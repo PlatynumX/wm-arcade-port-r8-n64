@@ -17,6 +17,7 @@ add_library(wmcore STATIC
     src/core/visual.c
     src/core/roster.c
     src/core/attract.c
+    src/core/audio.c
     src/core/app.c
     src/core/composite.c
     src/generated/attract_sequence.c

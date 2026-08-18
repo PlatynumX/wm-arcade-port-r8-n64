@@ -33,7 +33,7 @@ CORE_C := \
     src/generated/finish_sequences.c \
     src/generated/bret_visuals.c \
     src/generated/bret_attacks.c
-ASSET_C := src/generated/bret_sprites.c src/generated/sports_logo.c src/generated/dcs_logo.c src/generated/title_screen.c src/generated/title_sparkle.c src/generated/bmod_tables.c
+ASSET_C := src/generated/bret_sprites.c src/generated/sports_logo.c src/generated/dcs_logo.c src/generated/title_screen.c src/generated/title_sparkle.c src/generated/bmod_tables.c src/generated/sports_background.c src/generated/sports_motto.c
 N64_C := src/platform/n64/main.c src/platform/n64/dcs_effect.c
 C_FILES := $(CORE_C) $(ASSET_C) $(N64_C)
 OBJS := $(addprefix $(BUILD_DIR)/,$(C_FILES:.c=.o))
@@ -59,6 +59,9 @@ src/generated/title_sparkle.c: src/generated/sports_logo.c tools/sparkle_bundle.
 
 src/generated/bmod_tables.c: src/generated/sports_logo.c tools/bmod_source.py
 	@test -s $@ || sh ./scripts/prepare_frontend_assets.sh
+
+src/generated/sports_background.c src/generated/sports_motto.c: tools/wimpimg.py tools/sports_background_bundle.py tools/sports_motto_bundle.py scripts/prepare_sports_source_assets.sh
+	sh ./scripts/prepare_sports_source_assets.sh
 
 $(BUILD_DIR)/$(ROMNAME).elf: $(OBJS)
 

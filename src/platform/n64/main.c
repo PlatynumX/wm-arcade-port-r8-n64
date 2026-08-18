@@ -12,6 +12,8 @@
 #include "dcs_effect.h"
 #include "wm/roster.h"
 #include "wm/sports_logo.h"
+#include "wm/sports_background.h"
+#include "wm/sports_motto.h"
 #include "wm/title_screen.h"
 #include "wm/title_sparkle.h"
 #include "wm/visual.h"
@@ -359,17 +361,158 @@ static void render_dcs_logo(const wm_app *app) {
                               WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
 }
 
+/* SPORTBKBMOD uses the same packed BLIMP/BMOD semantics as the title
+   background, but with BGNDPAL.ASM::BKPALS and six universe placements. */
+static void draw_sports_background_block(const wm_sports_background_image *img,
+                                         const wm_sports_background_palette *pal,
+                                         const wm_bmod_block *block) {
+    if (!img || !pal || !block || !img->pixels_ci8 || !pal->color_count)
+        return;
+
+    const bool transparent = (block->flags & WM_BMOD_TRANSPARENT) != 0;
+    uint16_t *tlut = transparent ? pal->rgba5551_keyed : pal->rgba5551_opaque;
+    if (!tlut) return;
+
+    surface_t tex = surface_make_linear((void *)img->pixels_ci8, FMT_CI8,
+                                        img->width, img->height);
+    rdpq_set_mode_standard();
+    rdpq_mode_tlut(TLUT_RGBA16);
+    rdpq_mode_filter(FILTER_POINT);
+    rdpq_mode_alphacompare(1);
+    rdpq_tex_upload_tlut(tlut, 0, pal->color_count);
+
+    int pitch = (img->width + 7) & ~7;
+    int strip_h = pitch > 0 ? 2048 / pitch : 0;
+    if (strip_h < 1) strip_h = 1;
+    if (strip_h > 2) strip_h &= ~1;
+
+    const bool flip_x = (block->flags & WM_BMOD_HFLIP) != 0;
+    const bool flip_y = (block->flags & WM_BMOD_VFLIP) != 0;
+    const float x = (float)block->x * WM_FRONTEND_SCALE_X;
+
+    for (int row = 0; row < img->height; row += strip_h) {
+        int h = img->height - row;
+        if (h > strip_h) h = strip_h;
+        const int dest_row = flip_y ? (int)img->height - row - h : row;
+        const float y = (float)(block->y + dest_row) * WM_FRONTEND_SCALE_Y;
+        rdpq_tex_blit(&tex, x, y,
+                      &(rdpq_blitparms_t){
+                          .t0 = row,
+                          .height = h,
+                          .flip_x = flip_x,
+                          .flip_y = flip_y,
+                          .scale_x = WM_FRONTEND_SCALE_X,
+                          .scale_y = WM_FRONTEND_SCALE_Y,
+                          .filtering = false,
+                      });
+    }
+}
+
+static void render_sports_background(const wm_app *app) {
+    const wm_named_bmod *named = wm_source_bmod_find("SPORTBKBMOD");
+    if (!named || named->module.block_count != 71)
+        return;
+
+    /* ATTR.ASM::logo_mod, verbatim. */
+    static const int16_t module_starts[6][2] = {
+        {-400,    0},
+        {-800,  400},
+        {-1200, 800},
+        {-1600,1200},
+        {-2000,1600},
+        {-2400,2000},
+    };
+
+    struct sports_draw_ref { wm_bmod_block block; };
+    static struct sports_draw_ref refs[6 * 71];
+    size_t count = 0;
+
+    for (size_t m = 0; m < 6; ++m) {
+        for (size_t i = 0; i < named->module.block_count; ++i) {
+            wm_bmod_block b;
+            if (!wm_bmod_decode_block(&named->module, i, &b))
+                continue;
+
+            /* BAKGND stores universe positions and subtracts WORLDTL to plot. */
+            b.x = (int16_t)(module_starts[m][0] + b.x - app->attract.sports_world_x);
+            b.y = (int16_t)(module_starts[m][1] + b.y - app->attract.sports_world_y);
+
+            const wm_sports_background_image *img =
+                wm_sports_background_image_at(b.header_index);
+            if (!img)
+                continue;
+
+            if ((int)b.x + (int)img->width < -64 || b.x > 464 ||
+                (int)b.y + (int)img->height < -32 || b.y > 288)
+                continue;
+
+            refs[count++].block = b;
+        }
+    }
+
+    /* Same source Y/Z ordering used by the already-ported title BMOD renderer. */
+    for (size_t i = 1; i < count; ++i) {
+        struct sports_draw_ref key = refs[i];
+        size_t j = i;
+        while (j > 0 && wm_bmod_draw_before(&key.block, &refs[j - 1].block)) {
+            refs[j] = refs[j - 1];
+            --j;
+        }
+        refs[j] = key;
+    }
+
+    for (size_t i = 0; i < count; ++i) {
+        const wm_bmod_block *b = &refs[i].block;
+        const wm_sports_background_image *img =
+            wm_sports_background_image_at(b->header_index);
+        const wm_sports_background_palette *pal =
+            wm_sports_background_palette_at(b->palette);
+        draw_sports_background_block(img, pal, b);
+    }
+}
+
+static void render_sports_motto(void) {
+    /* ATTR.ASM::rule_str:
+       JAM_STR osgmd8_ascii,6,0,200,225,SGMD8WHT,print_string_C2 */
+    const char *text = wm_sports_motto_text();
+    if (!text) return;
+
+    int width = 0;
+    for (const char *p = text; *p; ++p) {
+        if (*p == ' ') {
+            width += 6;
+            continue;
+        }
+        const wm_source_sprite *g = wm_sports_motto_glyph(*p);
+        if (g) width += g->width;
+    }
+
+    float pen_x = (200.0f - (float)width * 0.5f) * WM_FRONTEND_SCALE_X;
+    const float y = 225.0f * WM_FRONTEND_SCALE_Y;
+
+    for (const char *p = text; *p; ++p) {
+        if (*p == ' ') {
+            pen_x += 6.0f * WM_FRONTEND_SCALE_X;
+            continue;
+        }
+        const wm_source_sprite *g = wm_sports_motto_glyph(*p);
+        if (!g) continue;
+        draw_source_sprite_scaled(g, pen_x, y, g->xani, g->yani, false, g,
+                                  WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
+        /* JAM_STR cspace=0; glyph image width supplies the character advance. */
+        pen_x += (float)g->width * WM_FRONTEND_SCALE_X;
+    }
+}
+
 static void render_midway_sports(const wm_app *app) {
     fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
-
-    /* show_sports_logo does not unblank until after SLEEPK 2, object creation,
-       and SLEEPK 1. */
+    /* show_sports_logo stays blank through SLEEPK 2 + object creation + SLEEPK 1. */
     if (app->attract.call_ticks < WM_SPORTS_LOGO_VISIBLE_TICK)
         return;
 
-    /* show_sports_logo creates all 17 BEGINOBJ objects at one arcade anchor.
-       Their individual WIMP hotspots position each piece; preserving those
-       offsets keeps the segmented Midway Sports artwork assembled. */
+    render_sports_background(app);
+
+    /* ATTR.ASM LOGO_LIST: SPRTLG01..SPRTLG17 share one object anchor. */
     const float anchor_x = 200.0f * WM_FRONTEND_SCALE_X;
     const float anchor_y = 118.0f * WM_FRONTEND_SCALE_Y;
     const size_t count = wm_sports_logo_sprite_count();
@@ -381,9 +524,7 @@ static void render_midway_sports(const wm_app *app) {
                                   WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
     }
 
-    /* app->attract.sports_world_x/y already execute the original X-=2/Y+=2
-       process timing. SPORTBKBMOD and osgmd8 are deliberately not replaced by
-       made-up artwork; their exact source renderers remain to be translated. */
+    render_sports_motto();
 }
 
 

@@ -24,16 +24,28 @@ SGMD8WHT_RGB555 = [
 ]
 
 def exact_glyph_map(images):
-    by_name = {im.name.lower(): im for im in images}
+    """Resolve osgmd8_ascii symbols using WIMP directory order.
+
+    SGMD8.IMG contains duplicate directory names. Converting the directory to
+    a Python dict was wrong because it silently replaced earlier headers with
+    later duplicates. LOAD2 consumes a named image from the active WIMP file,
+    so preserve source directory order and select the first exact match.
+    """
     mapping = {}
     missing = []
+    duplicate_counts = {}
+
     for ch in NEEDED:
         key = f"osgmd8_{ch.lower()}"
-        im = by_name.get(key)
-        if im is None:
+        matches = [im for im in images if im.name.lower() == key]
+        if not matches:
             missing.append(f"osgmd8_{ch}")
-        else:
-            mapping[ch] = im
+            continue
+
+        mapping[ch] = matches[0]
+        if len(matches) > 1:
+            duplicate_counts[ch] = len(matches)
+
     if missing:
         available = ", ".join(im.name for im in images)
         raise ValueError(
@@ -42,6 +54,16 @@ def exact_glyph_map(images):
             + ". Available image names: "
             + available
         )
+
+    if duplicate_counts:
+        detail = ", ".join(
+            f"{ch}={count}" for ch, count in sorted(duplicate_counts.items())
+        )
+        print(
+            "SGMD8 duplicate WIMP names detected; "
+            "using first source-directory occurrence: " + detail
+        )
+
     return mapping
 
 def emit_array(lines, ctype, name, vals, fmt, per):

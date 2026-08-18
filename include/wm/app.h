@@ -38,6 +38,19 @@
 #define WM_TITLE_LAVA_PERIOD_TICKS 5u
 #define WM_TITLE_LAVA_STEPS 32u
 
+/* ATTRACT.ASM passes MOVI [102,7],A8, A10=WHERE_WRESTLMANIA_SPARKLES and
+   A9=4 before CREATE FLASH_PID,SPRINKLE_GLINTS. Preserve the known call
+   interface even though the shared-library routine/table bodies are absent
+   from the checked-in WWF source tree. */
+#define WM_TITLE_GLINT_SOURCE_ARG_HI 102u
+#define WM_TITLE_GLINT_SOURCE_ARG_LO 7u
+#define WM_TITLE_GLINT_COUNT 4u
+#define WM_TITLE_GLINT_ANIM_FRAMES 15u
+#define WM_TITLE_RANDOM_ANIM_FRAMES 13u
+/* Inferred until the external shared SPRINKLE_GLINTS/RANDOM_SPARKLE bodies are
+   recovered. This must not be treated as a source-exact timing constant. */
+#define WM_TITLE_SPARKLE_INFERRED_FRAME_TICKS 2u
+
 /* ATTRACT.ASM::DCS_LOGO boundaries. The 60-tick sleep here is literal source
    data, not TSEC, and therefore intentionally remains 60 source ticks. */
 #define WM_DCS_STATIC_TICKS 0x42u
@@ -67,6 +80,14 @@ typedef enum {
 } wm_attract_flow;
 
 typedef struct {
+    int16_t x;
+    int16_t y;
+    uint8_t family;
+    uint8_t frame;
+    bool active;
+} wm_title_sparkle;
+
+typedef struct {
     wm_attract_call call;
     wm_attract_flow flow;
     size_t source_index;
@@ -78,6 +99,9 @@ typedef struct {
     int sports_world_x;
     int sports_world_y;
     unsigned title_lava_step;
+    wm_title_sparkle title_glints[WM_TITLE_GLINT_COUNT];
+    wm_title_sparkle title_random_sparkle;
+    uint32_t title_random_state;
 } wm_attract_state;
 
 typedef struct {

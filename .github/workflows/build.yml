@@ -47,14 +47,17 @@ jobs:
           cc -std=c11 -Wall -Wextra -Wpedantic -Werror -Iinclude -c src/generated/sports_logo.c -o /tmp/sports_logo.o
           cc -std=c11 -Wall -Wextra -Wpedantic -Werror -Iinclude -c src/generated/dcs_logo.c -o /tmp/dcs_logo.o
           cc -std=c11 -Wall -Wextra -Wpedantic -Werror -Iinclude -c src/generated/title_screen.c -o /tmp/title_screen.o
+          cc -std=c11 -Wall -Wextra -Wpedantic -Werror -Iinclude -c src/generated/title_sparkle.c -o /tmp/title_sparkle.o
           cc -std=c11 -Wall -Wextra -Wpedantic -Werror -Iinclude -c src/generated/bmod_tables.c -o /tmp/bmod_tables.o
       - name: Show generated artwork footprint
         run: |
-          wc -c src/generated/bret_sprites.c src/generated/sports_logo.c src/generated/dcs_logo.c src/generated/title_screen.c
+          wc -c src/generated/bret_sprites.c src/generated/sports_logo.c src/generated/dcs_logo.c src/generated/title_screen.c src/generated/title_sparkle.c
           grep -c '^    {"H' src/generated/bret_sprites.c
           test "$(grep -c '^    {"SPRTLG' src/generated/sports_logo.c)" -eq 17
           test -s src/generated/dcs_logo.c
           test -s src/generated/title_screen.c
+          test -s src/generated/title_sparkle.c
+          test "$(grep -c '"SPARKLE.IMG"' src/generated/title_sparkle.c)" -eq 69
           test -s src/generated/bmod_tables.c
           grep -q '"NTITLESCBMOD", {403, 256, 40' src/generated/bmod_tables.c
           grep -q '"SPORTBKBMOD", {1100, 400, 71' src/generated/bmod_tables.c
@@ -112,6 +115,8 @@ jobs:
           test -s src/generated/sports_logo.c
           test -s src/generated/dcs_logo.c
           test -s src/generated/title_screen.c
+          test -s src/generated/title_sparkle.c
+          test "$(grep -c '"SPARKLE.IMG"' src/generated/title_sparkle.c)" -eq 69
           test -s src/generated/bmod_tables.c
           test -s build/source_ir.json
           test -s build/SOURCE_FRONTIER.md

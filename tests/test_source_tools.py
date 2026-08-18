@@ -23,6 +23,7 @@ manifest = load("bret_manifest", ROOT / "tools" / "bret_manifest.py")
 wimp = load("wimpimg", ROOT / "tools" / "wimpimg.py")
 bundle = load("bret_bundle", ROOT / "tools" / "bret_bundle.py")
 frontend_bundle = load("frontend_bundle", ROOT / "tools" / "frontend_bundle.py")
+sparkle_bundle = load("sparkle_bundle", ROOT / "tools" / "sparkle_bundle.py")
 dcs_bundle = load("dcs_bundle", ROOT / "tools" / "dcs_bundle.py")
 inventory_mod = load("source_inventory", ROOT / "tools" / "source_inventory.py")
 attract_sequence = load("attract_sequence", ROOT / "tools" / "attract_sequence.py")
@@ -185,6 +186,34 @@ def test_frontend_bundle() -> None:
         assert "wm_sports_logo_sprite_count" in text
 
 
+
+
+def test_sparkle_bundle() -> None:
+    assert len(sparkle_bundle.SPARKLE_NAMES) == 69
+    assert sparkle_bundle.SPARKLE_NAMES[0] == "BSPRKA01"
+    assert sparkle_bundle.SPARKLE_NAMES[14] == "BSPRKA15"
+    assert sparkle_bundle.SPARKLE_NAMES[15] == "BSPRKB01"
+    assert sparkle_bundle.SPARKLE_NAMES[29] == "BSPRKB15"
+    assert sparkle_bundle.SPARKLE_NAMES[30] == "SPRKLA01"
+    assert sparkle_bundle.SPARKLE_NAMES[-1] == "SPRKLC13"
+
+    with tempfile.TemporaryDirectory() as td_s:
+        td = pathlib.Path(td_s)
+        source = td / "SPARKLE.IMG"
+        source.write_bytes(synthetic_wimp("BSPRKA01", "SPARKPAL"))
+        out = td / "title_sparkle.c"
+        count, pixels = sparkle_bundle.emit(source, out, ["BSPRKA01"])
+        text = out.read_text()
+        assert count == 1 and pixels == 6
+        assert '#include "wm/title_sparkle.h"' in text
+        assert '"BSPRKA01", "SPARKLE.IMG", 3, 2, -1, 2' in text
+        assert "wm_title_sparkle_sprite_find" in text
+        assert "wm_title_sparkle_sprite_at" in text
+        assert "wm_title_sparkle_sprite_count" in text
+        subprocess.run([
+            "cc", "-std=c11", "-Wall", "-Wextra", "-Wpedantic", "-Werror",
+            f"-I{ROOT / 'include'}", "-c", str(out), "-o", str(td / "sparkle.o")
+        ], check=True)
 
 
 def test_dcs_bundle() -> None:
@@ -519,6 +548,7 @@ def main() -> int:
     test_wimp_emit_c()
     test_bundle_multi_container()
     test_frontend_bundle()
+    test_sparkle_bundle()
     test_dcs_bundle()
     test_bdd_bundle()
     test_bmod_source_generator()

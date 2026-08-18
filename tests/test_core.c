@@ -447,9 +447,18 @@ static void test_attract_source_flow(void) {
         CHECK(app.attract.call == WM_ATTRACT_SHOW_TITLE);
     }
     CHECK(wm_process_find_id(&app.scheduler, WM_PID_CYCLE_LAVA) != NULL);
+    CHECK(wm_process_find_id(&app.scheduler, WM_PID_FLASH) != NULL);
+    CHECK(wm_process_find_id(&app.scheduler, WM_PID_ATTRACT_ANIM) != NULL);
     CHECK(app.attract.title_lava_step != initial_lava);
+    bool any_glint = false;
+    for (size_t i = 0; i < WM_TITLE_GLINT_COUNT; ++i)
+        any_glint |= app.attract.title_glints[i].active;
+    CHECK(any_glint);
+    CHECK(app.attract.title_random_state != 0x57574631u);
     wm_app_tick(&app, &button);
     CHECK(wm_process_find_id(&app.scheduler, WM_PID_CYCLE_LAVA) == NULL);
+    CHECK(wm_process_find_id(&app.scheduler, WM_PID_FLASH) == NULL);
+    CHECK(wm_process_find_id(&app.scheduler, WM_PID_ATTRACT_ANIM) == NULL);
     CHECK(app.attract.call == WM_ATTRACT_DCS_LOGO);
     CHECK(app.attract.amode_loops == 1);
 

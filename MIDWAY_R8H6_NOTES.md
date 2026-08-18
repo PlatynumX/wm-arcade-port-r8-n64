@@ -13,11 +13,11 @@ r8h6 continues the strict source-port contract. It does not restore the old hand
 ## Deliberately still absent
 
 - `cycle_lava` per-background-block palette substitution.
-- `SPRINKLE_GLINTS` and `RANDOM_SPARKLE` object/process rendering.
+- The original `SPARKLE.IMG` frame set and `show_title` sparkle process lifetime are now translated in r9. Exact `SPRINKLE_GLINTS` / `RANDOM_SPARKLE` placement and cadence remain pending because their shared helper bodies and `WHERE_WRESTLMANIA_SPARKLES` table are referenced externally but are not present in the checked-in WWF source tree.
 - Generalize the now-working NTITLESC BDD/BMOD block renderer to the remaining backgrounds.
 - Original `start_match`, credit/start/select, credits, hints, bios, audio and remaining attract routines.
 
-Those stay absent until their original implementations/dependencies are translated. No approximation is substituted.
+Anything still source-missing stays explicitly marked as such; provisional behavior is not claimed as source-exact.
 
 ## Build/source handling
 

@@ -12,6 +12,7 @@
 #include "wm/roster.h"
 #include "wm/sports_logo.h"
 #include "wm/title_screen.h"
+#include "wm/title_sparkle.h"
 #include "wm/visual.h"
 
 #define STICK_DEADZONE 12
@@ -385,6 +386,33 @@ static void render_midway_sports(const wm_app *app) {
 }
 
 
+static const wm_source_sprite *title_sparkle_frame(const wm_title_sparkle *sp) {
+    if (!sp || !sp->active) return NULL;
+
+    size_t base = 0;
+    unsigned frames = 0;
+    switch (sp->family) {
+        case 0: base = WM_TITLE_SPARKLE_BIG_A_BASE; frames = WM_TITLE_BIG_SPARKLE_FRAMES; break;
+        case 1: base = WM_TITLE_SPARKLE_BIG_B_BASE; frames = WM_TITLE_BIG_SPARKLE_FRAMES; break;
+        case 2: base = WM_TITLE_SPARKLE_SMALL_A_BASE; frames = WM_TITLE_SMALL_SPARKLE_FRAMES; break;
+        case 3: base = WM_TITLE_SPARKLE_SMALL_B_BASE; frames = WM_TITLE_SMALL_SPARKLE_FRAMES; break;
+        case 4: base = WM_TITLE_SPARKLE_SMALL_C_BASE; frames = WM_TITLE_SMALL_SPARKLE_FRAMES; break;
+        default: return NULL;
+    }
+    if ((unsigned)sp->frame >= frames) return NULL;
+    return wm_title_sparkle_sprite_at(base + sp->frame);
+}
+
+static void draw_title_sparkle(const wm_title_sparkle *sp) {
+    const wm_source_sprite *spr = title_sparkle_frame(sp);
+    if (!spr) return;
+    draw_source_sprite_scaled(spr,
+                              (float)sp->x * WM_FRONTEND_SCALE_X,
+                              (float)sp->y * WM_FRONTEND_SCALE_Y,
+                              spr->xani, spr->yani, false, spr,
+                              WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
+}
+
 static void render_title_screen(const wm_app *app) {
     fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
     if (app->attract.call_ticks < WM_TITLE_SETUP_TICKS)
@@ -425,9 +453,17 @@ static void render_title_screen(const wm_app *app) {
         draw_title_background_block(img, pal, block);
     }
 
+    /* SPARKLE.IMG is the original WIMP artwork named by IMG/MISC.LOD.
+       ATTRACT.ASM starts both FLASH_PID/SPRINKLE_GLINTS and
+       ATTRACT_ANIMPID/RANDOM_SPARKLE at this same title boundary; the portable
+       core owns their state and lifetime, while this backend only plots it. */
+    for (size_t i = 0; i < WM_TITLE_GLINT_COUNT; ++i)
+        draw_title_sparkle(&app->attract.title_glints[i]);
+    draw_title_sparkle(&app->attract.title_random_sparkle);
+
     /* The module is 403x256 against the arcade's 400x256 viewport, so the
        normal arcade->N64 transform naturally clips the final three source
-       columns. cycle_lava/sparkle processes remain separate source routines. */
+       columns. */
 }
 
 static __attribute__((unused)) void render_match(const wm_app *app) {

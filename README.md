@@ -11,11 +11,12 @@ r9 is the first broad **shared-engine** pass. It is not a claim that the complet
 - **Cooperative source-process scheduler.** Shared CREATE/sleep/kill-by-PID behavior is used by translated frontend processes instead of hand-coded screen timers.
 - **Packed BMOD records.** The original 64-bit background block records are decoded generically; CI extracts `NTITLESCBMOD` and `SPORTBKBMOD` directly from `BGNDTBL.ASM`.
 - **Original BLIMP title artwork.** `BIGWWF.BDB`/`BIGWWF.BDD` are decoded into their 40 CI8 blocks and six RGB555 palettes, cross-validated against `NTITLESCBMOD`, and rendered from the original packed block records rather than a flattened WIMP crop.
+- **Original title sparkle artwork/process lifetime.** All 69 WIMP frames named by `MISC.LOD` from `SPARKLE.IMG` are generated as source sprites. `show_title` creates/kills the source `FLASH_PID` and `ATTRACT_ANIMPID` processes alongside `cycle_lava`. The shared `SPRINKLE_GLINTS`/`RANDOM_SPARKLE` helper bodies and `WHERE_WRESTLMANIA_SPARKLES` table are absent from the checked-in WWF tree, so placement/random cadence is clearly marked provisional rather than source-exact.
 - **Typed animation stream.** Mixed WORD/LONG operands are preserved. Implemented commands execute source operand widths and direction rules; unknown commands fail closed instead of being guessed.
 - **Whole-source dependency IR.** CI scans every `SUBR`/`SUBRP`, static call/process edge and unresolved dynamic edge, with frontiers rooted at `attract_mode` and `start_match`.
 - **Whole-source animation IR.** CI mechanically preserves typed WORD/LONG animation data and W/L packing macros across the historical ASM tree.
 - **Source selection core from `SELECT.ASM`.** The 2x4 cursor grid, exact crouton coordinates, source BMOD placement, player start/mug/sound data, `scramble_table` roster mapping, attributes, legal four-way movement, START+UP random-selection gate, random wander/home rules, 15-second source selection timer and 30-tick final wait constants are translated in portable C.
-- **Source-driven attract execution.** Initial 8-tick blank, active source routine order, DCS/Midway/title timing, Midway background movement and title lava process scheduling remain source-driven.
+- **Source-driven attract execution.** Initial 8-tick blank, active source routine order, DCS/Midway/title timing, Midway background movement, title lava scheduling, and the source title sparkle process lifetime remain source-driven.
 - **Original artwork paths already proven on N64.** Midway Sports uses the original 17 WIMP pieces; title art is derived from original artist/BMOD data; Bret remains the first wrestler with the current visual backend.
 
 ## What is deliberately *not* called a port yet

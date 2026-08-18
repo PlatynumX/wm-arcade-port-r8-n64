@@ -2,8 +2,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "wm/app.h"
+#include "audio_backend.h"
 #include "wm/bmod.h"
 #include "wm/bret_sprites.h"
 #include "wm/composite.h"
@@ -361,59 +363,165 @@ static void render_dcs_logo(const wm_app *app) {
                               WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
 }
 
-/* SPORTBKBMOD uses the same packed BLIMP/BMOD semantics as the title
-   background, but with BGNDPAL.ASM::BKPALS and six universe placements. */
-static void draw_sports_background_block(const wm_sports_background_image *img,
-                                         const wm_sports_background_palette *pal,
-                                         const wm_bmod_block *block) {
-    if (!img || !pal || !block || !img->pixels_ci8 || !pal->color_count)
+/* SPORTBKBMOD source-faithful cached renderer.
+   The previous N64 path decoded/sorted/drew all 71 BMOD records every video
+   frame and repeatedly switched their TLUTs. That changed no source state, but
+   made the visible -2/+2 movement much more expensive than the arcade process.
+
+   Compose the exact 1100x400 source module once from the same records, pixels,
+   flags, Y/Z order and BKPALS colors. Per frame, reproduce BAKGND by copying
+   only the visible 400x256 source window for the six original logo_mod starts.
+   Source coordinates and movement timing are untouched. */
+#define WM_SPORTS_MODULE_W 1100
+#define WM_SPORTS_MODULE_H 400
+#define WM_SPORTS_VIEW_W 400
+#define WM_SPORTS_VIEW_H 256
+#define WM_SPORTS_MAX_MERGED_COLORS 256
+
+static uint8_t sports_module_ci8[WM_SPORTS_MODULE_W * WM_SPORTS_MODULE_H]
+    __attribute__((aligned(8)));
+static uint8_t sports_view_ci8[WM_SPORTS_VIEW_W * WM_SPORTS_VIEW_H]
+    __attribute__((aligned(8)));
+static uint16_t sports_merged_tlut[WM_SPORTS_MAX_MERGED_COLORS]
+    __attribute__((aligned(8)));
+static unsigned sports_merged_colors;
+static bool sports_background_cache_ready;
+
+static uint8_t sports_merge_color(uint16_t rgba5551) {
+    for (unsigned i = 1; i < sports_merged_colors; ++i) {
+        if (sports_merged_tlut[i] == rgba5551)
+            return (uint8_t)i;
+    }
+    if (sports_merged_colors >= WM_SPORTS_MAX_MERGED_COLORS)
+        return 0;
+    sports_merged_tlut[sports_merged_colors] = rgba5551;
+    return (uint8_t)sports_merged_colors++;
+}
+
+static void sports_compose_block(const wm_bmod_block *b) {
+    const wm_sports_background_image *img =
+        wm_sports_background_image_at(b->header_index);
+    const wm_sports_background_palette *pal =
+        wm_sports_background_palette_at(b->palette);
+    if (!img || !pal || !img->pixels_ci8 || !pal->rgba5551_opaque)
         return;
 
-    const bool transparent = (block->flags & WM_BMOD_TRANSPARENT) != 0;
-    uint16_t *tlut = transparent ? pal->rgba5551_keyed : pal->rgba5551_opaque;
-    if (!tlut) return;
+    const bool transparent = (b->flags & WM_BMOD_TRANSPARENT) != 0;
+    const bool flip_x = (b->flags & WM_BMOD_HFLIP) != 0;
+    const bool flip_y = (b->flags & WM_BMOD_VFLIP) != 0;
 
-    surface_t tex = surface_make_linear((void *)img->pixels_ci8, FMT_CI8,
-                                        img->width, img->height);
-    rdpq_set_mode_standard();
-    rdpq_mode_tlut(TLUT_RGBA16);
-    rdpq_mode_filter(FILTER_POINT);
-    rdpq_mode_alphacompare(1);
-    rdpq_tex_upload_tlut(tlut, 0, pal->color_count);
+    for (int dy = 0; dy < (int)img->height; ++dy) {
+        const int out_y = (int)b->y + dy;
+        if ((unsigned)out_y >= WM_SPORTS_MODULE_H)
+            continue;
+        const int sy = flip_y ? (int)img->height - 1 - dy : dy;
 
-    int pitch = (img->width + 7) & ~7;
-    int strip_h = pitch > 0 ? 2048 / pitch : 0;
-    if (strip_h < 1) strip_h = 1;
-    if (strip_h > 2) strip_h &= ~1;
+        for (int dx = 0; dx < (int)img->width; ++dx) {
+            const int out_x = (int)b->x + dx;
+            if ((unsigned)out_x >= WM_SPORTS_MODULE_W)
+                continue;
 
-    const bool flip_x = (block->flags & WM_BMOD_HFLIP) != 0;
-    const bool flip_y = (block->flags & WM_BMOD_VFLIP) != 0;
-    const float x = (float)block->x * WM_FRONTEND_SCALE_X;
+            const int sx = flip_x ? (int)img->width - 1 - dx : dx;
+            const uint8_t src =
+                img->pixels_ci8[(size_t)sy * img->width + (size_t)sx];
 
-    for (int row = 0; row < img->height; row += strip_h) {
-        int h = img->height - row;
-        if (h > strip_h) h = strip_h;
-        const int dest_row = flip_y ? (int)img->height - row - h : row;
-        const float y = (float)(block->y + dest_row) * WM_FRONTEND_SCALE_Y;
-        rdpq_tex_blit(&tex, x, y,
-                      &(rdpq_blitparms_t){
-                          .t0 = row,
-                          .height = h,
-                          .flip_x = flip_x,
-                          .flip_y = flip_y,
-                          .scale_x = WM_FRONTEND_SCALE_X,
-                          .scale_y = WM_FRONTEND_SCALE_Y,
-                          .filtering = false,
-                      });
+            if (transparent && src == 0)
+                continue;
+            if (src >= pal->color_count)
+                continue;
+
+            const uint8_t merged =
+                sports_merge_color(pal->rgba5551_opaque[src]);
+            if (merged == 0)
+                continue;
+
+            sports_module_ci8[(size_t)out_y * WM_SPORTS_MODULE_W +
+                              (size_t)out_x] = merged;
+        }
     }
 }
 
-static void render_sports_background(const wm_app *app) {
+static void sports_background_cache_init(void) {
+    if (sports_background_cache_ready)
+        return;
+
     const wm_named_bmod *named = wm_source_bmod_find("SPORTBKBMOD");
     if (!named || named->module.block_count != 71)
         return;
 
-    /* ATTR.ASM::logo_mod, verbatim. */
+    memset(sports_module_ci8, 0, sizeof(sports_module_ci8));
+    memset(sports_merged_tlut, 0, sizeof(sports_merged_tlut));
+    sports_merged_tlut[0] = 0;
+    sports_merged_colors = 1;
+
+    struct sports_cache_ref { wm_bmod_block block; };
+    struct sports_cache_ref refs[71];
+    size_t count = 0;
+
+    for (size_t i = 0; i < named->module.block_count; ++i) {
+        if (!wm_bmod_decode_block(&named->module, i, &refs[count].block))
+            continue;
+        ++count;
+    }
+
+    for (size_t i = 1; i < count; ++i) {
+        struct sports_cache_ref key = refs[i];
+        size_t j = i;
+        while (j > 0 && wm_bmod_draw_before(&key.block, &refs[j - 1].block)) {
+            refs[j] = refs[j - 1];
+            --j;
+        }
+        refs[j] = key;
+    }
+
+    for (size_t i = 0; i < count; ++i)
+        sports_compose_block(&refs[i].block);
+
+    sports_background_cache_ready = true;
+    debugf("sports: cached exact SPORTBKBMOD 1100x400 (%lu blocks, %u colors)\n",
+           (unsigned long)count, sports_merged_colors);
+}
+
+static void sports_copy_visible_module(int module_x, int module_y) {
+    const int left = module_x < 0 ? 0 : module_x;
+    const int top = module_y < 0 ? 0 : module_y;
+    const int right =
+        module_x + WM_SPORTS_MODULE_W > WM_SPORTS_VIEW_W
+            ? WM_SPORTS_VIEW_W : module_x + WM_SPORTS_MODULE_W;
+    const int bottom =
+        module_y + WM_SPORTS_MODULE_H > WM_SPORTS_VIEW_H
+            ? WM_SPORTS_VIEW_H : module_y + WM_SPORTS_MODULE_H;
+
+    if (left >= right || top >= bottom)
+        return;
+
+    const int src_x = left - module_x;
+    const int src_y = top - module_y;
+    const size_t width = (size_t)(right - left);
+
+    for (int y = top; y < bottom; ++y) {
+        const uint8_t *src =
+            sports_module_ci8 +
+            (size_t)(src_y + y - top) * WM_SPORTS_MODULE_W +
+            (size_t)src_x;
+        uint8_t *dst =
+            sports_view_ci8 +
+            (size_t)y * WM_SPORTS_VIEW_W +
+            (size_t)left;
+
+        for (size_t x = 0; x < width; ++x) {
+            if (src[x] != 0)
+                dst[x] = src[x];
+        }
+    }
+}
+
+static void render_sports_background(const wm_app *app) {
+    sports_background_cache_init();
+    if (!sports_background_cache_ready)
+        return;
+
+    /* ATTR.ASM::logo_mod universe starts, verbatim. */
     static const int16_t module_starts[6][2] = {
         {-400,    0},
         {-800,  400},
@@ -423,51 +531,37 @@ static void render_sports_background(const wm_app *app) {
         {-2400,2000},
     };
 
-    struct sports_draw_ref { wm_bmod_block block; };
-    static struct sports_draw_ref refs[6 * 71];
-    size_t count = 0;
+    memset(sports_view_ci8, 0, sizeof(sports_view_ci8));
 
-    for (size_t m = 0; m < 6; ++m) {
-        for (size_t i = 0; i < named->module.block_count; ++i) {
-            wm_bmod_block b;
-            if (!wm_bmod_decode_block(&named->module, i, &b))
-                continue;
-
-            /* BAKGND stores universe positions and subtracts WORLDTL to plot. */
-            b.x = (int16_t)(module_starts[m][0] + b.x - app->attract.sports_world_x);
-            b.y = (int16_t)(module_starts[m][1] + b.y - app->attract.sports_world_y);
-
-            const wm_sports_background_image *img =
-                wm_sports_background_image_at(b.header_index);
-            if (!img)
-                continue;
-
-            if ((int)b.x + (int)img->width < -64 || b.x > 464 ||
-                (int)b.y + (int)img->height < -32 || b.y > 288)
-                continue;
-
-            refs[count++].block = b;
-        }
+    for (size_t i = 0; i < 6; ++i) {
+        /* BAKGND universe -> display conversion subtracts WORLDTL. */
+        const int x = module_starts[i][0] - app->attract.sports_world_x;
+        const int y = module_starts[i][1] - app->attract.sports_world_y;
+        sports_copy_visible_module(x, y);
     }
 
-    /* Same source Y/Z ordering used by the already-ported title BMOD renderer. */
-    for (size_t i = 1; i < count; ++i) {
-        struct sports_draw_ref key = refs[i];
-        size_t j = i;
-        while (j > 0 && wm_bmod_draw_before(&key.block, &refs[j - 1].block)) {
-            refs[j] = refs[j - 1];
-            --j;
-        }
-        refs[j] = key;
-    }
+    surface_t tex =
+        surface_make_linear((void *)sports_view_ci8, FMT_CI8,
+                            WM_SPORTS_VIEW_W, WM_SPORTS_VIEW_H);
 
-    for (size_t i = 0; i < count; ++i) {
-        const wm_bmod_block *b = &refs[i].block;
-        const wm_sports_background_image *img =
-            wm_sports_background_image_at(b->header_index);
-        const wm_sports_background_palette *pal =
-            wm_sports_background_palette_at(b->palette);
-        draw_sports_background_block(img, pal, b);
+    rdpq_set_mode_standard();
+    rdpq_mode_tlut(TLUT_RGBA16);
+    rdpq_mode_filter(FILTER_POINT);
+    rdpq_mode_alphacompare(1);
+    rdpq_tex_upload_tlut(sports_merged_tlut, 0, sports_merged_colors);
+
+    /* 400-byte CI8 rows: four source rows per TMEM-safe strip. */
+    for (int t = 0; t < WM_SPORTS_VIEW_H; t += 4) {
+        int h = WM_SPORTS_VIEW_H - t;
+        if (h > 4) h = 4;
+        rdpq_tex_blit(&tex, 0.0f, (float)t * WM_FRONTEND_SCALE_Y,
+                      &(rdpq_blitparms_t){
+                          .t0 = t,
+                          .height = h,
+                          .scale_x = WM_FRONTEND_SCALE_X,
+                          .scale_y = WM_FRONTEND_SCALE_Y,
+                          .filtering = false,
+                      });
     }
 }
 
@@ -670,6 +764,8 @@ int main(void) {
     rdpq_init();
     rdpq_debug_start();
     joypad_init();
+    wm_n64_audio_init();
+    sports_background_cache_init();
     rdpq_text_register_font(1, rdpq_font_load_builtin(FONT_BUILTIN_DEBUG_VAR));
 
     wm_app_init(&app);
@@ -688,6 +784,7 @@ int main(void) {
         bool connected = false;
         wm_input_state input = read_input(&connected);
         (void)wm_app_video_frame(&app, &input);
+        wm_n64_audio_service(&app);
         (void)connected;
         render_app(&app);
     }

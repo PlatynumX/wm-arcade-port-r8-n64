@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include "wm/attract.h"
+#include "wm/audio.h"
 #include "wm/demo.h"
 #include "wm/process.h"
 #include "wm/roster.h"
@@ -111,6 +112,7 @@ typedef struct {
 } wm_attract_state;
 
 typedef struct {
+    wm_audio_state audio;
     wm_attract_state attract;
     wm_demo demo;
     wm_wrestler_id p1_choice;

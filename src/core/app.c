@@ -215,6 +215,11 @@ static void begin_call(wm_app *app, wm_attract_call call) {
     switch (call) {
         case WM_ATTRACT_DCS_LOGO:
             a->dcs_phase = WM_DCS_STATIC;
+            /* ATTR.ASM::DCS_LOGO SNDSND 1005 after display_unblank.
+               Source suppresses it once AMODE_LOOPS >= 2. ADJMUSIC is
+               not exposed yet; this frontend's default is enabled. */
+            if (a->amode_loops < 2u)
+                (void)wm_audio_send_command(&app->audio, 1005);
             break;
         case WM_ATTRACT_SHOW_SPORTS_LOGO:
             a->sports_world_x = 0;
@@ -368,6 +373,7 @@ static bool tick_title(wm_app *app, const wm_input_state *input) {
 
 void wm_app_init(wm_app *app) {
     memset(app, 0, sizeof(*app));
+    wm_audio_init(&app->audio);
     wm_demo_init(&app->demo);
     wm_source_clock_init(&app->source_clock);
     wm_scheduler_init(&app->scheduler);
@@ -380,6 +386,7 @@ void wm_app_init(wm_app *app) {
 
 void wm_app_tick(wm_app *app, const wm_input_state *input) {
     if (!app) return;
+    wm_audio_source_tick(&app->audio);
     if (!input) input = &no_input;
 
     if (input->z) app->show_debug = !app->show_debug;
@@ -392,6 +399,8 @@ void wm_app_tick(wm_app *app, const wm_input_state *input) {
             return;
         }
         app->attract_started = true;
+        /* ATTRACT.ASM startup SNDSND command 0 after SLEEPK 8. */
+        (void)wm_audio_send_command(&app->audio, 0);
         begin_base_loop(app);
     }
 
@@ -410,7 +419,13 @@ void wm_app_tick(wm_app *app, const wm_input_state *input) {
        cooperative-yield boundary. */
     wm_scheduler_step(&app->scheduler);
 
-    if (done) advance_call(app);
+    if (done) {
+        if (app->attract.call == WM_ATTRACT_DCS_LOGO) {
+            /* ATTR.ASM::DCS_LOGO exit SNDSND command 0 at nobutn1. */
+            (void)wm_audio_send_command(&app->audio, 0);
+        }
+        advance_call(app);
+    }
     skip_untranslated_calls(app);
 }
 

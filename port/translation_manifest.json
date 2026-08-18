@@ -1,0 +1,120 @@
+{
+  "revision": "r9",
+  "policy": "Original source routine/data first. Shared source-engine translation replaces one-off recreation; unresolved semantics fail closed.",
+  "attract": {
+    "show_hstd": {
+      "status": "not-started",
+      "note": "Original high-score display not translated."
+    },
+    "DCS_LOGO": {
+      "status": "partial-source",
+      "note": "Original object/timing path translated; original ADD_PIXEL_ROT/ADD_PIXEL_VEL plotter effects remain missing."
+    },
+    "show_sports_logo": {
+      "status": "partial-source",
+      "note": "Original 17 WIMP logo pieces, source timing and MOVE_BACK_OFF_SCREEN process scheduling translated; packed SPORTBKBMOD records are now ingested generically, artwork/palette block renderer still partial."
+    },
+    "show_gameplay": {
+      "status": "harness-only",
+      "note": "r8 demo combat is a hardware bring-up harness, not the original start_match process graph; excluded from normal arcade flow."
+    },
+    "creditscreen": {
+      "status": "not-started",
+      "note": "Original credits routine not translated."
+    },
+    "show_title": {
+      "status": "partial-source",
+      "note": "Original setup/button timing translated; cycle_lava now runs as a source PID on the shared scheduler. NTITLESC packed BMOD data is ingested generically; final per-block palette/art backend remains partial."
+    },
+    "DO_HINTS": {
+      "status": "not-started",
+      "note": "Original hints controller not translated."
+    },
+    "show_gen_tips": {
+      "status": "not-started",
+      "note": "Original general tips routine not translated."
+    },
+    "show_bios": {
+      "status": "not-started",
+      "note": "Original bios routine not translated."
+    },
+    "show_bios_tips": {
+      "status": "not-started",
+      "note": "Original bio tips routine not translated."
+    },
+    "show_operatormsg": {
+      "status": "not-started",
+      "note": "Original operator message routine not translated."
+    },
+    "show_time_date": {
+      "status": "not-started",
+      "note": "Original time/date routine not translated."
+    },
+    "show_copyright": {
+      "status": "not-started",
+      "note": "Original copyright routine not translated."
+    },
+    "aama_message": {
+      "status": "not-started",
+      "note": "Original AAMA routine not translated."
+    }
+  },
+  "systems": {
+    "attract_mode_scheduler": {
+      "status": "partial-source",
+      "note": "Active source JSRP order, AMODE_LOOPS branch structure, and initial SLEEPK 8 blank are translated on the original 53 Hz source clock."
+    },
+    "wimp_ci8_renderer": {
+      "status": "partial-source",
+      "note": "CI8/TLUT pixels/hotspots translated for converted assets; general object/process semantics incomplete."
+    },
+    "two_channel_wrestler_composite": {
+      "status": "partial-source",
+      "note": "set_image attachment offset math translated for Bret bring-up."
+    },
+    "start_match": {
+      "status": "not-started",
+      "note": "Original start_match subtree is mechanically mapped by source IR but game/process/player dependencies are not yet translated; no harness substitution."
+    },
+    "credit_start_select": {
+      "status": "partial-source",
+      "note": "SELECT.ASM source tables are regenerated in CI; cursor grid/BMOD placement/scramble_table roster mapping/player start-mug-sound data/attributes, exact four-way cursor legality, START+UP random-select gate, random wander/home movement, source select_clock PSTATUS reset/OLD_PSTATUS behavior, 15-second timer and 30-tick final wait constant are translated. Credit/buy-in process wiring, original objects/text/mug art and full select process orchestration remain."
+    },
+    "combat": {
+      "status": "harness-only",
+      "note": "Portable demo AI/health/contact logic is test scaffolding and is not part of normal arcade execution."
+    },
+    "audio": {
+      "status": "not-started",
+      "note": "Original game-side DCS command semantics/backend not translated."
+    },
+    "background_artist_crop": {
+      "status": "partial-source",
+      "note": "BDB source block bounds + BGNDTBL BMOD dimensions recover exact full-screen source composites directly from original WIMP artist files; currently wired for NTITLESC."
+    },
+    "source_clock": {
+      "status": "exact-source",
+      "note": "DISPLAY.EQU TSEC=53 is executed independently of 60 Hz N64 presentation using an accumulator; literal 60-tick source sleeps remain literal."
+    },
+    "source_process_scheduler": {
+      "status": "partial-source",
+      "note": "Cooperative CREATE/sleep/kill-by-PID execution is shared by translated attract processes; full MPROC semantics and process pdata remain to port."
+    },
+    "bmod_packed_records": {
+      "status": "partial-source",
+      "note": "BAKGND.ASM 64-bit block records decode exactly and CI extracts NTITLESCBMOD/SPORTBKBMOD verbatim from BGNDTBL.ASM; header art/palette object construction remains incomplete."
+    },
+    "typed_animation_stream": {
+      "status": "partial-source",
+      "note": "Mixed WORD/LONG source stream supports frame refs, REPEAT, SETMODE, velocity LONG operands/modes, PAUSE, SETSPEED, zero velocities, facing/xflip and END. Unknown commands stop explicitly."
+    },
+    "source_dependency_ir": {
+      "status": "exact-source",
+      "note": "CI scans every SUBR/SUBRP and static CALL/JSRP/CREATE edge and emits dependency frontiers for attract_mode and start_match without inventing unresolved dynamic semantics."
+    },
+    "animation_source_ir": {
+      "status": "exact-source",
+      "note": "CI scans typed WORD/LONG animation data and W/L packing macros across the original ASM tree, preserving source expressions and unresolved forms without inventing pointer or command semantics."
+    }
+  }
+}

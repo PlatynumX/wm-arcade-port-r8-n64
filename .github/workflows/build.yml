@@ -1,0 +1,214 @@
+name: build
+
+on:
+  push:
+    branches-ignore: [rom-build]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  host-verification:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure portable verifier
+        run: cmake -S . -B build-host -DCMAKE_BUILD_TYPE=Release
+      - name: Build portable verifier
+        run: cmake --build build-host --parallel
+      - name: Run portable tests
+        run: ctest --test-dir build-host --output-on-failure
+      - name: Run source-attract smoke test
+        run: ./build-host/wm_headless
+
+  source-conversion:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch historical source and regenerate translated source data
+        run: sh ./scripts/regenerate_source_data.sh
+      - name: Inventory complete historical source tree
+        run: |
+          sh ./scripts/inventory_original.sh
+          sh ./scripts/build_source_ir.sh
+          sh ./scripts/build_animation_ir.sh
+      - name: Verify checked-in translated tables are reproducible
+        run: git diff --exit-code -- src/generated/attract_sequence.c src/generated/select_tables.c src/generated/port_status.c src/generated/finish_sequences.c src/generated/bret_visuals.c src/generated/bret_attacks.c docs/PORT_COVERAGE.md
+      - name: Convert original WIMP artwork to portable C
+        run: |
+          sh ./scripts/prepare_bret_sprites.sh
+          sh ./scripts/prepare_frontend_assets.sh
+      - name: Compile generated sprite sources on host
+        run: |
+          cc -std=c11 -Wall -Wextra -Wpedantic -Werror -Iinclude -c src/generated/bret_sprites.c -o /tmp/bret_sprites.o
+          cc -std=c11 -Wall -Wextra -Wpedantic -Werror -Iinclude -c src/generated/sports_logo.c -o /tmp/sports_logo.o
+          cc -std=c11 -Wall -Wextra -Wpedantic -Werror -Iinclude -c src/generated/dcs_logo.c -o /tmp/dcs_logo.o
+          cc -std=c11 -Wall -Wextra -Wpedantic -Werror -Iinclude -c src/generated/title_screen.c -o /tmp/title_screen.o
+          cc -std=c11 -Wall -Wextra -Wpedantic -Werror -Iinclude -c src/generated/bmod_tables.c -o /tmp/bmod_tables.o
+      - name: Show generated artwork footprint
+        run: |
+          wc -c src/generated/bret_sprites.c src/generated/sports_logo.c src/generated/dcs_logo.c src/generated/title_screen.c
+          grep -c '^    {"H' src/generated/bret_sprites.c
+          test "$(grep -c '^    {"SPRTLG' src/generated/sports_logo.c)" -eq 17
+          test -s src/generated/dcs_logo.c
+          test -s src/generated/title_screen.c
+          test -s src/generated/bmod_tables.c
+          grep -q '"NTITLESCBMOD", {403, 256, 40' src/generated/bmod_tables.c
+          grep -q '"SPORTBKBMOD", {1100, 400, 71' src/generated/bmod_tables.c
+
+  n64-rom:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/dragonminded/libdragon:trunk
+    env:
+      N64_INST: /n64_toolchain
+      LIBDRAGON_REV: 0c665e8439aba143424631ba29ef2c305eaa986b
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Ensure host-side asset tools exist
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v python3 >/dev/null 2>&1; then
+            apt-get update
+            DEBIAN_FRONTEND=noninteractive apt-get install -y python3
+          fi
+          python3 --version
+          git --version
+          make --version | head -1
+
+      - name: Install pinned libdragon SDK
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -x "$N64_INST/bin/mips64-elf-gcc"
+          rm -rf /tmp/libdragon
+          git init -q /tmp/libdragon
+          git -C /tmp/libdragon remote add origin https://github.com/DragonMinded/libdragon.git
+          git -C /tmp/libdragon fetch -q --depth 1 origin "$LIBDRAGON_REV"
+          git -C /tmp/libdragon checkout -q --detach FETCH_HEAD
+          test "$(git -C /tmp/libdragon rev-parse HEAD)" = "$LIBDRAGON_REV"
+          make -C /tmp/libdragon -j2 install
+          make -C /tmp/libdragon -j2 tools-install
+          test -f "$N64_INST/include/n64.mk"
+          test -f "$N64_INST/mips64-elf/lib/libdragon.a"
+          test -x "$N64_INST/bin/n64tool"
+
+      - name: Regenerate source data and original artwork
+        shell: bash
+        run: |
+          set -euo pipefail
+          sh ./scripts/regenerate_source_data.sh
+          sh ./scripts/inventory_original.sh
+          sh ./scripts/build_source_ir.sh
+          sh ./scripts/build_animation_ir.sh
+          sh ./scripts/prepare_bret_sprites.sh
+          sh ./scripts/prepare_frontend_assets.sh
+          test -s src/generated/bret_sprites.c
+          test -s src/generated/sports_logo.c
+          test -s src/generated/dcs_logo.c
+          test -s src/generated/title_screen.c
+          test -s src/generated/bmod_tables.c
+          test -s build/source_ir.json
+          test -s build/SOURCE_FRONTIER.md
+          test -s build/animation_ir.json
+          test -s build/ANIMATION_FRONTIER.md
+          test "$(grep -c '^    {"SPRTLG' src/generated/sports_logo.c)" -eq 17
+
+      - name: Export Bret PNG inspection assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/export_bret_pngs.py \
+            --lod original/wwf-wrestlemania/IMG/BRET.LOD \
+            --img-dir original/wwf-wrestlemania/IMG \
+            --visual-source src/generated/bret_visuals.c \
+            --visual-source src/generated/bret_attacks.c \
+            --out-zip bret-r8-textures-png.zip
+          test -s bret-r8-textures-png.zip
+          python3 - <<'PYZIP'
+          import zipfile
+          z=zipfile.ZipFile('bret-r8-textures-png.zip')
+          pngs=[n for n in z.namelist() if n.lower().endswith('.png')]
+          print(f'PNG frames in zip: {len(pngs)}')
+          assert len(pngs) >= 100
+          PYZIP
+
+      - name: Build Nintendo 64 ROM
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf build/n64 wm_arcade_r9.z64
+          make -j2
+          test -s wm_arcade_r9.z64
+          ls -lh wm_arcade_r9.z64
+
+      - name: Upload ROM and coverage as Actions artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: wm-arcade-r9-build
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            wm_arcade_r9.z64
+            docs/PORT_COVERAGE.md
+            build/SOURCE_FRONTIER.md
+            build/source_ir.json
+            build/ANIMATION_FRONTIER.md
+            build/animation_ir.json
+            build/SOURCE_INVENTORY.md
+            bret-r8-textures-png.zip
+
+      - name: Publish ROM to rom-build branch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          ROM="$GITHUB_WORKSPACE/wm_arcade_r9.z64"
+          ASSETS="$GITHUB_WORKSPACE/bret-r8-textures-png.zip"
+          COVERAGE="$GITHUB_WORKSPACE/docs/PORT_COVERAGE.md"
+          FRONTIER="$GITHUB_WORKSPACE/build/SOURCE_FRONTIER.md"
+          SOURCEIR="$GITHUB_WORKSPACE/build/source_ir.json"
+          ANIMFRONTIER="$GITHUB_WORKSPACE/build/ANIMATION_FRONTIER.md"
+          ANIMIR="$GITHUB_WORKSPACE/build/animation_ir.json"
+          test -s "$ROM"
+          test -s "$ASSETS"
+          test -s "$COVERAGE"
+          test -s "$FRONTIER"
+          test -s "$SOURCEIR"
+          test -s "$ANIMFRONTIER"
+          test -s "$ANIMIR"
+          cp "$ROM" /tmp/wm_arcade_r9.z64
+          cp "$ASSETS" /tmp/bret-r8-textures-png.zip
+          cp "$COVERAGE" /tmp/PORT_COVERAGE.md
+          cp "$FRONTIER" /tmp/SOURCE_FRONTIER.md
+          cp "$SOURCEIR" /tmp/source_ir.json
+          cp "$ANIMFRONTIER" /tmp/ANIMATION_FRONTIER.md
+          cp "$ANIMIR" /tmp/animation_ir.json
+
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan rom-build-tmp
+          git rm -rf . >/dev/null 2>&1 || true
+          cp /tmp/wm_arcade_r9.z64 ./wm_arcade_r9.z64
+          cp /tmp/bret-r8-textures-png.zip ./bret-r8-textures-png.zip
+          cp /tmp/PORT_COVERAGE.md ./PORT_COVERAGE.md
+          cp /tmp/SOURCE_FRONTIER.md ./SOURCE_FRONTIER.md
+          cp /tmp/source_ir.json ./source_ir.json
+          cp /tmp/ANIMATION_FRONTIER.md ./ANIMATION_FRONTIER.md
+          cp /tmp/animation_ir.json ./animation_ir.json
+          {
+            echo "WrestleMania Arcade N64 r9"
+            echo "source_commit=$GITHUB_SHA"
+            echo "workflow_run=$GITHUB_RUN_ID"
+            echo "built_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          } > BUILD.txt
+          git add -f wm_arcade_r9.z64 bret-r8-textures-png.zip PORT_COVERAGE.md SOURCE_FRONTIER.md source_ir.json ANIMATION_FRONTIER.md animation_ir.json BUILD.txt
+          git commit -m "ROM build ${GITHUB_SHA::12}"
+          git push --force origin HEAD:rom-build

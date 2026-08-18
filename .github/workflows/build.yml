@@ -37,7 +37,7 @@ jobs:
           sh ./scripts/build_animation_ir.sh
       - name: Verify checked-in translated tables are reproducible
         run: git diff --exit-code -- src/generated/attract_sequence.c src/generated/select_tables.c src/generated/port_status.c src/generated/finish_sequences.c src/generated/bret_visuals.c src/generated/bret_attacks.c docs/PORT_COVERAGE.md
-      - name: Convert original WIMP artwork to portable C
+      - name: Convert original WIMP and BLIMP artwork to portable C
         run: |
           sh ./scripts/prepare_bret_sprites.sh
           sh ./scripts/prepare_frontend_assets.sh

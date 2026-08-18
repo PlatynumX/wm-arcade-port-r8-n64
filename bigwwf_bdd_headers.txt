@@ -1,0 +1,7 @@
+file_size = 290584
+declared_records = 40
+headers_found = 1
+
+00: hdr=0x000003 data=0x00000F vals=(3, 204, 119, 1) gap=290569
+    first16 = 05 05 05 05 05 03 03 02 04 01 01 05 09 02 06 01
+    last16  = 4a 28 4a 28 4a 28 4a 28 4a 28 4a 28 4a 28 4a 28

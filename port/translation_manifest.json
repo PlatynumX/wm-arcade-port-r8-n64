@@ -24,7 +24,7 @@
     },
     "show_title": {
       "status": "partial-source",
-      "note": "Original setup/button timing translated; cycle_lava now runs as a source PID on the shared scheduler. NTITLESC packed BMOD data is ingested generically; final per-block palette/art backend remains partial."
+      "note": "Original setup/button timing translated; cycle_lava runs as a source PID on the shared scheduler. NTITLESC now executes the original BIGWWF.BDD CI8 blocks and RGB555 palettes through the verbatim NTITLESCBMOD placement/depth/transparent records. Lava palette cycling and sparkle object plotting remain."
     },
     "DO_HINTS": {
       "status": "not-started",
@@ -88,9 +88,9 @@
       "status": "not-started",
       "note": "Original game-side DCS command semantics/backend not translated."
     },
-    "background_artist_crop": {
+    "background_blimp_bdd": {
       "status": "partial-source",
-      "note": "BDB source block bounds + BGNDTBL BMOD dimensions recover exact full-screen source composites directly from original WIMP artist files; currently wired for NTITLESC."
+      "note": "Paired BDB/BDD BLIMP data is decoded as raw source blocks plus palettes and cross-validated against compiled BMOD records; NTITLESC is wired block-for-block with no WIMP crop or flattened recreation."
     },
     "source_clock": {
       "status": "exact-source",
@@ -102,7 +102,7 @@
     },
     "bmod_packed_records": {
       "status": "partial-source",
-      "note": "BAKGND.ASM 64-bit block records decode exactly and CI extracts NTITLESCBMOD/SPORTBKBMOD verbatim from BGNDTBL.ASM; header art/palette object construction remains incomplete."
+      "note": "BAKGND.ASM 64-bit block records decode exactly and CI extracts NTITLESCBMOD/SPORTBKBMOD verbatim from BGNDTBL.ASM. NTITLESC now consumes header index, palette, Z and MAP_FLAGS transparency at render time; the reusable renderer still needs extending to remaining backgrounds."
     },
     "typed_animation_stream": {
       "status": "partial-source",

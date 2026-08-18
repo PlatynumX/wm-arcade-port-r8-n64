@@ -35,7 +35,10 @@ typedef struct {
 
 enum {
     WM_BMOD_HFLIP = 1u << 0,
-    WM_BMOD_VFLIP = 1u << 1
+    WM_BMOD_VFLIP = 1u << 1,
+    /* BAKGND.ASM bgnd_addblk tests MAP_FLAGS bit 2 before deciding whether
+       palette index zero writes to the framebuffer. */
+    WM_BMOD_TRANSPARENT = 1u << 2
 };
 
 bool wm_bmod_decode_block(const wm_bmod_module *module, size_t index,

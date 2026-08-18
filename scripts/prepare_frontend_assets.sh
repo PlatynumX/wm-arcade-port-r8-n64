@@ -6,10 +6,13 @@ SPORTS_SOURCE="$ORIG/IMG/SPORTLO8.IMG"
 DCS_SOURCE="$ORIG/IMG/DCSLOGO.IMG"
 SPORTS_OUT="$ROOT/src/generated/sports_logo.c"
 DCS_OUT="$ROOT/src/generated/dcs_logo.c"
+TITLE_BDB="$ORIG/IMG/BIGWWF.BDB"
+TITLE_BDD="$ORIG/IMG/BIGWWF.BDD"
 TITLE_OUT="$ROOT/src/generated/title_screen.c"
 BMOD_OUT="$ROOT/src/generated/bmod_tables.c"
 
-if [ ! -f "$SPORTS_SOURCE" ] || [ ! -f "$DCS_SOURCE" ]; then
+if [ ! -f "$SPORTS_SOURCE" ] || [ ! -f "$DCS_SOURCE" ] || \
+   [ ! -f "$TITLE_BDB" ] || [ ! -f "$TITLE_BDD" ]; then
     sh "$ROOT/scripts/fetch_original.sh"
 fi
 
@@ -21,8 +24,9 @@ python3 "$ROOT/tools/dcs_bundle.py" \
     --source "$DCS_SOURCE" \
     --out "$DCS_OUT"
 
-python3 "$ROOT/tools/background_crop.py" \
-    --img-dir "$ORIG/IMG" \
+python3 "$ROOT/tools/bdd_bundle.py" \
+    --bdd "$TITLE_BDD" \
+    --bdb "$TITLE_BDB" \
     --bgndtbl "$ORIG/BGNDTBL.ASM" \
     --region NTITLESC \
     --module NTITLESCBMOD \

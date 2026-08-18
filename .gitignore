@@ -16,3 +16,4 @@ src/generated/sports_logo.c
 src/generated/dcs_logo.c
 
 src/generated/title_screen.c
+src/generated/bmod_tables.c

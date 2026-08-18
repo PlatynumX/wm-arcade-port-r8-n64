@@ -84,6 +84,7 @@ static void test_bmod_decode(void) {
     CHECK(wm_bmod_decode_block(&m, 0, &b));
     CHECK(b.palette == 0);
     CHECK(b.flags == 4);
+    CHECK((b.flags & WM_BMOD_TRANSPARENT) != 0);
     CHECK(b.z == 1);
     CHECK(b.x == 0);
     CHECK(b.y == 133);

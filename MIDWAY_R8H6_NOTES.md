@@ -6,7 +6,7 @@ r8h6 continues the strict source-port contract. It does not restore the old hand
 
 - `show_title` is now a `partial-source` routine instead of being skipped.
 - Its setup sleeps, unblank point, half-second button lockout, 10-second `wait_on_butn` interval, and `cycle_lava` five-tick scheduler are represented in the portable core.
-- `NTITLESCBMOD` is recovered from the original Midway artist data by reading the `NTITLESC` source block records from the matching BDB and the final module dimensions from `BGNDTBL.ASM`.
+- `NTITLESCBMOD` now uses the original paired `BIGWWF.BDB`/`BIGWWF.BDD` BLIMP data: 40 raw CI8 source blocks, their original RGB555 palettes, and the compiled placement/depth/transparent records from `BGNDTBL.ASM`.
 - The N64 renderer applies the same 400x256 arcade-coordinate transform used by the other frontend assets; it does not resize the title background to fit 320 pixels.
 - `show_gameplay` remains harness-only and cannot be entered through normal attract flow.
 
@@ -14,7 +14,7 @@ r8h6 continues the strict source-port contract. It does not restore the old hand
 
 - `cycle_lava` per-background-block palette substitution.
 - `SPRINKLE_GLINTS` and `RANDOM_SPARKLE` object/process rendering.
-- General BMOD/BGD block renderer.
+- Generalize the now-working NTITLESC BDD/BMOD block renderer to the remaining backgrounds.
 - Original `start_match`, credit/start/select, credits, hints, bios, audio and remaining attract routines.
 
 Those stay absent until their original implementations/dependencies are translated. No approximation is substituted.

@@ -11,7 +11,7 @@ Original source routine/data first. Shared source-engine translation replaces on
 | `show_sports_logo` | **partial-source** | Original 17 WIMP logo pieces, source timing and MOVE_BACK_OFF_SCREEN process scheduling translated; packed SPORTBKBMOD records are now ingested generically, artwork/palette block renderer still partial. |
 | `show_gameplay` | **harness-only** | r8 demo combat is a hardware bring-up harness, not the original start_match process graph; excluded from normal arcade flow. |
 | `creditscreen` | **not-started** | Original credits routine not translated. |
-| `show_title` | **partial-source** | Original setup/button timing translated; cycle_lava now runs as a source PID on the shared scheduler. NTITLESC packed BMOD data is ingested generically; final per-block palette/art backend remains partial. |
+| `show_title` | **partial-source** | Original setup/button timing translated; cycle_lava runs as a source PID on the shared scheduler. NTITLESC now executes the original BIGWWF.BDD CI8 blocks and RGB555 palettes through the verbatim NTITLESCBMOD placement/depth/transparent records. Lava palette cycling and sparkle object plotting remain. |
 | `DO_HINTS` | **not-started** | Original hints controller not translated. |
 | `show_gen_tips` | **not-started** | Original general tips routine not translated. |
 | `show_bios` | **not-started** | Original bios routine not translated. |
@@ -32,10 +32,10 @@ Original source routine/data first. Shared source-engine translation replaces on
 | `credit_start_select` | **partial-source** | SELECT.ASM source tables are regenerated in CI; cursor grid/BMOD placement/scramble_table roster mapping/player start-mug-sound data/attributes, exact four-way cursor legality, START+UP random-select gate, random wander/home movement, source select_clock PSTATUS reset/OLD_PSTATUS behavior, 15-second timer and 30-tick final wait constant are translated. Credit/buy-in process wiring, original objects/text/mug art and full select process orchestration remain. |
 | `combat` | **harness-only** | Portable demo AI/health/contact logic is test scaffolding and is not part of normal arcade execution. |
 | `audio` | **not-started** | Original game-side DCS command semantics/backend not translated. |
-| `background_artist_crop` | **partial-source** | BDB source block bounds + BGNDTBL BMOD dimensions recover exact full-screen source composites directly from original WIMP artist files; currently wired for NTITLESC. |
+| `background_blimp_bdd` | **partial-source** | Paired BDB/BDD BLIMP data is decoded as raw source blocks plus palettes and cross-validated against compiled BMOD records; NTITLESC is wired block-for-block with no WIMP crop or flattened recreation. |
 | `source_clock` | **exact-source** | DISPLAY.EQU TSEC=53 is executed independently of 60 Hz N64 presentation using an accumulator; literal 60-tick source sleeps remain literal. |
 | `source_process_scheduler` | **partial-source** | Cooperative CREATE/sleep/kill-by-PID execution is shared by translated attract processes; full MPROC semantics and process pdata remain to port. |
-| `bmod_packed_records` | **partial-source** | BAKGND.ASM 64-bit block records decode exactly and CI extracts NTITLESCBMOD/SPORTBKBMOD verbatim from BGNDTBL.ASM; header art/palette object construction remains incomplete. |
+| `bmod_packed_records` | **partial-source** | BAKGND.ASM 64-bit block records decode exactly and CI extracts NTITLESCBMOD/SPORTBKBMOD verbatim from BGNDTBL.ASM. NTITLESC now consumes header index, palette, Z and MAP_FLAGS transparency at render time; the reusable renderer still needs extending to remaining backgrounds. |
 | `typed_animation_stream` | **partial-source** | Mixed WORD/LONG source stream supports frame refs, REPEAT, SETMODE, velocity LONG operands/modes, PAUSE, SETSPEED, zero velocities, facing/xflip and END. Unknown commands stop explicitly. |
 | `source_dependency_ir` | **exact-source** | CI scans every SUBR/SUBRP and static CALL/JSRP/CREATE edge and emits dependency frontiers for attract_mode and start_match without inventing unresolved dynamic semantics. |
 | `animation_source_ir` | **exact-source** | CI scans typed WORD/LONG animation data and W/L packing macros across the original ASM tree, preserving source expressions and unresolved forms without inventing pointer or command semantics. |

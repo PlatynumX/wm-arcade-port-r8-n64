@@ -29,7 +29,7 @@ attract_sequence = load("attract_sequence", ROOT / "tools" / "attract_sequence.p
 port_manifest = load("port_manifest", ROOT / "tools" / "port_manifest.py")
 source_text_bundle = load("source_text_bundle", ROOT / "tools" / "source_text_bundle.py")
 source_text_verify = load("verify_source_text_bundle", ROOT / "tools" / "verify_source_text_bundle.py")
-background_crop = load("background_crop", ROOT / "tools" / "background_crop.py")
+bdd_bundle = load("bdd_bundle", ROOT / "tools" / "bdd_bundle.py")
 bmod_source = load("bmod_source", ROOT / "tools" / "bmod_source.py")
 source_ir = load("source_ir", ROOT / "tools" / "source_ir.py")
 animation_ir = load("animation_ir", ROOT / "tools" / "animation_ir.py")
@@ -201,74 +201,59 @@ def test_dcs_bundle() -> None:
         assert "wm_dcs_logo_sprite" in text
 
 
-def synthetic_background_wimp() -> bytes:
-    # One 8x6 CI8 full-canvas image named BIGWWF with a 16-color palette.
-    data = bytearray(0x120)
-    struct.pack_into("<HHIHHHH", data, 0, 1, 0, 0x90, 0x063F, 0, 0, 0)
-    for i in range(16):
-        struct.pack_into("<H", data, 0x1C + i * 2, i)
-    # Pixel data starts at 0x40; width 8 has no row padding.
-    for y in range(6):
-        for x in range(8):
-            data[0x40 + y * 8 + x] = (y * 8 + x) & 0x0F
-    off = 0x90
-    data[off:off+6] = b"BIGWWF"
-    struct.pack_into("<hhHHHI", data, off + 18, 0, 0, 8, 6, 5, 0x40)
-    struct.pack_into("<9h", data, off + 32, 0,0,0,0,0,-1,-1,-1,-1)
-    poff = off + wimp.IMAGE_ENTRY_SIZE
-    data[poff:poff+6] = b"WWFPAL"
-    struct.pack_into("<HI", data, poff + 12, 16, 0x1C)
-    return bytes(data)
-
-
-def test_background_crop_parsers() -> None:
+def test_bdd_bundle() -> None:
     with tempfile.TemporaryDirectory() as td_s:
         td = pathlib.Path(td_s)
-        bdb = td / "BIGWWF.BDB"
+        bdd = td / "TINY.BDD"
+        raw = bytearray()
+        raw += b"2\n"
+        raw += b"A 2 2 1\n" + bytes([0, 1, 2, 3])
+        raw += b"B 1 2 0\n" + bytes([0, 1])
+        raw += b"P0 4\n" + struct.pack("<4H", 0x0000, 0x7C00, 0x03E0, 0x001F)
+        raw += b"P1 2\n" + struct.pack("<2H", 0x0000, 0x7FFF)
+        bdd.write_bytes(raw)
+
+        bdb = td / "TINY.BDB"
         bdb.write_text(
-            "BIGWWF 2000 1000 255 1 6 40\n"
-            "NTITLESC 1244 1674 279 557\n"
-            "100 1263 426 3 0\n"
-            "100 1263 293 0 0\n"
-            "4000 1263 544 6 0\n"
+            "TINY 100 100 255 1 2 2\n"
+            "NTITLESC 10 13 20 22\n"
+            "100 10 20 A 0\n"
+            "100 12 20 B 1\n"
         )
-        src, cw, ch, bounds, records = background_crop.parse_bdb(bdb, "NTITLESC")
-        assert src == "BIGWWF" and (cw, ch) == (2000, 1000)
-        assert bounds == (1244, 1674, 279, 557)
-        assert min(x for x, _ in records) == 1263
-        assert min(y for _, y in records) == 293
-
-        tbl = td / "BGNDTBL.ASM"
-        tbl.write_text("NTITLESCBMOD:\n\t.word 403,256,40\n\t.long NTITLESCBLKS,WFHDRS,WFPALS\n")
-        assert background_crop.parse_bmod_size(tbl, "NTITLESCBMOD") == (403, 256, 40)
-
-        srcpx = bytes(range(24))
-        assert background_crop.crop_ci8(srcpx, 6, 4, 1, 1, 3, 2) == bytes([7,8,9,13,14,15])
-
-        # End-to-end synthetic emitter/compile check with a tiny BMOD.
-        tiny_bdb = td / "TINY.BDB"
-        tiny_bdb.write_text(
-            "BIGWWF 8 6 255 1 1 1\n"
-            "NTITLESC 0 8 0 6\n"
-            "100 1 2 0 0\n"
+        bg = td / "BGNDTBL.ASM"
+        bg.write_text(
+            "TINYBLKS:\n"
+            "    .word 0140H,0,0,00H\n"
+            "    .word 0141H,2,0,01H\n"
+            "NTITLESCBMOD:\n"
+            "    .word 3,2,2\n"
+            "    .long TINYBLKS, TINYHDRS, TINYPALS\n"
         )
-        tiny_tbl = td / "TINYBG.ASM"
-        tiny_tbl.write_text("NTITLESCBMOD:\n\t.word 3,2,1\n\t.long X,Y,Z\n")
-        img = td / "BIGWWF.IMG"
-        img.write_bytes(synthetic_background_wimp())
+
+        images, palettes = bdd_bundle.parse_bdd(bdd)
+        assert len(images) == 2 and len(palettes) == 2
+        assert (images[0].source_id, images[0].width, images[0].height) == (0xA, 2, 2)
+        assert images[0].pixels == bytes([0, 1, 2, 3])
+        assert palettes[0].name == "P0" and len(palettes[0].words_rgb555) == 4
+
+        region = bdd_bundle.parse_bdb(bdb, "NTITLESC")
+        assert len(region.blocks) == 2 and region.blocks[1].source_id == 0xB
+        validation = bdd_bundle.validate_sources(images, palettes, region, bg, "NTITLESCBMOD")
+        assert validation["footprint"] == (3, 2)
+        assert (validation["min_x"], validation["min_y"]) == (10, 20)
+
         out = td / "title_screen.c"
-        w, h, x, y = background_crop.emit(
-            img, tiny_bdb, tiny_tbl, "NTITLESC", "NTITLESCBMOD", out
-        )
-        assert (w, h, x, y) == (3, 2, 1, 2)
+        bdd_bundle.emit(out, images, palettes, region, validation, bdd, bdb)
         text = out.read_text()
-        assert '"NTITLESC", "BIGWWF.IMG:TINY.BDB", 3, 2' in text
-        assert "0x0001" in text  # background palette index 0 stays opaque
+        assert "wm_title_background_image_count" in text
+        assert "wm_title_background_palette_at" in text
+        assert "0xF801" in text
+        # Keyed form makes only palette index zero transparent.
+        assert "0x0000, 0xF801" in text
         subprocess.run([
             "cc", "-std=c11", "-Wall", "-Wextra", "-Wpedantic", "-Werror",
             f"-I{ROOT / 'include'}", "-c", str(out), "-o", str(td / "title.o")
         ], check=True)
-
 
 def test_attract_sequence() -> None:
     source = ROOT / "tests" / "fixtures" / "ATTRACT_MIN.ASM"
@@ -535,7 +520,7 @@ def main() -> int:
     test_bundle_multi_container()
     test_frontend_bundle()
     test_dcs_bundle()
-    test_background_crop_parsers()
+    test_bdd_bundle()
     test_bmod_source_generator()
     test_attract_sequence()
     test_source_ir_graph()

@@ -178,6 +178,56 @@ static void draw_source_sprite(const wm_source_sprite *spr, int anchor_x, int an
                               1.0f, 1.0f);
 }
 
+/* Draw one original BLIMP/BMOD background block. Unlike WIMP character
+   sprites, background CI8 pixels choose their palette from the packed BMOD
+   record. BAKGND.ASM MAP_FLAGS bit 2 controls whether index zero writes. */
+static void draw_title_background_block(const wm_title_background_image *img,
+                                        const wm_title_background_palette *pal,
+                                        const wm_bmod_block *block) {
+    if (!img || !pal || !block || !img->pixels_ci8 || !pal->color_count)
+        return;
+
+    const bool transparent = (block->flags & WM_BMOD_TRANSPARENT) != 0;
+    uint16_t *tlut = transparent ? pal->rgba5551_keyed : pal->rgba5551_opaque;
+    if (!tlut) return;
+
+    surface_t tex = surface_make_linear((void *)img->pixels_ci8, FMT_CI8,
+                                        img->width, img->height);
+    rdpq_set_mode_standard();
+    rdpq_mode_tlut(TLUT_RGBA16);
+    rdpq_mode_filter(FILTER_POINT);
+    rdpq_mode_alphacompare(1);
+    rdpq_tex_upload_tlut(tlut, 0, pal->color_count);
+
+    /* Keep the already hardware-tested CI8/TLUT strip size. For VFLIP, put
+       each flipped strip at its mirrored destination so the full block (not
+       each strip independently) is vertically flipped. */
+    int pitch = (img->width + 7) & ~7;
+    int strip_h = pitch > 0 ? 2048 / pitch : 0;
+    if (strip_h < 1) strip_h = 1;
+    if (strip_h > 2) strip_h &= ~1;
+
+    const bool flip_x = (block->flags & WM_BMOD_HFLIP) != 0;
+    const bool flip_y = (block->flags & WM_BMOD_VFLIP) != 0;
+    const float x = (float)block->x * WM_FRONTEND_SCALE_X;
+    for (int t = 0; t < img->height; t += strip_h) {
+        int h = img->height - t;
+        if (h > strip_h) h = strip_h;
+        const int dest_row = flip_y ? (int)img->height - t - h : t;
+        const float y = (float)(block->y + dest_row) * WM_FRONTEND_SCALE_Y;
+        rdpq_tex_blit(&tex, x, y,
+                      &(rdpq_blitparms_t){
+                          .t0 = t,
+                          .height = h,
+                          .flip_x = flip_x,
+                          .flip_y = flip_y,
+                          .scale_x = WM_FRONTEND_SCALE_X,
+                          .scale_y = WM_FRONTEND_SCALE_Y,
+                          .filtering = false,
+                      });
+    }
+}
+
 static void draw_shadow(int x, int y) {
     fill_rect(x - 13, y - 3, x + 14, y + 2, RGBA32(86, 86, 90, 255));
 }
@@ -340,20 +390,44 @@ static void render_title_screen(const wm_app *app) {
     if (app->attract.call_ticks < WM_TITLE_SETUP_TICKS)
         return;
 
-    /* NTITLESCBMOD is recovered directly from the original BIGWWF artist
-       source by applying the BDB block bounds and BGNDTBL module dimensions.
-       This is the source composite itself, not a recreated title bitmap. */
-    const wm_source_sprite *spr = wm_title_screen_sprite();
-    if (!spr) return;
-    /* Preserve arcade coordinates rather than fitting the 403-pixel BMOD to
-       the N64 width. NTITLESCBMOD is slightly wider than the 400-pixel arcade
-       viewport, so the source-correct transform naturally clips its right edge. */
-    draw_source_sprite_scaled(spr, 0.0f, 0.0f, 0, 0, false, spr,
-                              WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
+    const wm_named_bmod *named = wm_source_bmod_find("NTITLESCBMOD");
+    if (!named || named->module.block_count > 64)
+        return;
 
-    /* cycle_lava and both sparkle processes are source-scheduled in wm_app.
-       Per-block palette substitution/sparkle plotting remain intentionally
-       absent until the general BMOD/object backend is translated. */
+    /* BAKGND.ASM inserts blocks into the background object list by OZPOS.
+       Execute that depth ordering here while keeping source order stable for
+       equal-Z blocks. The packed records themselves remain verbatim. */
+    struct title_draw_ref {
+        wm_bmod_block block;
+    } refs[64];
+    size_t count = 0;
+    for (size_t i = 0; i < named->module.block_count; ++i) {
+        if (!wm_bmod_decode_block(&named->module, i, &refs[count].block))
+            continue;
+        ++count;
+    }
+    for (size_t i = 1; i < count; ++i) {
+        struct title_draw_ref key = refs[i];
+        size_t j = i;
+        while (j > 0 && refs[j - 1].block.z > key.block.z) {
+            refs[j] = refs[j - 1];
+            --j;
+        }
+        refs[j] = key;
+    }
+
+    for (size_t i = 0; i < count; ++i) {
+        const wm_bmod_block *block = &refs[i].block;
+        const wm_title_background_image *img =
+            wm_title_background_image_at(block->header_index);
+        const wm_title_background_palette *pal =
+            wm_title_background_palette_at(block->palette);
+        draw_title_background_block(img, pal, block);
+    }
+
+    /* The module is 403x256 against the arcade's 400x256 viewport, so the
+       normal arcade->N64 transform naturally clips the final three source
+       columns. cycle_lava/sparkle processes remain separate source routines. */
 }
 
 static __attribute__((unused)) void render_match(const wm_app *app) {
@@ -424,7 +498,10 @@ int main(void) {
     debugf("wm_arcade_port r9: source-engine pass, 53 Hz arcade clock / 60 Hz video\n");
     debugf("embedded Bret source sprites: %u\n", (unsigned)wm_bret_sprite_count());
     debugf("embedded Midway Sports logo pieces: %u\n", (unsigned)wm_sports_logo_sprite_count());
-    debugf("embedded source title background: %s\n", wm_title_screen_sprite() ? "NTITLESC" : "missing");
+    debugf("embedded source title background: %s (%lu blocks, %lu palettes)\n",
+           wm_title_background_source_name(),
+           (unsigned long)wm_title_background_image_count(),
+           (unsigned long)wm_title_background_palette_count());
     debugf("embedded packed BMOD modules: %u\n", (unsigned)wm_source_bmod_count());
     debugf("ATTRACT.ASM preserves initial 8 source-tick blank; harness-only gameplay excluded\n");
     debugf("controls: A run, C-L LP, C-U PP, C-R LK, C-D PK, R block\n");

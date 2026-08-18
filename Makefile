@@ -51,7 +51,7 @@ src/generated/sports_logo.c: tools/wimpimg.py tools/frontend_bundle.py tools/dcs
 src/generated/dcs_logo.c: src/generated/sports_logo.c
 	@test -s $@ || sh ./scripts/prepare_frontend_assets.sh
 
-src/generated/title_screen.c: src/generated/sports_logo.c
+src/generated/title_screen.c: src/generated/sports_logo.c tools/bdd_bundle.py tools/bmod_source.py
 	@test -s $@ || sh ./scripts/prepare_frontend_assets.sh
 
 src/generated/bmod_tables.c: src/generated/sports_logo.c tools/bmod_source.py

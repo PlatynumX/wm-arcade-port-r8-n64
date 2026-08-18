@@ -35,7 +35,7 @@ def parse_int_expr(expr: str) -> int:
 
 def is_label_line(code: str, label: str) -> bool:
     c = code.lstrip("#").strip()
-    if c == label or c.startswith(label + " ") or c.startswith(label + ":"):
+    if re.match(rf"^{re.escape(label)}(?:\s|:|$)", c, re.I):
         return True
     m = re.match(r"SUBR(?:P)?\s+#?([A-Za-z_][A-Za-z0-9_]*)\b", c, re.I)
     return bool(m and m.group(1).lower() == label.lower())

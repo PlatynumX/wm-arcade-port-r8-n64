@@ -38,18 +38,23 @@
 #define WM_TITLE_LAVA_PERIOD_TICKS 5u
 #define WM_TITLE_LAVA_STEPS 32u
 
-/* ATTRACT.ASM passes MOVI [102,7],A8, A10=WHERE_WRESTLMANIA_SPARKLES and
-   A9=4 before CREATE FLASH_PID,SPRINKLE_GLINTS. Preserve the known call
-   interface even though the shared-library routine/table bodies are absent
-   from the checked-in WWF source tree. */
-#define WM_TITLE_GLINT_SOURCE_ARG_HI 102u
-#define WM_TITLE_GLINT_SOURCE_ARG_LO 7u
-#define WM_TITLE_GLINT_COUNT 4u
+/* Recovered from the rev 1.30 arcade program ROM.
+   ATTRACT.ASM passes A8=[102,7], A10=WHERE_WRESTLMANIA_SPARKLES, A9=4.
+   A9 is the inclusive maximum family number for RNDRNG0, not a glint count.
+   The ROM table contains 40 (x,y) offsets followed by FFFF,FFFF. */
+#define WM_TITLE_SPARKLE_ORIGIN_Y 102u
+#define WM_TITLE_SPARKLE_ORIGIN_X 7u
+#define WM_TITLE_SPARKLE_SITE_COUNT 40u
+#define WM_TITLE_SPARKLE_FAMILY_COUNT 5u
+#define WM_TITLE_SPARKLE_SLOT_COUNT 8u
+#define WM_TITLE_SPARKLE_FRAME_TICKS 2u
+#define WM_TITLE_SPARKLE_SWEEP_PERIOD_TICKS 5u
+#define WM_TITLE_SPARKLE_RANDOM_POLL_TICKS 20u
+#define WM_TITLE_SPARKLE_RANDOM_POST_TICKS 30u
+#define WM_TITLE_GLINT_COUNT WM_TITLE_SPARKLE_SLOT_COUNT
 #define WM_TITLE_GLINT_ANIM_FRAMES 15u
 #define WM_TITLE_RANDOM_ANIM_FRAMES 13u
-/* Inferred until the external shared SPRINKLE_GLINTS/RANDOM_SPARKLE bodies are
-   recovered. This must not be treated as a source-exact timing constant. */
-#define WM_TITLE_SPARKLE_INFERRED_FRAME_TICKS 2u
+#define WM_TITLE_SPARKLE_INFERRED_FRAME_TICKS WM_TITLE_SPARKLE_FRAME_TICKS
 
 /* ATTRACT.ASM::DCS_LOGO boundaries. The 60-tick sleep here is literal source
    data, not TSEC, and therefore intentionally remains 60 source ticks. */
@@ -102,6 +107,7 @@ typedef struct {
     wm_title_sparkle title_glints[WM_TITLE_GLINT_COUNT];
     wm_title_sparkle title_random_sparkle;
     uint32_t title_random_state;
+    uint32_t title_rng_counter;
 } wm_attract_state;
 
 typedef struct {

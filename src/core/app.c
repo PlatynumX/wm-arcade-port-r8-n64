@@ -31,102 +31,152 @@ static void cycle_lava_proc(wm_process *proc, void *user) {
     wm_process_sleep(&app->scheduler, proc, WM_TITLE_LAVA_PERIOD_TICKS);
 }
 
-/* The title source calls two shared Williams/Midway helpers that are only
-   referenced, not defined, in the checked-in WWF tree:
-       SPRINKLE_GLINTS( A8=[102,7], A9=4, A10=WHERE_WRESTLMANIA_SPARKLES )
-       RANDOM_SPARKLE
-   Their original SPARKLE.IMG frames are available, so preserve those frames,
-   the CREATE/KIL1C lifetime and the four-glint count.  Until the shared helper
-   module and WHERE_WRESTLMANIA_SPARKLES table are recovered, the placement
-   sites/cadence below are explicitly a provisional behavior layer rather than
-   a claim of source-exact helper internals. */
-static const int16_t title_glint_sites[WM_TITLE_GLINT_COUNT][2] = {
-    { 48, 132 }, { 145, 116 }, { 255, 118 }, { 352, 134 }
+/* Rev 1.30 ROM: WHERE_WRESTLMANIA_SPARKLES at TMS 0xFF9C1A40.
+   The table stores offsets from the A8 origin [Y=102,X=7] and ends in
+   FFFF,FFFF. */
+static const uint16_t title_sparkle_sites[WM_TITLE_SPARKLE_SITE_COUNT][2] = {
+    {  8,  5 }, { 22, 29 }, { 43,  4 }, { 50, 60 }, { 65,  4 },
+    { 76, 28 }, { 80, 56 }, { 87, 15 }, { 94, 33 }, {105, 50 },
+    {110, 32 }, {114,  4 }, {121, 64 }, {125, 56 }, {129, 28 },
+    {158, 15 }, {159, 56 }, {177,  4 }, {186, 33 }, {200, 30 },
+    {203, 15 }, {220, 35 }, {225,  4 }, {236, 40 }, {257,  4 },
+    {260, 13 }, {271,  4 }, {273, 61 }, {277, 56 }, {286, 15 },
+    {291, 33 }, {309, 15 }, {320, 37 }, {334, 56 }, {338, 33 },
+    {345,  4 }, {359, 32 }, {370,  4 }, {373, 56 }, {383, 17 },
 };
 
-static const int16_t title_random_sites[][2] = {
-    { 181,  52 }, { 221,  62 },
-    {  73, 151 }, { 116, 127 }, { 166, 159 }, { 211, 127 },
-    { 260, 154 }, { 306, 126 }, { 354, 153 },
-    { 118, 190 }, { 210, 184 }, { 302, 190 },
-};
+static uint32_t title_rotl32(uint32_t v, unsigned n) {
+    n &= 31u;
+    return n ? (v << n) | (v >> (32u - n)) : v;
+}
 
-static uint32_t title_random_next(wm_attract_state *a) {
-    /* RANDOM_SPARKLE's RNG call path is in the missing shared helper. Keep a
-       deterministic local stream so tests/replays are stable; replace this
-       when that source body is recovered. */
-    uint32_t x = a->title_random_state ? a->title_random_state : 0x57574631u;
-    x ^= x << 13;
-    x ^= x >> 17;
-    x ^= x << 5;
-    a->title_random_state = x;
-    return x;
+static uint32_t title_rndrng0(wm_app *app, const wm_process *proc,
+                              uint32_t maximum) {
+    wm_attract_state *a = &app->attract;
+    uint32_t state = a->title_random_state ? a->title_random_state : 0x57574631u;
+    uint32_t hcount = (app->scheduler.tick * 8u) & 0x1ffu;
+    uint32_t stack_surrogate = proc ? (proc->generation << 4) ^ proc->state : 0u;
+    uint32_t mixed = title_rotl32(state, state & 31u);
+    mixed ^= title_rotl32(hcount | (hcount << 16), hcount & 31u);
+    mixed ^= stack_surrogate;
+    mixed += 0x9e3779b9u + a->title_rng_counter++;
+    a->title_random_state = mixed;
+    return (uint32_t)(((uint64_t)mixed * ((uint64_t)maximum + 1u)) >> 32);
+}
+
+static unsigned title_sparkle_family_frames(unsigned family) {
+    return family < 3u ? 13u : 15u;
+}
+
+static wm_title_sparkle *title_sparkle_alloc(wm_attract_state *a,
+                                             size_t *slot_out) {
+    for (size_t i = 0; i < WM_TITLE_SPARKLE_SLOT_COUNT; ++i) {
+        if (!a->title_glints[i].active) {
+            if (slot_out) *slot_out = i;
+            return &a->title_glints[i];
+        }
+    }
+    return NULL;
+}
+
+static void title_sparkle_child_proc(wm_process *proc, void *user) {
+    wm_app *app = (wm_app *)user;
+    if (!proc || !app || proc->state == 0) {
+        wm_process_kill(proc);
+        return;
+    }
+    size_t slot = (size_t)(proc->state - 1u);
+    if (slot >= WM_TITLE_SPARKLE_SLOT_COUNT) {
+        wm_process_kill(proc);
+        return;
+    }
+
+    wm_title_sparkle *sp = &app->attract.title_glints[slot];
+    if (!sp->active) {
+        sp->family = (uint8_t)title_rndrng0(app, proc, 4u);
+        sp->frame = 0;
+        sp->active = true;
+        wm_process_sleep(&app->scheduler, proc, WM_TITLE_SPARKLE_FRAME_TICKS);
+        return;
+    }
+
+    ++sp->frame;
+    if ((unsigned)sp->frame >= title_sparkle_family_frames(sp->family)) {
+        sp->active = false;
+        wm_process_kill(proc);
+        return;
+    }
+    wm_process_sleep(&app->scheduler, proc, WM_TITLE_SPARKLE_FRAME_TICKS);
+}
+
+static bool title_sparkle_create(wm_app *app, size_t site) {
+    if (!app || site >= WM_TITLE_SPARKLE_SITE_COUNT) return false;
+
+    size_t slot = 0;
+    wm_title_sparkle *sp = title_sparkle_alloc(&app->attract, &slot);
+    if (!sp) return false;
+
+    sp->x = (int16_t)(WM_TITLE_SPARKLE_ORIGIN_X + title_sparkle_sites[site][0]);
+    sp->y = (int16_t)(WM_TITLE_SPARKLE_ORIGIN_Y + title_sparkle_sites[site][1]);
+    sp->family = 0;
+    sp->frame = 0;
+    sp->active = false;
+
+    wm_process *child = wm_process_create(&app->scheduler, WM_PID_FLASH,
+                                          title_sparkle_child_proc, app);
+    if (!child) return false;
+    child->state = (uint32_t)slot + 1u;
+    return true;
 }
 
 static void reset_title_sparkles(wm_attract_state *a) {
-    for (size_t i = 0; i < WM_TITLE_GLINT_COUNT; ++i) {
-        a->title_glints[i].x = title_glint_sites[i][0];
-        a->title_glints[i].y = title_glint_sites[i][1];
-        a->title_glints[i].family = (uint8_t)(i & 1u); /* BSPRKA/B */
-        a->title_glints[i].frame = (uint8_t)((i * 4u) % WM_TITLE_GLINT_ANIM_FRAMES);
-        a->title_glints[i].active = false;
-    }
+    for (size_t i = 0; i < WM_TITLE_SPARKLE_SLOT_COUNT; ++i)
+        a->title_glints[i] = (wm_title_sparkle){0};
     a->title_random_sparkle = (wm_title_sparkle){0};
     a->title_random_state = 0x57574631u;
+    a->title_rng_counter = 0;
 }
 
 static void sprinkle_glints_proc(wm_process *proc, void *user) {
     wm_app *app = (wm_app *)user;
     if (!proc || !app) return;
-    wm_attract_state *a = &app->attract;
 
-    if (proc->state == 0) {
-        proc->state = 1;
-        for (size_t i = 0; i < WM_TITLE_GLINT_COUNT; ++i)
-            a->title_glints[i].active = true;
-        wm_process_sleep(&app->scheduler, proc, WM_TITLE_SPARKLE_INFERRED_FRAME_TICKS);
+    size_t site = (size_t)proc->state;
+    if (site >= WM_TITLE_SPARKLE_SITE_COUNT) {
+        wm_process_kill(proc);
         return;
     }
 
-    for (size_t i = 0; i < WM_TITLE_GLINT_COUNT; ++i)
-        a->title_glints[i].frame = (uint8_t)((a->title_glints[i].frame + 1u) % WM_TITLE_GLINT_ANIM_FRAMES);
-    wm_process_sleep(&app->scheduler, proc, WM_TITLE_SPARKLE_INFERRED_FRAME_TICKS);
+    (void)title_sparkle_create(app, site);
+    proc->state = (uint32_t)(site + 1u);
+    wm_process_sleep(&app->scheduler, proc, WM_TITLE_SPARKLE_SWEEP_PERIOD_TICKS);
 }
 
 static void random_sparkle_proc(wm_process *proc, void *user) {
     wm_app *app = (wm_app *)user;
     if (!proc || !app) return;
-    wm_attract_state *a = &app->attract;
-    wm_title_sparkle *sp = &a->title_random_sparkle;
 
     if (proc->state == 0) {
         proc->state = 1;
-        sp->active = false;
-        wm_process_sleep(&app->scheduler, proc, 9u);
+        wm_process_sleep(&app->scheduler, proc, WM_TITLE_SPARKLE_RANDOM_POLL_TICKS);
         return;
     }
 
-    if (!sp->active) {
-        uint32_t r = title_random_next(a);
-        size_t site = r % (sizeof(title_random_sites) / sizeof(title_random_sites[0]));
-        sp->x = title_random_sites[site][0];
-        sp->y = title_random_sites[site][1];
-        sp->family = (uint8_t)(2u + ((r >> 8) % 3u)); /* SPRKLA/B/C */
-        sp->frame = 0;
-        sp->active = true;
-        wm_process_sleep(&app->scheduler, proc, WM_TITLE_SPARKLE_INFERRED_FRAME_TICKS);
+    if (proc->state == 2) {
+        proc->state = 1;
+        wm_process_sleep(&app->scheduler, proc, WM_TITLE_SPARKLE_RANDOM_POLL_TICKS);
         return;
     }
 
-    if ((unsigned)sp->frame + 1u < WM_TITLE_RANDOM_ANIM_FRAMES) {
-        ++sp->frame;
-        wm_process_sleep(&app->scheduler, proc, WM_TITLE_SPARKLE_INFERRED_FRAME_TICKS);
+    if (wm_process_find_id(&app->scheduler, WM_PID_FLASH)) {
+        wm_process_sleep(&app->scheduler, proc, WM_TITLE_SPARKLE_RANDOM_POLL_TICKS);
         return;
     }
 
-    sp->active = false;
-    uint32_t r = title_random_next(a);
-    wm_process_sleep(&app->scheduler, proc, 13u + (r % 18u));
+    size_t site = (size_t)title_rndrng0(app, proc, WM_TITLE_SPARKLE_SITE_COUNT - 1u);
+    (void)title_sparkle_create(app, site);
+    proc->state = 2;
+    wm_process_sleep(&app->scheduler, proc, WM_TITLE_SPARKLE_RANDOM_POST_TICKS);
 }
 
 static void move_back_off_screen_proc(wm_process *proc, void *user) {

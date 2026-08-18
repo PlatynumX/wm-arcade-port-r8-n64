@@ -9,6 +9,7 @@
 #include "wm/composite.h"
 #include "wm/demo.h"
 #include "wm/dcs_logo.h"
+#include "dcs_effect.h"
 #include "wm/roster.h"
 #include "wm/sports_logo.h"
 #include "wm/title_screen.h"
@@ -331,26 +332,26 @@ static void draw_match_hud(const wm_app *app) {
 
 static void render_dcs_logo(const wm_app *app) {
     fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+    const wm_source_sprite *spr = wm_dcs_logo_sprite();
+    if (!spr) return;
 
     const wm_dcs_phase phase = app->attract.dcs_phase;
-    if (phase == WM_DCS_BURST_FLASH) {
-        /* DCS_LOGO toggles IRQSKYE white/normal for one tick each, three times.
-           The ADD_PIXEL_VEL particles themselves are not substituted here; that
-           hardware plotter is a separate source translation. */
-        if (app->attract.phase_ticks & 1u)
-            fill_rect(0, 0, 320, 240, RGBA32(255, 255, 255, 255));
-        return;
+    switch (phase) {
+        case WM_DCS_ROT_UNSKIPPABLE:
+        case WM_DCS_ROT_SKIPPABLE:
+        case WM_DCS_BURST_FLASH:
+        case WM_DCS_BURST_WAIT:
+        case WM_DCS_BURST_SKIPPABLE:
+            wm_n64_render_dcs_effect(app, spr);
+            return;
+        default:
+            break;
     }
 
-    /* The source object is visible before ADD_PIXEL_ROT and for the ten-tick
-       redisplay between the two pixel effects.  During the source pixel effects
-       the original object has M_NODISP/deletion set, so do not fake a logo. */
     if (phase != WM_DCS_STATIC && phase != WM_DCS_ROT_SETUP &&
         phase != WM_DCS_STATIC_RETURN)
         return;
 
-    const wm_source_sprite *spr = wm_dcs_logo_sprite();
-    if (!spr) return;
     draw_source_sprite_scaled(spr,
                               200.0f * WM_FRONTEND_SCALE_X,
                               120.0f * WM_FRONTEND_SCALE_Y,
@@ -392,11 +393,12 @@ static const wm_source_sprite *title_sparkle_frame(const wm_title_sparkle *sp) {
     size_t base = 0;
     unsigned frames = 0;
     switch (sp->family) {
-        case 0: base = WM_TITLE_SPARKLE_BIG_A_BASE; frames = WM_TITLE_BIG_SPARKLE_FRAMES; break;
-        case 1: base = WM_TITLE_SPARKLE_BIG_B_BASE; frames = WM_TITLE_BIG_SPARKLE_FRAMES; break;
-        case 2: base = WM_TITLE_SPARKLE_SMALL_A_BASE; frames = WM_TITLE_SMALL_SPARKLE_FRAMES; break;
-        case 3: base = WM_TITLE_SPARKLE_SMALL_B_BASE; frames = WM_TITLE_SMALL_SPARKLE_FRAMES; break;
-        case 4: base = WM_TITLE_SPARKLE_SMALL_C_BASE; frames = WM_TITLE_SMALL_SPARKLE_FRAMES; break;
+        /* Rev 1.30 ROM animation-pointer order, selected by RNDRNG0(4). */
+        case 0: base = WM_TITLE_SPARKLE_SMALL_A_BASE; frames = WM_TITLE_SMALL_SPARKLE_FRAMES; break;
+        case 1: base = WM_TITLE_SPARKLE_SMALL_B_BASE; frames = WM_TITLE_SMALL_SPARKLE_FRAMES; break;
+        case 2: base = WM_TITLE_SPARKLE_SMALL_C_BASE; frames = WM_TITLE_SMALL_SPARKLE_FRAMES; break;
+        case 3: base = WM_TITLE_SPARKLE_BIG_A_BASE; frames = WM_TITLE_BIG_SPARKLE_FRAMES; break;
+        case 4: base = WM_TITLE_SPARKLE_BIG_B_BASE; frames = WM_TITLE_BIG_SPARKLE_FRAMES; break;
         default: return NULL;
     }
     if ((unsigned)sp->frame >= frames) return NULL;
@@ -454,13 +456,11 @@ static void render_title_screen(const wm_app *app) {
         draw_title_background_block(img, pal, block);
     }
 
-    /* SPARKLE.IMG is the original WIMP artwork named by IMG/MISC.LOD.
-       ATTRACT.ASM starts both FLASH_PID/SPRINKLE_GLINTS and
-       ATTRACT_ANIMPID/RANDOM_SPARKLE at this same title boundary; the portable
-       core owns their state and lifetime, while this backend only plots it. */
-    for (size_t i = 0; i < WM_TITLE_GLINT_COUNT; ++i)
+    /* SPARKLE.IMG is the original WIMP artwork. The core models the
+       recovered FLASH_PID child overlap directly: sequential 40-site sweep first,
+       then RANDOM_SPARKLE reuses those same sites. */
+    for (size_t i = 0; i < WM_TITLE_SPARKLE_SLOT_COUNT; ++i)
         draw_title_sparkle(&app->attract.title_glints[i]);
-    draw_title_sparkle(&app->attract.title_random_sparkle);
 
     /* The module is 403x256 against the arcade's 400x256 viewport, so the
        normal arcade->N64 transform naturally clips the final three source

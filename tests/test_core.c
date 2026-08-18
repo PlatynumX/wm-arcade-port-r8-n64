@@ -99,6 +99,19 @@ static void test_bmod_decode(void) {
     CHECK(b.z == 2);
     CHECK(b.x == -2);
     CHECK(b.header_index == 0x123);
+
+    /* Midway background objects are Z/Y sorted.  These are the relationships
+       that matter to NTITLESC: the stone strips at Y=182/134 must draw before
+       the MIDWAY strip at Y=201 when all share Z=0x40. */
+    const wm_bmod_block stone182 = {.z=0x40, .y=182};
+    const wm_bmod_block stone134 = {.z=0x40, .y=134};
+    const wm_bmod_block midway = {.z=0x40, .y=201};
+    const wm_bmod_block back = {.z=0x01, .y=250};
+    CHECK(wm_bmod_draw_before(&stone182, &midway));
+    CHECK(wm_bmod_draw_before(&stone134, &midway));
+    CHECK(!wm_bmod_draw_before(&midway, &stone182));
+    CHECK(wm_bmod_draw_before(&back, &stone134));
+    CHECK(!wm_bmod_draw_before(&stone134, &stone134));
 }
 
 static void test_source_sequence(void) {

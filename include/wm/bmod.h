@@ -44,6 +44,14 @@ enum {
 bool wm_bmod_decode_block(const wm_bmod_module *module, size_t index,
                           wm_bmod_block *out);
 
+/* Portable reconstruction of the Midway background-object ordering.
+   BAKGND.ASM sends normal background blocks through INSBOBJ and the shared
+   display dispatcher runs YZSORT every frame.  The shared INSBOBJ/YZSORT body
+   is not present in this game's source drop; matching its observed title
+   composition requires Z first and OYPOS top-to-bottom for equal Z.  Returning
+   false for an exact tie lets callers keep source order stable. */
+bool wm_bmod_draw_before(const wm_bmod_block *a, const wm_bmod_block *b);
+
 /* Original background visibility test used by BGND_UD1/bgnd_addmod. The N64
    backend can use this before issuing RDP draws; pad is in source pixels. */
 bool wm_bmod_block_intersects(const wm_bmod_block *b,

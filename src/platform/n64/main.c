@@ -422,9 +422,10 @@ static void render_title_screen(const wm_app *app) {
     if (!named || named->module.block_count > 64)
         return;
 
-    /* BAKGND.ASM inserts blocks into the background object list by OZPOS.
-       Execute that depth ordering here while keeping source order stable for
-       equal-Z blocks. The packed records themselves remain verbatim. */
+    /* BAKGND.ASM creates these as background objects through INSBOBJ and the
+       display dispatcher runs YZSORT.  Reconstruct that Z/Y ordering here;
+       source-order-only equal-Z ties incorrectly cover half of MIDWAY.  The
+       packed BMOD records themselves remain verbatim. */
     struct title_draw_ref {
         wm_bmod_block block;
     } refs[64];
@@ -437,7 +438,7 @@ static void render_title_screen(const wm_app *app) {
     for (size_t i = 1; i < count; ++i) {
         struct title_draw_ref key = refs[i];
         size_t j = i;
-        while (j > 0 && refs[j - 1].block.z > key.block.z) {
+        while (j > 0 && wm_bmod_draw_before(&key.block, &refs[j - 1].block)) {
             refs[j] = refs[j - 1];
             --j;
         }

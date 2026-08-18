@@ -16,6 +16,13 @@ bool wm_bmod_decode_block(const wm_bmod_module *module, size_t index,
     return true;
 }
 
+bool wm_bmod_draw_before(const wm_bmod_block *a, const wm_bmod_block *b) {
+    if (!a || !b) return false;
+    if (a->z != b->z) return a->z < b->z;
+    if (a->y != b->y) return a->y < b->y;
+    return false;
+}
+
 bool wm_bmod_block_intersects(const wm_bmod_block *b,
                               uint16_t block_w, uint16_t block_h,
                               int world_x, int world_y,

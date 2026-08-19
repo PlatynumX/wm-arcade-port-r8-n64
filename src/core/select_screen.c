@@ -16,6 +16,8 @@
 #define WM_SEL_NAME_WAIT_TICKS       20u
 #define WM_SEL_MANUAL_DEBOUNCE        3u
 #define WM_SEL_STICK_THRESHOLD        28
+#define WM_SEL_TSEC                    53u
+#define WM_SEL_SELECT_TIME_TICKS      (WM_SEL_TSEC * 15u) /* SELECT.ASM select_time */
 
 static void send_dcs(wm_audio_state *audio, uint16_t command) {
     if (audio) (void)wm_audio_send_command(audio, command);
@@ -67,7 +69,12 @@ void wm_select_screen_init(wm_select_screen_state *state) {
     state->rng_state = 0x57574653u;
 
     wm_select_cursor_init(&state->p1, 0);
-    wm_select_clock_init(&state->clock, 1u); /* one-player PSTATUS */
+    /* SELECT.ASM select_clock: select_time equ TSEC*15.  Do not route this
+       through the older generic clock shim: the display process reads the
+       select_clock process PA9 directly and only becomes visible below 6. */
+    state->select_ticks_remaining = WM_SEL_SELECT_TIME_TICKS;
+    state->clock.ticks_remaining = WM_SEL_SELECT_TIME_TICKS;
+    state->clock.time_out = false;
 }
 
 static void choose_current(wm_select_screen_state *state,
@@ -93,14 +100,24 @@ static void choose_current(wm_select_screen_state *state,
 }
 
 static void tick_clock(wm_select_screen_state *state, wm_audio_state *audio) {
-    wm_select_clock_tick(&state->clock, 1u, 0u);
-
+    /* Direct port of SELECT.ASM select_clock.  In the one-player N64 path
+       PSTATUS does not change while choosing, so the source reset-on-buyin
+       branch has no additional state to service here. */
     if (state->clock.time_out)
         return;
 
-    /* SELECT.ASM clock_digits uses PA9 >> 6 and only exposes values below 6.
-       The initial comparison value is 4, verbatim from the source. */
-    uint8_t digit = (uint8_t)(state->clock.ticks_remaining >> 6);
+    if (state->select_ticks_remaining > 0u)
+        --state->select_ticks_remaining;
+
+    state->clock.ticks_remaining = state->select_ticks_remaining;
+    if (state->select_ticks_remaining == 0u) {
+        state->clock.time_out = true;
+        return;
+    }
+
+    /* clock_digits reads select_clock.PA9 >> 6.  It keeps the digit object
+       OFF for values >= 6, then swaps FNT9_n and turns it ON. */
+    uint8_t digit = (uint8_t)(state->select_ticks_remaining >> 6);
     if (digit < 6u && digit != state->last_clock_digit) {
         state->last_clock_digit = digit;
         send_dcs(audio, WM_SEL_CLOCK_DCS);
@@ -248,7 +265,7 @@ uint8_t wm_select_screen_current_source(const wm_select_screen_state *state) {
 int wm_select_screen_clock_digit(const wm_select_screen_state *state) {
     if (!state || state->clock.time_out)
         return -1;
-    uint8_t digit = (uint8_t)(state->clock.ticks_remaining >> 6);
+    uint8_t digit = (uint8_t)(state->select_ticks_remaining >> 6);
     return digit < 6u ? (int)digit : -1;
 }
 

@@ -14,7 +14,8 @@
  */
 typedef struct {
     wm_select_cursor p1;
-    wm_select_clock clock;
+    wm_select_clock clock; /* retained for ABI while SELECT.ASM timer is ported below */
+    unsigned select_ticks_remaining;
 
     bool active;
     bool finished;

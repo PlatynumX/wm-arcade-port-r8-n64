@@ -35,7 +35,7 @@ CORE_C := \
     src/generated/bret_visuals.c \
     src/generated/bret_attacks.c
 ASSET_C := src/generated/bret_sprites.c src/generated/sports_logo.c src/generated/dcs_logo.c src/generated/title_screen.c src/generated/title_sparkle.c src/generated/bmod_tables.c src/generated/sports_background.c src/generated/sports_motto.c
-N64_C := src/platform/n64/main.c src/platform/n64/dcs_effect.c src/platform/n64/audio_backend.c
+N64_C := src/platform/n64/main.c src/platform/n64/dcs_effect.c src/platform/n64/audio_backend.c src/platform/n64/dcs_bank.c
 C_FILES := $(CORE_C) $(ASSET_C) $(N64_C)
 OBJS := $(addprefix $(BUILD_DIR)/,$(C_FILES:.c=.o))
 
@@ -78,6 +78,20 @@ $(DCS1005_WAV64): $(DCS1005_WAV)
 $(BUILD_DIR)/$(ROMNAME).dfs: $(DCS1005_WAV64)
 $(ROMNAME).z64: $(BUILD_DIR)/$(ROMNAME).dfs
 # END EXACT WWF DCS COMMAND 1005
+
+# BEGIN EXACT WWF DCS FRONTEND SELECT BANK
+DCS_BANK_CMDS := 0176 0208 0244 0248 0460 1376 1456 1460 1512 1556 1560 1564 1568 2560 2564 2568 2572 2576 3640 3644 3648 3652 3656 3660 3664 3668
+DCS_BANK_WAVS := $(addprefix assets/dcs/cmd_,$(addsuffix .wav,$(DCS_BANK_CMDS)))
+DCS_BANK_WAV64 := $(addprefix filesystem/dcs/cmd_,$(addsuffix .wav64,$(DCS_BANK_CMDS)))
+
+filesystem/dcs/cmd_%.wav64: assets/dcs/cmd_%.wav
+	@mkdir -p $(dir $@)
+	@echo " [DCS BANK] $@"
+	@$(N64_AUDIOCONV) --wav-compress 0 --wav-loop false -o $(dir $@) $<
+
+$(BUILD_DIR)/$(ROMNAME).dfs: $(DCS_BANK_WAV64)
+$(ROMNAME).z64: $(BUILD_DIR)/$(ROMNAME).dfs
+# END EXACT WWF DCS FRONTEND SELECT BANK
 
 $(BUILD_DIR)/$(ROMNAME).elf: $(OBJS)
 

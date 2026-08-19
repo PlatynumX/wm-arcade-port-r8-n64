@@ -3,6 +3,7 @@
 #include <stdint.h>
 
 #include "audio_backend.h"
+#include "dcs_bank.h"
 
 #define WM_DCS_OUTPUT_HZ 31250
 #define WM_N64_AUDIO_BUFFERS 4
@@ -32,6 +33,7 @@ static void dispatch_dcs_command(const wm_audio_event *event) {
     if (!event) return;
     switch (event->command) {
         case 0:
+            wm_dcs_bank_stop();
             stop_all_channels();
             debugf("audio: DCS_LOGO EXIT cmd0 @ source tick %lu\n",
                    (unsigned long)event->source_tick);
@@ -40,9 +42,11 @@ static void dispatch_dcs_command(const wm_audio_event *event) {
             play_dcs_cmd1005(event->source_tick);
             break;
         default:
-            debugf("audio: untranslated DCS cmd %u @ source tick %lu\n",
-                   (unsigned)event->command,
-                   (unsigned long)event->source_tick);
+            if (!wm_dcs_bank_play(event->command, event->source_tick)) {
+                debugf("audio: untranslated DCS cmd %u @ source tick %lu\n",
+                       (unsigned)event->command,
+                       (unsigned long)event->source_tick);
+            }
             break;
     }
 }
@@ -52,6 +56,7 @@ void wm_n64_audio_init(void) {
     audio_init(WM_DCS_OUTPUT_HZ, WM_N64_AUDIO_BUFFERS);
     mixer_init(WM_N64_AUDIO_CHANNELS);
     mixer_set_vol(1.0f);
+    wm_dcs_bank_init();
 
     /* Level-0 WAV64 is uncompressed and needs no codec initialization. */
     wav64_open(&dcs_cmd1005_wave, WM_DCS_CMD1005_PATH);

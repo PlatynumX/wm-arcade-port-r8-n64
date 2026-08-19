@@ -1,0 +1,32 @@
+WWF WrestleMania Arcade - exact DCS frontend/select sound bank
+==============================================================
+Generated from the user's wwfmania U2-U5 sound ROMs with DCSDecoderNative.
+PCM source rate: 31,250 Hz, mono signed 16-bit, reference master volume FF.
+
+RAW DCS command mappings recovered from DCSSOUND.ASM:
+0176 frontend screen-close whoosh
+0208 random-selection movement
+0244 P1 selection
+0248 P2 selection
+0460 character-select clock tick
+1376 coin
+1456 P2 cursor movement
+1460 P1 cursor movement
+1512 buy-in
+1556/1560/1564/1568 frontend credit/service family
+2560 Howard Finkel: good evening...
+2564 Howard Finkel: my name is Howard Finkel
+2568 Howard Finkel: welcome to WrestleMania by Midway
+2572 Howard Finkel: this match is scheduled for 2 falls
+2576 Howard Finkel: we have a winner
+3640 Doink
+3644 Shawn Michaels
+3648 Razor Ramon
+3652 Bam Bam Bigelow
+3656 Undertaker
+3660 Lex Luger
+3664 Bret Hart
+3668 Yokozuna
+
+Command 1005 remains the separately validated DCS-logo decode already in r9.
+No arcade ROM image is copied into the repository.

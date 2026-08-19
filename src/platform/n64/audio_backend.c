@@ -24,7 +24,7 @@ static void play_dcs_cmd1005(uint32_t source_tick) {
     mixer_ch_stop(WM_DCS_CMD1005_CHANNEL);
     wav64_play(&dcs_cmd1005_wave, WM_DCS_CMD1005_CHANNEL);
     mixer_ch_set_vol(WM_DCS_CMD1005_CHANNEL, 1.0f, 1.0f);
-    debugf("audio: exact DCS cmd 1005 started @ source tick %lu\n",
+    debugf("audio: DCS_LOGO ENTER cmd1005 @ source tick %lu\n",
            (unsigned long)source_tick);
 }
 
@@ -33,7 +33,7 @@ static void dispatch_dcs_command(const wm_audio_event *event) {
     switch (event->command) {
         case 0:
             stop_all_channels();
-            debugf("audio: DCS stop cmd 0 @ source tick %lu\n",
+            debugf("audio: DCS_LOGO EXIT cmd0 @ source tick %lu\n",
                    (unsigned long)event->source_tick);
             break;
         case 1005:

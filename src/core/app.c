@@ -215,11 +215,12 @@ static void begin_call(wm_app *app, wm_attract_call call) {
     switch (call) {
         case WM_ATTRACT_DCS_LOGO:
             a->dcs_phase = WM_DCS_STATIC;
+            /* Source-owned DCS command: start at DCS_LOGO entry, tick 0. */
+            (void)wm_audio_send_command(&app->audio, 1005);
             /* ATTR.ASM::DCS_LOGO SNDSND 1005 after display_unblank.
                Source suppresses it once AMODE_LOOPS >= 2. ADJMUSIC is
                not exposed yet; this frontend's default is enabled. */
             if (a->amode_loops < 2u)
-                (void)wm_audio_send_command(&app->audio, 1005);
             break;
         case WM_ATTRACT_SHOW_SPORTS_LOGO:
             a->sports_world_x = 0;
@@ -257,6 +258,10 @@ static void finish_base_loop(wm_app *app) {
 
 static void advance_call(wm_app *app) {
     wm_attract_state *a = &app->attract;
+    if (a->call == WM_ATTRACT_DCS_LOGO) {
+        /* ATTR.ASM DCS screen stop/reset boundary. */
+        (void)wm_audio_send_command(&app->audio, 0);
+    }
     kill_call_processes(app, a->call);
 
     switch (a->flow) {

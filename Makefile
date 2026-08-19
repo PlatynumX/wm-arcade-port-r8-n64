@@ -64,13 +64,28 @@ src/generated/bmod_tables.c: src/generated/sports_logo.c tools/bmod_source.py
 src/generated/sports_background.c src/generated/sports_motto.c: tools/wimpimg.py tools/sports_background_bundle.py tools/sports_motto_bundle.py scripts/prepare_sports_source_assets.sh
 	sh ./scripts/prepare_sports_source_assets.sh
 
+# BEGIN EXACT WWF DCS COMMAND 1005
+# Native 31,250 Hz mono signed-16 output decoded from DCS command 1005/0x03ED.
+# Compression 0 is intentional: do not add another lossy codec after the DCS decode.
+DCS1005_WAV := assets/dcs/wwf_dcs_cmd1005_31250hz_ref.wav
+DCS1005_WAV64 := filesystem/dcs/wwf_dcs_cmd1005_31250hz_ref.wav64
+
+$(DCS1005_WAV64): $(DCS1005_WAV)
+	@mkdir -p $(dir $@)
+	@echo " [DCS AUDIO] $@"
+	@$(N64_AUDIOCONV) --wav-compress 0 --wav-loop false -o $(dir $@) "$<"
+
+$(BUILD_DIR)/$(ROMNAME).dfs: $(DCS1005_WAV64)
+$(ROMNAME).z64: $(BUILD_DIR)/$(ROMNAME).dfs
+# END EXACT WWF DCS COMMAND 1005
+
 $(BUILD_DIR)/$(ROMNAME).elf: $(OBJS)
 
 $(ROMNAME).z64: N64_ROM_TITLE = "WM Arcade Port r9"
 $(ROMNAME).z64: N64_ROM_REGIONFREE = true
 
 clean:
-	$(RM) -r $(BUILD_DIR) $(ROMNAME).z64 $(ASSET_C)
+	$(RM) -r $(BUILD_DIR) $(ROMNAME).z64 $(ASSET_C) $(DCS1005_WAV64)
 
 .PHONY: all clean assets
 

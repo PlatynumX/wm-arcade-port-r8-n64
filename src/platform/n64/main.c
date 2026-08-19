@@ -764,6 +764,7 @@ int main(void) {
     rdpq_init();
     rdpq_debug_start();
     joypad_init();
+    dfs_init(DFS_DEFAULT_LOCATION);
     wm_n64_audio_init();
     sports_background_cache_init();
     rdpq_text_register_font(1, rdpq_font_load_builtin(FONT_BUILTIN_DEBUG_VAR));

@@ -489,6 +489,22 @@ void wm_app_tick(wm_app *app, const wm_input_state *input) {
         return;
     }
 
+    /*
+     * SOURCE_SELECT_TITLE_START_BRIDGE
+     * The arcade reaches select through coin/PSTATUS accounting that is not yet
+     * translated. Start on the already-source-exact title is only the N64
+     * input bridge into SELECT.ASM; the select presentation/timing below is not
+     * a replacement frontend.
+     */
+    if (app->attract.call == WM_ATTRACT_SHOW_TITLE &&
+        app->attract.call_ticks > WM_TITLE_BUTTON_ENABLE_TICKS &&
+        input->start) {
+        kill_call_processes(app, app->attract.call);
+        app->mode = WM_APP_MODE_SELECT;
+        wm_select_screen_init(&app->select);
+        return;
+    }
+
     bool done = false;
     switch (app->attract.call) {
         case WM_ATTRACT_DCS_LOGO: done = tick_dcs_logo(app, input); break;

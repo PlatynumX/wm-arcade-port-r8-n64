@@ -707,6 +707,7 @@ static void render_title_screen(const wm_app *app) {
 
 
 
+
 /* BEGIN SOURCE SELECT RENDERER */
 static void draw_select_background_block(const wm_select_background_image *img,
                                          const wm_select_background_palette *pal,
@@ -820,28 +821,20 @@ static int select_font9_advance(char c) {
 static int select_font9_width(const char *text) {
     int w = 0;
     if (!text) return 0;
-    for (; *text; ++text) w += select_font9_advance(*text);
+    for (; *text; ++text) w += (*text == '!') ? 4 : select_font9_advance(*text);
     return w;
 }
 
-static void draw_select_font9(const char *text, int x, int y, bool centered) {
+static void draw_select_font9(const char *text, int x, int y, bool centered, bool yellow) {
     if (!text) return;
     if (centered) x -= select_font9_width(text) / 2;
     for (; *text; ++text) {
         char c = *text;
         if (c == ' ') { x += 5; continue; }
-        if (c == '!') {
-            /* The source text is CHALLENGER NEEDED!.  The period-free glyph
-               set used by this select extractor has no guaranteed symbolic
-               name for '!'; the visible MAME reference shows the punctuation
-               tight to NEEDED.  Leave its source-width gap rather than draw a
-               replacement-font exclamation mark. */
-            x += 4;
-            continue;
-        }
-        char name[8];
+        if (c == '!') { x += 4; continue; }
+        char name[9];
         if ((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
-            snprintf(name, sizeof(name), "FNT9_%c", c);
+            snprintf(name, sizeof(name), yellow ? "YFNT9_%c" : "FNT9_%c", c);
             const wm_source_sprite *spr = wm_select_sprite_find(name);
             if (spr) {
                 draw_select_sprite_named(name, x, y, false);
@@ -862,10 +855,10 @@ static void render_select_buyin_overlay(const wm_app *app) {
          ln4_setupb  = (321,125) TO START
        The N64 start bridge represents the same one-human-player state as the
        cabinet screen: P1 active, P2 waiting to buy in. */
-    draw_select_font9("CHALLENGER", 321, 60, true);
-    draw_select_font9("NEEDED",     321, 75, true);
-    draw_select_font9("2 CREDITS",  321, 110, true);
-    draw_select_font9("TO START",   321, 125, true);
+    draw_select_font9("CHALLENGER", 321, 60, true, true);
+    draw_select_font9("NEEDED!",    321, 75, true, true);
+    draw_select_font9("2 CREDITS",  321, 110, true, true);
+    draw_select_font9("TO START",   321, 125, true, true);
 
     /* #p2name begins as WF_INSERT; #blink toggles its visibility through the
        original CNTR 30 -> 22 cadence while CR_STRTP says there are not enough
@@ -876,14 +869,14 @@ static void render_select_buyin_overlay(const wm_app *app) {
     /* start_credbox is outside SELECT.ASM, but this title->select bridge has
        exactly one active credit.  Draw it with the game's FNT9 glyph assets,
        matching the cabinet-visible CREDIT 01 state without a replacement font. */
-    draw_select_font9("CREDIT 01", 200, 12, true);
+    draw_select_font9("CREDIT 01", 200, 12, true, true);
 }
 
 static void render_select_random_message(const wm_app *app) {
     if (!app || app->select.p1.random_dest < 0) return;
     /* SELECT.ASM message_setup/message_string is literally "CALLA RNDPER" at
        P1 center x=79,y=15.  Preserve the shipped source string verbatim. */
-    draw_select_font9("CALLA RNDPER", 79, 15, true);
+    draw_select_font9("CALLA RNDPER", 79, 15, true, false);
 }
 
 static const char *const select_croutons[8] = {
@@ -970,6 +963,7 @@ static void render_character_select(const wm_app *app) {
     }
 }
 /* END SOURCE SELECT RENDERER */
+
 
 
 static __attribute__((unused)) void render_match(const wm_app *app) {

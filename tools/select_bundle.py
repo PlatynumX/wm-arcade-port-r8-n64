@@ -31,7 +31,7 @@ DIGITS = [f"FNT9_{n}" for n in range(10)]
 # the alphabet from the original WIMP containers as source glyphs; do not use
 # a libdragon/debug font for arcade UI text.
 FONT9_ALPHA = [f"FNT9_{c}" for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
-BUYIN = ["WF_INSERT"]
+BUYIN = ["WF_INSERT", "WF_START"]
 REQUIRED = CROUTONS + CURSOR + NAMES + MUGS + DIGITS + FONT9_ALPHA + BUYIN
 
 def source_symbol_name(data: bytes, im) -> str:
@@ -126,6 +126,13 @@ def main() -> int:
             lines.append("    " + ", ".join(f"0x{v:02X}" for v in px[i:i+24]) + ",")
         lines += ["};", ""]
 
+    # SELECT.ASM initial one-player challenger text uses FNT9YEL_P.
+    # Source palette from IMGPAL.ASM: .word 02D6Bh,0000h,07FE0h.
+    yel_vals = [rgb555_to_rgba5551(v, i) for i, v in enumerate((0x2D6B, 0x0000, 0x7FE0))]
+    lines.append("static uint16_t pal_FNT9YEL_P[] __attribute__((aligned(8))) = {")
+    lines.append("    " + ", ".join(f"0x{v:04X}" for v in yel_vals) + ",")
+    lines += ["};", ""]
+
     lines.append("static const wm_source_sprite sprites[] = {")
     for req in REQUIRED:
         path, data, images, palettes, im, pal, source_name = found[req.upper()]
@@ -136,6 +143,17 @@ def main() -> int:
         lines.append(
             f'    {{"{source_name}", "{path.name}", {im.width}, {im.height}, '
             f'{im.xani}, {im.yani}, {{{tail}}}, px_{ident}, pal_{pident}, {pal.color_count}}},'
+        )
+
+    # Same original FNT9 pixels under the exact FNT9YEL_P source palette.
+    for req in DIGITS + FONT9_ALPHA:
+        path, data, images, palettes, im, pal, source_name = found[req.upper()]
+        ident = sprite_idents[req.upper()]
+        tail = ", ".join(str(v) for v in im.tail_words)
+        yname = "Y" + source_name
+        lines.append(
+            f'    {{"{yname}", "{path.name}", {im.width}, {im.height}, '
+            f'{im.xani}, {im.yani}, {{{tail}}}, px_{ident}, pal_FNT9YEL_P, 3}},'
         )
     lines += [
         "};",

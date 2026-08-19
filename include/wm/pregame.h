@@ -61,6 +61,7 @@ typedef struct {
     int32_t progress_world_x_fp;
 
     unsigned phase_ticks;
+    unsigned belt_anim_ticks; /* palette_cycle: advances throughout title question */
     unsigned belt_wait_ticks;
     unsigned flash_ticks;
     unsigned progress_counter;

@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
-"""Build exact foreground SELECT.ASM WIMP artwork from the original source containers.
+"""Build exact SELECT.ASM + PROGRESS.ASM WIMP artwork and live palettes.
 
-The source symbols are taken directly from SELECT.ASM:
-- eight croutons
-- P1 blue plate + highlight
-- eight-piece mugshot groups
-- wrestler name images
-- FNT9 countdown/message glyphs
-- WF_INSERT buy-in/name-band image
+The championship/title-choice pass also exports the original OSGEMD prompt
+glyphs and IMGPAL.ASM palette symbols used by ask_belt_question/hilight.
+
 
 No replacement PNGs or hand-redrawn assets are accepted.
 """
@@ -31,6 +27,15 @@ DIGITS = [f"FNT9_{n}" for n in range(10)]
 # the alphabet from the original WIMP containers as source glyphs; do not use
 # a libdragon/debug font for arcade UI text.
 FONT9_ALPHA = [f"FNT9_{c}" for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
+# PROGRESS.ASM belt_prompt_setup uses osgemd_ascii for "SELECT YOUR TITLE:".
+OSGEMD_ALPHA = [f"OSGEMD_{c}" for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
+OSGEMD_PUNCT = ["OSGEMD_COL"]
+# Live OPAL assignments / palette-cycle tables used by ask_belt_question.
+SOURCE_PALETTES = [
+    "DPLT_P2P", "DPLT_W_P", "WSF_Y_P", "WSF_W_P",
+    "CHGLWT_P", *[f"CHGLWT{i}P" for i in range(1, 10)],
+    "CHGLWB_P", *[f"CHGLWB{i}P" for i in range(1, 10)],
+]
 BUYIN = ["WF_INSERT", "WF_START"]
 # PROGRESS.ASM::ask_belt_question live one-player title-selection art.
 BELT_CHOICE = [
@@ -52,11 +57,11 @@ PROGRESS_UI = [
 # CREATE_TEMP_WRESTLER uses these full-body source images on the progression
 # screen. Keep them optional until every historical WIMP container variant is
 # confirmed; if present they are emitted for the next progress-renderer pass.
-OPTIONAL = PROGRESS_UI + [
+OPTIONAL = ["OSGEMD_SPC"] + PROGRESS_UI + [
     "H4ST4A02", "RAZOR_STAND", "TAKER_STAND", "YOKO_STAND", "SHAWN_STAND",
     "BAM_STAND", "DOINK_STAND", "LEX_STAND",
 ]
-REQUIRED = CROUTONS + CURSOR + NAMES + MUGS + DIGITS + FONT9_ALPHA + BUYIN + BELT_CHOICE
+REQUIRED = CROUTONS + CURSOR + NAMES + MUGS + DIGITS + FONT9_ALPHA + OSGEMD_ALPHA + OSGEMD_PUNCT + BUYIN + BELT_CHOICE
 
 def source_symbol_name(data: bytes, im) -> str:
     """Recover the full source symbol stored in the WIMP directory.
@@ -86,11 +91,72 @@ def source_symbol_name(data: bytes, im) -> str:
         return im.name
     return text
 
+def asm_num(token: str) -> int:
+    token = token.strip().rstrip(',')
+    if token.lower().endswith('h'):
+        return int(token[:-1], 16)
+    if token.lower().startswith('0x'):
+        return int(token, 16)
+    return int(token, 10)
+
+
+def asm_code_lines(text: str):
+    for raw in text.splitlines():
+        yield raw.split(';', 1)[0].strip()
+
+
+def parse_source_palette(text: str, label: str) -> list[int]:
+    """Parse one IMGPAL.ASM `label: .word size; .word colors...` block."""
+    import re
+    lines = list(asm_code_lines(text))
+    rx = re.compile(rf'^{re.escape(label)}\s*:?\s*$', re.I)
+    start = None
+    for i, line in enumerate(lines):
+        if rx.match(line):
+            start = i + 1
+            break
+    if start is None:
+        raise ValueError(f'IMGPAL palette not found: {label}')
+
+    def word_values(line: str):
+        m = re.match(r'(?i)^\.word\s+(.+)$', line)
+        if not m:
+            return None
+        return [asm_num(x) for x in m.group(1).split(',') if x.strip()]
+
+    i = start
+    while i < len(lines) and not lines[i]:
+        i += 1
+    size_vals = word_values(lines[i]) if i < len(lines) else None
+    if not size_vals or len(size_vals) != 1:
+        raise ValueError(f'{label}: missing palette size')
+    size = size_vals[0]
+    i += 1
+    vals: list[int] = []
+    label_rx = re.compile(r'^[A-Za-z_.$][A-Za-z0-9_.$]*\s*:\s*$')
+    while i < len(lines) and len(vals) < size:
+        line = lines[i]
+        i += 1
+        if not line:
+            continue
+        if label_rx.match(line):
+            break
+        w = word_values(line)
+        if w:
+            vals.extend(w)
+    if len(vals) < size:
+        raise ValueError(f'{label}: expected {size} colors, parsed {len(vals)}')
+    return vals[:size]
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--img-dir", required=True, type=pathlib.Path)
+    ap.add_argument("--imgpal", required=True, type=pathlib.Path)
     ap.add_argument("--out", required=True, type=pathlib.Path)
     ns = ap.parse_args()
+    imgpal_text = ns.imgpal.read_text(errors="replace")
+    named_source_palettes = {name: parse_source_palette(imgpal_text, name) for name in SOURCE_PALETTES}
 
     wanted = {n.upper() for n in REQUIRED + OPTIONAL}
     found = {}
@@ -159,6 +225,16 @@ def main() -> int:
     lines.append("    " + ", ".join(f"0x{v:04X}" for v in yel_vals) + ",")
     lines += ["};", ""]
 
+    source_palette_idents = {}
+    for pname in SOURCE_PALETTES:
+        ident = c_ident(pname)
+        source_palette_idents[pname] = ident
+        vals = [rgb555_to_rgba5551(v, i) for i, v in enumerate(named_source_palettes[pname])]
+        lines.append(f"static uint16_t srcpal_{ident}[] __attribute__((aligned(8))) = {{")
+        for i in range(0, len(vals), 12):
+            lines.append("    " + ", ".join(f"0x{v:04X}" for v in vals[i:i+12]) + ",")
+        lines += ["};", ""]
+
     lines.append("static const wm_source_sprite sprites[] = {")
     for req in emitted:
         path, data, images, palettes, im, pal, source_name = found[req.upper()]
@@ -184,6 +260,21 @@ def main() -> int:
     lines += [
         "};",
         "",
+        "static const wm_select_palette source_palettes[] = {",
+    ]
+    for pname in SOURCE_PALETTES:
+        ident = source_palette_idents[pname]
+        lines.append(f'    {{"{pname}", srcpal_{ident}, {len(named_source_palettes[pname])}}},')
+    lines += [
+        "};",
+        "",
+        "const wm_select_palette *wm_select_palette_find(const char *source_name) {",
+        "    if (!source_name) return 0;",
+        "    for (size_t i=0;i<sizeof(source_palettes)/sizeof(source_palettes[0]);++i)",
+        "        if (!strcmp(source_palettes[i].source_name, source_name)) return &source_palettes[i];",
+        "    return 0;",
+        "}",
+        "",
         "const wm_source_sprite *wm_select_sprite_find(const char *source_frame) {",
         "    if (!source_frame) return 0;",
         "    for (size_t i=0;i<sizeof(sprites)/sizeof(sprites[0]);++i)",
@@ -203,7 +294,7 @@ def main() -> int:
     ns.out.parent.mkdir(parents=True, exist_ok=True)
     ns.out.write_text("\n".join(lines))
     print(
-        f"select/pregame foreground: {len(emitted)} exact images ({len(REQUIRED)} required) from {scanned} WIMP containers "
+        f"select/pregame foreground: {len(emitted)} exact images + {len(SOURCE_PALETTES)} live palettes ({len(REQUIRED)} required) from {scanned} WIMP containers "
         f"({rejected} non-WIMP/unsupported skipped) -> {ns.out}"
     )
     return 0

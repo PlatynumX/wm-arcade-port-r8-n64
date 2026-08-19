@@ -10,7 +10,7 @@ if [ ! -f "$ORIG/SELECT.ASM" ] || [ ! -f "$ORIG/BGNDTBL.ASM" ] || \
     sh "$ROOT/scripts/fetch_original.sh"
 fi
 
-: "${WWFMANIA_ZIP:?WWFMANIA_ZIP must point to the user's wwfmania.zip}"
+: "${WWFMANIA_ZIP:?WWFMANIA_ZIP must point to the user wwfmania.zip}"
 [ -f "$WWFMANIA_ZIP" ] || {
     echo "ERROR: WWF arcade ROM zip not found: $WWFMANIA_ZIP" >&2
     exit 2
@@ -18,6 +18,7 @@ fi
 
 python3 "$ROOT/tools/select_bundle.py" \
     --img-dir "$ORIG/IMG" \
+    --imgpal "$ORIG/IMGPAL.ASM" \
     --out "$ROOT/src/generated/select_sprites.c"
 
 python3 "$ROOT/tools/select_background_bundle.py" \

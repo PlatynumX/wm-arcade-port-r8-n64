@@ -177,6 +177,11 @@ void wm_pregame_tick(wm_pregame_state *s,
                      wm_audio_state *audio) {
     if (!s || s->finished) return;
 
+    /* PROGRESS.ASM starts both palette_cycle processes before the two-tick
+       setup sleep and kills them only after flash_it + the 15-tick hold. */
+    if (s->phase >= WM_PREGAME_BELT_SETUP && s->phase <= WM_PREGAME_BELT_FLASH)
+        ++s->belt_anim_ticks;
+
     switch (s->phase) {
         case WM_PREGAME_BELT_SETUP:
             if (++s->phase_ticks >= BELT_SETUP_SLEEP_TICKS) {

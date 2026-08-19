@@ -710,6 +710,7 @@ static void render_title_screen(const wm_app *app) {
 
 
 
+
 /* BEGIN SOURCE SELECT RENDERER */
 static void draw_select_background_block(const wm_select_background_image *img,
                                          const wm_select_background_palette *pal,
@@ -805,6 +806,70 @@ static void draw_select_sprite_named(const char *name, int x, int y, bool flip_x
                               (float)y * WM_FRONTEND_SCALE_Y,
                               spr->xani, spr->yani, flip_x, spr,
                               WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
+}
+
+
+/* Wolf-unit BEGINOBJP/OPAL equivalent for source WIMP pixels.  Keep the
+   original image CI8 indices, but feed the palette selected by PROGRESS.ASM. */
+static void draw_select_sprite_named_palette(const char *name, int x, int y,
+                                             bool flip_x, const char *palette_name) {
+    const wm_source_sprite *spr = wm_select_sprite_find(name);
+    const wm_select_palette *pal = wm_select_palette_find(palette_name);
+    if (!spr || !pal || !pal->rgba5551 || !pal->color_count) return;
+
+    wm_source_sprite palette_proxy = *spr;
+    palette_proxy.palette_rgba5551 = pal->rgba5551;
+    palette_proxy.palette_colors = pal->color_count;
+    draw_source_sprite_scaled(spr,
+                              (float)x * WM_FRONTEND_SCALE_X,
+                              (float)y * WM_FRONTEND_SCALE_Y,
+                              spr->xani, spr->yani, flip_x, &palette_proxy,
+                              WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
+}
+
+/* belt_prompt_setup is JAM_STR(osgemd_ascii,8,0,200,18+256,BLUE,0).
+   The exact OSGEMD WIMP glyphs and source coordinates are ported here.
+   BLUE is a live text-engine color selector rather than an IMGPAL symbol;
+   until that text-color path is decoded, retain each glyph's source WIMP
+   palette rather than inventing a replacement turquoise palette. */
+static const wm_source_sprite *belt_osgemd_glyph(char c) {
+    char name[16];
+    if (c >= 'A' && c <= 'Z') {
+        snprintf(name, sizeof(name), "OSGEMD_%c", c);
+        return wm_select_sprite_find(name);
+    }
+    if (c == ':') return wm_select_sprite_find("OSGEMD_COL");
+    if (c == ' ') return wm_select_sprite_find("OSGEMD_SPC");
+    return NULL;
+}
+
+static int belt_osgemd_width(const char *text) {
+    int width = 0;
+    if (!text) return 0;
+    for (; *text; ++text) {
+        const wm_source_sprite *spr = belt_osgemd_glyph(*text);
+        if (spr) width += (int)spr->width;
+        else if (*text == ' ') width += 6;
+    }
+    return width;
+}
+
+static void draw_belt_osgemd_centered(const char *text, int center_x, int y) {
+    if (!text) return;
+    int x = center_x - belt_osgemd_width(text) / 2;
+    for (; *text; ++text) {
+        const wm_source_sprite *spr = belt_osgemd_glyph(*text);
+        if (spr) {
+            draw_source_sprite_scaled(spr,
+                                      (float)x * WM_FRONTEND_SCALE_X,
+                                      (float)y * WM_FRONTEND_SCALE_Y,
+                                      spr->xani, spr->yani, false, spr,
+                                      WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
+            x += (int)spr->width;
+        } else if (*text == ' ') {
+            x += 6;
+        }
+    }
 }
 
 /* SELECT.ASM routes its live select/buy-in strings through the game's font9
@@ -1002,33 +1067,92 @@ static void render_belt_choice(const wm_app *app) {
     fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
     if (!app) return;
 
-    /* PROGRESS.ASM::ask_belt_question creates these WIMP objects while the
-       world starts at Y=0 and then advances +0x18 until it is clamped to 255.
-       Source objects are authored one screen below the viewport (+256). */
+    /* PROGRESS.ASM::ask_belt_question authors the whole composition one
+       Wolf-unit screen below the viewport, then moves WORLDTLY +0x18/tick
+       until 255.  Preserve those source positions instead of hand-layout. */
     const int wy = app->pregame.belt_world_y;
     const int top_y = 93 + 256 - wy;
     const int bottom_y = 184 + 256 - wy;
+    const bool inter_selected =
+        app->pregame.belt_type == WM_PREGAME_BELT_INTERCONTINENTAL;
 
+    /* PROGRESS.ASM requests BEGINOBJP(MVEBAR_R,DPLT_P_P), but DPLT_P_P is
+       not defined in this source drop's IMGPAL.ASM.  Preserve MVEBAR_R's
+       embedded WIMP palette until that shipped/shared palette is recovered;
+       do not alias it to a different known palette.  SHADOW01 is likewise
+       original source artwork; JUDDER_SHADOW remains a later fidelity item. */
     draw_select_sprite_named("MVEBAR_R", 10, 30 + 256 - wy, false);
     draw_select_sprite_named("SHADOW01", 13, 39 + 256 - wy, false);
 
-    draw_select_sprite_named("CHOGLOT_A", 200, top_y, false);
-    draw_select_sprite_named("CHOGLOT_B", 200, top_y, false);
-    draw_select_sprite_named("CHSHDT_A", 200, top_y, false);
-    draw_select_sprite_named("CHSHDT_B", 200, top_y, false);
-    draw_select_sprite_named("CHOICBK",   200, top_y, false);
-    draw_select_sprite_named("INTER",     200, top_y, false);
+    draw_belt_osgemd_centered("SELECT YOUR TITLE:", 200, 18 + 256 - wy);
 
-    draw_select_sprite_named("CHOGLOB_A", 201, bottom_y, false);
-    draw_select_sprite_named("CHOGLOB_B", 201, bottom_y, false);
-    draw_select_sprite_named("CHSHDB_A", 201, bottom_y, false);
-    draw_select_sprite_named("CHSHDB_B", 201, bottom_y, false);
-    draw_select_sprite_named("CHOICBK",   201, bottom_y, false);
-    draw_select_sprite_named("WORLD",     201, bottom_y, false);
+    /* Two independent PCYC_PID processes walk ten source palettes, one frame
+       every four source ticks, and apply each palette to the A/B glow pair. */
+    static const char *const top_glow_pal[10] = {
+        "CHGLWT_P", "CHGLWT1P", "CHGLWT2P", "CHGLWT3P", "CHGLWT4P",
+        "CHGLWT5P", "CHGLWT6P", "CHGLWT7P", "CHGLWT8P", "CHGLWT9P"
+    };
+    static const char *const bottom_glow_pal[10] = {
+        "CHGLWB_P", "CHGLWB1P", "CHGLWB2P", "CHGLWB3P", "CHGLWB4P",
+        "CHGLWB5P", "CHGLWB6P", "CHGLWB7P", "CHGLWB8P", "CHGLWB9P"
+    };
+    const unsigned pal_frame = (app->pregame.belt_anim_ticks / 4u) % 10u;
 
-    /* The live source prompt is osgemd_ascii, not font9, and the selection
-       highlight/flash is implemented with object-control/palette cycling.
-       Neither is replaced with a lookalike here. */
+    /* hilight toggles OCTRL bit 2 between each option's glow pair and shadow
+       pair.  Fix18 drew all eight simultaneously; that is not the arcade
+       object state.  After flash_it, the source deletes both glow pairs. */
+    const bool post_flash_hold =
+        app->pregame.phase == WM_PREGAME_BELT_FLASH &&
+        app->pregame.phase_ticks >= 18u;
+
+    if (!post_flash_hold) {
+        if (inter_selected) {
+            draw_select_sprite_named_palette("CHOGLOT_A", 200, top_y, false,
+                                             top_glow_pal[pal_frame]);
+            draw_select_sprite_named_palette("CHOGLOT_B", 200, top_y, false,
+                                             top_glow_pal[pal_frame]);
+            draw_select_sprite_named("CHSHDB_A", 201, bottom_y, false);
+            draw_select_sprite_named("CHSHDB_B", 201, bottom_y, false);
+        } else {
+            draw_select_sprite_named("CHSHDT_A", 200, top_y, false);
+            draw_select_sprite_named("CHSHDT_B", 200, top_y, false);
+            draw_select_sprite_named_palette("CHOGLOB_A", 201, bottom_y, false,
+                                             bottom_glow_pal[pal_frame]);
+            draw_select_sprite_named_palette("CHOGLOB_B", 201, bottom_y, false,
+                                             bottom_glow_pal[pal_frame]);
+        }
+    } else {
+        /* DELOBJ removes top glow A/B and bottom glow A/B after flash_it. */
+        if (inter_selected) {
+            draw_select_sprite_named("CHSHDB_A", 201, bottom_y, false);
+            draw_select_sprite_named("CHSHDB_B", 201, bottom_y, false);
+        } else {
+            draw_select_sprite_named("CHSHDT_A", 200, top_y, false);
+            draw_select_sprite_named("CHSHDT_B", 200, top_y, false);
+        }
+    }
+
+    /* hilight also swaps the option plate/text OPALs. */
+    const char *top_plate_pal = inter_selected ? "DPLT_P2P" : "DPLT_W_P";
+    const char *top_text_pal = inter_selected ? "WSF_Y_P" : "WSF_W_P";
+    const char *bottom_plate_pal = inter_selected ? "DPLT_W_P" : "DPLT_P2P";
+    const char *bottom_text_pal = inter_selected ? "WSF_W_P" : "WSF_Y_P";
+
+    /* flash_it touches only the selected CHOICBK object: three loops of
+       3 ticks off / 3 ticks on.  The INTER/WORLD label itself stays present. */
+    bool selected_plate_visible = true;
+    if (app->pregame.phase == WM_PREGAME_BELT_FLASH &&
+        app->pregame.phase_ticks < 18u) {
+        selected_plate_visible = ((app->pregame.phase_ticks / 3u) & 1u) != 0u;
+    }
+
+    if (!inter_selected || selected_plate_visible)
+        draw_select_sprite_named_palette("CHOICBK", 200, top_y, false, top_plate_pal);
+    draw_select_sprite_named_palette("INTER", 200, top_y, false, top_text_pal);
+
+    if (inter_selected || selected_plate_visible)
+        draw_select_sprite_named_palette("CHOICBK", 201, bottom_y, false, bottom_plate_pal);
+    draw_select_sprite_named_palette("WORLD", 201, bottom_y, false, bottom_text_pal);
 }
 
 static void render_progress_screen(const wm_app *app) {
@@ -1085,6 +1209,7 @@ static void render_pregame(const wm_app *app) {
 }
 
 /* END SOURCE SELECT RENDERER */
+
 
 
 

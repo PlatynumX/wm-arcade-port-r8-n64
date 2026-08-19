@@ -713,6 +713,7 @@ static void render_title_screen(const wm_app *app) {
 
 
 
+
 /* BEGIN SOURCE SELECT RENDERER */
 static void draw_select_background_block(const wm_select_background_image *img,
                                          const wm_select_background_palette *pal,
@@ -1179,10 +1180,23 @@ static void draw_progress_piece(const wm_source_sprite *spr,
    here are the platform draw calls: animation labels, delays, WIMP pixels,
    x/y offsets, channel-2 attachment metadata and wrestler_pal all come from
    the historical source and original WIMP containers. */
+/* WRESTLE.ASM's 3D object path projects progression wrestler Z through the
+   source Y_SCALE_MULTIPLIER before subtracting OBJ_YPOS.  Fix20-26 incorrectly
+   treated OBJ_YPOS=100 as a literal screen Y and discarded Z entirely. */
+#define WM_PROGRESS_Y_SCALE_MULTIPLIER 0x3566
+
+static int wm_progress_ground_y(int source_z) {
+    return (int)(((int32_t)source_z * (int32_t)WM_PROGRESS_Y_SCALE_MULTIPLIER) >> 16);
+}
+
+static int wm_progress_actor_y(int source_y, int source_z) {
+    return wm_progress_ground_y(source_z) - source_y;
+}
+
 static void draw_progress_actor(uint8_t source_wrestler,
                                 wm_progress_action action,
                                 unsigned anim_ticks,
-                                int world_x, int source_y,
+                                int world_x, int source_y, int source_z,
                                 int world_scroll_x,
                                 bool facing_left) {
     const wm_progress_anim *primary_anim =
@@ -1200,8 +1214,18 @@ static void draw_progress_actor(uint8_t source_wrestler,
     const wm_source_sprite *primary = wm_progress_sprite_find(pf->source_frame);
     if (!primary) return;
 
-    const float sx = (float)(world_x - world_scroll_x);
-    const float sy = (float)source_y;
+    /* ANI_OFFSET mutates the wrestler process position.  Bam's wait animation
+       moves him -800 before clever_addr adds +800, so clever inherits the
+       wait-side displacement rather than starting from a fresh zero origin. */
+    int inherited_x = 0;
+    if (source_wrestler == 5u && action == WM_PROGRESS_ACT_CLEVER)
+        inherited_x = -800;
+
+    const int actor_x = world_x + inherited_x + pf->offset_x;
+    const int actor_y = source_y + pf->offset_y;
+    const int actor_z = source_z + pf->offset_z;
+    const float sx = (float)(actor_x - world_scroll_x);
+    const float sy = (float)wm_progress_actor_y(actor_y, actor_z);
     const bool primary_flip = facing_left ^ pf->xflip;
     draw_progress_piece(primary, pal, sx, sy,
                         primary->xani, primary->yani, primary_flip);
@@ -1224,29 +1248,167 @@ static void draw_progress_actor(uint8_t source_wrestler,
                         secondary_xoff, secondary_yoff, torso_flip);
 }
 
-static void draw_progress_opponents(const wm_app *app, int world_scroll_x) {
-    if (!app) return;
+typedef struct {
+    uint8_t wrestler;
+    wm_progress_action action;
+    unsigned anim_ticks;
+    int world_x;
+    int source_y;
+    int source_z;
+    bool facing_left;
+    bool opponent;
+} wm_progress_draw_actor;
 
-    /* PROGRESS.ASM::WHICH_ZPOS_TABLE stores x as an offset that
-       CREATE_TEMP_WRESTLER adds to [375,0].  Z controls object ordering in the
-       arcade object list; these source-X positions are preserved verbatim. */
+static void wm_progress_sort_actors(wm_progress_draw_actor *a, unsigned count) {
+    /* The arcade object renderer updates OYVAL from Z projection to preserve
+       priority.  For these temporary wrestlers, ascending source Z is the
+       equivalent painter order: farther actors first, nearer actors last. */
+    for (unsigned i = 1; i < count; ++i) {
+        wm_progress_draw_actor key = a[i];
+        unsigned j = i;
+        while (j > 0 && a[j - 1].source_z > key.source_z) {
+            a[j] = a[j - 1];
+            --j;
+        }
+        a[j] = key;
+    }
+}
+
+static const char *wm_progress_fuji_frame(unsigned t) {
+    /* PROGRESS.ASM::FUJI_ANIM: 7,7,7,60,7,7,7. */
+    if (t < 7u) return "FUJI01";
+    t -= 7u;
+    if (t < 7u) return "FUJI02";
+    t -= 7u;
+    if (t < 7u) return "FUJI03";
+    t -= 7u;
+    if (t < 60u) return "FUJI04";
+    t -= 60u;
+    if (t < 7u) return "FUJI03";
+    t -= 7u;
+    if (t < 7u) return "FUJI02";
+    return "FUJI01";
+}
+
+static void draw_progress_fuji(const wm_progress_draw_actor *a,
+                               unsigned opponent_count,
+                               int world_scroll_x) {
+    if (!a || !a->opponent || a->wrestler != 3u || opponent_count != 1u)
+        return;
+
+    /* CREATE_FUJI first moves Yokozuna +30 in world X, then creates Fuji at
+       that shifted X-80 and source Y=240.  The caller has already applied the
+       +30 to Yokozuna's actor X. */
+    const int fuji_x = a->world_x - 80 - world_scroll_x;
+    const char *frame = "FUJI01";
+    if (a->action == WM_PROGRESS_ACT_CLEVER)
+        frame = wm_progress_fuji_frame(a->anim_ticks);
+    draw_select_sprite_named(frame, fuji_x, 240, false);
+}
+
+static void draw_progress_urn(const wm_progress_draw_actor *a,
+                              int world_scroll_x) {
+    if (!a || !a->opponent || a->wrestler != 2u ||
+        a->action != WM_PROGRESS_ACT_CLEVER || a->anim_ticks < 48u)
+        return;
+
+    /* und_clever_anim runs eight 6-tick frames before CREATE_URN. URN_ANIM is
+       five BLUURN frames at six ticks each, then the object dies. */
+    unsigned t = a->anim_ticks - 48u;
+    if (t >= 30u) return;
+    char frame[16];
+    snprintf(frame, sizeof(frame), "BLUURN%02u", (t / 6u) + 1u);
+    const int x = a->world_x - world_scroll_x;
+    const int y = wm_progress_ground_y(a->source_z) - 0x5A;
+    draw_select_sprite_named(frame, x, y, false);
+}
+
+static void draw_progress_water(const wm_progress_draw_actor *a,
+                                int world_scroll_x) {
+    if (!a || !a->opponent || a->wrestler != 6u ||
+        a->action != WM_PROGRESS_ACT_CLEVER || a->anim_ticks < 18u)
+        return;
+
+    /* dnk_clever_anim invokes CREATE_WATER after three 6-tick frames. */
+    unsigned t = a->anim_ticks - 18u;
+    if (t >= 39u) return;
+
+    const char *frame;
+    if (t < 4u) frame = "WATER01";
+    else if (t < 8u) frame = "WATER02";
+    else if (t < 23u) frame = "WATER03";
+    else if (t < 27u) frame = "WATER04";
+    else if (t < 31u) frame = "WATER05";
+    else if (t < 35u) frame = "WATER06";
+    else frame = "WATER07";
+
+    int water_world_x = a->world_x - 10;
+    if (t >= 8u && t < 23u) {
+        /* START_WATER stores (start-0x240)/15, then MOVE_WATER subtracts that
+           once per tick.  Keep the arithmetic in source world coordinates. */
+        const int delta = (water_world_x - 0x240) / 15;
+        unsigned steps = t - 8u;
+        if (steps > 15u) steps = 15u;
+        water_world_x -= delta * (int)steps;
+    } else if (t >= 23u) {
+        water_world_x = 0x240;
+    }
+    const int y = wm_progress_ground_y(a->source_z) - 0x58;
+    draw_select_sprite_named(frame, water_world_x - world_scroll_x, y, false);
+}
+
+static unsigned wm_progress_build_actors(const wm_app *app,
+                                         wm_progress_draw_actor out[4]) {
+    if (!app || !out) return 0u;
+    unsigned n = 0u;
+    out[n++] = (wm_progress_draw_actor){
+        app->pregame.player_source_wrestler,
+        app->pregame.progress_player_action,
+        app->pregame.progress_player_anim_ticks,
+        (int)(app->pregame.progress_player_x_fp >> 16),
+        100, 0x470, false, false
+    };
+
     static const int16_t one_x[1]   = {675};
+    static const int16_t one_z[1]   = {0x470};
     static const int16_t two_x[2]   = {705, 655};
+    static const int16_t two_z[2]   = {0x490, 0x450};
     static const int16_t three_x[3] = {720, 675, 630};
-    const int16_t *xs = one_x;
+    static const int16_t three_z[3] = {0x4A0, 0x470, 0x440};
+    const int16_t *xs = one_x, *zs = one_z;
     unsigned count = app->pregame.opponent_count;
-    if (count == 2u) xs = two_x;
-    else if (count >= 3u) { xs = three_x; count = 3u; }
-    else if (count == 0u) return;
+    if (count == 2u) { xs = two_x; zs = two_z; }
+    else if (count >= 3u) { xs = three_x; zs = three_z; count = 3u; }
 
-    for (unsigned i = 0; i < count; ++i) {
-        const uint8_t w = wm_pregame_opponent_at(&app->pregame, i);
+    for (unsigned i = 0; i < count && n < 4u; ++i) {
+        uint8_t w = wm_pregame_opponent_at(&app->pregame, i);
         if (w == 0xffu) continue;
-        draw_progress_actor(w,
-                            app->pregame.progress_opponent_action,
-                            app->pregame.progress_opponent_anim_ticks,
-                            xs[i], 100, world_scroll_x,
-                            true /* CREATE_TEMP_WRESTLER FACING_DIR=8 */);
+        int x = xs[i];
+        /* CREATE_FUJI mutates Yoko's OBJ_XPOS by +30 when he is the only
+           opponent.  Preserve that mutation before both wrestler and Fuji draw. */
+        if (count == 1u && w == 3u) x += 30;
+        out[n++] = (wm_progress_draw_actor){
+            w, app->pregame.progress_opponent_action,
+            app->pregame.progress_opponent_anim_ticks,
+            x, 100, zs[i], true, true
+        };
+    }
+    return n;
+}
+
+static void draw_progress_actors_and_effects(const wm_app *app,
+                                             int world_scroll_x) {
+    wm_progress_draw_actor actors[4];
+    unsigned count = wm_progress_build_actors(app, actors);
+    wm_progress_sort_actors(actors, count);
+    for (unsigned i = 0; i < count; ++i) {
+        wm_progress_draw_actor *a = &actors[i];
+        draw_progress_actor(a->wrestler, a->action, a->anim_ticks,
+                            a->world_x, a->source_y, a->source_z,
+                            world_scroll_x, a->facing_left);
+        draw_progress_fuji(a, app->pregame.opponent_count, world_scroll_x);
+        draw_progress_urn(a, world_scroll_x);
+        draw_progress_water(a, world_scroll_x);
     }
 }
 
@@ -1309,12 +1471,7 @@ static void render_progress_screen(const wm_app *app) {
        MOVE_PROGRESS both player X and WORLDTLX advance by RUN_SPEED, keeping
        the selected wrestler running in place while the arena scrolls beneath
        him. Opponents sit farther down the same world and scroll into view. */
-    draw_progress_actor(app->pregame.player_source_wrestler,
-                        app->pregame.progress_player_action,
-                        app->pregame.progress_player_anim_ticks,
-                        (int)(app->pregame.progress_player_x_fp >> 16),
-                        100, world_x, false);
-    draw_progress_opponents(app, world_x);
+    draw_progress_actors_and_effects(app, world_x);
 
     /* Live PROGRESS.ASM font9 labels.  TONIGHT'S PROGRAM contains a source
        apostrophe glyph that is still outside the extracted FNT9 subset, so do
@@ -1362,6 +1519,7 @@ static void render_pregame(const wm_app *app) {
 }
 
 /* END SOURCE SELECT RENDERER */
+
 
 
 

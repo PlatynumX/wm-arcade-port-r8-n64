@@ -20,6 +20,11 @@ typedef struct {
     const char *source_frame;
     uint16_t ticks;
     bool xflip;
+    /* Cumulative ANI_OFFSET state in source world coordinates at this frame.
+       PROGRESS.ASM uses this for Bam Bam's offscreen wait/rise choreography. */
+    int16_t offset_x;
+    int16_t offset_y;
+    int16_t offset_z;
 } wm_progress_anim_frame;
 
 typedef struct {

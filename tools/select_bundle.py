@@ -51,7 +51,7 @@ BELT_CHOICE = [
     "CHOGLOB_A", "CHOGLOB_B", "CHSHDB_A", "CHSHDB_B",
     "CHOICBK", "INTER", "WORLD",
 ]
-# PROGRESS.ASM::DO_LADDER_BITS live source images required by Fix20.  The
+# PROGRESS.ASM::DO_LADDER_BITS live source images required by the progression port.  The
 # extra LOGO_IMAGE_TABLE images remain optional until SET_IMAGE_AND_FLASH is
 # ported as its own process.
 PROGRESS_UI = [
@@ -62,13 +62,21 @@ PROGRESS_UI = [
 PROGRESS_UI_OPTIONAL = [
     "HRT3", "RZR3", "UND3", "YOK3", "SHN3", "BAM3", "DNK3", "LEX3", "WWFCHAL",
 ]
+# Live PROGRESS.ASM character-specific process artwork.  These are not
+# replacement effects: CREATE_FUJI / CREATE_URN / CREATE_WATER name these exact
+# source WIMP images.
+PROGRESS_EFFECTS = [
+    "FUJI01", "FUJI02", "FUJI03", "FUJI04",
+    "BLUURN01", "BLUURN02", "BLUURN03", "BLUURN04", "BLUURN05",
+    "WATER01", "WATER02", "WATER03", "WATER04", "WATER05", "WATER06", "WATER07",
+]
 # Legacy stand-image aliases are kept optional; Fix20 wrestler visuals are
 # generated instead from the exact action animation frame dependencies.
 OPTIONAL = ["OSGEMD_SPC"] + PROGRESS_UI_OPTIONAL + [
     "H4ST4A02", "RAZOR_STAND", "TAKER_STAND", "YOKO_STAND", "SHAWN_STAND",
     "BAM_STAND", "DOINK_STAND", "LEX_STAND",
 ]
-REQUIRED = CROUTONS + CURSOR + NAMES + MUGS + DIGITS + FONT9_ALPHA + OSGEMD_ALPHA + OSGEMD_PUNCT + BUYIN + BELT_CHOICE + PROGRESS_UI
+REQUIRED = CROUTONS + CURSOR + NAMES + MUGS + DIGITS + FONT9_ALPHA + OSGEMD_ALPHA + OSGEMD_PUNCT + BUYIN + BELT_CHOICE + PROGRESS_UI + PROGRESS_EFFECTS
 
 def source_symbol_name(data: bytes, im) -> str:
     """Recover the full source symbol stored in the WIMP directory.

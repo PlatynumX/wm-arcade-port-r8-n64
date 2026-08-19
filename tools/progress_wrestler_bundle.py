@@ -3,7 +3,8 @@
 
 This is intentionally narrow: it compiles only the animation channels that
 PROGRESS.ASM::start_them_doing_stuff selects for standing, running, waiting,
-clever, taunting and dead temporary wrestlers.  Frames are pulled from the
+clever, taunting and dead temporary wrestlers.  Fix27 also preserves the
+cumulative ANI_OFFSET state needed by progression-only choreography.  Frames are pulled from the
 original WIMP .IMG containers and the object palettes come from the exact
 wrestler_pal table named by PROGRESS.ASM.
 """
@@ -75,6 +76,20 @@ def asm_int(expr: str) -> int:
     return max(1, int(eval(e, {"__builtins__": None}, {})))
 
 
+def asm_signed_int(expr: str) -> int:
+    """Parse the signed integer operands used by ANI_OFFSET.
+
+    Progression's live action tables only use ordinary decimal/hex integer
+    offsets (not runtime expressions).  Keep this separate from delay parsing
+    because zero and negative values are meaningful here.
+    """
+    e = expr.strip()
+    e = HEX_RE.sub(lambda m: str(int(m.group(1), 16)), e)
+    if not re.fullmatch(r"[0-9+\-*/() \t]+", e):
+        raise ValueError(f"unsupported signed animation operand: {expr}")
+    return int(eval(e, {"__builtins__": None}, {}))
+
+
 def frame_name(expr: str) -> str:
     e = expr.strip().lstrip("#")
     m = FR_RE.match(e)
@@ -137,6 +152,9 @@ def compile_anim(global_index, label: str):
     frames = []
     pc_seen = {}
     xflip = False
+    offset_x = 0
+    offset_y = 0
+    offset_z = 0
     repeat = False
     loop_start = 0
     repeat_base = 0
@@ -172,6 +190,12 @@ def compile_anim(global_index, label: str):
                 break
             if op == "ANI_XFLIP":
                 xflip = not xflip
+            elif op == "ANI_OFFSET":
+                if len(vals) < 4:
+                    raise ValueError(f"{label}: ANI_OFFSET missing x/y/z operands")
+                offset_x += asm_signed_int(vals[1])
+                offset_y += asm_signed_int(vals[2])
+                offset_z += asm_signed_int(vals[3])
             pc += 1; continue
 
         lm = WL_RE.match(code)
@@ -219,7 +243,7 @@ def compile_anim(global_index, label: str):
             if dupper.startswith("ANI_"):
                 pc += 1; continue
             ticks = asm_int(delay)
-            frames.append((frame_name(operand), ticks, xflip))
+            frames.append((frame_name(operand), ticks, xflip, offset_x, offset_y, offset_z))
             saw_frame = True
             pc += 1; continue
 
@@ -343,11 +367,11 @@ def main() -> int:
             label=f"{prefix}_{suffix}"
             src, frames, repeat, loop=compile_anim(global_index,label)
             compiled[(wid,aname,False)] = (label,src,frames,repeat,loop)
-            for f,_,_ in frames: needed.setdefault(f,None)
+            for f,_,_,_,_,_ in frames: needed.setdefault(f,None)
         tlabel=f"{prefix}_torso4_anim"
         src,frames,repeat,loop=compile_anim(global_index,tlabel)
         compiled[(wid,"TORSO",True)] = (tlabel,src,frames,repeat,loop)
-        for f,_,_ in frames: needed.setdefault(f,None)
+        for f,_,_,_,_,_ in frames: needed.setdefault(f,None)
 
     # Resolve needed source frames by scanning all WIMP containers. Frame names
     # used by wrestler sequences are the 8-byte source directory names.
@@ -415,8 +439,8 @@ def main() -> int:
         # key may share label only once (torso unique by wrestler).
         if ident not in anim_symbols:
             lines.append(f'static const wm_progress_anim_frame af_{ident}[] = {{')
-            for f,t,flip in frames:
-                lines.append(f'    {{"{f}", {t}, {"true" if flip else "false"}}},')
+            for f,t,flip,ox,oy,oz in frames:
+                lines.append(f'    {{"{f}", {t}, {"true" if flip else "false"}, {ox}, {oy}, {oz}}},')
             lines += ['};',f'static const wm_progress_anim anim_{ident} = {{"{label}", af_{ident}, sizeof(af_{ident})/sizeof(af_{ident}[0]), {loop}, {"true" if repeat else "false"}}};','']
             anim_symbols[ident]=label
 

@@ -255,6 +255,7 @@ void wm_pregame_init(wm_pregame_state *s,
     s->current_ladder_index = -1;
     s->belt_world_y = 0;
     s->match_count = 1u; /* WRESTLE.ASM increments match_cnt before pregame_show. */
+    s->win_streak = 0u; /* Fresh one-player run: both source win-streak counters are clear. */
     s->rng_state = 0x50524731u ^ ((uint32_t)s->player_source_wrestler * 0x9E3779B9u);
 }
 

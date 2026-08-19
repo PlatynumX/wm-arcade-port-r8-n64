@@ -1415,6 +1415,88 @@ static void draw_progress_actors_and_effects(const wm_app *app,
     }
 }
 
+/* Fix29: source-authentic dynamic progression HUD.
+   PROGRESS.ASM JAM_STR(font9_ascii,8,0,...) uses an 8-pixel space and zero
+   inter-glyph spacing.  Keep this separate from SELECT.ASM's font9 metrics. */
+static const wm_source_sprite *progress_font9_glyph(char c, char name[12]) {
+    if ((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
+        snprintf(name, 12, "YFNT9_%c", c);
+    else if (c == '\'')
+        snprintf(name, 12, "YFNT9_APO");
+    else {
+        name[0] = '\0';
+        return NULL;
+    }
+    return wm_select_sprite_find(name);
+}
+static int progress_font9_width(const char *text) {
+    int width = 0;
+    if (!text) return 0;
+    for (; *text; ++text) {
+        if (*text == ' ') {
+            width += 8;
+            continue;
+        }
+        char name[12];
+        const wm_source_sprite *spr = progress_font9_glyph(*text, name);
+        if (spr) width += (int)spr->width;
+    }
+    return width;
+}
+static void draw_progress_font9(const char *text, int x, int y, bool centered) {
+    if (!text) return;
+    if (centered) x -= progress_font9_width(text) / 2;
+    for (; *text; ++text) {
+        if (*text == ' ') {
+            x += 8;
+            continue;
+        }
+        char name[12];
+        const wm_source_sprite *spr = progress_font9_glyph(*text, name);
+        if (!spr) continue;
+        draw_select_sprite_named(name, x, y, false);
+        x += (int)spr->width;
+    }
+}
+/* PROGRESS.ASM::DO_LADDER_BITS uses win_ascii, mess_spacing=2 and WINFONT. */
+static void draw_progress_win_number(unsigned value, unsigned maximum,
+                                     int x, int y) {
+    if (value > maximum) value = maximum;
+    char digits[16];
+    snprintf(digits, sizeof(digits), "%u", value);
+    for (const char *c = digits; *c; ++c) {
+        char name[12];
+        snprintf(name, sizeof(name), "WFONT_%c", *c);
+        const wm_source_sprite *spr = wm_select_sprite_find(name);
+        if (!spr) continue;
+        draw_select_sprite_named_palette(name, x, y, false, "WINFONT");
+        x += (int)spr->width + 2;
+    }
+}
+/* Recent-champion initials switch to wsf14_ascii while retaining the source
+   mess_spacing=2 / mess_space_width=3 values set immediately beforehand. */
+static void draw_progress_wsf14(const char *text, int x, int y) {
+    if (!text) return;
+    for (; *text; ++text) {
+        if (*text == ' ') {
+            x += 3;
+            continue;
+        }
+        if (*text < 'A' || *text > 'Z') continue;
+        char name[12];
+        snprintf(name, sizeof(name), "WSF14_%c", *text);
+        const wm_source_sprite *spr = wm_select_sprite_find(name);
+        if (!spr) continue;
+        draw_select_sprite_named_palette(name, x, y, false, "WSF_Y_P");
+        x += (int)spr->width + 2;
+    }
+}
+static const char *progress_factory_recent_champ(const wm_app *app) {
+    /* HSTD.ASM factory tables: BEATEN_ROM_TABLE + HS_SIZE begins "MIKE ";
+       INTER_ROM_TABLE + HS_SIZE begins "MARK ".  Persistence can replace this
+       with live CMOS/high-score state when that subsystem is ported. */
+    return app->pregame.belt_type == WM_PREGAME_BELT_WWF ? "MIKE " : "MARK ";
+}
 static void draw_progress_ladder_bits(const wm_app *app) {
     if (!app) return;
     enum { STATX = 5, STATY = 30 };
@@ -1455,6 +1537,10 @@ static void draw_progress_ladder_bits(const wm_app *app) {
     const char *ff = flash_frames[(app->pregame.flash_frame / 2u) & 7u];
     for (unsigned i = 0; i < marker_count; ++i)
         draw_select_sprite_named_palette(ff, flash_x[i], STATY+9, false, flash_pal);
+    /* Fix29 exact DO_LADDER_BITS dynamic fields. */
+    draw_progress_win_number(app->pregame.match_count, 999u, STATX+76, STATY+19+3+2);
+    draw_progress_win_number(app->pregame.win_streak, 9999999u, STATX+7+50, STATY+19+4+12+3);
+    draw_progress_wsf14(progress_factory_recent_champ(app), 0x15F, STATY+19+12+3);
 }
 
 static void render_progress_screen(const wm_app *app) {
@@ -1476,15 +1562,14 @@ static void render_progress_screen(const wm_app *app) {
        him. Opponents sit farther down the same world and scroll into view. */
     draw_progress_actors_and_effects(app, world_x);
 
-    /* Live PROGRESS.ASM font9 labels.  TONIGHT'S PROGRAM contains a source
-       apostrophe glyph that is still outside the extracted FNT9 subset, so do
-       not synthesize punctuation here. The exact belt/title strings are fully
-       source-backed and remain visible. */
+    /* PROGRESS.ASM tonites_matchup/type_setup/belt_setup verbatim:
+       JAM_STR font9_ascii,8,0 at source coordinates 22,13 / 241,28 / 241,41. */
+    draw_progress_font9("TONIGHT'S PROGRAM", 22, 13, false);
     if (app->pregame.belt_type == WM_PREGAME_BELT_WWF)
-        draw_select_font9("WWF CHAMPIONSHIP", 241, 28, true, true);
+        draw_progress_font9("WWF CHAMPIONSHIP", 241, 28, true);
     else
-        draw_select_font9("INTERCONTINENTAL", 241, 28, true, true);
-    draw_select_font9("TITLE", 241, 41, true, true);
+        draw_progress_font9("INTERCONTINENTAL", 241, 28, true);
+    draw_progress_font9("TITLE", 241, 41, true);
 
     /* start_credbox is a shared cabinet process not yet independently decoded;
        retain the proven FNT9 credit state without inventing its frame. */

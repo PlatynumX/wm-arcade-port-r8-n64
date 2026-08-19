@@ -27,6 +27,11 @@ DIGITS = [f"FNT9_{n}" for n in range(10)]
 # the alphabet from the original WIMP containers as source glyphs; do not use
 # a libdragon/debug font for arcade UI text.
 FONT9_ALPHA = [f"FNT9_{c}" for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
+# PROGRESS.ASM live progression strings additionally use the exact source
+# apostrophe, WFONT digits, and WSF14 recent-champion initials.
+FONT9_PUNCT = ["FNT9_APO"]
+WIN_DIGITS = [f"WFONT_{n}" for n in range(10)]
+WSF14_ALPHA = [f"WSF14_{c}" for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
 # PROGRESS.ASM belt_prompt_setup uses osgemd_ascii for "SELECT YOUR TITLE:".
 OSGEMD_ALPHA = [f"OSGEMD_{c}" for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
 OSGEMD_PUNCT = ["OSGEMD_COL"]
@@ -76,7 +81,7 @@ OPTIONAL = ["OSGEMD_SPC"] + PROGRESS_UI_OPTIONAL + [
     "H4ST4A02", "RAZOR_STAND", "TAKER_STAND", "YOKO_STAND", "SHAWN_STAND",
     "BAM_STAND", "DOINK_STAND", "LEX_STAND",
 ]
-REQUIRED = CROUTONS + CURSOR + NAMES + MUGS + DIGITS + FONT9_ALPHA + OSGEMD_ALPHA + OSGEMD_PUNCT + BUYIN + BELT_CHOICE + PROGRESS_UI + PROGRESS_EFFECTS
+REQUIRED = CROUTONS + CURSOR + NAMES + MUGS + DIGITS + FONT9_ALPHA + FONT9_PUNCT + WIN_DIGITS + WSF14_ALPHA + OSGEMD_ALPHA + OSGEMD_PUNCT + BUYIN + BELT_CHOICE + PROGRESS_UI + PROGRESS_EFFECTS
 
 def source_symbol_name(data: bytes, im) -> str:
     """Recover the full source symbol stored in the WIMP directory.
@@ -273,7 +278,7 @@ def main() -> int:
         )
 
     # Same original FNT9 pixels under the exact FNT9YEL_P source palette.
-    for req in DIGITS + FONT9_ALPHA:
+    for req in DIGITS + FONT9_ALPHA + FONT9_PUNCT:
         path, data, images, palettes, im, pal, source_name = found[req.upper()]
         ident = sprite_idents[req.upper()]
         tail = ", ".join(str(v) for v in im.tail_words)

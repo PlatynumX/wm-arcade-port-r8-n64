@@ -75,6 +75,7 @@ typedef struct {
     unsigned progress_counter;
     unsigned flash_frame;
     unsigned match_count;
+    unsigned win_streak; /* PROGRESS.ASM p1winstreak/p2winstreak display value. */
 
     bool finished;
     bool ready_for_match;

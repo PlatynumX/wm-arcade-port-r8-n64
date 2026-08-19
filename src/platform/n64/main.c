@@ -714,6 +714,7 @@ static void render_title_screen(const wm_app *app) {
 
 
 
+
 /* BEGIN SOURCE SELECT RENDERER */
 static void draw_select_background_block(const wm_select_background_image *img,
                                          const wm_select_background_palette *pal,
@@ -1180,9 +1181,11 @@ static void draw_progress_piece(const wm_source_sprite *spr,
    here are the platform draw calls: animation labels, delays, WIMP pixels,
    x/y offsets, channel-2 attachment metadata and wrestler_pal all come from
    the historical source and original WIMP containers. */
-/* WRESTLE.ASM's 3D object path projects progression wrestler Z through the
-   source Y_SCALE_MULTIPLIER before subtracting OBJ_YPOS.  Fix20-26 incorrectly
-   treated OBJ_YPOS=100 as a literal screen Y and discarded Z entirely. */
+/* ANIM.ASM::set_images anchors wrestler OYVAL at Z*Y_SCALE_MULTIPLIER and
+   puts OBJ_YPOSINT into ODYOFF.  PROGRESS.ASM writes MOVI 100 to the 32-bit
+   OBJ_YPOS field, which leaves OBJ_YPOSINT (the high/int word) at zero.
+   Therefore the progression actors start on the projected ground line; the
+   literal 100 is fractional low-word state, not a 100-pixel vertical lift. */
 #define WM_PROGRESS_Y_SCALE_MULTIPLIER 0x3566
 
 static int wm_progress_ground_y(int source_z) {
@@ -1297,8 +1300,8 @@ static void draw_progress_fuji(const wm_progress_draw_actor *a,
         return;
 
     /* CREATE_FUJI first moves Yokozuna +30 in world X, then creates Fuji at
-       that shifted X-80 and source Y=240.  The caller has already applied the
-       +30 to Yokozuna's actor X. */
+       that shifted X-80. Fuji is a separate source object and keeps its own
+       authored screen-space Y path. */
     const int fuji_x = a->world_x - 80 - world_scroll_x;
     const char *frame = "FUJI01";
     if (a->action == WM_PROGRESS_ACT_CLEVER)
@@ -1366,7 +1369,7 @@ static unsigned wm_progress_build_actors(const wm_app *app,
         app->pregame.progress_player_action,
         app->pregame.progress_player_anim_ticks,
         (int)(app->pregame.progress_player_x_fp >> 16),
-        100, 0x470, false, false
+        0, 0x470, false, false
     };
 
     static const int16_t one_x[1]   = {675};
@@ -1390,7 +1393,7 @@ static unsigned wm_progress_build_actors(const wm_app *app,
         out[n++] = (wm_progress_draw_actor){
             w, app->pregame.progress_opponent_action,
             app->pregame.progress_opponent_anim_ticks,
-            x, 100, zs[i], true, true
+            x, 0, zs[i], true, true
         };
     }
     return n;
@@ -1519,6 +1522,7 @@ static void render_pregame(const wm_app *app) {
 }
 
 /* END SOURCE SELECT RENDERER */
+
 
 
 

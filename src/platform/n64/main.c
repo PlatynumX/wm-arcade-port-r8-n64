@@ -13,6 +13,7 @@
 #include "wm/dcs_logo.h"
 #include "dcs_effect.h"
 #include "wm/roster.h"
+#include "wm/pregame.h"
 #include "wm/select_background.h"
 #include "wm/select_sprites.h"
 #include "wm/select.h"
@@ -708,6 +709,7 @@ static void render_title_screen(const wm_app *app) {
 
 
 
+
 /* BEGIN SOURCE SELECT RENDERER */
 static void draw_select_background_block(const wm_select_background_image *img,
                                          const wm_select_background_palette *pal,
@@ -962,7 +964,128 @@ static void render_character_select(const wm_app *app) {
         draw_select_sprite_named(fnt, 0xCB, 232, false);
     }
 }
+
+
+/* PROGRESS.ASM uses LADDERBMOD as a horizontally-scrolled packed Wolf Unit
+   background.  Keep this separate from the select modules because it is
+   decoded from its own ERHDRS/ERPALS source tables. */
+static void render_progress_module(const char *name, int module_x, int module_y) {
+    const wm_named_bmod *named = wm_source_bmod_find(name);
+    if (!named || named->module.block_count > 64)
+        return;
+
+    struct progress_draw_ref { wm_bmod_block block; } refs[64];
+    size_t count = 0;
+    for (size_t i = 0; i < named->module.block_count; ++i) {
+        if (wm_bmod_decode_block(&named->module, i, &refs[count].block))
+            ++count;
+    }
+    for (size_t i = 1; i < count; ++i) {
+        struct progress_draw_ref key = refs[i];
+        size_t j = i;
+        while (j > 0 && wm_bmod_draw_before(&key.block, &refs[j - 1].block)) {
+            refs[j] = refs[j - 1];
+            --j;
+        }
+        refs[j] = key;
+    }
+
+    for (size_t i = 0; i < count; ++i) {
+        const wm_bmod_block *b = &refs[i].block;
+        const wm_select_background_image *img = wm_progress_image_at(b->header_index);
+        const wm_select_background_palette *pal = wm_progress_palette_at(b->palette);
+        draw_select_background_block(img, pal, b, module_x, module_y);
+    }
+}
+
+static void render_belt_choice(const wm_app *app) {
+    fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+    if (!app) return;
+
+    /* PROGRESS.ASM::ask_belt_question creates these WIMP objects while the
+       world starts at Y=0 and then advances +0x18 until it is clamped to 255.
+       Source objects are authored one screen below the viewport (+256). */
+    const int wy = app->pregame.belt_world_y;
+    const int top_y = 93 + 256 - wy;
+    const int bottom_y = 184 + 256 - wy;
+
+    draw_select_sprite_named("MVEBAR_R", 10, 30 + 256 - wy, false);
+    draw_select_sprite_named("SHADOW01", 13, 39 + 256 - wy, false);
+
+    draw_select_sprite_named("CHOGLOT_A", 200, top_y, false);
+    draw_select_sprite_named("CHOGLOT_B", 200, top_y, false);
+    draw_select_sprite_named("CHSHDT_A", 200, top_y, false);
+    draw_select_sprite_named("CHSHDT_B", 200, top_y, false);
+    draw_select_sprite_named("CHOICBK",   200, top_y, false);
+    draw_select_sprite_named("INTER",     200, top_y, false);
+
+    draw_select_sprite_named("CHOGLOB_A", 201, bottom_y, false);
+    draw_select_sprite_named("CHOGLOB_B", 201, bottom_y, false);
+    draw_select_sprite_named("CHSHDB_A", 201, bottom_y, false);
+    draw_select_sprite_named("CHSHDB_B", 201, bottom_y, false);
+    draw_select_sprite_named("CHOICBK",   201, bottom_y, false);
+    draw_select_sprite_named("WORLD",     201, bottom_y, false);
+
+    /* The live source prompt is osgemd_ascii, not font9, and the selection
+       highlight/flash is implemented with object-control/palette cycling.
+       Neither is replaced with a lookalike here. */
+}
+
+static void render_progress_screen(const wm_app *app) {
+    fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+    if (!app) return;
+
+    /* PROGRESS_BMOD = LADDERBMOD at (-60,-45), with WORLDTLX advancing in
+       16.16 source coordinates during MOVE_PROGRESS. */
+    const int world_x = (int)(app->pregame.progress_world_x_fp >> 16);
+    render_progress_module("LADDERBMOD", -60 - world_x, -45);
+
+    /* These two live strings are font9 in PROGRESS.ASM and therefore can use
+       the exact source glyph path already established by character select. */
+    if (app->pregame.belt_type == WM_PREGAME_BELT_WWF)
+        draw_select_font9("WWF CHAMPIONSHIP", 241, 28, true, true);
+    else
+        draw_select_font9("INTERCONTINENTAL", 241, 28, true, true);
+    draw_select_font9("TITLE", 241, 41, true, true);
+
+    /* TONIGHT'S PROGRAM is intentionally not approximated: its apostrophe and
+       surrounding setup still belong to the remaining progress text pass.
+       Likewise the source ladder bits/logo/temp-wrestler object state uses
+       palette overrides and transition semantics not yet represented here. */
+}
+
+static void render_pregame(const wm_app *app) {
+    if (!app) {
+        fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+        return;
+    }
+
+    switch (app->pregame.phase) {
+        case WM_PREGAME_BELT_SETUP:
+        case WM_PREGAME_BELT_SLIDE:
+        case WM_PREGAME_BELT_SELECT:
+        case WM_PREGAME_BELT_FLASH:
+            render_belt_choice(app);
+            break;
+
+        case WM_PREGAME_PROGRESS_SETUP:
+        case WM_PREGAME_PROGRESS_SCROLL:
+        case WM_PREGAME_PROGRESS_HOLD:
+        case WM_PREGAME_PROGRESS_CLOSE:
+            render_progress_screen(app);
+            break;
+
+        case WM_PREGAME_READY_FOR_MATCH:
+        default:
+            /* Deliberate architecture boundary.  The old render_match() is a
+               development harness, not the arcade start_match path. */
+            fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+            break;
+    }
+}
+
 /* END SOURCE SELECT RENDERER */
+
 
 
 
@@ -992,6 +1115,11 @@ static void render_app(const wm_app *app) {
 
     if (app->mode == WM_APP_MODE_SELECT) {
         render_character_select(app);
+    } else if (app->mode == WM_APP_MODE_PREGAME) {
+        render_pregame(app);
+    } else if (app->mode == WM_APP_MODE_MATCH_INIT) {
+        /* Honest handoff boundary: render_match() is still a dev harness. */
+        fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
     } else switch (app->attract.call) {
         case WM_ATTRACT_DCS_LOGO:
             render_dcs_logo(app);

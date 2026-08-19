@@ -32,7 +32,31 @@ DIGITS = [f"FNT9_{n}" for n in range(10)]
 # a libdragon/debug font for arcade UI text.
 FONT9_ALPHA = [f"FNT9_{c}" for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
 BUYIN = ["WF_INSERT", "WF_START"]
-REQUIRED = CROUTONS + CURSOR + NAMES + MUGS + DIGITS + FONT9_ALPHA + BUYIN
+# PROGRESS.ASM::ask_belt_question live one-player title-selection art.
+BELT_CHOICE = [
+    "MVEBAR_R", "SHADOW01",
+    "CHOGLOT_A", "CHOGLOT_B", "CHSHDT_A", "CHSHDT_B",
+    "CHOGLOB_A", "CHOGLOB_B", "CHSHDB_A", "CHSHDB_B",
+    "CHOICBK", "INTER", "WORLD",
+]
+# PROGRESS.ASM::DO_LADDER_BITS / LOGO_IMAGE_TABLE. These are direct live
+# source references. Fix17 does not render their palette-override/transition
+# semantics yet, so extract them opportunistically without making this
+# foundation pass fail if a historical WIMP container variant omits one.
+PROGRESS_UI = [
+    "STATBAR", "BLUESH", "TXTBAR1", "WINS_IMG", "MATCH_IMG", "TXTPCE",
+    "RCHAMP", "SWWFBLT", "LBAR_GENB",
+    "FLASH01", "FLASH02", "FLASH03", "FLASH04", "FLASH05",
+    "HRT3", "RZR3", "UND3", "YOK3", "SHN3", "BAM3", "DNK3", "LEX3", "WWFCHAL",
+]
+# CREATE_TEMP_WRESTLER uses these full-body source images on the progression
+# screen. Keep them optional until every historical WIMP container variant is
+# confirmed; if present they are emitted for the next progress-renderer pass.
+OPTIONAL = PROGRESS_UI + [
+    "H4ST4A02", "RAZOR_STAND", "TAKER_STAND", "YOKO_STAND", "SHAWN_STAND",
+    "BAM_STAND", "DOINK_STAND", "LEX_STAND",
+]
+REQUIRED = CROUTONS + CURSOR + NAMES + MUGS + DIGITS + FONT9_ALPHA + BUYIN + BELT_CHOICE
 
 def source_symbol_name(data: bytes, im) -> str:
     """Recover the full source symbol stored in the WIMP directory.
@@ -68,7 +92,7 @@ def main() -> int:
     ap.add_argument("--out", required=True, type=pathlib.Path)
     ns = ap.parse_args()
 
-    wanted = {n.upper() for n in REQUIRED}
+    wanted = {n.upper() for n in REQUIRED + OPTIONAL}
     found = {}
     scanned = 0
     rejected = 0
@@ -94,6 +118,8 @@ def main() -> int:
             + ", ".join(missing)
         )
 
+    emitted = REQUIRED + [n for n in OPTIONAL if n.upper() in found]
+
     lines = [
         "/* Auto-generated from original WWF WIMP .IMG containers for SELECT.ASM. */",
         '#include "wm/select_sprites.h"',
@@ -102,7 +128,7 @@ def main() -> int:
     ]
 
     palette_names = {}
-    for req in REQUIRED:
+    for req in emitted:
         path, data, images, palettes, im, pal, source_name = found[req.upper()]
         pkey = (path.name.upper(), pal.directory_offset)
         if pkey in palette_names:
@@ -116,7 +142,7 @@ def main() -> int:
         lines += ["};", ""]
 
     sprite_idents = {}
-    for req in REQUIRED:
+    for req in emitted:
         path, data, images, palettes, im, pal, source_name = found[req.upper()]
         ident = c_ident(path.stem + "_" + source_name + "_" + f"{im.directory_offset:x}")
         sprite_idents[req.upper()] = ident
@@ -134,7 +160,7 @@ def main() -> int:
     lines += ["};", ""]
 
     lines.append("static const wm_source_sprite sprites[] = {")
-    for req in REQUIRED:
+    for req in emitted:
         path, data, images, palettes, im, pal, source_name = found[req.upper()]
         pkey = (path.name.upper(), pal.directory_offset)
         ident = sprite_idents[req.upper()]
@@ -177,7 +203,7 @@ def main() -> int:
     ns.out.parent.mkdir(parents=True, exist_ok=True)
     ns.out.write_text("\n".join(lines))
     print(
-        f"select foreground: {len(REQUIRED)} exact images from {scanned} WIMP containers "
+        f"select/pregame foreground: {len(emitted)} exact images ({len(REQUIRED)} required) from {scanned} WIMP containers "
         f"({rejected} non-WIMP/unsupported skipped) -> {ns.out}"
     )
     return 0

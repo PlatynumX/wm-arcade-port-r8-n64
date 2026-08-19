@@ -9,6 +9,7 @@
 #include "wm/process.h"
 #include "wm/roster.h"
 #include "wm/source_clock.h"
+#include "wm/pregame.h"
 #include "wm/select_screen.h"
 
 /* DISPLAY.EQU: TSEC equ 53. Source sleeps expressed in TSEC use this rate.
@@ -114,13 +115,16 @@ typedef struct {
 
 typedef enum {
     WM_APP_MODE_ATTRACT = 0,
-    WM_APP_MODE_SELECT
+    WM_APP_MODE_SELECT,
+    WM_APP_MODE_PREGAME,
+    WM_APP_MODE_MATCH_INIT
 } wm_app_mode;
 
 typedef struct {
     wm_audio_state audio;
     wm_app_mode mode;
     wm_select_screen_state select;
+    wm_pregame_state pregame;
     wm_attract_state attract;
     wm_demo demo;
     wm_wrestler_id p1_choice;

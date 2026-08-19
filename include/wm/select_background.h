@@ -35,4 +35,12 @@ const char *wm_select_choice_source_name(void);
 uint16_t wm_select_choice_source_origin_x(void);
 uint16_t wm_select_choice_source_origin_y(void);
 
+size_t wm_progress_image_count(void);
+const wm_select_background_image *wm_progress_image_at(size_t index);
+size_t wm_progress_palette_count(void);
+const wm_select_background_palette *wm_progress_palette_at(size_t index);
+const char *wm_progress_source_name(void);
+uint16_t wm_progress_source_origin_x(void);
+uint16_t wm_progress_source_origin_y(void);
+
 #endif

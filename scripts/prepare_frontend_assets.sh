@@ -42,6 +42,7 @@ python3 "$ROOT/tools/bmod_source.py" \
     --source "$ORIG/BGNDTBL.ASM" \
     --module NTITLESCBMOD \
     --module SPORTBKBMOD \
+    --module LADDERBMOD \
     --module choiceBMOD \
     --module wwfselbkBMOD \
     --out "$BMOD_OUT"

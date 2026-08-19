@@ -275,6 +275,7 @@ def main():
     ap.add_argument('--imgpal',required=True,type=pathlib.Path)
     ap.add_argument('--out-main',required=True,type=pathlib.Path)
     ap.add_argument('--out-choice',required=True,type=pathlib.Path)
+    ap.add_argument('--out-progress',required=True,type=pathlib.Path)
     ns=ap.parse_args()
     gfx=load_gfx_region(ns.romzip)
     print(f'WWF graphics ROM: verified 16 x 1MiB chips; assembled 32-bit interleaved region ({len(gfx)} bytes)')
@@ -283,6 +284,7 @@ def main():
     ip=ns.imgpal.read_text(errors='replace')
     emit_module(gfx,bt,[bp,ip],'wwfselbkBMOD',ns.out_main,'wm_select_main')
     emit_module(gfx,bt,[bp,ip],'choiceBMOD',ns.out_choice,'wm_select_choice')
+    emit_module(gfx,bt,[bp,ip],'LADDERBMOD',ns.out_progress,'wm_progress')
     return 0
 
 if __name__=='__main__':

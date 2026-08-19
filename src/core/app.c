@@ -404,6 +404,22 @@ void wm_app_tick(wm_app *app, const wm_input_state *input) {
                               input ? input->light_kick : false,
                               input ? input->power_kick : false,
                               &app->audio, &app->p1_choice);
+        if (app->select.finished) {
+            wm_pregame_init(&app->pregame,
+                            app->select.selected_source_wrestler,
+                            app->p1_choice);
+            app->mode = WM_APP_MODE_PREGAME;
+        }
+        return;
+    }
+    if (app->mode == WM_APP_MODE_PREGAME) {
+        wm_pregame_tick(&app->pregame, input, &app->audio);
+        if (app->pregame.finished)
+            app->mode = WM_APP_MODE_MATCH_INIT;
+        return;
+    }
+    if (app->mode == WM_APP_MODE_MATCH_INIT) {
+        /* Explicit boundary: start_match is the next source subsystem. */
         return;
     }
     if (!input) input = &no_input;
@@ -427,78 +443,12 @@ void wm_app_tick(wm_app *app, const wm_input_state *input) {
 
     /*
      * SOURCE_SELECT_TITLE_START_BRIDGE
-     * The arcade reaches select through coin/PSTATUS accounting that is not yet
-     * translated. Start on the already-source-exact title is only the N64
-     * input bridge into SELECT.ASM; the select presentation/timing below is not
-     * a replacement frontend.
+     * Cabinet coin/PSTATUS accounting is not yet a native N64 subsystem.
+     * Start on the source title bridges one human player into SELECT.ASM.
      */
     if (app->attract.call == WM_ATTRACT_SHOW_TITLE &&
         app->attract.call_ticks > WM_TITLE_BUTTON_ENABLE_TICKS &&
-        input->start) {
-        kill_call_processes(app, app->attract.call);
-        app->mode = WM_APP_MODE_SELECT;
-        wm_select_screen_init(&app->select);
-        return;
-    }
-
-    /*
-     * SOURCE_SELECT_TITLE_START_BRIDGE
-     * The arcade reaches select through coin/PSTATUS accounting that is not yet
-     * translated. Start on the already-source-exact title is only the N64
-     * input bridge into SELECT.ASM; the select presentation/timing below is not
-     * a replacement frontend.
-     */
-    if (app->attract.call == WM_ATTRACT_SHOW_TITLE &&
-        app->attract.call_ticks > WM_TITLE_BUTTON_ENABLE_TICKS &&
-        input->start) {
-        kill_call_processes(app, app->attract.call);
-        app->mode = WM_APP_MODE_SELECT;
-        wm_select_screen_init(&app->select);
-        return;
-    }
-
-    /*
-     * SOURCE_SELECT_TITLE_START_BRIDGE
-     * The arcade reaches select through coin/PSTATUS accounting that is not yet
-     * translated. Start on the already-source-exact title is only the N64
-     * input bridge into SELECT.ASM; the select presentation/timing below is not
-     * a replacement frontend.
-     */
-    if (app->attract.call == WM_ATTRACT_SHOW_TITLE &&
-        app->attract.call_ticks > WM_TITLE_BUTTON_ENABLE_TICKS &&
-        input->start) {
-        kill_call_processes(app, app->attract.call);
-        app->mode = WM_APP_MODE_SELECT;
-        wm_select_screen_init(&app->select);
-        return;
-    }
-
-    /*
-     * SOURCE_SELECT_TITLE_START_BRIDGE
-     * The arcade reaches select through coin/PSTATUS accounting that is not yet
-     * translated. Start on the already-source-exact title is only the N64
-     * input bridge into SELECT.ASM; the select presentation/timing below is not
-     * a replacement frontend.
-     */
-    if (app->attract.call == WM_ATTRACT_SHOW_TITLE &&
-        app->attract.call_ticks > WM_TITLE_BUTTON_ENABLE_TICKS &&
-        input->start) {
-        kill_call_processes(app, app->attract.call);
-        app->mode = WM_APP_MODE_SELECT;
-        wm_select_screen_init(&app->select);
-        return;
-    }
-
-    /*
-     * SOURCE_SELECT_TITLE_START_BRIDGE
-     * The arcade reaches select through coin/PSTATUS accounting that is not yet
-     * translated. Start on the already-source-exact title is only the N64
-     * input bridge into SELECT.ASM; the select presentation/timing below is not
-     * a replacement frontend.
-     */
-    if (app->attract.call == WM_ATTRACT_SHOW_TITLE &&
-        app->attract.call_ticks > WM_TITLE_BUTTON_ENABLE_TICKS &&
-        input->start) {
+        input && input->start) {
         kill_call_processes(app, app->attract.call);
         app->mode = WM_APP_MODE_SELECT;
         wm_select_screen_init(&app->select);

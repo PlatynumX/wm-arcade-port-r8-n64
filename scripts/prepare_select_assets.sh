@@ -26,7 +26,8 @@ python3 "$ROOT/tools/select_background_bundle.py" \
     --bgndpal "$ORIG/BGNDPAL.ASM" \
     --imgpal "$ORIG/IMGPAL.ASM" \
     --out-main "$ROOT/src/generated/select_background_main.c" \
-    --out-choice "$ROOT/src/generated/select_background_choice.c"
+    --out-choice "$ROOT/src/generated/select_background_choice.c" \
+    --out-progress "$ROOT/src/generated/progress_background.c"
 
 python3 "$ROOT/tools/bmod_source.py" \
     --source "$ORIG/BGNDTBL.ASM" \
@@ -34,4 +35,5 @@ python3 "$ROOT/tools/bmod_source.py" \
     --module SPORTBKBMOD \
     --module wwfselbkBMOD \
     --module choiceBMOD \
+    --module LADDERBMOD \
     --out "$ROOT/src/generated/bmod_tables.c"

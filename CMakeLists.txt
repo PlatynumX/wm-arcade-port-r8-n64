@@ -10,6 +10,7 @@ add_library(wmcore STATIC
     src/core/source_clock.c
     src/core/bmod.c
     src/core/select.c
+    src/core/select_screen.c
     src/core/anim.c
     src/core/game.c
     src/core/ropes.c

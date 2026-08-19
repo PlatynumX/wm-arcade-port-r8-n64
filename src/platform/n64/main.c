@@ -706,6 +706,7 @@ static void render_title_screen(const wm_app *app) {
 }
 
 
+
 /* BEGIN SOURCE SELECT RENDERER */
 static void draw_select_background_block(const wm_select_background_image *img,
                                          const wm_select_background_palette *pal,
@@ -803,6 +804,88 @@ static void draw_select_sprite_named(const char *name, int x, int y, bool flip_x
                               WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
 }
 
+/* SELECT.ASM routes its live select/buy-in strings through the game's font9
+   artwork.  Keep those source glyphs in the renderer instead of substituting
+   the libdragon/debug font. */
+static int select_font9_advance(char c) {
+    if (c == ' ') return 5;
+    char name[8];
+    if (c >= 'A' && c <= 'Z') snprintf(name, sizeof(name), "FNT9_%c", c);
+    else if (c >= '0' && c <= '9') snprintf(name, sizeof(name), "FNT9_%c", c);
+    else return 0;
+    const wm_source_sprite *spr = wm_select_sprite_find(name);
+    return spr ? (int)spr->width + 1 : 0;
+}
+
+static int select_font9_width(const char *text) {
+    int w = 0;
+    if (!text) return 0;
+    for (; *text; ++text) w += select_font9_advance(*text);
+    return w;
+}
+
+static void draw_select_font9(const char *text, int x, int y, bool centered) {
+    if (!text) return;
+    if (centered) x -= select_font9_width(text) / 2;
+    for (; *text; ++text) {
+        char c = *text;
+        if (c == ' ') { x += 5; continue; }
+        if (c == '!') {
+            /* The source text is CHALLENGER NEEDED!.  The period-free glyph
+               set used by this select extractor has no guaranteed symbolic
+               name for '!'; the visible MAME reference shows the punctuation
+               tight to NEEDED.  Leave its source-width gap rather than draw a
+               replacement-font exclamation mark. */
+            x += 4;
+            continue;
+        }
+        char name[8];
+        if ((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9')) {
+            snprintf(name, sizeof(name), "FNT9_%c", c);
+            const wm_source_sprite *spr = wm_select_sprite_find(name);
+            if (spr) {
+                draw_select_sprite_named(name, x, y, false);
+                x += (int)spr->width + 1;
+            }
+        }
+    }
+}
+
+static void render_select_buyin_overlay(const wm_app *app) {
+    if (!app) return;
+
+    /* SELECT.ASM #norm, non-freeplay branch.  These are the actual JAM_STR
+       centers/rows for player two, not screenshot-estimated coordinates:
+         ln1_setupxb = (321,60)  CHALLENGER
+         ln2_setupxb = (321,75)  NEEDED!
+         ln3_setupb  = (321,110) x CREDITS
+         ln4_setupb  = (321,125) TO START
+       The N64 start bridge represents the same one-human-player state as the
+       cabinet screen: P1 active, P2 waiting to buy in. */
+    draw_select_font9("CHALLENGER", 321, 60, true);
+    draw_select_font9("NEEDED",     321, 75, true);
+    draw_select_font9("2 CREDITS",  321, 110, true);
+    draw_select_font9("TO START",   321, 125, true);
+
+    /* #p2name begins as WF_INSERT; #blink toggles its visibility through the
+       original CNTR 30 -> 22 cadence while CR_STRTP says there are not enough
+       credits.  The image itself is original WIMP artwork. */
+    if (app->select.buyin_name_visible)
+        draw_select_sprite_named("WF_INSERT", 0x142, 184, false);
+
+    /* start_credbox is outside SELECT.ASM, but this title->select bridge has
+       exactly one active credit.  Draw it with the game's FNT9 glyph assets,
+       matching the cabinet-visible CREDIT 01 state without a replacement font. */
+    draw_select_font9("CREDIT 01", 200, 12, true);
+}
+
+static void render_select_random_message(const wm_app *app) {
+    if (!app || app->select.p1.random_dest < 0) return;
+    /* SELECT.ASM message_setup/message_string is literally "CALLA RNDPER" at
+       P1 center x=79,y=15.  Preserve the shipped source string verbatim. */
+    draw_select_font9("CALLA RNDPER", 79, 15, true);
+}
+
 static const char *const select_croutons[8] = {
     "CRUT_DK","CRUT_RR","CRUT_UN","CRUT_YK",
     "CRUT_SM","CRUT_BM","CRUT_BH","CRUT_LX"
@@ -873,6 +956,11 @@ static void render_character_select(const wm_app *app) {
     if (name)
         draw_select_sprite_named(name, 51, 184, false);
 
+    /* Port the source inactive-P2 buy-in overlay that fills the otherwise
+       empty red panel in the one-player select state. */
+    render_select_buyin_overlay(app);
+    render_select_random_message(app);
+
     int digit = wm_select_screen_clock_digit(&app->select);
     if (digit >= 0 && digit <= 9) {
         char fnt[8];
@@ -882,6 +970,7 @@ static void render_character_select(const wm_app *app) {
     }
 }
 /* END SOURCE SELECT RENDERER */
+
 
 static __attribute__((unused)) void render_match(const wm_app *app) {
     const wm_demo *demo = &app->demo;

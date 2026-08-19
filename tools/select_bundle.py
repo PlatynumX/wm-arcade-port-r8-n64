@@ -36,6 +36,13 @@ SOURCE_PALETTES = [
     "CHGLWT_P", *[f"CHGLWT{i}P" for i in range(1, 10)],
     "CHGLWB_P", *[f"CHGLWB{i}P" for i in range(1, 10)],
 ]
+# PROGRESS.ASM::DO_LADDER_BITS live palette overrides. Most are global
+# IMGPAL symbols; SWWFBW_P and DPLT_P_P are local tables at the bottom of
+# PROGRESS.ASM and therefore must be parsed from that file.
+PROGRESS_PALETTES = [
+    "DPLT_R_P", "BARB_P", "WINFONT", "SWWFBB_P",
+    "SWWFBW_P", "DPLT_P_P", "FLASHP_P", "FLASHR_P",
+]
 BUYIN = ["WF_INSERT", "WF_START"]
 # PROGRESS.ASM::ask_belt_question live one-player title-selection art.
 BELT_CHOICE = [
@@ -44,24 +51,24 @@ BELT_CHOICE = [
     "CHOGLOB_A", "CHOGLOB_B", "CHSHDB_A", "CHSHDB_B",
     "CHOICBK", "INTER", "WORLD",
 ]
-# PROGRESS.ASM::DO_LADDER_BITS / LOGO_IMAGE_TABLE. These are direct live
-# source references. Fix17 does not render their palette-override/transition
-# semantics yet, so extract them opportunistically without making this
-# foundation pass fail if a historical WIMP container variant omits one.
+# PROGRESS.ASM::DO_LADDER_BITS live source images required by Fix20.  The
+# extra LOGO_IMAGE_TABLE images remain optional until SET_IMAGE_AND_FLASH is
+# ported as its own process.
 PROGRESS_UI = [
     "STATBAR", "BLUESH", "TXTBAR1", "WINS_IMG", "MATCH_IMG", "TXTPCE",
     "RCHAMP", "SWWFBLT", "LBAR_GENB",
     "FLASH01", "FLASH02", "FLASH03", "FLASH04", "FLASH05",
+]
+PROGRESS_UI_OPTIONAL = [
     "HRT3", "RZR3", "UND3", "YOK3", "SHN3", "BAM3", "DNK3", "LEX3", "WWFCHAL",
 ]
-# CREATE_TEMP_WRESTLER uses these full-body source images on the progression
-# screen. Keep them optional until every historical WIMP container variant is
-# confirmed; if present they are emitted for the next progress-renderer pass.
-OPTIONAL = ["OSGEMD_SPC"] + PROGRESS_UI + [
+# Legacy stand-image aliases are kept optional; Fix20 wrestler visuals are
+# generated instead from the exact action animation frame dependencies.
+OPTIONAL = ["OSGEMD_SPC"] + PROGRESS_UI_OPTIONAL + [
     "H4ST4A02", "RAZOR_STAND", "TAKER_STAND", "YOKO_STAND", "SHAWN_STAND",
     "BAM_STAND", "DOINK_STAND", "LEX_STAND",
 ]
-REQUIRED = CROUTONS + CURSOR + NAMES + MUGS + DIGITS + FONT9_ALPHA + OSGEMD_ALPHA + OSGEMD_PUNCT + BUYIN + BELT_CHOICE
+REQUIRED = CROUTONS + CURSOR + NAMES + MUGS + DIGITS + FONT9_ALPHA + OSGEMD_ALPHA + OSGEMD_PUNCT + BUYIN + BELT_CHOICE + PROGRESS_UI
 
 def source_symbol_name(data: bytes, im) -> str:
     """Recover the full source symbol stored in the WIMP directory.
@@ -153,10 +160,20 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--img-dir", required=True, type=pathlib.Path)
     ap.add_argument("--imgpal", required=True, type=pathlib.Path)
+    ap.add_argument("--progress", type=pathlib.Path, help="PROGRESS.ASM for local progression palettes")
     ap.add_argument("--out", required=True, type=pathlib.Path)
     ns = ap.parse_args()
     imgpal_text = ns.imgpal.read_text(errors="replace")
+    progress_text = ns.progress.read_text(errors="replace") if ns.progress else ""
     named_source_palettes = {name: parse_source_palette(imgpal_text, name) for name in SOURCE_PALETTES}
+    for name in PROGRESS_PALETTES:
+        try:
+            named_source_palettes[name] = parse_source_palette(imgpal_text, name)
+        except ValueError:
+            if not progress_text:
+                raise ValueError(f"progress palette {name} requires --progress PROGRESS.ASM")
+            named_source_palettes[name] = parse_source_palette(progress_text, name)
+    all_source_palettes = SOURCE_PALETTES + PROGRESS_PALETTES
 
     wanted = {n.upper() for n in REQUIRED + OPTIONAL}
     found = {}
@@ -226,7 +243,7 @@ def main() -> int:
     lines += ["};", ""]
 
     source_palette_idents = {}
-    for pname in SOURCE_PALETTES:
+    for pname in all_source_palettes:
         ident = c_ident(pname)
         source_palette_idents[pname] = ident
         vals = [rgb555_to_rgba5551(v, i) for i, v in enumerate(named_source_palettes[pname])]
@@ -262,7 +279,7 @@ def main() -> int:
         "",
         "static const wm_select_palette source_palettes[] = {",
     ]
-    for pname in SOURCE_PALETTES:
+    for pname in all_source_palettes:
         ident = source_palette_idents[pname]
         lines.append(f'    {{"{pname}", srcpal_{ident}, {len(named_source_palettes[pname])}}},')
     lines += [
@@ -294,7 +311,7 @@ def main() -> int:
     ns.out.parent.mkdir(parents=True, exist_ok=True)
     ns.out.write_text("\n".join(lines))
     print(
-        f"select/pregame foreground: {len(emitted)} exact images + {len(SOURCE_PALETTES)} live palettes ({len(REQUIRED)} required) from {scanned} WIMP containers "
+        f"select/pregame foreground: {len(emitted)} exact images + {len(all_source_palettes)} live palettes ({len(REQUIRED)} required) from {scanned} WIMP containers "
         f"({rejected} non-WIMP/unsupported skipped) -> {ns.out}"
     )
     return 0

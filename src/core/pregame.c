@@ -109,6 +109,85 @@ static void init_ladder_table(wm_pregame_state *s) {
     s->current_ladder_index = -1; /* source CURRENT_LADDER = LADDER-20h */
 }
 
+static uint8_t ladder_slot_for_source_wrestler(uint8_t source_wrestler) {
+    /* TEMP_LADDER is eight packed slots (0..7); SORT_OUT_WRESTLER_NUM maps
+       packed slot 7 to live wrestler 8 (Lex).  Use the packed-domain value
+       when applying scramble_table_entry's exclusion bitmask. */
+    return source_wrestler == 8u ? 7u : (source_wrestler & 7u);
+}
+
+static unsigned count_bits8(uint8_t bits) {
+    unsigned n = 0u;
+    for (unsigned i = 0; i < 8u; ++i)
+        n += (bits >> i) & 1u;
+    return n;
+}
+
+static uint8_t get_rnd_wrestler(wm_pregame_state *s, uint8_t excluded) {
+    /* PROGRESS.ASM::get_rnd_wrestler chooses the Nth non-excluded packed
+       wrestler. RNDRNG0's inclusive-range contract is preserved by the
+       isolated bridge above. */
+    unsigned excluded_count = count_bits8(excluded);
+    unsigned maximum = 7u - excluded_count;
+    unsigned nth = rndrng0_bridge(s, maximum) + 1u;
+    for (uint8_t w = 0; w < 8u; ++w) {
+        if (excluded & (uint8_t)(1u << w))
+            continue;
+        if (--nth == 0u)
+            return w;
+    }
+    return 0u;
+}
+
+static uint32_t scramble_table_entry(wm_pregame_state *s,
+                                     int ladder_index,
+                                     uint32_t packed) {
+    uint8_t count = (uint8_t)(packed >> 24);
+    if (count <= 1u)
+        return packed;
+
+    /* PROGRESS.ASM::scramble_table_entry excludes the human and, except for
+       the first entry, every drone from the previous fight.  Final-battle
+       replacement and the PCNT 1-in-32 triple-Doink easter egg depend on
+       source-global state that is not reached by the current first-pregame
+       port, so keep those branches at the later-ladder boundary. */
+    uint8_t excluded = (uint8_t)(1u << ladder_slot_for_source_wrestler(
+        s->player_source_wrestler));
+    if (ladder_index > 0) {
+        uint32_t prev = s->ladder[ladder_index - 1].packed;
+        unsigned prev_count = (unsigned)(prev >> 24);
+        if (prev_count > 3u) prev_count = 3u;
+        for (unsigned i = 0; i < prev_count; ++i) {
+            uint8_t w = (uint8_t)((prev >> (i * 8u)) & 0xffu);
+            if (w < 8u) excluded |= (uint8_t)(1u << w);
+        }
+    }
+
+    /* Source makes one retry for duplicate picks rather than looping until
+       unique; preserve that exact slightly-odd behavior. */
+    uint8_t a3 = get_rnd_wrestler(s, excluded);
+    uint8_t a4 = get_rnd_wrestler(s, excluded);
+    if (a4 == a3)
+        a4 = get_rnd_wrestler(s, excluded);
+    uint8_t a5 = get_rnd_wrestler(s, excluded);
+    if (a5 == a3 || a5 == a4)
+        a5 = get_rnd_wrestler(s, excluded);
+
+    /* The assembly packs its first/second/third picks high-to-low, leaving the
+       third pick in OP1.  NEXT_IN_LADDER then moves Shawn (4), if present,
+       into the final occupied opponent slot. */
+    uint8_t op1 = a5;
+    uint8_t op2 = a4;
+    uint8_t op3 = a3;
+    if (op1 == 4u) {
+        uint8_t t = op1; op1 = op2; op2 = t;
+    }
+    if (count >= 3u && op2 == 4u) {
+        uint8_t t = op2; op2 = op3; op3 = t;
+    }
+    return pack_ladder_entry(count, op1, op2, op3);
+}
+
 static void next_in_ladder(wm_pregame_state *s) {
     if (s->current_ladder_index + 1 < (int)WM_PREGAME_PLAYABLE_LADDER_ENTRIES)
         ++s->current_ladder_index;
@@ -116,23 +195,30 @@ static void next_in_ladder(wm_pregame_state *s) {
         s->current_ladder_index = 0;
 
     uint32_t p = s->ladder[s->current_ladder_index].packed;
+    if ((uint8_t)(p >> 24) > 1u) {
+        p = scramble_table_entry(s, s->current_ladder_index, p);
+        s->ladder[s->current_ladder_index].packed = p;
+    }
     s->opponent_count = (uint8_t)(p >> 24);
     if (s->opponent_count > WM_PREGAME_MAX_OPPONENTS)
         s->opponent_count = WM_PREGAME_MAX_OPPONENTS;
     s->opponents[0] = (uint8_t)(p & 0xffu);
     s->opponents[1] = (uint8_t)((p >> 8) & 0xffu);
     s->opponents[2] = (uint8_t)((p >> 16) & 0xffu);
-
-    /* NEXT_IN_LADDER also calls scramble_table_entry for multi-opponent fights.
-       That routine has its own exclusion/random-pick dependency and is kept as
-       the next progression fidelity item rather than replaced with invented
-       opponent rules here. */
 }
 
 static void enter_progress(wm_pregame_state *s, wm_audio_state *audio) {
     init_ladder_table(s);          /* SELECT.ASM pregame_show */
     next_in_ladder(s);             /* PUT_UP_PROGRESS */
     s->progress_world_x_fp = 0;
+    /* CREATE_TEMP_WRESTLER::RUNNING_MAN starts at [140,0], Y=100 and
+       standing_addr. Opponents are created on waiting_addr. */
+    s->progress_player_x_fp = (140 << 16);
+    s->progress_temp_speed_fp = 0;
+    s->progress_player_action = WM_PROGRESS_ACT_STAND;
+    s->progress_opponent_action = WM_PROGRESS_ACT_WAIT;
+    s->progress_player_anim_ticks = 0;
+    s->progress_opponent_anim_ticks = 0;
     s->phase_ticks = 0;
     s->progress_counter = PROGRESS_SCROLL_COUNTER_START;
     s->flash_frame = 0;
@@ -226,36 +312,76 @@ void wm_pregame_tick(wm_pregame_state *s,
             break;
 
         case WM_PREGAME_PROGRESS_SETUP:
-            /* PUT_UP_PROGRESS builds the screen then immediately opens it.
-               Hold one source tick so renderer sees the initialized composition. */
+            /* After OPEN_SCREEN_LINE, source sets TEMP_SPEED=RUN_SPEED and
+               changes player channel 1 to running_addr. */
+            s->progress_temp_speed_fp = PROGRESS_RUN_SPEED_FP;
+            s->progress_player_action = WM_PROGRESS_ACT_RUN;
+            s->progress_player_anim_ticks = 0;
+            s->progress_opponent_action = WM_PROGRESS_ACT_WAIT;
+            s->progress_opponent_anim_ticks = 0;
             s->phase_ticks = 0;
             s->phase = WM_PREGAME_PROGRESS_SCROLL;
             break;
 
-        case WM_PREGAME_PROGRESS_SCROLL:
-            s->flash_frame = (s->flash_frame + 1u) & 7u;
+        case WM_PREGAME_PROGRESS_SCROLL: {
+            s->flash_frame = (s->flash_frame + 1u) & 15u;
+            /* MOVE_PROGRESS exits directly on current buttons. It does not
+               enter STILL_PROGRESS first. */
             if (any_source_button(input)) {
-                s->progress_counter = PROGRESS_HOLD_COUNTER_START;
-                s->phase = WM_PREGAME_PROGRESS_HOLD;
+                s->phase_ticks = 0;
+                s->phase = WM_PREGAME_PROGRESS_CLOSE;
                 break;
             }
+
+            /* The temporary wrestler is a separate process: its XVEL is the
+               shared TEMP_SPEED while the background gets SET_SCROLL_SPEED. */
+            s->progress_player_x_fp += s->progress_temp_speed_fp;
+
+            if (s->progress_counter <= 16u) {
+                /* SET_SCROLL_SPEED clears TEMP_SPEED and reissues
+                   standing_addr during the deceleration tail. */
+                s->progress_temp_speed_fp = 0;
+                s->progress_player_action = WM_PROGRESS_ACT_STAND;
+                s->progress_player_anim_ticks = 0;
+            } else {
+                ++s->progress_player_anim_ticks;
+            }
+            ++s->progress_opponent_anim_ticks;
             s->progress_world_x_fp += progress_speed_fp(s->progress_counter);
+
             if (s->progress_counter == 0u) {
+                /* After MOVE_PROGRESS, all live opponents switch to
+                   clever_addr before STILL_PROGRESS begins. */
                 s->progress_counter = PROGRESS_HOLD_COUNTER_START;
+                s->progress_opponent_action = WM_PROGRESS_ACT_CLEVER;
+                s->progress_opponent_anim_ticks = 0;
                 s->phase = WM_PREGAME_PROGRESS_HOLD;
             } else {
                 --s->progress_counter;
             }
             break;
+        }
 
         case WM_PREGAME_PROGRESS_HOLD:
-            s->flash_frame = (s->flash_frame + 1u) & 7u;
-            if (any_source_button(input) || s->progress_counter == 0u) {
+            s->flash_frame = (s->flash_frame + 1u) & 15u;
+            ++s->progress_player_anim_ticks;
+            ++s->progress_opponent_anim_ticks;
+            /* STILL_PROGRESS also exits directly on current buttons. */
+            if (any_source_button(input)) {
                 s->phase_ticks = 0;
                 s->phase = WM_PREGAME_PROGRESS_CLOSE;
                 break;
             }
-            --s->progress_counter;
+            if (s->progress_counter == 80u) {
+                s->progress_player_action = WM_PROGRESS_ACT_TAUNT;
+                s->progress_player_anim_ticks = 0;
+            }
+            if (s->progress_counter == 0u) {
+                s->phase_ticks = 0;
+                s->phase = WM_PREGAME_PROGRESS_CLOSE;
+            } else {
+                --s->progress_counter;
+            }
             break;
 
         case WM_PREGAME_PROGRESS_CLOSE:
@@ -279,7 +405,10 @@ void wm_pregame_tick(wm_pregame_state *s,
 uint8_t wm_pregame_opponent_at(const wm_pregame_state *s, unsigned index) {
     if (!s || index >= s->opponent_count || index >= WM_PREGAME_MAX_OPPONENTS)
         return 0xffu;
-    return s->opponents[index];
+    uint8_t w = s->opponents[index];
+    /* PROGRESS.ASM::SORT_OUT_WRESTLER_NUM promotes packed ladder slot 7
+       (the unused source slot) to live wrestler 8, Lex Luger. */
+    return w == 7u ? 8u : w;
 }
 
 const char *wm_pregame_phase_name(wm_pregame_phase phase) {

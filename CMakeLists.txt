@@ -28,6 +28,7 @@ add_library(wmcore STATIC
     src/generated/finish_sequences.c
     src/generated/bret_visuals.c
     src/generated/bret_attacks.c
+    src/generated/progress_wrestlers.c
 )
 target_include_directories(wmcore PUBLIC include)
 target_compile_options(wmcore PRIVATE -Wall -Wextra -Wpedantic)

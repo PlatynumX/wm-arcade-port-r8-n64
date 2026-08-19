@@ -16,6 +16,7 @@
 #include "wm/pregame.h"
 #include "wm/select_background.h"
 #include "wm/select_sprites.h"
+#include "wm/progress_wrestlers.h"
 #include "wm/select.h"
 #include "wm/sports_logo.h"
 #include "wm/sports_background.h"
@@ -711,6 +712,7 @@ static void render_title_screen(const wm_app *app) {
 
 
 
+
 /* BEGIN SOURCE SELECT RENDERER */
 static void draw_select_background_block(const wm_select_background_image *img,
                                          const wm_select_background_palette *pal,
@@ -1155,6 +1157,141 @@ static void render_belt_choice(const wm_app *app) {
     draw_select_sprite_named_palette("WORLD", 201, bottom_y, false, bottom_text_pal);
 }
 
+static void draw_progress_piece(const wm_source_sprite *spr,
+                                const wm_progress_palette *pal,
+                                float anchor_x, float anchor_y,
+                                int display_off_x, int display_off_y,
+                                bool flip_x) {
+    if (!spr || !pal || !pal->rgba5551 || !pal->color_count) return;
+    wm_source_sprite palette_proxy = *spr;
+    palette_proxy.palette_rgba5551 = pal->rgba5551;
+    palette_proxy.palette_colors = pal->color_count;
+    draw_source_sprite_scaled(spr,
+                              anchor_x * WM_FRONTEND_SCALE_X,
+                              anchor_y * WM_FRONTEND_SCALE_Y,
+                              display_off_x, display_off_y, flip_x,
+                              &palette_proxy,
+                              WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
+}
+
+/* PROGRESS.ASM::CREATE_TEMP_WRESTLER uses the same two-channel wrestler
+   image/attachment machinery as the match renderer.  The only substitutions
+   here are the platform draw calls: animation labels, delays, WIMP pixels,
+   x/y offsets, channel-2 attachment metadata and wrestler_pal all come from
+   the historical source and original WIMP containers. */
+static void draw_progress_actor(uint8_t source_wrestler,
+                                wm_progress_action action,
+                                unsigned anim_ticks,
+                                int world_x, int source_y,
+                                int world_scroll_x,
+                                bool facing_left) {
+    const wm_progress_anim *primary_anim =
+        wm_progress_anim_get(source_wrestler, action, false);
+    const wm_progress_anim *torso_anim =
+        wm_progress_anim_get(source_wrestler, action, true);
+    const wm_progress_anim_frame *pf =
+        wm_progress_anim_frame_at(primary_anim, anim_ticks);
+    const wm_progress_anim_frame *tf =
+        wm_progress_anim_frame_at(torso_anim, anim_ticks);
+    const wm_progress_palette *pal =
+        wm_progress_palette_for_wrestler(source_wrestler);
+    if (!pf || !pal) return;
+
+    const wm_source_sprite *primary = wm_progress_sprite_find(pf->source_frame);
+    if (!primary) return;
+
+    const float sx = (float)(world_x - world_scroll_x);
+    const float sy = (float)source_y;
+    const bool primary_flip = facing_left ^ pf->xflip;
+    draw_progress_piece(primary, pal, sx, sy,
+                        primary->xani, primary->yani, primary_flip);
+
+    if (!tf) return;
+    const wm_source_sprite *torso = wm_progress_sprite_find(tf->source_frame);
+    if (!torso) return;
+
+    const int a2x = primary->wimp_tail[WM_ATTACH_X_SLOT];
+    const int a2y = primary->wimp_tail[WM_ATTACH_Y_SLOT];
+    if (a2x == -1 && a2y == -1) return;
+    if (a2x < -512 || a2x > 512 || a2y < -512 || a2y > 512) return;
+
+    int secondary_xoff = 0, secondary_yoff = 0;
+    wm_secondary_display_offsets(primary->xani, primary->yani, a2x, a2y,
+                                 torso->xani, torso->yani,
+                                 &secondary_xoff, &secondary_yoff);
+    const bool torso_flip = facing_left ^ tf->xflip;
+    draw_progress_piece(torso, pal, sx, sy,
+                        secondary_xoff, secondary_yoff, torso_flip);
+}
+
+static void draw_progress_opponents(const wm_app *app, int world_scroll_x) {
+    if (!app) return;
+
+    /* PROGRESS.ASM::WHICH_ZPOS_TABLE stores x as an offset that
+       CREATE_TEMP_WRESTLER adds to [375,0].  Z controls object ordering in the
+       arcade object list; these source-X positions are preserved verbatim. */
+    static const int16_t one_x[1]   = {675};
+    static const int16_t two_x[2]   = {705, 655};
+    static const int16_t three_x[3] = {720, 675, 630};
+    const int16_t *xs = one_x;
+    unsigned count = app->pregame.opponent_count;
+    if (count == 2u) xs = two_x;
+    else if (count >= 3u) { xs = three_x; count = 3u; }
+    else if (count == 0u) return;
+
+    for (unsigned i = 0; i < count; ++i) {
+        const uint8_t w = wm_pregame_opponent_at(&app->pregame, i);
+        if (w == 0xffu) continue;
+        draw_progress_actor(w,
+                            app->pregame.progress_opponent_action,
+                            app->pregame.progress_opponent_anim_ticks,
+                            xs[i], 100, world_scroll_x,
+                            true /* CREATE_TEMP_WRESTLER FACING_DIR=8 */);
+    }
+}
+
+static void draw_progress_ladder_bits(const wm_app *app) {
+    if (!app) return;
+    enum { STATX = 5, STATY = 30 };
+    const bool champ = app->pregame.belt_type == WM_PREGAME_BELT_WWF;
+    const char *plate = champ ? "DPLT_P_P" : "DPLT_R_P";
+    const char *belt_pal = champ ? "SWWFBB_P" : "SWWFBW_P";
+    const char *flash_pal = champ ? "FLASHP_P" : "FLASHR_P";
+
+    /* PROGRESS.ASM::INTER_BITS_LIST / CHAMP_BITS_LIST, in source order. */
+    draw_select_sprite_named_palette("STATBAR",  STATX,      STATY,      false, plate);
+    draw_select_sprite_named_palette("BLUESH",   STATX+50,   STATY+19,   false, "BARB_P");
+    draw_select_sprite_named_palette("TXTBAR1",  STATX+60,   STATY+26,   false, plate);
+    draw_select_sprite_named_palette("WINS_IMG", STATX+20,   STATY+38,   false, "WINFONT");
+    draw_select_sprite_named_palette("BLUESH",   STATX+36,   STATY+33,   false, "BARB_P");
+    draw_select_sprite_named_palette("TXTBAR1",  STATX+46,   STATY+40,   false, plate);
+    draw_select_sprite_named_palette("MATCH_IMG",STATX+29,   STATY+24,   false, "WINFONT");
+    draw_select_sprite_named_palette("BLUESH",   STATX+23,   STATY+47,   false, "BARB_P");
+    draw_select_sprite_named_palette("TXTBAR1",  STATX+230,  STATY+40,   false, plate);
+    draw_select_sprite_named_palette("TXTBAR1",  STATX+297,  STATY+40,   false, plate);
+    draw_select_sprite_named_palette("TXTBAR1",  STATX+360,  STATY+40,   false, plate);
+    draw_select_sprite_named_palette("TXTPCE",   STATX+260,  STATY+40,   false, plate);
+    draw_select_sprite_named_palette("TXTPCE",   STATX+335,  STATY+40,   false, plate);
+    draw_select_sprite_named_palette("RCHAMP",   STATX+199,  STATY+38,   false, "WINFONT");
+    draw_select_sprite_named_palette("SWWFBLT",  STATX+345,  STATY+9,    false, belt_pal);
+    draw_select_sprite_named_palette("LBAR_GENB",STATX+111,  STATY,      true,  "BARB_P");
+    draw_select_sprite_named_palette("LBAR_GENB",STATX+64,   STATY+51,   true,  "BARB_P");
+
+    /* FLASH_BIT_ANIM: 01,02,03,04,05,04,03,02, two source ticks each.
+       `flash_frame` is maintained in source ticks by the portable state. */
+    static const char *const flash_frames[8] = {
+        "FLASH01","FLASH02","FLASH03","FLASH04",
+        "FLASH05","FLASH04","FLASH03","FLASH02"
+    };
+    static const int16_t flash_x[7] = {31,47,63,79,114,130,165};
+    unsigned marker_count = app->pregame.current_ladder_index >= 0
+        ? (unsigned)app->pregame.current_ladder_index + 1u : 1u;
+    if (marker_count > 7u) marker_count = 7u;
+    const char *ff = flash_frames[(app->pregame.flash_frame / 2u) & 7u];
+    for (unsigned i = 0; i < marker_count; ++i)
+        draw_select_sprite_named_palette(ff, flash_x[i], STATY+9, false, flash_pal);
+}
+
 static void render_progress_screen(const wm_app *app) {
     fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
     if (!app) return;
@@ -1164,18 +1301,34 @@ static void render_progress_screen(const wm_app *app) {
     const int world_x = (int)(app->pregame.progress_world_x_fp >> 16);
     render_progress_module("LADDERBMOD", -60 - world_x, -45);
 
-    /* These two live strings are font9 in PROGRESS.ASM and therefore can use
-       the exact source glyph path already established by character select. */
+    /* Screen-relative ladder furniture is drawn before the temporary
+       wrestlers in the same source composition. */
+    draw_progress_ladder_bits(app);
+
+    /* CREATE_TEMP_WRESTLER: player starts at world X=140/Y=100.  During
+       MOVE_PROGRESS both player X and WORLDTLX advance by RUN_SPEED, keeping
+       the selected wrestler running in place while the arena scrolls beneath
+       him. Opponents sit farther down the same world and scroll into view. */
+    draw_progress_actor(app->pregame.player_source_wrestler,
+                        app->pregame.progress_player_action,
+                        app->pregame.progress_player_anim_ticks,
+                        (int)(app->pregame.progress_player_x_fp >> 16),
+                        100, world_x, false);
+    draw_progress_opponents(app, world_x);
+
+    /* Live PROGRESS.ASM font9 labels.  TONIGHT'S PROGRAM contains a source
+       apostrophe glyph that is still outside the extracted FNT9 subset, so do
+       not synthesize punctuation here. The exact belt/title strings are fully
+       source-backed and remain visible. */
     if (app->pregame.belt_type == WM_PREGAME_BELT_WWF)
         draw_select_font9("WWF CHAMPIONSHIP", 241, 28, true, true);
     else
         draw_select_font9("INTERCONTINENTAL", 241, 28, true, true);
     draw_select_font9("TITLE", 241, 41, true, true);
 
-    /* TONIGHT'S PROGRAM is intentionally not approximated: its apostrophe and
-       surrounding setup still belong to the remaining progress text pass.
-       Likewise the source ladder bits/logo/temp-wrestler object state uses
-       palette overrides and transition semantics not yet represented here. */
+    /* start_credbox is a shared cabinet process not yet independently decoded;
+       retain the proven FNT9 credit state without inventing its frame. */
+    draw_select_font9("CREDIT 01", 200, 12, true, true);
 }
 
 static void render_pregame(const wm_app *app) {
@@ -1209,6 +1362,7 @@ static void render_pregame(const wm_app *app) {
 }
 
 /* END SOURCE SELECT RENDERER */
+
 
 
 

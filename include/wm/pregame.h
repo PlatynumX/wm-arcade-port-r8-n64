@@ -7,6 +7,7 @@
 #include "wm/audio.h"
 #include "wm/input.h"
 #include "wm/roster.h"
+#include "wm/progress_wrestlers.h"
 
 /*
  * Source-level port of SELECT.ASM::pregame_show and the one-player portions
@@ -59,6 +60,13 @@ typedef struct {
     /* PROGRESS.ASM world scroll registers represented as source pixels/fixed 16.16. */
     int belt_world_y;
     int32_t progress_world_x_fp;
+    /* PROGRESS.ASM::CREATE_TEMP_WRESTLER / TEMP_SPEED actor state. */
+    int32_t progress_player_x_fp;
+    int32_t progress_temp_speed_fp;
+    wm_progress_action progress_player_action;
+    wm_progress_action progress_opponent_action;
+    unsigned progress_player_anim_ticks;
+    unsigned progress_opponent_anim_ticks;
 
     unsigned phase_ticks;
     unsigned belt_anim_ticks; /* palette_cycle: advances throughout title question */

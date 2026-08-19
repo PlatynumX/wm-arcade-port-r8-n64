@@ -6,7 +6,8 @@ The source symbols are taken directly from SELECT.ASM:
 - P1 blue plate + highlight
 - eight-piece mugshot groups
 - wrestler name images
-- FNT9 countdown digits
+- FNT9 countdown/message glyphs
+- WF_INSERT buy-in/name-band image
 
 No replacement PNGs or hand-redrawn assets are accepted.
 """
@@ -26,7 +27,12 @@ NAMES = ["NAM_BRT","NAM_RZR","NAM_UND","NAM_YOK","NAM_SHN2","NAM_BAM2","NAM_DNK"
 MUG_PREFIXES = ["BH","RR","UN","YK","SM","BM","DK","LX"]
 MUGS = [f"{p}MUG_{c}" for p in MUG_PREFIXES for c in "ABCDEFGH"]
 DIGITS = [f"FNT9_{n}" for n in range(10)]
-REQUIRED = CROUTONS + CURSOR + NAMES + MUGS + DIGITS
+# SELECT.ASM uses the font9 family for its live select/buy-in messages.  Pull
+# the alphabet from the original WIMP containers as source glyphs; do not use
+# a libdragon/debug font for arcade UI text.
+FONT9_ALPHA = [f"FNT9_{c}" for c in "ABCDEFGHIJKLMNOPQRSTUVWXYZ"]
+BUYIN = ["WF_INSERT"]
+REQUIRED = CROUTONS + CURSOR + NAMES + MUGS + DIGITS + FONT9_ALPHA + BUYIN
 
 def source_symbol_name(data: bytes, im) -> str:
     """Recover the full source symbol stored in the WIMP directory.

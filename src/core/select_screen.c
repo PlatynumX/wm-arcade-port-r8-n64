@@ -67,6 +67,8 @@ void wm_select_screen_init(wm_select_screen_state *state) {
     state->selected_source_wrestler = 0xffu;
     state->last_clock_digit = 4u; /* SELECT.ASM clock_digits initializes A11=4. */
     state->rng_state = 0x57574653u;
+    state->buyin_blink_countdown = 30u; /* SELECT.ASM CNTR init */
+    state->buyin_name_visible = true;
 
     wm_select_cursor_init(&state->p1, 0);
     /* SELECT.ASM select_clock: select_time equ TSEC*15.  Do not route this
@@ -154,6 +156,15 @@ void wm_select_screen_tick(wm_select_screen_state *state,
     }
 
     tick_clock(state, audio);
+
+    /* SELECT.ASM #blink: CNTR starts at 30, then toggles the inactive
+       name-band object every 22 ticks while waiting for a buy-in. */
+    if (state->buyin_blink_countdown > 0u)
+        --state->buyin_blink_countdown;
+    if (state->buyin_blink_countdown == 0u) {
+        state->buyin_blink_countdown = 22u;
+        state->buyin_name_visible = !state->buyin_name_visible;
+    }
 
     if (state->p1.selected) {
         if (state->name_pending && state->name_wait > 0u) {

@@ -26,6 +26,8 @@ typedef struct {
     unsigned manual_debounce;
     unsigned name_wait;
     unsigned final_wait;
+    unsigned buyin_blink_countdown;
+    bool buyin_name_visible;
 
     bool prev_up;
     bool prev_down;

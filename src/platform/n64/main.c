@@ -754,8 +754,99 @@ static void render_app(const wm_app *app) {
     display_show(disp);
 }
 
+
+/*
+ * WM_N64_WALLCLOCK_SOURCE_SYNC
+ *
+ * The Wolf Unit simulation clock is 53 Hz. It must advance from elapsed
+ * real time, not from the number of frames the N64 renderer manages to
+ * complete. The old path called wm_app_video_frame() once per render loop;
+ * when the source-exact DCS particle renderer dropped below 60 fps, that
+ * silently slowed ATTRACT.ASM while DCS PCM continued at real audio speed.
+ *
+ * Use microsecond wall time and an integer phase accumulator. This has no
+ * fractional drift: every elapsed second contributes exactly 53 source ticks.
+ */
+#define WM_N64_SOURCE_HZ 53ull
+#define WM_N64_USEC_PER_SEC 1000000ull
+
+typedef struct {
+    uint64_t last_us;
+    uint64_t phase;
+    wm_input_state latched_input;
+} wm_n64_source_timer;
+
+static void wm_n64_latch_source_input(wm_input_state *dst,
+                                      const wm_input_state *src) {
+    if (!dst || !src) return;
+
+    dst->stick_x = src->stick_x;
+    dst->stick_y = src->stick_y;
+    dst->start |= src->start;
+    dst->run |= src->run;
+    dst->light_punch |= src->light_punch;
+    dst->power_punch |= src->power_punch;
+    dst->light_kick |= src->light_kick;
+    dst->power_kick |= src->power_kick;
+    dst->block |= src->block;
+    dst->l |= src->l;
+    dst->z |= src->z;
+    dst->b |= src->b;
+}
+
+static unsigned wm_n64_source_ticks_due(wm_n64_source_timer *timer,
+                                        uint64_t now_us) {
+    if (!timer) return 0;
+
+    if (timer->last_us == 0) {
+        timer->last_us = now_us;
+        return 0;
+    }
+
+    const uint64_t elapsed_us = now_us - timer->last_us;
+    timer->last_us = now_us;
+
+    timer->phase += elapsed_us * WM_N64_SOURCE_HZ;
+    const unsigned due = (unsigned)(timer->phase / WM_N64_USEC_PER_SEC);
+    timer->phase %= WM_N64_USEC_PER_SEC;
+    return due;
+}
+
+static void wm_n64_run_source_ticks(wm_app *app,
+                                    wm_n64_source_timer *timer,
+                                    const wm_input_state *sampled_input) {
+    if (!app || !timer || !sampled_input) return;
+
+    wm_n64_latch_source_input(&timer->latched_input, sampled_input);
+
+    const unsigned due = wm_n64_source_ticks_due(timer, get_ticks_us());
+    if (!due) return;
+
+    wm_input_state tick_input = timer->latched_input;
+    memset(&timer->latched_input, 0, sizeof(timer->latched_input));
+
+    for (unsigned i = 0; i < due; ++i) {
+        wm_app_tick(app, &tick_input);
+
+        tick_input.start = false;
+        tick_input.light_punch = false;
+        tick_input.power_punch = false;
+        tick_input.light_kick = false;
+        tick_input.power_kick = false;
+        tick_input.l = false;
+        tick_input.z = false;
+        tick_input.b = false;
+
+        tick_input.run = sampled_input->run;
+        tick_input.block = sampled_input->block;
+        tick_input.stick_x = sampled_input->stick_x;
+        tick_input.stick_y = sampled_input->stick_y;
+    }
+}
+
 int main(void) {
     wm_app app;
+    wm_n64_source_timer source_timer = {0};
 
     debug_init_emulog();
     debug_init_usblog();
@@ -770,7 +861,8 @@ int main(void) {
     rdpq_text_register_font(1, rdpq_font_load_builtin(FONT_BUILTIN_DEBUG_VAR));
 
     wm_app_init(&app);
-    debugf("wm_arcade_port r9: source-engine pass, 53 Hz arcade clock / 60 Hz video\n");
+    source_timer.last_us = get_ticks_us();
+    debugf("wm_arcade_port r9: 53 Hz arcade wall clock, render-rate independent\n");
     debugf("embedded Bret source sprites: %u\n", (unsigned)wm_bret_sprite_count());
     debugf("embedded Midway Sports logo pieces: %u\n", (unsigned)wm_sports_logo_sprite_count());
     debugf("embedded source title background: %s (%lu blocks, %lu palettes)\n",
@@ -784,7 +876,7 @@ int main(void) {
     while (1) {
         bool connected = false;
         wm_input_state input = read_input(&connected);
-        (void)wm_app_video_frame(&app, &input);
+        wm_n64_run_source_ticks(&app, &source_timer, &input);
         wm_n64_audio_service(&app);
         (void)connected;
         render_app(&app);

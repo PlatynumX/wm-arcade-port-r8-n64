@@ -18,6 +18,7 @@ CORE_C := \
     src/core/source_clock.c \
     src/core/bmod.c \
     src/core/select.c \
+    src/core/select_screen.c \
     src/core/anim.c \
     src/core/game.c \
     src/core/ropes.c \
@@ -34,7 +35,7 @@ CORE_C := \
     src/generated/finish_sequences.c \
     src/generated/bret_visuals.c \
     src/generated/bret_attacks.c
-ASSET_C := src/generated/bret_sprites.c src/generated/sports_logo.c src/generated/dcs_logo.c src/generated/title_screen.c src/generated/title_sparkle.c src/generated/bmod_tables.c src/generated/sports_background.c src/generated/sports_motto.c
+ASSET_C := src/generated/bret_sprites.c src/generated/sports_logo.c src/generated/dcs_logo.c src/generated/title_screen.c src/generated/title_sparkle.c src/generated/bmod_tables.c src/generated/sports_background.c src/generated/sports_motto.c src/generated/select_sprites.c src/generated/select_background_main.c src/generated/select_background_choice.c
 N64_C := src/platform/n64/main.c src/platform/n64/dcs_effect.c src/platform/n64/audio_backend.c src/platform/n64/dcs_bank.c
 C_FILES := $(CORE_C) $(ASSET_C) $(N64_C)
 OBJS := $(addprefix $(BUILD_DIR)/,$(C_FILES:.c=.o))
@@ -92,6 +93,15 @@ filesystem/dcs/cmd_%.wav64: assets/dcs/cmd_%.wav
 $(BUILD_DIR)/$(ROMNAME).dfs: $(DCS_BANK_WAV64)
 $(ROMNAME).z64: $(BUILD_DIR)/$(ROMNAME).dfs
 # END EXACT WWF DCS FRONTEND SELECT BANK
+
+# BEGIN SOURCE CHARACTER SELECT ASSETS
+# Generated SELECT C is checked in so CI/builds never require an arcade ROM.
+# Regeneration is explicit and local only.
+.PHONY: prepare-select-assets
+prepare-select-assets:
+	@test -n "$(WWFMANIA_ZIP)" || (echo "Set WWFMANIA_ZIP=/path/to/wwfmania.zip" >&2; exit 2)
+	WWFMANIA_ZIP="$(WWFMANIA_ZIP)" sh ./scripts/prepare_select_assets.sh
+# END SOURCE CHARACTER SELECT ASSETS
 
 $(BUILD_DIR)/$(ROMNAME).elf: $(OBJS)
 

@@ -74,6 +74,10 @@ void wm_n64_audio_service(wm_app *app) {
     wm_audio_event event;
     while (wm_audio_pop_event(&app->audio, &event))
         dispatch_dcs_command(&event);
+    /* ADD_VOICE queue: start the next exact announcer track only after
+       channel 3 naturally finishes. */
+    wm_dcs_bank_service();
+
     while (audio_can_write()) {
         int16_t *out = audio_write_begin();
         mixer_poll(out, audio_get_buffer_length());

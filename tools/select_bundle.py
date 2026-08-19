@@ -1,0 +1,166 @@
+#!/usr/bin/env python3
+"""Build exact foreground SELECT.ASM WIMP artwork from the original source containers.
+
+The source symbols are taken directly from SELECT.ASM:
+- eight croutons
+- P1 blue plate + highlight
+- eight-piece mugshot groups
+- wrestler name images
+- FNT9 countdown digits
+
+No replacement PNGs or hand-redrawn assets are accepted.
+"""
+from __future__ import annotations
+import argparse
+import pathlib
+import sys
+
+from wimpimg import (
+    parse_file, palette_for_image, read_palette_words, read_ci8,
+    rgb555_to_rgba5551, c_ident,
+)
+
+CROUTONS = ["CRUT_DK","CRUT_RR","CRUT_UN","CRUT_YK","CRUT_SM","CRUT_BM","CRUT_BH","CRUT_LX"]
+CURSOR = ["CRUTPLT_B","CRUTHI_B"]
+NAMES = ["NAM_BRT","NAM_RZR","NAM_UND","NAM_YOK","NAM_SHN2","NAM_BAM2","NAM_DNK","NAM_LEX"]
+MUG_PREFIXES = ["BH","RR","UN","YK","SM","BM","DK","LX"]
+MUGS = [f"{p}MUG_{c}" for p in MUG_PREFIXES for c in "ABCDEFGH"]
+DIGITS = [f"FNT9_{n}" for n in range(10)]
+REQUIRED = CROUTONS + CURSOR + NAMES + MUGS + DIGITS
+
+def source_symbol_name(data: bytes, im) -> str:
+    """Recover the full source symbol stored in the WIMP directory.
+
+    The shared wimpimg.py reader intentionally used an 8-byte name slice while
+    reverse-engineering the first frontend assets.  SELECT.ASM exposes a case
+    that proves the directory symbol is longer: CRUTPLT_B / CRUTPLT_R share the
+    same first eight bytes ("CRUTPLT").  XANI starts at +18, so the source-name
+    field has room for the longer symbol before the animation metadata.
+
+    For select extraction only, read a conservative 16-byte symbol, require a
+    NUL terminator and printable ASCII, and otherwise fall back to the proven
+    8-byte parser name.  This avoids changing the already-working global parser
+    underneath title/DCS/sports assets.
+    """
+    off = im.directory_offset
+    raw = data[off:off + 16]
+    nul = raw.find(b"\0")
+    if nul <= 0:
+        return im.name
+    raw = raw[:nul]
+    try:
+        text = raw.decode("ascii")
+    except UnicodeDecodeError:
+        return im.name
+    if not text or any(ord(c) < 0x20 or ord(c) > 0x7E for c in text):
+        return im.name
+    return text
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--img-dir", required=True, type=pathlib.Path)
+    ap.add_argument("--out", required=True, type=pathlib.Path)
+    ns = ap.parse_args()
+
+    wanted = {n.upper() for n in REQUIRED}
+    found = {}
+    scanned = 0
+    rejected = 0
+
+    for path in sorted(ns.img_dir.glob("*.IMG")):
+        try:
+            data, header, images, palettes = parse_file(path)
+        except Exception:
+            rejected += 1
+            continue
+        scanned += 1
+        for im in images:
+            source_name = source_symbol_name(data, im)
+            key = source_name.upper()
+            if key in wanted and key not in found:
+                pal = palette_for_image(im, images, palettes)
+                found[key] = (path, data, images, palettes, im, pal, source_name)
+
+    missing = [n for n in REQUIRED if n.upper() not in found]
+    if missing:
+        raise ValueError(
+            "required SELECT.ASM WIMP images not found in original IMG set: "
+            + ", ".join(missing)
+        )
+
+    lines = [
+        "/* Auto-generated from original WWF WIMP .IMG containers for SELECT.ASM. */",
+        '#include "wm/select_sprites.h"',
+        "#include <string.h>",
+        "",
+    ]
+
+    palette_names = {}
+    for req in REQUIRED:
+        path, data, images, palettes, im, pal, source_name = found[req.upper()]
+        pkey = (path.name.upper(), pal.directory_offset)
+        if pkey in palette_names:
+            continue
+        ident = c_ident(path.stem + "_" + pal.name + "_" + f"{pal.directory_offset:x}")
+        palette_names[pkey] = ident
+        vals = [rgb555_to_rgba5551(v, i) for i, v in enumerate(read_palette_words(data, pal))]
+        lines.append(f"static uint16_t pal_{ident}[] __attribute__((aligned(8))) = {{")
+        for i in range(0, len(vals), 12):
+            lines.append("    " + ", ".join(f"0x{v:04X}" for v in vals[i:i+12]) + ",")
+        lines += ["};", ""]
+
+    sprite_idents = {}
+    for req in REQUIRED:
+        path, data, images, palettes, im, pal, source_name = found[req.upper()]
+        ident = c_ident(path.stem + "_" + source_name + "_" + f"{im.directory_offset:x}")
+        sprite_idents[req.upper()] = ident
+        px = read_ci8(data, im)
+        lines.append(f"static const uint8_t px_{ident}[] __attribute__((aligned(8))) = {{")
+        for i in range(0, len(px), 24):
+            lines.append("    " + ", ".join(f"0x{v:02X}" for v in px[i:i+24]) + ",")
+        lines += ["};", ""]
+
+    lines.append("static const wm_source_sprite sprites[] = {")
+    for req in REQUIRED:
+        path, data, images, palettes, im, pal, source_name = found[req.upper()]
+        pkey = (path.name.upper(), pal.directory_offset)
+        ident = sprite_idents[req.upper()]
+        pident = palette_names[pkey]
+        tail = ", ".join(str(v) for v in im.tail_words)
+        lines.append(
+            f'    {{"{source_name}", "{path.name}", {im.width}, {im.height}, '
+            f'{im.xani}, {im.yani}, {{{tail}}}, px_{ident}, pal_{pident}, {pal.color_count}}},'
+        )
+    lines += [
+        "};",
+        "",
+        "const wm_source_sprite *wm_select_sprite_find(const char *source_frame) {",
+        "    if (!source_frame) return 0;",
+        "    for (size_t i=0;i<sizeof(sprites)/sizeof(sprites[0]);++i)",
+        "        if (!strcmp(sprites[i].source_frame, source_frame)) return &sprites[i];",
+        "    return 0;",
+        "}",
+        "",
+        "const wm_source_sprite *wm_select_sprite_at(size_t index) {",
+        "    return index < sizeof(sprites)/sizeof(sprites[0]) ? &sprites[index] : 0;",
+        "}",
+        "",
+        "size_t wm_select_sprite_count(void) {",
+        "    return sizeof(sprites)/sizeof(sprites[0]);",
+        "}",
+        "",
+    ]
+    ns.out.parent.mkdir(parents=True, exist_ok=True)
+    ns.out.write_text("\n".join(lines))
+    print(
+        f"select foreground: {len(REQUIRED)} exact images from {scanned} WIMP containers "
+        f"({rejected} non-WIMP/unsupported skipped) -> {ns.out}"
+    )
+    return 0
+
+if __name__ == "__main__":
+    try:
+        raise SystemExit(main())
+    except (OSError, ValueError) as exc:
+        print(f"select_bundle: error: {exc}", file=sys.stderr)
+        raise SystemExit(2)

@@ -9,6 +9,7 @@
 #include "wm/process.h"
 #include "wm/roster.h"
 #include "wm/source_clock.h"
+#include "wm/select_screen.h"
 
 /* DISPLAY.EQU: TSEC equ 53. Source sleeps expressed in TSEC use this rate.
    Literal source sleeps such as SLEEP 60 stay literal 60 source ticks. */
@@ -111,8 +112,15 @@ typedef struct {
     uint32_t title_rng_counter;
 } wm_attract_state;
 
+typedef enum {
+    WM_APP_MODE_ATTRACT = 0,
+    WM_APP_MODE_SELECT
+} wm_app_mode;
+
 typedef struct {
     wm_audio_state audio;
+    wm_app_mode mode;
+    wm_select_screen_state select;
     wm_attract_state attract;
     wm_demo demo;
     wm_wrestler_id p1_choice;

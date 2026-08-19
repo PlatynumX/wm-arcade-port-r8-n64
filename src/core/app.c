@@ -378,6 +378,7 @@ static bool tick_title(wm_app *app, const wm_input_state *input) {
 
 void wm_app_init(wm_app *app) {
     memset(app, 0, sizeof(*app));
+    app->mode = WM_APP_MODE_ATTRACT;
     wm_audio_init(&app->audio);
     wm_demo_init(&app->demo);
     wm_source_clock_init(&app->source_clock);
@@ -392,6 +393,19 @@ void wm_app_init(wm_app *app) {
 void wm_app_tick(wm_app *app, const wm_input_state *input) {
     if (!app) return;
     wm_audio_source_tick(&app->audio);
+    /* SOURCE_SELECT_MODE_TICK */
+    if (app->mode == WM_APP_MODE_SELECT) {
+        wm_select_screen_tick(&app->select,
+                              input ? input->stick_x : 0,
+                              input ? input->stick_y : 0,
+                              input ? input->start : false,
+                              input ? input->light_punch : false,
+                              input ? input->power_punch : false,
+                              input ? input->light_kick : false,
+                              input ? input->power_kick : false,
+                              &app->audio, &app->p1_choice);
+        return;
+    }
     if (!input) input = &no_input;
 
     if (input->z) app->show_debug = !app->show_debug;
@@ -410,6 +424,22 @@ void wm_app_tick(wm_app *app, const wm_input_state *input) {
     }
 
     skip_untranslated_calls(app);
+
+    /*
+     * SOURCE_SELECT_TITLE_START_BRIDGE
+     * The arcade reaches select through coin/PSTATUS accounting that is not yet
+     * translated. Start on the already-source-exact title is only the N64
+     * input bridge into SELECT.ASM; the select presentation/timing below is not
+     * a replacement frontend.
+     */
+    if (app->attract.call == WM_ATTRACT_SHOW_TITLE &&
+        app->attract.call_ticks > WM_TITLE_BUTTON_ENABLE_TICKS &&
+        input->start) {
+        kill_call_processes(app, app->attract.call);
+        app->mode = WM_APP_MODE_SELECT;
+        wm_select_screen_init(&app->select);
+        return;
+    }
 
     bool done = false;
     switch (app->attract.call) {

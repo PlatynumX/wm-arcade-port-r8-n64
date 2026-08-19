@@ -13,6 +13,9 @@
 #include "wm/dcs_logo.h"
 #include "dcs_effect.h"
 #include "wm/roster.h"
+#include "wm/select_background.h"
+#include "wm/select_sprites.h"
+#include "wm/select.h"
 #include "wm/sports_logo.h"
 #include "wm/sports_background.h"
 #include "wm/sports_motto.h"
@@ -702,6 +705,184 @@ static void render_title_screen(const wm_app *app) {
        columns. */
 }
 
+
+/* BEGIN SOURCE SELECT RENDERER */
+static void draw_select_background_block(const wm_select_background_image *img,
+                                         const wm_select_background_palette *pal,
+                                         const wm_bmod_block *block,
+                                         int module_x, int module_y) {
+    if (!img || !pal || !block || !img->pixels_ci8 || !pal->color_count)
+        return;
+
+    const int bx = module_x + (int)block->x;
+    const int by = module_y + (int)block->y;
+    if (bx >= 400 || by >= 256 ||
+        bx + (int)img->width <= 0 || by + (int)img->height <= 0)
+        return;
+
+    const bool transparent = (block->flags & WM_BMOD_TRANSPARENT) != 0;
+    uint16_t *tlut = transparent ? pal->rgba5551_keyed : pal->rgba5551_opaque;
+    if (!tlut) return;
+
+    surface_t tex = surface_make_linear((void *)img->pixels_ci8, FMT_CI8,
+                                        img->width, img->height);
+    rdpq_set_mode_standard();
+    rdpq_mode_tlut(TLUT_RGBA16);
+    rdpq_mode_filter(FILTER_POINT);
+    rdpq_mode_alphacompare(1);
+    rdpq_tex_upload_tlut(tlut, 0, pal->color_count);
+
+    int pitch = (img->width + 7) & ~7;
+    int strip_h = pitch > 0 ? 2048 / pitch : 0;
+    if (strip_h < 1) strip_h = 1;
+    if (strip_h > 2) strip_h &= ~1;
+
+    const bool flip_x = (block->flags & WM_BMOD_HFLIP) != 0;
+    const bool flip_y = (block->flags & WM_BMOD_VFLIP) != 0;
+    const float x = (float)bx * WM_FRONTEND_SCALE_X;
+
+    for (int t = 0; t < img->height; t += strip_h) {
+        int h = img->height - t;
+        if (h > strip_h) h = strip_h;
+        const int dest_row = flip_y ? (int)img->height - t - h : t;
+        const float y = (float)(by + dest_row) * WM_FRONTEND_SCALE_Y;
+        rdpq_tex_blit(&tex, x, y,
+                      &(rdpq_blitparms_t){
+                          .t0 = t,
+                          .height = h,
+                          .flip_x = flip_x,
+                          .flip_y = flip_y,
+                          .scale_x = WM_FRONTEND_SCALE_X,
+                          .scale_y = WM_FRONTEND_SCALE_Y,
+                          .filtering = false,
+                      });
+    }
+}
+
+static void render_select_module(const char *name, bool choice,
+                                 int module_x, int module_y) {
+    const wm_named_bmod *named = wm_source_bmod_find(name);
+    if (!named || named->module.block_count > 64)
+        return;
+
+    struct select_draw_ref { wm_bmod_block block; } refs[64];
+    size_t count = 0;
+    for (size_t i = 0; i < named->module.block_count; ++i) {
+        if (wm_bmod_decode_block(&named->module, i, &refs[count].block))
+            ++count;
+    }
+    for (size_t i = 1; i < count; ++i) {
+        struct select_draw_ref key = refs[i];
+        size_t j = i;
+        while (j > 0 && wm_bmod_draw_before(&key.block, &refs[j - 1].block)) {
+            refs[j] = refs[j - 1];
+            --j;
+        }
+        refs[j] = key;
+    }
+
+    for (size_t i = 0; i < count; ++i) {
+        const wm_bmod_block *b = &refs[i].block;
+        const wm_select_background_image *img =
+            choice ? wm_select_choice_image_at(b->header_index)
+                   : wm_select_main_image_at(b->header_index);
+        const wm_select_background_palette *pal =
+            choice ? wm_select_choice_palette_at(b->palette)
+                   : wm_select_main_palette_at(b->palette);
+        draw_select_background_block(img, pal, b, module_x, module_y);
+    }
+}
+
+static void draw_select_sprite_named(const char *name, int x, int y, bool flip_x) {
+    const wm_source_sprite *spr = wm_select_sprite_find(name);
+    if (!spr) return;
+    draw_source_sprite_scaled(spr,
+                              (float)x * WM_FRONTEND_SCALE_X,
+                              (float)y * WM_FRONTEND_SCALE_Y,
+                              spr->xani, spr->yani, flip_x, spr,
+                              WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
+}
+
+static const char *const select_croutons[8] = {
+    "CRUT_DK","CRUT_RR","CRUT_UN","CRUT_YK",
+    "CRUT_SM","CRUT_BM","CRUT_BH","CRUT_LX"
+};
+
+static const int16_t select_crouton_pos[8][2] = {
+    {164,45},{204,45},{164,90},{204,90},
+    {164,135},{204,135},{164,180},{204,180}
+};
+
+static const char *select_name_image(uint8_t source_id) {
+    static const char *const names[9] = {
+        "NAM_BRT","NAM_RZR","NAM_UND","NAM_YOK","NAM_SHN2",
+        "NAM_BAM2","NAM_DNK",NULL,"NAM_LEX"
+    };
+    return source_id < 9u ? names[source_id] : NULL;
+}
+
+static void draw_select_mug(uint8_t source_id) {
+    static const char *const mug[9][8] = {
+        {"BHMUG_A","BHMUG_B","BHMUG_C","BHMUG_D","BHMUG_E","BHMUG_F","BHMUG_G","BHMUG_H"},
+        {"RRMUG_A","RRMUG_B","RRMUG_C","RRMUG_D","RRMUG_E","RRMUG_F","RRMUG_G","RRMUG_H"},
+        {"UNMUG_A","UNMUG_B","UNMUG_C","UNMUG_D","UNMUG_E","UNMUG_F","UNMUG_G","UNMUG_H"},
+        {"YKMUG_A","YKMUG_B","YKMUG_C","YKMUG_D","YKMUG_E","YKMUG_F","YKMUG_G","YKMUG_H"},
+        {"SMMUG_A","SMMUG_B","SMMUG_C","SMMUG_D","SMMUG_E","SMMUG_F","SMMUG_G","SMMUG_H"},
+        {"BMMUG_A","BMMUG_B","BMMUG_C","BMMUG_D","BMMUG_E","BMMUG_F","BMMUG_G","BMMUG_H"},
+        {"DKMUG_A","DKMUG_B","DKMUG_C","DKMUG_D","DKMUG_E","DKMUG_F","DKMUG_G","DKMUG_H"},
+        {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL},
+        {"LXMUG_A","LXMUG_B","LXMUG_C","LXMUG_D","LXMUG_E","LXMUG_F","LXMUG_G","LXMUG_H"},
+    };
+    if (source_id >= 9u) return;
+
+    /* SELECT.ASM draw_mugshot calls BEGINOBJW for every piece at the exact same
+       P1 anchor [20,175]; each WIMP image contributes its own ANI offset. */
+    for (int i = 0; i < 8; ++i)
+        if (mug[source_id][i])
+            draw_select_sprite_named(mug[source_id][i], 20, 175, false);
+}
+
+static void render_character_select(const wm_app *app) {
+    fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+    if (!app || app->select.setup_ticks == 0u)
+        return;
+
+    /* SELECT.ASM plyrsel_mod, verbatim module coordinates. choiceBMOD begins at
+       source Y=256 and is naturally outside the initial 400x256 viewport. */
+    render_select_module("wwfselbkBMOD", false, -40, 0);
+    render_select_module("choiceBMOD", true, 3, 256);
+
+    uint8_t source_id = wm_select_screen_current_source(&app->select);
+    draw_select_mug(source_id); /* mugshot_z = 1 */
+
+    const uint8_t slot = app->select.p1.index < 8u ? app->select.p1.index : 0u;
+    const int cx = select_crouton_pos[slot][0];
+    const int cy = select_crouton_pos[slot][1];
+
+    /* hiplate_z=2, crutpic_z=4, hilite_z=5. */
+    draw_select_sprite_named("CRUTPLT_B", cx, cy, false);
+    for (int i = 0; i < 8; ++i)
+        draw_select_sprite_named(select_croutons[i],
+                                 select_crouton_pos[i][0],
+                                 select_crouton_pos[i][1], false);
+    if (wm_select_screen_highlight_visible(&app->select))
+        draw_select_sprite_named("CRUTHI_B", cx, cy, false);
+
+    /* p1name table: x=51, y=184, name_z=9. */
+    const char *name = select_name_image(source_id);
+    if (name)
+        draw_select_sprite_named(name, 51, 184, false);
+
+    int digit = wm_select_screen_clock_digit(&app->select);
+    if (digit >= 0 && digit <= 9) {
+        char fnt[8];
+        snprintf(fnt, sizeof(fnt), "FNT9_%d", digit);
+        /* clock_digits source anchor: [0CBh,232]. */
+        draw_select_sprite_named(fnt, 0xCB, 232, false);
+    }
+}
+/* END SOURCE SELECT RENDERER */
+
 static __attribute__((unused)) void render_match(const wm_app *app) {
     const wm_demo *demo = &app->demo;
     draw_ring_back();
@@ -726,7 +907,9 @@ static void render_app(const wm_app *app) {
     surface_t *disp = display_get();
     rdpq_attach(disp, NULL);
 
-    switch (app->attract.call) {
+    if (app->mode == WM_APP_MODE_SELECT) {
+        render_character_select(app);
+    } else switch (app->attract.call) {
         case WM_ATTRACT_DCS_LOGO:
             render_dcs_logo(app);
             break;

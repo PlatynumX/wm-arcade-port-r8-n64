@@ -988,7 +988,7 @@ static void render_select_buyin_overlay(const wm_app *app) {
         }
 
         /* buyin_counter source object: x=80/320, y=TIMER_YPOS=208. */
-        char timer_name[8];
+        char timer_name[9];
         snprintf(timer_name, sizeof(timer_name), "FNT9_%u", cont->digit);
         draw_select_sprite_named(
             timer_name,

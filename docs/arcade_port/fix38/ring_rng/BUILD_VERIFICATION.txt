@@ -1,0 +1,14 @@
+Combined conversation handoff verification
+=========================================
+wmania_rng tests: PASS
+wmania_hiscore_complete tests: PASS
+wmania_attract_nongameplay_complete tests: PASS
+wmania_ring_chunk1 tests: PASS
+wmania_ring_chunk2 tests: PASS
+wmania_ring_chunk3 tests: PASS
+wmania_ring_chunk4 tests: PASS
+translated rope source scripts: 143
+translated rope command programs: 70
+translated side-rope image pairs: 134
+All non-test .c files compile together with:
+  -std=c11 -Wall -Wextra -Werror -c

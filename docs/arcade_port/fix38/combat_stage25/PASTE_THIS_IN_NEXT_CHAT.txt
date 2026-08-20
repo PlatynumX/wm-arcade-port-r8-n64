@@ -1,0 +1,17 @@
+Merge the attached cumulative WrestleMania Arcade Combat Stage 25 DRONE CORE bundle into the current N64 port. Use ONLY this ZIP; it supersedes every earlier combat-stage ZIP including Stage 24.
+
+This must remain a direct PORT of the original arcade combat/AI code, not a recreation implementation.
+
+Stages 1-23 contain the shared combat engine plus eight dedicated wrestler source modules. Stage 24 adds direct special-object combat. Stage 25 adds the shared executable DRONE.ASM CPU decision core and its source AI script interpreter semantics.
+
+Read MERGE_HANDOFF.md, SOURCE_AUDIT_STAGE25.md, DRONE_PORT_COVERAGE.md, DRONE_SOURCE_SEAMS.md and COMBAT_CORE_BOUNDARY.md first. Then run ./run_all_tests.sh before changing anything.
+
+Do not replace wm_arcade_drone.c with a generic AI/behavior-tree system. Preserve source decision order, mode handling, blocking geometry, missed-block learning, team-size arithmetic, get-up behavior, range bands, headhold/headheld delays, script interpreter commands and packed input behavior.
+
+Important: Stage 25 intentionally leaves raw DRONE.ASM data as exact source-labelled seams where this pass could not responsibly materialize the complete table/script contents. These include blkbase_t, blkatk_t, sklhhdly_t, sklhrdly_t, wnshort_t, wnmed_t, wnlong_t, the named scripts referenced by those tables, command-2 skill tables and unresolved script call/function targets.
+
+DO NOT fill those seams with guessed percentages, generic difficulty curves, hand-authored move weights, or recreated scripts. Materialize them directly from the complete arcade source/ROM data and feed them through the existing callbacks without changing Stage 25 logic.
+
+Preserve the exact source quirks already tested: missile block geometry differs from normal attack geometry; positive GETUP_TIME always aborts the current AI script; per-attack missed-block counts are distinct; team block penalty is (alive_team-1)<<5; HEADHELD normally uses (alive_team-1)<<4; hard-skill headhold lists restrict to the first two scripts.
+
+Do not build a new ROM until the cumulative bundle is merged into the current known-good N64 source and all Stages 1-25 host tests still pass.

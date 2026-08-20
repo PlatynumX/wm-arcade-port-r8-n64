@@ -1,0 +1,21 @@
+WrestleMania Arcade Combat cumulative Stage 25 verification
+===========================================================
+
+Strict host regression:
+  Stages 1-25: PASS
+  Flags: -std=c11 -Wall -Wextra -Werror -pedantic -O2
+
+UndefinedBehaviorSanitizer regression:
+  Stages 1-25: PASS
+  Flags: -std=c11 -Wall -Wextra -Werror -pedantic -O1 -g -fsanitize=undefined -fno-sanitize-recover=undefined
+
+Stage 25 dedicated coverage includes:
+  - source get-up table endpoints
+  - source range-list selection seam
+  - self-mode script selection
+  - normal and missile block geometry
+  - per-attack missed-block learning
+  - unconditional script abort while GETUP_TIME > 0
+  - decoded source script VM call/random-jump/input path
+  - facing-based packed input direction flip
+  - final input transition generation

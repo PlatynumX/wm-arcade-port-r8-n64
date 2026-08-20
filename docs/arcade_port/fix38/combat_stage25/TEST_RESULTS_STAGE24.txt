@@ -1,0 +1,17 @@
+Stage 24 cumulative test result
+===============================
+
+Default strict build flags:
+  -std=c11 -Wall -Wextra -Werror -pedantic -O2
+
+Result:
+  Stages 1-24: PASS
+
+UndefinedBehaviorSanitizer flags:
+  -std=c11 -Wall -Wextra -Werror -pedantic -O1 -g
+  -fsanitize=undefined -fno-sanitize-recover=undefined
+
+Result:
+  Stages 1-24 UBSan: PASS
+
+No ROM was built.

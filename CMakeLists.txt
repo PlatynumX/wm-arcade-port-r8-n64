@@ -32,6 +32,64 @@ add_library(wmcore STATIC
     src/generated/bret_attacks.c
     src/generated/progress_wrestlers.c
 )
+# BEGIN FIX38 CUMULATIVE ARCADE SOURCE PORTS
+target_sources(wmcore PRIVATE
+    src/core/arcade/wm_arcade_anim_combat.c
+    src/core/arcade/wm_arcade_attach_anim.c
+    src/core/arcade/wm_arcade_bam.c
+    src/core/arcade/wm_arcade_bret.c
+    src/core/arcade/wm_arcade_bret_tables.c
+    src/core/arcade/wm_arcade_combat.c
+    src/core/arcade/wm_arcade_doink.c
+    src/core/arcade/wm_arcade_drone.c
+    src/core/arcade/wm_arcade_lex.c
+    src/core/arcade/wm_arcade_move_dispatch.c
+    src/core/arcade/wm_arcade_razor.c
+    src/core/arcade/wm_arcade_razor_tables.c
+    src/core/arcade/wm_arcade_react.c
+    src/core/arcade/wm_arcade_react1_core.c
+    src/core/arcade/wm_arcade_react2_core.c
+    src/core/arcade/wm_arcade_react3_core.c
+    src/core/arcade/wm_arcade_react4_core.c
+    src/core/arcade/wm_arcade_react5_core.c
+    src/core/arcade/wm_arcade_react6_core.c
+    src/core/arcade/wm_arcade_react7_core.c
+    src/core/arcade/wm_arcade_react8_core.c
+    src/core/arcade/wm_arcade_react9_core.c
+    src/core/arcade/wm_arcade_roster.c
+    src/core/arcade/wm_arcade_shawn.c
+    src/core/arcade/wm_arcade_special.c
+    src/core/arcade/wm_arcade_taker.c
+    src/core/arcade/wm_arcade_wrestler_port.c
+    src/core/arcade/wm_arcade_yoko.c
+    src/core/arcade/wmania_attract_adapter.c
+    src/core/arcade/wmania_attract_core.c
+    src/core/arcade/wmania_attract_data.c
+    src/core/arcade/wmania_attract_operator.c
+    src/core/arcade/wmania_attract_secret.c
+    src/core/arcade/wmania_attract_time.c
+    src/core/arcade/wmania_attract_visuals.c
+    src/core/arcade/wmania_hiscore_adapter.c
+    src/core/arcade/wmania_hiscore_core.c
+    src/core/arcade/wmania_hiscore_counter.c
+    src/core/arcade/wmania_hiscore_entry.c
+    src/core/arcade/wmania_hiscore_factory.c
+    src/core/arcade/wmania_hiscore_persist.c
+    src/core/arcade/wmania_hiscore_present.c
+    src/core/arcade/wmania_hiscore_special.c
+    src/core/arcade/wmania_hiscore_system.c
+    src/core/arcade/wmania_ring_climb.c
+    src/core/arcade/wmania_ring_geometry.c
+    src/core/arcade/wmania_ring_out.c
+    src/core/arcade/wmania_rng.c
+    src/core/arcade/wmania_rope_command.c
+    src/core/arcade/wmania_rope_runtime.c
+    src/core/arcade/wmania_rope_source_data.c
+    src/core/arcade/wmania_rope_spawn.c
+)
+# END FIX38 CUMULATIVE ARCADE SOURCE PORTS
+
+
 target_include_directories(wmcore PUBLIC include)
 target_compile_options(wmcore PRIVATE -Wall -Wextra -Wpedantic)
 

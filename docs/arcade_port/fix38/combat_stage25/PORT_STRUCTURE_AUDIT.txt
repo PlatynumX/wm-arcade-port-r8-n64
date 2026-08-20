@@ -1,0 +1,19 @@
+Stage 23 port structure audit
+
+Dedicated wrestler C modules:
+wm_arcade_bret.c
+wm_arcade_razor.c
+wm_arcade_taker.c
+wm_arcade_yoko.c
+wm_arcade_shawn.c
+wm_arcade_bam.c
+wm_arcade_doink.c
+wm_arcade_lex.c
+
+Removed generic behavior entry points:
+wm_arcade_move_remaining_wrestler
+wm_arcade_roster_release_charge
+wm_arcade_roster_fire_secret
+wm_arcade_roster_start_special_process
+
+The roster/port wrapper is selection/routing only. Wrestler-specific mode/action/secret/charge/special behavior is in the corresponding wrestler module.

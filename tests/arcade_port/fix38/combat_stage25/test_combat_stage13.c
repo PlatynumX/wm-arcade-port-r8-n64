@@ -1,0 +1,6 @@
+#include <assert.h>
+#include <stdio.h>
+#include <string.h>
+#include "wm_arcade_move_dispatch.h"
+typedef struct tr{int sp,ap,mv;uintptr_t tok;wm_arcade_move_handler_id_t id;}tr_t;static void s(wm_arcade_actor_t*a,uintptr_t t,void*u){(void)a;tr_t*x=u;x->sp++;x->tok=t;}static void p(wm_arcade_actor_t*a,void*u){(void)a;((tr_t*)u)->ap++;}static void m(wm_arcade_actor_t*a,wm_arcade_move_handler_id_t i,void*u){(void)a;tr_t*x=u;x->mv++;x->id=i;}
+int main(void){wm_arcade_actor_t a;tr_t t={0};wm_arcade_move_callbacks_t c={s,p,m,&t};memset(&a,0,sizeof(a));a.wrestler_num=4;a.special_move_addr=(uintptr_t)0x1234;assert(wm_arcade_move_wrestler(&a,0,&c)==WM_MOVE_DISPATCH_SPECIAL&&t.sp==1&&t.tok==(uintptr_t)0x1234&&a.special_move_addr==0&&t.ap==0&&t.mv==0);memset(&t,0,sizeof(t));assert(wm_arcade_move_wrestler(&a,0,&c)==WM_MOVE_DISPATCH_CHARACTER&&t.ap==1&&t.mv==1&&t.id==WM_MOVE_HANDLER_SHAWN);a.wrestler_num=7;assert(wm_arcade_move_wrestler(&a,0,&c)==WM_MOVE_DISPATCH_SPARE);assert(wm_arcade_move_wrestler(&a,1,&c)==WM_MOVE_DISPATCH_HALTED);assert(wm_arcade_convert_facing(WM_MOVE_DOWN)==4&&wm_arcade_convert_facing(WM_MOVE_RIGHT)==2&&wm_arcade_convert_facing(WM_MOVE_UP_RIGHT)==1);puts("Stage 13 top-level move dispatch tests: PASS");return 0;}

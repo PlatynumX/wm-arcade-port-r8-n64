@@ -47,6 +47,7 @@ SOURCE_PALETTES = [
 PROGRESS_PALETTES = [
     "DPLT_R_P", "BARB_P", "WINFONT", "SWWFBB_P",
     "SWWFBW_P", "DPLT_P_P", "FLASHP_P", "FLASHR_P",
+    "CHIP_B_P", "SPKPRP_P",
 ]
 BUYIN = ["WF_INSERT", "WF_START"]
 # PROGRESS.ASM::ask_belt_question live one-player title-selection art.
@@ -74,6 +75,16 @@ PROGRESS_TRANSITION = [
     "CSELBK_B", "CSELBK_D", "CSELBK_F",
     "CSELBV_A", "CSELBV_C", "CSELBV_B", "CSELBV_D",
 ]
+# PROGRESS.ASM::RANDOM_SPARK_TAB and all CHIP*_F/B frames.
+PROGRESS_PARTICLES = (
+    [f"CHIP1_{n:02d}" for n in range(1, 20, 2)] +
+    [f"CHIP2_{n:02d}" for n in range(1, 10, 2)] +
+    [f"CHIP3_{n:02d}" for n in range(1, 20, 2)] +
+    [f"CHIP4_{n:02d}" for n in range(1, 10, 2)] +
+    [f"CHIP5_{n:02d}" for n in range(1, 20, 2)] +
+    ["SPKD1_09", "SPKD2_09", "SPKD4_09", "SPKR1_09"]
+)
+
 # Live PROGRESS.ASM character-specific process artwork.  These are not
 # replacement effects: CREATE_FUJI / CREATE_URN / CREATE_WATER name these exact
 # source WIMP images.
@@ -84,11 +95,11 @@ PROGRESS_EFFECTS = [
 ]
 # Legacy stand-image aliases are kept optional; Fix20 wrestler visuals are
 # generated instead from the exact action animation frame dependencies.
-OPTIONAL = ["OSGEMD_SPC"] + PROGRESS_UI_OPTIONAL + [
+OPTIONAL = PROGRESS_UI_OPTIONAL + [
     "H4ST4A02", "RAZOR_STAND", "TAKER_STAND", "YOKO_STAND", "SHAWN_STAND",
     "BAM_STAND", "DOINK_STAND", "LEX_STAND",
 ]
-REQUIRED = CROUTONS + CURSOR + NAMES + MUGS + DIGITS + FONT9_ALPHA + FONT9_PUNCT + WIN_DIGITS + WSF14_ALPHA + OSGEMD_ALPHA + OSGEMD_PUNCT + BUYIN + BELT_CHOICE + PROGRESS_UI + PROGRESS_TRANSITION + PROGRESS_EFFECTS
+REQUIRED = CROUTONS + CURSOR + NAMES + MUGS + DIGITS + FONT9_ALPHA + FONT9_PUNCT + WIN_DIGITS + WSF14_ALPHA + OSGEMD_ALPHA + OSGEMD_PUNCT + BUYIN + BELT_CHOICE + PROGRESS_UI + PROGRESS_TRANSITION + PROGRESS_EFFECTS + PROGRESS_PARTICLES
 
 def source_symbol_name(data: bytes, im) -> str:
     """Recover the full source symbol stored in the WIMP directory.

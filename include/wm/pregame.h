@@ -42,6 +42,20 @@ typedef struct {
     uint32_t packed; /* source long: count|op3|op2|op1 */
 } wm_pregame_ladder_entry;
 
+#define WM_PREGAME_PROGRESS_BITS 40u
+
+typedef struct {
+    int32_t x_fp;
+    int32_t y_fp;
+    int32_t xvel_fp;
+    int32_t yvel_fp;
+    uint16_t delay;
+    uint8_t kind;
+    uint8_t anim_index;
+    bool anim_started;
+    bool active;
+} wm_progress_bit;
+
 typedef struct {
     wm_pregame_phase phase;
     wm_pregame_belt belt_type;
@@ -81,6 +95,8 @@ typedef struct {
     unsigned progress_close_post_ticks;
     int8_t progress_shake_x;
     int8_t progress_shake_y;
+    wm_progress_bit progress_bits[WM_PREGAME_PROGRESS_BITS];
+    bool progress_bits_created;
     unsigned match_count;
     unsigned win_streak; /* PROGRESS.ASM p1winstreak/p2winstreak display value. */
 

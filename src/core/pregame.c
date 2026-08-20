@@ -21,6 +21,10 @@
 #define PROGRESS_CLOSE_P_SPEED (200u / PROGRESS_CLOSE_P_DELAY)
 #define PROGRESS_CLOSE_EFFECT_SLEEP (35u + 24u)
 #define PROGRESS_CLOSE_FINAL_SLEEP 10u
+#define PROGRESS_BIT_ACCEL_FP 0x5000
+#define PROGRESS_BIT_KILL_Y_FP (255 << 16)
+#define PROGRESS_BIT_INITIAL_DELAY 2u
+#define PROGRESS_BIT_SPARK_DELAY 100u
 #define PROGRESS_SHAKE_STEP_TICKS 2u
 #define PROGRESS_SHAKE_STEPS 12u
 
@@ -270,6 +274,73 @@ static void progress_set_shake(wm_pregame_state *s, unsigned elapsed) {
 
 /* CLOSE_PROGRESS_SCREEN: P_DELAY=20, speed=200/P_DELAY=10.
    get_all_buttons_cur2 swaps A8/A9 when any current button is active. */
+
+static uint8_t progress_bit_anim_len(uint8_t kind) {
+    static const uint8_t lens[10] = {10,10,5,5,10,10,5,5,10,10};
+    return kind < 10u ? lens[kind] : 1u;
+}
+
+/* Direct PROGRESS.ASM::CREATE_BITS call ordering/ranges. */
+static void progress_create_bits(wm_pregame_state *s) {
+    if (!s || s->progress_bits_created) return;
+
+    memset(s->progress_bits, 0, sizeof(s->progress_bits));
+    uint32_t ymax = 40u;
+    int32_t shared_y_fp = 0;
+
+    for (unsigned i = 0; i < WM_PREGAME_PROGRESS_BITS; ++i) {
+        const unsigned remaining = WM_PREGAME_PROGRESS_BITS - i;
+        wm_progress_bit *b = &s->progress_bits[i];
+
+        if ((remaining & 3u) == 0u) {
+            shared_y_fp = (int32_t)(rndrng0_bridge(s, ymax) << 16);
+            ymax += 20u;
+        }
+
+        b->active = true;
+        b->x_fp = (200 << 16);
+        b->y_fp = shared_y_fp;
+        b->yvel_fp = -(int32_t)rndrng0_bridge(s, 0x58000u);
+        b->xvel_fp = (int32_t)rndrng0_bridge(s, 0x80000u) - 0x40000;
+        b->kind = (uint8_t)rndrng0_bridge(s, 13u);
+        b->delay = PROGRESS_BIT_INITIAL_DELAY;
+        b->anim_index = 0u;
+        b->anim_started = false;
+    }
+
+    s->progress_bits_created = true;
+}
+
+/* Direct PROGRESS.ASM::MOVE_BITS fixed-point physics/animation timing. */
+static void progress_tick_bits(wm_pregame_state *s) {
+    if (!s || !s->progress_bits_created) return;
+
+    for (unsigned i = 0; i < WM_PREGAME_PROGRESS_BITS; ++i) {
+        wm_progress_bit *b = &s->progress_bits[i];
+        if (!b->active) continue;
+
+        b->yvel_fp += PROGRESS_BIT_ACCEL_FP;
+        b->y_fp += b->yvel_fp;
+        if (b->y_fp >= PROGRESS_BIT_KILL_Y_FP) {
+            b->active = false;
+            continue;
+        }
+        b->x_fp += b->xvel_fp;
+
+        if (b->delay > 0u) --b->delay;
+        if (b->delay != 0u) continue;
+
+        const uint8_t len = progress_bit_anim_len(b->kind);
+        if (!b->anim_started) {
+            b->anim_started = true;
+            b->anim_index = 0u;
+        } else {
+            b->anim_index = (uint8_t)((b->anim_index + 1u) % len);
+        }
+        b->delay = b->kind < 10u ? 1u : PROGRESS_BIT_SPARK_DELAY;
+    }
+}
+
 static void begin_progress_close(wm_pregame_state *s, bool fast) {
     if (!s) return;
     s->phase = WM_PREGAME_PROGRESS_CLOSE;
@@ -282,6 +353,8 @@ static void begin_progress_close(wm_pregame_state *s, bool fast) {
     s->progress_close_post_ticks = 0;
     s->progress_shake_x = 0;
     s->progress_shake_y = 0;
+    memset(s->progress_bits, 0, sizeof(s->progress_bits));
+    s->progress_bits_created = false;
 }
 
 /* CLOSE_PROGRESS_SCREEN process timing. Renderer owns INIT_BLOC,
@@ -295,8 +368,11 @@ static void tick_progress_close(wm_pregame_state *s) {
         if (s->progress_close_move_ticks == s->progress_close_delay &&
             s->progress_close_delay != PROGRESS_CLOSE_P_SPEED)
             progress_set_shake(s, 0);
+            progress_create_bits(s);
         return;
     }
+
+    progress_tick_bits(s);
 
     const bool fast = s->progress_close_delay == PROGRESS_CLOSE_P_SPEED;
     const unsigned effects = fast ? 0u : PROGRESS_CLOSE_EFFECT_SLEEP;

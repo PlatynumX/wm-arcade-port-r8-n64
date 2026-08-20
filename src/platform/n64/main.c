@@ -843,7 +843,7 @@ static const wm_source_sprite *belt_osgemd_glyph(char c) {
         return wm_select_sprite_find(name);
     }
     if (c == ':') return wm_select_sprite_find("OSGEMD_COL");
-    if (c == ' ') return wm_select_sprite_find("OSGEMD_SPC");
+    if (c == ' ') return NULL;
     return NULL;
 }
 
@@ -1114,7 +1114,7 @@ static void render_belt_choice(const wm_app *app) {
        embedded WIMP palette until that shipped/shared palette is recovered;
        do not alias it to a different known palette.  SHADOW01 is likewise
        original source artwork; JUDDER_SHADOW remains a later fidelity item. */
-    draw_select_sprite_named("MVEBAR_R", 10, 30 + 256 - wy, false);
+    draw_select_sprite_named_palette("MVEBAR_R", 10, 30 + 256 - wy, false, "DPLT_P_P");
     draw_select_sprite_named("SHADOW01", 13, 39 + 256 - wy, false);
 
     draw_belt_osgemd_centered("SELECT YOUR TITLE:", 200, 18 + 256 - wy);
@@ -1670,6 +1670,100 @@ static void draw_progress_close_transition(const wm_app *app) {
     }
 }
 
+
+static const char *progress_bit_frame_name(const wm_progress_bit *b) {
+    static const char *const chip1_f[] = {
+        "CHIP1_01","CHIP1_03","CHIP1_05","CHIP1_07","CHIP1_09",
+        "CHIP1_11","CHIP1_13","CHIP1_15","CHIP1_17","CHIP1_19"
+    };
+    static const char *const chip1_b[] = {
+        "CHIP1_19","CHIP1_17","CHIP1_15","CHIP1_13","CHIP1_11",
+        "CHIP1_09","CHIP1_07","CHIP1_05","CHIP1_03","CHIP1_01"
+    };
+    static const char *const chip2_f[] = {
+        "CHIP2_01","CHIP2_03","CHIP2_05","CHIP2_07","CHIP2_09"
+    };
+    static const char *const chip2_b[] = {
+        "CHIP2_09","CHIP2_07","CHIP2_05","CHIP2_03","CHIP2_01"
+    };
+    static const char *const chip3_f[] = {
+        "CHIP3_01","CHIP3_03","CHIP3_05","CHIP3_07","CHIP3_09",
+        "CHIP3_11","CHIP3_13","CHIP3_15","CHIP3_17","CHIP3_19"
+    };
+    static const char *const chip3_b[] = {
+        "CHIP3_19","CHIP3_17","CHIP3_15","CHIP3_13","CHIP3_11",
+        "CHIP3_09","CHIP3_07","CHIP3_05","CHIP3_03","CHIP3_01"
+    };
+    static const char *const chip4_f[] = {
+        "CHIP4_01","CHIP4_03","CHIP4_05","CHIP4_07","CHIP4_09"
+    };
+    static const char *const chip4_b[] = {
+        "CHIP4_09","CHIP4_07","CHIP4_05","CHIP4_03","CHIP4_01"
+    };
+    static const char *const chip5_f[] = {
+        "CHIP5_01","CHIP5_03","CHIP5_05","CHIP5_07","CHIP5_09",
+        "CHIP5_11","CHIP5_13","CHIP5_15","CHIP5_17","CHIP5_19"
+    };
+    static const char *const chip5_b[] = {
+        "CHIP5_19","CHIP5_17","CHIP5_15","CHIP5_13","CHIP5_11",
+        "CHIP5_09","CHIP5_07","CHIP5_05","CHIP5_03","CHIP5_01"
+    };
+    static const char *const initial[10] = {
+        "CHIP1_01","CHIP1_01","CHIP2_01","CHIP2_01","CHIP3_01",
+        "CHIP3_01","CHIP4_01","CHIP4_01","CHIP5_01","CHIP5_01"
+    };
+    static const char *const sparks[4] = {
+        "SPKD1_09","SPKD2_09","SPKD4_09","SPKR1_09"
+    };
+
+    if (!b || !b->active) return NULL;
+    if (b->kind >= 10u) return sparks[b->kind - 10u];
+    if (!b->anim_started) return initial[b->kind];
+
+    switch (b->kind) {
+        case 0: return chip1_f[b->anim_index % 10u];
+        case 1: return chip1_b[b->anim_index % 10u];
+        case 2: return chip2_f[b->anim_index % 5u];
+        case 3: return chip2_b[b->anim_index % 5u];
+        case 4: return chip3_f[b->anim_index % 10u];
+        case 5: return chip3_b[b->anim_index % 10u];
+        case 6: return chip4_f[b->anim_index % 5u];
+        case 7: return chip4_b[b->anim_index % 5u];
+        case 8: return chip5_f[b->anim_index % 10u];
+        case 9: return chip5_b[b->anim_index % 10u];
+        default: return NULL;
+    }
+}
+
+static void draw_progress_bits(const wm_app *app) {
+    if (!app || app->pregame.phase != WM_PREGAME_PROGRESS_CLOSE ||
+        !app->pregame.progress_bits_created)
+        return;
+
+    for (unsigned i = 0; i < WM_PREGAME_PROGRESS_BITS; ++i) {
+        const wm_progress_bit *b = &app->pregame.progress_bits[i];
+        const char *name = progress_bit_frame_name(b);
+        if (!name) continue;
+
+        const wm_source_sprite *spr = wm_select_sprite_find(name);
+        const wm_select_palette *pal = wm_select_palette_find(
+            b->kind < 10u ? "CHIP_B_P" : "SPKPRP_P");
+        if (!spr || !pal || !pal->rgba5551 || !pal->color_count) continue;
+
+        wm_source_sprite palette_proxy = *spr;
+        palette_proxy.palette_rgba5551 = pal->rgba5551;
+        palette_proxy.palette_colors = pal->color_count;
+
+        const int x = (int)(b->x_fp >> 16) + app->pregame.progress_shake_x;
+        const int y = (int)(b->y_fp >> 16) + app->pregame.progress_shake_y;
+        draw_source_sprite_scaled(spr,
+                                  (float)x * WM_FRONTEND_SCALE_X,
+                                  (float)y * WM_FRONTEND_SCALE_Y,
+                                  0, 0, false, &palette_proxy,
+                                  WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
+    }
+}
+
 static void render_progress_screen(const wm_app *app) {
     fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
     if (!app) return;
@@ -1700,6 +1794,7 @@ static void render_progress_screen(const wm_app *app) {
     /* start_credbox is external/shared; no invented cabinet text. */
     if (app->pregame.phase == WM_PREGAME_PROGRESS_CLOSE)
         draw_progress_close_transition(app);
+    draw_progress_bits(app);
 }
 
 static void render_pregame(const wm_app *app) {

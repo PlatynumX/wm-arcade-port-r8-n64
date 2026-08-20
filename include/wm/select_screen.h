@@ -28,6 +28,7 @@ typedef struct {
     unsigned final_wait;
     unsigned buyin_blink_countdown;
     bool buyin_name_visible;
+    bool cursor_z_flip;
 
     bool prev_up;
     bool prev_down;
@@ -35,6 +36,7 @@ typedef struct {
     bool prev_right;
 
     uint8_t last_clock_digit;
+    uint8_t player_pal_pref;
     uint8_t selected_source_wrestler;
     uint32_t rng_state;
 } wm_select_screen_state;
@@ -55,4 +57,6 @@ uint8_t wm_select_screen_current_source(const wm_select_screen_state *state);
 int wm_select_screen_clock_digit(const wm_select_screen_state *state);
 bool wm_select_screen_highlight_visible(const wm_select_screen_state *state);
 
+bool wm_select_screen_cursor_z_flipped(const wm_select_screen_state *state);
+uint8_t wm_select_screen_player_palette_preference(const wm_select_screen_state *state);
 #endif

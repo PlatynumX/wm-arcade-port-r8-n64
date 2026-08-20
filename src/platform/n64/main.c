@@ -1080,13 +1080,24 @@ static void render_character_select(const wm_app *app) {
     const int cx = select_crouton_pos[slot][0];
     const int cy = select_crouton_pos[slot][1];
 
-    /* hiplate_z=2, crutpic_z=4, hilite_z=5. */
+    /*
+     * SELECT.ASM #waitloop: HIPLATE z=2/3, croutons z=4,
+     * HILITE z=5/4. The N64 frontend is painter ordered, so explicitly
+     * reproduce the two source ordering phases.
+     */
+    const bool hilite_visible =
+        wm_select_screen_highlight_visible(&app->select);
+    const bool cursor_z_flip =
+        wm_select_screen_cursor_z_flipped(&app->select);
+
     draw_select_sprite_named("CRUTPLT_B", cx, cy, false);
+    if (cursor_z_flip && hilite_visible)
+        draw_select_sprite_named("CRUTHI_B", cx, cy, false);
     for (int i = 0; i < 8; ++i)
         draw_select_sprite_named(select_croutons[i],
                                  select_crouton_pos[i][0],
                                  select_crouton_pos[i][1], false);
-    if (wm_select_screen_highlight_visible(&app->select))
+    if (!cursor_z_flip && hilite_visible)
         draw_select_sprite_named("CRUTHI_B", cx, cy, false);
 
     /* p1name table: x=51, y=184, name_z=9. */

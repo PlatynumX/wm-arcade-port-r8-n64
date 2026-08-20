@@ -79,14 +79,41 @@ void wm_select_screen_init(wm_select_screen_state *state) {
     state->clock.time_out = false;
 }
 
+
+/*
+ * SELECT.ASM #but_hit:
+ *   no current stick/button -> player_pal_pref = 0
+ *   PUNCH  -> 4
+ *   SKICK  -> 7
+ *   SPUNCH -> 5
+ *   KICK   -> 6
+ * The N64 attack arguments are edge events, but on the commit tick an edge
+ * is also a current button, so this preserves the source decision.
+ */
+static uint8_t select_palette_preference(bool stick_active,
+                                         bool light_punch_pressed,
+                                         bool power_punch_pressed,
+                                         bool light_kick_pressed,
+                                         bool power_kick_pressed) {
+    if (!stick_active)
+        return 0u;
+    if (light_punch_pressed) return 4u;
+    if (power_kick_pressed)  return 7u;
+    if (power_punch_pressed) return 5u;
+    if (light_kick_pressed)  return 6u;
+    return 0u;
+}
+
 static void choose_current(wm_select_screen_state *state,
                            wm_audio_state *audio,
-                           wm_wrestler_id *p1_choice) {
+                           wm_wrestler_id *p1_choice,
+                           uint8_t palette_preference) {
     uint8_t source_id = 0xffu;
     if (!wm_select_choose(&state->p1, &source_id))
         return;
 
     state->selected_source_wrestler = source_id;
+    state->player_pal_pref = palette_preference;
     state->name_pending = true;
     state->name_wait = WM_SEL_NAME_WAIT_TICKS;
     state->final_wait = WM_SEL_FINAL_WAIT_TICKS;
@@ -166,6 +193,18 @@ void wm_select_screen_tick(wm_select_screen_state *state,
         state->buyin_name_visible = !state->buyin_name_visible;
     }
 
+    /*
+     * SELECT.ASM #waitloop:
+     * HIPLATE OZPOS alternates 2 <-> 3 and HILITE alternates 5 <-> 4
+     * once per source tick.
+     *
+     * The same loop invokes external FLASHME every eight ticks. FLASHME is
+     * not defined in the available WWF source drop, so Fix35 does not invent
+     * a substitute implementation.
+     */
+    if (!state->p1.selected)
+        state->cursor_z_flip = !state->cursor_z_flip;
+
     if (state->p1.selected) {
         if (state->name_pending && state->name_wait > 0u) {
             --state->name_wait;
@@ -184,15 +223,23 @@ void wm_select_screen_tick(wm_select_screen_state *state,
         return;
     }
 
-    if (state->clock.time_out) {
-        choose_current(state, audio, p1_choice);
-        return;
-    }
-
     const bool up = stick_y > WM_SEL_STICK_THRESHOLD;
     const bool down = stick_y < -WM_SEL_STICK_THRESHOLD;
     const bool left = stick_x < -WM_SEL_STICK_THRESHOLD;
     const bool right = stick_x > WM_SEL_STICK_THRESHOLD;
+
+    const bool palette_stick_active = up || down || left || right;
+    const uint8_t palette_preference =
+        select_palette_preference(palette_stick_active,
+                                  light_punch_pressed,
+                                  power_punch_pressed,
+                                  light_kick_pressed,
+                                  power_kick_pressed);
+
+    if (state->clock.time_out) {
+        choose_current(state, audio, p1_choice, palette_preference);
+        return;
+    }
 
     const bool up_down = up && !state->prev_up;
     const bool down_down = down && !state->prev_down;
@@ -214,7 +261,7 @@ void wm_select_screen_tick(wm_select_screen_state *state,
         /* Source checks destination before executing the next random/homing move. */
         if (state->p1.random_wander == 0u &&
             state->p1.index == (uint8_t)state->p1.random_dest) {
-            choose_current(state, audio, p1_choice);
+            choose_current(state, audio, p1_choice, palette_preference);
             return;
         }
 
@@ -240,7 +287,7 @@ void wm_select_screen_tick(wm_select_screen_state *state,
     /* get_but_val_down: any of the four attack buttons commits the wrestler. */
     if (light_punch_pressed || power_punch_pressed ||
         light_kick_pressed || power_kick_pressed) {
-        choose_current(state, audio, p1_choice);
+        choose_current(state, audio, p1_choice, palette_preference);
         return;
     }
 
@@ -291,4 +338,12 @@ bool wm_select_screen_highlight_visible(const wm_select_screen_state *state) {
      */
     if (state->final_wait == 0u) return true;
     return ((state->final_wait / 2u) & 1u) != 0u;
+}
+
+bool wm_select_screen_cursor_z_flipped(const wm_select_screen_state *state) {
+    return state && !state->p1.selected && state->cursor_z_flip;
+}
+
+uint8_t wm_select_screen_player_palette_preference(const wm_select_screen_state *state) {
+    return state ? state->player_pal_pref : 0u;
 }

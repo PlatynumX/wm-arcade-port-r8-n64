@@ -860,25 +860,45 @@ static int belt_osgemd_width(const char *text) {
 
 static void draw_belt_osgemd_centered(const char *text, int center_x, int y) {
     if (!text) return;
+
+    /*
+     * PROGRESS.ASM::belt_prompt_setup:
+     *   JAM_STR osgemd_ascii,8,0,200,18+256,BLUE,0
+     *
+     * OSGEMD.IMG contains the exact source `blue` palette.  The extracted
+     * OSGEMD_C record points at that palette, so use it as the text-engine
+     * palette override for every glyph instead of leaving each letter on its
+     * unrelated embedded authoring palette.
+     */
+    const wm_source_sprite *blue_palette_source =
+        wm_select_sprite_find("OSGEMD_C");
+
     int x = center_x - belt_osgemd_width(text) / 2;
     for (; *text; ++text) {
         const wm_source_sprite *spr = belt_osgemd_glyph(*text);
         if (spr) {
+            wm_source_sprite palette_proxy = *spr;
+            if (blue_palette_source &&
+                blue_palette_source->palette_rgba5551 &&
+                blue_palette_source->palette_colors) {
+                palette_proxy.palette_rgba5551 =
+                    blue_palette_source->palette_rgba5551;
+                palette_proxy.palette_colors =
+                    blue_palette_source->palette_colors;
+            }
             draw_source_sprite_scaled(spr,
                                       (float)x * WM_FRONTEND_SCALE_X,
                                       (float)y * WM_FRONTEND_SCALE_Y,
-                                      spr->xani, spr->yani, false, spr,
-                                      WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
+                                      spr->xani, spr->yani, false,
+                                      &palette_proxy,
+                                      WM_FRONTEND_SCALE_X,
+                                      WM_FRONTEND_SCALE_Y);
             x += (int)spr->width;
         } else if (*text == ' ') {
             x += 6;
         }
     }
 }
-
-/* SELECT.ASM routes its live select/buy-in strings through the game's font9
-   artwork.  Keep those source glyphs in the renderer instead of substituting
-   the libdragon/debug font. */
 static int select_font9_advance(char c) {
     if (c == ' ') return 5;
     char name[8];

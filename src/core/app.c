@@ -380,6 +380,7 @@ void wm_app_init(wm_app *app) {
     memset(app, 0, sizeof(*app));
     app->mode = WM_APP_MODE_ATTRACT;
     wm_audio_init(&app->audio);
+    wm_select_continue_init(&app->continue_select);
     wm_award_init(&app->awards);
     wm_demo_init(&app->demo);
     wm_source_clock_init(&app->source_clock);
@@ -408,6 +409,7 @@ void wm_app_tick_dual(wm_app *app,
                               p1_input ? p1_input->light_kick : false,
                               p1_input ? p1_input->power_kick : false,
                               &app->audio, &app->p1_choice);
+        app->done_howard = wm_select_screen_howard_done(&app->select);
 
         /*
          * SOURCE_SELECT_P2_START_BRIDGE
@@ -489,6 +491,7 @@ void wm_app_tick_dual(wm_app *app,
         kill_call_processes(app, app->attract.call);
         app->mode = WM_APP_MODE_SELECT;
         wm_select_screen_init(&app->select);
+        wm_select_screen_set_howard_done(&app->select, app->done_howard);
         /* SELECT.ASM::show_bonus_icons with SHOW_ACCUM_ICONS=0 clears the
            accumulated total on a fresh (zero-winstreak) player. */
         (void)wm_award_prepare_select_bonus(&app->awards, 0u);

@@ -62,11 +62,83 @@ static uint16_t wrestler_name_dcs(uint8_t source_id) {
     }
 }
 
+/* SELECT.ASM WHICH_SPEECH second word: PRCSLP duration per source wrestler. */
+static unsigned wrestler_name_speech_ticks(uint8_t source_id) {
+    static const uint8_t ticks[9] = {
+        70u, /* Bret */
+        44u, /* Razor */
+        54u, /* Undertaker */
+        59u, /* Yokozuna */
+        55u, /* Shawn */
+        76u, /* Bam Bam */
+        54u, /* Doink */
+        0u,  /* spare */
+        47u  /* Lex */
+    };
+    return source_id < 9u ? ticks[source_id] : 0u;
+}
+
+static void tick_speech_started(wm_select_screen_state *state) {
+    if (!state || !state->speech_started)
+        return;
+    if (state->speech_ticks_remaining > 0u)
+        --state->speech_ticks_remaining;
+    if (state->speech_ticks_remaining == 0u)
+        state->speech_started = false;
+}
+
+/*
+ * Direct process translation of call_wrestler_name:
+ *   SLEEPK 20
+ *   wait while SPEECH_STARTED
+ *   compare NEXT_ANN_QUEUE/CURRENT_ANN_QUEUE
+ *   ADD_VOICE
+ *   PRCSLP WHICH_SPEECH.duration
+ *   clear SPEECH_STARTED
+ *
+ * announcer_queue_equal is deliberately an explicit external bridge because
+ * the DCS transport FIFO is not the arcade announcer's board-side queue pair.
+ */
+static void tick_wrestler_name_process(wm_select_screen_state *state,
+                                       bool *pending,
+                                       unsigned *wait_ticks,
+                                       uint8_t source_id,
+                                       wm_audio_state *audio) {
+    if (!state || !pending || !wait_ticks || !*pending)
+        return;
+
+    if (*wait_ticks > 0u) {
+        --*wait_ticks;
+        if (*wait_ticks > 0u)
+            return;
+    }
+
+    if (state->speech_started)
+        return;
+
+    if (!state->announcer_queue_equal) {
+        /* JRNE NO_SPEECH_COS_HOWRD_TALKIN -> DIE, with no retry. */
+        *pending = false;
+        return;
+    }
+
+    const uint16_t command = wrestler_name_dcs(source_id);
+    const unsigned duration = wrestler_name_speech_ticks(source_id);
+    if (command != 0u && duration != 0u) {
+        send_dcs(audio, command);
+        state->speech_started = true;
+        state->speech_ticks_remaining = duration;
+    }
+    *pending = false;
+}
+
+
 void wm_select_screen_init(wm_select_screen_state *state) {
     if (!state) return;
     memset(state, 0, sizeof(*state));
 
     state->active = true;
+    state->announcer_queue_equal = true;
     state->selected_source_wrestler = 0xffu;
     state->last_clock_digit = 4u; /* SELECT.ASM clock_digits initializes A11=4. */
     state->rng_state = 0x57574653u;
@@ -176,14 +248,18 @@ void wm_select_screen_tick(wm_select_screen_state *state,
         return;
     }
 
-    if (!state->howard_queued) {
-        /*
-         * SELECT.ASM GOOD_EVENING queues 1FBh,1FCh,1FDh once on the first
-         * selection screen.  The N64 DCS bank serializes these announcer tracks.
-         */
+    tick_speech_started(state);
+
+    /*
+     * SELECT.ASM GOOD_EVENING, total_matches==0 branch:
+     * queue 1FBh/1FCh/1FDh once, then set global DONE_HOWARD.
+     * The later total_matches/RNDPER branch remains a gameplay dependency.
+     */
+    if (!state->howard_done) {
         send_dcs(audio, WM_SEL_HOWARD_GOOD_EVENING);
         send_dcs(audio, WM_SEL_HOWARD_MY_NAME);
         send_dcs(audio, WM_SEL_HOWARD_WELCOME);
+        state->howard_done = true;
         state->howard_queued = true;
     }
 
@@ -211,14 +287,12 @@ void wm_select_screen_tick(wm_select_screen_state *state,
         state->cursor_z_flip = !state->cursor_z_flip;
 
     if (state->p1.selected) {
-        if (state->name_pending && state->name_wait > 0u) {
-            --state->name_wait;
-            if (state->name_wait == 0u) {
-                uint16_t cmd = wrestler_name_dcs(state->selected_source_wrestler);
-                if (cmd) send_dcs(audio, cmd);
-                state->name_pending = false;
-            }
-        }
+        tick_wrestler_name_process(
+            state,
+            &state->name_pending,
+            &state->name_wait,
+            state->selected_source_wrestler,
+            audio);
 
         /* SELECT.ASM active_flag: do not leave SELECT while P2 is active. */
     if (state->p2_joined && !state->p2.selected) {
@@ -414,16 +488,12 @@ void wm_select_screen_tick_p2(wm_select_screen_state *state,
         state->p2_cursor_z_flip = !state->p2_cursor_z_flip;
 
     if (state->p2.selected) {
-        if (state->p2_name_pending && state->p2_name_wait > 0u) {
-            --state->p2_name_wait;
-            if (state->p2_name_wait == 0u) {
-                uint16_t cmd =
-                    wrestler_name_dcs(state->p2_selected_source_wrestler);
-                if (cmd)
-                    send_dcs(audio, cmd);
-                state->p2_name_pending = false;
-            }
-        }
+        tick_wrestler_name_process(
+            state,
+            &state->p2_name_pending,
+            &state->p2_name_wait,
+            state->p2_selected_source_wrestler,
+            audio);
         if (state->p2_flash_ticks > 0u)
             --state->p2_flash_ticks;
         return;
@@ -577,4 +647,20 @@ bool wm_select_screen_cursor_z_flipped(const wm_select_screen_state *state) {
 
 uint8_t wm_select_screen_player_palette_preference(const wm_select_screen_state *state) {
     return state ? state->player_pal_pref : 0u;
+}
+
+void wm_select_screen_set_howard_done(wm_select_screen_state *state,
+                                      bool done) {
+    if (state)
+        state->howard_done = done;
+}
+
+bool wm_select_screen_howard_done(const wm_select_screen_state *state) {
+    return state && state->howard_done;
+}
+
+void wm_select_screen_set_announcer_queue_equal(
+    wm_select_screen_state *state, bool equal) {
+    if (state)
+        state->announcer_queue_equal = equal;
 }

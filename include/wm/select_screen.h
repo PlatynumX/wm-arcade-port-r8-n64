@@ -21,6 +21,10 @@ typedef struct {
     bool active;
     bool finished;
     bool howard_queued;
+    bool howard_done;
+    bool announcer_queue_equal;
+    bool speech_started;
+    unsigned speech_ticks_remaining;
     bool name_pending;
 
     unsigned setup_ticks;
@@ -88,4 +92,14 @@ uint8_t wm_select_screen_p2_current_source(const wm_select_screen_state *state);
 bool wm_select_screen_p2_highlight_visible(const wm_select_screen_state *state);
 bool wm_select_screen_p2_cursor_z_flipped(const wm_select_screen_state *state);
 uint8_t wm_select_screen_p2_palette_preference(const wm_select_screen_state *state);
+void wm_select_screen_set_howard_done(wm_select_screen_state *state,
+                                      bool done);
+bool wm_select_screen_howard_done(const wm_select_screen_state *state);
+/*
+ * Direct bridge for SELECT.ASM NEXT_ANN_QUEUE == CURRENT_ANN_QUEUE.
+ * The current N64 DCS command transport does not expose those board-side
+ * queue counters, so callers must not substitute wm_audio_state::count.
+ */
+void wm_select_screen_set_announcer_queue_equal(
+    wm_select_screen_state *state, bool equal);
 #endif

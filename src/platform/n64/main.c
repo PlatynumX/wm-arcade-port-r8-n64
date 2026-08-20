@@ -937,8 +937,83 @@ static void render_select_buyin_overlay(const wm_app *app) {
     if (!app)
         return;
 
+    const wm_select_continue_state *cont = &app->continue_select;
+    if (wm_select_continue_visible(cont)) {
+        const int center = cont->player
+            ? WM_SELECT_CONTINUE_P2_CENTER_X
+            : WM_SELECT_CONTINUE_P1_CENTER_X;
+
+        /*
+         * SELECT.ASM::buyin_text (.if 1):
+         * PLEASE      y=80, white
+         * CONTINUE!   y=95, white
+         * x CREDIT(S) y=110, yellow
+         * TO CONTINUE y=125, yellow
+         * FREE PLAY   y=120, yellow in free-play mode.
+         */
+        if (cont->free_play) {
+            draw_select_font9("FREE PLAY", center,
+                              WM_SELECT_CONTINUE_FREEPLAY_YPOS,
+                              true, true);
+        }
+
+        draw_select_font9("PLEASE", center,
+                          WM_SELECT_CONTINUE_PLEASE_YPOS,
+                          true, false);
+        draw_select_font9("CONTINUE", center,
+                          WM_SELECT_CONTINUE_TEXT_YPOS,
+                          true, false);
+
+        if (!cont->free_play) {
+            const unsigned shown =
+                cont->credits_needed < 10u ? cont->credits_needed : 9u;
+            char digit_name[8];
+            snprintf(digit_name, sizeof(digit_name), "YFNT9_%u", shown);
+
+            /* buyin_text source digit X: P1 50 (54 for one), P2 0x122
+               (0x126 for one). */
+            int digit_x;
+            if (cont->player)
+                digit_x = cont->credits_needed == 1u ? 0x126 : 0x122;
+            else
+                digit_x = cont->credits_needed == 1u ? 54 : 50;
+
+            draw_select_sprite_named(
+                digit_name, digit_x, WM_SELECT_CONTINUE_CREDITS_YPOS, false);
+            draw_select_font9(
+                cont->credits_needed == 1u ? "  CREDIT" : "  CREDITS",
+                center, WM_SELECT_CONTINUE_CREDITS_YPOS, true, true);
+            draw_select_font9("TO CONTINUE", center,
+                              WM_SELECT_CONTINUE_TO_YPOS, true, true);
+        }
+
+        /* buyin_counter source object: x=80/320, y=TIMER_YPOS=208. */
+        char timer_name[8];
+        snprintf(timer_name, sizeof(timer_name), "FNT9_%u", cont->digit);
+        draw_select_sprite_named(
+            timer_name,
+            cont->player ? 320 : 80,
+            WM_SELECT_CONTINUE_TIMER_YPOS,
+            false);
+
+        /*
+         * CR_CONTP selects original WF_INSERT/WF_START artwork. can_continue
+         * is an explicit cabinet-credit bridge; no N64 credit rule is invented.
+         */
+        if (cont->prompt_visible) {
+            draw_select_sprite_named(
+                cont->can_continue ? "WF_START" : "WF_INSERT",
+                cont->player ? 0x142 : 0x51,
+                184,
+                false);
+        }
+
+        draw_select_font9("CREDIT 01", 200, 12, true, true);
+        return;
+    }
+
     if (!app->select.p2_joined) {
-        /* SELECT.ASM inactive P2 buy-in panel. */
+        /* SELECT.ASM #norm inactive-P2 branch retained from Fix36. */
         draw_select_font9("CHALLENGER", 321, 60, true, true);
         draw_select_font9("NEEDED!",    321, 75, true, true);
         draw_select_font9("2 CREDITS",  321, 110, true, true);
@@ -947,7 +1022,6 @@ static void render_select_buyin_overlay(const wm_app *app) {
             draw_select_sprite_named("WF_INSERT", 0x142, 184, false);
     }
 
-    /* Cabinet credit accounting is still a platform bridge in this port. */
     draw_select_font9("CREDIT 01", 200, 12, true, true);
 }
 

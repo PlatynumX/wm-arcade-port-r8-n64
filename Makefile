@@ -19,6 +19,7 @@ CORE_C := \
     src/core/bmod.c \
     src/core/select.c \
     src/core/select_screen.c \
+    src/core/select_continue.c \
     src/core/award.c \
     src/core/pregame.c \
     src/core/anim.c \

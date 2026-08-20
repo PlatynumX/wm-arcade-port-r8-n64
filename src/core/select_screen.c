@@ -4,6 +4,9 @@
 
 /* SELECT.ASM exact player-one raw DCS bindings recovered through DCSSOUND.ASM. */
 #define WM_SEL_P1_MOVE_DCS       1460u
+#define WM_SEL_P2_MOVE_DCS 1456u
+#define WM_SEL_P2_CHOOSE_DCS 248u
+#define WM_SEL_P2_FLASH_TICKS 26u
 #define WM_SEL_RANDOM_MOVE_DCS    208u
 #define WM_SEL_P1_CHOOSE_DCS      244u
 #define WM_SEL_CLOCK_DCS          460u
@@ -71,6 +74,8 @@ void wm_select_screen_init(wm_select_screen_state *state) {
     state->buyin_name_visible = true;
 
     wm_select_cursor_init(&state->p1, 0);
+    wm_select_cursor_init(&state->p2, 1);
+    state->p2_selected_source_wrestler = 0xffu;
     /* SELECT.ASM select_clock: select_time equ TSEC*15.  Do not route this
        through the older generic clock shim: the display process reads the
        select_clock process PA9 directly and only becomes visible below 6. */
@@ -215,7 +220,14 @@ void wm_select_screen_tick(wm_select_screen_state *state,
             }
         }
 
-        if (state->final_wait > 0u) {
+        /* SELECT.ASM active_flag: do not leave SELECT while P2 is active. */
+    if (state->p2_joined && !state->p2.selected) {
+        state->final_wait = WM_SEL_FINAL_WAIT_TICKS;
+        state->finished = false;
+        return;
+    }
+
+    if (state->final_wait > 0u) {
             --state->final_wait;
             if (state->final_wait == 0u)
                 state->finished = true;
@@ -312,6 +324,225 @@ void wm_select_screen_tick(wm_select_screen_state *state,
         }
     }
 }
+
+/*
+ * SELECT.ASM P2 selector process.
+ *
+ * Source p2info:
+ *   start index 1
+ *   PI_MOVESOUND  C7h -> raw DCS 1456
+ *   PI_SELSOUND   CCh -> raw DCS 248
+ *   red CRUTPLT_R / CRUTHI_R presentation
+ *
+ * PSTATUS/coin accounting itself is a cabinet subsystem.  The N64 app layer
+ * activates this process from Controller 2 Start and then all selector logic
+ * below follows the same source state machine as P1.
+ */
+void wm_select_screen_join_p2(wm_select_screen_state *state) {
+    if (!state || state->p2_joined)
+        return;
+
+    state->p2_joined = true;
+    wm_select_cursor_init(&state->p2, 1);
+    state->p2_selected_source_wrestler = 0xffu;
+    state->p2_player_pal_pref = 0u;
+    state->p2_cursor_z_flip = false;
+    state->p2_name_pending = false;
+    state->p2_name_wait = 0u;
+    state->p2_flash_ticks = 0u;
+    state->p2_manual_debounce = 0u;
+    state->p2_prev_up = false;
+    state->p2_prev_down = false;
+    state->p2_prev_left = false;
+    state->p2_prev_right = false;
+
+    /* SELECT.ASM select_clock #reset on PSTATUS change. */
+    state->select_ticks_remaining = WM_SEL_SELECT_TIME_TICKS;
+    state->clock.ticks_remaining = WM_SEL_SELECT_TIME_TICKS;
+    state->clock.time_out = false;
+    state->last_clock_digit = 4u;
+
+    /* SELECT.ASM #wait checks active_flag again during the 30-tick tail. */
+    state->finished = false;
+    state->final_wait = WM_SEL_FINAL_WAIT_TICKS;
+}
+
+static void choose_p2_current(wm_select_screen_state *state,
+                              wm_audio_state *audio,
+                              wm_wrestler_id *p2_choice,
+                              uint8_t palette_preference) {
+    uint8_t source_id = 0xffu;
+    if (!state || !wm_select_choose(&state->p2, &source_id))
+        return;
+
+    state->p2_selected_source_wrestler = source_id;
+    state->p2_player_pal_pref = palette_preference;
+    state->p2_name_pending = true;
+    state->p2_name_wait = WM_SEL_NAME_WAIT_TICKS;
+    state->p2_flash_ticks = WM_SEL_P2_FLASH_TICKS;
+
+    if (p2_choice) {
+        wm_wrestler_id roster;
+        if (wm_select_source_to_roster(source_id, &roster))
+            *p2_choice = roster;
+    }
+
+    /* p2info PI_SELSOUND = CCh. */
+    send_dcs(audio, WM_SEL_P2_CHOOSE_DCS);
+
+    /* If P1 was already chosen, the common #wait begins now. */
+    if (state->p1.selected) {
+        state->finished = false;
+        state->final_wait = WM_SEL_FINAL_WAIT_TICKS;
+    }
+}
+
+void wm_select_screen_tick_p2(wm_select_screen_state *state,
+                              int stick_x, int stick_y,
+                              bool start_pressed,
+                              bool light_punch_pressed,
+                              bool power_punch_pressed,
+                              bool light_kick_pressed,
+                              bool power_kick_pressed,
+                              wm_audio_state *audio,
+                              wm_wrestler_id *p2_choice) {
+    if (!state || !state->active || !state->p2_joined)
+        return;
+
+    /* p2info starts HIPLATE at z=3 and HILITE at z=6; both XOR 1/tick. */
+    if (!state->p2.selected)
+        state->p2_cursor_z_flip = !state->p2_cursor_z_flip;
+
+    if (state->p2.selected) {
+        if (state->p2_name_pending && state->p2_name_wait > 0u) {
+            --state->p2_name_wait;
+            if (state->p2_name_wait == 0u) {
+                uint16_t cmd =
+                    wrestler_name_dcs(state->p2_selected_source_wrestler);
+                if (cmd)
+                    send_dcs(audio, cmd);
+                state->p2_name_pending = false;
+            }
+        }
+        if (state->p2_flash_ticks > 0u)
+            --state->p2_flash_ticks;
+        return;
+    }
+
+    const bool up = stick_y > WM_SEL_STICK_THRESHOLD;
+    const bool down = stick_y < -WM_SEL_STICK_THRESHOLD;
+    const bool left = stick_x < -WM_SEL_STICK_THRESHOLD;
+    const bool right = stick_x > WM_SEL_STICK_THRESHOLD;
+
+    const bool palette_stick_active = up || down || left || right;
+    const uint8_t palette_preference =
+        select_palette_preference(palette_stick_active,
+                                  light_punch_pressed,
+                                  power_punch_pressed,
+                                  light_kick_pressed,
+                                  power_kick_pressed);
+
+    if (state->clock.time_out) {
+        choose_p2_current(state, audio, p2_choice, palette_preference);
+        return;
+    }
+
+    const bool up_down = up && !state->p2_prev_up;
+    const bool down_down = down && !state->p2_prev_down;
+    const bool left_down = left && !state->p2_prev_left;
+    const bool right_down = right && !state->p2_prev_right;
+
+    state->p2_prev_up = up;
+    state->p2_prev_down = down;
+    state->p2_prev_left = left;
+    state->p2_prev_right = right;
+
+    if (state->p2.random_dest >= 0) {
+        if (state->p2.random_delay > 0u) {
+            --state->p2.random_delay;
+            return;
+        }
+
+        if (state->p2.random_wander == 0u &&
+            state->p2.index == (uint8_t)state->p2.random_dest) {
+            choose_p2_current(state, audio, p2_choice, palette_preference);
+            return;
+        }
+
+        uint8_t old_index = state->p2.index;
+        (void)wm_select_random_event(
+            &state->p2,
+            rndrng0_bridge(state, 3u),
+            rndrng0_bridge(state, 2u),
+            rndrng0_bridge(state, 1u) != 0u);
+        if (state->p2.index != old_index)
+            send_dcs(audio, WM_SEL_RANDOM_MOVE_DCS);
+        return;
+    }
+
+    /* Same SELECT.ASM random-select gesture, using P2's start index (1). */
+    if (start_pressed && up &&
+        wm_select_random_can_begin(&state->p2, true, true)) {
+        (void)wm_select_begin_random(&state->p2, rndrng0_bridge(state, 7u));
+        return;
+    }
+
+    if (light_punch_pressed || power_punch_pressed ||
+        light_kick_pressed || power_kick_pressed) {
+        choose_p2_current(state, audio, p2_choice, palette_preference);
+        return;
+    }
+
+    if (state->p2_manual_debounce > 0u) {
+        --state->p2_manual_debounce;
+        return;
+    }
+
+    wm_select_direction dir = WM_SELECT_DIR_NONE;
+    if (down_down) dir = WM_SELECT_DIR_DOWN;
+    else if (up_down) dir = WM_SELECT_DIR_UP;
+    else if (left_down) dir = WM_SELECT_DIR_LEFT;
+    else if (right_down) dir = WM_SELECT_DIR_RIGHT;
+
+    if (dir != WM_SELECT_DIR_NONE) {
+        uint8_t old_index = state->p2.index;
+        state->p2.index = wm_select_move(state->p2.index, dir);
+        if (state->p2.index != old_index) {
+            /* p2info PI_MOVESOUND = C7h. */
+            send_dcs(audio, WM_SEL_P2_MOVE_DCS);
+            state->p2_manual_debounce = WM_SEL_MANUAL_DEBOUNCE;
+        }
+    }
+}
+
+uint8_t wm_select_screen_p2_current_source(const wm_select_screen_state *state) {
+    if (!state || !state->p2_joined)
+        return 0xffu;
+    if (state->p2.selected)
+        return state->p2_selected_source_wrestler;
+    return wm_select_slot_to_source_wrestler(state->p2.index);
+}
+
+bool wm_select_screen_p2_highlight_visible(const wm_select_screen_state *state) {
+    if (!state || !state->p2_joined)
+        return false;
+    if (!state->p2.selected)
+        return true;
+    if (state->p2_flash_ticks == 0u)
+        return true;
+    return ((state->p2_flash_ticks / 2u) & 1u) != 0u;
+}
+
+bool wm_select_screen_p2_cursor_z_flipped(const wm_select_screen_state *state) {
+    return state && state->p2_joined &&
+           !state->p2.selected && state->p2_cursor_z_flip;
+}
+
+uint8_t wm_select_screen_p2_palette_preference(
+    const wm_select_screen_state *state) {
+    return state ? state->p2_player_pal_pref : 0u;
+}
+
 
 uint8_t wm_select_screen_current_source(const wm_select_screen_state *state) {
     if (!state) return 0xffu;

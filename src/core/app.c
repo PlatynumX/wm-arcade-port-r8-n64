@@ -391,26 +391,59 @@ void wm_app_init(wm_app *app) {
     app->attract_started = false;
 }
 
-void wm_app_tick(wm_app *app, const wm_input_state *input) {
+void wm_app_tick_dual(wm_app *app,
+                      const wm_input_state *p1_input,
+                      const wm_input_state *p2_input) {
+    const wm_input_state *input = p1_input;
     if (!app) return;
     wm_audio_source_tick(&app->audio);
     /* SOURCE_SELECT_MODE_TICK */
     if (app->mode == WM_APP_MODE_SELECT) {
         wm_select_screen_tick(&app->select,
-                              input ? input->stick_x : 0,
-                              input ? input->stick_y : 0,
-                              input ? input->start : false,
-                              input ? input->light_punch : false,
-                              input ? input->power_punch : false,
-                              input ? input->light_kick : false,
-                              input ? input->power_kick : false,
+                              p1_input ? p1_input->stick_x : 0,
+                              p1_input ? p1_input->stick_y : 0,
+                              p1_input ? p1_input->start : false,
+                              p1_input ? p1_input->light_punch : false,
+                              p1_input ? p1_input->power_punch : false,
+                              p1_input ? p1_input->light_kick : false,
+                              p1_input ? p1_input->power_kick : false,
                               &app->audio, &app->p1_choice);
+
+        /*
+         * SOURCE_SELECT_P2_START_BRIDGE
+         * Arcade SELECT.ASM sees PSTATUS change when player two buys in.
+         * N64 has no coin/PSTATUS subsystem yet, so Controller 2 Start is the
+         * platform boundary that activates the otherwise direct P2 process.
+         */
+        bool p2_joined_now = false;
+        if (p2_input && p2_input->start && !app->select.p2_joined) {
+            wm_select_screen_join_p2(&app->select);
+            (void)wm_award_prepare_select_bonus(&app->awards, 1u);
+            p2_joined_now = true;
+        }
+
+        /* Consume the buy-in Start edge; it must not also start random-select. */
+        if (app->select.p2_joined && !p2_joined_now) {
+            wm_select_screen_tick_p2(&app->select,
+                                     p2_input ? p2_input->stick_x : 0,
+                                     p2_input ? p2_input->stick_y : 0,
+                                     p2_input ? p2_input->start : false,
+                                     p2_input ? p2_input->light_punch : false,
+                                     p2_input ? p2_input->power_punch : false,
+                                     p2_input ? p2_input->light_kick : false,
+                                     p2_input ? p2_input->power_kick : false,
+                                     &app->audio, &app->p2_choice);
+        }
+
         if (app->select.finished) {
+            /*
+             * Fix36 deliberately ends at the SELECT boundary.  The current
+             * pregame/progression port is still P1-oriented; do not invent a
+             * new two-player pregame here.
+             */
             wm_pregame_init(&app->pregame,
                             app->select.selected_source_wrestler,
                             app->p1_choice);
-            /* PROGRESS.ASM reads the same persistent p1winstreak used by
-               AWARD.ASM::show_bonus_icons. */
             app->pregame.win_streak = app->awards.win_streak[0];
             app->mode = WM_APP_MODE_PREGAME;
         }
@@ -483,6 +516,11 @@ void wm_app_tick(wm_app *app, const wm_input_state *input) {
         advance_call(app);
     }
     skip_untranslated_calls(app);
+}
+
+
+void wm_app_tick(wm_app *app, const wm_input_state *input) {
+    wm_app_tick_dual(app, input, NULL);
 }
 
 static void latch_input(wm_input_state *dst, const wm_input_state *src) {

@@ -14,6 +14,7 @@
  */
 typedef struct {
     wm_select_cursor p1;
+    wm_select_cursor p2;
     wm_select_clock clock; /* retained for ABI while SELECT.ASM timer is ported below */
     unsigned select_ticks_remaining;
 
@@ -30,13 +31,27 @@ typedef struct {
     bool buyin_name_visible;
     bool cursor_z_flip;
 
+    bool p2_joined;
+    bool p2_cursor_z_flip;
+    bool p2_name_pending;
+    unsigned p2_manual_debounce;
+    unsigned p2_name_wait;
+    unsigned p2_flash_ticks;
+
     bool prev_up;
     bool prev_down;
     bool prev_left;
     bool prev_right;
 
+    bool p2_prev_up;
+    bool p2_prev_down;
+    bool p2_prev_left;
+    bool p2_prev_right;
+
     uint8_t last_clock_digit;
     uint8_t player_pal_pref;
+    uint8_t p2_player_pal_pref;
+    uint8_t p2_selected_source_wrestler;
     uint8_t selected_source_wrestler;
     uint32_t rng_state;
 } wm_select_screen_state;
@@ -59,4 +74,18 @@ bool wm_select_screen_highlight_visible(const wm_select_screen_state *state);
 
 bool wm_select_screen_cursor_z_flipped(const wm_select_screen_state *state);
 uint8_t wm_select_screen_player_palette_preference(const wm_select_screen_state *state);
+void wm_select_screen_join_p2(wm_select_screen_state *state);
+void wm_select_screen_tick_p2(wm_select_screen_state *state,
+                              int stick_x, int stick_y,
+                              bool start_pressed,
+                              bool light_punch_pressed,
+                              bool power_punch_pressed,
+                              bool light_kick_pressed,
+                              bool power_kick_pressed,
+                              wm_audio_state *audio,
+                              wm_wrestler_id *p2_choice);
+uint8_t wm_select_screen_p2_current_source(const wm_select_screen_state *state);
+bool wm_select_screen_p2_highlight_visible(const wm_select_screen_state *state);
+bool wm_select_screen_p2_cursor_z_flipped(const wm_select_screen_state *state);
+uint8_t wm_select_screen_p2_palette_preference(const wm_select_screen_state *state);
 #endif

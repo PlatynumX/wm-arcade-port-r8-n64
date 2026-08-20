@@ -153,4 +153,8 @@ bool wm_app_video_frame(wm_app *app, const wm_input_state *input);
 bool wm_attract_call_is_translated(wm_attract_call call);
 bool wm_app_any_attract_button(const wm_input_state *input);
 
+/* Execute one source tick with independent cabinet P1/P2 inputs. */
+void wm_app_tick_dual(wm_app *app,
+                      const wm_input_state *p1_input,
+                      const wm_input_state *p2_input);
 #endif

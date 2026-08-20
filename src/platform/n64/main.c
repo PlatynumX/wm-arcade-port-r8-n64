@@ -41,17 +41,17 @@
 #define WM_ATTACH_X_SLOT 3
 #define WM_ATTACH_Y_SLOT 4
 
-static wm_input_state read_input(bool *connected) {
+static wm_input_state read_input(joypad_port_t port, bool *connected) {
     wm_input_state out = {0};
-    joypad_poll();
-    *connected = joypad_is_connected(JOYPAD_PORT_1);
-    if (!*connected)
+    const bool present = joypad_is_connected(port);
+    if (connected)
+        *connected = present;
+    if (!present)
         return out;
 
-    const joypad_inputs_t in = joypad_get_inputs(JOYPAD_PORT_1);
-    const joypad_buttons_t now = joypad_get_buttons(JOYPAD_PORT_1);
-    const joypad_buttons_t pressed = joypad_get_buttons_pressed(JOYPAD_PORT_1);
-
+    const joypad_inputs_t in = joypad_get_inputs(port);
+    const joypad_buttons_t now = joypad_get_buttons(port);
+    const joypad_buttons_t pressed = joypad_get_buttons_pressed(port);
     out.stick_x = in.stick_x;
     out.stick_y = in.stick_y;
     if (out.stick_x >= -STICK_DEADZONE && out.stick_x <= STICK_DEADZONE &&
@@ -62,19 +62,17 @@ static wm_input_state read_input(bool *connected) {
         if (now.d_up)    out.stick_y =  90;
     }
 
-    /* User-selected N64 layout. Keep the portable core named after the
-       arcade actions rather than after N64 physical buttons. */
+    /* Same arcade-action mapping on each physical N64 controller. */
     out.run         = now.a;
     out.light_punch = pressed.c_left;
     out.power_punch = pressed.c_up;
     out.light_kick  = pressed.c_right;
     out.power_kick  = pressed.c_down;
     out.block       = now.r;
-
-    out.start = pressed.start;
-    out.l = pressed.l;
-    out.z = pressed.z;
-    out.b = pressed.b; /* reserved; intentionally not required by gameplay */
+    out.start       = pressed.start;
+    out.l           = pressed.l;
+    out.z           = pressed.z;
+    out.b           = pressed.b;
     return out;
 }
 
@@ -936,38 +934,32 @@ static void draw_select_font9(const char *text, int x, int y, bool centered, boo
 }
 
 static void render_select_buyin_overlay(const wm_app *app) {
-    if (!app) return;
+    if (!app)
+        return;
 
-    /* SELECT.ASM #norm, non-freeplay branch.  These are the actual JAM_STR
-       centers/rows for player two, not screenshot-estimated coordinates:
-         ln1_setupxb = (321,60)  CHALLENGER
-         ln2_setupxb = (321,75)  NEEDED!
-         ln3_setupb  = (321,110) x CREDITS
-         ln4_setupb  = (321,125) TO START
-       The N64 start bridge represents the same one-human-player state as the
-       cabinet screen: P1 active, P2 waiting to buy in. */
-    draw_select_font9("CHALLENGER", 321, 60, true, true);
-    draw_select_font9("NEEDED!",    321, 75, true, true);
-    draw_select_font9("2 CREDITS",  321, 110, true, true);
-    draw_select_font9("TO START",   321, 125, true, true);
+    if (!app->select.p2_joined) {
+        /* SELECT.ASM inactive P2 buy-in panel. */
+        draw_select_font9("CHALLENGER", 321, 60, true, true);
+        draw_select_font9("NEEDED!",    321, 75, true, true);
+        draw_select_font9("2 CREDITS",  321, 110, true, true);
+        draw_select_font9("TO START",   321, 125, true, true);
+        if (app->select.buyin_name_visible)
+            draw_select_sprite_named("WF_INSERT", 0x142, 184, false);
+    }
 
-    /* #p2name begins as WF_INSERT; #blink toggles its visibility through the
-       original CNTR 30 -> 22 cadence while CR_STRTP says there are not enough
-       credits.  The image itself is original WIMP artwork. */
-    if (app->select.buyin_name_visible)
-        draw_select_sprite_named("WF_INSERT", 0x142, 184, false);
-
-    /* start_credbox is outside SELECT.ASM, but this title->select bridge has
-       exactly one active credit.  Draw it with the game's FNT9 glyph assets,
-       matching the cabinet-visible CREDIT 01 state without a replacement font. */
+    /* Cabinet credit accounting is still a platform bridge in this port. */
     draw_select_font9("CREDIT 01", 200, 12, true, true);
 }
 
 static void render_select_random_message(const wm_app *app) {
-    if (!app || app->select.p1.random_dest < 0) return;
-    /* SELECT.ASM message_setup/message_string is literally "CALLA RNDPER" at
-       P1 center x=79,y=15.  Preserve the shipped source string verbatim. */
-    draw_select_font9("CALLA RNDPER", 79, 15, true, false);
+    if (!app)
+        return;
+
+    /* SELECT.ASM message_setup: P1 x=79, P2 x=321, y=15. */
+    if (app->select.p1.random_dest >= 0)
+        draw_select_font9("CALLA RNDPER", 79, 15, true, false);
+    if (app->select.p2_joined && app->select.p2.random_dest >= 0)
+        draw_select_font9("CALLA RNDPER", 321, 15, true, false);
 }
 
 static const char *const select_croutons[8] = {
@@ -988,7 +980,9 @@ static const char *select_name_image(uint8_t source_id) {
     return source_id < 9u ? names[source_id] : NULL;
 }
 
-static void draw_select_mug(uint8_t source_id) {
+static void draw_select_mug_at(uint8_t source_id,
+                               int anchor_x, int anchor_y,
+                               bool flip_x) {
     static const char *const mug[9][8] = {
         {"BHMUG_A","BHMUG_B","BHMUG_C","BHMUG_D","BHMUG_E","BHMUG_F","BHMUG_G","BHMUG_H"},
         {"RRMUG_A","RRMUG_B","RRMUG_C","RRMUG_D","RRMUG_E","RRMUG_F","RRMUG_G","RRMUG_H"},
@@ -1000,13 +994,13 @@ static void draw_select_mug(uint8_t source_id) {
         {NULL,NULL,NULL,NULL,NULL,NULL,NULL,NULL},
         {"LXMUG_A","LXMUG_B","LXMUG_C","LXMUG_D","LXMUG_E","LXMUG_F","LXMUG_G","LXMUG_H"},
     };
-    if (source_id >= 9u) return;
+    if (source_id >= 9u)
+        return;
 
-    /* SELECT.ASM draw_mugshot calls BEGINOBJW for every piece at the exact same
-       P1 anchor [20,175]; each WIMP image contributes its own ANI offset. */
     for (int i = 0; i < 8; ++i)
         if (mug[source_id][i])
-            draw_select_sprite_named(mug[source_id][i], 20, 175, false);
+            draw_select_sprite_named(mug[source_id][i],
+                                     anchor_x, anchor_y, flip_x);
 }
 
 
@@ -1037,18 +1031,19 @@ static void draw_bonus_icon_string(uint32_t total, int center_x, int y) {
 }
 
 /* AWARD.ASM::show_bonus_icons. */
-static void render_select_bonus_icons(const wm_app *app) {
-    if (!app) return;
-    const uint32_t total = wm_award_select_total(&app->awards, 0u);
-    if (!total) return;
+static void render_select_bonus_icons(const wm_app *app,
+                                      unsigned player) {
+    if (!app || player > 1u)
+        return;
 
-    draw_select_sprite_named("SKILBON",
-                             WM_BONUS_MSG_XPOS1,
-                             WM_BONUS_MSG_YPOS,
-                             false);
-    draw_bonus_icon_string(total,
-                           WM_BONUS_ICON_XPOS1,
-                           WM_BONUS_ICON_YPOS);
+    const uint32_t total = wm_award_select_total(&app->awards, player);
+    if (!total)
+        return;
+
+    const int msg_x = player ? WM_BONUS_MSG_XPOS2 : WM_BONUS_MSG_XPOS1;
+    const int icon_x = player ? WM_BONUS_ICON_XPOS2 : WM_BONUS_ICON_XPOS1;
+    draw_select_sprite_named("SKILBON", msg_x, WM_BONUS_MSG_YPOS, false);
+    draw_bonus_icon_string(total, icon_x, WM_BONUS_ICON_YPOS);
 }
 
 /* AWARD.ASM::show_progress_bicons. */
@@ -1067,54 +1062,93 @@ static void render_character_select(const wm_app *app) {
     if (!app || app->select.setup_ticks == 0u)
         return;
 
-    /* SELECT.ASM plyrsel_mod, verbatim module coordinates. choiceBMOD begins at
-       source Y=256 and is naturally outside the initial 400x256 viewport. */
     render_select_module("wwfselbkBMOD", false, -40, 0);
     render_select_module("choiceBMOD", true, 3, 256);
 
-    uint8_t source_id = wm_select_screen_current_source(&app->select);
-    draw_select_mug(source_id); /* mugshot_z = 1 */
-    render_select_bonus_icons(app);
+    const uint8_t p1_source = wm_select_screen_current_source(&app->select);
+    draw_select_mug_at(p1_source, 20, 175, false);
+    render_select_bonus_icons(app, 0u);
 
-    const uint8_t slot = app->select.p1.index < 8u ? app->select.p1.index : 0u;
-    const int cx = select_crouton_pos[slot][0];
-    const int cy = select_crouton_pos[slot][1];
+    uint8_t p2_source = 0xffu;
+    if (app->select.p2_joined) {
+        p2_source = wm_select_screen_p2_current_source(&app->select);
+        /* p2info: mug x=400-18, y=175, M_FLIPH. */
+        draw_select_mug_at(p2_source, 382, 175, true);
+        render_select_bonus_icons(app, 1u);
+    }
+
+    const uint8_t p1_slot =
+        app->select.p1.index < 8u ? app->select.p1.index : 0u;
+    const uint8_t p2_slot =
+        app->select.p2.index < 8u ? app->select.p2.index : 1u;
+    const int p1x = select_crouton_pos[p1_slot][0];
+    const int p1y = select_crouton_pos[p1_slot][1];
+    const int p2x = select_crouton_pos[p2_slot][0];
+    const int p2y = select_crouton_pos[p2_slot][1];
 
     /*
-     * SELECT.ASM #waitloop: HIPLATE z=2/3, croutons z=4,
-     * HILITE z=5/4. The N64 frontend is painter ordered, so explicitly
-     * reproduce the two source ordering phases.
+     * SELECT.ASM object Z:
+     * P1 plate 2<->3, highlight 5<->4.
+     * P2 plate 3<->2, highlight 6<->7.
      */
-    const bool hilite_visible =
-        wm_select_screen_highlight_visible(&app->select);
-    const bool cursor_z_flip =
+    const bool p1_flip =
         wm_select_screen_cursor_z_flipped(&app->select);
+    const bool p2_flip =
+        wm_select_screen_p2_cursor_z_flipped(&app->select);
+    const int p1_plate_z = p1_flip ? 3 : 2;
+    const int p2_plate_z = p2_flip ? 2 : 3;
 
-    draw_select_sprite_named("CRUTPLT_B", cx, cy, false);
-    if (cursor_z_flip && hilite_visible)
-        draw_select_sprite_named("CRUTHI_B", cx, cy, false);
+    if (app->select.p2_joined && p2_plate_z < p1_plate_z) {
+        draw_select_sprite_named("CRUTPLT_R", p2x, p2y, false);
+        draw_select_sprite_named("CRUTPLT_B", p1x, p1y, false);
+    } else {
+        draw_select_sprite_named("CRUTPLT_B", p1x, p1y, false);
+        if (app->select.p2_joined)
+            draw_select_sprite_named("CRUTPLT_R", p2x, p2y, false);
+    }
+
+    const bool p1_hilite =
+        wm_select_screen_highlight_visible(&app->select);
+    if (p1_flip && p1_hilite)
+        draw_select_sprite_named("CRUTHI_B", p1x, p1y, false);
+
     for (int i = 0; i < 8; ++i)
         draw_select_sprite_named(select_croutons[i],
                                  select_crouton_pos[i][0],
                                  select_crouton_pos[i][1], false);
-    if (!cursor_z_flip && hilite_visible)
-        draw_select_sprite_named("CRUTHI_B", cx, cy, false);
 
-    /* p1name table: x=51, y=184, name_z=9. */
-    const char *name = select_name_image(source_id);
-    if (name)
-        draw_select_sprite_named(name, 51, 184, false);
+    if (!p1_flip && p1_hilite)
+        draw_select_sprite_named("CRUTHI_B", p1x, p1y, false);
 
-    /* Port the source inactive-P2 buy-in overlay that fills the otherwise
-       empty red panel in the one-player select state. */
+    if (app->select.p2_joined &&
+        wm_select_screen_p2_highlight_visible(&app->select)) {
+        /*
+         * SELECT.ASM #place_cursor: when both cursors occupy one crouton,
+         * only P2 HILITE is nudged +2,+2; the red plate is not moved.
+         */
+        const int overlap = p1_slot == p2_slot ? 2 : 0;
+        draw_select_sprite_named("CRUTHI_R",
+                                 p2x + overlap, p2y + overlap, false);
+    }
+
+    /* p1info/p2info PI_NAME_X are hexadecimal source constants. */
+    const char *p1_name = select_name_image(p1_source);
+    if (p1_name)
+        draw_select_sprite_named(p1_name, 0x51, 184, false);
+
+    if (app->select.p2_joined) {
+        const char *p2_name = select_name_image(p2_source);
+        if (p2_name)
+            draw_select_sprite_named(p2_name, 0x142, 184, false);
+    }
+
     render_select_buyin_overlay(app);
     render_select_random_message(app);
 
-    int digit = wm_select_screen_clock_digit(&app->select);
+    const int digit = wm_select_screen_clock_digit(&app->select);
     if (digit >= 0 && digit <= 9) {
         char fnt[8];
         snprintf(fnt, sizeof(fnt), "FNT9_%d", digit);
-        /* clock_digits source anchor: [0CBh,232]. */
         draw_select_sprite_named(fnt, 0xCB, 232, false);
     }
 }
@@ -1980,7 +2014,7 @@ static void render_app(const wm_app *app) {
 typedef struct {
     uint64_t last_us;
     uint64_t phase;
-    wm_input_state latched_input;
+    wm_input_state latched_input[2];
 } wm_n64_source_timer;
 
 static void wm_n64_latch_source_input(wm_input_state *dst,
@@ -2019,35 +2053,50 @@ static unsigned wm_n64_source_ticks_due(wm_n64_source_timer *timer,
     return due;
 }
 
-static void wm_n64_run_source_ticks(wm_app *app,
-                                    wm_n64_source_timer *timer,
-                                    const wm_input_state *sampled_input) {
-    if (!app || !timer || !sampled_input) return;
+static void wm_n64_run_source_ticks_dual(
+    wm_app *app,
+    wm_n64_source_timer *timer,
+    const wm_input_state *sampled_p1,
+    const wm_input_state *sampled_p2) {
+    if (!app || !timer || !sampled_p1 || !sampled_p2)
+        return;
 
-    wm_n64_latch_source_input(&timer->latched_input, sampled_input);
+    wm_n64_latch_source_input(&timer->latched_input[0], sampled_p1);
+    wm_n64_latch_source_input(&timer->latched_input[1], sampled_p2);
 
     const unsigned due = wm_n64_source_ticks_due(timer, get_ticks_us());
-    if (!due) return;
+    if (!due)
+        return;
 
-    wm_input_state tick_input = timer->latched_input;
-    memset(&timer->latched_input, 0, sizeof(timer->latched_input));
+    wm_input_state tick_input[2] = {
+        timer->latched_input[0],
+        timer->latched_input[1]
+    };
+    memset(timer->latched_input, 0, sizeof(timer->latched_input));
 
     for (unsigned i = 0; i < due; ++i) {
-        wm_app_tick(app, &tick_input);
+        wm_app_tick_dual(app, &tick_input[0], &tick_input[1]);
 
-        tick_input.start = false;
-        tick_input.light_punch = false;
-        tick_input.power_punch = false;
-        tick_input.light_kick = false;
-        tick_input.power_kick = false;
-        tick_input.l = false;
-        tick_input.z = false;
-        tick_input.b = false;
+        for (unsigned p = 0; p < 2u; ++p) {
+            tick_input[p].start = false;
+            tick_input[p].light_punch = false;
+            tick_input[p].power_punch = false;
+            tick_input[p].light_kick = false;
+            tick_input[p].power_kick = false;
+            tick_input[p].l = false;
+            tick_input[p].z = false;
+            tick_input[p].b = false;
+        }
 
-        tick_input.run = sampled_input->run;
-        tick_input.block = sampled_input->block;
-        tick_input.stick_x = sampled_input->stick_x;
-        tick_input.stick_y = sampled_input->stick_y;
+        tick_input[0].run = sampled_p1->run;
+        tick_input[0].block = sampled_p1->block;
+        tick_input[0].stick_x = sampled_p1->stick_x;
+        tick_input[0].stick_y = sampled_p1->stick_y;
+
+        tick_input[1].run = sampled_p2->run;
+        tick_input[1].block = sampled_p2->block;
+        tick_input[1].stick_x = sampled_p2->stick_x;
+        tick_input[1].stick_y = sampled_p2->stick_y;
     }
 }
 
@@ -2079,11 +2128,19 @@ int main(void) {
     debugf("embedded packed BMOD modules: %u\n", (unsigned)wm_source_bmod_count());
     debugf("ATTRACT.ASM preserves initial 8 source-tick blank; harness-only gameplay excluded\n");
     debugf("controls: A run, C-L LP, C-U PP, C-R LK, C-D PK, R block\n");
+    debugf("Fix36: Controller 2 Start buys P2 into SELECT.ASM\n");
 
     while (1) {
-        bool connected = false;
-        wm_input_state input = read_input(&connected);
-        wm_n64_run_source_ticks(&app, &source_timer, &input);
+        joypad_poll();
+
+        bool connected[2] = {false, false};
+        wm_input_state input[2] = {
+            read_input(JOYPAD_PORT_1, &connected[0]),
+            read_input(JOYPAD_PORT_2, &connected[1])
+        };
+
+        wm_n64_run_source_ticks_dual(&app, &source_timer,
+                                     &input[0], &input[1]);
         wm_n64_audio_service(&app);
         (void)connected;
         render_app(&app);

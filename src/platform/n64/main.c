@@ -1009,6 +1009,59 @@ static void draw_select_mug(uint8_t source_id) {
             draw_select_sprite_named(mug[source_id][i], 20, 175, false);
 }
 
+
+/* AWARD.ASM::get_bonus_icons stores half the summed WIMP widths in
+   icon_string_width.  Reproduce that centering directly from the exact
+   extracted WIMP widths. */
+static int bonus_icon_string_width(const wm_bonus_icon_list *icons) {
+    if (!icons) return 0;
+    int width = 0;
+    for (size_t i = 0; i < icons->count; ++i) {
+        const char *name = wm_award_bonus_icon_source_name(icons->icon[i]);
+        const wm_source_sprite *spr = wm_select_sprite_find(name);
+        if (spr) width += (int)spr->width;
+    }
+    return width;
+}
+
+static void draw_bonus_icon_string(uint32_t total, int center_x, int y) {
+    const wm_bonus_icon_list icons = wm_award_get_bonus_icons(total);
+    int x = center_x - bonus_icon_string_width(&icons) / 2;
+    for (size_t i = 0; i < icons.count; ++i) {
+        const char *name = wm_award_bonus_icon_source_name(icons.icon[i]);
+        const wm_source_sprite *spr = wm_select_sprite_find(name);
+        if (!spr) continue;
+        draw_select_sprite_named(name, x, y, false);
+        x += (int)spr->width;
+    }
+}
+
+/* AWARD.ASM::show_bonus_icons. */
+static void render_select_bonus_icons(const wm_app *app) {
+    if (!app) return;
+    const uint32_t total = wm_award_select_total(&app->awards, 0u);
+    if (!total) return;
+
+    draw_select_sprite_named("SKILBON",
+                             WM_BONUS_MSG_XPOS1,
+                             WM_BONUS_MSG_YPOS,
+                             false);
+    draw_bonus_icon_string(total,
+                           WM_BONUS_ICON_XPOS1,
+                           WM_BONUS_ICON_YPOS);
+}
+
+/* AWARD.ASM::show_progress_bicons. */
+static void render_progress_bonus_icons(const wm_app *app) {
+    if (!app) return;
+    const uint32_t total = wm_award_progress_total(&app->awards);
+    if (!total) return;
+
+    draw_bonus_icon_string(total,
+                           WM_PROGRESS_BONUS_ICON_XPOS,
+                           WM_PROGRESS_BONUS_ICON_YPOS);
+}
+
 static void render_character_select(const wm_app *app) {
     fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
     if (!app || app->select.setup_ticks == 0u)
@@ -1021,6 +1074,7 @@ static void render_character_select(const wm_app *app) {
 
     uint8_t source_id = wm_select_screen_current_source(&app->select);
     draw_select_mug(source_id); /* mugshot_z = 1 */
+    render_select_bonus_icons(app);
 
     const uint8_t slot = app->select.p1.index < 8u ? app->select.p1.index : 0u;
     const int cx = select_crouton_pos[slot][0];
@@ -1772,6 +1826,7 @@ static void render_progress_screen(const wm_app *app) {
        16.16 source coordinates during MOVE_PROGRESS. */
     const int world_x = (int)(app->pregame.progress_world_x_fp >> 16);
     render_progress_module("LADDERBMOD", -60 - world_x, -45);
+    render_progress_bonus_icons(app);
 
     /* Screen-relative ladder furniture is drawn before the temporary
        wrestlers in the same source composition. */

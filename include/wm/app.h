@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include "wm/attract.h"
 #include "wm/audio.h"
+#include "wm/award.h"
 #include "wm/demo.h"
 #include "wm/process.h"
 #include "wm/roster.h"
@@ -124,6 +125,7 @@ typedef struct {
     wm_audio_state audio;
     wm_app_mode mode;
     wm_select_screen_state select;
+    wm_award_state awards;
     wm_pregame_state pregame;
     wm_attract_state attract;
     wm_demo demo;

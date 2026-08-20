@@ -380,6 +380,7 @@ void wm_app_init(wm_app *app) {
     memset(app, 0, sizeof(*app));
     app->mode = WM_APP_MODE_ATTRACT;
     wm_audio_init(&app->audio);
+    wm_award_init(&app->awards);
     wm_demo_init(&app->demo);
     wm_source_clock_init(&app->source_clock);
     wm_scheduler_init(&app->scheduler);
@@ -408,6 +409,9 @@ void wm_app_tick(wm_app *app, const wm_input_state *input) {
             wm_pregame_init(&app->pregame,
                             app->select.selected_source_wrestler,
                             app->p1_choice);
+            /* PROGRESS.ASM reads the same persistent p1winstreak used by
+               AWARD.ASM::show_bonus_icons. */
+            app->pregame.win_streak = app->awards.win_streak[0];
             app->mode = WM_APP_MODE_PREGAME;
         }
         return;
@@ -452,6 +456,9 @@ void wm_app_tick(wm_app *app, const wm_input_state *input) {
         kill_call_processes(app, app->attract.call);
         app->mode = WM_APP_MODE_SELECT;
         wm_select_screen_init(&app->select);
+        /* SELECT.ASM::show_bonus_icons with SHOW_ACCUM_ICONS=0 clears the
+           accumulated total on a fresh (zero-winstreak) player. */
+        (void)wm_award_prepare_select_bonus(&app->awards, 0u);
         return;
     }
 

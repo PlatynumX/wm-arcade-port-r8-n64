@@ -1,4 +1,6 @@
 #include "wm/app.h"
+#include "wm_fix39_runtime.h"
+#include <stdint.h>
 #include <string.h>
 
 static const wm_input_state no_input = {0};
@@ -45,23 +47,16 @@ static const uint16_t title_sparkle_sites[WM_TITLE_SPARKLE_SITE_COUNT][2] = {
     {345,  4 }, {359, 32 }, {370,  4 }, {373, 56 }, {383, 17 },
 };
 
-static uint32_t title_rotl32(uint32_t v, unsigned n) {
-    n &= 31u;
-    return n ? (v << n) | (v >> (32u - n)) : v;
-}
 
 static uint32_t title_rndrng0(wm_app *app, const wm_process *proc,
-                              uint32_t maximum) {
-    wm_attract_state *a = &app->attract;
-    uint32_t state = a->title_random_state ? a->title_random_state : 0x57574631u;
+                               uint32_t maximum) {
+    /* Exact shared RNDRNG0 translation. The source scheduler phase supplies
+       HCOUNT; a live stack address supplies the N64 SP entropy input. */
     uint32_t hcount = (app->scheduler.tick * 8u) & 0x1ffu;
-    uint32_t stack_surrogate = proc ? (proc->generation << 4) ^ proc->state : 0u;
-    uint32_t mixed = title_rotl32(state, state & 31u);
-    mixed ^= title_rotl32(hcount | (hcount << 16), hcount & 31u);
-    mixed ^= stack_surrogate;
-    mixed += 0x9e3779b9u + a->title_rng_counter++;
-    a->title_random_state = mixed;
-    return (uint32_t)(((uint64_t)mixed * ((uint64_t)maximum + 1u)) >> 32);
+    uint32_t sp_value = (uint32_t)(uintptr_t)&maximum;
+    (void)proc;
+    wm_fix39_rng_set_entropy(hcount, sp_value);
+    return wm_fix39_rndrng0(maximum);
 }
 
 static unsigned title_sparkle_family_frames(unsigned family) {
@@ -242,6 +237,7 @@ static void begin_call(wm_app *app, wm_attract_call call) {
 static void begin_base_loop(wm_app *app) {
     app->attract.flow = WM_ATTRACT_FLOW_BASE;
     app->attract.source_index = 0;
+    (void)wm_fix39_attract_cycle_begin();
     begin_call(app, wm_source_attract_loop[0]);
 }
 
@@ -378,6 +374,7 @@ static bool tick_title(wm_app *app, const wm_input_state *input) {
 
 void wm_app_init(wm_app *app) {
     memset(app, 0, sizeof(*app));
+    wm_fix39_runtime_init();
     app->mode = WM_APP_MODE_ATTRACT;
     wm_audio_init(&app->audio);
     wm_select_continue_init(&app->continue_select);
@@ -458,7 +455,21 @@ void wm_app_tick_dual(wm_app *app,
         return;
     }
     if (app->mode == WM_APP_MODE_MATCH_INIT) {
-        /* Explicit boundary: start_match is the next source subsystem. */
+        if (!wm_fix39_match_started()) {
+            uint32_t hs_remaining = 0u;
+            wm_fix39_match_begin((unsigned)app->p1_choice,
+                                 (unsigned)app->p2_choice);
+            /* No guessed operator adjustment: this is a no-op until bound. */
+            (void)wm_fix39_hiscore_player_start_or_continue(&hs_remaining);
+        }
+        wm_fix39_match_tick(input ? input->stick_x : 0,
+                            input ? input->stick_y : 0,
+                            input ? input->run : false,
+                            input ? input->light_punch : false,
+                            input ? input->power_punch : false,
+                            input ? input->light_kick : false,
+                            input ? input->power_kick : false,
+                            input ? input->block : false);
         return;
     }
     if (!input) input = &no_input;
@@ -551,5 +562,11 @@ bool wm_app_video_frame(wm_app *app, const wm_input_state *input) {
     wm_input_state tick_input = app->latched_input;
     memset(&app->latched_input, 0, sizeof(app->latched_input));
     wm_app_tick(app, &tick_input);
+    /* WRESTLE.ASM mainpok randomizes RAND after process_dispatch. */
+    {
+        uint32_t hcount = (app->scheduler.tick * 8u) & 0x1ffu;
+        uint32_t sp_value = (uint32_t)(uintptr_t)&tick_input;
+        (void)wm_fix39_mainloop_step(hcount, sp_value);
+    }
     return true;
 }

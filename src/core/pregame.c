@@ -368,7 +368,7 @@ static void tick_progress_close(wm_pregame_state *s) {
         if (s->progress_close_move_ticks == s->progress_close_delay &&
             s->progress_close_delay != PROGRESS_CLOSE_P_SPEED)
             progress_set_shake(s, 0);
-            progress_create_bits(s);
+        progress_create_bits(s);
         return;
     }
 

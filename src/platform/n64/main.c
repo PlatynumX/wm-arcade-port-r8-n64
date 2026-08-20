@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "wm/app.h"
+#include "wm_fix39_runtime.h"
 #include "audio_backend.h"
 #include "wm/bmod.h"
 #include "wm/bret_sprites.h"
@@ -1694,10 +1695,10 @@ static void draw_progress_wsf14(const char *text, int x, int y) {
     }
 }
 static const char *progress_factory_recent_champ(const wm_app *app) {
-    /* HSTD.ASM factory tables: BEATEN_ROM_TABLE + HS_SIZE begins "MIKE ";
-       INTER_ROM_TABLE + HS_SIZE begins "MARK ".  Persistence can replace this
-       with live CMOS/high-score state when that subsystem is ported. */
-    return app->pregame.belt_type == WM_PREGAME_BELT_WWF ? "MIKE " : "MARK ";
+    if (!app) return "";
+    /* HSTD.ASM source factory/live table owns the recent champion string. */
+    return wm_fix39_hiscore_recent_initials(
+        app->pregame.belt_type == WM_PREGAME_BELT_WWF);
 }
 static void draw_progress_ladder_bits(const wm_app *app) {
     if (!app) return;

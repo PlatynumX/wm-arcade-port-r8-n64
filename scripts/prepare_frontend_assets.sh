@@ -12,6 +12,7 @@ TITLE_BDB="$ORIG/IMG/BIGWWF.BDB"
 TITLE_BDD="$ORIG/IMG/BIGWWF.BDD"
 TITLE_OUT="$ROOT/src/generated/title_screen.c"
 BMOD_OUT="$ROOT/src/generated/bmod_tables.c"
+SELECT_OUT="$ROOT/src/generated/select_sprites.c"
 
 if [ ! -f "$SPORTS_SOURCE" ] || [ ! -f "$DCS_SOURCE" ] || \
    [ ! -f "$SPARKLE_SOURCE" ] || [ ! -f "$TITLE_BDB" ] || [ ! -f "$TITLE_BDD" ]; then
@@ -46,3 +47,10 @@ python3 "$ROOT/tools/bmod_source.py" \
     --module choiceBMOD \
     --module wwfselbkBMOD \
     --out "$BMOD_OUT"
+
+
+python3 "$ROOT/tools/select_bundle.py" \
+    --img-dir "$ORIG/IMG" \
+    --imgpal "$ORIG/IMGPAL.ASM" \
+    --progress "$ORIG/PROGRESS.ASM" \
+    --out "$SELECT_OUT"

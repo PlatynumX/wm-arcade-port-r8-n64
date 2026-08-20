@@ -17,6 +17,12 @@
 #define PROGRESS_SCROLL_COUNTER_START 100u
 #define PROGRESS_HOLD_COUNTER_START 90u
 #define PROGRESS_RUN_SPEED_FP (4 << 16)
+#define PROGRESS_CLOSE_P_DELAY 20u
+#define PROGRESS_CLOSE_P_SPEED (200u / PROGRESS_CLOSE_P_DELAY)
+#define PROGRESS_CLOSE_EFFECT_SLEEP (35u + 24u)
+#define PROGRESS_CLOSE_FINAL_SLEEP 10u
+#define PROGRESS_SHAKE_STEP_TICKS 2u
+#define PROGRESS_SHAKE_STEPS 12u
 
 static const uint8_t which_music_source[9] = {5,2,1,7,6,4,8,0,3};
 
@@ -243,6 +249,79 @@ static int32_t progress_speed_fp(unsigned remaining) {
     return speed;
 }
 
+
+/* PROGRESS.ASM::SHAKE_TABLE, packed [Y,X] plus PRCSLP 2 per entry. */
+static const int8_t progress_shake_table[PROGRESS_SHAKE_STEPS][2] = {
+    {-1,-1}, { 2, 1}, {-2, 0}, {-3, 1}, { 2, 3}, { 0,-2},
+    {-1,-1}, { 2, 1}, {-2, 0}, {-3, 1}, { 2, 3}, { 0,-2},
+};
+
+static void progress_set_shake(wm_pregame_state *s, unsigned elapsed) {
+    if (!s) return;
+    unsigned i = elapsed / PROGRESS_SHAKE_STEP_TICKS;
+    if (i >= PROGRESS_SHAKE_STEPS) {
+        s->progress_shake_x = 0;
+        s->progress_shake_y = 0;
+        return;
+    }
+    s->progress_shake_y = progress_shake_table[i][0];
+    s->progress_shake_x = progress_shake_table[i][1];
+}
+
+/* CLOSE_PROGRESS_SCREEN: P_DELAY=20, speed=200/P_DELAY=10.
+   get_all_buttons_cur2 swaps A8/A9 when any current button is active. */
+static void begin_progress_close(wm_pregame_state *s, bool fast) {
+    if (!s) return;
+    s->phase = WM_PREGAME_PROGRESS_CLOSE;
+    s->phase_ticks = 0;
+    s->progress_close_delay =
+        fast ? PROGRESS_CLOSE_P_SPEED : PROGRESS_CLOSE_P_DELAY;
+    s->progress_close_speed =
+        fast ? PROGRESS_CLOSE_P_DELAY : PROGRESS_CLOSE_P_SPEED;
+    s->progress_close_move_ticks = 0;
+    s->progress_close_post_ticks = 0;
+    s->progress_shake_x = 0;
+    s->progress_shake_y = 0;
+}
+
+/* CLOSE_PROGRESS_SCREEN process timing. Renderer owns INIT_BLOC,
+   SETUP_LOGOS and MOVE_BLOC geometry from the same source routine. */
+static void tick_progress_close(wm_pregame_state *s) {
+    if (!s) return;
+    ++s->phase_ticks;
+
+    if (s->progress_close_move_ticks < s->progress_close_delay) {
+        ++s->progress_close_move_ticks;
+        if (s->progress_close_move_ticks == s->progress_close_delay &&
+            s->progress_close_delay != PROGRESS_CLOSE_P_SPEED)
+            progress_set_shake(s, 0);
+        return;
+    }
+
+    const bool fast = s->progress_close_delay == PROGRESS_CLOSE_P_SPEED;
+    const unsigned effects = fast ? 0u : PROGRESS_CLOSE_EFFECT_SLEEP;
+    const unsigned total = effects + PROGRESS_CLOSE_FINAL_SLEEP;
+
+    if (s->progress_close_post_ticks < total) {
+        ++s->progress_close_post_ticks;
+        if (!fast) {
+            if (s->progress_close_post_ticks <= effects)
+                progress_set_shake(s, s->progress_close_post_ticks);
+            else
+                progress_set_shake(s, PROGRESS_SHAKE_STEPS *
+                                      PROGRESS_SHAKE_STEP_TICKS);
+        }
+        if (s->progress_close_post_ticks < total)
+            return;
+    }
+
+    s->progress_shake_x = 0;
+    s->progress_shake_y = 0;
+    s->ready_for_match = true;
+    s->finished = true;
+    s->phase = WM_PREGAME_READY_FOR_MATCH;
+}
+
 void wm_pregame_init(wm_pregame_state *s,
                      uint8_t selected_source_wrestler,
                      wm_wrestler_id selected_roster_wrestler) {
@@ -329,8 +408,8 @@ void wm_pregame_tick(wm_pregame_state *s,
             /* MOVE_PROGRESS exits directly on current buttons. It does not
                enter STILL_PROGRESS first. */
             if (any_source_button(input)) {
-                s->phase_ticks = 0;
-                s->phase = WM_PREGAME_PROGRESS_CLOSE;
+                begin_progress_close(s, true);
+                tick_progress_close(s);
                 break;
             }
 
@@ -369,8 +448,8 @@ void wm_pregame_tick(wm_pregame_state *s,
             ++s->progress_opponent_anim_ticks;
             /* STILL_PROGRESS also exits directly on current buttons. */
             if (any_source_button(input)) {
-                s->phase_ticks = 0;
-                s->phase = WM_PREGAME_PROGRESS_CLOSE;
+                begin_progress_close(s, true);
+                tick_progress_close(s);
                 break;
             }
             if (s->progress_counter == 80u) {
@@ -378,21 +457,15 @@ void wm_pregame_tick(wm_pregame_state *s,
                 s->progress_player_anim_ticks = 0;
             }
             if (s->progress_counter == 0u) {
-                s->phase_ticks = 0;
-                s->phase = WM_PREGAME_PROGRESS_CLOSE;
+                begin_progress_close(s, false);
+                tick_progress_close(s);
             } else {
                 --s->progress_counter;
             }
             break;
 
         case WM_PREGAME_PROGRESS_CLOSE:
-            /* CLOSE_PROGRESS_SCREEN is a source transition system. Keep a
-               clean handoff boundary rather than jumping into the old demo. */
-            if (++s->phase_ticks >= 1u) {
-                s->ready_for_match = true;
-                s->finished = true;
-                s->phase = WM_PREGAME_READY_FOR_MATCH;
-            }
+            tick_progress_close(s);
             break;
 
         case WM_PREGAME_READY_FOR_MATCH:

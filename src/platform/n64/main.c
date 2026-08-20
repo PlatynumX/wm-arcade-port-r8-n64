@@ -1543,6 +1543,104 @@ static void draw_progress_ladder_bits(const wm_app *app) {
     draw_progress_wsf14(progress_factory_recent_champ(app), 0x15F, STATY+19+12+3);
 }
 
+
+/* PROGRESS.ASM::FIND_LOGO_IMAGE / LOGO_IMAGE_TABLE. */
+static const char *progress_logo_image(uint8_t source_id) {
+    static const char *const logos[10] = {
+        "HRT3", "RZR3", "UND3", "YOK3", "SHN3",
+        "BAM3", "DNK3", "LEX3", "LEX3", "WWFCHAL"
+    };
+    return source_id < 10u ? logos[source_id] : NULL;
+}
+
+/* PROGRESS.ASM::MOVE_BLOC: left DAGs travel +speed, right DAGs -speed. */
+static int progress_close_block_x(int start_x, unsigned travel) {
+    return start_x < 200 ? start_x + (int)travel
+                         : start_x - (int)travel;
+}
+
+/* INIT_BLOC_STUFF uses the image SAG and a separately supplied B_DAG. */
+static void draw_progress_bloc(const wm_app *app, const char *name,
+                               int start_x, int y, unsigned travel) {
+    if (!app || !name) return;
+    const wm_source_sprite *spr = wm_select_sprite_find(name);
+    if (!spr) return;
+    const int x = progress_close_block_x(start_x, travel)
+                + app->pregame.progress_shake_x;
+    const int sy = y + app->pregame.progress_shake_y;
+    draw_source_sprite_scaled(spr,
+                              (float)x * WM_FRONTEND_SCALE_X,
+                              (float)sy * WM_FRONTEND_SCALE_Y,
+                              0, 0, false, spr,
+                              WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
+}
+
+/* INIT_BLOC + SETUP_LOGOS + SETUP_THIS_LOGO_DAG, one-player close path. */
+static void draw_progress_close_transition(const wm_app *app) {
+    if (!app || app->pregame.phase != WM_PREGAME_PROGRESS_CLOSE)
+        return;
+
+    unsigned travel = app->pregame.progress_close_move_ticks *
+                      app->pregame.progress_close_speed;
+    if (travel > 200u) travel = 200u;
+
+    static const struct {
+        const char *name;
+        int16_t y, x;
+    } init_bloc_tab[10] = {
+        {"CSELBK_A",   0,-204},
+        {"CSELBK_C", 133,-204},
+        {"CSELBK_E", 252,-204},
+        {"CSELBK_B",   0, 404},
+        {"CSELBK_D", 133, 404},
+        {"CSELBK_F", 252, 404},
+        {"CSELBV_A",   0,  -4},
+        {"CSELBV_C", 133,  -4},
+        {"CSELBV_B",   0, 400},
+        {"CSELBV_D", 133, 400},
+    };
+
+    for (unsigned i=0; i<10u; ++i)
+        draw_progress_bloc(app, init_bloc_tab[i].name,
+                           init_bloc_tab[i].x, init_bloc_tab[i].y, travel);
+
+    const char *human_name =
+        progress_logo_image(app->pregame.player_source_wrestler);
+    const wm_source_sprite *human =
+        human_name ? wm_select_sprite_find(human_name) : NULL;
+    if (human) {
+        const int x = -200 + (200 - (int)human->width) / 2;
+        const int y = (255 - (int)human->height) / 2;
+        draw_progress_bloc(app, human_name, x, y, travel);
+    }
+
+    unsigned count = app->pregame.opponent_count;
+    if (count > WM_PREGAME_MAX_OPPONENTS)
+        count = WM_PREGAME_MAX_OPPONENTS;
+
+    int stack_h = -15;
+    for (unsigned i=0; i<count; ++i) {
+        const uint8_t id = wm_pregame_opponent_at(&app->pregame,i);
+        const char *name = progress_logo_image(id);
+        const wm_source_sprite *spr =
+            name ? wm_select_sprite_find(name) : NULL;
+        if (spr) stack_h += (int)spr->height + 15;
+    }
+    if (stack_h < 0) stack_h = 0;
+
+    int y = (255 - stack_h) / 2;
+    for (unsigned i=0; i<count; ++i) {
+        const uint8_t id = wm_pregame_opponent_at(&app->pregame,i);
+        const char *name = progress_logo_image(id);
+        const wm_source_sprite *spr =
+            name ? wm_select_sprite_find(name) : NULL;
+        if (!spr) continue;
+        const int x = 400 + (200 - (int)spr->width) / 2;
+        draw_progress_bloc(app,name,x,y,travel);
+        y += (int)spr->height + 15;
+    }
+}
+
 static void render_progress_screen(const wm_app *app) {
     fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
     if (!app) return;
@@ -1570,10 +1668,9 @@ static void render_progress_screen(const wm_app *app) {
     else
         draw_progress_font9("INTERCONTINENTAL", 241, 28, true);
     draw_progress_font9("TITLE", 241, 41, true);
-
-    /* start_credbox is a shared cabinet process not yet independently decoded;
-       retain the proven FNT9 credit state without inventing its frame. */
-    draw_select_font9("CREDIT 01", 200, 12, true, true);
+    /* start_credbox is external/shared; no invented cabinet text. */
+    if (app->pregame.phase == WM_PREGAME_PROGRESS_CLOSE)
+        draw_progress_close_transition(app);
 }
 
 static void render_pregame(const wm_app *app) {

@@ -74,6 +74,13 @@ typedef struct {
     unsigned flash_ticks;
     unsigned progress_counter;
     unsigned flash_frame;
+    /* PROGRESS.ASM CLOSE_PROGRESS_SCREEN state. */
+    unsigned progress_close_delay;
+    unsigned progress_close_speed;
+    unsigned progress_close_move_ticks;
+    unsigned progress_close_post_ticks;
+    int8_t progress_shake_x;
+    int8_t progress_shake_y;
     unsigned match_count;
     unsigned win_streak; /* PROGRESS.ASM p1winstreak/p2winstreak display value. */
 

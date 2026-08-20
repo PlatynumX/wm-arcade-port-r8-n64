@@ -1075,6 +1075,15 @@ static void render_belt_choice(const wm_app *app) {
        Wolf-unit screen below the viewport, then moves WORLDTLY +0x18/tick
        until 255.  Preserve those source positions instead of hand-layout. */
     const int wy = app->pregame.belt_world_y;
+    /*
+     * SELECT.ASM::plyrsel_mod installs both modules before belt selection:
+     *   wwfselbkBMOD  at (-40,0)
+     *   choiceBMOD    at (3,256)
+     * PROGRESS.ASM::ask_belt_question advances WORLDTLY and calls BGND_UD1;
+     * screen-space Y is therefore module_y - belt_world_y.
+     */
+    render_select_module("wwfselbkBMOD", false, -40, -wy);
+    render_select_module("choiceBMOD", true, 3, 256 - wy);
     const int top_y = 93 + 256 - wy;
     const int bottom_y = 184 + 256 - wy;
     const bool inter_selected =

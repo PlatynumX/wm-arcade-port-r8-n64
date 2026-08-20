@@ -11,7 +11,7 @@ endif
 
 include $(N64_INST)/include/n64.mk
 
-CFLAGS += -I$(CURDIR)/include
+CFLAGS += -I$(CURDIR)/include -I$(CURDIR)/src/fix39
 
 CORE_C := \
     src/core/process.c \
@@ -96,9 +96,14 @@ CORE_C += $(FIX38_ARCADE_C)
 # END FIX38 CUMULATIVE ARCADE SOURCE PORTS
 
 
+# BEGIN FIX39 SOURCE-DIRECT MERGE
+FIX39_C := \
+    src/fix39/wm_fix39_runtime.c \
+    src/fix39/wmania_ring_onscreen.c
+# END FIX39 SOURCE-DIRECT MERGE
 ASSET_C := src/generated/bret_sprites.c src/generated/sports_logo.c src/generated/dcs_logo.c src/generated/title_screen.c src/generated/title_sparkle.c src/generated/bmod_tables.c src/generated/sports_background.c src/generated/sports_motto.c src/generated/select_sprites.c src/generated/select_background_main.c src/generated/select_background_choice.c src/generated/progress_background.c src/generated/progress_wrestlers.c
 N64_C := src/platform/n64/main.c src/platform/n64/dcs_effect.c src/platform/n64/audio_backend.c src/platform/n64/dcs_bank.c
-C_FILES := $(CORE_C) $(ASSET_C) $(N64_C)
+C_FILES := $(FIX39_C) $(CORE_C) $(ASSET_C) $(N64_C)
 OBJS := $(addprefix $(BUILD_DIR)/,$(C_FILES:.c=.o))
 
 all: $(ROMNAME).z64

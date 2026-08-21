@@ -4,6 +4,11 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 ORIG="$ROOT/original/wwf-wrestlemania"
 SPORTS_BG_SOURCE="$ORIG/IMG/SPORTBK.IMG"
+# FIX39 SPORTS BACKGROUND OVERRIDE
+FIX39_SPORTS_BG_SOURCE="$ROOT/assets/fix39_sports_override/SPORTBK.IMG"
+if [ -f "$FIX39_SPORTS_BG_SOURCE" ]; then
+  SPORTS_BG_SOURCE="$FIX39_SPORTS_BG_SOURCE"
+fi
 SPORTS_FONT_SOURCE="$ORIG/IMG/SGMD8.IMG"
 SPORTS_BG_OUT="$ROOT/src/generated/sports_background.c"
 SPORTS_MOTTO_OUT="$ROOT/src/generated/sports_motto.c"

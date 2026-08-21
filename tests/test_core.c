@@ -3,6 +3,7 @@
 #include <string.h>
 #include "wm/anim.h"
 #include "wm/app.h"
+#include "wm_fix39_runtime.h"
 #include "wm/bmod.h"
 #include "wm/source_clock.h"
 #include "wm/bret_visuals.h"
@@ -467,7 +468,8 @@ static void test_attract_source_flow(void) {
     for (size_t i = 0; i < WM_TITLE_GLINT_COUNT; ++i)
         any_glint |= app.attract.title_glints[i].active;
     CHECK(any_glint);
-    CHECK(app.attract.title_random_state != 0x57574631u);
+    /* Fix39 replaced the provisional per-title RNG with the shared source RAND/RNDRNG0 state. */
+    CHECK(wm_fix39_rng_state() != 0u);
     wm_app_tick(&app, &button);
     CHECK(wm_process_find_id(&app.scheduler, WM_PID_CYCLE_LAVA) == NULL);
     CHECK(wm_process_find_id(&app.scheduler, WM_PID_FLASH) == NULL);

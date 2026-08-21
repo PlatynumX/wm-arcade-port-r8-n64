@@ -5,6 +5,10 @@
 #include <string.h>
 
 #include "wm/app.h"
+#include "wm_fix39_runtime.h"
+#include "wmania_attract_data.h"
+#include "fix39_attract_text_generated.h"
+#include "fix39_attract_assets_generated.h"
 #include "audio_backend.h"
 #include "wm/bmod.h"
 #include "wm/bret_sprites.h"
@@ -1131,6 +1135,276 @@ static void render_progress_bonus_icons(const wm_app *app) {
                            WM_PROGRESS_BONUS_ICON_YPOS);
 }
 
+/* BEGIN FIX39 V12 ATTRACT RENDERERS */
+typedef enum {
+    FIX39_FONT_OSGEMD,
+    FIX39_FONT_WSF10,
+    FIX39_FONT_OGMD10,
+    FIX39_FONT_RD7
+} fix39_attract_font;
+
+static const wm_source_sprite *fix39_attract_sprite(const char *name) {
+    const wm_source_sprite *spr = wm_fix39_attract_sprite_find(name);
+    return spr ? spr : wm_select_sprite_find(name);
+}
+
+static const wm_source_sprite *fix39_attract_glyph(fix39_attract_font font,
+                                                    char c, char name[24]) {
+    name[0] = '\0';
+    if (font == FIX39_FONT_OSGEMD) {
+        if ((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
+            snprintf(name, 24, "OSGEMD_%c", c);
+        else switch (c) {
+            case '%': strcpy(name,"OSGEMD_PCT"); break;
+            case '&': strcpy(name,"OSGEMD_AND"); break;
+            case '!': strcpy(name,"OSGEMD_EXP"); break;
+            case '-': strcpy(name,"OSGEMD_DAS"); break;
+            case '.': strcpy(name,"OSGEMD_DOT"); break;
+            case '$': strcpy(name,"OSGEMD_DOL"); break;
+            case '/': strcpy(name,"OSGEMD_SLS"); break;
+            case '\'': strcpy(name,"OSGEMD_APO"); break;
+            case '?': strcpy(name,"OSGEMD_QUE"); break;
+            case ':': strcpy(name,"OSGEMD_COL"); break;
+            case '(': strcpy(name,"OSGEMD_OBR"); break;
+            case ')': strcpy(name,"OSGEMD_CBR"); break;
+            case '#': strcpy(name,"OSGEMD_NUM"); break;
+            default: break;
+        }
+    } else if (font == FIX39_FONT_WSF10) {
+        if ((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
+            snprintf(name, 24, "WSF10_%c", c);
+        else switch (c) {
+            case '%': strcpy(name,"WSF10PCT"); break;
+            case '!': strcpy(name,"WSF10EXC"); break;
+            case ',': strcpy(name,"WSF10COM"); break;
+            case '.': strcpy(name,"WSF10PER"); break;
+            case '-': strcpy(name,"WSF10DSH"); break;
+            case '#': strcpy(name,"WSF10NUM"); break;
+            case '\'': strcpy(name,"WSF10APO"); break;
+            default: break;
+        }
+    } else if (font == FIX39_FONT_OGMD10) {
+        if ((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
+            snprintf(name, 24, "osgmd10_%c", c);
+        else switch (c) {
+            case '%': strcpy(name,"osgmd10_PCT"); break;
+            case '!': strcpy(name,"osgmd10_EXP"); break;
+            case '(': strcpy(name,"osgmd10_OBR"); break;
+            case ')': strcpy(name,"osgmd10_CBR"); break;
+            case ',': strcpy(name,"osgmd10_COM"); break;
+            case '.': strcpy(name,"osgmd10_DOT"); break;
+            case ':': strcpy(name,"osgmd10_COL"); break;
+            case '-': strcpy(name,"osgmd10_DAS"); break;
+            case '#': strcpy(name,"osgmd10_NUM"); break;
+            case '&': strcpy(name,"osgmd10_AND"); break;
+            case '/': strcpy(name,"osgmd10_SLS"); break;
+            case '$': strcpy(name,"osgmd10_DOL"); break;
+            case '\'': strcpy(name,"osgmd10_APO"); break;
+            default: break;
+        }
+    } else {
+        if (c >= 'A' && c <= 'Z') snprintf(name, 24, "FONT7%c", c);
+        else if (c >= '0' && c <= '9') snprintf(name, 24, "FONT7%c", c);
+        else switch (c) {
+            case '!': strcpy(name,"FONT7excla"); break;
+            case '"': strcpy(name,"FONT7quote"); break;
+            case '#': strcpy(name,"FONT7pound"); break;
+            case '$': strcpy(name,"FONT7doll"); break;
+            case '%': strcpy(name,"FONT7percen"); break;
+            case '&': strcpy(name,"FONT7and"); break;
+            case '\'': strcpy(name,"FONT7apost"); break;
+            case '(': strcpy(name,"FONT7parenl"); break;
+            case ')': strcpy(name,"FONT7parenr"); break;
+            case '*': strcpy(name,"FONT7ast"); break;
+            case '+': strcpy(name,"FONT7plus"); break;
+            case ',': strcpy(name,"FONT7comma"); break;
+            case '-': strcpy(name,"FONT7dash"); break;
+            case '.': strcpy(name,"FONT7period"); break;
+            case '/': strcpy(name,"FONT7forsp"); break;
+            case ':': strcpy(name,"FONT7colon"); break;
+            case ';': strcpy(name,"FONT7semicol"); break;
+            case '<': strcpy(name,"FONT7less"); break;
+            case '=': strcpy(name,"FONT7equal"); break;
+            case '>': strcpy(name,"FONT7more"); break;
+            case '?': strcpy(name,"FONT7quest"); break;
+            case '[': strcpy(name,"FONT7bracl"); break;
+            case ']': strcpy(name,"FONT7bracr"); break;
+            default: break;
+        }
+    }
+    return name[0] ? fix39_attract_sprite(name) : NULL;
+}
+
+static void fix39_draw_sprite(const wm_source_sprite *spr, int x, int y,
+                              const wm_fix39_attract_palette *pal) {
+    if (!spr) return;
+    wm_source_sprite proxy = *spr;
+    const wm_source_sprite *palette_source = spr;
+    if (pal && pal->rgba5551 && pal->color_count) {
+        proxy.palette_rgba5551 = pal->rgba5551;
+        proxy.palette_colors = pal->color_count;
+        palette_source = &proxy;
+    }
+    draw_source_sprite_scaled(spr,
+                              (float)x * WM_FRONTEND_SCALE_X,
+                              (float)y * WM_FRONTEND_SCALE_Y,
+                              spr->xani, spr->yani, false, palette_source,
+                              WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
+}
+
+static int fix39_text_width(const char *text, fix39_attract_font font,
+                            int space_width, int spacing) {
+    int width = 0;
+    bool have_glyph = false;
+    if (!text) return 0;
+    for (const char *p = text; *p; ++p) {
+        if (*p == ' ') { width += space_width; continue; }
+        char name[24];
+        const wm_source_sprite *g = fix39_attract_glyph(font, *p, name);
+        if (!g) continue;
+        width += (int)g->width + spacing;
+        have_glyph = true;
+    }
+    if (have_glyph && spacing > 0) width -= spacing;
+    return width;
+}
+
+static void fix39_draw_text(const char *text, fix39_attract_font font,
+                            int x, int y, bool centered,
+                            int space_width, int spacing,
+                            const wm_fix39_attract_palette *pal,
+                            const wm_source_sprite *sprite_pal) {
+    if (!text) return;
+    if (centered) x -= fix39_text_width(text, font, space_width, spacing) / 2;
+    for (const char *p = text; *p; ++p) {
+        if (*p == ' ') { x += space_width; continue; }
+        char name[24];
+        const wm_source_sprite *g = fix39_attract_glyph(font, *p, name);
+        if (!g) continue;
+        if (sprite_pal && sprite_pal->palette_rgba5551) {
+            wm_source_sprite proxy = *g;
+            proxy.palette_rgba5551 = sprite_pal->palette_rgba5551;
+            proxy.palette_colors = sprite_pal->palette_colors;
+            draw_source_sprite_scaled(g,
+                                      (float)x * WM_FRONTEND_SCALE_X,
+                                      (float)y * WM_FRONTEND_SCALE_Y,
+                                      g->xani, g->yani, false, &proxy,
+                                      WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
+        } else {
+            fix39_draw_sprite(g, x, y, pal);
+        }
+        x += (int)g->width + spacing;
+    }
+}
+
+static void fix39_render_slate(void) {
+    fill_rect(0, 0, 320, 240, RGBA32(0,0,0,255));
+    render_select_module("slateBMOD", true, 0, 0);
+}
+
+static void fix39_render_hint(void) {
+    const WmAttractLive *live = wm_fix39_attract_live_state();
+    if (!live) return;
+    unsigned h = live->hint_index % WM_ATTRACT_ACTIVE_HINTS;
+    const WmAttractHint *hint = &wm_attract_hints[h];
+    const wm_fix39_attract_palette *ruby = wm_fix39_attract_palette_find("RUBYPAL");
+    const wm_fix39_attract_palette *yellow = wm_fix39_attract_palette_find("WSF_Y_P");
+    const wm_fix39_attract_palette *white = wm_fix39_attract_palette_find("WGFS_W_P");
+    fix39_render_slate();
+    fix39_draw_sprite(fix39_attract_sprite("MVEBAR_R"), 10, 21, NULL);
+    fix39_draw_sprite(fix39_attract_sprite("SHADOW01"), 13, 30, NULL);
+    fix39_draw_sprite(fix39_attract_sprite(hint->tip_image_symbol), 190, 21, white);
+    const wm_source_sprite *num = fix39_attract_sprite(hint->number_image_symbol);
+    if (num) fix39_draw_sprite(num, 200 + (int)num->width / 2, 9, white);
+    fix39_draw_sprite(fix39_attract_sprite("MUGBAK"), 400, 254, NULL);
+    fix39_draw_sprite(fix39_attract_sprite("MUGFRNT"), 400, 254, NULL);
+    fix39_draw_sprite(fix39_attract_sprite(hint->mug_image_symbol), 400, 254, NULL);
+    fix39_draw_text(wm_fix39_source_hint_title(h), FIX39_FONT_OSGEMD,
+                    200, 62, true, 10, 0, ruby, NULL);
+    size_t lines = wm_fix39_source_hint_line_count(h);
+    for (size_t i = 0; i < lines; ++i)
+        fix39_draw_text(wm_fix39_source_hint_line(h, i), FIX39_FONT_WSF10,
+                        200, 108 + (int)i * 15, true, 10, 1, yellow, NULL);
+    if (live->waiting_external)
+        (void)wm_fix39_attract_screen_signal_external_complete();
+}
+
+static void fix39_render_general_tips(void) {
+    const WmAttractLive *live = wm_fix39_attract_live_state();
+    const wm_fix39_attract_palette *yellow = wm_fix39_attract_palette_find("SGMD8YEL");
+    const wm_source_sprite *blue = wm_select_sprite_find("OSGEMD_C");
+    fix39_render_slate();
+    fix39_draw_sprite(fix39_attract_sprite("MVEBAR_R"), 10, 21, NULL);
+    fix39_draw_sprite(fix39_attract_sprite("SHADOW01"), 13, 30, NULL);
+    fix39_draw_text(wm_fix39_source_general_title(), FIX39_FONT_OSGEMD,
+                    200, 10, true, 10, 0, NULL, blue);
+    for (size_t i = 0; i < WM_FIX39_ATTRACT_GENERAL_TIP_ROWS; ++i)
+        fix39_draw_text(wm_fix39_source_general_row(i), FIX39_FONT_OGMD10,
+                        200, 60 + (int)i * 15, true, 6, 0, yellow, NULL);
+    if (live && live->waiting_external)
+        (void)wm_fix39_attract_screen_signal_external_complete();
+}
+
+static void fix39_render_copyright(void) {
+    const WmAttractLive *live = wm_fix39_attract_live_state();
+    fill_rect(0, 0, 320, 240, RGBA32(0,0,0,255));
+    if (!live) return;
+    const bool page2 = live->page >= 2u;
+    size_t first = page2 ? 9u : 0u;
+    size_t count = page2 ? 10u : 9u;
+    if (!page2)
+        fix39_draw_sprite(fix39_attract_sprite("SMWWF2"), 200, 65, NULL);
+    /* STRCNRMO_2 is an external Wolf-unit library routine. Published game
+       source gives a10=1 and all glyph widths/anchors but not its private
+       blank-space metric; keep source glyphs/native RD7 palette instead of an
+       N64/debug-font replacement. */
+    for (size_t i = 0; i < count; ++i)
+        fix39_draw_text(wm_fix39_source_copyright_line(first + i), FIX39_FONT_RD7,
+                        200, 110 + (int)i * 12, true, 1, 1, NULL, NULL);
+}
+
+static uint32_t fix39_aama_blue(unsigned rgb555) {
+    /* ATTRACT.ASM::blue_grad_pal is literal RGB555: 31..0 (blue channel). */
+    unsigned b5 = rgb555 & 31u;
+    unsigned b8 = (b5 << 3) | (b5 >> 2);
+    return RGBA32(0, 0, b8, 255);
+}
+
+static void fix39_render_aama_gradient(void) {
+    /* Direct translation of do_the_grad_thang's two 2-pixel-high DMA runs.
+       Top: palette indexes 0..30.  Then source advances Y by 0x84 (132).
+       Bottom: palette indexes 31..0.  The final source rows clip at 256. */
+    int sy = 0;
+    for (unsigned index = 0; index < 31u; ++index, sy += 2) {
+        unsigned rgb555 = 31u - index;
+        int y0 = (sy * 240) / 256;
+        int y1 = ((sy + 2) * 240 + 255) / 256;
+        fill_rect(0, y0, 320, y1, fix39_aama_blue(rgb555));
+    }
+    sy += 132;
+    for (int index = 31; index >= 0; --index, sy += 2) {
+        if (sy >= 256) break;
+        unsigned rgb555 = 31u - (unsigned)index;
+        int end = sy + 2;
+        if (end > 256) end = 256;
+        int y0 = (sy * 240) / 256;
+        int y1 = (end * 240 + 255) / 256;
+        fill_rect(0, y0, 320, y1, fix39_aama_blue(rgb555));
+    }
+}
+
+static void fix39_render_aama(void) {
+    fill_rect(0, 0, 320, 240, RGBA32(0,0,0,255));
+    fix39_render_aama_gradient();
+    fix39_draw_text(wm_fix39_source_aama_line(0), FIX39_FONT_RD7, 200,94,true,1,1,NULL,NULL);
+    fix39_draw_text(wm_fix39_source_aama_line(1), FIX39_FONT_RD7, 177,114,false,1,1,NULL,NULL);
+    fix39_draw_text(wm_fix39_source_aama_line(2), FIX39_FONT_RD7, 260,114,false,1,1,NULL,NULL);
+    fix39_draw_text(wm_fix39_source_aama_line(3), FIX39_FONT_RD7, 200,125,true,1,1,NULL,NULL);
+    fix39_draw_text(wm_fix39_source_aama_line(4), FIX39_FONT_RD7, 200,136,true,1,1,NULL,NULL);
+    fix39_draw_text(wm_fix39_source_aama_line(5), FIX39_FONT_RD7, 200,147,true,1,1,NULL,NULL);
+}
+/* END FIX39 V12 ATTRACT RENDERERS */
+
 static void render_character_select(const wm_app *app) {
     fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
     if (!app || app->select.setup_ticks == 0u)
@@ -1694,10 +1968,10 @@ static void draw_progress_wsf14(const char *text, int x, int y) {
     }
 }
 static const char *progress_factory_recent_champ(const wm_app *app) {
-    /* HSTD.ASM factory tables: BEATEN_ROM_TABLE + HS_SIZE begins "MIKE ";
-       INTER_ROM_TABLE + HS_SIZE begins "MARK ".  Persistence can replace this
-       with live CMOS/high-score state when that subsystem is ported. */
-    return app->pregame.belt_type == WM_PREGAME_BELT_WWF ? "MIKE " : "MARK ";
+    if (!app) return "";
+    /* HSTD.ASM source factory/live table owns the recent champion string. */
+    return wm_fix39_hiscore_recent_initials(
+        app->pregame.belt_type == WM_PREGAME_BELT_WWF);
 }
 static void draw_progress_ladder_bits(const wm_app *app) {
     if (!app) return;
@@ -2051,6 +2325,18 @@ static void render_app(const wm_app *app) {
         case WM_ATTRACT_SHOW_TITLE:
             render_title_screen(app);
             break;
+        case WM_ATTRACT_DO_HINTS:
+            fix39_render_hint();
+            break;
+        case WM_ATTRACT_SHOW_GEN_TIPS:
+            fix39_render_general_tips();
+            break;
+        case WM_ATTRACT_SHOW_COPYRIGHT:
+            fix39_render_copyright();
+            break;
+        case WM_ATTRACT_AAMA_MESSAGE:
+            fix39_render_aama();
+            break;
         case WM_ATTRACT_SHOW_GAMEPLAY:
             /* The existing combat renderer is a development harness only.
                Normal product rendering can never present it as start_match. */
@@ -2191,6 +2477,11 @@ int main(void) {
     rdpq_text_register_font(1, rdpq_font_load_builtin(FONT_BUILTIN_DEBUG_VAR));
 
     wm_app_init(&app);
+    wm_fix39_attract_set_platform_capabilities(
+        WM_FIX39_ATTRACT_CAP_DESIGNER_HINT |
+        WM_FIX39_ATTRACT_CAP_GENERAL_TIPS |
+        WM_FIX39_ATTRACT_CAP_COPYRIGHT |
+        WM_FIX39_ATTRACT_CAP_AAMA);
     source_timer.last_us = get_ticks_us();
     debugf("wm_arcade_port r9: 53 Hz arcade wall clock, render-rate independent\n");
     debugf("embedded Bret source sprites: %u\n", (unsigned)wm_bret_sprite_count());

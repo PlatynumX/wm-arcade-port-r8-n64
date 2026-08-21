@@ -44,6 +44,7 @@ python3 "$ROOT/tools/bmod_source.py" \
     --module NTITLESCBMOD \
     --module SPORTBKBMOD \
     --module LADDERBMOD \
+    --module slateBMOD \
     --module choiceBMOD \
     --module wwfselbkBMOD \
     --out "$BMOD_OUT"

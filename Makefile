@@ -11,7 +11,7 @@ endif
 
 include $(N64_INST)/include/n64.mk
 
-CFLAGS += -I$(CURDIR)/include
+CFLAGS += -I$(CURDIR)/include -I$(CURDIR)/src/fix39 -I$(CURDIR)/src/generated
 
 CORE_C := \
     src/core/process.c \
@@ -96,9 +96,15 @@ CORE_C += $(FIX38_ARCADE_C)
 # END FIX38 CUMULATIVE ARCADE SOURCE PORTS
 
 
-ASSET_C := src/generated/bret_sprites.c src/generated/sports_logo.c src/generated/dcs_logo.c src/generated/title_screen.c src/generated/title_sparkle.c src/generated/bmod_tables.c src/generated/sports_background.c src/generated/sports_motto.c src/generated/select_sprites.c src/generated/select_background_main.c src/generated/select_background_choice.c src/generated/progress_background.c src/generated/progress_wrestlers.c
+# BEGIN FIX39 SOURCE-DIRECT MERGE
+FIX39_C := \
+    src/fix39/wm_fix39_runtime.c \
+    src/fix39/wmania_attract_live.c \
+    src/fix39/wmania_ring_onscreen.c
+# END FIX39 SOURCE-DIRECT MERGE
+ASSET_C := src/generated/bret_sprites.c src/generated/sports_logo.c src/generated/dcs_logo.c src/generated/title_screen.c src/generated/title_sparkle.c src/generated/bmod_tables.c src/generated/sports_background.c src/generated/sports_motto.c src/generated/select_sprites.c src/generated/select_background_main.c src/generated/select_background_choice.c src/generated/progress_background.c src/generated/progress_wrestlers.c src/generated/fix39_attract_text_generated.c src/generated/fix39_attract_assets.c
 N64_C := src/platform/n64/main.c src/platform/n64/dcs_effect.c src/platform/n64/audio_backend.c src/platform/n64/dcs_bank.c
-C_FILES := $(CORE_C) $(ASSET_C) $(N64_C)
+C_FILES := $(FIX39_C) $(CORE_C) $(ASSET_C) $(N64_C)
 OBJS := $(addprefix $(BUILD_DIR)/,$(C_FILES:.c=.o))
 
 all: $(ROMNAME).z64
@@ -163,6 +169,31 @@ prepare-select-assets:
 	@test -n "$(WWFMANIA_ZIP)" || (echo "Set WWFMANIA_ZIP=/path/to/wwfmania.zip" >&2; exit 2)
 	WWFMANIA_ZIP="$(WWFMANIA_ZIP)" sh ./scripts/prepare_select_assets.sh
 # END SOURCE CHARACTER SELECT ASSETS
+
+
+# BEGIN FIX39 ATTRACT SOURCE TEXT
+FIX39_ATTRACT_ASM := original/wwf-wrestlemania/ATTRACT.ASM
+FIX39_ATTRACT_TEXT_C := src/generated/fix39_attract_text_generated.c
+FIX39_ATTRACT_TEXT_H := src/generated/fix39_attract_text_generated.h
+$(FIX39_ATTRACT_TEXT_C) $(FIX39_ATTRACT_TEXT_H): $(FIX39_ATTRACT_ASM) tools/fix39_attract_text.py
+	python3 tools/fix39_attract_text.py --source $(FIX39_ATTRACT_ASM) --out-c $(FIX39_ATTRACT_TEXT_C) --out-h $(FIX39_ATTRACT_TEXT_H)
+# END FIX39 ATTRACT SOURCE TEXT
+
+
+# BEGIN FIX39 ATTRACT SOURCE ASSETS
+FIX39_ATTRACT_IMG_DIR := original/wwf-wrestlemania/IMG
+FIX39_ATTRACT_IMGPAL := original/wwf-wrestlemania/IMGPAL.ASM
+FIX39_ATTRACT_ASSET_C := src/generated/fix39_attract_assets.c
+FIX39_ATTRACT_ASSET_H := src/generated/fix39_attract_assets_generated.h
+$(FIX39_ATTRACT_ASSET_C) $(FIX39_ATTRACT_ASSET_H): tools/fix39_attract_assets.py tools/wimpimg.py
+	@test -f $(FIX39_ATTRACT_IMGPAL) || sh scripts/fetch_original.sh
+	python3 tools/fix39_attract_assets.py --img-dir $(FIX39_ATTRACT_IMG_DIR) --imgpal $(FIX39_ATTRACT_IMGPAL) --wimpimg tools/wimpimg.py --out-c $(FIX39_ATTRACT_ASSET_C) --out-h $(FIX39_ATTRACT_ASSET_H)
+# END FIX39 ATTRACT SOURCE ASSETS
+
+
+# BEGIN FIX39 ATTRACT GENERATED HEADER ORDER
+$(BUILD_DIR)/src/platform/n64/main.o: $(FIX39_ATTRACT_TEXT_H) $(FIX39_ATTRACT_ASSET_H)
+# END FIX39 ATTRACT GENERATED HEADER ORDER
 
 $(BUILD_DIR)/$(ROMNAME).elf: $(OBJS)
 

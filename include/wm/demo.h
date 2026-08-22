@@ -26,6 +26,7 @@ typedef enum {
 } wm_demo_action;
 
 typedef struct {
+    uint8_t roster_id;
     wm_visual_state visual;
     wm_visual_state torso_visual;
     wm_demo_facing facing;
@@ -56,6 +57,7 @@ typedef struct {
 
 void wm_demo_init(wm_demo *d);
 void wm_demo_reset_match(wm_demo *d);
+void wm_demo_set_roster(wm_demo *d, uint8_t p1, uint8_t p2);
 void wm_demo_tick(wm_demo *d, const wm_input_state *input);
 const char *wm_demo_action_name(wm_demo_action action);
 const char *wm_demo_facing_name(wm_demo_facing facing);

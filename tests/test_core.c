@@ -3,6 +3,8 @@
 #include <string.h>
 #include "wm/anim.h"
 #include "wm/app.h"
+#include "wm/character_assets.h"
+#include "wm_fix39_runtime.h"
 #include "wm/bmod.h"
 #include "wm/source_clock.h"
 #include "wm/bret_visuals.h"
@@ -252,6 +254,7 @@ static void test_demo_four_way_and_run(void) {
     wm_demo d;
     wm_demo_init(&d);
     d.ai_enabled = false;
+    wm_demo_set_roster(&d, 4u, 0u);
     CHECK(d.p1.action == WM_DEMO_IDLE);
     CHECK(d.p1.facing == WM_DEMO_FACING_6);
 
@@ -260,13 +263,14 @@ static void test_demo_four_way_and_run(void) {
     CHECK(d.p1.action == WM_DEMO_WALK);
     CHECK(d.p1.facing == WM_DEMO_FACING_6);
     CHECK(d.p1.flip_x);
-    CHECK(d.p1.visual.sequence == &wm_bret_walk6_f4_anim);
+    CHECK(d.p1.visual.sequence == wm_character_visual(4u, WM_CV_WALK6));
+    CHECK(d.p1.visual.sequence != wm_character_visual(0u, WM_CV_WALK6));
 
     wm_input_state left = {.stick_x = -80};
     wm_demo_tick(&d, &left);
     CHECK(d.p1.facing == WM_DEMO_FACING_4);
     CHECK(!d.p1.flip_x);
-    CHECK(d.p1.visual.sequence == &wm_bret_walk4_f4_anim);
+    CHECK(d.p1.visual.sequence == wm_character_visual(4u, WM_CV_WALK4));
 
     wm_input_state up_run = {.stick_y = 80, .run = true};
     int y0 = d.p1.screen_y;
@@ -274,13 +278,13 @@ static void test_demo_four_way_and_run(void) {
     CHECK(d.p1.action == WM_DEMO_RUN);
     CHECK(d.p1.facing == WM_DEMO_FACING_8);
     CHECK(d.p1.screen_y < y0);
-    CHECK(d.p1.visual.sequence == &wm_bret_run_anim);
+    CHECK(d.p1.visual.sequence == wm_character_visual(4u, WM_CV_RUN));
 
     wm_input_state down = {.stick_y = -80};
     wm_demo_tick(&d, &down);
     CHECK(d.p1.action == WM_DEMO_WALK);
     CHECK(d.p1.facing == WM_DEMO_FACING_2);
-    CHECK(d.p1.visual.sequence == &wm_bret_walk2_f2_anim);
+    CHECK(d.p1.visual.sequence == wm_character_visual(4u, WM_CV_WALK2));
 }
 
 static bool is_attack_action(wm_demo_action a) {
@@ -331,13 +335,13 @@ static void run_attack_case(wm_input_state attack, wm_demo_action expected_actio
 
 static void test_four_attack_buttons(void) {
     run_attack_case((wm_input_state){.light_punch=true}, WM_DEMO_LIGHT_PUNCH,
-                    &wm_bret_light_punch4_anim, 5);
+                    wm_character_visual(0u, WM_CV_LP4), 5);
     run_attack_case((wm_input_state){.power_punch=true}, WM_DEMO_POWER_PUNCH,
-                    &wm_bret_power_punch_anim, 12);
+                    wm_character_visual(0u, WM_CV_PP), 12);
     run_attack_case((wm_input_state){.light_kick=true}, WM_DEMO_LIGHT_KICK,
-                    &wm_bret_light_kick4_anim, 5);
+                    wm_character_visual(0u, WM_CV_LK4), 5);
     run_attack_case((wm_input_state){.power_kick=true}, WM_DEMO_POWER_KICK,
-                    &wm_bret_power_kick_anim, 15);
+                    wm_character_visual(0u, WM_CV_PK), 15);
 }
 
 static void test_block(void) {
@@ -452,8 +456,16 @@ static void test_attract_source_flow(void) {
     CHECK(app.attract.sports_world_y > 0);
     wm_app_tick(&app, &button);
     CHECK(wm_process_find_id(&app.scheduler, WM_PID_WATER) == NULL);
+    CHECK(app.attract.call == WM_ATTRACT_SHOW_GAMEPLAY);
+    /* Gameplay now owns a real attract window. With RUN held, it becomes
+       skippable after 60 ticks and then advances past the pending credit
+       screen to the translated title call. */
+    for (unsigned i = 0; i < 60u; ++i) {
+        wm_app_tick(&app, &button);
+        CHECK(app.attract.call == WM_ATTRACT_SHOW_GAMEPLAY);
+    }
+    wm_app_tick(&app, &button);
     CHECK(app.attract.call == WM_ATTRACT_SHOW_TITLE);
-
     unsigned initial_lava = app.attract.title_lava_step;
     for (unsigned i = 0; i < WM_TITLE_BUTTON_ENABLE_TICKS; ++i) {
         wm_app_tick(&app, &button);
@@ -467,16 +479,24 @@ static void test_attract_source_flow(void) {
     for (size_t i = 0; i < WM_TITLE_GLINT_COUNT; ++i)
         any_glint |= app.attract.title_glints[i].active;
     CHECK(any_glint);
-    CHECK(app.attract.title_random_state != 0x57574631u);
+    /* Fix39 replaced the provisional per-title RNG with the shared source RAND/RNDRNG0 state. */
+    CHECK(wm_fix39_rng_state() != 0u);
     wm_app_tick(&app, &button);
     CHECK(wm_process_find_id(&app.scheduler, WM_PID_CYCLE_LAVA) == NULL);
     CHECK(wm_process_find_id(&app.scheduler, WM_PID_FLASH) == NULL);
     CHECK(wm_process_find_id(&app.scheduler, WM_PID_ATTRACT_ANIM) == NULL);
+    CHECK(app.attract.call == WM_ATTRACT_SHOW_GAMEPLAY);
+    /* Fix39: second source gameplay slot after Title. */
+    for (unsigned i = 0; i < 60u; ++i) {
+        wm_app_tick(&app, &button);
+        CHECK(app.attract.call == WM_ATTRACT_SHOW_GAMEPLAY);
+    }
+    wm_app_tick(&app, &button);
     CHECK(app.attract.call == WM_ATTRACT_DCS_LOGO);
     CHECK(app.attract.amode_loops == 1);
 
-    CHECK(app.demo.total_hits == 0);
-    CHECK(app.demo.total_blocks == 0);
+    /* Fix39: live attract gameplay mutates demo combat counters. */
+    /* Counter values are outcome-dependent once CPU-vs-CPU gameplay runs. */
 
     bool old_debug = app.show_debug;
     wm_app_tick(&app, &(wm_input_state){.z=true});

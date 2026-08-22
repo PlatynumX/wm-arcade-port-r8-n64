@@ -15,6 +15,28 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Prepare generated Bret sprites for host verifier
+        # FIX39 DEMO3 HOST GENERATED SPRITES
+        run: |
+          set -euo pipefail
+          sh ./scripts/prepare_bret_sprites.sh
+          test -s src/generated/bret_sprites.c
+      - name: Generate Bret attack frames from historical source
+        # FIX39 DEMO5 SOURCE ATTACK FRAMES
+        run: |
+          set -euo pipefail
+          test -f original/wwf-wrestlemania/HRTSEQ2.ASM || sh ./scripts/fetch_original.sh
+          python3 tools/fix39_bret_attack_frames.py --source original/wwf-wrestlemania/HRTSEQ2.ASM --out src/fix39/wm_arcade_bret_attack_frames_generated.h
+          grep -q 'WM_FIX39_BRET_ATTACK_FRAMES_GENERATED 1' src/fix39/wm_arcade_bret_attack_frames_generated.h
+      - name: Generate all wrestler source art and attack frames
+        # FIX39 COMBAT2L CHARACTER ASSETS
+        run: |
+          set -euo pipefail
+          test -d original/wwf-wrestlemania || sh ./scripts/fetch_original.sh
+          python3 tools/fix39_character_assets.py --root original/wwf-wrestlemania --out-c src/generated/character_assets.c --out-h include/wm/character_assets.h
+          python3 tools/fix39_character_attack_frames.py --root original/wwf-wrestlemania --out src/fix39/wm_arcade_character_attack_frames_generated.h
+          grep -q 'WM_FIX39_CHARACTER_ATTACK_FRAMES_GENERATED 1' src/fix39/wm_arcade_character_attack_frames_generated.h
+          test -s src/generated/character_assets.c
       - name: Configure portable verifier
         run: cmake -S . -B build-host -DCMAKE_BUILD_TYPE=Release
       - name: Build portable verifier

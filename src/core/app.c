@@ -1,4 +1,9 @@
 #include "wm/app.h"
+#include "wm_fix39_runtime.h"
+#include "wm_arcade_wimp_frame.h"
+#include "wm/bret_sprites.h"
+#include "wm/visual.h"
+#include <stdint.h>
 #include <string.h>
 
 static const wm_input_state no_input = {0};
@@ -45,23 +50,16 @@ static const uint16_t title_sparkle_sites[WM_TITLE_SPARKLE_SITE_COUNT][2] = {
     {345,  4 }, {359, 32 }, {370,  4 }, {373, 56 }, {383, 17 },
 };
 
-static uint32_t title_rotl32(uint32_t v, unsigned n) {
-    n &= 31u;
-    return n ? (v << n) | (v >> (32u - n)) : v;
-}
 
 static uint32_t title_rndrng0(wm_app *app, const wm_process *proc,
-                              uint32_t maximum) {
-    wm_attract_state *a = &app->attract;
-    uint32_t state = a->title_random_state ? a->title_random_state : 0x57574631u;
+                               uint32_t maximum) {
+    /* Exact shared RNDRNG0 translation. The source scheduler phase supplies
+       HCOUNT; a live stack address supplies the N64 SP entropy input. */
     uint32_t hcount = (app->scheduler.tick * 8u) & 0x1ffu;
-    uint32_t stack_surrogate = proc ? (proc->generation << 4) ^ proc->state : 0u;
-    uint32_t mixed = title_rotl32(state, state & 31u);
-    mixed ^= title_rotl32(hcount | (hcount << 16), hcount & 31u);
-    mixed ^= stack_surrogate;
-    mixed += 0x9e3779b9u + a->title_rng_counter++;
-    a->title_random_state = mixed;
-    return (uint32_t)(((uint64_t)mixed * ((uint64_t)maximum + 1u)) >> 32);
+    uint32_t sp_value = (uint32_t)(uintptr_t)&maximum;
+    (void)proc;
+    wm_fix39_rng_set_entropy(hcount, sp_value);
+    return wm_fix39_rndrng0(maximum);
 }
 
 static unsigned title_sparkle_family_frames(unsigned family) {
@@ -239,66 +237,72 @@ static void begin_call(wm_app *app, wm_attract_call call) {
     }
 }
 
+static bool fix39_attract_frontend_call(const WmAttractStep *step,
+                                          wm_attract_call *out) {
+    if (!step || !out) return false;
+    switch (step->screen) {
+        case WM_FIX39_ATTRACT_HISCORES: *out = WM_ATTRACT_SHOW_HSTD; return true;
+        case WM_FIX39_ATTRACT_DCS_LOGO: *out = WM_ATTRACT_DCS_LOGO; return true;
+        case WM_FIX39_ATTRACT_SPORTS_LOGO: *out = WM_ATTRACT_SHOW_SPORTS_LOGO; return true;
+        case WM_FIX39_ATTRACT_GAMEPLAY_DEMO_1:
+        case WM_FIX39_ATTRACT_GAMEPLAY_DEMO_2: *out = WM_ATTRACT_SHOW_GAMEPLAY; return true;
+        case WM_FIX39_ATTRACT_CREDITS_1:
+        case WM_FIX39_ATTRACT_CREDITS_2:
+        case WM_FIX39_ATTRACT_EVEN_LOOP_CREDITS: *out = WM_ATTRACT_CREDITSCREEN; return true;
+        case WM_FIX39_ATTRACT_TITLE: *out = WM_ATTRACT_SHOW_TITLE; return true;
+        case WM_FIX39_ATTRACT_DESIGNER_HINT: *out = WM_ATTRACT_DO_HINTS; return true;
+        case WM_FIX39_ATTRACT_GENERAL_TIPS: *out = WM_ATTRACT_SHOW_GEN_TIPS; return true;
+        case WM_FIX39_ATTRACT_BIO: *out = WM_ATTRACT_SHOW_BIOS; return true;
+        case WM_FIX39_ATTRACT_BIO_TIPS: *out = WM_ATTRACT_SHOW_BIOS_TIPS; return true;
+        case WM_FIX39_ATTRACT_OPERATOR_MESSAGE: *out = WM_ATTRACT_SHOW_OPERATORMSG; return true;
+        case WM_FIX39_ATTRACT_TIME_DATE: *out = WM_ATTRACT_SHOW_TIME_DATE; return true;
+        case WM_FIX39_ATTRACT_COPYRIGHT: *out = WM_ATTRACT_SHOW_COPYRIGHT; return true;
+        case WM_FIX39_ATTRACT_AAMA: *out = WM_ATTRACT_AAMA_MESSAGE; return true;
+    }
+    return false;
+}
+static bool begin_fix39_attract_step(wm_app *app, size_t index) {
+    const WmAttractStep *step = wm_fix39_attract_step(index);
+    wm_attract_call call;
+    if (!step || !fix39_attract_frontend_call(step, &call)) return false;
+    app->attract.source_index = (uint8_t)index;
+    app->attract.amode_loops = step->source_amode_loops;
+    begin_call(app, call);
+    /* V11 source ownership: this begins the translated screen runner only
+       when the platform has explicitly bound its exact presentation. */
+    (void)wm_fix39_attract_screen_begin(index);
+    return true;
+}
 static void begin_base_loop(wm_app *app) {
     app->attract.flow = WM_ATTRACT_FLOW_BASE;
-    app->attract.source_index = 0;
-    begin_call(app, wm_source_attract_loop[0]);
+    if (wm_fix39_attract_cycle_begin() == 0u) return;
+    (void)begin_fix39_attract_step(app, 0u);
 }
 
-static void finish_base_loop(wm_app *app) {
-    wm_attract_state *a = &app->attract;
-    ++a->amode_loops;
-    if (a->amode_loops & 1u) {
-        begin_base_loop(app);
-        return;
-    }
-    a->flow = WM_ATTRACT_FLOW_EVEN_CREDITS;
-    begin_call(app, WM_ATTRACT_CREDITSCREEN);
-}
 
 static void advance_call(wm_app *app) {
     wm_attract_state *a = &app->attract;
+    size_t next_index;
     if (a->call == WM_ATTRACT_DCS_LOGO) {
         /* ATTR.ASM DCS screen stop/reset boundary. */
         (void)wm_audio_send_command(&app->audio, 0);
     }
     kill_call_processes(app, a->call);
-
-    switch (a->flow) {
-        case WM_ATTRACT_FLOW_BASE:
-            ++a->source_index;
-            if (a->source_index < wm_source_attract_loop_count) {
-                begin_call(app, wm_source_attract_loop[a->source_index]);
-            } else {
-                finish_base_loop(app);
-            }
-            return;
-        case WM_ATTRACT_FLOW_EVEN_CREDITS:
-            a->flow = WM_ATTRACT_FLOW_TIME_DATE;
-            begin_call(app, WM_ATTRACT_SHOW_TIME_DATE);
-            return;
-        case WM_ATTRACT_FLOW_TIME_DATE:
-            if (a->amode_loops & 7u) begin_base_loop(app);
-            else {
-                a->flow = WM_ATTRACT_FLOW_COPYRIGHT;
-                begin_call(app, WM_ATTRACT_SHOW_COPYRIGHT);
-            }
-            return;
-        case WM_ATTRACT_FLOW_COPYRIGHT:
-            a->flow = WM_ATTRACT_FLOW_AAMA;
-            begin_call(app, WM_ATTRACT_AAMA_MESSAGE);
-            return;
-        case WM_ATTRACT_FLOW_AAMA:
-            a->amode_loops = 0;
-            begin_base_loop(app);
-            return;
+    next_index = (size_t)a->source_index + 1u;
+    if (wm_fix39_attract_step(next_index) != NULL) {
+        (void)begin_fix39_attract_step(app, next_index);
+        return;
     }
+    begin_base_loop(app);
 }
 
-static void skip_untranslated_calls(wm_app *app) {
-    for (unsigned guard = 0; guard < 64 &&
-         !wm_attract_call_is_translated(app->attract.call); ++guard)
+static void skip_fix39_pending_calls(wm_app *app) {
+    for (unsigned guard = 0; guard < 64u; ++guard) {
+        size_t index = (size_t)app->attract.source_index;
+        if (wm_fix39_attract_step_runnable(index)) return;
+        wm_fix39_attract_note_pending_skip(index);
         advance_call(app);
+    }
 }
 
 static void set_dcs_phase(wm_app *app, wm_dcs_phase phase) {
@@ -355,6 +359,69 @@ static bool tick_sports_logo(wm_app *app, const wm_input_state *input) {
     return a->call_ticks >= WM_SPORTS_LOGO_TOTAL_TICKS;
 }
 
+static void fix39_bind_demo_frame_boxes(wm_app *app) {
+    const wm_visual_frame *vf[2] = { wm_visual_current(&app->demo.p1.visual), wm_visual_current(&app->demo.p2.visual) };
+    for (size_t i = 0; i < 2u; ++i) {
+        const wm_source_sprite *spr = (vf[i] && vf[i]->source_frame) ? wm_bret_sprite_find(vf[i]->source_frame) : NULL;
+        wm_arcade_frame_box_t box;
+        if (spr && wm_arcade_wimp_frame_box_from_sprite(spr, &box))
+            (void)wm_fix39_match_set_frame_box(i, &box);
+        else
+            wm_fix39_match_clear_frame_box(i);
+    }
+}
+
+static bool fix39_tick_gameplay_demo(wm_app *app, const wm_input_state *input) {
+    wm_attract_state *a = &app->attract;
+    ++a->call_ticks;
+    if (a->call_ticks == 1u) {
+        wm_demo_reset_match(&app->demo);
+        wm_fix39_match_begin((unsigned)app->p1_choice, (unsigned)app->p2_choice);
+        wm_fix39_match_set_cpu_vs_cpu(true);
+    }
+
+    /* The source-art N64 presenter remains a presentation adapter only. The
+       translated arcade DRONE/combat runtime below owns match behavior. */
+    {
+        wm_input_state cpu1 = {0};
+        int dx = app->demo.p2.screen_x - app->demo.p1.screen_x;
+        int dy = app->demo.p2.screen_y - app->demo.p1.screen_y;
+        if (dx > 36) cpu1.stick_x = 75;
+        else if (dx < -36) cpu1.stick_x = -75;
+        if (dy > 18) cpu1.stick_y = -55;
+        else if (dy < -18) cpu1.stick_y = 55;
+        if (dx < 58 && dx > -58 && dy < 30 && dy > -30) {
+            unsigned phase = (unsigned)((a->call_ticks / 24u) & 3u);
+            cpu1.light_punch = phase == 0u;
+            cpu1.power_punch = phase == 1u;
+            cpu1.light_kick = phase == 2u;
+            cpu1.power_kick = phase == 3u;
+        }
+        wm_demo_tick(&app->demo, &cpu1);
+    }
+
+    /* Keep COLLIS in the exact same X/Z/facing space as the source-art presenter. */
+    wm_fix39_match_sync_presenter_pose(0, app->demo.p1.screen_x, app->demo.p1.screen_y, app->demo.p1.flip_x, app->demo.p1.action == WM_DEMO_BLOCK);
+    wm_fix39_match_sync_presenter_pose(1, app->demo.p2.screen_x, app->demo.p2.screen_y, app->demo.p2.flip_x, app->demo.p2.action == WM_DEMO_BLOCK);
+    wm_fix39_match_bind_bret_demo_attack(0, (int)app->demo.p1.action, app->demo.p1.visual.frame_index, (int)app->demo.p1.facing);
+    wm_fix39_match_bind_bret_demo_attack(1, (int)app->demo.p2.action, app->demo.p2.visual.frame_index, (int)app->demo.p2.facing);
+
+    /* Bind the exact current WIMP IANI3 tuple before the source collision slot. */
+    fix39_bind_demo_frame_boxes(app);
+    wm_fix39_match_tick(0, 0, false, false, false, false, false, false);
+    app->demo.p1.health = (int)wm_fix39_match_life(0);
+    app->demo.p2.health = (int)wm_fix39_match_life(1);
+
+    if (a->call_ticks > 60u && wm_app_any_attract_button(input)) {
+        wm_fix39_match_set_cpu_vs_cpu(false);
+        return true;
+    }
+    if (a->call_ticks >= 452u) {
+        wm_fix39_match_set_cpu_vs_cpu(false);
+        return true;
+    }
+    return false;
+}
 static bool tick_title(wm_app *app, const wm_input_state *input) {
     wm_attract_state *a = &app->attract;
     ++a->call_ticks;
@@ -378,6 +445,7 @@ static bool tick_title(wm_app *app, const wm_input_state *input) {
 
 void wm_app_init(wm_app *app) {
     memset(app, 0, sizeof(*app));
+    wm_fix39_runtime_init();
     app->mode = WM_APP_MODE_ATTRACT;
     wm_audio_init(&app->audio);
     wm_select_continue_init(&app->continue_select);
@@ -478,7 +546,7 @@ void wm_app_tick_dual(wm_app *app,
         begin_base_loop(app);
     }
 
-    skip_untranslated_calls(app);
+    skip_fix39_pending_calls(app);
 
     /*
      * SOURCE_SELECT_TITLE_START_BRIDGE
@@ -500,11 +568,15 @@ void wm_app_tick_dual(wm_app *app,
 
     bool done = false;
     switch (app->attract.call) {
-        case WM_ATTRACT_DCS_LOGO: done = tick_dcs_logo(app, input); break;
-        case WM_ATTRACT_SHOW_SPORTS_LOGO: done = tick_sports_logo(app, input); break;
-        case WM_ATTRACT_SHOW_TITLE: done = tick_title(app, input); break;
-        default: break;
-    }
+            case WM_ATTRACT_DCS_LOGO: done = tick_dcs_logo(app, input); break;
+            case WM_ATTRACT_SHOW_SPORTS_LOGO: done = tick_sports_logo(app, input); break;
+            case WM_ATTRACT_SHOW_TITLE: done = tick_title(app, input); break;
+        case WM_ATTRACT_SHOW_GAMEPLAY: done = fix39_tick_gameplay_demo(app, input); break;
+            default:
+                done = wm_fix39_attract_screen_tick(
+                    wm_app_any_attract_button(input));
+                break;
+        }
 
     /* Source CREATEd processes are stepped on the same global source clock.
        Individual translated process bodies explicitly preserve their initial
@@ -518,7 +590,7 @@ void wm_app_tick_dual(wm_app *app,
         }
         advance_call(app);
     }
-    skip_untranslated_calls(app);
+    skip_fix39_pending_calls(app);
 }
 
 
@@ -551,5 +623,11 @@ bool wm_app_video_frame(wm_app *app, const wm_input_state *input) {
     wm_input_state tick_input = app->latched_input;
     memset(&app->latched_input, 0, sizeof(app->latched_input));
     wm_app_tick(app, &tick_input);
+    /* WRESTLE.ASM mainpok randomizes RAND after process_dispatch. */
+    {
+        uint32_t hcount = (app->scheduler.tick * 8u) & 0x1ffu;
+        uint32_t sp_value = (uint32_t)(uintptr_t)&tick_input;
+        (void)wm_fix39_mainloop_step(hcount, sp_value);
+    }
     return true;
 }

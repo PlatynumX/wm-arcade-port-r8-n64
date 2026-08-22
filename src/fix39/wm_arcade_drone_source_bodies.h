@@ -1,0 +1,5 @@
+#ifndef WM_ARCADE_DRONE_SOURCE_BODIES_H
+#define WM_ARCADE_DRONE_SOURCE_BODIES_H
+int wm_arcade_drone_source_install_generated_bodies(void);
+int wm_arcade_drone_source_generated_body_count(void);
+#endif

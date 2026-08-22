@@ -1,0 +1,887 @@
+/* Generated only from original Midway CROWD.ASM + CROWD.IMG. */
+#include "wm/crowd_assets.h"
+static const wm_crowd_cmd s0[]={
+{WM_CROWD_FRAME,1,6},
+{WM_CROWD_FRAME,2,6},
+{WM_CROWD_FRAME,3,6},
+{WM_CROWD_FRAME,1,6},
+{WM_CROWD_GOTO,2,0},
+};
+static const wm_crowd_cmd s1[]={
+{WM_CROWD_FRAME,1,6},
+{WM_CROWD_FRAME,2,6},
+{WM_CROWD_REPEAT,0,7},
+{WM_CROWD_FRAME,3,6},
+{WM_CROWD_FRAME,2,6},
+{WM_CROWD_SHOULD_REPEAT,0,0},
+{WM_CROWD_FRAME,1,6},
+{WM_CROWD_GOTO,2,0},
+};
+static const wm_crowd_cmd s2[]={
+{WM_CROWD_FRAME,0,32767},
+{WM_CROWD_GOTO,2,0},
+};
+static const wm_crowd_cmd s3[]={
+{WM_CROWD_FRAME,5,7},
+{WM_CROWD_FRAME,6,7},
+{WM_CROWD_FRAME,7,7},
+{WM_CROWD_FRAME,5,7},
+{WM_CROWD_GOTO,5,0},
+};
+static const wm_crowd_cmd s4[]={
+{WM_CROWD_FRAME,5,7},
+{WM_CROWD_FRAME,6,7},
+{WM_CROWD_FRAME,7,7},
+{WM_CROWD_REPEAT,0,7},
+{WM_CROWD_FRAME,6,7},
+{WM_CROWD_FRAME,7,7},
+{WM_CROWD_SHOULD_REPEAT,0,0},
+{WM_CROWD_FRAME,5,7},
+{WM_CROWD_GOTO,5,0},
+};
+static const wm_crowd_cmd s5[]={
+{WM_CROWD_FRAME,4,32767},
+{WM_CROWD_GOTO,5,0},
+};
+static const wm_crowd_cmd s6[]={
+{WM_CROWD_FRAME,14,8},
+{WM_CROWD_FRAME,15,8},
+{WM_CROWD_FRAME,16,8},
+{WM_CROWD_FRAME,15,8},
+{WM_CROWD_FRAME,14,8},
+{WM_CROWD_GOTO,7,0},
+};
+static const wm_crowd_cmd s7[]={
+{WM_CROWD_FRAME,13,32767},
+{WM_CROWD_GOTO,7,0},
+};
+static const wm_crowd_cmd s8[]={
+{WM_CROWD_FRAME,17,7},
+{WM_CROWD_FRAME,18,7},
+{WM_CROWD_FRAME,19,7},
+{WM_CROWD_FRAME,20,7},
+{WM_CROWD_FRAME,19,7},
+{WM_CROWD_FRAME,18,7},
+{WM_CROWD_GOTO,10,0},
+};
+static const wm_crowd_cmd s9[]={
+{WM_CROWD_FRAME,17,7},
+{WM_CROWD_REPEAT,0,7},
+{WM_CROWD_FRAME,18,7},
+{WM_CROWD_FRAME,19,7},
+{WM_CROWD_FRAME,20,7},
+{WM_CROWD_FRAME,19,7},
+{WM_CROWD_FRAME,18,7},
+{WM_CROWD_FRAME,19,7},
+{WM_CROWD_FRAME,20,7},
+{WM_CROWD_FRAME,19,7},
+{WM_CROWD_SHOULD_REPEAT,0,0},
+{WM_CROWD_FRAME,18,7},
+{WM_CROWD_GOTO,10,0},
+};
+static const wm_crowd_cmd s10[]={
+{WM_CROWD_FRAME,17,7},
+{WM_CROWD_RNDWAIT,0,530},
+{WM_CROWD_FRAME,18,7},
+{WM_CROWD_FRAME,19,7},
+{WM_CROWD_FRAME,20,7},
+{WM_CROWD_FRAME,19,7},
+{WM_CROWD_FRAME,18,7},
+{WM_CROWD_GOTO,10,0},
+};
+static const wm_crowd_cmd s11[]={
+{WM_CROWD_FRAME,22,7},
+{WM_CROWD_FRAME,23,7},
+{WM_CROWD_FRAME,24,7},
+{WM_CROWD_FRAME,23,7},
+{WM_CROWD_FRAME,22,7},
+{WM_CROWD_GOTO,13,0},
+};
+static const wm_crowd_cmd s12[]={
+{WM_CROWD_FRAME,22,7},
+{WM_CROWD_REPEAT,0,3},
+{WM_CROWD_FRAME,23,7},
+{WM_CROWD_FRAME,24,7},
+{WM_CROWD_SHOULD_REPEAT,0,0},
+{WM_CROWD_FRAME,23,7},
+{WM_CROWD_FRAME,22,7},
+{WM_CROWD_GOTO,13,0},
+};
+static const wm_crowd_cmd s13[]={
+{WM_CROWD_FRAME,21,32767},
+{WM_CROWD_GOTO,13,0},
+};
+static const wm_crowd_cmd s14[]={
+{WM_CROWD_REPEAT,0,2},
+{WM_CROWD_FRAME,25,8},
+{WM_CROWD_FRAME,26,8},
+{WM_CROWD_FRAME,27,8},
+{WM_CROWD_FRAME,28,8},
+{WM_CROWD_FRAME,27,8},
+{WM_CROWD_FRAME,26,8},
+{WM_CROWD_SHOULD_REPEAT,0,0},
+{WM_CROWD_GOTO,15,0},
+};
+static const wm_crowd_cmd s15[]={
+{WM_CROWD_FRAME,25,8},
+{WM_CROWD_RNDWAIT,0,212},
+{WM_CROWD_FRAME,26,8},
+{WM_CROWD_FRAME,27,8},
+{WM_CROWD_FRAME,28,8},
+{WM_CROWD_FRAME,27,8},
+{WM_CROWD_FRAME,26,8},
+{WM_CROWD_GOTO,15,0},
+};
+static const wm_crowd_cmd s16[]={
+{WM_CROWD_FRAME,30,7},
+{WM_CROWD_FRAME,31,7},
+{WM_CROWD_FRAME,32,7},
+{WM_CROWD_FRAME,33,10},
+{WM_CROWD_FRAME,32,7},
+{WM_CROWD_FRAME,31,7},
+{WM_CROWD_FRAME,30,7},
+{WM_CROWD_GOTO,18,0},
+};
+static const wm_crowd_cmd s17[]={
+{WM_CROWD_FRAME,30,7},
+{WM_CROWD_REPEAT,0,7},
+{WM_CROWD_FRAME,31,7},
+{WM_CROWD_FRAME,32,7},
+{WM_CROWD_FRAME,33,10},
+{WM_CROWD_FRAME,32,7},
+{WM_CROWD_SHOULD_REPEAT,0,0},
+{WM_CROWD_FRAME,31,7},
+{WM_CROWD_FRAME,30,7},
+{WM_CROWD_GOTO,18,0},
+};
+static const wm_crowd_cmd s18[]={
+{WM_CROWD_FRAME,29,32767},
+{WM_CROWD_GOTO,18,0},
+};
+static const wm_crowd_cmd s19[]={
+{WM_CROWD_FRAME,35,8},
+{WM_CROWD_FRAME,36,8},
+{WM_CROWD_FRAME,37,8},
+{WM_CROWD_FRAME,35,8},
+{WM_CROWD_GOTO,21,0},
+};
+static const wm_crowd_cmd s20[]={
+{WM_CROWD_FRAME,35,8},
+{WM_CROWD_REPEAT,0,4},
+{WM_CROWD_FRAME,36,8},
+{WM_CROWD_FRAME,37,8},
+{WM_CROWD_SHOULD_REPEAT,0,0},
+{WM_CROWD_FRAME,35,8},
+{WM_CROWD_GOTO,21,0},
+};
+static const wm_crowd_cmd s21[]={
+{WM_CROWD_FRAME,34,32767},
+{WM_CROWD_GOTO,21,0},
+};
+static const wm_crowd_cmd s22[]={
+{WM_CROWD_FRAME,39,5},
+{WM_CROWD_FRAME,40,5},
+{WM_CROWD_FRAME,41,5},
+{WM_CROWD_FRAME,42,5},
+{WM_CROWD_FRAME,43,5},
+{WM_CROWD_GOTO,24,0},
+};
+static const wm_crowd_cmd s23[]={
+{WM_CROWD_REPEAT,0,7},
+{WM_CROWD_FRAME,39,5},
+{WM_CROWD_FRAME,40,5},
+{WM_CROWD_SHOULD_REPEAT,0,0},
+{WM_CROWD_FRAME,41,5},
+{WM_CROWD_FRAME,42,5},
+{WM_CROWD_FRAME,43,5},
+{WM_CROWD_GOTO,24,0},
+};
+static const wm_crowd_cmd s24[]={
+{WM_CROWD_FRAME,38,32767},
+{WM_CROWD_GOTO,24,0},
+};
+static const wm_crowd_cmd s25[]={
+{WM_CROWD_FRAME,100,6},
+{WM_CROWD_FRAME,101,6},
+{WM_CROWD_FRAME,102,6},
+{WM_CROWD_FRAME,103,6},
+{WM_CROWD_FRAME,102,6},
+{WM_CROWD_FRAME,101,6},
+{WM_CROWD_FRAME,100,6},
+{WM_CROWD_GOTO,27,0},
+};
+static const wm_crowd_cmd s26[]={
+{WM_CROWD_FRAME,100,6},
+{WM_CROWD_FRAME,101,6},
+{WM_CROWD_REPEAT,0,7},
+{WM_CROWD_FRAME,102,6},
+{WM_CROWD_FRAME,103,6},
+{WM_CROWD_FRAME,102,6},
+{WM_CROWD_FRAME,101,6},
+{WM_CROWD_SHOULD_REPEAT,0,0},
+{WM_CROWD_FRAME,100,6},
+{WM_CROWD_GOTO,27,0},
+};
+static const wm_crowd_cmd s27[]={
+{WM_CROWD_FRAME,99,32767},
+{WM_CROWD_GOTO,27,0},
+};
+static const wm_crowd_cmd s28[]={
+{WM_CROWD_FRAME,45,8},
+{WM_CROWD_FRAME,46,8},
+{WM_CROWD_FRAME,47,8},
+{WM_CROWD_FRAME,48,8},
+{WM_CROWD_GOTO,30,0},
+};
+static const wm_crowd_cmd s29[]={
+{WM_CROWD_FRAME,45,8},
+{WM_CROWD_FRAME,46,8},
+{WM_CROWD_REPEAT,0,7},
+{WM_CROWD_FRAME,47,8},
+{WM_CROWD_FRAME,48,8},
+{WM_CROWD_SHOULD_REPEAT,0,0},
+{WM_CROWD_GOTO,30,0},
+};
+static const wm_crowd_cmd s30[]={
+{WM_CROWD_FRAME,44,32767},
+{WM_CROWD_GOTO,30,0},
+};
+static const wm_crowd_cmd s31[]={
+{WM_CROWD_FRAME,50,7},
+{WM_CROWD_FRAME,51,7},
+{WM_CROWD_FRAME,52,7},
+{WM_CROWD_FRAME,51,7},
+{WM_CROWD_FRAME,50,7},
+{WM_CROWD_GOTO,33,0},
+};
+static const wm_crowd_cmd s32[]={
+{WM_CROWD_FRAME,50,7},
+{WM_CROWD_REPEAT,0,3},
+{WM_CROWD_FRAME,51,7},
+{WM_CROWD_FRAME,52,7},
+{WM_CROWD_SHOULD_REPEAT,0,0},
+{WM_CROWD_FRAME,51,7},
+{WM_CROWD_FRAME,50,7},
+{WM_CROWD_GOTO,33,0},
+};
+static const wm_crowd_cmd s33[]={
+{WM_CROWD_FRAME,49,32767},
+{WM_CROWD_GOTO,33,0},
+};
+static const wm_crowd_cmd s34[]={
+{WM_CROWD_FRAME,54,8},
+{WM_CROWD_FRAME,55,8},
+{WM_CROWD_FRAME,56,24},
+{WM_CROWD_FRAME,55,8},
+{WM_CROWD_FRAME,54,8},
+{WM_CROWD_GOTO,36,0},
+};
+static const wm_crowd_cmd s35[]={
+{WM_CROWD_FRAME,54,8},
+{WM_CROWD_FRAME,55,8},
+{WM_CROWD_FRAME,56,8},
+{WM_CROWD_FRAME,55,8},
+{WM_CROWD_FRAME,56,24},
+{WM_CROWD_FRAME,55,8},
+{WM_CROWD_FRAME,54,8},
+{WM_CROWD_GOTO,36,0},
+};
+static const wm_crowd_cmd s36[]={
+{WM_CROWD_FRAME,53,32767},
+{WM_CROWD_GOTO,36,0},
+};
+static const wm_crowd_cmd s37[]={
+{WM_CROWD_FRAME,58,7},
+{WM_CROWD_FRAME,59,7},
+{WM_CROWD_FRAME,60,7},
+{WM_CROWD_FRAME,59,7},
+{WM_CROWD_FRAME,60,7},
+{WM_CROWD_FRAME,58,7},
+{WM_CROWD_GOTO,39,0},
+};
+static const wm_crowd_cmd s38[]={
+{WM_CROWD_FRAME,58,7},
+{WM_CROWD_FRAME,59,7},
+{WM_CROWD_FRAME,60,7},
+{WM_CROWD_REPEAT,0,6},
+{WM_CROWD_FRAME,59,7},
+{WM_CROWD_FRAME,60,7},
+{WM_CROWD_SHOULD_REPEAT,0,0},
+{WM_CROWD_FRAME,58,7},
+{WM_CROWD_GOTO,39,0},
+};
+static const wm_crowd_cmd s39[]={
+{WM_CROWD_FRAME,57,32767},
+{WM_CROWD_GOTO,39,0},
+};
+static const wm_crowd_cmd s40[]={
+{WM_CROWD_FRAME,61,8},
+{WM_CROWD_FRAME,62,8},
+{WM_CROWD_FRAME,63,8},
+{WM_CROWD_FRAME,64,8},
+{WM_CROWD_FRAME,65,8},
+{WM_CROWD_FRAME,64,8},
+{WM_CROWD_FRAME,63,8},
+{WM_CROWD_GOTO,41,0},
+};
+static const wm_crowd_cmd s41[]={
+{WM_CROWD_FRAME,61,32767},
+{WM_CROWD_GOTO,41,0},
+};
+static const wm_crowd_cmd s42[]={
+{WM_CROWD_FRAME,67,6},
+{WM_CROWD_FRAME,68,6},
+{WM_CROWD_FRAME,69,6},
+{WM_CROWD_FRAME,70,6},
+{WM_CROWD_FRAME,69,6},
+{WM_CROWD_FRAME,68,6},
+{WM_CROWD_FRAME,67,6},
+{WM_CROWD_GOTO,44,0},
+};
+static const wm_crowd_cmd s43[]={
+{WM_CROWD_FRAME,67,6},
+{WM_CROWD_REPEAT,0,6},
+{WM_CROWD_FRAME,68,6},
+{WM_CROWD_FRAME,69,6},
+{WM_CROWD_FRAME,70,6},
+{WM_CROWD_FRAME,69,6},
+{WM_CROWD_SHOULD_REPEAT,0,0},
+{WM_CROWD_FRAME,68,6},
+{WM_CROWD_FRAME,67,6},
+{WM_CROWD_GOTO,44,0},
+};
+static const wm_crowd_cmd s44[]={
+{WM_CROWD_FRAME,66,32767},
+{WM_CROWD_GOTO,44,0},
+};
+static const wm_crowd_cmd s45[]={
+{WM_CROWD_FRAME,72,8},
+{WM_CROWD_FRAME,73,8},
+{WM_CROWD_FRAME,74,8},
+{WM_CROWD_FRAME,72,8},
+{WM_CROWD_GOTO,47,0},
+};
+static const wm_crowd_cmd s46[]={
+{WM_CROWD_FRAME,72,8},
+{WM_CROWD_REPEAT,0,6},
+{WM_CROWD_FRAME,73,8},
+{WM_CROWD_FRAME,74,8},
+{WM_CROWD_SHOULD_REPEAT,0,0},
+{WM_CROWD_FRAME,73,8},
+{WM_CROWD_FRAME,72,8},
+{WM_CROWD_GOTO,47,0},
+};
+static const wm_crowd_cmd s47[]={
+{WM_CROWD_FRAME,71,32767},
+{WM_CROWD_GOTO,47,0},
+};
+static const wm_crowd_cmd s48[]={
+{WM_CROWD_FRAME,126,8},
+{WM_CROWD_FRAME,127,8},
+{WM_CROWD_FRAME,128,20},
+{WM_CROWD_FRAME,127,8},
+{WM_CROWD_FRAME,126,8},
+{WM_CROWD_GOTO,49,0},
+};
+static const wm_crowd_cmd s49[]={
+{WM_CROWD_FRAME,125,32767},
+{WM_CROWD_GOTO,49,0},
+};
+static const wm_crowd_cmd s50[]={
+{WM_CROWD_FRAME,76,9},
+{WM_CROWD_FRAME,77,9},
+{WM_CROWD_FRAME,78,9},
+{WM_CROWD_FRAME,77,9},
+{WM_CROWD_FRAME,78,9},
+{WM_CROWD_FRAME,77,9},
+{WM_CROWD_FRAME,76,9},
+{WM_CROWD_GOTO,52,0},
+};
+static const wm_crowd_cmd s51[]={
+{WM_CROWD_FRAME,76,9},
+{WM_CROWD_REPEAT,0,6},
+{WM_CROWD_FRAME,77,9},
+{WM_CROWD_FRAME,78,9},
+{WM_CROWD_SHOULD_REPEAT,0,0},
+{WM_CROWD_FRAME,76,9},
+{WM_CROWD_GOTO,52,0},
+};
+static const wm_crowd_cmd s52[]={
+{WM_CROWD_FRAME,75,32767},
+{WM_CROWD_GOTO,52,0},
+};
+static const wm_crowd_cmd s53[]={
+{WM_CROWD_FRAME,80,7},
+{WM_CROWD_FRAME,81,7},
+{WM_CROWD_FRAME,82,7},
+{WM_CROWD_FRAME,81,7},
+{WM_CROWD_FRAME,80,7},
+{WM_CROWD_GOTO,55,0},
+};
+static const wm_crowd_cmd s54[]={
+{WM_CROWD_REPEAT,0,4},
+{WM_CROWD_FRAME,80,7},
+{WM_CROWD_FRAME,81,7},
+{WM_CROWD_FRAME,82,7},
+{WM_CROWD_FRAME,81,7},
+{WM_CROWD_SHOULD_REPEAT,0,0},
+{WM_CROWD_FRAME,80,7},
+{WM_CROWD_GOTO,55,0},
+};
+static const wm_crowd_cmd s55[]={
+{WM_CROWD_FRAME,79,32767},
+{WM_CROWD_GOTO,55,0},
+};
+static const wm_crowd_cmd s56[]={
+{WM_CROWD_FRAME,84,8},
+{WM_CROWD_FRAME,85,8},
+{WM_CROWD_FRAME,86,8},
+{WM_CROWD_FRAME,85,8},
+{WM_CROWD_FRAME,86,8},
+{WM_CROWD_FRAME,85,8},
+{WM_CROWD_FRAME,84,8},
+{WM_CROWD_GOTO,58,0},
+};
+static const wm_crowd_cmd s57[]={
+{WM_CROWD_FRAME,84,8},
+{WM_CROWD_REPEAT,0,7},
+{WM_CROWD_FRAME,85,8},
+{WM_CROWD_FRAME,86,8},
+{WM_CROWD_SHOULD_REPEAT,0,0},
+{WM_CROWD_FRAME,84,8},
+{WM_CROWD_GOTO,58,0},
+};
+static const wm_crowd_cmd s58[]={
+{WM_CROWD_FRAME,83,32767},
+{WM_CROWD_GOTO,58,0},
+};
+static const wm_crowd_cmd s59[]={
+{WM_CROWD_FRAME,104,8},
+{WM_CROWD_FRAME,105,8},
+{WM_CROWD_FRAME,106,8},
+{WM_CROWD_FRAME,107,8},
+{WM_CROWD_FRAME,108,8},
+{WM_CROWD_FRAME,109,8},
+{WM_CROWD_FRAME,110,8},
+{WM_CROWD_FRAME,111,16},
+{WM_CROWD_FRAME,110,8},
+{WM_CROWD_FRAME,109,8},
+{WM_CROWD_GOTO,61,0},
+};
+static const wm_crowd_cmd s60[]={
+{WM_CROWD_FRAME,104,8},
+{WM_CROWD_FRAME,105,8},
+{WM_CROWD_FRAME,106,8},
+{WM_CROWD_REPEAT,0,3},
+{WM_CROWD_FRAME,107,8},
+{WM_CROWD_FRAME,108,8},
+{WM_CROWD_SHOULD_REPEAT,0,0},
+{WM_CROWD_GOTO,61,0},
+};
+static const wm_crowd_cmd s61[]={
+{WM_CROWD_FRAME,104,1},
+{WM_CROWD_RNDWAIT,0,1060},
+{WM_CROWD_FRAME,109,8},
+{WM_CROWD_FRAME,110,8},
+{WM_CROWD_FRAME,111,16},
+{WM_CROWD_FRAME,110,8},
+{WM_CROWD_FRAME,109,8},
+{WM_CROWD_GOTO,61,0},
+};
+static const wm_crowd_cmd s62[]={
+{WM_CROWD_FRAME,90,8},
+{WM_CROWD_FRAME,93,8},
+{WM_CROWD_FRAME,96,8},
+{WM_CROWD_FRAME,93,8},
+{WM_CROWD_FRAME,90,8},
+{WM_CROWD_GOTO,63,0},
+};
+static const wm_crowd_cmd s63[]={
+{WM_CROWD_FRAME,87,32767},
+{WM_CROWD_GOTO,63,0},
+};
+static const wm_crowd_cmd s64[]={
+{WM_CROWD_FRAME,91,8},
+{WM_CROWD_FRAME,94,8},
+{WM_CROWD_FRAME,97,8},
+{WM_CROWD_FRAME,94,8},
+{WM_CROWD_FRAME,91,8},
+{WM_CROWD_GOTO,65,0},
+};
+static const wm_crowd_cmd s65[]={
+{WM_CROWD_FRAME,88,32767},
+{WM_CROWD_GOTO,65,0},
+};
+static const wm_crowd_cmd s66[]={
+{WM_CROWD_FRAME,92,8},
+{WM_CROWD_FRAME,95,8},
+{WM_CROWD_FRAME,98,8},
+{WM_CROWD_FRAME,95,8},
+{WM_CROWD_FRAME,92,8},
+{WM_CROWD_GOTO,67,0},
+};
+static const wm_crowd_cmd s67[]={
+{WM_CROWD_FRAME,89,32767},
+{WM_CROWD_GOTO,67,0},
+};
+static const wm_crowd_cmd s68[]={
+{WM_CROWD_FRAME,113,7},
+{WM_CROWD_FRAME,114,7},
+{WM_CROWD_FRAME,115,7},
+{WM_CROWD_FRAME,114,7},
+{WM_CROWD_FRAME,113,7},
+{WM_CROWD_GOTO,70,0},
+};
+static const wm_crowd_cmd s69[]={
+{WM_CROWD_FRAME,113,7},
+{WM_CROWD_REPEAT,0,4},
+{WM_CROWD_FRAME,114,7},
+{WM_CROWD_FRAME,115,7},
+{WM_CROWD_SHOULD_REPEAT,0,0},
+{WM_CROWD_FRAME,114,7},
+{WM_CROWD_FRAME,113,7},
+{WM_CROWD_GOTO,70,0},
+};
+static const wm_crowd_cmd s70[]={
+{WM_CROWD_FRAME,112,32767},
+{WM_CROWD_GOTO,70,0},
+};
+static const wm_crowd_cmd s71[]={
+{WM_CROWD_FRAME,117,7},
+{WM_CROWD_FRAME,118,7},
+{WM_CROWD_FRAME,119,7},
+{WM_CROWD_FRAME,117,7},
+{WM_CROWD_GOTO,73,0},
+};
+static const wm_crowd_cmd s72[]={
+{WM_CROWD_FRAME,117,7},
+{WM_CROWD_REPEAT,0,7},
+{WM_CROWD_FRAME,118,7},
+{WM_CROWD_FRAME,119,7},
+{WM_CROWD_SHOULD_REPEAT,0,0},
+{WM_CROWD_FRAME,117,7},
+{WM_CROWD_GOTO,73,0},
+};
+static const wm_crowd_cmd s73[]={
+{WM_CROWD_FRAME,116,32767},
+{WM_CROWD_GOTO,73,0},
+};
+static const wm_crowd_cmd s74[]={
+{WM_CROWD_FRAME,9,7},
+{WM_CROWD_FRAME,10,7},
+{WM_CROWD_FRAME,11,7},
+{WM_CROWD_FRAME,12,7},
+{WM_CROWD_FRAME,11,7},
+{WM_CROWD_FRAME,12,7},
+{WM_CROWD_FRAME,11,7},
+{WM_CROWD_FRAME,10,7},
+{WM_CROWD_FRAME,9,7},
+{WM_CROWD_GOTO,76,0},
+};
+static const wm_crowd_cmd s75[]={
+{WM_CROWD_FRAME,9,7},
+{WM_CROWD_FRAME,10,7},
+{WM_CROWD_REPEAT,0,4},
+{WM_CROWD_FRAME,11,7},
+{WM_CROWD_FRAME,12,7},
+{WM_CROWD_FRAME,11,7},
+{WM_CROWD_FRAME,10,7},
+{WM_CROWD_FRAME,11,7},
+{WM_CROWD_FRAME,12,7},
+{WM_CROWD_SHOULD_REPEAT,0,0},
+{WM_CROWD_FRAME,11,7},
+{WM_CROWD_FRAME,10,7},
+{WM_CROWD_FRAME,9,7},
+{WM_CROWD_GOTO,76,0},
+};
+static const wm_crowd_cmd s76[]={
+{WM_CROWD_FRAME,8,32767},
+{WM_CROWD_GOTO,76,0},
+};
+static const wm_crowd_cmd s77[]={
+{WM_CROWD_FRAME,121,8},
+{WM_CROWD_FRAME,122,8},
+{WM_CROWD_FRAME,123,8},
+{WM_CROWD_FRAME,124,8},
+{WM_CROWD_GOTO,78,0},
+};
+static const wm_crowd_cmd s78[]={
+{WM_CROWD_FRAME,120,32767},
+{WM_CROWD_GOTO,78,0},
+};
+static const wm_crowd_cmd s79[]={
+{WM_CROWD_FRAME,130,8},
+{WM_CROWD_FRAME,131,8},
+{WM_CROWD_FRAME,132,8},
+{WM_CROWD_FRAME,131,8},
+{WM_CROWD_FRAME,130,8},
+{WM_CROWD_GOTO,81,0},
+};
+static const wm_crowd_cmd s80[]={
+{WM_CROWD_FRAME,130,8},
+{WM_CROWD_REPEAT,0,7},
+{WM_CROWD_FRAME,131,8},
+{WM_CROWD_FRAME,132,8},
+{WM_CROWD_SHOULD_REPEAT,0,0},
+{WM_CROWD_FRAME,130,8},
+{WM_CROWD_GOTO,81,0},
+};
+static const wm_crowd_cmd s81[]={
+{WM_CROWD_FRAME,129,32767},
+{WM_CROWD_GOTO,81,0},
+};
+static const wm_crowd_script scripts[]={
+{s0,sizeof(s0)/sizeof(s0[0])},
+{s1,sizeof(s1)/sizeof(s1[0])},
+{s2,sizeof(s2)/sizeof(s2[0])},
+{s3,sizeof(s3)/sizeof(s3[0])},
+{s4,sizeof(s4)/sizeof(s4[0])},
+{s5,sizeof(s5)/sizeof(s5[0])},
+{s6,sizeof(s6)/sizeof(s6[0])},
+{s7,sizeof(s7)/sizeof(s7[0])},
+{s8,sizeof(s8)/sizeof(s8[0])},
+{s9,sizeof(s9)/sizeof(s9[0])},
+{s10,sizeof(s10)/sizeof(s10[0])},
+{s11,sizeof(s11)/sizeof(s11[0])},
+{s12,sizeof(s12)/sizeof(s12[0])},
+{s13,sizeof(s13)/sizeof(s13[0])},
+{s14,sizeof(s14)/sizeof(s14[0])},
+{s15,sizeof(s15)/sizeof(s15[0])},
+{s16,sizeof(s16)/sizeof(s16[0])},
+{s17,sizeof(s17)/sizeof(s17[0])},
+{s18,sizeof(s18)/sizeof(s18[0])},
+{s19,sizeof(s19)/sizeof(s19[0])},
+{s20,sizeof(s20)/sizeof(s20[0])},
+{s21,sizeof(s21)/sizeof(s21[0])},
+{s22,sizeof(s22)/sizeof(s22[0])},
+{s23,sizeof(s23)/sizeof(s23[0])},
+{s24,sizeof(s24)/sizeof(s24[0])},
+{s25,sizeof(s25)/sizeof(s25[0])},
+{s26,sizeof(s26)/sizeof(s26[0])},
+{s27,sizeof(s27)/sizeof(s27[0])},
+{s28,sizeof(s28)/sizeof(s28[0])},
+{s29,sizeof(s29)/sizeof(s29[0])},
+{s30,sizeof(s30)/sizeof(s30[0])},
+{s31,sizeof(s31)/sizeof(s31[0])},
+{s32,sizeof(s32)/sizeof(s32[0])},
+{s33,sizeof(s33)/sizeof(s33[0])},
+{s34,sizeof(s34)/sizeof(s34[0])},
+{s35,sizeof(s35)/sizeof(s35[0])},
+{s36,sizeof(s36)/sizeof(s36[0])},
+{s37,sizeof(s37)/sizeof(s37[0])},
+{s38,sizeof(s38)/sizeof(s38[0])},
+{s39,sizeof(s39)/sizeof(s39[0])},
+{s40,sizeof(s40)/sizeof(s40[0])},
+{s41,sizeof(s41)/sizeof(s41[0])},
+{s42,sizeof(s42)/sizeof(s42[0])},
+{s43,sizeof(s43)/sizeof(s43[0])},
+{s44,sizeof(s44)/sizeof(s44[0])},
+{s45,sizeof(s45)/sizeof(s45[0])},
+{s46,sizeof(s46)/sizeof(s46[0])},
+{s47,sizeof(s47)/sizeof(s47[0])},
+{s48,sizeof(s48)/sizeof(s48[0])},
+{s49,sizeof(s49)/sizeof(s49[0])},
+{s50,sizeof(s50)/sizeof(s50[0])},
+{s51,sizeof(s51)/sizeof(s51[0])},
+{s52,sizeof(s52)/sizeof(s52[0])},
+{s53,sizeof(s53)/sizeof(s53[0])},
+{s54,sizeof(s54)/sizeof(s54[0])},
+{s55,sizeof(s55)/sizeof(s55[0])},
+{s56,sizeof(s56)/sizeof(s56[0])},
+{s57,sizeof(s57)/sizeof(s57[0])},
+{s58,sizeof(s58)/sizeof(s58[0])},
+{s59,sizeof(s59)/sizeof(s59[0])},
+{s60,sizeof(s60)/sizeof(s60[0])},
+{s61,sizeof(s61)/sizeof(s61[0])},
+{s62,sizeof(s62)/sizeof(s62[0])},
+{s63,sizeof(s63)/sizeof(s63[0])},
+{s64,sizeof(s64)/sizeof(s64[0])},
+{s65,sizeof(s65)/sizeof(s65[0])},
+{s66,sizeof(s66)/sizeof(s66[0])},
+{s67,sizeof(s67)/sizeof(s67[0])},
+{s68,sizeof(s68)/sizeof(s68[0])},
+{s69,sizeof(s69)/sizeof(s69[0])},
+{s70,sizeof(s70)/sizeof(s70[0])},
+{s71,sizeof(s71)/sizeof(s71[0])},
+{s72,sizeof(s72)/sizeof(s72[0])},
+{s73,sizeof(s73)/sizeof(s73[0])},
+{s74,sizeof(s74)/sizeof(s74[0])},
+{s75,sizeof(s75)/sizeof(s75[0])},
+{s76,sizeof(s76)/sizeof(s76[0])},
+{s77,sizeof(s77)/sizeof(s77[0])},
+{s78,sizeof(s78)/sizeof(s78[0])},
+{s79,sizeof(s79)/sizeof(s79[0])},
+{s80,sizeof(s80)/sizeof(s80[0])},
+{s81,sizeof(s81)/sizeof(s81[0])},
+};
+static const wm_crowd_asset assets[]={
+{"ALEX1","rom:/fix39_arena/crowd/ALEX1.bin",105,71,0,0,7455,7456,64},
+{"ALEX2","rom:/fix39_arena/crowd/ALEX2.bin",123,71,11,0,8733,8736,64},
+{"ALEX3","rom:/fix39_arena/crowd/ALEX3.bin",114,96,4,25,10944,10944,64},
+{"ALEX4","rom:/fix39_arena/crowd/ALEX4.bin",108,96,0,25,10368,10368,64},
+{"CARLO1","rom:/fix39_arena/crowd/CARLO1.bin",43,34,0,0,1462,1464,64},
+{"CARLO2","rom:/fix39_arena/crowd/CARLO2.bin",48,34,2,0,1632,1632,64},
+{"CARLO3","rom:/fix39_arena/crowd/CARLO3.bin",46,33,0,-1,1518,1520,64},
+{"CARLO4","rom:/fix39_arena/crowd/CARLO4.bin",48,34,1,0,1632,1632,64},
+{"CRAZY1","rom:/fix39_arena/crowd/CRAZY1.bin",43,36,0,0,1548,1552,64},
+{"CRAZY2","rom:/fix39_arena/crowd/CRAZY2.bin",56,36,8,0,2016,2016,64},
+{"CRAZY3","rom:/fix39_arena/crowd/CRAZY3.bin",54,42,11,6,2268,2272,64},
+{"CRAZY4","rom:/fix39_arena/crowd/CRAZY4.bin",53,41,7,5,2173,2176,64},
+{"CRAZY5","rom:/fix39_arena/crowd/CRAZY5.bin",44,38,0,2,1672,1672,64},
+{"DAVEMSK1","rom:/fix39_arena/crowd/DAVEMSK1.bin",59,76,0,0,4484,4488,64},
+{"DAVEMSK2","rom:/fix39_arena/crowd/DAVEMSK2.bin",68,76,0,1,5168,5168,64},
+{"DAVEMSK3","rom:/fix39_arena/crowd/DAVEMSK3.bin",70,75,0,0,5250,5256,64},
+{"DAVEMSK4","rom:/fix39_arena/crowd/DAVEMSK4.bin",73,76,0,0,5548,5552,64},
+{"DEWY1","rom:/fix39_arena/crowd/DEWY1.bin",47,36,0,0,1692,1696,64},
+{"DEWY2","rom:/fix39_arena/crowd/DEWY2.bin",58,43,6,7,2494,2496,64},
+{"DEWY3","rom:/fix39_arena/crowd/DEWY3.bin",56,47,3,11,2632,2632,64},
+{"DEWY4","rom:/fix39_arena/crowd/DEWY4.bin",58,44,5,8,2552,2552,64},
+{"EUG1","rom:/fix39_arena/crowd/EUG1.bin",46,35,0,0,1610,1616,64},
+{"EUG2","rom:/fix39_arena/crowd/EUG2.bin",54,43,3,8,2322,2328,64},
+{"EUG3","rom:/fix39_arena/crowd/EUG3.bin",48,54,2,19,2592,2592,64},
+{"EUG4","rom:/fix39_arena/crowd/EUG4.bin",42,57,-3,22,2394,2400,64},
+{"GEORGE1","rom:/fix39_arena/crowd/GEORGE1.bin",48,71,0,0,3408,3408,64},
+{"GEORGE2","rom:/fix39_arena/crowd/GEORGE2.bin",48,71,0,0,3408,3408,64},
+{"GEORGE3","rom:/fix39_arena/crowd/GEORGE3.bin",49,71,0,0,3479,3480,64},
+{"GEORGE4","rom:/fix39_arena/crowd/GEORGE4.bin",49,71,0,0,3479,3480,64},
+{"JAK1","rom:/fix39_arena/crowd/JAK1.bin",46,35,0,0,1610,1616,64},
+{"JAK2","rom:/fix39_arena/crowd/JAK2.bin",46,45,2,10,2070,2072,64},
+{"JAK3","rom:/fix39_arena/crowd/JAK3.bin",35,59,-2,24,2065,2072,64},
+{"JAK4","rom:/fix39_arena/crowd/JAK4.bin",37,57,-1,22,2109,2112,64},
+{"JAK5","rom:/fix39_arena/crowd/JAK5.bin",46,57,4,22,2622,2624,64},
+{"JAKE1","rom:/fix39_arena/crowd/JAKE1.bin",115,75,0,0,8625,8632,64},
+{"JAKE2","rom:/fix39_arena/crowd/JAKE2.bin",127,100,2,25,12700,12704,64},
+{"JAKE3","rom:/fix39_arena/crowd/JAKE3.bin",118,124,4,49,14632,14632,64},
+{"JAKE4","rom:/fix39_arena/crowd/JAKE4.bin",126,120,5,45,15120,15120,64},
+{"JAMIE1","rom:/fix39_arena/crowd/JAMIE1.bin",49,36,0,0,1764,1768,64},
+{"JAMIE2","rom:/fix39_arena/crowd/JAMIE2.bin",44,39,0,3,1716,1720,64},
+{"JAMIE3","rom:/fix39_arena/crowd/JAMIE3.bin",39,59,-5,23,2301,2304,64},
+{"JAMIE4","rom:/fix39_arena/crowd/JAMIE4.bin",47,48,-5,12,2256,2256,64},
+{"JAMIE5","rom:/fix39_arena/crowd/JAMIE5.bin",53,36,-4,0,1908,1912,64},
+{"JAMIE6","rom:/fix39_arena/crowd/JAMIE6.bin",48,34,-3,-2,1632,1632,64},
+{"JASONCRD1","rom:/fix39_arena/crowd/JASONCRD1.bin",99,71,0,0,7029,7032,54},
+{"JASONCRD2","rom:/fix39_arena/crowd/JASONCRD2.bin",102,73,2,2,7446,7448,54},
+{"JASONCRD3","rom:/fix39_arena/crowd/JASONCRD3.bin",101,86,4,15,8686,8688,54},
+{"JASONCRD4","rom:/fix39_arena/crowd/JASONCRD4.bin",102,90,5,19,9180,9184,54},
+{"JASONCRD5","rom:/fix39_arena/crowd/JASONCRD5.bin",100,72,1,1,7200,7200,54},
+{"JENI1","rom:/fix39_arena/crowd/JENI1.bin",42,33,0,0,1386,1392,64},
+{"JENI2","rom:/fix39_arena/crowd/JENI2.bin",43,33,1,0,1419,1424,64},
+{"JENI3","rom:/fix39_arena/crowd/JENI3.bin",41,34,0,1,1394,1400,64},
+{"JENI4","rom:/fix39_arena/crowd/JENI4.bin",33,35,-3,2,1155,1160,64},
+{"JOHNC1","rom:/fix39_arena/crowd/JOHNC1.bin",55,33,0,0,1815,1816,64},
+{"JOHNC2","rom:/fix39_arena/crowd/JOHNC2.bin",68,33,6,0,2244,2248,64},
+{"JOHNC3","rom:/fix39_arena/crowd/JOHNC3.bin",54,36,1,3,1944,1944,64},
+{"JOHNC4","rom:/fix39_arena/crowd/JOHNC4.bin",33,31,-12,-2,1023,1024,64},
+{"JOSH1","rom:/fix39_arena/crowd/JOSH1.bin",34,32,0,0,1088,1088,64},
+{"JOSH2","rom:/fix39_arena/crowd/JOSH2.bin",46,32,5,0,1472,1472,64},
+{"JOSH3","rom:/fix39_arena/crowd/JOSH3.bin",51,34,7,2,1734,1736,64},
+{"JOSH4","rom:/fix39_arena/crowd/JOSH4.bin",52,34,9,2,1768,1768,64},
+{"JOY1","rom:/fix39_arena/crowd/JOY1.bin",40,59,0,0,2360,2360,64},
+{"JOY2","rom:/fix39_arena/crowd/JOY2.bin",49,59,0,-1,2891,2896,64},
+{"JOY3","rom:/fix39_arena/crowd/JOY3.bin",53,56,0,-4,2968,2968,64},
+{"JOY4","rom:/fix39_arena/crowd/JOY4.bin",68,51,0,-9,3468,3472,64},
+{"JOY5","rom:/fix39_arena/crowd/JOY5.bin",98,70,0,11,6860,6864,64},
+{"MANC1","rom:/fix39_arena/crowd/MANC1.bin",43,36,0,0,1548,1552,64},
+{"MANC2","rom:/fix39_arena/crowd/MANC2.bin",63,42,3,6,2646,2648,64},
+{"MANC3","rom:/fix39_arena/crowd/MANC3.bin",64,58,7,22,3712,3712,64},
+{"MANC4","rom:/fix39_arena/crowd/MANC4.bin",83,55,22,19,4565,4568,64},
+{"MANC5","rom:/fix39_arena/crowd/MANC5.bin",64,55,17,19,3520,3520,64},
+{"MARINE1","rom:/fix39_arena/crowd/MARINE1.bin",67,69,0,0,4623,4624,64},
+{"MARINE2","rom:/fix39_arena/crowd/MARINE2.bin",66,79,-1,10,5214,5216,64},
+{"MARINE3","rom:/fix39_arena/crowd/MARINE3.bin",70,92,3,23,6440,6440,64},
+{"MARINE4","rom:/fix39_arena/crowd/MARINE4.bin",66,93,-2,24,6138,6144,64},
+{"NEWCOM1","rom:/fix39_arena/crowd/NEWCOM1.bin",44,36,0,0,1584,1584,64},
+{"NEWCOM2","rom:/fix39_arena/crowd/NEWCOM2.bin",46,36,2,0,1656,1656,64},
+{"NEWCOM3","rom:/fix39_arena/crowd/NEWCOM3.bin",36,61,-4,25,2196,2200,64},
+{"NEWCOM4","rom:/fix39_arena/crowd/NEWCOM4.bin",33,71,-6,35,2343,2344,64},
+{"PENA1","rom:/fix39_arena/crowd/PENA1.bin",35,33,0,-2,1155,1160,64},
+{"PENA2","rom:/fix39_arena/crowd/PENA2.bin",53,33,10,-1,1749,1752,64},
+{"PENA3","rom:/fix39_arena/crowd/PENA3.bin",42,68,3,34,2856,2856,64},
+{"PENA4","rom:/fix39_arena/crowd/PENA4.bin",43,72,4,38,3096,3096,64},
+{"SAL1","rom:/fix39_arena/crowd/SAL1.bin",34,35,0,0,1190,1192,64},
+{"SAL2","rom:/fix39_arena/crowd/SAL2.bin",47,37,10,2,1739,1744,64},
+{"SAL3","rom:/fix39_arena/crowd/SAL3.bin",56,39,15,4,2184,2184,64},
+{"SAL4","rom:/fix39_arena/crowd/SAL4.bin",53,73,9,38,3869,3872,64},
+{"SDCRD1A","rom:/fix39_arena/crowd/SDCRD1A.bin",107,129,0,0,13803,13808,64},
+{"SDCRD1B","rom:/fix39_arena/crowd/SDCRD1B.bin",60,177,0,0,10620,10624,64},
+{"SDCRD1C","rom:/fix39_arena/crowd/SDCRD1C.bin",98,132,0,0,12936,12936,64},
+{"SDCRD2A","rom:/fix39_arena/crowd/SDCRD2A.bin",93,112,0,-12,10416,10416,64},
+{"SDCRD2B","rom:/fix39_arena/crowd/SDCRD2B.bin",63,179,14,2,11277,11280,64},
+{"SDCRD2C","rom:/fix39_arena/crowd/SDCRD2C.bin",114,138,13,7,15732,15736,64},
+{"SDCRD3A","rom:/fix39_arena/crowd/SDCRD3A.bin",95,115,0,-10,10925,10928,64},
+{"SDCRD3B","rom:/fix39_arena/crowd/SDCRD3B.bin",78,178,12,1,13884,13888,64},
+{"SDCRD3C","rom:/fix39_arena/crowd/SDCRD3C.bin",109,153,-6,23,16677,16680,64},
+{"SDCRD4A","rom:/fix39_arena/crowd/SDCRD4A.bin",93,128,0,4,11904,11904,64},
+{"SDCRD4B","rom:/fix39_arena/crowd/SDCRD4B.bin",82,185,14,8,15170,15176,64},
+{"SDCRD4C","rom:/fix39_arena/crowd/SDCRD4C.bin",112,153,-8,23,17136,17136,64},
+{"SERG1","rom:/fix39_arena/crowd/SERG1.bin",36,34,0,0,1224,1224,64},
+{"SERG2","rom:/fix39_arena/crowd/SERG2.bin",70,37,11,3,2590,2592,64},
+{"SERG3","rom:/fix39_arena/crowd/SERG3.bin",78,38,9,4,2964,2968,64},
+{"SERG4","rom:/fix39_arena/crowd/SERG4.bin",70,36,12,2,2520,2520,64},
+{"SERG5","rom:/fix39_arena/crowd/SERG5.bin",47,35,-3,1,1645,1648,64},
+{"SHERID1","rom:/fix39_arena/crowd/SHERID1.bin",41,37,0,0,1517,1520,64},
+{"SHERID2","rom:/fix39_arena/crowd/SHERID2.bin",46,33,4,-4,1518,1520,64},
+{"SHERID3","rom:/fix39_arena/crowd/SHERID3.bin",59,37,10,0,2183,2184,64},
+{"SHERID4","rom:/fix39_arena/crowd/SHERID4.bin",62,47,13,10,2914,2920,64},
+{"SHERID5","rom:/fix39_arena/crowd/SHERID5.bin",62,37,13,0,2294,2296,64},
+{"SHERID6","rom:/fix39_arena/crowd/SHERID6.bin",42,34,2,-3,1428,1432,64},
+{"SHERID7","rom:/fix39_arena/crowd/SHERID7.bin",42,35,2,-2,1470,1472,64},
+{"SHERID8","rom:/fix39_arena/crowd/SHERID8.bin",42,35,2,-2,1470,1472,64},
+{"SOFI1","rom:/fix39_arena/crowd/SOFI1.bin",34,31,0,-1,1054,1056,64},
+{"SOFI2","rom:/fix39_arena/crowd/SOFI2.bin",35,41,0,8,1435,1440,64},
+{"SOFI3","rom:/fix39_arena/crowd/SOFI3.bin",31,57,-3,25,1767,1768,64},
+{"SOFI4","rom:/fix39_arena/crowd/SOFI4.bin",29,60,-3,28,1740,1744,64},
+{"TOBIAS1","rom:/fix39_arena/crowd/TOBIAS1.bin",37,61,0,0,2257,2264,64},
+{"TOBIAS2","rom:/fix39_arena/crowd/TOBIAS2.bin",46,63,6,2,2898,2904,64},
+{"TOBIAS3","rom:/fix39_arena/crowd/TOBIAS3.bin",46,73,2,12,3358,3360,64},
+{"TOBIAS4","rom:/fix39_arena/crowd/TOBIAS4.bin",44,82,0,20,3608,3608,64},
+{"TONYCRD1","rom:/fix39_arena/crowd/TONYCRD1.bin",90,66,0,0,5940,5944,64},
+{"TONYCRD2","rom:/fix39_arena/crowd/TONYCRD2.bin",88,65,-2,0,5720,5720,64},
+{"TONYCRD3","rom:/fix39_arena/crowd/TONYCRD3.bin",91,63,-1,-4,5733,5736,64},
+{"TONYCRD4","rom:/fix39_arena/crowd/TONYCRD4.bin",87,65,-1,-1,5655,5656,64},
+{"TONYCRD5","rom:/fix39_arena/crowd/TONYCRD5.bin",92,68,0,2,6256,6256,64},
+{"TURMEL1","rom:/fix39_arena/crowd/TURMEL1.bin",52,38,0,0,1976,1976,64},
+{"TURMEL2","rom:/fix39_arena/crowd/TURMEL2.bin",57,41,2,3,2337,2344,64},
+{"TURMEL3","rom:/fix39_arena/crowd/TURMEL3.bin",90,57,24,18,5130,5136,64},
+{"TURMEL4","rom:/fix39_arena/crowd/TURMEL4.bin",70,77,11,38,5390,5392,64},
+{"VOGEL1","rom:/fix39_arena/crowd/VOGEL1.bin",142,92,0,0,13064,13064,64},
+{"VOGEL2","rom:/fix39_arena/crowd/VOGEL2.bin",142,92,0,0,13064,13064,64},
+{"VOGEL3","rom:/fix39_arena/crowd/VOGEL3.bin",142,114,0,22,16188,16192,64},
+{"VOGEL4","rom:/fix39_arena/crowd/VOGEL4.bin",142,123,0,31,17466,17472,64},
+};
+static const wm_crowd_person persons[]={
+{30,28,29},
+{78,77,77},
+{81,79,80},
+{73,71,72},
+{2,0,1},
+{47,45,46},
+{21,19,20},
+{36,34,35},
+{10,8,9},
+{27,25,26},
+{24,22,23},
+{61,59,60},
+{58,56,57},
+{39,37,38},
+{49,48,48},
+{76,74,75},
+{5,3,4},
+{52,50,51},
+{41,40,40},
+{63,62,62},
+{65,64,64},
+{67,66,66},
+{15,14,14},
+{7,6,6},
+{70,68,69},
+{44,42,43},
+{18,16,17},
+{13,11,12},
+{55,53,54},
+{33,31,32},
+};
+size_t wm_crowd_person_count(void){return sizeof(persons)/sizeof(persons[0]);}
+const wm_crowd_person *wm_crowd_person_at(size_t i){return i<sizeof(persons)/sizeof(persons[0])?&persons[i]:0;}
+const wm_crowd_script *wm_crowd_script_at(size_t i){return i<sizeof(scripts)/sizeof(scripts[0])?&scripts[i]:0;}
+const wm_crowd_asset *wm_crowd_asset_at(size_t i){return i<sizeof(assets)/sizeof(assets[0])?&assets[i]:0;}

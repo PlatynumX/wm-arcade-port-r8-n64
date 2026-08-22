@@ -1,5 +1,5 @@
 #include "wm/demo.h"
-#include "wm/bret_visuals.h"
+#include "wm/character_assets.h"
 #include "wm/source_data.h"
 #include <stdlib.h>
 #include <string.h>
@@ -42,37 +42,30 @@ static bool action_is_attack(wm_demo_action action) {
 }
 
 static const wm_visual_sequence *sequence_for(const wm_demo_fighter *f) {
+    wm_character_visual_slot slot = WM_CV_STAND2;
     switch (f->action) {
-        case WM_DEMO_LIGHT_PUNCH:
-            return horizontal_facing(f->facing) ? &wm_bret_light_punch4_anim
-                                                : &wm_bret_light_punch2_anim;
-        case WM_DEMO_POWER_PUNCH:
-            return &wm_bret_power_punch_anim;
-        case WM_DEMO_LIGHT_KICK:
-            return horizontal_facing(f->facing) ? &wm_bret_light_kick4_anim
-                                                : &wm_bret_light_kick2_anim;
-        case WM_DEMO_POWER_KICK:
-            return &wm_bret_power_kick_anim;
-        case WM_DEMO_RUN:
-            return &wm_bret_run_anim;
+        case WM_DEMO_LIGHT_PUNCH: slot = horizontal_facing(f->facing) ? WM_CV_LP4 : WM_CV_LP2; break;
+        case WM_DEMO_POWER_PUNCH: slot = WM_CV_PP; break;
+        case WM_DEMO_LIGHT_KICK: slot = horizontal_facing(f->facing) ? WM_CV_LK4 : WM_CV_LK2; break;
+        case WM_DEMO_POWER_KICK: slot = WM_CV_PK; break;
+        case WM_DEMO_RUN: slot = WM_CV_RUN; break;
         case WM_DEMO_WALK:
             switch (f->facing) {
-                case WM_DEMO_FACING_2: return &wm_bret_walk2_f2_anim;
-                case WM_DEMO_FACING_8: return &wm_bret_walk8_f2_anim;
-                case WM_DEMO_FACING_4: return &wm_bret_walk4_f4_anim;
-                case WM_DEMO_FACING_6: return &wm_bret_walk6_f4_anim;
+                case WM_DEMO_FACING_2: slot = WM_CV_WALK2; break;
+                case WM_DEMO_FACING_8: slot = WM_CV_WALK8; break;
+                case WM_DEMO_FACING_4: slot = WM_CV_WALK4; break;
+                case WM_DEMO_FACING_6: slot = WM_CV_WALK6; break;
             }
             break;
         case WM_DEMO_BLOCK:
         case WM_DEMO_IDLE:
-        default:
-            return horizontal_facing(f->facing) ? &wm_bret_stand4_anim : &wm_bret_stand2_anim;
+        default: slot = horizontal_facing(f->facing) ? WM_CV_STAND4 : WM_CV_STAND2; break;
     }
-    return &wm_bret_stand2_anim;
+    return wm_character_visual(f->roster_id, slot);
 }
 
 static const wm_visual_sequence *torso_sequence_for(const wm_demo_fighter *f) {
-    return horizontal_facing(f->facing) ? &wm_bret_torso4_anim : &wm_bret_torso2_anim;
+    return wm_character_visual(f->roster_id, horizontal_facing(f->facing) ? WM_CV_TORSO4 : WM_CV_TORSO2);
 }
 
 static void refresh_flip(wm_demo_fighter *f) {
@@ -389,8 +382,12 @@ static void tick_cpu(wm_demo *d) {
 }
 
 void wm_demo_reset_match(wm_demo *d) {
+    uint8_t p1_roster = d->p1.roster_id;
+    uint8_t p2_roster = d->p2.roster_id;
     memset(&d->p1, 0, sizeof(d->p1));
     memset(&d->p2, 0, sizeof(d->p2));
+    d->p1.roster_id = p1_roster;
+    d->p2.roster_id = p2_roster;
 
     d->p1.screen_x = 118;
     d->p1.screen_y = 172;
@@ -410,6 +407,13 @@ void wm_demo_reset_match(wm_demo *d) {
     d->total_blocks = 0;
 }
 
+void wm_demo_set_roster(wm_demo *d, uint8_t p1, uint8_t p2) {
+    if (!d) return;
+    d->p1.roster_id = p1;
+    d->p2.roster_id = p2;
+    set_action(&d->p1, d->p1.action);
+    set_action(&d->p2, d->p2.action);
+}
 void wm_demo_init(wm_demo *d) {
     memset(d, 0, sizeof(*d));
     wm_game_init(&d->game);

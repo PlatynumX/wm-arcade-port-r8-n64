@@ -3,6 +3,7 @@
 #include <string.h>
 #include "wm/anim.h"
 #include "wm/app.h"
+#include "wm_fix39_runtime.h"
 #include "wm/bmod.h"
 #include "wm/source_clock.h"
 #include "wm/bret_visuals.h"
@@ -452,8 +453,16 @@ static void test_attract_source_flow(void) {
     CHECK(app.attract.sports_world_y > 0);
     wm_app_tick(&app, &button);
     CHECK(wm_process_find_id(&app.scheduler, WM_PID_WATER) == NULL);
+    CHECK(app.attract.call == WM_ATTRACT_SHOW_GAMEPLAY);
+    /* Gameplay now owns a real attract window. With RUN held, it becomes
+       skippable after 60 ticks and then advances past the pending credit
+       screen to the translated title call. */
+    for (unsigned i = 0; i < 60u; ++i) {
+        wm_app_tick(&app, &button);
+        CHECK(app.attract.call == WM_ATTRACT_SHOW_GAMEPLAY);
+    }
+    wm_app_tick(&app, &button);
     CHECK(app.attract.call == WM_ATTRACT_SHOW_TITLE);
-
     unsigned initial_lava = app.attract.title_lava_step;
     for (unsigned i = 0; i < WM_TITLE_BUTTON_ENABLE_TICKS; ++i) {
         wm_app_tick(&app, &button);
@@ -467,16 +476,24 @@ static void test_attract_source_flow(void) {
     for (size_t i = 0; i < WM_TITLE_GLINT_COUNT; ++i)
         any_glint |= app.attract.title_glints[i].active;
     CHECK(any_glint);
-    CHECK(app.attract.title_random_state != 0x57574631u);
+    /* Fix39 replaced the provisional per-title RNG with the shared source RAND/RNDRNG0 state. */
+    CHECK(wm_fix39_rng_state() != 0u);
     wm_app_tick(&app, &button);
     CHECK(wm_process_find_id(&app.scheduler, WM_PID_CYCLE_LAVA) == NULL);
     CHECK(wm_process_find_id(&app.scheduler, WM_PID_FLASH) == NULL);
     CHECK(wm_process_find_id(&app.scheduler, WM_PID_ATTRACT_ANIM) == NULL);
+    CHECK(app.attract.call == WM_ATTRACT_SHOW_GAMEPLAY);
+    /* Fix39: second source gameplay slot after Title. */
+    for (unsigned i = 0; i < 60u; ++i) {
+        wm_app_tick(&app, &button);
+        CHECK(app.attract.call == WM_ATTRACT_SHOW_GAMEPLAY);
+    }
+    wm_app_tick(&app, &button);
     CHECK(app.attract.call == WM_ATTRACT_DCS_LOGO);
     CHECK(app.attract.amode_loops == 1);
 
-    CHECK(app.demo.total_hits == 0);
-    CHECK(app.demo.total_blocks == 0);
+    /* Fix39: live attract gameplay mutates demo combat counters. */
+    /* Counter values are outcome-dependent once CPU-vs-CPU gameplay runs. */
 
     bool old_debug = app.show_debug;
     wm_app_tick(&app, &(wm_input_state){.z=true});

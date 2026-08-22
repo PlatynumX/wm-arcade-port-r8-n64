@@ -11,7 +11,7 @@ endif
 
 include $(N64_INST)/include/n64.mk
 
-CFLAGS += -I$(CURDIR)/include
+CFLAGS += -I$(CURDIR)/include -I$(CURDIR)/src/fix39 -I$(CURDIR)/src/generated
 
 CORE_C := \
     src/core/process.c \
@@ -64,7 +64,6 @@ FIX38_ARCADE_C := \
     src/core/arcade/wm_arcade_react9_core.c \
     src/core/arcade/wm_arcade_roster.c \
     src/core/arcade/wm_arcade_shawn.c \
-    src/core/arcade/wm_arcade_special.c \
     src/core/arcade/wm_arcade_taker.c \
     src/core/arcade/wm_arcade_wrestler_port.c \
     src/core/arcade/wm_arcade_yoko.c \
@@ -72,7 +71,6 @@ FIX38_ARCADE_C := \
     src/core/arcade/wmania_attract_core.c \
     src/core/arcade/wmania_attract_data.c \
     src/core/arcade/wmania_attract_operator.c \
-    src/core/arcade/wmania_attract_secret.c \
     src/core/arcade/wmania_attract_time.c \
     src/core/arcade/wmania_attract_visuals.c \
     src/core/arcade/wmania_hiscore_adapter.c \
@@ -80,14 +78,10 @@ FIX38_ARCADE_C := \
     src/core/arcade/wmania_hiscore_counter.c \
     src/core/arcade/wmania_hiscore_entry.c \
     src/core/arcade/wmania_hiscore_factory.c \
-    src/core/arcade/wmania_hiscore_persist.c \
     src/core/arcade/wmania_hiscore_present.c \
     src/core/arcade/wmania_hiscore_special.c \
     src/core/arcade/wmania_hiscore_system.c \
     src/core/arcade/wmania_ring_climb.c \
-    src/core/arcade/wmania_ring_geometry.c \
-    src/core/arcade/wmania_ring_out.c \
-    src/core/arcade/wmania_rng.c \
     src/core/arcade/wmania_rope_command.c \
     src/core/arcade/wmania_rope_runtime.c \
     src/core/arcade/wmania_rope_source_data.c \
@@ -96,9 +90,32 @@ CORE_C += $(FIX38_ARCADE_C)
 # END FIX38 CUMULATIVE ARCADE SOURCE PORTS
 
 
-ASSET_C := src/generated/bret_sprites.c src/generated/sports_logo.c src/generated/dcs_logo.c src/generated/title_screen.c src/generated/title_sparkle.c src/generated/bmod_tables.c src/generated/sports_background.c src/generated/sports_motto.c src/generated/select_sprites.c src/generated/select_background_main.c src/generated/select_background_choice.c src/generated/progress_background.c src/generated/progress_wrestlers.c
+# BEGIN FIX39 SOURCE-DIRECT MERGE
+FIX39_C := \
+    src/fix39/wm_arcade_drone_source_bodies.c \
+    src/fix39/wm_arcade_drone_source_ranges.c \
+    src/fix39/wm_arcade_drone_source_scripts.c \
+    src/fix39/wm_arcade_drone_source_services.c \
+    src/fix39/wm_arcade_drone_source_tables.c \
+    src/fix39/wm_arcade_fireworks.c \
+    src/fix39/wm_arcade_matchflow.c \
+    src/fix39/wm_arcade_movement.c \
+    src/fix39/wm_arcade_source_attack_frames.c \
+    src/fix39/wm_arcade_special.c \
+    src/fix39/wm_arcade_story.c \
+    src/fix39/wm_arcade_wimp_frame.c \
+    src/fix39/wm_fix39_runtime.c \
+    src/fix39/wmania_attract_live.c \
+    src/fix39/wmania_attract_secret.c \
+    src/fix39/wmania_hiscore_persist.c \
+    src/fix39/wmania_ring_geometry.c \
+    src/fix39/wmania_ring_onscreen.c \
+    src/fix39/wmania_ring_out.c \
+    src/fix39/wmania_rng.c
+# END FIX39 SOURCE-DIRECT MERGE
+ASSET_C := src/generated/bret_sprites.c src/generated/character_assets.c src/generated/ring_rope_assets.c src/generated/sports_logo.c src/generated/dcs_logo.c src/generated/title_screen.c src/generated/title_sparkle.c src/generated/bmod_tables.c src/generated/sports_background.c src/generated/sports_motto.c src/generated/select_sprites.c src/generated/select_background_main.c src/generated/select_background_choice.c src/generated/progress_background.c src/generated/progress_wrestlers.c src/generated/fix39_attract_text_generated.c src/generated/fix39_attract_assets.c
 N64_C := src/platform/n64/main.c src/platform/n64/dcs_effect.c src/platform/n64/audio_backend.c src/platform/n64/dcs_bank.c
-C_FILES := $(CORE_C) $(ASSET_C) $(N64_C)
+C_FILES := $(FIX39_C) $(CORE_C) $(ASSET_C) $(N64_C)
 OBJS := $(addprefix $(BUILD_DIR)/,$(C_FILES:.c=.o))
 
 all: $(ROMNAME).z64
@@ -138,7 +155,11 @@ $(DCS1005_WAV64): $(DCS1005_WAV)
 	@$(N64_AUDIOCONV) --wav-compress 0 --wav-loop false -o $(dir $@) "$<"
 
 $(BUILD_DIR)/$(ROMNAME).dfs: $(DCS1005_WAV64)
+# BEGIN FIX39 STREAMED CHARACTER ART
+FIX39_CHAR_DFS_FILES := $(wildcard filesystem/fix39_chars/*/*.bin)
+$(BUILD_DIR)/$(ROMNAME).dfs: $(FIX39_CHAR_DFS_FILES)
 $(ROMNAME).z64: $(BUILD_DIR)/$(ROMNAME).dfs
+# END FIX39 STREAMED CHARACTER ART
 # END EXACT WWF DCS COMMAND 1005
 
 # BEGIN EXACT WWF DCS FRONTEND SELECT BANK
@@ -163,6 +184,40 @@ prepare-select-assets:
 	@test -n "$(WWFMANIA_ZIP)" || (echo "Set WWFMANIA_ZIP=/path/to/wwfmania.zip" >&2; exit 2)
 	WWFMANIA_ZIP="$(WWFMANIA_ZIP)" sh ./scripts/prepare_select_assets.sh
 # END SOURCE CHARACTER SELECT ASSETS
+
+
+# BEGIN FIX39 ATTRACT SOURCE TEXT
+FIX39_ATTRACT_ASM := original/wwf-wrestlemania/ATTRACT.ASM
+FIX39_ATTRACT_TEXT_C := src/generated/fix39_attract_text_generated.c
+FIX39_ATTRACT_TEXT_H := src/generated/fix39_attract_text_generated.h
+$(FIX39_ATTRACT_TEXT_C) $(FIX39_ATTRACT_TEXT_H): $(FIX39_ATTRACT_ASM) tools/fix39_attract_text.py
+	python3 tools/fix39_attract_text.py --source $(FIX39_ATTRACT_ASM) --out-c $(FIX39_ATTRACT_TEXT_C) --out-h $(FIX39_ATTRACT_TEXT_H)
+# END FIX39 ATTRACT SOURCE TEXT
+
+
+# BEGIN FIX39 ATTRACT SOURCE ASSETS
+FIX39_ATTRACT_IMG_DIR := original/wwf-wrestlemania/IMG
+FIX39_ATTRACT_IMGPAL := original/wwf-wrestlemania/IMGPAL.ASM
+FIX39_ATTRACT_ASSET_C := src/generated/fix39_attract_assets.c
+FIX39_ATTRACT_ASSET_H := src/generated/fix39_attract_assets_generated.h
+$(FIX39_ATTRACT_ASSET_C) $(FIX39_ATTRACT_ASSET_H): tools/fix39_attract_assets.py tools/wimpimg.py
+	@test -f $(FIX39_ATTRACT_IMGPAL) || sh scripts/fetch_original.sh
+	python3 tools/fix39_attract_assets.py --img-dir $(FIX39_ATTRACT_IMG_DIR) --imgpal $(FIX39_ATTRACT_IMGPAL) --wimpimg tools/wimpimg.py --out-c $(FIX39_ATTRACT_ASSET_C) --out-h $(FIX39_ATTRACT_ASSET_H)
+# END FIX39 ATTRACT SOURCE ASSETS
+
+
+# BEGIN FIX39 ATTRACT GENERATED HEADER ORDER
+$(BUILD_DIR)/src/platform/n64/main.o: $(FIX39_ATTRACT_TEXT_H) $(FIX39_ATTRACT_ASSET_H)
+# END FIX39 ATTRACT GENERATED HEADER ORDER
+
+
+# BEGIN FIX39 BRET SOURCE ATTACK FRAMES
+FIX39_HRTSEQ2 := original/wwf-wrestlemania/HRTSEQ2.ASM
+FIX39_BRET_ATTACK_H := src/fix39/wm_arcade_bret_attack_frames_generated.h
+$(FIX39_BRET_ATTACK_H): $(FIX39_HRTSEQ2) tools/fix39_bret_attack_frames.py
+	python3 tools/fix39_bret_attack_frames.py --source $(FIX39_HRTSEQ2) --out $(FIX39_BRET_ATTACK_H)
+$(BUILD_DIR)/src/fix39/wm_arcade_source_attack_frames.o: $(FIX39_BRET_ATTACK_H)
+# END FIX39 BRET SOURCE ATTACK FRAMES
 
 $(BUILD_DIR)/$(ROMNAME).elf: $(OBJS)
 

@@ -1,0 +1,9 @@
+#include "wm_arcade_source_attack_frames.h"
+#include <string.h>
+typedef struct { const char *frame; unsigned char uses_z; uint16_t mode; int16_t x,y,z,w,h,d; } wm_arcade_source_attack_frame_t;
+#include "wm_arcade_character_attack_frames_generated.h"
+static bool find_in(const wm_arcade_source_attack_frame_t *tab,unsigned n,const char *source_frame,bool *uses_z,wm_arcade_attack_on_z_args_t *zargs,wm_arcade_attack_on_args_t *args){
+ if(!source_frame||!uses_z||!zargs||!args)return false;for(unsigned i=0;i<n;i++){const wm_arcade_source_attack_frame_t*r=&tab[i];if(strcmp(source_frame,r->frame))continue;*uses_z=r->uses_z!=0;if(*uses_z){zargs->attack_mode=r->mode;zargs->xoff=r->x;zargs->yoff=r->y;zargs->zoff=r->z;zargs->width=r->w;zargs->height=r->h;zargs->depth=r->d;}else{args->attack_mode=r->mode;args->xoff=r->x;args->yoff=r->y;args->width=r->w;args->height=r->h;}return true;}return false;}
+bool wm_arcade_character_attack_for_source_frame(uint8_t id,const char*f,bool*u,wm_arcade_attack_on_z_args_t*z,wm_arcade_attack_on_args_t*a){switch(id){
+case 0:return find_in(wm_char_0_attack_frames,WM_CHAR_0_ATTACK_COUNT,f,u,z,a);case 1:return find_in(wm_char_1_attack_frames,WM_CHAR_1_ATTACK_COUNT,f,u,z,a);case 2:return find_in(wm_char_2_attack_frames,WM_CHAR_2_ATTACK_COUNT,f,u,z,a);case 3:return find_in(wm_char_3_attack_frames,WM_CHAR_3_ATTACK_COUNT,f,u,z,a);case 4:return find_in(wm_char_4_attack_frames,WM_CHAR_4_ATTACK_COUNT,f,u,z,a);case 5:return find_in(wm_char_5_attack_frames,WM_CHAR_5_ATTACK_COUNT,f,u,z,a);case 6:return find_in(wm_char_6_attack_frames,WM_CHAR_6_ATTACK_COUNT,f,u,z,a);case 8:return find_in(wm_char_8_attack_frames,WM_CHAR_8_ATTACK_COUNT,f,u,z,a);default:return false;}}
+bool wm_arcade_bret_attack_for_source_frame(const char*f,bool*u,wm_arcade_attack_on_z_args_t*z,wm_arcade_attack_on_args_t*a){return wm_arcade_character_attack_for_source_frame(0,f,u,z,a);}

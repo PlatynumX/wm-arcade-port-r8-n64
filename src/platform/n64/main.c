@@ -5,9 +5,21 @@
 #include <string.h>
 
 #include "wm/app.h"
+#include "wm_fix39_runtime.h"
+#include "wmania_attract_data.h"
+#include "wmania_hiscore_present.h"
+#include "fix39_attract_text_generated.h"
+#include "fix39_attract_assets_generated.h"
 #include "audio_backend.h"
 #include "wm/bmod.h"
 #include "wm/bret_sprites.h"
+#include "wm/ring_rope_assets.h"
+#include "wm/ring_arena_assets.h"
+#include "wm/crowd_assets.h"
+#include "wmania_rope_spawn.h"
+#include "wmania_ring_geometry.h"
+#include <stdlib.h>
+#include "wm/character_assets.h"
 #include "wm/composite.h"
 #include "wm/demo.h"
 #include "wm/dcs_logo.h"
@@ -24,6 +36,8 @@
 #include "wm/title_screen.h"
 #include "wm/title_sparkle.h"
 #include "wm/visual.h"
+
+static bool fix39_tick_gameplay_demo(wm_app *app, const wm_input_state *input);
 
 #define STICK_DEADZONE 12
 
@@ -90,42 +104,309 @@ static void draw_background(void) {
     fill_rect(0, 0, 320, 240, RGBA32(8, 10, 18, 255));
 }
 
+/* Combat2AU: ROPES.ASM source-object renderer.  Object positions are the
+   literal LWWWWW seeds translated through BEGINOBJ, then DISPLAY.ASM world-TL
+   subtraction.  WRESTLE.ASM init_scroller sets WORLDTLX=RING_X_CENTER-200 and
+   WORLDTLY=-27 for the normal 1v1 attract match. */
+typedef struct { const wm_ring_rope_asset *a; uint8_t *mem; size_t bytes; uint32_t stamp; } fix39_rope_cache;
+static fix39_rope_cache fix39_rope_cache_slots[12];
+static uint32_t fix39_rope_stamp;
+static const uint8_t *fix39_rope_load(const wm_ring_rope_asset *a, uint16_t **pal) {
+    if (!a || !pal) return NULL;
+    ++fix39_rope_stamp;
+    for (unsigned i=0;i<12;i++) if (fix39_rope_cache_slots[i].a==a) {
+        fix39_rope_cache_slots[i].stamp=fix39_rope_stamp;
+        *pal=(uint16_t*)(void*)(fix39_rope_cache_slots[i].mem+a->palette_offset);
+        return fix39_rope_cache_slots[i].mem;
+    }
+    unsigned pick=0; for(unsigned i=0;i<12;i++){ if(!fix39_rope_cache_slots[i].a){pick=i;break;} if(fix39_rope_cache_slots[i].stamp<fix39_rope_cache_slots[pick].stamp)pick=i; }
+    fix39_rope_cache *c=&fix39_rope_cache_slots[pick]; free(c->mem); memset(c,0,sizeof(*c));
+    c->bytes=(size_t)a->palette_offset+(size_t)a->palette_colors*2u; c->mem=malloc(c->bytes); if(!c->mem)return NULL;
+    FILE *fp=fopen(a->path,"rb"); if(!fp){free(c->mem);memset(c,0,sizeof(*c));return NULL;}
+    if(fread(c->mem,1,c->bytes,fp)!=c->bytes){fclose(fp);free(c->mem);memset(c,0,sizeof(*c));return NULL;} fclose(fp);
+    data_cache_hit_writeback(c->mem,c->bytes); c->a=a; c->stamp=fix39_rope_stamp;
+    *pal=(uint16_t*)(void*)(c->mem+a->palette_offset); return c->mem;
+}
+static void fix39_draw_rope_object(WmRopeBank bank,WmRopeChannel ch,WmRopeHalf half) {
+    const WmRopeObjectSeed *s=wm_rope_object_seed(bank,ch,half); if(!s||!s->exists)return;
+    const char *sym=wm_fix39_rope_image_symbol(bank,ch,half); const wm_ring_rope_asset *a=wm_ring_rope_asset_find(sym); if(!a)return;
+    uint16_t *pal=NULL; const uint8_t *px=fix39_rope_load(a,&pal); if(!px||!pal)return;
+    /* ROPES.ASM calls BEGINOBJ (not BEGINOBJW) after applying the literal
+       +104/-258 object offsets. DISPLAY.ASM later subtracts WORLDTL and then
+       subtracts the image ODOFF animation point. For M_FLIPH it first changes
+       the X offset to (width - 1 - offset). Reproduce that sequence directly
+       instead of relying on rdpq_tex_blit's centre/flip semantics. */
+    const int obj_x=((int)(wm_rope_spawn_x_fp16(s)>>16))-wm_fix39_camera_worldtlx_int();
+    const int obj_y=((int)(wm_rope_spawn_y_fp16(s)>>16))-wm_fix39_camera_worldtly_int();
+    const int xoff=s->flip_horizontal ? ((int)a->width-1-(int)a->xani) : (int)a->xani;
+    const int yoff=(int)a->yani;
+    const float sx=(float)(obj_x-xoff)*WM_FRONTEND_SCALE_X;
+    const float sy=(float)(obj_y-yoff)*WM_FRONTEND_SCALE_Y;
+    surface_t tex=surface_make_linear((void*)px,FMT_CI8,a->width,a->height);
+    rdpq_set_mode_standard(); rdpq_mode_tlut(TLUT_RGBA16); rdpq_mode_filter(FILTER_POINT); rdpq_mode_alphacompare(1);
+    rdpq_tex_upload_tlut(pal,0,a->palette_colors);
+    int pitch=(a->width+7)&~7, sh=pitch?2048/pitch:1; if(sh<1)sh=1; if(sh>2)sh&=~1;
+    for(int top=0;top<a->height;top+=sh){int h=a->height-top;if(h>sh)h=sh;
+        rdpq_tex_blit(&tex,sx,sy+(float)top*WM_FRONTEND_SCALE_Y,&(rdpq_blitparms_t){.t0=top,.height=h,.flip_x=s->flip_horizontal,.scale_x=WM_FRONTEND_SCALE_X,.scale_y=WM_FRONTEND_SCALE_Y,.filtering=false});}
+}
+static void fix39_draw_rope_bank(WmRopeBank bank){
+    for(unsigned ch=0;ch<WM_FIX39_ROPE_CHANNEL_COUNT;ch++) for(unsigned h=0;h<2;h++) fix39_draw_rope_object(bank,(WmRopeChannel)ch,(WmRopeHalf)h);
+}
+/* Combat2AX: exact ringBMOD renderer translated from the Midway background
+   object path.  Source authority is BGNDTBL.ASM ringBMOD/ringBLKS plus the
+   selected NEWRINGB.BDD image database.  WRESTLE.ASM ring_mod starts the
+   module at (105,-450); init_scroller starts WORLDTL at
+   (RING_X_CENTER-200,-27) for normal 1v1. */
+#define WM_RING_MODULE_X 105
+#define WM_RING_MODULE_Y (-450)
+#define WM_RING_WORLD_TL_X ((int)wm_fix39_camera_worldtlx_int())
+#define WM_RING_WORLD_TL_Y ((int)wm_fix39_camera_worldtly_int())
+#define WM_RING_SOURCE_VIEW_W 400
+#define WM_RING_SOURCE_VIEW_H 256
+#define WM_RING_ARENA_IMAGE_COUNT 95
+static uint8_t *fix39_arena_pixels[WM_RING_ARENA_IMAGE_COUNT];
+static size_t fix39_arena_pixel_bytes[WM_RING_ARENA_IMAGE_COUNT];
+static uint16_t fix39_arena_order[211];
+static bool fix39_arena_order_ready;
+static const uint8_t *fix39_arena_image_load(uint16_t header_index) {
+    if (header_index >= WM_RING_ARENA_IMAGE_COUNT) return NULL;
+    if (fix39_arena_pixels[header_index]) return fix39_arena_pixels[header_index];
+    const wm_ring_arena_image *a = wm_ring_arena_image_at(header_index);
+    if (!a) return NULL;
+    const size_t bytes=(size_t)a->width*(size_t)a->height;
+    uint8_t *mem = malloc(bytes);
+    if (!mem) return NULL;
+    FILE *fp = fopen(a->path, "rb");
+    if (!fp) { free(mem); return NULL; }
+    if (fread(mem, 1, bytes, fp) != bytes) {
+        fclose(fp);
+        free(mem);
+        return NULL;
+    }
+    fclose(fp);
+    data_cache_hit_writeback(mem,bytes);
+    fix39_arena_pixels[header_index] = mem;
+    fix39_arena_pixel_bytes[header_index] = bytes;
+    return mem;
+}
+static bool fix39_arena_draw_before(const wm_ring_arena_block *a,const wm_ring_arena_block *b){
+    wm_bmod_block aa={a->palette,a->flags,a->z,a->x,a->y,a->header_index};
+    wm_bmod_block bb={b->palette,b->flags,b->z,b->x,b->y,b->header_index};
+    return wm_bmod_draw_before(&aa,&bb);
+}
+static void fix39_arena_order_init(void){
+    if (fix39_arena_order_ready) return;
+    const size_t n = wm_ring_arena_block_count();
+    if (n != 211) return;
+    for(size_t i=0;i<n;i++)fix39_arena_order[i]=(uint16_t)i;
+    for(size_t i=1;i<n;i++){
+        uint16_t key = fix39_arena_order[i];
+        size_t j = i;
+        const wm_ring_arena_block *kb=wm_ring_arena_block_at(key);
+        while (j > 0) {
+            const wm_ring_arena_block *pb = wm_ring_arena_block_at(fix39_arena_order[j - 1]);
+            if (!fix39_arena_draw_before(kb, pb)) break;
+            fix39_arena_order[j] = fix39_arena_order[j - 1];
+            --j;
+        }
+        fix39_arena_order[j]=key;
+    }
+    fix39_arena_order_ready=true;
+}
+/* Combat2BC: CROWD.ASM crowd_anim translation.  BAKLST selects a crowd
+   animator by (OZPOS >> 1), and only indices 0..29 are crowd-controlled.  The
+   ring BMOD carries those literal Z values, so no new placement table is
+   invented here. */
+typedef struct { uint16_t script,pc,time,frame,repeat_pc,repeat_n; bool ready; } fix39_crowd_state;
+static fix39_crowd_state fix39_crowd[30];
+static bool fix39_crowd_ready;
+static uint8_t *fix39_crowd_pixels[160];
+static void fix39_crowd_init(void){
+    if(fix39_crowd_ready)return;
+    for(unsigned i=0;i<30;i++){
+        const wm_crowd_person *p=wm_crowd_person_at(i); if(!p)continue;
+        fix39_crowd[i].script=p->normal_script; fix39_crowd[i].ready=true;
+    }
+    fix39_crowd_ready=true;
+}
+static void fix39_crowd_tick_one(fix39_crowd_state *s){
+    if(!s||!s->ready)return;
+    if(s->time){--s->time; if(s->time)return;}
+    for(unsigned guard=0;guard<32;guard++){
+        const wm_crowd_script *sc=wm_crowd_script_at(s->script); if(!sc||!sc->count){s->ready=false;return;}
+        if(s->pc>=sc->count)s->pc=0;
+        const wm_crowd_cmd *c=&sc->cmd[s->pc++];
+        switch((wm_crowd_op)c->op){
+        case WM_CROWD_FRAME:s->frame=c->arg;s->time=c->value;return;
+        case WM_CROWD_GOTO:s->script=c->arg;s->pc=0;continue;
+        case WM_CROWD_RNDWAIT:s->time=(uint16_t)wm_fix39_rndrng0(c->value);return;
+        case WM_CROWD_REPEAT:s->repeat_pc=s->pc;s->repeat_n=(uint16_t)wm_fix39_rndrng0(c->value);continue;
+        case WM_CROWD_SHOULD_REPEAT:
+            if(s->repeat_n>1){--s->repeat_n;s->pc=s->repeat_pc;} else s->repeat_n=0;
+            continue;
+        default:s->ready=false;return;
+        }
+    }
+}
+static void fix39_crowd_tick(void){fix39_crowd_init();for(unsigned i=0;i<30;i++)fix39_crowd_tick_one(&fix39_crowd[i]);}
+/* CROWD.ASM DO_CROWD_CHEER: C_OVERRIDE|C_LONG, no random filter. */
+static void fix39_crowd_do_crowd_cheer(void){
+    fix39_crowd_init();
+    for(unsigned i=0;i<30;i++){
+        if(i==20u||i==21u||i==23u)continue;
+        const wm_crowd_person *p=wm_crowd_person_at(i); if(!p)continue;
+        fix39_crowd[i].script=p->cheer2_script; fix39_crowd[i].pc=0; fix39_crowd[i].time=1; fix39_crowd[i].ready=true;
+        if(i==19u){
+            const unsigned side[]={20u,21u,23u};
+            for(unsigned k=0;k<3;k++){ unsigned j=side[k]; const wm_crowd_person *q=wm_crowd_person_at(j); if(q){ fix39_crowd[j].script=q->cheer1_script; fix39_crowd[j].pc=0; fix39_crowd[j].time=1; fix39_crowd[j].ready=true; } }
+        }
+    }
+}
+static bool fix39_crowd_cheer_frame(const char *f){
+    static const char *const frames[]={
+        "L3PN5B+FR8","L4SW5A+FR2","L4FX5B+FR1","S3PN5C+FR7","S1TT5Z+FR2","S4SW4A+FR1",
+        "H3PN5A+FR8","H1TL5A+FR3","H4SL4C+FR1","B2PN5A+FR6","B1TT5Z+FR2","B4SW4B+FR3",
+        "U5RV5A+FR4","U4PS3A+FR5","U5RV5A+FR6","U3PN5A+FR9","U1TT5A+FR2","U5RV5A+FR1",
+        "D4PN5A+FR5","D1TT5Z+FR2","D5WN5B+FR2","Y3PF3C+FR12","Y1TT5Z+FR2","Y5RV5A+FR1",
+        "R3PN5A+FR6","R1TT5Z+FR2","R4SW4D+FR3"
+    };
+    if(!f)return false;
+    for(unsigned i=0;i<sizeof(frames)/sizeof(frames[0]);i++) if(strcmp(f,frames[i])==0) return true;
+    return false;
+}
+static void fix39_crowd_source_frame_event(unsigned slot,const char *frame){
+    static char last[2][32]; if(slot>=2)return;
+    if(!frame)return;
+    if(strncmp(last[slot],frame,sizeof(last[slot])-1)!=0){ strncpy(last[slot],frame,sizeof(last[slot])-1); last[slot][sizeof(last[slot])-1]=0; if(fix39_crowd_cheer_frame(frame))fix39_crowd_do_crowd_cheer(); }
+}
+static const uint8_t *fix39_crowd_load(uint16_t fi,uint16_t **pal){
+    const wm_crowd_asset *a=wm_crowd_asset_at(fi); if(!a||!pal||fi>=160)return NULL;
+    if(!fix39_crowd_pixels[fi]){
+        const size_t bytes=(size_t)a->palette_offset+(size_t)a->palette_colors*2u; uint8_t *m=malloc(bytes); if(!m)return NULL;
+        FILE *fp=fopen(a->path,"rb"); if(!fp){free(m);return NULL;} if(fread(m,1,bytes,fp)!=bytes){fclose(fp);free(m);return NULL;} fclose(fp);
+        data_cache_hit_writeback(m,bytes); fix39_crowd_pixels[fi]=m;
+    }
+    *pal=(uint16_t*)(void*)(fix39_crowd_pixels[fi]+a->palette_offset); return fix39_crowd_pixels[fi];
+}
+static bool fix39_draw_crowd_block(const wm_ring_arena_block *b){
+    if(!b || (b->z&1u) || b->z>58u)return false;
+    const unsigned ci=(unsigned)b->z>>1; if(ci>=30)return false; fix39_crowd_init();
+    const fix39_crowd_state *s=&fix39_crowd[ci];
+    /* CROWD.ASM mutates an existing BAKLST object in place. If the translated
+       dynamic frame is not available, leave that object on its original BMOD
+       image instead of deleting it from the scene. */
+    const wm_crowd_asset *a=wm_crowd_asset_at(s->frame); if(!a)return false;
+    const wm_crowd_person *person=wm_crowd_person_at(ci); const wm_crowd_script *norm=person?wm_crowd_script_at(person->normal_script):NULL;
+    int ix=0,iy=0;
+    if(norm){for(unsigned j=0;j<norm->count;j++)if(norm->cmd[j].op==WM_CROWD_FRAME){const wm_crowd_asset *ia=wm_crowd_asset_at(norm->cmd[j].arg);if(ia){ix=ia->xani;iy=ia->yani;}break;}}
+    /* CROWD.ASM anibobj preserves the animation point by moving OXPOS/OYPOS
+       by old IANI - new IANI. BMOD x/y are the source object's initial pos. */
+    int x=(int)b->x+WM_RING_MODULE_X-WM_RING_WORLD_TL_X + ix-(int)a->xani;
+    int y=(int)b->y+WM_RING_MODULE_Y-WM_RING_WORLD_TL_Y + iy-(int)a->yani;
+    uint16_t *pal=NULL; const uint8_t *px=fix39_crowd_load(s->frame,&pal);
+    if(!px||!pal)return false;
+    surface_t tex=surface_make_linear((void*)px,FMT_CI8,a->width,a->height);
+    rdpq_set_mode_standard();rdpq_mode_tlut(TLUT_RGBA16);rdpq_mode_filter(FILTER_POINT);rdpq_mode_alphacompare(1);rdpq_tex_upload_tlut(pal,0,a->palette_colors);
+    int pitch=(a->width+7)&~7,sh=pitch?2048/pitch:1;if(sh<1)sh=1;if(sh>2)sh&=~1;
+    const bool fx=(b->flags&WM_BMOD_HFLIP)!=0;
+    for(int top=0;top<(int)a->height;top+=sh){int h=(int)a->height-top;if(h>sh)h=sh;rdpq_tex_blit(&tex,(float)x*WM_FRONTEND_SCALE_X,(float)(y+top)*WM_FRONTEND_SCALE_Y,&(rdpq_blitparms_t){.t0=top,.height=h,.flip_x=fx,.scale_x=WM_FRONTEND_SCALE_X,.scale_y=WM_FRONTEND_SCALE_Y,.filtering=false});}
+    return true;
+}
+
+static void fix39_draw_arena_block(const wm_ring_arena_block *b){
+    if (!b) return;
+    if (fix39_draw_crowd_block(b)) return;
+    const wm_ring_arena_image *img = wm_ring_arena_image_at(b->header_index);
+    const wm_ring_arena_palette *pal = wm_ring_arena_palette_at(b->palette);
+    if (!img || !pal || !pal->color_count) return;
+    const int sx=(int)b->x+WM_RING_MODULE_X-WM_RING_WORLD_TL_X;
+    const int sy=(int)b->y+WM_RING_MODULE_Y-WM_RING_WORLD_TL_Y;
+    if (sx + (int)img->width < 0 || sx >= WM_RING_SOURCE_VIEW_W ||
+        sy + (int)img->height < 0 || sy >= WM_RING_SOURCE_VIEW_H) return;
+    const uint8_t *px = fix39_arena_image_load(b->header_index);
+    if (!px) return;
+    const bool transparent=(b->flags&WM_BMOD_TRANSPARENT)!=0;
+    uint16_t *tlut=transparent?pal->rgba5551_keyed:pal->rgba5551_opaque;
+    surface_t tex=surface_make_linear((void*)px,FMT_CI8,img->width,img->height);
+    rdpq_set_mode_standard(); rdpq_mode_tlut(TLUT_RGBA16); rdpq_mode_filter(FILTER_POINT); rdpq_mode_alphacompare(1); rdpq_tex_upload_tlut(tlut,0,pal->color_count);
+    int pitch = (img->width + 7) & ~7;
+    int sh = pitch ? 2048 / pitch : 1;
+    if (sh < 1) sh = 1;
+    if (sh > 2) sh &= ~1;
+    const bool fx=(b->flags&WM_BMOD_HFLIP)!=0, fy=(b->flags&WM_BMOD_VFLIP)!=0;
+    for (int top = 0; top < (int)img->height; top += sh) {
+        int h = (int)img->height - top;
+        if (h > sh) h = sh;
+        int dr = fy ? (int)img->height - top - h : top;
+        rdpq_tex_blit(&tex,(float)sx*WM_FRONTEND_SCALE_X,(float)(sy+dr)*WM_FRONTEND_SCALE_Y,&(rdpq_blitparms_t){.t0=top,.height=h,.flip_x=fx,.flip_y=fy,.scale_x=WM_FRONTEND_SCALE_X,.scale_y=WM_FRONTEND_SCALE_Y,.filtering=false});}
+}
+/* Combat2BA: preserve the original shared OZPOS order from BAKGND.ASM
+   #ztbl and ROPES.ASM instead of grouping every rope bank around a coarse
+   back/front split.  The exact source Z values are:
+     ring 100=13c7 mat, 101=13c8 back posts, 102=13c9 back buckles,
+     side shadows=13c8, back/side-blue=13ca, side-white=13cb,
+     side-red=13cc,
+     ring 103=1500 front buckles, 104=1501 front posts,
+     105=1502 front mat, front ropes=15aa, ring 106=1769 front gate.
+   WRESTLE.ASM creates the ring module before the rope processes, so equal-Z
+   rope objects are emitted after their ring-module peers. */
+static void fix39_draw_arena_z(uint8_t source_z) {
+    fix39_arena_order_init();
+    if (!fix39_arena_order_ready) return;
+    for (size_t oi=0; oi<211; ++oi) {
+        const wm_ring_arena_block *b=wm_ring_arena_block_at(fix39_arena_order[oi]);
+        if (b && b->z==source_z) fix39_draw_arena_block(b);
+    }
+}
+static void fix39_draw_rope_channel(WmRopeBank bank,WmRopeChannel channel) {
+    fix39_draw_rope_object(bank,channel,WM_FIX39_ROPE_HALF_FIRST);
+    fix39_draw_rope_object(bank,channel,WM_FIX39_ROPE_HALF_SECOND);
+}
+static void fix39_draw_side_channel(WmRopeChannel channel) {
+    fix39_draw_rope_channel(WM_FIX39_ROPE_LEFT,channel);
+    fix39_draw_rope_channel(WM_FIX39_ROPE_RIGHT,channel);
+}
+static void fix39_draw_arena_through_back_posts(void) {
+    /* Combat2BH: restore the exact source-ordered BAKLST traversal proven on
+       hardware in AX/AY.  CROWD.ASM-controlled/background objects (raw OZPOS
+       0..70) and ring #ztbl families 100/101 are one ordered list in Midway's
+       renderer; do not split the crowd into an isolated pass.  Splitting that
+       list in BA/BG left the hardware scene without the crowd/rail layer. */
+    fix39_arena_order_init();
+    if (!fix39_arena_order_ready) return;
+    for (size_t oi=0; oi<211; ++oi) {
+        const wm_ring_arena_block *b=wm_ring_arena_block_at(fix39_arena_order[oi]);
+        if (b && b->z <= 101) fix39_draw_arena_block(b);
+    }
+}
 static void draw_ring_back(void) {
+    fix39_crowd_tick();
     draw_background();
-    fill_rect(0, 82, 320, 240, RGBA32(20, 22, 28, 255));
-
-    fill_rect(26, 96, 294, 214, RGBA32(92, 92, 102, 255));
-    fill_rect(33, 102, 287, 205, RGBA32(194, 194, 198, 255));
-    fill_rect(39, 108, 281, 199, RGBA32(216, 216, 216, 255));
-
-    fill_rect(25, 83, 31, 205, RGBA32(38, 38, 44, 255));
-    fill_rect(289, 83, 295, 205, RGBA32(38, 38, 44, 255));
-    fill_rect(29, 105, 291, 108, RGBA32(188, 26, 40, 255));
-    fill_rect(29, 114, 291, 117, RGBA32(188, 26, 40, 255));
-    fill_rect(29, 123, 291, 126, RGBA32(188, 26, 40, 255));
+    /* BAKGND.ASM BAKLST is a single ordered list: crowd/background, mat and
+       back posts.  Keep that traversal intact so the source crowd cannot be
+       dropped between independent renderer passes. */
+    fix39_draw_arena_through_back_posts(); /* Z 0..101 */
+    fix39_draw_side_channel(WM_FIX39_ROPE_CHANNEL_SHADOW); /* 13c8 */
+    fix39_draw_arena_z(102); /* 13c9 back buckles */
+    fix39_draw_rope_channel(WM_FIX39_ROPE_BACK,WM_FIX39_ROPE_CHANNEL_RED);   /* 13ca */
+    fix39_draw_rope_channel(WM_FIX39_ROPE_BACK,WM_FIX39_ROPE_CHANNEL_WHITE); /* 13ca */
+    fix39_draw_rope_channel(WM_FIX39_ROPE_BACK,WM_FIX39_ROPE_CHANNEL_BLUE);  /* 13ca */
+    fix39_draw_side_channel(WM_FIX39_ROPE_CHANNEL_BLUE);  /* 13ca */
+    fix39_draw_side_channel(WM_FIX39_ROPE_CHANNEL_WHITE); /* 13cb */
+    fix39_draw_side_channel(WM_FIX39_ROPE_CHANNEL_RED);   /* 13cc */
 }
-
 static void draw_ring_front(void) {
-    fill_rect(29, 183, 291, 186, RGBA32(202, 28, 44, 255));
-    fill_rect(29, 192, 291, 195, RGBA32(202, 28, 44, 255));
-    fill_rect(29, 201, 291, 204, RGBA32(202, 28, 44, 255));
-    fill_rect(25, 180, 31, 209, RGBA32(38, 38, 44, 255));
-    fill_rect(289, 180, 295, 209, RGBA32(38, 38, 44, 255));
+    /* BAKGND.ASM puts these three ring families before the 15aa front ropes,
+       while the 1769 front gate is after them. */
+    fix39_draw_arena_z(103); /* 1500 front buckles */
+    fix39_draw_arena_z(104); /* 1501 front posts */
+    fix39_draw_arena_z(105); /* 1502 front mat */
+    fix39_draw_rope_channel(WM_FIX39_ROPE_FRONT,WM_FIX39_ROPE_CHANNEL_RED);
+    fix39_draw_rope_channel(WM_FIX39_ROPE_FRONT,WM_FIX39_ROPE_CHANNEL_WHITE);
+    fix39_draw_rope_channel(WM_FIX39_ROPE_FRONT,WM_FIX39_ROPE_CHANNEL_BLUE);
+    fix39_draw_arena_z(106); /* 1769 front gate */
 }
 
-static const wm_source_sprite *bret_object_palette(const wm_source_sprite *fallback) {
-    /* The arcade renderer does not leave each image piece on its source palette.
-       set_image() writes the wrestler's OBJ_PAL back to OPAL after plotting every
-       primary and secondary piece. BRETIMG.ASM exports H4ST4A02 as Bret's base
-       image, so use its palette as the portable equivalent of that shared object
-       palette. Fall back only if the generated source data is incomplete. */
-    const wm_source_sprite *base = wm_bret_sprite_find("H4ST4A02");
-    if (!base || !base->palette_rgba5551 || !base->palette_colors)
-        return fallback;
-    if (fallback && base->palette_colors < fallback->palette_colors)
-        return fallback;
-    return base;
-}
 
 static void draw_source_sprite_scaled(const wm_source_sprite *spr, float anchor_x, float anchor_y,
                                       int display_off_x, int display_off_y,
@@ -241,9 +522,12 @@ static void draw_shadow(int x, int y) {
     fill_rect(x - 13, y - 3, x + 14, y + 2, RGBA32(86, 86, 90, 255));
 }
 
+static int fix39_runtime_draw_index=-1;
 static const wm_source_sprite *fighter_sprite(const wm_demo_fighter *f) {
+    if(fix39_runtime_draw_index>=0){const wm_arcade_actor_t *a=wm_fix39_actor((size_t)fix39_runtime_draw_index);const char *fr=wm_fix39_actor_source_frame((size_t)fix39_runtime_draw_index);if(a&&fr){const wm_source_sprite *s=wm_character_sprite_find((uint8_t)a->wrestler_num,fr);if(s)return s;}}
+
     const wm_visual_frame *frame = wm_visual_current(&f->visual);
-    return frame ? wm_bret_sprite_find(frame->source_frame) : NULL;
+    return frame ? wm_character_sprite_find(f->roster_id, frame->source_frame) : NULL;
 }
 
 static bool fighter_uses_torso_layer(const wm_demo_fighter *f) {
@@ -260,14 +544,15 @@ static void draw_fighter(const wm_demo_fighter *f) {
         return;
     }
 
-    const wm_source_sprite *object_pal = bret_object_palette(spr);
+    const wm_source_sprite *object_pal = wm_character_base_sprite(f->roster_id);
+    if (!object_pal) object_pal = spr;
     draw_source_sprite(spr, f->screen_x, f->screen_y,
                        spr->xani, spr->yani, f->flip_x, object_pal);
 
     if (fighter_uses_torso_layer(f)) {
         const wm_visual_frame *torso_frame = wm_visual_current(&f->torso_visual);
         const wm_source_sprite *torso = torso_frame
-            ? wm_bret_sprite_find(torso_frame->source_frame) : NULL;
+            ? wm_character_sprite_find(f->roster_id, torso_frame->source_frame) : NULL;
         if (torso) {
             int a2x = spr->wimp_tail[WM_ATTACH_X_SLOT];
             int a2y = spr->wimp_tail[WM_ATTACH_Y_SLOT];
@@ -332,9 +617,23 @@ static void draw_match_hud(const wm_app *app) {
              demo->p1.screen_x, demo->p1.screen_y, demo->p1.stun_ticks,
              demo->p2.screen_x, demo->p2.screen_y, demo->p2.stun_ticks);
     text_line(8, 44, line);
+    {
+        const WmFix39Status *cs = wm_fix39_status();
+        if (cs) {
+            snprintf(line, sizeof(line), "COLLIS ch:%u ab:%u x:%u y:%u z:%u o:%u r:%u h:%u",
+                     (unsigned)cs->combat_checkhit_ticks, (unsigned)cs->combat_attack_boxes_built,
+                     (unsigned)cs->combat_x_overlap_ticks, (unsigned)cs->combat_y_overlap_ticks,
+                     (unsigned)cs->combat_z_overlap_ticks, (unsigned)cs->combat_full_overlap_ticks,
+                     (unsigned)cs->combat_full_overlap_rejected, (unsigned)cs->combat_accepted_hits);
+            text_line(8, 56, line);
+            snprintf(line, sizeof(line), "DEMO VIS:B/B SEL:%u/%u",
+                     (unsigned)app->p1_choice, (unsigned)app->p2_choice);
+            text_line(8, 68, line);
+        }
+    }
 
     if ((p1 && !p1->visual_backend_ready) || (p2 && !p2->visual_backend_ready))
-        text_line(8, 214, "SOURCE SLOT SELECTED - BRET ART BACKEND USED AS PLACEHOLDER");
+        text_line(8, 214, "SOURCE CHARACTER ART BACKEND ACTIVE");
 }
 
 static void render_dcs_logo(const wm_app *app) {
@@ -1131,6 +1430,567 @@ static void render_progress_bonus_icons(const wm_app *app) {
                            WM_PROGRESS_BONUS_ICON_YPOS);
 }
 
+/* BEGIN FIX39 V12 ATTRACT RENDERERS */
+typedef enum {
+    FIX39_FONT_OSGEMD,
+    FIX39_FONT_WSF10,
+    FIX39_FONT_OGMD10,
+    FIX39_FONT_WSF14,
+    FIX39_FONT_WGSF18,
+    FIX39_FONT_RD7
+} fix39_attract_font;
+
+static const wm_source_sprite *fix39_attract_sprite(const char *name) {
+    const wm_source_sprite *spr = wm_fix39_attract_sprite_find(name);
+    return spr ? spr : wm_select_sprite_find(name);
+}
+
+static const wm_source_sprite *fix39_attract_glyph(fix39_attract_font font,
+                                                    char c, char name[24]) {
+    name[0] = '\0';
+    if (font == FIX39_FONT_OSGEMD) {
+        if ((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
+            snprintf(name, 24, "OSGEMD_%c", c);
+        else switch (c) {
+            case '%': strcpy(name,"OSGEMD_PCT"); break;
+            case '&': strcpy(name,"OSGEMD_AND"); break;
+            case '!': strcpy(name,"OSGEMD_EXP"); break;
+            case '-': strcpy(name,"OSGEMD_DAS"); break;
+            case '.': strcpy(name,"OSGEMD_DOT"); break;
+            case '$': strcpy(name,"OSGEMD_DOL"); break;
+            case '/': strcpy(name,"OSGEMD_SLS"); break;
+            case '\'': strcpy(name,"OSGEMD_APO"); break;
+            case '?': strcpy(name,"OSGEMD_QUE"); break;
+            case ':': strcpy(name,"OSGEMD_COL"); break;
+            case '(': strcpy(name,"OSGEMD_OBR"); break;
+            case ')': strcpy(name,"OSGEMD_CBR"); break;
+            case '#': strcpy(name,"OSGEMD_NUM"); break;
+            default: break;
+        }
+    } else if (font == FIX39_FONT_WSF10) {
+        if ((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
+            snprintf(name, 24, "WSF10_%c", c);
+        else switch (c) {
+            case '%': strcpy(name,"WSF10PCT"); break;
+            case '!': strcpy(name,"WSF10EXC"); break;
+            case ',': strcpy(name,"WSF10COM"); break;
+            case '.': strcpy(name,"WSF10PER"); break;
+            case '-': strcpy(name,"WSF10DSH"); break;
+            case '#': strcpy(name,"WSF10NUM"); break;
+            case '\'': strcpy(name,"WSF10APO"); break;
+            default: break;
+        }
+    } else if (font == FIX39_FONT_OGMD10) {
+        if ((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
+            snprintf(name, 24, "osgmd10_%c", c);
+        else switch (c) {
+            case '%': strcpy(name,"osgmd10_PCT"); break;
+            case '!': strcpy(name,"osgmd10_EXP"); break;
+            case '(': strcpy(name,"osgmd10_OBR"); break;
+            case ')': strcpy(name,"osgmd10_CBR"); break;
+            case ',': strcpy(name,"osgmd10_COM"); break;
+            case '.': strcpy(name,"osgmd10_DOT"); break;
+            case ':': strcpy(name,"osgmd10_COL"); break;
+            case '-': strcpy(name,"osgmd10_DAS"); break;
+            case '#': strcpy(name,"osgmd10_NUM"); break;
+            case '&': strcpy(name,"osgmd10_AND"); break;
+            case '/': strcpy(name,"osgmd10_SLS"); break;
+            case '$': strcpy(name,"osgmd10_DOL"); break;
+            case '\'': strcpy(name,"osgmd10_APO"); break;
+            default: break;
+        }
+    } else if (font == FIX39_FONT_WSF14) {
+        if (c >= '0' && c <= '9')
+            snprintf(name, 24, "WSF14_%c", c);
+        else switch (c) {
+            case '#': strcpy(name,"WSF14NUM"); break;
+            default: break;
+        }
+    } else if (font == FIX39_FONT_WGSF18) {
+        if (c >= '0' && c <= '9')
+            snprintf(name, 24, "WGSF18_%c", c);
+        else switch (c) {
+            case '.': strcpy(name,"WGSF18PER"); break;
+            default: break;
+        }
+    } else {
+        if (c >= 'A' && c <= 'Z') snprintf(name, 24, "FONT7%c", c);
+        else if (c >= '0' && c <= '9') snprintf(name, 24, "FONT7%c", c);
+        else switch (c) {
+            case '!': strcpy(name,"FONT7excla"); break;
+            case '"': strcpy(name,"FONT7quote"); break;
+            case '#': strcpy(name,"FONT7pound"); break;
+            case '$': strcpy(name,"FONT7doll"); break;
+            case '%': strcpy(name,"FONT7percen"); break;
+            case '&': strcpy(name,"FONT7and"); break;
+            case '\'': strcpy(name,"FONT7apost"); break;
+            case '(': strcpy(name,"FONT7parenl"); break;
+            case ')': strcpy(name,"FONT7parenr"); break;
+            case '*': strcpy(name,"FONT7ast"); break;
+            case '+': strcpy(name,"FONT7plus"); break;
+            case ',': strcpy(name,"FONT7comma"); break;
+            case '-': strcpy(name,"FONT7dash"); break;
+            case '.': strcpy(name,"FONT7period"); break;
+            case '/': strcpy(name,"FONT7forsp"); break;
+            case ':': strcpy(name,"FONT7colon"); break;
+            case ';': strcpy(name,"FONT7semicol"); break;
+            case '<': strcpy(name,"FONT7less"); break;
+            case '=': strcpy(name,"FONT7equal"); break;
+            case '>': strcpy(name,"FONT7more"); break;
+            case '?': strcpy(name,"FONT7quest"); break;
+            case '[': strcpy(name,"FONT7bracl"); break;
+            case ']': strcpy(name,"FONT7bracr"); break;
+            default: break;
+        }
+    }
+    return name[0] ? fix39_attract_sprite(name) : NULL;
+}
+
+static void fix39_draw_sprite(const wm_source_sprite *spr, int x, int y,
+                              const wm_fix39_attract_palette *pal) {
+    if (!spr) return;
+    wm_source_sprite proxy = *spr;
+    const wm_source_sprite *palette_source = spr;
+    if (pal && pal->rgba5551 && pal->color_count) {
+        proxy.palette_rgba5551 = pal->rgba5551;
+        proxy.palette_colors = pal->color_count;
+        palette_source = &proxy;
+    }
+    draw_source_sprite_scaled(spr,
+                              (float)x * WM_FRONTEND_SCALE_X,
+                              (float)y * WM_FRONTEND_SCALE_Y,
+                              spr->xani, spr->yani, false, palette_source,
+                              WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
+}
+
+static int fix39_text_width(const char *text, fix39_attract_font font,
+                            int space_width, int spacing) {
+    int width = 0;
+    bool have_glyph = false;
+    if (!text) return 0;
+    for (const char *p = text; *p; ++p) {
+        if (*p == ' ') { width += space_width; continue; }
+        char name[24];
+        const wm_source_sprite *g = fix39_attract_glyph(font, *p, name);
+        if (!g) continue;
+        width += (int)g->width + spacing;
+        have_glyph = true;
+    }
+    if (have_glyph && spacing > 0) width -= spacing;
+    return width;
+}
+
+static void fix39_draw_text(const char *text, fix39_attract_font font,
+                            int x, int y, bool centered,
+                            int space_width, int spacing,
+                            const wm_fix39_attract_palette *pal,
+                            const wm_source_sprite *sprite_pal) {
+    if (!text) return;
+    if (centered) x -= fix39_text_width(text, font, space_width, spacing) / 2;
+    for (const char *p = text; *p; ++p) {
+        if (*p == ' ') { x += space_width; continue; }
+        char name[24];
+        const wm_source_sprite *g = fix39_attract_glyph(font, *p, name);
+        if (!g) continue;
+        if (sprite_pal && sprite_pal->palette_rgba5551) {
+            wm_source_sprite proxy = *g;
+            proxy.palette_rgba5551 = sprite_pal->palette_rgba5551;
+            proxy.palette_colors = sprite_pal->palette_colors;
+            draw_source_sprite_scaled(g,
+                                      (float)x * WM_FRONTEND_SCALE_X,
+                                      (float)y * WM_FRONTEND_SCALE_Y,
+                                      g->xani, g->yani, false, &proxy,
+                                      WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
+        } else {
+            fix39_draw_sprite(g, x, y, pal);
+        }
+        x += (int)g->width + spacing;
+    }
+}
+
+static void fix39_render_slate(void) {
+    fill_rect(0, 0, 320, 240, RGBA32(0,0,0,255));
+    render_select_module("slateBMOD", true, 0, 0);
+}
+
+/* HSTD.ASM table renderer.  Coordinates below are direct translations of
+   print_inter/print_beaten/print_tag/print_hscores/print_winstreaks and their
+   draw_*_table_entry helpers.  Persistence is intentionally separate: V12i
+   presents the source factory/runtime tables already owned by Fix39. */
+/* Keep lookup keys inline rather than as a ROM pointer table.  This mirrors
+   the V12f hint hardening and avoids adding another dynamic pointer chain to
+   an ATTRACT path that repeats indefinitely on hardware. */
+static const char fix39_hs_crouton[8][8] = {
+    "CRUT_BH", "CRUT_RR", "CRUT_UN", "CRUT_YK",
+    "CRUT_SM", "CRUT_BM", "CRUT_DK", "CRUT_LX"
+};
+
+static const char fix39_hs_wrestler_name[9][8] = {
+    "HART", "RAZOR", "UNDER", "YOKO", "SHAWN",
+    "BAMBAM", "DOINK", "", "LEX"
+};
+
+static void fix39_draw_text_right(const char *text, fix39_attract_font font,
+                                  int x, int y, int space_width, int spacing,
+                                  const wm_fix39_attract_palette *pal) {
+    x -= fix39_text_width(text, font, space_width, spacing);
+    fix39_draw_text(text, font, x, y, false, space_width, spacing, pal, NULL);
+}
+
+static void fix39_hs_initials3(const uint8_t in[WM_HS_NUM_INITIALS + 1u], char out[4]) {
+    out[0] = (char)in[0];
+    out[1] = (char)in[1];
+    out[2] = (char)in[2];
+    out[3] = '\0';
+}
+
+static void fix39_hs_trim5(const uint8_t in[WM_HS_NUM_INITIALS + 1u],
+                           char out[WM_HS_NUM_INITIALS + 1u]) {
+    unsigned first = 0u;
+    unsigned last = WM_HS_NUM_INITIALS;
+    while (first < WM_HS_NUM_INITIALS && in[first] == (uint8_t)' ') ++first;
+    while (last > first && in[last - 1u] == (uint8_t)' ') --last;
+    unsigned n = 0u;
+    for (unsigned i = first; i < last; ++i) out[n++] = (char)in[i];
+    out[n] = '\0';
+}
+
+static const wm_fix39_attract_palette *fix39_hs_row_palette(const WmHsDisplayRow *row) {
+    return wm_fix39_attract_palette_find(row && row->highlighted ? "BLUE" : "GOLD");
+}
+
+static void fix39_hs_rank(uint16_t rank, int x, int y, bool with_hash,
+                          bool streak_decor) {
+    char buf[8];
+    const wm_fix39_attract_palette *rank_pal = wm_fix39_attract_palette_find("WSF_W_P");
+    const wm_fix39_attract_palette *bar_pal = wm_fix39_attract_palette_find("DPLT_R_P");
+    snprintf(buf, sizeof(buf), with_hash ? "#%u" : "%u", (unsigned)rank);
+    fix39_draw_sprite(fix39_attract_sprite("SPEAR"), x - 8, y + 2, NULL);
+    if (streak_decor)
+        fix39_draw_sprite(fix39_attract_sprite("BARBUTT"), x - 10, y + 2, bar_pal);
+    else
+        fix39_draw_sprite(fix39_attract_sprite("SPEAR"), x + 13, y + 2, NULL);
+    fix39_draw_text(buf, FIX39_FONT_WSF14, streak_decor ? x - 4 : x, y,
+                    false, 7, 0, rank_pal, NULL);
+}
+
+static void fix39_hs_backdrop(void) {
+    fix39_render_slate();
+}
+
+/* HSTD.ASM gives MVEBAR_R/SHADOW01 OZPOS 0x1799 while scrolling rows use
+   0x1000..0x1003. MOVE_ALL_OBJS_UP explicitly leaves objects above 0x1798
+   stationary, so the fixed header is also in front of every scrolling rank,
+   initial and defeated-wrestler object. Draw this overlay last to reproduce
+   the arcade object's Z ordering instead of letting N64 submission order put
+   scrolling rows through the banner. */
+static void fix39_hs_header_overlay(const WmHsPresentDescriptor *desc) {
+    const wm_fix39_attract_palette *blue = wm_fix39_attract_palette_find("BLUE");
+    fix39_draw_sprite(fix39_attract_sprite(WM_HS_PRESENT_BAR_SOURCE_SYMBOL),
+                      WM_HS_PRESENT_BAR_X, WM_HS_PRESENT_BAR_Y, NULL);
+    fix39_draw_sprite(fix39_attract_sprite(WM_HS_PRESENT_SHADOW_SOURCE_SYMBOL),
+                      WM_HS_PRESENT_SHADOW_X, WM_HS_PRESENT_SHADOW_Y, NULL);
+    fix39_draw_text(desc->title, FIX39_FONT_OSGEMD,
+                    desc->layout.title_x, desc->layout.title_y, true,
+                    desc->layout.title_space_width, 0, blue, NULL);
+}
+
+static void fix39_hs_draw_beaten(const WmHsSystem *sys,
+                                 const WmAttractLive *live,
+                                 WmHsPresentScreen screen) {
+    const WmHsPresentDescriptor *desc = &wm_hs_present_sequence[screen];
+    WmHsDisplayRow rows[4];
+    size_t count = wm_hs_present_rows(sys, screen, live->hiscore_start_rank, rows, 3u);
+    const int scroll = live->phase == WM_ATTRACT_LIVE_HSTD_SCROLL ?
+                       (int)live->hiscore_scroll_px : 0;
+    if (scroll && live->hiscore_start_rank + 3u <= desc->total_rows) {
+        WmHsDisplayRow next;
+        if (wm_hs_present_rows(sys, screen,
+                               (uint16_t)(live->hiscore_start_rank + 3u),
+                               &next, 1u) == 1u) {
+            rows[count++] = next;
+        }
+    }
+
+    for (size_t i = 0; i < count; ++i) {
+        const WmHsDisplayRow *row = &rows[i];
+        const int iy = desc->layout.first_initials_y + (int)i * desc->layout.row_y_step - scroll;
+        const int sy = desc->layout.first_score_y + (int)i * desc->layout.row_y_step - scroll;
+        const wm_fix39_attract_palette *row_pal = fix39_hs_row_palette(row);
+        int icon_x = desc->layout.first_score_x;
+        unsigned icons = 0u;
+        char initials[WM_HS_NUM_INITIALS + 1u];
+        memcpy(initials, row->initials, sizeof(initials));
+
+        if (iy < -40 || iy > 260) continue;
+        for (unsigned n = 0; n < 8u; ++n) {
+            if (row->defeated_wrestler_bits & (1u << n)) {
+                fix39_draw_sprite(fix39_attract_sprite(fix39_hs_crouton[n]),
+                                  icon_x, sy + 2, NULL);
+                icon_x += 0x30;
+                ++icons;
+            }
+        }
+        if (icons < 8u) {
+            icon_x += 10;
+            for (unsigned n = icons; n < 8u; ++n) {
+                fix39_draw_sprite(fix39_attract_sprite("OSGEMD_DOT"), icon_x, sy + 2, NULL);
+                icon_x += 0x30;
+            }
+        }
+        /* draw_beaten_table_entry: a9.x + 50, uncentred, OSGEMD. */
+        fix39_draw_text(initials, FIX39_FONT_OSGEMD,
+                        desc->layout.first_initials_x + 50, iy, false,
+                        10, 0, row_pal, NULL);
+        fix39_hs_rank(row->rank, desc->layout.first_initials_x, iy, true, false);
+    }
+}
+
+static void fix39_hs_draw_tag(const WmHsSystem *sys) {
+    const WmHsPresentDescriptor *desc = &wm_hs_present_sequence[WM_HS_PRESENT_TAG];
+    WmHsDisplayRow rows[9];
+    const wm_fix39_attract_palette *score_pal = wm_fix39_attract_palette_find("WGSF_W_P1");
+    size_t count = wm_hs_present_rows(sys, WM_HS_PRESENT_TAG, 1u, rows, 9u);
+    for (size_t i = 0; i < count; ++i) {
+        const WmHsDisplayRow *row = &rows[i];
+        const int y = desc->layout.first_score_y + (int)i * desc->layout.row_y_step;
+        const int ry = desc->layout.first_initials_y + (int)i * desc->layout.row_y_step;
+        const wm_fix39_attract_palette *row_pal = fix39_hs_row_palette(row);
+        char score[24];
+        char initials[WM_HS_NUM_INITIALS + 1u];
+        char partner[WM_HS_NUM_INITIALS + 1u];
+        fix39_hs_trim5(row->initials, initials);
+        fix39_hs_trim5(row->partner_initials, partner);
+        if (!wm_hs_format_time(row->score_bcd, score, sizeof(score))) strcpy(score, "0.0");
+        /* draw_tag_table_entry source A6=0x110, a10.x=72. */
+        fix39_draw_text_right(score, FIX39_FONT_WGSF18,
+                              desc->layout.first_score_x + 0x110, y,
+                              10, 2, score_pal);
+        fix39_draw_text(initials, FIX39_FONT_OSGEMD,
+                        desc->layout.first_score_x + 30, y, true,
+                        10, 0, row_pal, NULL);
+        fix39_draw_sprite(fix39_attract_sprite("OSGEMD_AND"),
+                          desc->layout.first_score_x + 0x52, y, row_pal);
+        fix39_draw_text(partner, FIX39_FONT_OSGEMD,
+                        desc->layout.first_score_x + 155, y, true,
+                        10, 0, row_pal, NULL);
+        fix39_hs_rank(row->rank, desc->layout.first_initials_x, ry, true, false);
+    }
+}
+
+static void fix39_hs_draw_pin(const WmHsSystem *sys) {
+    const WmHsPresentDescriptor *desc = &wm_hs_present_sequence[WM_HS_PRESENT_PIN];
+    WmHsDisplayRow rows[9];
+    const wm_fix39_attract_palette *score_pal = wm_fix39_attract_palette_find("WGSF_W_P1");
+    size_t count = wm_hs_present_rows(sys, WM_HS_PRESENT_PIN, 1u, rows, 9u);
+    for (size_t i = 0; i < count; ++i) {
+        const WmHsDisplayRow *row = &rows[i];
+        const int y = desc->layout.first_score_y + (int)i * desc->layout.row_y_step;
+        const int ry = desc->layout.first_initials_y + (int)i * desc->layout.row_y_step;
+        const wm_fix39_attract_palette *row_pal = fix39_hs_row_palette(row);
+        char score[24];
+        char initials[4];
+        fix39_hs_initials3(row->initials, initials);
+        if (!wm_hs_format_time(row->score_bcd, score, sizeof(score))) strcpy(score, "0.0");
+        /* draw_pinspeed_table_entry source A6=120, a10.x=72. */
+        fix39_draw_text_right(score, FIX39_FONT_WGSF18,
+                              desc->layout.first_score_x + 120, y,
+                              10, 2, score_pal);
+        fix39_draw_text(initials, FIX39_FONT_OSGEMD,
+                        desc->layout.first_score_x + 0x17, y, true,
+                        10, 0, row_pal, NULL);
+        if (row->wrestler_index >= 0 && row->wrestler_index < 9 &&
+            fix39_hs_wrestler_name[(unsigned)row->wrestler_index][0] != '\0') {
+            fix39_draw_sprite(
+                fix39_attract_sprite(fix39_hs_wrestler_name[(unsigned)row->wrestler_index]),
+                /* HSTD.ASM adds [302,0] to A9 ([Y,Xleft]), not A10. */
+                desc->layout.first_initials_x + 302, y + 7, NULL);
+        }
+        fix39_hs_rank(row->rank, desc->layout.first_initials_x, ry, true, false);
+    }
+}
+
+static void fix39_hs_draw_streak(const WmHsSystem *sys) {
+    const WmHsPresentDescriptor *desc = &wm_hs_present_sequence[WM_HS_PRESENT_STREAK];
+    WmHsDisplayRow rows[18];
+    const wm_fix39_attract_palette *score_pal = wm_fix39_attract_palette_find("WGSF_W_P1");
+    size_t count = wm_hs_present_rows(sys, WM_HS_PRESENT_STREAK, 1u, rows, 18u);
+    for (size_t i = 0; i < count; ++i) {
+        const bool second = i >= 9u;
+        const int slot = (int)(second ? i - 9u : i);
+        const int ix = second ? desc->layout.second_initials_x : desc->layout.first_initials_x;
+        const int iy0 = second ? desc->layout.second_initials_y : desc->layout.first_initials_y;
+        const int sx = second ? desc->layout.second_score_x : desc->layout.first_score_x;
+        const int sy0 = second ? desc->layout.second_score_y : desc->layout.first_score_y;
+        const int y = sy0 + slot * desc->layout.row_y_step;
+        const int ry = iy0 + slot * desc->layout.row_y_step;
+        const WmHsDisplayRow *row = &rows[i];
+        const wm_fix39_attract_palette *row_pal = fix39_hs_row_palette(row);
+        char score[24];
+        char initials[4];
+        fix39_hs_initials3(row->initials, initials);
+        snprintf(score, sizeof(score), "%u", (unsigned)row->score_binary);
+        /* draw_winstreak_table_entry source A6=80, print_string_C. */
+        fix39_draw_text(score, FIX39_FONT_WGSF18,
+                        sx + 80, y, true, 10, 0, score_pal, NULL);
+        fix39_draw_text(initials, FIX39_FONT_OSGEMD,
+                        sx + 0x17, y, true, 10, 0, row_pal, NULL);
+        fix39_hs_rank(row->rank, ix, ry, false, true);
+    }
+}
+
+static void fix39_render_hiscores(void) {
+    const WmAttractLive *live = wm_fix39_attract_live_state();
+    const WmHsSystem *sys = wm_fix39_hiscore_system();
+    if (!live || !sys || live->page >= (uint8_t)WM_HS_PRESENT_COUNT) return;
+    WmHsPresentScreen screen = (WmHsPresentScreen)live->page;
+    const WmHsPresentDescriptor *desc = &wm_hs_present_sequence[screen];
+    fix39_hs_backdrop();
+    switch (screen) {
+        case WM_HS_PRESENT_INTER:
+        case WM_HS_PRESENT_BEATEN:
+            fix39_hs_draw_beaten(sys, live, screen);
+            break;
+        case WM_HS_PRESENT_TAG:
+            fix39_hs_draw_tag(sys);
+            break;
+        case WM_HS_PRESENT_PIN:
+            fix39_hs_draw_pin(sys);
+            break;
+        case WM_HS_PRESENT_STREAK:
+            fix39_hs_draw_streak(sys);
+            break;
+        default:
+            break;
+    }
+    fix39_hs_header_overlay(desc);
+}
+
+/* N64 runtime hardening for the source WHICH_HINT/WHICH_22_NUM tables.
+   V12e hardware pinned the second-loop exception to the dynamic hint-art
+   wm_fix39_attract_sprite_find() call.  The exception alone cannot prove
+   whether the bad read was the WmAttractHint name pointer or the generated
+   lookup table's source_frame pointer, so V12f removes the former from this
+   N64 path while the asset generator removes the latter from lookup scans.
+   Keep the exact source order with inline character matrices. */
+static const char fix39_hint_tip_symbols[WM_ATTRACT_ACTIVE_HINTS][8] = {
+    "JMSTIP", "MIKTIP", "MJTTIP", "JOSTIP", "EUGTIP",
+    "SHNTIP", "JAKTIP", "SALTIP", "TONTIP", "EUGTIP"
+};
+static const char fix39_hint_mug_symbols[WM_ATTRACT_ACTIVE_HINTS][8] = {
+    "JASMUG", "MIKMUG", "MRKMUG", "JSHMUG", "EUGMUG",
+    "SHNMUG", "JAKMUG", "SALMUG", "TONMUG", "JSHMUG"
+};
+static const char fix39_hint_number_symbols[WM_ATTRACT_ACTIVE_HINTS][10] = {
+    "WGSF22_1", "WGSF22_2", "WGSF22_3", "WGSF22_4", "WGSF22_5",
+    "WGSF22_6", "WGSF22_7", "WGSF22_8", "WGSF22_9", "WGSF22_0"
+};
+
+static void fix39_render_hint(void) {
+    const WmAttractLive *live = wm_fix39_attract_live_state();
+    if (!live) return;
+    unsigned h = live->hint_index % WM_ATTRACT_ACTIVE_HINTS;
+    const wm_fix39_attract_palette *ruby = wm_fix39_attract_palette_find("RUBYPAL");
+    const wm_fix39_attract_palette *yellow = wm_fix39_attract_palette_find("WSF_Y_P");
+    const wm_fix39_attract_palette *white = wm_fix39_attract_palette_find("WGFS_W_P");
+    fix39_render_slate();
+    fix39_draw_sprite(fix39_attract_sprite("MVEBAR_R"), 10, 21, NULL);
+    fix39_draw_sprite(fix39_attract_sprite("SHADOW01"), 13, 30, NULL);
+    const wm_source_sprite *tip = fix39_attract_sprite(fix39_hint_tip_symbols[h]);
+    const wm_source_sprite *num = fix39_attract_sprite(fix39_hint_number_symbols[h]);
+    fix39_draw_sprite(tip, 190, 21, white);
+    /* ATTRACT.ASM PUT_UP_TIP_NAME uses OSIZEX of the designer-name/TIP#
+       object, not the number glyph, then adds 200 for the number X. */
+    if (tip && num) fix39_draw_sprite(num, 200 + (int)tip->width / 2, 9, white);
+    fix39_draw_sprite(fix39_attract_sprite("MUGBAK"), 400, 254, NULL);
+    fix39_draw_sprite(fix39_attract_sprite("MUGFRNT"), 400, 254, NULL);
+    fix39_draw_sprite(fix39_attract_sprite(fix39_hint_mug_symbols[h]), 400, 254, NULL);
+    fix39_draw_text(wm_fix39_source_hint_title(h), FIX39_FONT_OSGEMD,
+                    200, 62, true, 10, 0, ruby, NULL);
+    size_t lines = wm_fix39_source_hint_line_count(h);
+    for (size_t i = 0; i < lines; ++i)
+        fix39_draw_text(wm_fix39_source_hint_line(h, i), FIX39_FONT_WSF10,
+                        200, 108 + (int)i * 15, true, 10, 1, yellow, NULL);
+    if (live->waiting_external)
+        (void)wm_fix39_attract_screen_signal_external_complete();
+}
+
+static void fix39_render_general_tips(void) {
+    const WmAttractLive *live = wm_fix39_attract_live_state();
+    const wm_fix39_attract_palette *yellow = wm_fix39_attract_palette_find("SGMD8YEL");
+    const wm_source_sprite *blue = wm_select_sprite_find("OSGEMD_C");
+    fix39_render_slate();
+    fix39_draw_sprite(fix39_attract_sprite("MVEBAR_R"), 10, 21, NULL);
+    fix39_draw_sprite(fix39_attract_sprite("SHADOW01"), 13, 30, NULL);
+    fix39_draw_text(wm_fix39_source_general_title(), FIX39_FONT_OSGEMD,
+                    200, 10, true, 10, 0, NULL, blue);
+    for (size_t i = 0; i < WM_FIX39_ATTRACT_GENERAL_TIP_ROWS; ++i)
+        fix39_draw_text(wm_fix39_source_general_row(i), FIX39_FONT_OGMD10,
+                        200, 60 + (int)i * 15, true, 6, 0, yellow, NULL);
+    if (live && live->waiting_external)
+        (void)wm_fix39_attract_screen_signal_external_complete();
+}
+
+static void fix39_render_copyright(void) {
+    const WmAttractLive *live = wm_fix39_attract_live_state();
+    fill_rect(0, 0, 320, 240, RGBA32(0,0,0,255));
+    if (!live) return;
+    const bool page2 = live->page >= 2u;
+    size_t first = page2 ? 9u : 0u;
+    size_t count = page2 ? 10u : 9u;
+    if (!page2)
+        fix39_draw_sprite(fix39_attract_sprite("SMWWF2"), 200, 65, NULL);
+    /* STRCNRMO_2 is an external Wolf-unit library routine. Published game
+       source gives a10=1 and all glyph widths/anchors but not its private
+       blank-space metric; keep source glyphs/native RD7 palette instead of an
+       N64/debug-font replacement. */
+    for (size_t i = 0; i < count; ++i)
+        fix39_draw_text(wm_fix39_source_copyright_line(first + i), FIX39_FONT_RD7,
+                        200, 110 + (int)i * 12, true, 1, 1, NULL, NULL);
+}
+
+static color_t fix39_aama_blue(unsigned rgb555) {
+    /* ATTRACT.ASM::blue_grad_pal is literal RGB555: 31..0 (blue channel). */
+    unsigned b5 = rgb555 & 31u;
+    unsigned b8 = (b5 << 3) | (b5 >> 2);
+    return RGBA32(0, 0, b8, 255);
+}
+
+static void fix39_render_aama_gradient(void) {
+    /* Direct translation of do_the_grad_thang's two 2-pixel-high DMA runs.
+       Top: palette indexes 0..30.  Then source advances Y by 0x84 (132).
+       Bottom: palette indexes 31..0.  The final source rows clip at 256. */
+    int sy = 0;
+    for (unsigned index = 0; index < 31u; ++index, sy += 2) {
+        unsigned rgb555 = 31u - index;
+        int y0 = (sy * 240) / 256;
+        int y1 = ((sy + 2) * 240 + 255) / 256;
+        fill_rect(0, y0, 320, y1, fix39_aama_blue(rgb555));
+    }
+    sy += 132;
+    for (int index = 31; index >= 0; --index, sy += 2) {
+        if (sy >= 256) break;
+        unsigned rgb555 = 31u - (unsigned)index;
+        int end = sy + 2;
+        if (end > 256) end = 256;
+        int y0 = (sy * 240) / 256;
+        int y1 = (end * 240 + 255) / 256;
+        fill_rect(0, y0, 320, y1, fix39_aama_blue(rgb555));
+    }
+}
+
+static void fix39_render_aama(void) {
+    fill_rect(0, 0, 320, 240, RGBA32(0,0,0,255));
+    fix39_render_aama_gradient();
+    fix39_draw_text(wm_fix39_source_aama_line(0), FIX39_FONT_RD7, 200,94,true,1,1,NULL,NULL);
+    fix39_draw_text(wm_fix39_source_aama_line(1), FIX39_FONT_RD7, 177,114,false,1,1,NULL,NULL);
+    fix39_draw_text(wm_fix39_source_aama_line(2), FIX39_FONT_RD7, 260,114,false,1,1,NULL,NULL);
+    fix39_draw_text(wm_fix39_source_aama_line(3), FIX39_FONT_RD7, 200,125,true,1,1,NULL,NULL);
+    fix39_draw_text(wm_fix39_source_aama_line(4), FIX39_FONT_RD7, 200,136,true,1,1,NULL,NULL);
+    fix39_draw_text(wm_fix39_source_aama_line(5), FIX39_FONT_RD7, 200,147,true,1,1,NULL,NULL);
+}
+/* END FIX39 V12 ATTRACT RENDERERS */
+
 static void render_character_select(const wm_app *app) {
     fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
     if (!app || app->select.setup_ticks == 0u)
@@ -1694,10 +2554,10 @@ static void draw_progress_wsf14(const char *text, int x, int y) {
     }
 }
 static const char *progress_factory_recent_champ(const wm_app *app) {
-    /* HSTD.ASM factory tables: BEATEN_ROM_TABLE + HS_SIZE begins "MIKE ";
-       INTER_ROM_TABLE + HS_SIZE begins "MARK ".  Persistence can replace this
-       with live CMOS/high-score state when that subsystem is ported. */
-    return app->pregame.belt_type == WM_PREGAME_BELT_WWF ? "MIKE " : "MARK ";
+    if (!app) return "";
+    /* HSTD.ASM source factory/live table owns the recent champion string. */
+    return wm_fix39_hiscore_recent_initials(
+        app->pregame.belt_type == WM_PREGAME_BELT_WWF);
 }
 static void draw_progress_ladder_bits(const wm_app *app) {
     if (!app) return;
@@ -2010,16 +2870,33 @@ static void render_pregame(const wm_app *app) {
 
 
 
+static void fix39_project_actor(size_t index, int *sx, int *sy, bool *flip_x) {
+    const wm_arcade_actor_t *a=wm_fix39_actor(index);
+    if (!a) { if(sx)*sx=0; if(sy)*sy=0; if(flip_x)*flip_x=false; return; }
+    if (sx) *sx=(int)a->x_int-(int)wm_fix39_camera_worldtlx_int();
+    if (sy) *sy=(int)(((int64_t)a->z_int*0x3566)>>16)-(int)a->y_int-(int)wm_fix39_camera_worldtly_int();
+    if (flip_x) *flip_x=(a->obj_control&WM_OBJ_FLIPH)!=0;
+}
+static void fix39_draw_fighter_from_source(const wm_demo_fighter *src,size_t index){
+    wm_demo_fighter f=*src;
+    fix39_project_actor(index,&f.screen_x,&f.screen_y,&f.flip_x);
+    fix39_runtime_draw_index=(int)index; draw_fighter(&f); fix39_runtime_draw_index=-1;
+}
 static __attribute__((unused)) void render_match(const wm_app *app) {
     const wm_demo *demo = &app->demo;
+    int p1x,p1y,p2x,p2y; bool p1f,p2f;
+    fix39_project_actor(0,&p1x,&p1y,&p1f);
+    fix39_project_actor(1,&p2x,&p2y,&p2f);
+    (void)p1x; (void)p2x; (void)p1f; (void)p2f;
+    { fix39_crowd_source_frame_event(0,wm_fix39_actor_source_frame(0)); fix39_crowd_source_frame_event(1,wm_fix39_actor_source_frame(1)); }
     draw_ring_back();
 
-    if (demo->p1.screen_y <= demo->p2.screen_y) {
-        draw_fighter(&demo->p1);
-        draw_fighter(&demo->p2);
+    if (p1y <= p2y) {
+        fix39_draw_fighter_from_source(&demo->p1,0);
+        fix39_draw_fighter_from_source(&demo->p2,1);
     } else {
-        draw_fighter(&demo->p2);
-        draw_fighter(&demo->p1);
+        fix39_draw_fighter_from_source(&demo->p2,1);
+        fix39_draw_fighter_from_source(&demo->p1,0);
     }
     draw_ring_front();
 
@@ -2051,10 +2928,24 @@ static void render_app(const wm_app *app) {
         case WM_ATTRACT_SHOW_TITLE:
             render_title_screen(app);
             break;
+        case WM_ATTRACT_SHOW_HSTD:
+            fix39_render_hiscores();
+            break;
+        case WM_ATTRACT_DO_HINTS:
+            fix39_render_hint();
+            break;
+        case WM_ATTRACT_SHOW_GEN_TIPS:
+            fix39_render_general_tips();
+            break;
+        case WM_ATTRACT_SHOW_COPYRIGHT:
+            fix39_render_copyright();
+            break;
+        case WM_ATTRACT_AAMA_MESSAGE:
+            fix39_render_aama();
+            break;
         case WM_ATTRACT_SHOW_GAMEPLAY:
-            /* The existing combat renderer is a development harness only.
-               Normal product rendering can never present it as start_match. */
-            fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+            /* Fix39: normal attract SHOW_GAMEPLAY presentation. */
+            render_match(app);
             break;
         default:
             /* Untranslated source routines are skipped by the portable core;
@@ -2191,6 +3082,12 @@ int main(void) {
     rdpq_text_register_font(1, rdpq_font_load_builtin(FONT_BUILTIN_DEBUG_VAR));
 
     wm_app_init(&app);
+    wm_fix39_attract_set_platform_capabilities(
+        WM_FIX39_ATTRACT_CAP_HISCORES |
+        WM_FIX39_ATTRACT_CAP_DESIGNER_HINT |
+        WM_FIX39_ATTRACT_CAP_GENERAL_TIPS |
+        WM_FIX39_ATTRACT_CAP_COPYRIGHT |
+        WM_FIX39_ATTRACT_CAP_AAMA);
     source_timer.last_us = get_ticks_us();
     debugf("wm_arcade_port r9: 53 Hz arcade wall clock, render-rate independent\n");
     debugf("embedded Bret source sprites: %u\n", (unsigned)wm_bret_sprite_count());
@@ -2219,4 +3116,24 @@ int main(void) {
         (void)connected;
         render_app(&app);
     }
+}
+
+static unsigned fix39_frontend_slot_for_arcade(unsigned rid){
+    for(unsigned s=0;s<8u;++s)if((unsigned)wm_fix39_frontend_to_arcade_roster(s)==rid)return s;
+    return 0u;
+}
+static bool fix39_tick_gameplay_demo(wm_app *app, const wm_input_state *input) {
+    wm_attract_state *a=&app->attract; ++a->call_ticks;
+    if(a->call_ticks==1u){
+        WmAttractDemoPlan plan;
+        if(!wm_fix39_attract_demo_plan(a->amode_loops,false,&plan))return true;
+        /* ATTR.ASM SHOW_GAMEPLAY -> START_MATCH: one gameplay authority.
+           wm_demo is renderer storage only and is never reset/ticked here. */
+        wm_fix39_match_begin(fix39_frontend_slot_for_arcade(plan.player_wrestler),fix39_frontend_slot_for_arcade(plan.opponent_wrestler));
+        wm_fix39_match_set_cpu_vs_cpu(true);
+    }
+    wm_fix39_match_tick(0,0,false,false,false,false,false,false);
+    if(a->call_ticks>60u && wm_app_any_attract_button(input)){wm_fix39_match_set_cpu_vs_cpu(false);return true;}
+    if(a->call_ticks>=600u){wm_fix39_match_set_cpu_vs_cpu(false);return true;}
+    return false;
 }

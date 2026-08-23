@@ -4,6 +4,13 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 ORIG="$ROOT/original/wwf-wrestlemania"
 SPORTS_BG_SOURCE="$ORIG/IMG/SPORTBK.IMG"
+# FIX39 SPORTS BACKGROUND OVERRIDE
+FIX39_SPORTS_BG_SOURCE="$ROOT/assets/fix39_sports_override/SPORTBK.IMG"
+SPORTS_BG_TOOL="$ROOT/tools/sports_background_bundle.py"
+if [ -f "$FIX39_SPORTS_BG_SOURCE" ]; then
+  SPORTS_BG_SOURCE="$FIX39_SPORTS_BG_SOURCE"
+  SPORTS_BG_TOOL="$ROOT/tools/fix39_sports_background_bundle.py"
+fi
 SPORTS_FONT_SOURCE="$ORIG/IMG/SGMD8.IMG"
 SPORTS_BG_OUT="$ROOT/src/generated/sports_background.c"
 SPORTS_MOTTO_OUT="$ROOT/src/generated/sports_motto.c"
@@ -17,7 +24,7 @@ fi
 test -f "$SPORTS_BG_SOURCE"
 test -f "$SPORTS_FONT_SOURCE"
 
-python3 "$ROOT/tools/sports_background_bundle.py" \
+python3 "$SPORTS_BG_TOOL" \
     --source "$SPORTS_BG_SOURCE" \
     --out "$SPORTS_BG_OUT"
 

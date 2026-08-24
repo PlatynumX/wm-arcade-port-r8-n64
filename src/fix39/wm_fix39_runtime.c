@@ -2016,10 +2016,9 @@ void wm_fix39_match_begin(unsigned frontend_p1, unsigned frontend_p2)
         wm_source_anim_runtime_bind(&g.source_torso[i],&g.source_anim_services);
         wm_source_anim_runtime_set_secondary(&g.source_torso[i], true);
     }
-    for (i=0u;i<WM_FIX39_ACTOR_COUNT;++i) {
-        wm_source_anim_runtime_init(&g.source_anim[i]);
-        wm_source_anim_runtime_init(&g.source_torso[i]);
-    }
+    /* Combat2EM: do not re-init here. wm_source_anim_runtime_init() is a
+       full memset; the duplicate EL/EK loop erased the service bindings and
+       torso-secondary state established immediately above. */
     init_source_character_animation(&g.actors[0]);
     init_source_character_animation(&g.actors[1]);
     for (i=0u;i<WM_FIX39_ACTOR_COUNT;++i)
@@ -2137,6 +2136,13 @@ static void live_confine_grounded_inring(bool first_call_of_tick)
                 break;
             }
         }
+        /* Combat2EM: set_collision_boxes has no source geometry until the
+           streamed animation VM has produced a current frame. Midway never
+           confines against an invented zero box, so skip this pass until the
+           exact WIMP IANI3 box is valid. The post-animate pass can then run
+           in the same source tick. */
+        if (!g.frame_box_valid[i])
+            continue;
         if (!wm_arcade_confine_grounded_inring(a, any_opp_outside))
             continue;
 

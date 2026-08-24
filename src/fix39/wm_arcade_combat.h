@@ -46,6 +46,9 @@ struct wm_arcade_actor {
     uint32_t status_flags;
 
     int32_t move_dir;
+    /* WRESTLE.ASM confine_wrestler/fix1/fix2 state. */
+    uint16_t can_move_dir;
+    uint16_t can_move_temp;
     /* Stage 7 / REACT5: directional and input state used by running/hiptoss reactions. */
     int32_t facing_dir;
     int32_t new_facing_dir;
@@ -133,6 +136,7 @@ struct wm_arcade_actor {
     uint16_t but_val_up;
     uint16_t stick_val_down;
     uint16_t stick_val_up;
+    int32_t closest_num;
     int32_t closest_dist;
     int32_t closest_xdist;
     int32_t closest_ydist;

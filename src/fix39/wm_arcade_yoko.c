@@ -214,3 +214,17 @@ int wm_arcade_yoko_fire_monitor(wm_arcade_actor_t*a,wm_arcade_actor_t*o,wm_arcad
     startsp(a,s,c);
     return 1;
 }
+
+void wm_arcade_yoko_ani_init(wm_arcade_actor_t *a, const wm_arcade_yoko_callbacks_t *cb)
+{
+    const int face2 = a && ((a->facing_dir & WM_MOVE_RIGHT) != 0u);
+    if (!a || !cb) return;
+
+    /* Character YOKO.ASM ANI_INIT animation body.  WRESTLE.ASM's
+       common ani_init clears ATTIMG_CUR_FRAME before dispatch. */
+    a->attimg_cur_frame = 0;
+    if (cb->change_anim_label)
+        cb->change_anim_label(a, face2 ? "yok_stand2_anim" : "yok_stand4_anim", cb->user);
+    if (cb->change_torso_label)
+        cb->change_torso_label(a, face2 ? "yok_torso2_anim" : "yok_torso4_anim", cb->user);
+}

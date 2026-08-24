@@ -7,6 +7,8 @@
 #include "wm_arcade_wimp_frame.h"
 #include "wm/character_assets.h"
 #include "wm_arcade_movement.h"
+#include "wm_arcade_confine_grounded.h"
+#include "wm_arcade_wrestle_target.h"
 #include <stdio.h>
 
 #include "wm_arcade_attach_anim.h"
@@ -807,7 +809,7 @@ static bool live_start_source_anim(wm_arcade_actor_t *a, const char *label, bool
 
 static const char *live_default_stand_label(const wm_arcade_actor_t *a)
 {
-    bool face2=a && (a->facing_dir&WM_MOVE_UP);
+    bool face2=a && (a->facing_dir&WM_MOVE_RIGHT);
     if(!a)return 0;
     switch(a->wrestler_num){
     case WM_ROSTER_BRET:return face2?"hrt_stand2_anim":"hrt_stand4_anim";
@@ -886,28 +888,26 @@ static void live_wrestler_hit(wm_arcade_actor_t *attacker,
     wm_arcade_wrestler_hit_collision_callback(attacker, victim, &g.react_bridge);
 }
 
-static void refresh_distances(void)
+static void source_calc_closest_all(void)
 {
-    wm_arcade_actor_t *a = &g.actors[0];
-    wm_arcade_actor_t *b = &g.actors[1];
-    int32_t dx = b->x_int - a->x_int;
-    int32_t dy = b->y_int - a->y_int;
-    int32_t dz = b->z_int - a->z_int;
-    int32_t ax = abs32(dx);
-    int32_t ay = abs32(dy);
-    int32_t az = abs32(dz);
-    int32_t d = ax;
-    if (ay > d) d = ay;
-    if (az > d) d = az;
+    wm_arcade_closest_world_t world;
+    unsigned i;
+    world.actors = g.actor_ptrs;
+    world.actor_count = WM_FIX39_ACTOR_COUNT;
+    world.pcnt = g.status.pcnt;
+    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i)
+        (void)wm_arcade_calc_closest(&g.actors[i], &world);
+}
 
-    a->closest_xdist = ax;
-    a->closest_ydist = ay;
-    a->closest_zdist = az;
-    a->closest_dist = d;
-    b->closest_xdist = ax;
-    b->closest_ydist = ay;
-    b->closest_zdist = az;
-    b->closest_dist = d;
+static void source_calc_closest2_all(void)
+{
+    wm_arcade_closest_world_t world;
+    unsigned i;
+    world.actors = g.actor_ptrs;
+    world.actor_count = WM_FIX39_ACTOR_COUNT;
+    world.pcnt = g.status.pcnt;
+    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i)
+        (void)wm_arcade_calc_closest2(&g.actors[i], &world);
 }
 
 static void init_actor(wm_arcade_actor_t *a,
@@ -1467,11 +1467,41 @@ static void live_character_move(wm_arcade_actor_t *a,
 static void init_source_character_animation(wm_arcade_actor_t *a)
 {
     if (!a) return;
-    if (a->wrestler_num == WM_ROSTER_BRET)
+
+    /* WRESTLE.ASM::ani_init common state before #init_addr dispatch. */
+    a->ani_speed = 0x100u;
+    a->i_will_die = 0;
+    a->walk_fast = 0; /* hyper_speed_on is zero in the current live runtime. */
+    a->attimg_cur_frame = 0;
+
+    switch (a->wrestler_num) {
+    case WM_ROSTER_BRET:
         wm_arcade_bret_ani_init(a, &bret_callbacks);
-    else if (a->wrestler_num == WM_ROSTER_RAZOR)
+        break;
+    case WM_ROSTER_RAZOR:
         wm_arcade_razor_ani_init(a, &razor_callbacks);
-    /* The other six source files do not expose a separate ani_init entry. */
+        break;
+    case WM_ROSTER_TAKER:
+        wm_arcade_taker_ani_init(a, &common_callbacks);
+        break;
+    case WM_ROSTER_YOKO:
+        wm_arcade_yoko_ani_init(a, &common_callbacks);
+        break;
+    case WM_ROSTER_SHAWN:
+        wm_arcade_shawn_ani_init(a, &common_callbacks);
+        break;
+    case WM_ROSTER_BAM:
+        wm_arcade_bam_ani_init(a, &common_callbacks);
+        break;
+    case WM_ROSTER_DOINK:
+        wm_arcade_doink_ani_init(a, &common_callbacks);
+        break;
+    case WM_ROSTER_LEX:
+        wm_arcade_lex_ani_init(a, &common_callbacks);
+        break;
+    default:
+        break;
+    }
 }
 
 static uint32_t drone_rndrng0_upto(uint32_t max_inclusive, void *user)
@@ -1968,7 +1998,6 @@ void wm_fix39_match_begin(unsigned frontend_p1, unsigned frontend_p2)
     g.actor_ptrs[1] = &g.actors[1];
     g.actors[0].smart_target = &g.actors[1];
     g.actors[1].smart_target = &g.actors[0];
-    refresh_distances();
     memset(g.ringout, 0, sizeof(g.ringout));
     for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
         g.ringout[i].ring_time = 0;
@@ -1996,9 +2025,7 @@ void wm_fix39_match_begin(unsigned frontend_p1, unsigned frontend_p2)
     for (i=0u;i<WM_FIX39_ACTOR_COUNT;++i)
         if (!wm_source_anim_runtime_frame(&g.source_anim[i]))
             (void)live_start_source_anim(&g.actors[i],live_default_stand_label(&g.actors[i]),false);
-    for (i=0u;i<WM_FIX39_ACTOR_COUNT;++i)
-        if (!wm_source_anim_runtime_frame(&g.source_anim[i]))
-            (void)live_start_source_anim(&g.actors[i],live_default_stand_label(&g.actors[i]),false);
+    source_calc_closest_all();
 
     g.old_p1_buttons = 0u;
     g.old_p1_stick = 0u;
@@ -2069,6 +2096,57 @@ void wm_fix39_match_set_cpu_vs_cpu(bool enabled)
     g.match_cpu_vs_cpu = enabled;
 }
 
+/* Combat2EK: WRESTLE.ASM set_collision_boxes + confine_wrestler source-order
+ * bridge for the grounded in-ring state captured in the hardware demo bug.
+ * Full confinement remains the next WRESTLE parity phase. */
+static void live_refresh_source_hurt_boxes(void)
+{
+    unsigned i;
+    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
+        wm_arcade_actor_t *a = &g.actors[i];
+        const char *frame = wm_source_anim_runtime_frame(&g.source_anim[i]);
+        const wm_source_sprite *spr = frame ?
+            wm_character_sprite_find((uint8_t)a->wrestler_num, frame) : 0;
+        wm_arcade_frame_box_t fb;
+        if (spr && wm_arcade_wimp_frame_box_from_sprite(spr, &fb)) {
+            g.frame_box[i] = fb;
+            g.frame_box_valid[i] = true;
+            wm_arcade_set_hurt_box(a, &g.frame_box[i]);
+        } else {
+            g.frame_box_valid[i] = false;
+        }
+    }
+    g.status.collision_boxes_ready =
+        g.frame_box_valid[0] && g.frame_box_valid[1];
+}
+
+static void live_confine_grounded_inring(bool first_call_of_tick)
+{
+    unsigned i, j;
+    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
+        bool any_opp_outside = false;
+        wm_arcade_actor_t *a = &g.actors[i];
+        for (j = 0u; j < WM_FIX39_ACTOR_COUNT; ++j) {
+            const wm_arcade_actor_t *o;
+            if (j == i) continue;
+            o = &g.actors[j];
+            if (!o->active || o->player_side == a->player_side ||
+                o->player_mode == WM_PMODE_DEAD) continue;
+            if (o->in_ring != 0) {
+                any_opp_outside = true;
+                break;
+            }
+        }
+        if (!wm_arcade_confine_grounded_inring(a, any_opp_outside))
+            continue;
+
+        if (first_call_of_tick)
+            a->can_move_dir = (uint16_t)(a->can_move_dir | a->can_move_temp);
+        else
+            a->can_move_temp = a->can_move_dir;
+    }
+}
+
 void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
                          bool run,
                          bool light_punch,
@@ -2116,19 +2194,13 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
         g.actors[i].in_ring = wm_ring_inring_field(
             (int16_t)g.actors[i].x_int, (int16_t)g.actors[i].z_int);
 
-    /* WRESTLE.ASM wrestler_main exact control-order seam:
-       set_collision_boxes/confine precede update_newfacing; update_newfacing and
-       closest-position state MUST precede drone_main.  Earlier revisions ran
-       DRONE first, so AI consumed stale facing/distance and could continually
-       seek away from its opponent. */
-    live_source_face_opponents();
-    refresh_distances();
+    /* WRESTLE.ASM: set_collision_boxes -> confine_wrestler -> fix2. */
+    live_refresh_source_hurt_boxes();
+    live_confine_grounded_inring(true);
 
-    /* WRESTLE.ASM::wrestler_main calls update_newfacing before drone_main.
-       Keep the translated actor facing/world direction current before DRONE
-       chooses seek/action input and before character move dispatch consumes it. */
+    /* WRESTLE.ASM update_newfacing consumes the target selected by the
+       previous calc_closest/calc_closest2 pass. Do not recalculate here. */
     live_source_face_opponents();
-    refresh_distances();
 
     if (g.status.drone_runtime_ready) {
         wm_arcade_drone_world_t world;
@@ -2193,7 +2265,11 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
         wm_source_anim_runtime_tick(&g.source_anim[i],&g.actors[i]);
         wm_source_anim_runtime_tick(&g.source_torso[i],&g.actors[i]);
     }
-    refresh_distances();
+    /* WRESTLE.ASM: set_collision_boxes -> confine_wrestler -> fix1,
+       then calc_closest2. */
+    live_refresh_source_hurt_boxes();
+    live_confine_grounded_inring(false);
+    source_calc_closest2_all();
 
     memset(&env, 0, sizeof(env));
     env.pcnt = g.status.pcnt;

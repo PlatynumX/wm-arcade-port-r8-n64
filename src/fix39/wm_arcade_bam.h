@@ -48,6 +48,8 @@ int wm_arcade_bam_release_charge(wm_arcade_actor_t *wrestler, wm_arcade_actor_t 
 int wm_arcade_bam_fire_secret(wm_arcade_actor_t *wrestler, wm_arcade_actor_t *opponent, wm_arcade_bam_secret_id_t id, uint32_t pcnt, const wm_arcade_bam_callbacks_t *cb);
 int wm_arcade_bam_fire_monitor(wm_arcade_actor_t *wrestler, wm_arcade_actor_t *opponent, wm_arcade_bam_monitor_id_t id, const wm_arcade_bam_env_t *env, int opponent_attack_is_leaping, const wm_arcade_bam_callbacks_t *cb);
 
+void wm_arcade_bam_ani_init(wm_arcade_actor_t *wrestler, const wm_arcade_bam_callbacks_t *cb);
+
 #ifdef __cplusplus
 }
 #endif

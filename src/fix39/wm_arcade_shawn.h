@@ -51,6 +51,8 @@ int wm_arcade_shawn_release_charge(wm_arcade_actor_t *wrestler, wm_arcade_actor_
 int wm_arcade_shawn_fire_secret(wm_arcade_actor_t *wrestler, wm_arcade_actor_t *opponent, wm_arcade_shawn_secret_id_t id, uint32_t pcnt, const wm_arcade_shawn_callbacks_t *cb);
 int wm_arcade_shawn_fire_monitor(wm_arcade_actor_t *wrestler, wm_arcade_actor_t *opponent, wm_arcade_shawn_monitor_id_t id, const wm_arcade_shawn_env_t *env, int opponent_attack_is_leaping, const wm_arcade_shawn_callbacks_t *cb);
 
+void wm_arcade_shawn_ani_init(wm_arcade_actor_t *wrestler, const wm_arcade_shawn_callbacks_t *cb);
+
 #ifdef __cplusplus
 }
 #endif

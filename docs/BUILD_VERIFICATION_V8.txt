@@ -1,0 +1,46 @@
+Fix39 V8 verification
+=====================
+
+Local source verification:
+- complete 54-module Fix39 source bundle: GCC -Werror PASS
+- complete 54-module Fix39 source bundle: Clang -Werror PASS
+- enum namespace collision regression: PASS under GCC and Clang
+- Python patcher syntax: PASS
+- Termux build script bash syntax: PASS
+- smoke-test script bash syntax: PASS
+
+Patcher regression fixtures:
+1. Current-style repo layout with no src/core/arcade duplication
+   - first apply: 54 Fix39 C modules added to N64 Makefile
+   - second apply: byte-identical patched target files (idempotent)
+   - live MATCH_INIT -> wm_fix39_match_tick hook present
+   - source attract-cycle owner hook present
+   - HSTD recent-champion N64 renderer binding present
+   PASS
+
+2. V7 duplicate-source layout with 52 translated basenames already built from
+   src/core/arcade
+   - 52 duplicate modules suppressed
+   - only wm_fix39_runtime.c and wmania_ring_onscreen.c retained in FIX39_C
+   - second apply preserves the same 52+2 split
+   PASS
+
+Live-source smoke assertions include:
+- RAND/RNDRNG0 path
+- source attract cycle and explicit demo holes
+- source 1v1 actor reset seeds
+- P1 input latch
+- both actor dispatchers each source tick
+- all eight wrestler IDs enter their direct-port module
+- all four rope runtime banks tick
+- rope command resolves into direct ROPES.ASM program data
+- HSTD factory table validation/recent-champion data
+- HSTD reset counter remains gated until real operator adjustment is bound
+
+Not claimed by this verification:
+- N64/libdragon cross-build of V8 itself (performed by the included GitHub
+  Actions Termux flow)
+- real-hardware gameplay correctness for the newly live match paths
+
+V7 is the user-confirmed clean build/boot/play baseline immediately preceding
+this V8 runtime-wiring revision.

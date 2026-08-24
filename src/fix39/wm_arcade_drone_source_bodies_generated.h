@@ -1,0 +1,5 @@
+#ifndef WM_ARCADE_DRONE_SOURCE_BODIES_GENERATED_H
+#define WM_ARCADE_DRONE_SOURCE_BODIES_GENERATED_H
+#define WM_FIX39_DRONE_TRANSLATED_BODY_COUNT 0
+static const WmFix39DroneGeneratedBody wm_fix39_generated_bodies[1]={{0,0}};
+#endif

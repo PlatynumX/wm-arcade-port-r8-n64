@@ -1,0 +1,2 @@
+V13e C5h: source-backed conservative direct-body translation pass.
+The build consumes C5f recovered historical body windows, translates only linear state-only bodies whose instruction semantics are fully recognized, and attaches those generated C handlers to the exact C5d/C5e service labels. Any body containing branches, calls, actor-memory accesses, or unknown instructions remains fail-closed.

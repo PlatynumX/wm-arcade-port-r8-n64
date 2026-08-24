@@ -1,0 +1,7 @@
+Fix39 V13e Chunk 5c
+
+- Base: c5b build-good checkpoint.
+- Adds build-generated DRONE executable-service ID registry.
+- Binds runtime script_call callback to the generated registry dispatcher.
+- Dispatcher remains fail-closed until exact translated service bodies are attached.
+- Package Python regressions and host Fix39 smoke pass before release.

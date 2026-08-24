@@ -1,0 +1,32 @@
+Fix39 v7 verification
+=====================
+
+Observed N64 failure from GitHub Actions run 32395025489:
+- all Fix39 and baseline arcade C sources compiled successfully
+- GNU ld reported 310 multiple-definition errors
+- zero undefined-reference errors
+- duplicate pairs were src/fix39/<module>.o and src/core/arcade/<module>.o
+
+Root cause:
+The known-good baseline already compiles 52 translated arcade modules from
+src/core/arcade.  The standalone Fix39 handoff also contains those same 52
+translations, and v6 added every src/fix39 C file to the libdragon Makefile.
+Host CMake did not expose this because its baseline source list does not compile
+src/core/arcade in parallel.
+
+v7 fix:
+- Keep the complete 54-module Fix39 source bundle for standalone/host testing.
+- When the N64 Makefile already builds src/core/arcade, compare source basenames
+  against that tree and reuse the baseline modules instead of linking duplicates.
+- Add only Fix39-only N64 modules.  Against the failure inventory this resolves
+  to wm_fix39_runtime.c and wmania_ring_onscreen.c.
+- Rebuild the FIX39_C block on each apply, so the patch is idempotent and can
+  also repair a previously over-inclusive Fix39 Makefile block.
+
+Regression performed locally:
+- synthetic Makefile with wildcard src/core/arcade build
+- 54 Fix39 C files total
+- 52 baseline duplicates suppressed
+- 2 Fix39-only N64 sources retained
+- second apply produces the same deduplicated source set
+PASS

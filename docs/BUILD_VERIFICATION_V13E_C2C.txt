@@ -1,0 +1,24 @@
+Fix39 V13e-c2c DRONE WL wildcard parser verification
+
+Scope
+-----
+- preserve all V13e-c2b 9-slot DRONE root/range work;
+- preserve the Be A Man / PlatynumX Sports source-slot replacement;
+- fix only the real-source parser seam exposed by DRONE.ASM mode-list
+  terminators written as `WL -1,<script_list>` via macros.h.
+
+Source-backed reason
+--------------------
+DRONE.ASM drone_main reads each mode-list record as two signed bytes followed by
+one LONG script-table pointer. Negative bytes skip mode comparison. A source
+WORD of -1 is 0xffff, so both bytes are -1 regardless of byte ordering. The
+parser therefore recognizes that exact terminal wildcard form and deliberately
+refuses arbitrary packed WL mode values in this chunk.
+
+Acceptance
+----------
+- fix39_drone_ranges.py --self-test PASS using `WL -1,...` terminal records;
+- chunk-2 source resolver smoke PASS using the same production syntax;
+- existing C1/C2/Sports/ATTRACT structural regressions PASS;
+- package SHA manifest PASS;
+- ZIP integrity PASS.

@@ -1,0 +1,45 @@
+Fix39 V12h build/verification checkpoint
+==========================================
+
+Purpose
+-------
+Correct two hardware-visible source-translation mistakes found in V12g without
+changing the HSTD state machine, factory tables, or source screen order.
+
+Corrections
+-----------
+1. External IMGPAL palette alpha now follows DMAWNZ/CI8 index semantics:
+   palette index 0 -> transparent regardless of RGB555 value; every non-zero
+   palette index -> alpha 1 even when its RGB555 value is 0.
+   This specifically fixes the gray 0x318C matte visible around designer TIP
+   name/number art using WGFS_W_P.
+
+2. Fastest Pindown wrestler-name art now translates HSTD.ASM exactly:
+   position = A9.x + 302, Y = A9.y + 7. V12g accidentally used the A10 score
+   origin for X, shifting labels 64 source pixels too far right.
+
+Source-fidelity decisions
+-------------------------
+- INTER_ROM_TABLE lower ranks are blank/zero in the historical source after
+  the populated factory entries.
+- BEATEN_ROM_TABLE lower ranks are likewise blank/zero after its populated
+  factory entries.
+- These rows must not be filled with fabricated initials/scores. Session/CMOS
+  insertion and later persistence are separate work.
+- INTER/WORLD score fields are defeated-wrestler masks; the arcade renderer
+  represents them as crouton icons plus dots rather than decimal score text.
+
+Local regression suite
+----------------------
+- python -m py_compile tools/fix39_attract_assets.py tests/test_v12_patcher.py
+- python tools/fix39_attract_assets.py --self-test
+- python tools/fix39_attract_text.py --self-test
+- python tests/test_v12_patcher.py
+- python tests/test_patcher_structural.py
+- bash tests/run_fix39_smoke.sh
+- bash -n termux_fix39_build.sh
+
+All listed checks pass in the packaged V12h tree. GitHub Actions/libdragon is
+still the authoritative N64 compile. Hardware follow-up should verify the TIP
+matte is gone, Pindown wrestler labels are fully onscreen, and multiple attract
+loops remain stable.

@@ -1,0 +1,9 @@
+Fix39 V13e C5j verification
+
+- final package SHA256 manifest
+- DRONE local-branch translator self-test
+- C5j structural regression
+- all packaged Python regressions
+- host C/VM smoke tests where compiler is available
+
+C5j preserves fail-closed handling for calls, actor/world memory, B registers and unsupported instructions.

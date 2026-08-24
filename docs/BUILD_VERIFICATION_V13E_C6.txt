@@ -1,0 +1,11 @@
+Fix39 V13e Chunk 6 — live CPU DRONE activation
+
+- Adds distinct plain RND mask service (not RNDRNG0 alias).
+- Binds closest-actor/distance, seek direction, command-1 seek, range/script tables and generated command-5 bodies.
+- Owns persistent P2 DRONE state in the live match runtime.
+- Calls wm_arcade_drone_main for P2 before wrestler movement/dispatch each tick.
+- Commits DRONE but/joy transitions into the actor input fields consumed by the ported wrestler dispatcher.
+- Adds runtime counters and state introspection for hardware verification.
+- Keeps unsupported generated command-5/EXGPC bodies fail-closed.
+
+This is the final planned DRONE integration pass. Hardware behavior may still expose bugs, but no additional translation-plumbing chunk is planned.

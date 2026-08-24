@@ -1,0 +1,44 @@
+Fix39 V13 source-completion wiring verification
+===============================================
+
+Base: Fix39 V12i hardware-approved HSTD Z-order/transparency checkpoint.
+Additional input: WrestleMania_Arcade_Combat_Completion_Handoff.zip.
+Historical source provenance used by handoff:
+1280555b4d041dd025198c8e85ed14b4c1c91cfb
+
+Host checks run before packaging:
+- GCC Fix39 integration smoke: PASS
+- GCC namespace collision regression: PASS
+- Clang Fix39 integration smoke: PASS
+- Clang namespace collision regression: PASS
+- V13 completion structural regression: PASS
+- ATTRACT source-text generator self-test: PASS
+- ATTRACT WIMP asset generator self-test: PASS
+- structural attract patcher regression: PASS
+- V12/V13 renderer/integration patcher regression: PASS
+- Python apply_fix39.py compile: PASS
+- Termux helper shell syntax: PASS
+
+The Android/Termux helper also fetches the historical source and checks:
+- V13c intentionally retains the existing Midway Sports attract slot; source preflight only requires the historical show_sports_logo symbol/call site to exist;
+- WRESTLE.ASM exposes wrestler_friction;
+- WRESTLE2.ASM exposes wrestler_veladd;
+- required V12i WIMP/HSTD symbols are generated;
+- stale pre-V9 rope namespace symbols did not survive the merge.
+
+A successful host/static verification does not claim that currently unbound
+N64 animation/collision/AI/audio/save adapters are complete. Those seams remain
+explicit in WmFix39Status and docs/FIX39_V13_REMAINING.md.
+
+- V13c fixes the live ATTRACT bridge by mapping WM_FIX39_ATTRACT_SPORTS_LOGO to WM_ATTRACT_SHOW_SPORTS_LOGO; the baseline wm_core test now has a structural guard against this omission.
+
+V13d N64 ring-geometry link regression
+--------------------------------------
+- V13c N64 link failure reproduced from Actions: undefined references to
+  wm_ring_calc_line_x and wm_ring_inring_field.
+- Root cause: Makefile duplicate-source suppression used filename equality and
+  selected the older partial src/core/arcade/wmania_ring_geometry.c.
+- V13d marks wmania_ring_geometry.c as a baseline override, removes the older
+  partial module from CMake/Makefile source lists, and compiles the completion
+  Fix39 module on both host and N64 targets.
+- Functional synthetic Makefile regression added to tests/test_v13_completion.py.

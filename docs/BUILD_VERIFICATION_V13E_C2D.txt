@@ -1,0 +1,26 @@
+Fix39 V13e-c2d DRONE source self-sized script-list parser verification
+
+Scope
+-----
+- preserve all V13e-c2c WL wildcard + 9-slot DRONE range work;
+- preserve the Be A Man / PlatynumX Sports source-slot replacement;
+- fix only the real-source parser seam exposed by DRONE.ASM script-list
+  headers written as `(end_label-$)/32-1`.
+
+Source-backed reason
+--------------------
+The Williams/TMS source is bit-addressed and uses `$` as the assembler location
+counter.  DRONE.ASM uses `(end_label-$)/32-1` to derive the maximum valid
+index from the number of following 32-bit script pointers.  The C2 parser must
+not try to feed `$` or source labels to Python's numeric evaluator.  C2d
+recognizes only this exact source form and resolves it structurally: it counts
+the actual LONG pointer records up to the named forward end label, then stores
+`pointer_count - 1`, which is the value consumed before RNDRNG0 indexing.
+
+Acceptance
+----------
+- fix39_drone_ranges.py --self-test PASS with a self-sized pointer list;
+- chunk-2 source resolver smoke PASS using the same source syntax;
+- existing C1/C2/Sports/ATTRACT structural regressions PASS;
+- package SHA manifest PASS;
+- ZIP integrity PASS.

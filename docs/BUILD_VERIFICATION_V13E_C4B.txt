@@ -1,0 +1,26 @@
+Fix39 V13e Chunk 4b
+====================
+
+Purpose
+-------
+Correct the Chunk 4a DRONE script/skill generator self-test failure seen before compilation.
+
+Root cause
+----------
+Script.unresolved_inline is a boolean marker. Chunk 4a incorrectly attempted to iterate it while collecting C4 seam labels, causing:
+
+    TypeError: 'bool' object is not iterable
+
+Fix
+---
+Seam labels are now collected from the decoded CALL_CODE / CALL_FUNCTION operations, where their source labels actually live. The boolean remains only as the script-level status marker.
+
+Host verification
+-----------------
+PASS: tools/fix39_drone_scripts.py --self-test
+PASS: tests/test_v13e_chunk4.py
+PASS: all tests/test_*.py regressions
+
+Expected Termux behavior
+------------------------
+The build should now pass the "Verifying DRONE script/skill source generator" stage and continue into the remaining generator/build stages.

@@ -1,0 +1,40 @@
+WrestleMania Arcade N64 - Fix39 V13e-c3c verification
+=======================================================
+
+Purpose
+-------
+C3c fixes the historical DRONE.ASM script generator after the real Termux
+preflight reached `reachable script label drn_seek not found in active
+DRONE.ASM body`.
+
+Root cause
+----------
+C3b sliced to the final `.file "drone.asm"` body before macro expansion.  The
+range generator expanded the complete historical translation unit first.  A
+macro defined outside the final body can therefore remain live when invoked
+inside it; the two generators were looking at different effective source.
+
+Correction
+----------
+- Expand the complete DRONE.ASM translation unit first.
+- Select the final production `.file "drone.asm"` body only after expansion.
+- Keep final-body selection so archived earlier DRONE bodies do not become live.
+- Add a regression fixture with a macro defined before `.file` that generates
+  `#drn_seek` when invoked in the active body.
+- Preserve all C3b symbol/inline/WL fixes, C3a include/equate fixes, and C2e
+  Sports replacement assets.
+
+Local verification
+------------------
+- all five generator self-tests PASS
+- Fix39 V11/V12/V13/C1/C2/C3 structural tests PASS
+- Sports palette override regression PASS
+- C2 range smoke PASS
+- C3 scripts + VM semantics smoke PASS
+- full Fix39 integration smoke PASS
+- namespace collision regression PASS
+
+Still gated
+-----------
+- C4: rnd, drone_seek, command-5/EXGPC service targets
+- C5: final live DRONE CPU activation

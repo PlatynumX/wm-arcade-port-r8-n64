@@ -1,0 +1,51 @@
+Fix39 V12g build/verification checkpoint
+=========================================
+
+Purpose
+-------
+Enable the already-translated HSTD/high-score ATTRACT sequence and correct the
+hardware-visible designer TIP-number anchor, without changing the V11b top-level
+ATTRACT scheduler or adding a save-system dependency.
+
+Hardware evidence entering this pass
+------------------------------------
+V12f was tested on N64. The V12e second-loop hint lookup crash did not recur.
+Repeated designer/general-tip screens rendered, which exposed two visible
+issues to address next:
+  * the WGSF22 designer tip number overlapped the word TIP; and
+  * no HSTD pages were visible because HISCORES was still capability-gated.
+
+V12g changes
+------------
+* Correct PUT_UP_TIP_NAME number X anchor to use designer-name/TIP# sprite width.
+* Make HISCORES a Fix39 live/capability-backed ATTRACT screen on N64.
+* Present all five HSTD pages in source order.
+* Use existing WmHsSystem factory/runtime tables; no persistence is invented.
+* Add source WSF14/WGSF18 rank/score glyphs, HSTD decorations, crouton icons,
+  wrestler labels and required source palettes to the generated asset set.
+* Translate first-two-page three-row scrolling state and source timing values.
+* Keep static tag/pin/streak layouts and source title/backdrop coordinates.
+* Add regressions for HSTD capability insertion, all five pages, layout
+  constants, source font families, first-three-vs-five-initial handling, the
+  TIP anchor, and termination of the complete HSTD live state machine.
+
+Local verification
+------------------
+The packaged revision is expected to pass:
+  python -m py_compile tools/apply_fix39.py tools/fix39_attract_text.py tools/fix39_attract_assets.py
+  python tools/fix39_attract_text.py --self-test
+  python tools/fix39_attract_assets.py --self-test
+  python tests/test_patcher_structural.py
+  python tests/test_v12_patcher.py
+  bash tests/run_fix39_smoke.sh
+  bash -n termux_fix39_build.sh
+  strict host compile/runtime harness for the injected N64 renderer snippet
+
+The GitHub Actions libdragon job remains the authoritative N64 compile. The
+Termux helper performs real historical-source/WIMP preflight before pushing.
+
+Persistence
+-----------
+No N64 save backend is added in V12g. This is intentional. The source-backed
+high-score tables are displayable and session-live now; persistence is the next
+separate storage task so it cannot block ATTRACT completion.

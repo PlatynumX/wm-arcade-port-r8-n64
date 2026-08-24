@@ -1,0 +1,11 @@
+Fix39 V12e verification
+
+Authoritative V12d GitHub Actions failure diagnosed from n64-rom job 96658380619:
+- src/platform/n64/main.c:1370: RGBA32 returns libdragon color_t, but fix39_aama_blue was declared uint32_t
+- src/platform/n64/main.c:1382/1392: fill_rect argument 5 requires color_t
+
+V12e correction:
+- patches/fix39_v12_n64_attract.inc: fix39_aama_blue now returns color_t
+- tests/test_v12_patcher.py asserts the libdragon-compatible signature and rejects the old uint32_t signature
+
+No AAMA palette/gradient arithmetic or ATTRACT sequencing was changed.

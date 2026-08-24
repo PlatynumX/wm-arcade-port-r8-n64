@@ -1,0 +1,10 @@
+Fix39 V13e chunk 5g verification
+
+Purpose:
+- Widen the command-5/EXGPC service-body ABI so a translated body receives the exact
+  live self actor, opponent actor, and DRONE process-local state.
+- Preserve fail-closed dispatch for unknown/unattached services and null DRONE state.
+- This is the execution-context bridge required before direct translated bodies can
+  safely mutate DRN_BUT/DRN_JOY/DRN_DELAY/DRN_ACT state.
+
+No service body is fabricated in this pass.

@@ -1,0 +1,18 @@
+Fix39 V13e Chunk 4d
+====================
+
+Purpose
+-------
+Continue Chunk 4 from the hardware/build-good C4b checkpoint without activating incomplete CPU combat.
+
+Change
+------
+The decoded DRONE VM now treats command-5 and EXGPC source calls as strict execution seams. The callback returns success only when the exact translated target ran. If a target is unresolved, the VM holds at that source operation instead of advancing past it.
+
+Why this matters
+----------------
+C4b exposed the real source labels. C4d prevents a future adapter from accidentally turning those calls into silent no-ops while the remaining targets are translated/bound.
+
+Expected build behavior
+-----------------------
+No frontend/attract behavior change is intended yet. This is a safety/runtime-semantics chunk before binding the exact C4 services and then activating DRONE.

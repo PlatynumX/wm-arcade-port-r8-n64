@@ -1,6 +1,0 @@
-Fix39 V13e-c5d verification
-- exact command-5 source entry addresses generated from historical DRONE.ASM
-- exact EXGPC inline entry addresses generated from script label + decoded source offset
-- generated service kind table distinguishes CALL_CODE from EXGPC_INLINE
-- runtime exposes label -> source address/kind lookup without pretending untranslated bodies executed
-- service dispatcher remains fail-closed until translated body is attached

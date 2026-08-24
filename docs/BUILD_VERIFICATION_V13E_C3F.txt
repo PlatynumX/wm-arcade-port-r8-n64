@@ -1,6 +1,0 @@
-Fix39 V13e C3f verification
-
-C3f corrects an invalid shell preflight assertion exposed by the exact historical DRONE.ASM run.
-The generator had already succeeded: 75 scripts, 1 command-2 skill table, 15 C4 code seams.
-The historical reachable graph is not required to contain WM_DRONE_SC_DONE. VM support for DONE/yield remains implemented and generator self-tested.
-The preflight now requires actual generated operation arrays instead.

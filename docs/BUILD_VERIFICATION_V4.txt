@@ -1,6 +1,0 @@
-Fix39 v4 verification
-
-- MATCH_INIT is now patched as a structural whole-file if-branch.
-- Function-definition scanning no longer permits leading whitespace to cross newlines.
-- Failure diagnostics print every MATCH_INIT occurrence with line numbers.
-- Source-bundle smoke suite is unchanged and must pass before repo patching.

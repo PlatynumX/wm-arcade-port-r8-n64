@@ -20,20 +20,18 @@ bool wm_arcade_confine_grounded_inring(wm_arcade_actor_t *a,
     int16_t line;
     int32_t delta;
 
+    /* Combat2EL parity correction: WRESTLE.ASM does NOT gate ordinary
+       in-ring X/Z confinement on Y==GROUND_Y, zombie state, or whether an
+       opponent is already outside.  Those EK safety guards disabled the
+       routine at match start because reset_start seeds OBJ_YPOS=0 while
+       GROUND_Y=MAT_Y.  Keep only the unported attached-pair branch guarded. */
+    (void)any_opponent_outside;
     if (!a) return false;
 
-    /* WRESTLE.ASM early-outs.  Extra guards below are what make this a
-       source-safe subset instead of pretending the whole routine is ported. */
     if (a->anim_mode & WM_ARCADE_MODE_NOCONFINE) return false;
     if (a->player_mode == WM_PMODE_ATTACHED) return false;
     if (a->in_ring != 0) return false;
-
-    /* The live slice is only used where climb/attached/airborne side effects
-       cannot fire in the original code. */
     if (a->attach_proc != 0) return false;
-    if (a->status_flags & WM_STATUS_ZOMBIE) return false;
-    if (any_opponent_outside) return false;
-    if (a->y_int != a->ground_y) return false;
 
     /* WRESTLE.ASM inside-ring Z confinement. Equality blocks movement but
        does not rewrite the coordinate. */

@@ -43,6 +43,7 @@ add_library(wmcore STATIC
     src/fix39/wm_arcade_bret.c
     src/fix39/wm_arcade_bret_tables.c
     src/fix39/wm_arcade_combat.c
+    src/fix39/wm_arcade_confine_grounded.c
     src/fix39/wm_arcade_doink.c
     src/fix39/wm_arcade_drone.c
     src/fix39/wm_arcade_drone_source_bodies.c
@@ -77,6 +78,7 @@ add_library(wmcore STATIC
     src/fix39/wm_arcade_taker.c
     src/fix39/wm_arcade_target_offsets.c
     src/fix39/wm_arcade_wimp_frame.c
+    src/fix39/wm_arcade_wrestle_target.c
     src/fix39/wm_arcade_wrestler_port.c
     src/fix39/wm_arcade_yoko.c
     src/fix39/wm_fix39_runtime.c

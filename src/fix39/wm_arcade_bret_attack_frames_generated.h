@@ -1,0 +1,31 @@
+/* generated from historical HRTSEQ2.ASM; do not edit */
+#ifndef WM_ARCADE_BRET_ATTACK_FRAMES_GENERATED_H
+#define WM_ARCADE_BRET_ATTACK_FRAMES_GENERATED_H
+#define WM_FIX39_BRET_ATTACK_FRAMES_GENERATED 1
+static const wm_arcade_source_attack_frame_t wm_bret_source_attack_frames[] = {
+    {"H4PL3X+FR4", 1, WM_AMODE_PUNCH, 30, 51, 0, 80, 45, 45},
+    {"H2PL3B+FR4", 1, WM_AMODE_PUNCH, 30, 91, -45, 50, 15, 45},
+    {"H4UP3C+FR6", 0, WM_AMODE_UPRCUT, -6, 40, -40, 64, 90, 80},
+    {"H4PS3A+FR4", 0, WM_AMODE_PUSH, 11, 83, -40, 70, 20, 80},
+    {"H2PF2B+FR2", 1, WM_AMODE_HITCHECK, -5, -8, -40, 32, 32, 50},
+    {"H2PF2B+FR5", 1, WM_AMODE_LBOWDROP2, 5, -8, -40, 32, 32, 50},
+    {"H4PF4B+FR2", 1, WM_AMODE_HITCHECK, 5, -6, -10, 36, 30, 50},
+    {"H4PF4B+FR5", 1, WM_AMODE_LBOWDROP2, 5, -6, -10, 36, 30, 50},
+    {"H2BC3A+FR4", 0, WM_AMODE_HDBUTT, 19, 75, -40, 35, 24, 80},
+    {"H4BC3A+FR4", 0, WM_AMODE_URN, 19, 75, -40, 35, 24, 80},
+    {"H2KM3A+FR5", 0, WM_AMODE_KICK, 23, 73, -40, 50, 17, 80},
+    {"H4KM3D+FR5", 0, WM_AMODE_FLYKICK, 15, 69, -40, 64, 38, 80},
+    {"H4KM3C+FR3", 0, WM_AMODE_SPINKICK, 5, 54, -40, 70, 34, 80},
+    {"H4KM3C+FR4", 0, WM_AMODE_SPINKICK, 5, 54, -40, 70, 34, 80},
+    {"H3DC3A+FR5", 0, WM_AMODE_FLYKICK, -3, 26, -40, 61, 21, 80},
+    {"H2MP2B+FR2", 1, WM_AMODE_HITCHECK, 7, -10, -40, 28, 31, 50},
+    {"H2MP2B+FR5", 1, WM_AMODE_STOMP2, 7, -10, -40, 28, 31, 50},
+    {"H4MP4A+FR2", 1, WM_AMODE_HITCHECK, 7, -12, -10, 29, 35, 50},
+    {"H4MP4A+FR5", 1, WM_AMODE_STOMP2, 7, -12, -10, 29, 35, 50},
+    {"H4JK4C+FR6", 0, WM_AMODE_BUTTSTOMP, -50, -6, -40, 36, 23, 80},
+    {"H4JP4C+FR5", 1, WM_AMODE_BSTOMP, 0, 14, -10, 36, 52, 70},
+    {"H4NM3A+FR4", 0, WM_AMODE_KNEE, 11, 44, -40, 51, 49, 80},
+    {"H2NM3A+FR4", 0, WM_AMODE_KNEE, 11, 44, -40, 51, 49, 80},
+};
+#define WM_FIX39_BRET_ATTACK_FRAME_COUNT 23u
+#endif

@@ -24,9 +24,12 @@ if [ ! -f "$SPORTS_SOURCE" ] || [ ! -f "$DCS_SOURCE" ] || \
     sh "$ROOT/scripts/fetch_original.sh"
 fi
 
-python3 "$ROOT/tools/frontend_bundle.py" \
-    --source "$SPORTS_SOURCE" \
-    --out "$SPORTS_OUT"
+# Be a Man replacement owns sports_logo.c; DCS/title regeneration must not
+# overwrite the checked-in 17-piece replacement payload.
+if [ ! -s "$SPORTS_OUT" ]; then
+    echo "missing checked-in replacement: $SPORTS_OUT" >&2
+    exit 2
+fi
 
 python3 "$ROOT/tools/dcs_bundle.py" \
     --source "$DCS_SOURCE" \

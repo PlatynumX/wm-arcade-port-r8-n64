@@ -129,8 +129,12 @@ assets: $(ASSET_C)
 src/generated/bret_sprites.c: tools/wimpimg.py tools/bret_bundle.py tools/bret_manifest.py scripts/prepare_bret_sprites.sh src/generated/bret_visuals.c src/generated/bret_attacks.c
 	sh ./scripts/prepare_bret_sprites.sh
 
-src/generated/sports_logo.c: tools/wimpimg.py tools/frontend_bundle.py tools/dcs_bundle.py tools/sparkle_bundle.py scripts/prepare_frontend_assets.sh
-	sh ./scripts/prepare_frontend_assets.sh
+# BEGIN BE A MAN EXACT SPORTLO8 REPLACEMENT
+# Generated C is checked in. Normal builds must not regenerate the original
+# Midway artwork over the replacement payload.
+src/generated/sports_logo.c:
+	@test -s $@
+# END BE A MAN EXACT SPORTLO8 REPLACEMENT
 
 src/generated/dcs_logo.c: src/generated/sports_logo.c
 	@test -s $@ || sh ./scripts/prepare_frontend_assets.sh
@@ -235,7 +239,7 @@ $(ROMNAME).z64: N64_ROM_TITLE = "WM Arcade Port r9"
 $(ROMNAME).z64: N64_ROM_REGIONFREE = true
 
 clean:
-	$(RM) -r $(BUILD_DIR) $(ROMNAME).z64 $(ASSET_C) $(DCS1005_WAV64)
+	$(RM) -r $(BUILD_DIR) $(ROMNAME).z64 $(filter-out src/generated/sports_logo.c,$(ASSET_C)) $(DCS1005_WAV64)
 
 .PHONY: all clean assets
 

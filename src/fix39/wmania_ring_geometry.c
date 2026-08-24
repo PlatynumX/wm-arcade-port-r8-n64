@@ -76,8 +76,10 @@ int16_t wm_ring_calc_line_x(const WmRingBoundarySeed *line, int16_t z)
     int32_t den;
 
     if (!line) return 0;
-    if (z <= line->top_z) return line->top_x;
-    if (z >= line->bottom_z) return line->bottom_x;
+    /* WRESTLE.ASM calc_line_x returns 0 outside its generated Z span. */
+    if (z < line->top_z || z > line->bottom_z) return 0;
+    if (z == line->top_z) return line->top_x;
+    if (z == line->bottom_z) return line->bottom_x;
 
     den = (int32_t)line->bottom_z - (int32_t)line->top_z;
     if (den == 0) return line->top_x;

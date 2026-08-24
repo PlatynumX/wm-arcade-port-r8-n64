@@ -78,10 +78,10 @@ static wm_input_state read_input(joypad_port_t port, bool *connected) {
 
     /* Same arcade-action mapping on each physical N64 controller. */
     out.run         = now.a;
-    out.light_punch = pressed.c_left;
-    out.power_punch = pressed.c_up;
-    out.light_kick  = pressed.c_right;
-    out.power_kick  = pressed.c_down;
+    out.light_punch = now.c_left;
+    out.power_punch = now.c_up;
+    out.light_kick  = now.c_right;
+    out.power_kick  = now.c_down;
     out.block       = now.r;
     out.start       = pressed.start;
     out.l           = pressed.l;
@@ -3075,11 +3075,19 @@ static void wm_n64_run_source_ticks_dual(
 
         tick_input[0].run = sampled_p1->run;
         tick_input[0].block = sampled_p1->block;
+        tick_input[0].light_punch = sampled_p1->light_punch;
+        tick_input[0].power_punch = sampled_p1->power_punch;
+        tick_input[0].light_kick = sampled_p1->light_kick;
+        tick_input[0].power_kick = sampled_p1->power_kick;
         tick_input[0].stick_x = sampled_p1->stick_x;
         tick_input[0].stick_y = sampled_p1->stick_y;
 
         tick_input[1].run = sampled_p2->run;
         tick_input[1].block = sampled_p2->block;
+        tick_input[1].light_punch = sampled_p2->light_punch;
+        tick_input[1].power_punch = sampled_p2->power_punch;
+        tick_input[1].light_kick = sampled_p2->light_kick;
+        tick_input[1].power_kick = sampled_p2->power_kick;
         tick_input[1].stick_x = sampled_p2->stick_x;
         tick_input[1].stick_y = sampled_p2->stick_y;
     }

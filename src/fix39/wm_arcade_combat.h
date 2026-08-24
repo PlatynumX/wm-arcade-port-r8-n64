@@ -49,6 +49,11 @@ struct wm_arcade_actor {
     /* WRESTLE.ASM confine_wrestler/fix1/fix2 state. */
     uint16_t can_move_dir;
     uint16_t can_move_temp;
+    int32_t x_bound;              /* X_BOUND */
+    int32_t z_bound;              /* Z_BOUND */
+    uint32_t climb_start;         /* CLIMB_START */
+    uint32_t climb_last;          /* CLIMB_LAST */
+    uint32_t hit_gate_time;       /* HIT_GATE_TIME */
     /* Stage 7 / REACT5: directional and input state used by running/hiptoss reactions. */
     int32_t facing_dir;
     int32_t new_facing_dir;
@@ -87,6 +92,7 @@ struct wm_arcade_actor {
     void *meter_proc;
     int32_t wrestler_num;
     int32_t player_num;
+    int32_t player_type;          /* PLYR.EQU PLYR_TYPE */
 
     /* Stage 2: REACT1.ASM / ANIM.ASM combat state. */
     uint32_t last_hit_time;
@@ -136,6 +142,11 @@ struct wm_arcade_actor {
     uint16_t but_val_up;
     uint16_t stick_val_down;
     uint16_t stick_val_up;
+    uint16_t stick_rel_cur;       /* STICK_REL_CUR */
+    uint16_t stick_rel_new;       /* STICK_REL_NEW */
+    uint32_t wrest_joystat[16];   /* WRESTLE.ASM logical queue slice */
+    uint16_t joy_dtime[9];        /* exact KEEP THIS ORDER dtime banks */
+    uint16_t auto_pin_countdown;  /* AUTO_PIN_CNTDOWN */
     int32_t closest_num;
     int32_t closest_dist;
     int32_t closest_xdist;

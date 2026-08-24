@@ -15,6 +15,12 @@
  * tables use the original numeric values.
  */
 
+enum wm_arcade_player_type {
+    WM_PTYPE_PLAYER  = 0,
+    WM_PTYPE_DRONE   = 1,
+    WM_PTYPE_REFEREE = -1
+};
+
 enum wm_arcade_player_mode {
     WM_PMODE_NORMAL       = 0,
     WM_PMODE_RUNNING      = 1,

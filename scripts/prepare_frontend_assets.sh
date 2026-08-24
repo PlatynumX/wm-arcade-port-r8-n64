@@ -3,6 +3,11 @@ set -eu
 ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
 ORIG="$ROOT/original/wwf-wrestlemania"
 SPORTS_SOURCE="$ORIG/IMG/SPORTLO8.IMG"
+# FIX39 SPORTS FOREGROUND OVERRIDE
+FIX39_SPORTS_SOURCE="$ROOT/assets/fix39_sports_override/SPORTLO8.IMG"
+if [ -f "$FIX39_SPORTS_SOURCE" ]; then
+  SPORTS_SOURCE="$FIX39_SPORTS_SOURCE"
+fi
 DCS_SOURCE="$ORIG/IMG/DCSLOGO.IMG"
 SPARKLE_SOURCE="$ORIG/IMG/SPARKLE.IMG"
 SPORTS_OUT="$ROOT/src/generated/sports_logo.c"
@@ -44,6 +49,7 @@ python3 "$ROOT/tools/bmod_source.py" \
     --module NTITLESCBMOD \
     --module SPORTBKBMOD \
     --module LADDERBMOD \
+    --module slateBMOD \
     --module choiceBMOD \
     --module wwfselbkBMOD \
     --out "$BMOD_OUT"
@@ -54,3 +60,8 @@ python3 "$ROOT/tools/select_bundle.py" \
     --imgpal "$ORIG/IMGPAL.ASM" \
     --progress "$ORIG/PROGRESS.ASM" \
     --out "$SELECT_OUT"
+
+# FIX39 SPORTS BACKGROUND REGEN
+if [ -f "$ROOT/assets/fix39_sports_override/SPORTBK.IMG" ]; then
+  sh "$ROOT/scripts/prepare_sports_source_assets.sh"
+fi

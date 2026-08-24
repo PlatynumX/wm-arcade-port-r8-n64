@@ -9,7 +9,7 @@
 extern "C" {
 #endif
 
-#define WM_ATTRACT_ACTIVE_HINTS 5u
+#define WM_ATTRACT_ACTIVE_HINTS 10u
 #define WM_ATTRACT_WRESTLERS 8u
 #define WM_ATTRACT_BIO_ATTRIBUTES 4u
 #define WM_ATTRACT_COPYRIGHT_PAGE1_LINES 9u
@@ -23,9 +23,12 @@ extern "C" {
 typedef struct {
     const char *title_label;
     const char *body_label;
+    const char *body_line_labels[6];
     const char *tip_image_symbol;
     const char *mug_image_symbol;
+    const char *number_image_symbol;
     uint8_t number_image_index;
+    uint8_t body_line_count;
 } WmAttractHint;
 
 typedef struct {

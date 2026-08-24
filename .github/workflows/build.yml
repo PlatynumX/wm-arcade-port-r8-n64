@@ -31,13 +31,14 @@ jobs:
       - name: Verify Fix39 host/N64 source ownership
         # COMBAT2DI BUILD GRAPH AUTHORITY
         run: python3 tools/fix39_build_graph_audit.py .
-      - name: Generate development-frozen Combat2AM wrestler art and current attack frames
+      - name: Generate development-frozen Combat2DS full wrestler art and current attack frames
         # FIX39 COMBAT2L CHARACTER ASSETS
         run: |
           set -euo pipefail
           test -d original/wwf-wrestlemania || sh ./scripts/fetch_original.sh
-          # FIX39 COMBAT2EF PLAYABLE LANE: Combat2AM visual generator is development-only; strict EC converter remains final authority.
+          # FIX39 COMBAT2EH FULL VISUAL LANE: exact Combat2DS full-corpus generator is development-only; strict EC converter remains final authority.
           python3 tools/fix39_character_assets_development_frozen.py --root original/wwf-wrestlemania --out-c src/generated/character_assets.c --out-h include/wm/character_assets.h --out-fs filesystem/fix39_chars
+          sh ./scripts/verify_character_payload.sh filesystem/fix39_chars
           python3 tools/fix39_character_attack_frames.py --root original/wwf-wrestlemania --out src/fix39/wm_arcade_character_attack_frames_generated.h
           grep -q 'WM_FIX39_CHARACTER_ATTACK_FRAMES_GENERATED 1' src/fix39/wm_arcade_character_attack_frames_generated.h
           test -s src/generated/character_assets.c
@@ -138,6 +139,7 @@ jobs:
           sh ./scripts/prepare_bret_sprites.sh
           sh ./scripts/prepare_frontend_assets.sh
           python3 tools/fix39_character_assets_development_frozen.py --root original/wwf-wrestlemania --out-c src/generated/character_assets.c --out-h include/wm/character_assets.h --out-fs filesystem/fix39_chars
+          sh ./scripts/verify_character_payload.sh filesystem/fix39_chars
           python3 tools/fix39_character_attack_frames.py --root original/wwf-wrestlemania --out src/fix39/wm_arcade_character_attack_frames_generated.h
           test -n "$(find filesystem/fix39_chars -type f -name '*.bin' -print -quit)"
           test -s src/generated/bret_sprites.c
@@ -179,6 +181,12 @@ jobs:
           rm -rf build/n64 wm_arcade_r9.z64
           make -j2
           test -s wm_arcade_r9.z64
+          ROM_BYTES="$(stat -c%s wm_arcade_r9.z64)"
+          echo "Combat2EH ROM bytes: $ROM_BYTES"
+          test "$ROM_BYTES" -ge 40000000 || {
+            echo "ERROR: Combat2EH ROM unexpectedly small ($ROM_BYTES bytes); full 4885-frame DFS likely missing" >&2
+            exit 1
+          }
           ls -lh wm_arcade_r9.z64
 
       - name: Upload ROM and coverage as Actions artifact

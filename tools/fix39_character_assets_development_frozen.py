@@ -197,20 +197,18 @@ def _scan_img_fallback(root, wanted):
 
 
 def _available_frame_names(root):
-    """Return exact physical WIMP frame names present in LOD indexes or packed IMG files.
+    """Return only frame names physically present in packed WIMP .IMG containers.
 
-    Historical ASM can contain stale/alternate image references that are not present in
-    the checked-in WIMP payload.  The N64 presenter must never fabricate those frames.
+    .LOD manifests are indexes, not payload authority.  The historical tree contains
+    stale .LOD entries (for example Bam Bam sequence names that no longer exist in
+    BAM_JMS.IMG).  Treating those names as physical made the Combat2BQ all-animation
+    expansion survive the prefilter and then fail later when the mapped .IMG lacked
+    the image.  The packed .IMG directory is the source-of-truth payload, matching
+    _scan_img_fallback/find_lod below.
     """
     names=set()
-    loddir=root/'IMG'
-    for lod in sorted(set(loddir.glob('*.LOD')) | set(loddir.glob('*.lod')), key=lambda p:p.name.lower()):
-        try:
-            m=bret_manifest.parse_lod(lod)
-        except Exception:
-            continue
-        names.update(k.upper() for k in m)
-    for path in sorted(loddir.iterdir(), key=lambda p:p.name.lower()):
+    imgdir=root/'IMG'
+    for path in sorted(imgdir.iterdir(), key=lambda p:p.name.lower()):
         if not path.is_file() or path.suffix.lower()!='.img':
             continue
         try:
@@ -281,11 +279,41 @@ def emit(root,out_c,out_h,out_fs=None):
             seqs[slot]=(path,seq)
             for fr in seq.frames:
                 if fr.name not in frames:frames.append(fr.name)
+        # Combat2BQ: the source animation runtime can select any physical
+        # wrestler frame referenced by the canonical sequence corpus, not only
+        # the old attract-presenter subset.  Stream those exact WIMP frames too.
+        seq_re = re.compile(r'\b([A-Za-z][A-Za-z0-9_]*)\s*\+\s*FR(\d+)\b', re.I)
+        owner_prefix = ART_PREFIX[name]
+        for sp in sorted(root.glob(pfx.upper()+'SEQ*.ASM'), key=lambda q:q.name.lower()):
+            if not _is_canonical_asm(sp):
+                continue
+            for raw in sp.read_text(errors='replace').splitlines():
+                code = raw.split(';',1)[0]
+                for fm in seq_re.finditer(code):
+                    base=fm.group(1).upper()
+                    if base[:1] != owner_prefix:
+                        continue
+                    fr=_frame_name(base,fm.group(2))
+                    if fr.upper() in available and fr not in frames:
+                        frames.append(fr)
+        # FINISEQ contains character-specific finish animations outside the
+        # normal *SEQ* files; include only frames belonging to this wrestler.
+        fp=root/'FINISEQ.ASM'
+        if fp.exists():
+            for raw in fp.read_text(errors='replace').splitlines():
+                code=raw.split(';',1)[0]
+                for fm in seq_re.finditer(code):
+                    base=fm.group(1).upper()
+                    if base[:1] != owner_prefix:
+                        continue
+                    fr=_frame_name(base,fm.group(2))
+                    if fr.upper() in available and fr not in frames:
+                        frames.append(fr)
         charseq[name]=seqs; allframes[name]=frames
 
     h=['#ifndef WM_CHARACTER_ASSETS_H','#define WM_CHARACTER_ASSETS_H','#include <stddef.h>','#include <stdint.h>','#include "wm/visual.h"','#include "wm/bret_sprites.h"','typedef enum wm_character_visual_slot { WM_CV_STAND2,WM_CV_STAND4,WM_CV_TORSO2,WM_CV_TORSO4,WM_CV_WALK2,WM_CV_WALK8,WM_CV_WALK4,WM_CV_WALK6,WM_CV_RUN,WM_CV_LP2,WM_CV_LP4,WM_CV_PP,WM_CV_LK2,WM_CV_LK4,WM_CV_PK,WM_CV_COUNT } wm_character_visual_slot;','const wm_visual_sequence *wm_character_visual(uint8_t roster_id, wm_character_visual_slot slot);','const wm_source_sprite *wm_character_sprite_find(uint8_t roster_id,const char *source_frame);','const wm_source_sprite *wm_character_base_sprite(uint8_t roster_id);','size_t wm_character_sprite_count(uint8_t roster_id);','#endif','']
     out_h.parent.mkdir(parents=True,exist_ok=True); out_h.write_text('\n'.join(h))
-    c=['/* Auto-generated from original Midway wrestler ASM/WIMP data. */','#include "wm/character_assets.h"','#include <string.h>','#if defined(__mips__)','#include <stdio.h>','#include <stdlib.h>','#include <stdint.h>','#endif','']
+    c=['/* Auto-generated from original Midway wrestler ASM/WIMP data. */','#include "wm/character_assets.h"','#include <string.h>','#if defined(__mips__)','#include <stdio.h>','#include <stdlib.h>','#include <stdint.h>','#include <libdragon.h>','#endif','']
     seqsym={}
     for rid,name,pfx in CHARS:
         syms=[]
@@ -319,10 +347,28 @@ def emit(root,out_c,out_h,out_fs=None):
             rel=f'fix39_chars/{rid}/{frame}.bin'
             if out_fs is not None:
                 fp=out_fs/str(rid)/f'{frame}.bin'; fp.parent.mkdir(parents=True,exist_ok=True)
+                # Combat2DS: version every streamed character blob.  The N64
+                # loader validates wrestler/frame/dimensions before exposing
+                # CI8/TLUT pointers, so a stale or cross-wrestler DragonFS file
+                # can never be rendered as another character.
+                frame_hash=2166136261
+                for ch in frame.encode('ascii','replace'):
+                    frame_hash=((frame_hash ^ ch)*16777619)&0xffffffff
                 with fp.open('wb') as fh:
+                    fh.write(b'WMC1')
+                    fh.write(bytes((rid & 0xff,0)))
+                    fh.write(int(im.width).to_bytes(2,'big'))
+                    fh.write(int(im.height).to_bytes(2,'big'))
+                    fh.write(int(pal.color_count).to_bytes(2,'big'))
+                    fh.write(int(len(pxvals)).to_bytes(4,'big'))
+                    fh.write(int(frame_hash).to_bytes(4,'big'))
                     fh.write(pxvals)
                     for v in palvals: fh.write(int(v).to_bytes(2,'big'))
-            meta.append((frame,cont,im,pal,len(pxvals),rel))
+            else:
+                frame_hash=2166136261
+                for ch in frame.encode('ascii','replace'):
+                    frame_hash=((frame_hash ^ ch)*16777619)&0xffffffff
+            meta.append((frame,cont,im,pal,len(pxvals),rel,frame_hash))
         n64_meta[name]=meta
 
         # Host branch remains fully embedded so portable verification has no
@@ -348,10 +394,12 @@ def emit(root,out_c,out_h,out_fs=None):
     # Compact N64 metadata and an 8-entry LRU. Eight entries comfortably hold
     # main/base/torso for both active wrestlers while avoiding all-roster art in RAM.
     c += ['#if defined(__mips__)',
-          'typedef struct { const char *frame,*container,*path; uint16_t width,height; int16_t xani,yani; int16_t tail[WM_WIMP_TAIL_WORDS]; uint16_t pal_colors; uint32_t pixel_bytes; } wm_char_meta;',
+          'typedef struct { const char *frame,*container,*path; uint16_t width,height; int16_t xani,yani; int16_t tail[WM_WIMP_TAIL_WORDS]; uint16_t pal_colors; uint32_t pixel_bytes,frame_hash; } wm_char_meta;',
           'typedef struct { uint8_t valid,id; const wm_char_meta *meta; uint8_t *mem; size_t bytes; uint32_t stamp; wm_source_sprite sprite; } wm_char_cache;',
           'static wm_char_cache wm_char_cache_slots[8]; static uint32_t wm_char_cache_stamp;',
-          'static void wm_char_cache_release(wm_char_cache *c){ if(c->mem) free(c->mem); memset(c,0,sizeof(*c)); }',
+          'static uint16_t wm_be16(const uint8_t *p){return (uint16_t)(((uint16_t)p[0]<<8)|p[1]);}',
+          'static uint32_t wm_be32(const uint8_t *p){return ((uint32_t)p[0]<<24)|((uint32_t)p[1]<<16)|((uint32_t)p[2]<<8)|p[3];}',
+          'static void wm_char_cache_release(wm_char_cache *c){ if(c->mem){ /* RDPQ is asynchronous: never recycle a CI8/TLUT buffer while queued draw commands may still reference it. */ rdpq_fence(); rspq_wait(); free(c->mem); } memset(c,0,sizeof(*c)); }',
           'static const wm_source_sprite *wm_char_load(uint8_t id,const wm_char_meta *m){',
           '    wm_char_cache_stamp++;',
           '    for(unsigned i=0;i<8;i++) if(wm_char_cache_slots[i].valid && wm_char_cache_slots[i].id==id && wm_char_cache_slots[i].meta==m){wm_char_cache_slots[i].stamp=wm_char_cache_stamp;return &wm_char_cache_slots[i].sprite;}',
@@ -361,7 +409,10 @@ def emit(root,out_c,out_h,out_fs=None):
           '    cc->mem=(uint8_t*)malloc(total); if(!cc->mem)return 0; cc->bytes=total;',
           '    char full[96]; int nn=snprintf(full,sizeof(full),"rom:/%s",m->path); if(nn<=0 || (size_t)nn>=sizeof(full)){wm_char_cache_release(cc);return 0;}',
           '    FILE *fp=fopen(full,"rb"); if(!fp){wm_char_cache_release(cc);return 0;}',
-          '    if(fread(cc->mem,1,m->pixel_bytes,fp)!=m->pixel_bytes || fread(cc->mem+pal_off,2,m->pal_colors,fp)!=m->pal_colors){fclose(fp);wm_char_cache_release(cc);return 0;} fclose(fp);',
+          '    uint8_t bh[20]; if(fread(bh,1,sizeof(bh),fp)!=sizeof(bh) || memcmp(bh,"WMC1",4)!=0 || bh[4]!=id || wm_be16(bh+6)!=m->width || wm_be16(bh+8)!=m->height || wm_be16(bh+10)!=m->pal_colors || wm_be32(bh+12)!=m->pixel_bytes || wm_be32(bh+16)!=m->frame_hash){fclose(fp);wm_char_cache_release(cc);return 0;}',
+          '    if(fread(cc->mem,1,m->pixel_bytes,fp)!=m->pixel_bytes || fread(cc->mem+pal_off,2,m->pal_colors,fp)!=m->pal_colors){fclose(fp);wm_char_cache_release(cc);return 0;} if(fgetc(fp)!=EOF){fclose(fp);wm_char_cache_release(cc);return 0;} fclose(fp);',
+          '    /* DragonFS fread populated cached CPU memory.  The renderer/RDP consumes these bytes through DMA, so publish both CI8 texels and TLUT to physical RAM before returning the sprite. */',
+          '    data_cache_hit_writeback(cc->mem,total);',
           '    cc->valid=1; cc->id=id; cc->meta=m; cc->stamp=wm_char_cache_stamp;',
           '    cc->sprite.source_frame=m->frame; cc->sprite.source_container=m->container; cc->sprite.width=m->width; cc->sprite.height=m->height; cc->sprite.xani=m->xani; cc->sprite.yani=m->yani;',
           '    memcpy(cc->sprite.wimp_tail,m->tail,sizeof(m->tail)); cc->sprite.pixels_ci8=cc->mem; cc->sprite.palette_rgba5551=(uint16_t*)(void*)(cc->mem+pal_off); cc->sprite.palette_colors=m->pal_colors;',
@@ -371,8 +422,8 @@ def emit(root,out_c,out_h,out_fs=None):
     for rid,name,pfx in CHARS:
         arr=f'meta_{name}'; meta_arrays[name]=arr
         c.append(f'static const wm_char_meta {arr}[]={{')
-        for frame,cont,im,pal,pixel_bytes,rel in n64_meta[name]:
-            c.append(f'{{"{frame}","{cont}","{rel}",{im.width},{im.height},{im.xani},{im.yani},{{'+','.join(str(v) for v in im.tail_words)+f'}},{pal.color_count},{pixel_bytes}u}},')
+        for frame,cont,im,pal,pixel_bytes,rel,frame_hash in n64_meta[name]:
+            c.append(f'{{"{frame}","{cont}","{rel}",{im.width},{im.height},{im.xani},{im.yani},{{'+','.join(str(v) for v in im.tail_words)+f'}},{pal.color_count},{pixel_bytes}u,0x{frame_hash:08X}u}},')
         c.append('};')
     c += ['#endif','']
 

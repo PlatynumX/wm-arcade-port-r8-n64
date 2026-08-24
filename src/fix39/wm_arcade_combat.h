@@ -87,6 +87,7 @@ struct wm_arcade_actor {
     void *meter_proc;
     int32_t wrestler_num;
     int32_t player_num;
+    int32_t player_type;          /* PLYR.EQU PLYR_TYPE */
 
     /* Stage 2: REACT1.ASM / ANIM.ASM combat state. */
     uint32_t last_hit_time;
@@ -136,6 +137,11 @@ struct wm_arcade_actor {
     uint16_t but_val_up;
     uint16_t stick_val_down;
     uint16_t stick_val_up;
+    uint16_t stick_rel_cur;       /* STICK_REL_CUR */
+    uint16_t stick_rel_new;       /* STICK_REL_NEW */
+    uint32_t wrest_joystat[16];   /* WRESTLE.ASM logical queue slice */
+    uint16_t joy_dtime[9];        /* exact KEEP THIS ORDER dtime banks */
+    uint16_t auto_pin_countdown;  /* AUTO_PIN_CNTDOWN */
     int32_t closest_num;
     int32_t closest_dist;
     int32_t closest_xdist;

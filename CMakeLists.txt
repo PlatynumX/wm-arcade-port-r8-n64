@@ -79,6 +79,7 @@ add_library(wmcore STATIC
     src/fix39/wm_arcade_target_offsets.c
     src/fix39/wm_arcade_wimp_frame.c
     src/fix39/wm_arcade_wrestle_target.c
+    src/fix39/wm_arcade_wrestle_input.c
     src/fix39/wm_arcade_wrestler_port.c
     src/fix39/wm_arcade_yoko.c
     src/fix39/wm_fix39_runtime.c

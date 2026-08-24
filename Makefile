@@ -82,6 +82,7 @@ FIX39_C := \
     src/fix39/wm_arcade_movement.c \
     src/fix39/wm_arcade_confine_grounded.c \
     src/fix39/wm_arcade_wrestle_target.c \
+    src/fix39/wm_arcade_wrestle_input.c \
     src/fix39/wm_arcade_razor.c \
     src/fix39/wm_arcade_razor_tables.c \
     src/fix39/wm_arcade_react.c \

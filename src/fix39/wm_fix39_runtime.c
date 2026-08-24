@@ -9,6 +9,7 @@
 #include "wm_arcade_movement.h"
 #include "wm_arcade_confine_grounded.h"
 #include "wm_arcade_wrestle_target.h"
+#include "wm_arcade_wrestle_input.h"
 #include <stdio.h>
 
 #include "wm_arcade_attach_anim.h"
@@ -109,6 +110,9 @@ static struct {
     int32_t native_close_the_door;
     int32_t native_guy_up;
     int32_t native_guy_in;
+    bool in_finish_move;
+    bool finish_completed;
+    bool royal_rumble;
     char recent_initials[2][WM_HS_NUM_INITIALS + 1u];
 } g;
 
@@ -888,6 +892,41 @@ static void live_wrestler_hit(wm_arcade_actor_t *attacker,
     wm_arcade_wrestler_hit_collision_callback(attacker, victim, &g.react_bridge);
 }
 
+static int source_anyone_bucking(void)
+{
+    unsigned i;
+    if (g.royal_rumble) return 0;
+    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
+        const wm_arcade_actor_t *p = g.actor_ptrs[i];
+        if (!p || !p->active) continue;
+        if ((p->status_flags & WM_STATUS_DO_BUCKOFF) != 0u) return 1;
+    }
+    return 0;
+}
+
+static void source_auto_pin_check(wm_arcade_actor_t *a, void *user)
+{
+    wm_arcade_actor_t *o;
+    (void)user;
+    if (!a) return;
+    if (g.in_finish_move || g.finish_completed || g.royal_rumble) return;
+
+    o = a->smart_target;
+    if (!o || o->player_mode != WM_PMODE_DEAD) goto alive;
+    if ((a->status_flags & WM_STATUS_DID_PIN) != 0u) return;
+    if ((o->status_flags & WM_STATUS_ZOMBIE) != 0u) goto alive;
+    if (source_anyone_bucking()) return;
+
+    a->auto_pin_countdown = (uint16_t)(a->auto_pin_countdown + 1u);
+    if (a->auto_pin_countdown < (3u * 60u)) return;
+    if ((a->anim_mode & WM_ARCADE_MODE_UNINT) != 0u) return;
+    a->player_type = WM_PTYPE_DRONE;
+    return;
+
+alive:
+    a->auto_pin_countdown = 0u;
+}
+
 static void source_calc_closest_all(void)
 {
     wm_arcade_closest_world_t world;
@@ -921,6 +960,7 @@ static void init_actor(wm_arcade_actor_t *a,
     memset(a, 0, sizeof(*a));
     a->active = 1;
     a->player_num = player_num;
+    a->player_type = WM_PTYPE_PLAYER;
     a->player_side = side;
     a->wrestler_num = wrestler_num;
     a->x_int = x;
@@ -940,6 +980,7 @@ static void init_actor(wm_arcade_actor_t *a,
     a->in_ring = 0;
     a->facing_dir = facing;
     a->new_facing_dir = facing;
+    wm_arcade_wrestle_input_init(a);
 }
 
 
@@ -1381,7 +1422,18 @@ static void razor_sound(wm_arcade_actor_t *a, wm_arcade_razor_sound_id_t id, voi
     ++t->sound_events;
 }
 
+static void common_check_secret_moves_live(
+    wm_arcade_actor_t *a, const wm_arcade_input_pattern_t *patterns,
+    size_t count, void *user);
+static void bret_check_secret_moves_live(
+    wm_arcade_actor_t *a, const wm_arcade_bret_secret_pattern_t *patterns,
+    size_t count, void *user);
+static void razor_check_secret_moves_live(
+    wm_arcade_actor_t *a, const wm_arcade_razor_secret_pattern_t *patterns,
+    size_t count, void *user);
+
 static const wm_arcade_roster_callbacks_t common_callbacks = {
+    .check_secret_moves = common_check_secret_moves_live,
     .check_combo_go = source_check_combo_go_port,
     .adjust_health = source_adjust_health_port,
     .set_raisearm_bit = source_set_raisearm_bit_port,
@@ -1396,6 +1448,7 @@ static const wm_arcade_roster_callbacks_t common_callbacks = {
 };
 
 static const wm_arcade_bret_callbacks_t bret_callbacks = {
+    .check_secret_moves = bret_check_secret_moves_live,
     .check_combo_go = source_check_combo_go_port,
     .adjust_health = source_adjust_health_port,
     .set_raisearm_bit = source_set_raisearm_bit_port,
@@ -1409,6 +1462,7 @@ static const wm_arcade_bret_callbacks_t bret_callbacks = {
 };
 
 static const wm_arcade_razor_callbacks_t razor_callbacks = {
+    .check_secret_moves = razor_check_secret_moves_live,
     .check_combo_go = source_check_combo_go_port,
     .adjust_health = source_adjust_health_port,
     .set_raisearm_bit = source_set_raisearm_bit_port,
@@ -1431,6 +1485,129 @@ static const wm_arcade_wrestler_port_bindings_t wrestler_bindings = {
     .doink = &common_callbacks,
     .lex = &common_callbacks
 };
+
+/* WRESTLE.ASM::check_secret_moves shared scheduler. */
+static int source_secret_eligible(const wm_arcade_actor_t *a)
+{
+    if (!a) return 0;
+    if (a->immobilize_time != 0) return 0;
+    if (a->player_mode == WM_PMODE_DIZZY) return 0;
+    if (a->player_mode == WM_PMODE_WAITANIM) return 0;
+    if (a->getup_time != 0) return 0;
+    return 1;
+}
+
+static int source_secret_charge_probe(wm_arcade_actor_t *a)
+{
+    const wm_arcade_wrestler_profile_t *p;
+    const wm_arcade_input_pattern_t *probe;
+    uint16_t held;
+
+    if (!a) return 0;
+    p = wm_arcade_roster_profile((wm_arcade_roster_id_t)a->wrestler_num);
+    if (!p || !p->secrets || p->secret_count == 0u) return 0;
+    probe = &p->secrets[0];
+    if (probe->step_count != 0u || !probe->source_label || p->charge_button == 0u)
+        return 0;
+    if ((a->but_val_up & p->charge_button) == 0u) return 0;
+
+    held = wm_arcade_get_button_dtime(a, p->charge_button);
+    if (held < p->charge_ticks) return 0;
+
+    /* Source hold-test routines set carry after CALLR scrt_xxx, even if the
+       called body rejects on current mode/state. */
+    (void)wm_arcade_port_release_charge(
+        p, a, a->smart_target, probe->source_label, held, &wrestler_bindings);
+    return 1;
+}
+
+static void common_check_secret_moves_live(
+    wm_arcade_actor_t *a, const wm_arcade_input_pattern_t *patterns,
+    size_t count, void *user)
+{
+    size_t i;
+    const wm_arcade_wrestler_profile_t *p;
+    (void)user;
+    if (!source_secret_eligible(a)) return;
+    if (source_secret_charge_probe(a)) return;
+    p = wm_arcade_roster_profile((wm_arcade_roster_id_t)a->wrestler_num);
+    if (!p || !patterns) return;
+
+    for (i = 0u; i < count; ++i) {
+        const wm_arcade_input_pattern_t *pat = &patterns[i];
+        if (!pat->steps || pat->step_count == 0u) continue;
+        if (!wm_arcade_wrestle_pattern_match(
+                a, pat->steps, pat->step_count, pat->max_ticks,
+                g.status.round_tickcount))
+            continue;
+        if ((a->status_flags & WM_STATUS_ZOMBIE) == 0u)
+            (void)wm_arcade_port_fire_secret(
+                p, a, a->smart_target, pat->source_label, g.status.pcnt,
+                &wrestler_bindings);
+        return;
+    }
+}
+
+static void bret_check_secret_moves_live(
+    wm_arcade_actor_t *a, const wm_arcade_bret_secret_pattern_t *patterns,
+    size_t count, void *user)
+{
+    size_t i;
+    (void)user;
+    if (!source_secret_eligible(a)) return;
+    if (source_secret_charge_probe(a)) return;
+    if (!patterns) return;
+    for (i = 0u; i < count; ++i) {
+        const wm_arcade_bret_secret_pattern_t *pat = &patterns[i];
+        wm_arcade_input_step_t tmp[16];
+        size_t j;
+        if (pat->step_count > 16u) continue;
+        for (j = 0u; j < pat->step_count; ++j) {
+            tmp[j].value = pat->steps[j].value;
+            tmp[j].ignore_mask = pat->steps[j].ignore_mask;
+        }
+        if (!wm_arcade_wrestle_pattern_match(
+                a, tmp, pat->step_count, pat->max_ticks,
+                g.status.round_tickcount))
+            continue;
+        if ((a->status_flags & WM_STATUS_ZOMBIE) == 0u)
+            (void)wm_arcade_bret_fire_secret(
+                a, a->smart_target, pat->id, g.status.pcnt,
+                wrestler_bindings.bret);
+        return;
+    }
+}
+
+static void razor_check_secret_moves_live(
+    wm_arcade_actor_t *a, const wm_arcade_razor_secret_pattern_t *patterns,
+    size_t count, void *user)
+{
+    size_t i;
+    (void)user;
+    if (!source_secret_eligible(a)) return;
+    if (source_secret_charge_probe(a)) return;
+    if (!patterns) return;
+    for (i = 0u; i < count; ++i) {
+        const wm_arcade_razor_secret_pattern_t *pat = &patterns[i];
+        wm_arcade_input_step_t tmp[16];
+        size_t j;
+        if (pat->step_count > 16u) continue;
+        for (j = 0u; j < pat->step_count; ++j) {
+            tmp[j].value = pat->steps[j].value;
+            tmp[j].ignore_mask = pat->steps[j].ignore_mask;
+        }
+        if (!wm_arcade_wrestle_pattern_match(
+                a, tmp, pat->step_count, pat->max_ticks,
+                g.status.round_tickcount))
+            continue;
+        if ((a->status_flags & WM_STATUS_ZOMBIE) == 0u)
+            (void)wm_arcade_razor_fire_secret(
+                a, a->smart_target, pat->id, g.status.pcnt,
+                wrestler_bindings.razor);
+        return;
+    }
+}
+
 
 static void queued_special_token(wm_arcade_actor_t *a, uintptr_t token, void *user)
 {
@@ -2004,6 +2181,9 @@ void wm_fix39_match_begin(unsigned frontend_p1, unsigned frontend_p2)
         live_ringout_refresh(i);
     }
     g.allow_offscreen = 0u;
+    g.in_finish_move = false;
+    g.finish_completed = false;
+    g.royal_rumble = false;
 
     /* Combat2CG: animation bytecode/tables are streamed from DragonFS.
        Drop the previous match cache only at a match boundary, never while a
@@ -2034,6 +2214,8 @@ void wm_fix39_match_begin(unsigned frontend_p1, unsigned frontend_p2)
     g.camera.worldtly_fp16 = -(27 << 16);
     wm_arcade_drone_init(&g.drone_state[0], 15);
     wm_arcade_drone_init(&g.drone_state[1], 20);
+    g.actors[0].player_type = WM_PTYPE_PLAYER;
+    g.actors[1].player_type = WM_PTYPE_DRONE;
     g.status.pcnt = 0u;
     g.status.round_tickcount = 0u;
     g.status.wrestler_dispatch_ticks = 0u;
@@ -2093,6 +2275,8 @@ void wm_fix39_match_set_cpu_vs_cpu(bool enabled)
 {
     if (!g.status.initialized) wm_fix39_runtime_init();
     g.match_cpu_vs_cpu = enabled;
+    g.actors[0].player_type = enabled ? WM_PTYPE_DRONE : WM_PTYPE_PLAYER;
+    g.actors[1].player_type = WM_PTYPE_DRONE;
 }
 
 /* Combat2EK: WRESTLE.ASM set_collision_boxes + confine_wrestler source-order
@@ -2169,14 +2353,15 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
     WmFix39DispatchContext ctx;
     wm_arcade_move_callbacks_t move_cb;
     unsigned i;
-    (void)run; /* RUN is a separate joystick/run behavior service in source. */
 
     if (!g.status.match_started) return;
 
     p1 = &g.actors[0];
-    if (!g.match_cpu_vs_cpu) {
+    if (p1->player_type == WM_PTYPE_PLAYER) {
         now_but = button_bits(light_punch, power_punch,
                               light_kick, power_kick, block);
+        if (run)
+            now_but = (uint16_t)(now_but | WM_BTN_PUNCH | WM_BTN_KICK);
         now_stick = stick_direction(stick_x, stick_y);
 
         changed = (uint16_t)(now_but ^ g.old_p1_buttons);
@@ -2216,7 +2401,8 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
         world.pcnt = g.status.pcnt;
         world.round_tickcount = g.status.round_tickcount;
         world.first_ladder = 0;
-        if (g.match_cpu_vs_cpu) {
+        if (g.actors[0].player_type == WM_PTYPE_DRONE &&
+            (g.actors[0].status_flags & WM_STATUS_ZOMBIE) == 0u) {
             wm_arcade_drone_step_result_t dr0 = wm_arcade_drone_main(
                 &g.actors[0], &g.drone_state[0], &world, &g.drone_callbacks);
             if (g.drone_state[0].anim_request) {
@@ -2230,20 +2416,27 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
                 { ++g.status.drone_input_ticks; ++g.status.drone_input_ticks_by_player[0]; }
             g.actors[0].move_dir = g.actors[0].stick_val_cur;
         }
-        wm_arcade_drone_step_result_t dr = wm_arcade_drone_main(
-            &g.actors[1], &g.drone_state[1], &world, &g.drone_callbacks);
-        if (g.drone_state[1].anim_request) {
-            common_anim_label(&g.actors[1], g.drone_state[1].anim_request, 0);
-            g.drone_state[1].anim_request = 0;
+        if (g.actors[1].player_type == WM_PTYPE_DRONE &&
+            (g.actors[1].status_flags & WM_STATUS_ZOMBIE) == 0u) {
+            wm_arcade_drone_step_result_t dr = wm_arcade_drone_main(
+                &g.actors[1], &g.drone_state[1], &world, &g.drone_callbacks);
+            if (g.drone_state[1].anim_request) {
+                common_anim_label(&g.actors[1], g.drone_state[1].anim_request, 0);
+                g.drone_state[1].anim_request = 0;
+            }
+            ++g.status.drone_ticks;
+            ++g.status.drone_ticks_by_player[1];
+            if (dr == WM_DRONE_STEP_INPUT || dr == WM_DRONE_STEP_BLOCK ||
+                g.actors[1].but_val_cur != 0u || g.actors[1].stick_val_cur != 0u)
+                { ++g.status.drone_input_ticks; ++g.status.drone_input_ticks_by_player[1]; }
+            g.actors[1].move_dir = g.actors[1].stick_val_cur;
         }
-        ++g.status.drone_ticks;
-        ++g.status.drone_ticks_by_player[1];
-        if (dr == WM_DRONE_STEP_INPUT || dr == WM_DRONE_STEP_BLOCK ||
-            g.actors[1].but_val_cur != 0u || g.actors[1].stick_val_cur != 0u)
-            { ++g.status.drone_input_ticks; ++g.status.drone_input_ticks_by_player[1]; }
-        g.actors[1].move_dir = g.actors[1].stick_val_cur;
     }
 
+
+    /* WRESTLE.ASM::update_joystat -- source history queue. */
+    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i)
+        wm_arcade_update_joystat(&g.actors[i], g.status.round_tickcount, false);
 
     /* WRESTLE.ASM count_button_presses: live per-wrestler counters consumed
        by animation/native sequence logic. */
@@ -2282,6 +2475,7 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
     memset(&move_cb, 0, sizeof(move_cb));
     ctx.env = &env;
     move_cb.change_anim_special = queued_special_token;
+    move_cb.auto_pin_check = source_auto_pin_check;
     move_cb.character_move = live_character_move;
     move_cb.user = &ctx;
 
@@ -2317,6 +2511,16 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
             a->attach_proc = 0;
     }
 
+    /* WRESTLE.ASM set_collision_boxes -> overlap_collision after update_links. */
+    g.status.collision_boxes_ready =
+        g.frame_box_valid[0] && g.frame_box_valid[1];
+    if (g.status.collision_boxes_ready) {
+        for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i)
+            wm_arcade_set_hurt_box(&g.actors[i], &g.frame_box[i]);
+        (void)wm_arcade_resolve_overlap(&g.actors[0], &g.actors[1]);
+        (void)wm_arcade_resolve_overlap(&g.actors[1], &g.actors[0]);
+    }
+
     /* WRESTLE.ASM master_keep_attached after overlap_collision. */
     for (i=0u;i<WM_FIX39_ACTOR_COUNT;++i) {
         wm_arcade_actor_t *a=&g.actors[i];
@@ -2332,6 +2536,10 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
             else a->obj_control |= WM_OBJ_FLIPH;
         }
     }
+
+    /* WRESTLE.ASM::update_joy_dtime follows xflip and precedes countdowns. */
+    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i)
+        wm_arcade_update_joy_dtime(&g.actors[i]);
 
     /* WRESTLE.ASM wrestler_main countdown tail.  GETUP_TIME is recovery
        state only; ANI_WAITROLL/ANI_GETUP_WAIT and ANI_CHANGEANIM own the actual
@@ -2383,11 +2591,7 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
     if (g.status.collision_boxes_ready) {
         for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i)
             wm_arcade_set_hurt_box(&g.actors[i], &g.frame_box[i]);
-        /* WRESTLE.ASM overlap_collision runs after move_wrestler/update_links
-           and a fresh set_collision_boxes.  Resolve both source actors in the
-           same ordered pass; do not synthesize boxes when source IANI3 is absent. */
-        (void)wm_arcade_resolve_overlap(&g.actors[0], &g.actors[1]);
-        (void)wm_arcade_resolve_overlap(&g.actors[1], &g.actors[0]);
+        /* Per-wrestler overlap_collision already ran above in wrestler_main order. */
         g.combat_runtime.pcnt = g.status.pcnt;
         g.combat_runtime.round_tickcount = g.status.round_tickcount;
         {

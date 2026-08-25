@@ -33,6 +33,36 @@ enum {
     G_YOKO_SALT_THROW,
     G_YOKO_GRAB_TOSS_AIR,
     G_YOKO_HD_COMBO2,
+    G_SHAWN_HD_COMBO2,
+    G_SHAWN_HD_COMBO1,
+    G_SHAWN_CHARGE_SUPLEX,
+    G_SHAWN_SWIRL_SPEEDKICK,
+    G_SHAWN_SLIDING_KICKTOSS,
+    G_SHAWN_HD_SUPLEX,
+    G_SHAWN_HD_FRANK,
+    G_SHAWN_HD_KICKTOSS,
+    G_SHAWN_HD_BUTTS,
+    G_SHAWN_FLIPSLAM,
+    G_SHAWN_GRAB_TOSS_AIR,
+    G_BAM_CHARGE_NECKBREAKER,
+    G_BAM_HD_COMBO1,
+    G_BAM_HD_PILE,
+    G_BAM_HD_POGO,
+    G_BAM_HD_COMBO2,
+    G_BAM_GRAB_TOSS_AIR,
+    G_DOINK_CHARGE_FLYKICK,
+    G_DOINK_HD_SLAM,
+    G_DOINK_HD_COMBO1,
+    G_DOINK_HD_PILE,
+    G_DOINK_HD_COMBO2,
+    G_DOINK_HD_BUZZ,
+    G_DOINK_GRAB_TOSS_AIR,
+    G_LEX_HD_PILE,
+    G_LEX_HD_ELBOW_FACE,
+    G_LEX_HD_GRABOH,
+    G_LEX_GRAB_TOSS_AIR,
+    G_LEX_HD_COMBO1,
+    G_LEX_HD_COMBO2,
     G_TAKER_HD_NECK,
     G_TAKER_HD_FACESLAM,
     G_TAKER_HD_PILE,
@@ -152,6 +182,62 @@ static const wm_arcade_smove_wait_step_t yok_hdhold_combo2[] = {
     STEP(WM_B_PUNCH, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
 };
 
+
+/* Combat2ES/R21 shared WAITSWITCH chains for the remaining active SMOVE bodies.
+   The source files use repeated motifs here: toward/toward/button headhold
+   monitors, down/down/button headhold monitors, away/away/punch grab-toss-air,
+   and down/toward/button motion specials. */
+static const wm_arcade_smove_wait_step_t smv_tow_tow_spunch[] = {
+    STEP(WM_J_TOWARD, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_TOWARD, 0, 60),
+    STEP(WM_B_SPUNCH, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+static const wm_arcade_smove_wait_step_t smv_tow_tow_punch[] = {
+    STEP(WM_J_TOWARD, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_TOWARD, 0, 60),
+    STEP(WM_B_PUNCH, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+static const wm_arcade_smove_wait_step_t smv_tow_tow_kick[] = {
+    STEP(WM_J_TOWARD, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_TOWARD, 0, 60),
+    STEP(WM_B_KICK, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+static const wm_arcade_smove_wait_step_t smv_tow_tow_skick[] = {
+    STEP(WM_J_TOWARD, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_TOWARD, 0, 60),
+    STEP(WM_B_SKICK, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+static const wm_arcade_smove_wait_step_t smv_down_down_skick[] = {
+    STEP(WM_J_DOWN, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_DOWN, 0, 60),
+    STEP(WM_B_SKICK, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+static const wm_arcade_smove_wait_step_t smv_down_down_kick[] = {
+    STEP(WM_J_DOWN, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_DOWN, 0, 60),
+    STEP(WM_B_KICK, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+static const wm_arcade_smove_wait_step_t smv_down_tow_punch[] = {
+    STEP(WM_J_DOWN, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_TOWARD, WM_J_DOWN | WM_J_UP, 60),
+    STEP(WM_B_PUNCH, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+static const wm_arcade_smove_wait_step_t smv_down_tow_kick[] = {
+    STEP(WM_J_DOWN, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_TOWARD, WM_J_DOWN | WM_J_UP, 60),
+    STEP(WM_B_KICK, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+static const wm_arcade_smove_wait_step_t smv_down_tow_skick[] = {
+    STEP(WM_J_DOWN, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_TOWARD, WM_J_DOWN | WM_J_UP, 60),
+    STEP(WM_B_SKICK, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+static const wm_arcade_smove_wait_step_t smv_away_away_punch[] = {
+    STEP(WM_J_AWAY, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_AWAY, 0, 40),
+    STEP(WM_B_PUNCH, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+
 static const wm_arcade_smove_wait_step_t und_hd_neck[] = {
     STEP(WM_J_TOWARD, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
     STEP(WM_J_TOWARD, 0, 60),
@@ -227,6 +313,39 @@ static const wm_arcade_smove_entry_t manifest[] = {
     { WM_ROSTER_YOKO, "yok_salt_throw", "yok_4_salt_anim", yok_salt_throw, 3, G_YOKO_SALT_THROW, 120, 1 },
     { WM_ROSTER_YOKO, "yok_grab_toss_air", "yok_hiptoss_anim", yok_grab_toss_air, 3, G_YOKO_GRAB_TOSS_AIR, 20, 1 },
     { WM_ROSTER_YOKO, "yok_hdhold_combo2", "yok_combo_kick_anim", yok_hdhold_combo2, 3, G_YOKO_HD_COMBO2, 20, 1 },
+    { WM_ROSTER_SHAWN, "shn_hdhold_combo2", "shn_combo_kick_anim", smv_tow_tow_kick, 3, G_SHAWN_HD_COMBO2, 20, 1 },
+    { WM_ROSTER_SHAWN, "shn_hdhold_combo1", "shn_combo_punch_anim", smv_tow_tow_spunch, 3, G_SHAWN_HD_COMBO1, 20, 1 },
+    { WM_ROSTER_SHAWN, "shn_charge_suplex", "shn_vsuplex_anim", 0, 0, G_SHAWN_CHARGE_SUPLEX, 1, 1 },
+    { WM_ROSTER_SHAWN, "shn_swirl_speedkick", "shn_swirl_speedkick_anim", smv_down_tow_skick, 3, G_SHAWN_SWIRL_SPEEDKICK, 20, 1 },
+    { WM_ROSTER_SHAWN, "shn_sliding_kicktoss", "shn_sliding_kicktoss_anim", smv_tow_tow_kick, 3, G_SHAWN_SLIDING_KICKTOSS, 20, 1 },
+    { WM_ROSTER_SHAWN, "shn_hdhold_suplex", "shn_vsuplex_anim", smv_down_down_skick, 3, G_SHAWN_HD_SUPLEX, 20, 1 },
+    { WM_ROSTER_SHAWN, "shn_hdhold_frank", "shn_frankensteiner_anim", smv_tow_tow_spunch, 3, G_SHAWN_HD_FRANK, 20, 1 },
+    { WM_ROSTER_SHAWN, "shn_hdhold_kicktoss", "shn_kicktoss_anim", smv_down_down_kick, 3, G_SHAWN_HD_KICKTOSS, 20, 1 },
+    { WM_ROSTER_SHAWN, "shn_hdhold_butts", "shn_butts_anim", smv_tow_tow_kick, 3, G_SHAWN_HD_BUTTS, 20, 1 },
+    { WM_ROSTER_SHAWN, "shn_flipslam", "shn_flipslam_anim", smv_down_tow_punch, 3, G_SHAWN_FLIPSLAM, 20, 1 },
+    { WM_ROSTER_SHAWN, "shn_grab_toss_air", "shn_hiptoss_anim", smv_away_away_punch, 3, G_SHAWN_GRAB_TOSS_AIR, 20, 1 },
+
+    { WM_ROSTER_BAM, "bam_charge_neckbreaker", "bam_neckbreaker_anim", 0, 0, G_BAM_CHARGE_NECKBREAKER, 1, 1 },
+    { WM_ROSTER_BAM, "bam_hdhold_combo1", "bam_combo_punch_anim", smv_tow_tow_spunch, 3, G_BAM_HD_COMBO1, 20, 1 },
+    { WM_ROSTER_BAM, "bam_hdhold_pile", "bam_3_pile_driver_anim", smv_down_down_skick, 3, G_BAM_HD_PILE, 20, 1 },
+    { WM_ROSTER_BAM, "bam_hdhold_pogo", "bam_pogo_anim", smv_tow_tow_kick, 3, G_BAM_HD_POGO, 20, 1 },
+    { WM_ROSTER_BAM, "bam_hdhold_combo2", "bam_combo_kick_anim", smv_tow_tow_kick, 3, G_BAM_HD_COMBO2, 20, 1 },
+    { WM_ROSTER_BAM, "bam_grab_toss_air", "bam_hiptoss_anim", smv_away_away_punch, 3, G_BAM_GRAB_TOSS_AIR, 20, 1 },
+
+    { WM_ROSTER_DOINK, "dnk_charge_flykick", "dnk_flying_kick_anim", 0, 0, G_DOINK_CHARGE_FLYKICK, 1, 1 },
+    { WM_ROSTER_DOINK, "dnk_hdhold_slam", "dnk_slam_anim", smv_tow_tow_spunch, 3, G_DOINK_HD_SLAM, 20, 1 },
+    { WM_ROSTER_DOINK, "dnk_hdhold_combo1", "dnk_combo_punch_anim", smv_tow_tow_spunch, 3, G_DOINK_HD_COMBO1, 20, 1 },
+    { WM_ROSTER_DOINK, "dnk_hdhold_pile", "dnk_3_pile_driver_anim", smv_down_down_skick, 3, G_DOINK_HD_PILE, 20, 1 },
+    { WM_ROSTER_DOINK, "dnk_hdhold_combo2", "dnk_combo_kick_anim", smv_tow_tow_kick, 3, G_DOINK_HD_COMBO2, 20, 1 },
+    { WM_ROSTER_DOINK, "dnk_hdhold_buzz", "dnk_buzz_anim", smv_tow_tow_kick, 3, G_DOINK_HD_BUZZ, 20, 1 },
+    { WM_ROSTER_DOINK, "dnk_grab_toss_air", "dnk_hiptoss_anim", smv_away_away_punch, 3, G_DOINK_GRAB_TOSS_AIR, 20, 1 },
+
+    { WM_ROSTER_LEX, "lex_hdhold_pile", "lex_3_pile_driver_anim", smv_down_down_skick, 3, G_LEX_HD_PILE, 20, 1 },
+    { WM_ROSTER_LEX, "lex_hdhold_elbow_face", "lex_elbow_face_anim", smv_tow_tow_punch, 3, G_LEX_HD_ELBOW_FACE, 20, 1 },
+    { WM_ROSTER_LEX, "lex_hdhold_graboh", "lex_graboh_anim", smv_tow_tow_spunch, 3, G_LEX_HD_GRABOH, 20, 1 },
+    { WM_ROSTER_LEX, "lex_grab_toss_air", "lex_hiptoss_anim", smv_away_away_punch, 3, G_LEX_GRAB_TOSS_AIR, 20, 1 },
+    { WM_ROSTER_LEX, "lex_hdhold_combo1", "lex_combo_punch_anim", smv_tow_tow_spunch, 3, G_LEX_HD_COMBO1, 20, 1 },
+    { WM_ROSTER_LEX, "lex_hdhold_combo2", "lex_combo_kick_anim", smv_tow_tow_kick, 3, G_LEX_HD_COMBO2, 20, 1 },
     { WM_ROSTER_TAKER, "und_hdhold_neckbrk", "und_neckbreaker_anim", und_hd_neck, 3, G_TAKER_HD_NECK, 20, 1 },
     { WM_ROSTER_TAKER, "und_hdhold_faceslam", "und_choke_face_slam_anim", und_hd_faceslam, 3, G_TAKER_HD_FACESLAM, 20, 1 },
     { WM_ROSTER_TAKER, "und_hdhold_pile", "und_pile_anim", und_hd_pile, 3, G_TAKER_HD_PILE, 20, 1 },
@@ -858,6 +977,229 @@ static int fire_yoko_grab_toss_air(wm_arcade_actor_t *a,
     return 1;
 }
 
+
+static int r21_is_headholdish(uint16_t mode)
+{
+    return mode == WM_PMODE_HEADHOLD || mode == WM_PMODE_HEADHELD;
+}
+
+static int r21_reject_basic_active(const wm_arcade_actor_t *a)
+{
+    if (!a) return 1;
+    if ((a->anim_mode & WM_ARCADE_MODE_UNINT) != 0u) return 1;
+    if (a->getup_time != 0) return 1;
+    if (a->player_mode == WM_PMODE_HEADHELD ||
+        a->player_mode == WM_PMODE_HEADHOLD ||
+        a->player_mode == WM_PMODE_ONGROUND ||
+        a->player_mode == WM_PMODE_DEAD) return 1;
+    return 0;
+}
+
+static int r21_opp_ground_dead(const wm_arcade_actor_t *opp)
+{
+    return opp && (opp->player_mode == WM_PMODE_ONGROUND ||
+                   opp->player_mode == WM_PMODE_DEAD);
+}
+
+static int r21_bonus_for_gate(uint8_t gate)
+{
+    switch (gate) {
+    case G_SHAWN_HD_SUPLEX: return 42;
+    case G_SHAWN_HD_FRANK: return 34;
+    case G_SHAWN_HD_KICKTOSS: return 22;
+    case G_SHAWN_HD_BUTTS: return 20;
+    case G_BAM_HD_PILE: return 7;
+    case G_BAM_HD_POGO: return 19;
+    case G_DOINK_HD_SLAM: return 20;
+    case G_DOINK_HD_PILE: return 7;
+    case G_DOINK_HD_BUZZ: return 25;
+    case G_LEX_HD_PILE: return 7;
+    case G_LEX_HD_ELBOW_FACE: return 20;
+    case G_LEX_HD_GRABOH: return 20;
+    default: return 0;
+    }
+}
+
+static uint16_t r21_immob_for_gate(uint8_t gate)
+{
+    switch (gate) {
+    case G_SHAWN_HD_SUPLEX: return 30;
+    case G_SHAWN_HD_FRANK: return 32;
+    case G_SHAWN_HD_KICKTOSS: return 24;
+    case G_SHAWN_HD_BUTTS: return 20;
+    default: return 15;
+    }
+}
+
+static const char *r21_sound_for_gate(uint8_t gate)
+{
+    switch (gate) {
+    case G_SHAWN_SWIRL_SPEEDKICK:
+    case G_SHAWN_SLIDING_KICKTOSS:
+    case G_DOINK_CHARGE_FLYKICK:
+        return "FLYKICK_T1/FLYKICK_T2";
+    case G_SHAWN_CHARGE_SUPLEX:
+    case G_BAM_CHARGE_NECKBREAKER:
+        return "GRABFLING_T1/GRABFLING_T2";
+    case G_DOINK_HD_BUZZ:
+        return "BUZZ_T1/BUZZ_T2";
+    default:
+        return "GRABFLING_T1/PUNCH_T2";
+    }
+}
+
+static int fire_remaining_charge(wm_arcade_smove_proc_t *p,
+                                 wm_arcade_actor_t *a,
+                                 wm_arcade_actor_t *opp,
+                                 const wm_arcade_smove_entry_t *e,
+                                 const wm_arcade_smove_callbacks_t *cb)
+{
+    uint16_t button;
+    uint16_t charge;
+    uint16_t min_ticks = 85u;
+    if (!p || !a || !e) return 0;
+
+    if (e->gate_kind == G_DOINK_CHARGE_FLYKICK)
+        button = WM_BTN_SKICK;
+    else if (e->gate_kind == G_SHAWN_CHARGE_SUPLEX)
+        button = WM_BTN_SPUNCH;
+    else
+        button = WM_BTN_PUNCH;
+
+    if ((a->but_val_cur & button) != 0u) {
+        if (p->timeout != 0xffffu) ++p->timeout;
+        return 0;
+    }
+
+    charge = p->timeout;
+    p->timeout = 0;
+    if (charge < min_ticks) return 0;
+    if (r21_reject_basic_active(a)) return 0;
+    if (r21_opp_ground_dead(opp)) return 0;
+    if (cb && cb->ck_ignore && cb->ck_ignore(a, cb->user)) return 0;
+
+    queue_result(a, e, cb);
+    if (e->gate_kind == G_DOINK_CHARGE_FLYKICK && a->player_mode != WM_PMODE_DEAD)
+        a->player_mode = WM_PMODE_INAIR;
+    if (cb && cb->sound_label)
+        cb->sound_label(a, r21_sound_for_gate(e->gate_kind), cb->user);
+    return 1;
+}
+
+static int fire_remaining_headhold_throw(wm_arcade_actor_t *a,
+                                         wm_arcade_actor_t *opp,
+                                         const wm_arcade_smove_entry_t *e,
+                                         const wm_arcade_smove_callbacks_t *cb)
+{
+    wm_arcade_actor_t *target = 0;
+    int bonus;
+    if (!a || !e) return 0;
+    if (!r21_is_headholdish(a->player_mode)) return 0;
+
+    if (a->player_mode == WM_PMODE_HEADHELD) {
+        if (a->i_will_die != 0) return 0;
+        if (a->immobilize_time != 0) return 0;
+        if (cb && cb->do_reversal) cb->do_reversal(a, cb->user);
+        if (cb && cb->do_reversal_message) cb->do_reversal_message(a, cb->user);
+        target = a->who_hit_me ? a->who_hit_me : opp;
+        a->smart_target = target;
+    } else {
+        if (a->immobilize_time != 0) return 0;
+        bonus = r21_bonus_for_gate(e->gate_kind);
+        if (bonus != 0 && cb && cb->bonus_message)
+            cb->bonus_message(a, bonus, cb->user);
+        target = a->who_i_hit ? a->who_i_hit : opp;
+        a->smart_target = target;
+    }
+
+    if (!target) return 0;
+    target->immobilize_time = r21_immob_for_gate(e->gate_kind);
+    if (cb && cb->find_and_kill_endless)
+        cb->find_and_kill_endless(a, cb->user);
+    queue_result(a, e, cb);
+    if (cb && cb->sound_label)
+        cb->sound_label(a, "GRABHOLD_T1/GRABHOLD_T2", cb->user);
+    return 1;
+}
+
+static int fire_remaining_combo(wm_arcade_actor_t *a,
+                                wm_arcade_actor_t *opp,
+                                const wm_arcade_smove_entry_t *e,
+                                const wm_arcade_smove_callbacks_t *cb)
+{
+    if (!a || !e) return 0;
+    if (a->player_mode != WM_PMODE_HEADHOLD) return 0;
+    if (cb && cb->check_combo_go && cb->check_combo_go(a, cb->user) < 0) return 0;
+    if (a->immobilize_time != 0) return 0;
+    a->smart_target = a->who_i_hit ? a->who_i_hit : opp;
+    if (cb && cb->find_and_kill_endless)
+        cb->find_and_kill_endless(a, cb->user);
+    queue_result(a, e, cb);
+    if (cb && cb->sound_label)
+        cb->sound_label(a, "UPRCUT_T1/UPRCUT_T2", cb->user);
+    return 1;
+}
+
+static int fire_remaining_grab_toss_air(wm_arcade_actor_t *a,
+                                        wm_arcade_actor_t *opp,
+                                        const wm_arcade_smove_entry_t *e,
+                                        const wm_arcade_smove_callbacks_t *cb)
+{
+    const char *normal;
+    const char *air;
+    uint16_t limit = 0x70u;
+    if (!a || !e) return 0;
+    normal = e->result_label;
+    air = normal;
+    if ((a->anim_mode & WM_ARCADE_MODE_UNINT) != 0u) return 0;
+    if (a->player_mode == WM_PMODE_HEADHOLD) return 0;
+    if (r21_opp_ground_dead(opp)) return 0;
+
+    switch (e->gate_kind) {
+    case G_SHAWN_GRAB_TOSS_AIR: air = "shn_hiptoss2_anim"; break;
+    case G_BAM_GRAB_TOSS_AIR: air = "bam_hiptoss2_anim"; break;
+    case G_DOINK_GRAB_TOSS_AIR: air = "dnk_hiptoss2_anim"; break;
+    case G_LEX_GRAB_TOSS_AIR: air = "lex_hiptoss2_anim"; break;
+    default: break;
+    }
+
+    if (opp && (mode_is_inair(opp->player_mode) ||
+                opp->attack_type == WM_SMOVE_AT_LEAPING)) {
+        normal = air;
+    } else {
+        if (cb && cb->find_and_kill_endless)
+            cb->find_and_kill_endless(a, cb->user);
+        if (a->closest_dist > limit) return 0;
+    }
+
+    a->special_move_addr = (uintptr_t)normal;
+    if (cb && cb->resolve_label_token)
+        a->special_move_addr = cb->resolve_label_token(normal, cb->user);
+    if (cb && cb->sound_label)
+        cb->sound_label(a, "GRABFLING_T1/PUNCH_T2", cb->user);
+    return 1;
+}
+
+static int fire_remaining_motion(wm_arcade_actor_t *a,
+                                 wm_arcade_actor_t *opp,
+                                 const wm_arcade_smove_entry_t *e,
+                                 const wm_arcade_smove_callbacks_t *cb)
+{
+    if (!a || !e) return 0;
+    if ((a->anim_mode & WM_ARCADE_MODE_UNINT) != 0u) return 0;
+    if (a->player_mode == WM_PMODE_ONTURNBKL ||
+        a->player_mode == WM_PMODE_HEADHELD) return 0;
+    if (r21_opp_ground_dead(opp)) return 0;
+    if (cb && cb->ck_ignore && cb->ck_ignore(a, cb->user)) return 0;
+
+    if (cb && cb->find_and_kill_endless)
+        cb->find_and_kill_endless(a, cb->user);
+    queue_result(a, e, cb);
+    if (cb && cb->sound_label)
+        cb->sound_label(a, r21_sound_for_gate(e->gate_kind), cb->user);
+    return 1;
+}
+
 static int fire_entry(wm_arcade_actor_t **actors, size_t n,
                       wm_arcade_actor_t *a,
                       wm_arcade_smove_proc_t *p,
@@ -905,6 +1247,41 @@ static int fire_entry(wm_arcade_actor_t **actors, size_t n,
         return fire_yoko_salt_throw(a, e, cb);
     case G_YOKO_GRAB_TOSS_AIR:
         return fire_yoko_grab_toss_air(a, opp, e, cb);
+    case G_SHAWN_CHARGE_SUPLEX:
+    case G_BAM_CHARGE_NECKBREAKER:
+    case G_DOINK_CHARGE_FLYKICK:
+        return fire_remaining_charge(p, a, opp, e, cb);
+    case G_SHAWN_HD_SUPLEX:
+    case G_SHAWN_HD_FRANK:
+    case G_SHAWN_HD_KICKTOSS:
+    case G_SHAWN_HD_BUTTS:
+    case G_BAM_HD_PILE:
+    case G_BAM_HD_POGO:
+    case G_DOINK_HD_SLAM:
+    case G_DOINK_HD_PILE:
+    case G_DOINK_HD_BUZZ:
+    case G_LEX_HD_PILE:
+    case G_LEX_HD_ELBOW_FACE:
+    case G_LEX_HD_GRABOH:
+        return fire_remaining_headhold_throw(a, opp, e, cb);
+    case G_SHAWN_HD_COMBO1:
+    case G_SHAWN_HD_COMBO2:
+    case G_BAM_HD_COMBO1:
+    case G_BAM_HD_COMBO2:
+    case G_DOINK_HD_COMBO1:
+    case G_DOINK_HD_COMBO2:
+    case G_LEX_HD_COMBO1:
+    case G_LEX_HD_COMBO2:
+        return fire_remaining_combo(a, opp, e, cb);
+    case G_SHAWN_GRAB_TOSS_AIR:
+    case G_BAM_GRAB_TOSS_AIR:
+    case G_DOINK_GRAB_TOSS_AIR:
+    case G_LEX_GRAB_TOSS_AIR:
+        return fire_remaining_grab_toss_air(a, opp, e, cb);
+    case G_SHAWN_SWIRL_SPEEDKICK:
+    case G_SHAWN_SLIDING_KICKTOSS:
+    case G_SHAWN_FLIPSLAM:
+        return fire_remaining_motion(a, opp, e, cb);
     case G_TAKER_HD_NECK:
     case G_TAKER_HD_FACESLAM:
     case G_TAKER_HD_PILE:

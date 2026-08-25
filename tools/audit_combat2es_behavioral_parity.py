@@ -104,15 +104,41 @@ def _run_strict_manifest() -> dict[str, object]:
     return {"ran": True, "rc": proc.returncode, "stdout": proc.stdout, "stderr": proc.stderr}
 
 
+def _service_body(text: str, function_name: str) -> str:
+    marker = f"static void {function_name}"
+    start = text.find(marker)
+    if start < 0:
+        return ""
+    brace = text.find("{", start)
+    if brace < 0:
+        return ""
+    depth = 0
+    for pos in range(brace, len(text)):
+        ch = text[pos]
+        if ch == "{":
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0:
+                return text[start:pos + 1]
+    return text[start:]
+
+
 def _service_findings(runtime_c: str, findings: list[Finding]) -> None:
-    service_checks = [
-        (
+    fk_body = _service_body(runtime_c, "source_find_and_kill_endless_port")
+    if "source_find_and_kill_endless_port" in runtime_c and "wm_sound_find_and_kill_endless" not in fk_body:
+        _add_if_present(
+            findings,
+            runtime_c,
+            RUNTIME_C,
             "source_find_and_kill_endless_port",
             "critical",
             "find_and_kill_endless_service_stub",
-            "FIND_AND_KILL_ENDLESS is part of many SMOVE bodies. A no-op service point can pass label audits while leaving endless/attached helper processes alive differently from source.",
-            "Port or bind the real process-kill behavior and add a focused runtime test that proves the expected target/endless process is removed.",
-        ),
+            "FIND_AND_KILL_ENDLESS is part of many SMOVE bodies. If this service does not call the translated DCSSOUND helper, active SMOVE bodies can leave endless DCS channels alive differently from source.",
+            "Bind the service to wm_sound_find_and_kill_endless and keep a focused sound-channel regression test.",
+        )
+
+    service_checks = [
         (
             "no separate N64 process class yet",
             "critical",

@@ -1734,11 +1734,13 @@ static uintptr_t source_label_token(const char *source_label, void *user)
 
 static void source_find_and_kill_endless_port(wm_arcade_actor_t *a, void *user)
 {
-    /* FIND_AND_KILL_ENDLESS has no separate N64 process class yet; keep this
-       as the single service point so translated SMOVE bodies call the source
-       hook instead of silently skipping it. */
+    /* DCSSOUND.ASM::FIND_AND_KILL_ENDLESS kills the tracked ENDLESS_SOUND
+       channel, clears its priority/duration state, sends the source stop
+       command (994..997), then clears ENDLESS_SOUND. */
     (void)a;
     (void)user;
+    if (g.sound)
+        wm_sound_find_and_kill_endless(g.sound);
 }
 
 static void source_do_reversal_port(wm_arcade_actor_t *a, void *user)

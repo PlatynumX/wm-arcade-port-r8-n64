@@ -11,52 +11,37 @@ This audit starts after active SMOVE label closure. It is not a gameplay change.
 
 ## Finding counts
 
-- critical: 2
 - major: 3
 - minor: 3
 - info: 1
 
 ## Findings
 
-### CRITICAL: find_and_kill_endless_service_stub
-
-- file: `src/fix39/wm_fix39_runtime.c`
-- evidence: src/fix39/wm_fix39_runtime.c:1735: void *user); static uintptr_t source_label_token(const char *source_label, void *user) { (void)user; return (uintptr_t)source_label; } static void source_find_and_kill_endless_port(wm_arcade_actor_t *a, void *user) { /* FIND_AND_KILL_ENDLESS has no separate N64 process class yet; keep this as the single service point so transla
-- why: FIND_AND_KILL_ENDLESS is part of many SMOVE bodies. A no-op service point can pass label audits while leaving endless/attached helper processes alive differently from source.
-- next: Port or bind the real process-kill behavior and add a focused runtime test that proves the expected target/endless process is removed.
-
-### CRITICAL: explicit_no_process_class_debt
-
-- file: `src/fix39/wm_fix39_runtime.c`
-- evidence: src/fix39/wm_fix39_runtime.c:1737: ser; return (uintptr_t)source_label; } static void source_find_and_kill_endless_port(wm_arcade_actor_t *a, void *user) { /* FIND_AND_KILL_ENDLESS has no separate N64 process class yet; keep this as the single service point so translated SMOVE bodies call the source hook instead of silently skipping it. */ (void)a; (void
-- why: The code states the source process class is not represented yet. That is parity debt, not finished behavior.
-- next: Identify the corresponding source process class and add N64-side lifecycle state instead of treating it as trace-only.
-
 ### MAJOR: reversal_message_not_text_object_verified
 
 - file: `src/fix39/wm_fix39_runtime.c`
-- evidence: src/fix39/wm_fix39_runtime.c:1748: ource uses DO_REVERSAL before WHOHITME-targeted counter throws. Preserve actor-owned reversal state here; presentation messaging is the companion DO_REVERSAL_MESS hook below. */ (void)user; if (!a) return; a->status_flags |= WM_STATUS_COMBO_BROKEN; a->anti_combo_time = g.status.pcnt; } static void source
+- evidence: src/fix39/wm_fix39_runtime.c:1750: ource uses DO_REVERSAL before WHOHITME-targeted counter throws. Preserve actor-owned reversal state here; presentation messaging is the companion DO_REVERSAL_MESS hook below. */ (void)user; if (!a) return; a->status_flags |= WM_STATUS_COMBO_BROKEN; a->anti_combo_time = g.status.pcnt; } static void source
 - why: DO_REVERSAL_MESS is a source message effect. Routing it through trace/sound metadata is not proof that the arcade message object/timing exists.
 - next: Port or connect the real message renderer path and assert timing/object spawn semantics.
 
 ### MAJOR: bonus_message_synthesized_label
 
 - file: `src/fix39/wm_fix39_runtime.c`
-- evidence: src/fix39/wm_fix39_runtime.c:1772: object/spawn backend can consume the same hook later without changing SMOVE bodies. */ a->damage_given += bonus; snprintf(label, sizeof(label), "BONUS_MESS_%03d", bonus); common_sound_label(a, label, 0); } static int source_ck_ignore_a8_port(wm_arcade_actor_t *a, void *user) { uint16_t away = 0u; (void
+- evidence: src/fix39/wm_fix39_runtime.c:1774: object/spawn backend can consume the same hook later without changing SMOVE bodies. */ a->damage_given += bonus; snprintf(label, sizeof(label), "BONUS_MESS_%03d", bonus); common_sound_label(a, label, 0); } static int source_ck_ignore_a8_port(wm_arcade_actor_t *a, void *user) { uint16_t away = 0u; (void
 - why: BONUS_MESS was converted into a synthesized label/accounting hook. That may not match source scoring, text lifetime, message PID, or display timing.
 - next: Translate BONUS_MESS as a real source message process and compare bonus values/timing per wrestler.
 
 ### MAJOR: bonus_message_changes_damage_counter
 
 - file: `src/fix39/wm_fix39_runtime.c`
-- evidence: src/fix39/wm_fix39_runtime.c:1771: /* Runtime-visible accounting for BONUS_MESS(A10). The text object/spawn backend can consume the same hook later without changing SMOVE bodies. */ a->damage_given += bonus; snprintf(label, sizeof(label), "BONUS_MESS_%03d", bonus); common_sound_label(a, label, 0); } static int source_ck_ignore_a8_port(wm_arcade_actor_t *a
+- evidence: src/fix39/wm_fix39_runtime.c:1773: /* Runtime-visible accounting for BONUS_MESS(A10). The text object/spawn backend can consume the same hook later without changing SMOVE bodies. */ a->damage_given += bonus; snprintf(label, sizeof(label), "BONUS_MESS_%03d", bonus); common_sound_label(a, label, 0); } static int source_ck_ignore_a8_port(wm_arcade_actor_t *a
 - why: Damage accounting and bonus-message scoring are not necessarily the same source side effect.
 - next: Verify the original accounting path before modifying damage_given as a stand-in.
 
 ### MINOR: ck_ignore_a8_direction_table_needs_source_proof
 
 - file: `src/fix39/wm_fix39_runtime.c`
-- evidence: src/fix39/wm_fix39_runtime.c:1776: SMOVE bodies. */ a->damage_given += bonus; snprintf(label, sizeof(label), "BONUS_MESS_%03d", bonus); common_sound_label(a, label, 0); } static int source_ck_ignore_a8_port(wm_arcade_actor_t *a, void *user) { uint16_t away = 0u; (void)user; if (!a) return 1; /* WRESTLE.ASM::ck_ignore_a8: index NEW_FACING_DIR throu
+- evidence: src/fix39/wm_fix39_runtime.c:1778: SMOVE bodies. */ a->damage_given += bonus; snprintf(label, sizeof(label), "BONUS_MESS_%03d", bonus); common_sound_label(a, label, 0); } static int source_ck_ignore_a8_port(wm_arcade_actor_t *a, void *user) { uint16_t away = 0u; (void)user; if (!a) return 1; /* WRESTLE.ASM::ck_ignore_a8: index NEW_FACING_DIR throu
 - why: ck_ignore/ck_ignore_a8 is direction-table logic in WRESTLE.ASM. The local translation needs exact mv_tbl coverage evidence.
 - next: Add a small table-driven test against the WRESTLE.ASM mv_tbl mapping for all facing/move_dir cases.
 

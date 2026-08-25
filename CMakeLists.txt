@@ -40,6 +40,7 @@ add_library(wmcore STATIC
     src/generated/ring_rope_assets.c
     src/generated/ring_arena_assets.c
     src/generated/crowd_assets.c
+    src/generated/dcs_r2b_port_bindings.c
     src/generated/progress_wrestlers.c
 # BEGIN FIX39 SOURCE-DIRECT MERGE
     src/fix39/wm_arcade_anim_combat.c
@@ -203,6 +204,15 @@ if(WM_BUILD_TESTS)
     add_test(NAME wm_combat_whole_source_parity_audit
              COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/audit_combat_whole_source_parity.py)
     set_tests_properties(wm_combat_whole_source_parity_audit PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+    add_executable(wm_dcs_r2b_audio_binding_regression_tests tests/dcs_r2b_audio_binding_regression.c)
+    target_link_libraries(wm_dcs_r2b_audio_binding_regression_tests PRIVATE wmcore)
+    target_compile_options(wm_dcs_r2b_audio_binding_regression_tests PRIVATE -Wall -Wextra -Wpedantic -UNDEBUG)
+    add_test(NAME wm_dcs_r2b_audio_binding_regression COMMAND wm_dcs_r2b_audio_binding_regression_tests)
+
+    add_test(NAME wm_remaining_noncombat_systems_audit
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/audit_remaining_noncombat_systems.py)
+    set_tests_properties(wm_remaining_noncombat_systems_audit PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 add_executable(wm_combat_adjacent_source_closure_tests tests/combat_adjacent_source_closure.c)
 target_link_libraries(wm_combat_adjacent_source_closure_tests PRIVATE wmcore)

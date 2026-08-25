@@ -248,6 +248,12 @@
       "und_finish_move1"
     ],
     "YOKO": [
+      "yok_hdhold_combo1",
+      "yok_hdhold_scissor",
+      "yok_hdhold_suplex",
+      "yok_salt_throw",
+      "yok_grab_toss_air",
+      "yok_hdhold_combo2",
       "std_walk_fast",
       "std_taunt"
     ]
@@ -294,13 +300,6 @@
       "shn_grab_toss_air"
     ],
     "TAKER": [],
-    "YOKO": [
-      "yok_hdhold_combo1",
-      "yok_hdhold_scissor",
-      "yok_hdhold_suplex",
-      "yok_salt_throw",
-      "yok_grab_toss_air",
-      "yok_hdhold_combo2"
-    ]
+    "YOKO": []
   }
 }

@@ -6,7 +6,7 @@
 
 /* DAMAGE.EQU AT_LEAPING is 57; keep it local to avoid colliding with
    wm_arcade_damage.h's enum member of the same source name. */
-#define WM_BRET_AT_LEAPING 57
+#define WM_SMOVE_AT_LEAPING 57
 
 enum {
     G_NONE = 0,
@@ -27,6 +27,12 @@ enum {
     G_RAZOR_GRAB_TOSS_AIR,
     G_RAZOR_HD_COMBO2,
     G_RAZOR_SLIDING_RUG,
+    G_YOKO_HD_COMBO1,
+    G_YOKO_HD_SCISSOR,
+    G_YOKO_HD_SUPLEX,
+    G_YOKO_SALT_THROW,
+    G_YOKO_GRAB_TOSS_AIR,
+    G_YOKO_HD_COMBO2,
     G_TAKER_HD_NECK,
     G_TAKER_HD_FACESLAM,
     G_TAKER_HD_PILE,
@@ -114,6 +120,38 @@ static const wm_arcade_smove_wait_step_t rzr_hdhold_combo2[] = {
     STEP(WM_B_KICK, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
 };
 
+
+static const wm_arcade_smove_wait_step_t yok_hdhold_combo1[] = {
+    STEP(WM_J_TOWARD, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_TOWARD, 0, 60),
+    STEP(WM_B_SPUNCH, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+static const wm_arcade_smove_wait_step_t yok_hdhold_scissor[] = {
+    STEP(WM_J_TOWARD, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_TOWARD, 0, 60),
+    STEP(WM_B_SPUNCH, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+static const wm_arcade_smove_wait_step_t yok_hdhold_suplex[] = {
+    STEP(WM_J_DOWN, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_DOWN, 0, 60),
+    STEP(WM_B_SKICK, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+static const wm_arcade_smove_wait_step_t yok_salt_throw[] = {
+    STEP(WM_J_DOWN, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_TOWARD, WM_J_DOWN | WM_J_UP, 60),
+    STEP(WM_B_PUNCH, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+static const wm_arcade_smove_wait_step_t yok_grab_toss_air[] = {
+    STEP(WM_J_AWAY, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_AWAY, 0, 40),
+    STEP(WM_B_PUNCH, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+static const wm_arcade_smove_wait_step_t yok_hdhold_combo2[] = {
+    STEP(WM_J_TOWARD, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_TOWARD, 0, 60),
+    STEP(WM_B_PUNCH, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+
 static const wm_arcade_smove_wait_step_t und_hd_neck[] = {
     STEP(WM_J_TOWARD, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
     STEP(WM_J_TOWARD, 0, 60),
@@ -183,6 +221,12 @@ static const wm_arcade_smove_entry_t manifest[] = {
     { WM_ROSTER_RAZOR, "rzr_grab_toss_air", "rzr_hiptoss_anim", rzr_grab_toss_air, 3, G_RAZOR_GRAB_TOSS_AIR, 20, 1 },
     { WM_ROSTER_RAZOR, "rzr_hdhold_combo2", "rzr_combo_kick_anim", rzr_hdhold_combo2, 3, G_RAZOR_HD_COMBO2, 20, 1 },
     { WM_ROSTER_RAZOR, "rzr_sliding_rug", "rzr_sliding_rug_anim", rzr_sliding_rug, 3, G_RAZOR_SLIDING_RUG, 20, 1 },
+    { WM_ROSTER_YOKO, "yok_hdhold_combo1", "yok_combo_jabs_anim", yok_hdhold_combo1, 3, G_YOKO_HD_COMBO1, 20, 1 },
+    { WM_ROSTER_YOKO, "yok_hdhold_scissor", "yok_scissor_anim", yok_hdhold_scissor, 3, G_YOKO_HD_SCISSOR, 20, 1 },
+    { WM_ROSTER_YOKO, "yok_hdhold_suplex", "yok_vsuplex_anim", yok_hdhold_suplex, 3, G_YOKO_HD_SUPLEX, 20, 1 },
+    { WM_ROSTER_YOKO, "yok_salt_throw", "yok_4_salt_anim", yok_salt_throw, 3, G_YOKO_SALT_THROW, 120, 1 },
+    { WM_ROSTER_YOKO, "yok_grab_toss_air", "yok_hiptoss_anim", yok_grab_toss_air, 3, G_YOKO_GRAB_TOSS_AIR, 20, 1 },
+    { WM_ROSTER_YOKO, "yok_hdhold_combo2", "yok_combo_kick_anim", yok_hdhold_combo2, 3, G_YOKO_HD_COMBO2, 20, 1 },
     { WM_ROSTER_TAKER, "und_hdhold_neckbrk", "und_neckbreaker_anim", und_hd_neck, 3, G_TAKER_HD_NECK, 20, 1 },
     { WM_ROSTER_TAKER, "und_hdhold_faceslam", "und_choke_face_slam_anim", und_hd_faceslam, 3, G_TAKER_HD_FACESLAM, 20, 1 },
     { WM_ROSTER_TAKER, "und_hdhold_pile", "und_pile_anim", und_hd_pile, 3, G_TAKER_HD_PILE, 20, 1 },
@@ -522,7 +566,7 @@ static int fire_bret_grab_toss_air(wm_arcade_actor_t *a,
     if (opp && (opp->player_mode == WM_PMODE_ONGROUND ||
                 opp->player_mode == WM_PMODE_DEAD)) return 0;
 
-    if (opp && (mode_is_inair(opp->player_mode) || opp->attack_type == WM_BRET_AT_LEAPING)) {
+    if (opp && (mode_is_inair(opp->player_mode) || opp->attack_type == WM_SMOVE_AT_LEAPING)) {
         label = "hrt_hiptoss2_anim";
     } else {
         if (a->closest_dist > 0x70) return 0;
@@ -671,7 +715,7 @@ static int fire_razor_grab_toss_air(wm_arcade_actor_t *a,
                 opp->player_mode == WM_PMODE_DEAD)) return 0;
 
     if (opp && (mode_is_inair(opp->player_mode) ||
-                opp->attack_type == WM_BRET_AT_LEAPING)) {
+                opp->attack_type == WM_SMOVE_AT_LEAPING)) {
         label = ((a->facing_dir & WM_MOVE_RIGHT) != 0u) ?
             "rzr_2_hiptoss2_anim" : "rzr_4_hiptoss2_anim";
     } else {
@@ -702,6 +746,115 @@ static int fire_razor_headhold_combo(wm_arcade_actor_t *a,
     if (cb && cb->find_and_kill_endless)
         cb->find_and_kill_endless(a, cb->user);
     queue_result(a, e, cb);
+    return 1;
+}
+
+
+static int fire_yoko_headhold_throw(wm_arcade_actor_t *a,
+                                    wm_arcade_actor_t *opp,
+                                    const wm_arcade_smove_entry_t *e,
+                                    const wm_arcade_smove_callbacks_t *cb)
+{
+    wm_arcade_actor_t *target = 0;
+    int bonus = 0;
+    uint16_t immob = 15;
+    if (!a || !e) return 0;
+
+    if (a->player_mode != WM_PMODE_HEADHOLD &&
+        a->player_mode != WM_PMODE_HEADHELD) return 0;
+
+    if (a->player_mode == WM_PMODE_HEADHELD) {
+        if (a->i_will_die != 0) return 0;
+        if (a->immobilize_time != 0) return 0;
+        if (cb && cb->do_reversal) cb->do_reversal(a, cb->user);
+        if (cb && cb->do_reversal_message) cb->do_reversal_message(a, cb->user);
+        target = a->who_hit_me ? a->who_hit_me : opp;
+        a->smart_target = target;
+    } else {
+        if (a->immobilize_time != 0) return 0;
+        if (e->gate_kind == G_YOKO_HD_SUPLEX) {
+            bonus = 42;
+            immob = 30;
+        } else if (e->gate_kind == G_YOKO_HD_SCISSOR) {
+            bonus = 34;
+            immob = 32;
+        }
+        if (bonus != 0 && cb && cb->bonus_message)
+            cb->bonus_message(a, bonus, cb->user);
+        target = a->who_i_hit ? a->who_i_hit : opp;
+        a->smart_target = target;
+    }
+
+    if (!target) return 0;
+    target->immobilize_time = immob;
+    if (cb && cb->find_and_kill_endless)
+        cb->find_and_kill_endless(a, cb->user);
+    queue_result(a, e, cb);
+    if (cb && cb->sound_label)
+        cb->sound_label(a, "GRABFLING_T1/GRABFLING_T2", cb->user);
+    return 1;
+}
+
+static int fire_yoko_headhold_combo(wm_arcade_actor_t *a,
+                                    wm_arcade_actor_t *opp,
+                                    const wm_arcade_smove_entry_t *e,
+                                    const wm_arcade_smove_callbacks_t *cb)
+{
+    if (!a || !e) return 0;
+    if (a->player_mode != WM_PMODE_HEADHOLD) return 0;
+    if (cb && cb->check_combo_go && cb->check_combo_go(a, cb->user) < 0) return 0;
+    if (a->immobilize_time != 0) return 0;
+
+    a->smart_target = a->who_i_hit ? a->who_i_hit : opp;
+    if (cb && cb->find_and_kill_endless)
+        cb->find_and_kill_endless(a, cb->user);
+    queue_result(a, e, cb);
+    if (cb && cb->sound_label)
+        cb->sound_label(a, "UPRCUT_T1/UPRCUT_T2", cb->user);
+    return 1;
+}
+
+static int fire_yoko_salt_throw(wm_arcade_actor_t *a,
+                                const wm_arcade_smove_entry_t *e,
+                                const wm_arcade_smove_callbacks_t *cb)
+{
+    if (!a || !e) return 0;
+    if (a->player_mode != WM_PMODE_HEADHOLD &&
+        a->player_mode != WM_PMODE_HEADHELD) return 0;
+
+    if (cb && cb->find_and_kill_endless)
+        cb->find_and_kill_endless(a, cb->user);
+    queue_result(a, e, cb);
+    if (cb && cb->sound_label)
+        cb->sound_label(a, "LBOWDROP_T1/LBOWDROP_T2", cb->user);
+    return 1;
+}
+
+static int fire_yoko_grab_toss_air(wm_arcade_actor_t *a,
+                                   wm_arcade_actor_t *opp,
+                                   const wm_arcade_smove_entry_t *e,
+                                   const wm_arcade_smove_callbacks_t *cb)
+{
+    const char *label;
+    if (!a || !e) return 0;
+    if ((a->anim_mode & WM_ARCADE_MODE_UNINT) != 0u) return 0;
+    if (a->player_mode == WM_PMODE_HEADHOLD) return 0;
+    if (opp && (opp->player_mode == WM_PMODE_ONGROUND ||
+                opp->player_mode == WM_PMODE_DEAD)) return 0;
+
+    if (opp && (mode_is_inair(opp->player_mode) ||
+                opp->attack_type == WM_SMOVE_AT_LEAPING)) {
+        label = "yok_hiptoss2_anim";
+    } else {
+        if (a->closest_dist > 0x6c) return 0;
+        label = "yok_hiptoss_anim";
+    }
+
+    a->special_move_addr = (uintptr_t)label;
+    if (cb && cb->resolve_label_token)
+        a->special_move_addr = cb->resolve_label_token(label, cb->user);
+    if (cb && cb->sound_label)
+        cb->sound_label(a, "GRABFLING_T1/PUNCH_T2", cb->user);
     return 1;
 }
 
@@ -742,6 +895,16 @@ static int fire_entry(wm_arcade_actor_t **actors, size_t n,
         return fire_razor_headhold_combo(a, opp, e, cb);
     case G_RAZOR_SLIDING_RUG:
         return fire_razor_sliding_rug(a, opp, e, cb);
+    case G_YOKO_HD_COMBO1:
+    case G_YOKO_HD_COMBO2:
+        return fire_yoko_headhold_combo(a, opp, e, cb);
+    case G_YOKO_HD_SCISSOR:
+    case G_YOKO_HD_SUPLEX:
+        return fire_yoko_headhold_throw(a, opp, e, cb);
+    case G_YOKO_SALT_THROW:
+        return fire_yoko_salt_throw(a, e, cb);
+    case G_YOKO_GRAB_TOSS_AIR:
+        return fire_yoko_grab_toss_air(a, opp, e, cb);
     case G_TAKER_HD_NECK:
     case G_TAKER_HD_FACESLAM:
     case G_TAKER_HD_PILE:

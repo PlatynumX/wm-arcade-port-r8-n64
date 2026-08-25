@@ -12,12 +12,7 @@
 - none
 
 ### YOKO
-- yok_hdhold_combo1
-- yok_hdhold_scissor
-- yok_hdhold_suplex
-- yok_salt_throw
-- yok_grab_toss_air
-- yok_hdhold_combo2
+- none
 
 ### SHAWN
 - shn_hdhold_combo2

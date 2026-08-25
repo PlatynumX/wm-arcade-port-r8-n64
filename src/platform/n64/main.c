@@ -2930,6 +2930,54 @@ static __attribute__((unused)) void render_match(const wm_app *app) {
     }
     draw_ring_front();
 
+    /* R37I diagnostic-only overlay.  Read-only: it never writes wrestler,
+       DRONE, RNG, lifecycle, or attract state.  The purpose is to expose the
+       actual hardware execution state so it can be compared to WRESTLE.ASM /
+       DRONE.ASM instead of changing gameplay by guesswork. */
+    {
+        char db[160];
+        const WmFix39Status *st = wm_fix39_status();
+        const size_t dn = wm_fix39_active_actor_count();
+
+        snprintf(db,sizeof(db),
+                 "R37I src=%u t=%lu ph=%lu pc=%lu n=%u H=%u",
+                 (unsigned)app->attract.source_index,
+                 (unsigned long)app->attract.call_ticks,
+                 (unsigned long)app->attract.phase_ticks,
+                 (unsigned long)(st ? st->pcnt : 0u),
+                 (unsigned)dn,
+                 wm_fix39_match_halt() ? 1u : 0u);
+        text_line(2,8,db);
+
+        for(size_t di=0; di<dn && di<4u; ++di) {
+            const wm_arcade_actor_t *da = wm_fix39_actor(di);
+            const wm_arcade_drone_state_t *dd = wm_fix39_drone_state(di);
+            int target=-1;
+            if(!da) continue;
+            for(size_t tj=0; tj<dn && tj<4u; ++tj)
+                if(da->smart_target == wm_fix39_actor(tj)) { target=(int)tj; break; }
+
+            snprintf(db,sizeof(db),
+                     "%u W%d P%d S%d T%d ty%d pm%u am%u sf%08lx",
+                     (unsigned)di, (int)da->wrestler_num, (int)da->player_num,
+                     (int)da->player_side, target, (int)da->player_type,
+                     (unsigned)da->player_mode, (unsigned)da->attack_mode,
+                     (unsigned long)da->status_flags);
+            text_line(2,20+(int)di*22,db);
+
+            snprintf(db,sizeof(db),
+                     " x%d z%d d%d b%04x j%04x M%d K%d D%d Q%u/%d",
+                     (int)da->x_int,(int)da->z_int,(int)da->closest_dist,
+                     (unsigned)da->but_val_cur,(unsigned)da->stick_val_cur,
+                     dd ? (int)dd->mode : -99,
+                     dd ? (int)dd->skill : -99,
+                     dd ? (int)dd->delay : -99,
+                     dd ? (unsigned)dd->script_pc : 0u,
+                     dd ? (int)dd->service_pc : -99);
+            text_line(2,30+(int)di*22,db);
+        }
+    }
+
     /* This is the currently translated start_match/gameplay subset.  It is
        driven by ATTRACT.ASM::show_gameplay timing now; no frontend menu owns it. */
     if (app->show_debug)

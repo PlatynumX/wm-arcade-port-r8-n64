@@ -1,0 +1,91 @@
+{
+  "audit": "combat2es_behavioral_parity",
+  "counts": {
+    "critical": 2,
+    "info": 1,
+    "major": 3,
+    "minor": 3
+  },
+  "findings": [
+    {
+      "evidence": "src/fix39/wm_fix39_runtime.c:1735: void *user); static uintptr_t source_label_token(const char *source_label, void *user) { (void)user; return (uintptr_t)source_label; } static void source_find_and_kill_endless_port(wm_arcade_actor_t *a, void *user) { /* FIND_AND_KILL_ENDLESS has no separate N64 process class yet; keep this as the single service point so transla",
+      "file": "src/fix39/wm_fix39_runtime.c",
+      "key": "find_and_kill_endless_service_stub",
+      "next_action": "Port or bind the real process-kill behavior and add a focused runtime test that proves the expected target/endless process is removed.",
+      "severity": "critical",
+      "why_it_matters": "FIND_AND_KILL_ENDLESS is part of many SMOVE bodies. A no-op service point can pass label audits while leaving endless/attached helper processes alive differently from source."
+    },
+    {
+      "evidence": "src/fix39/wm_fix39_runtime.c:1737: ser; return (uintptr_t)source_label; } static void source_find_and_kill_endless_port(wm_arcade_actor_t *a, void *user) { /* FIND_AND_KILL_ENDLESS has no separate N64 process class yet; keep this as the single service point so translated SMOVE bodies call the source hook instead of silently skipping it. */ (void)a; (void",
+      "file": "src/fix39/wm_fix39_runtime.c",
+      "key": "explicit_no_process_class_debt",
+      "next_action": "Identify the corresponding source process class and add N64-side lifecycle state instead of treating it as trace-only.",
+      "severity": "critical",
+      "why_it_matters": "The code states the source process class is not represented yet. That is parity debt, not finished behavior."
+    },
+    {
+      "evidence": "src/fix39/wm_fix39_runtime.c:1748: ource uses DO_REVERSAL before WHOHITME-targeted counter throws. Preserve actor-owned reversal state here; presentation messaging is the companion DO_REVERSAL_MESS hook below. */ (void)user; if (!a) return; a->status_flags |= WM_STATUS_COMBO_BROKEN; a->anti_combo_time = g.status.pcnt; } static void source",
+      "file": "src/fix39/wm_fix39_runtime.c",
+      "key": "reversal_message_not_text_object_verified",
+      "next_action": "Port or connect the real message renderer path and assert timing/object spawn semantics.",
+      "severity": "major",
+      "why_it_matters": "DO_REVERSAL_MESS is a source message effect. Routing it through trace/sound metadata is not proof that the arcade message object/timing exists."
+    },
+    {
+      "evidence": "src/fix39/wm_fix39_runtime.c:1772: object/spawn backend can consume the same hook later without changing SMOVE bodies. */ a->damage_given += bonus; snprintf(label, sizeof(label), \"BONUS_MESS_%03d\", bonus); common_sound_label(a, label, 0); } static int source_ck_ignore_a8_port(wm_arcade_actor_t *a, void *user) { uint16_t away = 0u; (void",
+      "file": "src/fix39/wm_fix39_runtime.c",
+      "key": "bonus_message_synthesized_label",
+      "next_action": "Translate BONUS_MESS as a real source message process and compare bonus values/timing per wrestler.",
+      "severity": "major",
+      "why_it_matters": "BONUS_MESS was converted into a synthesized label/accounting hook. That may not match source scoring, text lifetime, message PID, or display timing."
+    },
+    {
+      "evidence": "src/fix39/wm_fix39_runtime.c:1771: /* Runtime-visible accounting for BONUS_MESS(A10). The text object/spawn backend can consume the same hook later without changing SMOVE bodies. */ a->damage_given += bonus; snprintf(label, sizeof(label), \"BONUS_MESS_%03d\", bonus); common_sound_label(a, label, 0); } static int source_ck_ignore_a8_port(wm_arcade_actor_t *a",
+      "file": "src/fix39/wm_fix39_runtime.c",
+      "key": "bonus_message_changes_damage_counter",
+      "next_action": "Verify the original accounting path before modifying damage_given as a stand-in.",
+      "severity": "major",
+      "why_it_matters": "Damage accounting and bonus-message scoring are not necessarily the same source side effect."
+    },
+    {
+      "evidence": "src/fix39/wm_fix39_runtime.c:1776: SMOVE bodies. */ a->damage_given += bonus; snprintf(label, sizeof(label), \"BONUS_MESS_%03d\", bonus); common_sound_label(a, label, 0); } static int source_ck_ignore_a8_port(wm_arcade_actor_t *a, void *user) { uint16_t away = 0u; (void)user; if (!a) return 1; /* WRESTLE.ASM::ck_ignore_a8: index NEW_FACING_DIR throu",
+      "file": "src/fix39/wm_fix39_runtime.c",
+      "key": "ck_ignore_a8_direction_table_needs_source_proof",
+      "next_action": "Add a small table-driven test against the WRESTLE.ASM mv_tbl mapping for all facing/move_dir cases.",
+      "severity": "minor",
+      "why_it_matters": "ck_ignore/ck_ignore_a8 is direction-table logic in WRESTLE.ASM. The local translation needs exact mv_tbl coverage evidence."
+    },
+    {
+      "evidence": "src/fix39/wm_arcade_smove_runtime.c:423: file; p->process_label = label; p->entry = wm_arcade_smove_lookup_entry(profile->id, label); p->unresolved = p->entry == 0 || p->entry->source_exact_body == 0; proc_rewind(0, p, 1); ++made; ++rt->created; if (p->unresolved) ++rt->unresolved_created; } (void)owner; retu",
+      "file": "src/fix39/wm_arcade_smove_runtime.c",
+      "key": "source_exact_body_flags_present",
+      "next_action": "Review each occurrence and either back it with exact source citations/tests or remove the approximation.",
+      "severity": "info",
+      "why_it_matters": "The boolean exact-body flag is only a checklist marker; this audit tracks where deeper proof is still needed."
+    },
+    {
+      "evidence": "zero-step source_exact bodies: hrt_charge_face_rake, hrt_charge_flying_kick, rzr_charge_slashes, shn_charge_suplex, bam_charge_neckbreaker, dnk_charge_flykick",
+      "file": "src/fix39/wm_arcade_smove_runtime.c",
+      "key": "zero_step_charge_body_review",
+      "next_action": "Add focused tests for every zero-step body: hold duration below threshold, threshold hit, release reset, mode rejection, and sound/result side effects.",
+      "severity": "minor",
+      "why_it_matters": "Hold/release monitors do not go through WAITSWITCH. They need separate timing review for charge thresholds and reset behavior."
+    },
+    {
+      "evidence": "direct assignments found: 6",
+      "file": "src/fix39/wm_arcade_smove_runtime.c",
+      "key": "direct_special_move_addr_assignments",
+      "next_action": "For each direct assignment, add tests for both left/right or up/down facing choices and verify resolve_label_token is called.",
+      "severity": "minor",
+      "why_it_matters": "Some source bodies pick FACE24/directional result labels manually. Direct writes must still use the label resolver and match source facing choices."
+    }
+  ],
+  "manifest_entry_count": 63,
+  "source_exact_entry_count": 63,
+  "strict_manifest": {
+    "ran": true,
+    "rc": 0,
+    "stderr": "",
+    "stdout": "Combat source manifest audit OK\nReport written to build/combat_source_completion_report.md/json\n"
+  }
+}

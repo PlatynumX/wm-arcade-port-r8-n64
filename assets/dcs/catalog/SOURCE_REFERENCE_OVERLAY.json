@@ -1,0 +1,4453 @@
+{
+  "11": {
+    "triple_sound_indices_hex": [],
+    "direct_source_reference": "wmania_tune segment A",
+    "valid_in_wwf_l1_dcs": true
+  },
+  "13": {
+    "triple_sound_indices_hex": [],
+    "direct_source_reference": "wmania_tune segment C",
+    "valid_in_wwf_l1_dcs": true
+  },
+  "14": {
+    "triple_sound_indices_hex": [],
+    "direct_source_reference": "wmania_tune segment B",
+    "valid_in_wwf_l1_dcs": false
+  },
+  "128": {
+    "triple_sound_indices_hex": [
+      "001"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "132": {
+    "triple_sound_indices_hex": [
+      "002"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "136": {
+    "triple_sound_indices_hex": [
+      "004"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "140": {
+    "triple_sound_indices_hex": [
+      "005"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "144": {
+    "triple_sound_indices_hex": [
+      "006"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "148": {
+    "triple_sound_indices_hex": [
+      "007"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "152": {
+    "triple_sound_indices_hex": [
+      "008"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "156": {
+    "triple_sound_indices_hex": [
+      "009"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "160": {
+    "triple_sound_indices_hex": [
+      "04E"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "164": {
+    "triple_sound_indices_hex": [
+      "04F"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "168": {
+    "triple_sound_indices_hex": [
+      "00E"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "172": {
+    "triple_sound_indices_hex": [
+      "00F"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "176": {
+    "triple_sound_indices_hex": [
+      "010",
+      "035",
+      "040"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "180": {
+    "triple_sound_indices_hex": [
+      "011"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "184": {
+    "triple_sound_indices_hex": [
+      "012"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "188": {
+    "triple_sound_indices_hex": [
+      "013"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "192": {
+    "triple_sound_indices_hex": [
+      "014"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "196": {
+    "triple_sound_indices_hex": [
+      "015"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "200": {
+    "triple_sound_indices_hex": [
+      "016"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "204": {
+    "triple_sound_indices_hex": [
+      "017"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "208": {
+    "triple_sound_indices_hex": [
+      "018",
+      "0DD"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "212": {
+    "triple_sound_indices_hex": [
+      "019"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "216": {
+    "triple_sound_indices_hex": [
+      "01A"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "220": {
+    "triple_sound_indices_hex": [
+      "01B",
+      "034"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "224": {
+    "triple_sound_indices_hex": [
+      "01C"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "228": {
+    "triple_sound_indices_hex": [
+      "01D"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "232": {
+    "triple_sound_indices_hex": [
+      "01E",
+      "0A8"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "236": {
+    "triple_sound_indices_hex": [
+      "01F",
+      "033"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "240": {
+    "triple_sound_indices_hex": [
+      "020"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "244": {
+    "triple_sound_indices_hex": [
+      "021",
+      "0CB"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "248": {
+    "triple_sound_indices_hex": [
+      "022",
+      "0CC"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "252": {
+    "triple_sound_indices_hex": [
+      "023"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "256": {
+    "triple_sound_indices_hex": [
+      "024"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "260": {
+    "triple_sound_indices_hex": [
+      "025",
+      "037"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "264": {
+    "triple_sound_indices_hex": [
+      "026"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "268": {
+    "triple_sound_indices_hex": [
+      "027"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "272": {
+    "triple_sound_indices_hex": [
+      "028"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "276": {
+    "triple_sound_indices_hex": [
+      "029"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "280": {
+    "triple_sound_indices_hex": [
+      "02A"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "284": {
+    "triple_sound_indices_hex": [
+      "02B"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "288": {
+    "triple_sound_indices_hex": [
+      "02C"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "292": {
+    "triple_sound_indices_hex": [
+      "02D"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "296": {
+    "triple_sound_indices_hex": [
+      "02E"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "300": {
+    "triple_sound_indices_hex": [
+      "02F"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "304": {
+    "triple_sound_indices_hex": [
+      "030"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "308": {
+    "triple_sound_indices_hex": [
+      "031"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "312": {
+    "triple_sound_indices_hex": [
+      "032"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "316": {
+    "triple_sound_indices_hex": [
+      "0C0"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "320": {
+    "triple_sound_indices_hex": [
+      "0C2"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "324": {
+    "triple_sound_indices_hex": [
+      "0CD"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "328": {
+    "triple_sound_indices_hex": [
+      "0B1"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "335": {
+    "triple_sound_indices_hex": [
+      "0B3"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "344": {
+    "triple_sound_indices_hex": [
+      "0B4"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "348": {
+    "triple_sound_indices_hex": [
+      "0AC"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "352": {
+    "triple_sound_indices_hex": [
+      "0B2"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "360": {
+    "triple_sound_indices_hex": [
+      "0AA"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "368": {
+    "triple_sound_indices_hex": [
+      "0AD"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "376": {
+    "triple_sound_indices_hex": [
+      "0B6"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "380": {
+    "triple_sound_indices_hex": [
+      "0BE"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "408": {
+    "triple_sound_indices_hex": [
+      "03D"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "412": {
+    "triple_sound_indices_hex": [
+      "00B"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "416": {
+    "triple_sound_indices_hex": [
+      "00C"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "424": {
+    "triple_sound_indices_hex": [
+      "00D"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "428": {
+    "triple_sound_indices_hex": [
+      "046"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "432": {
+    "triple_sound_indices_hex": [
+      "047"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "434": {
+    "triple_sound_indices_hex": [
+      "0B5"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "460": {
+    "triple_sound_indices_hex": [
+      "00A"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "464": {
+    "triple_sound_indices_hex": [
+      "098"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "468": {
+    "triple_sound_indices_hex": [
+      "0D7"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "472": {
+    "triple_sound_indices_hex": [
+      "0D8"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "476": {
+    "triple_sound_indices_hex": [
+      "0D9"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "480": {
+    "triple_sound_indices_hex": [
+      "0DA"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "484": {
+    "triple_sound_indices_hex": [
+      "0DB"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "488": {
+    "triple_sound_indices_hex": [
+      "0DC"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "524": {
+    "triple_sound_indices_hex": [
+      "050"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "528": {
+    "triple_sound_indices_hex": [
+      "051"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "536": {
+    "triple_sound_indices_hex": [
+      "053"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "540": {
+    "triple_sound_indices_hex": [
+      "054"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "544": {
+    "triple_sound_indices_hex": [
+      "055"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "548": {
+    "triple_sound_indices_hex": [
+      "056"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "552": {
+    "triple_sound_indices_hex": [
+      "057"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "556": {
+    "triple_sound_indices_hex": [
+      "058"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "560": {
+    "triple_sound_indices_hex": [
+      "059"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "564": {
+    "triple_sound_indices_hex": [
+      "282"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "568": {
+    "triple_sound_indices_hex": [
+      "283"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "572": {
+    "triple_sound_indices_hex": [
+      "284"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "576": {
+    "triple_sound_indices_hex": [
+      "285"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "580": {
+    "triple_sound_indices_hex": [
+      "286"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "584": {
+    "triple_sound_indices_hex": [
+      "287"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "588": {
+    "triple_sound_indices_hex": [
+      "0D3"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "592": {
+    "triple_sound_indices_hex": [
+      "0D4"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "596": {
+    "triple_sound_indices_hex": [
+      "0D5"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "600": {
+    "triple_sound_indices_hex": [
+      "0D6"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "640": {
+    "triple_sound_indices_hex": [
+      "060"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "644": {
+    "triple_sound_indices_hex": [
+      "061"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "648": {
+    "triple_sound_indices_hex": [
+      "062"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "652": {
+    "triple_sound_indices_hex": [
+      "063"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "656": {
+    "triple_sound_indices_hex": [
+      "064"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "768": {
+    "triple_sound_indices_hex": [
+      "05A"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "772": {
+    "triple_sound_indices_hex": [
+      "05B"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "789": {
+    "triple_sound_indices_hex": [
+      "0B0"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "900": {
+    "triple_sound_indices_hex": [
+      "066"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "904": {
+    "triple_sound_indices_hex": [
+      "042",
+      "067"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "908": {
+    "triple_sound_indices_hex": [
+      "068"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "912": {
+    "triple_sound_indices_hex": [
+      "069"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "916": {
+    "triple_sound_indices_hex": [
+      "06A"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "920": {
+    "triple_sound_indices_hex": [
+      "06B"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "932": {
+    "triple_sound_indices_hex": [
+      "06E"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "936": {
+    "triple_sound_indices_hex": [
+      "06F"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "994": {
+    "triple_sound_indices_hex": [],
+    "direct_source_reference": "stop channel 1",
+    "valid_in_wwf_l1_dcs": true
+  },
+  "995": {
+    "triple_sound_indices_hex": [],
+    "direct_source_reference": "stop channel 2",
+    "valid_in_wwf_l1_dcs": true
+  },
+  "996": {
+    "triple_sound_indices_hex": [],
+    "direct_source_reference": "stop channel 3",
+    "valid_in_wwf_l1_dcs": true
+  },
+  "997": {
+    "triple_sound_indices_hex": [],
+    "direct_source_reference": "stop channel 4",
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1045": {
+    "triple_sound_indices_hex": [
+      "085"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1048": {
+    "triple_sound_indices_hex": [
+      "086"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "1051": {
+    "triple_sound_indices_hex": [
+      "087"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "1054": {
+    "triple_sound_indices_hex": [
+      "088"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "1057": {
+    "triple_sound_indices_hex": [
+      "089"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1060": {
+    "triple_sound_indices_hex": [
+      "08A"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1063": {
+    "triple_sound_indices_hex": [
+      "08B"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1066": {
+    "triple_sound_indices_hex": [
+      "08C"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "1069": {
+    "triple_sound_indices_hex": [
+      "08D"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "1072": {
+    "triple_sound_indices_hex": [
+      "08E"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "1075": {
+    "triple_sound_indices_hex": [
+      "08F",
+      "090"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "1078": {
+    "triple_sound_indices_hex": [
+      "091"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "1081": {
+    "triple_sound_indices_hex": [
+      "092"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1084": {
+    "triple_sound_indices_hex": [
+      "093"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1087": {
+    "triple_sound_indices_hex": [
+      "094"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1116": {
+    "triple_sound_indices_hex": [
+      "071"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1120": {
+    "triple_sound_indices_hex": [
+      "072"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1124": {
+    "triple_sound_indices_hex": [
+      "073"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1128": {
+    "triple_sound_indices_hex": [
+      "074"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1132": {
+    "triple_sound_indices_hex": [
+      "075"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "1148": {
+    "triple_sound_indices_hex": [
+      "079"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1160": {
+    "triple_sound_indices_hex": [
+      "07C"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1180": {
+    "triple_sound_indices_hex": [
+      "0CE"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1184": {
+    "triple_sound_indices_hex": [
+      "0CF"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1188": {
+    "triple_sound_indices_hex": [
+      "0D0"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1192": {
+    "triple_sound_indices_hex": [
+      "0D1"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1196": {
+    "triple_sound_indices_hex": [
+      "082"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1208": {
+    "triple_sound_indices_hex": [
+      "0D2"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1220": {
+    "triple_sound_indices_hex": [
+      "0AE"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1224": {
+    "triple_sound_indices_hex": [
+      "0AF"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1228": {
+    "triple_sound_indices_hex": [
+      "099"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1232": {
+    "triple_sound_indices_hex": [
+      "09A"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1236": {
+    "triple_sound_indices_hex": [
+      "041",
+      "0AB"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1240": {
+    "triple_sound_indices_hex": [
+      "09C"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1244": {
+    "triple_sound_indices_hex": [
+      "09D"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1248": {
+    "triple_sound_indices_hex": [
+      "09E"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1252": {
+    "triple_sound_indices_hex": [
+      "09F"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1256": {
+    "triple_sound_indices_hex": [
+      "0A0"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1260": {
+    "triple_sound_indices_hex": [
+      "0A1"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1264": {
+    "triple_sound_indices_hex": [
+      "0A2"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1268": {
+    "triple_sound_indices_hex": [
+      "0A3"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1280": {
+    "triple_sound_indices_hex": [
+      "076",
+      "0BF"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1284": {
+    "triple_sound_indices_hex": [
+      "03C"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1288": {
+    "triple_sound_indices_hex": [
+      "077",
+      "0A5",
+      "0C1"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1296": {
+    "triple_sound_indices_hex": [
+      "078",
+      "0C3"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1304": {
+    "triple_sound_indices_hex": [
+      "0C5"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1364": {
+    "triple_sound_indices_hex": [
+      "0B7"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "1368": {
+    "triple_sound_indices_hex": [
+      "0B8"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "1376": {
+    "triple_sound_indices_hex": [
+      "048"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1436": {
+    "triple_sound_indices_hex": [
+      "043"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1440": {
+    "triple_sound_indices_hex": [
+      "044"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "1444": {
+    "triple_sound_indices_hex": [
+      "045"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1448": {
+    "triple_sound_indices_hex": [
+      "03E"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1452": {
+    "triple_sound_indices_hex": [
+      "03F"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1456": {
+    "triple_sound_indices_hex": [
+      "0C7"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1460": {
+    "triple_sound_indices_hex": [
+      "0C8"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1472": {
+    "triple_sound_indices_hex": [
+      "0BC"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1476": {
+    "triple_sound_indices_hex": [
+      "0BD"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1480": {
+    "triple_sound_indices_hex": [
+      "003"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1484": {
+    "triple_sound_indices_hex": [
+      "0B9"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1488": {
+    "triple_sound_indices_hex": [
+      "0BA"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1492": {
+    "triple_sound_indices_hex": [
+      "09B"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1512": {
+    "triple_sound_indices_hex": [
+      "049"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1516": {
+    "triple_sound_indices_hex": [
+      "0C4"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1520": {
+    "triple_sound_indices_hex": [
+      "0BB"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1528": {
+    "triple_sound_indices_hex": [
+      "07D"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "1536": {
+    "triple_sound_indices_hex": [
+      "07E"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "1544": {
+    "triple_sound_indices_hex": [
+      "07F"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "1552": {
+    "triple_sound_indices_hex": [
+      "080"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "1556": {
+    "triple_sound_indices_hex": [
+      "04A"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1560": {
+    "triple_sound_indices_hex": [
+      "04B"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1564": {
+    "triple_sound_indices_hex": [
+      "04C"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1568": {
+    "triple_sound_indices_hex": [
+      "04D"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1576": {
+    "triple_sound_indices_hex": [
+      "0A9"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1580": {
+    "triple_sound_indices_hex": [
+      "0C6"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1600": {
+    "triple_sound_indices_hex": [
+      "290"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1604": {
+    "triple_sound_indices_hex": [
+      "291"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1608": {
+    "triple_sound_indices_hex": [
+      "292"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1612": {
+    "triple_sound_indices_hex": [
+      "293"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1616": {
+    "triple_sound_indices_hex": [
+      "039",
+      "294"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1620": {
+    "triple_sound_indices_hex": [
+      "295"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1624": {
+    "triple_sound_indices_hex": [
+      "296"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1628": {
+    "triple_sound_indices_hex": [
+      "297"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1632": {
+    "triple_sound_indices_hex": [
+      "298"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "1636": {
+    "triple_sound_indices_hex": [
+      "299"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "2560": {
+    "triple_sound_indices_hex": [
+      "1FB"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "2564": {
+    "triple_sound_indices_hex": [
+      "1FC"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "2568": {
+    "triple_sound_indices_hex": [
+      "1FD"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "2572": {
+    "triple_sound_indices_hex": [
+      "1FF"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "2576": {
+    "triple_sound_indices_hex": [
+      "1FE"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3072": {
+    "triple_sound_indices_hex": [
+      "0E0"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3076": {
+    "triple_sound_indices_hex": [
+      "0E1"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3080": {
+    "triple_sound_indices_hex": [
+      "0E2"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3084": {
+    "triple_sound_indices_hex": [
+      "0E3"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3088": {
+    "triple_sound_indices_hex": [
+      "0E4"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3092": {
+    "triple_sound_indices_hex": [
+      "0E5"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3096": {
+    "triple_sound_indices_hex": [
+      "0E6"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3100": {
+    "triple_sound_indices_hex": [
+      "0E7"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3104": {
+    "triple_sound_indices_hex": [
+      "0E8"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3108": {
+    "triple_sound_indices_hex": [
+      "0E9"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3112": {
+    "triple_sound_indices_hex": [
+      "0EA"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3116": {
+    "triple_sound_indices_hex": [
+      "0EB"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3120": {
+    "triple_sound_indices_hex": [
+      "0EC"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3124": {
+    "triple_sound_indices_hex": [
+      "0ED"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3128": {
+    "triple_sound_indices_hex": [
+      "0EE"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3132": {
+    "triple_sound_indices_hex": [
+      "0EF"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3136": {
+    "triple_sound_indices_hex": [
+      "0F0"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3140": {
+    "triple_sound_indices_hex": [
+      "0F1"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3144": {
+    "triple_sound_indices_hex": [
+      "0F2"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3148": {
+    "triple_sound_indices_hex": [
+      "0F3"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3152": {
+    "triple_sound_indices_hex": [
+      "0F4"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3156": {
+    "triple_sound_indices_hex": [
+      "0F5"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3160": {
+    "triple_sound_indices_hex": [
+      "0F6"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3164": {
+    "triple_sound_indices_hex": [
+      "0F7"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3168": {
+    "triple_sound_indices_hex": [
+      "0F8"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3172": {
+    "triple_sound_indices_hex": [
+      "0F9"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3176": {
+    "triple_sound_indices_hex": [
+      "0FA"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3180": {
+    "triple_sound_indices_hex": [
+      "0FB"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3184": {
+    "triple_sound_indices_hex": [
+      "0FC"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3188": {
+    "triple_sound_indices_hex": [
+      "0FD"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3192": {
+    "triple_sound_indices_hex": [
+      "0FE"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3196": {
+    "triple_sound_indices_hex": [
+      "0FF"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3200": {
+    "triple_sound_indices_hex": [
+      "100"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3204": {
+    "triple_sound_indices_hex": [
+      "101"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3208": {
+    "triple_sound_indices_hex": [
+      "102"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3212": {
+    "triple_sound_indices_hex": [
+      "103"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3216": {
+    "triple_sound_indices_hex": [
+      "104"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3220": {
+    "triple_sound_indices_hex": [
+      "105"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3224": {
+    "triple_sound_indices_hex": [
+      "106"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3228": {
+    "triple_sound_indices_hex": [
+      "107",
+      "134"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3232": {
+    "triple_sound_indices_hex": [
+      "108",
+      "135"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3236": {
+    "triple_sound_indices_hex": [
+      "109"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3240": {
+    "triple_sound_indices_hex": [
+      "10A"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3244": {
+    "triple_sound_indices_hex": [
+      "10B"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3248": {
+    "triple_sound_indices_hex": [
+      "10C"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3252": {
+    "triple_sound_indices_hex": [
+      "10D"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3256": {
+    "triple_sound_indices_hex": [
+      "10E"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3260": {
+    "triple_sound_indices_hex": [
+      "10F"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3264": {
+    "triple_sound_indices_hex": [
+      "110"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3268": {
+    "triple_sound_indices_hex": [
+      "167"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3272": {
+    "triple_sound_indices_hex": [
+      "168"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3276": {
+    "triple_sound_indices_hex": [
+      "169"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3280": {
+    "triple_sound_indices_hex": [
+      "16A"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3284": {
+    "triple_sound_indices_hex": [
+      "16B"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3288": {
+    "triple_sound_indices_hex": [
+      "16C"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3292": {
+    "triple_sound_indices_hex": [
+      "16D"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3296": {
+    "triple_sound_indices_hex": [
+      "16E"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3300": {
+    "triple_sound_indices_hex": [
+      "13D"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3308": {
+    "triple_sound_indices_hex": [
+      "158"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3312": {
+    "triple_sound_indices_hex": [
+      "157"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3316": {
+    "triple_sound_indices_hex": [
+      "148"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3320": {
+    "triple_sound_indices_hex": [
+      "149"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3324": {
+    "triple_sound_indices_hex": [
+      "14A"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3328": {
+    "triple_sound_indices_hex": [
+      "13E"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3332": {
+    "triple_sound_indices_hex": [
+      "14B"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3336": {
+    "triple_sound_indices_hex": [
+      "14C"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3340": {
+    "triple_sound_indices_hex": [
+      "14D"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "3352": {
+    "triple_sound_indices_hex": [
+      "14E"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3356": {
+    "triple_sound_indices_hex": [
+      "12A"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3360": {
+    "triple_sound_indices_hex": [
+      "129"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3364": {
+    "triple_sound_indices_hex": [
+      "14F"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3368": {
+    "triple_sound_indices_hex": [
+      "13F"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3372": {
+    "triple_sound_indices_hex": [
+      "150"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3376": {
+    "triple_sound_indices_hex": [
+      "151"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3380": {
+    "triple_sound_indices_hex": [
+      "140"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "3384": {
+    "triple_sound_indices_hex": [
+      "141"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3388": {
+    "triple_sound_indices_hex": [
+      "142"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3392": {
+    "triple_sound_indices_hex": [
+      "147"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3396": {
+    "triple_sound_indices_hex": [
+      "145"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3400": {
+    "triple_sound_indices_hex": [
+      "146"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3404": {
+    "triple_sound_indices_hex": [
+      "152"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3412": {
+    "triple_sound_indices_hex": [
+      "111"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3416": {
+    "triple_sound_indices_hex": [
+      "112"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3420": {
+    "triple_sound_indices_hex": [
+      "113"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3424": {
+    "triple_sound_indices_hex": [
+      "114"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3428": {
+    "triple_sound_indices_hex": [
+      "115"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3432": {
+    "triple_sound_indices_hex": [
+      "116"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3436": {
+    "triple_sound_indices_hex": [
+      "117"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3440": {
+    "triple_sound_indices_hex": [
+      "118"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3444": {
+    "triple_sound_indices_hex": [
+      "119"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3448": {
+    "triple_sound_indices_hex": [
+      "11A"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3452": {
+    "triple_sound_indices_hex": [
+      "11B"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3456": {
+    "triple_sound_indices_hex": [
+      "11C"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3460": {
+    "triple_sound_indices_hex": [
+      "11D"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3464": {
+    "triple_sound_indices_hex": [
+      "11E"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3468": {
+    "triple_sound_indices_hex": [
+      "11F"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3472": {
+    "triple_sound_indices_hex": [
+      "120"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3476": {
+    "triple_sound_indices_hex": [
+      "121"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3480": {
+    "triple_sound_indices_hex": [
+      "122"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3484": {
+    "triple_sound_indices_hex": [
+      "123"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3488": {
+    "triple_sound_indices_hex": [
+      "124"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3492": {
+    "triple_sound_indices_hex": [
+      "125"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3496": {
+    "triple_sound_indices_hex": [
+      "126"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3500": {
+    "triple_sound_indices_hex": [
+      "127"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3504": {
+    "triple_sound_indices_hex": [
+      "128"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3508": {
+    "triple_sound_indices_hex": [
+      "138"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3512": {
+    "triple_sound_indices_hex": [
+      "139"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3516": {
+    "triple_sound_indices_hex": [
+      "13A"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3528": {
+    "triple_sound_indices_hex": [
+      "137"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "3532": {
+    "triple_sound_indices_hex": [
+      "13B"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3536": {
+    "triple_sound_indices_hex": [
+      "153"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3540": {
+    "triple_sound_indices_hex": [
+      "154"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3544": {
+    "triple_sound_indices_hex": [
+      "155"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3548": {
+    "triple_sound_indices_hex": [
+      "156"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3556": {
+    "triple_sound_indices_hex": [
+      "143"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3564": {
+    "triple_sound_indices_hex": [
+      "13C"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3568": {
+    "triple_sound_indices_hex": [
+      "144"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3580": {
+    "triple_sound_indices_hex": [
+      "159"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3584": {
+    "triple_sound_indices_hex": [
+      "15A"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3588": {
+    "triple_sound_indices_hex": [
+      "15B"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3592": {
+    "triple_sound_indices_hex": [
+      "15C"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3600": {
+    "triple_sound_indices_hex": [
+      "15E"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3604": {
+    "triple_sound_indices_hex": [
+      "15F"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3608": {
+    "triple_sound_indices_hex": [
+      "160"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3612": {
+    "triple_sound_indices_hex": [
+      "161"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3616": {
+    "triple_sound_indices_hex": [
+      "162"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3624": {
+    "triple_sound_indices_hex": [
+      "164"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3628": {
+    "triple_sound_indices_hex": [
+      "136"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3632": {
+    "triple_sound_indices_hex": [
+      "165"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3636": {
+    "triple_sound_indices_hex": [
+      "166"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3640": {
+    "triple_sound_indices_hex": [
+      "12B"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3644": {
+    "triple_sound_indices_hex": [
+      "12C"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3648": {
+    "triple_sound_indices_hex": [
+      "12D"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3652": {
+    "triple_sound_indices_hex": [
+      "12E"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3656": {
+    "triple_sound_indices_hex": [
+      "12F"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3660": {
+    "triple_sound_indices_hex": [
+      "130"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3664": {
+    "triple_sound_indices_hex": [
+      "131"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3668": {
+    "triple_sound_indices_hex": [
+      "132"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3672": {
+    "triple_sound_indices_hex": [
+      "133"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3680": {
+    "triple_sound_indices_hex": [
+      "16F"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3684": {
+    "triple_sound_indices_hex": [
+      "170"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3688": {
+    "triple_sound_indices_hex": [
+      "171"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3692": {
+    "triple_sound_indices_hex": [
+      "172"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "3696": {
+    "triple_sound_indices_hex": [
+      "173"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "3700": {
+    "triple_sound_indices_hex": [
+      "174"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "3704": {
+    "triple_sound_indices_hex": [
+      "175"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "3708": {
+    "triple_sound_indices_hex": [
+      "176"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "3712": {
+    "triple_sound_indices_hex": [
+      "177"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "3716": {
+    "triple_sound_indices_hex": [
+      "178"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "3720": {
+    "triple_sound_indices_hex": [
+      "179"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "3724": {
+    "triple_sound_indices_hex": [
+      "17A"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3728": {
+    "triple_sound_indices_hex": [
+      "17B"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3736": {
+    "triple_sound_indices_hex": [
+      "17D"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3740": {
+    "triple_sound_indices_hex": [
+      "17E"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3744": {
+    "triple_sound_indices_hex": [
+      "17F"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3748": {
+    "triple_sound_indices_hex": [
+      "180"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3752": {
+    "triple_sound_indices_hex": [
+      "181"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3756": {
+    "triple_sound_indices_hex": [
+      "182"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3760": {
+    "triple_sound_indices_hex": [
+      "183"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3764": {
+    "triple_sound_indices_hex": [
+      "184"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3768": {
+    "triple_sound_indices_hex": [
+      "185"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3776": {
+    "triple_sound_indices_hex": [
+      "187"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3780": {
+    "triple_sound_indices_hex": [
+      "188"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3788": {
+    "triple_sound_indices_hex": [
+      "18A"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3792": {
+    "triple_sound_indices_hex": [
+      "18B"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3796": {
+    "triple_sound_indices_hex": [
+      "18C"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3800": {
+    "triple_sound_indices_hex": [
+      "18D"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3804": {
+    "triple_sound_indices_hex": [
+      "18E"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "3808": {
+    "triple_sound_indices_hex": [
+      "18F"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3844": {
+    "triple_sound_indices_hex": [
+      "198"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3852": {
+    "triple_sound_indices_hex": [
+      "19A"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3856": {
+    "triple_sound_indices_hex": [
+      "19B"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3860": {
+    "triple_sound_indices_hex": [
+      "19C"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3864": {
+    "triple_sound_indices_hex": [
+      "19D"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3868": {
+    "triple_sound_indices_hex": [
+      "19E"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3872": {
+    "triple_sound_indices_hex": [
+      "19F"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3876": {
+    "triple_sound_indices_hex": [
+      "1A0"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3880": {
+    "triple_sound_indices_hex": [
+      "1A1"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3884": {
+    "triple_sound_indices_hex": [
+      "1A2"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3888": {
+    "triple_sound_indices_hex": [
+      "1A3"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3892": {
+    "triple_sound_indices_hex": [
+      "1A4"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3896": {
+    "triple_sound_indices_hex": [
+      "1A5"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3900": {
+    "triple_sound_indices_hex": [
+      "1A6"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3904": {
+    "triple_sound_indices_hex": [
+      "1A7"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3908": {
+    "triple_sound_indices_hex": [
+      "1A8"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3916": {
+    "triple_sound_indices_hex": [
+      "1AA"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3924": {
+    "triple_sound_indices_hex": [
+      "1AC"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3928": {
+    "triple_sound_indices_hex": [
+      "1AD"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3932": {
+    "triple_sound_indices_hex": [
+      "1AE"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3980": {
+    "triple_sound_indices_hex": [
+      "1BA"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3984": {
+    "triple_sound_indices_hex": [
+      "1BB"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3988": {
+    "triple_sound_indices_hex": [
+      "1BC"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3992": {
+    "triple_sound_indices_hex": [
+      "190"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "3996": {
+    "triple_sound_indices_hex": [
+      "191"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4000": {
+    "triple_sound_indices_hex": [
+      "192"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4500": {
+    "triple_sound_indices_hex": [
+      "200"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4504": {
+    "triple_sound_indices_hex": [
+      "201"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4508": {
+    "triple_sound_indices_hex": [
+      "202"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4512": {
+    "triple_sound_indices_hex": [
+      "203"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4516": {
+    "triple_sound_indices_hex": [
+      "204"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4520": {
+    "triple_sound_indices_hex": [
+      "205"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4524": {
+    "triple_sound_indices_hex": [
+      "206"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4528": {
+    "triple_sound_indices_hex": [
+      "234"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4532": {
+    "triple_sound_indices_hex": [
+      "235"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4536": {
+    "triple_sound_indices_hex": [
+      "207"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4540": {
+    "triple_sound_indices_hex": [
+      "208"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4544": {
+    "triple_sound_indices_hex": [
+      "209"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "4548": {
+    "triple_sound_indices_hex": [
+      "20A"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4552": {
+    "triple_sound_indices_hex": [
+      "20B"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4556": {
+    "triple_sound_indices_hex": [
+      "20C"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4560": {
+    "triple_sound_indices_hex": [
+      "20D"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4564": {
+    "triple_sound_indices_hex": [
+      "20E"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4568": {
+    "triple_sound_indices_hex": [
+      "20F"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4572": {
+    "triple_sound_indices_hex": [
+      "210"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4576": {
+    "triple_sound_indices_hex": [
+      "211"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4580": {
+    "triple_sound_indices_hex": [
+      "212"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4584": {
+    "triple_sound_indices_hex": [
+      "213"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4588": {
+    "triple_sound_indices_hex": [
+      "214"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": false
+  },
+  "4592": {
+    "triple_sound_indices_hex": [
+      "215"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4596": {
+    "triple_sound_indices_hex": [
+      "216"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4600": {
+    "triple_sound_indices_hex": [
+      "217"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4604": {
+    "triple_sound_indices_hex": [
+      "218"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4608": {
+    "triple_sound_indices_hex": [
+      "219"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4612": {
+    "triple_sound_indices_hex": [
+      "21A"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4616": {
+    "triple_sound_indices_hex": [
+      "21B"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4620": {
+    "triple_sound_indices_hex": [
+      "21C"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4624": {
+    "triple_sound_indices_hex": [
+      "21D"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4628": {
+    "triple_sound_indices_hex": [
+      "21E"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4632": {
+    "triple_sound_indices_hex": [
+      "21F"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4636": {
+    "triple_sound_indices_hex": [
+      "220"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4640": {
+    "triple_sound_indices_hex": [
+      "221"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4644": {
+    "triple_sound_indices_hex": [
+      "222"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4648": {
+    "triple_sound_indices_hex": [
+      "223"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4652": {
+    "triple_sound_indices_hex": [
+      "224"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4656": {
+    "triple_sound_indices_hex": [
+      "225"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4660": {
+    "triple_sound_indices_hex": [
+      "226"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4664": {
+    "triple_sound_indices_hex": [
+      "227"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4668": {
+    "triple_sound_indices_hex": [
+      "228"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4672": {
+    "triple_sound_indices_hex": [
+      "229"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4676": {
+    "triple_sound_indices_hex": [
+      "22A"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4680": {
+    "triple_sound_indices_hex": [
+      "22B"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4684": {
+    "triple_sound_indices_hex": [
+      "22C"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4688": {
+    "triple_sound_indices_hex": [
+      "22D"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4692": {
+    "triple_sound_indices_hex": [
+      "22E"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4696": {
+    "triple_sound_indices_hex": [
+      "22F"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4700": {
+    "triple_sound_indices_hex": [
+      "230"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4704": {
+    "triple_sound_indices_hex": [
+      "231"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4708": {
+    "triple_sound_indices_hex": [
+      "232"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4712": {
+    "triple_sound_indices_hex": [
+      "233"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4800": {
+    "triple_sound_indices_hex": [
+      "236"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4804": {
+    "triple_sound_indices_hex": [
+      "237"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4808": {
+    "triple_sound_indices_hex": [
+      "238"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4812": {
+    "triple_sound_indices_hex": [
+      "239"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4816": {
+    "triple_sound_indices_hex": [
+      "23A"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4820": {
+    "triple_sound_indices_hex": [
+      "23B"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4824": {
+    "triple_sound_indices_hex": [
+      "23C"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4828": {
+    "triple_sound_indices_hex": [
+      "23D"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4832": {
+    "triple_sound_indices_hex": [
+      "23E"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4836": {
+    "triple_sound_indices_hex": [
+      "23F"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4840": {
+    "triple_sound_indices_hex": [
+      "240"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4844": {
+    "triple_sound_indices_hex": [
+      "241"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4848": {
+    "triple_sound_indices_hex": [
+      "242"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4852": {
+    "triple_sound_indices_hex": [
+      "243"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4856": {
+    "triple_sound_indices_hex": [
+      "244"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4860": {
+    "triple_sound_indices_hex": [
+      "245"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4864": {
+    "triple_sound_indices_hex": [
+      "246"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4868": {
+    "triple_sound_indices_hex": [
+      "247"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4872": {
+    "triple_sound_indices_hex": [
+      "248"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4876": {
+    "triple_sound_indices_hex": [
+      "249"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4880": {
+    "triple_sound_indices_hex": [
+      "24A"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4884": {
+    "triple_sound_indices_hex": [
+      "24B"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4888": {
+    "triple_sound_indices_hex": [
+      "24C"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4892": {
+    "triple_sound_indices_hex": [
+      "24D"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4896": {
+    "triple_sound_indices_hex": [
+      "24E"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4900": {
+    "triple_sound_indices_hex": [
+      "24F"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4904": {
+    "triple_sound_indices_hex": [
+      "250"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4908": {
+    "triple_sound_indices_hex": [
+      "251"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4912": {
+    "triple_sound_indices_hex": [
+      "252"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4916": {
+    "triple_sound_indices_hex": [
+      "253"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4920": {
+    "triple_sound_indices_hex": [
+      "254"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4924": {
+    "triple_sound_indices_hex": [
+      "255"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4928": {
+    "triple_sound_indices_hex": [
+      "256"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4932": {
+    "triple_sound_indices_hex": [
+      "257"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4936": {
+    "triple_sound_indices_hex": [
+      "258"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4940": {
+    "triple_sound_indices_hex": [
+      "259"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4944": {
+    "triple_sound_indices_hex": [
+      "25A"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4948": {
+    "triple_sound_indices_hex": [
+      "25B"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4952": {
+    "triple_sound_indices_hex": [
+      "25C"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4956": {
+    "triple_sound_indices_hex": [
+      "25D"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4960": {
+    "triple_sound_indices_hex": [
+      "25E"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4964": {
+    "triple_sound_indices_hex": [
+      "25F"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4968": {
+    "triple_sound_indices_hex": [
+      "260"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4972": {
+    "triple_sound_indices_hex": [
+      "261"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4976": {
+    "triple_sound_indices_hex": [
+      "262"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4980": {
+    "triple_sound_indices_hex": [
+      "263"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4984": {
+    "triple_sound_indices_hex": [
+      "264"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4988": {
+    "triple_sound_indices_hex": [
+      "265"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "4992": {
+    "triple_sound_indices_hex": [
+      "266"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5000": {
+    "triple_sound_indices_hex": [
+      "267"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5004": {
+    "triple_sound_indices_hex": [
+      "268"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5008": {
+    "triple_sound_indices_hex": [
+      "269"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5012": {
+    "triple_sound_indices_hex": [
+      "26A"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5016": {
+    "triple_sound_indices_hex": [
+      "26B"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5020": {
+    "triple_sound_indices_hex": [
+      "26C"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5024": {
+    "triple_sound_indices_hex": [
+      "26D"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5028": {
+    "triple_sound_indices_hex": [
+      "26E"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5032": {
+    "triple_sound_indices_hex": [
+      "26F"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5036": {
+    "triple_sound_indices_hex": [
+      "270"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5040": {
+    "triple_sound_indices_hex": [
+      "271"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5044": {
+    "triple_sound_indices_hex": [
+      "272"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5048": {
+    "triple_sound_indices_hex": [
+      "273"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5052": {
+    "triple_sound_indices_hex": [
+      "274"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5056": {
+    "triple_sound_indices_hex": [
+      "275"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5060": {
+    "triple_sound_indices_hex": [
+      "276"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5064": {
+    "triple_sound_indices_hex": [
+      "277"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5068": {
+    "triple_sound_indices_hex": [
+      "278"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5072": {
+    "triple_sound_indices_hex": [
+      "279"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5076": {
+    "triple_sound_indices_hex": [
+      "27A"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5080": {
+    "triple_sound_indices_hex": [
+      "27B"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5084": {
+    "triple_sound_indices_hex": [
+      "27C"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5088": {
+    "triple_sound_indices_hex": [
+      "27D"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5092": {
+    "triple_sound_indices_hex": [
+      "27E"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5096": {
+    "triple_sound_indices_hex": [
+      "27F"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5100": {
+    "triple_sound_indices_hex": [
+      "280"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "5104": {
+    "triple_sound_indices_hex": [
+      "281"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6144": {
+    "triple_sound_indices_hex": [
+      "1F9"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6148": {
+    "triple_sound_indices_hex": [
+      "1FA"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6156": {
+    "triple_sound_indices_hex": [
+      "1DC"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6164": {
+    "triple_sound_indices_hex": [
+      "1DB"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6168": {
+    "triple_sound_indices_hex": [
+      "1DD"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6172": {
+    "triple_sound_indices_hex": [
+      "1DE"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6176": {
+    "triple_sound_indices_hex": [
+      "1DF"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6180": {
+    "triple_sound_indices_hex": [
+      "1E0"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6192": {
+    "triple_sound_indices_hex": [
+      "1E1"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6196": {
+    "triple_sound_indices_hex": [
+      "1E2"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6200": {
+    "triple_sound_indices_hex": [
+      "2B4"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6208": {
+    "triple_sound_indices_hex": [
+      "2B6"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6212": {
+    "triple_sound_indices_hex": [
+      "2B7"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6216": {
+    "triple_sound_indices_hex": [
+      "2B8"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6220": {
+    "triple_sound_indices_hex": [
+      "2B9"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6224": {
+    "triple_sound_indices_hex": [
+      "2BA"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6236": {
+    "triple_sound_indices_hex": [
+      "2BB"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6240": {
+    "triple_sound_indices_hex": [
+      "2BE"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6276": {
+    "triple_sound_indices_hex": [
+      "2C7"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6280": {
+    "triple_sound_indices_hex": [
+      "2C8"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6284": {
+    "triple_sound_indices_hex": [
+      "2C9"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6288": {
+    "triple_sound_indices_hex": [
+      "2CA"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6292": {
+    "triple_sound_indices_hex": [
+      "2CB"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6296": {
+    "triple_sound_indices_hex": [
+      "2CC"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6300": {
+    "triple_sound_indices_hex": [
+      "2CD"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6304": {
+    "triple_sound_indices_hex": [
+      "2CE"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6308": {
+    "triple_sound_indices_hex": [
+      "2CF"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6316": {
+    "triple_sound_indices_hex": [
+      "2D1"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6320": {
+    "triple_sound_indices_hex": [
+      "2D2"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6324": {
+    "triple_sound_indices_hex": [
+      "2D3"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6328": {
+    "triple_sound_indices_hex": [
+      "2D4"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6332": {
+    "triple_sound_indices_hex": [
+      "2D5"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6336": {
+    "triple_sound_indices_hex": [
+      "2D6"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6344": {
+    "triple_sound_indices_hex": [
+      "2D8"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6348": {
+    "triple_sound_indices_hex": [
+      "2D9"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6352": {
+    "triple_sound_indices_hex": [
+      "2DA"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6356": {
+    "triple_sound_indices_hex": [
+      "2DB"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6360": {
+    "triple_sound_indices_hex": [
+      "2DC"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6364": {
+    "triple_sound_indices_hex": [
+      "1D1"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6368": {
+    "triple_sound_indices_hex": [
+      "1D2"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6376": {
+    "triple_sound_indices_hex": [
+      "2DD"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6380": {
+    "triple_sound_indices_hex": [
+      "1D9"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6384": {
+    "triple_sound_indices_hex": [
+      "1DA"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6388": {
+    "triple_sound_indices_hex": [
+      "1D8"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6392": {
+    "triple_sound_indices_hex": [
+      "1E4"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6396": {
+    "triple_sound_indices_hex": [
+      "1E9"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6400": {
+    "triple_sound_indices_hex": [
+      "1D0"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6404": {
+    "triple_sound_indices_hex": [
+      "1EB"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6408": {
+    "triple_sound_indices_hex": [
+      "1EC"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6412": {
+    "triple_sound_indices_hex": [
+      "2DE"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6424": {
+    "triple_sound_indices_hex": [
+      "2E1"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6428": {
+    "triple_sound_indices_hex": [
+      "2E2"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6432": {
+    "triple_sound_indices_hex": [
+      "2E3"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6436": {
+    "triple_sound_indices_hex": [
+      "1D6"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6440": {
+    "triple_sound_indices_hex": [
+      "2E4"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6444": {
+    "triple_sound_indices_hex": [
+      "1D7"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6448": {
+    "triple_sound_indices_hex": [
+      "1D5"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6452": {
+    "triple_sound_indices_hex": [
+      "2E5"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6456": {
+    "triple_sound_indices_hex": [
+      "2E6"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6460": {
+    "triple_sound_indices_hex": [
+      "2E7"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6464": {
+    "triple_sound_indices_hex": [
+      "1D3"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6468": {
+    "triple_sound_indices_hex": [
+      "1D4"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6472": {
+    "triple_sound_indices_hex": [
+      "2E8"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6476": {
+    "triple_sound_indices_hex": [
+      "1E3"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6480": {
+    "triple_sound_indices_hex": [
+      "1E5"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6484": {
+    "triple_sound_indices_hex": [
+      "1E6"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6488": {
+    "triple_sound_indices_hex": [
+      "2E9"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6492": {
+    "triple_sound_indices_hex": [
+      "2EA"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6496": {
+    "triple_sound_indices_hex": [
+      "2EB"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6500": {
+    "triple_sound_indices_hex": [
+      "1E7"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6504": {
+    "triple_sound_indices_hex": [
+      "1E8"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6508": {
+    "triple_sound_indices_hex": [
+      "1EA"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6512": {
+    "triple_sound_indices_hex": [
+      "2EC"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6516": {
+    "triple_sound_indices_hex": [
+      "2ED"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6520": {
+    "triple_sound_indices_hex": [
+      "2EE"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6528": {
+    "triple_sound_indices_hex": [
+      "2EF"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6532": {
+    "triple_sound_indices_hex": [
+      "1EE"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6536": {
+    "triple_sound_indices_hex": [
+      "1ED"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6540": {
+    "triple_sound_indices_hex": [
+      "1EF",
+      "2F1"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6544": {
+    "triple_sound_indices_hex": [
+      "2F2"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6548": {
+    "triple_sound_indices_hex": [
+      "2F3"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6552": {
+    "triple_sound_indices_hex": [
+      "2F4"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6556": {
+    "triple_sound_indices_hex": [
+      "1F8"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6560": {
+    "triple_sound_indices_hex": [
+      "2F5"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6564": {
+    "triple_sound_indices_hex": [
+      "1F0"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6568": {
+    "triple_sound_indices_hex": [
+      "2F6"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6572": {
+    "triple_sound_indices_hex": [
+      "1F1"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6576": {
+    "triple_sound_indices_hex": [
+      "2F7"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6580": {
+    "triple_sound_indices_hex": [
+      "1F2"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6584": {
+    "triple_sound_indices_hex": [
+      "1F4"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6588": {
+    "triple_sound_indices_hex": [
+      "1F3"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6592": {
+    "triple_sound_indices_hex": [
+      "2F8"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6600": {
+    "triple_sound_indices_hex": [
+      "1F5"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6604": {
+    "triple_sound_indices_hex": [
+      "1F6"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6608": {
+    "triple_sound_indices_hex": [
+      "2F9"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6612": {
+    "triple_sound_indices_hex": [
+      "2FA"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6616": {
+    "triple_sound_indices_hex": [
+      "2FB"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6620": {
+    "triple_sound_indices_hex": [
+      "2FC"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6624": {
+    "triple_sound_indices_hex": [
+      "2FD"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6628": {
+    "triple_sound_indices_hex": [
+      "2FE"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6632": {
+    "triple_sound_indices_hex": [
+      "2FF"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6636": {
+    "triple_sound_indices_hex": [
+      "300"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6640": {
+    "triple_sound_indices_hex": [
+      "301"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  },
+  "6644": {
+    "triple_sound_indices_hex": [
+      "302"
+    ],
+    "direct_source_reference": null,
+    "valid_in_wwf_l1_dcs": true
+  }
+}

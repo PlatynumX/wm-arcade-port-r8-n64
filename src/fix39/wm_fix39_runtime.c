@@ -1944,8 +1944,14 @@ static void live_character_move(wm_arcade_actor_t *a,
     opp = &g.actors[index ^ 1];
     t = &g.trace[index];
     live_continue_ring_climb_if_ready(a);
-    if (g.ring_climb_cont[index] == WM_RING_CLIMB_CONT_NONE &&
-        a->player_mode != WM_PMODE_WAITANIM)
+
+    /*
+     * WRESTLE.ASM::move_wrestler always dispatches move_xxx after its
+     * HALT/special/auto-pin checks. Do not suppress MODE_WAITANIM here:
+     * the direct wrestler ports own that mode and use it to run CODE_ADDR
+     * when ANIMODE.END becomes set.
+     */
+    if (g.ring_climb_cont[index] == WM_RING_CLIMB_CONT_NONE)
         t->last_character_step = wm_arcade_move_ported_wrestler(
             profile, a, opp, ctx ? ctx->env : 0, &wrestler_bindings);
 }

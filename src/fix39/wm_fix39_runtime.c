@@ -1255,28 +1255,68 @@ static void common_sound_label(wm_arcade_actor_t *a, const char *label, void *us
     if(g.sound)(void)wm_arcade_sound_play_label(g.sound,a,label);
 }
 
+
+typedef struct source_special_spawn_rule {
+    const char *label;
+    wm_arcade_special_kind_t kind;
+} source_special_spawn_rule_t;
+
+/* Combat2ES R34:
+   Source process spawns must be exact labels, not substring guesses.
+   The previous "contains salt/reaper/spirit/pie/fireball" classifier could
+   accidentally turn an unrelated process label into a gameplay object.
+   Unknown labels now remain ordinary source process labels and do not
+   fabricate SPECIAL.ASM objects. */
+static const source_special_spawn_rule_t source_special_spawn_rules[] = {
+    {"yok_salt", WM_SP_KIND_YOKO_SALT},
+    {"yok_salt_proc", WM_SP_KIND_YOKO_SALT},
+    {"yok_salt_throw", WM_SP_KIND_YOKO_SALT},
+    {"salt_throw", WM_SP_KIND_YOKO_SALT},
+    {"salt_proc", WM_SP_KIND_YOKO_SALT},
+
+    {"und_spirit", WM_SP_KIND_TAKER_SPIRIT},
+    {"und_spirit_proc", WM_SP_KIND_TAKER_SPIRIT},
+    {"spirit_proc", WM_SP_KIND_TAKER_SPIRIT},
+    {"und_reaper", WM_SP_KIND_TAKER_REAPER},
+    {"und_reaper_proc", WM_SP_KIND_TAKER_REAPER},
+    {"reaper_proc", WM_SP_KIND_TAKER_REAPER},
+
+    {"dnk_pie", WM_SP_KIND_DOINK_PIE},
+    {"dnk_pie_proc", WM_SP_KIND_DOINK_PIE},
+    {"pie_proc", WM_SP_KIND_DOINK_PIE},
+
+    {"bam_fireball", WM_SP_KIND_BAM_FIREBALL},
+    {"bam_fireball_proc", WM_SP_KIND_BAM_FIREBALL},
+    {"bam_fire_ball", WM_SP_KIND_BAM_FIREBALL},
+    {"bam_fire_ball_proc", WM_SP_KIND_BAM_FIREBALL},
+    {"fireball_proc", WM_SP_KIND_BAM_FIREBALL},
+    {"fire_ball_proc", WM_SP_KIND_BAM_FIREBALL}
+};
+
+static bool source_special_kind_for_label(const char *label,
+                                          wm_arcade_special_kind_t *kind)
+{
+    size_t i;
+    if (!label || !kind) return false;
+    for (i = 0u; i < sizeof(source_special_spawn_rules) / sizeof(source_special_spawn_rules[0]); ++i) {
+        if (strcmp(label, source_special_spawn_rules[i].label) == 0) {
+            *kind = source_special_spawn_rules[i].kind;
+            return true;
+        }
+    }
+    return false;
+}
+
 static void common_start_special_label(wm_arcade_actor_t *a, const char *label, void *user)
 {
     WmFix39ActorTrace *t = trace_for(a);
+    wm_arcade_special_kind_t kind;
     (void)user;
     if (!t) return;
     t->external_special_label = label;
     ++t->external_special_events;
-    /* Connect source labels to the SPECIAL.ASM constructors already ported
-       in this bundle. Unknown process labels remain ordinary wrestler-special
-       processes and are not misclassified as projectiles. */
-    if (label != 0) {
-        if (strstr(label, "salt") != 0)
-            (void)live_spawn_special(a, WM_SP_KIND_YOKO_SALT);
-        else if (strstr(label, "reaper") != 0)
-            (void)live_spawn_special(a, WM_SP_KIND_TAKER_REAPER);
-        else if (strstr(label, "spirit") != 0)
-            (void)live_spawn_special(a, WM_SP_KIND_TAKER_SPIRIT);
-        else if (strstr(label, "pie") != 0)
-            (void)live_spawn_special(a, WM_SP_KIND_DOINK_PIE);
-        else if (strstr(label, "fireball") != 0 || strstr(label, "fire_ball") != 0)
-            (void)live_spawn_special(a, WM_SP_KIND_BAM_FIREBALL);
-    }
+    if (source_special_kind_for_label(label, &kind))
+        (void)live_spawn_special(a, kind);
 }
 
 /* Combat2CZ: direct WRESTLE.ASM::execute_walk/change_walk_anim/set_velocities.

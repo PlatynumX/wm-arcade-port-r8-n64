@@ -203,4 +203,14 @@ if(WM_BUILD_TESTS)
     add_test(NAME wm_combat_whole_source_parity_audit
              COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/audit_combat_whole_source_parity.py)
     set_tests_properties(wm_combat_whole_source_parity_audit PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+add_executable(wm_combat_adjacent_source_closure_tests tests/combat_adjacent_source_closure.c)
+target_link_libraries(wm_combat_adjacent_source_closure_tests PRIVATE wmcore)
+target_compile_options(wm_combat_adjacent_source_closure_tests PRIVATE -Wall -Wextra -Wpedantic -UNDEBUG)
+add_test(NAME wm_combat_adjacent_source_closure COMMAND wm_combat_adjacent_source_closure_tests)
+
+add_test(NAME wm_combat_adjacent_source_parity_audit
+         COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/audit_combat_adjacent_source_parity.py)
+set_tests_properties(wm_combat_adjacent_source_parity_audit PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
 endif()

@@ -49,6 +49,11 @@
 #define WM_FIX39_ACTOR_COUNT 2u
 #define WM_FIX39_ATTRACT_MAX_STEPS 32u
 #define WM_FIX39_SPECIAL_SLOTS 8u
+/* GAME.EQU: MESSAGES_PID is the ordinary message process family; MESSAGE_PID
+   is explicitly used by BONUS_MESS.  Preserve source PID identity in the trace
+   instead of faking messages as sound labels. */
+#define WM_FIX39_MESSAGES_PID 0x013Fu
+#define WM_FIX39_MESSAGE_PID_BONUS 0x0241u
 
 /* WRESTLE.ASM reset_start, first team1_starts/team2_starts entries. */
 #define WM_FIX39_P1_START_X (WM_RING_X_CENTER - 85)
@@ -1732,6 +1737,19 @@ static uintptr_t source_label_token(const char *source_label, void *user)
 }
 
 
+static void source_message_event(wm_arcade_actor_t *a,
+                                 const char *source_label,
+                                 int value,
+                                 uint16_t source_pid)
+{
+    WmFix39ActorTrace *tr = trace_for(a);
+    if (!tr) return;
+    tr->message_label = source_label;
+    tr->message_value = value;
+    tr->message_pid = source_pid;
+    ++tr->message_events;
+}
+
 static void source_find_and_kill_endless_port(wm_arcade_actor_t *a, void *user)
 {
     /* DCSSOUND.ASM::FIND_AND_KILL_ENDLESS kills the tracked ENDLESS_SOUND
@@ -1756,23 +1774,23 @@ static void source_do_reversal_port(wm_arcade_actor_t *a, void *user)
 
 static void source_do_reversal_message_port(wm_arcade_actor_t *a, void *user)
 {
-    /* Message renderer is not a fake animation: expose the source hook through
-       trace/sound metadata until the message object backend is ported. */
-    common_sound_label(a, "DO_REVERSAL_MESS", user);
+    /* DO_REVERSAL_MESS is a source message event, not a WRSND label.
+       Keep it in explicit message trace state until the lifebar/message object
+       backend consumes the same event. */
+    (void)user;
+    source_message_event(a, "DO_REVERSAL_MESS", 0, WM_FIX39_MESSAGES_PID);
 }
 
 static void source_bonus_message_port(wm_arcade_actor_t *a, int bonus, void *user)
 {
-    char label[32];
     (void)user;
     if (!a) return;
     if (bonus < 0) bonus = 0;
     if (bonus > 999) bonus = 999;
-    /* Runtime-visible accounting for BONUS_MESS(A10).  The text object/spawn
-       backend can consume the same hook later without changing SMOVE bodies. */
-    a->damage_given += bonus;
-    snprintf(label, sizeof(label), "BONUS_MESS_%03d", bonus);
-    common_sound_label(a, label, 0);
+    /* BONUS_MESS(A10) creates MESSAGE_PID in the source.  Do not account this
+       as damage and do not synthesize a sound label; expose the source message
+       event for the lifebar/message renderer path. */
+    source_message_event(a, "BONUS_MESS", bonus, WM_FIX39_MESSAGE_PID_BONUS);
 }
 
 static int source_ck_ignore_a8_port(wm_arcade_actor_t *a, void *user)

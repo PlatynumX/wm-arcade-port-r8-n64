@@ -106,6 +106,10 @@ typedef struct {
     const char *torso_animation_label;
     const char *sound_label;
     const char *external_special_label;
+    const char *message_label;
+
+    uint16_t message_pid;
+    int32_t message_value;
 
     /* Bret/Razor use source enum tokens until their animation pointer tables
        are connected to the native arcade-frame interpreter. */
@@ -117,6 +121,7 @@ typedef struct {
     uint32_t animation_events;
     uint32_t sound_events;
     uint32_t external_special_events;
+    uint32_t message_events;
 } WmFix39ActorTrace;
 
 void wm_fix39_runtime_init(void);

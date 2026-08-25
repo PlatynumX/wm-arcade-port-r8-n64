@@ -11,37 +11,15 @@ This audit starts after active SMOVE label closure. It is not a gameplay change.
 
 ## Finding counts
 
-- major: 3
 - minor: 3
 - info: 1
 
 ## Findings
 
-### MAJOR: reversal_message_not_text_object_verified
-
-- file: `src/fix39/wm_fix39_runtime.c`
-- evidence: src/fix39/wm_fix39_runtime.c:1750: ource uses DO_REVERSAL before WHOHITME-targeted counter throws. Preserve actor-owned reversal state here; presentation messaging is the companion DO_REVERSAL_MESS hook below. */ (void)user; if (!a) return; a->status_flags |= WM_STATUS_COMBO_BROKEN; a->anti_combo_time = g.status.pcnt; } static void source
-- why: DO_REVERSAL_MESS is a source message effect. Routing it through trace/sound metadata is not proof that the arcade message object/timing exists.
-- next: Port or connect the real message renderer path and assert timing/object spawn semantics.
-
-### MAJOR: bonus_message_synthesized_label
-
-- file: `src/fix39/wm_fix39_runtime.c`
-- evidence: src/fix39/wm_fix39_runtime.c:1774: object/spawn backend can consume the same hook later without changing SMOVE bodies. */ a->damage_given += bonus; snprintf(label, sizeof(label), "BONUS_MESS_%03d", bonus); common_sound_label(a, label, 0); } static int source_ck_ignore_a8_port(wm_arcade_actor_t *a, void *user) { uint16_t away = 0u; (void
-- why: BONUS_MESS was converted into a synthesized label/accounting hook. That may not match source scoring, text lifetime, message PID, or display timing.
-- next: Translate BONUS_MESS as a real source message process and compare bonus values/timing per wrestler.
-
-### MAJOR: bonus_message_changes_damage_counter
-
-- file: `src/fix39/wm_fix39_runtime.c`
-- evidence: src/fix39/wm_fix39_runtime.c:1773: /* Runtime-visible accounting for BONUS_MESS(A10). The text object/spawn backend can consume the same hook later without changing SMOVE bodies. */ a->damage_given += bonus; snprintf(label, sizeof(label), "BONUS_MESS_%03d", bonus); common_sound_label(a, label, 0); } static int source_ck_ignore_a8_port(wm_arcade_actor_t *a
-- why: Damage accounting and bonus-message scoring are not necessarily the same source side effect.
-- next: Verify the original accounting path before modifying damage_given as a stand-in.
-
 ### MINOR: ck_ignore_a8_direction_table_needs_source_proof
 
 - file: `src/fix39/wm_fix39_runtime.c`
-- evidence: src/fix39/wm_fix39_runtime.c:1778: SMOVE bodies. */ a->damage_given += bonus; snprintf(label, sizeof(label), "BONUS_MESS_%03d", bonus); common_sound_label(a, label, 0); } static int source_ck_ignore_a8_port(wm_arcade_actor_t *a, void *user) { uint16_t away = 0u; (void)user; if (!a) return 1; /* WRESTLE.ASM::ck_ignore_a8: index NEW_FACING_DIR throu
+- evidence: src/fix39/wm_fix39_runtime.c:1796: urce message event for the lifebar/message renderer path. */ source_message_event(a, "BONUS_MESS", bonus, WM_FIX39_MESSAGE_PID_BONUS); } static int source_ck_ignore_a8_port(wm_arcade_actor_t *a, void *user) { uint16_t away = 0u; (void)user; if (!a) return 1; /* WRESTLE.ASM::ck_ignore_a8: index NEW_FACING_DIR throu
 - why: ck_ignore/ck_ignore_a8 is direction-table logic in WRESTLE.ASM. The local translation needs exact mv_tbl coverage evidence.
 - next: Add a small table-driven test against the WRESTLE.ASM mv_tbl mapping for all facing/move_dir cases.
 

@@ -46,7 +46,8 @@
 #include <limits.h>
 #include <string.h>
 
-#define WM_FIX39_ACTOR_COUNT 2u
+/* show_gameplay supports one drone plus up to three CURRENT_LADDER drones. */
+#define WM_FIX39_ACTOR_COUNT 4u
 #define WM_FIX39_ATTRACT_MAX_STEPS 32u
 #define WM_FIX39_SPECIAL_SLOTS 8u
 /* GAME.EQU: MESSAGES_PID is the ordinary message process family; MESSAGE_PID
@@ -62,6 +63,12 @@
 #define WM_FIX39_P2_START_X (WM_RING_X_CENTER + 85)
 #define WM_FIX39_P2_START_Z (1103 + 93)
 #define WM_FIX39_P2_FACING  6
+#define WM_FIX39_P2B_START_X (WM_RING_X_CENTER + 150)
+#define WM_FIX39_P2B_START_Z (1103 + 170)
+#define WM_FIX39_P2B_FACING  5
+#define WM_FIX39_P2C_START_X (WM_RING_X_CENTER + 20)
+#define WM_FIX39_P2C_START_Z (1103 + 16)
+#define WM_FIX39_P2C_FACING  6
 
 static struct {
     WmFix39Status status;
@@ -76,6 +83,7 @@ static struct {
     WmRopeRuntimeAdapter rope_render_adapter;
     wm_arcade_actor_t actors[WM_FIX39_ACTOR_COUNT];
     wm_arcade_actor_t *actor_ptrs[WM_FIX39_ACTOR_COUNT];
+    size_t active_actor_count;
     WmFix39ActorTrace trace[WM_FIX39_ACTOR_COUNT];
     wm_source_anim_runtime_t source_anim[WM_FIX39_ACTOR_COUNT];
     wm_source_anim_runtime_t source_torso[WM_FIX39_ACTOR_COUNT];
@@ -221,8 +229,10 @@ int wm_fix39_frontend_to_arcade_roster(unsigned id)
 
 static int actor_index(const wm_arcade_actor_t *a)
 {
-    if (a == &g.actors[0]) return 0;
-    if (a == &g.actors[1]) return 1;
+    unsigned i;
+    if (!a) return -1;
+    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i)
+        if (a == &g.actors[i]) return (int)i;
     return -1;
 }
 
@@ -989,9 +999,9 @@ static void source_calc_closest_all(void)
     wm_arcade_closest_world_t world;
     unsigned i;
     world.actors = g.actor_ptrs;
-    world.actor_count = WM_FIX39_ACTOR_COUNT;
+    world.actor_count = g.active_actor_count;
     world.pcnt = g.status.pcnt;
-    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i)
+    for (i = 0u; i < g.active_actor_count; ++i)
         (void)wm_arcade_calc_closest(&g.actors[i], &world);
 }
 
@@ -1000,9 +1010,9 @@ static void source_calc_closest2_all(void)
     wm_arcade_closest_world_t world;
     unsigned i;
     world.actors = g.actor_ptrs;
-    world.actor_count = WM_FIX39_ACTOR_COUNT;
+    world.actor_count = g.active_actor_count;
     world.pcnt = g.status.pcnt;
-    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i)
+    for (i = 0u; i < g.active_actor_count; ++i)
         (void)wm_arcade_calc_closest2(&g.actors[i], &world);
 }
 
@@ -2628,6 +2638,15 @@ void wm_fix39_match_begin(unsigned frontend_p1, unsigned frontend_p2)
     unsigned i;
     if (!g.status.initialized) wm_fix39_runtime_init();
 
+    g.active_actor_count = 2u;
+    for (i = 2u; i < WM_FIX39_ACTOR_COUNT; ++i) {
+        memset(&g.actors[i], 0, sizeof(g.actors[i]));
+        g.actor_ptrs[i] = 0;
+        memset(&g.trace[i], 0, sizeof(g.trace[i]));
+        memset(&g.frame_box[i], 0, sizeof(g.frame_box[i]));
+        g.frame_box_valid[i] = false;
+    }
+
     {
         int p1_wrestler = wm_fix39_frontend_to_arcade_roster(frontend_p1);
         int p2_wrestler = wm_fix39_frontend_to_arcade_roster(frontend_p2);
@@ -2756,6 +2775,82 @@ void wm_fix39_match_begin(unsigned frontend_p1, unsigned frontend_p2)
         (void)wm_arcade_smove_init_for_wrestler(&g.smoves, &g.actors[i], (uint8_t)i, sp);
     }
     g.status.match_started = true;
+}
+
+
+bool wm_fix39_attract_match_begin(const WmAttractDemoPlan *plan)
+{
+    static const int32_t ox[3] = {
+        WM_FIX39_P2_START_X, WM_FIX39_P2B_START_X, WM_FIX39_P2C_START_X
+    };
+    static const int32_t oz[3] = {
+        WM_FIX39_P2_START_Z, WM_FIX39_P2B_START_Z, WM_FIX39_P2C_START_Z
+    };
+    static const int32_t oface[3] = {
+        WM_FIX39_P2_FACING, WM_FIX39_P2B_FACING, WM_FIX39_P2C_FACING
+    };
+    int p1_front=-1, p2_front=-1;
+    unsigned f, slot;
+
+    if (!plan || plan->num_opps < 1u || plan->num_opps > 3u) return false;
+    if (!g.status.initialized) wm_fix39_runtime_init();
+
+    for (f=0u; f<8u; ++f) {
+        int r=wm_fix39_frontend_to_arcade_roster(f);
+        if (r==(int)plan->player_wrestler) p1_front=(int)f;
+        if (r==(int)plan->opponent_wrestlers[0]) p2_front=(int)f;
+    }
+    if (p1_front < 0 || p2_front < 0) return false;
+
+    wm_fix39_match_begin((unsigned)p1_front,(unsigned)p2_front);
+    if (!g.status.match_started) return false;
+
+    g.active_actor_count=(size_t)plan->num_opps+1u;
+    g.actors[0].player_type=WM_PTYPE_DRONE;
+    g.actors[1].player_type=WM_PTYPE_DRONE;
+
+    for (slot=2u; slot<g.active_actor_count; ++slot) {
+        unsigned oi=slot-1u;
+        init_actor(&g.actors[slot], (int)slot, 1,
+                   (int)plan->opponent_wrestlers[oi],
+                   ox[oi], oz[oi], oface[oi]);
+        g.actor_ptrs[slot]=&g.actors[slot];
+
+        wm_source_anim_runtime_init(&g.source_anim[slot]);
+        wm_source_anim_runtime_init(&g.source_torso[slot]);
+        wm_source_anim_runtime_bind(&g.source_anim[slot],&g.source_anim_services);
+        wm_source_anim_runtime_bind(&g.source_torso[slot],&g.source_anim_services);
+        wm_source_anim_runtime_set_secondary(&g.source_torso[slot], true);
+        init_source_character_animation(&g.actors[slot]);
+        if (!wm_source_anim_runtime_frame(&g.source_anim[slot]))
+            (void)live_start_source_anim(&g.actors[slot],
+                                         live_default_stand_label(&g.actors[slot]),
+                                         false);
+
+        wm_arcade_drone_init(&g.drone_state[slot],20);
+        wm_arcade_getup_process_init(&g.getup[slot]);
+        wm_arcade_getup_process_begin(&g.getup[slot],&g.actors[slot],
+            g.actor_ptrs,WM_FIX39_ACTOR_COUNT,true,1u,false,g.sound);
+        {
+            const wm_arcade_wrestler_profile_t *sp=
+                wm_arcade_roster_profile((wm_arcade_roster_id_t)g.actors[slot].wrestler_num);
+            (void)wm_arcade_smove_init_for_wrestler(&g.smoves,&g.actors[slot],
+                                                     (uint8_t)slot,sp);
+        }
+    }
+
+    for (slot=(unsigned)g.active_actor_count; slot<WM_FIX39_ACTOR_COUNT; ++slot)
+        g.actor_ptrs[slot]=0;
+
+    source_calc_closest_all();
+    g.match_cpu_vs_cpu=true;
+    g.lifecycle.attract_wrap=true;
+    return true;
+}
+
+size_t wm_fix39_active_actor_count(void)
+{
+    return g.status.match_started ? g.active_actor_count : 0u;
 }
 
 bool wm_fix39_match_started(void)
@@ -2931,6 +3026,30 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
                 { ++g.status.drone_input_ticks; ++g.status.drone_input_ticks_by_player[1]; }
             g.actors[1].move_dir = g.actors[1].stick_val_cur;
         }
+
+        /* R37F1: WRESTLE.ASM #0plyr creates every CURRENT_LADDER opponent
+           with PTYPE_DRONE. Run the same DRONE.ASM interpreter for source
+           process slots 2/3 instead of merely rendering them. */
+        for (i = 2u; i < g.active_actor_count; ++i) {
+            wm_arcade_actor_t *a = &g.actors[i];
+            if (a->player_type == WM_PTYPE_DRONE &&
+                (a->status_flags & WM_STATUS_ZOMBIE) == 0u) {
+                wm_arcade_drone_step_result_t drx = wm_arcade_drone_main(
+                    a, &g.drone_state[i], &world, &g.drone_callbacks);
+                if (g.drone_state[i].anim_request) {
+                    common_anim_label(a, g.drone_state[i].anim_request, 0);
+                    g.drone_state[i].anim_request = 0;
+                }
+                ++g.status.drone_ticks;
+                ++g.status.drone_ticks_by_player[i];
+                if (drx == WM_DRONE_STEP_INPUT || drx == WM_DRONE_STEP_BLOCK ||
+                    a->but_val_cur != 0u || a->stick_val_cur != 0u) {
+                    ++g.status.drone_input_ticks;
+                    ++g.status.drone_input_ticks_by_player[i];
+                }
+                a->move_dir = a->stick_val_cur;
+            }
+        }
     }
 
 
@@ -3000,9 +3119,9 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
     move_cb.character_move = live_character_move;
     move_cb.user = &ctx;
 
-    /* WRESTLE.ASM move_wrestler owns character dispatch.  Both actors enter
-       it every live source tick; P2 now receives the live DRONE-generated input. */
-    if (!g.lifecycle.halt) for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
+    /* WRESTLE.ASM process_dispatch only visits created wrestler processes.
+       Capacity is four for attract, but a normal match still owns exactly two. */
+    if (!g.lifecycle.halt) for (i = 0u; i < g.active_actor_count; ++i) {
         (void)wm_arcade_move_wrestler(&g.actors[i], 0, &move_cb);
         ++g.status.wrestler_dispatch_ticks;
         ++g.status.wrestler_dispatch_ticks_by_player[i];
@@ -3147,7 +3266,7 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
     g.combat_runtime.pcnt = g.status.pcnt;
     ++g.status.pcnt;
     ++g.status.round_tickcount;
-    wm_arcade_match_lifecycle_tick(&g.lifecycle,g.actor_ptrs,WM_FIX39_ACTOR_COUNT,g.status.pcnt);
+    wm_arcade_match_lifecycle_tick(&g.lifecycle,g.actor_ptrs,g.active_actor_count,g.status.pcnt);
 }
 
 const wm_arcade_actor_t *wm_fix39_actor(size_t index)

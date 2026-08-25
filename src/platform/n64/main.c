@@ -2904,19 +2904,29 @@ static void fix39_draw_fighter_from_source(const wm_demo_fighter *src,size_t ind
 }
 static __attribute__((unused)) void render_match(const wm_app *app) {
     const wm_demo *demo = &app->demo;
-    int p1x,p1y,p2x,p2y; bool p1f,p2f;
-    fix39_project_actor(0,&p1x,&p1y,&p1f);
-    fix39_project_actor(1,&p2x,&p2y,&p2f);
-    (void)p1x; (void)p2x; (void)p1f; (void)p2f;
-    { fix39_crowd_source_frame_event(0,wm_fix39_actor_source_frame(0)); fix39_crowd_source_frame_event(1,wm_fix39_actor_source_frame(1)); }
+    struct fix39_draw_actor { size_t index; int y; } order[4];
+    size_t n=wm_fix39_active_actor_count();
+    if(n>4u)n=4u;
+    for(size_t i=0;i<n;i++){
+        int x,y; bool f;
+        fix39_project_actor(i,&x,&y,&f);
+        (void)x; (void)f;
+        order[i].index=i; order[i].y=y;
+        fix39_crowd_source_frame_event(i,wm_fix39_actor_source_frame(i));
+    }
+    for(size_t i=1;i<n;i++){
+        struct fix39_draw_actor k=order[i]; size_t j=i;
+        while(j>0 && k.y<order[j-1].y){order[j]=order[j-1];--j;}
+        order[j]=k;
+    }
     draw_ring_back();
-
-    if (p1y <= p2y) {
-        fix39_draw_fighter_from_source(&demo->p1,0);
-        fix39_draw_fighter_from_source(&demo->p2,1);
-    } else {
-        fix39_draw_fighter_from_source(&demo->p2,1);
-        fix39_draw_fighter_from_source(&demo->p1,0);
+    for(size_t oi=0;oi<n;oi++){
+        size_t idx=order[oi].index;
+        const wm_arcade_actor_t *a=wm_fix39_actor(idx);
+        wm_demo_fighter scratch = (idx==0u)?demo->p1:demo->p2;
+        if(!a)continue;
+        scratch.roster_id=(uint8_t)a->wrestler_num;
+        fix39_draw_fighter_from_source(&scratch,idx);
     }
     draw_ring_front();
 
@@ -3159,22 +3169,15 @@ static bool fix39_tick_gameplay_demo(wm_app *app, const wm_input_state *input) {
         WmAttractDemoPlan plan;
         if(!wm_fix39_attract_demo_plan(a->amode_loops,false,&plan))return true;
         {
-            int p1slot=fix39_frontend_slot_for_arcade(plan.player_wrestler);
-            int p2slot=fix39_frontend_slot_for_arcade(plan.opponent_wrestler);
             const wm_arcade_actor_t *p1; const wm_arcade_actor_t *p2;
-            if(p1slot<0 || p2slot<0)return true;
-            /* ATTR.ASM wrestler IDs are gameplay authority. wm_demo remains
-               renderer storage only, but it must carry the SAME source IDs so
-               any torso/base-frame fallback cannot silently become Bret. */
             app->demo.p1.roster_id=plan.player_wrestler;
-            app->demo.p2.roster_id=plan.opponent_wrestler;
-            wm_fix39_match_begin((unsigned)p1slot,(unsigned)p2slot);
+            app->demo.p2.roster_id=plan.opponent_wrestlers[0];
+            if(!wm_fix39_attract_match_begin(&plan))return true;
             p1=wm_fix39_actor(0); p2=wm_fix39_actor(1);
             if(!p1 || !p2 || (unsigned)p1->wrestler_num!=plan.player_wrestler ||
-               (unsigned)p2->wrestler_num!=plan.opponent_wrestler){
+               (unsigned)p2->wrestler_num!=plan.opponent_wrestlers[0]){
                 wm_fix39_match_set_cpu_vs_cpu(false); return true;
             }
-            wm_fix39_match_set_cpu_vs_cpu(true);
         }
     }
     wm_fix39_match_tick(0,0,false,false,false,false,false,false);

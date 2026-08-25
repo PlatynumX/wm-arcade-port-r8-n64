@@ -220,9 +220,13 @@ void wm_attract_demo_plan_make(WmAttractDemoPlan *plan,
     plan->p2rounds = 1u;
     plan->player_wrestler = (uint8_t)wrestler;
     plan->ladder_battle = (uint8_t)battle;
-    wrestler = ladder[battle][0]; /* source CURRENT_LADDER=LADDER+battle*32 */
-    if (wrestler == 7u) ++wrestler; /* SORT_OUT_WRESTLER_NUM */
-    plan->opponent_wrestler = (uint8_t)wrestler;
+    /* WRESTLE.ASM #0plyr consumes NUM_OPPS wrestlers from CURRENT_LADDER. */
+    plan->num_opps = counts[battle];
+    for (j = 0u; j < plan->num_opps; ++j) {
+        wrestler = ladder[battle][j];
+        if (wrestler == 7u) ++wrestler; /* SORT_OUT_WRESTLER_NUM */
+        plan->opponent_wrestlers[j] = (uint8_t)wrestler;
+    }
     plan->warmup_frames = 3u * 60u;
     plan->freeze_frames = 3u * 60u;
     plan->freeze_hold_frames = 60u;

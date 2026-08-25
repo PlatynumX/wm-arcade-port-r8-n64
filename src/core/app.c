@@ -399,13 +399,9 @@ static bool fix39_tick_gameplay_demo(wm_app *app, const wm_input_state *input) {
         if (!wm_fix39_attract_demo_plan((uint16_t)a->amode_loops, false, &plan))
             return true; /* fail closed: never invent an attract matchup */
 
-        p1 = fix39_demo_arcade_to_frontend(plan.player_wrestler);
-        p2 = fix39_demo_arcade_to_frontend(plan.opponent_wrestler);
-        if (p1 < 0 || p2 < 0)
+        (void)p1; (void)p2;
+        if (!wm_fix39_attract_match_begin(&plan))
             return true;
-
-        wm_fix39_match_begin((unsigned)p1, (unsigned)p2);
-        wm_fix39_match_set_cpu_vs_cpu(true);
 
         /* phase_ticks == 0 means live SHOW_GAMEPLAY.
            Nonzero is the source freeze/fade tail after wait_on_butn returns. */

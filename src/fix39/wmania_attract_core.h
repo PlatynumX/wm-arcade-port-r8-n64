@@ -105,8 +105,9 @@ typedef struct {
     uint8_t p1rounds;
     uint8_t p2rounds;
     uint8_t player_wrestler;  /* 0..6 or 8: source skips spare slot 7 */
-    uint8_t opponent_wrestler; /* first drone from exact INIT_LADDER_TABLE entry */
-    uint8_t ladder_battle;    /* RNDRNG0(5)+1 => 1..6 */
+    uint8_t num_opps;          /* NUM_OPPS from selected CURRENT_LADDER row: 1..3 */
+    uint8_t opponent_wrestlers[3]; /* complete source ladder row, sorted 7 -> 8 */
+    uint8_t ladder_battle;     /* RNDRNG0(5)+1 => 1..6 */
     uint16_t warmup_frames;
     uint16_t freeze_frames;
     uint16_t freeze_hold_frames;

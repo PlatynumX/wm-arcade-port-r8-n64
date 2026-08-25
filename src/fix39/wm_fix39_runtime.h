@@ -52,14 +52,14 @@ typedef struct {
 
     /* Proven live-entry counters. */
     uint32_t wrestler_dispatch_ticks;
-    uint32_t wrestler_dispatch_ticks_by_player[2];
+    uint32_t wrestler_dispatch_ticks_by_player[4];
     uint32_t drone_ticks;
     uint32_t drone_input_ticks;
     /* Combat2DT: per-actor liveness distinguishes a global DRONE stall from
        one actor parking on a source service/script seam. */
-    uint32_t drone_ticks_by_player[2];
-    uint32_t drone_input_ticks_by_player[2];
-    uint32_t actor_position_changes[2];
+    uint32_t drone_ticks_by_player[4];
+    uint32_t drone_input_ticks_by_player[4];
+    uint32_t actor_position_changes[4];
     uint32_t rope_process_ticks;
     uint32_t ringout_process_ticks;
     uint32_t special_process_ticks;
@@ -207,6 +207,9 @@ int16_t wm_fix39_camera_worldtly_int(void);
 /* Source-exact first 1v1 reset_start seeds from WRESTLE.ASM. */
 int wm_fix39_frontend_to_arcade_roster(unsigned frontend_id);
 void wm_fix39_match_begin(unsigned frontend_p1, unsigned frontend_p2);
+/* ATTRACT.ASM/WRESTLE.ASM PSTATUS==0 #0plyr path. */
+bool wm_fix39_attract_match_begin(const WmAttractDemoPlan *plan);
+size_t wm_fix39_active_actor_count(void);
 bool wm_fix39_match_started(void);
 void wm_fix39_match_set_cpu_vs_cpu(bool enabled);
 void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,

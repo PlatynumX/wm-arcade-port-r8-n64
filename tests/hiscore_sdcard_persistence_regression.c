@@ -77,5 +77,15 @@ int main(void)
     printf("High-score SD-card persistence regression: PASS\n");
     printf("default_path=%s\n", WM_HS_SDCARD_SAVE_PATH);
     printf("host_test_path=%s\n", path);
+
+    /* Host regression residue must never become a port asset or Git commit. */
+    {
+        char dir[1024];
+        if (snprintf(dir, sizeof(dir), "%s/wm_arcade", root) < (int)sizeof(dir)) {
+            (void)unlink(path);
+            (void)rmdir(dir);
+        }
+        (void)rmdir(root);
+    }
     return 0;
 }

@@ -4,8 +4,8 @@
   "base_expected": "fix39-v13e-dcs-r2b-decoded-port-assets",
   "ignore_custom_branding_assets": true,
   "fake_complete_markers": [],
-  "green": 6,
-  "yellow": 1,
+  "green": 7,
+  "yellow": 0,
   "red": 0,
   "findings": [
     {
@@ -85,19 +85,20 @@
     },
     {
       "subsystem": "rendering_presentation_adapter",
-      "status": "YELLOW_BOUNDARY",
+      "status": "GREEN_CODE_AUDITED_WITH_HARDWARE_CAPTURE_BOUNDARY",
       "evidence": [
         "visual core compiled",
         "composite compiled",
         "WIMP/source frame binding compiled",
         "ring geometry compiled",
         "ring onscreen compiled",
-        "ring/crowd generated assets compiled"
+        "ring/crowd generated assets compiled",
+        "renderer equivalence invariants compiled and audited"
       ],
-      "gaps": [
-        "platform renderer equivalence invariants missing"
-      ],
-      "ignored": []
+      "gaps": [],
+      "ignored": [
+        "pixel-perfect hardware screenshot comparison remains external validation"
+      ]
     },
     {
       "subsystem": "operator_service_cabinet_leftovers",

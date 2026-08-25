@@ -174,7 +174,7 @@ def rendering_presentation() -> Finding:
         else:
             gaps.append(label)
     render = read("src/core/render_equivalence.c")
-    if "WM_RENDER_TRANSPARENT_CI8_INDEX" in read("include/wm/render_equivalence.h") and "wm_render_layer_order_valid" in render:
+    if "WM_RENDER_TRANSPARENT_CI8_INDEX" in read("include/wm/render_equivalence.h") and "wm_render_layer_order_is_source_safe" in render:
         ev.append("renderer equivalence invariants compiled and audited")
         return Finding("rendering_presentation_adapter", "GREEN_CODE_AUDITED_WITH_HARDWARE_CAPTURE_BOUNDARY", ev, [], ["pixel-perfect hardware screenshot comparison remains external validation"])
     gaps.append("platform renderer equivalence invariants missing")

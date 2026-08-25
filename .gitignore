@@ -19,3 +19,6 @@ src/generated/title_screen.c
 src/generated/bmod_tables.c
 
 src/generated/title_sparkle.c
+.r37_hiscore_sd_*/
+build/.r37_hiscore_sd_*/
+build-host/.r37_hiscore_sd_*/

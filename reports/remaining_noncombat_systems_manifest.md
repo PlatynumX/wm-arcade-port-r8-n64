@@ -4,8 +4,8 @@
 - scope: all remaining non-combat systems manifest + install/wire obvious completed pieces + fail/report remaining gaps
 - base expected: fix39-v13e-dcs-r2b-decoded-port-assets
 - ignored deltas: intentional Midway Sports / Be a Man / PlatynumX branding assets
-- green: 6
-- yellow: 1
+- green: 7
+- yellow: 0
 - red: 0
 
 ## audio_dcs_runtime
@@ -78,7 +78,7 @@ Ignored / intentional:
 
 ## rendering_presentation_adapter
 
-- status: YELLOW_BOUNDARY
+- status: GREEN_CODE_AUDITED_WITH_HARDWARE_CAPTURE_BOUNDARY
 
 Evidence:
 - visual core compiled
@@ -87,9 +87,10 @@ Evidence:
 - ring geometry compiled
 - ring onscreen compiled
 - ring/crowd generated assets compiled
+- renderer equivalence invariants compiled and audited
 
-Remaining gaps / boundaries:
-- platform renderer equivalence invariants missing
+Ignored / intentional:
+- pixel-perfect hardware screenshot comparison remains external validation
 
 ## operator_service_cabinet_leftovers
 

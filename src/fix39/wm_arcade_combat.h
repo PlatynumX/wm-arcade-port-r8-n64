@@ -24,17 +24,16 @@ typedef struct wm_arcade_frame_box {
 
 typedef struct wm_arcade_actor wm_arcade_actor_t;
 
-/*
- * Merge adapter only.  It names original arcade process fields in portable C;
- * it is not intended to replace the N64 port's wrestler structure.
- */
+/* Portable spelling of the original PLYR.EQU wrestler process data used by
+ * translated combat code.  Keep source-owned state here rather than in N64
+ * runtime side arrays so source procedures can retain their original data
+ * ownership and reset semantics. */
 struct wm_arcade_actor {
     int active;
 
     int32_t x_int;
     int32_t y_int;
     int32_t z_int;
-    /* Full 16.16 positions used by attachment animation commands. */
     int32_t x_fixed;
     int32_t y_fixed;
     int32_t z_fixed;
@@ -46,28 +45,29 @@ struct wm_arcade_actor {
     uint32_t status_flags;
 
     int32_t move_dir;
-    /* WRESTLE.ASM confine_wrestler/fix1/fix2 state. */
     uint16_t can_move_dir;
     uint16_t can_move_temp;
-    int32_t x_bound;              /* X_BOUND */
-    int32_t z_bound;              /* Z_BOUND */
-    uint32_t climb_start;         /* CLIMB_START */
-    uint32_t climb_last;          /* CLIMB_LAST */
-    uint32_t hit_gate_time;       /* HIT_GATE_TIME */
-    /* Stage 7 / REACT5: directional and input state used by running/hiptoss reactions. */
+    int32_t x_bound;
+    int32_t z_bound;
+    uint32_t climb_start;
+    uint32_t climb_last;
+    uint32_t hit_gate_time;
     int32_t facing_dir;
     int32_t new_facing_dir;
     uint16_t stick_val_cur;
     int32_t immobilize_time;
     int32_t combo_count;
-    /* Stage 4: REACT2 combo-uppercut reads WHOHITME->RPT_COUNT. */
+    int32_t combo_start;
+    int32_t but_count;
     int32_t rpt_count;
     int32_t in_ring;
+    int32_t outside_alone;
 
     wm_arcade_actor_t *attach_proc;
     wm_arcade_actor_t *smart_target;
     wm_arcade_actor_t *who_i_hit;
     wm_arcade_actor_t *who_hit_me;
+    wm_arcade_actor_t *who_pinned_me;
 
     wm_arcade_box3_t hurt_box;
 
@@ -88,15 +88,15 @@ struct wm_arcade_actor {
     int32_t delay_meter;
     int32_t safe_time;
     int32_t dizzy;
+    int32_t dizzy_count;
     uint32_t head_grab_time;
     void *meter_proc;
     int32_t wrestler_num;
     int32_t player_num;
-    int32_t player_type;          /* PLYR.EQU PLYR_TYPE */
+    int32_t player_type;
 
-    /* Stage 2: REACT1.ASM / ANIM.ASM combat state. */
     uint32_t last_hit_time;
-    uint16_t last_damage;          /* source stores a WORD PCNT stamp */
+    uint16_t last_damage;
     int16_t next_damage;
     uint32_t special_damage_time;
     uint16_t risk;
@@ -110,43 +110,39 @@ struct wm_arcade_actor {
     int32_t my_pal;
     int32_t obj_pal;
 
-    /* Stage 3: concrete REACT1.ASM reaction state. Velocities are source 16.16. */
     int32_t x_vel;
     int32_t y_vel;
     int32_t z_vel;
-    /* WRESTLE/WRESTLE2 object motion fields (source 16.16 where noted). */
-    int32_t gravity;             /* OBJ_GRAVITY, 16.16 */
-    int32_t obj_friction;        /* OBJ_FRICTION, 16.16 */
-    int32_t ground_y;            /* integer source-space Y */
-    int32_t priority;            /* source object priority selected by calc_ground_y */
-    int32_t climbing_thru;       /* CLIMBING_THRU transition flag */
+    int32_t gravity;
+    int32_t obj_friction;
+    int32_t ground_y;
+    int32_t priority;
+    int32_t climbing_thru;
     int32_t roll_pos;
     int32_t usr_var1;
-    int32_t usr_var2;              /* PLYR.EQU USR_VAR2; Yoko salt failure flag. */
-    int32_t player_side;           /* PLYR.EQU PLYR_SIDE: 0, 1, or -1. */
+    int32_t usr_var2;
+    int32_t player_side;
     int32_t consecutive_hits;
     int32_t life;
 
     int32_t attach_xoff;
     int32_t attach_yoff;
     int32_t attach_zoff;
-    uint16_t attack_time;          /* round_tickcount WORD */
+    uint16_t attack_time;
 
-    /* Final combat-core integration: animation/move-dispatch fields. */
     uint16_t ani_speed;
-    uintptr_t special_move_addr;   /* source SPECIAL_MOVE_ADDR pointer/token */
+    uintptr_t special_move_addr;
 
-    /* Stage 14 / BRET.ASM character-control adapter fields. */
     uint16_t but_val_cur;
     uint16_t but_val_down;
     uint16_t but_val_up;
     uint16_t stick_val_down;
     uint16_t stick_val_up;
-    uint16_t stick_rel_cur;       /* STICK_REL_CUR */
-    uint16_t stick_rel_new;       /* STICK_REL_NEW */
-    uint32_t wrest_joystat[16];   /* WRESTLE.ASM logical queue slice */
-    uint16_t joy_dtime[9];        /* exact KEEP THIS ORDER dtime banks */
-    uint16_t auto_pin_countdown;  /* AUTO_PIN_CNTDOWN */
+    uint16_t stick_rel_cur;
+    uint16_t stick_rel_new;
+    uint32_t wrest_joystat[16];
+    uint16_t joy_dtime[9];
+    uint16_t auto_pin_countdown;
     int32_t closest_num;
     int32_t closest_dist;
     int32_t closest_xdist;
@@ -156,11 +152,10 @@ struct wm_arcade_actor {
     int32_t i_will_die;
     uint32_t block_time;
     uint32_t last_headhold;
-    uintptr_t code_addr;         /* source CODE_ADDR pointer/token; resolver owns meaning */
+    uintptr_t code_addr;
     int32_t delay_butns;
     int32_t attack_type;
 
-    /* Combat2CE: fields read/written directly by the original ANIM.ASM VM. */
     int32_t tgt_xoff;
     int32_t tgt_yoff;
     int32_t tgt_zoff;
@@ -177,6 +172,21 @@ struct wm_arcade_actor {
     int32_t attachimg_zoff;
     const char *attachimg_frame;
     int32_t source_vm_fault;
+
+    /* Remaining combat-facing PLYR.EQU state. */
+    int32_t whack_cnt;
+    int32_t puppet_time;
+    int32_t puppet_ticks;
+    int32_t ring_time;
+    uint32_t last_fling;
+    uint32_t last_hiptoss;
+    uint32_t last_fling_attempt;
+    uint32_t last_spunch;
+    uint32_t last_skick;
+    int32_t buckoff_count;
+    int32_t zombie_time;
+    int32_t damage_given;
+    int32_t new_wrestler_num;
 };
 
 typedef struct wm_arcade_combat_callbacks {

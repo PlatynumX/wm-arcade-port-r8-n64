@@ -86,6 +86,7 @@ add_library(wmcore STATIC
     src/fix39/wm_arcade_taker.c
     src/fix39/wm_arcade_target_offsets.c
     src/fix39/wm_arcade_wimp_frame.c
+    src/fix39/wm_arcade_wrestle_core.c
     src/fix39/wm_arcade_wrestle_target.c
     src/fix39/wm_arcade_wrestle_input.c
     src/fix39/wm_arcade_wrestler_port.c
@@ -143,6 +144,11 @@ if(WM_BUILD_TESTS)
     target_link_libraries(wm_fix39_tests PRIVATE wmcore)
     target_compile_options(wm_fix39_tests PRIVATE -Wall -Wextra -Wpedantic -UNDEBUG)
     add_test(NAME wm_fix39 COMMAND wm_fix39_tests)
+
+    add_executable(wm_wrestle_source_parity_tests tests/wrestle_source_parity.c)
+    target_link_libraries(wm_wrestle_source_parity_tests PRIVATE wmcore)
+    target_compile_options(wm_wrestle_source_parity_tests PRIVATE -Wall -Wextra -Wpedantic -UNDEBUG)
+    add_test(NAME wm_wrestle_source_parity COMMAND wm_wrestle_source_parity_tests)
 
     find_package(Python3 COMPONENTS Interpreter REQUIRED)
     add_test(NAME wm_asmseq

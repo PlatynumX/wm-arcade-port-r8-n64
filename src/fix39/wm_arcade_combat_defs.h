@@ -8,7 +8,7 @@
  * Source paths:
  *   PLYR.EQU    player modes, attack modes, status bits
  *   ANIM.EQU    animation mode bits
- *   GAME.EQU    move directions, STAY_TIME
+ *   GAME.EQU    move directions, STAY_TIME / FLUNG_TIME
  *   DISPLAY.EQU object horizontal flip bit
  *
  * Do not renumber these to make them prettier: animation scripts and combat
@@ -118,7 +118,6 @@ enum wm_arcade_move_dir {
     WM_MOVE_DOWN_RIGHT = 10
 };
 
-/* GAME.EQU button values.  BRET.ASM indexes 32-entry action tables with these. */
 enum wm_arcade_button_bits {
     WM_BTN_PUNCH  = 1u << 0,
     WM_BTN_BLOCK  = 1u << 1,
@@ -128,7 +127,6 @@ enum wm_arcade_button_bits {
 };
 #define WM_BTN_ATTACK_MASK 0x001fu
 
-/* GAME.EQU special-move input values (button values are shifted by four). */
 #define WM_J_UP          WM_MOVE_UP
 #define WM_J_TOWARD      WM_MOVE_RIGHT
 #define WM_J_DOWN        WM_MOVE_DOWN
@@ -147,7 +145,6 @@ enum wm_arcade_button_bits {
 #define WM_B_KICK        (WM_BTN_KICK << 4)
 #define WM_B_SKICK       (WM_BTN_SKICK << 4)
 
-/* ANIM.EQU mode flags. */
 enum wm_arcade_anim_mode_bits {
     WM_ARCADE_MODE_END          = 0x0001,
     WM_ARCADE_MODE_INTURN       = 0x0002,
@@ -167,7 +164,6 @@ enum wm_arcade_anim_mode_bits {
     WM_ARCADE_MODE_INVISIBLE    = 0x8000
 };
 
-/* PLYR.EQU STATUS_FLAGS bits. */
 enum wm_arcade_status_bits {
     WM_STATUS_PRESS_LAST    = 1u << 0,
     WM_STATUS_DID_PIN       = 1u << 1,
@@ -192,10 +188,16 @@ enum wm_arcade_status_bits {
     WM_STATUS_PUSH          = 1u << 20
 };
 
-/* DISPLAY.EQU OCTRL flag used by collision box mirroring. */
-#define WM_OBJ_FLIPH 0x0010u
+/* PLYR.EQU exact masks. */
+#define WM_STATUS_RESET_MASK \
+    (WM_STATUS_TEMP_PAL | WM_STATUS_DID_BUCKOFF)
+#define WM_STATUS_CLEAR_ON_SETMODE \
+    (WM_STATUS_SCROLL_CTRL | WM_STATUS_DEAD_ANIM | \
+     WM_STATUS_DID_RAISEARM | WM_STATUS_KOD | \
+     WM_STATUS_COMBO_BROKEN | WM_STATUS_PUSH)
 
-/* GAME.EQU. */
+#define WM_OBJ_FLIPH 0x0010u
 #define WM_STAY_TIME 270
+#define WM_FLUNG_TIME 120
 
 #endif

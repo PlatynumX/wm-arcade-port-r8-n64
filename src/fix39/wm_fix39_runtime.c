@@ -14,6 +14,7 @@
 #include "wm_arcade_wrestle_input.h"
 #include "wm_arcade_match_lifecycle.h"
 #include "wm_arcade_getup_process.h"
+#include "wm_arcade_wrestle_core.h"
 #include "wm/arcade_sound_lookup.h"
 #include "wm/arcade_sound.h"
 #include <stdio.h>
@@ -937,25 +938,14 @@ static int source_anyone_bucking(void)
 
 static void source_auto_pin_check(wm_arcade_actor_t *a, void *user)
 {
-    wm_arcade_actor_t *o;
+    wm_arcade_auto_pin_env_t env;
     (void)user;
-    if (!a) return;
-    if (g.in_finish_move || g.finish_completed || g.royal_rumble) return;
-
-    o = a->smart_target;
-    if (!o || o->player_mode != WM_PMODE_DEAD) goto alive;
-    if ((a->status_flags & WM_STATUS_DID_PIN) != 0u) return;
-    if ((o->status_flags & WM_STATUS_ZOMBIE) != 0u) goto alive;
-    if (source_anyone_bucking()) return;
-
-    a->auto_pin_countdown = (uint16_t)(a->auto_pin_countdown + 1u);
-    if (a->auto_pin_countdown < (3u * WM_ARCADE_TSEC)) return;
-    if ((a->anim_mode & WM_ARCADE_MODE_UNINT) != 0u) return;
-    a->player_type = WM_PTYPE_DRONE;
-    return;
-
-alive:
-    a->auto_pin_countdown = 0u;
+    memset(&env, 0, sizeof(env));
+    env.in_finish_move = g.in_finish_move;
+    env.finish_completed = g.finish_completed;
+    env.royal_rumble = g.royal_rumble;
+    env.anyone_bucking = source_anyone_bucking() != 0;
+    (void)wm_arcade_auto_pin_check(a, a ? a->smart_target : 0, &env);
 }
 
 static void source_calc_closest_all(void)
@@ -2579,7 +2569,11 @@ void wm_fix39_match_begin(unsigned frontend_p1, unsigned frontend_p2)
     g.status.story_plan_ready = true;
     g.status.fireworks_plan_ready = true;
     wm_arcade_match_lifecycle_init(&g.lifecycle, false);
-    for (i=0u;i<WM_FIX39_ACTOR_COUNT;++i) wm_arcade_getup_process_init(&g.getup[i]);
+    for (i=0u;i<WM_FIX39_ACTOR_COUNT;++i) {
+        wm_arcade_getup_process_init(&g.getup[i]);
+        wm_arcade_getup_process_begin(&g.getup[i], &g.actors[i],
+            g.actor_ptrs, WM_FIX39_ACTOR_COUNT, true, 1u, false, g.sound);
+    }
     g.status.match_started = true;
 }
 
@@ -2775,7 +2769,7 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
 
     /* WRESTLE.ASM count_button_presses: live per-wrestler counters consumed
        by animation/native sequence logic. */
-    for (i=0u;i<WM_FIX39_ACTOR_COUNT;++i) source_count_button_presses(&g.actors[i]);
+    for (i=0u;i<WM_FIX39_ACTOR_COUNT;++i) wm_arcade_count_button_presses(&g.actors[i]);
 
     /* ARE_WE_IN_RING / ring-out timing and health are already ported; keep
        their persistent per-player RING_TIME state live every match tick. */
@@ -2840,11 +2834,8 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
         else g.frame_box_valid[i]=false;
     }
     /* WRESTLE.ASM update_links: break a one-way stale attachment. */
-    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
-        wm_arcade_actor_t *a = &g.actors[i];
-        if (a->attach_proc && a->attach_proc->attach_proc != a)
-            a->attach_proc = 0;
-    }
+    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i)
+        wm_arcade_update_links(&g.actors[i]);
 
     /* WRESTLE.ASM set_collision_boxes -> overlap_collision after update_links. */
     g.status.collision_boxes_ready =
@@ -2866,42 +2857,19 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
     /* WRESTLE.ASM set_wrestler_xflip, skipped only for MODE_NOAUTOFLIP. */
     for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
         wm_arcade_actor_t *a = &g.actors[i];
-        if (!(a->anim_mode & WM_ARCADE_MODE_NOAUTOFLIP)) {
-            if (a->facing_dir & WM_MOVE_RIGHT) a->obj_control &= (uint16_t)~WM_OBJ_FLIPH;
-            else a->obj_control |= WM_OBJ_FLIPH;
-        }
+        if ((a->anim_mode & WM_ARCADE_MODE_NOAUTOFLIP) == 0u)
+            wm_arcade_set_wrestler_xflip(a);
     }
 
     /* WRESTLE.ASM::update_joy_dtime follows xflip and precedes countdowns. */
     for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i)
         wm_arcade_update_joy_dtime(&g.actors[i]);
 
-    /* WRESTLE.ASM wrestler_main countdown tail.  GETUP_TIME is recovery
-       state only; ANI_WAITROLL/ANI_GETUP_WAIT and ANI_CHANGEANIM own the actual
-       get-up animation.  Do not force PLYRMODE/stand from this loop. */
+    /* WRESTLE.ASM wrestler_main countdown tail plus concurrent GETUP_PID. */
     for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
-        wm_arcade_actor_t *a = &g.actors[i];
-        if (a->delay_butns > 0) --a->delay_butns;
-        if (a->safe_time > 0) --a->safe_time;
-        if (a->delay_meter > 0) --a->delay_meter;
-        if (a->immobilize_time > 0) --a->immobilize_time;
-        if (a->walk_fast > 0) --a->walk_fast;
-        if (a->getup_time > 0) {
-            /* Source rejects a newly-set recovery while DELAY_METER is active. */
-            if (a->delay_meter > 0) a->getup_time = 0;
-            else {
-                --a->getup_time;
-                if (a->getup_time > 0) {
-                    uint16_t pressed=(uint16_t)(a->but_val_down|a->stick_val_down);
-                    uint32_t sf=a->status_flags;
-                    bool press_last=(sf&WM_STATUS_PRESS_LAST)!=0;
-                    if(pressed)sf|=WM_STATUS_PRESS_LAST;else sf&=~WM_STATUS_PRESS_LAST;
-                    a->status_flags=sf;
-                    if(pressed||press_last){a->getup_time-=3;if(a->getup_time<0)a->getup_time=0;}
-                }
-            }
-            if(a->getup_time==0){a->dizzy=0;a->stars_flag=0;a->delay_butns=40;}
-        }
+        wm_arcade_wrestler_countdown_tail(
+            &g.actors[i], wm_arcade_match_clock_zero(&g.lifecycle));
+        wm_arcade_getup_process_tick(&g.getup[i], &g.actors[i]);
     }
 
     /* SPECIAL.ASM process state and COLLIS.ASM object collisions are already

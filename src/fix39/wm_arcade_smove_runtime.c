@@ -8,6 +8,9 @@ enum {
     G_NONE = 0,
     G_BRET_CHARGE_FACE_RAKE,
     G_BRET_ROLL_UPPERCUT,
+    G_BRET_HD_PILE,
+    G_BRET_HD_DDT,
+    G_BRET_HD_FACESLAM,
     G_TAKER_HD_NECK,
     G_TAKER_HD_FACESLAM,
     G_TAKER_HD_PILE,
@@ -26,6 +29,22 @@ static const wm_arcade_smove_wait_step_t hrt_roll_uppercut[] = {
     STEP(WM_J_DOWN, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
     STEP(WM_J_TOWARD, WM_J_UP | WM_J_DOWN, 60),
     STEP(WM_B_SPUNCH, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+
+static const wm_arcade_smove_wait_step_t hrt_hdhold_pile[] = {
+    STEP(WM_J_TOWARD, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_TOWARD, 0, 60),
+    STEP(WM_B_SPUNCH, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+static const wm_arcade_smove_wait_step_t hrt_hdhold_ddt[] = {
+    STEP(WM_J_DOWN, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_DOWN, 0, 60),
+    STEP(WM_B_SKICK, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+static const wm_arcade_smove_wait_step_t hrt_hdhold_faceslam[] = {
+    STEP(WM_J_DOWN, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_TOWARD, WM_J_DOWN | WM_J_UP, 60),
+    STEP(WM_B_PUNCH, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
 };
 
 static const wm_arcade_smove_wait_step_t und_hd_neck[] = {
@@ -82,6 +101,9 @@ static const wm_arcade_smove_wait_step_t und_finish1[] = {
 static const wm_arcade_smove_entry_t manifest[] = {
     { WM_ROSTER_BRET, "hrt_charge_face_rake", "hrt_rake_face_anim", 0, 0, G_BRET_CHARGE_FACE_RAKE, 1, 1 },
     { WM_ROSTER_BRET, "hrt_roll_uppercut", "hrt_roll_uppercut_anim", hrt_roll_uppercut, 3, G_BRET_ROLL_UPPERCUT, 1, 1 },
+    { WM_ROSTER_BRET, "hrt_hdhold_pile", "hrt_3_pile_driver_anim", hrt_hdhold_pile, 3, G_BRET_HD_PILE, 20, 1 },
+    { WM_ROSTER_BRET, "hrt_hdhold_ddt", "hrt_hh_2_ddt_anim", hrt_hdhold_ddt, 3, G_BRET_HD_DDT, 20, 1 },
+    { WM_ROSTER_BRET, "hrt_hdhold_faceslam", "hrt_3_face_driver2_anim", hrt_hdhold_faceslam, 3, G_BRET_HD_FACESLAM, 20, 1 },
     { WM_ROSTER_TAKER, "und_hdhold_neckbrk", "und_neckbreaker_anim", und_hd_neck, 3, G_TAKER_HD_NECK, 20, 1 },
     { WM_ROSTER_TAKER, "und_hdhold_faceslam", "und_choke_face_slam_anim", und_hd_faceslam, 3, G_TAKER_HD_FACESLAM, 20, 1 },
     { WM_ROSTER_TAKER, "und_hdhold_pile", "und_pile_anim", und_hd_pile, 3, G_TAKER_HD_PILE, 20, 1 },
@@ -255,6 +277,51 @@ static void queue_result(wm_arcade_actor_t *a, const wm_arcade_smove_entry_t *e,
     a->special_move_addr = tok;
 }
 
+
+static int fire_bret_headhold_body(wm_arcade_actor_t *a, wm_arcade_actor_t *opp,
+                                   const wm_arcade_smove_entry_t *e,
+                                   const wm_arcade_smove_callbacks_t *cb)
+{
+    wm_arcade_actor_t *target = 0;
+    int bonus = 0;
+    if (!a || !e) return 0;
+
+    if (a->player_mode != WM_PMODE_HEADHOLD &&
+        a->player_mode != WM_PMODE_HEADHELD) return 0;
+
+    if (a->player_mode == WM_PMODE_HEADHELD) {
+        /* BRET.ASM reversal branch: reject if I_WILL_DIE, then
+           DO_REVERSAL / DO_REVERSAL_MESS and target WHOHITME. */
+        if (a->i_will_die != 0) return 0;
+        if (a->immobilize_time != 0) return 0;
+        if (cb && cb->do_reversal) cb->do_reversal(a, cb->user);
+        if (cb && cb->do_reversal_message) cb->do_reversal_message(a, cb->user);
+        target = a->who_hit_me ? a->who_hit_me : opp;
+        a->smart_target = target;
+    } else {
+        /* BRET.ASM slam branch: BONUS_MESS score id then target WHOIHIT. */
+        if (a->immobilize_time != 0) return 0;
+        if (e->gate_kind == G_BRET_HD_PILE) bonus = 35;
+        else if (e->gate_kind == G_BRET_HD_DDT) bonus = 16;
+        else if (e->gate_kind == G_BRET_HD_FACESLAM) bonus = 20;
+        if (bonus != 0 && cb && cb->bonus_message)
+            cb->bonus_message(a, bonus, cb->user);
+        target = a->who_i_hit ? a->who_i_hit : opp;
+        a->smart_target = target;
+    }
+
+    if (!target) return 0;
+    target->immobilize_time = 15;
+    if (cb && cb->find_and_kill_endless)
+        cb->find_and_kill_endless(a, cb->user);
+
+    if (e->gate_kind == G_BRET_HD_PILE && cb && cb->sound_label)
+        cb->sound_label(a, "GRABFLING_T1/GRABFLING_T2", cb->user);
+
+    queue_result(a, e, cb);
+    return 1;
+}
+
 static int fire_taker_headhold(wm_arcade_actor_t *a, wm_arcade_actor_t *opp,
                                const wm_arcade_smove_entry_t *e,
                                const wm_arcade_smove_callbacks_t *cb)
@@ -342,6 +409,10 @@ static int fire_entry(wm_arcade_actor_t **actors, size_t n,
         return fire_bret_charge_face_rake(p, a, e, cb);
     case G_BRET_ROLL_UPPERCUT:
         return fire_bret_roll_uppercut(a, e, cb);
+    case G_BRET_HD_PILE:
+    case G_BRET_HD_DDT:
+    case G_BRET_HD_FACESLAM:
+        return fire_bret_headhold_body(a, opp, e, cb);
     case G_TAKER_HD_NECK:
     case G_TAKER_HD_FACESLAM:
     case G_TAKER_HD_PILE:

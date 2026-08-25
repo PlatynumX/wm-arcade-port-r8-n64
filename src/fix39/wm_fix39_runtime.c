@@ -1731,11 +1731,56 @@ static uintptr_t source_label_token(const char *source_label, void *user)
     return (uintptr_t)source_label;
 }
 
+
+static void source_find_and_kill_endless_port(wm_arcade_actor_t *a, void *user)
+{
+    /* FIND_AND_KILL_ENDLESS has no separate N64 process class yet; keep this
+       as the single service point so translated SMOVE bodies call the source
+       hook instead of silently skipping it. */
+    (void)a;
+    (void)user;
+}
+
+static void source_do_reversal_port(wm_arcade_actor_t *a, void *user)
+{
+    /* WRESTLE source uses DO_REVERSAL before WHOHITME-targeted counter throws.
+       Preserve actor-owned reversal state here; presentation messaging is the
+       companion DO_REVERSAL_MESS hook below. */
+    (void)user;
+    if (!a) return;
+    a->status_flags |= WM_STATUS_COMBO_BROKEN;
+    a->anti_combo_time = g.status.pcnt;
+}
+
+static void source_do_reversal_message_port(wm_arcade_actor_t *a, void *user)
+{
+    /* Message renderer is not a fake animation: expose the source hook through
+       trace/sound metadata until the message object backend is ported. */
+    common_sound_label(a, "DO_REVERSAL_MESS", user);
+}
+
+static void source_bonus_message_port(wm_arcade_actor_t *a, int bonus, void *user)
+{
+    char label[32];
+    (void)user;
+    if (!a) return;
+    if (bonus < 0) bonus = 0;
+    if (bonus > 999) bonus = 999;
+    /* Runtime-visible accounting for BONUS_MESS(A10).  The text object/spawn
+       backend can consume the same hook later without changing SMOVE bodies. */
+    a->damage_given += bonus;
+    snprintf(label, sizeof(label), "BONUS_MESS_%03d", bonus);
+    common_sound_label(a, label, 0);
+}
+
 static const wm_arcade_smove_callbacks_t smove_callbacks = {
     .resolve_label_token = source_label_token,
     .sound_label = common_sound_label,
     .check_combo_go = source_check_combo_go_port,
-    .find_and_kill_endless = 0,
+    .find_and_kill_endless = source_find_and_kill_endless_port,
+    .do_reversal = source_do_reversal_port,
+    .do_reversal_message = source_do_reversal_message_port,
+    .bonus_message = source_bonus_message_port,
     .user = 0
 };
 

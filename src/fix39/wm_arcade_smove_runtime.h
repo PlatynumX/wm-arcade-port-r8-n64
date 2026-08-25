@@ -64,6 +64,9 @@ typedef struct wm_arcade_smove_callbacks {
     void (*sound_label)(wm_arcade_actor_t *actor, const char *source_label, void *user);
     int (*check_combo_go)(wm_arcade_actor_t *actor, void *user);
     void (*find_and_kill_endless)(wm_arcade_actor_t *actor, void *user);
+    void (*do_reversal)(wm_arcade_actor_t *actor, void *user);
+    void (*do_reversal_message)(wm_arcade_actor_t *actor, void *user);
+    void (*bonus_message)(wm_arcade_actor_t *actor, int bonus, void *user);
     void *user;
 } wm_arcade_smove_callbacks_t;
 

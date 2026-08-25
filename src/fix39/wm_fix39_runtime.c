@@ -2806,14 +2806,23 @@ bool wm_fix39_attract_match_begin(const WmAttractDemoPlan *plan)
     if (!g.status.match_started) return false;
 
     g.active_actor_count=(size_t)plan->num_opps+1u;
+
+    /* WRESTLE.ASM #0plyr source identities. */
     g.actors[0].player_type=WM_PTYPE_DRONE;
+    g.actors[0].player_num=2;
     g.actors[1].player_type=WM_PTYPE_DRONE;
+    g.actors[1].player_num=3;
 
     for (slot=2u; slot<g.active_actor_count; ++slot) {
         unsigned oi=slot-1u;
-        init_actor(&g.actors[slot], (int)slot, 1,
+        init_actor(&g.actors[slot], (int)(slot + 2u), 1,
                    (int)plan->opponent_wrestlers[oi],
                    ox[oi], oz[oi], oface[oi]);
+
+        /* WRESTLE.ASM #0plyr keeps A8=PTYPE_DRONE for every SCREATE in the
+           CURRENT_LADDER loop. init_actor() is shared with normal matches
+           and does not imply drone ownership, so set the source type here. */
+        g.actors[slot].player_type=WM_PTYPE_DRONE;
         g.actor_ptrs[slot]=&g.actors[slot];
 
         wm_source_anim_runtime_init(&g.source_anim[slot]);
@@ -2841,10 +2850,15 @@ bool wm_fix39_attract_match_begin(const WmAttractDemoPlan *plan)
 
     for (slot=(unsigned)g.active_actor_count; slot<WM_FIX39_ACTOR_COUNT; ++slot)
         g.actor_ptrs[slot]=0;
+    /* WRESTLE.ASM::init_scroller: 1v2 uses -23; 1v1/1v3 use -27. */
+    g.camera.worldtlx_fp16 = (WM_RING_X_CENTER - 200) << 16;
+    g.camera.worldtly_fp16 = -((plan->num_opps == 2u ? 23 : 27) << 16);
 
     source_calc_closest_all();
     g.match_cpu_vs_cpu=true;
     g.lifecycle.attract_wrap=true;
+    g.lifecycle.config.pstatus=0u;
+    g.lifecycle.config.num_opps=plan->num_opps;
     return true;
 }
 

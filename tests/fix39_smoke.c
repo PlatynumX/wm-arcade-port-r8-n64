@@ -391,6 +391,30 @@ static void test_match_seed_and_mapping(void)
     assert(wm_fix39_actor_trace(0u)->animation_events >= 2u);
 }
 
+static void test_attract_source_player_numbers_and_scroller(void)
+{
+    WmAttractDemoPlan plan = {0};
+    const wm_arcade_actor_t *a0, *a1, *a2;
+    wm_fix39_runtime_init();
+    plan.player_wrestler=WM_ROSTER_BRET;
+    plan.num_opps=2u;
+    plan.opponent_wrestlers[0]=WM_ROSTER_RAZOR;
+    plan.opponent_wrestlers[1]=WM_ROSTER_TAKER;
+    assert(wm_fix39_attract_match_begin(&plan));
+    assert(wm_fix39_active_actor_count()==3u);
+    a0=wm_fix39_actor(0u); a1=wm_fix39_actor(1u); a2=wm_fix39_actor(2u);
+    assert(a0&&a1&&a2);
+    assert(a0->player_num==2);
+    assert(a1->player_num==3);
+    assert(a2->player_num==4);
+    assert(wm_fix39_camera_worldtly_int()==-23);
+    wm_fix39_match_tick(0,0,false,false,false,false,false,false);
+    assert(wm_fix39_status()->wrestler_dispatch_ticks==3u);
+    assert(wm_fix39_status()->drone_ticks_by_player[0]==1u);
+    assert(wm_fix39_status()->drone_ticks_by_player[1]==1u);
+    assert(wm_fix39_status()->drone_ticks_by_player[2]==1u);
+}
+
 static void test_all_eight_live_dispatchers(void)
 {
     for (unsigned frontend = 0u; frontend < 8u; ++frontend) {
@@ -629,6 +653,7 @@ int main(void)
     test_hiscore_live_sequence();
     test_attract_ownership_gate();
     test_match_seed_and_mapping();
+    test_attract_source_player_numbers_and_scroller();
     test_all_eight_live_dispatchers();
     test_rope_processes();
     test_hiscore_counter_binding();

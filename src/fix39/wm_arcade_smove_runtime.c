@@ -202,11 +202,6 @@ static const wm_arcade_smove_wait_step_t smv_tow_tow_kick[] = {
     STEP(WM_J_TOWARD, 0, 60),
     STEP(WM_B_KICK, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
 };
-static const wm_arcade_smove_wait_step_t smv_tow_tow_skick[] = {
-    STEP(WM_J_TOWARD, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
-    STEP(WM_J_TOWARD, 0, 60),
-    STEP(WM_B_SKICK, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
-};
 static const wm_arcade_smove_wait_step_t smv_down_down_skick[] = {
     STEP(WM_J_DOWN, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
     STEP(WM_J_DOWN, 0, 60),
@@ -221,11 +216,6 @@ static const wm_arcade_smove_wait_step_t smv_down_tow_punch[] = {
     STEP(WM_J_DOWN, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
     STEP(WM_J_TOWARD, WM_J_DOWN | WM_J_UP, 60),
     STEP(WM_B_PUNCH, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
-};
-static const wm_arcade_smove_wait_step_t smv_down_tow_kick[] = {
-    STEP(WM_J_DOWN, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
-    STEP(WM_J_TOWARD, WM_J_DOWN | WM_J_UP, 60),
-    STEP(WM_B_KICK, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
 };
 static const wm_arcade_smove_wait_step_t smv_down_tow_skick[] = {
     STEP(WM_J_DOWN, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),

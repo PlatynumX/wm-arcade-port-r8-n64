@@ -2112,7 +2112,24 @@ static void live_character_move(wm_arcade_actor_t *a,
     if (index < 0) return;
 
     profile = wm_arcade_roster_profile((wm_arcade_roster_id_t)a->wrestler_num);
-    opp = &g.actors[index ^ 1];
+
+    /*
+     * WRESTLE.ASM::get_opp_process:
+     *   move *a13(CLOSEST_NUM),a0
+     *   X32 a0
+     *   addi process_ptrs,a0
+     *   move *a0,a0,L
+     *
+     * smart_target is the live C representation populated from the same
+     * CLOSEST_NUM/process_ptrs calculation. The old index-XOR-1 shortcut was
+     * only valid for slots 0/1; in attract multi-opponent battles slot 2 was
+     * handed inactive slot 3 instead of its closest opponent.
+     */
+    opp = a->smart_target;
+    if (!opp && a->closest_num >= 0 &&
+        (size_t)a->closest_num < g.active_actor_count)
+        opp = g.actor_ptrs[(size_t)a->closest_num];
+
     t = &g.trace[index];
     live_continue_ring_climb_if_ready(a);
 

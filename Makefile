@@ -30,6 +30,11 @@ CORE_C := \
     src/core/roster.c \
     src/core/attract.c \
     src/core/audio.c \
+    src/core/arcade_sound.c \
+    src/core/arcade_sound_tables.c \
+    src/core/arcade_sound_bridge.c \
+    src/core/arcade_sound_lookup.c \
+    src/core/dcs_host_protocol.c \
     src/core/app.c \
     src/core/composite.c \
     src/generated/attract_sequence.c \
@@ -78,6 +83,8 @@ FIX39_C := \
     src/fix39/wm_arcade_fireworks.c \
     src/fix39/wm_arcade_lex.c \
     src/fix39/wm_arcade_matchflow.c \
+    src/fix39/wm_arcade_match_lifecycle.c \
+    src/fix39/wm_arcade_getup_process.c \
     src/fix39/wm_arcade_move_dispatch.c \
     src/fix39/wm_arcade_movement.c \
     src/fix39/wm_arcade_confine_grounded.c \

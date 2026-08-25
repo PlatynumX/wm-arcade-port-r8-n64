@@ -8,6 +8,7 @@
 typedef struct {
     uint16_t command;
     uint32_t source_tick;
+    int8_t source_channel; /* -2 raw/control, 0..3 translated DCSSOUND voice */
 } wm_audio_event;
 
 typedef struct {
@@ -23,5 +24,6 @@ typedef struct {
 void wm_audio_init(wm_audio_state *audio);
 void wm_audio_source_tick(wm_audio_state *audio);
 bool wm_audio_send_command(wm_audio_state *audio, uint16_t command);
+bool wm_audio_send_routed_command(wm_audio_state *audio, uint16_t command, int8_t source_channel);
 bool wm_audio_pop_event(wm_audio_state *audio, wm_audio_event *event);
 #endif

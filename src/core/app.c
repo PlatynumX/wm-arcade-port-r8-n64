@@ -1,4 +1,6 @@
 #include "wm/app.h"
+#include "wm/arcade_sound_tables.h"
+#include "wm/arcade_sound_bridge.h"
 #include "wm_fix39_runtime.h"
 #include "wm_arcade_wimp_frame.h"
 #include "wm/character_assets.h"
@@ -8,6 +10,11 @@
 #include <string.h>
 
 static const wm_input_state no_input = {0};
+static uint32_t app_sound_rng(void *user, uint32_t maximum) {
+    wm_app *app=(wm_app *)user; uint32_t h=(app->scheduler.tick*8u)&0x1ffu;
+    uint32_t sp=(uint32_t)(uintptr_t)&maximum; wm_fix39_rng_set_entropy(h,sp); return wm_fix39_rndrng0(maximum);
+}
+static uint32_t app_sound_hcount(void *user) { wm_app *app=(wm_app *)user; return (app->scheduler.tick*8u)&0x1ffu; }
 
 bool wm_app_any_attract_button(const wm_input_state *input) {
     if (!input) return false;
@@ -369,8 +376,8 @@ static bool fix39_tick_gameplay_demo(wm_app *app, const wm_input_state *input) {
         wm_fix39_match_set_cpu_vs_cpu(true);
     }
     wm_fix39_match_tick(0, 0, false, false, false, false, false, false);
-    if (a->call_ticks > 60u && wm_app_any_attract_button(input)) { wm_fix39_match_set_cpu_vs_cpu(false); return true; }
-    if (a->call_ticks >= 600u) { wm_fix39_match_set_cpu_vs_cpu(false); return true; }
+    if (a->call_ticks > 180u && wm_app_any_attract_button(input)) { wm_fix39_match_set_cpu_vs_cpu(false); return true; }
+    if (a->call_ticks >= (180u + 10u * WM_SOURCE_TICKS_PER_SEC)) { wm_fix39_match_set_cpu_vs_cpu(false); return true; }
     return false;
 }
 static bool tick_title(wm_app *app, const wm_input_state *input) {
@@ -399,6 +406,10 @@ void wm_app_init(wm_app *app) {
     wm_fix39_runtime_init();
     app->mode = WM_APP_MODE_ATTRACT;
     wm_audio_init(&app->audio);
+    wm_arcade_sound_init(&app->sound, wm_arcade_sound_emit_to_audio, &app->audio, app_sound_rng, app);
+    wm_arcade_sound_bind_default_tables(&app->sound);
+    wm_arcade_sound_bind_hcount(&app->sound, app_sound_hcount, app);
+    wm_fix39_bind_arcade_sound(&app->sound);
     wm_select_continue_init(&app->continue_select);
     wm_award_init(&app->awards);
     wm_demo_init(&app->demo);
@@ -417,6 +428,7 @@ void wm_app_tick_dual(wm_app *app,
     const wm_input_state *input = p1_input;
     if (!app) return;
     wm_audio_source_tick(&app->audio);
+    wm_arcade_sound_tick(&app->sound);
     /* SOURCE_SELECT_MODE_TICK */
     if (app->mode == WM_APP_MODE_SELECT) {
         wm_select_screen_tick(&app->select,

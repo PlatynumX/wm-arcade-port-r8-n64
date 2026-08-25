@@ -12,6 +12,10 @@
 #include "wm/arcade/wmania_ring_climb.h"
 #include "wm_arcade_wrestle_target.h"
 #include "wm_arcade_wrestle_input.h"
+#include "wm_arcade_match_lifecycle.h"
+#include "wm_arcade_getup_process.h"
+#include "wm/arcade_sound_lookup.h"
+#include "wm/arcade_sound.h"
 #include <stdio.h>
 
 #include "wm_arcade_attach_anim.h"
@@ -116,6 +120,9 @@ static struct {
     bool in_finish_move;
     bool finish_completed;
     bool royal_rumble;
+    wm_arcade_sound *sound;
+    wm_arcade_match_lifecycle lifecycle;
+    wm_arcade_getup_process getup[WM_FIX39_ACTOR_COUNT];
     char recent_initials[2][WM_HS_NUM_INITIALS + 1u];
 } g;
 
@@ -127,6 +134,11 @@ static void live_rope_set_image(void *user, WmRopeBank bank, WmRopeChannel chann
         (unsigned)half >= 2u) return;
     g.rope_image_symbol[(unsigned)bank][(unsigned)channel][(unsigned)half] = source_image_symbol;
 }
+
+void wm_fix39_bind_arcade_sound(wm_arcade_sound *sound) { g.sound=sound; }
+uint8_t wm_fix39_match_clock_tens(void) { return g.lifecycle.tens; }
+uint8_t wm_fix39_match_clock_ones(void) { return g.lifecycle.ones; }
+bool wm_fix39_match_halt(void) { return g.lifecycle.halt; }
 
 const char *wm_fix39_rope_image_symbol(WmRopeBank bank, WmRopeChannel channel, WmRopeHalf half)
 {
@@ -314,8 +326,23 @@ static int source_anim_rndper_hi(uint16_t probability, void *user)
 }
 static void source_anim_sound(wm_arcade_actor_t *a,const char *token,int32_t raw,void *user)
 {
-    WmFix39ActorTrace *tr=trace_for(a); (void)user;
+    WmFix39ActorTrace *tr=trace_for(a); uint16_t v=(uint16_t)raw; (void)user;
     if(tr){tr->sound_label=token;tr->sound_token=raw;++tr->sound_events;}
+    if(!g.sound||!a)return;
+    /* ANIM.ASM::_ani_sound: RUN_SND is suppressed when this wrestler made
+       another foot noise within the previous 12 PCNT ticks. */
+    if(v==0x00c0u){
+        uint16_t now=(uint16_t)g.status.pcnt; int32_t d=(int32_t)now-(int32_t)a->foot_pcnt; if(d<0)d=-d;
+        if(d<12)return;
+        a->foot_pcnt=now;
+    }
+    if(v&WM_SOUND_DEFLT)(void)wm_sound_wrtable_sound(g.sound,(uint16_t)(v&0x7fffu),(uint8_t)a->wrestler_num);
+    else (void)wm_sound_triple_sound(g.sound,v);
+}
+static void source_anim_raw_sound(wm_arcade_actor_t *a,const char *token,int32_t raw,void *user)
+{
+    WmFix39ActorTrace *tr=trace_for(a); (void)user; if(tr){tr->sound_label=token;tr->sound_token=raw;++tr->sound_events;}
+    if(g.sound)(void)wm_sound_sndsnd(g.sound,(uint16_t)raw);
 }
 static void source_anim_native_am_i_dead(wm_arcade_actor_t *a)
 {
@@ -793,6 +820,7 @@ static void init_source_anim_services(void)
     g.source_anim_services.rndrng0=source_anim_rndrng0;
     g.source_anim_services.rndper_hi=source_anim_rndper_hi;
     g.source_anim_services.sound=source_anim_sound;
+    g.source_anim_services.raw_sound=source_anim_raw_sound;
     g.source_anim_services.code=source_anim_code;
     g.source_anim_services.change_other_anim=source_anim_change_other;
     g.source_anim_services.force_other_frame=source_anim_force_other;
@@ -921,7 +949,7 @@ static void source_auto_pin_check(wm_arcade_actor_t *a, void *user)
     if (source_anyone_bucking()) return;
 
     a->auto_pin_countdown = (uint16_t)(a->auto_pin_countdown + 1u);
-    if (a->auto_pin_countdown < (3u * 60u)) return;
+    if (a->auto_pin_countdown < (3u * WM_ARCADE_TSEC)) return;
     if ((a->anim_mode & WM_ARCADE_MODE_UNINT) != 0u) return;
     a->player_type = WM_PTYPE_DRONE;
     return;
@@ -1197,11 +1225,8 @@ static void common_torso_label(wm_arcade_actor_t *a, const char *label, void *us
 
 static void common_sound_label(wm_arcade_actor_t *a, const char *label, void *user)
 {
-    WmFix39ActorTrace *t = trace_for(a);
-    (void)user;
-    if (!t) return;
-    t->sound_label = label;
-    ++t->sound_events;
+    WmFix39ActorTrace *t=trace_for(a); (void)user; if(t){t->sound_label=label;++t->sound_events;}
+    if(g.sound)(void)wm_arcade_sound_play_label(g.sound,a,label);
 }
 
 static void common_start_special_label(wm_arcade_actor_t *a, const char *label, void *user)
@@ -1533,7 +1558,7 @@ static void live_confine_adjust_health(wm_arcade_actor_t *a,
 static void live_confine_ditch_meter(wm_arcade_actor_t *a, void *user)
 {
     (void)user;
-    if (a) a->meter_proc = 0;
+    if (a) { int i=actor_index(a); if(i>=0) wm_arcade_getup_process_ditch(&g.getup[i],a); else a->meter_proc=0; }
 }
 
 static void live_continue_ring_climb_if_ready(wm_arcade_actor_t *a)
@@ -1669,11 +1694,10 @@ static void bret_torso(wm_arcade_actor_t *a, wm_arcade_bret_anim_id_t id, void *
 
 static void bret_sound(wm_arcade_actor_t *a, wm_arcade_bret_sound_id_t id, void *user)
 {
-    WmFix39ActorTrace *t = trace_for(a);
-    (void)user;
-    if (!t) return;
-    t->sound_token = (int32_t)id;
-    ++t->sound_events;
+    static const int pair[][2]={{-1,-1},{0,1},{4,5},{24,25},{-2,-2},{20,21},{8,9},{12,13},{32,33},{40,41},{36,37},{52,53}};
+    WmFix39ActorTrace*t=trace_for(a);(void)user;if(t){t->sound_token=(int32_t)id;++t->sound_events;}
+    if(!g.sound||!a||(unsigned)id>=sizeof(pair)/sizeof(pair[0]))return;
+    if(pair[id][0]==-2)(void)wm_sound_triple_sound(g.sound,0x16u);else if(pair[id][0]>=0)(void)wm_arcade_sound_wrsnd_pair(g.sound,(uint8_t)a->wrestler_num,(uint16_t)pair[id][0],pair[id][1]);
 }
 
 static void razor_anim(wm_arcade_actor_t *a, wm_arcade_razor_anim_id_t id, void *user)
@@ -1692,11 +1716,10 @@ static void razor_torso(wm_arcade_actor_t *a, wm_arcade_razor_anim_id_t id, void
 
 static void razor_sound(wm_arcade_actor_t *a, wm_arcade_razor_sound_id_t id, void *user)
 {
-    WmFix39ActorTrace *t = trace_for(a);
-    (void)user;
-    if (!t) return;
-    t->sound_token = (int32_t)id;
-    ++t->sound_events;
+    static const int pair[][2]={{-1,-1},{0,1},{4,5},{24,25},{-2,-2},{20,21},{21,-1},{8,9},{9,-1},{12,13},{28,29},{32,1},{36,37},{52,53}};
+    WmFix39ActorTrace*t=trace_for(a);(void)user;if(t){t->sound_token=(int32_t)id;++t->sound_events;}
+    if(!g.sound||!a||(unsigned)id>=sizeof(pair)/sizeof(pair[0]))return;
+    if(pair[id][0]==-2)(void)wm_sound_triple_sound(g.sound,0x16u);else if(pair[id][0]>=0)(void)wm_arcade_sound_wrsnd_pair(g.sound,(uint8_t)a->wrestler_num,(uint16_t)pair[id][0],pair[id][1]);
 }
 
 static void common_check_secret_moves_live(
@@ -2549,6 +2572,8 @@ void wm_fix39_match_begin(unsigned frontend_p1, unsigned frontend_p2)
     g.status.postmatch_router_ready = true;
     g.status.story_plan_ready = true;
     g.status.fireworks_plan_ready = true;
+    wm_arcade_match_lifecycle_init(&g.lifecycle, false);
+    for (i=0u;i<WM_FIX39_ACTOR_COUNT;++i) wm_arcade_getup_process_init(&g.getup[i]);
     g.status.match_started = true;
 }
 
@@ -2561,6 +2586,7 @@ void wm_fix39_match_set_cpu_vs_cpu(bool enabled)
 {
     if (!g.status.initialized) wm_fix39_runtime_init();
     g.match_cpu_vs_cpu = enabled;
+    g.lifecycle.attract_wrap = enabled;
     g.actors[0].player_type = enabled ? WM_PTYPE_DRONE : WM_PTYPE_PLAYER;
     g.actors[1].player_type = WM_PTYPE_DRONE;
 }
@@ -2784,7 +2810,7 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
 
     /* WRESTLE.ASM move_wrestler owns character dispatch.  Both actors enter
        it every live source tick; P2 now receives the live DRONE-generated input. */
-    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
+    if (!g.lifecycle.halt) for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
         (void)wm_arcade_move_wrestler(&g.actors[i], 0, &move_cb);
         ++g.status.wrestler_dispatch_ticks;
         ++g.status.wrestler_dispatch_ticks_by_player[i];
@@ -2955,6 +2981,7 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
     g.combat_runtime.pcnt = g.status.pcnt;
     ++g.status.pcnt;
     ++g.status.round_tickcount;
+    wm_arcade_match_lifecycle_tick(&g.lifecycle,g.actor_ptrs,WM_FIX39_ACTOR_COUNT,g.status.pcnt);
 }
 
 const wm_arcade_actor_t *wm_fix39_actor(size_t index)

@@ -17,6 +17,7 @@ typedef struct wm_source_anim_services {
     uint32_t (*rndrng0)(uint32_t max_inclusive, void *user);
     int (*rndper_hi)(uint16_t probability, void *user);
     void (*sound)(wm_arcade_actor_t *a, const char *token, int32_t raw, void *user);
+    void (*raw_sound)(wm_arcade_actor_t *a, const char *token, int32_t raw, void *user);
     void (*code)(wm_arcade_actor_t *a, const char *label, void *user);
     void (*shake)(wm_arcade_actor_t *a, int kind, int value, void *user);
     void (*rope)(wm_arcade_actor_t *a, int bank, int action, int value, void *user);

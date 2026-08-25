@@ -457,10 +457,10 @@ static void test_attract_source_flow(void) {
     wm_app_tick(&app, &button);
     CHECK(wm_process_find_id(&app.scheduler, WM_PID_WATER) == NULL);
     CHECK(app.attract.call == WM_ATTRACT_SHOW_GAMEPLAY);
-    /* Gameplay now owns a real attract window. With RUN held, it becomes
-       skippable after 60 ticks and then advances past the pending credit
-       screen to the translated title call. */
-    for (unsigned i = 0; i < 60u; ++i) {
+    /* ATTR.ASM show_gameplay creates start_match, then executes the literal
+       SLEEP 3*60 before entering wait_on_butn(10*TSEC). Therefore a held
+       attract button cannot skip this call until after 180 source ticks. */
+    for (unsigned i = 0; i < 180u; ++i) {
         wm_app_tick(&app, &button);
         CHECK(app.attract.call == WM_ATTRACT_SHOW_GAMEPLAY);
     }
@@ -486,8 +486,9 @@ static void test_attract_source_flow(void) {
     CHECK(wm_process_find_id(&app.scheduler, WM_PID_FLASH) == NULL);
     CHECK(wm_process_find_id(&app.scheduler, WM_PID_ATTRACT_ANIM) == NULL);
     CHECK(app.attract.call == WM_ATTRACT_SHOW_GAMEPLAY);
-    /* Fix39: second source gameplay slot after Title. */
-    for (unsigned i = 0; i < 60u; ++i) {
+    /* Fix39: second source gameplay slot after Title uses the same
+       show_gameplay routine and therefore the same literal 3*60 lockout. */
+    for (unsigned i = 0; i < 180u; ++i) {
         wm_app_tick(&app, &button);
         CHECK(app.attract.call == WM_ATTRACT_SHOW_GAMEPLAY);
     }

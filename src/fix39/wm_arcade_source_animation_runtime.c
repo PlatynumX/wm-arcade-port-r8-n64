@@ -135,7 +135,7 @@ static int exec_cmd(wm_source_anim_runtime_t*s,wm_arcade_actor_t*a,const wm_sour
     case 60: case 61: case 62: NEXT();
     case 63: o=0;if(attached_pair(a,&o)){t=table_for(s,i,0);if(t){unsigned base=(unsigned)o->wrestler_num;te=(base<t->count)?&t->entries[base]:0;if(te&&te->text&&s->services&&s->services->force_other_frame)s->services->force_other_frame(a,o,te->text,s->services->user);}}NEXT();
     case 64: o=0;if(attached_pair(a,&o)){te=table_entry(s,i,0,(unsigned)o->wrestler_num);if(te&&te->text&&s->services&&s->services->change_other_anim)s->services->change_other_anim(a,o,te->text,s->services->user);}NEXT();
-    case 65: if(s->services&&s->services->sound)s->services->sound(a,at(i,0),av(i,0),s->services->user);NEXT();
+    case 65: if(s->services&&s->services->raw_sound)s->services->raw_sound(a,at(i,0),av(i,0),s->services->user);NEXT();
     case 66: if(s->services&&s->services->combat_runtime)wm_arcade_ani_damageopp(a,(int16_t)av(i,0),(int16_t)av(i,1),s->services->combat_runtime,s->services->react);NEXT();
     case 67: if(rndper(s,(uint16_t)av(i,0))){if(!branch_n(s,a,i,1))s->fault=67;return 0;}NEXT();
     case 68: wm_arcade_ani_waithitopp(a);NEXT();

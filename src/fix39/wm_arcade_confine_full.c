@@ -4,7 +4,7 @@
 #include <stdint.h>
 
 #define WM_GATE_CRASH_DAMAGE 20
-#define WM_TSEC 60u
+#define WM_TSEC 53u
 
 static void set_full_x(wm_arcade_actor_t *a, int32_t x)
 {

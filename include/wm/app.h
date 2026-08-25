@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include "wm/attract.h"
 #include "wm/audio.h"
+#include "wm/arcade_sound.h"
 #include "wm/award.h"
 #include "wm/demo.h"
 #include "wm/process.h"
@@ -124,6 +125,7 @@ typedef enum {
 
 typedef struct {
     wm_audio_state audio;
+    wm_arcade_sound sound;
     wm_app_mode mode;
     wm_select_screen_state select;
     wm_select_continue_state continue_select;

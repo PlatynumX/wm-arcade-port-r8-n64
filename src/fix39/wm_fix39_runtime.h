@@ -18,6 +18,7 @@
 #include "wmania_ring_onscreen.h"
 #include "wmania_rope_command.h"
 #include "wmania_rope_spawn.h"
+#include "wm/arcade_sound.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -119,6 +120,10 @@ typedef struct {
 } WmFix39ActorTrace;
 
 void wm_fix39_runtime_init(void);
+void wm_fix39_bind_arcade_sound(wm_arcade_sound *sound);
+uint8_t wm_fix39_match_clock_tens(void);
+uint8_t wm_fix39_match_clock_ones(void);
+bool wm_fix39_match_halt(void);
 
 /* Combat2AR: live ROPES.ASM image-object bridge. The rope interpreter owns
  * these symbols; platform renderers only consume them. */

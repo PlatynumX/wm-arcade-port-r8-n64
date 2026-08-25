@@ -406,29 +406,44 @@ size_t wm_arcade_smove_init_for_wrestler(
 {
     size_t i, made = 0;
     if (!rt || !owner || !profile) return 0;
-    for (i = 0; i < profile->special_process_count; ++i) {
-        const char *label = profile->special_processes[i];
+
+    /*
+     * Combat2ES R26B:
+     * Runtime monitor creation must be driven from the strict source manifest,
+     * not from the older profile->special_processes side table.  R25 proved the
+     * manifest is the authoritative active SMOVE surface (63 source-exact active
+     * bodies), and R26 exposed that the profile table can be stale/incomplete
+     * for the zero-step charge monitors and disabled finisher filtering.
+     */
+    for (i = 0; i < wm_arcade_smove_manifest_count(); ++i) {
+        const wm_arcade_smove_entry_t *entry = wm_arcade_smove_manifest_entry(i);
         wm_arcade_smove_proc_t *p;
-        if (!wm_arcade_smove_label_source_enabled(profile->id, label))
+
+        if (!entry || entry->wrestler != profile->id)
+            continue;
+        if (!wm_arcade_smove_label_source_enabled(profile->id, entry->process_label))
             continue;
         if (rt->proc_count >= WM_ARCADE_SMOVE_MAX_PROCS)
             break;
+
         p = &rt->proc[rt->proc_count++];
         memset(p, 0, sizeof(*p));
         p->active = 1;
         p->owner_slot = owner_slot;
         p->profile = profile;
-        p->process_label = label;
-        p->entry = wm_arcade_smove_lookup_entry(profile->id, label);
-        p->unresolved = p->entry == 0 || p->entry->source_exact_body == 0;
+        p->process_label = entry->process_label;
+        p->entry = entry;
+        p->unresolved = entry->source_exact_body == 0;
         proc_rewind(0, p, 1);
         ++made;
         ++rt->created;
         if (p->unresolved) ++rt->unresolved_created;
     }
+
     (void)owner;
     return made;
 }
+
 
 void wm_arcade_smove_reset_for_wrestler(
     wm_arcade_smove_runtime_t *rt,

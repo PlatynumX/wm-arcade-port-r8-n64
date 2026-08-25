@@ -4,12 +4,10 @@
 
 ### BRET
 - hrt_charge_flying_kick
-- hrt_charge_face_rake
 - hrt_hdhold_pile
 - hrt_hdhold_ddt
 - hrt_hdhold_faceslam
 - hrt_grab_toss_air
-- hrt_roll_uppercut
 - hrt_hdhold_combo1
 - hrt_hdhold_combo2
 

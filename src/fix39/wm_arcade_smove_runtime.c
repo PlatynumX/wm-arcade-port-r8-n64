@@ -6,6 +6,8 @@
 
 enum {
     G_NONE = 0,
+    G_BRET_CHARGE_FACE_RAKE,
+    G_BRET_ROLL_UPPERCUT,
     G_TAKER_HD_NECK,
     G_TAKER_HD_FACESLAM,
     G_TAKER_HD_PILE,
@@ -16,6 +18,14 @@ enum {
     G_TAKER_COMBO1,
     G_TAKER_COMBO2,
     G_TAKER_FINISH1
+};
+
+
+/* BRET.ASM hrt_smove_table bodies translated in Combat2ES R15. */
+static const wm_arcade_smove_wait_step_t hrt_roll_uppercut[] = {
+    STEP(WM_J_DOWN, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_TOWARD, WM_J_UP | WM_J_DOWN, 60),
+    STEP(WM_B_SPUNCH, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
 };
 
 static const wm_arcade_smove_wait_step_t und_hd_neck[] = {
@@ -70,6 +80,8 @@ static const wm_arcade_smove_wait_step_t und_finish1[] = {
 };
 
 static const wm_arcade_smove_entry_t manifest[] = {
+    { WM_ROSTER_BRET, "hrt_charge_face_rake", "hrt_rake_face_anim", 0, 0, G_BRET_CHARGE_FACE_RAKE, 1, 1 },
+    { WM_ROSTER_BRET, "hrt_roll_uppercut", "hrt_roll_uppercut_anim", hrt_roll_uppercut, 3, G_BRET_ROLL_UPPERCUT, 1, 1 },
     { WM_ROSTER_TAKER, "und_hdhold_neckbrk", "und_neckbreaker_anim", und_hd_neck, 3, G_TAKER_HD_NECK, 20, 1 },
     { WM_ROSTER_TAKER, "und_hdhold_faceslam", "und_choke_face_slam_anim", und_hd_faceslam, 3, G_TAKER_HD_FACESLAM, 20, 1 },
     { WM_ROSTER_TAKER, "und_hdhold_pile", "und_pile_anim", und_hd_pile, 3, G_TAKER_HD_PILE, 20, 1 },
@@ -269,14 +281,67 @@ static int fire_taker_headhold(wm_arcade_actor_t *a, wm_arcade_actor_t *opp,
     return 1;
 }
 
+
+static int fire_bret_charge_face_rake(wm_arcade_smove_proc_t *p,
+                                      wm_arcade_actor_t *a,
+                                      const wm_arcade_smove_entry_t *e,
+                                      const wm_arcade_smove_callbacks_t *cb)
+{
+    uint16_t charge;
+    if (!p || !a || !e) return 0;
+
+    /* BRET.ASM::hrt_charge_face_rake: count while PLAYER_PUNCH is held. */
+    if ((a->but_val_cur & WM_BTN_PUNCH) != 0u) {
+        if (p->timeout != 0xffffu) ++p->timeout;
+        return 0;
+    }
+
+    charge = p->timeout;
+    p->timeout = 0;
+    if (charge < 100u) return 0;
+
+    if (a->getup_time != 0) return 0;
+    if (a->player_mode == WM_PMODE_HEADHELD ||
+        a->player_mode == WM_PMODE_HEADHOLD ||
+        a->player_mode == WM_PMODE_ONGROUND ||
+        a->player_mode == WM_PMODE_DEAD) return 0;
+    if ((a->anim_mode & WM_ARCADE_MODE_UNINT) != 0u) return 0;
+
+    queue_result(a, e, cb);
+    if (cb && cb->sound_label) cb->sound_label(a, "UPRCUT_T1/UPRCUT_T2", cb->user);
+    return 1;
+}
+
+static int fire_bret_roll_uppercut(wm_arcade_actor_t *a,
+                                   const wm_arcade_smove_entry_t *e,
+                                   const wm_arcade_smove_callbacks_t *cb)
+{
+    if (!a || !e) return 0;
+    if ((a->anim_mode & WM_ARCADE_MODE_UNINT) != 0u) return 0;
+    if (a->immobilize_time != 0) return 0;
+    if (a->player_mode == WM_PMODE_ONTURNBKL ||
+        a->player_mode == WM_PMODE_HEADHOLD ||
+        a->player_mode == WM_PMODE_HEADHELD) return 0;
+
+    if (cb && cb->sound_label) cb->sound_label(a, "GRABFLING_T1/GRABFLING_T2", cb->user);
+    queue_result(a, e, cb);
+    a->run_time = 0;
+    return 1;
+}
+
 static int fire_entry(wm_arcade_actor_t **actors, size_t n,
                       wm_arcade_actor_t *a,
+                      wm_arcade_smove_proc_t *p,
                       const wm_arcade_smove_entry_t *e,
                       const wm_arcade_smove_callbacks_t *cb)
 {
     wm_arcade_actor_t *opp = opponent_for(actors, n, a);
     if (!a || !e) return 0;
     switch (e->gate_kind) {
+    case G_BRET_CHARGE_FACE_RAKE:
+        return fire_bret_charge_face_rake(p, a, e, cb);
+    case G_BRET_ROLL_UPPERCUT:
+        return fire_bret_roll_uppercut(a, e, cb);
     case G_TAKER_HD_NECK:
     case G_TAKER_HD_FACESLAM:
     case G_TAKER_HD_PILE:
@@ -357,6 +422,14 @@ void wm_arcade_smove_runtime_tick(
         if (!a || !a->active) continue;
         if (p->sleep_ticks != 0u) { --p->sleep_ticks; continue; }
         if (a->special_move_addr != (uintptr_t)0) { proc_rewind(rt, p, 1); continue; }
+        if (p->entry->step_count == 0u) {
+            if (fire_entry(actors, actor_count, a, p, p->entry, callbacks)) {
+                ++p->fires;
+                ++rt->fire_count;
+                proc_rewind(0, p, p->entry->post_fire_sleep);
+            }
+            continue;
+        }
         if (p->step_index >= p->entry->step_count) { proc_rewind(rt, p, 1); continue; }
         s = &p->entry->steps[p->step_index];
         if (s->load_timeout != WM_ARCADE_SMOVE_TIMEOUT_KEEP &&
@@ -370,7 +443,7 @@ void wm_arcade_smove_runtime_tick(
         ++p->step_index;
         p->timeout_loaded_for = 0xffu;
         if (p->step_index < p->entry->step_count) continue;
-        if (fire_entry(actors, actor_count, a, p->entry, callbacks)) {
+        if (fire_entry(actors, actor_count, a, p, p->entry, callbacks)) {
             ++p->fires;
             ++rt->fire_count;
             proc_rewind(0, p, p->entry->post_fire_sleep);

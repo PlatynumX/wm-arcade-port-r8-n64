@@ -2940,13 +2940,13 @@ static __attribute__((unused)) void render_match(const wm_app *app) {
         const size_t dn = wm_fix39_active_actor_count();
 
         snprintf(db,sizeof(db),
-                 "R37I src=%u t=%lu ph=%lu pc=%lu n=%u H=%u",
+                 "R37J s%u t%lu pc%lu n%u H%u R%08lx",
                  (unsigned)app->attract.source_index,
                  (unsigned long)app->attract.call_ticks,
-                 (unsigned long)app->attract.phase_ticks,
                  (unsigned long)(st ? st->pcnt : 0u),
                  (unsigned)dn,
-                 wm_fix39_match_halt() ? 1u : 0u);
+                 wm_fix39_match_halt() ? 1u : 0u,
+                 (unsigned long)wm_fix39_rng_state());
         text_line(2,8,db);
 
         for(size_t di=0; di<dn && di<4u; ++di) {
@@ -3118,7 +3118,19 @@ static void wm_n64_run_source_ticks_dual(
     memset(timer->latched_input, 0, sizeof(timer->latched_input));
 
     for (unsigned i = 0; i < due; ++i) {
+        /*
+         * WRESTLE.ASM::mainlp updates RAND after process_dispatch, while
+         * RND/RNDRNG calls made by processes read live HCOUNT/SP.
+         */
+        uint32_t source_hcount = (uint32_t)get_ticks();
+        uint32_t source_sp = (uint32_t)(uintptr_t)&source_hcount;
+        wm_fix39_rng_set_entropy(source_hcount, source_sp);
+
         wm_app_tick_dual(app, &tick_input[0], &tick_input[1]);
+
+        source_hcount = (uint32_t)get_ticks();
+        source_sp = (uint32_t)(uintptr_t)&source_hcount;
+        (void)wm_fix39_mainloop_step(source_hcount, source_sp);
 
         for (unsigned p = 0; p < 2u; ++p) {
             tick_input[p].start = false;

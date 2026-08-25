@@ -19,6 +19,13 @@ FIX39_COMBAT_OWNERS = {
 }
 PRESERVE_EXACT={'wm_arcade_roster.c'}
 PRESERVE_PREFIX=('wmania_attract_','wmania_hiscore_','wmania_ring_','wmania_rope_')
+R37_GRAPH_REQUIRED = {
+    'src/fix39/wm_arcade_smove_runtime.c',
+    'src/generated/dcs_r2b_port_bindings.c',
+    'src/core/cabinet_bridge.c',
+    'src/core/sdcard_hiscore_backend.c',
+    'src/core/render_equivalence.c',
+}
 
 def paths(text):
     return set(re.findall(r'(?:src/core/arcade|src/fix39)/[A-Za-z0-9_]+\.c',text))
@@ -43,6 +50,9 @@ def main(root:Path):
     for name in sorted(FIX39_COMBAT_OWNERS & fix):
         f=f'src/fix39/{name}'
         if f not in cp or f not in mp: errs.append(f'required combat owner missing: {name}')
+    for req in sorted(R37_GRAPH_REQUIRED):
+        if req not in cm or req not in mk:
+            errs.append(f'R37 CMake/N64 graph mismatch: {req}')
     m=re.search(r'(?m)^C_FILES\s*:=\s*(.*)$',mk)
     if not m or '$(FIX39_C)' not in m.group(1): errs.append('N64 Makefile C_FILES does not include $(FIX39_C)')
     # no basename may be active from both roots

@@ -6,20 +6,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <unistd.h>
 
 static char *make_test_root(char templ[1024])
 {
-    /*
-     * Keep the regression root inside the repo/build working directory.
-     * Termux/Android may expose TMPDIR through paths whose intermediate
-     * components are not mkdir-friendly for our backend proof, while the port's
-     * real runtime default remains sd:/wm_arcade/hiscore.whs.
-     */
-    if (snprintf(templ, 1024, ".r37_hiscore_sd_XXXXXX") >= 1024) {
-        return NULL;
-    }
-    return mkdtemp(templ);
+    int n = snprintf(templ, 1024, ".r37_hiscore_sd_%ld", (long)getpid());
+    if (n < 0 || n >= 1024) return NULL;
+    (void)rmdir(templ);
+    if (mkdir(templ, 0700) != 0) return NULL;
+    return templ;
 }
 
 int main(void)
@@ -37,7 +33,7 @@ int main(void)
     const char *path;
 
     if (root == NULL) {
-        perror("mkdtemp");
+        perror("mkdir test root");
         fprintf(stderr, "template=%s\n", templ[0] ? templ : "(empty)");
         return 2;
     }

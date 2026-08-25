@@ -37,6 +37,9 @@ CORE_C := \
     src/core/dcs_host_protocol.c \
     src/core/app.c \
     src/core/composite.c \
+    src/core/cabinet_bridge.c \
+    src/core/sdcard_hiscore_backend.c \
+    src/core/render_equivalence.c \
     src/generated/attract_sequence.c \
     src/generated/select_tables.c \
     src/generated/port_status.c \
@@ -109,6 +112,7 @@ FIX39_C := \
     src/fix39/wm_arcade_source_animation_runtime.c \
     src/fix39/wm_arcade_source_attack_frames.c \
     src/fix39/wm_arcade_special.c \
+    src/fix39/wm_arcade_smove_runtime.c \
     src/fix39/wm_arcade_story.c \
     src/fix39/wm_arcade_taker.c \
     src/fix39/wm_arcade_target_offsets.c \
@@ -129,7 +133,7 @@ FIX39_C := \
     src/fix39/wmania_ring_onscreen.c \
     src/fix39/wmania_rng.c
 # END FIX39 SOURCE-DIRECT MERGE
-ASSET_C := src/generated/bret_sprites.c src/generated/character_assets.c src/generated/ring_rope_assets.c src/generated/ring_arena_assets.c src/generated/crowd_assets.c src/generated/sports_logo.c src/generated/dcs_logo.c src/generated/title_screen.c src/generated/title_sparkle.c src/generated/bmod_tables.c src/generated/sports_background.c src/generated/sports_motto.c src/generated/select_sprites.c src/generated/select_background_main.c src/generated/select_background_choice.c src/generated/progress_background.c src/generated/progress_wrestlers.c src/generated/fix39_attract_text_generated.c src/generated/fix39_attract_assets.c
+ASSET_C := src/generated/dcs_r2b_port_bindings.c src/generated/bret_sprites.c src/generated/character_assets.c src/generated/ring_rope_assets.c src/generated/ring_arena_assets.c src/generated/crowd_assets.c src/generated/sports_logo.c src/generated/dcs_logo.c src/generated/title_screen.c src/generated/title_sparkle.c src/generated/bmod_tables.c src/generated/sports_background.c src/generated/sports_motto.c src/generated/select_sprites.c src/generated/select_background_main.c src/generated/select_background_choice.c src/generated/progress_background.c src/generated/progress_wrestlers.c src/generated/fix39_attract_text_generated.c src/generated/fix39_attract_assets.c
 N64_C := src/platform/n64/main.c src/platform/n64/dcs_effect.c src/platform/n64/audio_backend.c src/platform/n64/dcs_bank.c
 C_FILES := $(FIX39_C) $(CORE_C) $(ASSET_C) $(N64_C)
 OBJS := $(addprefix $(BUILD_DIR)/,$(C_FILES:.c=.o))

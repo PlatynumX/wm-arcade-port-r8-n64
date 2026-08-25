@@ -3019,69 +3019,11 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
        previous calc_closest/calc_closest2 pass. Do not recalculate here. */
     live_source_face_opponents();
 
-    if (g.status.drone_runtime_ready) {
-        wm_arcade_drone_world_t world;
-        memset(&world, 0, sizeof(world));
-        world.actors = g.actor_ptrs;
-        world.actor_count = WM_FIX39_ACTOR_COUNT;
-        world.pcnt = g.status.pcnt;
-        world.round_tickcount = g.status.round_tickcount;
-        world.first_ladder = 0;
-        if (g.actors[0].player_type == WM_PTYPE_DRONE &&
-            (g.actors[0].status_flags & WM_STATUS_ZOMBIE) == 0u) {
-            wm_arcade_drone_step_result_t dr0 = wm_arcade_drone_main(
-                &g.actors[0], &g.drone_state[0], &world, &g.drone_callbacks);
-            if (g.drone_state[0].anim_request) {
-                common_anim_label(&g.actors[0], g.drone_state[0].anim_request, 0);
-                g.drone_state[0].anim_request = 0;
-            }
-            ++g.status.drone_ticks;
-            ++g.status.drone_ticks_by_player[0];
-            if (dr0 == WM_DRONE_STEP_INPUT || dr0 == WM_DRONE_STEP_BLOCK ||
-                g.actors[0].but_val_cur != 0u || g.actors[0].stick_val_cur != 0u)
-                { ++g.status.drone_input_ticks; ++g.status.drone_input_ticks_by_player[0]; }
-            g.actors[0].move_dir = g.actors[0].stick_val_cur;
-        }
-        if (g.actors[1].player_type == WM_PTYPE_DRONE &&
-            (g.actors[1].status_flags & WM_STATUS_ZOMBIE) == 0u) {
-            wm_arcade_drone_step_result_t dr = wm_arcade_drone_main(
-                &g.actors[1], &g.drone_state[1], &world, &g.drone_callbacks);
-            if (g.drone_state[1].anim_request) {
-                common_anim_label(&g.actors[1], g.drone_state[1].anim_request, 0);
-                g.drone_state[1].anim_request = 0;
-            }
-            ++g.status.drone_ticks;
-            ++g.status.drone_ticks_by_player[1];
-            if (dr == WM_DRONE_STEP_INPUT || dr == WM_DRONE_STEP_BLOCK ||
-                g.actors[1].but_val_cur != 0u || g.actors[1].stick_val_cur != 0u)
-                { ++g.status.drone_input_ticks; ++g.status.drone_input_ticks_by_player[1]; }
-            g.actors[1].move_dir = g.actors[1].stick_val_cur;
-        }
+    /* R37L: DRONE.ASM is a source process-yield producer, not an
+       immediate-input helper. The generated DRN_BUT/DRN_JOY from the previous
+       source sleep are intentionally consumed below before the next DRONE
+       decision is produced at the end of wrestler_main. */
 
-        /* R37F1: WRESTLE.ASM #0plyr creates every CURRENT_LADDER opponent
-           with PTYPE_DRONE. Run the same DRONE.ASM interpreter for source
-           process slots 2/3 instead of merely rendering them. */
-        for (i = 2u; i < g.active_actor_count; ++i) {
-            wm_arcade_actor_t *a = &g.actors[i];
-            if (a->player_type == WM_PTYPE_DRONE &&
-                (a->status_flags & WM_STATUS_ZOMBIE) == 0u) {
-                wm_arcade_drone_step_result_t drx = wm_arcade_drone_main(
-                    a, &g.drone_state[i], &world, &g.drone_callbacks);
-                if (g.drone_state[i].anim_request) {
-                    common_anim_label(a, g.drone_state[i].anim_request, 0);
-                    g.drone_state[i].anim_request = 0;
-                }
-                ++g.status.drone_ticks;
-                ++g.status.drone_ticks_by_player[i];
-                if (drx == WM_DRONE_STEP_INPUT || drx == WM_DRONE_STEP_BLOCK ||
-                    a->but_val_cur != 0u || a->stick_val_cur != 0u) {
-                    ++g.status.drone_input_ticks;
-                    ++g.status.drone_input_ticks_by_player[i];
-                }
-                a->move_dir = a->stick_val_cur;
-            }
-        }
-    }
 
 
     /* WRESTLE.ASM RISK countdown, immediately before update_joystat. */
@@ -3213,6 +3155,88 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
             &g.actors[i], wm_arcade_match_clock_zero(&g.lifecycle));
         wm_arcade_getup_process_tick(&g.getup[i], &g.actors[i]);
     }
+
+    /*
+     * R37L — WRESTLE.ASM wrestler_main process boundary:
+     *
+     *   ... update_joy_dtime
+     *   ... countdown tail
+     *   jruc #loop
+     *   ARE_WE_IN_RING / facing / positions
+     *   drone_main
+     *   SLEEPR 1
+     *
+     * The C runtime executes one consolidated source tick, so DRONE must run
+     * here, after this wrestler's current-tick state has been consumed and
+     * updated. Its DRN_BUT/DRN_JOY transitions remain on the actor until the
+     * next wm_fix39_match_tick(), where update_joystat/move_wrestler consume
+     * them. Running DRONE before update_joystat incorrectly collapsed the
+     * source SLEEP 1 boundary.
+     */
+    if (g.status.drone_runtime_ready) {
+        wm_arcade_drone_world_t world;
+        memset(&world, 0, sizeof(world));
+        world.actors = g.actor_ptrs;
+        world.actor_count = WM_FIX39_ACTOR_COUNT;
+        world.pcnt = g.status.pcnt;
+        world.round_tickcount = g.status.round_tickcount;
+        world.first_ladder = 0;
+        if (g.actors[0].player_type == WM_PTYPE_DRONE &&
+            (g.actors[0].status_flags & WM_STATUS_ZOMBIE) == 0u) {
+            wm_arcade_drone_step_result_t dr0 = wm_arcade_drone_main(
+                &g.actors[0], &g.drone_state[0], &world, &g.drone_callbacks);
+            if (g.drone_state[0].anim_request) {
+                common_anim_label(&g.actors[0], g.drone_state[0].anim_request, 0);
+                g.drone_state[0].anim_request = 0;
+            }
+            ++g.status.drone_ticks;
+            ++g.status.drone_ticks_by_player[0];
+            if (dr0 == WM_DRONE_STEP_INPUT || dr0 == WM_DRONE_STEP_BLOCK ||
+                g.actors[0].but_val_cur != 0u || g.actors[0].stick_val_cur != 0u)
+                { ++g.status.drone_input_ticks; ++g.status.drone_input_ticks_by_player[0]; }
+            g.actors[0].move_dir = g.actors[0].stick_val_cur;
+        }
+        if (g.actors[1].player_type == WM_PTYPE_DRONE &&
+            (g.actors[1].status_flags & WM_STATUS_ZOMBIE) == 0u) {
+            wm_arcade_drone_step_result_t dr = wm_arcade_drone_main(
+                &g.actors[1], &g.drone_state[1], &world, &g.drone_callbacks);
+            if (g.drone_state[1].anim_request) {
+                common_anim_label(&g.actors[1], g.drone_state[1].anim_request, 0);
+                g.drone_state[1].anim_request = 0;
+            }
+            ++g.status.drone_ticks;
+            ++g.status.drone_ticks_by_player[1];
+            if (dr == WM_DRONE_STEP_INPUT || dr == WM_DRONE_STEP_BLOCK ||
+                g.actors[1].but_val_cur != 0u || g.actors[1].stick_val_cur != 0u)
+                { ++g.status.drone_input_ticks; ++g.status.drone_input_ticks_by_player[1]; }
+            g.actors[1].move_dir = g.actors[1].stick_val_cur;
+        }
+
+        /* R37F1: WRESTLE.ASM #0plyr creates every CURRENT_LADDER opponent
+           with PTYPE_DRONE. Run the same DRONE.ASM interpreter for source
+           process slots 2/3 instead of merely rendering them. */
+        for (i = 2u; i < g.active_actor_count; ++i) {
+            wm_arcade_actor_t *a = &g.actors[i];
+            if (a->player_type == WM_PTYPE_DRONE &&
+                (a->status_flags & WM_STATUS_ZOMBIE) == 0u) {
+                wm_arcade_drone_step_result_t drx = wm_arcade_drone_main(
+                    a, &g.drone_state[i], &world, &g.drone_callbacks);
+                if (g.drone_state[i].anim_request) {
+                    common_anim_label(a, g.drone_state[i].anim_request, 0);
+                    g.drone_state[i].anim_request = 0;
+                }
+                ++g.status.drone_ticks;
+                ++g.status.drone_ticks_by_player[i];
+                if (drx == WM_DRONE_STEP_INPUT || drx == WM_DRONE_STEP_BLOCK ||
+                    a->but_val_cur != 0u || a->stick_val_cur != 0u) {
+                    ++g.status.drone_input_ticks;
+                    ++g.status.drone_input_ticks_by_player[i];
+                }
+                a->move_dir = a->stick_val_cur;
+            }
+        }
+    }
+
 
     /* SPECIAL.ASM process state and COLLIS.ASM object collisions are already
        directly ported. Tick any live source-spawned objects every match tick,

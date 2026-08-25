@@ -133,35 +133,135 @@ static void single_proc(wm_arcade_smove_runtime_t *rt,
     p->timeout_loaded_for = 0xffu;
 }
 
-static int contains(const char *s, const char *needle)
-{
-    return s != 0 && strstr(s, needle) != 0;
-}
+typedef enum manifest_gate {
+    MANIFEST_GATE_NORMAL = 0,
+    MANIFEST_GATE_HEADHOLD,
+    MANIFEST_GATE_GRAB_TOSS_AIR,
+    MANIFEST_GATE_CHARGE_PUNCH,
+    MANIFEST_GATE_CHARGE_SPUNCH,
+    MANIFEST_GATE_CHARGE_SKICK
+} manifest_gate_t;
 
-static int is_headhold_entry(const wm_arcade_smove_entry_t *e)
-{
-    const char *l = e->process_label;
-    return contains(l, "hdhold") ||
-           contains(l, "_hd_") ||
-           contains(l, "und_hdhold") ||
-           contains(l, "yok_salt_throw");
-}
+typedef struct manifest_gate_rule {
+    const char *process_label;
+    manifest_gate_t gate;
+} manifest_gate_rule_t;
 
-static int is_grab_toss_air_entry(const wm_arcade_smove_entry_t *e)
+/*
+ * Explicit source precondition map for every strict SMOVE manifest entry.
+ *
+ * R29B fixed yok_salt_throw by special-casing its label after the older test
+ * guessed gate state from substrings.  R30 removes that heuristic completely:
+ * every process label below is intentional, exact, and matched one-for-one
+ * against the 63-entry source manifest.
+ */
+static const manifest_gate_rule_t manifest_gate_rules[] = {
+    { "hrt_charge_face_rake", MANIFEST_GATE_CHARGE_PUNCH },
+    { "hrt_charge_flying_kick", MANIFEST_GATE_CHARGE_SKICK },
+    { "hrt_roll_uppercut", MANIFEST_GATE_NORMAL },
+    { "hrt_hdhold_pile", MANIFEST_GATE_HEADHOLD },
+    { "hrt_hdhold_ddt", MANIFEST_GATE_HEADHOLD },
+    { "hrt_hdhold_faceslam", MANIFEST_GATE_HEADHOLD },
+    { "hrt_grab_toss_air", MANIFEST_GATE_GRAB_TOSS_AIR },
+    { "hrt_hdhold_combo1", MANIFEST_GATE_HEADHOLD },
+    { "hrt_hdhold_combo2", MANIFEST_GATE_HEADHOLD },
+
+    { "rzr_charge_slashes", MANIFEST_GATE_CHARGE_PUNCH },
+    { "rzr_hdhold_pile", MANIFEST_GATE_HEADHOLD },
+    { "rzr_hdhold_combo1", MANIFEST_GATE_HEADHOLD },
+    { "rzr_hdhold_edge", MANIFEST_GATE_HEADHOLD },
+    { "rzr_hdhold_rug", MANIFEST_GATE_HEADHOLD },
+    { "rzr_grab_toss_air", MANIFEST_GATE_GRAB_TOSS_AIR },
+    { "rzr_hdhold_combo2", MANIFEST_GATE_HEADHOLD },
+    { "rzr_sliding_rug", MANIFEST_GATE_NORMAL },
+
+    { "yok_hdhold_combo1", MANIFEST_GATE_HEADHOLD },
+    { "yok_hdhold_scissor", MANIFEST_GATE_HEADHOLD },
+    { "yok_hdhold_suplex", MANIFEST_GATE_HEADHOLD },
+    { "yok_salt_throw", MANIFEST_GATE_HEADHOLD },
+    { "yok_grab_toss_air", MANIFEST_GATE_GRAB_TOSS_AIR },
+    { "yok_hdhold_combo2", MANIFEST_GATE_HEADHOLD },
+
+    { "shn_hdhold_combo2", MANIFEST_GATE_HEADHOLD },
+    { "shn_hdhold_combo1", MANIFEST_GATE_HEADHOLD },
+    { "shn_charge_suplex", MANIFEST_GATE_CHARGE_SPUNCH },
+    { "shn_swirl_speedkick", MANIFEST_GATE_NORMAL },
+    { "shn_sliding_kicktoss", MANIFEST_GATE_NORMAL },
+    { "shn_hdhold_suplex", MANIFEST_GATE_HEADHOLD },
+    { "shn_hdhold_frank", MANIFEST_GATE_HEADHOLD },
+    { "shn_hdhold_kicktoss", MANIFEST_GATE_HEADHOLD },
+    { "shn_hdhold_butts", MANIFEST_GATE_HEADHOLD },
+    { "shn_flipslam", MANIFEST_GATE_NORMAL },
+    { "shn_grab_toss_air", MANIFEST_GATE_GRAB_TOSS_AIR },
+
+    { "bam_charge_neckbreaker", MANIFEST_GATE_CHARGE_PUNCH },
+    { "bam_hdhold_combo1", MANIFEST_GATE_HEADHOLD },
+    { "bam_hdhold_pile", MANIFEST_GATE_HEADHOLD },
+    { "bam_hdhold_pogo", MANIFEST_GATE_HEADHOLD },
+    { "bam_hdhold_combo2", MANIFEST_GATE_HEADHOLD },
+    { "bam_grab_toss_air", MANIFEST_GATE_GRAB_TOSS_AIR },
+
+    { "dnk_charge_flykick", MANIFEST_GATE_CHARGE_SKICK },
+    { "dnk_hdhold_slam", MANIFEST_GATE_HEADHOLD },
+    { "dnk_hdhold_combo1", MANIFEST_GATE_HEADHOLD },
+    { "dnk_hdhold_pile", MANIFEST_GATE_HEADHOLD },
+    { "dnk_hdhold_combo2", MANIFEST_GATE_HEADHOLD },
+    { "dnk_hdhold_buzz", MANIFEST_GATE_HEADHOLD },
+    { "dnk_grab_toss_air", MANIFEST_GATE_GRAB_TOSS_AIR },
+
+    { "lex_hdhold_pile", MANIFEST_GATE_HEADHOLD },
+    { "lex_hdhold_elbow_face", MANIFEST_GATE_HEADHOLD },
+    { "lex_hdhold_graboh", MANIFEST_GATE_HEADHOLD },
+    { "lex_grab_toss_air", MANIFEST_GATE_GRAB_TOSS_AIR },
+    { "lex_hdhold_combo1", MANIFEST_GATE_HEADHOLD },
+    { "lex_hdhold_combo2", MANIFEST_GATE_HEADHOLD },
+
+    { "und_hdhold_neckbrk", MANIFEST_GATE_HEADHOLD },
+    { "und_hdhold_faceslam", MANIFEST_GATE_HEADHOLD },
+    { "und_hdhold_pile", MANIFEST_GATE_HEADHOLD },
+    { "und_choke_slide", MANIFEST_GATE_NORMAL },
+    { "und_spirit_push", MANIFEST_GATE_NORMAL },
+    { "und_spirit_pull", MANIFEST_GATE_NORMAL },
+    { "und_grab_toss_air", MANIFEST_GATE_GRAB_TOSS_AIR },
+    { "und_hdhold_combo1", MANIFEST_GATE_HEADHOLD },
+    { "und_hdhold_combo2", MANIFEST_GATE_HEADHOLD },
+    { "und_finish_move1", MANIFEST_GATE_NORMAL }
+};
+
+static manifest_gate_t manifest_gate_for(const wm_arcade_smove_entry_t *e)
 {
-    return contains(e->process_label, "grab_toss_air");
+    assert(e != 0);
+    assert(e->process_label != 0);
+    assert(sizeof(manifest_gate_rules) / sizeof(manifest_gate_rules[0]) == 63u);
+    for (size_t i = 0u; i < sizeof(manifest_gate_rules) / sizeof(manifest_gate_rules[0]); ++i) {
+        if (strcmp(manifest_gate_rules[i].process_label, e->process_label) == 0)
+            return manifest_gate_rules[i].gate;
+    }
+    fprintf(stderr, "missing explicit manifest gate rule for %s\n", e->process_label);
+    assert(0 && "missing explicit manifest gate rule");
+    return MANIFEST_GATE_NORMAL;
 }
 
 static int is_charge_entry(const wm_arcade_smove_entry_t *e)
 {
-    return e->step_count == 0u && contains(e->process_label, "charge");
+    manifest_gate_t gate = manifest_gate_for(e);
+    assert((gate == MANIFEST_GATE_CHARGE_PUNCH ||
+            gate == MANIFEST_GATE_CHARGE_SPUNCH ||
+            gate == MANIFEST_GATE_CHARGE_SKICK) == (e->step_count == 0u));
+    return gate == MANIFEST_GATE_CHARGE_PUNCH ||
+           gate == MANIFEST_GATE_CHARGE_SPUNCH ||
+           gate == MANIFEST_GATE_CHARGE_SKICK;
 }
 
 static uint16_t charge_button_for(const wm_arcade_smove_entry_t *e)
 {
-    const char *l = e->process_label;
-    if (contains(l, "shn_charge_suplex")) return WM_BTN_SPUNCH;
-    if (contains(l, "flying_kick") || contains(l, "flykick")) return WM_BTN_SKICK;
+    switch (manifest_gate_for(e)) {
+    case MANIFEST_GATE_CHARGE_SPUNCH: return WM_BTN_SPUNCH;
+    case MANIFEST_GATE_CHARGE_SKICK: return WM_BTN_SKICK;
+    case MANIFEST_GATE_CHARGE_PUNCH: return WM_BTN_PUNCH;
+    default: break;
+    }
+    assert(0 && "charge_button_for called for non-charge entry");
     return WM_BTN_PUNCH;
 }
 
@@ -169,21 +269,27 @@ static void prepare_gate_state(const wm_arcade_smove_entry_t *e,
                                wm_arcade_actor_t *a,
                                wm_arcade_actor_t *b)
 {
-    if (is_headhold_entry(e)) {
+    switch (manifest_gate_for(e)) {
+    case MANIFEST_GATE_HEADHOLD:
         a->player_mode = WM_PMODE_HEADHOLD;
         a->who_i_hit = b;
         a->smart_target = b;
         return;
-    }
-    if (is_grab_toss_air_entry(e)) {
+    case MANIFEST_GATE_GRAB_TOSS_AIR:
         a->player_mode = WM_PMODE_NORMAL;
         a->smart_target = b;
         b->player_mode = WM_PMODE_INAIR;
         a->closest_dist = 0x20;
         return;
+    case MANIFEST_GATE_CHARGE_PUNCH:
+    case MANIFEST_GATE_CHARGE_SPUNCH:
+    case MANIFEST_GATE_CHARGE_SKICK:
+    case MANIFEST_GATE_NORMAL:
+    default:
+        a->player_mode = WM_PMODE_NORMAL;
+        a->smart_target = b;
+        return;
     }
-    a->player_mode = WM_PMODE_NORMAL;
-    a->smart_target = b;
 }
 
 static void drive_expected_step(wm_arcade_actor_t *a, uint16_t expected)

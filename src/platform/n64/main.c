@@ -3180,8 +3180,30 @@ static bool fix39_tick_gameplay_demo(wm_app *app, const wm_input_state *input) {
             }
         }
     }
+    /* ATTRACT.ASM show_gameplay:
+       - start_match runs live
+       - SLEEP 3*60 makes the first 180 source ticks unskippable
+       - wait_on_butn(10*TSEC) runs after that
+       - when it returns, HALT freezes the match for 60 ticks
+       - fade_down then runs for 32 ticks before display_blank/nosounds/RETP
+
+       Do not use the old N64-only 60/600 shortcut here. */
+    if (a->phase_ticks != 0u) {
+        --a->phase_ticks;
+        if (a->phase_ticks == 0u) {
+            wm_fix39_match_set_cpu_vs_cpu(false);
+            return true;
+        }
+        return false;
+    }
+
     wm_fix39_match_tick(0,0,false,false,false,false,false,false);
-    if(a->call_ticks>60u && wm_app_any_attract_button(input)){wm_fix39_match_set_cpu_vs_cpu(false);return true;}
-    if(a->call_ticks>=600u){wm_fix39_match_set_cpu_vs_cpu(false);return true;}
+
+    if ((a->call_ticks > 180u && wm_app_any_attract_button(input)) ||
+        a->call_ticks >= (180u + 10u * WM_SOURCE_TICKS_PER_SEC)) {
+        /* Represent HALT by stopping match simulation while retaining the
+           current actor/render state through the 60+32 tail. */
+        a->phase_ticks = 60u + 32u;
+    }
     return false;
 }

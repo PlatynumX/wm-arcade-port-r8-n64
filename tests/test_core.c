@@ -457,10 +457,19 @@ static void test_attract_source_flow(void) {
     wm_app_tick(&app, &button);
     CHECK(wm_process_find_id(&app.scheduler, WM_PID_WATER) == NULL);
     CHECK(app.attract.call == WM_ATTRACT_SHOW_GAMEPLAY);
-    /* ATTR.ASM show_gameplay creates start_match, then executes the literal
-       SLEEP 3*60 before entering wait_on_butn(10*TSEC). Therefore a held
-       attract button cannot skip this call until after 180 source ticks. */
+    /* ATTR.ASM show_gameplay creates start_match, then executes literal
+       SLEEP 3*60 before entering wait_on_butn(10*TSEC). A held button returns
+       from that wait at the first eligible tick, but show_gameplay does NOT
+       return yet: source sets HALT, holds 60 ticks, starts fade_down, then
+       SLEEPK 32 before display_blank/nosounds/RETP. */
     for (unsigned i = 0; i < 180u; ++i) {
+        wm_app_tick(&app, &button);
+        CHECK(app.attract.call == WM_ATTRACT_SHOW_GAMEPLAY);
+    }
+
+    /* R37E source parity: after the held button ends wait_on_butn, preserve
+       the exact 60 + 32 tick frozen/fade tail. */
+    for (unsigned i = 0; i < (60u + 32u) - 1u; ++i) {
         wm_app_tick(&app, &button);
         CHECK(app.attract.call == WM_ATTRACT_SHOW_GAMEPLAY);
     }
@@ -486,9 +495,14 @@ static void test_attract_source_flow(void) {
     CHECK(wm_process_find_id(&app.scheduler, WM_PID_FLASH) == NULL);
     CHECK(wm_process_find_id(&app.scheduler, WM_PID_ATTRACT_ANIM) == NULL);
     CHECK(app.attract.call == WM_ATTRACT_SHOW_GAMEPLAY);
-    /* Fix39: second source gameplay slot after Title uses the same
-       show_gameplay routine and therefore the same literal 3*60 lockout. */
+    /* ATTRACT.ASM invokes the same show_gameplay routine here, so the
+       second demo has the identical 3*60 live period followed by the
+       60-tick HALT/freeze and 32-tick fade tail. */
     for (unsigned i = 0; i < 180u; ++i) {
+        wm_app_tick(&app, &button);
+        CHECK(app.attract.call == WM_ATTRACT_SHOW_GAMEPLAY);
+    }
+    for (unsigned i = 0; i < (60u + 32u) - 1u; ++i) {
         wm_app_tick(&app, &button);
         CHECK(app.attract.call == WM_ATTRACT_SHOW_GAMEPLAY);
     }

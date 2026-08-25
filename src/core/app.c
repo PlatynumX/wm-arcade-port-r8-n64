@@ -367,17 +367,75 @@ static bool tick_sports_logo(wm_app *app, const wm_input_state *input) {
     return a->call_ticks >= WM_SPORTS_LOGO_TOTAL_TICKS;
 }
 
+/* R37E: ATTRACT.ASM show_gameplay owns arcade roster identity, not frontend
+   selection identity. Keep this mapping explicit at the platform boundary. */
+static int fix39_demo_arcade_to_frontend(uint8_t arcade_id) {
+    switch (arcade_id) {
+        case WM_ROSTER_BRET:  return WM_WRESTLER_BRET;
+        case WM_ROSTER_RAZOR: return WM_WRESTLER_RAZOR;
+        case WM_ROSTER_TAKER: return WM_WRESTLER_UNDERTAKER;
+        case WM_ROSTER_YOKO:  return WM_WRESTLER_YOKOZUNA;
+        case WM_ROSTER_SHAWN: return WM_WRESTLER_SHAWN;
+        case WM_ROSTER_BAM:   return WM_WRESTLER_BAM_BAM;
+        case WM_ROSTER_DOINK: return WM_WRESTLER_DOINK;
+        case WM_ROSTER_LEX:   return WM_WRESTLER_LEX;
+        default:              return -1;
+    }
+}
+
 static bool fix39_tick_gameplay_demo(wm_app *app, const wm_input_state *input) {
     wm_attract_state *a = &app->attract;
     ++a->call_ticks;
+
     if (a->call_ticks == 1u) {
-        /* ATTR.ASM SHOW_GAMEPLAY enters the real match path. No wm_demo simulation. */
-        wm_fix39_match_begin((unsigned)app->p1_choice, (unsigned)app->p2_choice);
+        WmAttractDemoPlan plan;
+        int p1, p2;
+
+        /* ATTRACT.ASM source order:
+           current_round/match_cnt/p1rounds/p2rounds = 1;
+           RNDRNG0(7) -> INIT_LADDER_TABLE (consumes RNG) ->
+           RNDRNG0(5)+1 -> CURRENT_LADDER/NUM_OPPS -> start_match.
+           wm_fix39_attract_demo_plan preserves that RNG order. */
+        if (!wm_fix39_attract_demo_plan((uint16_t)a->amode_loops, false, &plan))
+            return true; /* fail closed: never invent an attract matchup */
+
+        p1 = fix39_demo_arcade_to_frontend(plan.player_wrestler);
+        p2 = fix39_demo_arcade_to_frontend(plan.opponent_wrestler);
+        if (p1 < 0 || p2 < 0)
+            return true;
+
+        wm_fix39_match_begin((unsigned)p1, (unsigned)p2);
         wm_fix39_match_set_cpu_vs_cpu(true);
+
+        /* phase_ticks == 0 means live SHOW_GAMEPLAY.
+           Nonzero is the source freeze/fade tail after wait_on_butn returns. */
+        a->phase_ticks = 0u;
     }
+
+    if (a->phase_ticks != 0u) {
+        /* Source sets HALT, sleeps 60, starts fade_down, then SLEEPK 32.
+           Freeze live wrestler simulation for the exact 60+32 control tail. */
+        --a->phase_ticks;
+        if (a->phase_ticks == 0u) {
+            wm_fix39_match_set_cpu_vs_cpu(false);
+            return true;
+        }
+        return false;
+    }
+
     wm_fix39_match_tick(0, 0, false, false, false, false, false, false);
-    if (a->call_ticks > 180u && wm_app_any_attract_button(input)) { wm_fix39_match_set_cpu_vs_cpu(false); return true; }
-    if (a->call_ticks >= (180u + 10u * WM_SOURCE_TICKS_PER_SEC)) { wm_fix39_match_set_cpu_vs_cpu(false); return true; }
+
+    /* Source SLEEP 3*60: attract buttons cannot end the demo before this. */
+    if (a->call_ticks < 180u)
+        return false;
+
+    /* Source wait_on_butn 10*TSEC.  Returning from the wait enters the
+       freeze/fade tail; it does not leave show_gameplay immediately. */
+    if (wm_app_any_attract_button(input) ||
+        a->call_ticks >= (180u + 10u * WM_SOURCE_TICKS_PER_SEC)) {
+        a->phase_ticks = 60u + 32u;
+    }
+
     return false;
 }
 static bool tick_title(wm_app *app, const wm_input_state *input) {

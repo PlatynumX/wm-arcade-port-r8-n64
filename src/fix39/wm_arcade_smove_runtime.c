@@ -20,6 +20,12 @@ enum {
     G_BRET_HD_COMBO1,
     G_BRET_HD_COMBO2,
     G_RAZOR_CHARGE_SLASHES,
+    G_RAZOR_HD_PILE,
+    G_RAZOR_HD_COMBO1,
+    G_RAZOR_HD_EDGE,
+    G_RAZOR_HD_RUG,
+    G_RAZOR_GRAB_TOSS_AIR,
+    G_RAZOR_HD_COMBO2,
     G_RAZOR_SLIDING_RUG,
     G_TAKER_HD_NECK,
     G_TAKER_HD_FACESLAM,
@@ -73,6 +79,36 @@ static const wm_arcade_smove_wait_step_t hrt_hdhold_combo2[] = {
 };
 
 static const wm_arcade_smove_wait_step_t rzr_sliding_rug[] = {
+    STEP(WM_J_TOWARD, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_TOWARD, 0, 60),
+    STEP(WM_B_KICK, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+static const wm_arcade_smove_wait_step_t rzr_hdhold_pile[] = {
+    STEP(WM_J_DOWN, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_DOWN, 0, 60),
+    STEP(WM_B_SKICK, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+static const wm_arcade_smove_wait_step_t rzr_hdhold_edge[] = {
+    STEP(WM_J_TOWARD, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_TOWARD, 0, 60),
+    STEP(WM_B_SPUNCH, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+static const wm_arcade_smove_wait_step_t rzr_hdhold_rug[] = {
+    STEP(WM_J_DOWN, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_DOWN, 0, 60),
+    STEP(WM_B_KICK, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+static const wm_arcade_smove_wait_step_t rzr_grab_toss_air[] = {
+    STEP(WM_J_AWAY, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_AWAY, 0, 40),
+    STEP(WM_B_PUNCH, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+static const wm_arcade_smove_wait_step_t rzr_hdhold_combo1[] = {
+    STEP(WM_J_TOWARD, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_TOWARD, 0, 60),
+    STEP(WM_B_SPUNCH, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+static const wm_arcade_smove_wait_step_t rzr_hdhold_combo2[] = {
     STEP(WM_J_TOWARD, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
     STEP(WM_J_TOWARD, 0, 60),
     STEP(WM_B_KICK, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
@@ -140,6 +176,12 @@ static const wm_arcade_smove_entry_t manifest[] = {
     { WM_ROSTER_BRET, "hrt_hdhold_combo1", "hrt_combo_punch_anim", hrt_hdhold_combo1, 3, G_BRET_HD_COMBO1, 20, 1 },
     { WM_ROSTER_BRET, "hrt_hdhold_combo2", "hrt_combo_kick_anim", hrt_hdhold_combo2, 3, G_BRET_HD_COMBO2, 20, 1 },
     { WM_ROSTER_RAZOR, "rzr_charge_slashes", "rzr_repeat_slash_anim", 0, 0, G_RAZOR_CHARGE_SLASHES, 1, 1 },
+    { WM_ROSTER_RAZOR, "rzr_hdhold_pile", "rzr_3_pile_driver_anim", rzr_hdhold_pile, 3, G_RAZOR_HD_PILE, 20, 1 },
+    { WM_ROSTER_RAZOR, "rzr_hdhold_combo1", "rzr_combo_punch_anim", rzr_hdhold_combo1, 3, G_RAZOR_HD_COMBO1, 20, 1 },
+    { WM_ROSTER_RAZOR, "rzr_hdhold_edge", "rzr_razors_edge_anim", rzr_hdhold_edge, 3, G_RAZOR_HD_EDGE, 20, 1 },
+    { WM_ROSTER_RAZOR, "rzr_hdhold_rug", "rzr_rugshake2_anim", rzr_hdhold_rug, 3, G_RAZOR_HD_RUG, 20, 1 },
+    { WM_ROSTER_RAZOR, "rzr_grab_toss_air", "rzr_hiptoss_anim", rzr_grab_toss_air, 3, G_RAZOR_GRAB_TOSS_AIR, 20, 1 },
+    { WM_ROSTER_RAZOR, "rzr_hdhold_combo2", "rzr_combo_kick_anim", rzr_hdhold_combo2, 3, G_RAZOR_HD_COMBO2, 20, 1 },
     { WM_ROSTER_RAZOR, "rzr_sliding_rug", "rzr_sliding_rug_anim", rzr_sliding_rug, 3, G_RAZOR_SLIDING_RUG, 20, 1 },
     { WM_ROSTER_TAKER, "und_hdhold_neckbrk", "und_neckbreaker_anim", und_hd_neck, 3, G_TAKER_HD_NECK, 20, 1 },
     { WM_ROSTER_TAKER, "und_hdhold_faceslam", "und_choke_face_slam_anim", und_hd_faceslam, 3, G_TAKER_HD_FACESLAM, 20, 1 },
@@ -570,6 +612,99 @@ static int fire_razor_sliding_rug(wm_arcade_actor_t *a,
     return 1;
 }
 
+
+static int fire_razor_headhold_throw(wm_arcade_actor_t *a, wm_arcade_actor_t *opp,
+                                     const wm_arcade_smove_entry_t *e,
+                                     const wm_arcade_smove_callbacks_t *cb)
+{
+    wm_arcade_actor_t *target = 0;
+    int bonus = 0;
+    if (!a || !e) return 0;
+
+    if (a->player_mode != WM_PMODE_HEADHOLD &&
+        a->player_mode != WM_PMODE_HEADHELD) return 0;
+
+    if (a->player_mode == WM_PMODE_HEADHELD) {
+        /* RAZOR.ASM reversal branch: DO_REVERSAL, DO_REVERSAL_MESS,
+           SMRTTGT WHOHITME, then immobilize WHOHITME. */
+        if (a->i_will_die != 0) return 0;
+        if (a->immobilize_time != 0) return 0;
+        if (cb && cb->do_reversal) cb->do_reversal(a, cb->user);
+        if (cb && cb->do_reversal_message) cb->do_reversal_message(a, cb->user);
+        target = a->who_hit_me ? a->who_hit_me : opp;
+        a->smart_target = target;
+    } else {
+        /* RAZOR.ASM slam branch: BONUS_MESS ids are 7 pile, 33 edge, 6 rug,
+           then SMRTTGT WHOIHIT and immobilize WHOIHIT. */
+        if (a->immobilize_time != 0) return 0;
+        if (e->gate_kind == G_RAZOR_HD_PILE) bonus = 7;
+        else if (e->gate_kind == G_RAZOR_HD_EDGE) bonus = 33;
+        else if (e->gate_kind == G_RAZOR_HD_RUG) bonus = 6;
+        if (bonus != 0 && cb && cb->bonus_message)
+            cb->bonus_message(a, bonus, cb->user);
+        target = a->who_i_hit ? a->who_i_hit : opp;
+        a->smart_target = target;
+    }
+
+    if (!target) return 0;
+    target->immobilize_time = 15;
+    if (cb && cb->find_and_kill_endless)
+        cb->find_and_kill_endless(a, cb->user);
+
+    queue_result(a, e, cb);
+    if ((e->gate_kind == G_RAZOR_HD_PILE || e->gate_kind == G_RAZOR_HD_EDGE) &&
+        cb && cb->sound_label)
+        cb->sound_label(a, "GRABHOLD_T1/GRABHOLD_T2", cb->user);
+    return 1;
+}
+
+static int fire_razor_grab_toss_air(wm_arcade_actor_t *a,
+                                    wm_arcade_actor_t *opp,
+                                    const wm_arcade_smove_entry_t *e,
+                                    const wm_arcade_smove_callbacks_t *cb)
+{
+    const char *label;
+    if (!a || !e) return 0;
+    if ((a->anim_mode & WM_ARCADE_MODE_UNINT) != 0u) return 0;
+    if (a->player_mode == WM_PMODE_HEADHOLD) return 0;
+    if (opp && (opp->player_mode == WM_PMODE_ONGROUND ||
+                opp->player_mode == WM_PMODE_DEAD)) return 0;
+
+    if (opp && (mode_is_inair(opp->player_mode) ||
+                opp->attack_type == WM_BRET_AT_LEAPING)) {
+        label = ((a->facing_dir & WM_MOVE_RIGHT) != 0u) ?
+            "rzr_2_hiptoss2_anim" : "rzr_4_hiptoss2_anim";
+    } else {
+        if (cb && cb->find_and_kill_endless)
+            cb->find_and_kill_endless(a, cb->user);
+        if (a->closest_dist > 0x68) return 0;
+        label = ((a->facing_dir & WM_MOVE_RIGHT) != 0u) ?
+            "rzr_2_hiptoss_anim" : "rzr_4_hiptoss_anim";
+    }
+
+    a->special_move_addr = (uintptr_t)label;
+    if (cb && cb->resolve_label_token)
+        a->special_move_addr = cb->resolve_label_token(label, cb->user);
+    if (cb && cb->sound_label) cb->sound_label(a, "GRABFLING_T1/PUNCH_T2", cb->user);
+    return 1;
+}
+
+static int fire_razor_headhold_combo(wm_arcade_actor_t *a,
+                                     wm_arcade_actor_t *opp,
+                                     const wm_arcade_smove_entry_t *e,
+                                     const wm_arcade_smove_callbacks_t *cb)
+{
+    if (!a || !e) return 0;
+    if (a->player_mode != WM_PMODE_HEADHOLD) return 0;
+    if (cb && cb->check_combo_go && cb->check_combo_go(a, cb->user) < 0) return 0;
+
+    a->smart_target = a->who_i_hit ? a->who_i_hit : opp;
+    if (cb && cb->find_and_kill_endless)
+        cb->find_and_kill_endless(a, cb->user);
+    queue_result(a, e, cb);
+    return 1;
+}
+
 static int fire_entry(wm_arcade_actor_t **actors, size_t n,
                       wm_arcade_actor_t *a,
                       wm_arcade_smove_proc_t *p,
@@ -596,6 +731,15 @@ static int fire_entry(wm_arcade_actor_t **actors, size_t n,
         return fire_bret_headhold_combo(a, opp, e, cb);
     case G_RAZOR_CHARGE_SLASHES:
         return fire_razor_charge_slashes(p, a, e, cb);
+    case G_RAZOR_HD_PILE:
+    case G_RAZOR_HD_EDGE:
+    case G_RAZOR_HD_RUG:
+        return fire_razor_headhold_throw(a, opp, e, cb);
+    case G_RAZOR_GRAB_TOSS_AIR:
+        return fire_razor_grab_toss_air(a, opp, e, cb);
+    case G_RAZOR_HD_COMBO1:
+    case G_RAZOR_HD_COMBO2:
+        return fire_razor_headhold_combo(a, opp, e, cb);
     case G_RAZOR_SLIDING_RUG:
         return fire_razor_sliding_rug(a, opp, e, cb);
     case G_TAKER_HD_NECK:

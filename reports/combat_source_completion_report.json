@@ -219,6 +219,12 @@
     ],
     "RAZOR": [
       "rzr_charge_slashes",
+      "rzr_hdhold_pile",
+      "rzr_hdhold_combo1",
+      "rzr_hdhold_edge",
+      "rzr_hdhold_rug",
+      "rzr_grab_toss_air",
+      "rzr_hdhold_combo2",
       "std_walk_fast",
       "std_taunt",
       "rzr_sliding_rug"
@@ -273,14 +279,7 @@
       "lex_hdhold_combo1",
       "lex_hdhold_combo2"
     ],
-    "RAZOR": [
-      "rzr_hdhold_pile",
-      "rzr_hdhold_combo1",
-      "rzr_hdhold_edge",
-      "rzr_hdhold_rug",
-      "rzr_grab_toss_air",
-      "rzr_hdhold_combo2"
-    ],
+    "RAZOR": [],
     "SHAWN": [
       "shn_hdhold_combo2",
       "shn_hdhold_combo1",

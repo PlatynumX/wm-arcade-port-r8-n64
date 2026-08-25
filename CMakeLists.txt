@@ -186,4 +186,13 @@ if(WM_BUILD_TESTS)
     target_link_libraries(wm_combat2es_runtime_all_manifest_regression_tests PRIVATE wmcore)
     target_compile_options(wm_combat2es_runtime_all_manifest_regression_tests PRIVATE -Wall -Wextra -Wpedantic -UNDEBUG)
     add_test(NAME wm_combat2es_runtime_all_manifest_regression COMMAND wm_combat2es_runtime_all_manifest_regression_tests)
+
+    add_executable(wm_combat_non_smove_core_regression_tests tests/combat_non_smove_core_regression.c)
+    target_link_libraries(wm_combat_non_smove_core_regression_tests PRIVATE wmcore)
+    target_compile_options(wm_combat_non_smove_core_regression_tests PRIVATE -Wall -Wextra -Wpedantic -UNDEBUG)
+    add_test(NAME wm_combat_non_smove_core_regression COMMAND wm_combat_non_smove_core_regression_tests)
+    add_test(NAME wm_combat_non_smove_source_reference_audit
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/audit_combat_non_smove_source_reference.py)
+    set_tests_properties(wm_combat_non_smove_source_reference_audit PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
 endif()

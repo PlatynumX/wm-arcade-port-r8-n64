@@ -168,10 +168,12 @@ bool wm_rng_rndper_hi(WmRng *rng, uint16_t probability)
 uint32_t wm_rng_rnd_mask(WmRng *rng, uint32_t mask)
 {
     if (rng == NULL) return 0u;
-    rng->rand_state = wm_rng_mix(
-        rng->rand_state,
-        read_hcount(rng),
-        read_sp(rng));
+    /*
+     * UTIL.ASM::rnd is a read-only mask of current RAND:
+     *   move @RAND,a1,L
+     *   and  a1,a0
+     *   rets
+     */
     return rng->rand_state & mask;
 }
 

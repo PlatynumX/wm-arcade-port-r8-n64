@@ -38,7 +38,7 @@ static const wm_arcade_input_pattern_t secret_patterns[]={
     {"neck_grab",s_neck30,3,30},
     {"boxing_pnch",s_box7,7,60}
 };
-static const char *const special_processes[] = {
+static const char *const special_processes[]={
     "dnk_charge_flykick",
     "dnk_hdhold_slam",
     "dnk_hdhold_combo1",

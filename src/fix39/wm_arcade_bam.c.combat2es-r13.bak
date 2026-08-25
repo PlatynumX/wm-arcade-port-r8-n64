@@ -38,7 +38,7 @@ static const wm_arcade_input_pattern_t secret_patterns[]={
     {"hip_toss2",s_hip_toss2,1,10},
     {"napalm",s_punch_dd,3,50}
 };
-static const char *const special_processes[] = {
+static const char *const special_processes[]={
     "bam_charge_neckbreaker",
     "bam_hdhold_combo1",
     "bam_hdhold_pile",
@@ -46,7 +46,9 @@ static const char *const special_processes[] = {
     "bam_hdhold_combo2",
     "bam_grab_toss_air",
     "std_walk_fast",
-    "std_taunt"
+    "std_taunt",
+    "bam_finish_move1",
+    "bam_finish_move2"
 };
 
 const wm_arcade_wrestler_profile_t wm_arcade_profile_bam={

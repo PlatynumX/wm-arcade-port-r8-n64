@@ -1,0 +1,17 @@
+/* Combat2ES R14C: generated-asset bridge restored.
+ * R11e CMake references this translation unit; do not prune it.  The sprite
+ * records are source-generated from original WIMP containers in
+ * progress_wrestlers.c, so this is a source-backed adapter, not a NULL stub.
+ */
+#include "wm/bret_sprites.h"
+#include "wm/progress_wrestlers.h"
+
+const wm_source_sprite *wm_bret_sprite_find(const char *source_frame)
+{
+    return wm_progress_sprite_find(source_frame);
+}
+
+size_t wm_bret_sprite_count(void)
+{
+    return wm_progress_sprite_count();
+}

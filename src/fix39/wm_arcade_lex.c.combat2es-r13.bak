@@ -36,7 +36,7 @@ static const wm_arcade_input_pattern_t secret_patterns[]={
     {"sliding_elbow",s_toward_punch,3,30},
     {"hammer",s_toward_skick,3,32}
 };
-static const char *const special_processes[] = {
+static const char *const special_processes[]={
     "lex_hdhold_pile",
     "lex_hdhold_elbow_face",
     "lex_hdhold_graboh",
@@ -44,7 +44,9 @@ static const char *const special_processes[] = {
     "lex_hdhold_combo1",
     "lex_hdhold_combo2",
     "std_walk_fast",
-    "std_taunt"
+    "std_taunt",
+    "lex_finish_move1",
+    "lex_finish_move2"
 };
 
 const wm_arcade_wrestler_profile_t wm_arcade_profile_lex={

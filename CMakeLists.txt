@@ -82,6 +82,7 @@ add_library(wmcore STATIC
     src/fix39/wm_arcade_source_animation_runtime.c
     src/fix39/wm_arcade_source_attack_frames.c
     src/fix39/wm_arcade_special.c
+    src/fix39/wm_arcade_smove_runtime.c
     src/fix39/wm_arcade_story.c
     src/fix39/wm_arcade_taker.c
     src/fix39/wm_arcade_target_offsets.c
@@ -155,4 +156,9 @@ if(WM_BUILD_TESTS)
              COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_asmseq.py)
     add_test(NAME wm_source_tools
              COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_source_tools.py)
+    add_test(NAME wm_combat_source_parity_audit
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/audit_combat_source_parity.py)
+    add_test(NAME wm_combat_source_manifest_audit
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/audit_combat_source_manifest.py)
+    set_tests_properties(wm_combat_source_manifest_audit PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endif()

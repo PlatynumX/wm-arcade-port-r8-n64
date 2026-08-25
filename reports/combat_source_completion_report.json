@@ -1,0 +1,308 @@
+{
+  "active_secret_tables": {
+    "BAM": [
+      "firepnch",
+      "neck_grab",
+      "grab_fling",
+      "hip_toss",
+      "grab_fling2",
+      "hip_toss2",
+      "jumpkick",
+      "grab_fling2",
+      "hip_toss2",
+      "napalm"
+    ],
+    "BRET": [
+      "charge_ddt",
+      "neck_grab",
+      "grab_fling",
+      "hip_toss",
+      "grab_fling2",
+      "hip_toss2",
+      "face_rake",
+      "jump_kick",
+      "supercut"
+    ],
+    "DOINK": [
+      "charge_buzz",
+      "grab_fling",
+      "hip_toss",
+      "grab_fling2",
+      "hip_toss2",
+      "earslap",
+      "hammer",
+      "neck_grab",
+      "boxing_pnch"
+    ],
+    "LEX": [
+      "charge_clobber",
+      "neck_grab",
+      "grab_fling",
+      "hip_toss",
+      "grab_fling2",
+      "hip_toss2",
+      "sliding_elbow",
+      "hammer"
+    ],
+    "RAZOR": [
+      "charge_flying_kick",
+      "neck_grab",
+      "grab_fling",
+      "hip_toss",
+      "grab_fling2",
+      "hip_toss2",
+      "down_slash"
+    ],
+    "SHAWN": [
+      "charge_flying_kick",
+      "grab_fling",
+      "hip_toss",
+      "grab_fling2",
+      "hip_toss2",
+      "neck_grab",
+      "frankensteiner",
+      "jump_kick"
+    ],
+    "TAKER": [
+      "button_hold",
+      "grab_fling",
+      "hip_toss",
+      "grab_fling2",
+      "hip_toss2",
+      "neck_grab",
+      "tomb_smash"
+    ],
+    "YOKO": [
+      "charge_salt",
+      "neck_grab",
+      "grab_fling",
+      "hip_toss",
+      "grab_fling2",
+      "hip_toss2",
+      "scissors",
+      "gut_push",
+      "jabs"
+    ]
+  },
+  "active_smove_tables": {
+    "BAM": [
+      "bam_charge_neckbreaker",
+      "bam_hdhold_combo1",
+      "bam_hdhold_pile",
+      "bam_hdhold_pogo",
+      "bam_hdhold_combo2",
+      "bam_grab_toss_air",
+      "std_walk_fast",
+      "std_taunt"
+    ],
+    "BRET": [
+      "hrt_charge_flying_kick",
+      "hrt_charge_face_rake",
+      "hrt_hdhold_pile",
+      "hrt_hdhold_ddt",
+      "hrt_hdhold_faceslam",
+      "hrt_grab_toss_air",
+      "hrt_roll_uppercut",
+      "hrt_hdhold_combo1",
+      "hrt_hdhold_combo2",
+      "std_walk_fast",
+      "std_taunt"
+    ],
+    "DOINK": [
+      "dnk_charge_flykick",
+      "dnk_hdhold_slam",
+      "dnk_hdhold_combo1",
+      "dnk_hdhold_pile",
+      "dnk_hdhold_combo2",
+      "dnk_hdhold_buzz",
+      "dnk_grab_toss_air",
+      "std_walk_fast",
+      "std_taunt"
+    ],
+    "LEX": [
+      "lex_hdhold_pile",
+      "lex_hdhold_elbow_face",
+      "lex_hdhold_graboh",
+      "lex_grab_toss_air",
+      "lex_hdhold_combo1",
+      "lex_hdhold_combo2",
+      "std_walk_fast",
+      "std_taunt"
+    ],
+    "RAZOR": [
+      "rzr_charge_slashes",
+      "rzr_hdhold_pile",
+      "rzr_hdhold_combo1",
+      "rzr_hdhold_edge",
+      "rzr_hdhold_rug",
+      "rzr_grab_toss_air",
+      "rzr_hdhold_combo2",
+      "std_walk_fast",
+      "std_taunt",
+      "rzr_sliding_rug"
+    ],
+    "SHAWN": [
+      "shn_hdhold_combo2",
+      "shn_hdhold_combo1",
+      "shn_charge_suplex",
+      "shn_swirl_speedkick",
+      "shn_sliding_kicktoss",
+      "shn_hdhold_suplex",
+      "shn_hdhold_frank",
+      "shn_hdhold_kicktoss",
+      "shn_hdhold_butts",
+      "shn_flipslam",
+      "shn_grab_toss_air",
+      "std_walk_fast",
+      "std_taunt"
+    ],
+    "TAKER": [
+      "und_hdhold_neckbrk",
+      "und_hdhold_faceslam",
+      "und_hdhold_pile",
+      "und_spirit_pull",
+      "und_spirit_push",
+      "und_grab_toss_air",
+      "und_hdhold_combo1",
+      "und_hdhold_combo2",
+      "und_choke_slide",
+      "std_walk_fast",
+      "std_taunt",
+      "und_finish_move1"
+    ],
+    "YOKO": [
+      "yok_hdhold_combo1",
+      "yok_hdhold_scissor",
+      "yok_hdhold_suplex",
+      "yok_salt_throw",
+      "yok_grab_toss_air",
+      "yok_hdhold_combo2",
+      "std_walk_fast",
+      "std_taunt"
+    ]
+  },
+  "finish_counts": {
+    "BAM": 0,
+    "BRET": 0,
+    "DOINK": 0,
+    "LEX": 0,
+    "RAZOR": 0,
+    "SHAWN": 0,
+    "TAKER": 1,
+    "YOKO": 0
+  },
+  "translated_or_standard_smove_labels_visible_to_runtime": {
+    "BAM": [
+      "std_walk_fast",
+      "std_taunt"
+    ],
+    "BRET": [
+      "std_walk_fast",
+      "std_taunt"
+    ],
+    "DOINK": [
+      "std_walk_fast",
+      "std_taunt"
+    ],
+    "LEX": [
+      "std_walk_fast",
+      "std_taunt"
+    ],
+    "RAZOR": [
+      "std_walk_fast",
+      "std_taunt"
+    ],
+    "SHAWN": [
+      "std_walk_fast",
+      "std_taunt"
+    ],
+    "TAKER": [
+      "und_hdhold_neckbrk",
+      "und_hdhold_faceslam",
+      "und_hdhold_pile",
+      "und_spirit_pull",
+      "und_spirit_push",
+      "und_grab_toss_air",
+      "und_hdhold_combo1",
+      "und_hdhold_combo2",
+      "und_choke_slide",
+      "std_walk_fast",
+      "std_taunt",
+      "und_finish_move1"
+    ],
+    "YOKO": [
+      "std_walk_fast",
+      "std_taunt"
+    ]
+  },
+  "unresolved_smove_monitor_bodies": {
+    "BAM": [
+      "bam_charge_neckbreaker",
+      "bam_hdhold_combo1",
+      "bam_hdhold_pile",
+      "bam_hdhold_pogo",
+      "bam_hdhold_combo2",
+      "bam_grab_toss_air"
+    ],
+    "BRET": [
+      "hrt_charge_flying_kick",
+      "hrt_charge_face_rake",
+      "hrt_hdhold_pile",
+      "hrt_hdhold_ddt",
+      "hrt_hdhold_faceslam",
+      "hrt_grab_toss_air",
+      "hrt_roll_uppercut",
+      "hrt_hdhold_combo1",
+      "hrt_hdhold_combo2"
+    ],
+    "DOINK": [
+      "dnk_charge_flykick",
+      "dnk_hdhold_slam",
+      "dnk_hdhold_combo1",
+      "dnk_hdhold_pile",
+      "dnk_hdhold_combo2",
+      "dnk_hdhold_buzz",
+      "dnk_grab_toss_air"
+    ],
+    "LEX": [
+      "lex_hdhold_pile",
+      "lex_hdhold_elbow_face",
+      "lex_hdhold_graboh",
+      "lex_grab_toss_air",
+      "lex_hdhold_combo1",
+      "lex_hdhold_combo2"
+    ],
+    "RAZOR": [
+      "rzr_charge_slashes",
+      "rzr_hdhold_pile",
+      "rzr_hdhold_combo1",
+      "rzr_hdhold_edge",
+      "rzr_hdhold_rug",
+      "rzr_grab_toss_air",
+      "rzr_hdhold_combo2",
+      "rzr_sliding_rug"
+    ],
+    "SHAWN": [
+      "shn_hdhold_combo2",
+      "shn_hdhold_combo1",
+      "shn_charge_suplex",
+      "shn_swirl_speedkick",
+      "shn_sliding_kicktoss",
+      "shn_hdhold_suplex",
+      "shn_hdhold_frank",
+      "shn_hdhold_kicktoss",
+      "shn_hdhold_butts",
+      "shn_flipslam",
+      "shn_grab_toss_air"
+    ],
+    "TAKER": [],
+    "YOKO": [
+      "yok_hdhold_combo1",
+      "yok_hdhold_scissor",
+      "yok_hdhold_suplex",
+      "yok_salt_throw",
+      "yok_grab_toss_air",
+      "yok_hdhold_combo2"
+    ]
+  }
+}

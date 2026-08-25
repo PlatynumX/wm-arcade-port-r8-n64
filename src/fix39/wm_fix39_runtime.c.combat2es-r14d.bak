@@ -111,6 +111,10 @@ static struct {
     bool match_cpu_vs_cpu;
     WmFix39CameraState camera;
     int32_t native_opp_xvel[WM_FIX39_ACTOR_COUNT];
+    uint32_t native_last_fling[WM_FIX39_ACTOR_COUNT];
+    uint32_t native_last_hiptoss[WM_FIX39_ACTOR_COUNT];
+    uint32_t native_last_skick[WM_FIX39_ACTOR_COUNT];
+    uint32_t native_last_spunch[WM_FIX39_ACTOR_COUNT];
     int32_t native_close_the_door;
     int32_t native_guy_up;
     int32_t native_guy_in;
@@ -602,12 +606,8 @@ static void source_native_full_check_roll(wm_arcade_actor_t *a)
 }
 static void source_native_full_delay(wm_arcade_actor_t *a,uint32_t *stamp,uint32_t ticks)
 {
-    uint32_t old,now;
-    if(!a||!stamp)return;
-    old=*stamp;
-    now=g.status.pcnt;
-    *stamp=now;
-    source_native_status(a,(uint32_t)(now-old)<ticks);
+    uint32_t old,now;int i=actor_index(a);if(!a||i<0)return;
+    old=stamp[i];now=g.status.pcnt;stamp[i]=now;source_native_status(a,(uint32_t)(now-old)<ticks);
 }
 static void source_native_full_elbow_tgt2(wm_arcade_actor_t *a)
 {
@@ -758,10 +758,10 @@ static void source_anim_code(wm_arcade_actor_t *a,const char *label,void *user)
     if(!strcmp(label,"choose_dir")){source_native_choose_dir(a);return;}
     if(!strcmp(label,"ck_flip")){source_native_ck_flip(a);return;}
     if(!strcmp(label,"check_roll")){source_native_full_check_roll(a);return;}
-    if(!strcmp(label,"fling_delay")){source_native_full_delay(a,&a->last_fling,3u*60u);return;}
-    if(!strcmp(label,"hiptoss_delay")){source_native_full_delay(a,&a->last_hiptoss,3u*60u);return;}
-    if(!strcmp(label,"skick_delay")){source_native_full_delay(a,&a->last_skick,2u*60u);return;}
-    if(!strcmp(label,"spunch_delay")){source_native_full_delay(a,&a->last_spunch,2u*60u);return;}
+    if(!strcmp(label,"fling_delay")){source_native_full_delay(a,g.native_last_fling,3u*60u);return;}
+    if(!strcmp(label,"hiptoss_delay")){source_native_full_delay(a,g.native_last_hiptoss,3u*60u);return;}
+    if(!strcmp(label,"skick_delay")){source_native_full_delay(a,g.native_last_skick,2u*60u);return;}
+    if(!strcmp(label,"spunch_delay")){source_native_full_delay(a,g.native_last_spunch,2u*60u);return;}
     if(!strcmp(label,"elbow_tgt2")){source_native_full_elbow_tgt2(a);return;}
     if(!strcmp(label,"set_target")){source_native_full_set_target(a);return;}
     if(!strcmp(label,"set_zvel")){source_native_full_set_zvel(a);return;}

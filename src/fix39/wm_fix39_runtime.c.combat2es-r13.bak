@@ -32,7 +32,6 @@
 #include "wm_arcade_react5_core.h"
 #include "wm_arcade_react9_core.h"
 #include "wm_arcade_special.h"
-#include "wm_arcade_smove_runtime.h"
 #include "wm_arcade_wrestler_port.h"
 #include "wmania_hiscore_counter.h"
 #include "wmania_hiscore_system.h"
@@ -111,6 +110,10 @@ static struct {
     bool match_cpu_vs_cpu;
     WmFix39CameraState camera;
     int32_t native_opp_xvel[WM_FIX39_ACTOR_COUNT];
+    uint32_t native_last_fling[WM_FIX39_ACTOR_COUNT];
+    uint32_t native_last_hiptoss[WM_FIX39_ACTOR_COUNT];
+    uint32_t native_last_skick[WM_FIX39_ACTOR_COUNT];
+    uint32_t native_last_spunch[WM_FIX39_ACTOR_COUNT];
     int32_t native_close_the_door;
     int32_t native_guy_up;
     int32_t native_guy_in;
@@ -121,7 +124,6 @@ static struct {
     wm_arcade_sound *sound;
     wm_arcade_match_lifecycle lifecycle;
     wm_arcade_getup_process getup[WM_FIX39_ACTOR_COUNT];
-    wm_arcade_smove_runtime_t smoves;
     char recent_initials[2][WM_HS_NUM_INITIALS + 1u];
 } g;
 
@@ -602,12 +604,8 @@ static void source_native_full_check_roll(wm_arcade_actor_t *a)
 }
 static void source_native_full_delay(wm_arcade_actor_t *a,uint32_t *stamp,uint32_t ticks)
 {
-    uint32_t old,now;
-    if(!a||!stamp)return;
-    old=*stamp;
-    now=g.status.pcnt;
-    *stamp=now;
-    source_native_status(a,(uint32_t)(now-old)<ticks);
+    uint32_t old,now;int i=actor_index(a);if(!a||i<0)return;
+    old=stamp[i];now=g.status.pcnt;stamp[i]=now;source_native_status(a,(uint32_t)(now-old)<ticks);
 }
 static void source_native_full_elbow_tgt2(wm_arcade_actor_t *a)
 {
@@ -758,10 +756,10 @@ static void source_anim_code(wm_arcade_actor_t *a,const char *label,void *user)
     if(!strcmp(label,"choose_dir")){source_native_choose_dir(a);return;}
     if(!strcmp(label,"ck_flip")){source_native_ck_flip(a);return;}
     if(!strcmp(label,"check_roll")){source_native_full_check_roll(a);return;}
-    if(!strcmp(label,"fling_delay")){source_native_full_delay(a,&a->last_fling,3u*60u);return;}
-    if(!strcmp(label,"hiptoss_delay")){source_native_full_delay(a,&a->last_hiptoss,3u*60u);return;}
-    if(!strcmp(label,"skick_delay")){source_native_full_delay(a,&a->last_skick,2u*60u);return;}
-    if(!strcmp(label,"spunch_delay")){source_native_full_delay(a,&a->last_spunch,2u*60u);return;}
+    if(!strcmp(label,"fling_delay")){source_native_full_delay(a,g.native_last_fling,3u*60u);return;}
+    if(!strcmp(label,"hiptoss_delay")){source_native_full_delay(a,g.native_last_hiptoss,3u*60u);return;}
+    if(!strcmp(label,"skick_delay")){source_native_full_delay(a,g.native_last_skick,2u*60u);return;}
+    if(!strcmp(label,"spunch_delay")){source_native_full_delay(a,g.native_last_spunch,2u*60u);return;}
     if(!strcmp(label,"elbow_tgt2")){source_native_full_elbow_tgt2(a);return;}
     if(!strcmp(label,"set_target")){source_native_full_set_target(a);return;}
     if(!strcmp(label,"set_zvel")){source_native_full_set_zvel(a);return;}
@@ -1724,21 +1722,6 @@ static void razor_check_secret_moves_live(
     wm_arcade_actor_t *a, const wm_arcade_razor_secret_pattern_t *patterns,
     size_t count, void *user);
 
-
-static uintptr_t source_label_token(const char *source_label, void *user)
-{
-    (void)user;
-    return (uintptr_t)source_label;
-}
-
-static const wm_arcade_smove_callbacks_t smove_callbacks = {
-    .resolve_label_token = source_label_token,
-    .sound_label = common_sound_label,
-    .check_combo_go = source_check_combo_go_port,
-    .find_and_kill_endless = 0,
-    .user = 0
-};
-
 static const wm_arcade_roster_callbacks_t common_callbacks = {
     .check_secret_moves = common_check_secret_moves_live,
     .check_combo_go = source_check_combo_go_port,
@@ -1753,7 +1736,6 @@ static const wm_arcade_roster_callbacks_t common_callbacks = {
     .master_keep_attached = source_master_keep_attached,
     .keep_attached = source_keep_attached,
     .start_special_label = common_start_special_label,
-    .resolve_label_token = source_label_token,
     .user = 0
 };
 
@@ -1926,15 +1908,10 @@ static void razor_check_secret_moves_live(
 static void queued_special_token(wm_arcade_actor_t *a, uintptr_t token, void *user)
 {
     WmFix39ActorTrace *t = trace_for(a);
-    const char *label = token > (uintptr_t)0x10000u ? (const char *)token : 0;
     (void)user;
-    if (t) {
-        t->animation_token = (int32_t)token;
-        t->animation_label = label;
-        ++t->animation_events;
-    }
-    if (label)
-        (void)live_start_source_anim(a, label, false);
+    if (!t) return;
+    t->animation_token = (int32_t)token;
+    ++t->animation_events;
 }
 
 typedef struct {
@@ -2597,16 +2574,6 @@ void wm_fix39_match_begin(unsigned frontend_p1, unsigned frontend_p2)
         wm_arcade_getup_process_begin(&g.getup[i], &g.actors[i],
             g.actor_ptrs, WM_FIX39_ACTOR_COUNT, true, 1u, false, g.sound);
     }
-
-    /* Combat2ES/R13: WRESTLE2.ASM::init_smoves creates persistent SMOVE_PID
-       watchdog processes for the current wrestler. Disabled GAME.EQU finish
-       entries are filtered here instead of left as live metadata. */
-    wm_arcade_smove_runtime_init(&g.smoves);
-    for (i=0u;i<WM_FIX39_ACTOR_COUNT;++i) {
-        const wm_arcade_wrestler_profile_t *sp =
-            wm_arcade_roster_profile((wm_arcade_roster_id_t)g.actors[i].wrestler_num);
-        (void)wm_arcade_smove_init_for_wrestler(&g.smoves, &g.actors[i], (uint8_t)i, sp);
-    }
     g.status.match_started = true;
 }
 
@@ -2834,12 +2801,6 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
 
     memset(&env, 0, sizeof(env));
     env.pcnt = g.status.pcnt;
-
-    /* Combat2ES/R13: tick persistent source SMOVE_PID processes before
-       WRESTLE.ASM::move_wrestler consumes SPECIAL_MOVE_ADDR. */
-    wm_arcade_smove_runtime_tick(&g.smoves, g.actor_ptrs, WM_FIX39_ACTOR_COUNT,
-                                 &smove_callbacks);
-
     memset(&move_cb, 0, sizeof(move_cb));
     ctx.env = &env;
     move_cb.change_anim_special = queued_special_token;

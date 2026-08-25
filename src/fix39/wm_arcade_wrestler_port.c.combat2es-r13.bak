@@ -45,17 +45,10 @@ static const wm_arcade_input_pattern_t bret_secrets[] = {
     PAT("supercut", bret_supercut, 3, 16)
 };
 static const char *const bret_smove[] = {
-    "hrt_charge_flying_kick",
-    "hrt_charge_face_rake",
-    "hrt_hdhold_pile",
-    "hrt_hdhold_ddt",
-    "hrt_hdhold_faceslam",
-    "hrt_grab_toss_air",
-    "hrt_roll_uppercut",
-    "hrt_hdhold_combo1",
-    "hrt_hdhold_combo2",
-    "std_walk_fast",
-    "std_taunt"
+    "hrt_charge_flying_kick", "hrt_charge_face_rake", "hrt_hdhold_pile",
+    "hrt_hdhold_ddt", "hrt_hdhold_faceslam", "hrt_grab_toss_air",
+    "hrt_roll_uppercut", "hrt_hdhold_combo1", "hrt_hdhold_combo2",
+    "std_walk_fast", "std_taunt", "hrt_finish_move1", "hrt_finish_move2"
 };
 
 /* RAZOR.ASM secret table records. charge_flying_kick is executable probe code. */
@@ -89,16 +82,10 @@ static const wm_arcade_input_pattern_t razor_secrets[] = {
     PAT("down_slash", razor_dslash, 4, 50)
 };
 static const char *const razor_smove[] = {
-    "rzr_charge_slashes",
-    "rzr_hdhold_pile",
-    "rzr_hdhold_combo1",
-    "rzr_hdhold_edge",
-    "rzr_hdhold_rug",
-    "rzr_grab_toss_air",
-    "rzr_hdhold_combo2",
-    "std_walk_fast",
-    "std_taunt",
-    "rzr_sliding_rug"
+    "rzr_charge_slashes", "rzr_hdhold_pile", "rzr_hdhold_combo1",
+    "rzr_hdhold_edge", "rzr_hdhold_rug", "rzr_grab_toss_air",
+    "rzr_hdhold_combo2", "std_walk_fast", "std_taunt", "rzr_sliding_rug",
+    "rzr_finish_move1", "rzr_finish_move2"
 };
 
 const wm_arcade_wrestler_profile_t wm_arcade_profile_bret = {
@@ -254,33 +241,23 @@ static int bret_monitor_id(const char *s, wm_arcade_bret_monitor_id_t *id)
 {
     struct item { const char *s; wm_arcade_bret_monitor_id_t id; };
     static const struct item t[] = {
-        {"hrt_roll_uppercut",WM_BRET_MON_ROLL_UPPERCUT},
-        {"hrt_hdhold_combo1",WM_BRET_MON_HEADHOLD_COMBO1},
-        {"hrt_hdhold_combo2",WM_BRET_MON_HEADHOLD_COMBO2},
-        {"hrt_hdhold_pile",WM_BRET_MON_HEADHOLD_PILE},
-        {"hrt_hdhold_ddt",WM_BRET_MON_HEADHOLD_DDT},
-        {"hrt_hdhold_faceslam",WM_BRET_MON_HEADHOLD_FACESLAM},
-        {"hrt_grab_toss_air",WM_BRET_MON_GRAB_TOSS_AIR}
+        {"hrt_roll_uppercut",WM_BRET_MON_ROLL_UPPERCUT},{"hrt_hdhold_combo1",WM_BRET_MON_HEADHOLD_COMBO1},
+        {"hrt_hdhold_combo2",WM_BRET_MON_HEADHOLD_COMBO2},{"hrt_hdhold_pile",WM_BRET_MON_HEADHOLD_PILE},
+        {"hrt_hdhold_ddt",WM_BRET_MON_HEADHOLD_DDT},{"hrt_hdhold_faceslam",WM_BRET_MON_HEADHOLD_FACESLAM},
+        {"hrt_grab_toss_air",WM_BRET_MON_GRAB_TOSS_AIR},{"hrt_finish_move1",WM_BRET_MON_FINISH1},{"hrt_finish_move2",WM_BRET_MON_FINISH2}
     };
-    size_t i;
-    for (i=0;i<sizeof t/sizeof t[0];++i) if (!strcmp(s,t[i].s)) { *id=t[i].id; return 1; }
-    return 0;
+    size_t i; for (i=0;i<sizeof t/sizeof t[0];++i) if (!strcmp(s,t[i].s)) { *id=t[i].id; return 1; } return 0;
 }
 static int razor_monitor_id(const char *s, wm_arcade_razor_monitor_id_t *id)
 {
     struct item { const char *s; wm_arcade_razor_monitor_id_t id; };
     static const struct item t[] = {
-        {"rzr_hdhold_pile",WM_RZR_MON_HEADHOLD_PILE},
-        {"rzr_hdhold_combo1",WM_RZR_MON_HEADHOLD_COMBO1},
-        {"rzr_hdhold_edge",WM_RZR_MON_HEADHOLD_EDGE},
-        {"rzr_hdhold_rug",WM_RZR_MON_HEADHOLD_RUG},
-        {"rzr_grab_toss_air",WM_RZR_MON_GRAB_TOSS_AIR},
-        {"rzr_hdhold_combo2",WM_RZR_MON_HEADHOLD_COMBO2},
-        {"rzr_sliding_rug",WM_RZR_MON_SLIDING_RUG}
+        {"rzr_hdhold_pile",WM_RZR_MON_HEADHOLD_PILE},{"rzr_hdhold_combo1",WM_RZR_MON_HEADHOLD_COMBO1},
+        {"rzr_hdhold_edge",WM_RZR_MON_HEADHOLD_EDGE},{"rzr_hdhold_rug",WM_RZR_MON_HEADHOLD_RUG},
+        {"rzr_grab_toss_air",WM_RZR_MON_GRAB_TOSS_AIR},{"rzr_hdhold_combo2",WM_RZR_MON_HEADHOLD_COMBO2},
+        {"rzr_sliding_rug",WM_RZR_MON_SLIDING_RUG},{"rzr_finish_move1",WM_RZR_MON_FINISH1},{"rzr_finish_move2",WM_RZR_MON_FINISH2}
     };
-    size_t i;
-    for (i=0;i<sizeof t/sizeof t[0];++i) if (!strcmp(s,t[i].s)) { *id=t[i].id; return 1; }
-    return 0;
+    size_t i; for (i=0;i<sizeof t/sizeof t[0];++i) if (!strcmp(s,t[i].s)) { *id=t[i].id; return 1; } return 0;
 }
 
 int wm_arcade_port_fire_monitor(const wm_arcade_wrestler_profile_t *p,

@@ -163,5 +163,7 @@ if(WM_BUILD_TESTS)
     set_tests_properties(wm_combat_source_manifest_audit PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
     add_test(NAME wm_combat2es_behavioral_parity_audit
              COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/audit_combat2es_behavioral_parity.py)
+    add_test(NAME wm_combat2es_behavioral_proofs
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_combat2es_behavioral_proofs.py)
     set_tests_properties(wm_combat2es_behavioral_parity_audit PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endif()

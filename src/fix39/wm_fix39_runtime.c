@@ -1636,17 +1636,6 @@ static void source_bounce_off_ropes_port(wm_arcade_actor_t *a, void *user)
    concrete drone callback definition, so provide the C prototype first. */
 static int drone_check_combo_go(wm_arcade_actor_t *actor, void *user);
 
-static void source_count_button_presses(wm_arcade_actor_t *a)
-{
-    uint16_t d;
-    if (!a) return;
-    d=a->but_val_down;
-    if (d & WM_BTN_PUNCH)  ++a->punchb_count;
-    if (d & WM_BTN_BLOCK)  ++a->blockb_count;
-    if (d & WM_BTN_SPUNCH) ++a->spunchb_count;
-    if (d & WM_BTN_KICK)   ++a->kickb_count;
-    if (d & WM_BTN_SKICK)  ++a->skickb_count;
-}
 static int source_check_combo_go_port(wm_arcade_actor_t *a, void *user)
 {
     return drone_check_combo_go(a,user);

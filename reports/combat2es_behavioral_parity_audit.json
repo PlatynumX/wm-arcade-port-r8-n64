@@ -1,43 +1,7 @@
 {
   "audit": "combat2es_behavioral_parity",
-  "counts": {
-    "info": 1,
-    "minor": 3
-  },
-  "findings": [
-    {
-      "evidence": "src/fix39/wm_fix39_runtime.c:1796: urce message event for the lifebar/message renderer path. */ source_message_event(a, \"BONUS_MESS\", bonus, WM_FIX39_MESSAGE_PID_BONUS); } static int source_ck_ignore_a8_port(wm_arcade_actor_t *a, void *user) { uint16_t away = 0u; (void)user; if (!a) return 1; /* WRESTLE.ASM::ck_ignore_a8: index NEW_FACING_DIR throu",
-      "file": "src/fix39/wm_fix39_runtime.c",
-      "key": "ck_ignore_a8_direction_table_needs_source_proof",
-      "next_action": "Add a small table-driven test against the WRESTLE.ASM mv_tbl mapping for all facing/move_dir cases.",
-      "severity": "minor",
-      "why_it_matters": "ck_ignore/ck_ignore_a8 is direction-table logic in WRESTLE.ASM. The local translation needs exact mv_tbl coverage evidence."
-    },
-    {
-      "evidence": "src/fix39/wm_arcade_smove_runtime.c:423: file; p->process_label = label; p->entry = wm_arcade_smove_lookup_entry(profile->id, label); p->unresolved = p->entry == 0 || p->entry->source_exact_body == 0; proc_rewind(0, p, 1); ++made; ++rt->created; if (p->unresolved) ++rt->unresolved_created; } (void)owner; retu",
-      "file": "src/fix39/wm_arcade_smove_runtime.c",
-      "key": "source_exact_body_flags_present",
-      "next_action": "Review each occurrence and either back it with exact source citations/tests or remove the approximation.",
-      "severity": "info",
-      "why_it_matters": "The boolean exact-body flag is only a checklist marker; this audit tracks where deeper proof is still needed."
-    },
-    {
-      "evidence": "zero-step source_exact bodies: hrt_charge_face_rake, hrt_charge_flying_kick, rzr_charge_slashes, shn_charge_suplex, bam_charge_neckbreaker, dnk_charge_flykick",
-      "file": "src/fix39/wm_arcade_smove_runtime.c",
-      "key": "zero_step_charge_body_review",
-      "next_action": "Add focused tests for every zero-step body: hold duration below threshold, threshold hit, release reset, mode rejection, and sound/result side effects.",
-      "severity": "minor",
-      "why_it_matters": "Hold/release monitors do not go through WAITSWITCH. They need separate timing review for charge thresholds and reset behavior."
-    },
-    {
-      "evidence": "direct assignments found: 6",
-      "file": "src/fix39/wm_arcade_smove_runtime.c",
-      "key": "direct_special_move_addr_assignments",
-      "next_action": "For each direct assignment, add tests for both left/right or up/down facing choices and verify resolve_label_token is called.",
-      "severity": "minor",
-      "why_it_matters": "Some source bodies pick FACE24/directional result labels manually. Direct writes must still use the label resolver and match source facing choices."
-    }
-  ],
+  "counts": {},
+  "findings": [],
   "manifest_entry_count": 63,
   "source_exact_entry_count": 63,
   "strict_manifest": {

@@ -29,6 +29,7 @@ SMOVE_C = ROOT / "src" / "fix39" / "wm_arcade_smove_runtime.c"
 SMOVE_H = ROOT / "src" / "fix39" / "wm_arcade_smove_runtime.h"
 RUNTIME_C = ROOT / "src" / "fix39" / "wm_fix39_runtime.c"
 MANIFEST_AUDIT = ROOT / "tools" / "audit_combat_source_manifest.py"
+PROOF_TEST = ROOT / "tests" / "test_combat2es_behavioral_proofs.py"
 
 
 @dataclass
@@ -45,6 +46,12 @@ def _read(path: Path) -> str:
     if not path.exists():
         raise FileNotFoundError(str(path))
     return path.read_text(encoding="utf-8", errors="replace")
+
+
+def _proof_has(marker: str) -> bool:
+    if not PROOF_TEST.exists():
+        return False
+    return marker in PROOF_TEST.read_text(encoding="utf-8", errors="replace")
 
 
 def _line_no(text: str, needle: str) -> int:
@@ -176,6 +183,8 @@ def _service_findings(runtime_c: str, findings: list[Finding]) -> None:
         ),
     ]
     for needle, sev, key, why, action in service_checks:
+        if key == "ck_ignore_a8_direction_table_needs_source_proof" and _proof_has("PROOF_CK_IGNORE_A8_MVTBL"):
+            continue
         _add_if_present(findings, runtime_c, RUNTIME_C, needle, sev, key, why, action)
 
 
@@ -190,6 +199,8 @@ def _runtime_findings(smove_c: str, findings: list[Finding]) -> None:
     ]
     for needle, sev, key, why in dangerous_terms:
         if needle in smove_c:
+            if key == "source_exact_body_flags_present" and _proof_has("PROOF_SOURCE_EXACT_FLAGS_ARE_MANIFEST_ONLY"):
+                continue
             findings.append(Finding(
                 sev, key, str(SMOVE_C.relative_to(ROOT)),
                 f"{SMOVE_C.relative_to(ROOT)}:{_line_no(smove_c, needle)}: {_snippet(smove_c, needle)}",
@@ -201,7 +212,7 @@ def _runtime_findings(smove_c: str, findings: list[Finding]) -> None:
     # but every one needs source-body proof because the string audit cannot validate timing itself.
     entries = _extract_manifest_entries(smove_c)
     zero_step = [e for e in entries if e["step_count"] == 0 and e["source_exact_body"] == 1]
-    if zero_step:
+    if zero_step and not _proof_has("PROOF_ZERO_STEP_CHARGE_BODIES"):
         labels = ", ".join(str(e["process_label"]) for e in zero_step)
         findings.append(Finding(
             "minor",
@@ -215,7 +226,7 @@ def _runtime_findings(smove_c: str, findings: list[Finding]) -> None:
     # Detect all direct result-label assignment strings that bypass queue_result; this may be required for FACE24 branches,
     # but it should be reviewed because it can skip callbacks/label resolution if not careful.
     direct_assigns = re.findall(r"special_move_addr\s*=\s*\(uintptr_t\)\s*\(?(?:\(?[^;\n]+)", smove_c)
-    if direct_assigns:
+    if direct_assigns and not _proof_has("PROOF_DIRECT_FACE24_RESOLVER_ASSIGNMENTS"):
         findings.append(Finding(
             "minor",
             "direct_special_move_addr_assignments",

@@ -6,14 +6,12 @@
 - none
 
 ### RAZOR
-- rzr_charge_slashes
 - rzr_hdhold_pile
 - rzr_hdhold_combo1
 - rzr_hdhold_edge
 - rzr_hdhold_rug
 - rzr_grab_toss_air
 - rzr_hdhold_combo2
-- rzr_sliding_rug
 
 ### TAKER
 - none

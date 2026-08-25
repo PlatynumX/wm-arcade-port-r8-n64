@@ -19,6 +19,8 @@ enum {
     G_BRET_GRAB_TOSS_AIR,
     G_BRET_HD_COMBO1,
     G_BRET_HD_COMBO2,
+    G_RAZOR_CHARGE_SLASHES,
+    G_RAZOR_SLIDING_RUG,
     G_TAKER_HD_NECK,
     G_TAKER_HD_FACESLAM,
     G_TAKER_HD_PILE,
@@ -68,6 +70,12 @@ static const wm_arcade_smove_wait_step_t hrt_hdhold_combo2[] = {
     STEP(WM_J_TOWARD, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
     STEP(WM_J_TOWARD, 0, 60),
     STEP(WM_B_SKICK, WM_J_DOWN_TOWARD | WM_J_UP_TOWARD, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+
+static const wm_arcade_smove_wait_step_t rzr_sliding_rug[] = {
+    STEP(WM_J_TOWARD, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_TOWARD, 0, 60),
+    STEP(WM_B_KICK, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
 };
 
 static const wm_arcade_smove_wait_step_t und_hd_neck[] = {
@@ -131,6 +139,8 @@ static const wm_arcade_smove_entry_t manifest[] = {
     { WM_ROSTER_BRET, "hrt_grab_toss_air", "hrt_hiptoss_anim", hrt_grab_toss_air, 3, G_BRET_GRAB_TOSS_AIR, 20, 1 },
     { WM_ROSTER_BRET, "hrt_hdhold_combo1", "hrt_combo_punch_anim", hrt_hdhold_combo1, 3, G_BRET_HD_COMBO1, 20, 1 },
     { WM_ROSTER_BRET, "hrt_hdhold_combo2", "hrt_combo_kick_anim", hrt_hdhold_combo2, 3, G_BRET_HD_COMBO2, 20, 1 },
+    { WM_ROSTER_RAZOR, "rzr_charge_slashes", "rzr_repeat_slash_anim", 0, 0, G_RAZOR_CHARGE_SLASHES, 1, 1 },
+    { WM_ROSTER_RAZOR, "rzr_sliding_rug", "rzr_sliding_rug_anim", rzr_sliding_rug, 3, G_RAZOR_SLIDING_RUG, 20, 1 },
     { WM_ROSTER_TAKER, "und_hdhold_neckbrk", "und_neckbreaker_anim", und_hd_neck, 3, G_TAKER_HD_NECK, 20, 1 },
     { WM_ROSTER_TAKER, "und_hdhold_faceslam", "und_choke_face_slam_anim", und_hd_faceslam, 3, G_TAKER_HD_FACESLAM, 20, 1 },
     { WM_ROSTER_TAKER, "und_hdhold_pile", "und_pile_anim", und_hd_pile, 3, G_TAKER_HD_PILE, 20, 1 },
@@ -504,6 +514,62 @@ static int fire_bret_headhold_combo(wm_arcade_actor_t *a,
     return 1;
 }
 
+
+static int fire_razor_charge_slashes(wm_arcade_smove_proc_t *p,
+                                     wm_arcade_actor_t *a,
+                                     const wm_arcade_smove_entry_t *e,
+                                     const wm_arcade_smove_callbacks_t *cb)
+{
+    uint16_t charge;
+    if (!p || !a || !e) return 0;
+
+    /* RAZOR.ASM::rzr_charge_slashes:
+       count CHARGE_TIME while PLAYER_PUNCH is held, then require >= 100. */
+    if ((a->but_val_cur & WM_BTN_PUNCH) != 0u) {
+        if (p->timeout != 0xffffu) ++p->timeout;
+        return 0;
+    }
+
+    charge = p->timeout;
+    p->timeout = 0;
+    if (charge < 100u) return 0;
+
+    if ((a->anim_mode & WM_ARCADE_MODE_UNINT) != 0u) return 0;
+    if (a->getup_time != 0) return 0;
+    if (a->player_mode == WM_PMODE_HEADHELD ||
+        a->player_mode == WM_PMODE_HEADHOLD ||
+        a->player_mode == WM_PMODE_ONGROUND ||
+        a->player_mode == WM_PMODE_DEAD) return 0;
+
+    queue_result(a, e, cb);
+    if (cb && cb->sound_label) cb->sound_label(a, "KICK_T2", cb->user);
+    return 1;
+}
+
+static int fire_razor_sliding_rug(wm_arcade_actor_t *a,
+                                  wm_arcade_actor_t *opp,
+                                  const wm_arcade_smove_entry_t *e,
+                                  const wm_arcade_smove_callbacks_t *cb)
+{
+    if (!a || !e) return 0;
+
+    /* RAZOR.ASM::rzr_sliding_rug:
+       reject held/headhold/ground/dead, UNINT, GETUP_TIME, dead opponent,
+       and ck_ignore carry before queueing rzr_sliding_rug_anim. */
+    if (a->player_mode == WM_PMODE_HEADHELD ||
+        a->player_mode == WM_PMODE_HEADHOLD ||
+        a->player_mode == WM_PMODE_ONGROUND ||
+        a->player_mode == WM_PMODE_DEAD) return 0;
+    if ((a->anim_mode & WM_ARCADE_MODE_UNINT) != 0u) return 0;
+    if (a->getup_time != 0) return 0;
+    if (opp && opp->player_mode == WM_PMODE_DEAD) return 0;
+    if (cb && cb->ck_ignore && cb->ck_ignore(a, cb->user)) return 0;
+
+    if (cb && cb->sound_label) cb->sound_label(a, "GRABHOLD_T1/GRABHOLD_T2", cb->user);
+    queue_result(a, e, cb);
+    return 1;
+}
+
 static int fire_entry(wm_arcade_actor_t **actors, size_t n,
                       wm_arcade_actor_t *a,
                       wm_arcade_smove_proc_t *p,
@@ -528,6 +594,10 @@ static int fire_entry(wm_arcade_actor_t **actors, size_t n,
     case G_BRET_HD_COMBO1:
     case G_BRET_HD_COMBO2:
         return fire_bret_headhold_combo(a, opp, e, cb);
+    case G_RAZOR_CHARGE_SLASHES:
+        return fire_razor_charge_slashes(p, a, e, cb);
+    case G_RAZOR_SLIDING_RUG:
+        return fire_razor_sliding_rug(a, opp, e, cb);
     case G_TAKER_HD_NECK:
     case G_TAKER_HD_FACESLAM:
     case G_TAKER_HD_PILE:

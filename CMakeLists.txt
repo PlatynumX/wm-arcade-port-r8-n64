@@ -195,4 +195,12 @@ if(WM_BUILD_TESTS)
              COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/audit_combat_non_smove_source_reference.py)
     set_tests_properties(wm_combat_non_smove_source_reference_audit PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
+
+    add_executable(wm_combat2es_whole_combat_source_cutover_tests tests/combat2es_whole_combat_source_cutover.c)
+    target_link_libraries(wm_combat2es_whole_combat_source_cutover_tests PRIVATE wmcore)
+    target_compile_options(wm_combat2es_whole_combat_source_cutover_tests PRIVATE -Wall -Wextra -Wpedantic -UNDEBUG)
+    add_test(NAME wm_combat2es_whole_combat_source_cutover COMMAND wm_combat2es_whole_combat_source_cutover_tests)
+    add_test(NAME wm_combat_whole_source_parity_audit
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/audit_combat_whole_source_parity.py)
+    set_tests_properties(wm_combat_whole_source_parity_audit PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 endif()

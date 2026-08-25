@@ -850,6 +850,35 @@ static bool live_start_source_anim(wm_arcade_actor_t *a, const char *label, bool
     return ok;
 }
 
+
+/* Combat2ES R33: whole-combat cutover.
+ * Source animation bytecode owns ATTACK_ON/OFF when opcode 6/7/14 appears.
+ * The generated source attack-frame table is also historical ASM-derived data;
+ * bind it from the current primary source frame each live tick so every shipped
+ * wrestler's ordinary, running, aerial, puppet and ground attack window reaches
+ * COLLIS.ASM/REACT1 through the same live actor state, not through presenter or
+ * demo-only shims. */
+static void live_bind_source_attack_windows_from_current_frames(void)
+{
+    unsigned i;
+    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
+        wm_arcade_actor_t *a = &g.actors[i];
+        const char *frame = wm_source_anim_runtime_frame(&g.source_anim[i]);
+        wm_arcade_attack_on_z_args_t zargs;
+        wm_arcade_attack_on_args_t args;
+        bool uses_z = false;
+        if (!a->active || frame == 0)
+            continue;
+        memset(&zargs, 0, sizeof(zargs));
+        memset(&args, 0, sizeof(args));
+        if (wm_arcade_character_attack_for_source_frame(
+                (uint8_t)a->wrestler_num, frame, &uses_z, &zargs, &args)) {
+            if (uses_z) wm_arcade_ani_attack_on_z(a, &zargs);
+            else wm_arcade_ani_attack_on(a, &args);
+        }
+    }
+}
+
 static const char *live_default_stand_label(const wm_arcade_actor_t *a)
 {
     bool face2=a && (a->facing_dir&WM_MOVE_RIGHT);
@@ -2905,6 +2934,11 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
         wm_source_anim_runtime_tick(&g.source_anim[i],&g.actors[i]);
         wm_source_anim_runtime_tick(&g.source_torso[i],&g.actors[i]);
     }
+    /* Combat2ES R33: bind current source-derived attack-frame windows
+       before the second collision-box/confine pass, in the same live actor
+       state consumed by COLLIS.ASM and REACT1. */
+    live_bind_source_attack_windows_from_current_frames();
+
     /* WRESTLE.ASM: set_collision_boxes -> confine_wrestler -> fix1,
        then calc_closest2. */
     live_refresh_source_hurt_boxes();

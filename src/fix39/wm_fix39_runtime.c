@@ -1773,6 +1773,30 @@ static void source_bonus_message_port(wm_arcade_actor_t *a, int bonus, void *use
     common_sound_label(a, label, 0);
 }
 
+static int source_ck_ignore_a8_port(wm_arcade_actor_t *a, void *user)
+{
+    uint16_t away = 0u;
+    (void)user;
+    if (!a) return 1;
+
+    /* WRESTLE.ASM::ck_ignore_a8: index NEW_FACING_DIR through mv_tbl and
+       return carry when MOVE_DIR contains the away bit. */
+    switch ((uint16_t)a->new_facing_dir) {
+    case WM_MOVE_UP_LEFT:
+    case WM_MOVE_DOWN_LEFT:
+        away = WM_MOVE_RIGHT;
+        break;
+    case WM_MOVE_UP_RIGHT:
+    case WM_MOVE_DOWN_RIGHT:
+        away = WM_MOVE_LEFT;
+        break;
+    default:
+        away = 0u;
+        break;
+    }
+    return away != 0u && ((uint16_t)a->move_dir & away) != 0u;
+}
+
 static const wm_arcade_smove_callbacks_t smove_callbacks = {
     .resolve_label_token = source_label_token,
     .sound_label = common_sound_label,
@@ -1781,6 +1805,7 @@ static const wm_arcade_smove_callbacks_t smove_callbacks = {
     .do_reversal = source_do_reversal_port,
     .do_reversal_message = source_do_reversal_message_port,
     .bonus_message = source_bonus_message_port,
+    .ck_ignore = source_ck_ignore_a8_port,
     .user = 0
 };
 

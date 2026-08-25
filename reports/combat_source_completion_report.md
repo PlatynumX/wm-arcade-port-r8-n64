@@ -3,10 +3,7 @@
 ## Unresolved active SMOVE monitor bodies
 
 ### BRET
-- hrt_charge_flying_kick
-- hrt_grab_toss_air
-- hrt_hdhold_combo1
-- hrt_hdhold_combo2
+- none
 
 ### RAZOR
 - rzr_charge_slashes

@@ -67,6 +67,7 @@ typedef struct wm_arcade_smove_callbacks {
     void (*do_reversal)(wm_arcade_actor_t *actor, void *user);
     void (*do_reversal_message)(wm_arcade_actor_t *actor, void *user);
     void (*bonus_message)(wm_arcade_actor_t *actor, int bonus, void *user);
+    int (*ck_ignore)(wm_arcade_actor_t *actor, void *user);
     void *user;
 } wm_arcade_smove_callbacks_t;
 

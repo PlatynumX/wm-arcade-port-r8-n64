@@ -4,13 +4,21 @@
 
 #define STEP(e,i,l) {(uint16_t)(e),(uint16_t)(i),(uint16_t)(l)}
 
+/* DAMAGE.EQU AT_LEAPING is 57; keep it local to avoid colliding with
+   wm_arcade_damage.h's enum member of the same source name. */
+#define WM_BRET_AT_LEAPING 57
+
 enum {
     G_NONE = 0,
     G_BRET_CHARGE_FACE_RAKE,
+    G_BRET_CHARGE_FLYING_KICK,
     G_BRET_ROLL_UPPERCUT,
     G_BRET_HD_PILE,
     G_BRET_HD_DDT,
     G_BRET_HD_FACESLAM,
+    G_BRET_GRAB_TOSS_AIR,
+    G_BRET_HD_COMBO1,
+    G_BRET_HD_COMBO2,
     G_TAKER_HD_NECK,
     G_TAKER_HD_FACESLAM,
     G_TAKER_HD_PILE,
@@ -45,6 +53,21 @@ static const wm_arcade_smove_wait_step_t hrt_hdhold_faceslam[] = {
     STEP(WM_J_DOWN, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
     STEP(WM_J_TOWARD, WM_J_DOWN | WM_J_UP, 60),
     STEP(WM_B_PUNCH, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+static const wm_arcade_smove_wait_step_t hrt_grab_toss_air[] = {
+    STEP(WM_J_AWAY, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_AWAY, 0, 40),
+    STEP(WM_B_PUNCH, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+static const wm_arcade_smove_wait_step_t hrt_hdhold_combo1[] = {
+    STEP(WM_J_TOWARD, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_TOWARD, 0, 60),
+    STEP(WM_B_PUNCH, WM_J_ALL, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
+};
+static const wm_arcade_smove_wait_step_t hrt_hdhold_combo2[] = {
+    STEP(WM_J_TOWARD, 0, WM_ARCADE_SMOVE_TIMEOUT_KEEP),
+    STEP(WM_J_TOWARD, 0, 60),
+    STEP(WM_B_SKICK, WM_J_DOWN_TOWARD | WM_J_UP_TOWARD, WM_ARCADE_SMOVE_TIMEOUT_KEEP)
 };
 
 static const wm_arcade_smove_wait_step_t und_hd_neck[] = {
@@ -100,10 +123,14 @@ static const wm_arcade_smove_wait_step_t und_finish1[] = {
 
 static const wm_arcade_smove_entry_t manifest[] = {
     { WM_ROSTER_BRET, "hrt_charge_face_rake", "hrt_rake_face_anim", 0, 0, G_BRET_CHARGE_FACE_RAKE, 1, 1 },
+    { WM_ROSTER_BRET, "hrt_charge_flying_kick", "hrt_flying_kick_anim", 0, 0, G_BRET_CHARGE_FLYING_KICK, 1, 1 },
     { WM_ROSTER_BRET, "hrt_roll_uppercut", "hrt_roll_uppercut_anim", hrt_roll_uppercut, 3, G_BRET_ROLL_UPPERCUT, 1, 1 },
     { WM_ROSTER_BRET, "hrt_hdhold_pile", "hrt_3_pile_driver_anim", hrt_hdhold_pile, 3, G_BRET_HD_PILE, 20, 1 },
     { WM_ROSTER_BRET, "hrt_hdhold_ddt", "hrt_hh_2_ddt_anim", hrt_hdhold_ddt, 3, G_BRET_HD_DDT, 20, 1 },
     { WM_ROSTER_BRET, "hrt_hdhold_faceslam", "hrt_3_face_driver2_anim", hrt_hdhold_faceslam, 3, G_BRET_HD_FACESLAM, 20, 1 },
+    { WM_ROSTER_BRET, "hrt_grab_toss_air", "hrt_hiptoss_anim", hrt_grab_toss_air, 3, G_BRET_GRAB_TOSS_AIR, 20, 1 },
+    { WM_ROSTER_BRET, "hrt_hdhold_combo1", "hrt_combo_punch_anim", hrt_hdhold_combo1, 3, G_BRET_HD_COMBO1, 20, 1 },
+    { WM_ROSTER_BRET, "hrt_hdhold_combo2", "hrt_combo_kick_anim", hrt_hdhold_combo2, 3, G_BRET_HD_COMBO2, 20, 1 },
     { WM_ROSTER_TAKER, "und_hdhold_neckbrk", "und_neckbreaker_anim", und_hd_neck, 3, G_TAKER_HD_NECK, 20, 1 },
     { WM_ROSTER_TAKER, "und_hdhold_faceslam", "und_choke_face_slam_anim", und_hd_faceslam, 3, G_TAKER_HD_FACESLAM, 20, 1 },
     { WM_ROSTER_TAKER, "und_hdhold_pile", "und_pile_anim", und_hd_pile, 3, G_TAKER_HD_PILE, 20, 1 },
@@ -396,6 +423,87 @@ static int fire_bret_roll_uppercut(wm_arcade_actor_t *a,
     return 1;
 }
 
+static int fire_bret_charge_flying_kick(wm_arcade_smove_proc_t *p,
+                                        wm_arcade_actor_t *a,
+                                        wm_arcade_actor_t *opp,
+                                        const wm_arcade_smove_entry_t *e,
+                                        const wm_arcade_smove_callbacks_t *cb)
+{
+    uint16_t charge;
+    if (!p || !a || !e) return 0;
+
+    /* BRET.ASM::hrt_charge_flying_kick: count while PLAYER_SKICK is held. */
+    if ((a->but_val_cur & WM_BTN_SKICK) != 0u) {
+        if (p->timeout != 0xffffu) ++p->timeout;
+        return 0;
+    }
+
+    charge = p->timeout;
+    p->timeout = 0;
+    if (charge < 100u) return 0;
+
+    if (a->getup_time != 0) return 0;
+    if (a->player_mode == WM_PMODE_HEADHELD ||
+        a->player_mode == WM_PMODE_HEADHOLD ||
+        a->player_mode == WM_PMODE_ONGROUND ||
+        a->player_mode == WM_PMODE_DEAD) return 0;
+    if (opp && (opp->player_mode == WM_PMODE_ONGROUND ||
+                opp->player_mode == WM_PMODE_DEAD)) return 0;
+    if ((a->anim_mode & WM_ARCADE_MODE_UNINT) != 0u) return 0;
+    if (cb && cb->ck_ignore && cb->ck_ignore(a, cb->user)) return 0;
+
+    queue_result(a, e, cb);
+    if (a->player_mode != WM_PMODE_DEAD) a->player_mode = WM_PMODE_INAIR;
+    if (cb && cb->sound_label) cb->sound_label(a, "FLYKICK_T1/FLYKICK_T2", cb->user);
+    return 1;
+}
+
+static int fire_bret_grab_toss_air(wm_arcade_actor_t *a,
+                                   wm_arcade_actor_t *opp,
+                                   const wm_arcade_smove_entry_t *e,
+                                   const wm_arcade_smove_callbacks_t *cb)
+{
+    const char *label;
+    if (!a || !e) return 0;
+    if ((a->anim_mode & WM_ARCADE_MODE_UNINT) != 0u) return 0;
+    if (a->player_mode == WM_PMODE_HEADHOLD) return 0;
+    if (opp && (opp->player_mode == WM_PMODE_ONGROUND ||
+                opp->player_mode == WM_PMODE_DEAD)) return 0;
+
+    if (opp && (mode_is_inair(opp->player_mode) || opp->attack_type == WM_BRET_AT_LEAPING)) {
+        label = "hrt_hiptoss2_anim";
+    } else {
+        if (a->closest_dist > 0x70) return 0;
+        label = "hrt_hiptoss_anim";
+    }
+
+    a->special_move_addr = (uintptr_t)label;
+    if (cb && cb->resolve_label_token)
+        a->special_move_addr = cb->resolve_label_token(label, cb->user);
+    if (cb && cb->sound_label) cb->sound_label(a, "HIPTOSS_T1/PUNCH_T2", cb->user);
+    return 1;
+}
+
+static int fire_bret_headhold_combo(wm_arcade_actor_t *a,
+                                    wm_arcade_actor_t *opp,
+                                    const wm_arcade_smove_entry_t *e,
+                                    const wm_arcade_smove_callbacks_t *cb)
+{
+    wm_arcade_actor_t *target;
+    if (!a || !e) return 0;
+    if (a->player_mode != WM_PMODE_HEADHOLD &&
+        a->player_mode != WM_PMODE_HEADHELD) return 0;
+    if (cb && cb->check_combo_go && cb->check_combo_go(a, cb->user) < 0) return 0;
+    if (a->immobilize_time != 0) return 0;
+
+    target = a->who_i_hit ? a->who_i_hit : opp;
+    a->smart_target = target;
+    if (cb && cb->find_and_kill_endless)
+        cb->find_and_kill_endless(a, cb->user);
+    queue_result(a, e, cb);
+    return 1;
+}
+
 static int fire_entry(wm_arcade_actor_t **actors, size_t n,
                       wm_arcade_actor_t *a,
                       wm_arcade_smove_proc_t *p,
@@ -407,12 +515,19 @@ static int fire_entry(wm_arcade_actor_t **actors, size_t n,
     switch (e->gate_kind) {
     case G_BRET_CHARGE_FACE_RAKE:
         return fire_bret_charge_face_rake(p, a, e, cb);
+    case G_BRET_CHARGE_FLYING_KICK:
+        return fire_bret_charge_flying_kick(p, a, opp, e, cb);
     case G_BRET_ROLL_UPPERCUT:
         return fire_bret_roll_uppercut(a, e, cb);
     case G_BRET_HD_PILE:
     case G_BRET_HD_DDT:
     case G_BRET_HD_FACESLAM:
         return fire_bret_headhold_body(a, opp, e, cb);
+    case G_BRET_GRAB_TOSS_AIR:
+        return fire_bret_grab_toss_air(a, opp, e, cb);
+    case G_BRET_HD_COMBO1:
+    case G_BRET_HD_COMBO2:
+        return fire_bret_headhold_combo(a, opp, e, cb);
     case G_TAKER_HD_NECK:
     case G_TAKER_HD_FACESLAM:
     case G_TAKER_HD_PILE:

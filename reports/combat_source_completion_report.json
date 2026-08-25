@@ -197,11 +197,15 @@
       "std_taunt"
     ],
     "BRET": [
+      "hrt_charge_flying_kick",
       "hrt_charge_face_rake",
       "hrt_hdhold_pile",
       "hrt_hdhold_ddt",
       "hrt_hdhold_faceslam",
+      "hrt_grab_toss_air",
       "hrt_roll_uppercut",
+      "hrt_hdhold_combo1",
+      "hrt_hdhold_combo2",
       "std_walk_fast",
       "std_taunt"
     ],
@@ -249,12 +253,7 @@
       "bam_hdhold_combo2",
       "bam_grab_toss_air"
     ],
-    "BRET": [
-      "hrt_charge_flying_kick",
-      "hrt_grab_toss_air",
-      "hrt_hdhold_combo1",
-      "hrt_hdhold_combo2"
-    ],
+    "BRET": [],
     "DOINK": [
       "dnk_charge_flykick",
       "dnk_hdhold_slam",

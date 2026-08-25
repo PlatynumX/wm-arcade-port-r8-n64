@@ -29,6 +29,9 @@ add_library(wmcore STATIC
     src/core/dcs_host_protocol.c
     src/core/app.c
     src/core/composite.c
+    src/core/cabinet_bridge.c
+    src/core/sdcard_hiscore_backend.c
+    src/core/render_equivalence.c
     src/generated/attract_sequence.c
     src/generated/select_tables.c
     src/generated/port_status.c
@@ -222,5 +225,26 @@ add_test(NAME wm_combat_adjacent_source_closure COMMAND wm_combat_adjacent_sourc
 add_test(NAME wm_combat_adjacent_source_parity_audit
          COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/audit_combat_adjacent_source_parity.py)
 set_tests_properties(wm_combat_adjacent_source_parity_audit PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+
+    add_executable(wm_hiscore_sdcard_persistence_regression_tests tests/hiscore_sdcard_persistence_regression.c)
+    target_link_libraries(wm_hiscore_sdcard_persistence_regression_tests PRIVATE wmcore)
+    target_compile_options(wm_hiscore_sdcard_persistence_regression_tests PRIVATE -Wall -Wextra -Wpedantic -UNDEBUG)
+    add_test(NAME wm_hiscore_sdcard_persistence_regression COMMAND wm_hiscore_sdcard_persistence_regression_tests)
+
+    add_executable(wm_renderer_equivalence_regression_tests tests/renderer_equivalence_regression.c)
+    target_link_libraries(wm_renderer_equivalence_regression_tests PRIVATE wmcore)
+    target_compile_options(wm_renderer_equivalence_regression_tests PRIVATE -Wall -Wextra -Wpedantic -UNDEBUG)
+    add_test(NAME wm_renderer_equivalence_regression COMMAND wm_renderer_equivalence_regression_tests)
+
+    add_test(NAME wm_renderer_equivalence_audit
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/audit_renderer_equivalence.py)
+    set_tests_properties(wm_renderer_equivalence_audit PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+
+    add_executable(wm_remaining_gap_closure_regression_tests tests/remaining_gap_closure_regression.c)
+    target_link_libraries(wm_remaining_gap_closure_regression_tests PRIVATE wmcore)
+    target_compile_options(wm_remaining_gap_closure_regression_tests PRIVATE -Wall -Wextra -Wpedantic -UNDEBUG)
+    add_test(NAME wm_remaining_gap_closure_regression COMMAND wm_remaining_gap_closure_regression_tests)
 
 endif()

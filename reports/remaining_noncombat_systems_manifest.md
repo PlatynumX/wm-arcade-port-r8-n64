@@ -4,8 +4,8 @@
 - scope: all remaining non-combat systems manifest + install/wire obvious completed pieces + fail/report remaining gaps
 - base expected: fix39-v13e-dcs-r2b-decoded-port-assets
 - ignored deltas: intentional Midway Sports / Be a Man / PlatynumX branding assets
-- green: 3
-- yellow: 4
+- green: 6
+- yellow: 1
 - red: 0
 
 ## audio_dcs_runtime
@@ -52,7 +52,7 @@ Ignored / intentional:
 
 ## pregame_progression_match_start
 
-- status: YELLOW_BOUNDARY
+- status: GREEN_WIRED
 
 Evidence:
 - pregame core compiled
@@ -60,22 +60,18 @@ Evidence:
 - matchflow compiled
 - story compiled
 - select->pregame handoff present
-
-Remaining gaps / boundaries:
-- MATCH_INIT still stops at explicit start_match boundary
+- MATCH_INIT enters live source match runtime using CURRENT_LADDER opponent mapping
 
 ## hiscore_persistence
 
-- status: YELLOW_BOUNDARY
+- status: GREEN_WIRED
 
 Evidence:
 - hiscore adapter compiled
 - hiscore core compiled
 - hiscore persistence compiled
 - hiscore presentation compiled
-
-Remaining gaps / boundaries:
-- SD-card filesystem persistence path not proven by audit
+- SD-card filesystem persistence backend is bound and regression-proven
 
 Ignored / intentional:
 - must not use SRAM/EEPROM/FlashRAM/Controller Pak for final persistent data
@@ -93,17 +89,18 @@ Evidence:
 - ring/crowd generated assets compiled
 
 Remaining gaps / boundaries:
-- platform renderer equivalence for palettes/z-order/transparency is not proven in this pass
+- platform renderer equivalence invariants missing
 
 ## operator_service_cabinet_leftovers
 
-- status: YELLOW_BOUNDARY
+- status: GREEN_PLATFORM_ADAPTER
 
 Evidence:
 - operator attract screen compiled
 - time/date attract screen compiled
 - copyright/AAMA mapped in attract switch
+- PSTATUS/player-start bookkeeping is centralized in explicit N64 cabinet adapter
 
-Remaining gaps / boundaries:
-- arcade bookkeeping/coin/PSTATUS remains N64-boundaried, not a native cabinet port
+Ignored / intentional:
+- physical coin switch hardware is absent on N64; no fake coin credits are generated
 

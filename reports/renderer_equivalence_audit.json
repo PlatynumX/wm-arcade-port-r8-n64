@@ -1,0 +1,50 @@
+{
+  "status": "PASS_WITH_HARDWARE_SCREENSHOT_BOUNDARY",
+  "scope": "renderer equivalence code-level audit: palette transparency, z/layer order, source coordinate conversion, WIMP frame metadata guard",
+  "explicit_boundary": "This audit does not claim pixel-perfect screenshot parity on N64 hardware for every frame; that remains a visual capture task.",
+  "ignored_custom_assets": [
+    "intentional Midway Sports / Be a Man / PlatynumX replacements"
+  ],
+  "checks": [
+    {
+      "name": "render_equivalence_core_compiled",
+      "ok": true,
+      "evidence": "CMake includes render equivalence core"
+    },
+    {
+      "name": "renderer_regression_compiled",
+      "ok": true,
+      "evidence": "CMake includes renderer equivalence regression"
+    },
+    {
+      "name": "transparent_ci8_index_zero",
+      "ok": true,
+      "evidence": "CI8 index 0 is the renderer transparent key"
+    },
+    {
+      "name": "layer_order_defined",
+      "ok": true,
+      "evidence": "Rope halves and actor layers are distinct"
+    },
+    {
+      "name": "layer_order_runtime_guard",
+      "ok": true,
+      "evidence": "Runtime guard validates ascending draw order"
+    },
+    {
+      "name": "visual_first_frame_duration",
+      "ok": true,
+      "evidence": "Visual timing preserves first source frame"
+    },
+    {
+      "name": "secondary_offsets_source_formula",
+      "ok": true,
+      "evidence": "Composite secondary offsets preserve source attach formula"
+    },
+    {
+      "name": "wimp_frame_fail_closed",
+      "ok": true,
+      "evidence": "WIMP/IANI3 frame box adapter fails closed on invalid metadata"
+    }
+  ]
+}

@@ -415,6 +415,12 @@ void wm_app_init(wm_app *app) {
     wm_demo_init(&app->demo);
     wm_source_clock_init(&app->source_clock);
     wm_scheduler_init(&app->scheduler);
+    wm_cabinet_bridge_init(&app->cabinet);
+    if (wm_hs_sdcard_backend_init(&app->hiscore_sdcard_backend,
+                                  &app->hiscore_save_backend,
+                                  NULL)) {
+        wm_fix39_hiscore_bind_persistence(&app->hiscore_save_backend);
+    }
     app->p1_choice = WM_WRESTLER_BRET;
     app->p2_choice = WM_WRESTLER_BAM_BAM;
     app->attract.amode_loops = 0;
@@ -450,6 +456,7 @@ void wm_app_tick_dual(wm_app *app,
          */
         bool p2_joined_now = false;
         if (p2_input && p2_input->start && !app->select.p2_joined) {
+            (void)wm_cabinet_bridge_accept_player_start(&app->cabinet, 1u);
             wm_select_screen_join_p2(&app->select);
             (void)wm_award_prepare_select_bonus(&app->awards, 1u);
             p2_joined_now = true;
@@ -489,7 +496,22 @@ void wm_app_tick_dual(wm_app *app,
         return;
     }
     if (app->mode == WM_APP_MODE_MATCH_INIT) {
-        /* Explicit boundary: start_match is the next source subsystem. */
+        /* SELECT/PROGRESS source handoff: CURRENT_LADDER's first live opponent
+           uses the same source-id conversion routine as SELECT.ASM, then
+           reset_start enters the already translated WRESTLE runtime. */
+        uint8_t source_opp = wm_pregame_opponent_at(&app->pregame, 0u);
+        wm_wrestler_id roster_opp;
+        if (!wm_select_source_to_roster(source_opp, &roster_opp)) return;
+        app->p2_choice = roster_opp;
+        wm_fix39_match_begin((unsigned)app->p1_choice, (unsigned)app->p2_choice);
+        if (wm_fix39_match_started()) app->mode = WM_APP_MODE_MATCH;
+        return;
+    }
+    if (app->mode == WM_APP_MODE_MATCH) {
+        const wm_input_state *mi = input ? input : &no_input;
+        wm_fix39_match_tick(mi->stick_x, mi->stick_y, mi->run,
+                            mi->light_punch, mi->power_punch,
+                            mi->light_kick, mi->power_kick, mi->block);
         return;
     }
     if (!input) input = &no_input;
@@ -520,6 +542,7 @@ void wm_app_tick_dual(wm_app *app,
         app->attract.call_ticks > WM_TITLE_BUTTON_ENABLE_TICKS &&
         input && input->start) {
         kill_call_processes(app, app->attract.call);
+        (void)wm_cabinet_bridge_accept_player_start(&app->cabinet, 0u);
         app->mode = WM_APP_MODE_SELECT;
         wm_select_screen_init(&app->select);
         wm_select_screen_set_howard_done(&app->select, app->done_howard);

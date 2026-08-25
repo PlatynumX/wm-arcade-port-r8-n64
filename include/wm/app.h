@@ -14,6 +14,8 @@
 #include "wm/pregame.h"
 #include "wm/select_screen.h"
 #include "wm/select_continue.h"
+#include "wm/sdcard_hiscore_backend.h"
+#include "wm/cabinet_bridge.h"
 
 /* DISPLAY.EQU: TSEC equ 53. Source sleeps expressed in TSEC use this rate.
    Literal source sleeps such as SLEEP 60 stay literal 60 source ticks. */
@@ -120,7 +122,8 @@ typedef enum {
     WM_APP_MODE_ATTRACT = 0,
     WM_APP_MODE_SELECT,
     WM_APP_MODE_PREGAME,
-    WM_APP_MODE_MATCH_INIT
+    WM_APP_MODE_MATCH_INIT,
+    WM_APP_MODE_MATCH
 } wm_app_mode;
 
 typedef struct {
@@ -145,6 +148,13 @@ typedef struct {
     wm_input_state latched_input;
     unsigned boot_ticks;
     bool attract_started;
+
+    /* N64 SD-card filesystem persistence backend for source HSTD tables. */
+    WmHsSdCardBackend hiscore_sdcard_backend;
+    WmHsSaveBackend hiscore_save_backend;
+
+    /* Source PSTATUS semantics behind an explicit N64 platform-input bridge. */
+    wm_cabinet_bridge_state cabinet;
 } wm_app;
 
 void wm_app_init(wm_app *app);

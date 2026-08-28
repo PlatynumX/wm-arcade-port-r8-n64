@@ -3180,7 +3180,10 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
         world.actor_count = WM_FIX39_ACTOR_COUNT;
         world.pcnt = g.status.pcnt;
         world.round_tickcount = g.status.round_tickcount;
-        world.first_ladder = 0;
+        /* ATTR.ASM::show_gameplay sets CURRENT_LADDER=LADDER before
+           start_match. DRONE.ASM consumes that exact first-ladder condition
+           for mode range and passive random-attack gating. */
+        world.first_ladder = g.match_cpu_vs_cpu ? 1 : 0;
         if (g.actors[0].player_type == WM_PTYPE_DRONE &&
             (g.actors[0].status_flags & WM_STATUS_ZOMBIE) == 0u) {
             wm_arcade_drone_step_result_t dr0 = wm_arcade_drone_main(

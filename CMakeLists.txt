@@ -242,6 +242,11 @@ set_tests_properties(wm_combat_adjacent_source_parity_audit PROPERTIES WORKING_D
     set_tests_properties(wm_renderer_equivalence_audit PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 
+    add_executable(wm_r37n3_source_frame_metadata_regression_tests tests/r37n3_source_frame_metadata_regression.c)
+    target_link_libraries(wm_r37n3_source_frame_metadata_regression_tests PRIVATE wmcore)
+    target_compile_options(wm_r37n3_source_frame_metadata_regression_tests PRIVATE -Wall -Wextra -Wpedantic -UNDEBUG)
+    add_test(NAME wm_r37n3_source_frame_metadata_regression COMMAND wm_r37n3_source_frame_metadata_regression_tests)
+
     add_executable(wm_remaining_gap_closure_regression_tests tests/remaining_gap_closure_regression.c)
     target_link_libraries(wm_remaining_gap_closure_regression_tests PRIVATE wmcore)
     target_compile_options(wm_remaining_gap_closure_regression_tests PRIVATE -Wall -Wextra -Wpedantic -UNDEBUG)

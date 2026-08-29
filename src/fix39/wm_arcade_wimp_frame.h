@@ -21,6 +21,8 @@ extern "C" {
 #define WM_WIMP_IANI3_Z_SLOT 7
 #define WM_WIMP_IANI3_ID_SLOT 8
 
+bool wm_arcade_wimp_frame_box_from_tail(const int16_t tail[WM_WIMP_TAIL_WORDS],
+                                         wm_arcade_frame_box_t *out);
 bool wm_arcade_wimp_frame_box_from_sprite(const wm_source_sprite *sprite,
                                            wm_arcade_frame_box_t *out);
 

@@ -209,6 +209,22 @@ const wm_source_sprite *wm_character_sprite_find(uint8_t roster_id,
     return wm_progress_sprite_find(source_frame);
 }
 
+
+bool wm_character_wimp_tail_find(uint8_t roster_id,
+                                 const char *source_frame,
+                                 int16_t out_tail[WM_WIMP_TAIL_WORDS])
+{
+    const wm_source_sprite *sprite;
+    size_t i;
+    (void)roster_id;
+    if (!source_frame || !out_tail) return false;
+    sprite = wm_progress_sprite_find(source_frame);
+    if (!sprite) return false;
+    for (i = 0u; i < WM_WIMP_TAIL_WORDS; ++i)
+        out_tail[i] = sprite->wimp_tail[i];
+    return true;
+}
+
 const wm_source_sprite *wm_character_base_sprite(uint8_t roster_id)
 {
     const wm_progress_anim *anim = wm_progress_anim_get(roster_id,

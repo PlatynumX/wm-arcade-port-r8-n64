@@ -267,6 +267,8 @@ def emit(root,out_c,out_h,out_fs=None):
     if out_fs is not None:
         out_fs.mkdir(parents=True, exist_ok=True)
     available=_available_frame_names(root)
+    import fix39_anim_vm_program as _animvm
+    vm_source_paths=_animvm.source_files(root)
     charseq={}; allframes={}
     slots=['stand2','stand4','torso2','torso4','walk2','walk8','walk4','walk6','run','lp2','lp4','pp','lk2','lk4','pk']
     for rid,name,pfx in CHARS:
@@ -309,9 +311,26 @@ def emit(root,out_c,out_h,out_fs=None):
                     fr=_frame_name(base,fm.group(2))
                     if fr.upper() in available and fr not in frames:
                         frames.append(fr)
+        # R37N3 source-VM corpus closure: rendering and compact WIMP metadata
+        # must cover every physical image token visible to the same canonical
+        # animation source corpus.  This only packages exact WIMP directory
+        # entries; it never aliases, substitutes, or fabricates a frame.
+        vm_added=0
+        for sp in vm_source_paths:
+            for raw in sp.read_text(errors='replace').splitlines():
+                code=raw.split(';',1)[0]
+                for fm in seq_re.finditer(code):
+                    base=fm.group(1).upper()
+                    if base[:1] != owner_prefix:
+                        continue
+                    fr=_frame_name(base,fm.group(2))
+                    if fr.upper() in available and fr not in frames:
+                        frames.append(fr); vm_added += 1
+        if vm_added:
+            print(f'fix39_character_assets: {name}: source-VM corpus added {vm_added} physical WIMP frames')
         charseq[name]=seqs; allframes[name]=frames
 
-    h=['#ifndef WM_CHARACTER_ASSETS_H','#define WM_CHARACTER_ASSETS_H','#include <stddef.h>','#include <stdint.h>','#include "wm/visual.h"','#include "wm/bret_sprites.h"','typedef enum wm_character_visual_slot { WM_CV_STAND2,WM_CV_STAND4,WM_CV_TORSO2,WM_CV_TORSO4,WM_CV_WALK2,WM_CV_WALK8,WM_CV_WALK4,WM_CV_WALK6,WM_CV_RUN,WM_CV_LP2,WM_CV_LP4,WM_CV_PP,WM_CV_LK2,WM_CV_LK4,WM_CV_PK,WM_CV_COUNT } wm_character_visual_slot;','const wm_visual_sequence *wm_character_visual(uint8_t roster_id, wm_character_visual_slot slot);','const wm_source_sprite *wm_character_sprite_find(uint8_t roster_id,const char *source_frame);','const wm_source_sprite *wm_character_base_sprite(uint8_t roster_id);','size_t wm_character_sprite_count(uint8_t roster_id);','#endif','']
+    h=['#ifndef WM_CHARACTER_ASSETS_H','#define WM_CHARACTER_ASSETS_H','#include <stddef.h>','#include <stdint.h>','#include <stdbool.h>','#include "wm/visual.h"','#include "wm/bret_sprites.h"','typedef enum wm_character_visual_slot { WM_CV_STAND2,WM_CV_STAND4,WM_CV_TORSO2,WM_CV_TORSO4,WM_CV_WALK2,WM_CV_WALK8,WM_CV_WALK4,WM_CV_WALK6,WM_CV_RUN,WM_CV_LP2,WM_CV_LP4,WM_CV_PP,WM_CV_LK2,WM_CV_LK4,WM_CV_PK,WM_CV_COUNT } wm_character_visual_slot;','const wm_visual_sequence *wm_character_visual(uint8_t roster_id, wm_character_visual_slot slot);','const wm_source_sprite *wm_character_sprite_find(uint8_t roster_id,const char *source_frame);','bool wm_character_wimp_tail_find(uint8_t roster_id,const char *source_frame,int16_t out_tail[WM_WIMP_TAIL_WORDS]);','const wm_source_sprite *wm_character_base_sprite(uint8_t roster_id);','size_t wm_character_sprite_count(uint8_t roster_id);','#endif','']
     out_h.parent.mkdir(parents=True,exist_ok=True); out_h.write_text('\n'.join(h))
     c=['/* Auto-generated from original Midway wrestler ASM/WIMP data. */','#include "wm/character_assets.h"','#include <string.h>','#if defined(__mips__)','#include <stdio.h>','#include <stdlib.h>','#include <stdint.h>','#include <libdragon.h>','#endif','']
     seqsym={}
@@ -435,6 +454,16 @@ def emit(root,out_c,out_h,out_fs=None):
     c += ['default:return 0;}for(size_t i=0;i<n;i++)if(strcmp(a[i].frame,f)==0)return wm_char_load(id,&a[i]);return 0;','#else','const wm_source_sprite *a=0;size_t n=0;switch(id){']
     for rid,name,pfx in CHARS:c.append(f'case {rid}:a={sprite_arrays[name]};n=sizeof({sprite_arrays[name]})/sizeof({sprite_arrays[name]}[0]);break;')
     c += ['default:return 0;}for(size_t i=0;i<n;i++)if(strcmp(a[i].source_frame,f)==0)return &a[i];return 0;','#endif','}']
+    # R37N3: collision metadata lookup never loads CI8/TLUT payloads on N64.
+    # It reads the exact WIMP tail already resident in compact generated meta.
+    c += ['bool wm_character_wimp_tail_find(uint8_t id,const char *f,int16_t out_tail[WM_WIMP_TAIL_WORDS]){if(!f||!out_tail)return false;',
+          '#if defined(__mips__)','const wm_char_meta *a=0;size_t n=0;switch(id){']
+    for rid,name,pfx in CHARS:c.append(f'case {rid}:a={meta_arrays[name]};n=sizeof({meta_arrays[name]})/sizeof({meta_arrays[name]}[0]);break;')
+    c += ['default:return false;}for(size_t i=0;i<n;i++)if(strcmp(a[i].frame,f)==0){memcpy(out_tail,a[i].tail,sizeof(a[i].tail));return true;}return false;',
+          '#else','const wm_source_sprite *a=0;size_t n=0;switch(id){']
+    for rid,name,pfx in CHARS:c.append(f'case {rid}:a={sprite_arrays[name]};n=sizeof({sprite_arrays[name]})/sizeof({sprite_arrays[name]}[0]);break;')
+    c += ['default:return false;}for(size_t i=0;i<n;i++)if(strcmp(a[i].source_frame,f)==0){memcpy(out_tail,a[i].wimp_tail,sizeof(a[i].wimp_tail));return true;}return false;',
+          '#endif','}']
     c += ['const wm_source_sprite *wm_character_base_sprite(uint8_t id){switch(id){']
     for rid,name,pfx in CHARS:c.append(f'case {rid}:return wm_character_sprite_find(id,"{bases[name]}");')
     c += ['default:return 0;}}','size_t wm_character_sprite_count(uint8_t id){switch(id){']

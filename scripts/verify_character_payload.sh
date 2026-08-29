@@ -8,36 +8,40 @@ test -d "$ROOT" || {
     exit 1
 }
 
-expected_total=4885
+# R37N3 exact source-VM physical WIMP corpus at the pinned historical source.
+expected_total=5129
 actual_total="$(find "$ROOT" -type f -name '*.bin' | wc -l | tr -d '[:space:]')"
 
 echo "Wrestler payload total: ${actual_total}/${expected_total}"
 test "$actual_total" = "$expected_total" || {
-    echo "ERROR: incomplete wrestler payload: ${actual_total}/${expected_total}" >&2
+    echo "ERROR: source-VM wrestler payload mismatch: ${actual_total}/${expected_total}" >&2
     exit 1
 }
 
 for spec in \
-    "0:589" \
-    "1:625" \
-    "2:583" \
-    "3:578" \
-    "4:618" \
-    "5:663" \
-    "6:614" \
-    "8:615"
+    "0:619" \
+    "1:647" \
+    "2:609" \
+    "3:603" \
+    "4:659" \
+    "5:696" \
+    "6:643" \
+    "8:653"
 do
     rid="${spec%%:*}"
     expected="${spec##*:}"
     dir="$ROOT/$rid"
+
     test -d "$dir" || {
         echo "ERROR: wrestler directory missing: $rid" >&2
         exit 1
     }
+
     actual="$(find "$dir" -maxdepth 1 -type f -name '*.bin' | wc -l | tr -d '[:space:]')"
     printf '  wrestler %s: %s/%s\n' "$rid" "$actual" "$expected"
+
     test "$actual" = "$expected" || {
-        echo "ERROR: wrestler $rid frame count mismatch" >&2
+        echo "ERROR: wrestler $rid source-VM frame count mismatch" >&2
         exit 1
     }
 done
@@ -50,4 +54,4 @@ if [ -n "$dirs" ]; then
     }
 fi
 
-echo "Combat2DS full wrestler payload contract: PASS (4885/4885)"
+echo "R37N3 source-VM wrestler payload contract: PASS (5129/5129)"

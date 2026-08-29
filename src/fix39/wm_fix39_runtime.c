@@ -2898,6 +2898,20 @@ void wm_fix39_match_set_cpu_vs_cpu(bool enabled)
     g.actors[1].player_type = WM_PTYPE_DRONE;
 }
 
+/* R37N3: COLLIS.ASM consumes CUR_FRAME's WIMP directory metadata directly.
+ * Keep that semantic path independent from renderer/DragonFS pixel loading. */
+static bool live_source_cur_frame_box(const wm_arcade_actor_t *a,
+                                      const char *frame,
+                                      wm_arcade_frame_box_t *out)
+{
+    int16_t tail[WM_WIMP_TAIL_WORDS];
+    if (!a || !frame || !out) return false;
+    if (a->wrestler_num < 0 || a->wrestler_num > 8) return false;
+    if (!wm_character_wimp_tail_find((uint8_t)a->wrestler_num, frame, tail))
+        return false;
+    return wm_arcade_wimp_frame_box_from_tail(tail, out);
+}
+
 /* Combat2EK: WRESTLE.ASM set_collision_boxes + confine_wrestler source-order
  * bridge for the grounded in-ring state captured in the hardware demo bug.
  * Full confinement remains the next WRESTLE parity phase. */
@@ -2907,10 +2921,8 @@ static void live_refresh_source_hurt_boxes(void)
     for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
         wm_arcade_actor_t *a = &g.actors[i];
         const char *frame = wm_source_anim_runtime_frame(&g.source_anim[i]);
-        const wm_source_sprite *spr = frame ?
-            wm_character_sprite_find((uint8_t)a->wrestler_num, frame) : 0;
         wm_arcade_frame_box_t fb;
-        if (spr && wm_arcade_wimp_frame_box_from_sprite(spr, &fb)) {
+        if (live_source_cur_frame_box(a, frame, &fb)) {
             g.frame_box[i] = fb;
             g.frame_box_valid[i] = true;
             wm_arcade_set_hurt_box(a, &g.frame_box[i]);
@@ -3112,9 +3124,8 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
     for (i=0u;i<WM_FIX39_ACTOR_COUNT;++i) {
         wm_arcade_actor_t *a=&g.actors[i];
         const char *frame=wm_source_anim_runtime_frame(&g.source_anim[i]);
-        const wm_source_sprite *spr=frame?wm_character_sprite_find((uint8_t)a->wrestler_num,frame):0;
         wm_arcade_frame_box_t fb;
-        if(spr && wm_arcade_wimp_frame_box_from_sprite(spr,&fb)){g.frame_box[i]=fb;g.frame_box_valid[i]=true;}
+        if(live_source_cur_frame_box(a,frame,&fb)){g.frame_box[i]=fb;g.frame_box_valid[i]=true;}
         else g.frame_box_valid[i]=false;
     }
     /* WRESTLE.ASM update_links: break a one-way stale attachment. */

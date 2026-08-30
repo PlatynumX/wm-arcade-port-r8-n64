@@ -10,6 +10,36 @@ static int boxes_overlap_inclusive(const wm_arcade_box3_t *a,
     return 1;
 }
 
+/* R37N9: PLYR.EQU lays each 16.16 position out as adjacent WORD fields
+ * OBJ_*POS (fraction) + OBJ_*POSINT (signed integer).  COLLIS.ASM writes
+ * OBJ_XPOSINT/OBJ_ZPOSINT directly during overlap separation.  In C these
+ * aliases are represented as separate fields, so emulate the source WORD
+ * write: replace only the high 16 bits and preserve the fractional low word. */
+static int32_t source_write_posint_word(int32_t fixed, int32_t integer)
+{
+    uint32_t lo = (uint32_t)fixed & 0xffffu;
+    uint32_t hi = (uint32_t)(uint16_t)(int16_t)integer << 16;
+    return (int32_t)(hi | lo);
+}
+
+static void source_write_xposint(wm_arcade_actor_t *actor, int32_t integer)
+{
+    int16_t word;
+    if (!actor) return;
+    word = (int16_t)integer;
+    actor->x_int = (int32_t)word;
+    actor->x_fixed = source_write_posint_word(actor->x_fixed, word);
+}
+
+static void source_write_zposint(wm_arcade_actor_t *actor, int32_t integer)
+{
+    int16_t word;
+    if (!actor) return;
+    word = (int16_t)integer;
+    actor->z_int = (int32_t)word;
+    actor->z_fixed = source_write_posint_word(actor->z_fixed, word);
+}
+
 void wm_arcade_set_hurt_box(wm_arcade_actor_t *actor,
                             const wm_arcade_frame_box_t *frame)
 {
@@ -105,23 +135,23 @@ int wm_arcade_resolve_overlap(wm_arcade_actor_t *mover,
 
         /* Resolve the smaller axis, except the source forces Z for a large Z glitch. */
         if (!(min_x > min_z || min_z > 0x3d)) {
-            if (rox > lox) mover->x_int += lox;
-            else mover->x_int -= rox;
+            if (rox > lox) source_write_xposint(mover, mover->x_int + lox);
+            else source_write_xposint(mover, mover->x_int - rox);
 
             if (mover->move_dir != 0 &&
                 (mover->move_dir & (WM_MOVE_UP | WM_MOVE_DOWN)) == 0) {
-                mover->z_int += (boz > toz) ? 3 : -3;
+                source_write_zposint(mover, mover->z_int + ((boz > toz) ? 3 : -3));
             }
             return 1;
         }
     }
 
-    if (boz > toz) mover->z_int += toz;
-    else mover->z_int -= boz;
+    if (boz > toz) source_write_zposint(mover, mover->z_int + toz);
+    else source_write_zposint(mover, mover->z_int - boz);
 
     if (mover->move_dir != 0 &&
         (mover->move_dir & (WM_MOVE_LEFT | WM_MOVE_RIGHT)) == 0) {
-        mover->x_int += (rox > lox) ? 3 : -3;
+        source_write_xposint(mover, mover->x_int + ((rox > lox) ? 3 : -3));
     }
     return 1;
 }

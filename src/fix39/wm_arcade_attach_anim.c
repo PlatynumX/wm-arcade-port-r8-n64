@@ -7,6 +7,22 @@ static int reciprocal(const wm_arcade_actor_t *a, const wm_arcade_actor_t *b)
     return a && b && b->attach_proc == a;
 }
 
+/* R37N9: source LONG writes to OBJ_*POS also update the adjacent
+ * OBJ_*POSINT view immediately.  The portable actor stores both views, so
+ * re-establish the alias after attachment code writes the fixed positions. */
+static int32_t source_posint_from_fixed(int32_t fixed)
+{
+    return (int32_t)(int16_t)((uint32_t)fixed >> 16);
+}
+
+static void source_sync_position_aliases(wm_arcade_actor_t *actor)
+{
+    if (!actor) return;
+    actor->x_int = source_posint_from_fixed(actor->x_fixed);
+    actor->y_int = source_posint_from_fixed(actor->y_fixed);
+    actor->z_int = source_posint_from_fixed(actor->z_fixed);
+}
+
 void wm_arcade_anim_enter_slave_idle(wm_arcade_actor_t *a)
 {
     if (!a) return;
@@ -129,6 +145,8 @@ wm_arcade_attach_status_t wm_arcade_master_keep_attached(wm_arcade_actor_t *a)
     xoff = a->attach_xoff * 65536;
     if ((a->facing_dir & WM_MOVE_RIGHT) == 0) xoff = -xoff;
     opp->x_fixed = a->x_fixed + xoff;
+    source_sync_position_aliases(a);
+    source_sync_position_aliases(opp);
     return WM_ATTACH_OK;
 }
 
@@ -146,5 +164,6 @@ wm_arcade_attach_status_t wm_arcade_keep_attached(wm_arcade_actor_t *a)
     xoff = master->attach_xoff * 65536;
     if ((master->facing_dir & WM_MOVE_RIGHT) == 0) xoff = -xoff;
     a->x_fixed = master->x_fixed + xoff;
+    source_sync_position_aliases(a);
     return WM_ATTACH_OK;
 }

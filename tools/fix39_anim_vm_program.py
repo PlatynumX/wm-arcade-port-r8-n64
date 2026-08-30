@@ -8,6 +8,17 @@ SEQ_PREFIXES=('HRT','RZR','UND','YOK','SHN','BAM','DNK','LEX')
 SUBR_RE=re.compile(r'^\s*SUBR(?:P)?\s+#?([A-Za-z_][A-Za-z0-9_]*)\b',re.I)
 ANI_RE=re.compile(r'\bANI_([A-Za-z0-9_]+)\b',re.I)
 FRAME_RE=re.compile(r'\b([A-Za-z][A-Za-z0-9_]*)\s*\+\s*FR(\d+)\b',re.I)
+
+def canonical_frame_token(text):
+    # R37N7: use the same physical WIMP-frame key for frame operands embedded
+    # in ANI command arguments and source-data tables as for ordinary frame
+    # instructions.  Do not rewrite arbitrary symbols/expressions.
+    s=text.strip()
+    m=FRAME_RE.fullmatch(s)
+    if m:
+        return f'{m.group(1).upper()}{int(m.group(2)):02d}'
+    return s
+
 LOCAL_RE=re.compile(r'^\s*#([A-Za-z_][A-Za-z0-9_]*)\s*$')
 PLAIN_LABEL_RE=re.compile(r'^\s*([A-Za-z_][A-Za-z0-9_]*)\s*$')
 DATA_LINE_RE=re.compile(r'^(?:\.word|\.long|REFLONG|[WL]{1,9})\b',re.I)
@@ -145,7 +156,7 @@ def collect_tables(root,ev):
                 if not dm:break
                 saw=True
                 for tok in split_args(dm.group(1),0):
-                    t=tok.strip();v=ev(t.lstrip('#'))
+                    t=tok.strip();v=ev(t.lstrip('#'));t=canonical_frame_token(t)
                     entries.append((0 if v is None else v,t,v is not None))
                 j+=1
             if saw:
@@ -185,7 +196,7 @@ def parse_program(root):
                 if op<0:unresolved.add(name)
                 args=[]
                 for arg in split_args(code,am.end()):
-                    text=arg.strip();v=ev(text.lstrip('#'))
+                    text=arg.strip();v=ev(text.lstrip('#'));text=canonical_frame_token(text)
                     args.append([0 if v is None else v,text,1 if v is not None else 0]) # kind 1 numeric, 0 string
                 ins.append(['cmd',op,name,args,0]);continue
             fm=FRAME_RE.search(code)

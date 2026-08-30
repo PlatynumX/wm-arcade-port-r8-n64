@@ -11,6 +11,22 @@ extern "C" {
 
 typedef struct wm_source_anim_runtime wm_source_anim_runtime_t;
 
+/* R37N8: Midway frame application copies geometry fields into live object
+   state when a frame changes. Keep that copied state distinct from the
+   display-frame token so collision never has to reinterpret a later name. */
+typedef struct wm_source_anim_frame_geometry {
+    const char *source_frame;
+    uint16_t width;
+    uint16_t height;
+    int16_t xani;
+    int16_t yani;
+    int16_t iani3x;
+    int16_t iani3y;
+    int16_t iani3z;
+    int16_t iani3id;
+    uint8_t valid;
+} wm_source_anim_frame_geometry_t;
+
 typedef struct wm_source_anim_services {
     uint16_t (*round_tick)(void *user);
     uint32_t (*pcnt)(void *user);
@@ -32,6 +48,15 @@ typedef struct wm_source_anim_services {
     void (*set_allow_offscreen)(int ticks, void *user);
     bool (*change_other_anim)(wm_arcade_actor_t *a, wm_arcade_actor_t *other, const char *label, void *user);
     bool (*force_other_frame)(wm_arcade_actor_t *a, wm_arcade_actor_t *other, const char *frame, void *user);
+    /* R37N7: exact logical geometry represented by the pre-LOAD2 WIMP frame.
+       These are the outputs reconstructed by Midway get_mpart_offsets +
+       get_mpart_xsize after the logical image is split into DMA pieces. */
+    bool (*multipart_geometry)(wm_arcade_actor_t *a, const char *frame,
+                               int16_t *xani, int16_t *yani, uint16_t *xsize,
+                               void *user);
+    /* R37N8: full converted WIMP metadata copied at frame-application time. */
+    bool (*frame_geometry)(wm_arcade_actor_t *a, const char *frame,
+                           wm_source_anim_frame_geometry_t *out, void *user);
     int (*do_roll)(wm_arcade_actor_t *a, void *user);
     int (*buttons_down)(wm_arcade_actor_t *a, void *user);
     wm_arcade_combat_runtime_t *combat_runtime;
@@ -43,6 +68,7 @@ struct wm_source_anim_runtime {
     const wm_source_anim_program_t *program;
     uint16_t pc;
     const char *current_frame;
+    wm_source_anim_frame_geometry_t frame_geometry;
     const wm_source_anim_services_t *services;
     uint32_t instructions_executed;
     int fault;
@@ -59,7 +85,14 @@ bool wm_source_anim_runtime_change(wm_source_anim_runtime_t *s, wm_arcade_actor_
                                    uint8_t roster_id, const char *label);
 void wm_source_anim_runtime_tick(wm_source_anim_runtime_t *s, wm_arcade_actor_t *a);
 void wm_source_anim_runtime_force_frame(wm_source_anim_runtime_t *s,const char *frame);
+bool wm_source_anim_runtime_force_frame_actor(wm_source_anim_runtime_t *s,
+                                               wm_arcade_actor_t *a,
+                                               const char *frame);
+bool wm_source_anim_runtime_copy_geometry_frame(wm_source_anim_runtime_t *s,
+                                                 wm_arcade_actor_t *a,
+                                                 const char *geometry_frame);
 const char *wm_source_anim_runtime_frame(const wm_source_anim_runtime_t *s);
+const wm_source_anim_frame_geometry_t *wm_source_anim_runtime_geometry(const wm_source_anim_runtime_t *s);
 const char *wm_source_anim_runtime_label(const wm_source_anim_runtime_t *s);
 #ifdef __cplusplus
 }

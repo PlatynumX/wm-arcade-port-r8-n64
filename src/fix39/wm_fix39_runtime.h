@@ -228,7 +228,8 @@ const char *wm_fix39_actor_source_anim(size_t index);
 
 /* Live animation/presentation bridge for COLLIS.ASM.  IANI3 fields come from
  * the exact current arcade image header; callers must not pass inferred sprite
- * bounds.  Collision stays disabled until both actors have valid frame boxes. */
+ * bounds.  Collision stays disabled until every active wrestler has a valid
+ * current frame box. */
 bool wm_fix39_match_set_frame_box(size_t index,
                                   const wm_arcade_frame_box_t *frame);
 void wm_fix39_match_clear_frame_box(size_t index);

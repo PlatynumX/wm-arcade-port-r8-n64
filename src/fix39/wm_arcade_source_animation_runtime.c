@@ -37,6 +37,14 @@ static int face_down(const wm_arcade_actor_t*a){return a&&((a->facing_dir&WM_MOV
 static int32_t rel_x(const wm_arcade_actor_t*a,int32_t v,int mode){if(mode==SRC_AM_ABS)return v;if(mode==SRC_AM_FACE_REL)return face_right(a)?v:-v;if(mode==SRC_AM_HIT_REL)return(a&&((a->hit_side&WM_MOVE_RIGHT)!=0))?v:-v;return(a&&((a->new_facing_dir&WM_MOVE_RIGHT)!=0))?v:-v;}
 static int32_t rel_z(const wm_arcade_actor_t*a,int32_t v,int mode){if(mode==SRC_AM_ABS)return v;if(mode==SRC_AM_FACE_REL)return face_down(a)?v:-v;if(mode==SRC_AM_HIT_REL)return(a&&((a->hit_side&WM_MOVE_UP)!=0))?v:-v;return(a&&((a->new_facing_dir&WM_MOVE_DOWN)!=0))?v:-v;}
 
+/* R37N9: OBJ_*POSINT is the signed high WORD of the source 16.16 position.
+ * Commands that write only that WORD must preserve the low fractional WORD. */
+static int32_t source_posword_into_fixed(int32_t fixed,int32_t integer){uint32_t lo=(uint32_t)fixed&0xffffu;uint32_t hi=(uint32_t)(uint16_t)(int16_t)integer<<16;return(int32_t)(hi|lo);}
+static void source_write_xposint(wm_arcade_actor_t*a,int32_t integer){int16_t w;if(!a)return;w=(int16_t)integer;a->x_int=(int32_t)w;a->x_fixed=source_posword_into_fixed(a->x_fixed,w);}
+static void source_write_yposint(wm_arcade_actor_t*a,int32_t integer){int16_t w;if(!a)return;w=(int16_t)integer;a->y_int=(int32_t)w;a->y_fixed=source_posword_into_fixed(a->y_fixed,w);}
+static void source_write_zposint(wm_arcade_actor_t*a,int32_t integer){int16_t w;if(!a)return;w=(int16_t)integer;a->z_int=(int32_t)w;a->z_fixed=source_posword_into_fixed(a->z_fixed,w);}
+
+
 static const wm_source_anim_table_t *table_for(const wm_source_anim_runtime_t*s,const wm_source_anim_ins_t*i,unsigned n){const wm_source_anim_table_t*t=0;if(!i||n>=i->argc)return 0;if(i->a[n].kind==WM_SRC_ARG_TABLE)t=wm_source_anim_table_by_id((uint16_t)i->a[n].value);if(!t)t=wm_source_anim_table_find(s&&s->program?s->program->source_file:0,at(i,n));return t;}
 static const wm_source_anim_arg_t *table_entry(const wm_source_anim_runtime_t*s,const wm_source_anim_ins_t*i,unsigned n,unsigned idx){const wm_source_anim_table_t*t=table_for(s,i,n);return(t&&idx<t->count)?&t->entries[idx]:0;}
 static int branch_arg(wm_source_anim_runtime_t*s,wm_arcade_actor_t*a,const wm_source_anim_arg_t*x){const wm_source_anim_program_t*p;if(!s||!x)return 0;if(x->kind==WM_SRC_ARG_LOCAL_PC){if(x->value>=0&&s->program&&x->value<s->program->count){s->pc=(uint16_t)x->value;return 1;}return 0;}p=wm_source_anim_program_find((uint8_t)a->wrestler_num,x->text?x->text:"");if(p){s->program=p;s->pc=0;return 1;}return 0;}
@@ -48,10 +56,42 @@ static int32_t *butcount_field(wm_arcade_actor_t*a,const char*n){if(!a||!n)retur
 static int rope_near(const wm_arcade_actor_t*a,int mode,int dist){const WmRingBoundarySeed*line;int x;if(!a||a->in_ring)return 0;if((mode&0xff)==SRC_RC_FRONT)line=face_right(a)?wm_ring_boundary_seed(WM_RING_BOUNDARY_RIGHT_ROPE):wm_ring_boundary_seed(WM_RING_BOUNDARY_LEFT_ROPE);else if((mode&0xff)==SRC_RC_BACK)line=face_right(a)?wm_ring_boundary_seed(WM_RING_BOUNDARY_LEFT_ROPE):wm_ring_boundary_seed(WM_RING_BOUNDARY_RIGHT_ROPE);else line=(a->x_int>WM_RING_X_CENTER)?wm_ring_boundary_seed(WM_RING_BOUNDARY_RIGHT_ROPE):wm_ring_boundary_seed(WM_RING_BOUNDARY_LEFT_ROPE);x=wm_ring_calc_line_x(line,(int16_t)a->z_int);return abs(a->x_int-x)<=dist;}
 static void leapatpos(wm_arcade_actor_t*a,int ticks,int maxdist,int ax,int ay,int az){int64_t dx,dz;uint32_t d;if(!a||ticks<=0)return;dx=((int64_t)a->tgt_xoff<<16)-(a->x_fixed+((int64_t)(face_right(a)?ax:-ax)<<16));dz=((int64_t)a->tgt_zoff<<16)-(a->z_fixed+((int64_t)az<<16));a->x_vel=(int32_t)(dx/ticks);a->z_vel=(int32_t)(dz/ticks);d=isqrt32((uint32_t)(((uabs32((int32_t)dx)>>16)*(uabs32((int32_t)dx)>>16))+((uabs32((int32_t)dz)>>16)*(uabs32((int32_t)dz)>>16))));if(maxdist>=0&&d>(uint32_t)maxdist&&d){a->x_vel=(int32_t)(((int64_t)a->x_vel*maxdist)/d);a->z_vel=(int32_t)(((int64_t)a->z_vel*maxdist)/d);} {int64_t dy=((int64_t)a->tgt_yoff<<16)-(a->y_fixed-((int64_t)ay<<16));int64_t grav=((int64_t)a->gravity*ticks*ticks)/2;int64_t vy=(dy+grav)/ticks;if(vy>0x0f0000)vy=0x0f0000;a->y_vel=(int32_t)vy;} (void)az;}
 
+/* R37N8: copied geometry is independent object state.  Keeping the copy
+ * operation separate from display identity is required for Midway paths that
+ * display one frame while borrowing geometry metadata from another. */
+static int source_anim_copy_geometry(wm_source_anim_runtime_t *s,
+                                     wm_arcade_actor_t *a,const char *frame)
+{
+    wm_source_anim_frame_geometry_t geom;
+    if(!s||!frame)return 0;
+    memset(&s->frame_geometry,0,sizeof(s->frame_geometry));
+    s->frame_geometry.source_frame=frame;
+    if(!s->services||!s->services->frame_geometry)return 1;
+    memset(&geom,0,sizeof(geom));
+    geom.source_frame=frame;
+    if(!s->services->frame_geometry(a,frame,&geom,s->services->user))return 0;
+    if(!geom.source_frame)geom.source_frame=frame;
+    geom.valid=1u;
+    s->frame_geometry=geom;
+    return 1;
+}
+
+/* Normal frame application changes the display token and copies its geometry
+ * atomically.  Collision later reads the copy, never a second name lookup. */
+static int source_anim_apply_frame(wm_source_anim_runtime_t *s,
+                                   wm_arcade_actor_t *a,const char *frame)
+{
+    if(!s||!frame)return 0;
+    s->current_frame=frame;
+    return source_anim_copy_geometry(s,a,frame);
+}
+
 void wm_source_anim_runtime_init(wm_source_anim_runtime_t*s){if(s)memset(s,0,sizeof(*s));}
 void wm_source_anim_runtime_bind(wm_source_anim_runtime_t*s,const wm_source_anim_services_t*v){if(s)s->services=v;}
 void wm_source_anim_runtime_set_secondary(wm_source_anim_runtime_t*s,bool secondary){if(s){s->secondary=secondary?1u:0u;s->mode_shadow=0;s->count_shadow=1;}}
-void wm_source_anim_runtime_force_frame(wm_source_anim_runtime_t*s,const char*f){if(s)s->current_frame=f;}
+void wm_source_anim_runtime_force_frame(wm_source_anim_runtime_t*s,const char*f){if(s){s->current_frame=f;memset(&s->frame_geometry,0,sizeof(s->frame_geometry));s->frame_geometry.source_frame=f;}}
+bool wm_source_anim_runtime_force_frame_actor(wm_source_anim_runtime_t*s,wm_arcade_actor_t*a,const char*f){return source_anim_apply_frame(s,a,f)!=0;}
+bool wm_source_anim_runtime_copy_geometry_frame(wm_source_anim_runtime_t*s,wm_arcade_actor_t*a,const char*f){return source_anim_copy_geometry(s,a,f)!=0;}
 bool wm_source_anim_runtime_change(wm_source_anim_runtime_t*s,wm_arcade_actor_t*a,uint8_t roster,const char*label){
     const wm_source_anim_services_t*v;
     const wm_source_anim_program_t*p;
@@ -63,10 +103,31 @@ bool wm_source_anim_runtime_change(wm_source_anim_runtime_t*s,wm_arcade_actor_t*
     /* ANIM.ASM change_anim1/2: do not restart an already-running identical script. */
     if(s->program==p && !(mode&WM_ARCADE_MODE_END))return true;
     v=s->services;
-    s->program=p;s->pc=0;s->current_frame=0;s->instructions_executed=0;s->fault=0;s->services=v;
+    s->program=p;s->pc=0;s->current_frame=0;memset(&s->frame_geometry,0,sizeof(s->frame_geometry));s->instructions_executed=0;s->fault=0;s->services=v;
     if(s->secondary){s->mode_shadow=0;s->count_shadow=1;}
     else{a->anim_mode=0;a->ani_count=1;a->gravity=SRC_GRAVITY;}
     return true;
+}
+
+/* R37N7 / WRESTLE2.ASM geometry contract.
+ * The port retains each pre-LOAD2 logical WIMP frame as one sprite. Midway's
+ * get_mpart_offsets scans post-LOAD2 pieces for max ANIX/ANIY, while
+ * get_mpart_xsize computes max(ANIX)+max(SIZX-ANIX). Those operations recover
+ * the same logical xani/yani/width retained by this port. */
+static int superslave2_geometry(const wm_source_anim_runtime_t *s,
+                                wm_arcade_actor_t *a,const char *frame,
+                                int16_t *xani,int16_t *yani,uint16_t *xsize)
+{
+    return s && s->services && s->services->multipart_geometry &&
+           s->services->multipart_geometry(a,frame,xani,yani,xsize,s->services->user);
+}
+
+static int superslave2_flip_matches_facing(const wm_arcade_actor_t *a)
+{
+    if (!a) return 1;
+    if ((a->obj_control & WM_OBJ_FLIPH) == 0u)
+        return (a->facing_dir & WM_MOVE_LEFT) == 0u;
+    return (a->facing_dir & WM_MOVE_RIGHT) == 0u;
 }
 
 static int exec_cmd(wm_source_anim_runtime_t*s,wm_arcade_actor_t*a,const wm_source_anim_ins_t*i){wm_arcade_actor_t*o;int32_t v,*fp;const wm_source_anim_arg_t*te;const wm_source_anim_table_t*t;unsigned idx;int cond=0;wm_arcade_attack_on_args_t ao;wm_arcade_attack_on_z_args_t az;
@@ -82,22 +143,22 @@ static int exec_cmd(wm_source_anim_runtime_t*s,wm_arcade_actor_t*a,const wm_sour
     case 6: ao.attack_mode=(uint16_t)av(i,0);ao.xoff=(int16_t)av(i,1);ao.yoff=(int16_t)av(i,2);ao.width=(int16_t)av(i,3);ao.height=(int16_t)av(i,4);wm_arcade_ani_attack_on(a,&ao);NEXT();
     case 7: wm_arcade_ani_attack_off(a,rtick(s));NEXT();
     case 8: o=a->smart_target;if(o){set_target_offsets(a,o,(uint16_t)av(i,5));a->tgt_xoff+=o->x_int;a->tgt_yoff+=o->y_int;a->tgt_zoff+=o->z_int;leapatpos(a,av(i,0),av(i,1),av(i,6),av(i,7),av(i,8));}NEXT();
-    case 9: a->attach_xoff=av(i,0);a->attach_yoff=av(i,1);NEXT();
+    case 9: a->attach_xoff=av(i,0);NEXT();
     case 10: wm_arcade_anim_detach(a);NEXT();
-    case 11: o=0;if((a->anim_mode&WM_ARCADE_MODE_KEEPATTACHED)&&attached_pair(a,&o)&&!(o->anim_mode&WM_ARCADE_MODE_GHOST)){if(o->y_vel<=0&&o->y_int<=o->ground_y){if(s->services&&s->services->code)s->services->code(a,"SMALL_BOUNCE",s->services->user);NEXT();}}if(a->y_vel<=0&&a->y_int<=a->ground_y){if(s->services&&s->services->code)s->services->code(a,"SMALL_BOUNCE",s->services->user);NEXT();}HOLD();
+    case 11: if(a->y_vel>0)HOLD();o=0;if((a->anim_mode&WM_ARCADE_MODE_KEEPATTACHED)&&attached_pair(a,&o)&&!(o->anim_mode&WM_ARCADE_MODE_GHOST)&&o->y_int<=o->ground_y){if(s->services&&s->services->code)s->services->code(a,"SMALL_BOUNCE",s->services->user);NEXT();}if(a->y_int<=a->ground_y){if(s->services&&s->services->code)s->services->code(a,"SMALL_BOUNCE",s->services->user);NEXT();}HOLD();
     case 12: a->obj_control^=WM_OBJ_FLIPH;NEXT();
     case 13: a->y_vel=av(i,0)<<16;NEXT();
     case 14: az.attack_mode=(uint16_t)av(i,0);az.xoff=(int16_t)av(i,1);az.yoff=(int16_t)av(i,2);az.zoff=(int16_t)av(i,3);az.width=(int16_t)av(i,4);az.height=(int16_t)av(i,5);az.depth=(int16_t)av(i,6);wm_arcade_ani_attack_on_z(a,&az);NEXT();
     case 15: a->anim_mode&=(uint16_t)~WM_ARCADE_MODE_NOGRAVITY;NEXT();
     case 16: a->anim_mode|=WM_ARCADE_MODE_NOGRAVITY;NEXT();
     case 17: if(!branch_n(s,a,i,0))s->fault=17;return 0;
-    case 18: a->attach_xoff=av(i,0);a->attach_yoff=av(i,1);a->attach_zoff=av(i,2);NEXT();
+    case 18: a->attach_xoff=av(i,0);a->attach_zoff=av(i,1);NEXT();
     case 19: NEXT();
     case 20: if(a->but_val_cur&(uint16_t)av(i,0)){a->facing_dir=a->new_facing_dir;if(face_right(a))a->obj_control&=(uint16_t)~WM_OBJ_FLIPH;else a->obj_control|=WM_OBJ_FLIPH;HOLD();}NEXT();
-    case 21: v=av(i,0);if(!face_right(a))v=-v;a->x_int+=v;a->x_fixed=a->x_int<<16;v=av(i,1);a->y_int+=v;a->y_fixed=a->y_int<<16;a->scroll_y-=v;a->z_int+=av(i,2);a->z_fixed=a->z_int<<16;NEXT();
+    case 21: v=av(i,0);if(!face_right(a))v=-v;source_write_xposint(a,a->x_int+v);v=av(i,1);source_write_yposint(a,a->y_int+v);a->scroll_y-=v;source_write_zposint(a,a->z_int+av(i,2));NEXT();
     case 22: a->obj_friction=av(i,0);a->anim_mode|=WM_ARCADE_MODE_FRICTION;NEXT();
     case 23: if(a->y_vel<av(i,0))a->y_vel=av(i,0);NEXT();
-    case 24: if(attached_pair(a,&o)){o->y_vel=av(i,1);o->z_vel=av(i,2);o->x_vel=face_right(a)?av(i,0):-av(i,0);}NEXT();
+    case 24: o=a->attach_proc;if(o&&o->attach_proc){o->y_vel=av(i,1);o->z_vel=av(i,2);o->x_vel=face_right(a)?av(i,0):-av(i,0);}NEXT();
     case 25: NEXT();
     case 26: if(s->services&&s->services->sound)s->services->sound(a,at(i,0),av(i,0),s->services->user);NEXT();
     case 27: a->facing_dir=a->new_facing_dir;NEXT();
@@ -145,13 +206,13 @@ static int exec_cmd(wm_source_anim_runtime_t*s,wm_arcade_actor_t*a,const wm_sour
     case 72: if(!a->hit_blocker){if(!branch_n(s,a,i,0))s->fault=72;return 0;}NEXT();
     case 73: a->anim_mode|=WM_ARCADE_MODE_END;return 1;
     case 74: case 75: {wm_arcade_actor_t*q=((av(i,0)&SRC_RC_OPPONENT)!=0)?a->smart_target:a;int near=rope_near(q,av(i,0),av(i,1));if(i->opcode==75)near=!near;if(near){if(!branch_n(s,a,i,2))s->fault=i->opcode;return 0;}NEXT();}
-    case 76: o=opp(a);if(o){v=av(i,0);if(v<0){o->delay_meter=0;v=-v;}if(!o->dizzy)o->getup_time=v;}NEXT();
+    case 76: o=a->attach_proc?a->attach_proc:a->who_i_hit;if(o){v=av(i,0);if(v<0){o->delay_meter=0;v=-v;}if(!o->dizzy)o->getup_time=v;}NEXT();
     case 77: if(s->services&&s->services->rope){s->services->rope(a,0,6,1,s->services->user);s->services->rope(a,a->x_int<=WM_RING_X_CENTER?2:3,6,1,s->services->user);}NEXT();
     case 78: if(!(s->services&&s->services->buttons_down&&s->services->buttons_down(a,s->services->user)))HOLD();NEXT();
-    case 79: o=0;if(attached_pair(a,&o)){s->pc++;a->ani_count=(int32_t)(((int64_t)av(i,0)*(a->ani_speed?a->ani_speed:0x100))>>8);s->current_frame=at(i,1);te=table_entry(s,i,2,(unsigned)o->wrestler_num);if(te){const wm_source_anim_table_t*st=wm_source_anim_table_find(s->program?s->program->source_file:0,te->text);if(st){unsigned off=(unsigned)av(i,3)*4u;if(off+3u<st->count){const char*fr=st->entries[off].text;if(fr&&s->services&&s->services->force_other_frame)s->services->force_other_frame(a,o,fr,s->services->user);a->attach_xoff=st->entries[off+1].value;a->attach_yoff=st->entries[off+2].value;if(st->entries[off+3].value)o->obj_control^=WM_OBJ_FLIPH;}}}return 1;}NEXT();
+    case 79: o=0;if(attached_pair(a,&o)){const wm_source_anim_table_t*st;const char*afr;const char*fr;unsigned off;int16_t ax16,ay16,dx16,dy16;uint16_t aw,dw;int32_t ax,dx,x,y;int flip,match;s->pc++;a->ani_count=(int32_t)(((int64_t)av(i,0)*(a->ani_speed?a->ani_speed:0x100))>>8);afr=at(i,1);source_anim_apply_frame(s,a,afr);te=table_entry(s,i,2,(unsigned)o->wrestler_num);if(!te){s->fault=79;a->source_vm_fault=79;return 1;}st=wm_source_anim_table_find(s->program?s->program->source_file:0,te->text);if(!st){s->fault=79;a->source_vm_fault=79;return 1;}off=(unsigned)av(i,3)*4u;if(off+3u>=st->count){s->fault=79;a->source_vm_fault=79;return 1;}fr=st->entries[off].text;if(!fr||!s->services||!s->services->force_other_frame||!s->services->force_other_frame(a,o,fr,s->services->user)){s->fault=79;a->source_vm_fault=79;return 1;}if(!superslave2_geometry(s,a,afr,&ax16,&ay16,&aw)||!superslave2_geometry(s,o,fr,&dx16,&dy16,&dw)){s->fault=79;a->source_vm_fault=79;return 1;}(void)aw;y=(int32_t)(int16_t)st->entries[off+2u].value-(int32_t)dy16+(int32_t)ay16;a->attach_yoff=y;ax=(int32_t)ax16;dx=(int32_t)(int16_t)dx16;x=(int32_t)(int16_t)st->entries[off+1u].value;flip=st->entries[off+3u].value!=0;match=superslave2_flip_matches_facing(a);if((match&&!flip)||(!match&&flip))dx=(int32_t)dw-dx;x+=dx-ax;if(!match)x=-x;a->attach_xoff=x;if(a->facing_dir&WM_MOVE_RIGHT)o->obj_control|=WM_OBJ_FLIPH;else o->obj_control&=(uint16_t)~WM_OBJ_FLIPH;if(flip)o->obj_control^=WM_OBJ_FLIPH;return 1;}NEXT();
     case 80: wm_arcade_anim_set_opp_mode_bits(a,(uint16_t)av(i,0));NEXT();
     case 81: wm_arcade_anim_clear_opp_mode_bits(a,(uint16_t)av(i,0));NEXT();
-    case 82: o=0;if(attached_pair(a,&o)){t=table_for(s,i,0);if(t){idx=(unsigned)o->wrestler_num*2u;if(idx+1u<t->count){v=t->entries[idx].value;if(!face_right(o))v=-v;o->x_int+=v;o->x_fixed=o->x_int<<16;o->y_int+=t->entries[idx+1].value;o->y_fixed=o->y_int<<16;}}}NEXT();
+    case 82: o=a->attach_proc;if(o&&o->attach_proc){t=table_for(s,i,0);if(t){idx=(unsigned)o->wrestler_num*2u;if(idx+1u<t->count){v=t->entries[idx].value;if(!face_right(o))v=-v;source_write_xposint(o,o->x_int+v);source_write_yposint(o,o->y_int+t->entries[idx+1].value);}}}NEXT();
     case 83: if(a->hit_blocker){if(!branch_n(s,a,i,0))s->fault=83;return 0;}NEXT();
     case 84:
         if(a->i_will_die){
@@ -167,7 +228,7 @@ static int exec_cmd(wm_source_anim_runtime_t*s,wm_arcade_actor_t*a,const wm_sour
         a->stars_flag=0;
         if(s->services&&s->services->do_roll&&s->services->do_roll(a,s->services->user))HOLD();
         NEXT();
-    case 85: o=0;if(attached_pair(a,&o))o->facing_dir=o->new_facing_dir;NEXT();
+    case 85: o=a->attach_proc;if(o&&o->attach_proc)o->facing_dir=o->new_facing_dir;NEXT();
     case 86: o=a->smart_target;set_status(a,0);if(o){for(idx=0;idx<i->argc;idx++){v=av(i,idx);if(v<0)break;if(o->wrestler_num==v){set_status(a,1);break;}}}NEXT();
     case 87: if(s->services&&s->services->create_proc)s->services->create_proc(a,i,s->services->user);NEXT();
     case 88: fp=butcount_field(a,at(i,0));if(fp&&*fp>=av(i,1)){if(!branch_n(s,a,i,2))s->fault=88;return 0;}NEXT();
@@ -190,14 +251,14 @@ static int exec_cmd(wm_source_anim_runtime_t*s,wm_arcade_actor_t*a,const wm_sour
     case 105: wm_arcade_anim_set_opp_player_mode(a,(uint16_t)av(i,0));NEXT();
     case 106: wm_arcade_anim_xflip_opp(a);NEXT();
     case 107: fp=word_field(a,at(i,0));if(fp)*fp=av(i,1);NEXT();
-    case 108: o=a->who_i_hit;if(o&&!a->hit_blocker&&!o->dizzy){o->immobilize_time=av(i,0);o->x_vel=o->y_vel=o->z_vel=0;}NEXT();
+    case 108: if(!a->dizzy){o=a->who_i_hit;if(o&&o->player_mode!=WM_PMODE_BLOCK){o->immobilize_time=av(i,0);o->x_vel=o->y_vel=o->z_vel=0;}}NEXT();
     case 109: o=0;if(attached_pair(a,&o)){t=table_for(s,i,0);idx=(unsigned)o->wrestler_num;if(t&&idx<t->count&&t->entries[idx].value)o->obj_control^=WM_OBJ_FLIPH;}NEXT();
     case 110: o=0;if(!attached_pair(a,&o))o=a->who_i_hit;if(o){o->y_vel=av(i,1);o->x_vel=face_right(a)?av(i,0):-av(i,0);o->z_vel=face_down(a)?av(i,2):-av(i,2);}NEXT();
-    case 111: v=av(i,0);o=0;if((a->anim_mode&WM_ARCADE_MODE_KEEPATTACHED)&&attached_pair(a,&o)&&!(o->anim_mode&WM_ARCADE_MODE_GHOST)&&o->y_vel<=0&&o->y_int<=o->ground_y+v){o->y_int=o->ground_y+v;o->y_fixed=o->y_int<<16;if(s->services&&s->services->code)s->services->code(a,"SMALL_BOUNCE",s->services->user);NEXT();}if(a->y_vel<=0&&a->y_int<=a->ground_y+v){a->y_int=a->ground_y+v;a->y_fixed=a->y_int<<16;if(s->services&&s->services->code)s->services->code(a,"SMALL_BOUNCE",s->services->user);NEXT();}HOLD();
+    case 111: v=av(i,0);if(a->y_vel>0)HOLD();o=0;if((a->anim_mode&WM_ARCADE_MODE_KEEPATTACHED)&&attached_pair(a,&o)&&!(o->anim_mode&WM_ARCADE_MODE_GHOST)&&o->y_int<=o->ground_y+v){o->y_int=o->ground_y+v;o->y_fixed=o->y_int<<16;if(s->services&&s->services->code)s->services->code(a,"SMALL_BOUNCE",s->services->user);NEXT();}if(a->y_int<=a->ground_y+v){a->y_int=a->ground_y+v;a->y_fixed=a->y_int<<16;if(s->services&&s->services->code)s->services->code(a,"SMALL_BOUNCE",s->services->user);NEXT();}HOLD();
     case 112: o=0;if(attached_pair(a,&o))o->x_vel=rel_x(a,av(i,0),av(i,1));NEXT();
     case 113: wm_arcade_anim_set_attach_from_whoihit(a);NEXT();
     case 114: a->combo_count++;o=a->who_i_hit;if(o)o->immobilize_time=30;NEXT();
-    case 115: o=opp(a);if(a->combo_count){a->combo_count=0;if(o){o->immobilize_time=0;o->getup_time=0;o->delay_meter=10*60;}}else{a->combo_count=0;if(o){o->immobilize_time=80;o->anti_combo_time=pcnt(s);o->getup_time=0;o->delay_meter=10*60;}}NEXT();
+    case 115: o=a->attach_proc?a->attach_proc:a->who_i_hit;if(a->combo_count){a->combo_count=0;if(o){o->immobilize_time=0;o->getup_time=0;o->delay_meter=10*60;}}else{a->combo_count=0;if(o){o->immobilize_time=80;o->anti_combo_time=pcnt(s);o->getup_time=0;o->delay_meter=10*60;}}NEXT();
     case 116: if(s->services&&s->services->add_move)s->services->add_move(a,av(i,0),av(i,1),av(i,2),s->services->user);NEXT();
     case 117: a->attack_type=av(i,0);v=av(i,1);if(v<0)v=30;a->attack_time=(uint16_t)(rtick(s)+v);NEXT();
     case 118: t=table_for(s,i,0);idx=(unsigned)a->wrestler_num;te=(t&&idx<t->count)?&t->entries[idx]:0;if(te&&te->text&&change_program(s,a,te->text,0))return 0;s->fault=118;return 1;
@@ -207,7 +268,7 @@ static int exec_cmd(wm_source_anim_runtime_t*s,wm_arcade_actor_t*a,const wm_sour
     case 122: if(s->services&&s->services->draw_name)s->services->draw_name(a,av(i,0),s->services->user);NEXT();
     case 123: if(s->services&&s->services->set_allow_offscreen)s->services->set_allow_offscreen(80,s->services->user);NEXT();
     case 124: a->attachimg_frame=at(i,0);a->attachimg_xoff=av(i,1);a->attachimg_yoff=av(i,2);a->attachimg_zoff=av(i,3);if(s->services&&s->services->attach_image)s->services->attach_image(a,a->attachimg_frame,a->attachimg_xoff,a->attachimg_yoff,a->attachimg_zoff,s->services->user);NEXT();
-    case 125: a->y_int=a->ground_y;a->y_fixed=a->y_int<<16;NEXT();
+    case 125: source_write_yposint(a,a->ground_y);NEXT();
     case 126: HOLD();
     case 127: if(av(i,0)>=0)a->scroll_y=av(i,0);a->status_flags|=WM_STATUS_SCROLL_CTRL;if(s->services&&s->services->scroll_ctrl)s->services->scroll_ctrl(a,av(i,0),s->services->user);NEXT();
     case 128: a->climbing_thru=0;a->safe_time=1;NEXT();
@@ -219,7 +280,7 @@ static int exec_cmd(wm_source_anim_runtime_t*s,wm_arcade_actor_t*a,const wm_sour
 #undef HOLD
 }
 
-static void wm_source_anim_runtime_tick_impl(wm_source_anim_runtime_t*s,wm_arcade_actor_t*a){unsigned budget=512;if(!s||!a||!s->program)return;if(a->anim_mode&WM_ARCADE_MODE_END)return;if(a->ani_count>0){a->ani_count--;if(a->ani_count>0)return;}while(budget--&&s->program&&s->pc<s->program->count){const wm_source_anim_ins_t*i=&s->program->ins[s->pc];s->instructions_executed++;if(i->kind==WM_SRC_INS_FRAME){uint32_t ticks=((uint32_t)i->ticks*(uint32_t)(a->ani_speed?a->ani_speed:0x100u))>>8;s->current_frame=i->name;s->pc++;a->ani_count=(int32_t)(ticks?ticks:1u);return;}if(exec_cmd(s,a,i))return;if(s->fault){a->source_vm_fault=s->fault;return;}}if(!budget){s->fault=-2;a->source_vm_fault=-2;}else if(s->program&&s->pc>=s->program->count){a->anim_mode|=WM_ARCADE_MODE_END;}}
+static void wm_source_anim_runtime_tick_impl(wm_source_anim_runtime_t*s,wm_arcade_actor_t*a){unsigned budget=512;if(!s||!a||!s->program)return;if(a->anim_mode&WM_ARCADE_MODE_END)return;if(a->ani_count>0){a->ani_count--;if(a->ani_count>0)return;}while(budget--&&s->program&&s->pc<s->program->count){const wm_source_anim_ins_t*i=&s->program->ins[s->pc];s->instructions_executed++;if(i->kind==WM_SRC_INS_FRAME){uint32_t ticks=((uint32_t)i->ticks*(uint32_t)(a->ani_speed?a->ani_speed:0x100u))>>8;source_anim_apply_frame(s,a,i->name);s->pc++;a->ani_count=(int32_t)(ticks?ticks:1u);return;}if(exec_cmd(s,a,i))return;if(s->fault){a->source_vm_fault=s->fault;return;}}if(!budget){s->fault=-2;a->source_vm_fault=-2;}else if(s->program&&s->pc>=s->program->count){a->anim_mode|=WM_ARCADE_MODE_END;}}
 void wm_source_anim_runtime_tick(wm_source_anim_runtime_t*s,wm_arcade_actor_t*a){
     uint16_t primary_mode;
     int32_t primary_count;
@@ -236,4 +297,5 @@ void wm_source_anim_runtime_tick(wm_source_anim_runtime_t*s,wm_arcade_actor_t*a)
     a->ani_count=primary_count;
 }
 const char *wm_source_anim_runtime_frame(const wm_source_anim_runtime_t*s){return s?s->current_frame:0;}
+const wm_source_anim_frame_geometry_t *wm_source_anim_runtime_geometry(const wm_source_anim_runtime_t*s){return(s&&s->frame_geometry.valid)?&s->frame_geometry:0;}
 const char *wm_source_anim_runtime_label(const wm_source_anim_runtime_t*s){return(s&&s->program)?s->program->label:0;}

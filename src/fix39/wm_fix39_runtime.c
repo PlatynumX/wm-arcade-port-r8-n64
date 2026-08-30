@@ -812,7 +812,41 @@ static bool source_anim_change_other(wm_arcade_actor_t *a,wm_arcade_actor_t *o,c
 static bool source_anim_force_other(wm_arcade_actor_t *a,wm_arcade_actor_t *o,const char *frame,void *user)
 {
     int i=actor_index(o);(void)a;(void)user;if(i<0||!frame)return false;
-    wm_source_anim_runtime_force_frame(&g.source_anim[i],frame);return true;
+    return wm_source_anim_runtime_force_frame_actor(&g.source_anim[i],o,frame);
+}
+static bool source_anim_multipart_geometry(wm_arcade_actor_t *a,const char *frame,
+                                           int16_t *xani,int16_t *yani,uint16_t *xsize,
+                                           void *user)
+{
+    const wm_source_sprite *sp;
+    (void)user;
+    if(!a||!frame||!xani||!yani||!xsize)return false;
+    sp=wm_character_sprite_find((uint8_t)a->wrestler_num,frame);
+    if(!sp)return false;
+    *xani=sp->xani;
+    *yani=sp->yani;
+    *xsize=sp->width;
+    return true;
+}
+static bool source_anim_frame_geometry(wm_arcade_actor_t *a,const char *frame,
+                                       wm_source_anim_frame_geometry_t *out,void *user)
+{
+    const wm_source_sprite *sp;
+    (void)user;
+    if(!a||!frame||!out)return false;
+    sp=wm_character_sprite_find((uint8_t)a->wrestler_num,frame);
+    if(!sp)return false;
+    memset(out,0,sizeof(*out));
+    out->source_frame=sp->source_frame?sp->source_frame:frame;
+    out->width=sp->width;
+    out->height=sp->height;
+    out->xani=sp->xani;
+    out->yani=sp->yani;
+    out->iani3x=sp->wimp_tail[WM_WIMP_IANI3_X_SLOT];
+    out->iani3y=sp->wimp_tail[WM_WIMP_IANI3_Y_SLOT];
+    out->iani3z=sp->wimp_tail[WM_WIMP_IANI3_Z_SLOT];
+    out->iani3id=sp->wimp_tail[WM_WIMP_IANI3_ID_SLOT];
+    return true;
 }
 static int source_anim_do_roll(wm_arcade_actor_t *a,void *user)
 {
@@ -842,6 +876,8 @@ static void init_source_anim_services(void)
     g.source_anim_services.code=source_anim_code;
     g.source_anim_services.change_other_anim=source_anim_change_other;
     g.source_anim_services.force_other_frame=source_anim_force_other;
+    g.source_anim_services.multipart_geometry=source_anim_multipart_geometry;
+    g.source_anim_services.frame_geometry=source_anim_frame_geometry;
     g.source_anim_services.do_roll=source_anim_do_roll;
     g.source_anim_services.buttons_down=source_anim_buttons_down;
     g.source_anim_services.set_allow_offscreen=source_anim_allow_offscreen;
@@ -2898,18 +2934,39 @@ void wm_fix39_match_set_cpu_vs_cpu(bool enabled)
     g.actors[1].player_type = WM_PTYPE_DRONE;
 }
 
-/* R37N3: COLLIS.ASM consumes CUR_FRAME's WIMP directory metadata directly.
- * Keep that semantic path independent from renderer/DragonFS pixel loading. */
-static bool live_source_cur_frame_box(const wm_arcade_actor_t *a,
-                                      const char *frame,
-                                      wm_arcade_frame_box_t *out)
+/* R37N8: COLLIS.ASM consumes geometry already owned by the current object.
+ * The source-animation VM now copies converted WIMP metadata when a frame is
+ * applied, so collision must read that snapshot rather than re-resolving the
+ * display token later. */
+static bool live_source_runtime_frame_box(const wm_source_anim_runtime_t *runtime,
+                                          wm_arcade_frame_box_t *out)
 {
-    int16_t tail[WM_WIMP_TAIL_WORDS];
-    if (!a || !frame || !out) return false;
-    if (a->wrestler_num < 0 || a->wrestler_num > 8) return false;
-    if (!wm_character_wimp_tail_find((uint8_t)a->wrestler_num, frame, tail))
+    const wm_source_anim_frame_geometry_t *geom=wm_source_anim_runtime_geometry(runtime);
+    if(!geom||!out)return false;
+    out->iani3x=geom->iani3x;
+    out->iani3y=geom->iani3y;
+    out->iani3z=geom->iani3z;
+    out->iani3id=geom->iani3id;
+    return true;
+}
+
+/* R37N4 COLLIS.ASM parity: the arcade collision walkers iterate process_ptrs,
+ * not a hard-coded P1/P2 pair.  A consolidated N64 collision pass is valid
+ * only when every currently active wrestler process has current CUR_FRAME
+ * IANI3 geometry. */
+static bool live_collision_boxes_ready_for_active(void)
+{
+    size_t i;
+    if (g.active_actor_count == 0u ||
+        g.active_actor_count > WM_FIX39_ACTOR_COUNT)
         return false;
-    return wm_arcade_wimp_frame_box_from_tail(tail, out);
+    for (i = 0u; i < g.active_actor_count; ++i) {
+        if (!g.actor_ptrs[i] ||
+            !g.actors[i].active ||
+            !g.frame_box_valid[i])
+            return false;
+    }
+    return true;
 }
 
 /* Combat2EK: WRESTLE.ASM set_collision_boxes + confine_wrestler source-order
@@ -2920,9 +2977,14 @@ static void live_refresh_source_hurt_boxes(void)
     unsigned i;
     for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
         wm_arcade_actor_t *a = &g.actors[i];
-        const char *frame = wm_source_anim_runtime_frame(&g.source_anim[i]);
         wm_arcade_frame_box_t fb;
-        if (live_source_cur_frame_box(a, frame, &fb)) {
+
+        if (i >= g.active_actor_count || !g.actor_ptrs[i] || !a->active) {
+            g.frame_box_valid[i] = false;
+            continue;
+        }
+
+        if (live_source_runtime_frame_box(&g.source_anim[i], &fb)) {
             g.frame_box[i] = fb;
             g.frame_box_valid[i] = true;
             wm_arcade_set_hurt_box(a, &g.frame_box[i]);
@@ -2931,7 +2993,7 @@ static void live_refresh_source_hurt_boxes(void)
         }
     }
     g.status.collision_boxes_ready =
-        g.frame_box_valid[0] && g.frame_box_valid[1];
+        live_collision_boxes_ready_for_active();
 }
 
 static void live_confine_source(bool first_call_of_tick)
@@ -3121,25 +3183,40 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
 
     /* ANIM.ASM owns attack windows through ANI_ATTACK_ON/OFF.  The current
        WIMP frame contributes only exact IANI3 hurt-box geometry. */
-    for (i=0u;i<WM_FIX39_ACTOR_COUNT;++i) {
-        wm_arcade_actor_t *a=&g.actors[i];
-        const char *frame=wm_source_anim_runtime_frame(&g.source_anim[i]);
+    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
+        wm_arcade_actor_t *a = &g.actors[i];
         wm_arcade_frame_box_t fb;
-        if(live_source_cur_frame_box(a,frame,&fb)){g.frame_box[i]=fb;g.frame_box_valid[i]=true;}
-        else g.frame_box_valid[i]=false;
+        if (i >= g.active_actor_count || !g.actor_ptrs[i] || !a->active) {
+            g.frame_box_valid[i] = false;
+            continue;
+        }
+        if (live_source_runtime_frame_box(&g.source_anim[i], &fb)) {
+            g.frame_box[i] = fb;
+            g.frame_box_valid[i] = true;
+        } else {
+            g.frame_box_valid[i] = false;
+        }
     }
     /* WRESTLE.ASM update_links: break a one-way stale attachment. */
-    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i)
+    for (i = 0u; i < g.active_actor_count; ++i)
         wm_arcade_update_links(&g.actors[i]);
 
-    /* WRESTLE.ASM set_collision_boxes -> overlap_collision after update_links. */
+    /* WRESTLE.ASM calls overlap_collision once per wrestler process.
+       COLLIS.ASM::overlap_collision then scans every process_ptrs entry.
+       Preserve that all-active mover/victim coverage here; the later
+       WRESTLE.ASM scheduler pass will audit the exact inter-process timing. */
     g.status.collision_boxes_ready =
-        g.frame_box_valid[0] && g.frame_box_valid[1];
+        live_collision_boxes_ready_for_active();
     if (g.status.collision_boxes_ready) {
-        for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i)
+        size_t j;
+        for (i = 0u; i < g.active_actor_count; ++i)
             wm_arcade_set_hurt_box(&g.actors[i], &g.frame_box[i]);
-        (void)wm_arcade_resolve_overlap(&g.actors[0], &g.actors[1]);
-        (void)wm_arcade_resolve_overlap(&g.actors[1], &g.actors[0]);
+        for (i = 0u; i < g.active_actor_count; ++i) {
+            for (j = 0u; j < g.active_actor_count; ++j) {
+                if ((size_t)i == j) continue;
+                (void)wm_arcade_resolve_overlap(&g.actors[i], &g.actors[j]);
+            }
+        }
     }
 
     /* WRESTLE.ASM master_keep_attached after overlap_collision. */
@@ -3270,52 +3347,64 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
        boxes are bound, run the existing direct COLLIS/REACT1 port in the
        original wrestler-loop position. */
     g.status.collision_boxes_ready =
-        g.frame_box_valid[0] && g.frame_box_valid[1];
+        live_collision_boxes_ready_for_active();
     if (g.status.collision_boxes_ready) {
-        for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i)
+        for (i = 0u; i < g.active_actor_count; ++i)
             wm_arcade_set_hurt_box(&g.actors[i], &g.frame_box[i]);
-        /* Per-wrestler overlap_collision already ran above in wrestler_main order. */
+        /* Per-wrestler overlap_collision already ran above. */
         g.combat_runtime.pcnt = g.status.pcnt;
         g.combat_runtime.round_tickcount = g.status.round_tickcount;
         {
             int hit;
             bool had_full_overlap = false;
-            for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
-                if (g.actors[i].anim_mode & WM_ARCADE_MODE_CHECKHIT) {
-                    size_t vi = i ^ 1u;
-                    wm_arcade_actor_t *attacker = &g.actors[i];
-                    wm_arcade_actor_t *victim = &g.actors[vi];
-                    bool xo, yo, zo;
-                    ++g.status.combat_checkhit_ticks;
-                    wm_arcade_set_attack_box(attacker);
-                    ++g.status.combat_attack_boxes_built;
-                    xo = !(attacker->attack_box.x1 > victim->hurt_box.x2 ||
-                           attacker->attack_box.x2 < victim->hurt_box.x1);
-                    yo = !(attacker->attack_box.y1 > victim->hurt_box.y2 ||
-                           attacker->attack_box.y2 < victim->hurt_box.y1);
-                    zo = !(attacker->attack_box.z1 > victim->hurt_box.z2 ||
-                           attacker->attack_box.z2 < victim->hurt_box.z1);
-                    if (xo) ++g.status.combat_x_overlap_ticks;
-                    if (yo) ++g.status.combat_y_overlap_ticks;
-                    if (zo) ++g.status.combat_z_overlap_ticks;
-                    if (xo && yo && zo) {
-                        ++g.status.combat_full_overlap_ticks;
-                        had_full_overlap = true;
-                    }
-                }
-            }
-            hit = wm_arcade_check_wrestler_collisions(
-                g.actor_ptrs, WM_FIX39_ACTOR_COUNT,
-                g.status.round_tickcount, &g.combat_callbacks);
-            if (hit) ++g.status.combat_accepted_hits;
-            else if (had_full_overlap) ++g.status.combat_full_overlap_rejected;
+
+            /* COLLIS.ASM::check_collisions calls object_collisions first.
+               SPECIAL hits may change player state before wrestler attacks are
+               scanned, so this order is gameplay-significant. */
             {
                 wm_arcade_special_collision_result_t sp = wm_arcade_object_collisions(
-                    &g.special_lists, g.actor_ptrs, WM_FIX39_ACTOR_COUNT,
+                    &g.special_lists, g.actor_ptrs, g.active_actor_count,
                     &g.combat_runtime, &g.special_callbacks);
                 if (sp.wrestler_hits > 0)
                     g.status.combat_accepted_hits += (uint32_t)sp.wrestler_hits;
             }
+
+            /* Diagnostics observe the same all-active victim surface used by
+               COLLIS.ASM; do not reduce multiplayer combat to i^1 pairs. */
+            for (i = 0u; i < g.active_actor_count; ++i) {
+                if (g.actors[i].anim_mode & WM_ARCADE_MODE_CHECKHIT) {
+                    size_t vi;
+                    wm_arcade_actor_t *attacker = &g.actors[i];
+                    ++g.status.combat_checkhit_ticks;
+                    wm_arcade_set_attack_box(attacker);
+                    ++g.status.combat_attack_boxes_built;
+                    for (vi = 0u; vi < g.active_actor_count; ++vi) {
+                        wm_arcade_actor_t *victim;
+                        bool xo, yo, zo;
+                        if (vi == (size_t)i) continue;
+                        victim = &g.actors[vi];
+                        xo = !(attacker->attack_box.x1 > victim->hurt_box.x2 ||
+                               attacker->attack_box.x2 < victim->hurt_box.x1);
+                        yo = !(attacker->attack_box.y1 > victim->hurt_box.y2 ||
+                               attacker->attack_box.y2 < victim->hurt_box.y1);
+                        zo = !(attacker->attack_box.z1 > victim->hurt_box.z2 ||
+                               attacker->attack_box.z2 < victim->hurt_box.z1);
+                        if (xo) ++g.status.combat_x_overlap_ticks;
+                        if (yo) ++g.status.combat_y_overlap_ticks;
+                        if (zo) ++g.status.combat_z_overlap_ticks;
+                        if (xo && yo && zo) {
+                            ++g.status.combat_full_overlap_ticks;
+                            had_full_overlap = true;
+                        }
+                    }
+                }
+            }
+
+            hit = wm_arcade_check_wrestler_collisions(
+                g.actor_ptrs, g.active_actor_count,
+                g.status.round_tickcount, &g.combat_callbacks);
+            if (hit) ++g.status.combat_accepted_hits;
+            else if (had_full_overlap) ++g.status.combat_full_overlap_rejected;
         }
         ++g.status.combat_collision_ticks;
     }
@@ -3377,7 +3466,8 @@ bool wm_fix39_match_set_frame_box(size_t index,
         return false;
     g.frame_box[index] = *frame;
     g.frame_box_valid[index] = true;
-    g.status.collision_boxes_ready = g.frame_box_valid[0] && g.frame_box_valid[1];
+    g.status.collision_boxes_ready =
+        live_collision_boxes_ready_for_active();
     return true;
 }
 

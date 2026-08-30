@@ -247,6 +247,45 @@ set_tests_properties(wm_combat_adjacent_source_parity_audit PROPERTIES WORKING_D
     target_compile_options(wm_r37n3_source_frame_metadata_regression_tests PRIVATE -Wall -Wextra -Wpedantic -UNDEBUG)
     add_test(NAME wm_r37n3_source_frame_metadata_regression COMMAND wm_r37n3_source_frame_metadata_regression_tests)
 
+    add_executable(wm_r37n4_collis_source_parity_regression_tests tests/r37n4_collis_source_parity_regression.c)
+    target_link_libraries(wm_r37n4_collis_source_parity_regression_tests PRIVATE wmcore)
+    target_compile_options(wm_r37n4_collis_source_parity_regression_tests PRIVATE -Wall -Wextra -Wpedantic -UNDEBUG)
+    add_test(NAME wm_r37n4_collis_source_parity_regression COMMAND wm_r37n4_collis_source_parity_regression_tests)
+
+    add_test(NAME wm_collis_source_parity_audit
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/audit_collis_source_parity.py)
+    set_tests_properties(wm_collis_source_parity_audit PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+    add_test(NAME wm_anim_attachment_source_parity_audit
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/audit_anim_attachment_source_parity.py)
+    set_tests_properties(wm_anim_attachment_source_parity_audit PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+    add_test(NAME wm_r37n7_superslave2_geometry_parity_audit
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/audit_r37n7_superslave2_geometry.py)
+    set_tests_properties(wm_r37n7_superslave2_geometry_parity_audit PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+    add_test(NAME wm_r37n7_superslave2_geometry_model
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_r37n7_superslave2_geometry.py)
+    set_tests_properties(wm_r37n7_superslave2_geometry_model PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+    add_test(NAME wm_r37n8_frame_geometry_state_audit
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/audit_r37n8_frame_geometry_state.py)
+    set_tests_properties(wm_r37n8_frame_geometry_state_audit PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+    add_test(NAME wm_r37n8_frame_geometry_state_model
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_r37n8_frame_geometry_state.py)
+    set_tests_properties(wm_r37n8_frame_geometry_state_model PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+    add_executable(wm_r37n9_position_alias_regression_tests tests/r37n9_position_alias_regression.c)
+    target_link_libraries(wm_r37n9_position_alias_regression_tests PRIVATE wmcore)
+    target_compile_options(wm_r37n9_position_alias_regression_tests PRIVATE -Wall -Wextra -Wpedantic -UNDEBUG)
+    add_test(NAME wm_r37n9_position_alias_regression COMMAND wm_r37n9_position_alias_regression_tests)
+
+    add_test(NAME wm_r37n9_position_alias_audit
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/audit_r37n9_position_alias.py)
+    set_tests_properties(wm_r37n9_position_alias_audit PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+    add_test(NAME wm_r37n9_position_alias_model
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_r37n9_position_alias_model.py)
+    set_tests_properties(wm_r37n9_position_alias_model PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
     add_executable(wm_remaining_gap_closure_regression_tests tests/remaining_gap_closure_regression.c)
     target_link_libraries(wm_remaining_gap_closure_regression_tests PRIVATE wmcore)
     target_compile_options(wm_remaining_gap_closure_regression_tests PRIVATE -Wall -Wextra -Wpedantic -UNDEBUG)

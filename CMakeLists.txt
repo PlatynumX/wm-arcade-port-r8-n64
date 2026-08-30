@@ -92,6 +92,7 @@ add_library(wmcore STATIC
     src/fix39/wm_arcade_target_offsets.c
     src/fix39/wm_arcade_wimp_frame.c
     src/fix39/wm_arcade_wrestle_core.c
+    src/fix39/wm_arcade_wrestler_process.c
     src/fix39/wm_arcade_wrestle_target.c
     src/fix39/wm_arcade_wrestle_input.c
     src/fix39/wm_arcade_wrestler_port.c
@@ -297,6 +298,18 @@ set_tests_properties(wm_combat_adjacent_source_parity_audit PROPERTIES WORKING_D
     add_test(NAME wm_r37n10_animation_slot_scheduler_model
              COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_r37n10_animation_slot_scheduler_model.py)
     set_tests_properties(wm_r37n10_animation_slot_scheduler_model PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+    add_executable(wm_r37n11_grapple_process_regression_tests tests/r37n11_grapple_process_regression.c)
+    target_link_libraries(wm_r37n11_grapple_process_regression_tests PRIVATE wmcore)
+    target_compile_options(wm_r37n11_grapple_process_regression_tests PRIVATE -Wall -Wextra -Wpedantic -UNDEBUG)
+    add_test(NAME wm_r37n11_grapple_process_regression COMMAND wm_r37n11_grapple_process_regression_tests)
+
+    add_test(NAME wm_r37n11_grapple_process_audit
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/audit_r37n11_grapple_process.py)
+    set_tests_properties(wm_r37n11_grapple_process_audit PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+    add_test(NAME wm_r37n11_grapple_process_model
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_r37n11_grapple_process_model.py)
+    set_tests_properties(wm_r37n11_grapple_process_model PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
     add_executable(wm_remaining_gap_closure_regression_tests tests/remaining_gap_closure_regression.c)
     target_link_libraries(wm_remaining_gap_closure_regression_tests PRIVATE wmcore)

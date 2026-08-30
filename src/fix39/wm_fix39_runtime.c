@@ -15,6 +15,7 @@
 #include "wm_arcade_match_lifecycle.h"
 #include "wm_arcade_getup_process.h"
 #include "wm_arcade_wrestle_core.h"
+#include "wm_arcade_wrestler_process.h"
 #include "wm/arcade_sound_lookup.h"
 #include "wm/arcade_sound.h"
 #include <stdio.h>
@@ -1075,6 +1076,9 @@ static void init_actor(wm_arcade_actor_t *a,
     a->gravity = WM_ARCADE_GRAVITY;
     a->obj_friction = 0; /* animation/object backend supplies OBJ_FRICTION */
     a->priority = 112;
+    /* MPROC/WRESTLE.ASM: initialization has already executed; the
+       first live wrestler slice resumes after the source SLEEPK 1. */
+    a->ptime = 1;
     a->climbing_thru = 0;
     a->life = 100;
     a->player_mode = WM_PMODE_NORMAL;
@@ -3036,6 +3040,49 @@ static void live_final_confine(void)
     }
 }
 
+/* R37N11: WRESTLE.ASM wrestler_main #loop owns DRONE.ASM.
+ * This is intentionally one actor at a time and is called immediately before
+ * that actor's SLEEPR/PTIME write. */
+static void live_drone_wrestler_slice(unsigned i)
+{
+    wm_arcade_drone_world_t world;
+    wm_arcade_drone_step_result_t dr;
+    wm_arcade_actor_t *a;
+
+    if (!g.status.drone_runtime_ready || i >= g.active_actor_count)
+        return;
+    if (!g.actor_ptrs[i])
+        return;
+
+    a = &g.actors[i];
+    if (!a->active || a->player_type != WM_PTYPE_DRONE ||
+        (a->status_flags & WM_STATUS_ZOMBIE) != 0u)
+        return;
+
+    memset(&world, 0, sizeof(world));
+    world.actors = g.actor_ptrs;
+    world.actor_count = WM_FIX39_ACTOR_COUNT;
+    world.pcnt = g.status.pcnt;
+    world.round_tickcount = g.status.round_tickcount;
+    /* ATTR.ASM::show_gameplay sets CURRENT_LADDER=LADDER before start_match. */
+    world.first_ladder = g.match_cpu_vs_cpu ? 1 : 0;
+
+    dr = wm_arcade_drone_main(a, &g.drone_state[i], &world, &g.drone_callbacks);
+    if (g.drone_state[i].anim_request) {
+        common_anim_label(a, g.drone_state[i].anim_request, 0);
+        g.drone_state[i].anim_request = 0;
+    }
+
+    ++g.status.drone_ticks;
+    ++g.status.drone_ticks_by_player[i];
+    if (dr == WM_DRONE_STEP_INPUT || dr == WM_DRONE_STEP_BLOCK ||
+        a->but_val_cur != 0u || a->stick_val_cur != 0u) {
+        ++g.status.drone_input_ticks;
+        ++g.status.drone_input_ticks_by_player[i];
+    }
+    a->move_dir = a->stick_val_cur;
+}
+
 void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
                          bool run,
                          bool light_punch,
@@ -3165,23 +3212,90 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
     move_cb.character_move = live_character_move;
     move_cb.user = &ctx;
 
-    /* WRESTLE.ASM process_dispatch only visits created wrestler processes.
-       Capacity is four for attract, but a normal match still owns exactly two. */
-    if (!g.lifecycle.halt) for (i = 0u; i < g.active_actor_count; ++i) {
-        (void)wm_arcade_move_wrestler(&g.actors[i], 0, &move_cb);
-        ++g.status.wrestler_dispatch_ticks;
-        ++g.status.wrestler_dispatch_ticks_by_player[i];
+    /* R37N11 / MPROC.ASM + WRESTLE.ASM wrestler process tail.
+     *
+     * R37N10 still executed this as global phases:
+     *   move(all) -> links(all) -> overlap(all) -> attach(all) -> xflip(all)
+     * That is not the source process order.  process_dispatch resumes one
+     * wrestler_main process; that wrestler completes move_wrestler,
+     * update_links, set_collision_boxes, overlap_collision, KEEPATTACHED,
+     * xflip, update_joy_dtime and countdowns before its DRONE/#loop sleep.
+     *
+     * PTIME is checked when EACH process-list entry is reached. Therefore an
+     * earlier wrestler may write PTIME=1 on a later wrestler and that later
+     * wrestler can wake in this same dispatcher pass. Conversely, if a later
+     * wrestler wakes an earlier one after the earlier process has slept, the
+     * wake survives to the next pass because the earlier sleep is not delayed
+     * to a global end-of-tick phase. */
+    for (i = 0u; i < g.active_actor_count; ++i) {
+        wm_arcade_actor_t *a = &g.actors[i];
+
+        if (!g.actor_ptrs[i] || !a->active)
+            continue;
+
+        if (!g.lifecycle.halt && wm_arcade_wrestler_process_dispatch_ready(a)) {
+            wm_arcade_frame_box_t fb;
+            size_t j;
+
+            (void)wm_arcade_move_wrestler(a, 0, &move_cb);
+            ++g.status.wrestler_dispatch_ticks;
+            ++g.status.wrestler_dispatch_ticks_by_player[i];
+
+            /* WRESTLE.ASM immediately follows move_wrestler with update_links. */
+            wm_arcade_update_links(a);
+
+            /* move_wrestler/change_anim1a may have primed a different
+               CUR_FRAME. Source calls set_collision_boxes again before
+               overlap_collision, so refresh THIS process' frame now. */
+            if (live_source_runtime_frame_box(&g.source_anim[i], &fb)) {
+                g.frame_box[i] = fb;
+                g.frame_box_valid[i] = true;
+                wm_arcade_set_hurt_box(a, &g.frame_box[i]);
+            } else {
+                g.frame_box_valid[i] = false;
+            }
+
+            g.status.collision_boxes_ready = live_collision_boxes_ready_for_active();
+            if (g.status.collision_boxes_ready) {
+                /* COLLIS.ASM::overlap_collision is called by THIS wrestler,
+                   then scans all process_ptrs victims in source slot order. */
+                for (j = 0u; j < g.active_actor_count; ++j) {
+                    if (j == (size_t)i) continue;
+                    (void)wm_arcade_resolve_overlap(a, &g.actors[j]);
+                }
+            }
+
+            if (a->anim_mode & WM_ARCADE_MODE_KEEPATTACHED)
+                (void)wm_arcade_master_keep_attached(a);
+
+            if ((a->anim_mode & WM_ARCADE_MODE_NOAUTOFLIP) == 0u)
+                wm_arcade_set_wrestler_xflip(a);
+
+            wm_arcade_update_joy_dtime(a);
+            wm_arcade_wrestler_countdown_tail(
+                a, wm_arcade_match_clock_zero(&g.lifecycle));
+
+            /* WRESTLE.ASM #loop: drone_main (for live drones) is immediately
+               before the B_KOD-selected SLEEPR value. */
+            live_drone_wrestler_slice(i);
+            wm_arcade_wrestler_process_sleep_loop(a);
+        }
+
+        /* GETUP_PID is a different source process (CREATE immediately after
+           each wrestler_main SCREATE). Do not gate it on wrestler PTIME/KOD. */
+        wm_arcade_getup_process_tick(&g.getup[i], a);
     }
 
-    /* The complete ROPES.ASM process interpreter is live.  Rendering the
-       source image symbols waits for a real N64 rope-object image adapter. */
+    /* ROPES are separate MPROC processes. Keep their already-ported process
+       interpreter on the main dispatch tick. */
     for (i = 0u; i < 4u; ++i) {
         wm_rope_runtime_tick(&g.ropes[i], &g.rope_render_adapter);
         ++g.status.rope_process_ticks;
     }
 
-    /* ANIM.ASM owns attack windows through ANI_ATTACK_ON/OFF.  The current
-       WIMP frame contributes only exact IANI3 hurt-box geometry. */
+    /* Refresh every active CUR_FRAME snapshot before the master collision
+       process. This is not the per-wrestler overlap call above; it supplies
+       exact IANI3 geometry to check_collisions later in the master tick. */
     for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
         wm_arcade_actor_t *a = &g.actors[i];
         wm_arcade_frame_box_t fb;
@@ -3196,137 +3310,9 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
             g.frame_box_valid[i] = false;
         }
     }
-    /* WRESTLE.ASM update_links: break a one-way stale attachment. */
-    for (i = 0u; i < g.active_actor_count; ++i)
-        wm_arcade_update_links(&g.actors[i]);
 
-    /* WRESTLE.ASM calls overlap_collision once per wrestler process.
-       COLLIS.ASM::overlap_collision then scans every process_ptrs entry.
-       Preserve that all-active mover/victim coverage here; the later
-       WRESTLE.ASM scheduler pass will audit the exact inter-process timing. */
-    g.status.collision_boxes_ready =
-        live_collision_boxes_ready_for_active();
-    if (g.status.collision_boxes_ready) {
-        size_t j;
-        for (i = 0u; i < g.active_actor_count; ++i)
-            wm_arcade_set_hurt_box(&g.actors[i], &g.frame_box[i]);
-        for (i = 0u; i < g.active_actor_count; ++i) {
-            for (j = 0u; j < g.active_actor_count; ++j) {
-                if ((size_t)i == j) continue;
-                (void)wm_arcade_resolve_overlap(&g.actors[i], &g.actors[j]);
-            }
-        }
-    }
-
-    /* WRESTLE.ASM master_keep_attached after overlap_collision. */
-    for (i=0u;i<WM_FIX39_ACTOR_COUNT;++i) {
-        wm_arcade_actor_t *a=&g.actors[i];
-        if (a->anim_mode & WM_ARCADE_MODE_KEEPATTACHED)
-            (void)wm_arcade_master_keep_attached(a);
-    }
-
-    /* WRESTLE.ASM set_wrestler_xflip, skipped only for MODE_NOAUTOFLIP. */
-    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
-        wm_arcade_actor_t *a = &g.actors[i];
-        if ((a->anim_mode & WM_ARCADE_MODE_NOAUTOFLIP) == 0u)
-            wm_arcade_set_wrestler_xflip(a);
-    }
-
-    /* WRESTLE.ASM::update_joy_dtime follows xflip and precedes countdowns. */
-    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i)
-        wm_arcade_update_joy_dtime(&g.actors[i]);
-
-    /* WRESTLE.ASM wrestler_main countdown tail plus concurrent GETUP_PID. */
-    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
-        wm_arcade_wrestler_countdown_tail(
-            &g.actors[i], wm_arcade_match_clock_zero(&g.lifecycle));
-        wm_arcade_getup_process_tick(&g.getup[i], &g.actors[i]);
-    }
-
-    /*
-     * R37L — WRESTLE.ASM wrestler_main process boundary:
-     *
-     *   ... update_joy_dtime
-     *   ... countdown tail
-     *   jruc #loop
-     *   ARE_WE_IN_RING / facing / positions
-     *   drone_main
-     *   SLEEPR 1
-     *
-     * The C runtime executes one consolidated source tick, so DRONE must run
-     * here, after this wrestler's current-tick state has been consumed and
-     * updated. Its DRN_BUT/DRN_JOY transitions remain on the actor until the
-     * next wm_fix39_match_tick(), where update_joystat/move_wrestler consume
-     * them. Running DRONE before update_joystat incorrectly collapsed the
-     * source SLEEP 1 boundary.
-     */
-    if (g.status.drone_runtime_ready) {
-        wm_arcade_drone_world_t world;
-        memset(&world, 0, sizeof(world));
-        world.actors = g.actor_ptrs;
-        world.actor_count = WM_FIX39_ACTOR_COUNT;
-        world.pcnt = g.status.pcnt;
-        world.round_tickcount = g.status.round_tickcount;
-        /* ATTR.ASM::show_gameplay sets CURRENT_LADDER=LADDER before
-           start_match. DRONE.ASM consumes that exact first-ladder condition
-           for mode range and passive random-attack gating. */
-        world.first_ladder = g.match_cpu_vs_cpu ? 1 : 0;
-        if (g.actors[0].player_type == WM_PTYPE_DRONE &&
-            (g.actors[0].status_flags & WM_STATUS_ZOMBIE) == 0u) {
-            wm_arcade_drone_step_result_t dr0 = wm_arcade_drone_main(
-                &g.actors[0], &g.drone_state[0], &world, &g.drone_callbacks);
-            if (g.drone_state[0].anim_request) {
-                common_anim_label(&g.actors[0], g.drone_state[0].anim_request, 0);
-                g.drone_state[0].anim_request = 0;
-            }
-            ++g.status.drone_ticks;
-            ++g.status.drone_ticks_by_player[0];
-            if (dr0 == WM_DRONE_STEP_INPUT || dr0 == WM_DRONE_STEP_BLOCK ||
-                g.actors[0].but_val_cur != 0u || g.actors[0].stick_val_cur != 0u)
-                { ++g.status.drone_input_ticks; ++g.status.drone_input_ticks_by_player[0]; }
-            g.actors[0].move_dir = g.actors[0].stick_val_cur;
-        }
-        if (g.actors[1].player_type == WM_PTYPE_DRONE &&
-            (g.actors[1].status_flags & WM_STATUS_ZOMBIE) == 0u) {
-            wm_arcade_drone_step_result_t dr = wm_arcade_drone_main(
-                &g.actors[1], &g.drone_state[1], &world, &g.drone_callbacks);
-            if (g.drone_state[1].anim_request) {
-                common_anim_label(&g.actors[1], g.drone_state[1].anim_request, 0);
-                g.drone_state[1].anim_request = 0;
-            }
-            ++g.status.drone_ticks;
-            ++g.status.drone_ticks_by_player[1];
-            if (dr == WM_DRONE_STEP_INPUT || dr == WM_DRONE_STEP_BLOCK ||
-                g.actors[1].but_val_cur != 0u || g.actors[1].stick_val_cur != 0u)
-                { ++g.status.drone_input_ticks; ++g.status.drone_input_ticks_by_player[1]; }
-            g.actors[1].move_dir = g.actors[1].stick_val_cur;
-        }
-
-        /* R37F1: WRESTLE.ASM #0plyr creates every CURRENT_LADDER opponent
-           with PTYPE_DRONE. Run the same DRONE.ASM interpreter for source
-           process slots 2/3 instead of merely rendering them. */
-        for (i = 2u; i < g.active_actor_count; ++i) {
-            wm_arcade_actor_t *a = &g.actors[i];
-            if (a->player_type == WM_PTYPE_DRONE &&
-                (a->status_flags & WM_STATUS_ZOMBIE) == 0u) {
-                wm_arcade_drone_step_result_t drx = wm_arcade_drone_main(
-                    a, &g.drone_state[i], &world, &g.drone_callbacks);
-                if (g.drone_state[i].anim_request) {
-                    common_anim_label(a, g.drone_state[i].anim_request, 0);
-                    g.drone_state[i].anim_request = 0;
-                }
-                ++g.status.drone_ticks;
-                ++g.status.drone_ticks_by_player[i];
-                if (drx == WM_DRONE_STEP_INPUT || drx == WM_DRONE_STEP_BLOCK ||
-                    a->but_val_cur != 0u || a->stick_val_cur != 0u) {
-                    ++g.status.drone_input_ticks;
-                    ++g.status.drone_input_ticks_by_player[i];
-                }
-                a->move_dir = a->stick_val_cur;
-            }
-        }
-    }
-
+    /* R37N11: DRONE.ASM now executes inside each runnable wrestler_main
+       slice immediately before that wrestler writes PTIME via SLEEPR. */
 
     /* SPECIAL.ASM process state and COLLIS.ASM object collisions are already
        directly ported. Tick any live source-spawned objects every match tick,

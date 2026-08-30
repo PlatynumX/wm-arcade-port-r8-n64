@@ -83,6 +83,22 @@ void wm_source_anim_runtime_bind(wm_source_anim_runtime_t *s,const wm_source_ani
 void wm_source_anim_runtime_set_secondary(wm_source_anim_runtime_t *s,bool secondary);
 bool wm_source_anim_runtime_change(wm_source_anim_runtime_t *s, wm_arcade_actor_t *a,
                                    uint8_t roster_id, const char *label);
+/* R37N10: exact ANIM.ASM change_anim1/2 entry points.  The conditional form
+   leaves an already-running identical animation completely untouched; the
+   restart form models change_anim1a/2a and always primes through the first
+   source sleep/frame boundary. */
+bool wm_source_anim_runtime_change_and_prime(wm_source_anim_runtime_t *s,
+                                              wm_arcade_actor_t *a,
+                                              uint8_t roster_id,
+                                              const char *label);
+bool wm_source_anim_runtime_restart_and_prime(wm_source_anim_runtime_t *s,
+                                               wm_arcade_actor_t *a,
+                                               uint8_t roster_id,
+                                               const char *label);
+uint16_t wm_source_anim_runtime_slot_mode(const wm_source_anim_runtime_t *s,
+                                          const wm_arcade_actor_t *a);
+int32_t wm_source_anim_runtime_slot_count(const wm_source_anim_runtime_t *s,
+                                          const wm_arcade_actor_t *a);
 void wm_source_anim_runtime_tick(wm_source_anim_runtime_t *s, wm_arcade_actor_t *a);
 void wm_source_anim_runtime_force_frame(wm_source_anim_runtime_t *s,const char *frame);
 bool wm_source_anim_runtime_force_frame_actor(wm_source_anim_runtime_t *s,

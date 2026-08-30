@@ -286,6 +286,18 @@ set_tests_properties(wm_combat_adjacent_source_parity_audit PROPERTIES WORKING_D
              COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_r37n9_position_alias_model.py)
     set_tests_properties(wm_r37n9_position_alias_model PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
+    add_executable(wm_r37n10_animation_slot_scheduler_regression_tests tests/r37n10_animation_slot_scheduler_regression.c)
+    target_link_libraries(wm_r37n10_animation_slot_scheduler_regression_tests PRIVATE wmcore)
+    target_compile_options(wm_r37n10_animation_slot_scheduler_regression_tests PRIVATE -Wall -Wextra -Wpedantic -UNDEBUG)
+    add_test(NAME wm_r37n10_animation_slot_scheduler_regression COMMAND wm_r37n10_animation_slot_scheduler_regression_tests)
+
+    add_test(NAME wm_r37n10_animation_slot_scheduler_audit
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/audit_r37n10_animation_slot_scheduler.py)
+    set_tests_properties(wm_r37n10_animation_slot_scheduler_audit PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+    add_test(NAME wm_r37n10_animation_slot_scheduler_model
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_r37n10_animation_slot_scheduler_model.py)
+    set_tests_properties(wm_r37n10_animation_slot_scheduler_model PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
     add_executable(wm_remaining_gap_closure_regression_tests tests/remaining_gap_closure_regression.c)
     target_link_libraries(wm_remaining_gap_closure_regression_tests PRIVATE wmcore)
     target_compile_options(wm_remaining_gap_closure_regression_tests PRIVATE -Wall -Wextra -Wpedantic -UNDEBUG)

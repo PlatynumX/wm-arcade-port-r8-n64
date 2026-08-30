@@ -544,7 +544,7 @@ static void source_native_is_guy_flag(wm_arcade_actor_t *a,int in)
 static void source_native_change_primary(wm_arcade_actor_t *a,const char *label)
 {
     int i=actor_index(a);if(i<0||!label)return;
-    if(wm_source_anim_runtime_change(&g.source_anim[i],a,(uint8_t)a->wrestler_num,label))wm_source_anim_runtime_tick(&g.source_anim[i],a);
+    (void)wm_source_anim_runtime_change_and_prime(&g.source_anim[i],a,(uint8_t)a->wrestler_num,label);
 }
 static void source_native_stand_or_dizzy(wm_arcade_actor_t *a,int dizzy)
 {
@@ -557,7 +557,7 @@ static void source_native_attach_victim(wm_arcade_actor_t *a)
     wm_arcade_actor_t *o=a?a->who_i_hit:0;int i;if(!a||!o)return;
     if(o->player_mode!=WM_PMODE_DEAD)o->player_mode=WM_PMODE_PUPPET;
     o->attach_proc=a;a->attach_proc=o;o->getup_time=0;wm_arcade_wrestler_collisions_off(o);
-    i=actor_index(o);if(i>=0&&wm_source_anim_runtime_change(&g.source_anim[i],o,(uint8_t)o->wrestler_num,"wres_slave_anim"))wm_source_anim_runtime_tick(&g.source_anim[i],o);
+    i=actor_index(o);if(i>=0)(void)wm_source_anim_runtime_change_and_prime(&g.source_anim[i],o,(uint8_t)o->wrestler_num,"wres_slave_anim");
 }
 static void source_native_x_flip(wm_arcade_actor_t *a){if(a)a->facing_dir^=(WM_MOVE_LEFT|WM_MOVE_RIGHT);}
 static void source_native_setup_run(wm_arcade_actor_t *a)
@@ -806,8 +806,8 @@ static void source_anim_code(wm_arcade_actor_t *a,const char *label,void *user)
 static bool source_anim_change_other(wm_arcade_actor_t *a,wm_arcade_actor_t *o,const char *label,void *user)
 {
     int i=actor_index(o);(void)a;(void)user;if(i<0||!label)return false;
-    if(!wm_source_anim_runtime_change(&g.source_anim[i],o,(uint8_t)o->wrestler_num,label))return false;
-    wm_source_anim_runtime_tick(&g.source_anim[i],o); return true;
+    /* ANIM.ASM::_ani_slaveanim calls change_anim1a, not change_anim1. */
+    return wm_source_anim_runtime_restart_and_prime(&g.source_anim[i],o,(uint8_t)o->wrestler_num,label);
 }
 static bool source_anim_force_other(wm_arcade_actor_t *a,wm_arcade_actor_t *o,const char *frame,void *user)
 {
@@ -888,12 +888,11 @@ static void init_source_anim_services(void)
 
 static bool live_start_source_anim(wm_arcade_actor_t *a, const char *label, bool torso)
 {
-    int i=actor_index(a); wm_source_anim_runtime_t *rt; bool ok;
+    int i=actor_index(a); wm_source_anim_runtime_t *rt;
     if(i<0||!label)return false;
     rt=torso?&g.source_torso[i]:&g.source_anim[i];
-    ok=wm_source_anim_runtime_change(rt,a,(uint8_t)a->wrestler_num,label);
-    if(ok)wm_source_anim_runtime_tick(rt,a); /* ANIM.ASM change_anim1a/2a */
-    return ok;
+    /* change_anim1/2 only primes when BASE changes or MODE_END is set. */
+    return wm_source_anim_runtime_change_and_prime(rt,a,(uint8_t)a->wrestler_num,label);
 }
 
 

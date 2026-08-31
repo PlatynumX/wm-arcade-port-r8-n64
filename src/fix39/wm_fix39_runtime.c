@@ -15,6 +15,7 @@
 #include "wm_arcade_match_lifecycle.h"
 #include "wm_arcade_getup_process.h"
 #include "wm_arcade_wrestle_core.h"
+#include "wm_arcade_wrestler_process.h"
 #include "wm/arcade_sound_lookup.h"
 #include "wm/arcade_sound.h"
 #include <stdio.h>
@@ -83,6 +84,7 @@ static struct {
     WmRopeRuntimeAdapter rope_render_adapter;
     wm_arcade_actor_t actors[WM_FIX39_ACTOR_COUNT];
     wm_arcade_actor_t *actor_ptrs[WM_FIX39_ACTOR_COUNT];
+    wm_arcade_wrestler_process_t wrestler_process[WM_FIX39_ACTOR_COUNT];
     size_t active_actor_count;
     WmFix39ActorTrace trace[WM_FIX39_ACTOR_COUNT];
     wm_source_anim_runtime_t source_anim[WM_FIX39_ACTOR_COUNT];
@@ -192,22 +194,29 @@ static uint16_t source_dir_to_opponent(const wm_arcade_actor_t *self,
     return dir;
 }
 
-static void live_source_face_opponents(void)
+static void live_source_face_opponent_one(unsigned i)
 {
-    unsigned i;
-    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
-        wm_arcade_actor_t *a = &g.actors[i];
-        wm_arcade_actor_t *opp = a->smart_target;
-        uint16_t desired = source_dir_to_opponent(a, opp);
-        if (desired == WM_MOVE_ZIP) continue;
-        a->new_facing_dir = desired;
-        if ((a->anim_mode & WM_ARCADE_MODE_NOAUTOFLIP) == 0u) {
-            a->facing_dir = desired;
-            /* COLLIS.ASM mirrors X geometry with OBJ_CONTROL/B_FLIPH.
-               Facing left therefore uses FLIPH; facing right clears it. */
-            if (desired & WM_MOVE_LEFT) a->obj_control |= WM_OBJ_FLIPH;
-            else if (desired & WM_MOVE_RIGHT) a->obj_control &= (uint16_t)~WM_OBJ_FLIPH;
-        }
+    wm_arcade_actor_t *a;
+    wm_arcade_actor_t *opp;
+    uint16_t desired;
+
+    if (i >= g.active_actor_count || !g.actor_ptrs[i])
+        return;
+    a = &g.actors[i];
+    if (!a->active)
+        return;
+    opp = a->smart_target;
+    desired = source_dir_to_opponent(a, opp);
+    if (desired == WM_MOVE_ZIP)
+        return;
+
+    a->new_facing_dir = desired;
+    if ((a->anim_mode & WM_ARCADE_MODE_NOAUTOFLIP) == 0u) {
+        a->facing_dir = desired;
+        if (desired & WM_MOVE_LEFT)
+            a->obj_control |= WM_OBJ_FLIPH;
+        else if (desired & WM_MOVE_RIGHT)
+            a->obj_control &= (uint16_t)~WM_OBJ_FLIPH;
     }
 }
 
@@ -903,24 +912,29 @@ static bool live_start_source_anim(wm_arcade_actor_t *a, const char *label, bool
  * wrestler's ordinary, running, aerial, puppet and ground attack window reaches
  * COLLIS.ASM/REACT1 through the same live actor state, not through presenter or
  * demo-only shims. */
-static void live_bind_source_attack_windows_from_current_frames(void)
+static void live_bind_source_attack_window_from_current_frame(unsigned i)
 {
-    unsigned i;
-    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
-        wm_arcade_actor_t *a = &g.actors[i];
-        const char *frame = wm_source_anim_runtime_frame(&g.source_anim[i]);
-        wm_arcade_attack_on_z_args_t zargs;
-        wm_arcade_attack_on_args_t args;
-        bool uses_z = false;
-        if (!a->active || frame == 0)
-            continue;
-        memset(&zargs, 0, sizeof(zargs));
-        memset(&args, 0, sizeof(args));
-        if (wm_arcade_character_attack_for_source_frame(
-                (uint8_t)a->wrestler_num, frame, &uses_z, &zargs, &args)) {
-            if (uses_z) wm_arcade_ani_attack_on_z(a, &zargs);
-            else wm_arcade_ani_attack_on(a, &args);
-        }
+    wm_arcade_actor_t *a;
+    const char *frame;
+    wm_arcade_attack_on_z_args_t zargs;
+    wm_arcade_attack_on_args_t args;
+    bool uses_z = false;
+
+    if (i >= g.active_actor_count || !g.actor_ptrs[i])
+        return;
+    a = &g.actors[i];
+    frame = wm_source_anim_runtime_frame(&g.source_anim[i]);
+    if (!a->active || frame == 0)
+        return;
+
+    memset(&zargs, 0, sizeof(zargs));
+    memset(&args, 0, sizeof(args));
+    if (wm_arcade_character_attack_for_source_frame(
+            (uint8_t)a->wrestler_num, frame, &uses_z, &zargs, &args)) {
+        if (uses_z)
+            wm_arcade_ani_attack_on_z(a, &zargs);
+        else
+            wm_arcade_ani_attack_on(a, &args);
     }
 }
 
@@ -1029,26 +1043,26 @@ static void source_auto_pin_check(wm_arcade_actor_t *a, void *user)
     (void)wm_arcade_auto_pin_check(a, a ? a->smart_target : 0, &env);
 }
 
-static void source_calc_closest_all(void)
+static void source_calc_closest_one(unsigned i)
 {
     wm_arcade_closest_world_t world;
-    unsigned i;
+    if (i >= g.active_actor_count || !g.actor_ptrs[i])
+        return;
     world.actors = g.actor_ptrs;
     world.actor_count = g.active_actor_count;
     world.pcnt = g.status.pcnt;
-    for (i = 0u; i < g.active_actor_count; ++i)
-        (void)wm_arcade_calc_closest(&g.actors[i], &world);
+    (void)wm_arcade_calc_closest(&g.actors[i], &world);
 }
 
-static void source_calc_closest2_all(void)
+static void source_calc_closest2_one(unsigned i)
 {
     wm_arcade_closest_world_t world;
-    unsigned i;
+    if (i >= g.active_actor_count || !g.actor_ptrs[i])
+        return;
     world.actors = g.actor_ptrs;
     world.actor_count = g.active_actor_count;
     world.pcnt = g.status.pcnt;
-    for (i = 0u; i < g.active_actor_count; ++i)
-        (void)wm_arcade_calc_closest2(&g.actors[i], &world);
+    (void)wm_arcade_calc_closest2(&g.actors[i], &world);
 }
 
 static void init_actor(wm_arcade_actor_t *a,
@@ -2691,6 +2705,7 @@ void wm_fix39_match_begin(unsigned frontend_p1, unsigned frontend_p2)
     if (!g.status.initialized) wm_fix39_runtime_init();
 
     g.active_actor_count = 2u;
+    memset(g.wrestler_process, 0, sizeof(g.wrestler_process));
     for (i = 2u; i < WM_FIX39_ACTOR_COUNT; ++i) {
         memset(&g.actors[i], 0, sizeof(g.actors[i]));
         g.actor_ptrs[i] = 0;
@@ -2722,6 +2737,8 @@ void wm_fix39_match_begin(unsigned frontend_p1, unsigned frontend_p2)
     g.actor_ptrs[1] = &g.actors[1];
     g.actors[0].smart_target = &g.actors[1];
     g.actors[1].smart_target = &g.actors[0];
+    wm_arcade_wrestler_process_init(&g.wrestler_process[0], &g.actors[0]);
+    wm_arcade_wrestler_process_init(&g.wrestler_process[1], &g.actors[1]);
     memset(g.ringout, 0, sizeof(g.ringout));
     for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
         g.ringout[i].ring_time = 0;
@@ -2751,7 +2768,6 @@ void wm_fix39_match_begin(unsigned frontend_p1, unsigned frontend_p2)
     for (i=0u;i<WM_FIX39_ACTOR_COUNT;++i)
         if (!wm_source_anim_runtime_frame(&g.source_anim[i]))
             (void)live_start_source_anim(&g.actors[i],live_default_stand_label(&g.actors[i]),false);
-    source_calc_closest_all();
 
     g.old_p1_buttons = 0u;
     g.old_p1_stick = 0u;
@@ -2876,6 +2892,7 @@ bool wm_fix39_attract_match_begin(const WmAttractDemoPlan *plan)
            and does not imply drone ownership, so set the source type here. */
         g.actors[slot].player_type=WM_PTYPE_DRONE;
         g.actor_ptrs[slot]=&g.actors[slot];
+        wm_arcade_wrestler_process_init(&g.wrestler_process[slot], &g.actors[slot]);
 
         wm_source_anim_runtime_init(&g.source_anim[slot]);
         wm_source_anim_runtime_init(&g.source_torso[slot]);
@@ -2906,7 +2923,6 @@ bool wm_fix39_attract_match_begin(const WmAttractDemoPlan *plan)
     g.camera.worldtlx_fp16 = (WM_RING_X_CENTER - 200) << 16;
     g.camera.worldtly_fp16 = -((plan->num_opps == 2u ? 23 : 27) << 16);
 
-    source_calc_closest_all();
     g.match_cpu_vs_cpu=true;
     g.lifecycle.attract_wrap=true;
     g.lifecycle.config.pstatus=0u;
@@ -2971,34 +2987,46 @@ static bool live_collision_boxes_ready_for_active(void)
 /* Combat2EK: WRESTLE.ASM set_collision_boxes + confine_wrestler source-order
  * bridge for the grounded in-ring state captured in the hardware demo bug.
  * Full confinement remains the next WRESTLE parity phase. */
+static bool live_refresh_source_hurt_box_one(unsigned i)
+{
+    wm_arcade_actor_t *a;
+    wm_arcade_frame_box_t fb;
+
+    if (i >= WM_FIX39_ACTOR_COUNT) return false;
+    a = &g.actors[i];
+    if (i >= g.active_actor_count || !g.actor_ptrs[i] || !a->active) {
+        g.frame_box_valid[i] = false;
+        return false;
+    }
+
+    if (live_source_runtime_frame_box(&g.source_anim[i], &fb)) {
+        g.frame_box[i] = fb;
+        g.frame_box_valid[i] = true;
+        wm_arcade_set_hurt_box(a, &g.frame_box[i]);
+        return true;
+    }
+    g.frame_box_valid[i] = false;
+    return false;
+}
+
 static void live_refresh_source_hurt_boxes(void)
 {
     unsigned i;
-    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
-        wm_arcade_actor_t *a = &g.actors[i];
-        wm_arcade_frame_box_t fb;
-
-        if (i >= g.active_actor_count || !g.actor_ptrs[i] || !a->active) {
-            g.frame_box_valid[i] = false;
-            continue;
-        }
-
-        if (live_source_runtime_frame_box(&g.source_anim[i], &fb)) {
-            g.frame_box[i] = fb;
-            g.frame_box_valid[i] = true;
-            wm_arcade_set_hurt_box(a, &g.frame_box[i]);
-        } else {
-            g.frame_box_valid[i] = false;
-        }
-    }
+    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i)
+        (void)live_refresh_source_hurt_box_one(i);
     g.status.collision_boxes_ready =
         live_collision_boxes_ready_for_active();
 }
 
-static void live_confine_source(bool first_call_of_tick)
+static void live_confine_source_one(unsigned i, bool fix2)
 {
     wm_arcade_confine_callbacks_t cb;
-    unsigned i;
+    wm_arcade_actor_t *a;
+
+    if (i >= g.active_actor_count || !g.actor_ptrs[i] ||
+        !g.frame_box_valid[i])
+        return;
+
     memset(&cb, 0, sizeof(cb));
     cb.climb = live_confine_climb;
     cb.rope_bounce_io = live_confine_rope;
@@ -3007,13 +3035,12 @@ static void live_confine_source(bool first_call_of_tick)
     cb.adjust_health = live_confine_adjust_health;
     cb.ditch_getup_meter = live_confine_ditch_meter;
 
-    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
-        wm_arcade_actor_t *a = &g.actors[i];
-        if (!g.frame_box_valid[i]) continue;
-        wm_arcade_confine_wrestler(a, g.status.pcnt, &cb);
-        if (first_call_of_tick) wm_arcade_confine_fix2(a);
-        else wm_arcade_confine_fix1(a);
-    }
+    a = &g.actors[i];
+    wm_arcade_confine_wrestler(a, g.status.pcnt, &cb);
+    if (fix2)
+        wm_arcade_confine_fix2(a);
+    else
+        wm_arcade_confine_fix1(a);
 }
 
 static void live_final_confine(void)
@@ -3034,6 +3061,45 @@ static void live_final_confine(void)
         if (!a->active || !a->attach_proc || !g.frame_box_valid[i]) continue;
         wm_arcade_confine_wrestler(a, g.status.pcnt, &cb);
     }
+}
+
+/* R37N12: WRESTLE.ASM #loop pre-sleep DRONE section.
+ * Every call is owned by one wrestler_main process, never a global AI phase. */
+static void live_drone_wrestler_slice(unsigned i)
+{
+    wm_arcade_drone_world_t world;
+    wm_arcade_drone_step_result_t dr;
+    wm_arcade_actor_t *a;
+
+    if (!g.status.drone_runtime_ready || i >= g.active_actor_count ||
+        !g.actor_ptrs[i])
+        return;
+    a = &g.actors[i];
+    if (!a->active || a->player_type != WM_PTYPE_DRONE ||
+        (a->status_flags & WM_STATUS_ZOMBIE) != 0u)
+        return;
+
+    memset(&world, 0, sizeof(world));
+    world.actors = g.actor_ptrs;
+    world.actor_count = WM_FIX39_ACTOR_COUNT;
+    world.pcnt = g.status.pcnt;
+    world.round_tickcount = g.status.round_tickcount;
+    world.first_ladder = g.match_cpu_vs_cpu ? 1 : 0;
+
+    dr = wm_arcade_drone_main(a, &g.drone_state[i], &world, &g.drone_callbacks);
+    if (g.drone_state[i].anim_request) {
+        common_anim_label(a, g.drone_state[i].anim_request, 0);
+        g.drone_state[i].anim_request = 0;
+    }
+
+    ++g.status.drone_ticks;
+    ++g.status.drone_ticks_by_player[i];
+    if (dr == WM_DRONE_STEP_INPUT || dr == WM_DRONE_STEP_BLOCK ||
+        a->but_val_cur != 0u || a->stick_val_cur != 0u) {
+        ++g.status.drone_input_ticks;
+        ++g.status.drone_input_ticks_by_player[i];
+    }
+    a->move_dir = a->stick_val_cur;
 }
 
 void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
@@ -3078,83 +3144,14 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
         g.old_p1_stick = now_stick;
     }
 
-    /* WRESTLE.ASM loop: ARE_WE_IN_RING is refreshed before the movement
-       services.  The exact line service is now source-backed. */
-    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i)
-        g.actors[i].in_ring = wm_ring_inring_field(
-            (int16_t)g.actors[i].x_int, (int16_t)g.actors[i].z_int);
-
-    /* WRESTLE.ASM: set_collision_boxes -> confine_wrestler -> fix2. */
-    live_refresh_source_hurt_boxes();
-    live_confine_source(true);
-
-    /* WRESTLE.ASM update_newfacing consumes the target selected by the
-       previous calc_closest/calc_closest2 pass. Do not recalculate here. */
-    live_source_face_opponents();
-
-    /* R37L: DRONE.ASM is a source process-yield producer, not an
-       immediate-input helper. The generated DRN_BUT/DRN_JOY from the previous
-       source sleep are intentionally consumed below before the next DRONE
-       decision is produced at the end of wrestler_main. */
-
-
-
-    /* WRESTLE.ASM RISK countdown, immediately before update_joystat. */
-    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
-        uint16_t r = g.actors[i].risk;
-        if (r != 0u) {
-            --r;
-            g.actors[i].risk = r;
-            if ((r & 0x7fffu) == 0u) g.actors[i].risk = 0u;
-        }
-    }
-
-    /* WRESTLE.ASM::update_joystat -- source history queue. */
-    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i)
-        wm_arcade_update_joystat(&g.actors[i], g.status.round_tickcount, false);
-
-    /* WRESTLE.ASM count_button_presses: live per-wrestler counters consumed
-       by animation/native sequence logic. */
-    for (i=0u;i<WM_FIX39_ACTOR_COUNT;++i) wm_arcade_count_button_presses(&g.actors[i]);
-
-    /* ARE_WE_IN_RING / ring-out timing and health are already ported; keep
-       their persistent per-player RING_TIME state live every match tick. */
+    /* RING_TIME is owned by its already-ported process lane, not by
+       wrestler_main itself. Keep that process alive once per outer dispatcher. */
     live_ringout_tick();
-
-    /* The already-ported keep_onscreen service is now in the live source
-       order. Its camera input now comes from translated DISPLAY.ASM WORLDTLX;
-       other platforms can still call
-       wm_fix39_keep_onscreen_before_velocity with their exact DISPLAY state. */
-    live_keep_onscreen_from_camera();
-    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
-        int32_t oldx=g.actors[i].x_int, oldz=g.actors[i].z_int;
-        wm_arcade_wrestler_veladd(&g.actors[i], false, false);
-        wm_arcade_wrestler_friction(&g.actors[i]);
-        if (g.actors[i].x_int != oldx || g.actors[i].z_int != oldz)
-            ++g.status.actor_position_changes[i];
-    }
-    /* ANIM.ASM::animate_wrestler: primary and secondary animation state
-       advance here, before move_wrestler, exactly as WRESTLE.ASM orders it. */
-    for (i=0u;i<WM_FIX39_ACTOR_COUNT;++i) {
-        wm_source_anim_runtime_tick(&g.source_anim[i],&g.actors[i]);
-        wm_source_anim_runtime_tick(&g.source_torso[i],&g.actors[i]);
-    }
-    /* Combat2ES R33: bind current source-derived attack-frame windows
-       before the second collision-box/confine pass, in the same live actor
-       state consumed by COLLIS.ASM and REACT1. */
-    live_bind_source_attack_windows_from_current_frames();
-
-    /* WRESTLE.ASM: set_collision_boxes -> confine_wrestler -> fix1,
-       then calc_closest2. */
-    live_refresh_source_hurt_boxes();
-    live_confine_source(false);
-    source_calc_closest2_all();
 
     memset(&env, 0, sizeof(env));
     env.pcnt = g.status.pcnt;
 
-    /* Combat2ES/R13: tick persistent source SMOVE_PID processes before
-       WRESTLE.ASM::move_wrestler consumes SPECIAL_MOVE_ADDR. */
+    /* SMOVE_PID is a separate source process family. */
     wm_arcade_smove_runtime_tick(&g.smoves, g.actor_ptrs, WM_FIX39_ACTOR_COUNT,
                                  &smove_callbacks);
 
@@ -3165,168 +3162,116 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
     move_cb.character_move = live_character_move;
     move_cb.user = &ctx;
 
-    /* WRESTLE.ASM process_dispatch only visits created wrestler processes.
-       Capacity is four for attract, but a normal match still owns exactly two. */
-    if (!g.lifecycle.halt) for (i = 0u; i < g.active_actor_count; ++i) {
-        (void)wm_arcade_move_wrestler(&g.actors[i], 0, &move_cb);
-        ++g.status.wrestler_dispatch_ticks;
-        ++g.status.wrestler_dispatch_ticks_by_player[i];
+    /* R37N12 / MPROC.ASM + WRESTLE.ASM complete wrestler_main coroutine.
+     *
+     * wrestler_main initialization ends in SLEEPK 1.  The FIRST wake address
+     * is calc_closest, which falls through #loop, runs DRONE and SLEEPR.
+     * Every later wake resumes immediately AFTER that SLEEPR and executes the
+     * entire gameplay body before jumping back to #loop and sleeping again.
+     *
+     * This is deliberately one process at a time.  PTIME is decremented when
+     * each process-list entry is visited, preserving same-pass opponent wake. */
+    for (i = 0u; i < g.active_actor_count; ++i) {
+        wm_arcade_actor_t *a = &g.actors[i];
+        wm_arcade_wrestler_process_t *proc = &g.wrestler_process[i];
+
+        if (!g.actor_ptrs[i] || !a->active)
+            continue;
+
+        if (wm_arcade_wrestler_process_dispatch_ready(a)) {
+            wm_arcade_wrestler_resume_t resume =
+                wm_arcade_wrestler_process_resume(proc);
+            int32_t oldx, oldz;
+            size_t j;
+
+            ++g.status.wrestler_dispatch_ticks;
+            ++g.status.wrestler_dispatch_ticks_by_player[i];
+
+            if (resume == WM_WRESTLER_RESUME_CALC_CLOSEST) {
+                source_calc_closest_one(i);
+            } else {
+                uint16_t r;
+
+                r = a->risk;
+                if (r != 0u) {
+                    --r;
+                    a->risk = r;
+                    if ((r & 0x7fffu) == 0u)
+                        a->risk = 0u;
+                }
+
+                wm_arcade_update_joystat(a, g.status.round_tickcount, false);
+                wm_arcade_count_button_presses(a);
+                live_keep_onscreen_from_camera();
+
+                oldx = a->x_int; oldz = a->z_int;
+                wm_arcade_wrestler_veladd(a, false, false);
+                wm_arcade_wrestler_friction(a);
+                if (a->x_int != oldx || a->z_int != oldz)
+                    ++g.status.actor_position_changes[i];
+
+                wm_source_anim_runtime_tick(&g.source_anim[i], a);
+                wm_source_anim_runtime_tick(&g.source_torso[i], a);
+                live_bind_source_attack_window_from_current_frame(i);
+
+                (void)live_refresh_source_hurt_box_one(i);
+                live_confine_source_one(i, false);
+                source_calc_closest2_one(i);
+
+                (void)wm_arcade_move_wrestler(a, 0, &move_cb);
+
+                oldx = a->x_int; oldz = a->z_int;
+                wm_arcade_wrestler_veladd(a, false, false);
+                wm_arcade_wrestler_friction(a);
+                if (a->x_int != oldx || a->z_int != oldz)
+                    ++g.status.actor_position_changes[i];
+
+                wm_arcade_update_links(a);
+
+                (void)live_refresh_source_hurt_box_one(i);
+                g.status.collision_boxes_ready =
+                    live_collision_boxes_ready_for_active();
+                if (g.status.collision_boxes_ready) {
+                    for (j = 0u; j < g.active_actor_count; ++j) {
+                        if ((size_t)i == j) continue;
+                        (void)wm_arcade_resolve_overlap(a, &g.actors[j]);
+                    }
+                }
+
+                if (a->anim_mode & WM_ARCADE_MODE_KEEPATTACHED)
+                    (void)wm_arcade_master_keep_attached(a);
+
+                if ((a->anim_mode & WM_ARCADE_MODE_NOAUTOFLIP) == 0u)
+                    wm_arcade_set_wrestler_xflip(a);
+
+                wm_arcade_update_joy_dtime(a);
+                wm_arcade_wrestler_countdown_tail(
+                    a, wm_arcade_match_clock_zero(&g.lifecycle));
+            }
+
+            a->in_ring = wm_ring_inring_field(
+                (int16_t)a->x_int, (int16_t)a->z_int);
+            (void)live_refresh_source_hurt_box_one(i);
+            live_confine_source_one(i, true);
+            live_source_face_opponent_one(i);
+
+            /* update_positions only mirrors OBJ XYZ into scroller arrays.
+               Actor XYZ is already the portable scroller authority. */
+
+            live_drone_wrestler_slice(i);
+            wm_arcade_wrestler_process_sleep(proc, a);
+        }
+
+        /* GETUP_PID is a distinct process created directly after each WMAIN. */
+        wm_arcade_getup_process_tick(&g.getup[i], a);
     }
 
-    /* The complete ROPES.ASM process interpreter is live.  Rendering the
-       source image symbols waits for a real N64 rope-object image adapter. */
     for (i = 0u; i < 4u; ++i) {
         wm_rope_runtime_tick(&g.ropes[i], &g.rope_render_adapter);
         ++g.status.rope_process_ticks;
     }
 
-    /* ANIM.ASM owns attack windows through ANI_ATTACK_ON/OFF.  The current
-       WIMP frame contributes only exact IANI3 hurt-box geometry. */
-    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
-        wm_arcade_actor_t *a = &g.actors[i];
-        wm_arcade_frame_box_t fb;
-        if (i >= g.active_actor_count || !g.actor_ptrs[i] || !a->active) {
-            g.frame_box_valid[i] = false;
-            continue;
-        }
-        if (live_source_runtime_frame_box(&g.source_anim[i], &fb)) {
-            g.frame_box[i] = fb;
-            g.frame_box_valid[i] = true;
-        } else {
-            g.frame_box_valid[i] = false;
-        }
-    }
-    /* WRESTLE.ASM update_links: break a one-way stale attachment. */
-    for (i = 0u; i < g.active_actor_count; ++i)
-        wm_arcade_update_links(&g.actors[i]);
-
-    /* WRESTLE.ASM calls overlap_collision once per wrestler process.
-       COLLIS.ASM::overlap_collision then scans every process_ptrs entry.
-       Preserve that all-active mover/victim coverage here; the later
-       WRESTLE.ASM scheduler pass will audit the exact inter-process timing. */
-    g.status.collision_boxes_ready =
-        live_collision_boxes_ready_for_active();
-    if (g.status.collision_boxes_ready) {
-        size_t j;
-        for (i = 0u; i < g.active_actor_count; ++i)
-            wm_arcade_set_hurt_box(&g.actors[i], &g.frame_box[i]);
-        for (i = 0u; i < g.active_actor_count; ++i) {
-            for (j = 0u; j < g.active_actor_count; ++j) {
-                if ((size_t)i == j) continue;
-                (void)wm_arcade_resolve_overlap(&g.actors[i], &g.actors[j]);
-            }
-        }
-    }
-
-    /* WRESTLE.ASM master_keep_attached after overlap_collision. */
-    for (i=0u;i<WM_FIX39_ACTOR_COUNT;++i) {
-        wm_arcade_actor_t *a=&g.actors[i];
-        if (a->anim_mode & WM_ARCADE_MODE_KEEPATTACHED)
-            (void)wm_arcade_master_keep_attached(a);
-    }
-
-    /* WRESTLE.ASM set_wrestler_xflip, skipped only for MODE_NOAUTOFLIP. */
-    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
-        wm_arcade_actor_t *a = &g.actors[i];
-        if ((a->anim_mode & WM_ARCADE_MODE_NOAUTOFLIP) == 0u)
-            wm_arcade_set_wrestler_xflip(a);
-    }
-
-    /* WRESTLE.ASM::update_joy_dtime follows xflip and precedes countdowns. */
-    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i)
-        wm_arcade_update_joy_dtime(&g.actors[i]);
-
-    /* WRESTLE.ASM wrestler_main countdown tail plus concurrent GETUP_PID. */
-    for (i = 0u; i < WM_FIX39_ACTOR_COUNT; ++i) {
-        wm_arcade_wrestler_countdown_tail(
-            &g.actors[i], wm_arcade_match_clock_zero(&g.lifecycle));
-        wm_arcade_getup_process_tick(&g.getup[i], &g.actors[i]);
-    }
-
-    /*
-     * R37L — WRESTLE.ASM wrestler_main process boundary:
-     *
-     *   ... update_joy_dtime
-     *   ... countdown tail
-     *   jruc #loop
-     *   ARE_WE_IN_RING / facing / positions
-     *   drone_main
-     *   SLEEPR 1
-     *
-     * The C runtime executes one consolidated source tick, so DRONE must run
-     * here, after this wrestler's current-tick state has been consumed and
-     * updated. Its DRN_BUT/DRN_JOY transitions remain on the actor until the
-     * next wm_fix39_match_tick(), where update_joystat/move_wrestler consume
-     * them. Running DRONE before update_joystat incorrectly collapsed the
-     * source SLEEP 1 boundary.
-     */
-    if (g.status.drone_runtime_ready) {
-        wm_arcade_drone_world_t world;
-        memset(&world, 0, sizeof(world));
-        world.actors = g.actor_ptrs;
-        world.actor_count = WM_FIX39_ACTOR_COUNT;
-        world.pcnt = g.status.pcnt;
-        world.round_tickcount = g.status.round_tickcount;
-        /* ATTR.ASM::show_gameplay sets CURRENT_LADDER=LADDER before
-           start_match. DRONE.ASM consumes that exact first-ladder condition
-           for mode range and passive random-attack gating. */
-        world.first_ladder = g.match_cpu_vs_cpu ? 1 : 0;
-        if (g.actors[0].player_type == WM_PTYPE_DRONE &&
-            (g.actors[0].status_flags & WM_STATUS_ZOMBIE) == 0u) {
-            wm_arcade_drone_step_result_t dr0 = wm_arcade_drone_main(
-                &g.actors[0], &g.drone_state[0], &world, &g.drone_callbacks);
-            if (g.drone_state[0].anim_request) {
-                common_anim_label(&g.actors[0], g.drone_state[0].anim_request, 0);
-                g.drone_state[0].anim_request = 0;
-            }
-            ++g.status.drone_ticks;
-            ++g.status.drone_ticks_by_player[0];
-            if (dr0 == WM_DRONE_STEP_INPUT || dr0 == WM_DRONE_STEP_BLOCK ||
-                g.actors[0].but_val_cur != 0u || g.actors[0].stick_val_cur != 0u)
-                { ++g.status.drone_input_ticks; ++g.status.drone_input_ticks_by_player[0]; }
-            g.actors[0].move_dir = g.actors[0].stick_val_cur;
-        }
-        if (g.actors[1].player_type == WM_PTYPE_DRONE &&
-            (g.actors[1].status_flags & WM_STATUS_ZOMBIE) == 0u) {
-            wm_arcade_drone_step_result_t dr = wm_arcade_drone_main(
-                &g.actors[1], &g.drone_state[1], &world, &g.drone_callbacks);
-            if (g.drone_state[1].anim_request) {
-                common_anim_label(&g.actors[1], g.drone_state[1].anim_request, 0);
-                g.drone_state[1].anim_request = 0;
-            }
-            ++g.status.drone_ticks;
-            ++g.status.drone_ticks_by_player[1];
-            if (dr == WM_DRONE_STEP_INPUT || dr == WM_DRONE_STEP_BLOCK ||
-                g.actors[1].but_val_cur != 0u || g.actors[1].stick_val_cur != 0u)
-                { ++g.status.drone_input_ticks; ++g.status.drone_input_ticks_by_player[1]; }
-            g.actors[1].move_dir = g.actors[1].stick_val_cur;
-        }
-
-        /* R37F1: WRESTLE.ASM #0plyr creates every CURRENT_LADDER opponent
-           with PTYPE_DRONE. Run the same DRONE.ASM interpreter for source
-           process slots 2/3 instead of merely rendering them. */
-        for (i = 2u; i < g.active_actor_count; ++i) {
-            wm_arcade_actor_t *a = &g.actors[i];
-            if (a->player_type == WM_PTYPE_DRONE &&
-                (a->status_flags & WM_STATUS_ZOMBIE) == 0u) {
-                wm_arcade_drone_step_result_t drx = wm_arcade_drone_main(
-                    a, &g.drone_state[i], &world, &g.drone_callbacks);
-                if (g.drone_state[i].anim_request) {
-                    common_anim_label(a, g.drone_state[i].anim_request, 0);
-                    g.drone_state[i].anim_request = 0;
-                }
-                ++g.status.drone_ticks;
-                ++g.status.drone_ticks_by_player[i];
-                if (drx == WM_DRONE_STEP_INPUT || drx == WM_DRONE_STEP_BLOCK ||
-                    a->but_val_cur != 0u || a->stick_val_cur != 0u) {
-                    ++g.status.drone_input_ticks;
-                    ++g.status.drone_input_ticks_by_player[i];
-                }
-                a->move_dir = a->stick_val_cur;
-            }
-        }
-    }
-
+    live_refresh_source_hurt_boxes();
 
     /* SPECIAL.ASM process state and COLLIS.ASM object collisions are already
        directly ported. Tick any live source-spawned objects every match tick,

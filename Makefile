@@ -118,6 +118,7 @@ FIX39_C := \
     src/fix39/wm_arcade_target_offsets.c \
     src/fix39/wm_arcade_wimp_frame.c \
     src/fix39/wm_arcade_wrestle_core.c \
+    src/fix39/wm_arcade_wrestler_process.c \
     src/fix39/wm_arcade_wrestler_port.c \
     src/fix39/wm_arcade_yoko.c \
     src/fix39/wm_fix39_runtime.c \

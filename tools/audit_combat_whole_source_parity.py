@@ -32,11 +32,9 @@ for n in required_cmake:
         failures.append(f"CMake missing {n}")
 
 required_runtime = [
-    "live_bind_source_attack_windows_from_current_frames",
     "wm_arcade_character_attack_for_source_frame",
     "wm_arcade_ani_attack_on_z",
     "wm_arcade_ani_attack_on(a, &args)",
-    "live_bind_source_attack_windows_from_current_frames();",
     "wm_arcade_check_wrestler_collisions",
     "wm_arcade_object_collisions",
     "wm_arcade_wrestler_countdown_tail",
@@ -46,6 +44,20 @@ required_runtime = [
 for n in required_runtime:
     if n not in runtime:
         failures.append(f"live runtime missing whole-combat cutover marker: {n}")
+
+legacy_attack_window = (
+    "live_bind_source_attack_windows_from_current_frames" in runtime and
+    "live_bind_source_attack_windows_from_current_frames();" in runtime
+)
+r37n12_attack_window = (
+    "live_bind_source_attack_window_from_current_frame" in runtime and
+    "live_bind_source_attack_window_from_current_frame(i);" in runtime
+)
+if not (legacy_attack_window or r37n12_attack_window):
+    failures.append(
+        "live runtime missing source attack-window binding "
+        "(legacy global or R37N12 per-wrestler process form)"
+    )
 
 # Source animation bytecode must own the combat opcodes, not external presenter code.
 for opcode_marker in [
@@ -114,7 +126,7 @@ report.write_text("""# Whole combat source-parity report
 - status: PASS
 - scope: whole live combat spine outside platform rendering/audio
 - gameplay source changed: yes
-- live source frame attack-window cutover: enabled for generated all-wrestler attack-frame corpus
+- live source frame attack-window cutover: enabled for generated all-wrestler corpus (global legacy or per-wrestler process binding)
 - source animation combat opcodes: present
 - COLLIS/REACT1 live collision path: present
 - SMOVE strict guard: external audit remains required

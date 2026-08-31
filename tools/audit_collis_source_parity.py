@@ -33,7 +33,10 @@ def main() -> int:
             "all-active CUR_FRAME readiness helper")
     require(runtime, "i < g.active_actor_count", "active process bounds")
     require(runtime, "j < g.active_actor_count", "all-active overlap victim scan")
-    require(runtime, "if ((size_t)i == j) continue;", "self overlap exclusion")
+    if ("if ((size_t)i == j) continue;" not in runtime and
+            "if (j == (size_t)i) continue;" not in runtime):
+        raise SystemExit("FAIL: self overlap exclusion: no all-active self-skip found")
+    print("PASS: self overlap exclusion")
     require(runtime,
             "wm_arcade_object_collisions(\n                    &g.special_lists, g.actor_ptrs, g.active_actor_count",
             "SPECIAL collision uses active process count")

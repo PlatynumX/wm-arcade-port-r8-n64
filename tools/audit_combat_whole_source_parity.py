@@ -35,7 +35,6 @@ required_runtime = [
     "wm_arcade_character_attack_for_source_frame",
     "wm_arcade_ani_attack_on_z",
     "wm_arcade_ani_attack_on(a, &args)",
-    "wm_arcade_check_wrestler_collisions",
     "wm_arcade_object_collisions",
     "wm_arcade_wrestler_countdown_tail",
     "wm_arcade_move_ported_wrestler",
@@ -44,6 +43,24 @@ required_runtime = [
 for n in required_runtime:
     if n not in runtime:
         failures.append(f"live runtime missing whole-combat cutover marker: {n}")
+
+# R37N14 translates COLLIS.ASM's attacker walk directly in the live runtime
+# so defender OBJ_COLL readiness can be pair-local.  Accept that source-shaped
+# cutover as an alternative to the older whole-list helper call.  The helper
+# itself remains required in wm_arcade_combat.c by the combat-core audit below.
+legacy_collision_cutover = "wm_arcade_check_wrestler_collisions(" in runtime
+r37n14_pair_local_cutover = (
+    "R37N14 / COLLIS.ASM readiness translation." in runtime and
+    "valid_defenders[WM_FIX39_ACTOR_COUNT]" in runtime and
+    "wm_arcade_set_attack_box(attacker)" in runtime and
+    "wm_arcade_try_attack_hit(attacker, victim" in runtime and
+    "g.status.round_tickcount & 1u" in runtime
+)
+if not (legacy_collision_cutover or r37n14_pair_local_cutover):
+    failures.append(
+        "live runtime missing COLLIS wrestler cutover "
+        "(legacy helper or R37N14 pair-local source scan)"
+    )
 
 legacy_attack_window = (
     "live_bind_source_attack_windows_from_current_frames" in runtime and

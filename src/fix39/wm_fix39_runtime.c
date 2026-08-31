@@ -3291,72 +3291,94 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
         }
     }
 
-    /* COLLIS.ASM bridge: frame hurt boxes are supplied by the presentation/
-       animation backend only when it has the exact current source-image IANI3
-       metadata.  Never synthesize geometry here.  Once both current frame
-       boxes are bound, run the existing direct COLLIS/REACT1 port in the
-       original wrestler-loop position. */
+    /* R37N14 / COLLIS.ASM readiness translation.
+     *
+     * set_xyz builds an attack box from the OFFENSIVE process's ATTACK fields;
+     * it does not read that attacker's OBJ_COLL* hurt box. check_collis then
+     * consumes each DEFENDER's OBJ_COLL* independently.  Therefore one actor
+     * whose current portable frame metadata is unavailable must not suppress
+     * every other wrestler's combat for the tick.
+     *
+     * collision_boxes_ready remains a diagnostic meaning "all active defender
+     * boxes are current".  It is deliberately NOT a global combat gate. */
     g.status.collision_boxes_ready =
         live_collision_boxes_ready_for_active();
-    if (g.status.collision_boxes_ready) {
-        for (i = 0u; i < g.active_actor_count; ++i)
-            wm_arcade_set_hurt_box(&g.actors[i], &g.frame_box[i]);
-        /* Per-wrestler overlap_collision already ran above. */
-        g.combat_runtime.pcnt = g.status.pcnt;
-        g.combat_runtime.round_tickcount = g.status.round_tickcount;
-        {
-            int hit;
-            bool had_full_overlap = false;
+    g.combat_runtime.pcnt = g.status.pcnt;
+    g.combat_runtime.round_tickcount = g.status.round_tickcount;
+    {
+        wm_arcade_actor_t *valid_defenders[WM_FIX39_ACTOR_COUNT] = {0};
+        bool any_valid_defender = false;
+        bool had_full_overlap = false;
+        int hit = 0;
+        size_t outer;
 
-            /* COLLIS.ASM::check_collisions calls object_collisions first.
-               SPECIAL hits may change player state before wrestler attacks are
-               scanned, so this order is gameplay-significant. */
-            {
-                wm_arcade_special_collision_result_t sp = wm_arcade_object_collisions(
-                    &g.special_lists, g.actor_ptrs, g.active_actor_count,
-                    &g.combat_runtime, &g.special_callbacks);
-                if (sp.wrestler_hits > 0)
-                    g.status.combat_accepted_hits += (uint32_t)sp.wrestler_hits;
+        /* set_collision_boxes already populated hurt_box in
+           live_refresh_source_hurt_box_one(). Build the process_ptrs-shaped
+           defender surface without inventing geometry for unavailable frames. */
+        for (i = 0u; i < g.active_actor_count; ++i) {
+            if (g.actor_ptrs[i] && g.actors[i].active && g.frame_box_valid[i]) {
+                valid_defenders[i] = &g.actors[i];
+                any_valid_defender = true;
             }
+        }
 
-            /* Diagnostics observe the same all-active victim surface used by
-               COLLIS.ASM; do not reduce multiplayer combat to i^1 pairs. */
-            for (i = 0u; i < g.active_actor_count; ++i) {
-                if (g.actors[i].anim_mode & WM_ARCADE_MODE_CHECKHIT) {
-                    size_t vi;
-                    wm_arcade_actor_t *attacker = &g.actors[i];
-                    ++g.status.combat_checkhit_ticks;
-                    wm_arcade_set_attack_box(attacker);
-                    ++g.status.combat_attack_boxes_built;
-                    for (vi = 0u; vi < g.active_actor_count; ++vi) {
-                        wm_arcade_actor_t *victim;
-                        bool xo, yo, zo;
-                        if (vi == (size_t)i) continue;
-                        victim = &g.actors[vi];
-                        xo = !(attacker->attack_box.x1 > victim->hurt_box.x2 ||
-                               attacker->attack_box.x2 < victim->hurt_box.x1);
-                        yo = !(attacker->attack_box.y1 > victim->hurt_box.y2 ||
-                               attacker->attack_box.y2 < victim->hurt_box.y1);
-                        zo = !(attacker->attack_box.z1 > victim->hurt_box.z2 ||
-                               attacker->attack_box.z2 < victim->hurt_box.z1);
-                        if (xo) ++g.status.combat_x_overlap_ticks;
-                        if (yo) ++g.status.combat_y_overlap_ticks;
-                        if (zo) ++g.status.combat_z_overlap_ticks;
-                        if (xo && yo && zo) {
-                            ++g.status.combat_full_overlap_ticks;
-                            had_full_overlap = true;
-                        }
-                    }
+        /* COLLIS.ASM::check_collisions calls object_collisions first.  SPECIAL
+           objects likewise require only the candidate defender's OBJ_COLL*. */
+        {
+            wm_arcade_special_collision_result_t sp = wm_arcade_object_collisions(
+                &g.special_lists, valid_defenders, g.active_actor_count,
+                &g.combat_runtime, &g.special_callbacks);
+            if (sp.wrestler_hits > 0)
+                g.status.combat_accepted_hits += (uint32_t)sp.wrestler_hits;
+        }
+
+        /* Direct translation of COLLIS.ASM attacker walk: even ticks scan
+           process_ptrs forward, odd ticks backward. Defender walk is always
+           process_ptrs forward. Stop after the first accepted wrestler hit. */
+        for (outer = 0u; outer < g.active_actor_count && !hit; ++outer) {
+            size_t ai = (g.status.round_tickcount & 1u)
+                ? (g.active_actor_count - 1u - outer) : outer;
+            wm_arcade_actor_t *attacker = g.actor_ptrs[ai];
+            size_t vi;
+
+            if (!attacker || !attacker->active) continue;
+            if (!(attacker->anim_mode & WM_ARCADE_MODE_CHECKHIT)) continue;
+
+            ++g.status.combat_checkhit_ticks;
+            wm_arcade_set_attack_box(attacker); /* COLLIS.ASM::set_xyz */
+            ++g.status.combat_attack_boxes_built;
+
+            for (vi = 0u; vi < g.active_actor_count; ++vi) {
+                wm_arcade_actor_t *victim = valid_defenders[vi];
+                bool xo, yo, zo;
+                if (!victim || vi == ai) continue;
+
+                xo = !(attacker->attack_box.x1 > victim->hurt_box.x2 ||
+                       attacker->attack_box.x2 < victim->hurt_box.x1);
+                yo = !(attacker->attack_box.y1 > victim->hurt_box.y2 ||
+                       attacker->attack_box.y2 < victim->hurt_box.y1);
+                zo = !(attacker->attack_box.z1 > victim->hurt_box.z2 ||
+                       attacker->attack_box.z2 < victim->hurt_box.z1);
+                if (xo) ++g.status.combat_x_overlap_ticks;
+                if (yo) ++g.status.combat_y_overlap_ticks;
+                if (zo) ++g.status.combat_z_overlap_ticks;
+                if (xo && yo && zo) {
+                    ++g.status.combat_full_overlap_ticks;
+                    had_full_overlap = true;
+                }
+
+                if (wm_arcade_try_attack_hit(attacker, victim,
+                                             &g.combat_callbacks) ==
+                    WM_HIT_ACCEPTED) {
+                    hit = 1;
+                    break;
                 }
             }
-
-            hit = wm_arcade_check_wrestler_collisions(
-                g.actor_ptrs, g.active_actor_count,
-                g.status.round_tickcount, &g.combat_callbacks);
-            if (hit) ++g.status.combat_accepted_hits;
-            else if (had_full_overlap) ++g.status.combat_full_overlap_rejected;
         }
-        ++g.status.combat_collision_ticks;
+
+        if (hit) ++g.status.combat_accepted_hits;
+        else if (had_full_overlap) ++g.status.combat_full_overlap_rejected;
+        if (any_valid_defender) ++g.status.combat_collision_ticks;
     }
 
     /* WRESTLE.ASM master loop: check_collisions -> final_confine. */

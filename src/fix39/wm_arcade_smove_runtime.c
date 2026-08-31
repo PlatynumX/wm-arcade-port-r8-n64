@@ -1348,6 +1348,58 @@ static int fire_entry(wm_arcade_actor_t **actors, size_t n,
     }
 }
 
+void wm_arcade_smove_runtime_tick_owner(
+    wm_arcade_smove_runtime_t *rt,
+    uint8_t owner_slot,
+    wm_arcade_actor_t **actors,
+    size_t actor_count,
+    const wm_arcade_smove_callbacks_t *callbacks)
+{
+    size_t i;
+    if (!rt || !actors) return;
+    for (i = 0; i < rt->proc_count; ++i) {
+        wm_arcade_smove_proc_t *p = &rt->proc[i];
+        wm_arcade_actor_t *a;
+        const wm_arcade_smove_wait_step_t *s;
+        wm_arcade_smove_wait_result_t wr;
+        if (p->owner_slot != owner_slot) continue;
+        if (!p->active || p->unresolved || !p->entry) continue;
+        if (p->owner_slot >= actor_count) continue;
+        a = actors[p->owner_slot];
+        if (!a || !a->active) continue;
+        if (p->sleep_ticks != 0u) { --p->sleep_ticks; continue; }
+        if (a->special_move_addr != (uintptr_t)0) { proc_rewind(rt, p, 1); continue; }
+        if (p->entry->step_count == 0u) {
+            if (fire_entry(actors, actor_count, a, p, p->entry, callbacks)) {
+                ++p->fires;
+                ++rt->fire_count;
+                proc_rewind(0, p, p->entry->post_fire_sleep);
+            }
+            continue;
+        }
+        if (p->step_index >= p->entry->step_count) { proc_rewind(rt, p, 1); continue; }
+        s = &p->entry->steps[p->step_index];
+        if (s->load_timeout != WM_ARCADE_SMOVE_TIMEOUT_KEEP &&
+            p->timeout_loaded_for != p->step_index) {
+            p->timeout = s->load_timeout;
+            p->timeout_loaded_for = p->step_index;
+        }
+        wr = wm_arcade_smove_waitswitch_down(a, s->expected, s->ignore_mask, &p->timeout);
+        if (wr == WM_SMOVE_WAIT_STILL_WAITING) continue;
+        if (wr == WM_SMOVE_WAIT_RESET) { proc_rewind(rt, p, 1); continue; }
+        ++p->step_index;
+        p->timeout_loaded_for = 0xffu;
+        if (p->step_index < p->entry->step_count) continue;
+        if (fire_entry(actors, actor_count, a, p, p->entry, callbacks)) {
+            ++p->fires;
+            ++rt->fire_count;
+            proc_rewind(0, p, p->entry->post_fire_sleep);
+        } else {
+            proc_rewind(rt, p, 1);
+        }
+    }
+}
+
 void wm_arcade_smove_runtime_tick(
     wm_arcade_smove_runtime_t *rt,
     wm_arcade_actor_t **actors,

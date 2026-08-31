@@ -83,6 +83,17 @@ void wm_arcade_smove_reset_for_wrestler(
 void wm_arcade_smove_kill_for_wrestler(
     wm_arcade_smove_runtime_t *rt,
     const wm_arcade_actor_t *owner);
+/* WRESTLE2.ASM::init_smoves creates each watchdog with GETPRC_INSERT,
+ * immediately before its owning WMAIN.  This owner-scoped dispatcher preserves
+ * that process-list interleave. */
+void wm_arcade_smove_runtime_tick_owner(
+    wm_arcade_smove_runtime_t *rt,
+    uint8_t owner_slot,
+    wm_arcade_actor_t **actors,
+    size_t actor_count,
+    const wm_arcade_smove_callbacks_t *callbacks);
+
+/* Whole-bank helper retained for non-WRESTLE callers/tests. */
 void wm_arcade_smove_runtime_tick(
     wm_arcade_smove_runtime_t *rt,
     wm_arcade_actor_t **actors,

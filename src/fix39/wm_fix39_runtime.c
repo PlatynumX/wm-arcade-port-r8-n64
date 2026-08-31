@@ -3151,9 +3151,10 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
     memset(&env, 0, sizeof(env));
     env.pcnt = g.status.pcnt;
 
-    /* SMOVE_PID is a separate source process family. */
-    wm_arcade_smove_runtime_tick(&g.smoves, g.actor_ptrs, WM_FIX39_ACTOR_COUNT,
-                                 &smove_callbacks);
+    /* SMOVE_PID processes are dispatched per owner below.
+       WRESTLE2.ASM::init_smoves creates them with GETPRC_INSERT directly
+       before the owning WMAIN process; a global pre-wrestler batch changes
+       SPECIAL_MOVE_ADDR visibility relative to wrestler_main. */
 
     memset(&move_cb, 0, sizeof(move_cb));
     ctx.env = &env;
@@ -3162,21 +3163,31 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
     move_cb.character_move = live_character_move;
     move_cb.user = &ctx;
 
-    /* R37N12 / MPROC.ASM + WRESTLE.ASM complete wrestler_main coroutine.
+    /* R37N13 direct MPROC.ASM + WRESTLE.ASM process translation.
      *
-     * wrestler_main initialization ends in SLEEPK 1.  The FIRST wake address
-     * is calc_closest, which falls through #loop, runs DRONE and SLEEPR.
-     * Every later wake resumes immediately AFTER that SLEEPR and executes the
-     * entire gameplay body before jumping back to #loop and sleeping again.
-     *
-     * This is deliberately one process at a time.  PTIME is decremented when
-     * each process-list entry is visited, preserving same-pass opponent wake. */
-    for (i = 0u; i < g.active_actor_count; ++i) {
+     * wrestler_main initialization ends in SLEEPK 1.  The first wake resumes
+     * at calc_closest, falls through #loop, runs DRONE, then SLEEPR.  Later
+     * wakes resume immediately after SLEEPR.  PTIME is decremented only when
+     * that WMAIN's active-list position is visited.  Whether a PTIME=1 wake
+     * can run in the current dispatcher pass therefore depends on source list
+     * order; it is not a global same-frame wake rule. */
+    for (i = (unsigned)g.active_actor_count; i-- > 0u;) {
         wm_arcade_actor_t *a = &g.actors[i];
         wm_arcade_wrestler_process_t *proc = &g.wrestler_process[i];
 
         if (!g.actor_ptrs[i] || !a->active)
             continue;
+
+        /* MPROC list order, translated literally:
+         *   SCREATE WMAIN      -> insert after creator
+         *   CREATE GETUP       -> insert after same creator, therefore before WMAIN
+         *   init_smoves/INSERT -> each SMOVE is inserted immediately before WMAIN
+         * Repeated wrestler creation therefore leaves the newest wrestler group
+         * first.  For two wrestlers: GETUP1, SMOVEs1, WMAIN1, GETUP0, SMOVEs0, WMAIN0. */
+        wm_arcade_getup_process_tick(&g.getup[i], a);
+        wm_arcade_smove_runtime_tick_owner(&g.smoves, (uint8_t)i,
+                                           g.actor_ptrs, WM_FIX39_ACTOR_COUNT,
+                                           &smove_callbacks);
 
         if (wm_arcade_wrestler_process_dispatch_ready(a)) {
             wm_arcade_wrestler_resume_t resume =
@@ -3220,12 +3231,9 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
 
                 (void)wm_arcade_move_wrestler(a, 0, &move_cb);
 
-                oldx = a->x_int; oldz = a->z_int;
-                wm_arcade_wrestler_veladd(a, false, false);
-                wm_arcade_wrestler_friction(a);
-                if (a->x_int != oldx || a->z_int != oldz)
-                    ++g.status.actor_position_changes[i];
-
+                /* WRESTLE.ASM has the second veladd/friction pair after
+                   move_wrestler commented out.  Do not integrate attachment
+                   geometry a second time in the same wrestler wake. */
                 wm_arcade_update_links(a);
 
                 (void)live_refresh_source_hurt_box_one(i);
@@ -3262,8 +3270,6 @@ void wm_fix39_match_tick(int8_t stick_x, int8_t stick_y,
             wm_arcade_wrestler_process_sleep(proc, a);
         }
 
-        /* GETUP_PID is a distinct process created directly after each WMAIN. */
-        wm_arcade_getup_process_tick(&g.getup[i], a);
     }
 
     for (i = 0u; i < 4u; ++i) {

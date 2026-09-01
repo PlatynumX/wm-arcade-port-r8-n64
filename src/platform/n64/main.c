@@ -3048,6 +3048,140 @@ static unsigned wm_n64_source_ticks_due(wm_n64_source_timer *timer,
     return due;
 }
 
+/* R37N15 FREEZE-DIAG
+ * Hardware-only observation. No actor/process field is written here.
+ * debugf already targets SummerCart UNF USB through debug_init_usblog(). */
+#define WM_R37N15_DIAG_PERIOD 53u
+#define WM_R37N15_STALL_TICKS 80u
+
+typedef struct {
+    bool in_match;
+    uint32_t last_snapshot_pcnt;
+    uint32_t last_dispatch[4];
+    uint32_t last_drone[4];
+    uint32_t last_hash[4];
+    uint16_t no_dispatch_ticks[4];
+    uint16_t same_state_ticks[4];
+    bool dispatch_reported[4];
+    bool state_reported[4];
+} wm_r37n15_diag_state;
+
+static wm_r37n15_diag_state wm_r37n15_diag;
+
+static uint32_t wm_r37n15_mix(uint32_t h, uint32_t v)
+{
+    h ^= v;
+    h *= 16777619u;
+    return h;
+}
+
+static uint32_t wm_r37n15_mix_text(uint32_t h, const char *s)
+{
+    unsigned n = 0u;
+    if (!s) return wm_r37n15_mix(h, 0u);
+    while (*s && n++ < 48u) h = wm_r37n15_mix(h, (uint8_t)*s++);
+    return h;
+}
+
+static int wm_r37n15_actor_index(const wm_arcade_actor_t *p)
+{
+    if (!p) return -1;
+    for (unsigned i = 0u; i < 4u; ++i)
+        if (p == wm_fix39_actor(i)) return (int)i;
+    return -1;
+}
+
+static uint32_t wm_r37n15_actor_hash(unsigned i, const wm_arcade_actor_t *a)
+{
+    uint32_t h = 2166136261u;
+    if (!a) return 0u;
+    h=wm_r37n15_mix(h,(uint32_t)a->x_int); h=wm_r37n15_mix(h,(uint32_t)a->y_int);
+    h=wm_r37n15_mix(h,(uint32_t)a->z_int); h=wm_r37n15_mix(h,(uint32_t)a->ptime);
+    h=wm_r37n15_mix(h,(uint32_t)a->player_mode); h=wm_r37n15_mix(h,(uint32_t)a->anim_mode);
+    h=wm_r37n15_mix(h,(uint32_t)a->attack_mode); h=wm_r37n15_mix(h,a->status_flags);
+    h=wm_r37n15_mix(h,(uint32_t)a->ani_count); h=wm_r37n15_mix(h,(uint32_t)a->ani_count2);
+    h=wm_r37n15_mix(h,(uint32_t)a->special_move_addr); h=wm_r37n15_mix(h,(uint32_t)a->code_addr);
+    h=wm_r37n15_mix(h,(uint32_t)a->source_vm_fault);
+    h=wm_r37n15_mix(h,(uint32_t)(wm_r37n15_actor_index(a->attach_proc)+1));
+    h=wm_r37n15_mix_text(h,wm_fix39_actor_source_anim(i));
+    h=wm_r37n15_mix_text(h,wm_fix39_actor_source_frame(i));
+    return h;
+}
+
+static void wm_r37n15_print_actor(const char *tag, unsigned i,
+                                   const WmFix39Status *st)
+{
+    const wm_arcade_actor_t *a = wm_fix39_actor(i);
+    const char *anim = wm_fix39_actor_source_anim(i);
+    const char *frame = wm_fix39_actor_source_frame(i);
+    if (!a || !a->active || !st) return;
+    debugf("R37N15 %s t=%lu rt=%u p=%u disp=%lu drone=%lu din=%lu rs=%d pt=%ld pm=%u am=%04x atk=%u sf=%08lx xyz=%ld,%ld,%ld vel=%ld,%ld,%ld att=%d wh=%d hm=%d sm=%08lx code=%08lx vm=%ld ac=%ld/%ld imm=%ld gu=%ld gp=%d sw=%lu hg=%lu anim=%s frame=%s\
+",
+           tag, (unsigned long)st->pcnt, (unsigned)st->round_tickcount, i,
+           (unsigned long)st->wrestler_dispatch_ticks_by_player[i],
+           (unsigned long)st->drone_ticks_by_player[i],
+           (unsigned long)st->drone_input_ticks_by_player[i],
+           wm_fix39_actor_process_resume(i), (long)a->ptime,
+           (unsigned)a->player_mode, (unsigned)a->anim_mode,
+           (unsigned)a->attack_mode, (unsigned long)a->status_flags,
+           (long)a->x_int,(long)a->y_int,(long)a->z_int,
+           (long)a->x_vel,(long)a->y_vel,(long)a->z_vel,
+           wm_r37n15_actor_index(a->attach_proc),
+           wm_r37n15_actor_index(a->who_i_hit),
+           wm_r37n15_actor_index(a->who_hit_me),
+           (unsigned long)a->special_move_addr,(unsigned long)a->code_addr,
+           (long)a->source_vm_fault,(long)a->ani_count,(long)a->ani_count2,
+           (long)a->immobilize_time,(long)a->getup_time,
+           wm_fix39_actor_getup_phase(i),
+           (unsigned long)wm_fix39_actor_smove_active_count(i),
+           (unsigned long)a->head_grab_time, anim?anim:"-", frame?frame:"-");
+}
+
+static void wm_r37n15_diag_tick(void)
+{
+    const WmFix39Status *st = wm_fix39_status();
+    if (!st || !wm_fix39_match_started()) {
+        memset(&wm_r37n15_diag,0,sizeof(wm_r37n15_diag));
+        return;
+    }
+    size_t n = wm_fix39_active_actor_count(); if (n > 4u) n = 4u;
+    if (!wm_r37n15_diag.in_match) {
+        memset(&wm_r37n15_diag,0,sizeof(wm_r37n15_diag));
+        wm_r37n15_diag.in_match=true;
+        wm_r37n15_diag.last_snapshot_pcnt=st->pcnt;
+        debugf("R37N15 DIAG MATCH-BEGIN actors=%lu\
+",(unsigned long)n);
+        for(unsigned i=0u;i<n;++i) wm_r37n15_print_actor("BEGIN",i,st);
+    }
+    for (unsigned i=0u;i<n;++i) {
+        const wm_arcade_actor_t *a=wm_fix39_actor(i); if(!a||!a->active)continue;
+        const uint32_t disp=st->wrestler_dispatch_ticks_by_player[i];
+        const uint32_t drone=st->drone_ticks_by_player[i];
+        const uint32_t hash=wm_r37n15_actor_hash(i,a);
+        if(disp==wm_r37n15_diag.last_dispatch[i]) {
+            if(wm_r37n15_diag.no_dispatch_ticks[i]!=UINT16_MAX)++wm_r37n15_diag.no_dispatch_ticks[i];
+        } else { wm_r37n15_diag.no_dispatch_ticks[i]=0u; wm_r37n15_diag.dispatch_reported[i]=false; }
+        if(hash==wm_r37n15_diag.last_hash[i]) {
+            if(wm_r37n15_diag.same_state_ticks[i]!=UINT16_MAX)++wm_r37n15_diag.same_state_ticks[i];
+        } else { wm_r37n15_diag.same_state_ticks[i]=0u; wm_r37n15_diag.state_reported[i]=false; }
+        if(!wm_r37n15_diag.dispatch_reported[i] && wm_r37n15_diag.no_dispatch_ticks[i]>=12u && a->ptime<=1) {
+            wm_r37n15_print_actor("DISPATCH-STALL",i,st);
+            wm_r37n15_diag.dispatch_reported[i]=true;
+        }
+        if(!wm_r37n15_diag.state_reported[i] && wm_r37n15_diag.same_state_ticks[i]>=WM_R37N15_STALL_TICKS && drone>wm_r37n15_diag.last_drone[i]) {
+            wm_r37n15_print_actor("STATE-STALL",i,st);
+            wm_r37n15_diag.state_reported[i]=true;
+        }
+        wm_r37n15_diag.last_dispatch[i]=disp;
+        wm_r37n15_diag.last_drone[i]=drone;
+        wm_r37n15_diag.last_hash[i]=hash;
+    }
+    if ((uint32_t)(st->pcnt-wm_r37n15_diag.last_snapshot_pcnt)>=WM_R37N15_DIAG_PERIOD) {
+        wm_r37n15_diag.last_snapshot_pcnt=st->pcnt;
+        for(unsigned i=0u;i<n;++i)wm_r37n15_print_actor("SNAP",i,st);
+    }
+}
+
 static void wm_n64_run_source_ticks_dual(
     wm_app *app,
     wm_n64_source_timer *timer,
@@ -3083,6 +3217,7 @@ static void wm_n64_run_source_ticks_dual(
         source_hcount = (uint32_t)get_ticks();
         source_sp = (uint32_t)(uintptr_t)&source_hcount;
         (void)wm_fix39_mainloop_step(source_hcount, source_sp);
+        wm_r37n15_diag_tick();
 
         for (unsigned p = 0; p < 2u; ++p) {
             tick_input[p].start = false;

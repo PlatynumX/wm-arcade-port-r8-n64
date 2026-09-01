@@ -226,6 +226,12 @@ const char *wm_fix39_actor_source_frame(size_t index);
 const char *wm_fix39_actor_source_torso_frame(size_t index);
 const char *wm_fix39_actor_source_anim(size_t index);
 
+/* R37N15 hardware-freeze diagnostics: read-only views of already-live source
+ * process state. These functions never mutate WRESTLE/MPROC state. */
+int wm_fix39_actor_process_resume(size_t index);
+int wm_fix39_actor_getup_phase(size_t index);
+size_t wm_fix39_actor_smove_active_count(size_t index);
+
 /* Live animation/presentation bridge for COLLIS.ASM.  IANI3 fields come from
  * the exact current arcade image header; callers must not pass inferred sprite
  * bounds.  Collision stays disabled until every active wrestler has a valid

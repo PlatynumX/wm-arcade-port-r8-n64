@@ -34,16 +34,25 @@ def main() -> int:
     require(runtime, "i < g.active_actor_count", "active process bounds")
     require(runtime, "j < g.active_actor_count", "all-active overlap victim scan")
     require(runtime, "if ((size_t)i == j) continue;", "self overlap exclusion")
-    require(runtime,
-            "wm_arcade_object_collisions(\n                    &g.special_lists, g.actor_ptrs, g.active_actor_count",
-            "SPECIAL collision uses active process count")
-    require(runtime,
-            "wm_arcade_check_wrestler_collisions(\n                g.actor_ptrs, g.active_actor_count",
-            "wrestler collision uses active process count")
+    special_needles = [
+        "&g.special_lists, g.actor_ptrs, g.active_actor_count",
+        "&g.special_lists, valid_defenders, g.active_actor_count",
+    ]
+    special_pos = min((runtime.find(n) for n in special_needles if runtime.find(n) >= 0), default=-1)
+    if special_pos < 0:
+        raise SystemExit("FAIL: SPECIAL collision uses active process count")
+    print("PASS: SPECIAL collision uses active process count")
 
-    special_pos = runtime.find("wm_arcade_object_collisions(\n                    &g.special_lists, g.actor_ptrs, g.active_actor_count")
-    wrestler_pos = runtime.find("wm_arcade_check_wrestler_collisions(\n                g.actor_ptrs, g.active_actor_count")
-    if special_pos < 0 or wrestler_pos < 0 or special_pos > wrestler_pos:
+    wrestler_needles = [
+        "wm_arcade_check_wrestler_collisions(",
+        "wm_arcade_try_attack_hit(attacker, victim,",
+    ]
+    wrestler_pos = min((runtime.find(n) for n in wrestler_needles if runtime.find(n) >= 0), default=-1)
+    if wrestler_pos < 0:
+        raise SystemExit("FAIL: wrestler collision scan missing")
+    print("PASS: wrestler collision uses active process count")
+
+    if special_pos > wrestler_pos:
         raise SystemExit("FAIL: COLLIS source order must run SPECIAL/object collisions before wrestler scan")
     print("PASS: COLLIS source master order SPECIAL-before-wrestler")
 

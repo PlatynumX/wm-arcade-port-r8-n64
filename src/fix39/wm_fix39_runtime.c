@@ -3425,6 +3425,29 @@ const char *wm_fix39_actor_source_anim(size_t index)
     return wm_source_anim_runtime_label(&g.source_anim[index]);
 }
 
+int wm_fix39_actor_process_resume(size_t index)
+{
+    if (index >= WM_FIX39_ACTOR_COUNT) return -1;
+    return (int)wm_arcade_wrestler_process_resume(&g.wrestler_process[index]);
+}
+
+int wm_fix39_actor_getup_phase(size_t index)
+{
+    if (index >= WM_FIX39_ACTOR_COUNT || !g.getup[index].active) return -1;
+    return (int)g.getup[index].phase;
+}
+
+size_t wm_fix39_actor_smove_active_count(size_t index)
+{
+    size_t i, count = 0u;
+    if (index >= WM_FIX39_ACTOR_COUNT) return 0u;
+    for (i = 0u; i < g.smoves.proc_count; ++i) {
+        const wm_arcade_smove_proc_t *p = &g.smoves.proc[i];
+        if (p->active && p->owner_slot == (uint8_t)index) ++count;
+    }
+    return count;
+}
+
 const WmFix39ActorTrace *wm_fix39_actor_trace(size_t index)
 {
     if (index >= WM_FIX39_ACTOR_COUNT) return 0;

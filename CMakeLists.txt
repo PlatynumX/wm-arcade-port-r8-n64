@@ -336,6 +336,14 @@ set_tests_properties(wm_combat_adjacent_source_parity_audit PROPERTIES WORKING_D
              COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/audit_r37n16_ani_code_local_label.py)
     set_tests_properties(wm_r37n16_ani_code_local_label_audit PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
+    add_test(NAME wm_r37n17_cross_subr_anim_branch_model
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_r37n17_cross_subr_anim_branches.py)
+    set_tests_properties(wm_r37n17_cross_subr_anim_branch_model PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+    add_test(NAME wm_r37n17_cross_subr_anim_branch_audit
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/audit_r37n17_cross_subr_anim_branches.py)
+    set_tests_properties(wm_r37n17_cross_subr_anim_branch_audit PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
     add_executable(wm_remaining_gap_closure_regression_tests tests/remaining_gap_closure_regression.c)
     target_link_libraries(wm_remaining_gap_closure_regression_tests PRIVATE wmcore)
     target_compile_options(wm_remaining_gap_closure_regression_tests PRIVATE -Wall -Wextra -Wpedantic -UNDEBUG)

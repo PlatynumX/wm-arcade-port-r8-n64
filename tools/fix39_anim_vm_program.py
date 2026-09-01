@@ -110,6 +110,33 @@ def source_files(root):
             if p not in seen and canonical(p):seen.add(p);out.append(p)
     return out
 
+def _r37n17_local_labels(lines):
+    out=set()
+    for raw in lines:
+        code=raw.split(';',1)[0].strip()
+        m=LOCAL_RE.match(code)
+        if m: out.add(m.group(1).lower())
+    return out
+
+def _r37n17_branch_targets(lines):
+    # Return #local targets used by animation branch opcodes in this source span.
+    out=set()
+    for raw in lines:
+        code=raw.split(';',1)[0].strip()
+        if not code or not DATA_LINE_RE.match(code): continue
+        am=ANI_RE.search(code)
+        if not am: continue
+        bi=BRANCH_ARG.get(am.group(1).upper())
+        if bi is None: continue
+        args=split_args(code,am.end())
+        if bi>=len(args): continue
+        t=args[bi].strip()
+        if t.startswith('#'):
+            name=t[1:].strip()
+            if re.fullmatch(r'[A-Za-z_][A-Za-z0-9_]*',name):
+                out.add(name.lower())
+    return out
+
 def collect_subrs(root):
     out=[]
     for p in source_files(root):
@@ -119,9 +146,7 @@ def collect_subrs(root):
             if m:starts.append((i,m.group(1)))
         for j,(st,lab) in enumerate(starts):
             # Midway frequently gives one program several entry labels by
-            # stacking SUBR directives (eg hrt_stand2_anim/hrt_stand8_anim).
-            # An alias has no executable/data text before the next SUBR and
-            # therefore owns the same body as the final alias in that run.
+            # stacking SUBR directives. Preserve the existing alias rule.
             k=j
             while k+1<len(starts):
                 a=starts[k][0]+1;b=starts[k+1][0]
@@ -132,8 +157,30 @@ def collect_subrs(root):
                         meaningful=True;break
                 if meaningful:break
                 k+=1
-            en=starts[k+1][0] if k+1<len(starts) else len(ls)
-            out.append((p,lab,ls[starts[k][0]+1:en]))
+
+            body_start=starts[k][0]+1
+            end_subr=k+1
+
+            # R37N17 / Midway source layout:
+            # SUBR is an entry label, not a hard end-of-program boundary.
+            # Alternate entries routinely branch into #labels that live in the
+            # immediately following SUBR body. Extend only when an unresolved
+            # animation branch target is actually defined in that next body;
+            # repeat for chained shared tails.
+            while end_subr < len(starts):
+                body_end=starts[end_subr][0]
+                body=ls[body_start:body_end]
+                missing=_r37n17_branch_targets(body)-_r37n17_local_labels(body)
+                if not missing: break
+
+                next_end=starts[end_subr+1][0] if end_subr+1<len(starts) else len(ls)
+                next_body=ls[starts[end_subr][0]+1:next_end]
+                next_labels=_r37n17_local_labels(next_body)
+                if not (missing & next_labels): break
+                end_subr+=1
+
+            en=starts[end_subr][0] if end_subr<len(starts) else len(ls)
+            out.append((p,lab,ls[body_start:en]))
     return out
 
 def collect_tables(root,ev):

@@ -137,6 +137,30 @@ def _r37n17_branch_targets(lines):
                 out.add(name.lower())
     return out
 
+def _r37n18_falls_through(lines):
+    # True when Midway animation bytecode naturally continues past this SUBR label.
+    # SUBR is an entry label, not an ANI terminator.
+    terminal={'END','REPEAT','GOTO','CHANGEANIM','CHANGEANIM_TBL'}
+    last=None
+    for raw in lines:
+        code=raw.split(';',1)[0].strip()
+        if not code:
+            continue
+        if LOCAL_RE.match(code):
+            continue
+        am=ANI_RE.search(code) if DATA_LINE_RE.match(code) else None
+        if am:
+            last=('cmd',am.group(1).upper())
+            continue
+        fm=FRAME_RE.search(code)
+        if fm:
+            last=('frame',None)
+    if last is None:
+        return False
+    if last[0]=='frame':
+        return True
+    return last[1] not in terminal
+
 def collect_subrs(root):
     out=[]
     for p in source_files(root):
@@ -171,12 +195,16 @@ def collect_subrs(root):
                 body_end=starts[end_subr][0]
                 body=ls[body_start:body_end]
                 missing=_r37n17_branch_targets(body)-_r37n17_local_labels(body)
-                if not missing: break
+                falls_through=_r37n18_falls_through(body)
 
                 next_end=starts[end_subr+1][0] if end_subr+1<len(starts) else len(ls)
                 next_body=ls[starts[end_subr][0]+1:next_end]
                 next_labels=_r37n17_local_labels(next_body)
-                if not (missing & next_labels): break
+
+                # Preserve either explicit shared-tail branches (R37N17) or
+                # literal source-bytecode fallthrough across the next SUBR
+                # entry label (R37N18). SUBR itself emits no ANI terminator.
+                if not falls_through and not (missing & next_labels): break
                 end_subr+=1
 
             en=starts[end_subr][0] if end_subr<len(starts) else len(ls)

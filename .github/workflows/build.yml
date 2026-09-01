@@ -178,6 +178,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+
+          # R37N15B SC64 DIAGNOSTIC PACKAGING
+          # SummerCart64 exposes 64 MiB ROM SDRAM plus 14 MiB extended ROM.
+          # The full decoded DCS stream archive is retained in git/source, but
+          # omitted from this diagnostic DragonFS image only.  No C/gameplay
+          # source is changed. Smaller cmd_*.wav64/frontend files remain.
+          DCS_HOLD=/tmp/r37n15b-full-dcs-streams
+          rm -rf "$DCS_HOLD"
+          mkdir -p "$DCS_HOLD"
+          DCS_STREAM_COUNT="$(find filesystem/dcs -maxdepth 1 -type f -name 'stream_*.wav64' | wc -l)"
+          DCS_STREAM_BYTES="$(find filesystem/dcs -maxdepth 1 -type f -name 'stream_*.wav64' -printf '%s\n' | awk '{s+=$1} END {print s+0}')"
+          echo "R37N15B: temporarily excluding $DCS_STREAM_COUNT full-bank DCS streams ($DCS_STREAM_BYTES bytes) from diagnostic DragonFS"
+          find filesystem/dcs -maxdepth 1 -type f -name 'stream_*.wav64' -exec mv -t "$DCS_HOLD" -- {} +
+
           rm -rf build/n64 wm_arcade_r9.z64
           make -j2
           test -s wm_arcade_r9.z64
@@ -187,6 +201,12 @@ jobs:
             echo "ERROR: Combat2EH ROM unexpectedly small ($ROM_BYTES bytes); full 4885-frame DFS likely missing" >&2
             exit 1
           }
+          SC64_LIMIT_BYTES=$((78 * 1024 * 1024))
+          test "$ROM_BYTES" -le "$SC64_LIMIT_BYTES" || {
+            echo "ERROR: R37N15B diagnostic ROM is still too large for SummerCart64: $ROM_BYTES > $SC64_LIMIT_BYTES" >&2
+            exit 1
+          }
+          echo "R37N15B: SC64 size gate PASS ($ROM_BYTES <= $SC64_LIMIT_BYTES)"
           ls -lh wm_arcade_r9.z64
 
       - name: Upload ROM and coverage as Actions artifact

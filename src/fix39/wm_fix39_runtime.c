@@ -703,6 +703,10 @@ static void source_native_full_effect(wm_arcade_actor_t *a,const char *label){so
 static void source_anim_code(wm_arcade_actor_t *a,const char *label,void *user)
 {
     (void)user; if(!a||!label)return;
+    /* R37N16 / ANIM.ASM: '#' marks an assembler-local code label.  The
+       serialized animation program preserves that source sigil, but CALL
+       resolves the symbol itself (#setup_run -> setup_run). */
+    if(label[0]=='#')label++;
     /* State-affecting ANI_CODE callbacks used by the eight shipped wrestlers.
        Audio/visual-only callbacks are recorded by source_anim_sound elsewhere. */
     if(!strcmp(label,"am_I_dead")){source_anim_native_am_i_dead(a);return;}

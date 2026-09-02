@@ -3068,6 +3068,21 @@ typedef struct {
 
 static wm_r37n15_diag_state wm_r37n15_diag;
 
+/* R37N19 COMBAT-ROPE-FLIGHT-RECORDER
+ * USB observation only. All mutable fields below are diagnostic-private. */
+typedef struct {
+    bool in_match;
+    uint32_t last_period_pcnt;
+    uint32_t last_full_overlap;
+    uint32_t last_hits;
+    uint32_t last_reactions;
+    uint32_t last_attachments;
+    uint32_t bounce_ticks[4];
+    uint32_t bounce_hash[4];
+} wm_r37n19_diag_state;
+
+static wm_r37n19_diag_state wm_r37n19_diag;
+
 static uint32_t wm_r37n15_mix(uint32_t h, uint32_t v)
 {
     h ^= v;
@@ -3137,9 +3152,150 @@ static void wm_r37n15_print_actor(const char *tag, unsigned i,
            (unsigned long)a->head_grab_time, anim?anim:"-", frame?frame:"-");
 }
 
+static uint32_t wm_r37n19_text_hash(const char *s)
+{
+    uint32_t h=2166136261u;
+    if(!s) return 0u;
+    while(*s) { h^=(uint8_t)*s++; h*=16777619u; }
+    return h;
+}
+
+static void wm_r37n19_print_fighter(unsigned i, const WmFix39Status *st)
+{
+    const wm_arcade_actor_t *a=wm_fix39_actor(i);
+    const char *anim=wm_fix39_actor_source_anim(i);
+    if(!a||!a->active||!st) return;
+    debugf("R37N19 FIGHT t=%lu p=%u in=%ld pm=%u am=%04x at=%u "
+           "xyz=%ld,%ld,%ld vel=%ld,%ld,%ld "
+           "close=%ld/%ld/%ld/%ld "
+           "att=%d wh=%d hm=%d hg=%lu "
+           "abox=%ld,%ld,%ld,%ld,%ld,%ld "
+           "hbox=%ld,%ld,%ld,%ld,%ld,%ld "
+           "apc=%u ains=%lu anim=%s\n",
+           (unsigned long)st->pcnt,i,(long)a->in_ring,
+           (unsigned)a->player_mode,(unsigned)a->attack_mode,
+           (unsigned)a->attack_time,
+           (long)a->x_int,(long)a->y_int,(long)a->z_int,
+           (long)a->x_vel,(long)a->y_vel,(long)a->z_vel,
+           (long)a->closest_dist,(long)a->closest_xdist,
+           (long)a->closest_ydist,(long)a->closest_zdist,
+           wm_r37n15_actor_index(a->attach_proc),
+           wm_r37n15_actor_index(a->who_i_hit),
+           wm_r37n15_actor_index(a->who_hit_me),
+           (unsigned long)a->head_grab_time,
+           (long)a->attack_box.x1,(long)a->attack_box.x2,
+           (long)a->attack_box.y1,(long)a->attack_box.y2,
+           (long)a->attack_box.z1,(long)a->attack_box.z2,
+           (long)a->hurt_box.x1,(long)a->hurt_box.x2,
+           (long)a->hurt_box.y1,(long)a->hurt_box.y2,
+           (long)a->hurt_box.z1,(long)a->hurt_box.z2,
+           (unsigned)wm_fix39_actor_source_anim_pc(i),
+           (unsigned long)wm_fix39_actor_source_anim_instructions(i),
+           anim?anim:"-");
+}
+
+static void wm_r37n19_diag_tick(const WmFix39Status *st)
+{
+    if(!st || !wm_fix39_match_started()) {
+        memset(&wm_r37n19_diag,0,sizeof(wm_r37n19_diag));
+        return;
+    }
+
+    size_t n=wm_fix39_active_actor_count();
+    if(n>4u)n=4u;
+
+    if(!wm_r37n19_diag.in_match) {
+        memset(&wm_r37n19_diag,0,sizeof(wm_r37n19_diag));
+        wm_r37n19_diag.in_match=true;
+        wm_r37n19_diag.last_period_pcnt=st->pcnt;
+        debugf("R37N19 FLIGHT MATCH-BEGIN actors=%lu\n",(unsigned long)n);
+    }
+
+    const bool event =
+        st->combat_full_overlap_ticks != wm_r37n19_diag.last_full_overlap ||
+        st->combat_accepted_hits != wm_r37n19_diag.last_hits ||
+        st->reaction_dispatches != wm_r37n19_diag.last_reactions ||
+        st->attachment_service_calls != wm_r37n19_diag.last_attachments;
+    const bool period =
+        (uint32_t)(st->pcnt-wm_r37n19_diag.last_period_pcnt) >= 53u;
+
+    if(event || period) {
+        debugf("R37N19 PIPE t=%lu coll=%lu chk=%lu boxes=%lu "
+               "x=%lu y=%lu z=%lu full=%lu rej=%lu hits=%lu react=%lu attach=%lu "
+               "ropeproc=%lu ringout=%lu\n",
+               (unsigned long)st->pcnt,
+               (unsigned long)st->combat_collision_ticks,
+               (unsigned long)st->combat_checkhit_ticks,
+               (unsigned long)st->combat_attack_boxes_built,
+               (unsigned long)st->combat_x_overlap_ticks,
+               (unsigned long)st->combat_y_overlap_ticks,
+               (unsigned long)st->combat_z_overlap_ticks,
+               (unsigned long)st->combat_full_overlap_ticks,
+               (unsigned long)st->combat_full_overlap_rejected,
+               (unsigned long)st->combat_accepted_hits,
+               (unsigned long)st->reaction_dispatches,
+               (unsigned long)st->attachment_service_calls,
+               (unsigned long)st->rope_process_ticks,
+               (unsigned long)st->ringout_process_ticks);
+        for(unsigned i=0u;i<n;++i)wm_r37n19_print_fighter(i,st);
+        wm_r37n19_diag.last_period_pcnt=st->pcnt;
+    }
+
+    for(unsigned i=0u;i<n;++i) {
+        const wm_arcade_actor_t *a=wm_fix39_actor(i);
+        const char *anim=wm_fix39_actor_source_anim(i);
+        if(!a||!a->active) continue;
+        const bool bounce=anim && strstr(anim,"_bounce_anim")!=NULL;
+        if(bounce) {
+            const uint32_t hash=wm_r37n19_text_hash(anim);
+            if(wm_r37n19_diag.bounce_hash[i]!=hash) {
+                wm_r37n19_diag.bounce_hash[i]=hash;
+                wm_r37n19_diag.bounce_ticks[i]=0u;
+                debugf("R37N19 BOUNCE-BEGIN t=%lu p=%u in=%ld xyz=%ld,%ld,%ld "
+                       "vel=%ld,%ld,%ld apc=%u ains=%lu anim=%s\n",
+                       (unsigned long)st->pcnt,i,(long)a->in_ring,
+                       (long)a->x_int,(long)a->y_int,(long)a->z_int,
+                       (long)a->x_vel,(long)a->y_vel,(long)a->z_vel,
+                       (unsigned)wm_fix39_actor_source_anim_pc(i),
+                       (unsigned long)wm_fix39_actor_source_anim_instructions(i),anim);
+            }
+            ++wm_r37n19_diag.bounce_ticks[i];
+            if(wm_r37n19_diag.bounce_ticks[i]==64u ||
+               wm_r37n19_diag.bounce_ticks[i]==128u ||
+               (wm_r37n19_diag.bounce_ticks[i]>128u &&
+                (wm_r37n19_diag.bounce_ticks[i]%128u)==0u)) {
+                debugf("R37N19 BOUNCE-STALL t=%lu p=%u dur=%lu in=%ld pm=%u am=%04x "
+                       "xyz=%ld,%ld,%ld vel=%ld,%ld,%ld apc=%u ains=%lu "
+                       "ropeproc=%lu anim=%s\n",
+                       (unsigned long)st->pcnt,i,
+                       (unsigned long)wm_r37n19_diag.bounce_ticks[i],
+                       (long)a->in_ring,(unsigned)a->player_mode,(unsigned)a->attack_mode,
+                       (long)a->x_int,(long)a->y_int,(long)a->z_int,
+                       (long)a->x_vel,(long)a->y_vel,(long)a->z_vel,
+                       (unsigned)wm_fix39_actor_source_anim_pc(i),
+                       (unsigned long)wm_fix39_actor_source_anim_instructions(i),
+                       (unsigned long)st->rope_process_ticks,anim);
+            }
+        } else if(wm_r37n19_diag.bounce_hash[i]) {
+            debugf("R37N19 BOUNCE-END t=%lu p=%u dur=%lu next=%s\n",
+                   (unsigned long)st->pcnt,i,
+                   (unsigned long)wm_r37n19_diag.bounce_ticks[i],
+                   anim?anim:"-");
+            wm_r37n19_diag.bounce_hash[i]=0u;
+            wm_r37n19_diag.bounce_ticks[i]=0u;
+        }
+    }
+
+    wm_r37n19_diag.last_full_overlap=st->combat_full_overlap_ticks;
+    wm_r37n19_diag.last_hits=st->combat_accepted_hits;
+    wm_r37n19_diag.last_reactions=st->reaction_dispatches;
+    wm_r37n19_diag.last_attachments=st->attachment_service_calls;
+}
+
 static void wm_r37n15_diag_tick(void)
 {
     const WmFix39Status *st = wm_fix39_status();
+    wm_r37n19_diag_tick(st);
     if (!st || !wm_fix39_match_started()) {
         memset(&wm_r37n15_diag,0,sizeof(wm_r37n15_diag));
         return;

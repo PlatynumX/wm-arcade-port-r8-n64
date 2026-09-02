@@ -226,6 +226,10 @@ const char *wm_fix39_actor_source_frame(size_t index);
 const char *wm_fix39_actor_source_torso_frame(size_t index);
 const char *wm_fix39_actor_source_anim(size_t index);
 
+/* R37N19 combat/rope flight recorder: read-only source-animation progress. */
+uint16_t wm_fix39_actor_source_anim_pc(size_t index);
+uint32_t wm_fix39_actor_source_anim_instructions(size_t index);
+
 /* R37N15 hardware-freeze diagnostics: read-only views of already-live source
  * process state. These functions never mutate WRESTLE/MPROC state. */
 int wm_fix39_actor_process_resume(size_t index);

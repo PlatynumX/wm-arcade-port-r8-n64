@@ -3452,6 +3452,20 @@ size_t wm_fix39_actor_smove_active_count(size_t index)
     return count;
 }
 
+uint16_t wm_fix39_actor_source_anim_pc(size_t index)
+{
+    if (index >= WM_FIX39_ACTOR_COUNT) return 0u;
+    return g.source_anim[index].pc;
+}
+
+uint32_t wm_fix39_actor_source_anim_instructions(size_t index)
+{
+    if (index >= WM_FIX39_ACTOR_COUNT) return 0u;
+    return g.source_anim[index].instructions_executed;
+}
+
+/* R37N19: end read-only animation progress probes. */
+
 const WmFix39ActorTrace *wm_fix39_actor_trace(size_t index)
 {
     if (index >= WM_FIX39_ACTOR_COUNT) return 0;

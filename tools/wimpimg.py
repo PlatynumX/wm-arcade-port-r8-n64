@@ -24,6 +24,10 @@ from dataclasses import asdict, dataclass
 HEADER_MIN = 28
 IMAGE_ENTRY_SIZE = 0x32
 PALETTE_ENTRY_SIZE = 0x1A
+NUM_DEFAULT_PALETTES = 3
+SEQSCR_ENTRY_SIZE = 0x62
+POINT_TABLE_SIZE = 0x28
+POINT_TABLE_CBOX_OFFSET = 0x24
 
 @dataclass(frozen=True)
 class WimpHeader:
@@ -34,6 +38,12 @@ class WimpHeader:
     anim_sequence_count: int
     anim_script_count: int
     unknown_0e: int
+
+    @property
+    def palette_count(self) -> int:
+        # LIB_HDR.PALCNT. WIMP reserves the first three palette ids as defaults;
+        # only PALCNT-NUM_DEFAULT_PALETTES PALETTE records are stored on disk.
+        return self.unknown_02
 
 @dataclass(frozen=True)
 class ImageEntry:
@@ -47,11 +57,29 @@ class ImageEntry:
     tail_words: tuple[int, ...]
     directory_offset: int
 
+    @property
+    def point_table_index_raw(self) -> int:
+        # Authoritative WIMP IMAGE.PTTBLNUM at byte +0x2E.
+        return self.tail_words[7]
+
+    @property
+    def alternate_palette_raw(self) -> int:
+        # Authoritative WIMP IMAGE.OPALS at byte +0x30.
+        return self.tail_words[8]
+
 @dataclass(frozen=True)
 class PaletteEntry:
     name: str
     color_count: int
     data_offset: int
+    directory_offset: int
+
+@dataclass(frozen=True)
+class PointTableCollision:
+    x: int
+    y: int
+    width_raw: int
+    height_raw: int
     directory_offset: int
 
 
@@ -113,9 +141,9 @@ def parse_images(data: bytes, header: WimpHeader) -> list[ImageEntry]:
             height=u16(data, off + 24),
             palette_index_raw=u16(data, off + 26),
             data_offset=u32(data, off + 28),
-            # Preserve the complete unknown 18-byte image-entry tail.  r6h3
-            # incorrectly assumed its first three words were LOAD2 PWRD1/2/3.
-            # They are not: real HRT_WLK data disproved that assumption.
+            # Preserve bytes +0x20..+0x31 for existing consumers. Authoritative
+            # WIMP fields here are DATA(dword), LIB, ANIX2, ANIY2, ANIZ2, FRM,
+            # PTTBLNUM, OPALS; they are not the packed LOAD2 IANI3 tuple.
             tail_words=tuple(s16(data, off + 32 + j * 2) for j in range(9)),
             directory_offset=off,
         )
@@ -134,10 +162,12 @@ def parse_images(data: bytes, header: WimpHeader) -> list[ImageEntry]:
 def parse_palettes(data: bytes, header: WimpHeader, images: list[ImageEntry]) -> list[PaletteEntry]:
     """Scan the palette directory immediately following image directory entries.
 
-    WIMP does not expose a palette count in the understood part of its header. We
-    therefore stop at the first entry that fails conservative palette validation.
-    The pixel-data area begins before the image directory, so a palette's data must
-    live before the first image pixel offset.
+    LIB_HDR.PALCNT includes WIMP's three built-in default palettes, which are not
+    serialized here. Keep the existing conservative scan so pixel extraction stays
+    compatible with the current generator while the point-table parser uses the
+    authoritative PALCNT value for its metadata offset. The pixel-data area begins
+    before the image directory, so a stored palette's data must live before the
+    first image pixel offset.
     """
     first_pixel = min(i.data_offset for i in images)
     off = header.directory_offset + header.image_count * IMAGE_ENTRY_SIZE
@@ -158,6 +188,83 @@ def parse_palettes(data: bytes, header: WimpHeader, images: list[ImageEntry]) ->
     if not out:
         raise ValueError("no valid WIMP palette directory entries found")
     return out
+
+
+def point_table_pool_offset(data: bytes, header: WimpHeader) -> int:
+    """Return the file offset of the first stored WIMP PTTBL record.
+
+    Source layout is the original WIMP 6.x save layout from wmpstruc.inc /
+    itimg.asm: IMAGE records, physically stored PALETTE records, SEQSCR records,
+    then 0x28-byte PTTBL records. PALCNT includes the three default palettes,
+    which are not serialized as PALETTE records.
+    """
+    stored_palettes = header.palette_count - NUM_DEFAULT_PALETTES
+    if stored_palettes < 0:
+        raise ValueError(
+            f"WIMP PALCNT {header.palette_count} smaller than {NUM_DEFAULT_PALETTES} default palettes"
+        )
+    off = (
+        header.directory_offset
+        + header.image_count * IMAGE_ENTRY_SIZE
+        + stored_palettes * PALETTE_ENTRY_SIZE
+        + (header.anim_sequence_count + header.anim_script_count) * SEQSCR_ENTRY_SIZE
+    )
+    if off > len(data):
+        raise ValueError(
+            f"WIMP point-table pool outside file: off=0x{off:X} file=0x{len(data):X}"
+        )
+    return off
+
+
+def point_table_collision_for_image(
+    data: bytes, header: WimpHeader, images: list[ImageEntry], image: ImageEntry
+) -> PointTableCollision | None:
+    """Resolve IMAGE.PTTBLNUM to the source PTTBL.CBOX record.
+
+    The original WIMP IT load path indexes `ptoset + PTTBLNUM * sizeof(PTTBL)`.
+    A negative PTTBLNUM means the frame has no point table. `images` remains in
+    the signature beside the other WIMP parser helpers and is intentionally not
+    used to reinterpret the source index.
+    """
+    del images
+    pttblnum = image.point_table_index_raw
+    if pttblnum < 0:
+        return None
+
+    off = point_table_pool_offset(data, header) + pttblnum * POINT_TABLE_SIZE
+    end = off + POINT_TABLE_SIZE
+    if end > len(data):
+        raise ValueError(
+            f"{image.name}: PTTBL {pttblnum} outside file: off=0x{off:X} file=0x{len(data):X}"
+        )
+
+    cbox = off + POINT_TABLE_CBOX_OFFSET
+    return PointTableCollision(
+        x=data[cbox + 0],
+        y=data[cbox + 1],
+        width_raw=data[cbox + 2],
+        height_raw=data[cbox + 3],
+        directory_offset=off,
+    )
+
+
+def s8_from_u8(value: int) -> int:
+    value &= 0xFF
+    return value - 0x100 if value & 0x80 else value
+
+
+def historical_bon_tuple(
+    image: ImageEntry, collision: PointTableCollision | None
+) -> tuple[int, int, int, int]:
+    """Reproduce the four-word BON> collision extension emitted by Midway's loader."""
+    if collision is None:
+        return (0, 0, 0, 0)
+    return (
+        s8_from_u8(collision.x) - image.xani,
+        s8_from_u8(collision.y) - image.yani,
+        collision.width_raw,
+        collision.height_raw,
+    )
 
 
 def palette_for_image(image: ImageEntry, images: list[ImageEntry], palettes: list[PaletteEntry]) -> PaletteEntry:

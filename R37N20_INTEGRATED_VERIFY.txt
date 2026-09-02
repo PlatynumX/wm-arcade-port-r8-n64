@@ -1,0 +1,12 @@
+PASS: Step8 authoritative PTTBL parser
+PASS: strict generator BON API
+PASS: build-path generator BON API
+PASS: raw WIMP tail API preserved
+PASS: runtime consumes BON
+PASS: build workflow uses patched generator
+PASS: runtime frame geometry has no raw-tail collision reads
+PASS: BON direct order X/Y/Z/ID
+PASS: exact baseline commit/blob gates
+PASS: cumulative R37N20 Steps 8-10 applied in one operation
+PASS: current GitHub Actions character-asset generator receives BON metadata wiring
+R37N20 INTEGRATED SOURCE VERIFY: PASS

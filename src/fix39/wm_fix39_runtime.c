@@ -845,6 +845,7 @@ static bool source_anim_frame_geometry(wm_arcade_actor_t *a,const char *frame,
                                        wm_source_anim_frame_geometry_t *out,void *user)
 {
     const wm_source_sprite *sp;
+    int16_t bon[WM_WIMP_BON_WORDS];
     (void)user;
     if(!a||!frame||!out)return false;
     sp=wm_character_sprite_find((uint8_t)a->wrestler_num,frame);
@@ -855,10 +856,11 @@ static bool source_anim_frame_geometry(wm_arcade_actor_t *a,const char *frame,
     out->height=sp->height;
     out->xani=sp->xani;
     out->yani=sp->yani;
-    out->iani3x=sp->wimp_tail[WM_WIMP_IANI3_X_SLOT];
-    out->iani3y=sp->wimp_tail[WM_WIMP_IANI3_Y_SLOT];
-    out->iani3z=sp->wimp_tail[WM_WIMP_IANI3_Z_SLOT];
-    out->iani3id=sp->wimp_tail[WM_WIMP_IANI3_ID_SLOT];
+    if(!wm_character_wimp_bon_find((uint8_t)a->wrestler_num,out->source_frame,bon))return false;
+    out->iani3x=bon[0];
+    out->iani3y=bon[1];
+    out->iani3z=bon[2];
+    out->iani3id=bon[3];
     return true;
 }
 static int source_anim_do_roll(wm_arcade_actor_t *a,void *user)

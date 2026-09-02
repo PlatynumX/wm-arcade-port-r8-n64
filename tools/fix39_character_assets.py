@@ -878,7 +878,7 @@ def emit(root,out_c,out_h,out_fs=None):
             print(f'fix39_character_assets: {name}: source-VM corpus added {vm_added} physical WIMP frames')
         charseq[name]=seqs; allframes[name]=frames
 
-    h=['#ifndef WM_CHARACTER_ASSETS_H','#define WM_CHARACTER_ASSETS_H','#include <stddef.h>','#include <stdint.h>','#include <stdbool.h>','#include "wm/visual.h"','#include "wm/bret_sprites.h"','typedef enum wm_character_visual_slot { WM_CV_STAND2,WM_CV_STAND4,WM_CV_TORSO2,WM_CV_TORSO4,WM_CV_WALK2,WM_CV_WALK8,WM_CV_WALK4,WM_CV_WALK6,WM_CV_RUN,WM_CV_LP2,WM_CV_LP4,WM_CV_PP,WM_CV_LK2,WM_CV_LK4,WM_CV_PK,WM_CV_COUNT } wm_character_visual_slot;','const wm_visual_sequence *wm_character_visual(uint8_t roster_id, wm_character_visual_slot slot);','const wm_source_sprite *wm_character_sprite_find(uint8_t roster_id,const char *source_frame);','bool wm_character_wimp_tail_find(uint8_t roster_id,const char *source_frame,int16_t out_tail[WM_WIMP_TAIL_WORDS]);','const wm_source_sprite *wm_character_base_sprite(uint8_t roster_id);','size_t wm_character_sprite_count(uint8_t roster_id);','#endif','']
+    h=['#ifndef WM_CHARACTER_ASSETS_H','#define WM_CHARACTER_ASSETS_H','#include <stddef.h>','#include <stdint.h>','#include <stdbool.h>','#include "wm/visual.h"','#include "wm/bret_sprites.h"','#define WM_WIMP_BON_WORDS 4','typedef enum wm_character_visual_slot { WM_CV_STAND2,WM_CV_STAND4,WM_CV_TORSO2,WM_CV_TORSO4,WM_CV_WALK2,WM_CV_WALK8,WM_CV_WALK4,WM_CV_WALK6,WM_CV_RUN,WM_CV_LP2,WM_CV_LP4,WM_CV_PP,WM_CV_LK2,WM_CV_LK4,WM_CV_PK,WM_CV_COUNT } wm_character_visual_slot;','const wm_visual_sequence *wm_character_visual(uint8_t roster_id, wm_character_visual_slot slot);','const wm_source_sprite *wm_character_sprite_find(uint8_t roster_id,const char *source_frame);','bool wm_character_wimp_tail_find(uint8_t roster_id,const char *source_frame,int16_t out_tail[WM_WIMP_TAIL_WORDS]);','bool wm_character_wimp_bon_find(uint8_t roster_id,const char *source_frame,int16_t out_bon[WM_WIMP_BON_WORDS]);','const wm_source_sprite *wm_character_base_sprite(uint8_t roster_id);','size_t wm_character_sprite_count(uint8_t roster_id);','#endif','']
     out_h.parent.mkdir(parents=True,exist_ok=True); out_h.write_text('\n'.join(h))
     c=['/* Auto-generated from original Midway wrestler ASM/WIMP data. */','#include "wm/character_assets.h"','#include <string.h>','#if defined(__mips__)','#include <stdio.h>','#include <stdlib.h>','#include <stdint.h>','#include <libdragon.h>','#endif','']
     seqsym={}
@@ -892,18 +892,21 @@ def emit(root,out_c,out_h,out_fs=None):
             syms.append(sym)
         seqsym[name]=syms
 
-    bases={}; sprite_arrays={}; counts={}; n64_meta={}
+    bases={}; sprite_arrays={}; counts={}; n64_meta={}; bon_meta={}
     for rid,name,pfx in CHARS:
         frames=allframes[name]; lod,mapping=find_lod(root,frames)
-        containers=OrderedDict(); palette_maps={}; palette_schemes={}; resolved=[]
+        containers=OrderedDict(); palette_maps={}; palette_schemes={}; resolved=[]; frame_bon=[]
         for frame in frames:
             cont=mapping[frame]
             if cont not in containers:
-                path=resolve_case(imgdir,cont); data,_hdr,imgs,pals=wimpimg.parse_file(path); containers[cont]=(path,data,imgs,pals)
+                path=resolve_case(imgdir,cont); data,hdr,imgs,pals=wimpimg.parse_file(path); containers[cont]=(path,data,hdr,imgs,pals)
                 palette_maps[cont],palette_schemes[cont]=_source_palette_map(data,imgs,pals,wimpimg)
                 print(f'fix39_character_assets: {name}:{cont} WIMP palette mapping={palette_schemes[cont]}')
-            path,data,imgs,pals=containers[cont]; im=next((x for x in imgs if x.name.upper()==frame),None)
+            path,data,hdr,imgs,pals=containers[cont]; im=next((x for x in imgs if x.name.upper()==frame),None)
             if not im:raise ValueError(f'{name}:{frame} absent from {path.name}')
+            collision=wimpimg.point_table_collision_for_image(data,hdr,imgs,im)
+            bon=wimpimg.historical_bon_tuple(im,collision)
+            frame_bon.append((frame,bon))
             pal=palette_maps[cont][im.directory_offset]
             raw_px=bytes(wimpimg.read_ci8(data,im))
             try:
@@ -914,6 +917,7 @@ def emit(root,out_c,out_h,out_fs=None):
                 raise ValueError(f'{name}:{frame}:{cont}: {exc}') from exc
             print(f'fix39_character_assets: {name}:{frame} palette={pal.name} colors={pal.color_count} base={pal_base} mode={pal_mode} raw_ci8={min(raw_px) if raw_px else 0}..{max(raw_px) if raw_px else 0} ci8={min(pxvals) if pxvals else 0}..{max(pxvals) if pxvals else 0}', flush=True)
             resolved.append((frame,cont,data,im,pal,eff_words,eff_parts,pxvals))
+        bon_meta[name]=frame_bon
         counts[name]=len(resolved)
         bases[name]=charseq[name]['stand4'][1].frames[0].name
         # N64 branch: keep only compact metadata resident. Pixel/palette payloads
@@ -979,6 +983,19 @@ def emit(root,out_c,out_h,out_fs=None):
             c.append(f'{{"{frame}","{cont}",{im.width},{im.height},{im.xani},{im.yani},{{'+','.join(str(v) for v in im.tail_words)+f'}},{px},{ps},{len(eff_words)}}},')
         c += ['};','#endif','']
 
+    # R37N20 Step9: keep historical LOAD2-family BON metadata resident and
+    # independent from the raw WIMP directory tail.  This is metadata wiring
+    # only; no gameplay consumer is changed in this step.
+    c += ['typedef struct { const char *frame; int16_t bon[WM_WIMP_BON_WORDS]; } wm_char_bon_meta;']
+    bon_arrays={}
+    for rid,name,pfx in CHARS:
+        arr=f'bon_{name}'; bon_arrays[name]=arr
+        c.append(f'static const wm_char_bon_meta {arr}[]={{')
+        for frame,bon in bon_meta[name]:
+            c.append(f'{{"{frame}",{{'+','.join(str(v) for v in bon)+'}},')
+        c.append('};')
+    c.append('')
+
     # Compact N64 metadata and an 8-entry LRU. Eight entries comfortably hold
     # main/base/torso for both active wrestlers while avoiding all-roster art in RAM.
     c += ['#if defined(__mips__)',
@@ -1033,6 +1050,10 @@ def emit(root,out_c,out_h,out_fs=None):
     for rid,name,pfx in CHARS:c.append(f'case {rid}:a={sprite_arrays[name]};n=sizeof({sprite_arrays[name]})/sizeof({sprite_arrays[name]}[0]);break;')
     c += ['default:return false;}for(size_t i=0;i<n;i++)if(strcmp(a[i].source_frame,f)==0){memcpy(out_tail,a[i].wimp_tail,sizeof(a[i].wimp_tail));return true;}return false;',
           '#endif','}']
+    c += ['bool wm_character_wimp_bon_find(uint8_t id,const char *f,int16_t out_bon[WM_WIMP_BON_WORDS]){if(!f||!out_bon)return false;',
+          'const wm_char_bon_meta *a=0;size_t n=0;switch(id){']
+    for rid,name,pfx in CHARS:c.append(f'case {rid}:a={bon_arrays[name]};n=sizeof({bon_arrays[name]})/sizeof({bon_arrays[name]}[0]);break;')
+    c += ['default:return false;}for(size_t i=0;i<n;i++)if(strcmp(a[i].frame,f)==0){memcpy(out_bon,a[i].bon,sizeof(a[i].bon));return true;}return false;}']
     c += ['const wm_source_sprite *wm_character_base_sprite(uint8_t id){switch(id){']
     for rid,name,pfx in CHARS:c.append(f'case {rid}:return wm_character_sprite_find(id,"{bases[name]}");')
     c += ['default:return 0;}}','size_t wm_character_sprite_count(uint8_t id){switch(id){']

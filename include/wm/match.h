@@ -2,6 +2,7 @@
 #define WM_MATCH_H
 
 #include <stdbool.h>
+#include "wm/arcade/wm_arcade_closest.h"
 #include "wm/arcade/wm_arcade_combat.h"
 #include "wm/arcade/wm_arcade_drone.h"
 #include "wm/arcade/wm_arcade_react.h"

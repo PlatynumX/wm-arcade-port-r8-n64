@@ -1054,6 +1054,59 @@ static void test_match_human_bret_walks_right(void) {
         CHECK(m.actors[1].x_fixed == 0);
 }
 
+/*
+ * Regression for the do_punch/near() gap this port previously documented as
+ * its next real blocker (README, port/translation_manifest.json): before
+ * wm_arcade_calc_closest (wm/arcade/wm_arcade_closest.h) was wired into
+ * wm_match_tick, closest_xdist/closest_zdist stayed 0 forever, so
+ * BRET.ASM's do_punch always treated the opponent as point-blank
+ * (near(a,50,45)) and picked the unwired WM_BRET_ANIM_BUTT2/4 headbutt
+ * instead of a mapped punch id -- even through a full human-input
+ * wm_match_tick call. With real per-tick distances now computed, a human
+ * punching from a realistic (non-point-blank) range gets the real, wired
+ * punch animation and its real ATTACK_ON window, through ordinary play --
+ * no direct bret_backend/wm_arcade_move_bret calls, unlike
+ * test_hurt_box_connects_a_real_hit's lower-level check.
+ */
+static void test_match_human_punch_from_range_selects_real_punch(void) {
+    WmRng rng;
+    wm_match_state m;
+    wm_arcade_drone_callbacks_t cb;
+    wm_input_state punch;
+    int guard;
+
+    wm_rng_init(&rng, 0x1234u, NULL, NULL, NULL);
+    wm_match_init(&m);
+    wm_match_start_selected(&m, &rng, WM_ROSTER_BRET);
+
+    /* Opponent stands 200 units away on X -- outside do_punch's
+       near(a,50,45) headbutt range, but still a plausible sparring
+       distance, not a contrived edge case. */
+    m.actors[1].x_int = 200;
+    m.actors[1].x_fixed = 200 << 16;
+
+    memset(&cb, 0, sizeof(cb));
+    cb.rndrng0_upto = test_match_rndrng0_cb;
+    cb.user = &rng;
+
+    memset(&punch, 0, sizeof(punch));
+    punch.light_punch = true;
+    wm_match_tick(&m, &cb, &punch);
+
+    CHECK(m.actors[0].closest_xdist == 200);
+    CHECK(m.bret_visual[0].current_id == WM_BRET_ANIM_PUNCH4);
+    CHECK(m.bret_visual[0].visual.sequence == &wm_bret_light_punch4_anim);
+
+    /* Let the already-started punch animation play out to its real,
+       hand-traced ATTACK_ON frame through ordinary wm_match_tick calls. */
+    memset(&punch, 0, sizeof(punch));
+    for (guard = 0; guard < 10 && !(m.actors[0].anim_mode & WM_MODE_CHECKHIT); ++guard)
+        wm_match_tick(&m, &cb, &punch);
+
+    CHECK(m.actors[0].anim_mode & WM_MODE_CHECKHIT);
+    CHECK(m.actors[0].attack_mode == WM_AMODE_PUNCH);
+}
+
 /* End-to-end through wm_match: when the RNG draws Bret for P1, the actor's
    idle stand animation is real (set once by wm_arcade_bret_ani_init inside
    wm_match_start_attract) and stays selected and running across ticks, since
@@ -1395,6 +1448,7 @@ int main(void) {
     test_human_input_commit();
     test_match_start_selected();
     test_match_human_bret_walks_right();
+    test_match_human_punch_from_range_selects_real_punch();
     test_match_bret_idle_animates();
     test_source_attract_sequence();
     test_attract_source_flow();

@@ -7,22 +7,26 @@
 #include "wm/arcade/wm_arcade_roster.h"
 #include "wm/arcade/wmania_rng.h"
 #include "wm/bret_backend.h"
+#include "wm/human_input.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /*
- * WRESTLE.ASM::start_match, PSTATUS==0 (attract/0-player) path only.
+ * WRESTLE.ASM::start_match: the PSTATUS==0 (attract/0-player, #0plyr) path
+ * via wm_match_start_attract, and the PSTATUS!=0 single-human (#1plyr) path
+ * via wm_match_start_selected. #2plyr (two humans) is not covered.
  *
  * Source flow being translated (WRESTLE.ASM:1568-1797):
  *   start_match -> (PSTATUS==0) #amode_battle -> init_life_data -> #0plyr
- *   wrestler-process creation loop.
+ *   or #1plyr wrestler-process creation loop.
  *
  * NOT yet translated, on purpose:
  *   - INIT_LADDER_TABLE / CURRENT_LADDER / NUM_OPPS multi-drone team
  *     selection: the ladder matchup table is not ported, so this only ever
- *     creates a single opponent instead of a full NUM_OPPS-sized team.
+ *     creates a single opponent instead of a full NUM_OPPS-sized team, for
+ *     either start path.
  *   - The wrestler_main process body itself: DRONE.ASM's script/range data
  *     (wnshort_t/wnmed_t/wnlong_t mode lists, named scripts, and the
  *     blkbase_t/blkatk_t/sklhhdly_t/sklhrdly_t skill tables) is emitted by a
@@ -65,6 +69,13 @@ typedef struct {
        index1 only because no ladder table exists yet to draw it properly. */
     unsigned opponent_wrestler;
 
+    /* wm_match_start_selected only: which actor (if any) is the #1plyr
+       PTYPE_PLAYER human, and its committed-input edge-detection state.
+       Always false/unused after wm_match_start_attract. */
+    bool has_human;
+    unsigned human_actor_index;
+    wm_human_input_state human_input_state;
+
     bool active;
     unsigned tick_count;
 } wm_match_state;
@@ -83,11 +94,27 @@ unsigned wm_match_draw_wrestler_index(WmRng *rng);
  * #0plyr loop does, and points each actor's smart_target at the other. */
 void wm_match_start_attract(wm_match_state *m, WmRng *rng);
 
-/* One source tick: steps each active drone's decision core, then -- for
- * whichever actor(s) drew WM_ROSTER_BRET -- wm_arcade_move_bret() and its
- * visual backend. See the "NOT yet translated" note above for what this
- * does and does not do for every other wrestler. */
-void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb);
+/*
+ * WRESTLE.ASM::start_match's PSTATUS!=0, #1plyr path (WRESTLE.ASM:1713-1731):
+ * a real PTYPE_PLAYER human at PLYRNUM 0 using p1_source_wrestler (the
+ * wrestler @index1 would hold -- i.e. whatever the select screen actually
+ * chose, wm_select_screen_state::selected_source_wrestler, NOT a random
+ * draw), plus one placeholder opponent drone at PLYRNUM 2 (source draws a
+ * full NUM_OPPS team from the ladder table here too; see the file comment).
+ * p1_source_wrestler must be a real wm_arcade_roster_id_t value (0-6 or 8).
+ */
+void wm_match_start_selected(wm_match_state *m, WmRng *rng,
+                             uint8_t p1_source_wrestler);
+
+/* One source tick: for the human actor (if wm_match_start_selected was
+ * used), commits human_input through wm_human_input_commit; every other
+ * actor steps its drone decision core as usual. Then -- for whichever
+ * actor(s) drew WM_ROSTER_BRET -- wm_arcade_move_bret() and its visual
+ * backend. See the file comment for what this does and does not do for
+ * every other wrestler. human_input is ignored (may be NULL) unless
+ * has_human is set. */
+void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
+                   const wm_input_state *human_input);
 
 #ifdef __cplusplus
 }

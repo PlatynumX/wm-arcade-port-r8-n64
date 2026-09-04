@@ -26,6 +26,17 @@ static void init_actor_life(wm_arcade_actor_t *a) {
     a->life = WM_MATCH_LIFE_MAX;
 }
 
+static void init_bret_backends(wm_match_state *m) {
+    unsigned i;
+    for (i = 0; i < WM_MATCH_MAX_ACTORS; ++i) {
+        wm_bret_backend_init(&m->bret_visual[i]);
+        if (m->actors[i].wrestler_num == WM_ROSTER_BRET) {
+            wm_arcade_bret_callbacks_t cb = wm_bret_backend_callbacks(&m->bret_visual[i]);
+            wm_arcade_bret_ani_init(&m->actors[i], &cb);
+        }
+    }
+}
+
 void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
     wm_arcade_actor_t *p1, *opp;
     if (!m) return;
@@ -57,20 +68,55 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
     wm_arcade_drone_init(&m->drones[0], 0);
     wm_arcade_drone_init(&m->drones[1], 0);
 
-    for (unsigned i = 0; i < WM_MATCH_MAX_ACTORS; ++i) {
-        wm_bret_backend_init(&m->bret_visual[i]);
-        if (m->actors[i].wrestler_num == WM_ROSTER_BRET) {
-            wm_arcade_bret_callbacks_t cb = wm_bret_backend_callbacks(&m->bret_visual[i]);
-            wm_arcade_bret_ani_init(&m->actors[i], &cb);
-        }
-    }
+    init_bret_backends(m);
 
     m->actor_count = WM_MATCH_MAX_ACTORS;
     m->active = true;
     m->tick_count = 0;
 }
 
-void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb) {
+void wm_match_start_selected(wm_match_state *m, WmRng *rng,
+                             uint8_t p1_source_wrestler) {
+    wm_arcade_actor_t *p1, *opp;
+    if (!m) return;
+
+    p1 = &m->actors[0];
+    opp = &m->actors[1];
+    init_actor_life(p1);
+    init_actor_life(opp);
+
+    /* WRESTLE.ASM:1713-1727 #1plyr: human, PLYRNUM=0, PSIDE_PLYR1, wrestler
+       from @index1 (whatever the select screen actually chose). */
+    p1->player_num = 0;
+    p1->player_side = WM_MATCH_PSIDE_PLYR1;
+    p1->wrestler_num = (int32_t)p1_source_wrestler;
+
+    /* WRESTLE.ASM:1733-1741 #ndrone: placeholder opponent draw -- see
+       wm/match.h. Not @index2/ladder-derived; PLYRNUM starts at 2. */
+    m->opponent_wrestler = wm_match_draw_wrestler_index(rng);
+    opp->player_num = 2;
+    opp->player_side = WM_MATCH_PSIDE_PLYR2;
+    opp->wrestler_num = (int32_t)m->opponent_wrestler;
+
+    p1->smart_target = opp;
+    opp->smart_target = p1;
+
+    wm_arcade_drone_init(&m->drones[0], 0);
+    wm_arcade_drone_init(&m->drones[1], 0);
+
+    init_bret_backends(m);
+
+    m->has_human = true;
+    m->human_actor_index = 0;
+    wm_human_input_init(&m->human_input_state);
+
+    m->actor_count = WM_MATCH_MAX_ACTORS;
+    m->active = true;
+    m->tick_count = 0;
+}
+
+void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
+                   const wm_input_state *human_input) {
     wm_arcade_drone_world_t world;
     wm_arcade_actor_t *actor_ptrs[WM_MATCH_MAX_ACTORS];
     unsigned i;
@@ -87,10 +133,14 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb) {
     world.first_ladder = 1;
 
     for (i = 0; i < m->actor_count; ++i) {
-        uint16_t old_but = m->drones[i].but;
-        uint16_t old_joy = m->drones[i].joy;
-        (void)wm_arcade_drone_main(&m->actors[i], &m->drones[i], &world, cb);
-        wm_arcade_drone_commit_inputs(&m->actors[i], &m->drones[i], old_but, old_joy);
+        if (m->has_human && i == m->human_actor_index) {
+            wm_human_input_commit(&m->actors[i], &m->human_input_state, human_input);
+        } else {
+            uint16_t old_but = m->drones[i].but;
+            uint16_t old_joy = m->drones[i].joy;
+            (void)wm_arcade_drone_main(&m->actors[i], &m->drones[i], &world, cb);
+            wm_arcade_drone_commit_inputs(&m->actors[i], &m->drones[i], old_but, old_joy);
+        }
 
         if (m->actors[i].wrestler_num == WM_ROSTER_BRET) {
             /* WM_MATCH_MAX_ACTORS==2: the other slot is always the opponent. */

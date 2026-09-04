@@ -128,7 +128,10 @@ typedef enum {
     WM_APP_MODE_ATTRACT = 0,
     WM_APP_MODE_SELECT,
     WM_APP_MODE_PREGAME,
-    WM_APP_MODE_MATCH_INIT
+    WM_APP_MODE_MATCH_INIT,
+    /* WRESTLE.ASM::start_match's #1plyr path -- see wm/match.h for exactly
+       what wm_match_start_selected/wm_match_tick do and don't translate. */
+    WM_APP_MODE_MATCH
 } wm_app_mode;
 
 typedef struct {

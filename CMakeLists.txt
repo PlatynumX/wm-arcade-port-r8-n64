@@ -21,6 +21,7 @@ add_library(wmcore STATIC
     src/core/match.c
     src/core/movement.c
     src/core/bret_backend.c
+    src/core/human_input.c
     src/core/visual.c
     src/core/roster.c
     src/core/attract.c

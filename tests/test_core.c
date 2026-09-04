@@ -9,8 +9,8 @@
 #include "wm/composite.h"
 #include "wm/demo.h"
 #include "wm/bret_backend.h"
-#include "wm/bret_visuals.h"
 #include "wm/game.h"
+#include "wm/human_input.h"
 #include "wm/match.h"
 #include "wm/movement.h"
 #include "wm/roster.h"
@@ -455,7 +455,7 @@ static void test_match_tick_runs_without_crashing(void) {
     cb.user = &rng;
 
     for (unsigned i = 0; i < 500; ++i)
-        wm_match_tick(&m, &cb);
+        wm_match_tick(&m, &cb, NULL);
     CHECK(m.tick_count == 500);
     /* Life is untouched: wm_bret_backend's callbacks don't wire
        adjust_health, and neither wrestler has a backend that could hit the
@@ -466,7 +466,7 @@ static void test_match_tick_runs_without_crashing(void) {
     /* Ticking an inactive match is a documented no-op. */
     wm_match_state inactive;
     wm_match_init(&inactive);
-    wm_match_tick(&inactive, &cb);
+    wm_match_tick(&inactive, &cb, NULL);
     CHECK(inactive.tick_count == 0);
 }
 
@@ -647,6 +647,111 @@ static void test_integrate_position(void) {
     CHECK(a.z_int == a.z_fixed >> 16);
 }
 
+static void test_human_input_commit(void) {
+    wm_arcade_actor_t a;
+    wm_human_input_state hs;
+    wm_input_state in;
+
+    memset(&a, 0, sizeof(a));
+    wm_human_input_init(&hs);
+
+    memset(&in, 0, sizeof(in));
+    in.light_punch = true;
+    in.block = true;
+    in.stick_x = 100; /* > deadzone */
+    wm_human_input_commit(&a, &hs, &in);
+    CHECK(a.but_val_cur == (WM_BTN_PUNCH | WM_BTN_BLOCK));
+    CHECK(a.but_val_down == (WM_BTN_PUNCH | WM_BTN_BLOCK)); /* fresh press */
+    CHECK(a.but_val_up == 0);
+    CHECK(a.stick_val_cur == WM_MOVE_RIGHT);
+
+    /* Block held, punch edge gone (wm_input_state's attack fields are
+       platform-pre-edge-detected -- see wm/human_input.h): PUNCH lifts,
+       BLOCK stays down without a fresh but_val_down for it. */
+    memset(&in, 0, sizeof(in));
+    in.block = true;
+    wm_human_input_commit(&a, &hs, &in);
+    CHECK(a.but_val_cur == WM_BTN_BLOCK);
+    CHECK(a.but_val_down == 0);
+    CHECK(a.but_val_up == WM_BTN_PUNCH);
+
+    /* Small stick deflection stays inside the deadzone. */
+    memset(&in, 0, sizeof(in));
+    in.stick_x = 5;
+    in.stick_y = -5;
+    wm_human_input_commit(&a, &hs, &in);
+    CHECK(a.stick_val_cur == 0);
+
+    /* NULL input is a defined "everything released" tick, not a crash. */
+    wm_human_input_commit(&a, &hs, NULL);
+    CHECK(a.but_val_cur == 0);
+    CHECK(a.stick_val_cur == 0);
+}
+
+static void test_match_start_selected(void) {
+    WmRng rng;
+    wm_match_state m;
+    wm_rng_init(&rng, 0xabcdu, NULL, NULL, NULL);
+    wm_match_init(&m);
+
+    wm_match_start_selected(&m, &rng, WM_ROSTER_BRET);
+    CHECK(m.active);
+    CHECK(m.has_human);
+    CHECK(m.human_actor_index == 0);
+    CHECK(m.opponent_wrestler <= 8 && m.opponent_wrestler != 7);
+
+    /* WRESTLE.ASM #1plyr: human PLYRNUM=0/PSIDE_PLYR1, drone PLYRNUM=2/
+       PSIDE_PLYR2 -- different from #0plyr's 2/3 (see wm/match.h). */
+    CHECK(m.actors[0].player_num == 0);
+    CHECK(m.actors[0].player_side == 0);
+    CHECK(m.actors[0].wrestler_num == WM_ROSTER_BRET);
+    CHECK(m.actors[0].life == 163);
+    CHECK(m.actors[1].player_num == 2);
+    CHECK(m.actors[1].player_side == 1);
+    CHECK(m.actors[0].smart_target == &m.actors[1]);
+    CHECK(m.actors[1].smart_target == &m.actors[0]);
+
+    /* wm_arcade_bret_ani_init already ran for the human Bret actor. */
+    CHECK(m.bret_visual[0].visual.sequence != NULL);
+}
+
+/* End-to-end: a human holding the stick right actually walks Bret to the
+   right, through the real wm_match_tick -> wm_human_input_commit ->
+   wm_arcade_move_bret -> execute_walk -> set_velocities -> position chain,
+   not a synthetic call into wm_execute_walk directly. */
+static void test_match_human_bret_walks_right(void) {
+    WmRng rng;
+    wm_match_state m;
+    wm_arcade_drone_callbacks_t cb;
+    wm_input_state right;
+
+    wm_rng_init(&rng, 0x42u, NULL, NULL, NULL);
+    wm_match_init(&m);
+    wm_match_start_selected(&m, &rng, WM_ROSTER_BRET);
+    int32_t start_x = m.actors[0].x_fixed;
+
+    memset(&cb, 0, sizeof(cb));
+    cb.rndrng0_upto = test_match_rndrng0_cb;
+    cb.user = &rng;
+
+    memset(&right, 0, sizeof(right));
+    right.stick_x = 100;
+    for (unsigned i = 0; i < 30; ++i)
+        wm_match_tick(&m, &cb, &right);
+
+    CHECK(m.actors[0].stick_val_cur == WM_MOVE_RIGHT);
+    CHECK(m.actors[0].move_dir == WM_MOVE_RIGHT);
+    CHECK(m.actors[0].x_vel == WM_BRET_WALK_VEL);
+    CHECK(m.actors[0].x_fixed > start_x);
+    CHECK(!(m.actors[0].obj_control & WM_OBJ_FLIPH));
+
+    /* The CPU opponent (a non-Bret wrestler unless the placeholder draw
+       happened to also land on Bret) never receives human input and keeps
+       stepping its drone core as before. */
+    if (m.actors[1].wrestler_num != WM_ROSTER_BRET)
+        CHECK(m.actors[1].x_fixed == 0);
+}
+
 /* End-to-end through wm_match: when the RNG draws Bret for P1, the actor's
    idle stand animation is real (set once by wm_arcade_bret_ani_init inside
    wm_match_start_attract) and stays selected and running across ticks, since
@@ -681,7 +786,7 @@ static void test_match_bret_idle_animates(void) {
     cb.rndrng0_upto = test_match_rndrng0_cb;
     cb.user = &rng;
     for (unsigned i = 0; i < 50; ++i) {
-        wm_match_tick(&m, &cb);
+        wm_match_tick(&m, &cb, NULL);
         CHECK(m.bret_visual[0].visual.sequence == initial);
     }
     /* wm_visual_tick actually advanced frames over 50 ticks; it isn't a
@@ -978,6 +1083,9 @@ int main(void) {
     test_set_velocities_ground_boost();
     test_execute_walk_flip_and_zip();
     test_integrate_position();
+    test_human_input_commit();
+    test_match_start_selected();
+    test_match_human_bret_walks_right();
     test_match_bret_idle_animates();
     test_source_attract_sequence();
     test_attract_source_flow();

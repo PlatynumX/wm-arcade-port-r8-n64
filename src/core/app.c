@@ -394,7 +394,7 @@ static bool tick_gameplay(wm_app *app, const wm_input_state *input) {
         memset(&cb, 0, sizeof(cb));
         cb.rndrng0_upto = drone_rndrng0_adapter;
         cb.user = &app->rng;
-        wm_match_tick(&app->match, &cb);
+        wm_match_tick(&app->match, &cb, NULL);
     }
 
     ++a->call_ticks;
@@ -495,7 +495,17 @@ void wm_app_tick_dual(wm_app *app,
         return;
     }
     if (app->mode == WM_APP_MODE_MATCH_INIT) {
-        /* Explicit boundary: start_match is the next source subsystem. */
+        wm_match_start_selected(&app->match, &app->rng,
+                                app->pregame.player_source_wrestler);
+        app->mode = WM_APP_MODE_MATCH;
+        return;
+    }
+    if (app->mode == WM_APP_MODE_MATCH) {
+        wm_arcade_drone_callbacks_t cb;
+        memset(&cb, 0, sizeof(cb));
+        cb.rndrng0_upto = drone_rndrng0_adapter;
+        cb.user = &app->rng;
+        wm_match_tick(&app->match, &cb, input);
         return;
     }
     if (!input) input = &no_input;

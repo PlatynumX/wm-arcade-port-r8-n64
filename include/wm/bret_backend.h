@@ -69,12 +69,15 @@ extern "C" {
  * reselection are held while a turn (leg or torso) is still playing, which
  * both matches the source and is load-bearing here -- without it, the
  * instant FACING_DIR catch-up would truncate every turn animation almost
- * immediately. Not translated: ANI_XFLIP inside the leg's own turn anims
- * (a purely cosmetic sprite-mirror mid-turn, no state consequence this
- * port tracks) and hrt_stand6_anim/hrt_stand8_anim as distinct symbols --
- * both are literal SUBR aliases of hrt_stand4_anim/hrt_stand2_anim
- * (HRTSEQ1.ASM:50,75) and rotate_table simply reuses those two pointers,
- * same reasoning already established for hrt_torso6/8_anim.
+ * immediately. The leg turn anims' own ANI_XFLIP (4 of the 6 canonical
+ * bodies -- the two adjacent-quadrant ones never cross the sprite's own
+ * left/right mirror line) is wired too: wm_bret_backend_tick toggles
+ * OBJ_CONTROL's WM_OBJ_FLIPH at its real, hand-traced frame index, same
+ * mechanism as the torso's ANI_SETFACING above. Not translated:
+ * hrt_stand6_anim/hrt_stand8_anim as distinct symbols -- both are literal
+ * SUBR aliases of hrt_stand4_anim/hrt_stand2_anim (HRTSEQ1.ASM:50,75) and
+ * rotate_table simply reuses those two pointers, same reasoning already
+ * established for hrt_torso6/8_anim.
  */
 
 typedef struct {

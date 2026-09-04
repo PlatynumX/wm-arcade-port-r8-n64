@@ -110,22 +110,33 @@ const wm_visual_sequence *wm_bret_torso_anim(int facing_compass, int new_facing_
 }
 
 /*
- * HRTSEQ1.ASM:460-524: each turn2 sequence's real ANI_SETFACING command(s),
- * hand-traced to the 0-based wm_visual_sequence frame index they fall right
- * before (same "falls right before the WL frame at active_frame_index"
- * convention as attack_windows below). ANI_SETFACING is ANIM.ASM's
- * _ani_setfacing (ANIM.ASM:1242-1249): an unconditional FACING_DIR=
- * NEW_FACING_DIR copy, fired live off whatever NEW_FACING_DIR is at that
- * instant, not a value captured when the turn started. The two 4-frame
- * sequences (4-to-8/6-to-2 and 2-to-6/8-to-4, the "opposite quadrant" 180-
- * degree-ish turns) carry two such commands. */
+ * Shared shape for "this sequence fires an instant, once-per-crossing
+ * command right before 1 or 2 specific 0-based frame indices" -- both
+ * ANI_SETFACING in the torso turn2 sequences and ANI_XFLIP in the leg turn
+ * sequences (both below) take this form, hand-traced the same way
+ * attack_windows' active_frame_index is: the command falls right before
+ * the WL frame line at that index. */
 typedef struct {
     const wm_visual_sequence *seq;
     unsigned char indices[2];
     unsigned char count;
-} wm_bret_torso_turn_setfacing_t;
+} wm_bret_frame_markers_t;
 
-static const wm_bret_torso_turn_setfacing_t torso_turn_setfacing[] = {
+static bool frame_index_is_marked(const wm_bret_frame_markers_t *w, size_t frame_index) {
+    unsigned char i;
+    if (!w) return false;
+    for (i = 0; i < w->count; ++i)
+        if (w->indices[i] == frame_index) return true;
+    return false;
+}
+
+/* HRTSEQ1.ASM:460-524: each turn2 sequence's real ANI_SETFACING command(s).
+   ANI_SETFACING is ANIM.ASM's _ani_setfacing (ANIM.ASM:1242-1249): an
+   unconditional FACING_DIR=NEW_FACING_DIR copy, fired live off whatever
+   NEW_FACING_DIR is at that instant, not a value captured when the turn
+   started. The two 4-frame sequences (4-to-8/6-to-2 and 2-to-6/8-to-4, the
+   "opposite quadrant" 180-degree-ish turns) carry two such commands. */
+static const wm_bret_frame_markers_t torso_turn_setfacing[] = {
     { &wm_bret_2_to_4_turn2_anim, {1, 0}, 1 },
     { &wm_bret_4_to_2_turn2_anim, {1, 0}, 1 },
     { &wm_bret_4_to_6_turn2_anim, {1, 0}, 1 },
@@ -136,7 +147,7 @@ static const wm_bret_torso_turn_setfacing_t torso_turn_setfacing[] = {
 #define WM_BRET_TORSO_TURN_SETFACING_COUNT \
     (sizeof(torso_turn_setfacing) / sizeof(torso_turn_setfacing[0]))
 
-static const wm_bret_torso_turn_setfacing_t *find_torso_turn_setfacing(const wm_visual_sequence *seq) {
+static const wm_bret_frame_markers_t *find_torso_turn_setfacing(const wm_visual_sequence *seq) {
     size_t i;
     if (!seq) return NULL;
     for (i = 0; i < WM_BRET_TORSO_TURN_SETFACING_COUNT; ++i)
@@ -144,12 +155,29 @@ static const wm_bret_torso_turn_setfacing_t *find_torso_turn_setfacing(const wm_
     return NULL;
 }
 
-static bool torso_frame_is_setfacing(const wm_bret_torso_turn_setfacing_t *w, size_t frame_index) {
-    unsigned char i;
-    if (!w) return false;
-    for (i = 0; i < w->count; ++i)
-        if (w->indices[i] == frame_index) return true;
-    return false;
+/*
+ * HRTSEQ1.ASM:390-454 ("TURNS (STANDS)", the leg's own rotate_table above):
+ * the real ANI_XFLIP each carries. ANI_XFLIP is ANIM.ASM's _ani_xflip
+ * (ANIM.ASM:939-947): OBJ_CONTROL ^= M_FLIPH (WM_OBJ_FLIPH here). Only 4 of
+ * the 6 canonical bodies carry one at all -- 2_to_4/4_to_2 (adjacent-
+ * quadrant turns, e.g. up-right<->right) never cross the sprite's own
+ * left/right mirror line, so they have none; confirmed by reading each
+ * header directly, not assumed. */
+static const wm_bret_frame_markers_t leg_turn_xflip[] = {
+    { &wm_bret_4_to_6_turn_anim, {1, 0}, 1 },
+    { &wm_bret_2_to_8_turn_anim, {1, 0}, 1 },
+    { &wm_bret_4_to_8_turn_anim, {3, 0}, 1 },
+    { &wm_bret_2_to_6_turn_anim, {3, 0}, 1 },
+};
+#define WM_BRET_LEG_TURN_XFLIP_COUNT \
+    (sizeof(leg_turn_xflip) / sizeof(leg_turn_xflip[0]))
+
+static const wm_bret_frame_markers_t *find_leg_turn_xflip(const wm_visual_sequence *seq) {
+    size_t i;
+    if (!seq) return NULL;
+    for (i = 0; i < WM_BRET_LEG_TURN_XFLIP_COUNT; ++i)
+        if (leg_turn_xflip[i].seq == seq) return &leg_turn_xflip[i];
+    return NULL;
 }
 
 const wm_visual_sequence *wm_bret_anim_sequence(wm_arcade_bret_anim_id_t id) {
@@ -429,22 +457,28 @@ void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
                           uint16_t round_tickcount) {
     const wm_bret_attack_window_t *w;
     bool at_active_frame;
-    size_t torso_old_frame_index;
+    size_t leg_old_frame_index, torso_old_frame_index;
 
     if (!bva) return;
+    leg_old_frame_index = bva->visual.frame_index;
     wm_visual_tick(&bva->visual);
     torso_old_frame_index = bva->torso_visual.frame_index;
     wm_visual_tick(&bva->torso_visual);
 
-    /* HRTSEQ1.ASM's ANI_SETFACING (torso_turn_setfacing above): fires
-       exactly once per crossing into a marked frame, matching the real
-       animation interpreter executing that command exactly once as it
-       reaches that point in the sequence -- not every tick the frame is
-       held. */
+    /* HRTSEQ1.ASM's ANI_SETFACING (torso_turn_setfacing above) and
+       ANI_XFLIP (leg_turn_xflip above): each fires exactly once per
+       crossing into a marked frame, matching the real animation
+       interpreter executing that command exactly once as it reaches that
+       point in the sequence -- not every tick the frame is held. */
     if (actor && bva->torso_visual.frame_index != torso_old_frame_index &&
-        torso_frame_is_setfacing(find_torso_turn_setfacing(bva->torso_visual.sequence),
-                                 bva->torso_visual.frame_index)) {
+        frame_index_is_marked(find_torso_turn_setfacing(bva->torso_visual.sequence),
+                              bva->torso_visual.frame_index)) {
         actor->facing_dir = actor->new_facing_dir;
+    }
+    if (actor && bva->visual.frame_index != leg_old_frame_index &&
+        frame_index_is_marked(find_leg_turn_xflip(bva->visual.sequence),
+                              bva->visual.frame_index)) {
+        actor->obj_control = (uint16_t)(actor->obj_control ^ WM_OBJ_FLIPH);
     }
 
     if (!actor) return;

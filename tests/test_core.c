@@ -1695,6 +1695,59 @@ static void test_bret_backend_tick_promotes_facing_dir_via_setfacing(void) {
 }
 
 /*
+ * HRTSEQ1.ASM:390-454 ANI_XFLIP (leg_turn_xflip in src/core/bret_backend.c):
+ * toggles OBJ_CONTROL's M_FLIPH bit, hand-traced against
+ * hrt_4_to_8_turn_anim's real 4-frame, 3-ticks-each body (HRTSEQ1.ASM:
+ * 432-442) -- the marker falls right before frame index 3.
+ */
+static void test_bret_backend_tick_toggles_flip_via_xflip(void) {
+    wm_arcade_actor_t a;
+    wm_bret_backend_actor bva;
+    int guard;
+    uint16_t start_flip, after_first;
+
+    memset(&a, 0, sizeof(a));
+    wm_bret_backend_init(&bva);
+    start_flip = (uint16_t)(a.obj_control & WM_OBJ_FLIPH);
+    wm_visual_start(&bva.visual, &wm_bret_4_to_8_turn_anim);
+
+    for (guard = 0; guard < 15 && (a.obj_control & WM_OBJ_FLIPH) == start_flip; ++guard)
+        wm_bret_backend_tick(&bva, &a, 0);
+    CHECK((a.obj_control & WM_OBJ_FLIPH) != start_flip);
+    CHECK(bva.visual.frame_index == 3);
+    CHECK(!bva.visual.ended);
+
+    /* One shot: further ticks (through frame 3's remaining duration and
+       past the sequence naturally ending) don't toggle it again. */
+    after_first = (uint16_t)(a.obj_control & WM_OBJ_FLIPH);
+    for (guard = 0; guard < 10 && !bva.visual.ended; ++guard)
+        wm_bret_backend_tick(&bva, &a, 0);
+    CHECK(bva.visual.ended);
+    CHECK((uint16_t)(a.obj_control & WM_OBJ_FLIPH) == after_first);
+}
+
+/* hrt_2_to_4_turn_anim/hrt_4_to_2_turn_anim are the real exception: no
+   ANI_XFLIP at all (adjacent-quadrant turns never cross the sprite's own
+   left/right mirror line) -- confirm OBJ_CONTROL never toggles across a
+   full play-through. */
+static void test_bret_backend_tick_no_xflip_for_adjacent_quadrant_turn(void) {
+    wm_arcade_actor_t a;
+    wm_bret_backend_actor bva;
+    int guard;
+    uint16_t start_flip;
+
+    memset(&a, 0, sizeof(a));
+    wm_bret_backend_init(&bva);
+    start_flip = (uint16_t)(a.obj_control & WM_OBJ_FLIPH);
+    wm_visual_start(&bva.visual, &wm_bret_2_to_4_turn_anim);
+
+    for (guard = 0; guard < 10 && !bva.visual.ended; ++guard)
+        wm_bret_backend_tick(&bva, &a, 0);
+    CHECK(bva.visual.ended);
+    CHECK((uint16_t)(a.obj_control & WM_OBJ_FLIPH) == start_flip);
+}
+
+/*
  * WRESTLE.ASM::execute_walk's own top-of-function INTURN freeze
  * (WRESTLE.ASM:5222-5252): "if our INTURN bit is set ... treat it like
  * UNINT" -- movement and reselection are held while a turn (leg or torso)
@@ -2541,6 +2594,8 @@ int main(void) {
     test_bret_backend_execute_walk_facing_lags_new_facing_while_moving();
     test_bret_backend_execute_walk_zip_selects_rotate_anim();
     test_bret_backend_tick_promotes_facing_dir_via_setfacing();
+    test_bret_backend_tick_toggles_flip_via_xflip();
+    test_bret_backend_tick_no_xflip_for_adjacent_quadrant_turn();
     test_bret_backend_execute_walk_freezes_while_leg_inturn();
     test_bret_backend_execute_walk_freezes_while_torso_inturn();
     test_bret_backend_execute_walk_resumes_after_leg_turn_ends();

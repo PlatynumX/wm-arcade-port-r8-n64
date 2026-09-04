@@ -441,6 +441,170 @@ const wm_visual_sequence wm_bret_walk8_f4_anim = {
     .repeat = true,
 };
 
+static const wm_visual_frame bret_2_to_4_turn_frames[] = {
+    {"H1TL5A03", 3},
+    {"H1TL5A04", 3},
+};
+
+const wm_visual_sequence wm_bret_2_to_4_turn_anim = {
+    .source_file = "HRTSEQ1.ASM",
+    .source_label = "hrt_2_to_4_turn_anim",
+    .frames = bret_2_to_4_turn_frames,
+    .frame_count = sizeof(bret_2_to_4_turn_frames) / sizeof(bret_2_to_4_turn_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_4_to_2_turn_frames[] = {
+    {"H1TL5A04", 3},
+    {"H1TL5A03", 3},
+};
+
+const wm_visual_sequence wm_bret_4_to_2_turn_anim = {
+    .source_file = "HRTSEQ1.ASM",
+    .source_label = "hrt_4_to_2_turn_anim",
+    .frames = bret_4_to_2_turn_frames,
+    .frame_count = sizeof(bret_4_to_2_turn_frames) / sizeof(bret_4_to_2_turn_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_4_to_6_turn_frames[] = {
+    {"H1TL5A05", 3},
+    {"H1TL5A05", 3},
+};
+
+const wm_visual_sequence wm_bret_4_to_6_turn_anim = {
+    .source_file = "HRTSEQ1.ASM",
+    .source_label = "hrt_4_to_6_turn_anim",
+    .frames = bret_4_to_6_turn_frames,
+    .frame_count = sizeof(bret_4_to_6_turn_frames) / sizeof(bret_4_to_6_turn_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_2_to_8_turn_frames[] = {
+    {"H1TL5A02", 3},
+    {"H1TL5A02", 3},
+};
+
+const wm_visual_sequence wm_bret_2_to_8_turn_anim = {
+    .source_file = "HRTSEQ1.ASM",
+    .source_label = "hrt_2_to_8_turn_anim",
+    .frames = bret_2_to_8_turn_frames,
+    .frame_count = sizeof(bret_2_to_8_turn_frames) / sizeof(bret_2_to_8_turn_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_4_to_8_turn_frames[] = {
+    {"H1TL5A04", 3},
+    {"H1TL5A03", 3},
+    {"H1TL5A02", 3},
+    {"H1TL5A02", 3},
+};
+
+const wm_visual_sequence wm_bret_4_to_8_turn_anim = {
+    .source_file = "HRTSEQ1.ASM",
+    .source_label = "hrt_4_to_8_turn_anim",
+    .frames = bret_4_to_8_turn_frames,
+    .frame_count = sizeof(bret_4_to_8_turn_frames) / sizeof(bret_4_to_8_turn_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_2_to_6_turn_frames[] = {
+    {"H1TL5A03", 3},
+    {"H1TL5A04", 3},
+    {"H1TL5A05", 3},
+    {"H1TL5A05", 3},
+};
+
+const wm_visual_sequence wm_bret_2_to_6_turn_anim = {
+    .source_file = "HRTSEQ1.ASM",
+    .source_label = "hrt_2_to_6_turn_anim",
+    .frames = bret_2_to_6_turn_frames,
+    .frame_count = sizeof(bret_2_to_6_turn_frames) / sizeof(bret_2_to_6_turn_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_2_to_4_turn2_frames[] = {
+    {"H1TT5A03", 3},
+    {"H1TT5A04", 3},
+};
+
+const wm_visual_sequence wm_bret_2_to_4_turn2_anim = {
+    .source_file = "HRTSEQ1.ASM",
+    .source_label = "hrt_2_to_4_turn2_anim",
+    .frames = bret_2_to_4_turn2_frames,
+    .frame_count = sizeof(bret_2_to_4_turn2_frames) / sizeof(bret_2_to_4_turn2_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_4_to_2_turn2_frames[] = {
+    {"H1TT5A04", 3},
+    {"H1TT5A03", 3},
+};
+
+const wm_visual_sequence wm_bret_4_to_2_turn2_anim = {
+    .source_file = "HRTSEQ1.ASM",
+    .source_label = "hrt_4_to_2_turn2_anim",
+    .frames = bret_4_to_2_turn2_frames,
+    .frame_count = sizeof(bret_4_to_2_turn2_frames) / sizeof(bret_4_to_2_turn2_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_4_to_6_turn2_frames[] = {
+    {"H1TT5A05", 3},
+    {"H1TT5A05", 3},
+};
+
+const wm_visual_sequence wm_bret_4_to_6_turn2_anim = {
+    .source_file = "HRTSEQ1.ASM",
+    .source_label = "hrt_4_to_6_turn2_anim",
+    .frames = bret_4_to_6_turn2_frames,
+    .frame_count = sizeof(bret_4_to_6_turn2_frames) / sizeof(bret_4_to_6_turn2_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_2_to_8_turn2_frames[] = {
+    {"H1TT5A02", 3},
+    {"H1TT5A02", 3},
+};
+
+const wm_visual_sequence wm_bret_2_to_8_turn2_anim = {
+    .source_file = "HRTSEQ1.ASM",
+    .source_label = "hrt_2_to_8_turn2_anim",
+    .frames = bret_2_to_8_turn2_frames,
+    .frame_count = sizeof(bret_2_to_8_turn2_frames) / sizeof(bret_2_to_8_turn2_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_4_to_8_turn2_frames[] = {
+    {"H1TT5A05", 3},
+    {"H1TT5A05", 3},
+    {"H1TT5A04", 3},
+    {"H1TT5A03", 3},
+};
+
+const wm_visual_sequence wm_bret_4_to_8_turn2_anim = {
+    .source_file = "HRTSEQ1.ASM",
+    .source_label = "hrt_4_to_8_turn2_anim",
+    .frames = bret_4_to_8_turn2_frames,
+    .frame_count = sizeof(bret_4_to_8_turn2_frames) / sizeof(bret_4_to_8_turn2_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_2_to_6_turn2_frames[] = {
+    {"H1TT5A03", 3},
+    {"H1TT5A04", 3},
+    {"H1TT5A05", 3},
+    {"H1TT5A05", 3},
+};
+
+const wm_visual_sequence wm_bret_2_to_6_turn2_anim = {
+    .source_file = "HRTSEQ1.ASM",
+    .source_label = "hrt_2_to_6_turn2_anim",
+    .frames = bret_2_to_6_turn2_frames,
+    .frame_count = sizeof(bret_2_to_6_turn2_frames) / sizeof(bret_2_to_6_turn2_frames[0]),
+    .repeat = false,
+};
+
 static const wm_visual_frame bret_run_frames[] = {
     {"H3RN3A01", 2},
     {"H3RN3A02", 3},

@@ -33,6 +33,18 @@ python3 "$ROOT/tools/wlanim.py" \
     --sequence hrt_walk6_f4_anim wm_bret_walk6_f4_anim bret_walk6_f4_frames \
     --sequence hrt_walk8_f2_anim wm_bret_walk8_f2_anim bret_walk8_f2_frames \
     --sequence hrt_walk8_f4_anim wm_bret_walk8_f4_anim bret_walk8_f4_frames \
+    --sequence hrt_2_to_4_turn_anim wm_bret_2_to_4_turn_anim bret_2_to_4_turn_frames \
+    --sequence hrt_4_to_2_turn_anim wm_bret_4_to_2_turn_anim bret_4_to_2_turn_frames \
+    --sequence hrt_4_to_6_turn_anim wm_bret_4_to_6_turn_anim bret_4_to_6_turn_frames \
+    --sequence hrt_2_to_8_turn_anim wm_bret_2_to_8_turn_anim bret_2_to_8_turn_frames \
+    --sequence hrt_4_to_8_turn_anim wm_bret_4_to_8_turn_anim bret_4_to_8_turn_frames \
+    --sequence hrt_2_to_6_turn_anim wm_bret_2_to_6_turn_anim bret_2_to_6_turn_frames \
+    --sequence hrt_2_to_4_turn2_anim wm_bret_2_to_4_turn2_anim bret_2_to_4_turn2_frames \
+    --sequence hrt_4_to_2_turn2_anim wm_bret_4_to_2_turn2_anim bret_4_to_2_turn2_frames \
+    --sequence hrt_4_to_6_turn2_anim wm_bret_4_to_6_turn2_anim bret_4_to_6_turn2_frames \
+    --sequence hrt_2_to_8_turn2_anim wm_bret_2_to_8_turn2_anim bret_2_to_8_turn2_frames \
+    --sequence hrt_4_to_8_turn2_anim wm_bret_4_to_8_turn2_anim bret_4_to_8_turn2_frames \
+    --sequence hrt_2_to_6_turn2_anim wm_bret_2_to_6_turn2_anim bret_2_to_6_turn2_frames \
     --slice hrt_run_anim wm_bret_run_anim bret_run_frames true \
     --out "$ROOT/src/generated/bret_visuals.c"
 python3 "$ROOT/tools/wlanim.py" \

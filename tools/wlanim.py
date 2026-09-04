@@ -23,7 +23,8 @@ WAIT_FRAME_RE = re.compile(r"^\s*WWL\s+ANI_WAITHITOPP\s*,\s*([^,]+),\s*([A-Za-z_
 REPEAT_RE = re.compile(r"^\s*\.word\s+ANI_REPEAT\s*$", re.I)
 END_RE = re.compile(r"^\s*\.word\s+ANI_END\s*$", re.I)
 GOTO_RE = re.compile(r"^\s*WL\s+ANI_GOTO\s*,\s*#?[A-Za-z_][A-Za-z0-9_]*\s*$", re.I)
-PREFIX_WORD_RE = re.compile(r"^\s*\.word\s+(ANI_SETMODE|ANI_SETSPEED)\b", re.I)
+PREFIX_WORD_RE = re.compile(
+    r"^\s*\.word\s+(ANI_SETMODE|ANI_SETSPEED|ANI_SETFACING|ANI_XFLIP)\b", re.I)
 HEX_SUFFIX_RE = re.compile(r"\b([0-9A-Fa-f]+)h\b")
 
 @dataclass(frozen=True)

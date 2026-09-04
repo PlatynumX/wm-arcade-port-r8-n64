@@ -46,21 +46,58 @@ const wm_visual_sequence *wm_bret_leg_anim(int move_compass, int facing_compass)
     return leg_table[move_compass][facing_compass];
 }
 
-/* BRET.ASM:2981 hrt_torso_anims_table[FACING_DIR_diag][NEW_FACING_DIR_diag],
-   a real 4x4 table (WRESTLE.ASM:4977-4993) -- see wm_bret_torso_anim's own
-   comment for how the two 0-7 compasses fold to a 0-3 "diag" index each.
-   Only the diagonal (facing_diag==new_facing_diag, i.e. FACING_DIR and
-   NEW_FACING_DIR land in the same compass quadrant -- not necessarily
-   equal, just not mid-turn) has been extracted: hrt_torso2_anim/
-   hrt_torso4_anim, value-for-value below. The 12 off-diagonal
-   turn-transition entries (hrt_2_to_4_turn2_anim etc.) are genuinely
-   reachable now that NEW_FACING_DIR tracks the opponent live while
-   FACING_DIR lags during a walk (wm_arcade_update_newfacing,
-   wm/arcade/wm_arcade_closest.h) but remain unextracted -- wm_bret_torso_anim
-   returns NULL for them and the caller leaves the current torso animation
-   playing rather than guessing. */
-static const wm_visual_sequence *const torso_diag_table[4] = {
-    &wm_bret_torso2_anim, &wm_bret_torso4_anim, &wm_bret_torso4_anim, &wm_bret_torso2_anim,
+/*
+ * BRET.ASM:2871 hrt_rotate_anims_table[old FACING_DIR diag][new
+ * NEW_FACING_DIR diag] (the "TURNS (STANDS)" block), transcribed
+ * value-for-value including its real SUBR aliasing (WRESTLE.ASM's own
+ * table literally reuses the reverse-rotation's address, e.g.
+ * hrt_6_to_8_turn_anim IS hrt_4_to_2_turn_anim, not merely equivalent --
+ * confirmed by reading HRTSEQ1.ASM directly, not guessed): diag2's row is
+ * diag1's row reversed, and diag3's row is diag0's reversed, because
+ * turning e.g. down-right<->down-left is the mirror of up-right<->up-left.
+ * Played by set_rotate_anim/change_anim1 for the idle (#zip) facing-change
+ * case -- see wm_bret_backend_execute_walk's own comment for how the two
+ * diag indices are derived (old FACING_DIR, not old MOVE_DIR).
+ */
+static const wm_visual_sequence *const rotate_table[4][4] = {
+    /* old = UP/UP_RIGHT (diag0) */
+    { &wm_bret_stand2_anim,     &wm_bret_2_to_4_turn_anim, &wm_bret_2_to_6_turn_anim, &wm_bret_2_to_8_turn_anim },
+    /* old = RIGHT/DOWN_RIGHT (diag1) */
+    { &wm_bret_4_to_2_turn_anim, &wm_bret_stand4_anim,     &wm_bret_4_to_6_turn_anim, &wm_bret_4_to_8_turn_anim },
+    /* old = DOWN/DOWN_LEFT (diag2) == hrt_stand6_anim's row, HRTSEQ1.ASM:75 alias of stand4 */
+    { &wm_bret_4_to_8_turn_anim, &wm_bret_4_to_6_turn_anim, &wm_bret_stand4_anim,     &wm_bret_4_to_2_turn_anim },
+    /* old = LEFT/UP_LEFT (diag3) == hrt_stand8_anim's row, HRTSEQ1.ASM:50 alias of stand2 */
+    { &wm_bret_2_to_8_turn_anim, &wm_bret_2_to_6_turn_anim, &wm_bret_2_to_4_turn_anim, &wm_bret_stand2_anim },
+};
+
+const wm_visual_sequence *wm_bret_rotate_anim(int old_facing_compass, int new_facing_compass) {
+    int old_diag, new_diag;
+    if (old_facing_compass < 0 || old_facing_compass > 7) return NULL;
+    if (new_facing_compass < 0 || new_facing_compass > 7) return NULL;
+    old_diag = old_facing_compass >> 1;
+    new_diag = new_facing_compass >> 1;
+    return rotate_table[old_diag][new_diag];
+}
+
+static bool is_leg_turn_sequence(const wm_visual_sequence *seq) {
+    return seq == &wm_bret_2_to_4_turn_anim || seq == &wm_bret_4_to_2_turn_anim ||
+           seq == &wm_bret_4_to_6_turn_anim || seq == &wm_bret_2_to_8_turn_anim ||
+           seq == &wm_bret_4_to_8_turn_anim || seq == &wm_bret_2_to_6_turn_anim;
+}
+
+/*
+ * BRET.ASM:2981 hrt_torso_anims_table[FACING_DIR diag][NEW_FACING_DIR diag]
+ * (the "TURNS (TORSOS)" block), same real aliasing pattern and reasoning as
+ * rotate_table above (e.g. hrt_8_to_6_turn2_anim IS hrt_2_to_4_turn2_anim).
+ * Played by change_walk_anim's torso half while actually walking. Unlike
+ * the leg's turn anims, each of these 12 carries one or two real
+ * ANI_SETFACING commands -- see torso_turn_setfacing below and
+ * wm_bret_backend_tick for how FACING_DIR actually gets promoted mid-walk. */
+static const wm_visual_sequence *const torso_table[4][4] = {
+    { &wm_bret_torso2_anim,      &wm_bret_2_to_4_turn2_anim, &wm_bret_2_to_6_turn2_anim, &wm_bret_2_to_8_turn2_anim },
+    { &wm_bret_4_to_2_turn2_anim, &wm_bret_torso4_anim,      &wm_bret_4_to_6_turn2_anim, &wm_bret_4_to_8_turn2_anim },
+    { &wm_bret_4_to_8_turn2_anim, &wm_bret_4_to_6_turn2_anim, &wm_bret_torso4_anim,      &wm_bret_4_to_2_turn2_anim },
+    { &wm_bret_2_to_8_turn2_anim, &wm_bret_2_to_6_turn2_anim, &wm_bret_2_to_4_turn2_anim, &wm_bret_torso2_anim },
 };
 
 const wm_visual_sequence *wm_bret_torso_anim(int facing_compass, int new_facing_compass) {
@@ -69,8 +106,50 @@ const wm_visual_sequence *wm_bret_torso_anim(int facing_compass, int new_facing_
     if (new_facing_compass < 0 || new_facing_compass > 7) return NULL;
     facing_diag = facing_compass >> 1;
     new_facing_diag = new_facing_compass >> 1;
-    if (facing_diag != new_facing_diag) return NULL;
-    return torso_diag_table[facing_diag];
+    return torso_table[facing_diag][new_facing_diag];
+}
+
+/*
+ * HRTSEQ1.ASM:460-524: each turn2 sequence's real ANI_SETFACING command(s),
+ * hand-traced to the 0-based wm_visual_sequence frame index they fall right
+ * before (same "falls right before the WL frame at active_frame_index"
+ * convention as attack_windows below). ANI_SETFACING is ANIM.ASM's
+ * _ani_setfacing (ANIM.ASM:1242-1249): an unconditional FACING_DIR=
+ * NEW_FACING_DIR copy, fired live off whatever NEW_FACING_DIR is at that
+ * instant, not a value captured when the turn started. The two 4-frame
+ * sequences (4-to-8/6-to-2 and 2-to-6/8-to-4, the "opposite quadrant" 180-
+ * degree-ish turns) carry two such commands. */
+typedef struct {
+    const wm_visual_sequence *seq;
+    unsigned char indices[2];
+    unsigned char count;
+} wm_bret_torso_turn_setfacing_t;
+
+static const wm_bret_torso_turn_setfacing_t torso_turn_setfacing[] = {
+    { &wm_bret_2_to_4_turn2_anim, {1, 0}, 1 },
+    { &wm_bret_4_to_2_turn2_anim, {1, 0}, 1 },
+    { &wm_bret_4_to_6_turn2_anim, {1, 0}, 1 },
+    { &wm_bret_2_to_8_turn2_anim, {1, 0}, 1 },
+    { &wm_bret_4_to_8_turn2_anim, {1, 3}, 2 },
+    { &wm_bret_2_to_6_turn2_anim, {1, 3}, 2 },
+};
+#define WM_BRET_TORSO_TURN_SETFACING_COUNT \
+    (sizeof(torso_turn_setfacing) / sizeof(torso_turn_setfacing[0]))
+
+static const wm_bret_torso_turn_setfacing_t *find_torso_turn_setfacing(const wm_visual_sequence *seq) {
+    size_t i;
+    if (!seq) return NULL;
+    for (i = 0; i < WM_BRET_TORSO_TURN_SETFACING_COUNT; ++i)
+        if (torso_turn_setfacing[i].seq == seq) return &torso_turn_setfacing[i];
+    return NULL;
+}
+
+static bool torso_frame_is_setfacing(const wm_bret_torso_turn_setfacing_t *w, size_t frame_index) {
+    unsigned char i;
+    if (!w) return false;
+    for (i = 0; i < w->count; ++i)
+        if (w->indices[i] == frame_index) return true;
+    return false;
 }
 
 const wm_visual_sequence *wm_bret_anim_sequence(wm_arcade_bret_anim_id_t id) {
@@ -161,10 +240,23 @@ wm_arcade_frame_box_t wm_bret_hurt_box_for_frame(const char *source_frame) {
 void wm_bret_backend_change_anim(wm_arcade_actor_t *actor,
                                  wm_arcade_bret_anim_id_t id, void *user) {
     wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
-    (void)actor;
     if (!bva) return;
     start_if_new(&bva->visual, wm_bret_anim_sequence(id));
     bva->current_id = id;
+    /* HRTSEQ2.ASM's own attack headers (hrt_2_punch_anim etc., HRTSEQ2.ASM:
+       184/303/...) all lead with `ANI_SETMODE,MODE_UNINT|MODE_NOAUTOFLIP`.
+       ANI_SETMODE is a zero-tick "instant" command the interpreter
+       processes synchronously the moment a new animation starts (same
+       reasoning already established for the turn sequences' own
+       MODE_INTURN), so BRET.ASM mode_normal's own `if (ANIMODE&MODE_UNINT)
+       return` sees it the instant an attack is selected, before
+       execute_walk would otherwise run this same tick and stomp the
+       just-started attack with an idle-turn/walk-cycle reselection.
+       Cleared back to MODE_NORMAL when the attack animation naturally
+       ends (matching that same header's `ANI_SETMODE,MODE_NORMAL` right
+       before its own ANI_END) -- see wm_bret_backend_tick. */
+    if (actor && find_attack_window(id))
+        actor->anim_mode |= (uint16_t)(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
 }
 
 void wm_bret_backend_change_torso_anim(wm_arcade_actor_t *actor,
@@ -194,38 +286,78 @@ static void wm_bret_backend_adjust_health(wm_arcade_actor_t *actor, int delta,
 
 void wm_bret_backend_execute_walk(wm_arcade_actor_t *actor, void *user) {
     wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    int32_t old_facing_dir;
+    bool leg_inturn, torso_inturn;
+
     if (!actor || !bva) return;
+
+    /* WRESTLE.ASM::execute_walk's own top-of-function gate (WRESTLE.ASM:
+       5222-5252): "if our INTURN bit is set, we're doing a turn and we
+       shouldn't do anything here -- treat it like UNINT." The source checks
+       ANIMODE (leg) and ANIMODE2 (torso) independently; this port has no
+       actor-level ANIMODE2 field (only Bret's torso track exists at all),
+       so it's derived from bva's own visual state instead: a turn/turn2
+       sequence is exactly the set that sets MODE_INTURN when played
+       (rotate_table/torso_table's off-diagonal cells, never their
+       diagonal/stand entries). This freeze isn't cosmetic: without it,
+       set_rotate_anim's instant FACING_DIR=NEW_FACING_DIR copy (below)
+       would immediately re-equalize old/new FACING_DIR on the very next
+       idle tick and truncate every turn anim to a single tick; for the
+       two-ANI_SETFACING torso turns it would cut the sequence off before
+       its second FACING_DIR promotion ever fires. */
+    leg_inturn = is_leg_turn_sequence(bva->visual.sequence) && !bva->visual.ended;
+    torso_inturn = find_torso_turn_setfacing(bva->torso_visual.sequence) && !bva->torso_visual.ended;
+    if (leg_inturn || torso_inturn) {
+        if (actor->move_dir == 0) {
+            actor->x_vel = 0;
+            actor->z_vel = 0;
+        }
+        return;
+    }
+
+    old_facing_dir = actor->facing_dir;
     wm_execute_walk(actor, bva->opponent, wm_bret_velocity_table);
 
-    /* WRESTLE.ASM::change_walk_anim's leg half (WRESTLE.ASM:5000-5014):
-       reselects hrt_leg_anims_table[MOVE_DIR][FACING_DIR] every tick.
-       FACING_DIR is now real (wm_arcade_update_newfacing +
-       wm_execute_walk's WM_MOVE_ZIP catch-up, see wm/arcade/
-       wm_arcade_closest.h and wm/movement.h) -- change_walk_anim's leg half
-       itself never writes FACING_DIR, so this doesn't either; it only
-       reflects whatever value FACING_DIR was last given (real while idle,
-       frozen from the last idle tick while walking, exactly like the
-       source). #zip already cleared MOVE_DIR to 0, so wm_convert_facing
-       returns -1 and no leg animation is (re)selected. */
     if (actor->move_dir != 0) {
         int move_compass, facing_compass;
+
+        /* WRESTLE.ASM::change_walk_anim's leg half (WRESTLE.ASM:5000-5014):
+           reselects hrt_leg_anims_table[MOVE_DIR][FACING_DIR] every tick.
+           FACING_DIR is real (wm_arcade_update_newfacing + wm_execute_walk's
+           WM_MOVE_ZIP catch-up, see wm/arcade/wm_arcade_closest.h and
+           wm/movement.h) -- change_walk_anim's leg half itself never writes
+           FACING_DIR, so this doesn't either; it stays frozen at its last
+           idle value while walking, exactly like the source. */
         move_compass = wm_convert_facing(actor->move_dir);
         facing_compass = wm_convert_facing(actor->facing_dir);
         start_if_new(&bva->visual, wm_bret_leg_anim(move_compass, facing_compass));
-    }
 
-    /* WRESTLE.ASM::change_walk_anim's torso half (WRESTLE.ASM:4973-4997):
-       reselects hrt_torso_anims_table[FACING_DIR][NEW_FACING_DIR] every
-       call this port reaches (source gates it on MODE_UNINT only, not on
-       MOVE_DIR -- unlike the leg half above, this runs even while idle).
-       Both indices are now real -- see wm_bret_torso_anim's own comment for
-       what's still missing (the 12 off-diagonal turn-transition entries).
-       If facing_dir is still its zeroed default (never having moved),
-       wm_convert_facing returns -1 and no torso animation is (re)selected. */
-    if (!(actor->anim_mode & WM_MODE_UNINT)) {
-        start_if_new(&bva->torso_visual,
-                     wm_bret_torso_anim(wm_convert_facing(actor->facing_dir),
-                                        wm_convert_facing(actor->new_facing_dir)));
+        /* WRESTLE.ASM::change_walk_anim's torso half (WRESTLE.ASM:4973-4997):
+           reselects hrt_torso_anims_table[FACING_DIR][NEW_FACING_DIR], gated
+           on MODE_UNINT only (unlike the leg half, which always runs once
+           change_walk_anim is called at all) -- but change_walk_anim itself
+           is only ever called from the 8 real-movement walk_table handlers,
+           never from #zip, so this whole block is correctly nested under
+           MOVE_DIR!=0, not run while idle. Both indices are now real and the
+           table is fully wired (wm_bret_torso_anim), including the 12
+           off-diagonal turn-transition entries. */
+        if (!(actor->anim_mode & WM_MODE_UNINT)) {
+            start_if_new(&bva->torso_visual,
+                         wm_bret_torso_anim(facing_compass,
+                                            wm_convert_facing(actor->new_facing_dir)));
+        }
+    } else {
+        /* WRESTLE.ASM::set_rotate_anim (WRESTLE.ASM:5062-5088), called only
+           from #zip/do_stance (WRESTLE.ASM:5286 `callr set_rotate_anim ;or
+           stance`): selects the LEG turn/stand anim from (OLD FACING_DIR,
+           NEW_FACING_DIR), using FACING_DIR as it was *before* the
+           WM_MOVE_ZIP catch-up above already applied it -- exactly what the
+           real set_rotate_anim reads before it overwrites FACING_DIR itself.
+           No torso reselection happens here: change_walk_anim (which drives
+           the torso) is never called from #zip in the source. */
+        int old_facing_compass = wm_convert_facing(old_facing_dir);
+        int new_facing_compass = wm_convert_facing(actor->new_facing_dir);
+        start_if_new(&bva->visual, wm_bret_rotate_anim(old_facing_compass, new_facing_compass));
     }
 }
 
@@ -244,10 +376,23 @@ void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
                           uint16_t round_tickcount) {
     const wm_bret_attack_window_t *w;
     bool at_active_frame;
+    size_t torso_old_frame_index;
 
     if (!bva) return;
     wm_visual_tick(&bva->visual);
+    torso_old_frame_index = bva->torso_visual.frame_index;
     wm_visual_tick(&bva->torso_visual);
+
+    /* HRTSEQ1.ASM's ANI_SETFACING (torso_turn_setfacing above): fires
+       exactly once per crossing into a marked frame, matching the real
+       animation interpreter executing that command exactly once as it
+       reaches that point in the sequence -- not every tick the frame is
+       held. */
+    if (actor && bva->torso_visual.frame_index != torso_old_frame_index &&
+        torso_frame_is_setfacing(find_torso_turn_setfacing(bva->torso_visual.sequence),
+                                 bva->torso_visual.frame_index)) {
+        actor->facing_dir = actor->new_facing_dir;
+    }
 
     if (!actor) return;
 
@@ -272,6 +417,12 @@ void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
         wm_arcade_ani_attack_off(actor, round_tickcount);
         bva->attack_active = false;
     }
+
+    /* The other half of wm_bret_backend_change_anim's MODE_UNINT: clears
+       back to MODE_NORMAL once the attack animation naturally ends, same
+       as its own HRTSEQ2.ASM header's trailing `ANI_SETMODE,MODE_NORMAL`. */
+    if (w && bva->visual.sequence == wm_bret_anim_sequence(bva->current_id) && bva->visual.ended)
+        actor->anim_mode &= (uint16_t)~(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
 }
 
 void wm_bret_backend_tick_position(wm_arcade_actor_t *actor) {

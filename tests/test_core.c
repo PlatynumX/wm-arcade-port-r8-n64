@@ -436,6 +436,30 @@ static void test_match_start_attract(void) {
     CHECK(m.actors[0].smart_target == &m.actors[1]);
     CHECK(m.actors[1].smart_target == &m.actors[0]);
     CHECK(m.tick_count == 0);
+
+    /* WRESTLE.ASM:2691-2755 (#set0) real #teamX_starts placement,
+       "first player on team" row (WRESTLE.ASM:2784/2790) -- RING_X_CENTER
+       (RING.EQU:22) = 0x400+50 = 1074. */
+    CHECK(m.actors[0].x_int == 1074 - 85);
+    CHECK(m.actors[0].x_fixed == (int32_t)((1074 - 85) << 16));
+    CHECK(m.actors[0].z_int == 1127 + 93);
+    CHECK(m.actors[0].facing_dir == WM_MOVE_UP_RIGHT);
+    CHECK(m.actors[0].new_facing_dir == WM_MOVE_UP_RIGHT);
+    CHECK(m.actors[1].x_int == 1074 + 85);
+    CHECK(m.actors[1].x_fixed == (int32_t)((1074 + 85) << 16));
+    CHECK(m.actors[1].z_int == 1103 + 93);
+    CHECK(m.actors[1].facing_dir == WM_MOVE_DOWN_LEFT);
+    CHECK(m.actors[1].new_facing_dir == WM_MOVE_DOWN_LEFT);
+
+    /* The two starting positions are chosen so each wrestler's real starting
+       facing already points at the other's real starting position --
+       recomputing NEW_FACING_DIR from these positions must land back on
+       the exact same value, so nothing spuriously "turns" on tick 1 (see
+       test_match_bret_idle_animates). */
+    wm_arcade_update_newfacing(&m.actors[0], &m.actors[1]);
+    wm_arcade_update_newfacing(&m.actors[1], &m.actors[0]);
+    CHECK(m.actors[0].new_facing_dir == WM_MOVE_UP_RIGHT);
+    CHECK(m.actors[1].new_facing_dir == WM_MOVE_DOWN_LEFT);
 }
 
 static uint32_t test_match_rndrng0_cb(uint32_t max_inclusive, void *user) {
@@ -1312,9 +1336,12 @@ static void test_match_round_decided_after_real_kill(void) {
 
     /* Force the opponent to a known, low life total and a range that lands
        the human's real light punch (as in
-       test_match_human_punch_from_range_selects_real_punch). */
-    m.actors[1].x_int = 60;
-    m.actors[1].x_fixed = 60 << 16;
+       test_match_human_punch_from_range_selects_real_punch), relative to
+       P1's own real match-start position, not the origin. */
+    m.actors[1].x_int = m.actors[0].x_int + 60;
+    m.actors[1].x_fixed = m.actors[1].x_int << 16;
+    m.actors[1].z_int = m.actors[0].z_int;
+    m.actors[1].z_fixed = m.actors[0].z_fixed;
     m.actors[1].life = 10;
 
     memset(&cb, 0, sizeof(cb));
@@ -1376,14 +1403,17 @@ static void test_bret_leg_anim_table(void) {
 }
 
 /* Spot-checks against BRET.ASM:2981 hrt_torso_anims_table's literal
-   diagonal contents (transcribed as torso_diag_table in
-   src/core/bret_backend.c): compass diag 0 (UP/UP_RIGHT) and diag 3 (LEFT/
+   contents (transcribed as torso_table in src/core/bret_backend.c),
+   diagonal and off-diagonal alike: diag 0 (UP/UP_RIGHT) and diag 3 (LEFT/
    UP_LEFT) -> hrt_torso2_anim; diag 1 (RIGHT/DOWN_RIGHT) and diag 2 (DOWN/
    DOWN_LEFT) -> hrt_torso4_anim (matching hrt_torso8_anim/hrt_torso6_anim's
    own SUBR aliasing of those two). facing_compass and new_facing_compass
    only need to share a diag, not be equal -- WRESTLE.ASM's own >>1 fold
    (WRESTLE.ASM:4979/4985) does the same. Off-diagonal (different diag,
-   i.e. mid-turn) is real and reachable but unextracted -> NULL. */
+   i.e. mid-turn) now resolves to the real turn-transition sequence,
+   including the reverse-rotation SUBR aliasing (e.g. diag3->diag0 reuses
+   the same pointer as diag0->diag3, since hrt_8_to_2_turn2_anim IS
+   hrt_2_to_8_turn2_anim in HRTSEQ1.ASM). */
 static void test_bret_torso_anim_table(void) {
     CHECK(wm_bret_torso_anim(0, 0) == &wm_bret_torso2_anim); /* UP/UP, diag 0 */
     CHECK(wm_bret_torso_anim(1, 0) == &wm_bret_torso2_anim); /* UP_RIGHT/UP, diag 0 */
@@ -1392,15 +1422,52 @@ static void test_bret_torso_anim_table(void) {
     CHECK(wm_bret_torso_anim(6, 7) == &wm_bret_torso2_anim); /* LEFT/UP_LEFT, diag 3 */
     CHECK(wm_bret_torso_anim(7, 6) == &wm_bret_torso2_anim); /* UP_LEFT/LEFT, diag 3 */
 
-    /* Off-diagonal: genuinely reachable (FACING_DIR lagging NEW_FACING_DIR
-       mid-walk), but no extracted turn-transition artwork. */
-    CHECK(wm_bret_torso_anim(0, 2) == NULL); /* diag 0 vs diag 1 */
-    CHECK(wm_bret_torso_anim(2, 6) == NULL); /* diag 1 vs diag 3 */
+    /* Off-diagonal: the 12 real turn-transition entries, genuinely
+       reachable now (FACING_DIR lagging NEW_FACING_DIR mid-walk). */
+    CHECK(wm_bret_torso_anim(0, 2) == &wm_bret_2_to_4_turn2_anim); /* diag0->diag1 */
+    CHECK(wm_bret_torso_anim(6, 4) == &wm_bret_2_to_4_turn2_anim); /* diag3->diag2, aliases diag0->diag1 */
+    CHECK(wm_bret_torso_anim(2, 0) == &wm_bret_4_to_2_turn2_anim); /* diag1->diag0 */
+    CHECK(wm_bret_torso_anim(4, 6) == &wm_bret_4_to_2_turn2_anim); /* diag2->diag3, aliases diag1->diag0 */
+    CHECK(wm_bret_torso_anim(2, 4) == &wm_bret_4_to_6_turn2_anim); /* diag1->diag2 */
+    CHECK(wm_bret_torso_anim(4, 2) == &wm_bret_4_to_6_turn2_anim); /* diag2->diag1, aliases diag1->diag2 */
+    CHECK(wm_bret_torso_anim(0, 6) == &wm_bret_2_to_8_turn2_anim); /* diag0->diag3 */
+    CHECK(wm_bret_torso_anim(6, 0) == &wm_bret_2_to_8_turn2_anim); /* diag3->diag0, aliases diag0->diag3 */
+    CHECK(wm_bret_torso_anim(2, 6) == &wm_bret_4_to_8_turn2_anim); /* diag1->diag3 */
+    CHECK(wm_bret_torso_anim(4, 0) == &wm_bret_4_to_8_turn2_anim); /* diag2->diag0, aliases diag1->diag3 */
+    CHECK(wm_bret_torso_anim(0, 4) == &wm_bret_2_to_6_turn2_anim); /* diag0->diag2 */
+    CHECK(wm_bret_torso_anim(6, 2) == &wm_bret_2_to_6_turn2_anim); /* diag3->diag1, aliases diag0->diag2 */
 
     CHECK(wm_bret_torso_anim(-1, 0) == NULL);
     CHECK(wm_bret_torso_anim(0, -1) == NULL);
     CHECK(wm_bret_torso_anim(8, 0) == NULL);
     CHECK(wm_bret_torso_anim(0, 8) == NULL);
+}
+
+/* BRET.ASM:2871 hrt_rotate_anims_table -- same shape/aliasing as
+   hrt_torso_anims_table above, but the STAND-suffix leg/idle-turn table
+   (wm_bret_rotate_anim/rotate_table). */
+static void test_bret_rotate_anim_table(void) {
+    CHECK(wm_bret_rotate_anim(0, 0) == &wm_bret_stand2_anim);
+    CHECK(wm_bret_rotate_anim(2, 3) == &wm_bret_stand4_anim);
+    CHECK(wm_bret_rotate_anim(6, 7) == &wm_bret_stand2_anim);
+
+    CHECK(wm_bret_rotate_anim(0, 2) == &wm_bret_2_to_4_turn_anim);
+    CHECK(wm_bret_rotate_anim(6, 4) == &wm_bret_2_to_4_turn_anim); /* diag3->diag2 aliases diag0->diag1 */
+    CHECK(wm_bret_rotate_anim(2, 0) == &wm_bret_4_to_2_turn_anim);
+    CHECK(wm_bret_rotate_anim(4, 6) == &wm_bret_4_to_2_turn_anim); /* diag2->diag3 aliases diag1->diag0 */
+    CHECK(wm_bret_rotate_anim(2, 4) == &wm_bret_4_to_6_turn_anim);
+    CHECK(wm_bret_rotate_anim(4, 2) == &wm_bret_4_to_6_turn_anim); /* diag2->diag1 aliases diag1->diag2 */
+    CHECK(wm_bret_rotate_anim(0, 6) == &wm_bret_2_to_8_turn_anim);
+    CHECK(wm_bret_rotate_anim(6, 0) == &wm_bret_2_to_8_turn_anim); /* diag3->diag0 aliases diag0->diag3 */
+    CHECK(wm_bret_rotate_anim(2, 6) == &wm_bret_4_to_8_turn_anim);
+    CHECK(wm_bret_rotate_anim(4, 0) == &wm_bret_4_to_8_turn_anim); /* diag2->diag0 aliases diag1->diag3 */
+    CHECK(wm_bret_rotate_anim(0, 4) == &wm_bret_2_to_6_turn_anim);
+    CHECK(wm_bret_rotate_anim(6, 2) == &wm_bret_2_to_6_turn_anim); /* diag3->diag1 aliases diag0->diag2 */
+
+    CHECK(wm_bret_rotate_anim(-1, 0) == NULL);
+    CHECK(wm_bret_rotate_anim(0, -1) == NULL);
+    CHECK(wm_bret_rotate_anim(8, 0) == NULL);
+    CHECK(wm_bret_rotate_anim(0, 8) == NULL);
 }
 
 /* HRTSEQ1.ASM:103-104/115-116: hrt_torso8_anim and hrt_torso6_anim are
@@ -1474,8 +1541,9 @@ static void test_bret_backend_execute_walk_selects_leg_anim(void) {
    while actually walking, e.g. after running past a repositioned opponent.
    The leg table only ever indexes on MOVE_DIR/FACING_DIR, so it's
    unaffected; the torso table's matching off-diagonal turn-transition entry
-   is real but unextracted, so wm_bret_torso_anim returns NULL and the torso
-   sprite already playing is left alone rather than guessed at. */
+   is now real and wired (wm_bret_torso_anim/torso_table), including its
+   real ANI_SETFACING promotion -- see
+   test_bret_backend_tick_promotes_facing_dir_via_setfacing for that half. */
 static void test_bret_backend_execute_walk_facing_lags_new_facing_while_moving(void) {
     wm_arcade_actor_t a;
     wm_bret_backend_actor bva;
@@ -1490,7 +1558,147 @@ static void test_bret_backend_execute_walk_facing_lags_new_facing_while_moving(v
 
     CHECK(a.facing_dir == WM_MOVE_RIGHT); /* still frozen -- leg half doesn't touch it */
     CHECK(bva.visual.sequence == &wm_bret_walk2_f2_anim); /* leg table: FACING_DIR unaffected by NEW_FACING_DIR */
-    CHECK(bva.torso_visual.sequence == &wm_bret_torso2_anim); /* left as-is: no off-diagonal data */
+    /* torso_table[RIGHT diag=1][LEFT diag=3] -- the real off-diagonal
+       turn-transition entry, not the old torso2_anim placeholder. */
+    CHECK(bva.torso_visual.sequence == &wm_bret_4_to_8_turn2_anim);
+}
+
+/* WRESTLE.ASM::set_rotate_anim, called from #zip/do_stance
+   (WRESTLE.ASM:5286). Real off-diagonal case (not the "never moved"
+   zeroed default test_bret_backend_execute_walk_selects_leg_anim covers):
+   set_rotate_anim reads FACING_DIR as it was *before* this tick's
+   catch-up, so the selected anim reflects the turn actually being made. */
+static void test_bret_backend_execute_walk_zip_selects_rotate_anim(void) {
+    wm_arcade_actor_t a;
+    wm_bret_backend_actor bva;
+
+    memset(&a, 0, sizeof(a));
+    wm_bret_backend_init(&bva);
+    a.move_dir = WM_MOVE_ZIP;
+    a.facing_dir = WM_MOVE_UP_RIGHT;       /* old facing, diag0 */
+    a.new_facing_dir = WM_MOVE_DOWN_RIGHT; /* opponent has moved, diag1 */
+    wm_bret_backend_execute_walk(&a, &bva);
+
+    /* rotate_table[diag0][diag1] == wm_bret_2_to_4_turn_anim, and the
+       WM_MOVE_ZIP catch-up (wm/movement.h) still applies regardless. */
+    CHECK(bva.visual.sequence == &wm_bret_2_to_4_turn_anim);
+    CHECK(a.facing_dir == WM_MOVE_DOWN_RIGHT);
+    CHECK(a.move_dir == 0);
+}
+
+/*
+ * HRTSEQ1.ASM:460-524 ANI_SETFACING: an unconditional, live
+ * FACING_DIR=NEW_FACING_DIR copy fired exactly once per marked frame
+ * (torso_turn_setfacing in src/core/bret_backend.c), hand-traced against
+ * hrt_4_to_8_turn2_anim's real 4-frame, 3-ticks-each body (HRTSEQ1.ASM:
+ * 500-511): markers before frame index 1 and again before index 3.
+ */
+static void test_bret_backend_tick_promotes_facing_dir_via_setfacing(void) {
+    wm_arcade_actor_t a;
+    wm_bret_backend_actor bva;
+    int guard;
+
+    memset(&a, 0, sizeof(a));
+    wm_bret_backend_init(&bva);
+    a.facing_dir = WM_MOVE_RIGHT;
+    a.new_facing_dir = WM_MOVE_LEFT;
+    wm_visual_start(&bva.torso_visual, &wm_bret_4_to_8_turn2_anim);
+
+    for (guard = 0; guard < 10 && a.facing_dir != WM_MOVE_LEFT; ++guard)
+        wm_bret_backend_tick(&bva, &a, 0);
+    CHECK(a.facing_dir == WM_MOVE_LEFT);
+    CHECK(bva.torso_visual.frame_index == 1);
+    CHECK(!bva.torso_visual.ended);
+
+    /* ANI_SETFACING reads whatever NEW_FACING_DIR is live at the instant it
+       fires, not a value captured when the turn started -- change it before
+       the second marker and confirm the second firing picks up the change. */
+    a.new_facing_dir = WM_MOVE_DOWN;
+    for (guard = 0; guard < 10 && a.facing_dir != WM_MOVE_DOWN; ++guard)
+        wm_bret_backend_tick(&bva, &a, 0);
+    CHECK(a.facing_dir == WM_MOVE_DOWN);
+    CHECK(bva.torso_visual.frame_index == 3);
+
+    /* Frame index 3 is the sequence's last frame -- it still has to play
+       out its own 3-tick duration before the one-shot, non-repeat sequence
+       actually ends. */
+    for (guard = 0; guard < 10 && !bva.torso_visual.ended; ++guard)
+        wm_bret_backend_tick(&bva, &a, 0);
+    CHECK(bva.torso_visual.ended);
+    CHECK(a.facing_dir == WM_MOVE_DOWN); /* no further/spurious promotion */
+}
+
+/*
+ * WRESTLE.ASM::execute_walk's own top-of-function INTURN freeze
+ * (WRESTLE.ASM:5222-5252): "if our INTURN bit is set ... treat it like
+ * UNINT" -- movement and reselection are held while a turn (leg or torso)
+ * is still playing. Not cosmetic: without it, set_rotate_anim's instant
+ * FACING_DIR=NEW_FACING_DIR copy would truncate every turn to one tick.
+ */
+static void test_bret_backend_execute_walk_freezes_while_leg_inturn(void) {
+    wm_arcade_actor_t a;
+    wm_bret_backend_actor bva;
+
+    memset(&a, 0, sizeof(a));
+    wm_bret_backend_init(&bva);
+    wm_visual_start(&bva.visual, &wm_bret_2_to_4_turn_anim); /* mid leg turn */
+    a.move_dir = WM_MOVE_RIGHT; /* player presses a direction mid-turn */
+    a.x_vel = 12345;            /* residual velocity from before the turn */
+    wm_bret_backend_execute_walk(&a, &bva);
+
+    /* WRESTLE.ASM's #inturn branch: MOVE_DIR!=0 -> jrnz #rets, literally
+       does nothing -- move_dir and any stale velocity are left untouched,
+       and no reselection happens. */
+    CHECK(a.move_dir == WM_MOVE_RIGHT);
+    CHECK(a.x_vel == 12345);
+    CHECK(bva.visual.sequence == &wm_bret_2_to_4_turn_anim);
+
+    /* Stick released mid-turn: velocities are cleared, still no reselect. */
+    wm_bret_backend_init(&bva);
+    memset(&a, 0, sizeof(a));
+    wm_visual_start(&bva.visual, &wm_bret_2_to_4_turn_anim);
+    a.move_dir = 0;
+    a.x_vel = 12345;
+    a.z_vel = 6789;
+    wm_bret_backend_execute_walk(&a, &bva);
+    CHECK(a.x_vel == 0);
+    CHECK(a.z_vel == 0);
+    CHECK(bva.visual.sequence == &wm_bret_2_to_4_turn_anim); /* unchanged */
+}
+
+static void test_bret_backend_execute_walk_freezes_while_torso_inturn(void) {
+    wm_arcade_actor_t a;
+    wm_bret_backend_actor bva;
+
+    memset(&a, 0, sizeof(a));
+    wm_bret_backend_init(&bva);
+    wm_visual_start(&bva.torso_visual, &wm_bret_4_to_8_turn2_anim);
+    a.move_dir = WM_MOVE_RIGHT;
+    a.facing_dir = WM_MOVE_RIGHT;
+    a.new_facing_dir = WM_MOVE_LEFT;
+    wm_bret_backend_execute_walk(&a, &bva);
+
+    CHECK(a.move_dir == WM_MOVE_RIGHT);          /* untouched by wm_execute_walk */
+    CHECK(bva.torso_visual.sequence == &wm_bret_4_to_8_turn2_anim); /* not reselected */
+    CHECK(bva.visual.sequence == NULL);          /* everything froze, not just the torso */
+}
+
+/* Once a turn anim naturally ends (ended==true), the freeze lifts and
+   ordinary dispatch resumes on the very next call. */
+static void test_bret_backend_execute_walk_resumes_after_leg_turn_ends(void) {
+    wm_arcade_actor_t a;
+    wm_bret_backend_actor bva;
+
+    memset(&a, 0, sizeof(a));
+    wm_bret_backend_init(&bva);
+    wm_visual_start(&bva.visual, &wm_bret_2_to_4_turn_anim);
+    bva.visual.ended = true; /* the turn already finished naturally */
+    a.move_dir = WM_MOVE_RIGHT;
+    a.facing_dir = WM_MOVE_RIGHT;
+    a.new_facing_dir = WM_MOVE_RIGHT;
+    wm_bret_backend_execute_walk(&a, &bva);
+
+    CHECK(bva.visual.sequence == &wm_bret_walk2_f2_anim); /* normal dispatch resumed */
 }
 
 static void test_bret_ani_init_facing(void) {
@@ -1736,6 +1944,13 @@ static void test_match_start_selected(void) {
     CHECK(m.actors[0].smart_target == &m.actors[1]);
     CHECK(m.actors[1].smart_target == &m.actors[0]);
 
+    /* Same real #teamX_starts placement as wm_match_start_attract -- see
+       that test's own comment for the derivation. */
+    CHECK(m.actors[0].x_int == 1074 - 85);
+    CHECK(m.actors[0].facing_dir == WM_MOVE_UP_RIGHT);
+    CHECK(m.actors[1].x_int == 1074 + 85);
+    CHECK(m.actors[1].facing_dir == WM_MOVE_DOWN_LEFT);
+
     /* wm_arcade_bret_ani_init already ran for the human Bret actor. */
     CHECK(m.bret_visual[0].visual.sequence != NULL);
 }
@@ -1749,11 +1964,23 @@ static void test_match_human_bret_walks_right(void) {
     wm_match_state m;
     wm_arcade_drone_callbacks_t cb;
     wm_input_state right;
+    int32_t opp_start_x;
 
     wm_rng_init(&rng, 0x42u, NULL, NULL, NULL);
     wm_match_init(&m);
     wm_match_start_selected(&m, &rng, WM_ROSTER_BRET);
     int32_t start_x = m.actors[0].x_fixed;
+
+    /* Keep the opponent far to the right for the whole 30-tick walk (a few
+       WM_BRET_WALK_VEL steps in 16.16 fixed move x_int by nothing close to
+       this), so NEW_FACING_DIR keeps pointing right throughout and never
+       drifts into the torso-turn/FACING_DIR-lag scenario
+       test_bret_backend_execute_walk_facing_lags_new_facing_while_moving
+       exercises directly -- this test is about ordinary straight-line
+       walking, not that. */
+    opp_start_x = 10000;
+    m.actors[1].x_int = opp_start_x;
+    m.actors[1].x_fixed = opp_start_x << 16;
 
     memset(&cb, 0, sizeof(cb));
     cb.rndrng0_upto = test_match_rndrng0_cb;
@@ -1769,14 +1996,20 @@ static void test_match_human_bret_walks_right(void) {
     CHECK(m.actors[0].x_vel == WM_BRET_WALK_VEL);
     CHECK(m.actors[0].x_fixed > start_x);
     CHECK(!(m.actors[0].obj_control & WM_OBJ_FLIPH));
-    /* hrt_leg_anims_table[RIGHT][RIGHT] -- see test_bret_leg_anim_table. */
+    /* facing_dir stays WM_MOVE_UP_RIGHT (P1's real match-start facing, see
+       wm_match_start_selected) the whole walk: the opponent is to the
+       right on both ticks that matter (before the walk and throughout),
+       so NEW_FACING_DIR never disagrees with it and hrt_leg_anims_table
+       never needs to reselect off of RIGHT/UP_RIGHT. */
+    CHECK(m.actors[0].facing_dir == WM_MOVE_UP_RIGHT);
+    /* hrt_leg_anims_table[RIGHT][UP_RIGHT] -- see test_bret_leg_anim_table. */
     CHECK(m.bret_visual[0].visual.sequence == &wm_bret_walk2_f2_anim);
 
     /* The CPU opponent (a non-Bret wrestler unless the placeholder draw
        happened to also land on Bret) never receives human input and keeps
        stepping its drone core as before. */
     if (m.actors[1].wrestler_num != WM_ROSTER_BRET)
-        CHECK(m.actors[1].x_fixed == 0);
+        CHECK(m.actors[1].x_fixed == opp_start_x << 16);
 }
 
 /*
@@ -1804,11 +2037,15 @@ static void test_match_human_punch_from_range_selects_real_punch(void) {
     wm_match_init(&m);
     wm_match_start_selected(&m, &rng, WM_ROSTER_BRET);
 
-    /* Opponent stands 200 units away on X -- outside do_punch's
-       near(a,50,45) headbutt range, but still a plausible sparring
-       distance, not a contrived edge case. */
-    m.actors[1].x_int = 200;
-    m.actors[1].x_fixed = 200 << 16;
+    /* Opponent stands 200 units away on X (same Z as P1) -- outside
+       do_punch's near(a,50,45) headbutt range, but still a plausible
+       sparring distance, not a contrived edge case. Relative to P1's own
+       real match-start position (WRESTLE.ASM:2691-2755's #teamX_starts,
+       wm/match.h's place_wrestler), not the origin. */
+    m.actors[1].x_int = m.actors[0].x_int + 200;
+    m.actors[1].x_fixed = m.actors[1].x_int << 16;
+    m.actors[1].z_int = m.actors[0].z_int;
+    m.actors[1].z_fixed = m.actors[0].z_fixed;
 
     memset(&cb, 0, sizeof(cb));
     cb.rndrng0_upto = test_match_rndrng0_cb;
@@ -1858,8 +2095,15 @@ static void test_match_tick_updates_newfacing_for_both_actors(void) {
     wm_match_init(&m);
     wm_match_start_selected(&m, &rng, WM_ROSTER_BRET);
 
-    m.actors[0].x_int = 0;   m.actors[0].z_int = 0;
-    m.actors[1].x_int = 100; m.actors[1].z_int = -50; /* opponent up-right */
+    /* Both _int and _fixed need setting: wm_bret_backend_tick_position's
+       wm_integrate_position resyncs x_int/z_int from x_fixed/z_fixed every
+       tick (actor 0 is a Bret actor, ticked within this same call), so a
+       stale _fixed would silently overwrite the _int override below before
+       actor 1's own wm_arcade_update_newfacing call reads it. */
+    m.actors[0].x_int = 0;   m.actors[0].x_fixed = 0;
+    m.actors[0].z_int = 0;   m.actors[0].z_fixed = 0;
+    m.actors[1].x_int = 100; m.actors[1].x_fixed = 100 << 16;
+    m.actors[1].z_int = -50; m.actors[1].z_fixed = -50 << 16; /* opponent up-right */
 
     memset(&cb, 0, sizeof(cb));
     cb.rndrng0_upto = test_match_rndrng0_cb;
@@ -2224,9 +2468,15 @@ int main(void) {
     test_bret_ani_init_facing();
     test_bret_leg_anim_table();
     test_bret_torso_anim_table();
+    test_bret_rotate_anim_table();
     test_bret_torso_alias_frames_match_source();
     test_bret_backend_execute_walk_selects_leg_anim();
     test_bret_backend_execute_walk_facing_lags_new_facing_while_moving();
+    test_bret_backend_execute_walk_zip_selects_rotate_anim();
+    test_bret_backend_tick_promotes_facing_dir_via_setfacing();
+    test_bret_backend_execute_walk_freezes_while_leg_inturn();
+    test_bret_backend_execute_walk_freezes_while_torso_inturn();
+    test_bret_backend_execute_walk_resumes_after_leg_turn_ends();
     test_convert_facing();
     test_set_velocities_normal();
     test_set_velocities_backward_reduction();

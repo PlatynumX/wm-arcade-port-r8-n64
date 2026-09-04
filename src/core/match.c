@@ -5,6 +5,31 @@
 #define WM_MATCH_PSIDE_PLYR1 0
 #define WM_MATCH_PSIDE_PLYR2 1
 
+/*
+ * WRESTLE.ASM:2691-2755 (#set0, wrestler-placement init): a wrestler's real
+ * starting OBJ_XPOS/OBJ_ZPOS and NEW_FACING_DIR/FACING_DIR all come from the
+ * SAME #teamX_starts table row (WRESTLE.ASM:2782-2792), X,Z,face_dir,unused
+ * quads. This port only ever creates one wrestler per side, so the "first
+ * player on team" row (index 0) is the only one ever reachable -- no
+ * team-battle/royal-rumble/INIT_LADDER_TABLE support exists here.
+ * RING_X_CENTER (RING.EQU:22) = 0400h+50 = 1074.
+ */
+#define WM_MATCH_RING_X_CENTER 1074
+#define WM_MATCH_P1_START_X (WM_MATCH_RING_X_CENTER - 85)
+#define WM_MATCH_P1_START_Z (1127 + 93)
+#define WM_MATCH_P1_START_FACING WM_MOVE_UP_RIGHT
+#define WM_MATCH_P2_START_X (WM_MATCH_RING_X_CENTER + 85)
+#define WM_MATCH_P2_START_Z (1103 + 93)
+#define WM_MATCH_P2_START_FACING WM_MOVE_DOWN_LEFT
+
+static void place_wrestler(wm_arcade_actor_t *a, int32_t x, int32_t z, int32_t facing) {
+    a->x_int = x;
+    a->x_fixed = x << 16;
+    a->z_int = z;
+    a->z_fixed = z << 16;
+    a->facing_dir = a->new_facing_dir = facing;
+}
+
 void wm_match_init(wm_match_state *m) {
     if (!m) return;
     memset(m, 0, sizeof(*m));
@@ -66,14 +91,8 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
     p1->smart_target = opp;
     opp->smart_target = p1;
 
-    /* WRESTLE.ASM:2753-2755 (#set0, wrestler-placement init): NEW_FACING_DIR
-       and FACING_DIR both start at the #teamX_starts table's real per-side
-       facing value (WRESTLE.ASM:2784/2790) -- this port only ever creates
-       the "first player on team" row, having no team-battle/royal-rumble
-       support, so team0's first-starter facing (9=MOVE_UP_RIGHT) and
-       team1's (6=MOVE_DOWN_LEFT) are the only reachable entries. */
-    p1->facing_dir = p1->new_facing_dir = WM_MOVE_UP_RIGHT;
-    opp->facing_dir = opp->new_facing_dir = WM_MOVE_DOWN_LEFT;
+    place_wrestler(p1, WM_MATCH_P1_START_X, WM_MATCH_P1_START_Z, WM_MATCH_P1_START_FACING);
+    place_wrestler(opp, WM_MATCH_P2_START_X, WM_MATCH_P2_START_Z, WM_MATCH_P2_START_FACING);
 
     wm_arcade_drone_init(&m->drones[0], 0);
     wm_arcade_drone_init(&m->drones[1], 0);
@@ -114,10 +133,10 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
     p1->smart_target = opp;
     opp->smart_target = p1;
 
-    /* WRESTLE.ASM:2753-2755 (#set0, wrestler-placement init): see the same
-       comment in wm_match_start_attract above. */
-    p1->facing_dir = p1->new_facing_dir = WM_MOVE_UP_RIGHT;
-    opp->facing_dir = opp->new_facing_dir = WM_MOVE_DOWN_LEFT;
+    /* WRESTLE.ASM:2691-2755 (#set0, wrestler-placement init): see
+       place_wrestler's own comment above wm_match_start_attract. */
+    place_wrestler(p1, WM_MATCH_P1_START_X, WM_MATCH_P1_START_Z, WM_MATCH_P1_START_FACING);
+    place_wrestler(opp, WM_MATCH_P2_START_X, WM_MATCH_P2_START_Z, WM_MATCH_P2_START_FACING);
 
     wm_arcade_drone_init(&m->drones[0], 0);
     wm_arcade_drone_init(&m->drones[1], 0);

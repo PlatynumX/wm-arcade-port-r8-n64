@@ -808,8 +808,10 @@ static void test_arcade_adjust_health_normal_damage(void) {
     wm_arcade_actor_t victim;
     memset(&victim, 0, sizeof(victim));
     victim.life = 100;
+    /* LIFEBAR.ASM:1471-1521: -30 scaled by _85PCT (218/256) -> -26, not a
+       plain -30 -- see wm_arcade_adjust_health's own comment. */
     wm_arcade_adjust_health(&victim, -30, NULL, false, 12345u, NULL);
-    CHECK(victim.life == 70);
+    CHECK(victim.life == 74);
     CHECK(victim.player_mode == WM_PMODE_NORMAL);
     /* LIFEBAR.ASM:1593-1595: unconditional on every call. */
     CHECK(victim.last_damage == (uint16_t)12345u);
@@ -826,10 +828,11 @@ static void test_arcade_adjust_health_clamps_to_life_max(void) {
 static void test_arcade_adjust_health_fudge_saves_a_near_death_hit(void) {
     wm_arcade_actor_t victim;
     memset(&victim, 0, sizeof(victim));
-    /* life+delta = -5: > -10 (not overkilled by 10+) and delta <= -20 (a
-       20+ point hit) -- LIFEBAR.ASM:1561-1569 fudge applies: life = 5. */
+    /* -24 scaled by _85PCT (LIFEBAR.ASM:1471-1521) -> -21: life+delta = -6,
+       > -10 (not overkilled by 10+) and the scaled delta is <= -20 (a 20+
+       point hit) -- LIFEBAR.ASM:1561-1569 fudge applies: life = 5. */
     victim.life = 15;
-    wm_arcade_adjust_health(&victim, -20, NULL, false, 0, NULL);
+    wm_arcade_adjust_health(&victim, -24, NULL, false, 0, NULL);
     CHECK(victim.life == 5);
     CHECK(victim.player_mode == WM_PMODE_NORMAL);
 }
@@ -877,45 +880,49 @@ static void test_arcade_adjust_health_combo_damage_overrides_delta(void) {
     memset(&victim, 0, sizeof(victim));
     memset(&attacker, 0, sizeof(attacker));
     victim.life = 100;
-    attacker.combo_count = 1; /* magnitude = max(10-1,4) = 9 */
+    attacker.combo_count = 1; /* magnitude = max(10-1,4) = 9, then scaled
+                                 by _85PCT (LIFEBAR.ASM:1471-1521) -> -8 */
     dam_mult = 4;
     wm_arcade_adjust_health(&victim, -1, &attacker, false, 0, &dam_mult);
-    CHECK(victim.life == 91); /* not 99: the original -1 delta is ignored */
+    CHECK(victim.life == 92); /* not 99: the original -1 delta is ignored */
     CHECK(dam_mult == 0);
 
     memset(&victim, 0, sizeof(victim));
     victim.life = 100;
-    attacker.combo_count = 20; /* magnitude = max(10-20,4) = 4 (floored) */
+    attacker.combo_count = 20; /* magnitude = max(10-20,4) = 4 (floored),
+                                   scaled by _85PCT -> -4 (unchanged) */
     wm_arcade_adjust_health(&victim, -1, &attacker, false, 0, NULL);
     CHECK(victim.life == 96);
 }
 
 /* LIFEBAR.ASM:1449-1465: no combo, but a nonzero dam_mult scales delta by
-   (1+dam_mult)/2 and clears it. */
+   (1+dam_mult)/2 and clears it. Each result is then also scaled by _85PCT
+   (LIFEBAR.ASM:1471-1521, see wm_arcade_adjust_health's own comment). */
 static void test_arcade_adjust_health_dam_mult_scales_delta(void) {
     wm_arcade_actor_t victim;
     int32_t dam_mult;
 
     memset(&victim, 0, sizeof(victim));
     victim.life = 100;
-    dam_mult = 2; /* x1.5 */
+    dam_mult = 2; /* x1.5: -10*3/2 = -15, then *_85PCT -> -13 */
     wm_arcade_adjust_health(&victim, -10, NULL, false, 0, &dam_mult);
-    CHECK(victim.life == 85); /* -10 * 3 / 2 = -15 */
+    CHECK(victim.life == 87);
     CHECK(dam_mult == 0);
 
     memset(&victim, 0, sizeof(victim));
     victim.life = 100;
-    dam_mult = 4; /* x2.5 */
+    dam_mult = 4; /* x2.5: -10*5/2 = -25, then *_85PCT -> -22 */
     wm_arcade_adjust_health(&victim, -10, NULL, false, 0, &dam_mult);
-    CHECK(victim.life == 75); /* -10 * 5 / 2 = -25 */
+    CHECK(victim.life == 78);
     CHECK(dam_mult == 0);
 
-    /* dam_mult == 0: no scaling, ordinary delta applied unchanged. */
+    /* dam_mult == 0: no DAM_MULT scaling, but _85PCT still applies:
+       -10 -> -9. */
     memset(&victim, 0, sizeof(victim));
     victim.life = 100;
     dam_mult = 0;
     wm_arcade_adjust_health(&victim, -10, NULL, false, 0, &dam_mult);
-    CHECK(victim.life == 90);
+    CHECK(victim.life == 91);
 }
 
 /* WHOHITME's own reduced_damage window (REACT1.ASM/wm_arcade_wrestler_hit):

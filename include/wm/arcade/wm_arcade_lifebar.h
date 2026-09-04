@@ -12,6 +12,11 @@ extern "C" {
 /* LIFEBAR.ASM:135 LIFE_MAX equ 163 (green pixels in life bar). */
 #define WM_ARCADE_LIFE_MAX 163
 
+/* GAME.EQU _85PCT equ 218 (8.8 fixed, ~0.85*256): LIFEBAR.ASM's
+   damage_mod_table[0] entry -- see wm_arcade_adjust_health's comment for
+   why this port's fixed 2-actor matches always resolve to that row. */
+#define WM_ARCADE_DAMAGE_MOD_85PCT 218
+
 /*
  * LIFEBAR.ASM::adjust_health's damage-application tail (LIFEBAR.ASM:
  * 1429-1670), shared by every real caller of it in this port: the REACT1.ASM
@@ -33,6 +38,15 @@ extern "C" {
  *     wm_bret_backend_callbacks' self-death path has none; only
  *     wm_arcade_wrestler_hit ever actually sets a runtime's dam_mult to
  *     2 or 4, via wm_match's wm_arcade_combat_runtime_t).
+ *   - LIFEBAR.ASM:1471-1521, applied next, only when delta is still
+ *     negative ("unless we're adding life"): delta *= WM_ARCADE_DAMAGE_MOD_
+ *     85PCT (218/256, an 8.8 fixed multiply+shift identical to the
+ *     unsigned-multiply-then-signed-shift the source uses on a negative
+ *     delta) then >>=8. The real source scales this by active-drone-count
+ *     and whether the victim is a drone or a player; this port's actors[]
+ *     is always the fixed pair wm_match_start_attract/selected create, so
+ *     that count is always 0 and both of the table's 0-drones columns are
+ *     the same _85PCT anyway -- no PLYR_TYPE branch needed.
  *   life = victim->life + delta (the possibly-transformed value above),
  *   clamped to [0, LIFE_MAX], except:
  *     - LIFEBAR.ASM:1561-1569 "fudge": a killing hit of 20+ points that
@@ -61,16 +75,19 @@ extern "C" {
  *     rapid-hit check) but nothing ever wrote it before this, so repeated
  *     attacks always dealt full_damage regardless of timing.
  *
- * NOT translated: LIFEBAR.ASM's damage_mod_table/speed_adjustment scaling
- * (both happen earlier in adjust_health, before delta reaches this
- * function), CHECK_COMBO_GO (an unlocated global "is the combo mechanic
- * enabled" gate -- this function always allows both combo_count branches
- * above, stricter than the source in a way that currently never matters
- * since combo_count is always 0), the lifebar flash-warning process,
- * ACTUAL_PLYRNUM/royal-rumble teammate propagation, 8-on-1 wrestler_count
- * bookkeeping, and everything past SETMODE DEAD (death sound, wrestler-type
- * death-animation dispatch, ROLL_POS reset, flash_red) -- all rendering/
- * team-mode features this port doesn't have.
+ * NOT translated: LIFEBAR.ASM:1524-1528's speed_adjustment scaling --
+ * initialized from an operator DIP-switch/menu setting (ADJSPEED via
+ * GET_ADJ, a settings subsystem this port doesn't have at all) through a
+ * 16.16 fixed multiply, so there is no real default to fall back to
+ * without guessing at operator settings; CHECK_COMBO_GO (an unlocated
+ * global "is the combo mechanic enabled" gate -- this function always
+ * allows both combo_count branches above, stricter than the source in a
+ * way that currently never matters since combo_count is always 0), the
+ * lifebar flash-warning process, ACTUAL_PLYRNUM/royal-rumble teammate
+ * propagation, 8-on-1 wrestler_count bookkeeping, and everything past
+ * SETMODE DEAD (death sound, wrestler-type death-animation dispatch,
+ * ROLL_POS reset, flash_red) -- all rendering/team-mode features this port
+ * doesn't have.
  */
 void wm_arcade_adjust_health(wm_arcade_actor_t *victim, int16_t delta,
                              wm_arcade_actor_t *damage_source,

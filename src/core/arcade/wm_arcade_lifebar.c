@@ -25,6 +25,18 @@ void wm_arcade_adjust_health(wm_arcade_actor_t *victim, int16_t delta,
         *dam_mult = 0;
     }
 
+    if (d < 0) {
+        /* LIFEBAR.ASM:1471-1521 damage_mod_table lookup ("unless we're
+           adding life"). wm_match's actors[] never holds more than the
+           fixed pair wm_match_start_attract/selected create, so the
+           source's active-drone count (is_8_on_1/buddy_mode_on/
+           royal_rumble, none of which exist in this port, or else a count
+           of process slots beyond the first two) always resolves to the
+           table's first row here -- and that row's drone/player columns
+           are both _85PCT, so no PLYR_TYPE branch is needed either. */
+        d = (d * WM_ARCADE_DAMAGE_MOD_85PCT) >> 8;
+    }
+
     life = (int32_t)victim->life + d;
 
     if (life <= 0) {

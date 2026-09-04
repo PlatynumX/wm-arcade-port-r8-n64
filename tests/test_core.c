@@ -505,13 +505,14 @@ static void test_bret_anim_sequence_mapping(void) {
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_KICK2) == &wm_bret_light_kick2_anim);
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_KICK4) == &wm_bret_light_kick4_anim);
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_SUPER_KICK2) == &wm_bret_power_kick_anim);
+    /* HRTSEQ2.ASM:1334-1335: hrt_4_super_kick_anim is a literal SUBR alias
+       of hrt_2_super_kick_anim, not distinct artwork. */
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_SUPER_KICK4) == &wm_bret_power_kick_anim);
 
     /* Deliberately unmapped: no "hrt_2_super_punch_anim" exists in the
-       source tree, and "hrt_4_super_kick_anim" (HRTSEQ2.ASM:1335) exists
-       but has not been extracted yet -- see wm/bret_backend.h. */
+       source tree at all -- see wm/bret_backend.h. */
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_SUPER_PUNCH2_2) == NULL);
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_SUPER_PUNCH4) == NULL);
-    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_SUPER_KICK4) == NULL);
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_PIN2) == NULL);
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_FINISH1) == NULL);
 }
@@ -539,6 +540,67 @@ static void test_bret_backend_change_anim(void) {
 
     wm_bret_backend_change_torso_anim(NULL, WM_BRET_ANIM_TORSO4, &bva);
     CHECK(bva.torso_visual.sequence == &wm_bret_torso4_anim);
+}
+
+/* HRTSEQ2.ASM: 5 of the 6 wired attacks lead with a real, instant
+   ANI_SETFACING (attack_sets_facing_on_start's own comment in
+   src/core/bret_backend.c has the exact HRTSEQ2.ASM line numbers);
+   hrt_4_kick_anim is the one real exception, verified by reading its
+   header directly rather than assumed from the other 5. */
+static void test_bret_backend_change_anim_sets_facing_on_attack_start(void) {
+    wm_arcade_actor_t a;
+    wm_bret_backend_actor bva;
+
+    memset(&a, 0, sizeof(a));
+    wm_bret_backend_init(&bva);
+    a.facing_dir = WM_MOVE_UP_RIGHT;
+    a.new_facing_dir = WM_MOVE_DOWN_LEFT;
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_PUNCH2, &bva);
+    CHECK(a.facing_dir == WM_MOVE_DOWN_LEFT); /* the instant ANI_SETFACING */
+    CHECK(a.anim_mode & WM_MODE_UNINT);
+
+    /* SUPER_KICK4 shares hrt_2_super_kick_anim's body (HRTSEQ2.ASM:
+       1334-1335), including its ANI_SETFACING. */
+    memset(&a, 0, sizeof(a));
+    wm_bret_backend_init(&bva);
+    a.facing_dir = WM_MOVE_UP_RIGHT;
+    a.new_facing_dir = WM_MOVE_DOWN_LEFT;
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_SUPER_KICK4, &bva);
+    CHECK(a.facing_dir == WM_MOVE_DOWN_LEFT);
+    CHECK(a.anim_mode & WM_MODE_UNINT);
+
+    /* hrt_4_kick_anim: real exception, no ANI_SETFACING. */
+    memset(&a, 0, sizeof(a));
+    wm_bret_backend_init(&bva);
+    a.facing_dir = WM_MOVE_UP_RIGHT;
+    a.new_facing_dir = WM_MOVE_DOWN_LEFT;
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_KICK4, &bva);
+    CHECK(a.facing_dir == WM_MOVE_UP_RIGHT);  /* unchanged */
+    CHECK(a.anim_mode & WM_MODE_UNINT);       /* KICK4 still sets MODE_UNINT */
+
+    /* Not a one-shot attack id at all (an idle stance): neither side
+       effect applies. */
+    memset(&a, 0, sizeof(a));
+    wm_bret_backend_init(&bva);
+    a.facing_dir = WM_MOVE_UP_RIGHT;
+    a.new_facing_dir = WM_MOVE_DOWN_LEFT;
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_STAND2, &bva);
+    CHECK(a.facing_dir == WM_MOVE_UP_RIGHT);
+    CHECK(!(a.anim_mode & WM_MODE_UNINT));
+
+    /* Reselecting the SAME already-playing attack (not a real restart)
+       doesn't re-copy -- the source command fires once, on selection, not
+       continuously for as long as the attack plays. */
+    memset(&a, 0, sizeof(a));
+    wm_bret_backend_init(&bva);
+    a.facing_dir = WM_MOVE_UP_RIGHT;
+    a.new_facing_dir = WM_MOVE_DOWN_LEFT;
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_PUNCH2, &bva);
+    CHECK(a.facing_dir == WM_MOVE_DOWN_LEFT);
+    a.facing_dir = WM_MOVE_UP_LEFT;         /* something else changed it after */
+    a.new_facing_dir = WM_MOVE_DOWN_RIGHT;  /* and new_facing_dir moved on too */
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_PUNCH2, &bva); /* same id, not a restart */
+    CHECK(a.facing_dir == WM_MOVE_UP_LEFT); /* untouched */
 }
 
 /* BRET.ASM:1325-1350 mode_normal's own I_WILL_DIE self-death resolution,
@@ -634,6 +696,10 @@ static void test_bret_attack_windows_remaining(void) {
         { WM_BRET_ANIM_KICK4, &wm_bret_light_kick4_anim, 5,
           WM_AMODE_KICK, 23, 73, 0, 50, 17, 0, false },
         { WM_BRET_ANIM_SUPER_KICK2, &wm_bret_power_kick_anim, 4,
+          WM_AMODE_SUPER_KICK, 5, 54, 0, 70, 34, 0, false },
+        /* HRTSEQ2.ASM:1334-1335: identical shared body, so the identical
+           hand-traced window applies. */
+        { WM_BRET_ANIM_SUPER_KICK4, &wm_bret_power_kick_anim, 4,
           WM_AMODE_SUPER_KICK, 5, 54, 0, 70, 34, 0, false },
     };
     size_t i;
@@ -2440,6 +2506,7 @@ int main(void) {
     test_match_tick_runs_without_crashing();
     test_bret_anim_sequence_mapping();
     test_bret_backend_change_anim();
+    test_bret_backend_change_anim_sets_facing_on_attack_start();
     test_bret_backend_i_will_die_resolves_through_move_bret();
     test_bret_attack_window_punch2();
     test_bret_attack_windows_remaining();

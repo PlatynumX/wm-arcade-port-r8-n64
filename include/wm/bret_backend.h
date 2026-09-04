@@ -25,9 +25,10 @@ extern "C" {
  *     hrt_2_super_punch_anim does not exist in the source tree, so
  *     WM_BRET_ANIM_SUPER_PUNCH2_2/SUPER_PUNCH4 stay unmapped)
  *   - WM_BRET_ANIM_KICK2/KICK4 (light kick, hrt_2/4_kick_anim)
- *   - WM_BRET_ANIM_SUPER_KICK2 (power kick, hrt_2_super_kick_anim --
- *     hrt_4_super_kick_anim exists in HRTSEQ2.ASM:1335 but has not been
- *     extracted yet, so WM_BRET_ANIM_SUPER_KICK4 stays unmapped)
+ *   - WM_BRET_ANIM_SUPER_KICK2/SUPER_KICK4 (power kick, hrt_2_super_kick_anim
+ *     -- hrt_4_super_kick_anim, HRTSEQ2.ASM:1335, is a literal SUBR alias of
+ *     it, same address, not distinct artwork, so both ids map to the same
+ *     extracted wm_bret_power_kick_anim data)
  *
  * Every other wm_arcade_bret_anim_id_t (grapples, pins, finishers, running
  * moves, turnbuckle moves, ...) resolves to NULL and wm_bret_backend_change_*

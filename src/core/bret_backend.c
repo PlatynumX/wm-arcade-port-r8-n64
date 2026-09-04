@@ -163,15 +163,27 @@ const wm_visual_sequence *wm_bret_anim_sequence(wm_arcade_bret_anim_id_t id) {
         case WM_BRET_ANIM_SUPER_PUNCH2_4: return &wm_bret_power_punch_anim;
         case WM_BRET_ANIM_KICK2: return &wm_bret_light_kick2_anim;
         case WM_BRET_ANIM_KICK4: return &wm_bret_light_kick4_anim;
+        /* HRTSEQ2.ASM:1334-1335: hrt_4_super_kick_anim is a literal SUBR
+           alias of hrt_2_super_kick_anim, same address -- not distinct
+           artwork, so both ids resolve to the same extracted sequence. */
         case WM_BRET_ANIM_SUPER_KICK2: return &wm_bret_power_kick_anim;
+        case WM_BRET_ANIM_SUPER_KICK4: return &wm_bret_power_kick_anim;
         default: return NULL;
     }
 }
 
-static void start_if_new(wm_visual_state *state, const wm_visual_sequence *seq) {
-    if (!state || !seq) return;
-    if (state->sequence != seq || state->ended)
+/* Returns true iff this call actually (re)started the sequence -- callers
+   use that to gate one-shot "instant command processed when a new
+   animation starts" side effects (MODE_UNINT, ANI_SETFACING below) so they
+   fire once per real selection, not every tick a caller happens to pass
+   the same id/sequence again. */
+static bool start_if_new(wm_visual_state *state, const wm_visual_sequence *seq) {
+    if (!state || !seq) return false;
+    if (state->sequence != seq || state->ended) {
         wm_visual_start(state, seq);
+        return true;
+    }
+    return false;
 }
 
 /*
@@ -204,8 +216,12 @@ static const wm_bret_attack_window_t attack_windows[] = {
     /* HRTSEQ2.ASM:1240 ANI_ATTACK_ON,AMODE_KICK,23,73,50,17 */
     { WM_BRET_ANIM_KICK4, 5, false,
       { WM_AMODE_KICK, 23, 73, 50, 17 }, {0,0,0,0,0,0,0} },
-    /* HRTSEQ2.ASM:1357 ANI_ATTACK_ON,AMODE_SUPER_KICK,5,54,70,34 */
+    /* HRTSEQ2.ASM:1357 ANI_ATTACK_ON,AMODE_SUPER_KICK,5,54,70,34 -- shared
+       body (HRTSEQ2.ASM:1334-1335 SUBR alias), so SUPER_KICK4 gets the
+       identical hand-traced window, not a separate guess. */
     { WM_BRET_ANIM_SUPER_KICK2, 4, false,
+      { WM_AMODE_SUPER_KICK, 5, 54, 70, 34 }, {0,0,0,0,0,0,0} },
+    { WM_BRET_ANIM_SUPER_KICK4, 4, false,
       { WM_AMODE_SUPER_KICK, 5, 54, 70, 34 }, {0,0,0,0,0,0,0} },
 };
 #define WM_BRET_ATTACK_WINDOW_COUNT \
@@ -216,6 +232,31 @@ static const wm_bret_attack_window_t *find_attack_window(wm_arcade_bret_anim_id_
     for (i = 0; i < WM_BRET_ATTACK_WINDOW_COUNT; ++i)
         if (attack_windows[i].id == id) return &attack_windows[i];
     return NULL;
+}
+
+/*
+ * HRTSEQ2.ASM: 5 of the 6 wired attacks lead with a real, instant
+ * ANI_SETFACING (right after ANI_ZEROVELS, before any WL frame -- same
+ * "processed synchronously when the animation starts" reasoning as
+ * MODE_UNINT above): hrt_2_punch_anim:187, hrt_4_punch_anim:307,
+ * hrt_4_super_punch_anim, hrt_2_kick_anim:1059, and
+ * hrt_2_super_kick_anim/hrt_4_super_kick_anim:1342 (after ANI_STARTATTACK
+ * there, but still before any WL frame -- same "instant, on start"
+ * timing; SUPER_KICK2 and SUPER_KICK4 share this one body). hrt_4_kick_anim
+ * is the one real exception: no ANI_SETFACING at all, verified by reading
+ * its header directly, not assumed from the other 5. */
+static bool attack_sets_facing_on_start(wm_arcade_bret_anim_id_t id) {
+    switch (id) {
+        case WM_BRET_ANIM_PUNCH2:
+        case WM_BRET_ANIM_PUNCH4:
+        case WM_BRET_ANIM_SUPER_PUNCH2_4:
+        case WM_BRET_ANIM_KICK2:
+        case WM_BRET_ANIM_SUPER_KICK2:
+        case WM_BRET_ANIM_SUPER_KICK4:
+            return true;
+        default:
+            return false;
+    }
 }
 
 wm_arcade_frame_box_t wm_bret_hurt_box_for_frame(const char *source_frame) {
@@ -240,9 +281,12 @@ wm_arcade_frame_box_t wm_bret_hurt_box_for_frame(const char *source_frame) {
 void wm_bret_backend_change_anim(wm_arcade_actor_t *actor,
                                  wm_arcade_bret_anim_id_t id, void *user) {
     wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    bool restarted;
     if (!bva) return;
-    start_if_new(&bva->visual, wm_bret_anim_sequence(id));
+    restarted = start_if_new(&bva->visual, wm_bret_anim_sequence(id));
     bva->current_id = id;
+    if (!actor || !restarted) return;
+
     /* HRTSEQ2.ASM's own attack headers (hrt_2_punch_anim etc., HRTSEQ2.ASM:
        184/303/...) all lead with `ANI_SETMODE,MODE_UNINT|MODE_NOAUTOFLIP`.
        ANI_SETMODE is a zero-tick "instant" command the interpreter
@@ -255,8 +299,17 @@ void wm_bret_backend_change_anim(wm_arcade_actor_t *actor,
        Cleared back to MODE_NORMAL when the attack animation naturally
        ends (matching that same header's `ANI_SETMODE,MODE_NORMAL` right
        before its own ANI_END) -- see wm_bret_backend_tick. */
-    if (actor && find_attack_window(id))
+    if (find_attack_window(id))
         actor->anim_mode |= (uint16_t)(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
+
+    /* attack_sets_facing_on_start's own comment: 5 of the 6 wired attacks
+       also carry a real, instant ANI_SETFACING right at their own start
+       (before hrt_4_kick_anim's real exception). Gated on `restarted`, not
+       every call, since the source command fires exactly once, the instant
+       the animation is selected -- not continuously for as long as it
+       plays. */
+    if (attack_sets_facing_on_start(id))
+        actor->facing_dir = actor->new_facing_dir;
 }
 
 void wm_bret_backend_change_torso_anim(wm_arcade_actor_t *actor,

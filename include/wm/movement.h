@@ -20,16 +20,23 @@ extern "C" {
  *   - execute_walk's 9-way MOVE_DIR dispatch (WRESTLE.ASM:5254 walk_table):
  *     sets MOVE_DIR and toggles the M_FLIPH OBJ_CONTROL bit exactly as the
  *     8 real-direction handlers do (up/down do not touch OBJ_CONTROL).
+ *   - The #zip/stance case's one line of real state update: set_rotate_anim
+ *     (WRESTLE.ASM:5062, called from WRESTLE.ASM:5286 `callr set_rotate_anim
+ *     ;or stance`) copies NEW_FACING_DIR into FACING_DIR synchronously and
+ *     unconditionally every idle tick, before/regardless of which turn
+ *     animation it separately selects -- see wm/arcade/wm_arcade_closest.h's
+ *     wm_arcade_update_newfacing for what feeds NEW_FACING_DIR.
  *
  * NOT covered:
- *   - Animation reselection (set_rotate_anim/change_anim1 for the #zip/
- *     stance case, change_walk_anim/change_anim2 for real movement). Both
- *     need per-wrestler leg/torso/rotate animation tables that reference
- *     ~24 HRTSEQ walk/turn sequences (hrt_walk1/2/4/5/6/8_f2/f4_anim,
- *     hrt_N_to_M_turn[2]_anim, hrt_stand6/8_anim) none of which
- *     tools/wlanim.py has extracted yet -- see wm/bret_backend.h. A
- *     wrestler therefore stays on whatever sprite was last selected while
- *     still genuinely moving underneath it.
+ *   - Animation reselection (set_rotate_anim's own turn-animation pick for
+ *     the #zip/stance case, change_walk_anim/change_anim2 for real
+ *     movement's leg/torso reselection -- the latter now real, see wm/
+ *     bret_backend.h). set_rotate_anim's rotate-table pick still needs
+ *     per-wrestler tables referencing ~24 HRTSEQ walk/turn sequences
+ *     (hrt_walk1/2/4/5/6/8_f2/f4_anim, hrt_N_to_M_turn[2]_anim,
+ *     hrt_stand6/8_anim) none of which tools/wlanim.py has extracted yet.
+ *     A wrestler therefore stays on whatever sprite was last selected while
+ *     idly turning to face a repositioned opponent.
  *   - down_right/down_left's CAN_MOVE_DIR redirect (falls back to pure
  *     #right/#left when downward movement is blocked). CAN_MOVE_DIR is
  *     computed by the unported ring-boundary/keep_onscreen system, so this

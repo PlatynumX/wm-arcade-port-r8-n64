@@ -39,6 +39,35 @@ extern "C" {
  */
 void wm_arcade_calc_closest(wm_arcade_actor_t *a, const wm_arcade_actor_t *o);
 
+/*
+ * WRESTLE.ASM:3018 SUBRP update_newfacing, the shared per-wrestler routine
+ * that recomputes NEW_FACING_DIR every tick from relative position toward
+ * the closest opponent (get_opp_process -- substituted with the fixed
+ * actor->smart_target opponent, the same substitution wm_arcade_calc_closest
+ * above already makes). Called unconditionally, for every wrestler process,
+ * from WRESTLE.ASM's main per-process loop (WRESTLE.ASM:2418 `callr
+ * update_newfacing`, right after confine_wrestler/confine_wrestler_fix2 and
+ * before the PLYR_TYPE human/zombie/drone_main branch) -- not gated on
+ * whether the wrestler is actually moving.
+ *
+ * Translated verbatim (WRESTLE.ASM:3015-3041):
+ *   new_facing_dir = (o->x_int > a->x_int ? MOVE_RIGHT : MOVE_LEFT)
+ *                   | (o->z_int > a->z_int ? MOVE_DOWN : MOVE_UP)
+ * (the source's `cmp a2,a3` computes a3-a2 then `jrgt` branches on that
+ * being >0, i.e. opponent's coordinate strictly greater than self's -- the
+ * same CMP/JRGT reading already verified elsewhere in this port.)
+ *
+ * NOT translated here: WRESTLE.ASM's set_rotate_anim, which is what actually
+ * promotes NEW_FACING_DIR into FACING_DIR (and only while the wrestler is
+ * stationary -- change_walk_anim never touches FACING_DIR while moving, see
+ * wm/movement.h and wm/bret_backend.h). This function only ever writes
+ * new_facing_dir; see wm_execute_walk's WM_MOVE_ZIP case for the literal
+ * FACING_DIR=NEW_FACING_DIR copy set_rotate_anim performs, and
+ * wm/bret_backend.h for what set_rotate_anim's own turn-animation selection
+ * still lacks.
+ */
+void wm_arcade_update_newfacing(wm_arcade_actor_t *a, const wm_arcade_actor_t *o);
+
 #ifdef __cplusplus
 }
 #endif

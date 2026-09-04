@@ -46,22 +46,31 @@ const wm_visual_sequence *wm_bret_leg_anim(int move_compass, int facing_compass)
     return leg_table[move_compass][facing_compass];
 }
 
-/* BRET.ASM:2981 hrt_torso_anims_table's diagonal (FACING_DIR==NEW_FACING_DIR,
-   i.e. not turning -- see wm_bret_torso_anim's own comment for why that's
-   the only reachable case here). Diagonal index 0-3 comes from
-   wm_convert_facing()'s compass (0-7) >> 1: {UP,UP_RIGHT}->0,
-   {RIGHT,DOWN_RIGHT}->1, {DOWN,DOWN_LEFT}->2, {LEFT,UP_LEFT}->3. The
-   table's own literal contents alias diag 0/3 to hrt_torso2_anim and
-   diag 1/2 to hrt_torso4_anim (hrt_torso8_anim/hrt_torso6_anim are
-   themselves SUBR aliases of those two, not distinct artwork -- see
-   wm/bret_visuals.h). */
+/* BRET.ASM:2981 hrt_torso_anims_table[FACING_DIR_diag][NEW_FACING_DIR_diag],
+   a real 4x4 table (WRESTLE.ASM:4977-4993) -- see wm_bret_torso_anim's own
+   comment for how the two 0-7 compasses fold to a 0-3 "diag" index each.
+   Only the diagonal (facing_diag==new_facing_diag, i.e. FACING_DIR and
+   NEW_FACING_DIR land in the same compass quadrant -- not necessarily
+   equal, just not mid-turn) has been extracted: hrt_torso2_anim/
+   hrt_torso4_anim, value-for-value below. The 12 off-diagonal
+   turn-transition entries (hrt_2_to_4_turn2_anim etc.) are genuinely
+   reachable now that NEW_FACING_DIR tracks the opponent live while
+   FACING_DIR lags during a walk (wm_arcade_update_newfacing,
+   wm/arcade/wm_arcade_closest.h) but remain unextracted -- wm_bret_torso_anim
+   returns NULL for them and the caller leaves the current torso animation
+   playing rather than guessing. */
 static const wm_visual_sequence *const torso_diag_table[4] = {
     &wm_bret_torso2_anim, &wm_bret_torso4_anim, &wm_bret_torso4_anim, &wm_bret_torso2_anim,
 };
 
-const wm_visual_sequence *wm_bret_torso_anim(int facing_compass) {
+const wm_visual_sequence *wm_bret_torso_anim(int facing_compass, int new_facing_compass) {
+    int facing_diag, new_facing_diag;
     if (facing_compass < 0 || facing_compass > 7) return NULL;
-    return torso_diag_table[facing_compass >> 1];
+    if (new_facing_compass < 0 || new_facing_compass > 7) return NULL;
+    facing_diag = facing_compass >> 1;
+    new_facing_diag = new_facing_compass >> 1;
+    if (facing_diag != new_facing_diag) return NULL;
+    return torso_diag_table[facing_diag];
 }
 
 const wm_visual_sequence *wm_bret_anim_sequence(wm_arcade_bret_anim_id_t id) {
@@ -189,17 +198,17 @@ void wm_bret_backend_execute_walk(wm_arcade_actor_t *actor, void *user) {
     wm_execute_walk(actor, bva->opponent, wm_bret_velocity_table);
 
     /* WRESTLE.ASM::change_walk_anim's leg half (WRESTLE.ASM:5000-5014):
-       reselects hrt_leg_anims_table[MOVE_DIR][FACING_DIR] every tick. Real
-       FACING_DIR tracking needs NEW_FACING_DIR (set by an as-yet-unlocated
-       shared routine) plus set_rotate_anim's FACING_DIR=NEW_FACING_DIR copy,
-       neither of which is ported. While actually moving, this substitutes
-       FACING_DIR=MOVE_DIR -- correct for straight walking, which is the
-       only case reachable today (nothing here supports facing one way while
-       walking another). #zip already cleared MOVE_DIR to 0, so
-       wm_convert_facing returns -1 and no leg animation is (re)selected. */
+       reselects hrt_leg_anims_table[MOVE_DIR][FACING_DIR] every tick.
+       FACING_DIR is now real (wm_arcade_update_newfacing +
+       wm_execute_walk's WM_MOVE_ZIP catch-up, see wm/arcade/
+       wm_arcade_closest.h and wm/movement.h) -- change_walk_anim's leg half
+       itself never writes FACING_DIR, so this doesn't either; it only
+       reflects whatever value FACING_DIR was last given (real while idle,
+       frozen from the last idle tick while walking, exactly like the
+       source). #zip already cleared MOVE_DIR to 0, so wm_convert_facing
+       returns -1 and no leg animation is (re)selected. */
     if (actor->move_dir != 0) {
         int move_compass, facing_compass;
-        actor->facing_dir = actor->move_dir;
         move_compass = wm_convert_facing(actor->move_dir);
         facing_compass = wm_convert_facing(actor->facing_dir);
         start_if_new(&bva->visual, wm_bret_leg_anim(move_compass, facing_compass));
@@ -209,17 +218,14 @@ void wm_bret_backend_execute_walk(wm_arcade_actor_t *actor, void *user) {
        reselects hrt_torso_anims_table[FACING_DIR][NEW_FACING_DIR] every
        call this port reaches (source gates it on MODE_UNINT only, not on
        MOVE_DIR -- unlike the leg half above, this runs even while idle).
-       Real FACING_DIR/NEW_FACING_DIR tracking needs the same not-yet-
-       located "compute NEW_FACING_DIR" routine the leg half's own comment
-       flags; substituting FACING_DIR=NEW_FACING_DIR (actor->facing_dir,
-       left alone here -- the leg half above is what actually updates it)
-       always lands on the table's diagonal, i.e. wm_bret_torso_anim's own
-       reduced 4-entry table. If facing_dir is still its zeroed default
-       (never having moved), wm_convert_facing returns -1 and no torso
-       animation is (re)selected. */
+       Both indices are now real -- see wm_bret_torso_anim's own comment for
+       what's still missing (the 12 off-diagonal turn-transition entries).
+       If facing_dir is still its zeroed default (never having moved),
+       wm_convert_facing returns -1 and no torso animation is (re)selected. */
     if (!(actor->anim_mode & WM_MODE_UNINT)) {
         start_if_new(&bva->torso_visual,
-                     wm_bret_torso_anim(wm_convert_facing(actor->facing_dir)));
+                     wm_bret_torso_anim(wm_convert_facing(actor->facing_dir),
+                                        wm_convert_facing(actor->new_facing_dir)));
     }
 }
 

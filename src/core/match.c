@@ -66,6 +66,15 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
     p1->smart_target = opp;
     opp->smart_target = p1;
 
+    /* WRESTLE.ASM:2753-2755 (#set0, wrestler-placement init): NEW_FACING_DIR
+       and FACING_DIR both start at the #teamX_starts table's real per-side
+       facing value (WRESTLE.ASM:2784/2790) -- this port only ever creates
+       the "first player on team" row, having no team-battle/royal-rumble
+       support, so team0's first-starter facing (9=MOVE_UP_RIGHT) and
+       team1's (6=MOVE_DOWN_LEFT) are the only reachable entries. */
+    p1->facing_dir = p1->new_facing_dir = WM_MOVE_UP_RIGHT;
+    opp->facing_dir = opp->new_facing_dir = WM_MOVE_DOWN_LEFT;
+
     wm_arcade_drone_init(&m->drones[0], 0);
     wm_arcade_drone_init(&m->drones[1], 0);
 
@@ -104,6 +113,11 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
 
     p1->smart_target = opp;
     opp->smart_target = p1;
+
+    /* WRESTLE.ASM:2753-2755 (#set0, wrestler-placement init): see the same
+       comment in wm_match_start_attract above. */
+    p1->facing_dir = p1->new_facing_dir = WM_MOVE_UP_RIGHT;
+    opp->facing_dir = opp->new_facing_dir = WM_MOVE_DOWN_LEFT;
 
     wm_arcade_drone_init(&m->drones[0], 0);
     wm_arcade_drone_init(&m->drones[1], 0);
@@ -154,6 +168,13 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
     world.first_ladder = 1;
 
     for (i = 0; i < m->actor_count; ++i) {
+        /* WRESTLE.ASM:2418 `callr update_newfacing`, called unconditionally
+           for every wrestler process before the human/zombie/drone_main
+           branch -- WM_MATCH_MAX_ACTORS==2, so the other slot is always the
+           opponent (same fixed-pair substitution wm_arcade_calc_closest
+           below already makes). */
+        wm_arcade_update_newfacing(&m->actors[i], &m->actors[1u - i]);
+
         if (m->has_human && i == m->human_actor_index) {
             wm_human_input_commit(&m->actors[i], &m->human_input_state, human_input);
         } else {

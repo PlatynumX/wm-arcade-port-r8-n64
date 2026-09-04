@@ -41,3 +41,14 @@ void wm_arcade_calc_closest(wm_arcade_actor_t *a, const wm_arcade_actor_t *o) {
             (uint32_t)dy * (uint32_t)dy;
     a->closest_dist = isqrt32(sumsq);
 }
+
+void wm_arcade_update_newfacing(wm_arcade_actor_t *a, const wm_arcade_actor_t *o) {
+    int32_t facing;
+
+    if (!a || !o) return;
+
+    facing = (o->x_int > a->x_int) ? WM_MOVE_RIGHT : WM_MOVE_LEFT;
+    facing |= (o->z_int > a->z_int) ? WM_MOVE_DOWN : WM_MOVE_UP;
+
+    a->new_facing_dir = facing;
+}

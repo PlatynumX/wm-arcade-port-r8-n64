@@ -84,6 +84,13 @@ void wm_execute_walk(wm_arcade_actor_t *actor,
             actor->move_dir = 0;
             actor->x_vel = 0;
             actor->z_vel = 0;
+            /* WRESTLE.ASM:5286 `callr set_rotate_anim ;or stance`, called
+               every idle (#zip) tick: set_rotate_anim's own body (WRESTLE.
+               ASM:5082-5083) does this copy unconditionally and
+               synchronously, before/regardless of which turn animation it
+               separately picks -- see wm/bret_backend.h for that
+               still-unported half. */
+            actor->facing_dir = actor->new_facing_dir;
             return;
         case WM_MOVE_UP:
         case WM_MOVE_DOWN:
@@ -100,10 +107,12 @@ void wm_execute_walk(wm_arcade_actor_t *actor,
             break;
         default:
             /* Not one of WRESTLE.ASM's 9 walk_table entries with real
-               bodies (3/7/11-15 all alias #zip); treat the same way. */
+               bodies (3/7/11-15 all alias #zip); treat the same way,
+               including the FACING_DIR catch-up above. */
             actor->move_dir = 0;
             actor->x_vel = 0;
             actor->z_vel = 0;
+            actor->facing_dir = actor->new_facing_dir;
             return;
     }
 

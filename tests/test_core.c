@@ -12,6 +12,7 @@
 #include "wm/bret_visuals.h"
 #include "wm/game.h"
 #include "wm/match.h"
+#include "wm/movement.h"
 #include "wm/roster.h"
 #include "wm/select.h"
 #include "wm/source_data.h"
@@ -538,12 +539,120 @@ static void test_bret_ani_init_facing(void) {
     CHECK(bva.torso_visual.sequence == &wm_bret_torso2_anim);
 }
 
+static void test_convert_facing(void) {
+    CHECK(wm_convert_facing(WM_MOVE_UP) == 0);
+    CHECK(wm_convert_facing(WM_MOVE_UP_RIGHT) == 1);
+    CHECK(wm_convert_facing(WM_MOVE_RIGHT) == 2);
+    CHECK(wm_convert_facing(WM_MOVE_DOWN_RIGHT) == 3);
+    CHECK(wm_convert_facing(WM_MOVE_DOWN) == 4);
+    CHECK(wm_convert_facing(WM_MOVE_DOWN_LEFT) == 5);
+    CHECK(wm_convert_facing(WM_MOVE_LEFT) == 6);
+    CHECK(wm_convert_facing(WM_MOVE_UP_LEFT) == 7);
+    /* WRESTLE.ASM:4514/4517/4521/4525-4529: 0, 3, 7, 11-15 all mean "zip". */
+    CHECK(wm_convert_facing(WM_MOVE_ZIP) == -1);
+    CHECK(wm_convert_facing(3) == -1);
+    CHECK(wm_convert_facing(11) == -1);
+}
+
+static void test_set_velocities_normal(void) {
+    wm_arcade_actor_t a;
+    memset(&a, 0, sizeof(a));
+    a.move_dir = WM_MOVE_RIGHT;
+    a.facing_dir = WM_MOVE_RIGHT; /* not moving backward */
+    wm_set_velocities(&a, NULL, wm_bret_velocity_table);
+    CHECK(a.x_vel == WM_BRET_WALK_VEL);
+    CHECK(a.z_vel == 0);
+}
+
+static void test_set_velocities_backward_reduction(void) {
+    wm_arcade_actor_t a;
+    int32_t expect_x;
+    memset(&a, 0, sizeof(a));
+    a.move_dir = WM_MOVE_LEFT;
+    a.facing_dir = WM_MOVE_RIGHT; /* opposite horizontal -> backward */
+    wm_set_velocities(&a, NULL, wm_bret_velocity_table);
+    /* WRESTLE.ASM MULT = 256*90/100 = 230. */
+    expect_x = (int32_t)(((int64_t)-WM_BRET_WALK_VEL * 230) >> 8);
+    CHECK(a.x_vel == expect_x);
+    CHECK(a.x_vel != -WM_BRET_WALK_VEL);
+}
+
+static void test_set_velocities_ground_boost(void) {
+    wm_arcade_actor_t a, opp;
+    int32_t expect_x;
+    memset(&a, 0, sizeof(a));
+    memset(&opp, 0, sizeof(opp));
+    a.move_dir = WM_MOVE_RIGHT;
+    a.facing_dir = WM_MOVE_RIGHT;
+    opp.player_mode = WM_PMODE_ONGROUND;
+    wm_set_velocities(&a, &opp, wm_bret_velocity_table);
+    /* WRESTLE.ASM GRND_MULT = 256*150/100 = 384. */
+    expect_x = (int32_t)(((int64_t)WM_BRET_WALK_VEL * 384) >> 8);
+    CHECK(a.x_vel == expect_x);
+
+    memset(&a, 0, sizeof(a));
+    a.move_dir = WM_MOVE_RIGHT;
+    a.facing_dir = WM_MOVE_RIGHT;
+    a.walk_fast = 1; /* same boost without any opponent at all */
+    wm_set_velocities(&a, NULL, wm_bret_velocity_table);
+    CHECK(a.x_vel == expect_x);
+}
+
+static void test_execute_walk_flip_and_zip(void) {
+    wm_arcade_actor_t a;
+
+    memset(&a, 0, sizeof(a));
+    a.move_dir = WM_MOVE_LEFT;
+    wm_execute_walk(&a, NULL, wm_bret_velocity_table);
+    CHECK(a.obj_control & WM_OBJ_FLIPH);
+    CHECK(a.move_dir == WM_MOVE_LEFT);
+    CHECK(a.x_vel == -WM_BRET_WALK_VEL);
+
+    /* WRESTLE.ASM #right/#up_right/#down_right clear M_FLIPH. */
+    memset(&a, 0, sizeof(a));
+    a.obj_control = WM_OBJ_FLIPH;
+    a.move_dir = WM_MOVE_RIGHT;
+    wm_execute_walk(&a, NULL, wm_bret_velocity_table);
+    CHECK(!(a.obj_control & WM_OBJ_FLIPH));
+
+    /* #up/#down never touch OBJ_CONTROL. */
+    memset(&a, 0, sizeof(a));
+    a.obj_control = WM_OBJ_FLIPH;
+    a.move_dir = WM_MOVE_UP;
+    wm_execute_walk(&a, NULL, wm_bret_velocity_table);
+    CHECK(a.obj_control & WM_OBJ_FLIPH);
+    CHECK(a.x_vel == 0);
+    CHECK(a.z_vel == -WM_BRET_WALK_VEL);
+
+    /* #zip clears MOVE_DIR and both velocities. */
+    memset(&a, 0, sizeof(a));
+    a.move_dir = WM_MOVE_ZIP;
+    a.x_vel = 12345;
+    a.z_vel = 6789;
+    wm_execute_walk(&a, NULL, wm_bret_velocity_table);
+    CHECK(a.move_dir == 0);
+    CHECK(a.x_vel == 0);
+    CHECK(a.z_vel == 0);
+}
+
+static void test_integrate_position(void) {
+    wm_arcade_actor_t a;
+    memset(&a, 0, sizeof(a));
+    a.x_vel = WM_BRET_WALK_VEL;
+    a.z_vel = -WM_BRET_WALK_VEL;
+    for (int i = 0; i < 10; ++i) wm_integrate_position(&a);
+    CHECK(a.x_fixed == (int32_t)(WM_BRET_WALK_VEL * 10));
+    CHECK(a.z_fixed == (int32_t)(-WM_BRET_WALK_VEL * 10));
+    CHECK(a.x_int == a.x_fixed >> 16);
+    CHECK(a.z_int == a.z_fixed >> 16);
+}
+
 /* End-to-end through wm_match: when the RNG draws Bret for P1, the actor's
    idle stand animation is real (set once by wm_arcade_bret_ani_init inside
    wm_match_start_attract) and stays selected and running across ticks, since
-   the idle drone AI never gives mode_normal a reason to change it and
-   execute_walk (the only thing that would reselect it) is not wired --
-   see wm/match.h. */
+   the idle drone AI never gives mode_normal a reason to change it -- see
+   wm/match.h. (wm_execute_walk itself is real and wired; it just has no
+   input to act on yet.) */
 static void test_match_bret_idle_animates(void) {
     WmRng rng;
     wm_match_state m;
@@ -863,6 +972,12 @@ int main(void) {
     test_bret_anim_sequence_mapping();
     test_bret_backend_change_anim();
     test_bret_ani_init_facing();
+    test_convert_facing();
+    test_set_velocities_normal();
+    test_set_velocities_backward_reduction();
+    test_set_velocities_ground_boost();
+    test_execute_walk_flip_and_zip();
+    test_integrate_position();
     test_match_bret_idle_animates();
     test_source_attract_sequence();
     test_attract_source_flow();

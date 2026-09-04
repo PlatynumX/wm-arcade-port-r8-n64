@@ -39,11 +39,11 @@ extern "C" {
  *     and which still resolve to nothing. The other seven wrestlers have no
  *     backend at all yet, so an actor drawn as one of them holds real state
  *     (health, ring assignment, mutual smart_target) but never moves.
- *   - wm_arcade_bret_callbacks_t.execute_walk (WRESTLE.ASM::execute_walk):
- *     not implemented -- see wm/bret_backend.h. A Bret actor's sprite stays
- *     on its initial stance rather than reselecting an idle/walk animation
- *     every tick, which is a real gap once movement AI exists, but has no
- *     visible effect today since the drone AI above never actually moves it.
+ *   - Movement input: nothing above ever gives a Bret actor a nonzero
+ *     stick_val_cur (see the DRONE.ASM note), so wm_arcade_bret_callbacks_t.
+ *     execute_walk (real, see wm/movement.h and wm/bret_backend.h) has
+ *     nothing to act on today; it takes real human/player input, not more
+ *     drone data.
  */
 
 #define WM_MATCH_MAX_ACTORS 2

@@ -2,6 +2,7 @@
 #define WM_BRET_BACKEND_H
 
 #include "wm/arcade/wm_arcade_bret.h"
+#include "wm/movement.h"
 #include "wm/visual.h"
 
 #ifdef __cplusplus
@@ -32,19 +33,26 @@ extern "C" {
  * no-ops for it rather than substituting a placeholder animation -- BRET.ASM
  * itself still picks the correct id; only its visual result is missing.
  *
- * wm_arcade_bret_callbacks_t.execute_walk is NOT implemented here.
- * WRESTLE.ASM::execute_walk (a shared, non-Bret-specific routine) drives both
- * movement velocity AND the idle "stance" animation reselection every tick
- * through set_rotate_anim/change_anim1 and a per-wrestler rotate-anim table;
- * porting it is its own separate step. Until it exists, a Bret actor's
- * sprite stays on whatever wm_bret_backend_ani_init set (correct for a
- * standing, non-moving, non-attacking wrestler, which is what the current
- * drone AI -- see wm/match.h -- always produces).
+ * wm_arcade_bret_callbacks_t.execute_walk is wired to wm/movement.h's
+ * wm_execute_walk()+wm_bret_velocity_table: real MOVE_DIR/OBJ_CONTROL/
+ * velocity behavior, so a Bret actor genuinely moves (see
+ * wm_bret_backend_tick_position()). What it does NOT do is reselect an
+ * animation: set_rotate_anim/change_anim1 (idle "stance" turning) and
+ * change_walk_anim/change_anim2 (actual walk cycle) both need per-wrestler
+ * leg/torso/rotate animation tables referencing ~24 HRTSEQ sequences
+ * tools/wlanim.py has not extracted (see wm/movement.h). A Bret actor
+ * therefore slides around the ring on whatever sprite
+ * wm_bret_backend_ani_init/wm_bret_backend_change_anim last selected.
  */
 
 typedef struct {
     wm_visual_state visual;
     wm_visual_state torso_visual;
+    /* Set by the caller before each wm_arcade_move_bret() call; read back
+       by the execute_walk callback, whose own signature has no opponent
+       parameter. NULL is safe (wm_execute_walk treats it as "no opponent
+       to check ONGROUND/DEAD against"). */
+    wm_arcade_actor_t *opponent;
 } wm_bret_backend_actor;
 
 void wm_bret_backend_init(wm_bret_backend_actor *bva);
@@ -59,13 +67,23 @@ void wm_bret_backend_change_anim(wm_arcade_actor_t *actor,
 void wm_bret_backend_change_torso_anim(wm_arcade_actor_t *actor,
                                        wm_arcade_bret_anim_id_t id, void *user);
 
-/* Builds a callbacks struct with only change_anim/change_torso_anim/user
-   populated; every other BRET.ASM callback (execute_walk, sound, secret
-   moves, ...) is intentionally left NULL -- see the file comment. */
+/* Builds a callbacks struct with change_anim/change_torso_anim/execute_walk/
+   user populated; every other BRET.ASM callback (sound, secret moves, ...)
+   is intentionally left NULL -- see the file comment. Set bva->opponent
+   before calling wm_arcade_move_bret() with this. */
 wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva);
 
-/* Advances both visual tracks by one source tick. */
+/* wm_arcade_bret_callbacks_t.execute_walk body: wm_execute_walk(actor,
+   bva->opponent, wm_bret_velocity_table). */
+void wm_bret_backend_execute_walk(wm_arcade_actor_t *actor, void *user);
+
+/* Advances both visual tracks by one source tick. Does not move the actor
+   -- see wm_bret_backend_tick_position(). */
 void wm_bret_backend_tick(wm_bret_backend_actor *bva);
+
+/* Not a source routine (see wm/movement.h's wm_integrate_position): applies
+   actor->x_vel/z_vel to its position for one tick. */
+void wm_bret_backend_tick_position(wm_arcade_actor_t *actor);
 
 #ifdef __cplusplus
 }

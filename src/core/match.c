@@ -96,11 +96,14 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb) {
             /* WM_MATCH_MAX_ACTORS==2: the other slot is always the opponent. */
             wm_arcade_actor_t *opp = &m->actors[1u - i];
             wm_arcade_bret_env_t env;
-            wm_arcade_bret_callbacks_t bret_cb = wm_bret_backend_callbacks(&m->bret_visual[i]);
+            wm_arcade_bret_callbacks_t bret_cb;
+            m->bret_visual[i].opponent = opp;
+            bret_cb = wm_bret_backend_callbacks(&m->bret_visual[i]);
             memset(&env, 0, sizeof(env));
             env.pcnt = m->tick_count;
             (void)wm_arcade_move_bret(&m->actors[i], opp, &env, &bret_cb);
             wm_bret_backend_tick(&m->bret_visual[i]);
+            wm_bret_backend_tick_position(&m->actors[i]);
         }
     }
 

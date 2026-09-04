@@ -45,11 +45,18 @@ void wm_bret_backend_change_torso_anim(wm_arcade_actor_t *actor,
     start_if_new(&bva->torso_visual, wm_bret_anim_sequence(id));
 }
 
+void wm_bret_backend_execute_walk(wm_arcade_actor_t *actor, void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    if (!actor || !bva) return;
+    wm_execute_walk(actor, bva->opponent, wm_bret_velocity_table);
+}
+
 wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva) {
     wm_arcade_bret_callbacks_t cb;
     memset(&cb, 0, sizeof(cb));
     cb.change_anim = wm_bret_backend_change_anim;
     cb.change_torso_anim = wm_bret_backend_change_torso_anim;
+    cb.execute_walk = wm_bret_backend_execute_walk;
     cb.user = bva;
     return cb;
 }
@@ -58,4 +65,8 @@ void wm_bret_backend_tick(wm_bret_backend_actor *bva) {
     if (!bva) return;
     wm_visual_tick(&bva->visual);
     wm_visual_tick(&bva->torso_visual);
+}
+
+void wm_bret_backend_tick_position(wm_arcade_actor_t *actor) {
+    wm_integrate_position(actor);
 }

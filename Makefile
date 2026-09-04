@@ -27,6 +27,7 @@ CORE_C := \
     src/core/ropes.c \
     src/core/demo.c \
     src/core/match.c \
+    src/core/movement.c \
     src/core/bret_backend.c \
     src/core/visual.c \
     src/core/roster.c \

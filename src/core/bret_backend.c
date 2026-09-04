@@ -157,9 +157,12 @@ static void wm_bret_backend_adjust_health(wm_arcade_actor_t *actor, int delta,
                                           void *user) {
     wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
     if (!actor) return;
+    /* No wm_arcade_combat_runtime_t reachable from this self-death path
+       (see wm_arcade_adjust_health's own comment): DAM_MULT tracking is
+       skipped here, not guessed at. */
     wm_arcade_adjust_health(actor, (int16_t)delta, actor->who_hit_me,
                             bva ? bva->attract_mode : false,
-                            bva ? bva->pcnt : 0);
+                            bva ? bva->pcnt : 0, NULL);
 }
 
 void wm_bret_backend_execute_walk(wm_arcade_actor_t *actor, void *user) {

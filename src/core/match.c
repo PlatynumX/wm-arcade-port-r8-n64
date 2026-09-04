@@ -130,7 +130,8 @@ static void wm_match_adjust_health(wm_arcade_actor_t *victim, int16_t signed_del
     wm_match_state *m = (wm_match_state *)user;
     wm_arcade_adjust_health(victim, signed_delta, damage_source,
                             m ? !m->has_human : false,
-                            m ? m->tick_count : 0);
+                            m ? m->tick_count : 0,
+                            m ? &m->combat_runtime.dam_mult : NULL);
 }
 
 void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,

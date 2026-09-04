@@ -2,15 +2,33 @@
 
 void wm_arcade_adjust_health(wm_arcade_actor_t *victim, int16_t delta,
                              wm_arcade_actor_t *damage_source,
-                             bool attract_mode, uint32_t pcnt) {
+                             bool attract_mode, uint32_t pcnt,
+                             int32_t *dam_mult) {
     int32_t life;
+    int32_t d = delta;
 
     if (!victim) return;
 
-    life = (int32_t)victim->life + delta;
+    if (damage_source && damage_source->combo_count != 0) {
+        /* LIFEBAR.ASM:1429-1447: "doing a combo" damage entirely replaces
+           the original hit's delta. */
+        int32_t magnitude = 10 - damage_source->combo_count;
+        if (magnitude < 4) magnitude = 4;
+        d = -magnitude;
+        if (dam_mult) *dam_mult = 0;
+    } else if (dam_mult && *dam_mult != 0) {
+        /* LIFEBAR.ASM:1449-1465: damage *= (1+DAM_MULT)/2, e.g. DAM_MULT=2
+           -> x1.5, DAM_MULT=4 -> x2.5. sra 1 floors toward -infinity for
+           negative values, matching C's >> on a negative signed int here. */
+        d = d * (1 + *dam_mult);
+        d >>= 1;
+        *dam_mult = 0;
+    }
+
+    life = (int32_t)victim->life + d;
 
     if (life <= 0) {
-        if (life > -10 && delta <= -20) {
+        if (life > -10 && d <= -20) {
             /* LIFEBAR.ASM:1561-1569 fudge. */
             life = 5;
         } else {

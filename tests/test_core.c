@@ -825,6 +825,21 @@ static void test_arcade_adjust_health_clamps_to_life_max(void) {
     CHECK(victim.life == WM_ARCADE_LIFE_MAX);
 }
 
+/* LIFEBAR.ASM:1524-1528 speed_adjustment scaling: the factory-default
+   ADJSPEED (WM_ARCADE_SPEED_ADJUSTMENT_16_16, see its own comment for why)
+   is exactly 1.0x, so it must not perturb any delta -- unlike
+   damage_mod_table, this step also runs on positive (healing) deltas. */
+static void test_arcade_adjust_health_speed_adjustment_is_identity(void) {
+    wm_arcade_actor_t victim;
+
+    CHECK(WM_ARCADE_SPEED_ADJUSTMENT_16_16 == 0x10000L);
+
+    memset(&victim, 0, sizeof(victim));
+    victim.life = 50;
+    wm_arcade_adjust_health(&victim, 7, NULL, false, 0, NULL); /* healing */
+    CHECK(victim.life == 57);
+}
+
 static void test_arcade_adjust_health_fudge_saves_a_near_death_hit(void) {
     wm_arcade_actor_t victim;
     memset(&victim, 0, sizeof(victim));
@@ -1956,6 +1971,7 @@ int main(void) {
     test_hurt_box_connects_a_real_hit();
     test_arcade_adjust_health_normal_damage();
     test_arcade_adjust_health_clamps_to_life_max();
+    test_arcade_adjust_health_speed_adjustment_is_identity();
     test_arcade_adjust_health_fudge_saves_a_near_death_hit();
     test_arcade_adjust_health_attract_mode_never_dies();
     test_arcade_adjust_health_death();

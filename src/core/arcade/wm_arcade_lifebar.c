@@ -37,6 +37,15 @@ void wm_arcade_adjust_health(wm_arcade_actor_t *victim, int16_t delta,
         d = (d * WM_ARCADE_DAMAGE_MOD_85PCT) >> 8;
     }
 
+    /* LIFEBAR.ASM:1524-1528 speed_adjustment scaling, applied unconditionally
+       (unlike the damage_mod_table step above, this one also runs on
+       positive/healing deltas): d = (d * speed_adjustment) >> 16, speed_
+       adjustment a Q16.16 fixed value. WM_ARCADE_SPEED_ADJUSTMENT_16_16 is
+       exactly 0x10000 (1.0x, a mathematical identity), so this line changes
+       nothing today -- see its own comment for why that is the real,
+       sourced factory-default value, not an invented placeholder. */
+    d = (int32_t)(((int64_t)d * WM_ARCADE_SPEED_ADJUSTMENT_16_16) >> 16);
+
     life = (int32_t)victim->life + d;
 
     if (life <= 0) {

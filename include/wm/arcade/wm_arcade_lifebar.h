@@ -18,6 +18,18 @@ extern "C" {
 #define WM_ARCADE_DAMAGE_MOD_85PCT 218
 
 /*
+ * LIFEBAR.ASM:183 #timer_table[ADJSPEED-1], Q16.16 fixed. This port has no
+ * live operator-settings/CMOS system to read a real ADJSPEED (1-5) from, so
+ * it uses the arcade's own factory-shipped default instead of inventing
+ * one: AUDIT.ASM's FACTORY_TABLE lists ADJSPEED (adjustment id 25) as 3,
+ * exactly matching LIFEBAR.ASM:161's own BADCHK fallback value for an
+ * out-of-range read. #timer_table[3-1] (0x10000*1) is the entry literally
+ * commented "normal damage (default)" in the source -- i.e. the factory
+ * default is precisely 1.0x, a mathematical identity multiply.
+ */
+#define WM_ARCADE_SPEED_ADJUSTMENT_16_16 0x10000L
+
+/*
  * LIFEBAR.ASM::adjust_health's damage-application tail (LIFEBAR.ASM:
  * 1429-1670), shared by every real caller of it in this port: the REACT1.ASM
  * hit path (wm_arcade_wrestler_hit -> wm_match's wrestler_hit callback) and
@@ -47,6 +59,13 @@ extern "C" {
  *     is always the fixed pair wm_match_start_attract/selected create, so
  *     that count is always 0 and both of the table's 0-drones columns are
  *     the same _85PCT anyway -- no PLYR_TYPE branch needed.
+ *   - LIFEBAR.ASM:1524-1528, applied next unconditionally (healing and
+ *     damage alike, unlike the damage_mod_table step): delta = (delta *
+ *     WM_ARCADE_SPEED_ADJUSTMENT_16_16) >> 16. See that macro's own comment
+ *     for why its value (the arcade's factory-default ADJSPEED setting) is
+ *     exactly 0x10000 -- a 1.0x identity, so this line has no effect today,
+ *     but is real and ready for a live value once this port has an operator-
+ *     settings system to read one from.
  *   life = victim->life + delta (the possibly-transformed value above),
  *   clamped to [0, LIFE_MAX], except:
  *     - LIFEBAR.ASM:1561-1569 "fudge": a killing hit of 20+ points that
@@ -75,13 +94,9 @@ extern "C" {
  *     rapid-hit check) but nothing ever wrote it before this, so repeated
  *     attacks always dealt full_damage regardless of timing.
  *
- * NOT translated: LIFEBAR.ASM:1524-1528's speed_adjustment scaling --
- * initialized from an operator DIP-switch/menu setting (ADJSPEED via
- * GET_ADJ, a settings subsystem this port doesn't have at all) through a
- * 16.16 fixed multiply, so there is no real default to fall back to
- * without guessing at operator settings; CHECK_COMBO_GO (an unlocated
- * global "is the combo mechanic enabled" gate -- this function always
- * allows both combo_count branches above, stricter than the source in a
+ * NOT translated: CHECK_COMBO_GO (an unlocated global "is the combo
+ * mechanic enabled" gate -- this function always allows both combo_count
+ * branches above, stricter than the source in a
  * way that currently never matters since combo_count is always 0), the
  * lifebar flash-warning process, ACTUAL_PLYRNUM/royal-rumble teammate
  * propagation, 8-on-1 wrestler_count bookkeeping, and everything past

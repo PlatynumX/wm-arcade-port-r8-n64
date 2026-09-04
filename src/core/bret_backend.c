@@ -158,7 +158,8 @@ static void wm_bret_backend_adjust_health(wm_arcade_actor_t *actor, int delta,
     wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
     if (!actor) return;
     wm_arcade_adjust_health(actor, (int16_t)delta, actor->who_hit_me,
-                            bva ? bva->attract_mode : false);
+                            bva ? bva->attract_mode : false,
+                            bva ? bva->pcnt : 0);
 }
 
 void wm_bret_backend_execute_walk(wm_arcade_actor_t *actor, void *user) {

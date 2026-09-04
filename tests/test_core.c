@@ -808,16 +808,18 @@ static void test_arcade_adjust_health_normal_damage(void) {
     wm_arcade_actor_t victim;
     memset(&victim, 0, sizeof(victim));
     victim.life = 100;
-    wm_arcade_adjust_health(&victim, -30, NULL, false);
+    wm_arcade_adjust_health(&victim, -30, NULL, false, 12345u);
     CHECK(victim.life == 70);
     CHECK(victim.player_mode == WM_PMODE_NORMAL);
+    /* LIFEBAR.ASM:1593-1595: unconditional on every call. */
+    CHECK(victim.last_damage == (uint16_t)12345u);
 }
 
 static void test_arcade_adjust_health_clamps_to_life_max(void) {
     wm_arcade_actor_t victim;
     memset(&victim, 0, sizeof(victim));
     victim.life = WM_ARCADE_LIFE_MAX - 5;
-    wm_arcade_adjust_health(&victim, 50, NULL, false);
+    wm_arcade_adjust_health(&victim, 50, NULL, false, 0);
     CHECK(victim.life == WM_ARCADE_LIFE_MAX);
 }
 
@@ -827,7 +829,7 @@ static void test_arcade_adjust_health_fudge_saves_a_near_death_hit(void) {
     /* life+delta = -5: > -10 (not overkilled by 10+) and delta <= -20 (a
        20+ point hit) -- LIFEBAR.ASM:1561-1569 fudge applies: life = 5. */
     victim.life = 15;
-    wm_arcade_adjust_health(&victim, -20, NULL, false);
+    wm_arcade_adjust_health(&victim, -20, NULL, false, 0);
     CHECK(victim.life == 5);
     CHECK(victim.player_mode == WM_PMODE_NORMAL);
 }
@@ -836,7 +838,7 @@ static void test_arcade_adjust_health_attract_mode_never_dies(void) {
     wm_arcade_actor_t victim;
     memset(&victim, 0, sizeof(victim));
     victim.life = 5;
-    wm_arcade_adjust_health(&victim, -5, NULL, true);
+    wm_arcade_adjust_health(&victim, -5, NULL, true, 0);
     CHECK(victim.life == WM_ARCADE_LIFE_MAX);
     CHECK(victim.player_mode == WM_PMODE_NORMAL);
 }
@@ -846,7 +848,7 @@ static void test_arcade_adjust_health_death(void) {
     memset(&victim, 0, sizeof(victim));
     victim.life = 5;
     victim.anim_mode = WM_MODE_CHECKHIT;
-    wm_arcade_adjust_health(&victim, -5, NULL, false);
+    wm_arcade_adjust_health(&victim, -5, NULL, false, 0);
     CHECK(victim.life == 0);
     CHECK(victim.player_mode == WM_PMODE_DEAD);
     /* LIFEBAR.ASM:1725 calla wres_collis_off. */
@@ -859,18 +861,85 @@ static void test_arcade_adjust_health_combo_revival_defers_death(void) {
     memset(&attacker, 0, sizeof(attacker));
     victim.life = 5;
     attacker.combo_count = 3;
-    wm_arcade_adjust_health(&victim, -5, &attacker, false);
+    wm_arcade_adjust_health(&victim, -5, &attacker, false, 0);
     CHECK(victim.life == 1);
     CHECK(victim.i_will_die == 1);
     CHECK(victim.player_mode == WM_PMODE_NORMAL);
 }
 
+/* WHOHITME's own reduced_damage window (REACT1.ASM/wm_arcade_wrestler_hit):
+   a second hit on the same victim within 50 ticks deals reduced_damage
+   instead of full_damage, but only once LAST_DAMAGE is real. */
+static void test_arcade_adjust_health_stamps_last_damage_for_reduced_window(void) {
+    wm_arcade_actor_t victim;
+    memset(&victim, 0, sizeof(victim));
+    victim.life = 100;
+    CHECK(victim.last_damage == 0);
+
+    wm_arcade_adjust_health(&victim, -8, NULL, false, 1000u);
+    CHECK(victim.last_damage == 1000u);
+
+    /* A later hit within REACT1.ASM's 50-tick window would now see a
+       nonzero, recent last_damage -- see
+       test_arcade_wrestler_hit_reduced_damage_within_window below for the
+       actual reduced_damage effect. */
+    wm_arcade_adjust_health(&victim, -8, NULL, false, 1010u);
+    CHECK(victim.last_damage == 1010u);
+}
+
 static void test_hurt_box_real_adjust_health(wm_arcade_actor_t *victim, int16_t delta,
                                              wm_arcade_actor_t *damage_source, void *user) {
-    (void)user;
+    wm_arcade_combat_runtime_t *runtime = (wm_arcade_combat_runtime_t *)user;
     /* Mirrors wm_match_adjust_health's adapter for a human match
        (attract_mode=false, matching wm_match_start_selected). */
-    wm_arcade_adjust_health(victim, delta, damage_source, false);
+    wm_arcade_adjust_health(victim, delta, damage_source, false,
+                            runtime ? runtime->pcnt : 0);
+}
+
+/* End-to-end through wm_arcade_wrestler_hit (REACT1.ASM): a second PUNCH
+   within the 50-tick window now actually deals WM_RD_PUNCH (reduced)
+   instead of WM_D_PUNCH (full) -- real once wm_arcade_adjust_health stamps
+   LAST_DAMAGE for the real callers to read back. */
+static void test_arcade_wrestler_hit_reduced_damage_within_window(void) {
+    wm_arcade_actor_t attacker, victim;
+    wm_arcade_combat_runtime_t runtime;
+    wm_arcade_react_callbacks_t cb;
+    wm_arcade_wrestler_hit_result_t r1, r2;
+    int32_t life_after_first, full_damage_dealt, reduced_damage_dealt;
+
+    memset(&attacker, 0, sizeof(attacker));
+    memset(&victim, 0, sizeof(victim));
+    attacker.wrestler_num = WM_ROSTER_BRET;
+    victim.wrestler_num = WM_ROSTER_BRET;
+    attacker.attack_mode = WM_AMODE_PUNCH;
+    victim.life = 163;
+    victim.player_mode = WM_PMODE_NORMAL;
+
+    wm_arcade_combat_runtime_init(&runtime);
+    memset(&cb, 0, sizeof(cb));
+    cb.adjust_health = test_hurt_box_real_adjust_health;
+    cb.user = &runtime;
+
+    runtime.pcnt = 100;
+    r1 = wm_arcade_wrestler_hit(&attacker, &victim, &runtime, &cb);
+    CHECK(r1.status == WM_WRESTLER_HIT_OK);
+    life_after_first = victim.life;
+    full_damage_dealt = 163 - life_after_first;
+    CHECK(full_damage_dealt > 0);
+    CHECK(victim.last_damage == 100);
+
+    /* WHOHITME must match the current attacker for the window to apply
+       (REACT1.ASM's own WHOHITME/A10 check) -- wm_arcade_wrestler_hit sets
+       this itself on the first hit. */
+    CHECK(victim.who_hit_me == &attacker);
+
+    runtime.pcnt = 130; /* 30 ticks later: elapsed_word(130,100)=30 <= 50 */
+    r2 = wm_arcade_wrestler_hit(&attacker, &victim, &runtime, &cb);
+    CHECK(r2.status == WM_WRESTLER_HIT_OK);
+    reduced_damage_dealt = life_after_first - victim.life;
+
+    CHECK(reduced_damage_dealt > 0);
+    CHECK(reduced_damage_dealt < full_damage_dealt);
 }
 
 /* End-to-end: wm_match_tick's real collision path (wm_arcade_
@@ -924,6 +993,7 @@ static void test_hurt_box_hit_kills_at_zero_life(void) {
     wm_arcade_combat_runtime_init(&runtime);
     memset(&react_cb, 0, sizeof(react_cb));
     react_cb.adjust_health = test_hurt_box_real_adjust_health;
+    react_cb.user = &runtime;
     bridge.runtime = &runtime;
     bridge.callbacks = &react_cb;
     memset(&bridge.last_result, 0, sizeof(bridge.last_result));
@@ -1789,6 +1859,8 @@ int main(void) {
     test_arcade_adjust_health_attract_mode_never_dies();
     test_arcade_adjust_health_death();
     test_arcade_adjust_health_combo_revival_defers_death();
+    test_arcade_adjust_health_stamps_last_damage_for_reduced_window();
+    test_arcade_wrestler_hit_reduced_damage_within_window();
     test_hurt_box_hit_kills_at_zero_life();
     test_arcade_get_live_bits();
     test_arcade_round_tick_decides_after_pin_timeout();

@@ -129,7 +129,8 @@ static void wm_match_adjust_health(wm_arcade_actor_t *victim, int16_t signed_del
                                    wm_arcade_actor_t *damage_source, void *user) {
     wm_match_state *m = (wm_match_state *)user;
     wm_arcade_adjust_health(victim, signed_delta, damage_source,
-                            m ? !m->has_human : false);
+                            m ? !m->has_human : false,
+                            m ? m->tick_count : 0);
 }
 
 void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
@@ -165,6 +166,7 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             wm_arcade_bret_env_t env;
             wm_arcade_bret_callbacks_t bret_cb;
             m->bret_visual[i].opponent = opp;
+            m->bret_visual[i].pcnt = m->tick_count;
             bret_cb = wm_bret_backend_callbacks(&m->bret_visual[i]);
             memset(&env, 0, sizeof(env));
             env.pcnt = m->tick_count;

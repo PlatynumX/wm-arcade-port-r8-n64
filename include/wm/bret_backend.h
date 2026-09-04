@@ -74,6 +74,10 @@ typedef struct {
        callback -- LIFEBAR.ASM adjust_health's "attract mode never dies"
        rule, see wm/arcade/wm_arcade_lifebar.h. */
     bool attract_mode;
+    /* Set by the caller every tick (alongside wm_arcade_bret_env_t.pcnt,
+       the same value) and read by the adjust_health callback for
+       LIFEBAR.ASM adjust_health's LAST_DAMAGE timestamp update. */
+    uint32_t pcnt;
 } wm_bret_backend_actor;
 
 void wm_bret_backend_init(wm_bret_backend_actor *bva);

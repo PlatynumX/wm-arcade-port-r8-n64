@@ -135,10 +135,12 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
  * and calls the real, shared wm_arcade_adjust_health (LIFEBAR.ASM:1547-1670):
  * the life range check (clamped to [0, LIFE_MAX]), its "attract mode never
  * dies" / "20+ pt near-death fudge" rules, and a genuine WM_PMODE_DEAD
- * transition once life actually reaches 0. LIFEBAR.ASM's combo multiplier
- * (DAM_MULT/COMBO_COUNT), per-drone-count and speed_adjustment damage
- * scaling, and everything past SETMODE DEAD (death animation, LAST_DAMAGE)
- * are NOT translated -- see wm_arcade_adjust_health's own comment.
+ * transition once life actually reaches 0, and a real LAST_DAMAGE stamp
+ * feeding wm_arcade_wrestler_hit's own rapid-hit reduced-damage window.
+ * LIFEBAR.ASM's combo multiplier (DAM_MULT/COMBO_COUNT), per-drone-count
+ * and speed_adjustment damage scaling, and everything past SETMODE DEAD
+ * (death animation) are NOT translated -- see wm_arcade_adjust_health's own
+ * comment.
  *
  * Finally, this steps round_state (wm/arcade/wm_arcade_round.h): once one
  * side has no live wrestler left, a real 5-second countdown starts, and

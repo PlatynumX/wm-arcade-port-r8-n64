@@ -2,7 +2,7 @@
 
 void wm_arcade_adjust_health(wm_arcade_actor_t *victim, int16_t delta,
                              wm_arcade_actor_t *damage_source,
-                             bool attract_mode) {
+                             bool attract_mode, uint32_t pcnt) {
     int32_t life;
 
     if (!victim) return;
@@ -34,4 +34,7 @@ void wm_arcade_adjust_health(wm_arcade_actor_t *victim, int16_t delta,
     }
 
     victim->life = life;
+
+    /* LIFEBAR.ASM:1593-1595, unconditional on every call. */
+    victim->last_damage = (uint16_t)pcnt;
 }

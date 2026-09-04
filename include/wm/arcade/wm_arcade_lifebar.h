@@ -2,6 +2,7 @@
 #define WM_ARCADE_LIFEBAR_H
 
 #include <stdbool.h>
+#include <stdint.h>
 #include "wm/arcade/wm_arcade_combat.h"
 
 #ifdef __cplusplus
@@ -38,6 +39,13 @@ extern "C" {
  *       deferred) sets player_mode to WM_PMODE_DEAD and turns off further
  *       hit checks (wm_arcade_wrestler_collisions_off, matching SETMODE
  *       DEAD + calla wres_collis_off).
+ *   - LIFEBAR.ASM:1593-1595 "update LAST_DAMAGE": unconditionally, on every
+ *     call (fudged, attract-saved, genuinely dying, or a plain clamp
+ *     alike), victim->last_damage is stamped with pcnt. This is what makes
+ *     wm_arcade_wrestler_hit's own reduced_damage window real: it already
+ *     read last_damage (REACT1.ASM's "elapsed_word(pcnt, last_damage)<=50"
+ *     rapid-hit check) but nothing ever wrote it before this, so repeated
+ *     attacks always dealt full_damage regardless of timing.
  *
  * NOT translated: LIFEBAR.ASM's DAM_MULT/COMBO_COUNT-based damage
  * multiplier and damage_mod_table/speed_adjustment scaling (both happen
@@ -45,9 +53,7 @@ extern "C" {
  * from), CHECK_COMBO_GO (an unlocated global "is the combo mechanic
  * enabled" gate -- this function always allows the combo-revival branch
  * when combo_count is nonzero, stricter than the source in a way that
- * currently never matters since combo_count is always 0), the LAST_DAMAGE
- * timestamp update (a separate rapid-hit reduced-damage window, unrelated
- * to the life/death transition this function implements), the lifebar
+ * currently never matters since combo_count is always 0), the lifebar
  * flash-warning process, ACTUAL_PLYRNUM/royal-rumble teammate propagation,
  * 8-on-1 wrestler_count bookkeeping, and everything past SETMODE DEAD
  * (death sound, wrestler-type death-animation dispatch, ROLL_POS reset,
@@ -55,7 +61,7 @@ extern "C" {
  */
 void wm_arcade_adjust_health(wm_arcade_actor_t *victim, int16_t delta,
                              wm_arcade_actor_t *damage_source,
-                             bool attract_mode);
+                             bool attract_mode, uint32_t pcnt);
 
 #ifdef __cplusplus
 }

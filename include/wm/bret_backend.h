@@ -34,15 +34,25 @@ extern "C" {
  * itself still picks the correct id; only its visual result is missing.
  *
  * wm_arcade_bret_callbacks_t.execute_walk is wired to wm/movement.h's
- * wm_execute_walk()+wm_bret_velocity_table: real MOVE_DIR/OBJ_CONTROL/
- * velocity behavior, so a Bret actor genuinely moves (see
- * wm_bret_backend_tick_position()). What it does NOT do is reselect an
- * animation: set_rotate_anim/change_anim1 (idle "stance" turning) and
- * change_walk_anim/change_anim2 (actual walk cycle) both need per-wrestler
- * leg/torso/rotate animation tables referencing ~24 HRTSEQ sequences
- * tools/wlanim.py has not extracted (see wm/movement.h). A Bret actor
- * therefore slides around the ring on whatever sprite
- * wm_bret_backend_ani_init/wm_bret_backend_change_anim last selected.
+ * wm_execute_walk()+wm_bret_velocity_table (real MOVE_DIR/OBJ_CONTROL/
+ * velocity behavior) AND, while actually moving, WRESTLE.ASM::
+ * change_walk_anim's leg-cycle reselection: hrt_leg_anims_table
+ * (BRET.ASM:2897, transcribed value-for-value as wm_bret_leg_anim's
+ * leg_table) is indexed by MOVE_DIR/FACING_DIR compass, all 12 of its
+ * hrt_walkM_fF_anim sequences are now extracted, and change_anim1's own
+ * "restart only on change or END" rule is preserved by start_if_new. See
+ * wm_bret_backend_execute_walk's own comment for the one real gap: real
+ * FACING_DIR tracking needs a not-yet-located shared "compute
+ * NEW_FACING_DIR" routine plus set_rotate_anim's copy step, neither
+ * ported, so FACING_DIR is substituted with MOVE_DIR while moving --
+ * correct for straight walking, the only case reachable today.
+ *
+ * change_walk_anim's TORSO reselection (hrt_torso_anims_table) and
+ * set_rotate_anim/change_anim1 (the #zip/idle-turn case, using
+ * hrt_rotate_anims_table's 12 turn-transition sequences plus
+ * hrt_stand6/8_anim) are still not translated -- the torso stays on
+ * whatever wm_bret_backend_ani_init set, and idle facing changes don't
+ * animate a turn.
  */
 
 typedef struct {
@@ -60,6 +70,11 @@ void wm_bret_backend_init(wm_bret_backend_actor *bva);
 /* NULL for any wm_arcade_bret_anim_id_t not listed above. */
 const wm_visual_sequence *wm_bret_anim_sequence(wm_arcade_bret_anim_id_t id);
 
+/* BRET.ASM:2897 hrt_leg_anims_table[move_compass][facing_compass] (both
+   wm_convert_facing() 0-7 results). NULL if either is out of 0-7 range
+   (in particular wm_convert_facing's -1 "zip" result). */
+const wm_visual_sequence *wm_bret_leg_anim(int move_compass, int facing_compass);
+
 /* wm_arcade_bret_callbacks_t.change_anim body. */
 void wm_bret_backend_change_anim(wm_arcade_actor_t *actor,
                                  wm_arcade_bret_anim_id_t id, void *user);
@@ -74,7 +89,8 @@ void wm_bret_backend_change_torso_anim(wm_arcade_actor_t *actor,
 wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva);
 
 /* wm_arcade_bret_callbacks_t.execute_walk body: wm_execute_walk(actor,
-   bva->opponent, wm_bret_velocity_table). */
+   bva->opponent, wm_bret_velocity_table) plus leg-cycle reselection --
+   see the file comment for exactly what that does and does not cover. */
 void wm_bret_backend_execute_walk(wm_arcade_actor_t *actor, void *user);
 
 /* Advances both visual tracks by one source tick. Does not move the actor

@@ -19,10 +19,18 @@ python3 "$ROOT/tools/wlanim.py" \
     --sequence hrt_stand4_anim wm_bret_stand4_anim bret_stand4_frames \
     --sequence hrt_torso2_anim wm_bret_torso2_anim bret_torso2_frames \
     --sequence hrt_torso4_anim wm_bret_torso4_anim bret_torso4_frames \
+    --sequence hrt_walk1_f2_anim wm_bret_walk1_f2_anim bret_walk1_f2_frames \
+    --sequence hrt_walk1_f4_anim wm_bret_walk1_f4_anim bret_walk1_f4_frames \
     --sequence hrt_walk2_f2_anim wm_bret_walk2_f2_anim bret_walk2_f2_frames \
-    --sequence hrt_walk8_f2_anim wm_bret_walk8_f2_anim bret_walk8_f2_frames \
+    --sequence hrt_walk2_f4_anim wm_bret_walk2_f4_anim bret_walk2_f4_frames \
+    --sequence hrt_walk4_f2_anim wm_bret_walk4_f2_anim bret_walk4_f2_frames \
     --sequence hrt_walk4_f4_anim wm_bret_walk4_f4_anim bret_walk4_f4_frames \
+    --sequence hrt_walk5_f2_anim wm_bret_walk5_f2_anim bret_walk5_f2_frames \
+    --sequence hrt_walk5_f4_anim wm_bret_walk5_f4_anim bret_walk5_f4_frames \
+    --sequence hrt_walk6_f2_anim wm_bret_walk6_f2_anim bret_walk6_f2_frames \
     --sequence hrt_walk6_f4_anim wm_bret_walk6_f4_anim bret_walk6_f4_frames \
+    --sequence hrt_walk8_f2_anim wm_bret_walk8_f2_anim bret_walk8_f2_frames \
+    --sequence hrt_walk8_f4_anim wm_bret_walk8_f4_anim bret_walk8_f4_frames \
     --slice hrt_run_anim wm_bret_run_anim bret_run_frames true \
     --out "$ROOT/src/generated/bret_visuals.c"
 python3 "$ROOT/tools/wlanim.py" \

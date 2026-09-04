@@ -85,6 +85,60 @@ const wm_visual_sequence wm_bret_torso4_anim = {
     .repeat = true,
 };
 
+static const wm_visual_frame bret_walk1_f2_frames[] = {
+    {"H2WL1A01", 2},
+    {"H2WL1A02", 2},
+    {"H2WL1A03", 2},
+    {"H2WL1A04", 3},
+    {"H2WL1A05", 2},
+    {"H2WL1A06", 2},
+    {"H2WL1A07", 2},
+    {"H2WL1A08", 3},
+    {"H2WL1A09", 2},
+    {"H2WL1A10", 2},
+    {"H2WL1A11", 2},
+    {"H2WL1A12", 3},
+    {"H2WL1A13", 2},
+    {"H2WL1A14", 2},
+    {"H2WL1A15", 2},
+    {"H2WL1A16", 3},
+};
+
+const wm_visual_sequence wm_bret_walk1_f2_anim = {
+    .source_file = "HRTSEQ1.ASM",
+    .source_label = "hrt_walk1_f2_anim",
+    .frames = bret_walk1_f2_frames,
+    .frame_count = sizeof(bret_walk1_f2_frames) / sizeof(bret_walk1_f2_frames[0]),
+    .repeat = true,
+};
+
+static const wm_visual_frame bret_walk1_f4_frames[] = {
+    {"H4WL5A16", 2},
+    {"H4WL5A15", 2},
+    {"H4WL5A14", 2},
+    {"H4WL5A13", 3},
+    {"H4WL5A12", 2},
+    {"H4WL5A11", 2},
+    {"H4WL5A10", 2},
+    {"H4WL5A09", 3},
+    {"H4WL5A08", 2},
+    {"H4WL5A07", 2},
+    {"H4WL5A06", 2},
+    {"H4WL5A05", 3},
+    {"H4WL5A04", 2},
+    {"H4WL5A03", 2},
+    {"H4WL5A02", 2},
+    {"H4WL5A01", 3},
+};
+
+const wm_visual_sequence wm_bret_walk1_f4_anim = {
+    .source_file = "HRTSEQ1.ASM",
+    .source_label = "hrt_walk1_f4_anim",
+    .frames = bret_walk1_f4_frames,
+    .frame_count = sizeof(bret_walk1_f4_frames) / sizeof(bret_walk1_f4_frames[0]),
+    .repeat = true,
+};
+
 static const wm_visual_frame bret_walk2_f2_frames[] = {
     {"H2WL2A01", 2},
     {"H2WL2A02", 2},
@@ -112,30 +166,56 @@ const wm_visual_sequence wm_bret_walk2_f2_anim = {
     .repeat = true,
 };
 
-static const wm_visual_frame bret_walk8_f2_frames[] = {
-    {"H2WL8A16", 2},
-    {"H2WL8A15", 2},
-    {"H2WL8A14", 2},
-    {"H2WL8A13", 3},
-    {"H2WL8A12", 2},
-    {"H2WL8A11", 2},
-    {"H2WL8A10", 2},
-    {"H2WL8A09", 3},
-    {"H2WL8A08", 2},
-    {"H2WL8A07", 2},
-    {"H2WL8A06", 2},
-    {"H2WL8A05", 3},
-    {"H2WL8A04", 2},
-    {"H2WL8A03", 2},
-    {"H2WL8A02", 2},
-    {"H2WL8A01", 3},
+static const wm_visual_frame bret_walk2_f4_frames[] = {
+    {"H4WL2A01", 2},
+    {"H4WL2A02", 2},
+    {"H4WL2A03", 2},
+    {"H4WL2A04", 3},
+    {"H4WL2A05", 2},
+    {"H4WL2A06", 2},
+    {"H4WL2A07", 2},
+    {"H4WL2A08", 3},
+    {"H4WL2A09", 2},
+    {"H4WL2A10", 2},
+    {"H4WL2A11", 2},
+    {"H4WL2A12", 3},
+    {"H4WL2A13", 2},
+    {"H4WL2A14", 2},
+    {"H4WL2A15", 2},
 };
 
-const wm_visual_sequence wm_bret_walk8_f2_anim = {
+const wm_visual_sequence wm_bret_walk2_f4_anim = {
     .source_file = "HRTSEQ1.ASM",
-    .source_label = "hrt_walk8_f2_anim",
-    .frames = bret_walk8_f2_frames,
-    .frame_count = sizeof(bret_walk8_f2_frames) / sizeof(bret_walk8_f2_frames[0]),
+    .source_label = "hrt_walk2_f4_anim",
+    .frames = bret_walk2_f4_frames,
+    .frame_count = sizeof(bret_walk2_f4_frames) / sizeof(bret_walk2_f4_frames[0]),
+    .repeat = true,
+};
+
+static const wm_visual_frame bret_walk4_f2_frames[] = {
+    {"H2WL8A01", 2},
+    {"H2WL8A02", 2},
+    {"H2WL8A03", 2},
+    {"H2WL8A04", 3},
+    {"H2WL8A05", 2},
+    {"H2WL8A06", 2},
+    {"H2WL8A07", 2},
+    {"H2WL8A08", 3},
+    {"H2WL8A09", 2},
+    {"H2WL8A10", 2},
+    {"H2WL8A11", 2},
+    {"H2WL8A12", 3},
+    {"H2WL8A13", 2},
+    {"H2WL8A14", 2},
+    {"H2WL8A15", 2},
+    {"H2WL8A16", 3},
+};
+
+const wm_visual_sequence wm_bret_walk4_f2_anim = {
+    .source_file = "HRTSEQ1.ASM",
+    .source_label = "hrt_walk4_f2_anim",
+    .frames = bret_walk4_f2_frames,
+    .frame_count = sizeof(bret_walk4_f2_frames) / sizeof(bret_walk4_f2_frames[0]),
     .repeat = true,
 };
 
@@ -166,6 +246,87 @@ const wm_visual_sequence wm_bret_walk4_f4_anim = {
     .repeat = true,
 };
 
+static const wm_visual_frame bret_walk5_f2_frames[] = {
+    {"H2WL1A16", 2},
+    {"H2WL1A15", 2},
+    {"H2WL1A14", 2},
+    {"H2WL1A13", 3},
+    {"H2WL1A12", 2},
+    {"H2WL1A11", 2},
+    {"H2WL1A10", 2},
+    {"H2WL1A09", 3},
+    {"H2WL1A08", 2},
+    {"H2WL1A07", 2},
+    {"H2WL1A06", 2},
+    {"H2WL1A05", 3},
+    {"H2WL1A04", 2},
+    {"H2WL1A03", 2},
+    {"H2WL1A02", 2},
+    {"H2WL1A01", 3},
+};
+
+const wm_visual_sequence wm_bret_walk5_f2_anim = {
+    .source_file = "HRTSEQ1.ASM",
+    .source_label = "hrt_walk5_f2_anim",
+    .frames = bret_walk5_f2_frames,
+    .frame_count = sizeof(bret_walk5_f2_frames) / sizeof(bret_walk5_f2_frames[0]),
+    .repeat = true,
+};
+
+static const wm_visual_frame bret_walk5_f4_frames[] = {
+    {"H4WL5A01", 2},
+    {"H4WL5A02", 2},
+    {"H4WL5A03", 2},
+    {"H4WL5A04", 3},
+    {"H4WL5A05", 2},
+    {"H4WL5A06", 2},
+    {"H4WL5A07", 2},
+    {"H4WL5A08", 3},
+    {"H4WL5A09", 2},
+    {"H4WL5A10", 2},
+    {"H4WL5A11", 2},
+    {"H4WL5A12", 3},
+    {"H4WL5A13", 2},
+    {"H4WL5A14", 2},
+    {"H4WL5A15", 2},
+    {"H4WL5A16", 3},
+};
+
+const wm_visual_sequence wm_bret_walk5_f4_anim = {
+    .source_file = "HRTSEQ1.ASM",
+    .source_label = "hrt_walk5_f4_anim",
+    .frames = bret_walk5_f4_frames,
+    .frame_count = sizeof(bret_walk5_f4_frames) / sizeof(bret_walk5_f4_frames[0]),
+    .repeat = true,
+};
+
+static const wm_visual_frame bret_walk6_f2_frames[] = {
+    {"H2WL2A16", 2},
+    {"H2WL2A15", 2},
+    {"H2WL2A14", 2},
+    {"H2WL2A13", 3},
+    {"H2WL2A12", 2},
+    {"H2WL2A11", 2},
+    {"H2WL2A10", 2},
+    {"H2WL2A09", 3},
+    {"H2WL2A08", 2},
+    {"H2WL2A07", 2},
+    {"H2WL2A06", 2},
+    {"H2WL2A05", 3},
+    {"H2WL2A04", 2},
+    {"H2WL2A03", 2},
+    {"H2WL2A02", 2},
+    {"H2WL2A01", 3},
+};
+
+const wm_visual_sequence wm_bret_walk6_f2_anim = {
+    .source_file = "HRTSEQ1.ASM",
+    .source_label = "hrt_walk6_f2_anim",
+    .frames = bret_walk6_f2_frames,
+    .frame_count = sizeof(bret_walk6_f2_frames) / sizeof(bret_walk6_f2_frames[0]),
+    .repeat = true,
+};
+
 static const wm_visual_frame bret_walk6_f4_frames[] = {
     {"H4WL2A15", 2},
     {"H4WL2A14", 2},
@@ -189,6 +350,60 @@ const wm_visual_sequence wm_bret_walk6_f4_anim = {
     .source_label = "hrt_walk6_f4_anim",
     .frames = bret_walk6_f4_frames,
     .frame_count = sizeof(bret_walk6_f4_frames) / sizeof(bret_walk6_f4_frames[0]),
+    .repeat = true,
+};
+
+static const wm_visual_frame bret_walk8_f2_frames[] = {
+    {"H2WL8A16", 2},
+    {"H2WL8A15", 2},
+    {"H2WL8A14", 2},
+    {"H2WL8A13", 3},
+    {"H2WL8A12", 2},
+    {"H2WL8A11", 2},
+    {"H2WL8A10", 2},
+    {"H2WL8A09", 3},
+    {"H2WL8A08", 2},
+    {"H2WL8A07", 2},
+    {"H2WL8A06", 2},
+    {"H2WL8A05", 3},
+    {"H2WL8A04", 2},
+    {"H2WL8A03", 2},
+    {"H2WL8A02", 2},
+    {"H2WL8A01", 3},
+};
+
+const wm_visual_sequence wm_bret_walk8_f2_anim = {
+    .source_file = "HRTSEQ1.ASM",
+    .source_label = "hrt_walk8_f2_anim",
+    .frames = bret_walk8_f2_frames,
+    .frame_count = sizeof(bret_walk8_f2_frames) / sizeof(bret_walk8_f2_frames[0]),
+    .repeat = true,
+};
+
+static const wm_visual_frame bret_walk8_f4_frames[] = {
+    {"H4WL4A09", 3},
+    {"H4WL4A08", 2},
+    {"H4WL4A07", 2},
+    {"H4WL4A06", 2},
+    {"H4WL4A05", 3},
+    {"H4WL4A04", 2},
+    {"H4WL4A03", 2},
+    {"H4WL4A02", 2},
+    {"H4WL4A01", 3},
+    {"H4WL4A16", 2},
+    {"H4WL4A15", 2},
+    {"H4WL4A14", 2},
+    {"H4WL4A13", 3},
+    {"H4WL4A12", 2},
+    {"H4WL4A11", 2},
+    {"H4WL4A10", 2},
+};
+
+const wm_visual_sequence wm_bret_walk8_f4_anim = {
+    .source_file = "HRTSEQ1.ASM",
+    .source_label = "hrt_walk8_f4_anim",
+    .frames = bret_walk8_f4_frames,
+    .frame_count = sizeof(bret_walk8_f4_frames) / sizeof(bret_walk8_f4_frames[0]),
     .repeat = true,
 };
 

@@ -517,6 +517,53 @@ static void test_bret_backend_change_anim(void) {
     CHECK(bva.torso_visual.sequence == &wm_bret_torso4_anim);
 }
 
+/* Spot-checks against BRET.ASM:2897 hrt_leg_anims_table's literal contents
+   (transcribed as leg_table in src/core/bret_backend.c), not just against
+   the C code that mirrors it. */
+static void test_bret_leg_anim_table(void) {
+    /* Block 0 "(#1 - UP)", entries 1 (UP) and 4 (DOWN_RIGHT). */
+    CHECK(wm_bret_leg_anim(0, 0) == &wm_bret_walk1_f2_anim);
+    CHECK(wm_bret_leg_anim(0, 3) == &wm_bret_walk1_f4_anim);
+    /* Block 2 "(#3 - RIGHT)", entries 1 (UP) and 6 (DOWN_LEFT). */
+    CHECK(wm_bret_leg_anim(2, 0) == &wm_bret_walk2_f2_anim);
+    CHECK(wm_bret_leg_anim(2, 5) == &wm_bret_walk8_f4_anim);
+    /* Block 4 "(#5 - DOWN)", entry 3 (RIGHT). */
+    CHECK(wm_bret_leg_anim(4, 2) == &wm_bret_walk5_f4_anim);
+    /* Block 6 "(#7 - LEFT)", entries 1 (UP) and 4 (DOWN_RIGHT). */
+    CHECK(wm_bret_leg_anim(6, 0) == &wm_bret_walk2_f2_anim);
+    CHECK(wm_bret_leg_anim(6, 3) == &wm_bret_walk8_f4_anim);
+    /* Block 7 "(#8 - UP-LEFT)", entry 5 (DOWN). */
+    CHECK(wm_bret_leg_anim(7, 4) == &wm_bret_walk6_f4_anim);
+
+    CHECK(wm_bret_leg_anim(-1, 0) == NULL);
+    CHECK(wm_bret_leg_anim(0, -1) == NULL);
+    CHECK(wm_bret_leg_anim(8, 0) == NULL);
+    CHECK(wm_bret_leg_anim(0, 8) == NULL);
+}
+
+static void test_bret_backend_execute_walk_selects_leg_anim(void) {
+    wm_arcade_actor_t a;
+    wm_bret_backend_actor bva;
+
+    memset(&a, 0, sizeof(a));
+    wm_bret_backend_init(&bva);
+    a.move_dir = WM_MOVE_RIGHT;
+    wm_bret_backend_execute_walk(&a, &bva);
+    /* facing_dir substituted from move_dir (see wm/bret_backend.h) ->
+       leg_table[RIGHT][RIGHT] == wm_bret_walk2_f2_anim. */
+    CHECK(a.facing_dir == WM_MOVE_RIGHT);
+    CHECK(bva.visual.sequence == &wm_bret_walk2_f2_anim);
+
+    /* #zip (move_dir cleared to 0 by wm_execute_walk) leaves the sprite
+       alone -- no leg animation for "not moving". */
+    wm_bret_backend_init(&bva);
+    memset(&a, 0, sizeof(a));
+    a.move_dir = WM_MOVE_ZIP;
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_STAND4, &bva);
+    wm_bret_backend_execute_walk(&a, &bva);
+    CHECK(bva.visual.sequence == &wm_bret_stand4_anim);
+}
+
 static void test_bret_ani_init_facing(void) {
     wm_arcade_actor_t a;
     wm_bret_backend_actor bva;
@@ -744,6 +791,8 @@ static void test_match_human_bret_walks_right(void) {
     CHECK(m.actors[0].x_vel == WM_BRET_WALK_VEL);
     CHECK(m.actors[0].x_fixed > start_x);
     CHECK(!(m.actors[0].obj_control & WM_OBJ_FLIPH));
+    /* hrt_leg_anims_table[RIGHT][RIGHT] -- see test_bret_leg_anim_table. */
+    CHECK(m.bret_visual[0].visual.sequence == &wm_bret_walk2_f2_anim);
 
     /* The CPU opponent (a non-Bret wrestler unless the placeholder draw
        happened to also land on Bret) never receives human input and keeps
@@ -1077,6 +1126,8 @@ int main(void) {
     test_bret_anim_sequence_mapping();
     test_bret_backend_change_anim();
     test_bret_ani_init_facing();
+    test_bret_leg_anim_table();
+    test_bret_backend_execute_walk_selects_leg_anim();
     test_convert_facing();
     test_set_velocities_normal();
     test_set_velocities_backward_reduction();

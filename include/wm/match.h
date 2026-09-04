@@ -5,6 +5,7 @@
 #include "wm/arcade/wm_arcade_closest.h"
 #include "wm/arcade/wm_arcade_combat.h"
 #include "wm/arcade/wm_arcade_drone.h"
+#include "wm/arcade/wm_arcade_lifebar.h"
 #include "wm/arcade/wm_arcade_react.h"
 #include "wm/arcade/wm_arcade_roster.h"
 #include "wm/arcade/wmania_rng.h"

@@ -1,5 +1,6 @@
 #include "wm/bret_backend.h"
 #include "wm/arcade/wm_arcade_anim_combat.h"
+#include "wm/arcade/wm_arcade_lifebar.h"
 #include "wm/bret_visuals.h"
 #include <string.h>
 
@@ -147,6 +148,19 @@ void wm_bret_backend_change_torso_anim(wm_arcade_actor_t *actor,
     start_if_new(&bva->torso_visual, wm_bret_anim_sequence(id));
 }
 
+/* wm_arcade_bret_callbacks_t.adjust_health body: mode_normal's own
+   I_WILL_DIE self-death call (BRET.ASM:1341-1343, "movi -10,a0 ... calla
+   adjust_health") reads WHOHITME itself for the shared routine's
+   combo-revival check, so this needs no opponent parameter beyond what the
+   actor already carries. */
+static void wm_bret_backend_adjust_health(wm_arcade_actor_t *actor, int delta,
+                                          void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    if (!actor) return;
+    wm_arcade_adjust_health(actor, (int16_t)delta, actor->who_hit_me,
+                            bva ? bva->attract_mode : false);
+}
+
 void wm_bret_backend_execute_walk(wm_arcade_actor_t *actor, void *user) {
     wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
     if (!actor || !bva) return;
@@ -176,6 +190,7 @@ wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva)
     cb.change_anim = wm_bret_backend_change_anim;
     cb.change_torso_anim = wm_bret_backend_change_torso_anim;
     cb.execute_walk = wm_bret_backend_execute_walk;
+    cb.adjust_health = wm_bret_backend_adjust_health;
     cb.user = bva;
     return cb;
 }

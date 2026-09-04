@@ -69,6 +69,11 @@ typedef struct {
        now -- see wm_bret_backend_tick's own comment. */
     wm_arcade_bret_anim_id_t current_id;
     bool attack_active;
+    /* Set once by the caller at match creation (wm/match.h's
+       init_bret_backends: !has_human) and read by the adjust_health
+       callback -- LIFEBAR.ASM adjust_health's "attract mode never dies"
+       rule, see wm/arcade/wm_arcade_lifebar.h. */
+    bool attract_mode;
 } wm_bret_backend_actor;
 
 void wm_bret_backend_init(wm_bret_backend_actor *bva);
@@ -89,9 +94,13 @@ void wm_bret_backend_change_torso_anim(wm_arcade_actor_t *actor,
                                        wm_arcade_bret_anim_id_t id, void *user);
 
 /* Builds a callbacks struct with change_anim/change_torso_anim/execute_walk/
-   user populated; every other BRET.ASM callback (sound, secret moves, ...)
-   is intentionally left NULL -- see the file comment. Set bva->opponent
-   before calling wm_arcade_move_bret() with this. */
+   adjust_health/user populated; every other BRET.ASM callback (sound,
+   secret moves, ...) is intentionally left NULL -- see the file comment.
+   Set bva->opponent and bva->attract_mode before calling
+   wm_arcade_move_bret() with this. adjust_health only fires from
+   mode_normal's I_WILL_DIE self-death case (BRET.ASM:1325-1350), which
+   this port cannot currently reach on its own -- see
+   wm/arcade/wm_arcade_lifebar.h. */
 wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva);
 
 /* wm_arcade_bret_callbacks_t.execute_walk body: wm_execute_walk(actor,

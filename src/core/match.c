@@ -1,9 +1,6 @@
 #include "wm/match.h"
 #include <string.h>
 
-/* LIFEBAR.ASM:135 LIFE_MAX equ 163 (green pixels in life bar). */
-#define WM_MATCH_LIFE_MAX 163
-
 /* PLYR.EQU: PSIDE_PLYR1 equ 0, PSIDE_PLYR2 equ 1. */
 #define WM_MATCH_PSIDE_PLYR1 0
 #define WM_MATCH_PSIDE_PLYR2 1
@@ -23,13 +20,17 @@ static void init_actor_life(wm_arcade_actor_t *a) {
     memset(a, 0, sizeof(*a));
     a->active = 1;
     a->in_ring = 1;
-    a->life = WM_MATCH_LIFE_MAX;
+    a->life = WM_ARCADE_LIFE_MAX;
 }
 
 static void init_bret_backends(wm_match_state *m) {
     unsigned i;
     for (i = 0; i < WM_MATCH_MAX_ACTORS; ++i) {
         wm_bret_backend_init(&m->bret_visual[i]);
+        /* LIFEBAR.ASM adjust_health's "attract mode never dies" rule
+           (PSTATUS==0) -- see wm_arcade_adjust_health. Fixed for the whole
+           match: neither start path changes has_human afterward. */
+        m->bret_visual[i].attract_mode = !m->has_human;
         if (m->actors[i].wrestler_num == WM_ROSTER_BRET) {
             wm_arcade_bret_callbacks_t cb = wm_bret_backend_callbacks(&m->bret_visual[i]);
             wm_arcade_bret_ani_init(&m->actors[i], &cb);
@@ -105,11 +106,13 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
     wm_arcade_drone_init(&m->drones[0], 0);
     wm_arcade_drone_init(&m->drones[1], 0);
 
-    init_bret_backends(m);
-
+    /* Set before init_bret_backends() so its attract_mode wiring
+       (!has_human) sees the right value. */
     m->has_human = true;
     m->human_actor_index = 0;
     wm_human_input_init(&m->human_input_state);
+
+    init_bret_backends(m);
 
     m->actor_count = WM_MATCH_MAX_ACTORS;
     m->active = true;
@@ -117,42 +120,14 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
     wm_arcade_combat_runtime_init(&m->combat_runtime);
 }
 
-/*
- * LIFEBAR.ASM:1547-1591 (adjust_health's damage-application tail), for the
- * one case wm_match ever creates: two actors, no royal rumble, no buddy
- * mode, no combo finisher.
- *
- * Translated:
- *   a3 = life + delta; clamp to [0, LIFE_MAX], except:
- *     - LIFEBAR.ASM:1561-1569 "fudge": a killing hit of 20+ points that
- *       doesn't overkill by more than 9 points bumps life to 5 instead of 0.
- *     - LIFEBAR.ASM:1578-1581 "if we're in attract mode, don't die!":
- *       PSTATUS==0 (m->has_human false here) snaps life back to LIFE_MAX
- *       instead of letting it hit 0.
- *
- * NOT translated (needs global state/tables this port doesn't have, and is
- * out of hurt-box-work scope): the DAM_MULT/COMBO_COUNT combo multiplier,
- * damage_mod_table drone-count scaling, speed_adjustment scaling, the
- * lifebar-flash warning process, ACTUAL_PLYRNUM/royal-rumble redirection,
- * and everything LIFEBAR.ASM does once life actually reaches 0 (MODE_DEAD,
- * teammate/getup handling) -- victim->player_mode is left untouched here.
- */
+/* wm_arcade_react_callbacks_t.adjust_health adapter: the real logic lives
+   in wm_arcade_adjust_health (wm/arcade/wm_arcade_lifebar.h), shared with
+   BRET.ASM's own self-death path (wm_bret_backend_callbacks). */
 static void wm_match_adjust_health(wm_arcade_actor_t *victim, int16_t signed_delta,
                                    wm_arcade_actor_t *damage_source, void *user) {
     wm_match_state *m = (wm_match_state *)user;
-    int32_t life = (int32_t)victim->life + signed_delta;
-    (void)damage_source;
-
-    if (life <= 0) {
-        if (life > -10 && signed_delta <= -20)
-            life = 5;
-        else
-            life = (m && m->has_human) ? 0 : WM_MATCH_LIFE_MAX;
-    } else if (life > WM_MATCH_LIFE_MAX) {
-        life = WM_MATCH_LIFE_MAX;
-    }
-
-    victim->life = life;
+    wm_arcade_adjust_health(victim, signed_delta, damage_source,
+                            m ? !m->has_human : false);
 }
 
 void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,

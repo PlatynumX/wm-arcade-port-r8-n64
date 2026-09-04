@@ -517,6 +517,37 @@ static void test_bret_backend_change_anim(void) {
     CHECK(bva.torso_visual.sequence == &wm_bret_torso4_anim);
 }
 
+/* BRET.ASM:1325-1350 mode_normal's own I_WILL_DIE self-death resolution,
+   through the real wm_arcade_move_bret dispatch (not a direct call into
+   wm_arcade_adjust_health): wm_bret_backend_callbacks() now wires
+   adjust_health for real, so this actually applies the -10 hit and SETMODE
+   DEAD instead of silently no-opping (cb->adjust_health was NULL before). */
+static void test_bret_backend_i_will_die_resolves_through_move_bret(void) {
+    wm_arcade_actor_t actor;
+    wm_bret_backend_actor bva;
+    wm_arcade_bret_callbacks_t cb;
+    wm_arcade_bret_env_t env;
+
+    memset(&actor, 0, sizeof(actor));
+    actor.life = 3;
+    actor.player_mode = WM_PMODE_NORMAL;
+    actor.i_will_die = 1;
+
+    wm_bret_backend_init(&bva);
+    bva.attract_mode = false;
+    cb = wm_bret_backend_callbacks(&bva);
+    memset(&env, 0, sizeof(env));
+
+    (void)wm_arcade_move_bret(&actor, NULL, &env, &cb);
+
+    /* Deliberately unmapped id (see wm/bret_backend.h): current_id is still
+       recorded even though no wm_visual_sequence exists for it. */
+    CHECK(bva.current_id == WM_BRET_ANIM_FALL_BACK);
+    CHECK(actor.life == 0);
+    CHECK(actor.player_mode == WM_PMODE_DEAD);
+    CHECK(actor.i_will_die == 0);
+}
+
 /* HRTSEQ2.ASM:204 ANI_ATTACK_ON_Z, AMODE_PUNCH,30,91,-45,50,15,45, hand-traced
    to fire right before wm_bret_light_punch2_anim's frame index 5 (of 11) --
    see wm_bret_backend_tick's own comment for how that index was derived. */
@@ -768,6 +799,153 @@ static void test_hurt_box_connects_a_real_hit(void) {
     CHECK(bridge.last_result.status == WM_WRESTLER_HIT_OK);
     CHECK(bridge.last_result.health_hook_called);
     CHECK(victim.life < life_before);
+}
+
+/* wm_arcade_adjust_health (wm/arcade/wm_arcade_lifebar.h), tested directly
+   against LIFEBAR.ASM's literal branch structure -- see that header's own
+   comment for the exact line numbers each case below translates. */
+static void test_arcade_adjust_health_normal_damage(void) {
+    wm_arcade_actor_t victim;
+    memset(&victim, 0, sizeof(victim));
+    victim.life = 100;
+    wm_arcade_adjust_health(&victim, -30, NULL, false);
+    CHECK(victim.life == 70);
+    CHECK(victim.player_mode == WM_PMODE_NORMAL);
+}
+
+static void test_arcade_adjust_health_clamps_to_life_max(void) {
+    wm_arcade_actor_t victim;
+    memset(&victim, 0, sizeof(victim));
+    victim.life = WM_ARCADE_LIFE_MAX - 5;
+    wm_arcade_adjust_health(&victim, 50, NULL, false);
+    CHECK(victim.life == WM_ARCADE_LIFE_MAX);
+}
+
+static void test_arcade_adjust_health_fudge_saves_a_near_death_hit(void) {
+    wm_arcade_actor_t victim;
+    memset(&victim, 0, sizeof(victim));
+    /* life+delta = -5: > -10 (not overkilled by 10+) and delta <= -20 (a
+       20+ point hit) -- LIFEBAR.ASM:1561-1569 fudge applies: life = 5. */
+    victim.life = 15;
+    wm_arcade_adjust_health(&victim, -20, NULL, false);
+    CHECK(victim.life == 5);
+    CHECK(victim.player_mode == WM_PMODE_NORMAL);
+}
+
+static void test_arcade_adjust_health_attract_mode_never_dies(void) {
+    wm_arcade_actor_t victim;
+    memset(&victim, 0, sizeof(victim));
+    victim.life = 5;
+    wm_arcade_adjust_health(&victim, -5, NULL, true);
+    CHECK(victim.life == WM_ARCADE_LIFE_MAX);
+    CHECK(victim.player_mode == WM_PMODE_NORMAL);
+}
+
+static void test_arcade_adjust_health_death(void) {
+    wm_arcade_actor_t victim;
+    memset(&victim, 0, sizeof(victim));
+    victim.life = 5;
+    victim.anim_mode = WM_MODE_CHECKHIT;
+    wm_arcade_adjust_health(&victim, -5, NULL, false);
+    CHECK(victim.life == 0);
+    CHECK(victim.player_mode == WM_PMODE_DEAD);
+    /* LIFEBAR.ASM:1725 calla wres_collis_off. */
+    CHECK(!(victim.anim_mode & WM_MODE_CHECKHIT));
+}
+
+static void test_arcade_adjust_health_combo_revival_defers_death(void) {
+    wm_arcade_actor_t victim, attacker;
+    memset(&victim, 0, sizeof(victim));
+    memset(&attacker, 0, sizeof(attacker));
+    victim.life = 5;
+    attacker.combo_count = 3;
+    wm_arcade_adjust_health(&victim, -5, &attacker, false);
+    CHECK(victim.life == 1);
+    CHECK(victim.i_will_die == 1);
+    CHECK(victim.player_mode == WM_PMODE_NORMAL);
+}
+
+static void test_hurt_box_real_adjust_health(wm_arcade_actor_t *victim, int16_t delta,
+                                             wm_arcade_actor_t *damage_source, void *user) {
+    (void)user;
+    /* Mirrors wm_match_adjust_health's adapter for a human match
+       (attract_mode=false, matching wm_match_start_selected). */
+    wm_arcade_adjust_health(victim, delta, damage_source, false);
+}
+
+/* End-to-end: wm_match_tick's real collision path (wm_arcade_
+   check_wrestler_collisions -> wm_arcade_wrestler_hit -> the real
+   wm_arcade_adjust_health, via the same adapter shape wm_match_
+   adjust_health uses) actually transitions a victim to WM_PMODE_DEAD once
+   life reaches 0, not just decrementing it forever. Same setup as
+   test_hurt_box_connects_a_real_hit, but with the victim's life preset to
+   exactly the real light punch's damage (10, per WM_D_PUNCH=8 and the
+   offense/defense-mod math in wm_arcade_wrestler_hit) so the hit is fatal
+   but not a 20+pt fudge case. */
+static void test_hurt_box_hit_kills_at_zero_life(void) {
+    wm_arcade_actor_t attacker, victim;
+    wm_bret_backend_actor bva_attacker, bva_victim;
+    wm_arcade_actor_t *actors[2];
+    wm_arcade_combat_runtime_t runtime;
+    wm_arcade_react_callbacks_t react_cb;
+    wm_arcade_react_bridge_t bridge;
+    wm_arcade_combat_callbacks_t combat_cb;
+    int guard;
+    bool hit = false;
+
+    memset(&attacker, 0, sizeof(attacker));
+    memset(&victim, 0, sizeof(victim));
+    attacker.active = 1;
+    victim.active = 1;
+    attacker.in_ring = 1;
+    victim.in_ring = 1;
+    attacker.life = 163;
+    victim.life = 10;
+    attacker.wrestler_num = WM_ROSTER_BRET;
+    victim.wrestler_num = WM_ROSTER_BRET;
+    attacker.player_mode = WM_PMODE_NORMAL;
+    victim.player_mode = WM_PMODE_NORMAL;
+    attacker.smart_target = &victim;
+    victim.smart_target = &attacker;
+    attacker.x_int = 0;
+    victim.x_int = 60;
+
+    wm_bret_backend_init(&bva_attacker);
+    wm_bret_backend_init(&bva_victim);
+    bva_attacker.opponent = &victim;
+    bva_victim.opponent = &attacker;
+
+    wm_bret_backend_change_anim(&attacker, WM_BRET_ANIM_PUNCH2, &bva_attacker);
+    wm_bret_backend_change_anim(&victim, WM_BRET_ANIM_STAND2, &bva_victim);
+
+    actors[0] = &attacker;
+    actors[1] = &victim;
+
+    wm_arcade_combat_runtime_init(&runtime);
+    memset(&react_cb, 0, sizeof(react_cb));
+    react_cb.adjust_health = test_hurt_box_real_adjust_health;
+    bridge.runtime = &runtime;
+    bridge.callbacks = &react_cb;
+    memset(&bridge.last_result, 0, sizeof(bridge.last_result));
+    memset(&combat_cb, 0, sizeof(combat_cb));
+    combat_cb.wrestler_hit = wm_arcade_wrestler_hit_collision_callback;
+    combat_cb.user = &bridge;
+
+    for (guard = 0; guard < 20 && !hit; ++guard) {
+        wm_bret_backend_tick(&bva_attacker, &attacker, (uint16_t)guard);
+        wm_bret_backend_tick(&bva_victim, &victim, (uint16_t)guard);
+        runtime.pcnt = (uint32_t)guard;
+        if (wm_arcade_check_wrestler_collisions(actors, 2, (uint32_t)guard, &combat_cb))
+            hit = true;
+    }
+
+    CHECK(hit);
+    CHECK(victim.life == 0);
+    CHECK(victim.player_mode == WM_PMODE_DEAD);
+    /* wres_collis_off (LIFEBAR.ASM:1725) is called on the dying victim, not
+       the attacker -- the attacker's own CHECKHIT bit (its still-active
+       punch window) is untouched by adjust_health. */
+    CHECK(attacker.anim_mode & WM_MODE_CHECKHIT);
 }
 
 /* Spot-checks against BRET.ASM:2897 hrt_leg_anims_table's literal contents
@@ -1431,11 +1609,19 @@ int main(void) {
     test_match_tick_runs_without_crashing();
     test_bret_anim_sequence_mapping();
     test_bret_backend_change_anim();
+    test_bret_backend_i_will_die_resolves_through_move_bret();
     test_bret_attack_window_punch2();
     test_bret_attack_windows_remaining();
     test_bret_hurt_box_for_frame_real_geometry();
     test_bret_backend_tick_sets_real_hurt_box();
     test_hurt_box_connects_a_real_hit();
+    test_arcade_adjust_health_normal_damage();
+    test_arcade_adjust_health_clamps_to_life_max();
+    test_arcade_adjust_health_fudge_saves_a_near_death_hit();
+    test_arcade_adjust_health_attract_mode_never_dies();
+    test_arcade_adjust_health_death();
+    test_arcade_adjust_health_combo_revival_defers_death();
+    test_hurt_box_hit_kills_at_zero_life();
     test_bret_ani_init_facing();
     test_bret_leg_anim_table();
     test_bret_backend_execute_walk_selects_leg_anim();

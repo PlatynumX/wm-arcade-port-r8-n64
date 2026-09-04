@@ -109,4 +109,26 @@ if(WM_BUILD_TESTS)
              COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_asmseq.py)
     add_test(NAME wm_source_tools
              COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_source_tools.py)
+
+    # Fix38 combat/ring/RNG/hiscore host verification tests. These were staged
+    # under tests/arcade_port/fix38 alongside the src/core/arcade sources they
+    # exercise but were never registered with CTest; the src/core/arcade code
+    # itself has been buildable and linked into wmcore/wm_headless since fix38.
+    file(GLOB WM_ARCADE_STAGE25_TESTS
+         ${CMAKE_SOURCE_DIR}/tests/arcade_port/fix38/combat_stage25/test_combat_stage*.c)
+    file(GLOB WM_ARCADE_RING_RNG_TESTS
+         ${CMAKE_SOURCE_DIR}/tests/arcade_port/fix38/ring_rng/test_*.c)
+
+    foreach(test_src ${WM_ARCADE_STAGE25_TESTS} ${WM_ARCADE_RING_RNG_TESTS})
+        get_filename_component(test_name ${test_src} NAME_WE)
+        set(test_target wm_${test_name})
+        add_executable(${test_target} ${test_src})
+        target_link_libraries(${test_target} PRIVATE wmcore)
+        # These tests were staged as standalone units against the arcade/
+        # headers directly (e.g. "wm_arcade_drone.h"), not the wm/arcade/
+        # public include path; add it just for these targets.
+        target_include_directories(${test_target} PRIVATE include/wm/arcade)
+        target_compile_options(${test_target} PRIVATE -Wall -Wextra -Wpedantic)
+        add_test(NAME ${test_target} COMMAND ${test_target})
+    endforeach()
 endif()

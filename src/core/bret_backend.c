@@ -111,6 +111,25 @@ static const wm_bret_attack_window_t *find_attack_window(wm_arcade_bret_anim_id_
     return NULL;
 }
 
+wm_arcade_frame_box_t wm_bret_hurt_box_for_frame(const char *source_frame) {
+    wm_arcade_frame_box_t box;
+    const wm_bret_frame_geometry_t *geo;
+
+    box.iani3x = 0;
+    box.iani3y = 0;
+    box.iani3z = 0;
+    box.iani3id = 0;
+
+    geo = source_frame ? wm_bret_frame_geometry_find(source_frame) : NULL;
+    if (!geo) return box;
+
+    box.iani3x = -(int32_t)geo->xani;
+    box.iani3y = -(int32_t)geo->yani;
+    box.iani3z = (int32_t)geo->width;
+    box.iani3id = (int32_t)geo->height;
+    return box;
+}
+
 void wm_bret_backend_change_anim(wm_arcade_actor_t *actor,
                                  wm_arcade_bret_anim_id_t id, void *user) {
     wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
@@ -171,6 +190,14 @@ void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
     wm_visual_tick(&bva->torso_visual);
 
     if (!actor) return;
+
+    {
+        const wm_visual_frame *cur = wm_visual_current(&bva->visual);
+        wm_arcade_frame_box_t box =
+            wm_bret_hurt_box_for_frame(cur ? cur->source_frame : NULL);
+        wm_arcade_set_hurt_box(actor, &box);
+    }
+
     w = find_attack_window(bva->current_id);
     at_active_frame = w && bva->visual.sequence == wm_bret_anim_sequence(bva->current_id) &&
                       bva->visual.frame_index == w->active_frame_index;

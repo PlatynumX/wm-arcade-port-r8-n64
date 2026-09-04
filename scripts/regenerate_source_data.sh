@@ -42,6 +42,15 @@ python3 "$ROOT/tools/wlanim.py" \
     --slice hrt_4_kick_anim wm_bret_light_kick4_anim bret_light_kick4_frames false \
     --slice hrt_2_super_kick_anim wm_bret_power_kick_anim bret_power_kick_frames false \
     --out "$ROOT/src/generated/bret_attacks.c"
+if [ ! -f "$ORIG/IMG/BRET.LOD" ]; then
+    sh "$ROOT/scripts/fetch_original.sh"
+fi
+python3 "$ROOT/tools/bret_geometry_bundle.py" \
+    --lod "$ORIG/IMG/BRET.LOD" \
+    --img-dir "$ORIG/IMG" \
+    --visual-source "$ROOT/src/generated/bret_visuals.c" \
+    --visual-source "$ROOT/src/generated/bret_attacks.c" \
+    --out "$ROOT/src/generated/bret_frame_geometry.c"
 python3 "$ROOT/tools/select_source.py" \
     --source "$ORIG/SELECT.ASM" \
     --out "$ROOT/src/generated/select_tables.c"

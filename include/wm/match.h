@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include "wm/arcade/wm_arcade_combat.h"
 #include "wm/arcade/wm_arcade_drone.h"
+#include "wm/arcade/wm_arcade_react.h"
 #include "wm/arcade/wm_arcade_roster.h"
 #include "wm/arcade/wmania_rng.h"
 #include "wm/bret_backend.h"
@@ -78,6 +79,11 @@ typedef struct {
 
     bool active;
     unsigned tick_count;
+
+    /* REACT1.ASM combat state (pcnt/any_hits/dam_mult) carried across ticks
+       for wm_arcade_wrestler_hit -- see wm_match_tick's own comment for what
+       the hit path around it does and does not translate. */
+    wm_arcade_combat_runtime_t combat_runtime;
 } wm_match_state;
 
 void wm_match_init(wm_match_state *m);
@@ -110,9 +116,21 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
  * used), commits human_input through wm_human_input_commit; every other
  * actor steps its drone decision core as usual. Then -- for whichever
  * actor(s) drew WM_ROSTER_BRET -- wm_arcade_move_bret() and its visual
- * backend. See the file comment for what this does and does not do for
- * every other wrestler. human_input is ignored (may be NULL) unless
- * has_human is set. */
+ * backend, which now also sets a real per-frame hurt_box every tick (see
+ * wm_bret_hurt_box_for_frame). See the file comment for what this does and
+ * does not do for every other wrestler. human_input is ignored (may be
+ * NULL) unless has_human is set.
+ *
+ * After every actor has moved, this calls the real, ctest-verified
+ * wm_arcade_check_wrestler_collisions()/wm_arcade_wrestler_hit() (REACT1.ASM)
+ * so a wired attack that overlaps a real hurt_box actually registers a hit
+ * and calls a real adjust_health translated from LIFEBAR.ASM:1547-1591 --
+ * the life range check (clamped to [0, LIFE_MAX]) and its "attract mode
+ * never dies" / "20+ pt near-death fudge" rules. LIFEBAR.ASM's combo
+ * multiplier (DAM_MULT/COMBO_COUNT), per-drone-count and speed_adjustment
+ * damage scaling, lifebar-flash warning process, and post-death (MODE_DEAD/
+ * getup/pin) handling are NOT translated -- see wm_match_adjust_health's own
+ * comment in match.c. */
 void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
                    const wm_input_state *human_input);
 

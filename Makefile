@@ -41,7 +41,8 @@ CORE_C := \
     src/generated/port_status.c \
     src/generated/finish_sequences.c \
     src/generated/bret_visuals.c \
-    src/generated/bret_attacks.c
+    src/generated/bret_attacks.c \
+    src/generated/bret_frame_geometry.c
 # BEGIN FIX38 CUMULATIVE ARCADE SOURCE PORTS
 FIX38_ARCADE_C := \
     src/core/arcade/wm_arcade_anim_combat.c \

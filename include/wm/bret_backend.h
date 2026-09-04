@@ -2,6 +2,7 @@
 #define WM_BRET_BACKEND_H
 
 #include "wm/arcade/wm_arcade_bret.h"
+#include "wm/bret_frame_geometry.h"
 #include "wm/movement.h"
 #include "wm/visual.h"
 
@@ -112,14 +113,38 @@ void wm_bret_backend_execute_walk(wm_arcade_actor_t *actor, void *user);
  * be NULL (attack activation is then simply skipped).
  *
  * This sets a real actor's real attack_mode/attack_xoff/.../anim_mode
- * (WM_MODE_CHECKHIT) exactly as the source opcodes do. It does NOT call
- * wm_arcade_check_wrestler_collisions -- that also needs the victim's
- * hurt_box (wm_arcade_set_hurt_box), which needs per-frame ANI3 hit-box
- * data (SYS.EQU's IANI3X/Y/Z/ID) this port has not extracted, so no hits
- * actually land yet. See README for that boundary.
+ * (WM_MODE_CHECKHIT) exactly as the source opcodes do.
+ *
+ * Also calls wm_arcade_set_hurt_box() every tick using
+ * wm_bret_hurt_box_for_frame() below -- see that function's comment for
+ * exactly what data backs it and what it does not claim to be.
  */
 void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
                           uint16_t round_tickcount);
+
+/*
+ * SYS.EQU's per-frame ANI3 hurt-box header (IANI3X/Y/Z/ID) is compiled from
+ * WIMP artist source by a build step whose output (bretimg.tbl/bret.seq/
+ * imgtbl.glo) is absent from the checked-in tree -- confirmed unrecoverable
+ * from the ASM source and from the WIMP .IMG directory format alike (its
+ * image entries carry xani/yani/width/height, never an authored hit-box
+ * rectangle). This substitutes the frame's own real WIMP image geometry as
+ * the hurt box, using the exact xani/yani/width/height
+ * wm_bret_frame_geometry_find() resolves (wm/bret_frame_geometry.h -- the
+ * same real numbers wm/bret_sprites.h's wm_source_sprite carries for
+ * rendering, without that struct's pixel/palette payload):
+ *   iani3x = -xani, iani3z = width   (wm_arcade_set_hurt_box's x1=x_int+
+ *     iani3x, x2=x1+iani3z then reproduces the sprite's own screen-space
+ *     footprint around the actor's x_int anchor, and mirrors correctly
+ *     under WM_OBJ_FLIPH since xani is anchor-to-left-edge in image space)
+ *   iani3y = -yani, iani3id = height (same construction on the Y axis)
+ * This is a deliberate, documented substitute for the original hand-tuned
+ * hit-box, not a recovery of it -- expect looser/tighter hit windows than
+ * the arcade original per frame. Returns an all-zero box (a box exactly at
+ * the actor's own point, effectively unhittable) if source_frame doesn't
+ * resolve to a known sprite.
+ */
+wm_arcade_frame_box_t wm_bret_hurt_box_for_frame(const char *source_frame);
 
 /* Not a source routine (see wm/movement.h's wm_integrate_position): applies
    actor->x_vel/z_vel to its position for one tick. */

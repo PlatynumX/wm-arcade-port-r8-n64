@@ -613,6 +613,163 @@ static void test_bret_attack_windows_remaining(void) {
     }
 }
 
+/* wm_bret_hurt_box_for_frame against real numbers independently confirmed
+   from the original WIMP containers (tools/wimpimg.py against HRT_PNC.IMG
+   and HRT_KIK.IMG) -- not just against the generated table that backs it. */
+static void test_bret_hurt_box_for_frame_real_geometry(void) {
+    wm_arcade_frame_box_t box = wm_bret_hurt_box_for_frame("H2PL3B04");
+    CHECK(box.iani3x == -44);
+    CHECK(box.iani3y == -107);
+    CHECK(box.iani3z == 119);
+    CHECK(box.iani3id == 110);
+
+    box = wm_bret_hurt_box_for_frame("H2KM3A05");
+    CHECK(box.iani3x == -41);
+    CHECK(box.iani3y == -101);
+    CHECK(box.iani3z == 104);
+    CHECK(box.iani3id == 102);
+
+    /* Unresolved frame names return an all-zero box (unhittable point)
+       rather than guessing or crashing. */
+    box = wm_bret_hurt_box_for_frame("NOT_A_REAL_FRAME");
+    CHECK(box.iani3x == 0 && box.iani3y == 0 && box.iani3z == 0 && box.iani3id == 0);
+    box = wm_bret_hurt_box_for_frame(NULL);
+    CHECK(box.iani3x == 0 && box.iani3y == 0 && box.iani3z == 0 && box.iani3id == 0);
+}
+
+/* wm_bret_backend_tick actually calls wm_arcade_set_hurt_box every tick
+   using the real current frame, not a placeholder. */
+static void test_bret_backend_tick_sets_real_hurt_box(void) {
+    wm_arcade_actor_t a;
+    wm_bret_backend_actor bva;
+    const wm_visual_frame *cur;
+    wm_arcade_frame_box_t expect;
+
+    memset(&a, 0, sizeof(a));
+    a.x_int = 1000;
+    a.z_int = 500;
+    wm_bret_backend_init(&bva);
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_STAND2, &bva);
+    CHECK(bva.visual.sequence == &wm_bret_stand2_anim);
+
+    wm_bret_backend_tick(&bva, &a, 0);
+
+    cur = wm_visual_current(&bva.visual);
+    CHECK(cur != NULL);
+    expect = wm_bret_hurt_box_for_frame(cur->source_frame);
+    CHECK(expect.iani3z > 0 && expect.iani3id > 0);
+
+    /* WM_PMODE_NORMAL (the memset-zeroed default): wm_arcade_set_hurt_box's
+       zoff=-30/zdepth=60, and the unflipped-x branch since obj_control has
+       no WM_OBJ_FLIPH here. */
+    CHECK(!(a.obj_control & WM_OBJ_FLIPH));
+    CHECK(a.hurt_box.x1 == a.x_int + expect.iani3x);
+    CHECK(a.hurt_box.x2 == a.hurt_box.x1 + expect.iani3z);
+    CHECK(a.hurt_box.y2 == a.y_int - expect.iani3y);
+    CHECK(a.hurt_box.y1 == a.hurt_box.y2 - expect.iani3id);
+    CHECK(a.hurt_box.z1 == a.z_int - 30);
+    CHECK(a.hurt_box.z2 == a.hurt_box.z1 + 60);
+}
+
+static void test_hurt_box_adjust_health(wm_arcade_actor_t *victim, int16_t delta,
+                                        wm_arcade_actor_t *source, void *user) {
+    (void)source;
+    (void)user;
+    victim->life += delta;
+}
+
+/*
+ * Capstone: a real per-frame hurt box (wm_bret_hurt_box_for_frame, set every
+ * tick by wm_bret_backend_tick) combined with the real, already
+ * ctest-verified-since-fix38 wm_arcade_check_wrestler_collisions() /
+ * wm_arcade_wrestler_hit() (REACT1.ASM) / wm_arcade_wrestler_hit_
+ * collision_callback bridge -- the exact pieces wm_match_tick now wires
+ * together (match.c) -- actually lands a hit and reduces the victim's life.
+ *
+ * This drives bret_backend.c and the react/combat layer directly rather
+ * than through wm_arcade_move_bret's button dispatch, matching how every
+ * other attack-window test in this file already exercises an attack
+ * (test_bret_attack_window_punch2 etc.): wm_arcade_move_bret's do_punch
+ * (BRET.ASM) currently always treats the opponent as point-blank (near(a,
+ * 50,45), since nothing in this port yet computes closest_xdist/closest_
+ * zdist) and picks the unwired WM_BRET_ANIM_BUTT2/4 headbutt instead of a
+ * mapped punch id -- a real, separate gap this test does not exercise or
+ * claim to fix.
+ */
+static void test_hurt_box_connects_a_real_hit(void) {
+    wm_arcade_actor_t attacker, victim;
+    wm_bret_backend_actor bva_attacker, bva_victim;
+    wm_arcade_actor_t *actors[2];
+    wm_arcade_combat_runtime_t runtime;
+    wm_arcade_react_callbacks_t react_cb;
+    wm_arcade_react_bridge_t bridge;
+    wm_arcade_combat_callbacks_t combat_cb;
+    int32_t life_before;
+    int guard;
+    bool hit = false;
+
+    memset(&attacker, 0, sizeof(attacker));
+    memset(&victim, 0, sizeof(victim));
+    attacker.active = 1;
+    victim.active = 1;
+    attacker.in_ring = 1;
+    victim.in_ring = 1;
+    attacker.life = 163;
+    victim.life = 163;
+    attacker.wrestler_num = WM_ROSTER_BRET;
+    victim.wrestler_num = WM_ROSTER_BRET;
+    attacker.player_mode = WM_PMODE_NORMAL;
+    victim.player_mode = WM_PMODE_NORMAL;
+    attacker.smart_target = &victim;
+    victim.smart_target = &attacker;
+
+    /* Real light-punch ATTACK_ON_Z box (xoff=30, width=50) reaches from
+       attacker.x_int=0: [30,80]. Real WM_BRET_ANIM_STAND2 frame 0 hurt box
+       (H2ST2A05, xani=19, width=54) at victim.x_int=60: [41,95] -- overlap
+       on all three axes (z/y stay at the actors' shared defaults). */
+    attacker.x_int = 0;
+    victim.x_int = 60;
+
+    wm_bret_backend_init(&bva_attacker);
+    wm_bret_backend_init(&bva_victim);
+    bva_attacker.opponent = &victim;
+    bva_victim.opponent = &attacker;
+
+    wm_bret_backend_change_anim(&attacker, WM_BRET_ANIM_PUNCH2, &bva_attacker);
+    wm_bret_backend_change_anim(&victim, WM_BRET_ANIM_STAND2, &bva_victim);
+    CHECK(bva_attacker.visual.sequence == &wm_bret_light_punch2_anim);
+
+    life_before = victim.life;
+    actors[0] = &attacker;
+    actors[1] = &victim;
+
+    wm_arcade_combat_runtime_init(&runtime);
+    memset(&react_cb, 0, sizeof(react_cb));
+    react_cb.adjust_health = test_hurt_box_adjust_health;
+    bridge.runtime = &runtime;
+    bridge.callbacks = &react_cb;
+    memset(&bridge.last_result, 0, sizeof(bridge.last_result));
+    memset(&combat_cb, 0, sizeof(combat_cb));
+    combat_cb.wrestler_hit = wm_arcade_wrestler_hit_collision_callback;
+    combat_cb.user = &bridge;
+
+    for (guard = 0; guard < 20 && !hit; ++guard) {
+        wm_bret_backend_tick(&bva_attacker, &attacker, (uint16_t)guard);
+        wm_bret_backend_tick(&bva_victim, &victim, (uint16_t)guard);
+        runtime.pcnt = (uint32_t)guard;
+        if (wm_arcade_check_wrestler_collisions(actors, 2, (uint32_t)guard, &combat_cb))
+            hit = true;
+    }
+
+    CHECK(hit);
+    CHECK(bva_attacker.visual.frame_index == 5);
+    CHECK(attacker.attack_mode == WM_AMODE_PUNCH);
+    CHECK(victim.hurt_box.x2 > victim.hurt_box.x1);
+    CHECK(bridge.last_result.status == WM_WRESTLER_HIT_OK);
+    CHECK(bridge.last_result.health_hook_called);
+    CHECK(victim.life < life_before);
+}
+
 /* Spot-checks against BRET.ASM:2897 hrt_leg_anims_table's literal contents
    (transcribed as leg_table in src/core/bret_backend.c), not just against
    the C code that mirrors it. */
@@ -1223,6 +1380,9 @@ int main(void) {
     test_bret_backend_change_anim();
     test_bret_attack_window_punch2();
     test_bret_attack_windows_remaining();
+    test_bret_hurt_box_for_frame_real_geometry();
+    test_bret_backend_tick_sets_real_hurt_box();
+    test_hurt_box_connects_a_real_hit();
     test_bret_ani_init_facing();
     test_bret_leg_anim_table();
     test_bret_backend_execute_walk_selects_leg_anim();

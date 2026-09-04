@@ -8,6 +8,11 @@ extern const wm_visual_sequence wm_bret_stand2_anim;
 extern const wm_visual_sequence wm_bret_stand4_anim;
 extern const wm_visual_sequence wm_bret_torso2_anim;
 extern const wm_visual_sequence wm_bret_torso4_anim;
+/* HRTSEQ1.ASM:104,116: hrt_torso8_anim/hrt_torso6_anim are literal SUBR
+   aliases for hrt_torso2_anim/hrt_torso4_anim (same address, no code in
+   between) -- these extract byte-identical frame data, not new artwork. */
+extern const wm_visual_sequence wm_bret_torso6_anim;
+extern const wm_visual_sequence wm_bret_torso8_anim;
 /* All 12 hrt_walkM_fF_anim leg-cycle sequences BRET.ASM:2897
    hrt_leg_anims_table can select (M=1/2/4/5/6/8 move compass,
    F=2/4 facing bank). */

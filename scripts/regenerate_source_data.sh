@@ -19,6 +19,8 @@ python3 "$ROOT/tools/wlanim.py" \
     --sequence hrt_stand4_anim wm_bret_stand4_anim bret_stand4_frames \
     --sequence hrt_torso2_anim wm_bret_torso2_anim bret_torso2_frames \
     --sequence hrt_torso4_anim wm_bret_torso4_anim bret_torso4_frames \
+    --sequence hrt_torso6_anim wm_bret_torso6_anim bret_torso6_frames \
+    --sequence hrt_torso8_anim wm_bret_torso8_anim bret_torso8_frames \
     --sequence hrt_walk1_f2_anim wm_bret_walk1_f2_anim bret_walk1_f2_frames \
     --sequence hrt_walk1_f4_anim wm_bret_walk1_f4_anim bret_walk1_f4_frames \
     --sequence hrt_walk2_f2_anim wm_bret_walk2_f2_anim bret_walk2_f2_frames \

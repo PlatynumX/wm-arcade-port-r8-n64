@@ -46,6 +46,24 @@ const wm_visual_sequence *wm_bret_leg_anim(int move_compass, int facing_compass)
     return leg_table[move_compass][facing_compass];
 }
 
+/* BRET.ASM:2981 hrt_torso_anims_table's diagonal (FACING_DIR==NEW_FACING_DIR,
+   i.e. not turning -- see wm_bret_torso_anim's own comment for why that's
+   the only reachable case here). Diagonal index 0-3 comes from
+   wm_convert_facing()'s compass (0-7) >> 1: {UP,UP_RIGHT}->0,
+   {RIGHT,DOWN_RIGHT}->1, {DOWN,DOWN_LEFT}->2, {LEFT,UP_LEFT}->3. The
+   table's own literal contents alias diag 0/3 to hrt_torso2_anim and
+   diag 1/2 to hrt_torso4_anim (hrt_torso8_anim/hrt_torso6_anim are
+   themselves SUBR aliases of those two, not distinct artwork -- see
+   wm/bret_visuals.h). */
+static const wm_visual_sequence *const torso_diag_table[4] = {
+    &wm_bret_torso2_anim, &wm_bret_torso4_anim, &wm_bret_torso4_anim, &wm_bret_torso2_anim,
+};
+
+const wm_visual_sequence *wm_bret_torso_anim(int facing_compass) {
+    if (facing_compass < 0 || facing_compass > 7) return NULL;
+    return torso_diag_table[facing_compass >> 1];
+}
+
 const wm_visual_sequence *wm_bret_anim_sequence(wm_arcade_bret_anim_id_t id) {
     switch (id) {
         case WM_BRET_ANIM_STAND2: return &wm_bret_stand2_anim;
@@ -185,6 +203,23 @@ void wm_bret_backend_execute_walk(wm_arcade_actor_t *actor, void *user) {
         move_compass = wm_convert_facing(actor->move_dir);
         facing_compass = wm_convert_facing(actor->facing_dir);
         start_if_new(&bva->visual, wm_bret_leg_anim(move_compass, facing_compass));
+    }
+
+    /* WRESTLE.ASM::change_walk_anim's torso half (WRESTLE.ASM:4973-4997):
+       reselects hrt_torso_anims_table[FACING_DIR][NEW_FACING_DIR] every
+       call this port reaches (source gates it on MODE_UNINT only, not on
+       MOVE_DIR -- unlike the leg half above, this runs even while idle).
+       Real FACING_DIR/NEW_FACING_DIR tracking needs the same not-yet-
+       located "compute NEW_FACING_DIR" routine the leg half's own comment
+       flags; substituting FACING_DIR=NEW_FACING_DIR (actor->facing_dir,
+       left alone here -- the leg half above is what actually updates it)
+       always lands on the table's diagonal, i.e. wm_bret_torso_anim's own
+       reduced 4-entry table. If facing_dir is still its zeroed default
+       (never having moved), wm_convert_facing returns -1 and no torso
+       animation is (re)selected. */
+    if (!(actor->anim_mode & WM_MODE_UNINT)) {
+        start_if_new(&bva->torso_visual,
+                     wm_bret_torso_anim(wm_convert_facing(actor->facing_dir)));
     }
 }
 

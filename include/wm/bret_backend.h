@@ -48,11 +48,13 @@ extern "C" {
  * ported, so FACING_DIR is substituted with MOVE_DIR while moving --
  * correct for straight walking, the only case reachable today.
  *
- * change_walk_anim's TORSO reselection (hrt_torso_anims_table) and
- * set_rotate_anim/change_anim1 (the #zip/idle-turn case, using
- * hrt_rotate_anims_table's 12 turn-transition sequences plus
- * hrt_stand6/8_anim) are still not translated -- the torso stays on
- * whatever wm_bret_backend_ani_init set, and idle facing changes don't
+ * change_walk_anim's TORSO reselection (hrt_torso_anims_table) is now
+ * translated too -- see wm_bret_torso_anim's own comment -- but only ever
+ * reaches that table's diagonal (not-turning) entries, for the same
+ * FACING_DIR/NEW_FACING_DIR substitution reason the leg half's comment
+ * gives. set_rotate_anim/change_anim1 (the #zip/idle-turn case, using
+ * hrt_rotate_anims_table's 12 off-diagonal turn-transition sequences plus
+ * hrt_stand6/8_anim) is still not translated -- idle facing changes don't
  * animate a turn.
  */
 
@@ -90,6 +92,19 @@ const wm_visual_sequence *wm_bret_anim_sequence(wm_arcade_bret_anim_id_t id);
    (in particular wm_convert_facing's -1 "zip" result). */
 const wm_visual_sequence *wm_bret_leg_anim(int move_compass, int facing_compass);
 
+/*
+ * BRET.ASM:2981 hrt_torso_anims_table[FACING_DIR][NEW_FACING_DIR], both
+ * indices folded to a 0-3 "diagonal" (wm_convert_facing() 0-7 result >> 1).
+ * Only the table's diagonal (facing_compass used for both indices, i.e.
+ * FACING_DIR==NEW_FACING_DIR -- not turning) is exposed here: this port
+ * has no real NEW_FACING_DIR tracking (same gap wm_bret_backend_
+ * execute_walk's own comment flags for the leg half), so the 12
+ * off-diagonal turn-transition entries (hrt_2_to_4_turn2_anim etc.) are
+ * unreachable and not wired. NULL if facing_compass is out of 0-7 range
+ * (in particular wm_convert_facing's -1 "zip"/never-moved result).
+ */
+const wm_visual_sequence *wm_bret_torso_anim(int facing_compass);
+
 /* wm_arcade_bret_callbacks_t.change_anim body. */
 void wm_bret_backend_change_anim(wm_arcade_actor_t *actor,
                                  wm_arcade_bret_anim_id_t id, void *user);
@@ -108,8 +123,9 @@ void wm_bret_backend_change_torso_anim(wm_arcade_actor_t *actor,
 wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva);
 
 /* wm_arcade_bret_callbacks_t.execute_walk body: wm_execute_walk(actor,
-   bva->opponent, wm_bret_velocity_table) plus leg-cycle reselection --
-   see the file comment for exactly what that does and does not cover. */
+   bva->opponent, wm_bret_velocity_table) plus leg-cycle and torso
+   reselection -- see the file comment for exactly what that does and does
+   not cover. */
 void wm_bret_backend_execute_walk(wm_arcade_actor_t *actor, void *user);
 
 /*

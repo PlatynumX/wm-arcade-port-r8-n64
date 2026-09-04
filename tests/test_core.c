@@ -1375,6 +1375,45 @@ static void test_bret_leg_anim_table(void) {
     CHECK(wm_bret_leg_anim(0, 8) == NULL);
 }
 
+/* Spot-checks against BRET.ASM:2981 hrt_torso_anims_table's literal
+   diagonal contents (transcribed as torso_diag_table in
+   src/core/bret_backend.c): compass 0/1 (UP/UP_RIGHT) and 6/7 (LEFT/
+   UP_LEFT) -> hrt_torso2_anim; compass 2/3 (RIGHT/DOWN_RIGHT) and 4/5
+   (DOWN/DOWN_LEFT) -> hrt_torso4_anim (matching hrt_torso8_anim/
+   hrt_torso6_anim's own SUBR aliasing of those two). */
+static void test_bret_torso_anim_table(void) {
+    CHECK(wm_bret_torso_anim(0) == &wm_bret_torso2_anim); /* UP */
+    CHECK(wm_bret_torso_anim(1) == &wm_bret_torso2_anim); /* UP_RIGHT */
+    CHECK(wm_bret_torso_anim(2) == &wm_bret_torso4_anim); /* RIGHT */
+    CHECK(wm_bret_torso_anim(3) == &wm_bret_torso4_anim); /* DOWN_RIGHT */
+    CHECK(wm_bret_torso_anim(4) == &wm_bret_torso4_anim); /* DOWN */
+    CHECK(wm_bret_torso_anim(5) == &wm_bret_torso4_anim); /* DOWN_LEFT */
+    CHECK(wm_bret_torso_anim(6) == &wm_bret_torso2_anim); /* LEFT */
+    CHECK(wm_bret_torso_anim(7) == &wm_bret_torso2_anim); /* UP_LEFT */
+
+    CHECK(wm_bret_torso_anim(-1) == NULL);
+    CHECK(wm_bret_torso_anim(8) == NULL);
+}
+
+/* HRTSEQ1.ASM:103-104/115-116: hrt_torso8_anim and hrt_torso6_anim are
+   literal SUBR aliases for hrt_torso2_anim/hrt_torso4_anim, not distinct
+   artwork -- confirm the extracted frame data actually matches, not just
+   that the symbols exist. */
+static void test_bret_torso_alias_frames_match_source(void) {
+    CHECK(wm_bret_torso8_anim.frame_count == wm_bret_torso2_anim.frame_count);
+    CHECK(wm_bret_torso6_anim.frame_count == wm_bret_torso4_anim.frame_count);
+    for (size_t i = 0; i < wm_bret_torso2_anim.frame_count; ++i) {
+        CHECK(strcmp(wm_bret_torso8_anim.frames[i].source_frame,
+                     wm_bret_torso2_anim.frames[i].source_frame) == 0);
+        CHECK(wm_bret_torso8_anim.frames[i].ticks == wm_bret_torso2_anim.frames[i].ticks);
+    }
+    for (size_t i = 0; i < wm_bret_torso4_anim.frame_count; ++i) {
+        CHECK(strcmp(wm_bret_torso6_anim.frames[i].source_frame,
+                     wm_bret_torso4_anim.frames[i].source_frame) == 0);
+        CHECK(wm_bret_torso6_anim.frames[i].ticks == wm_bret_torso4_anim.frames[i].ticks);
+    }
+}
+
 static void test_bret_backend_execute_walk_selects_leg_anim(void) {
     wm_arcade_actor_t a;
     wm_bret_backend_actor bva;
@@ -1384,18 +1423,34 @@ static void test_bret_backend_execute_walk_selects_leg_anim(void) {
     a.move_dir = WM_MOVE_RIGHT;
     wm_bret_backend_execute_walk(&a, &bva);
     /* facing_dir substituted from move_dir (see wm/bret_backend.h) ->
-       leg_table[RIGHT][RIGHT] == wm_bret_walk2_f2_anim. */
+       leg_table[RIGHT][RIGHT] == wm_bret_walk2_f2_anim, and the torso
+       half's own diagonal reselection (wm_bret_torso_anim(RIGHT)) ->
+       wm_bret_torso4_anim. */
     CHECK(a.facing_dir == WM_MOVE_RIGHT);
     CHECK(bva.visual.sequence == &wm_bret_walk2_f2_anim);
+    CHECK(bva.torso_visual.sequence == &wm_bret_torso4_anim);
 
-    /* #zip (move_dir cleared to 0 by wm_execute_walk) leaves the sprite
-       alone -- no leg animation for "not moving". */
+    /* #zip (move_dir cleared to 0 by wm_execute_walk) leaves the leg
+       sprite alone -- no leg animation for "not moving" -- and, since
+       facing_dir is still its zeroed default (never having moved),
+       wm_convert_facing returns -1 so the torso half no-ops too. */
     wm_bret_backend_init(&bva);
     memset(&a, 0, sizeof(a));
     a.move_dir = WM_MOVE_ZIP;
     wm_bret_backend_change_anim(&a, WM_BRET_ANIM_STAND4, &bva);
     wm_bret_backend_execute_walk(&a, &bva);
     CHECK(bva.visual.sequence == &wm_bret_stand4_anim);
+    CHECK(bva.torso_visual.sequence == NULL);
+
+    /* MODE_UNINT skips the torso half only (WRESTLE.ASM:4973-4976) -- the
+       leg half is unaffected. */
+    wm_bret_backend_init(&bva);
+    memset(&a, 0, sizeof(a));
+    a.move_dir = WM_MOVE_RIGHT;
+    a.anim_mode = WM_MODE_UNINT;
+    wm_bret_backend_execute_walk(&a, &bva);
+    CHECK(bva.visual.sequence == &wm_bret_walk2_f2_anim);
+    CHECK(bva.torso_visual.sequence == NULL);
 }
 
 static void test_bret_ani_init_facing(void) {
@@ -2039,6 +2094,8 @@ int main(void) {
     test_arcade_match_score_draw_awards_nothing();
     test_bret_ani_init_facing();
     test_bret_leg_anim_table();
+    test_bret_torso_anim_table();
+    test_bret_torso_alias_frames_match_source();
     test_bret_backend_execute_walk_selects_leg_anim();
     test_convert_facing();
     test_set_velocities_normal();

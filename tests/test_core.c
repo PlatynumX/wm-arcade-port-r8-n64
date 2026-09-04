@@ -948,6 +948,174 @@ static void test_hurt_box_hit_kills_at_zero_life(void) {
     CHECK(attacker.anim_mode & WM_MODE_CHECKHIT);
 }
 
+/* wm_arcade_get_live_bits (WRESTLE2.ASM::get_live_bits). */
+static void test_arcade_get_live_bits(void) {
+    wm_arcade_actor_t p1, p2;
+    wm_arcade_actor_t *actors[2] = { &p1, &p2 };
+
+    memset(&p1, 0, sizeof(p1));
+    memset(&p2, 0, sizeof(p2));
+    p1.active = 1;
+    p2.active = 1;
+    p1.player_side = 0;
+    p2.player_side = 1;
+    p1.player_mode = WM_PMODE_NORMAL;
+    p2.player_mode = WM_PMODE_NORMAL;
+    CHECK(wm_arcade_get_live_bits(actors, 2) == 3);
+
+    p2.player_mode = WM_PMODE_DEAD;
+    CHECK(wm_arcade_get_live_bits(actors, 2) == 1);
+
+    p1.player_mode = WM_PMODE_DEAD;
+    CHECK(wm_arcade_get_live_bits(actors, 2) == 0);
+
+    /* A dead-but-ZOMBIE actor still counts as live. */
+    p1.status_flags = WM_STATUS_ZOMBIE;
+    CHECK(wm_arcade_get_live_bits(actors, 2) == 1);
+
+    /* An inactive slot is skipped entirely, not counted as dead. */
+    p1.status_flags = 0;
+    p1.player_mode = WM_PMODE_NORMAL;
+    p2.active = 0;
+    CHECK(wm_arcade_get_live_bits(actors, 2) == 1);
+}
+
+/* wm_arcade_round_tick (WRESTLE2.ASM::match_timer's #1tmded 5-second
+   pin-idiot-check countdown). */
+static void test_arcade_round_tick_decides_after_pin_timeout(void) {
+    wm_arcade_actor_t p1, p2;
+    wm_arcade_actor_t *actors[2] = { &p1, &p2 };
+    wm_arcade_round_state_t rs;
+    int i;
+
+    memset(&p1, 0, sizeof(p1));
+    memset(&p2, 0, sizeof(p2));
+    p1.active = 1;
+    p2.active = 1;
+    p1.player_side = 0;
+    p2.player_side = 1;
+    p1.player_mode = WM_PMODE_NORMAL;
+    p2.player_mode = WM_PMODE_DEAD; /* side 1 is fully dead from tick 0 */
+
+    wm_arcade_round_state_init(&rs);
+    CHECK(!rs.decided);
+
+    for (i = 0; i < WM_ARCADE_PIN_TIMEOUT_TICKS - 1; ++i) {
+        wm_arcade_round_tick(&rs, actors, 2);
+        CHECK(!rs.decided);
+    }
+    wm_arcade_round_tick(&rs, actors, 2);
+    CHECK(rs.decided);
+    CHECK(rs.decided_winner_side == 0);
+
+    /* Already decided: further ticks are no-ops. */
+    wm_arcade_round_tick(&rs, actors, 2);
+    CHECK(rs.decided_winner_side == 0);
+}
+
+static void test_arcade_round_tick_cancels_on_revival(void) {
+    wm_arcade_actor_t p1, p2;
+    wm_arcade_actor_t *actors[2] = { &p1, &p2 };
+    wm_arcade_round_state_t rs;
+
+    memset(&p1, 0, sizeof(p1));
+    memset(&p2, 0, sizeof(p2));
+    p1.active = 1;
+    p2.active = 1;
+    p1.player_side = 0;
+    p2.player_side = 1;
+    p1.player_mode = WM_PMODE_NORMAL;
+    p2.player_mode = WM_PMODE_DEAD;
+
+    wm_arcade_round_state_init(&rs);
+    wm_arcade_round_tick(&rs, actors, 2);
+    wm_arcade_round_tick(&rs, actors, 2);
+    CHECK(rs.pin_timeout == WM_ARCADE_PIN_TIMEOUT_TICKS - 2);
+
+    /* Both sides alive again cancels the countdown. */
+    p2.player_mode = WM_PMODE_NORMAL;
+    wm_arcade_round_tick(&rs, actors, 2);
+    CHECK(rs.pin_timeout == 0);
+    CHECK(!rs.decided);
+}
+
+static void test_arcade_round_tick_double_ko_is_a_draw(void) {
+    wm_arcade_actor_t p1, p2;
+    wm_arcade_actor_t *actors[2] = { &p1, &p2 };
+    wm_arcade_round_state_t rs;
+    int i;
+
+    memset(&p1, 0, sizeof(p1));
+    memset(&p2, 0, sizeof(p2));
+    p1.active = 1;
+    p2.active = 1;
+    p1.player_side = 0;
+    p2.player_side = 1;
+    p1.player_mode = WM_PMODE_DEAD;
+    p2.player_mode = WM_PMODE_DEAD;
+
+    wm_arcade_round_state_init(&rs);
+    for (i = 0; i < WM_ARCADE_PIN_TIMEOUT_TICKS; ++i)
+        wm_arcade_round_tick(&rs, actors, 2);
+
+    CHECK(rs.decided);
+    CHECK(rs.decided_winner_side == -1);
+}
+
+/* End-to-end: a real fatal hit through wm_match_tick (same setup as
+   test_hurt_box_hit_kills_at_zero_life) eventually decides the match via
+   round_state, not just flipping player_mode. The opponent must also draw
+   WM_ROSTER_BRET (like test_match_bret_idle_animates), since only a Bret
+   actor gets a real per-frame hurt_box set at all. */
+static void test_match_round_decided_after_real_kill(void) {
+    WmRng rng;
+    wm_match_state m;
+    wm_arcade_drone_callbacks_t cb;
+    wm_input_state punch;
+    uint32_t seed;
+    bool found = false;
+    int guard;
+
+    for (seed = 0; seed < 4096 && !found; ++seed) {
+        WmRng probe;
+        wm_rng_init(&probe, seed, NULL, NULL, NULL);
+        if (wm_match_draw_wrestler_index(&probe) == WM_ROSTER_BRET) found = true;
+    }
+    CHECK(found);
+
+    wm_rng_init(&rng, seed, NULL, NULL, NULL);
+    wm_match_init(&m);
+    wm_match_start_selected(&m, &rng, WM_ROSTER_BRET);
+    CHECK(m.actors[1].wrestler_num == WM_ROSTER_BRET);
+
+    /* Force the opponent to a known, low life total and a range that lands
+       the human's real light punch (as in
+       test_match_human_punch_from_range_selects_real_punch). */
+    m.actors[1].x_int = 60;
+    m.actors[1].x_fixed = 60 << 16;
+    m.actors[1].life = 10;
+
+    memset(&cb, 0, sizeof(cb));
+    cb.rndrng0_upto = test_match_rndrng0_cb;
+    cb.user = &rng;
+
+    memset(&punch, 0, sizeof(punch));
+    punch.light_punch = true;
+    wm_match_tick(&m, &cb, &punch);
+    memset(&punch, 0, sizeof(punch));
+
+    for (guard = 0; guard < 20 && m.actors[1].player_mode != WM_PMODE_DEAD; ++guard)
+        wm_match_tick(&m, &cb, &punch);
+    CHECK(m.actors[1].player_mode == WM_PMODE_DEAD);
+    CHECK(!m.round_state.decided);
+
+    for (guard = 0; guard < WM_ARCADE_PIN_TIMEOUT_TICKS + 5 && !m.round_state.decided; ++guard)
+        wm_match_tick(&m, &cb, &punch);
+
+    CHECK(m.round_state.decided);
+    CHECK(m.round_state.decided_winner_side == m.actors[0].player_side);
+}
+
 /* Spot-checks against BRET.ASM:2897 hrt_leg_anims_table's literal contents
    (transcribed as leg_table in src/core/bret_backend.c), not just against
    the C code that mirrors it. */
@@ -1622,6 +1790,10 @@ int main(void) {
     test_arcade_adjust_health_death();
     test_arcade_adjust_health_combo_revival_defers_death();
     test_hurt_box_hit_kills_at_zero_life();
+    test_arcade_get_live_bits();
+    test_arcade_round_tick_decides_after_pin_timeout();
+    test_arcade_round_tick_cancels_on_revival();
+    test_arcade_round_tick_double_ko_is_a_draw();
     test_bret_ani_init_facing();
     test_bret_leg_anim_table();
     test_bret_backend_execute_walk_selects_leg_anim();
@@ -1635,6 +1807,7 @@ int main(void) {
     test_match_start_selected();
     test_match_human_bret_walks_right();
     test_match_human_punch_from_range_selects_real_punch();
+    test_match_round_decided_after_real_kill();
     test_match_bret_idle_animates();
     test_source_attract_sequence();
     test_attract_source_flow();

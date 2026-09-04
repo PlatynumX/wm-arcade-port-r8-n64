@@ -75,6 +75,7 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
     m->active = true;
     m->tick_count = 0;
     wm_arcade_combat_runtime_init(&m->combat_runtime);
+    wm_arcade_round_state_init(&m->round_state);
 }
 
 void wm_match_start_selected(wm_match_state *m, WmRng *rng,
@@ -118,6 +119,7 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
     m->active = true;
     m->tick_count = 0;
     wm_arcade_combat_runtime_init(&m->combat_runtime);
+    wm_arcade_round_state_init(&m->round_state);
 }
 
 /* wm_arcade_react_callbacks_t.adjust_health adapter: the real logic lives
@@ -196,6 +198,8 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
         (void)wm_arcade_check_wrestler_collisions(actor_ptrs, m->actor_count,
                                                   m->tick_count, &combat_cb);
     }
+
+    wm_arcade_round_tick(&m->round_state, actor_ptrs, m->actor_count);
 
     ++m->tick_count;
 }

@@ -8,6 +8,7 @@
 #include "wm/arcade/wm_arcade_lifebar.h"
 #include "wm/arcade/wm_arcade_react.h"
 #include "wm/arcade/wm_arcade_roster.h"
+#include "wm/arcade/wm_arcade_round.h"
 #include "wm/arcade/wmania_rng.h"
 #include "wm/bret_backend.h"
 #include "wm/human_input.h"
@@ -86,6 +87,11 @@ typedef struct {
        for wm_arcade_wrestler_hit -- see wm_match_tick's own comment for what
        the hit path around it does and does not translate. */
     wm_arcade_combat_runtime_t combat_runtime;
+
+    /* WRESTLE2.ASM::match_timer's KO-detection state (get_live_bits + the
+       5-second pin-idiot-check countdown) -- see wm/arcade/wm_arcade_round.h
+       for exactly what this does and does not decide. */
+    wm_arcade_round_state_t round_state;
 } wm_match_state;
 
 void wm_match_init(wm_match_state *m);
@@ -126,13 +132,21 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
  * After every actor has moved, this calls the real, ctest-verified
  * wm_arcade_check_wrestler_collisions()/wm_arcade_wrestler_hit() (REACT1.ASM)
  * so a wired attack that overlaps a real hurt_box actually registers a hit
- * and calls a real adjust_health translated from LIFEBAR.ASM:1547-1591 --
- * the life range check (clamped to [0, LIFE_MAX]) and its "attract mode
- * never dies" / "20+ pt near-death fudge" rules. LIFEBAR.ASM's combo
- * multiplier (DAM_MULT/COMBO_COUNT), per-drone-count and speed_adjustment
- * damage scaling, lifebar-flash warning process, and post-death (MODE_DEAD/
- * getup/pin) handling are NOT translated -- see wm_match_adjust_health's own
- * comment in match.c. */
+ * and calls the real, shared wm_arcade_adjust_health (LIFEBAR.ASM:1547-1670):
+ * the life range check (clamped to [0, LIFE_MAX]), its "attract mode never
+ * dies" / "20+ pt near-death fudge" rules, and a genuine WM_PMODE_DEAD
+ * transition once life actually reaches 0. LIFEBAR.ASM's combo multiplier
+ * (DAM_MULT/COMBO_COUNT), per-drone-count and speed_adjustment damage
+ * scaling, and everything past SETMODE DEAD (death animation, LAST_DAMAGE)
+ * are NOT translated -- see wm_arcade_adjust_health's own comment.
+ *
+ * Finally, this steps round_state (wm/arcade/wm_arcade_round.h): once one
+ * side has no live wrestler left, a real 5-second countdown starts, and
+ * round_state.decided/decided_winner_side become real once it elapses --
+ * WRESTLE2.ASM::match_timer's actual knockout trigger, not just its round
+ * clock running out. wm_match_tick keeps ticking after that (no round/
+ * match-over transition exists yet -- see that header for the rest of what
+ * a decided round does in the source that this doesn't reach). */
 void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
                    const wm_input_state *human_input);
 

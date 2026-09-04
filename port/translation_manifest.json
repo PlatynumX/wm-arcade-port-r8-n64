@@ -15,8 +15,8 @@
       "note": "Original 17 WIMP logo pieces, source timing and MOVE_BACK_OFF_SCREEN process scheduling translated; packed SPORTBKBMOD records are now ingested generically, artwork/palette block renderer still partial."
     },
     "show_gameplay": {
-      "status": "harness-only",
-      "note": "r8 demo combat is a hardware bring-up harness, not the original start_match process graph; excluded from normal arcade flow."
+      "status": "partial-source",
+      "note": "WRESTLE.ASM::start_match's PSTATUS==0 (#0plyr) path now runs from the real attract flow: the RNDRNG0(7)-skip-7 index1 draw, LIFEBAR.ASM::init_life_data (LIFE_MAX=163), and #0plyr's PLYRNUM/PSIDE wrestler-actor creation are translated (wm/match.h), and the SLEEP 3*60 + wait_on_butn 10*TSEC timing is exact. Not translated: INIT_LADDER_TABLE/CURRENT_LADDER/NUM_OPPS multi-drone team selection (only one placeholder opponent is created), DRONE.ASM's wnshort_t/wnmed_t/wnlong_t script data and the blkbase_t/blkatk_t/sklhhdly_t/sklhrdly_t skill tables (their SKLM macro expansion is not present in the checked-in source tree, so they are not guessed), and wm_arcade_move_ported_wrestler's character-control/animation layer (only Bret has a real visual backend). Wrestlers therefore hold real health/ring state but do not yet move, animate, or fight."
     },
     "creditscreen": {
       "status": "not-started",
@@ -73,8 +73,8 @@
       "note": "set_image attachment offset math translated for Bret bring-up."
     },
     "start_match": {
-      "status": "not-started",
-      "note": "Original start_match subtree is mechanically mapped by source IR but game/process/player dependencies are not yet translated; no harness substitution."
+      "status": "partial-source",
+      "note": "Only the PSTATUS==0 (#0plyr, attract-mode) creation path is translated (wm/match.h), driven from WM_ATTRACT_SHOW_GAMEPLAY -- see the show_gameplay note above for exactly what is and is not real. The #1plyr/#2plyr credited-match paths (WM_APP_MODE_MATCH_INIT after select/pregame) remain an explicit dead-end stub; CLOSE_PROGRESS_SCREEN, ring/rope/crowd/timer process creation, and collision/pin/finisher lifecycle are all still unported."
     },
     "credit_start_select": {
       "status": "partial-source",

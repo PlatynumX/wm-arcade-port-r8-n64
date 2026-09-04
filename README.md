@@ -18,14 +18,16 @@ r9 is the first broad **shared-engine** pass. It is not a claim that the complet
 - **Source selection core from `SELECT.ASM`.** The 2x4 cursor grid, exact crouton coordinates, source BMOD placement, player start/mug/sound data, `scramble_table` roster mapping, attributes, legal four-way movement, START+UP random-selection gate, random wander/home rules, 15-second source selection timer and 30-tick final wait constants are translated in portable C.
 - **Source-driven attract execution.** Initial 8-tick blank, active source routine order, DCS/Midway/title timing, Midway background movement, title lava scheduling, and the source title sparkle process lifetime remain source-driven.
 - **Original artwork paths already proven on N64.** Midway Sports uses the original 17 WIMP pieces; title art is derived from original artist/BMOD data; Bret remains the first wrestler with the current visual backend.
+- **`show_gameplay`'s attract-mode `start_match` creation path.** `ATTRACT.ASM::show_gameplay` is just `WRESTLE.ASM::start_match` run with `PSTATUS==0`; the `#0plyr` branch's `RNDRNG0(7)`-skip-7 wrestler draw, `LIFEBAR.ASM::init_life_data` (`LIFE_MAX`=163), and PLYRNUM/PSIDE wrestler-actor creation are translated (`wm/match.h`), on the real `SLEEP 3*60` + `wait_on_butn 10*TSEC` timing. See the boundary below for what this does not yet do.
 
 ## What is deliberately *not* called a port yet
 
-- `show_gameplay` / `start_match`: the old combat sandbox remains a **harness only** and cannot be entered by normal arcade flow.
+- The rest of `start_match`: `INIT_LADDER_TABLE`/`CURRENT_LADDER`/`NUM_OPPS` multi-drone team selection (only one placeholder opponent is created), ring/rope/crowd/timer process creation, and the `#1plyr`/`#2plyr` credited-match paths (still a dead-end stub after select/pregame).
+- The already-ported combat core's connection to a live match: `wm_arcade_move_ported_wrestler`'s character-control/animation layer needs a real backend per wrestler (only Bret has one), and `DRONE.ASM`'s AI script/range data (`wnshort_t`/`wnmed_t`/`wnlong_t`, `blkbase_t`/`blkatk_t`/`sklhhdly_t`/`sklhrdly_t`) is emitted by a source macro (`SKLM`) that is not present in the checked-in tree, so it is not guessed. Attract-mode wrestlers therefore hold real health/ring state today but do not move, animate, or fight yet.
 - Full credit/buy-in/start/select orchestration: the selection mechanics/data core is translated, but original credit processes, text, mug objects and final screen rendering still need their shared backends.
 - The complete 131-command animation interpreter, branch/pointer relocation, all wrestler visual banks and wrestler-specific process logic.
 - Full background header/palette object construction, fonts/text, fades and remaining frontend routines.
-- Match process graph, collision/ropes/turnbuckles, grapples, damage/pins/finishers, original CPU behavior and DCS audio backend.
+- Collision/ropes/turnbuckles, grapples, damage/pins/finishers, original CPU behavior and DCS audio backend.
 
 Anything still missing stays absent or is reported in the generated frontiers. Harness code does not substitute for the game.
 

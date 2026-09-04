@@ -26,6 +26,7 @@ CORE_C := \
     src/core/game.c \
     src/core/ropes.c \
     src/core/demo.c \
+    src/core/match.c \
     src/core/visual.c \
     src/core/roster.c \
     src/core/attract.c \

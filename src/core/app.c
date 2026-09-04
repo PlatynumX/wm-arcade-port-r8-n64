@@ -376,6 +376,41 @@ static bool tick_title(wm_app *app, const wm_input_state *input) {
     return a->call_ticks >= WM_TITLE_TOTAL_TICKS;
 }
 
+/* Adapts the shared @RAND stream to wm_arcade_drone_callbacks_t's
+   (max_inclusive, user) argument order; wm_rng_rndrng0_callback uses
+   (user, max_inclusive) for the high-score-initials caller instead. */
+static uint32_t drone_rndrng0_adapter(uint32_t max_inclusive, void *user) {
+    return wm_rng_rndrng0((WmRng *)user, max_inclusive);
+}
+
+static bool tick_gameplay(wm_app *app, const wm_input_state *input) {
+    wm_attract_state *a = &app->attract;
+
+    if (a->call_ticks == 0)
+        wm_match_start_attract(&app->match, &app->rng);
+
+    {
+        wm_arcade_drone_callbacks_t cb;
+        memset(&cb, 0, sizeof(cb));
+        cb.rndrng0_upto = drone_rndrng0_adapter;
+        cb.user = &app->rng;
+        wm_match_tick(&app->match, &cb);
+    }
+
+    ++a->call_ticks;
+
+    if ((a->call_ticks > WM_GAMEPLAY_BUTTON_ENABLE_TICKS &&
+         wm_app_any_attract_button(input)) ||
+        a->call_ticks >= WM_GAMEPLAY_TOTAL_TICKS) {
+        /* ATTRACT.ASM::show_gameplay ends by freezing wrestler processes
+           (@HALT), fading, and display_blank -- the next occurrence starts
+           a fresh start_match, not a continuation of this one. */
+        app->match.active = false;
+        return true;
+    }
+    return false;
+}
+
 void wm_app_init(wm_app *app) {
     memset(app, 0, sizeof(*app));
     app->mode = WM_APP_MODE_ATTRACT;
@@ -383,6 +418,8 @@ void wm_app_init(wm_app *app) {
     wm_select_continue_init(&app->continue_select);
     wm_award_init(&app->awards);
     wm_demo_init(&app->demo);
+    wm_match_init(&app->match);
+    wm_rng_init(&app->rng, 0, NULL, NULL, NULL);
     wm_source_clock_init(&app->source_clock);
     wm_scheduler_init(&app->scheduler);
     app->p1_choice = WM_WRESTLER_BRET;
@@ -503,6 +540,7 @@ void wm_app_tick_dual(wm_app *app,
         case WM_ATTRACT_DCS_LOGO: done = tick_dcs_logo(app, input); break;
         case WM_ATTRACT_SHOW_SPORTS_LOGO: done = tick_sports_logo(app, input); break;
         case WM_ATTRACT_SHOW_TITLE: done = tick_title(app, input); break;
+        case WM_ATTRACT_SHOW_GAMEPLAY: done = tick_gameplay(app, input); break;
         default: break;
     }
 

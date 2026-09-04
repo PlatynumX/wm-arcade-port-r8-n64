@@ -486,7 +486,7 @@ def test_source_inventory() -> None:
 
 def test_port_manifest() -> None:
     data = port_manifest.load(ROOT / "port" / "translation_manifest.json")
-    assert data["attract"]["show_gameplay"]["status"] == "harness-only"
+    assert data["attract"]["show_gameplay"]["status"] == "partial-source"
     assert data["attract"]["show_sports_logo"]["status"] == "partial-source"
     assert data["attract"]["show_title"]["status"] == "partial-source"
     with tempfile.TemporaryDirectory() as td_s:
@@ -496,7 +496,7 @@ def test_port_manifest() -> None:
         port_manifest.emit_c(data, out_c)
         port_manifest.emit_md(data, out_md)
         text = out_c.read_text()
-        assert "WM_ATTRACT_SHOW_GAMEPLAY: return WM_PORT_HARNESS_ONLY" in text
+        assert "WM_ATTRACT_SHOW_GAMEPLAY: return WM_PORT_PARTIAL_SOURCE" in text
         assert "WM_ATTRACT_SHOW_SPORTS_LOGO: return WM_PORT_PARTIAL_SOURCE" in text
         assert "WM_ATTRACT_SHOW_TITLE: return WM_PORT_PARTIAL_SOURCE" in text
         assert "harness-only" in out_md.read_text()

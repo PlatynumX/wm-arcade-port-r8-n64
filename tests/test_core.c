@@ -9,6 +9,7 @@
 #include "wm/composite.h"
 #include "wm/demo.h"
 #include "wm/game.h"
+#include "wm/match.h"
 #include "wm/roster.h"
 #include "wm/select.h"
 #include "wm/source_data.h"
@@ -388,6 +389,83 @@ static void test_demo_bounds(void) {
     CHECK(d.p1.screen_x >= 68);
 }
 
+/* ATTRACT.ASM::show_gameplay draws RNDRNG0(7) and bumps a 7 draw to 8, so
+   the result is never exactly 7 (wm_arcade_roster_id_t skips 7 for the
+   same reason). Sweep every RAND seed byte so both branches are exercised. */
+static void test_match_draw_wrestler_index_skips_seven(void) {
+    for (uint32_t seed = 0; seed < 256; ++seed) {
+        WmRng rng;
+        wm_rng_init(&rng, seed, NULL, NULL, NULL);
+        unsigned idx = wm_match_draw_wrestler_index(&rng);
+        CHECK(idx <= 8);
+        CHECK(idx != 7);
+    }
+}
+
+static void test_match_start_attract(void) {
+    WmRng rng;
+    wm_match_state m;
+    wm_rng_init(&rng, 0x1234u, NULL, NULL, NULL);
+    wm_match_init(&m);
+    CHECK(!m.active);
+
+    wm_match_start_attract(&m, &rng);
+    CHECK(m.active);
+    CHECK(m.actor_count == WM_MATCH_MAX_ACTORS);
+    CHECK(m.index1 <= 8 && m.index1 != 7);
+    CHECK(m.opponent_wrestler <= 8 && m.opponent_wrestler != 7);
+
+    /* LIFEBAR.ASM::init_life_data: LIFE_MAX = 163. */
+    CHECK(m.actors[0].life == 163);
+    CHECK(m.actors[1].life == 163);
+    CHECK(m.actors[0].active && m.actors[0].in_ring);
+    CHECK(m.actors[1].active && m.actors[1].in_ring);
+
+    /* WRESTLE.ASM #0plyr: P1 drone PLYRNUM=2/PSIDE_PLYR1=0,
+       opponent PLYRNUM=3/PSIDE_PLYR2=1. */
+    CHECK(m.actors[0].player_num == 2);
+    CHECK(m.actors[0].player_side == 0);
+    CHECK(m.actors[0].wrestler_num == (int32_t)m.index1);
+    CHECK(m.actors[1].player_num == 3);
+    CHECK(m.actors[1].player_side == 1);
+    CHECK(m.actors[1].wrestler_num == (int32_t)m.opponent_wrestler);
+
+    CHECK(m.actors[0].smart_target == &m.actors[1]);
+    CHECK(m.actors[1].smart_target == &m.actors[0]);
+    CHECK(m.tick_count == 0);
+}
+
+static uint32_t test_match_rndrng0_cb(uint32_t max_inclusive, void *user) {
+    return wm_rng_rndrng0((WmRng *)user, max_inclusive);
+}
+
+static void test_match_tick_runs_without_crashing(void) {
+    WmRng rng;
+    wm_match_state m;
+    wm_arcade_drone_callbacks_t cb;
+    wm_rng_init(&rng, 0x9999u, NULL, NULL, NULL);
+    wm_match_init(&m);
+    wm_match_start_attract(&m, &rng);
+
+    memset(&cb, 0, sizeof(cb));
+    cb.rndrng0_upto = test_match_rndrng0_cb;
+    cb.user = &rng;
+
+    for (unsigned i = 0; i < 500; ++i)
+        wm_match_tick(&m, &cb);
+    CHECK(m.tick_count == 500);
+    /* Life is untouched: no hit-detection path runs without the
+       character-control layer (see wm/match.h). */
+    CHECK(m.actors[0].life == 163);
+    CHECK(m.actors[1].life == 163);
+
+    /* Ticking an inactive match is a documented no-op. */
+    wm_match_state inactive;
+    wm_match_init(&inactive);
+    wm_match_tick(&inactive, &cb);
+    CHECK(inactive.tick_count == 0);
+}
+
 static void test_source_attract_sequence(void) {
     const wm_attract_call expected[] = {
         WM_ATTRACT_SHOW_HSTD,
@@ -418,9 +496,9 @@ static void test_attract_source_flow(void) {
 
     CHECK(wm_attract_call_port_status(WM_ATTRACT_DCS_LOGO) == WM_PORT_PARTIAL_SOURCE);
     CHECK(wm_attract_call_port_status(WM_ATTRACT_SHOW_SPORTS_LOGO) == WM_PORT_PARTIAL_SOURCE);
-    CHECK(wm_attract_call_port_status(WM_ATTRACT_SHOW_GAMEPLAY) == WM_PORT_HARNESS_ONLY);
+    CHECK(wm_attract_call_port_status(WM_ATTRACT_SHOW_GAMEPLAY) == WM_PORT_PARTIAL_SOURCE);
     CHECK(wm_attract_call_port_status(WM_ATTRACT_SHOW_TITLE) == WM_PORT_PARTIAL_SOURCE);
-    CHECK(!wm_attract_call_is_translated(WM_ATTRACT_SHOW_GAMEPLAY));
+    CHECK(wm_attract_call_is_translated(WM_ATTRACT_SHOW_GAMEPLAY));
     CHECK(wm_attract_call_is_translated(WM_ATTRACT_SHOW_TITLE));
 
     wm_input_state button = {.run=true};
@@ -452,6 +530,28 @@ static void test_attract_source_flow(void) {
     CHECK(app.attract.sports_world_y > 0);
     wm_app_tick(&app, &button);
     CHECK(wm_process_find_id(&app.scheduler, WM_PID_WATER) == NULL);
+    CHECK(app.attract.call == WM_ATTRACT_SHOW_GAMEPLAY);
+    /* WRESTLE.ASM::start_match's #0plyr path runs on the first gameplay
+       tick, not the transition tick that entered this call. */
+    CHECK(!app.match.active);
+
+    wm_app_tick(&app, &button);
+    CHECK(app.attract.call == WM_ATTRACT_SHOW_GAMEPLAY);
+    CHECK(app.attract.call_ticks == 1);
+    CHECK(app.match.active);
+    CHECK(app.match.index1 <= 8 && app.match.index1 != 7);
+    CHECK(app.match.actors[0].life == 163);
+    CHECK(app.match.actors[1].life == 163);
+    CHECK(app.match.actors[0].player_num == 2);
+    CHECK(app.match.actors[1].player_num == 3);
+    CHECK(app.match.tick_count == 1);
+
+    for (unsigned i = 1; i < WM_GAMEPLAY_BUTTON_ENABLE_TICKS; ++i) {
+        wm_app_tick(&app, &button);
+        CHECK(app.attract.call == WM_ATTRACT_SHOW_GAMEPLAY);
+    }
+    CHECK(app.attract.call_ticks == WM_GAMEPLAY_BUTTON_ENABLE_TICKS);
+    wm_app_tick(&app, &button);
     CHECK(app.attract.call == WM_ATTRACT_SHOW_TITLE);
 
     unsigned initial_lava = app.attract.title_lava_step;
@@ -472,6 +572,16 @@ static void test_attract_source_flow(void) {
     CHECK(wm_process_find_id(&app.scheduler, WM_PID_CYCLE_LAVA) == NULL);
     CHECK(wm_process_find_id(&app.scheduler, WM_PID_FLASH) == NULL);
     CHECK(wm_process_find_id(&app.scheduler, WM_PID_ATTRACT_ANIM) == NULL);
+    /* Second show_gameplay occurrence in the loop (see
+       test_source_attract_sequence); drive through it the same way. */
+    CHECK(app.attract.call == WM_ATTRACT_SHOW_GAMEPLAY);
+    CHECK(!app.match.active);
+    for (unsigned i = 0; i < WM_GAMEPLAY_BUTTON_ENABLE_TICKS; ++i) {
+        wm_app_tick(&app, &button);
+        CHECK(app.attract.call == WM_ATTRACT_SHOW_GAMEPLAY);
+    }
+    CHECK(app.match.active);
+    wm_app_tick(&app, &button);
     CHECK(app.attract.call == WM_ATTRACT_DCS_LOGO);
     CHECK(app.attract.amode_loops == 1);
 
@@ -632,6 +742,9 @@ int main(void) {
     test_block();
     test_cpu_chases();
     test_demo_bounds();
+    test_match_draw_wrestler_index_skips_seven();
+    test_match_start_attract();
+    test_match_tick_runs_without_crashing();
     test_source_attract_sequence();
     test_attract_source_flow();
     test_video_frame_source_clock_and_input_latch();

@@ -16,7 +16,7 @@
     },
     "show_gameplay": {
       "status": "partial-source",
-      "note": "WRESTLE.ASM::start_match's PSTATUS==0 (#0plyr) path now runs from the real attract flow: the RNDRNG0(7)-skip-7 index1 draw, LIFEBAR.ASM::init_life_data (LIFE_MAX=163), and #0plyr's PLYRNUM/PSIDE wrestler-actor creation are translated (wm/match.h), and the SLEEP 3*60 + wait_on_butn 10*TSEC timing is exact. Not translated: INIT_LADDER_TABLE/CURRENT_LADDER/NUM_OPPS multi-drone team selection (only one placeholder opponent is created), DRONE.ASM's wnshort_t/wnmed_t/wnlong_t script data and the blkbase_t/blkatk_t/sklhhdly_t/sklhrdly_t skill tables (their SKLM macro expansion is not present in the checked-in source tree, so they are not guessed), and wm_arcade_move_ported_wrestler's character-control/animation layer (only Bret has a real visual backend). Wrestlers therefore hold real health/ring state but do not yet move, animate, or fight."
+      "note": "WRESTLE.ASM::start_match's PSTATUS==0 (#0plyr) path now runs from the real attract flow: the RNDRNG0(7)-skip-7 index1 draw, LIFEBAR.ASM::init_life_data (LIFE_MAX=163), and #0plyr's PLYRNUM/PSIDE wrestler-actor creation are translated (wm/match.h), and the SLEEP 3*60 + wait_on_butn 10*TSEC timing is exact. Whichever actor draws WM_ROSTER_BRET runs the real wm_arcade_move_bret control layer every tick with a real visual backend (wm/bret_backend.h): its idle stance (WM_BRET_ANIM_STAND2/4, TORSO2/4) and 6 of its light/power punch/kick animations resolve to actual wm_visual_sequence data; every other BRET.ASM animation id, and every other wrestler, still resolves to nothing. Not translated: INIT_LADDER_TABLE/CURRENT_LADDER/NUM_OPPS multi-drone team selection (only one placeholder opponent is created), DRONE.ASM's wnshort_t/wnmed_t/wnlong_t script data and the blkbase_t/blkatk_t/sklhhdly_t/sklhrdly_t skill tables (their SKLM macro expansion is not present in the checked-in source tree, so they are not guessed -- the drone AI therefore never actually gives Bret a button/stick to act on), and WRESTLE.ASM::execute_walk (movement velocity and idle-animation reselection). Wrestlers hold real health/ring state and Bret can visibly stand in the ring correctly animated, but nothing moves, walks, or fights yet."
     },
     "creditscreen": {
       "status": "not-started",
@@ -74,7 +74,7 @@
     },
     "start_match": {
       "status": "partial-source",
-      "note": "Only the PSTATUS==0 (#0plyr, attract-mode) creation path is translated (wm/match.h), driven from WM_ATTRACT_SHOW_GAMEPLAY -- see the show_gameplay note above for exactly what is and is not real. The #1plyr/#2plyr credited-match paths (WM_APP_MODE_MATCH_INIT after select/pregame) remain an explicit dead-end stub; CLOSE_PROGRESS_SCREEN, ring/rope/crowd/timer process creation, and collision/pin/finisher lifecycle are all still unported."
+      "note": "Only the PSTATUS==0 (#0plyr, attract-mode) creation path is translated (wm/match.h), driven from WM_ATTRACT_SHOW_GAMEPLAY -- see the show_gameplay note above for exactly what is and is not real, including the Bret-only visual backend. The #1plyr/#2plyr credited-match paths (WM_APP_MODE_MATCH_INIT after select/pregame) remain an explicit dead-end stub; CLOSE_PROGRESS_SCREEN, ring/rope/crowd/timer process creation, and collision/pin/finisher lifecycle are all still unported."
     },
     "credit_start_select": {
       "status": "partial-source",

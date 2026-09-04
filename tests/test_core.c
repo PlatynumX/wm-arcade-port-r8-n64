@@ -8,6 +8,8 @@
 #include "wm/bret_visuals.h"
 #include "wm/composite.h"
 #include "wm/demo.h"
+#include "wm/bret_backend.h"
+#include "wm/bret_visuals.h"
 #include "wm/game.h"
 #include "wm/match.h"
 #include "wm/roster.h"
@@ -454,8 +456,9 @@ static void test_match_tick_runs_without_crashing(void) {
     for (unsigned i = 0; i < 500; ++i)
         wm_match_tick(&m, &cb);
     CHECK(m.tick_count == 500);
-    /* Life is untouched: no hit-detection path runs without the
-       character-control layer (see wm/match.h). */
+    /* Life is untouched: wm_bret_backend's callbacks don't wire
+       adjust_health, and neither wrestler has a backend that could hit the
+       other yet (see wm/match.h and wm/bret_backend.h). */
     CHECK(m.actors[0].life == 163);
     CHECK(m.actors[1].life == 163);
 
@@ -464,6 +467,118 @@ static void test_match_tick_runs_without_crashing(void) {
     wm_match_init(&inactive);
     wm_match_tick(&inactive, &cb);
     CHECK(inactive.tick_count == 0);
+}
+
+static void test_bret_anim_sequence_mapping(void) {
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_STAND2) == &wm_bret_stand2_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_STAND4) == &wm_bret_stand4_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_TORSO2) == &wm_bret_torso2_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_TORSO4) == &wm_bret_torso4_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_PUNCH2) == &wm_bret_light_punch2_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_PUNCH4) == &wm_bret_light_punch4_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_SUPER_PUNCH2_4) == &wm_bret_power_punch_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_KICK2) == &wm_bret_light_kick2_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_KICK4) == &wm_bret_light_kick4_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_SUPER_KICK2) == &wm_bret_power_kick_anim);
+
+    /* Deliberately unmapped: no "hrt_2_super_punch_anim" exists in the
+       source tree, and "hrt_4_super_kick_anim" (HRTSEQ2.ASM:1335) exists
+       but has not been extracted yet -- see wm/bret_backend.h. */
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_SUPER_PUNCH2_2) == NULL);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_SUPER_PUNCH4) == NULL);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_SUPER_KICK4) == NULL);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_PIN2) == NULL);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_FINISH1) == NULL);
+}
+
+static void test_bret_backend_change_anim(void) {
+    wm_bret_backend_actor bva;
+    wm_bret_backend_init(&bva);
+    CHECK(bva.visual.sequence == NULL);
+
+    wm_bret_backend_change_anim(NULL, WM_BRET_ANIM_STAND2, &bva);
+    CHECK(bva.visual.sequence == &wm_bret_stand2_anim);
+    CHECK(bva.visual.just_started);
+
+    /* Advance a few frames, then re-request the same id: must not restart
+       (same "only restart on change" rule as wm/demo.c's set_action). */
+    wm_bret_backend_tick(&bva);
+    wm_bret_backend_tick(&bva);
+    size_t frame_before = bva.visual.frame_index;
+    wm_bret_backend_change_anim(NULL, WM_BRET_ANIM_STAND2, &bva);
+    CHECK(bva.visual.frame_index == frame_before);
+
+    /* An unmapped id no-ops rather than clearing the sequence. */
+    wm_bret_backend_change_anim(NULL, WM_BRET_ANIM_FINISH1, &bva);
+    CHECK(bva.visual.sequence == &wm_bret_stand2_anim);
+
+    wm_bret_backend_change_torso_anim(NULL, WM_BRET_ANIM_TORSO4, &bva);
+    CHECK(bva.torso_visual.sequence == &wm_bret_torso4_anim);
+}
+
+static void test_bret_ani_init_facing(void) {
+    wm_arcade_actor_t a;
+    wm_bret_backend_actor bva;
+    wm_arcade_bret_callbacks_t cb;
+
+    memset(&a, 0, sizeof(a));
+    wm_bret_backend_init(&bva);
+    cb = wm_bret_backend_callbacks(&bva);
+
+    a.facing_dir = 0; /* not WM_MOVE_RIGHT -> the "4" (STAND4/TORSO4) branch */
+    wm_arcade_bret_ani_init(&a, &cb);
+    CHECK(bva.visual.sequence == &wm_bret_stand4_anim);
+    CHECK(bva.torso_visual.sequence == &wm_bret_torso4_anim);
+
+    wm_bret_backend_init(&bva);
+    cb = wm_bret_backend_callbacks(&bva);
+    a.facing_dir = WM_MOVE_RIGHT;
+    wm_arcade_bret_ani_init(&a, &cb);
+    CHECK(bva.visual.sequence == &wm_bret_stand2_anim);
+    CHECK(bva.torso_visual.sequence == &wm_bret_torso2_anim);
+}
+
+/* End-to-end through wm_match: when the RNG draws Bret for P1, the actor's
+   idle stand animation is real (set once by wm_arcade_bret_ani_init inside
+   wm_match_start_attract) and stays selected and running across ticks, since
+   the idle drone AI never gives mode_normal a reason to change it and
+   execute_walk (the only thing that would reselect it) is not wired --
+   see wm/match.h. */
+static void test_match_bret_idle_animates(void) {
+    WmRng rng;
+    wm_match_state m;
+    wm_arcade_drone_callbacks_t cb;
+    uint32_t seed;
+    bool found = false;
+
+    for (seed = 0; seed < 4096 && !found; ++seed) {
+        WmRng probe;
+        wm_rng_init(&probe, seed, NULL, NULL, NULL);
+        if (wm_match_draw_wrestler_index(&probe) == WM_ROSTER_BRET) found = true;
+    }
+    CHECK(found);
+
+    wm_rng_init(&rng, seed, NULL, NULL, NULL);
+    wm_match_init(&m);
+    wm_match_start_attract(&m, &rng);
+    CHECK(m.actors[0].wrestler_num == WM_ROSTER_BRET);
+    CHECK(m.bret_visual[0].visual.sequence != NULL);
+    const wm_visual_sequence *initial = m.bret_visual[0].visual.sequence;
+    CHECK(initial == &wm_bret_stand2_anim || initial == &wm_bret_stand4_anim);
+    uint16_t ticks_left_at_start = m.bret_visual[0].visual.ticks_left;
+    size_t frame_at_start = m.bret_visual[0].visual.frame_index;
+
+    memset(&cb, 0, sizeof(cb));
+    cb.rndrng0_upto = test_match_rndrng0_cb;
+    cb.user = &rng;
+    for (unsigned i = 0; i < 50; ++i) {
+        wm_match_tick(&m, &cb);
+        CHECK(m.bret_visual[0].visual.sequence == initial);
+    }
+    /* wm_visual_tick actually advanced frames over 50 ticks; it isn't a
+       frozen sprite. */
+    CHECK(m.bret_visual[0].visual.frame_index != frame_at_start ||
+          m.bret_visual[0].visual.ticks_left != ticks_left_at_start);
 }
 
 static void test_source_attract_sequence(void) {
@@ -745,6 +860,10 @@ int main(void) {
     test_match_draw_wrestler_index_skips_seven();
     test_match_start_attract();
     test_match_tick_runs_without_crashing();
+    test_bret_anim_sequence_mapping();
+    test_bret_backend_change_anim();
+    test_bret_ani_init_facing();
+    test_match_bret_idle_animates();
     test_source_attract_sequence();
     test_attract_source_flow();
     test_video_frame_source_clock_and_input_latch();

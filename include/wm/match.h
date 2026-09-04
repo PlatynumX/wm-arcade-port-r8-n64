@@ -4,7 +4,9 @@
 #include <stdbool.h>
 #include "wm/arcade/wm_arcade_combat.h"
 #include "wm/arcade/wm_arcade_drone.h"
+#include "wm/arcade/wm_arcade_roster.h"
 #include "wm/arcade/wmania_rng.h"
+#include "wm/bret_backend.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,11 +31,19 @@ extern "C" {
  *     wm_arcade_drone_main() is still called every tick with the callbacks
  *     that ARE real (rndrng0_upto) and safely no-ops (WM_DRONE_STEP_IDLE)
  *     for the rest -- it does not invent AI behavior.
- *   - wm_arcade_move_ported_wrestler(): the per-character control/animation
- *     layer needs a full wm_arcade_wrestler_port_bindings_t per wrestler,
- *     which itself needs a real anim/sound backend. Only Bret has one today
- *     (see README). Actors therefore hold real state (health, ring
- *     assignment, mutual smart_target) but do not yet move or animate.
+ *   - wm_arcade_move_ported_wrestler(): the generic 8-wrestler dispatcher is
+ *     not used here. Only Bret (wrestler_num==WM_ROSTER_BRET) is wired,
+ *     straight to wm_arcade_move_bret() with wm/bret_backend.h's adapter --
+ *     see that header for exactly which BRET.ASM animations it can resolve
+ *     to real wm_visual_sequence data (idle stance + 6 light/power attacks)
+ *     and which still resolve to nothing. The other seven wrestlers have no
+ *     backend at all yet, so an actor drawn as one of them holds real state
+ *     (health, ring assignment, mutual smart_target) but never moves.
+ *   - wm_arcade_bret_callbacks_t.execute_walk (WRESTLE.ASM::execute_walk):
+ *     not implemented -- see wm/bret_backend.h. A Bret actor's sprite stays
+ *     on its initial stance rather than reselecting an idle/walk animation
+ *     every tick, which is a real gap once movement AI exists, but has no
+ *     visible effect today since the drone AI above never actually moves it.
  */
 
 #define WM_MATCH_MAX_ACTORS 2
@@ -41,6 +51,9 @@ extern "C" {
 typedef struct {
     wm_arcade_actor_t actors[WM_MATCH_MAX_ACTORS];
     wm_arcade_drone_state_t drones[WM_MATCH_MAX_ACTORS];
+    /* Only actors[i].wrestler_num==WM_ROSTER_BRET drives this -- see the
+       file comment. Unused (left zeroed) for every other wrestler_num. */
+    wm_bret_backend_actor bret_visual[WM_MATCH_MAX_ACTORS];
     unsigned actor_count;
 
     /* @index1: source global set by ATTRACT.ASM::show_gameplay before
@@ -70,8 +83,10 @@ unsigned wm_match_draw_wrestler_index(WmRng *rng);
  * #0plyr loop does, and points each actor's smart_target at the other. */
 void wm_match_start_attract(wm_match_state *m, WmRng *rng);
 
-/* One source tick: steps each active drone's decision core. See the
- * "NOT yet translated" note above for what this does and does not do. */
+/* One source tick: steps each active drone's decision core, then -- for
+ * whichever actor(s) drew WM_ROSTER_BRET -- wm_arcade_move_bret() and its
+ * visual backend. See the "NOT yet translated" note above for what this
+ * does and does not do for every other wrestler. */
 void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb);
 
 #ifdef __cplusplus

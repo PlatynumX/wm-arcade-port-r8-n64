@@ -53,3 +53,23 @@ void wm_arcade_round_tick(wm_arcade_round_state_t *rs,
         else rs->decided_winner_side = -1; /* simultaneous double-KO draw */
     }
 }
+
+void wm_arcade_match_score_init(wm_arcade_match_score_t *score) {
+    if (!score) return;
+    score->p1rounds = 0;
+    score->p2rounds = 0;
+    score->match_winner = 0;
+}
+
+void wm_arcade_match_score_award_round(wm_arcade_match_score_t *score, int winner_side) {
+    int32_t *rounds;
+
+    if (!score || score->match_winner != 0) return;
+    if (winner_side != 0 && winner_side != 1) return; /* draw: no award */
+
+    rounds = (winner_side == 0) ? &score->p1rounds : &score->p2rounds;
+    ++*rounds;
+
+    if (*rounds >= 2)
+        score->match_winner = winner_side + 1;
+}

@@ -65,6 +65,53 @@ void wm_arcade_round_state_init(wm_arcade_round_state_t *rs);
 void wm_arcade_round_tick(wm_arcade_round_state_t *rs,
                           wm_arcade_actor_t *const *actors, size_t actor_count);
 
+/*
+ * LIFEBAR.ASM:5063 SUBRP set_winner, its KO branch only (LIFEBAR.ASM:
+ * 5070-5147) -- the #tmout branch (LIFEBAR.ASM:5149+, "clock ran out":
+ * award by average team life, tied-break by last hit) is unreached in this
+ * port, which has no round-timer/match_time countdown to expire in the
+ * first place.
+ *
+ * Real source semantics for the KO branch, specialized to the one case
+ * this port can ever produce: wm_arcade_round_state_t.decided_winner_side
+ * already picked the winning PLYR_SIDE (get_live_bits/pin_timeout, see
+ * above); the source's own "find the first live wrestler on that side,
+ * preferring one with DID_PIN set" search is moot here since this port's
+ * fixed 1-on-1 match never has more than one wrestler per side to find.
+ * decided_winner_side==-1 (a simultaneous double-KO) awards no round,
+ * matching how the source's own equivalent "found nobody alive" case
+ * (LIFEBAR.ASM:5099 "trouble... this should never happen") is explicitly
+ * not a normal path.
+ *
+ * p1rounds/p2rounds increment by 1 for a normal round win. The source's
+ * is_8_on_1/royal_rumble +2 override for a final match does not apply --
+ * neither mode exists in this port. match_winner is set (1 = side 0, 2 =
+ * side 1) the moment either count reaches LIFEBAR.ASM's real best-of-3
+ * threshold of 2, and this function then no-ops (matching the ONE-shot
+ * nature of a round award: calling it again for the same decided round
+ * would double-count, so the caller -- wm_match_tick -- calls this only on
+ * the false-to-true edge of round_state.decided).
+ *
+ * NOT translated: DO_ROUNDS and everything a real next round needs (life/
+ * position reset, a restarted round_state, on-screen round announcement) --
+ * this port has no round-2 restart at all, so match_winner becoming
+ * nonzero is currently a dead end: wm_match_tick keeps ticking exactly as
+ * it did before the round was decided.
+ */
+typedef struct {
+    int32_t p1rounds;
+    int32_t p2rounds;
+    /* 0 = match not yet decided; 1 = side 0 (PSIDE_PLYR1) has won the
+       match; 2 = side 1 (PSIDE_PLYR2). */
+    int32_t match_winner;
+} wm_arcade_match_score_t;
+
+void wm_arcade_match_score_init(wm_arcade_match_score_t *score);
+
+/* winner_side: 0 or 1 (wm_arcade_round_state_t.decided_winner_side once
+   decided is true), or -1 for a draw (no-op, awards nothing). */
+void wm_arcade_match_score_award_round(wm_arcade_match_score_t *score, int winner_side);
+
 #ifdef __cplusplus
 }
 #endif

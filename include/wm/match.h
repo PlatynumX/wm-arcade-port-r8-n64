@@ -92,6 +92,11 @@ typedef struct {
        5-second pin-idiot-check countdown) -- see wm/arcade/wm_arcade_round.h
        for exactly what this does and does not decide. */
     wm_arcade_round_state_t round_state;
+
+    /* LIFEBAR.ASM::set_winner's real best-of-3 round/match tracking,
+       awarded once on round_state.decided's false-to-true edge -- see
+       wm_arcade_match_score_award_round's own comment. */
+    wm_arcade_match_score_t score;
 } wm_match_state;
 
 void wm_match_init(wm_match_state *m);
@@ -151,9 +156,13 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
  * side has no live wrestler left, a real 5-second countdown starts, and
  * round_state.decided/decided_winner_side become real once it elapses --
  * WRESTLE2.ASM::match_timer's actual knockout trigger, not just its round
- * clock running out. wm_match_tick keeps ticking after that (no round/
- * match-over transition exists yet -- see that header for the rest of what
- * a decided round does in the source that this doesn't reach). */
+ * clock running out. On the exact tick that happens, wm_match_tick awards
+ * the real LIFEBAR.ASM::set_winner round to m->score (best-of-3
+ * p1rounds/p2rounds, match_winner set once either reaches 2) -- see
+ * wm_arcade_match_score_award_round's own comment for the pin-search/timer-
+ * expiry parts of set_winner this doesn't reach. wm_match_tick keeps
+ * ticking exactly as before even after match_winner becomes nonzero: there
+ * is still no round-2 restart, announcer, or match-over transition. */
 void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
                    const wm_input_state *human_input);
 

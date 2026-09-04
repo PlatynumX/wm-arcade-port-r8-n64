@@ -1248,6 +1248,42 @@ static void test_arcade_round_tick_double_ko_is_a_draw(void) {
     CHECK(rs.decided_winner_side == -1);
 }
 
+/* wm_arcade_match_score_award_round (LIFEBAR.ASM::set_winner's KO branch,
+   specialized to this port's fixed 1-on-1 case -- see its own comment). */
+static void test_arcade_match_score_awards_rounds_and_sets_match_winner(void) {
+    wm_arcade_match_score_t score;
+
+    wm_arcade_match_score_init(&score);
+    CHECK(score.p1rounds == 0 && score.p2rounds == 0 && score.match_winner == 0);
+
+    wm_arcade_match_score_award_round(&score, 0);
+    CHECK(score.p1rounds == 1);
+    CHECK(score.p2rounds == 0);
+    CHECK(score.match_winner == 0); /* best-of-3: one win isn't the match yet */
+
+    wm_arcade_match_score_award_round(&score, 1);
+    CHECK(score.p1rounds == 1);
+    CHECK(score.p2rounds == 1);
+    CHECK(score.match_winner == 0);
+
+    wm_arcade_match_score_award_round(&score, 0);
+    CHECK(score.p1rounds == 2);
+    CHECK(score.match_winner == 1); /* side 0 reached 2 round wins */
+
+    /* Once match_winner is set, further awards are a no-op. */
+    wm_arcade_match_score_award_round(&score, 1);
+    CHECK(score.p2rounds == 1);
+    CHECK(score.match_winner == 1);
+}
+
+static void test_arcade_match_score_draw_awards_nothing(void) {
+    wm_arcade_match_score_t score;
+
+    wm_arcade_match_score_init(&score);
+    wm_arcade_match_score_award_round(&score, -1);
+    CHECK(score.p1rounds == 0 && score.p2rounds == 0 && score.match_winner == 0);
+}
+
 /* End-to-end: a real fatal hit through wm_match_tick (same setup as
    test_hurt_box_hit_kills_at_zero_life) eventually decides the match via
    round_state, not just flipping player_mode. The opponent must also draw
@@ -1300,6 +1336,19 @@ static void test_match_round_decided_after_real_kill(void) {
 
     CHECK(m.round_state.decided);
     CHECK(m.round_state.decided_winner_side == m.actors[0].player_side);
+
+    /* wm_match_tick awarded the real LIFEBAR.ASM::set_winner round on the
+       exact tick round_state.decided flipped -- one round isn't the match
+       yet (best-of-3). */
+    CHECK(m.score.p1rounds == 1);
+    CHECK(m.score.p2rounds == 0);
+    CHECK(m.score.match_winner == 0);
+
+    /* The award happens exactly once: many more ticks past the decided
+       edge must not double-count it. */
+    for (guard = 0; guard < 10; ++guard)
+        wm_match_tick(&m, &cb, &punch);
+    CHECK(m.score.p1rounds == 1);
 }
 
 /* Spot-checks against BRET.ASM:2897 hrt_leg_anims_table's literal contents
@@ -1986,6 +2035,8 @@ int main(void) {
     test_arcade_round_tick_decides_after_pin_timeout();
     test_arcade_round_tick_cancels_on_revival();
     test_arcade_round_tick_double_ko_is_a_draw();
+    test_arcade_match_score_awards_rounds_and_sets_match_winner();
+    test_arcade_match_score_draw_awards_nothing();
     test_bret_ani_init_facing();
     test_bret_leg_anim_table();
     test_bret_backend_execute_walk_selects_leg_anim();

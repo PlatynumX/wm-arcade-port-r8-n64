@@ -503,8 +503,8 @@ static void test_bret_backend_change_anim(void) {
 
     /* Advance a few frames, then re-request the same id: must not restart
        (same "only restart on change" rule as wm/demo.c's set_action). */
-    wm_bret_backend_tick(&bva);
-    wm_bret_backend_tick(&bva);
+    wm_bret_backend_tick(&bva, NULL, 0);
+    wm_bret_backend_tick(&bva, NULL, 0);
     size_t frame_before = bva.visual.frame_index;
     wm_bret_backend_change_anim(NULL, WM_BRET_ANIM_STAND2, &bva);
     CHECK(bva.visual.frame_index == frame_before);
@@ -515,6 +515,102 @@ static void test_bret_backend_change_anim(void) {
 
     wm_bret_backend_change_torso_anim(NULL, WM_BRET_ANIM_TORSO4, &bva);
     CHECK(bva.torso_visual.sequence == &wm_bret_torso4_anim);
+}
+
+/* HRTSEQ2.ASM:204 ANI_ATTACK_ON_Z, AMODE_PUNCH,30,91,-45,50,15,45, hand-traced
+   to fire right before wm_bret_light_punch2_anim's frame index 5 (of 11) --
+   see wm_bret_backend_tick's own comment for how that index was derived. */
+static void test_bret_attack_window_punch2(void) {
+    wm_arcade_actor_t a;
+    wm_bret_backend_actor bva;
+    int guard;
+
+    memset(&a, 0, sizeof(a));
+    wm_bret_backend_init(&bva);
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_PUNCH2, &bva);
+    CHECK(bva.visual.sequence == &wm_bret_light_punch2_anim);
+    CHECK(!(a.anim_mode & WM_MODE_CHECKHIT));
+
+    for (guard = 0; guard < 20 && bva.visual.frame_index != 5; ++guard)
+        wm_bret_backend_tick(&bva, &a, (uint16_t)guard);
+    CHECK(bva.visual.frame_index == 5);
+    CHECK(a.anim_mode & WM_MODE_CHECKHIT);
+    CHECK(a.attack_mode == WM_AMODE_PUNCH);
+    CHECK(a.attack_xoff == 30);
+    CHECK(a.attack_yoff == 91);
+    CHECK(a.attack_zoff == -45);
+    CHECK(a.attack_width == 50);
+    CHECK(a.attack_height == 15);
+    CHECK(a.attack_depth == 45);
+
+    /* Re-ticking the same active frame does not refire (attack_time only
+       moves when ATTACK_OFF actually runs). */
+    uint16_t attack_time_before = a.attack_time;
+    wm_bret_backend_tick(&bva, &a, 999);
+    CHECK(a.attack_time == attack_time_before);
+
+    /* Advancing past the active frame turns WM_MODE_CHECKHIT back off
+       (ATTACK_OFF, HRTSEQ2.ASM:206) and records attack_time. */
+    for (guard = 0; guard < 20 && bva.visual.frame_index == 5; ++guard)
+        wm_bret_backend_tick(&bva, &a, 42);
+    CHECK(bva.visual.frame_index != 5);
+    CHECK(!(a.anim_mode & WM_MODE_CHECKHIT));
+    CHECK(a.attack_time == 42);
+}
+
+/* Spot-check the remaining 5 attack windows' literal ANI_ATTACK_ON(_Z) args
+   directly (no frame stepping -- test_bret_attack_window_punch2 already
+   proves the frame-index-driven activation/deactivation mechanism). */
+static void test_bret_attack_windows_remaining(void) {
+    static const struct {
+        wm_arcade_bret_anim_id_t id;
+        const wm_visual_sequence *seq;
+        size_t frame;
+        uint16_t attack_mode;
+        int16_t xoff, yoff, zoff, width, height, depth;
+        bool use_z;
+    } cases[] = {
+        { WM_BRET_ANIM_PUNCH4, &wm_bret_light_punch4_anim, 5,
+          WM_AMODE_PUNCH, 30, 91, 0, 50, 15, 45, true },
+        { WM_BRET_ANIM_SUPER_PUNCH2_4, &wm_bret_power_punch_anim, 5,
+          WM_AMODE_UPRCUT, -6, 40, 0, 64, 90, 0, false },
+        { WM_BRET_ANIM_KICK2, &wm_bret_light_kick2_anim, 5,
+          WM_AMODE_KICK, 23, 73, 0, 50, 17, 0, false },
+        { WM_BRET_ANIM_KICK4, &wm_bret_light_kick4_anim, 5,
+          WM_AMODE_KICK, 23, 73, 0, 50, 17, 0, false },
+        { WM_BRET_ANIM_SUPER_KICK2, &wm_bret_power_kick_anim, 4,
+          WM_AMODE_SUPER_KICK, 5, 54, 0, 70, 34, 0, false },
+    };
+    size_t i;
+    for (i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+        wm_arcade_actor_t a;
+        wm_bret_backend_actor bva;
+        int guard;
+
+        memset(&a, 0, sizeof(a));
+        wm_bret_backend_init(&bva);
+        wm_bret_backend_change_anim(&a, cases[i].id, &bva);
+        CHECK(bva.visual.sequence == cases[i].seq);
+
+        for (guard = 0; guard < 30 && bva.visual.frame_index != cases[i].frame; ++guard)
+            wm_bret_backend_tick(&bva, &a, 0);
+        CHECK(bva.visual.frame_index == cases[i].frame);
+        CHECK(a.anim_mode & WM_MODE_CHECKHIT);
+        CHECK(a.attack_mode == cases[i].attack_mode);
+        CHECK(a.attack_xoff == cases[i].xoff);
+        CHECK(a.attack_yoff == cases[i].yoff);
+        CHECK(a.attack_width == cases[i].width);
+        CHECK(a.attack_height == cases[i].height);
+        if (cases[i].use_z) {
+            CHECK(a.attack_zoff == cases[i].zoff);
+            CHECK(a.attack_depth == cases[i].depth);
+        } else {
+            /* wm_arcade_ani_attack_on's own real, already-ported defaults
+               (src/core/arcade/wm_arcade_anim_combat.c). */
+            CHECK(a.attack_zoff == -40);
+            CHECK(a.attack_depth == 80);
+        }
+    }
 }
 
 /* Spot-checks against BRET.ASM:2897 hrt_leg_anims_table's literal contents
@@ -1125,6 +1221,8 @@ int main(void) {
     test_match_tick_runs_without_crashing();
     test_bret_anim_sequence_mapping();
     test_bret_backend_change_anim();
+    test_bret_attack_window_punch2();
+    test_bret_attack_windows_remaining();
     test_bret_ani_init_facing();
     test_bret_leg_anim_table();
     test_bret_backend_execute_walk_selects_leg_anim();

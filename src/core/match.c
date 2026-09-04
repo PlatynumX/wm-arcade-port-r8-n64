@@ -152,7 +152,7 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             memset(&env, 0, sizeof(env));
             env.pcnt = m->tick_count;
             (void)wm_arcade_move_bret(&m->actors[i], opp, &env, &bret_cb);
-            wm_bret_backend_tick(&m->bret_visual[i]);
+            wm_bret_backend_tick(&m->bret_visual[i], &m->actors[i], (uint16_t)m->tick_count);
             wm_bret_backend_tick_position(&m->actors[i]);
         }
     }

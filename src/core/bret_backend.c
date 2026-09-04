@@ -1,4 +1,5 @@
 #include "wm/bret_backend.h"
+#include "wm/arcade/wm_arcade_anim_combat.h"
 #include "wm/bret_visuals.h"
 #include <string.h>
 
@@ -66,12 +67,57 @@ static void start_if_new(wm_visual_state *state, const wm_visual_sequence *seq) 
         wm_visual_start(state, seq);
 }
 
+/*
+ * Real ANIM.ASM ATTACK_ON(_Z) args for the 6 attack ids wm_bret_anim_sequence
+ * maps, hand-traced against HRTSEQ2.ASM (see wm_bret_backend_tick's comment):
+ * each attack's ANI_ATTACK_ON(_Z) command falls right before the WL frame
+ * line at active_frame_index (0-based) in that id's wm_visual_sequence.
+ */
+typedef struct {
+    wm_arcade_bret_anim_id_t id;
+    size_t active_frame_index;
+    bool use_z;
+    wm_arcade_attack_on_args_t args;
+    wm_arcade_attack_on_z_args_t z_args;
+} wm_bret_attack_window_t;
+
+static const wm_bret_attack_window_t attack_windows[] = {
+    /* HRTSEQ2.ASM:204 ANI_ATTACK_ON_Z, AMODE_PUNCH,30,91,-45,50,15,45 */
+    { WM_BRET_ANIM_PUNCH2, 5, true, {0,0,0,0,0},
+      { WM_AMODE_PUNCH, 30, 91, -45, 50, 15, 45 } },
+    /* HRTSEQ2.ASM:322 ANI_ATTACK_ON_Z, AMODE_PUNCH,30,91,0,50,15,45 */
+    { WM_BRET_ANIM_PUNCH4, 5, true, {0,0,0,0,0},
+      { WM_AMODE_PUNCH, 30, 91, 0, 50, 15, 45 } },
+    /* HRTSEQ2.ASM:247 ANI_ATTACK_ON,AMODE_UPRCUT,-6,40,64,90 */
+    { WM_BRET_ANIM_SUPER_PUNCH2_4, 5, false,
+      { WM_AMODE_UPRCUT, -6, 40, 64, 90 }, {0,0,0,0,0,0,0} },
+    /* HRTSEQ2.ASM:1074 ANI_ATTACK_ON,AMODE_KICK,23,73,50,17 */
+    { WM_BRET_ANIM_KICK2, 5, false,
+      { WM_AMODE_KICK, 23, 73, 50, 17 }, {0,0,0,0,0,0,0} },
+    /* HRTSEQ2.ASM:1240 ANI_ATTACK_ON,AMODE_KICK,23,73,50,17 */
+    { WM_BRET_ANIM_KICK4, 5, false,
+      { WM_AMODE_KICK, 23, 73, 50, 17 }, {0,0,0,0,0,0,0} },
+    /* HRTSEQ2.ASM:1357 ANI_ATTACK_ON,AMODE_SUPER_KICK,5,54,70,34 */
+    { WM_BRET_ANIM_SUPER_KICK2, 4, false,
+      { WM_AMODE_SUPER_KICK, 5, 54, 70, 34 }, {0,0,0,0,0,0,0} },
+};
+#define WM_BRET_ATTACK_WINDOW_COUNT \
+    (sizeof(attack_windows) / sizeof(attack_windows[0]))
+
+static const wm_bret_attack_window_t *find_attack_window(wm_arcade_bret_anim_id_t id) {
+    size_t i;
+    for (i = 0; i < WM_BRET_ATTACK_WINDOW_COUNT; ++i)
+        if (attack_windows[i].id == id) return &attack_windows[i];
+    return NULL;
+}
+
 void wm_bret_backend_change_anim(wm_arcade_actor_t *actor,
                                  wm_arcade_bret_anim_id_t id, void *user) {
     wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
     (void)actor;
     if (!bva) return;
     start_if_new(&bva->visual, wm_bret_anim_sequence(id));
+    bva->current_id = id;
 }
 
 void wm_bret_backend_change_torso_anim(wm_arcade_actor_t *actor,
@@ -115,10 +161,30 @@ wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva)
     return cb;
 }
 
-void wm_bret_backend_tick(wm_bret_backend_actor *bva) {
+void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
+                          uint16_t round_tickcount) {
+    const wm_bret_attack_window_t *w;
+    bool at_active_frame;
+
     if (!bva) return;
     wm_visual_tick(&bva->visual);
     wm_visual_tick(&bva->torso_visual);
+
+    if (!actor) return;
+    w = find_attack_window(bva->current_id);
+    at_active_frame = w && bva->visual.sequence == wm_bret_anim_sequence(bva->current_id) &&
+                      bva->visual.frame_index == w->active_frame_index;
+
+    if (at_active_frame) {
+        if (!bva->attack_active) {
+            if (w->use_z) wm_arcade_ani_attack_on_z(actor, &w->z_args);
+            else wm_arcade_ani_attack_on(actor, &w->args);
+            bva->attack_active = true;
+        }
+    } else if (bva->attack_active) {
+        wm_arcade_ani_attack_off(actor, round_tickcount);
+        bva->attack_active = false;
+    }
 }
 
 void wm_bret_backend_tick_position(wm_arcade_actor_t *actor) {

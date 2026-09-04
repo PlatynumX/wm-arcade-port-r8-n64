@@ -63,6 +63,11 @@ typedef struct {
        parameter. NULL is safe (wm_execute_walk treats it as "no opponent
        to check ONGROUND/DEAD against"). */
     wm_arcade_actor_t *opponent;
+    /* Last id passed to wm_bret_backend_change_anim, and whether
+       wm_bret_backend_tick has an ANIM.ASM ATTACK_ON active for it right
+       now -- see wm_bret_backend_tick's own comment. */
+    wm_arcade_bret_anim_id_t current_id;
+    bool attack_active;
 } wm_bret_backend_actor;
 
 void wm_bret_backend_init(wm_bret_backend_actor *bva);
@@ -93,9 +98,28 @@ wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva)
    see the file comment for exactly what that does and does not cover. */
 void wm_bret_backend_execute_walk(wm_arcade_actor_t *actor, void *user);
 
-/* Advances both visual tracks by one source tick. Does not move the actor
-   -- see wm_bret_backend_tick_position(). */
-void wm_bret_backend_tick(wm_bret_backend_actor *bva);
+/*
+ * Advances both visual tracks by one source tick (does not move the actor
+ * -- see wm_bret_backend_tick_position()), then fires ANIM.ASM's real
+ * ATTACK_ON/ATTACK_ON_Z/ATTACK_OFF (wm/arcade/wm_arcade_anim_combat.h,
+ * real and ctest-verified since fix38) for whichever of the 6 mapped
+ * attack animations (wm_bret_anim_sequence) is playing, using literal
+ * args hand-verified against each one's HRTSEQ2.ASM source (not the
+ * shipped wm_visual_sequence frame data, which -- like every wlanim.py
+ * --slice extraction -- linearly concatenates branchy source regardless
+ * of which path a real hit/block/miss takes; the frame index the attack
+ * box turns on at was traced against the raw source directly). actor may
+ * be NULL (attack activation is then simply skipped).
+ *
+ * This sets a real actor's real attack_mode/attack_xoff/.../anim_mode
+ * (WM_MODE_CHECKHIT) exactly as the source opcodes do. It does NOT call
+ * wm_arcade_check_wrestler_collisions -- that also needs the victim's
+ * hurt_box (wm_arcade_set_hurt_box), which needs per-frame ANI3 hit-box
+ * data (SYS.EQU's IANI3X/Y/Z/ID) this port has not extracted, so no hits
+ * actually land yet. See README for that boundary.
+ */
+void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
+                          uint16_t round_tickcount);
 
 /* Not a source routine (see wm/movement.h's wm_integrate_position): applies
    actor->x_vel/z_vel to its position for one tick. */

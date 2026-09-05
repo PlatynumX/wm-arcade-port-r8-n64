@@ -221,6 +221,17 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
            below already makes). */
         wm_arcade_update_newfacing(&m->actors[i], &m->actors[1u - i]);
 
+        /* WRESTLE.ASM's main loop computes each wrestler's own CLOSEST_*
+           fields every tick for every process (drone_main's own AI
+           decisions -- block detection, range-band script selection --
+           read them exactly like move_bret does), not just for whichever
+           actor happens to carry a real Bret backend. Previously this only
+           ran inside the Bret branch below, so a drone-controlled actor's
+           AI acted on the *previous* tick's stale distances; a drone-
+           controlled Bret got fresh data for move_bret but stale data for
+           its own drone_main decision that same tick. */
+        wm_arcade_calc_closest(&m->actors[i], &m->actors[1u - i]);
+
         if (m->has_human && i == m->human_actor_index) {
             wm_human_input_commit(&m->actors[i], &m->human_input_state, human_input);
         } else {
@@ -240,7 +251,6 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             bret_cb = wm_bret_backend_callbacks(&m->bret_visual[i]);
             memset(&env, 0, sizeof(env));
             env.pcnt = m->tick_count;
-            wm_arcade_calc_closest(&m->actors[i], opp);
             (void)wm_arcade_move_bret(&m->actors[i], opp, &env, &bret_cb);
             wm_bret_backend_tick(&m->bret_visual[i], &m->actors[i], (uint16_t)m->tick_count);
             /* WRESTLE.ASM's main loop calls confine_wrestler (via fix1/

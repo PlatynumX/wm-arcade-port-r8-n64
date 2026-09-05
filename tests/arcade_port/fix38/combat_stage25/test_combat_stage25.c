@@ -23,9 +23,9 @@ static int ba(int m,void*u){(void)m;(void)u;return 0;}
 static int hd(int s,void*u){(void)s;(void)u;return 0;}
 static int combo(wm_arcade_actor_t*a,void*u){(void)a;(void)u;return 0;}
 static void sel(wm_arcade_actor_t*a,const char*l,void*u){(void)a;((T*)u)->last=l;}
-static int sseek(wm_arcade_actor_t*a,wm_arcade_drone_state_t*d,void*u){(void)a;(void)d;return ((T*)u)->seek_result;}
+static int sseek(wm_arcade_actor_t*a,wm_arcade_actor_t*o,wm_arcade_drone_state_t*d,const char*l,void*u){(void)a;(void)o;(void)d;(void)l;return ((T*)u)->seek_result;}
 static int spct(const char*l,int s,void*u){(void)l;(void)s;(void)u;return 100;}
-static void scall(wm_arcade_actor_t*a,const char*l,void*u){(void)a;((T*)u)->called=l;}
+static int scall(wm_arcade_actor_t*a,wm_arcade_actor_t*o,wm_arcade_drone_state_t*d,const char*l,void*u){(void)a;(void)o;(void)d;((T*)u)->called=l;return WM_DRONE_CALL_CONTINUE;}
 
 static const char *short_scripts[] = {"short_exact", "short_alt"};
 static const wm_arcade_drone_script_list_t short_list = {1, short_scripts, 2};

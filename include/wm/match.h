@@ -32,14 +32,6 @@ extern "C" {
  *     selection: the ladder matchup table is not ported, so this only ever
  *     creates a single opponent instead of a full NUM_OPPS-sized team, for
  *     either start path.
- *   - The wrestler_main process body itself: DRONE.ASM's script/range data
- *     (wnshort_t/wnmed_t/wnlong_t mode lists, named scripts, and the
- *     blkbase_t/blkatk_t/sklhhdly_t/sklhrdly_t skill tables) is emitted by a
- *     SKLM macro that is not present in the checked-in historicalsource
- *     tree, so it cannot be materialized without guessing its expansion.
- *     wm_arcade_drone_main() is still called every tick with the callbacks
- *     that ARE real (rndrng0_upto) and safely no-ops (WM_DRONE_STEP_IDLE)
- *     for the rest -- it does not invent AI behavior.
  *   - wm_arcade_move_ported_wrestler(): the generic 8-wrestler dispatcher is
  *     not used here. Only Bret (wrestler_num==WM_ROSTER_BRET) is wired,
  *     straight to wm_arcade_move_bret() with wm/bret_backend.h's adapter --
@@ -47,12 +39,25 @@ extern "C" {
  *     to real wm_visual_sequence data (idle stance + 6 light/power attacks)
  *     and which still resolve to nothing. The other seven wrestlers have no
  *     backend at all yet, so an actor drawn as one of them holds real state
- *     (health, ring assignment, mutual smart_target) but never moves.
- *   - Movement input: nothing above ever gives a Bret actor a nonzero
- *     stick_val_cur (see the DRONE.ASM note), so wm_arcade_bret_callbacks_t.
- *     execute_walk (real, see wm/movement.h and wm/bret_backend.h) has
- *     nothing to act on today; it takes real human/player input, not more
- *     drone data.
+ *     (health, ring assignment, mutual smart_target) but never moves, even
+ *     though the drone AI driving it (see wm/arcade/wm_arcade_bret_drone.h)
+ *     does press real buttons/stick for it.
+ *
+ * DRONE.ASM's own AI decision core and script interpreter
+ * (wm_arcade_drone_main()/wm_arcade_drone_script_step(), wm/arcade/
+ * wm_arcade_drone.h) are real and wired every tick; wm/arcade/
+ * wm_arcade_bret_drone.h supplies the real data and DS_CODE-block callback
+ * bodies they need (an earlier claim that the source's SKLM macro wasn't
+ * present in the checked-in tree was wrong -- it is, and DRONE.ASM's own
+ * skill tables and Bret's short/medium/long-range script lists are
+ * transcribed from it). Only Bret has a real move/animation backend, so the
+ * per-wrestler branches (range_script_list/drn_combo/drone_chrg) only ever
+ * hand out real attack content when the drone-controlled actor is itself
+ * Bret; the shared, wrestler-agnostic majority of the engine (positioning,
+ * block detection, getup timing, run/roll/turnbuckle/in-air handling) runs
+ * for any wrestler. wm_match_tick computes wm_arcade_calc_closest for every
+ * actor every tick (not just whichever one carries a real Bret backend), so
+ * a drone's own decisions read fresh distances too.
  */
 
 #define WM_MATCH_MAX_ACTORS 2

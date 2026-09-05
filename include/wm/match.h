@@ -11,8 +11,10 @@
 #include "wm/arcade/wm_arcade_roster.h"
 #include "wm/arcade/wm_arcade_round.h"
 #include "wm/arcade/wmania_rng.h"
+#include "wm/arcade/wm_arcade_wrestler_port.h"
 #include "wm/bret_backend.h"
 #include "wm/human_input.h"
+#include "wm/wrestler_backend.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -68,6 +70,11 @@ typedef struct {
     /* Only actors[i].wrestler_num==WM_ROSTER_BRET drives this -- see the
        file comment. Unused (left zeroed) for every other wrestler_num. */
     wm_bret_backend_actor bret_visual[WM_MATCH_MAX_ACTORS];
+
+    /* The shared, animation-free backend state every other wrestler runs on
+       (wm/wrestler_backend.h): real execute_walk/adjust_health/mode_dead,
+       no artwork. Bret ignores it in favour of bret_visual above. */
+    wm_wrestler_backend_actor wrestler_visual[WM_MATCH_MAX_ACTORS];
     unsigned actor_count;
 
     /* @index1: source global set by ATTRACT.ASM::show_gameplay before

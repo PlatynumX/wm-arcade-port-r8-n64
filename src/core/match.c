@@ -210,6 +210,15 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
     memset(&world, 0, sizeof(world));
     world.actors = actor_ptrs;
     world.actor_count = m->actor_count;
+    /* @PCNT, the source's own free-running process/frame counter. This was
+       left at 0 while the drone engine had no data to act on, which made
+       drone_main's two real PCNT gates degenerate: "(PCNT+1) low four bits
+       clear" (its every-16-ticks passive check) was never satisfied, so a
+       MODE_NORMAL drone could never reach #doact and never selected an
+       action script at all, and "PCNT low five bits clear" (its every-32-
+       ticks aggression reroll) was satisfied on every single tick instead.
+       Same counter the Bret backend already uses for its own pcnt. */
+    world.pcnt = m->tick_count;
     world.round_tickcount = (uint16_t)m->tick_count;
     world.first_ladder = 1;
 
@@ -241,26 +250,77 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             wm_arcade_drone_commit_inputs(&m->actors[i], &m->drones[i], old_but, old_joy);
         }
 
-        if (m->actors[i].wrestler_num == WM_ROSTER_BRET) {
+        /* WRESTLE.ASM::move_wrestler dispatches every wrestler process
+           through its own move_xxx; wm_arcade_move_ported_wrestler is that
+           dispatcher, and all eight per-wrestler modules behind it are real
+           direct ports. Bret is the one with a full visual backend
+           (wm/bret_backend.h: real frame data, attack windows, hurt_box);
+           the other seven run the same real decision logic through the
+           shared, animation-free backend in wm/wrestler_backend.h. */
+        {
             /* WM_MATCH_MAX_ACTORS==2: the other slot is always the opponent. */
             wm_arcade_actor_t *opp = &m->actors[1u - i];
-            wm_arcade_bret_env_t env;
+            const wm_arcade_wrestler_profile_t *profile =
+                wm_arcade_roster_profile((wm_arcade_roster_id_t)m->actors[i].wrestler_num);
+            wm_arcade_roster_env_t env;
+            wm_arcade_wrestler_port_bindings_t bind;
             wm_arcade_bret_callbacks_t bret_cb;
-            m->bret_visual[i].opponent = opp;
-            m->bret_visual[i].pcnt = m->tick_count;
-            bret_cb = wm_bret_backend_callbacks(&m->bret_visual[i]);
+            wm_arcade_razor_callbacks_t razor_cb;
+            wm_arcade_roster_callbacks_t roster_cb;
+            const bool is_bret = m->actors[i].wrestler_num == WM_ROSTER_BRET;
+
             memset(&env, 0, sizeof(env));
             env.pcnt = m->tick_count;
-            (void)wm_arcade_move_bret(&m->actors[i], opp, &env, &bret_cb);
-            wm_bret_backend_tick(&m->bret_visual[i], &m->actors[i], (uint16_t)m->tick_count);
-            /* WRESTLE.ASM's main loop calls confine_wrestler (via fix1/
-               fix2) right after set_collision_boxes, every tick, for every
-               wrestler process -- only Bret has a real, moving hurt_box in
-               this port (wm_bret_backend_tick just set it fresh above), so
-               only Bret is confined here. Runs before position integration
-               so this tick's confinement uses this tick's own hurt_box. */
-            wm_arcade_confine_wrestler(&m->actors[i]);
-            wm_bret_backend_tick_position(&m->actors[i]);
+            env.p1rounds = m->score.p1rounds;
+            env.p2rounds = m->score.p2rounds;
+
+            m->wrestler_visual[i].opponent = opp;
+            m->wrestler_visual[i].pcnt = m->tick_count;
+            m->wrestler_visual[i].attract_mode = !m->has_human;
+            m->wrestler_visual[i].wrestler_num = m->actors[i].wrestler_num;
+
+            m->bret_visual[i].opponent = opp;
+            m->bret_visual[i].pcnt = m->tick_count;
+
+            bret_cb = wm_bret_backend_callbacks(&m->bret_visual[i]);
+            razor_cb = wm_wrestler_razor_callbacks(&m->wrestler_visual[i]);
+            roster_cb = wm_wrestler_roster_callbacks(&m->wrestler_visual[i]);
+
+            memset(&bind, 0, sizeof(bind));
+            bind.bret = &bret_cb;
+            bind.razor = &razor_cb;
+            bind.taker = &roster_cb;
+            bind.yoko = &roster_cb;
+            bind.shawn = &roster_cb;
+            bind.bam = &roster_cb;
+            bind.doink = &roster_cb;
+            bind.lex = &roster_cb;
+
+            if (profile)
+                (void)wm_arcade_move_ported_wrestler(profile, &m->actors[i], opp,
+                                                     &env, &bind);
+
+            if (is_bret) {
+                wm_bret_backend_tick(&m->bret_visual[i], &m->actors[i],
+                                     (uint16_t)m->tick_count);
+                /* WRESTLE.ASM's main loop calls confine_wrestler (via fix1/
+                   fix2) right after set_collision_boxes, every tick, for
+                   every wrestler process -- but it reads OBJ_COLLX1/X2, and
+                   only Bret has a real, moving hurt_box in this port
+                   (wm_bret_backend_tick just set it fresh above), so only
+                   Bret is confined here. Confining a wrestler whose
+                   hurt_box is still all-zero would clamp against a box that
+                   isn't where the wrestler is. Runs before position
+                   integration so this tick's confinement uses this tick's
+                   own hurt_box. */
+                wm_arcade_confine_wrestler(&m->actors[i]);
+            } else {
+                wm_wrestler_backend_tick(&m->wrestler_visual[i], &m->actors[i]);
+            }
+            /* WRESTLE.ASM integrates every wrestler process's own velocity
+               every tick, not just Bret's -- all eight now set real
+               velocities through their own execute_walk. */
+            wm_integrate_position(&m->actors[i]);
         }
     }
 

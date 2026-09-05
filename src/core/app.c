@@ -1,5 +1,5 @@
 #include "wm/app.h"
-#include "wm/arcade/wm_arcade_bret_drone.h"
+#include "wm/arcade/wm_arcade_drone_data.h"
 #include <string.h>
 
 static const wm_input_state no_input = {0};
@@ -384,7 +384,7 @@ static bool tick_gameplay(wm_app *app, const wm_input_state *input) {
         wm_match_start_attract(&app->match, &app->rng);
 
     {
-        wm_arcade_drone_callbacks_t cb = wm_arcade_bret_drone_callbacks(&app->rng);
+        wm_arcade_drone_callbacks_t cb = wm_arcade_drone_data_callbacks(&app->rng);
         wm_match_tick(&app->match, &cb, NULL);
     }
 
@@ -492,7 +492,7 @@ void wm_app_tick_dual(wm_app *app,
         return;
     }
     if (app->mode == WM_APP_MODE_MATCH) {
-        wm_arcade_drone_callbacks_t cb = wm_arcade_bret_drone_callbacks(&app->rng);
+        wm_arcade_drone_callbacks_t cb = wm_arcade_drone_data_callbacks(&app->rng);
         wm_match_tick(&app->match, &cb, input);
         return;
     }

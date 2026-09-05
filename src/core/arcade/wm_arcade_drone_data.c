@@ -1,4 +1,4 @@
-#include "wm/arcade/wm_arcade_bret_drone.h"
+#include "wm/arcade/wm_arcade_drone_data.h"
 #include "wm/arcade/wm_arcade_roster.h"
 #include "wm/arcade/wmania_ring_geometry.h"
 #include <string.h>
@@ -25,8 +25,11 @@
 #define CALLOP(lbl) {WM_DRONE_SC_CALL_CODE, 0, 0, 0, 0, (lbl), NULL}
 #define FUNCOP(lbl) {WM_DRONE_SC_CALL_FUNCTION, 0, 0, 0, 0, (lbl), NULL}
 #define RJMP(pct, idx) {WM_DRONE_SC_RANDOM_JUMP, 0, 0, (pct), (idx), NULL, NULL}
+#define RJMPX(pct, scr) {WM_DRONE_SC_RANDOM_JUMP, 0, 0, (pct), 0, NULL, (scr)}
 #define JMPI(idx) {WM_DRONE_SC_JUMP, 0, 0, 0, (idx), NULL, NULL}
 #define JMPX(scr) {WM_DRONE_SC_JUMP, 0, 0, 0, 0, NULL, (scr)}
+#define WAITOP() {WM_DRONE_SC_WAIT_INTERRUPTIBLE, 0, 0, 0, 0, NULL, NULL}
+#define ABIFBLK() {WM_DRONE_SC_ABORT_IF_BLOCKING, 0, 0, 0, 0, NULL, NULL}
 
 static int32_t iabs32(int32_t v) { return v < 0 ? -v : v; }
 
@@ -235,6 +238,187 @@ static const wm_arcade_drone_script_op_t ops_run[] = {
     CALLOP("drone_chkrun"), IN((uint16_t)(PM|KM),0), IN(0,0)
 };
 
+/* Remaining shared primitives from DRONE.ASM's own generic block, used by
+   the other seven wrestlers' lists. */
+static const wm_arcade_drone_script_op_t ops_spsk[] = {IN((uint16_t)(SPM|SKM),0)};
+static const wm_arcade_drone_script_op_t ops_dsk[] = {IN((uint16_t)(DM|SKM),0)};
+static const wm_arcade_drone_script_op_t ops_usp[] = {IN((uint16_t)(UM|SPM),0)};
+static const wm_arcade_drone_script_op_t ops_usk[] = {IN((uint16_t)(UM|SKM),0)};
+static const wm_arcade_drone_script_op_t ops_rrp[] = {
+    IN(RM,2), IN(0,2), IN(RM,2), IN(PM,0)
+};
+static const wm_arcade_drone_script_op_t ops_rrk[] = {
+    IN(RM,2), IN(0,2), IN(RM,2), IN(KM,0)
+};
+static const wm_arcade_drone_script_op_t ops_rrsk[] = {
+    IN(RM,2), IN(0,2), IN(RM,2), IN(SKM,0)
+};
+static const wm_arcade_drone_script_op_t ops_rsp4[] = {
+    IN((uint16_t)(RM|SPM),4), IN(0,4), IN(SPM,4), IN(0,4),
+    IN(SPM,4), IN(0,4), IN(SPM,0)
+};
+static const wm_arcade_drone_script_op_t ops_rk4[] = {
+    IN((uint16_t)(RM|KM),4), IN(0,4), IN(KM,4), IN(0,4),
+    IN(KM,4), IN(0,4), IN(KM,0)
+};
+static const wm_arcade_drone_script_op_t ops_rsk4k[] = {
+    IN((uint16_t)(RM|SKM),4), IN(0,4), IN(SKM,4), IN(0,4),
+    IN(SKM,4), IN(0,4), IN(SKM,4), IN(KM,0)
+};
+static const wm_arcade_drone_script_op_t ops_jk[] = {
+    IN(DM,2), IN((uint16_t)(DM|RM),2), IN(RM,2), IN(KM,0)
+};
+static const wm_arcade_drone_script_op_t ops_jkk[] = {
+    IN(DM,2), IN((uint16_t)(DM|RM),2), IN(RM,2), IN(KM,4),
+    IN(0,4), IN(KM,4), IN(0,4), IN(KM,4),
+    IN(0,4), IN(KM,4), IN(0,4), IN(KM,0)
+};
+static const wm_arcade_drone_script_op_t ops_jisp[] = {
+    IN(UM,2), IN((uint16_t)(UM|RM),2), IN(RM,2), IN(SPM,0)
+};
+static const wm_arcade_drone_script_op_t ops_j2p[] = {IN((uint16_t)(LM|DM),2)};
+static const wm_arcade_drone_script_op_t ops_lrrk[] = {
+    IN(LM,2), IN(RM,2), IN(0,2), IN(RM,2), IN(KM,0)
+};
+static const wm_arcade_drone_script_op_t ops_spsk2[] = {
+    IN(SPM,2), IN(SKM,2), IN(SPM,2), IN(SKM,0)
+};
+static const wm_arcade_drone_script_op_t ops_uddskk[] = {
+    IN(UM,2), IN(DM,2), IN(0,2), IN(DM,2), IN(SKM,2),
+    SKILLOP("sklrep_t"),
+    IN(0,8),
+    IN(KM,4), IN(0,4), IN(KM,4), IN(0,4), IN(KM,4), IN(0,4),
+    SKILLOP("sklrep_t"),
+    IN(KM,4), IN(0,4), IN(KM,4), IN(0,4), IN(KM,4), IN(0,4),
+    IN(KM,4), IN(0,4), IN(KM,4), IN(0,4), IN(KM,0)
+};
+/* #hhp3k/#hhp4/#hhp3pd/#hhsk3pd all use the file's own `.asg 6,T`. */
+static const wm_arcade_drone_script_op_t ops_hhp3k[] = {
+    IN((uint16_t)(RM|PM),6), IN(RM,6), IN((uint16_t)(RM|PM),6), IN(RM,6),
+    IN((uint16_t)(RM|PM),6), IN(RM,6), IN((uint16_t)(RM|PM),6), IN(RM,6),
+    IN((uint16_t)(RM|KM),2), IN(0,10), IN(0,0)
+};
+static const wm_arcade_drone_script_op_t ops_hhp4[] = {
+    IN((uint16_t)(RM|PM),6), IN(RM,6), IN((uint16_t)(RM|PM),6), IN(RM,6),
+    IN((uint16_t)(RM|PM),6), IN(RM,6), IN((uint16_t)(RM|PM),6), IN(RM,6),
+    IN((uint16_t)(RM|PM),6), IN(RM,6), IN((uint16_t)(RM|PM),2),
+    IN(0,10), IN(0,0)
+};
+static const wm_arcade_drone_script_op_t ops_hhp3pd[] = {
+    IN((uint16_t)(RM|PM),6), IN(RM,6), IN((uint16_t)(RM|PM),6), IN(RM,6),
+    IN((uint16_t)(RM|PM),6), IN(RM,6), IN((uint16_t)(RM|PM),6), IN(RM,11),
+    IN((uint16_t)(DM|SPM),2), IN(0,10), IN(0,0)
+};
+static const wm_arcade_drone_script_op_t ops_hhsk3pd[] = {
+    IN((uint16_t)(RM|SKM),6), IN(RM,6), IN((uint16_t)(RM|SKM),6), IN(RM,6),
+    IN((uint16_t)(RM|SKM),6), IN(RM,6), IN((uint16_t)(RM|SKM),6), IN(RM,6),
+    IN(SPM,2), IN(0,10), IN(0,0)
+};
+
+/* Razor-specific. */
+static const wm_arcade_drone_script_op_t ops_rzup4[] = {
+    IN((uint16_t)(UM|PM),5), IN(0,5), IN(PM,5), IN(0,5),
+    IN(PM,5), IN(0,5), IN(PM,0)
+};
+static const wm_arcade_drone_script_op_t ops_rzdp4[] = {
+    IN((uint16_t)(DM|PM),5), IN(0,5), IN(PM,5), IN(0,5),
+    IN(PM,5), IN(0,5), IN(PM,0)
+};
+static const wm_arcade_drone_script_op_t ops_rzuddksp[] = {
+    IN(UM,2), IN(DM,2), IN(0,2), IN(DM,2), IN(KM,2),
+    SKILLOP("sklrep_t"),
+    IN(0,20),
+    IN(SPM,6), IN(0,6), IN(SPM,6), IN(0,6), IN(SPM,6), IN(0,6),
+    SKILLOP("sklrep_t"),
+    IN(SPM,6), IN(0,6), IN(SPM,6), IN(0,6), IN(SPM,0)
+};
+
+/* Bam Bam-specific. */
+static const wm_arcade_drone_script_op_t ops_bahhrsk[] = {
+    IN((uint16_t)(RM|SKM),2), IN(0,5),
+    IN(SKM,4), IN(0,4), IN(SKM,4), IN(0,4), IN(SKM,4), IN(0,4),
+    SKILLOP("sklrep_t"),
+    IN(SKM,4), IN(0,4), IN(SKM,4), IN(0,4), IN(SKM,4), IN(0,4),
+    RJMPX(33, "#k"), RJMPX(33, "#sp"),
+    IN((uint16_t)(DM|SPM),0)
+};
+static const wm_arcade_drone_script_op_t ops_bahhpg[] = {
+    IN(UM,2), IN(DM,2), IN(0,2), IN(DM,2), IN(SKM,50),
+    SKILLOP("sklrep_t"),
+    IN(SPM,2), IN(0,2), IN(SPM,2), IN(0,2), IN(SPM,2), IN(0,15),
+    SKILLOP("sklrep_t"),
+    IN(SPM,2), IN(0,2), IN(SPM,2), IN(0,2), IN(SPM,2), IN(0,15),
+    IN(SPM,2), IN(0,2), IN(SPM,2), IN(0,2), IN(SPM,0)
+};
+
+/* Undertaker-specific. */
+static const wm_arcade_drone_script_op_t ops_utshootps[] = {
+    IN(RM,2), IN(0,2), IN(RM,2), IN(KM,2), IN(0,2),
+    WAITOP(), ABIFBLK(),
+    IN((uint16_t)(PM|KM),0)
+};
+static const wm_arcade_drone_script_op_t ops_utshootpl[] = {
+    IN(LM,2), IN(0,2), IN(LM,2), IN(KM,2), IN(0,2),
+    WAITOP(), ABIFBLK(),
+    IN((uint16_t)(DM|SPM),0)
+};
+static const wm_arcade_drone_script_op_t ops_uttombhit[] = {
+    IN(RM,2), IN(0,2), IN(RM,2), IN(SKM,5),
+    SKILLOP("sklrep_t"),
+    IN(KM,4), IN(0,4), IN(KM,4), IN(0,4), IN(KM,4), IN(0,4),
+    ABIFBLK(),
+    SKILLOP("sklrep_t"),
+    IN(KM,4), IN(0,4), IN(KM,4), IN(0,4), IN(KM,4), IN(0,4),
+    IN(KM,4), IN(0,4), IN(KM,4), IN(0,4), IN(KM,0)
+};
+static const wm_arcade_drone_script_op_t ops_uthhrp[] = {
+    IN((uint16_t)(RM|PM),2), IN(0,5),
+    IN(PM,4), IN(0,4), IN(PM,4), IN(0,4), IN(PM,4), IN(0,4),
+    SKILLOP("sklrep_t"),
+    IN(PM,4), IN(0,4), IN(PM,4), IN(0,4), IN(PM,4), IN(0,4),
+    RJMPX(50, "#sp"),
+    IN(KM,0)
+};
+static const wm_arcade_drone_script_op_t ops_utchup[] = {
+    IN((uint16_t)(UM|PM),2), IN(0,5),
+    IN(PM,4), IN(0,4), IN(PM,4), IN(0,4), IN(PM,4), IN(0,4),
+    SKILLOP("sklrep_t"),
+    IN(PM,4), IN(0,4), IN(PM,4), IN(0,4), IN(PM,4), IN(0,4),
+    RJMPX(50, "#sp"),
+    IN(KM,0)
+};
+static const wm_arcade_drone_script_op_t ops_utdk[] = {
+    IN(DM,2), IN(0,2), IN((uint16_t)(DM|KM),2),
+    SKILLOP("sklrep_t"),
+    IN(0,5),
+    IN(PM,4), IN(0,4), IN(PM,4), IN(0,4), IN(PM,4), IN(0,4),
+    IN(PM,4), IN(0,4), IN(PM,4), IN(0,4), IN(PM,4), IN(0,4),
+    SKILLOP("sklrep_t"),
+    IN(PM,4), IN(0,4), IN(PM,4), IN(0,4), IN(PM,0)
+};
+
+/* Doink-specific. */
+static const wm_arcade_drone_script_op_t ops_doham[] = {
+    IN(RM,2), IN(0,2), IN(RM,2), IN(SKM,10),
+    SKILLOP("sklrep_t"),
+    IN(KM,4), IN(0,4), IN(KM,4), IN(0,4), IN(KM,4), IN(0,4),
+    SKILLOP("sklrep_t"),
+    IN(KM,4), IN(0,4), IN(KM,4), IN(0,4), IN(KM,4), IN(0,4),
+    IN(KM,4), IN(0,4), IN(KM,4), IN(0,4), IN(KM,0)
+};
+static const wm_arcade_drone_script_op_t ops_doeslap[] = {
+    IN(DM,2), IN((uint16_t)(DM|RM),2), IN(RM,2), IN(PM,2),
+    SKILLOP("sklrep_t"),
+    IN(0,5), IN(PM,5), IN(0,5), IN(PM,5),
+    SKILLOP("sklrep_t"),
+    IN(0,5), IN(PM,5), IN(0,5), IN(PM,5),
+    IN(0,5), IN(PM,5), IN(0,5), IN(PM,0)
+};
+static const wm_arcade_drone_script_op_t ops_dopbig[] = {
+    IN(PM,2), IN(0,2), IN(PM,2), IN(0,2), IN(PM,2), IN(0,2),
+    IN(PM,2), IN(0,2), IN(PM,2), IN(0,2), IN(PM,2), IN(0,2), IN(PM,0)
+};
+
 /* One-op scripts whose entire behavior is a real, wrestler-agnostic DS_CODE
    block (or a persistent SEEK loop) -- see the per-routine callbacks below
    for the transcribed logic. */
@@ -319,6 +503,149 @@ static const wm_arcade_drone_script_list_t s_Mm_og_list = {2, s_Mm_og, 3};
 
 static const char *const s_M_opptbkl[] = {"#run"};
 static const wm_arcade_drone_script_list_t s_M_opptbkl_list = {0, s_M_opptbkl, 1};
+
+/* M_hhr: the shared head-held reversal list (Undertaker and Yoko use it
+   instead of one of their own). */
+static const char *const s_M_hhr[] = {"#k", "#uddsk", "#lrrsp"};
+static const wm_arcade_drone_script_list_t s_M_hhr_list = {2, s_M_hhr, 3};
+
+/* ---- Razor (raz_s_t / raz_m_t) ---- */
+static const char *const s_rzM_n[] = {
+    "#run", "#p", "#sp", "#k", "#sk", "#spx",
+    "#hgrab", "#hgrab", "#hgrab", "#flng", "#htoss", "#htoss",
+    "#ucut", "#jp", "#rrk"
+};
+static const wm_arcade_drone_script_list_t s_rzM_n_list = {14, s_rzM_n, 15};
+static const char *const s_rzMm_n[] = {
+    "drn_seek", "drn_retreat", "#run", "#sp", "#sk", "#flng",
+    "#jp", "#fast", "#chrg"
+};
+static const wm_arcade_drone_script_list_t s_rzMm_n_list = {8, s_rzMm_n, 9};
+static const char *const s_rzM_hh[] = {
+    "#uddsk", "#lrrsp", "#rzup4", "#rzdp4", "#ucut", "#rzuddksp"
+};
+static const wm_arcade_drone_script_list_t s_rzM_hh_list = {-5, s_rzM_hh, 6};
+static const char *const s_rzM_hhr[] = {"#k", "#uddsk", "#lrrsp", "#rzuddksp"};
+static const wm_arcade_drone_script_list_t s_rzM_hhr_list = {3, s_rzM_hhr, 4};
+
+/* ---- Undertaker (utak_s_t / utak_m_t) ---- */
+static const char *const s_utM_n[] = {
+    "#run", "#spx", "#p", "#sp", "#k", "#sk",
+    "#hgrab", "#hgrab", "#hgrab", "#flng", "#htoss", "#htoss",
+    "#ucut", "#utshootps", "#utshootpl", "#uttombhit", "#jp"
+};
+static const wm_arcade_drone_script_list_t s_utM_n_list = {16, s_utM_n, 17};
+static const char *const s_utMm_n[] = {
+    "drn_seek", "drn_retreat", "#run", "#sp", "#sk", "#flng",
+    "#utshootps", "#utshootpl", "#uttombhit", "#jp", "#fast", "#chrg"
+};
+static const wm_arcade_drone_script_list_t s_utMm_n_list = {11, s_utMm_n, 12};
+static const char *const s_utM_hh[] = {
+    "#uddsk", "#lrrsp", "#uthhrp", "#ucut", "#uttombhit", "#utdk"
+};
+static const wm_arcade_drone_script_list_t s_utM_hh_list = {-5, s_utM_hh, 6};
+static const char *const s_utM_chold[] = {
+    "#p", "#k", "#htoss", "#ucut", "#utchup", "#utdk", "#dsk"
+};
+static const wm_arcade_drone_script_list_t s_utM_chold_list = {6, s_utM_chold, 7};
+
+/* ---- Yokozuna (yoko_s_t / yoko_m_t) ---- */
+static const char *const s_yoM_n[] = {
+    "#run", "#spx", "#p", "#sp", "#k", "#sk",
+    "#hgrab", "#hgrab", "#hgrab", "#flng", "#htoss", "#htoss",
+    "#jp", "#rrsk", "#rrp", "#spsk"
+};
+static const wm_arcade_drone_script_list_t s_yoM_n_list = {15, s_yoM_n, 16};
+static const char *const s_yoMm_n[] = {
+    "drn_seek", "drn_retreat", "#run", "#sp", "#sk", "#flng",
+    "#jp", "#rrsk", "#spsk", "#fast", "#chrg"
+};
+static const wm_arcade_drone_script_list_t s_yoMm_n_list = {10, s_yoMm_n, 11};
+static const char *const s_yoM_hh[] = {"#uddsk", "#lrrsp", "#j2p", "#ucut"};
+static const wm_arcade_drone_script_list_t s_yoM_hh_list = {-3, s_yoM_hh, 4};
+static const char *const s_yoM_ooh[] = {"#k", "#dsk"};
+static const wm_arcade_drone_script_list_t s_yoM_ooh_list = {1, s_yoM_ooh, 2};
+
+/* ---- Shawn Michaels (shawn_s_t / shawn_m_t) ---- */
+static const char *const s_shM_n[] = {
+    "#run", "#spx", "#p", "#sp", "#k", "#sk",
+    "#hgrab", "#hgrab", "#hgrab", "#flng", "#htoss", "#htoss",
+    "#llsk", "#jkk", "#rrsk", "#rrk", "#jisp"
+};
+static const wm_arcade_drone_script_list_t s_shM_n_list = {16, s_shM_n, 17};
+static const char *const s_shMm_n[] = {
+    "drn_seek", "drn_retreat", "#run", "#sp", "#sk", "#flng",
+    "#llsk", "#jkk", "#rrsk", "#rrk", "#jisp", "#fast", "#chrg"
+};
+static const wm_arcade_drone_script_list_t s_shMm_n_list = {12, s_shMm_n, 13};
+static const char *const s_shM_hh[] = {
+    "#uddsk", "#lrrsp", "#rsk4k", "#jkk", "#rp", "#rsp4", "#rk4", "#lrrk"
+};
+static const wm_arcade_drone_script_list_t s_shM_hh_list = {-7, s_shM_hh, 8};
+static const char *const s_shM_hhr[] = {
+    "#k", "#uddsk", "#lrrsp", "#lrrk", "#jkk"
+};
+static const wm_arcade_drone_script_list_t s_shM_hhr_list = {4, s_shM_hhr, 5};
+
+/* ---- Bam Bam Bigelow (bam_s_t / bam_m_t) ---- */
+static const char *const s_baM_n[] = {
+    "#run", "#p", "#sp", "#k", "#sk", "#spx",
+    "#hgrab", "#hgrab", "#hgrab", "#flng", "#htoss", "#htoss",
+    "#llsk", "#spsk"
+};
+static const wm_arcade_drone_script_list_t s_baM_n_list = {13, s_baM_n, 14};
+static const char *const s_baMm_n[] = {
+    "drn_seek", "drn_retreat", "#run", "#sp", "#sk", "#flng",
+    "#llsk", "#spsk", "#fast", "#chrg"
+};
+static const wm_arcade_drone_script_list_t s_baMm_n_list = {9, s_baMm_n, 10};
+static const char *const s_baM_hh[] = {
+    "#bahhpg", "#lrrsp", "#jk", "#bahhrsk", "#bahhrsk", "#bahhrsk", "#spsk2"
+};
+static const wm_arcade_drone_script_list_t s_baM_hh_list = {-6, s_baM_hh, 7};
+static const char *const s_baM_hhr[] = {"#k", "#bahhpg", "#lrrsp", "#spsk2"};
+static const wm_arcade_drone_script_list_t s_baM_hhr_list = {3, s_baM_hhr, 4};
+static const char *const s_baM_ooh[] = {"#k", "#dsk"};
+static const wm_arcade_drone_script_list_t s_baM_ooh_list = {1, s_baM_ooh, 2};
+
+/* ---- Doink (doink_s_t / doink_m_t) ---- */
+static const char *const s_doM_n[] = {
+    "#run", "#spx", "#p", "#sp", "#k", "#sk",
+    "#hgrab", "#hgrab", "#hgrab", "#flng", "#htoss", "#htoss",
+    "#ucut", "#doham", "#doeslap", "#dopbig"
+};
+static const wm_arcade_drone_script_list_t s_doM_n_list = {15, s_doM_n, 16};
+static const char *const s_doMm_n[] = {
+    "drn_seek", "drn_retreat", "#run", "#sp", "#sk", "#flng",
+    "#doham", "#doeslap", "#fast", "#chrg"
+};
+static const wm_arcade_drone_script_list_t s_doMm_n_list = {9, s_doMm_n, 10};
+static const char *const s_doM_hh[] = {
+    "#uddskk", "#lrrsp", "#doham", "#j2p",
+    "#hhp3k", "#hhp4", "#hhp3pd", "#hhsk3pd"
+};
+static const wm_arcade_drone_script_list_t s_doM_hh_list = {-7, s_doM_hh, 8};
+static const char *const s_doM_hhr[] = {"#k", "#uddskk", "#lrrsp"};
+static const wm_arcade_drone_script_list_t s_doM_hhr_list = {2, s_doM_hhr, 3};
+
+/* ---- Lex Luger (lex_s_t / lex_m_t) ---- */
+static const char *const s_lxM_n[] = {
+    "#run", "#p", "#sp", "#k", "#sk", "#spx",
+    "#hgrab", "#hgrab", "#hgrab", "#flng", "#htoss", "#htoss",
+    "#rrp", "#spsk"
+};
+static const wm_arcade_drone_script_list_t s_lxM_n_list = {13, s_lxM_n, 14};
+static const char *const s_lxMm_n[] = {
+    "drn_seek", "drn_retreat", "#run", "#sp", "#sk", "#flng",
+    "#rrp", "#spsk", "#fast", "#chrg"
+};
+static const wm_arcade_drone_script_list_t s_lxMm_n_list = {9, s_lxMm_n, 10};
+static const char *const s_lxM_hh[] = {"#uddsk", "#lrrsp", "#rsk4k", "#jk"};
+static const wm_arcade_drone_script_list_t s_lxM_hh_list = {-3, s_lxM_hh, 4};
+static const char *const s_lxM_hhr[] = {"#k", "#uddsk", "#lrrsp", "#jk"};
+static const wm_arcade_drone_script_list_t s_lxM_hhr_list = {3, s_lxM_hhr, 4};
+static const char *const s_lxM_ooh[] = {"#p", "#usp", "#usk"};
+static const wm_arcade_drone_script_list_t s_lxM_ooh_list = {2, s_lxM_ooh, 3};
 
 static const char *const s_mdn[] = {"drn_seek", "#run", "drn_climbtb", "drn_taunt"};
 static const wm_arcade_drone_script_list_t s_mdn_list = {3, s_mdn, 4};
@@ -687,6 +1014,25 @@ static const wm_arcade_drone_script_t s_scripts[] = {
     ENTRY("#jpx", ops_jpx), ENTRY("#rp", ops_rp), ENTRY("#rsp", ops_rsp),
     ENTRY("#oghg", ops_oghg), ENTRY("#seeksp", ops_seeksp), ENTRY("#seeksk", ops_seeksk),
     ENTRY("#run", ops_run),
+    /* Shared primitives the other seven wrestlers' lists reach. */
+    ENTRY("#spsk", ops_spsk), ENTRY("#dsk", ops_dsk),
+    ENTRY("#usp", ops_usp), ENTRY("#usk", ops_usk),
+    ENTRY("#rrp", ops_rrp), ENTRY("#rrk", ops_rrk), ENTRY("#rrsk", ops_rrsk),
+    ENTRY("#rsp4", ops_rsp4), ENTRY("#rk4", ops_rk4), ENTRY("#rsk4k", ops_rsk4k),
+    ENTRY("#jk", ops_jk), ENTRY("#jkk", ops_jkk), ENTRY("#jisp", ops_jisp),
+    ENTRY("#j2p", ops_j2p), ENTRY("#lrrk", ops_lrrk), ENTRY("#spsk2", ops_spsk2),
+    ENTRY("#uddskk", ops_uddskk),
+    ENTRY("#hhp3k", ops_hhp3k), ENTRY("#hhp4", ops_hhp4),
+    ENTRY("#hhp3pd", ops_hhp3pd), ENTRY("#hhsk3pd", ops_hhsk3pd),
+    /* Per-wrestler primitives. */
+    ENTRY("#rzup4", ops_rzup4), ENTRY("#rzdp4", ops_rzdp4),
+    ENTRY("#rzuddksp", ops_rzuddksp),
+    ENTRY("#bahhrsk", ops_bahhrsk), ENTRY("#bahhpg", ops_bahhpg),
+    ENTRY("#utshootps", ops_utshootps), ENTRY("#utshootpl", ops_utshootpl),
+    ENTRY("#uttombhit", ops_uttombhit), ENTRY("#uthhrp", ops_uthhrp),
+    ENTRY("#utchup", ops_utchup), ENTRY("#utdk", ops_utdk),
+    ENTRY("#doham", ops_doham), ENTRY("#doeslap", ops_doeslap),
+    ENTRY("#dopbig", ops_dopbig),
     ENTRY("drn_run", ops_call_drn_run), ENTRY("drn_oprun", ops_call_drn_oprun),
     ENTRY("drn_roll", ops_roll), ENTRY("drn_climbtb", ops_climbtb), ENTRY("drn_ontb", ops_ontb),
     ENTRY("drn_inair", ops_inair), ENTRY("drn_opinair", ops_opinair),
@@ -768,28 +1114,96 @@ static void seek_dir_dist_cb(wm_arcade_actor_t *actor, wm_arcade_actor_t *opp,
     run_seekdirdist(actor, opp, drone, (WmRng *)user);
 }
 
+/*
+ * Every wrestler's own xxx_s_t (short) / xxx_m_t (medium) BBL chain, in the
+ * source's own row order -- first matching row wins. BBL's two mode checks
+ * are (own mode, opponent mode): DRONE.ASM's own dispatcher literally
+ * labels the two table bytes "My mode #" and "His mode #" and compares them
+ * against b6 (own) and b7 (opponent) in that order.
+ *
+ * The chains genuinely differ per wrestler: Bam/Yoko/Lex have an extra
+ * MODE_OPPOVERHEAD row, Undertaker has a MODE_CHOKEHOLD row and shares the
+ * generic M_hhr for head-held reversals, Yoko shares M_hhr too, and Razor/
+ * Shawn/Doink/Bret each carry their own reversal list.
+ *
+ * bret_l_t is shared by all eight (raz_l_t/utak_l_t/yoko_l_t/shawn_l_t/
+ * bam_l_t/doink_l_t/lex_l_t are literal aliases of the same label), so the
+ * long-range band is wrestler-independent.
+ */
 static const wm_arcade_drone_script_list_t *range_script_list_cb(
     const wm_arcade_actor_t *self, const wm_arcade_actor_t *opp,
     int band, int mymode, int opmode, void *user) {
+    const int normal = (band == 0);
     (void)opp; (void)user;
-    if (self->wrestler_num != WM_ROSTER_BRET) return NULL;
 
     if (band == 2) {
-        /* bret_l_t: BBL -1,MODE_ONGROUND,#mdog / WL -1,#mdn (own mode
-           wildcard, dispatched purely on the opponent's mode). */
+        /* bret_l_t (and its seven aliases): BBL -1,MODE_ONGROUND,#mdog /
+           WL -1,#mdn -- own mode wildcard, dispatched purely on the
+           opponent's mode. */
         return (opmode == WM_PMODE_ONGROUND) ? &s_mdog_list : &s_mdn_list;
     }
 
-    /* bret_s_t (band 0) / bret_m_t (band 1) share the same BBL shape;
-       BBL's own two mode checks are (self, opponent), verified against
-       each list's own comment ("Holding head" -> self==HEADHOLD, "Opp on
-       gnd" -> opponent==ONGROUND). */
-    if (mymode == WM_PMODE_HEADHOLD) return &s_brM_hh_list;
-    if (mymode == WM_PMODE_HEADHELD) return &s_brM_hhr_list;
-    if (opmode == WM_PMODE_ONGROUND) return (band == 0) ? &s_M_og_list : &s_Mm_og_list;
+    /* Rows every wrestler's short/medium chain shares, in source order,
+       after that wrestler's own head-hold rows. */
+    switch (self->wrestler_num) {
+    case WM_ROSTER_BRET:
+        if (mymode == WM_PMODE_HEADHOLD) return &s_brM_hh_list;
+        if (mymode == WM_PMODE_HEADHELD) return &s_brM_hhr_list;
+        break;
+    case WM_ROSTER_RAZOR:
+        if (mymode == WM_PMODE_HEADHOLD) return &s_rzM_hh_list;
+        if (mymode == WM_PMODE_HEADHELD) return &s_rzM_hhr_list;
+        break;
+    case WM_ROSTER_TAKER:
+        if (mymode == WM_PMODE_HEADHOLD) return &s_utM_hh_list;
+        if (mymode == WM_PMODE_HEADHELD) return &s_M_hhr_list;
+        if (mymode == WM_PMODE_CHOKEHOLD) return &s_utM_chold_list;
+        break;
+    case WM_ROSTER_YOKO:
+        if (mymode == WM_PMODE_HEADHOLD) return &s_yoM_hh_list;
+        if (mymode == WM_PMODE_HEADHELD) return &s_M_hhr_list;
+        if (mymode == WM_PMODE_OPPOVERHEAD) return &s_yoM_ooh_list;
+        break;
+    case WM_ROSTER_SHAWN:
+        if (mymode == WM_PMODE_HEADHOLD) return &s_shM_hh_list;
+        if (mymode == WM_PMODE_HEADHELD) return &s_shM_hhr_list;
+        break;
+    case WM_ROSTER_BAM:
+        if (mymode == WM_PMODE_HEADHOLD) return &s_baM_hh_list;
+        if (mymode == WM_PMODE_HEADHELD) return &s_baM_hhr_list;
+        if (mymode == WM_PMODE_OPPOVERHEAD) return &s_baM_ooh_list;
+        break;
+    case WM_ROSTER_DOINK:
+        if (mymode == WM_PMODE_HEADHOLD) return &s_doM_hh_list;
+        if (mymode == WM_PMODE_HEADHELD) return &s_doM_hhr_list;
+        break;
+    case WM_ROSTER_LEX:
+        if (mymode == WM_PMODE_HEADHOLD) return &s_lxM_hh_list;
+        if (mymode == WM_PMODE_HEADHELD) return &s_lxM_hhr_list;
+        if (mymode == WM_PMODE_OPPOVERHEAD) return &s_lxM_ooh_list;
+        break;
+    default:
+        return NULL;
+    }
+
+    /* BBL -1,MODE_ONGROUND,M_og|Mm_og and the two turnbuckle rows are
+       identical in all eight chains. */
+    if (opmode == WM_PMODE_ONGROUND) return normal ? &s_M_og_list : &s_Mm_og_list;
     if (opmode == WM_PMODE_ONTURNBKL || opmode == WM_PMODE_CLIMBTURNBKL)
         return &s_M_opptbkl_list;
-    return (band == 0) ? &s_brM_n_list : &s_brMm_n_list;
+
+    /* WL -1,xxM_n | xxMm_n -- that wrestler's own default list. */
+    switch (self->wrestler_num) {
+    case WM_ROSTER_BRET:  return normal ? &s_brM_n_list : &s_brMm_n_list;
+    case WM_ROSTER_RAZOR: return normal ? &s_rzM_n_list : &s_rzMm_n_list;
+    case WM_ROSTER_TAKER: return normal ? &s_utM_n_list : &s_utMm_n_list;
+    case WM_ROSTER_YOKO:  return normal ? &s_yoM_n_list : &s_yoMm_n_list;
+    case WM_ROSTER_SHAWN: return normal ? &s_shM_n_list : &s_shMm_n_list;
+    case WM_ROSTER_BAM:   return normal ? &s_baM_n_list : &s_baMm_n_list;
+    case WM_ROSTER_DOINK: return normal ? &s_doM_n_list : &s_doMm_n_list;
+    case WM_ROSTER_LEX:   return normal ? &s_lxM_n_list : &s_lxMm_n_list;
+    default: return NULL;
+    }
 }
 
 /* Matches app.c's own drone_rndrng0_adapter precedent: both DRONE.ASM's
@@ -802,7 +1216,7 @@ static uint32_t rndrng0_adapter(uint32_t max_inclusive, void *user) {
     return wm_rng_rndrng0((WmRng *)user, max_inclusive);
 }
 
-wm_arcade_drone_callbacks_t wm_arcade_bret_drone_callbacks(WmRng *rng) {
+wm_arcade_drone_callbacks_t wm_arcade_drone_data_callbacks(WmRng *rng) {
     wm_arcade_drone_callbacks_t cb;
     memset(&cb, 0, sizeof(cb));
     cb.rnd_upto = rndrng0_adapter;

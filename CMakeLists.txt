@@ -21,6 +21,7 @@ add_library(wmcore STATIC
     src/core/match.c
     src/core/movement.c
     src/core/bret_backend.c
+    src/core/wrestler_backend.c
     src/core/human_input.c
     src/core/visual.c
     src/core/roster.c
@@ -43,13 +44,13 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_attach_anim.c
     src/core/arcade/wm_arcade_bam.c
     src/core/arcade/wm_arcade_bret.c
-    src/core/arcade/wm_arcade_bret_drone.c
     src/core/arcade/wm_arcade_bret_tables.c
     src/core/arcade/wm_arcade_closest.c
     src/core/arcade/wm_arcade_combat.c
     src/core/arcade/wm_arcade_confine.c
     src/core/arcade/wm_arcade_doink.c
     src/core/arcade/wm_arcade_drone.c
+    src/core/arcade/wm_arcade_drone_data.c
     src/core/arcade/wm_arcade_joystat.c
     src/core/arcade/wm_arcade_lex.c
     src/core/arcade/wm_arcade_lifebar.c

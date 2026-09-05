@@ -1,5 +1,5 @@
-#ifndef WM_ARCADE_BRET_DRONE_H
-#define WM_ARCADE_BRET_DRONE_H
+#ifndef WM_ARCADE_DRONE_DATA_H
+#define WM_ARCADE_DRONE_DATA_H
 
 #include "wm/arcade/wm_arcade_drone.h"
 #include "wm/arcade/wmania_rng.h"
@@ -38,7 +38,7 @@ extern "C" {
  * positioning, blocking, getup timing, the shared drn_* movement/seek
  * scripts -- is genuine source behavior and runs for any wrestler pairing.
  */
-wm_arcade_drone_callbacks_t wm_arcade_bret_drone_callbacks(WmRng *rng);
+wm_arcade_drone_callbacks_t wm_arcade_drone_data_callbacks(WmRng *rng);
 
 #ifdef __cplusplus
 }

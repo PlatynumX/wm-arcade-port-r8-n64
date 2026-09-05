@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "wm_arcade_drone.h"
-#include "wm_arcade_bret_drone.h"
+#include "wm_arcade_drone_data.h"
 #include "wm/match.h"
 
 /* ---- Interpreter-extension unit tests (skip/abort/redirect/cross-script
@@ -80,7 +80,7 @@ static void test_skip_next(void) {
     assert(wm_arcade_drone_script_step(&a, &b, &d, &script, &cb) == WM_DRONE_STEP_INPUT);
     assert(ctx.calls == 1);
     assert(d.but == WM_BTN_KICK && d.delay == 3);
-    puts("bret_drone skip_next: PASS");
+    puts("drone_data skip_next: PASS");
 }
 
 static void test_abort_result(void) {
@@ -103,7 +103,7 @@ static void test_abort_result(void) {
 
     assert(wm_arcade_drone_script_step(&a, &b, &d, &script, &cb) == WM_DRONE_STEP_ABORT_SCRIPT);
     assert(d.script == NULL);
-    puts("bret_drone call_abort: PASS");
+    puts("drone_data call_abort: PASS");
 }
 
 static void test_redirect_same_tick(void) {
@@ -127,7 +127,7 @@ static void test_redirect_same_tick(void) {
     assert(wm_arcade_drone_script_step(&a, &b, &d, &script, &cb) == WM_DRONE_STEP_INPUT);
     assert(d.but == WM_BTN_KICK && d.delay == 5);
     assert(d.script && strcmp(d.script, "redirected") == 0);
-    puts("bret_drone redirect_same_tick: PASS");
+    puts("drone_data redirect_same_tick: PASS");
 }
 
 static void test_cross_script_jump(void) {
@@ -148,7 +148,7 @@ static void test_cross_script_jump(void) {
     assert(wm_arcade_drone_script_step(&a, &b, &d, &src_script, &cb) == WM_DRONE_STEP_INPUT);
     assert(d.but == WM_BTN_KICK && d.delay == 5);
     assert(d.script && strcmp(d.script, "redirected") == 0);
-    puts("bret_drone cross_script_jump: PASS");
+    puts("drone_data cross_script_jump: PASS");
 }
 
 static void test_done_yields_not_aborts(void) {
@@ -175,7 +175,7 @@ static void test_done_yields_not_aborts(void) {
     /* Next tick resumes right after the DS_SLP1 marker. */
     assert(wm_arcade_drone_script_step(&a, &b, &d, &script, &cb) == WM_DRONE_STEP_INPUT);
     assert(d.but == WM_BTN_SKICK && d.delay == 1);
-    puts("bret_drone done_yields_not_aborts: PASS");
+    puts("drone_data done_yields_not_aborts: PASS");
 }
 
 /* ---- Table spot-checks (SKLM-derived tables) ---- */
@@ -192,7 +192,7 @@ static void test_tables(void) {
     assert(wm_arcade_drone_headheld_delay_max(29) == 5);
     assert(wm_arcade_drone_repeat_pct(0) == 20);
     assert(wm_arcade_drone_repeat_pct(29) == 102);
-    puts("bret_drone tables: PASS");
+    puts("drone_data tables: PASS");
 }
 
 /* ---- Integration: a real CPU opponent actually fights ---- */
@@ -216,7 +216,7 @@ static void test_cpu_opponent_fights(void) {
     m.actors[0].wrestler_num = WM_ROSTER_BRET;
     m.actors[1].wrestler_num = WM_ROSTER_BRET;
 
-    cb = wm_arcade_bret_drone_callbacks(&rng);
+    cb = wm_arcade_drone_data_callbacks(&rng);
 
     start_x0 = m.actors[0].x_int; start_z0 = m.actors[0].z_int;
     start_x1 = m.actors[1].x_int; start_z1 = m.actors[1].z_int;
@@ -235,7 +235,62 @@ static void test_cpu_opponent_fights(void) {
     assert(saw_button && "CPU opponent never pressed a button");
     assert(saw_stick && "CPU opponent never pushed the stick");
     assert(moved && "CPU opponent never moved");
-    puts("bret_drone cpu_opponent_fights: PASS");
+    puts("drone_data cpu_opponent_fights: PASS");
+}
+
+/* ---- Every wrestler, not just Bret, runs its real dispatcher ---- */
+
+static void test_all_wrestlers_move(void) {
+    static const int ids[8] = {
+        WM_ROSTER_BRET, WM_ROSTER_RAZOR, WM_ROSTER_TAKER, WM_ROSTER_YOKO,
+        WM_ROSTER_SHAWN, WM_ROSTER_BAM, WM_ROSTER_DOINK, WM_ROSTER_LEX
+    };
+    int k;
+
+    /* Doink is the one wrestler whose own ASM uses a different #VEL/#DVEL. */
+    assert(wm_wrestler_velocity_table(WM_ROSTER_DOINK) !=
+           wm_wrestler_velocity_table(WM_ROSTER_BRET));
+    assert(wm_wrestler_velocity_table(WM_ROSTER_LEX) ==
+           wm_wrestler_velocity_table(WM_ROSTER_BRET));
+
+    for (k = 0; k < 8; ++k) {
+        wm_match_state m;
+        WmRng rng;
+        wm_arcade_drone_callbacks_t cb;
+        unsigned tick;
+        int32_t sx0, sz0, sx1, sz1;
+        int moved = 0, attacked = 0, left_block = 0;
+
+        wm_rng_init(&rng, 0x2000u + (uint32_t)k, NULL, NULL, NULL);
+        wm_match_init(&m);
+        wm_match_start_attract(&m, &rng);
+        m.actors[0].wrestler_num = ids[k];
+        m.actors[1].wrestler_num = ids[k];
+        cb = wm_arcade_drone_data_callbacks(&rng);
+
+        sx0 = m.actors[0].x_int; sz0 = m.actors[0].z_int;
+        sx1 = m.actors[1].x_int; sz1 = m.actors[1].z_int;
+
+        for (tick = 0; tick < 2000 && m.active; ++tick) {
+            uint16_t but;
+            wm_match_tick(&m, &cb, NULL);
+            if (m.actors[0].x_int != sx0 || m.actors[0].z_int != sz0 ||
+                m.actors[1].x_int != sx1 || m.actors[1].z_int != sz1)
+                moved = 1;
+            /* A real attack button (not just BLOCK) means this wrestler's
+               own AI script list produced a real action script. */
+            but = (uint16_t)(m.actors[0].but_val_cur | m.actors[1].but_val_cur);
+            if (but & (WM_BTN_PUNCH | WM_BTN_SPUNCH | WM_BTN_KICK | WM_BTN_SKICK))
+                attacked = 1;
+            /* Nothing may get permanently stuck in MODE_BLOCK: the block
+               animation's own ANI_WAITRELEASE releases it. */
+            if (m.actors[0].player_mode != WM_PMODE_BLOCK) left_block = 1;
+        }
+        assert(moved && "wrestler never moved through its own dispatcher");
+        assert(attacked && "wrestler's own AI script list never produced an attack");
+        assert(left_block && "wrestler never left MODE_BLOCK");
+    }
+    puts("drone_data all_wrestlers_move: PASS");
 }
 
 int main(void) {
@@ -246,6 +301,7 @@ int main(void) {
     test_done_yields_not_aborts();
     test_tables();
     test_cpu_opponent_fights();
+    test_all_wrestlers_move();
     puts("stage26 real CPU opponent (DRONE.ASM data + callbacks) tests: PASS");
     return 0;
 }

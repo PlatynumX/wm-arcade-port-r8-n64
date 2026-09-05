@@ -153,6 +153,17 @@ extern const wm_visual_sequence wm_bret_combo_kick_anim;
 extern const wm_visual_sequence wm_bret_fall_back_anim;
 
 /*
+ * The knockdown/getup set: what the animations above really become. None
+ * is selected by any dispatcher branch -- a getup is not chosen, it is
+ * what the fall before it turns into -- so they are reachable only through
+ * the ANI_CHANGEANIM hand-off in src/core/bret_backend.c.
+ */
+extern const wm_visual_sequence wm_bret_facedown_getup_anim;
+extern const wm_visual_sequence wm_bret_faceup_getup_anim;
+extern const wm_visual_sequence wm_bret_faceup_getup2_4_anim;
+extern const wm_visual_sequence wm_bret_hitonground_facedown_anim;
+
+/*
  * BRET.ASM:2871 hrt_rotate_anims_table's 12 off-diagonal turn-transition
  * entries (the "TURNS (STANDS)" block, HRTSEQ1.ASM:390-454) -- played by
  * set_rotate_anim/change_anim1 for the idle (#zip/stance) facing-change

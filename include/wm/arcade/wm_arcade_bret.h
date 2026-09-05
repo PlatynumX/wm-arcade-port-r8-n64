@@ -76,7 +76,16 @@ typedef enum wm_arcade_bret_anim_id {
     WM_BRET_ANIM_FACE_DRIVER2_3,
     WM_BRET_ANIM_ROLL_UPPERCUT,
     WM_BRET_ANIM_FINISH1,
-    WM_BRET_ANIM_FINISH2
+    WM_BRET_ANIM_FINISH2,
+    /* The animations Bret's knockdown/leap routines really become through
+       ANI_CHANGEANIM (ANIM.ASM:1301) once they end. They are not selected
+       by mode_normal or any dispatcher branch -- nothing "chooses" a
+       getup; it is what the animation before it turns into -- so they have
+       no place in mode_table and exist only as transition targets. */
+    WM_BRET_ANIM_FACEDOWN_GETUP,
+    WM_BRET_ANIM_FACEUP_GETUP,
+    WM_BRET_ANIM_FACEUP_GETUP2_4,
+    WM_BRET_ANIM_HITONGROUND_FACEDOWN
 } wm_arcade_bret_anim_id_t;
 
 typedef enum wm_arcade_bret_sound_id {

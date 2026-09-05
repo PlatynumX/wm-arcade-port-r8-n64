@@ -37,3 +37,78 @@ const wm_visual_sequence wm_bret_fall_back_anim = {
     .frame_count = sizeof(bret_fall_back_frames) / sizeof(bret_fall_back_frames[0]),
     .repeat = false,
 };
+
+static const wm_visual_frame bret_facedown_getup_frames[] = {
+    {"H3GU4A04", 2},
+    {"H3GU4A05", 2},
+    {"H3GU4A06", 2},
+    {"H3GU4A07", 2},
+    {"H3GU4A08", 2},
+    {"H3GU4A09", 2},
+    {"H3GU4A10", 2},
+    {"H3GU4A10", 1},
+};
+
+const wm_visual_sequence wm_bret_facedown_getup_anim = {
+    .source_file = "HRTSEQ4.ASM",
+    .source_label = "hrt_facedown_getup_anim",
+    .frames = bret_facedown_getup_frames,
+    .frame_count = sizeof(bret_facedown_getup_frames) / sizeof(bret_facedown_getup_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_faceup_getup_frames[] = {
+    {"H3GU2A01", 2},
+    {"H3GU2A02", 2},
+    {"H3GU2A03", 2},
+    {"H3GU2A04", 2},
+    {"H3GU2A05", 2},
+    {"H3GU2A06", 2},
+    {"H3GU2A07", 2},
+    {"H3GU2A08", 2},
+    {"H3GU2A09", 2},
+    {"H3GU2A10", 2},
+    {"H3GU2A10", 1},
+};
+
+const wm_visual_sequence wm_bret_faceup_getup_anim = {
+    .source_file = "HRTSEQ4.ASM",
+    .source_label = "hrt_faceup_getup_anim",
+    .frames = bret_faceup_getup_frames,
+    .frame_count = sizeof(bret_faceup_getup_frames) / sizeof(bret_faceup_getup_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_faceup_getup2_4_frames[] = {
+    {"H3GU4A05", 2},
+    {"H3GU4A06", 2},
+    {"H3GU4A07", 2},
+    {"H3GU4A08", 2},
+    {"H3GU4A09", 2},
+    {"H3GU4A10", 2},
+    {"H3GU4A10", 1},
+};
+
+const wm_visual_sequence wm_bret_faceup_getup2_4_anim = {
+    .source_file = "HRTSEQ4.ASM",
+    .source_label = "hrt_4_faceup_getup2_anim",
+    .frames = bret_faceup_getup2_4_frames,
+    .frame_count = sizeof(bret_faceup_getup2_4_frames) / sizeof(bret_faceup_getup2_4_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_hitonground_facedown_frames[] = {
+    {"H3MS3X01", 3},
+    {"H3MS3X02", 3},
+    {"H3MS3X03", 3},
+    {"H3MS3X04", 3},
+    {"H3MS3X05", 3},
+};
+
+const wm_visual_sequence wm_bret_hitonground_facedown_anim = {
+    .source_file = "HRTSEQ4.ASM",
+    .source_label = "hrt_hitonground_facedown_anim",
+    .frames = bret_hitonground_facedown_frames,
+    .frame_count = sizeof(bret_hitonground_facedown_frames) / sizeof(bret_hitonground_facedown_frames[0]),
+    .repeat = false,
+};

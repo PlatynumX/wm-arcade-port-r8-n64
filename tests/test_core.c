@@ -1827,6 +1827,59 @@ static void test_bret_attack_windows_batch6(void) {
     }
 }
 
+/* ANI_CHANGEANIM's hand-off (ANIM.ASM:1301): an animation that ends by
+   BECOMING another does not stop -- the target starts, with its own header
+   commands. hrt_tbukl_leap_anim is the case worth checking end to end
+   because it transitions twice: leap -> hit the ground face down -> get
+   up, each step a real routine with its own ANI_CHANGEANIM. */
+static void test_bret_anim_transition_chain(void) {
+    wm_arcade_actor_t a;
+    wm_bret_backend_actor bva;
+    int guard;
+    int saw_hitground = 0, saw_getup = 0;
+
+    memset(&a, 0, sizeof(a));
+    wm_bret_backend_init(&bva);
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_TBUKL_LEAP, &bva);
+    CHECK(bva.current_id == WM_BRET_ANIM_TBUKL_LEAP);
+
+    for (guard = 0; guard < 600; ++guard) {
+        wm_bret_backend_tick(&bva, &a, 0);
+        if (bva.current_id == WM_BRET_ANIM_HITONGROUND_FACEDOWN) saw_hitground = 1;
+        if (bva.current_id == WM_BRET_ANIM_FACEUP_GETUP) saw_getup = 1;
+    }
+    CHECK(saw_hitground == 1);
+    CHECK(saw_getup == 1);
+    CHECK(bva.current_id == WM_BRET_ANIM_FACEUP_GETUP);
+    CHECK(bva.visual.sequence == &wm_bret_faceup_getup_anim);
+    /* the getup's own header put him back on his feet */
+    CHECK(a.player_mode == WM_PMODE_NORMAL);
+
+    /* fall_back -> faceup_getup, the single-step case, and the one the
+       death path already selects. */
+    memset(&a, 0, sizeof(a));
+    wm_bret_backend_init(&bva);
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_FALL_BACK, &bva);
+    CHECK(a.anim_mode & WM_MODE_NOCOLLIS);
+    for (guard = 0; guard < 600 &&
+                    bva.current_id != WM_BRET_ANIM_FACEUP_GETUP; ++guard)
+        wm_bret_backend_tick(&bva, &a, 0);
+    CHECK(bva.current_id == WM_BRET_ANIM_FACEUP_GETUP);
+    /* the target's own header replaced the source animation's mode bits
+       rather than inheriting them */
+    CHECK(a.anim_mode & WM_MODE_NOCOLLIS);
+    CHECK(!(a.anim_mode & WM_MODE_OVERLAP));
+
+    /* An animation with no transition still simply ends. */
+    memset(&a, 0, sizeof(a));
+    wm_bret_backend_init(&bva);
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_BUTTS2, &bva);
+    for (guard = 0; guard < 600 && !bva.visual.ended; ++guard)
+        wm_bret_backend_tick(&bva, &a, 0);
+    CHECK(bva.visual.ended);
+    CHECK(bva.current_id == WM_BRET_ANIM_BUTTS2);
+}
+
 /* ATTRACT.ASM:669 TURN_SOUNDS_OFF_IF_NEED gates the DCS_LOGO music on
    AMODE_LOOPS < 2 -- it suppresses sound, and never skips or re-enters an
    attract call. app.c's guard for that had no body of its own and captured
@@ -4128,6 +4181,7 @@ int main(void) {
     test_bret_attack_windows_batch4();
     test_bret_rptcount_loop();
     test_bret_attack_windows_batch6();
+    test_bret_anim_transition_chain();
     test_attract_dcs_logo_does_not_fall_through();
     test_bret_hurt_box_for_frame_real_geometry();
     test_bret_backend_tick_sets_real_hurt_box();

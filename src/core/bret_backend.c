@@ -234,6 +234,11 @@ const wm_visual_sequence *wm_bret_anim_sequence(wm_arcade_bret_anim_id_t id) {
         case WM_BRET_ANIM_COMBO_PUNCH: return &wm_bret_combo_punch_anim;
         case WM_BRET_ANIM_COMBO_KICK: return &wm_bret_combo_kick_anim;
         case WM_BRET_ANIM_FALL_BACK: return &wm_bret_fall_back_anim;
+        case WM_BRET_ANIM_FACEDOWN_GETUP: return &wm_bret_facedown_getup_anim;
+        case WM_BRET_ANIM_FACEUP_GETUP: return &wm_bret_faceup_getup_anim;
+        case WM_BRET_ANIM_FACEUP_GETUP2_4: return &wm_bret_faceup_getup2_4_anim;
+        case WM_BRET_ANIM_HITONGROUND_FACEDOWN:
+            return &wm_bret_hitonground_facedown_anim;
         default: return NULL;
     }
 }
@@ -465,6 +470,49 @@ static const wm_bret_attack_window_t attack_windows[] = {
     (sizeof(attack_windows) / sizeof(attack_windows[0]))
 
 /*
+ * ANIM.ASM's ANI_CHANGEANIM (:1301) where it genuinely terminates a
+ * routine: _ani_changeanim overwrites OANIPC AND OANIBASE with the target
+ * and never returns, so the animation does not end -- it becomes another
+ * one. The source writes exactly that shape with the `.word ANI_END` after
+ * it commented out.
+ *
+ * Only unconditional transitions are here. tools/wlanim.py reports a
+ * next_label only when nothing after the ANI_CHANGEANIM ends the routine
+ * any other way; where a real ANI_END follows (hrt_2_butts_anim's
+ * button-mash #ex path, hrt_facedown_getup_anim's free-toss branch) the
+ * transition is one exit among several and is deliberately NOT taken here,
+ * because taking it would need the condition this port does not evaluate.
+ */
+typedef struct {
+    wm_arcade_bret_anim_id_t from;
+    wm_arcade_bret_anim_id_t to;
+} wm_bret_anim_transition_t;
+
+static const wm_bret_anim_transition_t anim_transitions[] = {
+    { WM_BRET_ANIM_FALL_BACK,            WM_BRET_ANIM_FACEUP_GETUP },
+    { WM_BRET_ANIM_FLYING_KICK,          WM_BRET_ANIM_FACEDOWN_GETUP },
+    { WM_BRET_ANIM_TBUKL_LEAP,           WM_BRET_ANIM_HITONGROUND_FACEDOWN },
+    { WM_BRET_ANIM_RUNNING_GROUND_PUNCH, WM_BRET_ANIM_FACEUP_GETUP2_4 },
+    /* hrt_hitonground_facedown_anim is itself a transition target that
+       transitions again, so the chain really is leap -> hit the ground ->
+       get up. */
+    { WM_BRET_ANIM_HITONGROUND_FACEDOWN, WM_BRET_ANIM_FACEUP_GETUP },
+};
+#define WM_BRET_ANIM_TRANSITION_COUNT \
+    (sizeof(anim_transitions) / sizeof(anim_transitions[0]))
+
+static bool find_anim_transition(wm_arcade_bret_anim_id_t from,
+                                 wm_arcade_bret_anim_id_t *to) {
+    size_t i;
+    for (i = 0; i < WM_BRET_ANIM_TRANSITION_COUNT; ++i)
+        if (anim_transitions[i].from == from) {
+            *to = anim_transitions[i].to;
+            return true;
+        }
+    return false;
+}
+
+/*
  * ANIM.ASM's ANI_SETPLYRMODE, when it falls partway through an animation
  * rather than in its header. Keyed on (id, frame) exactly like the attack
  * windows, and applied by wm_bret_backend_tick when the animation reaches
@@ -502,6 +550,10 @@ static const wm_bret_plyrmode_change_t plyrmode_changes[] = {
     { WM_BRET_ANIM_RUNNING_GROUND_PUNCH, 7, WM_PMODE_ONGROUND },
     /* hrt_fall_back_anim's own landing. */
     { WM_BRET_ANIM_FALL_BACK, 11, WM_PMODE_ONGROUND },
+    /* The getups' own headers put him back on his feet. */
+    { WM_BRET_ANIM_FACEDOWN_GETUP, 0, WM_PMODE_NORMAL },
+    { WM_BRET_ANIM_FACEUP_GETUP, 0, WM_PMODE_NORMAL },
+    { WM_BRET_ANIM_FACEUP_GETUP2_4, 0, WM_PMODE_NORMAL },
 };
 #define WM_BRET_PLYRMODE_CHANGE_COUNT \
     (sizeof(plyrmode_changes) / sizeof(plyrmode_changes[0]))
@@ -536,6 +588,12 @@ static uint16_t anim_header_mode_bits(wm_arcade_bret_anim_id_t id) {
         case WM_BRET_ANIM_PIN4:
         case WM_BRET_ANIM_RUNNING_GROUND_PUNCH:
             return (uint16_t)WM_MODE_OVERLAP;
+        /* hrt_facedown_getup_anim / hrt_faceup_getup_anim /
+           hrt_4_faceup_getup2_anim: ...|MODE_NOCOLLIS */
+        case WM_BRET_ANIM_FACEDOWN_GETUP:
+        case WM_BRET_ANIM_FACEUP_GETUP:
+        case WM_BRET_ANIM_FACEUP_GETUP2_4:
+            return (uint16_t)WM_MODE_NOCOLLIS;
         /* hrt_fall_back_anim: ...|MODE_OVERLAP|MODE_NOCOLLIS */
         case WM_BRET_ANIM_FALL_BACK:
             return (uint16_t)(WM_MODE_OVERLAP | WM_MODE_NOCOLLIS);
@@ -580,7 +638,11 @@ static bool anim_header_sets_uninit(wm_arcade_bret_anim_id_t id) {
     return id == WM_BRET_ANIM_HEAD_HELD_STAND3 ||
            id == WM_BRET_ANIM_FAKE_HOLD3 ||
            id == WM_BRET_ANIM_PIN2 || id == WM_BRET_ANIM_PIN4 ||
-           id == WM_BRET_ANIM_FALL_BACK;
+           id == WM_BRET_ANIM_FALL_BACK ||
+           id == WM_BRET_ANIM_FACEDOWN_GETUP ||
+           id == WM_BRET_ANIM_FACEUP_GETUP ||
+           id == WM_BRET_ANIM_FACEUP_GETUP2_4 ||
+           id == WM_BRET_ANIM_HITONGROUND_FACEDOWN;
 }
 
 /*
@@ -1097,6 +1159,23 @@ void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
     if (bva->pending_uninit_clear) {
         actor->anim_mode &= (uint16_t)~(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
         bva->pending_uninit_clear = false;
+    }
+
+    /* ANI_CHANGEANIM's own hand-off: an animation that ends by BECOMING
+       another does not stop -- the target starts, with its own header
+       commands, attack windows and mode bits, exactly as if it had been
+       selected. Driven through wm_bret_backend_change_anim so none of that
+       is special-cased, and applied on the tick the source animation
+       genuinely ends. */
+    if (actor && at_current_anim && bva->visual.ended) {
+        wm_arcade_bret_anim_id_t next_id;
+        if (find_anim_transition(bva->current_id, &next_id)) {
+            /* Clear the finished animation's own protection first, so the
+               target's header sets its own rather than inheriting. */
+            actor->anim_mode &= (uint16_t)~(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP |
+                                            anim_header_mode_bits(bva->current_id));
+            wm_bret_backend_change_anim(actor, next_id, bva);
+        }
     }
 
     /* hrt_4_block_anim's own tail, once the WAITRELEASE hold above has let

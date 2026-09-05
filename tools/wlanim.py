@@ -155,8 +155,17 @@ def _routine_terminates(lines: list[str], span: tuple[int, int]) -> bool:
     """Does this body actually end, rather than run on? ANI_END/ANI_REPEAT
     is a real terminator; a body with neither does not stop where its text
     stops, because execution simply continues into the words that follow."""
-    return any(END_RE.match(l) or REPEAT_RE.match(l) or CHANGEANIM_RE.match(l)
-               for l in lines[span[0]:span[1]])
+    body = lines[span[0]:span[1]]
+    if any(END_RE.match(l) or REPEAT_RE.match(l) for l in body):
+        return True
+    # An ANI_CHANGEANIM terminates only when it genuinely REPLACES the
+    # terminator -- i.e. nothing in the body ends it any other way. That is
+    # the shape the source writes with the `.word ANI_END` after it
+    # commented out (16 places across HRTSEQ2-4). When the body also has a
+    # real ANI_END, the CHANGEANIM is one exit among several and the
+    # routine's own frame list runs on to that ANI_END; see
+    # extract_visual_slice.
+    return any(CHANGEANIM_RE.match(l) for l in body)
 
 
 def _chain_target(lines: list[str], span: tuple[int, int]) -> int | None:
@@ -349,6 +358,19 @@ def extract_visual_slice(path: pathlib.Path, label: str, repeat: bool | None = N
         # belongs to some other path that branched past it.
         cm = CHANGEANIM_RE.match(line)
         if cm:
+            # Terminal only when nothing after it ends the routine any
+            # other way. hrt_fall_back_anim / hrt_flying_kick_anim end
+            # exactly here, their `.word ANI_END` commented out right
+            # below. But hrt_2_butts_anim reaches its ANI_CHANGEANIM when
+            # its repeat loop runs out and still has a real ANI_END on the
+            # button-mash #ex path, and hrt_facedown_getup_anim's sits
+            # inside an ANI_IFNOTSTATUS free-toss branch with the ordinary
+            # ending below it -- in both, the CHANGEANIM is one exit among
+            # several, so the flat list keeps walking to the ANI_END, the
+            # same "longest real path" rule every forward branch already
+            # gets.
+            if any(END_RE.match(lines[j]) for j in order[order.index(idx) + 1:]):
+                continue
             next_label = cm.group(1)
             break
         # The run routine is an endless local loop ending in ANI_GOTO #lp1.

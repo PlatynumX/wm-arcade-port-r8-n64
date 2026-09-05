@@ -272,10 +272,14 @@ def trace(path: pathlib.Path, label: str):
             continue
         if wlanim.REPEAT_RE.match(line) or wlanim.END_RE.match(line):
             break
-        # Same terminator extract_visual_slice uses: ANI_CHANGEANIM ends the
-        # routine (ANIM.ASM:1301), so indices must not run past it either.
+        # Same terminator rule extract_visual_slice uses: an ANI_CHANGEANIM
+        # ends the routine (ANIM.ASM:1301) only when nothing after it ends
+        # it any other way; otherwise it is one exit among several and the
+        # walk continues to the real ANI_END.
         if wlanim.CHANGEANIM_RE.match(line):
-            break
+            if not any(wlanim.END_RE.match(lines[j])
+                       for j in order[order.index(idx) + 1:]):
+                break
         cmd = COMMAND_RE.match(line)
         if cmd:
             events.append((len(frames), cmd.group(1).upper(), cmd.group(2).strip()))

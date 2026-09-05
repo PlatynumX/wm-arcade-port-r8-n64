@@ -613,6 +613,7 @@ static const wm_visual_frame bret_butts2_frames[] = {
     {"H2BC3A05", 2},
     {"H2BC3A06", 2},
     {"H2BC3A07", 2},
+    {"H2BC3A08", 2},
 };
 
 const wm_visual_sequence wm_bret_butts2_anim = {
@@ -636,6 +637,7 @@ static const wm_visual_frame bret_butts4_frames[] = {
     {"H4BC3A05", 2},
     {"H4BC3A06", 2},
     {"H4BC3A07", 2},
+    {"H4BC3A08", 2},
 };
 
 const wm_visual_sequence wm_bret_butts4_anim = {

@@ -86,6 +86,10 @@ python3 "$ROOT/tools/wlanim.py" \
     --source "$ORIG/HRTSEQ4.ASM" \
     --slice hrt_4_block_anim wm_bret_block4_anim bret_block4_frames false \
     --slice hrt_fall_back_anim wm_bret_fall_back_anim bret_fall_back_frames false \
+    --slice hrt_facedown_getup_anim wm_bret_facedown_getup_anim bret_facedown_getup_frames false \
+    --slice hrt_faceup_getup_anim wm_bret_faceup_getup_anim bret_faceup_getup_frames false \
+    --slice hrt_4_faceup_getup2_anim wm_bret_faceup_getup2_4_anim bret_faceup_getup2_4_frames false \
+    --slice hrt_hitonground_facedown_anim wm_bret_hitonground_facedown_anim bret_hitonground_facedown_frames false \
     --out "$ROOT/src/generated/bret_defense.c"
 python3 "$ROOT/tools/wlanim.py" \
     --source "$ORIG/HRTSEQ3.ASM" \

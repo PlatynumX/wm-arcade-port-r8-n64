@@ -74,10 +74,23 @@ def test_wlattack_audit() -> None:
 
     bseq = wlanim.extract_visual_slice(p, "hrt_2_butts_anim", False)
     assert (bseq.loop_first, bseq.loop_last, bseq.loop_count) == (0, 7, 3)
-    assert bseq.next_label == "hrt_4_uppercut_anim", bseq.next_label
-    # Truncated AT the transition: the 5 frames that used to follow belong
-    # to the #ex path that branched past the ANI_CHANGEANIM.
-    assert len(bseq.frames) == 8, len(bseq.frames)
+    # Its ANI_CHANGEANIM is reached when the repeat loop runs out, but the
+    # routine ALSO has a real ANI_END on its button-mash #ex path, so the
+    # transition is one exit among several rather than the terminator --
+    # the flat list keeps walking to that ANI_END, the same "longest real
+    # path" rule every forward branch already gets. Treating it as
+    # terminal truncated this to 8 frames and claimed a transition it does
+    # not unconditionally take.
+    assert bseq.next_label is None, bseq.next_label
+    assert len(bseq.frames) == 9, len(bseq.frames)
+
+    # hrt_facedown_getup_anim is the mirror image: its ANI_CHANGEANIM sits
+    # inside an ANI_IFNOTSTATUS free-toss branch with the ordinary ending
+    # below it, so it is not the terminator either.
+    getup = wlanim.extract_visual_slice(
+        ROOT / "original" / "wwf-wrestlemania" / "HRTSEQ4.ASM",
+        "hrt_facedown_getup_anim", False)
+    assert getup.next_label is None, getup.next_label
 
     # _ani_changeanim (ANIM.ASM:1301) overwrites OANIPC *and* OANIBASE and
     # never returns, and the source confirms it by commenting out the

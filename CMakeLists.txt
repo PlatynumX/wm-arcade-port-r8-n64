@@ -138,6 +138,14 @@ if(WM_BUILD_TESTS)
         # public include path; add it just for these targets.
         target_include_directories(${test_target} PRIVATE include/wm/arcade)
         target_compile_options(${test_target} PRIVATE -Wall -Wextra -Wpedantic)
+        # These tests verify themselves with plain assert(), which the
+        # project's documented release build (CMAKE_BUILD_TYPE=Release)
+        # would otherwise silently strip via the -DNDEBUG in
+        # CMAKE_C_FLAGS_RELEASE, making every assertion here a no-op and
+        # every one of these tests "pass" regardless of what it checks.
+        # -UNDEBUG (appended after the build type's flags, so it wins)
+        # keeps assert() live in these binaries no matter the build type.
+        target_compile_options(${test_target} PRIVATE -UNDEBUG)
         add_test(NAME ${test_target} COMMAND ${test_target})
     endforeach()
 endif()

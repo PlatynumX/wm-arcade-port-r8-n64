@@ -77,6 +77,8 @@ ctest --test-dir build-host --output-on-failure
 ./build-host/wm_headless
 ```
 
+The fix38 combat/ring/RNG/attract/hiscore host tests (`tests/arcade_port/fix38/`) verify themselves with plain `assert()`. Since `-DCMAKE_BUILD_TYPE=Release` above defines `NDEBUG`, which normally compiles every `assert()` to a no-op, their CMake targets force `-UNDEBUG` so those checks stay real under the documented build (confirmed by deliberately breaking one and watching it fail).
+
 ## N64 build
 
 With libdragon configured:

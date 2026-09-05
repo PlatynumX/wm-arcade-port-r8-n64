@@ -37,6 +37,9 @@ class Sequence:
     label: str
     frames: tuple[Frame, ...]
     repeat: bool
+    # ANI_CHANGEANIM target, when the routine ends by becoming another
+    # animation rather than by ANI_END.
+    next_label: str | None = None
     # ANIM.ASM RPT_COUNT loop, as frame indices into `frames`; loop_count 0
     # means the routine has no such loop.
     loop_first: int = 0
@@ -152,7 +155,7 @@ def _routine_terminates(lines: list[str], span: tuple[int, int]) -> bool:
     """Does this body actually end, rather than run on? ANI_END/ANI_REPEAT
     is a real terminator; a body with neither does not stop where its text
     stops, because execution simply continues into the words that follow."""
-    return any(END_RE.match(l) or REPEAT_RE.match(l)
+    return any(END_RE.match(l) or REPEAT_RE.match(l) or CHANGEANIM_RE.match(l)
                for l in lines[span[0]:span[1]])
 
 
@@ -179,6 +182,10 @@ def _chain_target(lines: list[str], span: tuple[int, int]) -> int | None:
         if m and m.group(1) == last_goto:
             return i
     return None
+
+
+CHANGEANIM_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_CHANGEANIM\s*,\s*([A-Za-z_][A-Za-z0-9_]*)", re.I)
 
 
 SET_RPT_RE = re.compile(
@@ -315,6 +322,7 @@ def extract_visual_slice(path: pathlib.Path, label: str, repeat: bool | None = N
 
     frames: list[Frame] = []
     inferred_repeat = False
+    next_label = None
     frame_at: dict[int, int] = {}
     walked: list[int] = []
 
@@ -332,6 +340,16 @@ def extract_visual_slice(path: pathlib.Path, label: str, repeat: bool | None = N
             inferred_repeat = True
             break
         if END_RE.match(line):
+            break
+        # ANIM.ASM:1301 _ani_changeanim overwrites OANIPC *and* OANIBASE
+        # with the target animation and never comes back, so this routine
+        # genuinely ends here and the target begins. The source says so
+        # itself: the `.word ANI_END` after an ANI_CHANGEANIM is commented
+        # out in 16 places across HRTSEQ2-4. Everything after it in the text
+        # belongs to some other path that branched past it.
+        cm = CHANGEANIM_RE.match(line)
+        if cm:
+            next_label = cm.group(1)
             break
         # The run routine is an endless local loop ending in ANI_GOTO #lp1.
         if frames and GOTO_RE.match(line):
@@ -355,7 +373,7 @@ def extract_visual_slice(path: pathlib.Path, label: str, repeat: bool | None = N
     return Sequence(label=label, frames=tuple(frames),
                     repeat=inferred_repeat if repeat is None else repeat,
                     loop_first=loop_first, loop_last=loop_last,
-                    loop_count=loop_count)
+                    loop_count=loop_count, next_label=next_label)
 
 
 def render(entries: list[tuple[str, str, str, Sequence]]) -> str:

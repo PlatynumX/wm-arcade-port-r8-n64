@@ -14,3 +14,26 @@ const wm_visual_sequence wm_bret_block4_anim = {
     .frame_count = sizeof(bret_block4_frames) / sizeof(bret_block4_frames[0]),
     .repeat = false,
 };
+
+static const wm_visual_frame bret_fall_back_frames[] = {
+    {"H3UC3X01", 3},
+    {"H3UC3X02", 3},
+    {"H3UC3X03", 3},
+    {"H3UC3X04", 3},
+    {"H3UC3X05", 3},
+    {"H3UC3X06", 2},
+    {"H3UC3X06", 2},
+    {"H3UC3X07", 3},
+    {"H3UC3X08", 3},
+    {"H3UC3X09", 3},
+    {"H3UC3X10", 3},
+    {"H3RL1A01", 1},
+};
+
+const wm_visual_sequence wm_bret_fall_back_anim = {
+    .source_file = "HRTSEQ4.ASM",
+    .source_label = "hrt_fall_back_anim",
+    .frames = bret_fall_back_frames,
+    .frame_count = sizeof(bret_fall_back_frames) / sizeof(bret_fall_back_frames[0]),
+    .repeat = false,
+};

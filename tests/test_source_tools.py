@@ -65,16 +65,34 @@ def test_wlattack_audit() -> None:
 
     assert verdict("hrt_2_punch_anim") == []
 
-    # hrt_2_butts_anim's ANI_SET_RPTCOUNT,3 span is representable now
-    # (wm_visual_sequence carries the loop), so the loop is no longer what
-    # blocks it -- the terminal ANI_CHANGEANIM into the uppercut still is.
+    # hrt_2_butts_anim is fully representable now: its ANI_SET_RPTCOUNT,3
+    # span is carried as loop fields, and its ANI_CHANGEANIM is recognised
+    # as the terminator ANIM.ASM:1301 actually makes it rather than a
+    # mid-stream command.
     butts = verdict("hrt_2_butts_anim")
-    assert any("ANI_CHANGEANIM" in w for w in butts)
-    assert not any("RPTCOUNT" in w for w in butts), butts
+    assert butts == [], butts
 
-    # A deterministic loop is carried, not flattened.
     bseq = wlanim.extract_visual_slice(p, "hrt_2_butts_anim", False)
     assert (bseq.loop_first, bseq.loop_last, bseq.loop_count) == (0, 7, 3)
+    assert bseq.next_label == "hrt_4_uppercut_anim", bseq.next_label
+    # Truncated AT the transition: the 5 frames that used to follow belong
+    # to the #ex path that branched past the ANI_CHANGEANIM.
+    assert len(bseq.frames) == 8, len(bseq.frames)
+
+    # _ani_changeanim (ANIM.ASM:1301) overwrites OANIPC *and* OANIBASE and
+    # never returns, and the source confirms it by commenting out the
+    # `.word ANI_END` that follows it in 16 places. Treating it as an
+    # ordinary command made routines read far longer and messier than they
+    # are -- hrt_fall_back_anim as 55 frames with four transitions when it
+    # is 12 frames with one, hrt_flying_kick_anim as 38 rather than 9.
+    fb = wlanim.extract_visual_slice(
+        ROOT / "original" / "wwf-wrestlemania" / "HRTSEQ4.ASM",
+        "hrt_fall_back_anim", False)
+    assert len(fb.frames) == 12, len(fb.frames)
+    assert fb.next_label == "hrt_faceup_getup_anim", fb.next_label
+    fk = wlanim.extract_visual_slice(p, "hrt_flying_kick_anim", False)
+    assert len(fk.frames) == 9, len(fk.frames)
+    assert fk.next_label == "hrt_facedown_getup_anim", fk.next_label
 
     # hrt_2_raise_arm_anim has no ANI_END of its own: it ends in
     # `ANI_GOTO,#cont`, a label inside hrt_4_raise_arm_anim. The extractor

@@ -57,9 +57,6 @@ COMMAND_RE = re.compile(
 # exits and its ANI_SLIDE_BACK forward skip are both of this kind.
 FLOW_RULES = (
     # blocking: a flat list is not any single real playthrough.
-    (re.compile(r"^\s*(?:\.word|WL|WWL)\s+ANI_CHANGEANIM\b", re.I), "blocking",
-     "ANI_CHANGEANIM: the routine turns into a different animation rather "
-     "than ending, so its own frame list is not the whole story"),
     (re.compile(r"^\s*W+L+W*\s+ANI_SUPERSLAVE2?\b", re.I), "blocking",
      "ANI_SUPERSLAVE: its WWLLW rows carry this actor's own frames in a "
      "shape wlanim.py's WL matcher does not parse, so those frames are "
@@ -152,8 +149,10 @@ def audit(path: pathlib.Path, label: str):
     # at runtime, or an effectively endless one -- still blocks, and
     # extract_visual_slice says exactly why.
     loop_note = None
+    seq_next = None
     try:
         seq = wlanim.extract_visual_slice(path, label, False)
+        seq_next = seq.next_label
         if seq.loop_count:
             loop_note = ("looped",
                          f"ANI_SET_RPTCOUNT,{seq.loop_count}: frames "
@@ -228,6 +227,15 @@ def audit(path: pathlib.Path, label: str):
 
     if not saw_frame:
         raise ValueError(f"no WL frames found for {label}")
+    if seq_next:
+        findings.insert(0, ("becomes",
+                            f"ends with ANI_CHANGEANIM,{seq_next} -- ANIM.ASM:"
+                            f"1301 overwrites OANIPC/OANIBASE and never "
+                            f"returns, so this routine really ends here and "
+                            f"{seq_next} begins (the source's own `.word "
+                            f"ANI_END` after it is commented out). The frame "
+                            f"list is complete for THIS animation; the "
+                            f"transition target is its own"))
     if loop_note:
         findings.insert(0, loop_note)
     if chained:
@@ -264,6 +272,10 @@ def trace(path: pathlib.Path, label: str):
             continue
         if wlanim.REPEAT_RE.match(line) or wlanim.END_RE.match(line):
             break
+        # Same terminator extract_visual_slice uses: ANI_CHANGEANIM ends the
+        # routine (ANIM.ASM:1301), so indices must not run past it either.
+        if wlanim.CHANGEANIM_RE.match(line):
+            break
         cmd = COMMAND_RE.match(line)
         if cmd:
             events.append((len(frames), cmd.group(1).upper(), cmd.group(2).strip()))
@@ -291,10 +303,11 @@ def main(argv=None) -> int:
             end = terminator[0] if terminator else "end of file"
             verdict = "NOT SAFELY SLICEABLE" if blocking else "sliceable"
             print(f"{label}: {verdict}  (slice ends at {end})")
-            for sev in ("chained", "looped", "blocking", "unported", "tolerated"):
+            for sev in ("chained", "becomes", "looped", "blocking",
+                        "unported", "tolerated"):
                 tag = {"blocking": "BLOCKING ", "unported": "unported ",
                        "tolerated": "tolerated", "chained": "chained  ",
-                       "looped": "looped   "}[sev]
+                       "looped": "looped   ", "becomes": "becomes  "}[sev]
                 for s_, why in findings:
                     if s_ == sev:
                         print(f"    {tag} {why}")

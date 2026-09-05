@@ -129,6 +129,30 @@ extern const wm_visual_sequence wm_bret_pin2_anim;
 extern const wm_visual_sequence wm_bret_pin4_anim;
 
 /*
+ * Batch 6, unlocked by treating ANI_CHANGEANIM as what ANIM.ASM:1301
+ * actually makes it: a terminator. _ani_changeanim overwrites OANIPC AND
+ * OANIBASE with the target and never returns, and the source says so
+ * itself -- the `.word ANI_END` after an ANI_CHANGEANIM is commented out
+ * in 16 places across HRTSEQ2-4. Treating it as an ordinary mid-stream
+ * command made these routines look far longer and far messier than they
+ * are: hrt_fall_back_anim read as 55 frames with four transitions when it
+ * is really 12 frames ending in one, and hrt_flying_kick_anim as 38
+ * rather than 9.
+ *
+ * Each ends by becoming another animation; that transition itself is not
+ * wired yet (see wm/bret_backend.h), so these play their own real frames
+ * and then stop rather than continuing into their follow-on.
+ */
+extern const wm_visual_sequence wm_bret_butts2_anim;
+extern const wm_visual_sequence wm_bret_butts4_anim;
+extern const wm_visual_sequence wm_bret_flying_kick_anim;
+extern const wm_visual_sequence wm_bret_tbukl_leap_anim;
+extern const wm_visual_sequence wm_bret_running_ground_punch_anim;
+extern const wm_visual_sequence wm_bret_combo_punch_anim;
+extern const wm_visual_sequence wm_bret_combo_kick_anim;
+extern const wm_visual_sequence wm_bret_fall_back_anim;
+
+/*
  * BRET.ASM:2871 hrt_rotate_anims_table's 12 off-diagonal turn-transition
  * entries (the "TURNS (STANDS)" block, HRTSEQ1.ASM:390-454) -- played by
  * set_rotate_anim/change_anim1 for the idle (#zip/stance) facing-change

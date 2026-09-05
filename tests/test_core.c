@@ -575,6 +575,28 @@ static void test_bret_anim_sequence_mapping(void) {
        span cannot represent -- wlanim.py refuses it rather than emitting
        an inverted or invented span. */
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_UPPERCUTS_TO_HEAD) == NULL);
+    /* Batch 6: unlocked by recognising ANI_CHANGEANIM as the terminator
+       ANIM.ASM:1301 makes it. Each of these ends by becoming another
+       animation, so its own frame list stops there. */
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_BUTTS2) == &wm_bret_butts2_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_BUTTS4) == &wm_bret_butts4_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_FLYING_KICK) ==
+          &wm_bret_flying_kick_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_TBUKL_LEAP) ==
+          &wm_bret_tbukl_leap_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_RUNNING_GROUND_PUNCH) ==
+          &wm_bret_running_ground_punch_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_COMBO_PUNCH) ==
+          &wm_bret_combo_punch_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_COMBO_KICK) ==
+          &wm_bret_combo_kick_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_FALL_BACK) ==
+          &wm_bret_fall_back_anim);
+    /* fall_back reads as 12 frames, not the 55 a walk that ran past its
+       ANI_CHANGEANIM produced; flying_kick as 9, not 38. */
+    CHECK(wm_bret_fall_back_anim.frame_count == 12);
+    CHECK(wm_bret_flying_kick_anim.frame_count == 9);
+    CHECK(wm_bret_butts2_anim.loop_count == 3);
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_FINISH1) == NULL);
 }
 
@@ -1181,8 +1203,17 @@ static void test_bret_backend_charge_ddt_fires_on_release(void) {
         wm_human_input_commit(&actor, &hs, &in);
         bva.pcnt = (uint32_t)i;
         (void)wm_arcade_move_bret(&actor, &opp, &env, &cb);
+        /* The press edge on tick 0 really selects an attack
+           (do_super_punch's own close-range butts branch at these zero
+           distances), whose header sets MODE_UNINT. Advancing the
+           animation -- what the live match loop does every tick -- lets it
+           finish, which is what makes the charge release below reachable;
+           wm_arcade_bret_try_charge_ddt's own MODE_UNINT precondition
+           would otherwise (correctly) refuse. */
+        wm_bret_backend_tick(&bva, &actor, (uint16_t)i);
     }
     CHECK(actor.powerp_dtime == 100);
+    CHECK(!(actor.anim_mode & WM_MODE_UNINT));
 
     memset(&in, 0, sizeof(in));
     wm_human_input_commit(&actor, &hs, &in);
@@ -1701,6 +1732,99 @@ static void test_bret_rptcount_loop(void) {
         CHECK(!(a.anim_mode & WM_MODE_CHECKHIT));
     }
     CHECK(bva.visual.ended);
+}
+
+/* Batch 6's attack windows and header commands, all traced with
+   tools/wlattack.py after ANI_CHANGEANIM was recognised as a terminator.
+   hrt_2/4_butts_anim's window is inside their ANI_SET_RPTCOUNT,3 span, so
+   it fires three times; the two combos carry three pulses each. */
+static void test_bret_attack_windows_batch6(void) {
+    static const struct {
+        wm_arcade_bret_anim_id_t id;
+        const wm_visual_sequence *seq;
+        size_t frame;
+        uint16_t attack_mode;
+        int16_t xoff, yoff, width, height;
+    } cases[] = {
+        { WM_BRET_ANIM_BUTTS2, &wm_bret_butts2_anim, 3,
+          WM_AMODE_HDBUTT_STAY, 19, 75, 35, 24 },
+        { WM_BRET_ANIM_BUTTS4, &wm_bret_butts4_anim, 3,
+          WM_AMODE_HDBUTT_STAY, 19, 75, 35, 24 },
+        { WM_BRET_ANIM_FLYING_KICK, &wm_bret_flying_kick_anim, 4,
+          WM_AMODE_FLYKICK, -3, 26, 61, 21 },
+        { WM_BRET_ANIM_RUNNING_GROUND_PUNCH,
+          &wm_bret_running_ground_punch_anim, 5,
+          WM_AMODE_BUTTSTOMP, -50, -6, 36, 23 },
+        { WM_BRET_ANIM_COMBO_KICK, &wm_bret_combo_kick_anim, 3,
+          WM_AMODE_KICK, 23, 53, 50, 27 },
+    };
+    size_t i;
+    for (i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+        wm_arcade_actor_t a;
+        wm_bret_backend_actor bva;
+        int guard;
+
+        memset(&a, 0, sizeof(a));
+        wm_bret_backend_init(&bva);
+        wm_bret_backend_change_anim(&a, cases[i].id, &bva);
+        CHECK(bva.visual.sequence == cases[i].seq);
+        CHECK(a.anim_mode & WM_MODE_UNINT);
+
+        for (guard = 0; guard < 80 && bva.visual.frame_index != cases[i].frame; ++guard)
+            wm_bret_backend_tick(&bva, &a, 0);
+        CHECK(bva.visual.frame_index == cases[i].frame);
+        CHECK(a.anim_mode & WM_MODE_CHECKHIT);
+        CHECK(a.attack_mode == cases[i].attack_mode);
+        CHECK(a.attack_xoff == cases[i].xoff);
+        CHECK(a.attack_yoff == cases[i].yoff);
+        CHECK(a.attack_width == cases[i].width);
+        CHECK(a.attack_height == cases[i].height);
+    }
+
+    /* hrt_tbukl_leap_anim's header carries three extra mode bits beyond
+       UNINT|NOAUTOFLIP, and its box is an ANI_ATTACK_ON_Z. */
+    {
+        wm_arcade_actor_t a;
+        wm_bret_backend_actor bva;
+        int guard;
+
+        memset(&a, 0, sizeof(a));
+        wm_bret_backend_init(&bva);
+        wm_bret_backend_change_anim(&a, WM_BRET_ANIM_TBUKL_LEAP, &bva);
+        CHECK(a.anim_mode & WM_MODE_OVERLAP);
+        CHECK(a.anim_mode & WM_MODE_NOCONFINE);
+        CHECK(a.anim_mode & WM_MODE_NOGRAVITY);
+        for (guard = 0; guard < 60 && bva.visual.frame_index != 4; ++guard)
+            wm_bret_backend_tick(&bva, &a, 0);
+        CHECK(a.attack_mode == WM_AMODE_BSTOMP);
+        CHECK(a.attack_zoff == -10);
+        CHECK(a.attack_depth == 70);
+        /* lands on the ground partway through */
+        for (guard = 0; guard < 60 && bva.visual.frame_index != 6; ++guard)
+            wm_bret_backend_tick(&bva, &a, 0);
+        CHECK(a.player_mode == WM_PMODE_ONGROUND);
+    }
+
+    /* hrt_fall_back_anim carries no attack window, an OVERLAP|NOCOLLIS
+       header, and its own landing partway through. */
+    {
+        wm_arcade_actor_t a;
+        wm_bret_backend_actor bva;
+        int guard;
+
+        memset(&a, 0, sizeof(a));
+        wm_bret_backend_init(&bva);
+        wm_bret_backend_change_anim(&a, WM_BRET_ANIM_FALL_BACK, &bva);
+        CHECK(a.anim_mode & WM_MODE_UNINT);
+        CHECK(a.anim_mode & WM_MODE_OVERLAP);
+        CHECK(a.anim_mode & WM_MODE_NOCOLLIS);
+        for (guard = 0; guard < 200 && bva.visual.frame_index != 11; ++guard) {
+            wm_bret_backend_tick(&bva, &a, 0);
+            CHECK(!(a.anim_mode & WM_MODE_CHECKHIT));
+        }
+        CHECK(bva.visual.frame_index == 11);
+        CHECK(a.player_mode == WM_PMODE_ONGROUND);
+    }
 }
 
 /* ATTRACT.ASM:669 TURN_SOUNDS_OFF_IF_NEED gates the DCS_LOGO music on
@@ -4003,6 +4127,7 @@ int main(void) {
     test_bret_midanim_setplyrmode();
     test_bret_attack_windows_batch4();
     test_bret_rptcount_loop();
+    test_bret_attack_windows_batch6();
     test_attract_dcs_logo_does_not_fall_through();
     test_bret_hurt_box_for_frame_real_geometry();
     test_bret_backend_tick_sets_real_hurt_box();

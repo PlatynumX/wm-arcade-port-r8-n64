@@ -603,3 +603,189 @@ const wm_visual_sequence wm_bret_pin4_anim = {
     .loop_last = 25,
     .loop_count = 3,
 };
+
+static const wm_visual_frame bret_butts2_frames[] = {
+    {"H2BC3A01", 2},
+    {"H2BC3A02", 2},
+    {"H2BC3A03", 2},
+    {"H2BC3A04", 2},
+    {"H2BC3A05", 6},
+    {"H2BC3A05", 2},
+    {"H2BC3A06", 2},
+    {"H2BC3A07", 2},
+};
+
+const wm_visual_sequence wm_bret_butts2_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_2_butts_anim",
+    .frames = bret_butts2_frames,
+    .frame_count = sizeof(bret_butts2_frames) / sizeof(bret_butts2_frames[0]),
+    .repeat = false,
+    /* ANI_SET_RPTCOUNT,3: frames [0..7] play 3 times before the stream continues. */
+    .loop_first = 0,
+    .loop_last = 7,
+    .loop_count = 3,
+};
+
+static const wm_visual_frame bret_butts4_frames[] = {
+    {"H4BC3A01", 2},
+    {"H4BC3A02", 2},
+    {"H4BC3A03", 2},
+    {"H4BC3A04", 2},
+    {"H4BC3A05", 6},
+    {"H4BC3A05", 2},
+    {"H4BC3A06", 2},
+    {"H4BC3A07", 2},
+};
+
+const wm_visual_sequence wm_bret_butts4_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_4_butts_anim",
+    .frames = bret_butts4_frames,
+    .frame_count = sizeof(bret_butts4_frames) / sizeof(bret_butts4_frames[0]),
+    .repeat = false,
+    /* ANI_SET_RPTCOUNT,3: frames [0..7] play 3 times before the stream continues. */
+    .loop_first = 0,
+    .loop_last = 7,
+    .loop_count = 3,
+};
+
+static const wm_visual_frame bret_flying_kick_frames[] = {
+    {"H3DC3A01", 2},
+    {"H3DC3A02", 2},
+    {"H3DC3A03", 7},
+    {"H3DC3A04", 3},
+    {"H3DC3A05", 3},
+    {"H3DC3A05", 3},
+    {"H3DC3A06", 1},
+    {"H3DC3A08", 2},
+    {"H3DC3A09", 2},
+};
+
+const wm_visual_sequence wm_bret_flying_kick_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_flying_kick_anim",
+    .frames = bret_flying_kick_frames,
+    .frame_count = sizeof(bret_flying_kick_frames) / sizeof(bret_flying_kick_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_tbukl_leap_frames[] = {
+    {"H4JP4C01", 3},
+    {"H4JP4C02", 3},
+    {"H4JP4C03", 3},
+    {"H4JP4C04", 3},
+    {"H4JP4C05", 6},
+    {"H4JP4C05", 24},
+    {"H4JP4C06", 1},
+};
+
+const wm_visual_sequence wm_bret_tbukl_leap_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_tbukl_leap_anim",
+    .frames = bret_tbukl_leap_frames,
+    .frame_count = sizeof(bret_tbukl_leap_frames) / sizeof(bret_tbukl_leap_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_running_ground_punch_frames[] = {
+    {"H4JK4C01", 2},
+    {"H4JK4C02", 2},
+    {"H4JK4C03", 3},
+    {"H4JK4C04", 3},
+    {"H4JK4C05", 3},
+    {"H4JK4C06", 2},
+    {"H4JK4C07", 5},
+    {"H4JK4C08", 4},
+};
+
+const wm_visual_sequence wm_bret_running_ground_punch_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_running_ground_punch_anim",
+    .frames = bret_running_ground_punch_frames,
+    .frame_count = sizeof(bret_running_ground_punch_frames) / sizeof(bret_running_ground_punch_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_combo_punch_frames[] = {
+    {"H4PL3X01", 2},
+    {"H4PL3X02", 2},
+    {"H4PL3X03", 2},
+    {"H4PL3X04", 2},
+    {"H4PL3X04", 1},
+    {"H4PL3X05", 2},
+    {"H4PL3X06", 2},
+    {"H4PL3X07", 2},
+    {"H4PL3X08", 2},
+    {"H4PL3X01", 2},
+    {"H4PL3X02", 2},
+    {"H4PL3X03", 2},
+    {"H4PL3X04", 2},
+    {"H4PL3X04", 1},
+    {"H4PL3X05", 2},
+    {"H4PL3X06", 2},
+    {"H4PL3X07", 2},
+    {"H4PL3X08", 2},
+    {"H4PL3X01", 1},
+    {"H4PL3X02", 1},
+    {"H4PL3X03", 1},
+    {"H4PL3X04", 2},
+    {"H4PL3X04", 1},
+    {"H4PL3X05", 2},
+    {"H4PL3X06", 2},
+    {"H4PL3X07", 1},
+};
+
+const wm_visual_sequence wm_bret_combo_punch_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_combo_punch_anim",
+    .frames = bret_combo_punch_frames,
+    .frame_count = sizeof(bret_combo_punch_frames) / sizeof(bret_combo_punch_frames[0]),
+    .repeat = false,
+    /* ANI_SET_RPTCOUNT,3: frames [18..25] play 3 times before the stream continues. */
+    .loop_first = 18,
+    .loop_last = 25,
+    .loop_count = 3,
+};
+
+static const wm_visual_frame bret_combo_kick_frames[] = {
+    {"H4KM3B02", 2},
+    {"H2KM3A03", 2},
+    {"H2KM3A04", 2},
+    {"H2KM3A05", 2},
+    {"H2KM3A05", 4},
+    {"H2KM3A06", 2},
+    {"H2KM3A08", 2},
+    {"H4KM3B09", 2},
+    {"H4KM3B10", 2},
+    {"H4KM3B02", 2},
+    {"H2KM3A03", 2},
+    {"H2KM3A04", 2},
+    {"H2KM3A05", 2},
+    {"H2KM3A05", 4},
+    {"H2KM3A06", 2},
+    {"H2KM3A08", 2},
+    {"H4KM3B09", 2},
+    {"H4KM3B10", 2},
+    {"H4KM3B02", 1},
+    {"H2KM3A03", 2},
+    {"H2KM3A04", 1},
+    {"H2KM3A05", 1},
+    {"H2KM3A05", 2},
+    {"H2KM3A06", 1},
+    {"H2KM3A08", 2},
+    {"H4KM3B09", 1},
+    {"H4KM3B10", 2},
+};
+
+const wm_visual_sequence wm_bret_combo_kick_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_combo_kick_anim",
+    .frames = bret_combo_kick_frames,
+    .frame_count = sizeof(bret_combo_kick_frames) / sizeof(bret_combo_kick_frames[0]),
+    .repeat = false,
+    /* ANI_SET_RPTCOUNT,3: frames [18..26] play 3 times before the stream continues. */
+    .loop_first = 18,
+    .loop_last = 26,
+    .loop_count = 3,
+};

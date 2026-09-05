@@ -74,10 +74,18 @@ python3 "$ROOT/tools/wlanim.py" \
     --slice hrt_knees_to_head_anim wm_bret_knees_to_head_anim bret_knees_to_head_frames false \
     --slice hrt_2_pin_anim wm_bret_pin2_anim bret_pin2_frames false \
     --slice hrt_4_pin_anim wm_bret_pin4_anim bret_pin4_frames false \
+    --slice hrt_2_butts_anim wm_bret_butts2_anim bret_butts2_frames false \
+    --slice hrt_4_butts_anim wm_bret_butts4_anim bret_butts4_frames false \
+    --slice hrt_flying_kick_anim wm_bret_flying_kick_anim bret_flying_kick_frames false \
+    --slice hrt_tbukl_leap_anim wm_bret_tbukl_leap_anim bret_tbukl_leap_frames false \
+    --slice hrt_running_ground_punch_anim wm_bret_running_ground_punch_anim bret_running_ground_punch_frames false \
+    --slice hrt_combo_punch_anim wm_bret_combo_punch_anim bret_combo_punch_frames false \
+    --slice hrt_combo_kick_anim wm_bret_combo_kick_anim bret_combo_kick_frames false \
     --out "$ROOT/src/generated/bret_attacks.c"
 python3 "$ROOT/tools/wlanim.py" \
     --source "$ORIG/HRTSEQ4.ASM" \
     --slice hrt_4_block_anim wm_bret_block4_anim bret_block4_frames false \
+    --slice hrt_fall_back_anim wm_bret_fall_back_anim bret_fall_back_frames false \
     --out "$ROOT/src/generated/bret_defense.c"
 python3 "$ROOT/tools/wlanim.py" \
     --source "$ORIG/HRTSEQ3.ASM" \

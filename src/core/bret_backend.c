@@ -225,6 +225,15 @@ const wm_visual_sequence *wm_bret_anim_sequence(wm_arcade_bret_anim_id_t id) {
         case WM_BRET_ANIM_KNEES_TO_HEAD: return &wm_bret_knees_to_head_anim;
         case WM_BRET_ANIM_PIN2: return &wm_bret_pin2_anim;
         case WM_BRET_ANIM_PIN4: return &wm_bret_pin4_anim;
+        case WM_BRET_ANIM_BUTTS2: return &wm_bret_butts2_anim;
+        case WM_BRET_ANIM_BUTTS4: return &wm_bret_butts4_anim;
+        case WM_BRET_ANIM_FLYING_KICK: return &wm_bret_flying_kick_anim;
+        case WM_BRET_ANIM_TBUKL_LEAP: return &wm_bret_tbukl_leap_anim;
+        case WM_BRET_ANIM_RUNNING_GROUND_PUNCH:
+            return &wm_bret_running_ground_punch_anim;
+        case WM_BRET_ANIM_COMBO_PUNCH: return &wm_bret_combo_punch_anim;
+        case WM_BRET_ANIM_COMBO_KICK: return &wm_bret_combo_kick_anim;
+        case WM_BRET_ANIM_FALL_BACK: return &wm_bret_fall_back_anim;
         default: return NULL;
     }
 }
@@ -416,38 +425,50 @@ static const wm_bret_attack_window_t attack_windows[] = {
       { WM_AMODE_HEADKNEES, 4, 34, 70, 54 }, {0,0,0,0,0,0,0} },
     { WM_BRET_ANIM_KNEES_TO_HEAD, 8, false,
       { WM_AMODE_HEADKNEES, 4, 54, 70, 34 }, {0,0,0,0,0,0,0} },
+    /* hrt_2/4_butts_anim: AMODE_HDBUTT_STAY, and the window sits inside
+       the routine's ANI_SET_RPTCOUNT,3 span, so three headbutts land per
+       playthrough from this one row. */
+    { WM_BRET_ANIM_BUTTS2, 3, false,
+      { WM_AMODE_HDBUTT_STAY, 19, 75, 35, 24 }, {0,0,0,0,0,0,0} },
+    { WM_BRET_ANIM_BUTTS4, 3, false,
+      { WM_AMODE_HDBUTT_STAY, 19, 75, 35, 24 }, {0,0,0,0,0,0,0} },
+    /* hrt_flying_kick_anim -- a different box from JUMP_KICK4's own
+       AMODE_FLYKICK,15,69,64,38. */
+    { WM_BRET_ANIM_FLYING_KICK, 4, false,
+      { WM_AMODE_FLYKICK, -3, 26, 61, 21 }, {0,0,0,0,0,0,0} },
+    /* hrt_tbukl_leap_anim writes TWO ANI_ATTACK_ON_Z back to back here,
+       its own comment saying "attack box dimensions depends on opp mode":
+       the second is reached by an ANI_IFOPPMODE,MODE_ONGROUND branch this
+       port does not evaluate. The fall-through default (y offset -1+5) is
+       wired; the grounded-opponent variant (-1+15) deliberately is not,
+       rather than guessed at. */
+    { WM_BRET_ANIM_TBUKL_LEAP, 4, true, {0,0,0,0,0},
+      { WM_AMODE_BSTOMP, 0, -1 + 5, -10, 36, 52, 70 } },
+    { WM_BRET_ANIM_RUNNING_GROUND_PUNCH, 5, false,
+      { WM_AMODE_BUTTSTOMP, -50, -6, 36, 23 }, {0,0,0,0,0,0,0} },
+    /* hrt_combo_punch_anim / hrt_combo_kick_anim: three real pulses each,
+       one per combo hit. */
+    { WM_BRET_ANIM_COMBO_PUNCH, 3, true, {0,0,0,0,0},
+      { WM_AMODE_PUNCH, 30, 51, 0, 80, 45, 45 } },
+    { WM_BRET_ANIM_COMBO_PUNCH, 12, true, {0,0,0,0,0},
+      { WM_AMODE_PUNCH, 30, 51, 0, 80, 45, 45 } },
+    { WM_BRET_ANIM_COMBO_PUNCH, 21, true, {0,0,0,0,0},
+      { WM_AMODE_PUNCH, 30, 51, 0, 80, 45, 45 } },
+    { WM_BRET_ANIM_COMBO_KICK, 3, false,
+      { WM_AMODE_KICK, 23, 53, 50, 27 }, {0,0,0,0,0,0,0} },
+    { WM_BRET_ANIM_COMBO_KICK, 12, false,
+      { WM_AMODE_KICK, 23, 53, 50, 27 }, {0,0,0,0,0,0,0} },
+    { WM_BRET_ANIM_COMBO_KICK, 21, false,
+      { WM_AMODE_KICK, 23, 53, 50, 27 }, {0,0,0,0,0,0,0} },
 };
 #define WM_BRET_ATTACK_WINDOW_COUNT \
     (sizeof(attack_windows) / sizeof(attack_windows[0]))
 
-/* The four wired attacks whose own ANI_SETMODE header really includes
-   MODE_OVERLAP on top of MODE_UNINT|MODE_NOAUTOFLIP (HRTSEQ2.ASM, read
-   with tools/wlattack.py). Every other wired attack's header carries only
-   the two bits. */
-static bool anim_header_sets_overlap(wm_arcade_bret_anim_id_t id) {
-    switch (id) {
-        case WM_BRET_ANIM_STOMP2:
-        case WM_BRET_ANIM_STOMP4:
-        case WM_BRET_ANIM_GROUND_PUNCH2:
-        case WM_BRET_ANIM_GROUND_PUNCH4:
-        /* hrt_3_fake_hold_anim and both pins carry MODE_OVERLAP too. */
-        case WM_BRET_ANIM_FAKE_HOLD3:
-        case WM_BRET_ANIM_PIN2:
-        case WM_BRET_ANIM_PIN4:
-            return true;
-        default:
-            return false;
-    }
-}
-
 /*
  * ANIM.ASM's ANI_SETPLYRMODE, when it falls partway through an animation
- * rather than in its header. hrt_kick_TB_anim is the first wired animation
- * that needs it: MODE_INAIR2 before its own frame 0 (Bret really is
- * airborne for the leap) and back to MODE_NORMAL before frame 4, once he
- * has landed. Keyed on (id, frame) exactly like the attack windows above,
- * and applied by wm_bret_backend_tick when the animation reaches that
- * frame. A row at frame 0 is applied by wm_bret_backend_change_anim
+ * rather than in its header. Keyed on (id, frame) exactly like the attack
+ * windows, and applied by wm_bret_backend_tick when the animation reaches
+ * that frame. A row at frame 0 is applied by wm_bret_backend_change_anim
  * instead, since the header commands are instant on selection.
  */
 typedef struct {
@@ -460,17 +481,27 @@ static const wm_bret_plyrmode_change_t plyrmode_changes[] = {
     /* hrt_kick_TB_anim: ANI_SETPLYRMODE,MODE_INAIR2 then MODE_NORMAL. */
     { WM_BRET_ANIM_KICK_TB, 0, WM_PMODE_INAIR2 },
     { WM_BRET_ANIM_KICK_TB, 4, WM_PMODE_NORMAL },
-    /* hrt_4_push_anim and hrt_3_head_held_stand_anim both lead with
-       ANI_SETPLYRMODE,MODE_NORMAL before their own frame 0 -- for the
-       head-held stand that is the whole point of the animation, since it
-       is what actually releases mode_headhold. */
+    /* hrt_4_push_anim, hrt_3_head_held_stand_anim and hrt_3_fake_hold_anim
+       all lead with ANI_SETPLYRMODE,MODE_NORMAL before their own frame 0 --
+       for the head-held stand that is the whole point of the animation,
+       since it is what actually releases mode_headhold. */
     { WM_BRET_ANIM_PUSH4, 0, WM_PMODE_NORMAL },
     { WM_BRET_ANIM_HEAD_HELD_STAND3, 0, WM_PMODE_NORMAL },
-    /* hrt_3_fake_hold_anim's own ANI_SETPLYRMODE,MODE_NORMAL header. */
     { WM_BRET_ANIM_FAKE_HOLD3, 0, WM_PMODE_NORMAL },
-    /* hrt_2/4_stomp_anim's own header, previously special-cased. */
+    /* hrt_2/4_stomp_anim's own header. */
     { WM_BRET_ANIM_STOMP2, 0, WM_PMODE_NORMAL },
     { WM_BRET_ANIM_STOMP4, 0, WM_PMODE_NORMAL },
+    /* hrt_flying_kick_anim: NORMAL on entry, ONGROUND once he lands. */
+    { WM_BRET_ANIM_FLYING_KICK, 0, WM_PMODE_NORMAL },
+    { WM_BRET_ANIM_FLYING_KICK, 7, WM_PMODE_ONGROUND },
+    /* hrt_tbukl_leap_anim ends up on the ground too. */
+    { WM_BRET_ANIM_TBUKL_LEAP, 6, WM_PMODE_ONGROUND },
+    /* hrt_running_ground_punch_anim: NORMAL, then airborne for the drop. */
+    { WM_BRET_ANIM_RUNNING_GROUND_PUNCH, 0, WM_PMODE_NORMAL },
+    { WM_BRET_ANIM_RUNNING_GROUND_PUNCH, 2, WM_PMODE_INAIR },
+    { WM_BRET_ANIM_RUNNING_GROUND_PUNCH, 7, WM_PMODE_ONGROUND },
+    /* hrt_fall_back_anim's own landing. */
+    { WM_BRET_ANIM_FALL_BACK, 11, WM_PMODE_ONGROUND },
 };
 #define WM_BRET_PLYRMODE_CHANGE_COUNT \
     (sizeof(plyrmode_changes) / sizeof(plyrmode_changes[0]))
@@ -483,6 +514,39 @@ static const wm_bret_plyrmode_change_t *find_plyrmode_change(
             plyrmode_changes[i].frame_index == frame_index)
             return &plyrmode_changes[i];
     return NULL;
+}
+
+/*
+ * Extra ANI_SETMODE bits a wired animation's own HRTSEQ header carries on
+ * top of MODE_UNINT|MODE_NOAUTOFLIP, read with tools/wlattack.py rather
+ * than assumed. Most attacks carry only those two; these carry more, and
+ * every bit here is genuinely consumed somewhere in the port
+ * (WM_MODE_OVERLAP by wm_arcade_combat.c's wrestler-overlap test,
+ * WM_MODE_NOCONFINE by wm_arcade_confine_wrestler's own early-out,
+ * WM_MODE_NOGRAVITY and WM_MODE_NOCOLLIS by the react/collision paths).
+ */
+static uint16_t anim_header_mode_bits(wm_arcade_bret_anim_id_t id) {
+    switch (id) {
+        case WM_BRET_ANIM_STOMP2:
+        case WM_BRET_ANIM_STOMP4:
+        case WM_BRET_ANIM_GROUND_PUNCH2:
+        case WM_BRET_ANIM_GROUND_PUNCH4:
+        case WM_BRET_ANIM_FAKE_HOLD3:
+        case WM_BRET_ANIM_PIN2:
+        case WM_BRET_ANIM_PIN4:
+        case WM_BRET_ANIM_RUNNING_GROUND_PUNCH:
+            return (uint16_t)WM_MODE_OVERLAP;
+        /* hrt_fall_back_anim: ...|MODE_OVERLAP|MODE_NOCOLLIS */
+        case WM_BRET_ANIM_FALL_BACK:
+            return (uint16_t)(WM_MODE_OVERLAP | WM_MODE_NOCOLLIS);
+        /* hrt_tbukl_leap_anim:
+           ...|MODE_OVERLAP|MODE_NOCONFINE|MODE_NOGRAVITY */
+        case WM_BRET_ANIM_TBUKL_LEAP:
+            return (uint16_t)(WM_MODE_OVERLAP | WM_MODE_NOCONFINE |
+                              WM_MODE_NOGRAVITY);
+        default:
+            return 0;
+    }
 }
 
 /* Any pulse at all for this id -- i.e. "this animation is one of the wired
@@ -515,7 +579,8 @@ static bool anim_header_sets_uninit(wm_arcade_bret_anim_id_t id) {
     if (anim_has_attack_window(id)) return true;
     return id == WM_BRET_ANIM_HEAD_HELD_STAND3 ||
            id == WM_BRET_ANIM_FAKE_HOLD3 ||
-           id == WM_BRET_ANIM_PIN2 || id == WM_BRET_ANIM_PIN4;
+           id == WM_BRET_ANIM_PIN2 || id == WM_BRET_ANIM_PIN4 ||
+           id == WM_BRET_ANIM_FALL_BACK;
 }
 
 /*
@@ -560,6 +625,11 @@ static bool attack_sets_facing_on_start(wm_arcade_bret_anim_id_t id) {
            head_held_stand3 genuinely do not. */
         case WM_BRET_ANIM_PUSH4:
         case WM_BRET_ANIM_KICK_TB:
+        case WM_BRET_ANIM_BUTTS2:
+        case WM_BRET_ANIM_BUTTS4:
+        case WM_BRET_ANIM_FLYING_KICK:
+        case WM_BRET_ANIM_TBUKL_LEAP:
+        case WM_BRET_ANIM_COMBO_KICK:
             return true;
         default:
             return false;
@@ -673,8 +743,7 @@ void wm_bret_backend_change_anim(wm_arcade_actor_t *actor,
            and genuinely consumed here by wm_arcade_combat.c's
            wrestler-overlap test, which is why they get it and the others
            deliberately do not. */
-        if (anim_header_sets_overlap(id))
-            actor->anim_mode |= (uint16_t)WM_MODE_OVERLAP;
+        actor->anim_mode |= anim_header_mode_bits(id);
         /* An ANI_SETPLYRMODE in this animation's own header (frame 0) is
            instant on selection, same as the mode bits above -- see
            plyrmode_changes. */
@@ -1015,7 +1084,7 @@ void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
        as its own HRTSEQ2.ASM header's trailing `ANI_SETMODE,MODE_NORMAL`. */
     if (at_current_anim && anim_header_sets_uninit(bva->current_id) && bva->visual.ended)
         actor->anim_mode &= (uint16_t)~(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP |
-                                        WM_MODE_OVERLAP);
+                                        anim_header_mode_bits(bva->current_id));
 
     /* secret_move_sets_mode_uninit's own ids have no frame data to time a
        real end from, so the WM_MODE_UNINT wm_bret_backend_change_anim set

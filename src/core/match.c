@@ -216,6 +216,13 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             wm_arcade_calc_closest(&m->actors[i], opp);
             (void)wm_arcade_move_bret(&m->actors[i], opp, &env, &bret_cb);
             wm_bret_backend_tick(&m->bret_visual[i], &m->actors[i], (uint16_t)m->tick_count);
+            /* WRESTLE.ASM's main loop calls confine_wrestler (via fix1/
+               fix2) right after set_collision_boxes, every tick, for every
+               wrestler process -- only Bret has a real, moving hurt_box in
+               this port (wm_bret_backend_tick just set it fresh above), so
+               only Bret is confined here. Runs before position integration
+               so this tick's confinement uses this tick's own hurt_box. */
+            wm_arcade_confine_wrestler(&m->actors[i]);
             wm_bret_backend_tick_position(&m->actors[i]);
         }
     }

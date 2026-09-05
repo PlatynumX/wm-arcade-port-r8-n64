@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include "wm/arcade/wm_arcade_closest.h"
 #include "wm/arcade/wm_arcade_combat.h"
+#include "wm/arcade/wm_arcade_confine.h"
 #include "wm/arcade/wm_arcade_drone.h"
 #include "wm/arcade/wm_arcade_lifebar.h"
 #include "wm/arcade/wm_arcade_react.h"

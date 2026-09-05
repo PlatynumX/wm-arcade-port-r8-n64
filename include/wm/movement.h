@@ -26,6 +26,10 @@ extern "C" {
  *     unconditionally every idle tick, before/regardless of which turn
  *     animation it separately selects -- see wm/arcade/wm_arcade_closest.h's
  *     wm_arcade_update_newfacing for what feeds NEW_FACING_DIR.
+ *   - down_right/down_left's CAN_MOVE_DIR redirect (WRESTLE.ASM:5339-5384):
+ *     falls back to the pure right/left handler when actor->can_move_dir's
+ *     real WM_MOVE_DOWN bit (wm/arcade/wm_arcade_confine.h, computed for
+ *     real from the ring-rope boundary) blocks downward movement.
  *
  * Covered, but one layer up in wm/bret_backend.h instead of here, since it
  * needs the visual-track state this generic, actor-only function doesn't
@@ -42,10 +46,6 @@ extern "C" {
  *     all wired in wm/bret_backend.h.
  *
  * NOT covered:
- *   - down_right/down_left's CAN_MOVE_DIR redirect (falls back to pure
- *     #right/#left when downward movement is blocked). CAN_MOVE_DIR is
- *     computed by the unported ring-boundary/keep_onscreen system, so this
- *     always takes the un-redirected diagonal.
  *   - Position integration. execute_walk only ever *sets* OBJ_XVEL/
  *     OBJ_ZVEL; applying that to OBJ_XPOS/OBJ_ZPOS every frame is done by
  *     ANIM.ASM's generic object mover, which this port has not translated.

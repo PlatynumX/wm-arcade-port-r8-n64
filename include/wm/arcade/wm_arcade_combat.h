@@ -55,6 +55,9 @@ struct wm_arcade_actor {
     /* Stage 4: REACT2 combo-uppercut reads WHOHITME->RPT_COUNT. */
     int32_t rpt_count;
     int32_t in_ring;
+    /* WRESTLE.ASM PLYR.EQU CAN_MOVE_DIR: WM_MOVE_* bits the wrestler is
+       currently confined against (real, see wm/arcade/wm_arcade_confine.h). */
+    int32_t can_move_dir;
 
     wm_arcade_actor_t *attach_proc;
     wm_arcade_actor_t *smart_target;

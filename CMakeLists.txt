@@ -46,6 +46,7 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_bret_tables.c
     src/core/arcade/wm_arcade_closest.c
     src/core/arcade/wm_arcade_combat.c
+    src/core/arcade/wm_arcade_confine.c
     src/core/arcade/wm_arcade_doink.c
     src/core/arcade/wm_arcade_drone.c
     src/core/arcade/wm_arcade_lex.c

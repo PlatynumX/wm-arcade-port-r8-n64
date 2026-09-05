@@ -3,6 +3,8 @@
 #include <string.h>
 #include "wm/anim.h"
 #include "wm/app.h"
+#include "wm/arcade/wm_arcade_confine.h"
+#include "wm/arcade/wmania_ring_geometry.h"
 #include "wm/bmod.h"
 #include "wm/source_clock.h"
 #include "wm/bret_visuals.h"
@@ -1954,6 +1956,43 @@ static void test_execute_walk_flip_and_zip(void) {
     CHECK(a.facing_dir == WM_MOVE_DOWN);
 }
 
+/* WRESTLE.ASM #down_right/#down_left (WRESTLE.ASM:5339-5384): redirects to
+   the pure right/left handler when actor->can_move_dir's real MOVE_DOWN
+   bit (wm/arcade/wm_arcade_confine.h) blocks downward movement. */
+static void test_execute_walk_can_move_dir_redirect(void) {
+    wm_arcade_actor_t a;
+
+    /* MOVE_DOWN blocked: down_right becomes plain right. */
+    memset(&a, 0, sizeof(a));
+    a.move_dir = WM_MOVE_DOWN_RIGHT;
+    a.can_move_dir = WM_MOVE_DOWN;
+    wm_execute_walk(&a, NULL, wm_bret_velocity_table);
+    CHECK(a.move_dir == WM_MOVE_RIGHT);
+    CHECK(a.x_vel == WM_BRET_WALK_VEL);
+    CHECK(a.z_vel == 0);
+    CHECK(!(a.obj_control & WM_OBJ_FLIPH));
+
+    /* MOVE_DOWN blocked: down_left becomes plain left. */
+    memset(&a, 0, sizeof(a));
+    a.move_dir = WM_MOVE_DOWN_LEFT;
+    a.can_move_dir = WM_MOVE_DOWN;
+    wm_execute_walk(&a, NULL, wm_bret_velocity_table);
+    CHECK(a.move_dir == WM_MOVE_LEFT);
+    CHECK(a.x_vel == -WM_BRET_WALK_VEL);
+    CHECK(a.z_vel == 0);
+    CHECK(a.obj_control & WM_OBJ_FLIPH);
+
+    /* MOVE_DOWN not blocked: takes the real diagonal, unaffected by other
+       can_move_dir bits (only MOVE_DOWN triggers this specific redirect). */
+    memset(&a, 0, sizeof(a));
+    a.move_dir = WM_MOVE_DOWN_RIGHT;
+    a.can_move_dir = WM_MOVE_LEFT;
+    wm_execute_walk(&a, NULL, wm_bret_velocity_table);
+    CHECK(a.move_dir == WM_MOVE_DOWN_RIGHT);
+    CHECK(a.x_vel == WM_BRET_WALK_DVEL);
+    CHECK(a.z_vel == WM_BRET_WALK_DVEL);
+}
+
 /*
  * WRESTLE.ASM:3018 SUBRP update_newfacing, wired as wm_arcade_update_newfacing
  * (wm/arcade/wm_arcade_closest.h): NEW_FACING_DIR = toward the opponent on
@@ -1985,6 +2024,152 @@ static void test_arcade_update_newfacing(void) {
     /* NULL actor/opponent: no-op, doesn't crash. */
     wm_arcade_update_newfacing(NULL, &o);
     wm_arcade_update_newfacing(&a, NULL);
+}
+
+/*
+ * WRESTLE.ASM:5814 calc_line_x, translated as wm_ring_calc_line_x (real
+ * direct interpolation instead of the source's cached per-Z table -- see
+ * that function's own comment in wm/arcade/wmania_ring_geometry.h). Values
+ * hand-derived from the closed form (top_x -/+ (i+1)*delta,
+ * delta=(width<<16)/(depth+1) truncating) and cross-checked independently
+ * in Python before being hardcoded here.
+ */
+static void test_ring_calc_line_x(void) {
+    const WmRingBoundarySeed *left = wm_ring_boundary_seed(WM_RING_BOUNDARY_LEFT_ROPE);
+    const WmRingBoundarySeed *right = wm_ring_boundary_seed(WM_RING_BOUNDARY_RIGHT_ROPE);
+
+    /* Left rope: top_x(856) > bottom_x(805), so values step DOWN as Z
+       increases -- index 0 (z==top_z) is already one delta step below
+       top_x itself, a genuine source quirk (see the function's own
+       comment), not top_x exactly. */
+    CHECK(wm_ring_calc_line_x(left, WM_RING_TOP) == 855);
+    CHECK(wm_ring_calc_line_x(left, WM_RING_BOT) == 805);
+    CHECK(wm_ring_calc_line_x(left, 1184) == 830);
+
+    /* Right rope: top_x(1297) < bottom_x(1348), values step UP. */
+    CHECK(wm_ring_calc_line_x(right, WM_RING_TOP) == 1297);
+    CHECK(wm_ring_calc_line_x(right, WM_RING_BOT) == 1347);
+    CHECK(wm_ring_calc_line_x(right, 1184) == 1322);
+
+    /* Out of [top_z, bottom_z]: 0, exactly matching calc_line_x's own
+       out-of-range return. */
+    CHECK(wm_ring_calc_line_x(left, WM_RING_TOP - 1) == 0);
+    CHECK(wm_ring_calc_line_x(left, WM_RING_BOT + 1) == 0);
+
+    CHECK(wm_ring_calc_line_x(NULL, 1184) == 0);
+}
+
+/* WRESTLE.ASM:3074 confine_wrestler, in-ring branch (wm/arcade/
+   wm_arcade_confine.h) -- well inside the ring: no clamp, CAN_MOVE_DIR
+   stays 0. */
+static void test_arcade_confine_wrestler_inside_ring_no_clamp(void) {
+    wm_arcade_actor_t a;
+    memset(&a, 0, sizeof(a));
+    a.x_int = WM_RING_X_CENTER; a.x_fixed = WM_RING_X_CENTER << 16;
+    a.z_int = 1184; a.z_fixed = 1184 << 16;
+    a.hurt_box.x1 = a.x_int - 30;
+    a.hurt_box.x2 = a.x_int + 30;
+
+    wm_arcade_confine_wrestler(&a);
+
+    CHECK(a.can_move_dir == 0);
+    CHECK(a.x_int == WM_RING_X_CENTER);
+    CHECK(a.z_int == 1184);
+}
+
+/* Z bounds: WRESTLE.ASM:3091-3129. */
+static void test_arcade_confine_wrestler_clamps_z(void) {
+    wm_arcade_actor_t a;
+
+    memset(&a, 0, sizeof(a));
+    a.x_int = WM_RING_X_CENTER; a.x_fixed = WM_RING_X_CENTER << 16;
+    a.hurt_box.x1 = a.x_int - 30;
+    a.hurt_box.x2 = a.x_int + 30;
+    a.z_int = WM_RING_TOP - 50; a.z_fixed = a.z_int << 16;
+    wm_arcade_confine_wrestler(&a);
+    CHECK(a.can_move_dir == WM_MOVE_UP);
+    CHECK(a.z_int == WM_RING_TOP);
+    CHECK(a.z_fixed == (int32_t)WM_RING_TOP << 16);
+
+    memset(&a, 0, sizeof(a));
+    a.x_int = WM_RING_X_CENTER; a.x_fixed = WM_RING_X_CENTER << 16;
+    a.hurt_box.x1 = a.x_int - 30;
+    a.hurt_box.x2 = a.x_int + 30;
+    a.z_int = WM_RING_BOT + 50; a.z_fixed = a.z_int << 16;
+    wm_arcade_confine_wrestler(&a);
+    CHECK(a.can_move_dir == WM_MOVE_DOWN);
+    CHECK(a.z_int == WM_RING_BOT);
+
+    /* Sitting exactly on the boundary: bit set, but no clamp needed. */
+    memset(&a, 0, sizeof(a));
+    a.x_int = WM_RING_X_CENTER; a.x_fixed = WM_RING_X_CENTER << 16;
+    a.hurt_box.x1 = a.x_int - 30;
+    a.hurt_box.x2 = a.x_int + 30;
+    a.z_int = WM_RING_TOP; a.z_fixed = WM_RING_TOP << 16;
+    wm_arcade_confine_wrestler(&a);
+    CHECK(a.can_move_dir == WM_MOVE_UP);
+    CHECK(a.z_int == WM_RING_TOP);
+}
+
+/* X bounds: WRESTLE.ASM:3132-3421, using hurt_box.x1/x2 exactly where the
+   source reads OBJ_COLLX1/OBJ_COLLX2. */
+static void test_arcade_confine_wrestler_clamps_x(void) {
+    wm_arcade_actor_t a;
+    int32_t left_rope, right_rope;
+
+    left_rope = wm_ring_calc_line_x(wm_ring_boundary_seed(WM_RING_BOUNDARY_LEFT_ROPE), 1184);
+    right_rope = wm_ring_calc_line_x(wm_ring_boundary_seed(WM_RING_BOUNDARY_RIGHT_ROPE), 1184);
+
+    /* Past the left rope: pushed back so hurt_box.x1 lands exactly on it
+       (hurt_box.x1 == x_int here, offset 0, so x_int itself ends up
+       exactly at left_rope). */
+    memset(&a, 0, sizeof(a));
+    a.z_int = 1184; a.z_fixed = 1184 << 16;
+    a.x_int = left_rope - 20; a.x_fixed = a.x_int << 16;
+    a.hurt_box.x1 = a.x_int; a.hurt_box.x2 = a.x_int + 60;
+    wm_arcade_confine_wrestler(&a);
+    CHECK(a.can_move_dir == WM_MOVE_LEFT);
+    CHECK(a.x_int == left_rope);
+    CHECK(a.x_fixed == (int32_t)(left_rope << 16));
+
+    /* Past the right rope: pushed back so hurt_box.x2 lands exactly on it
+       (hurt_box.x2 == x_int here, offset 0, so x_int ends up at
+       right_rope). */
+    memset(&a, 0, sizeof(a));
+    a.z_int = 1184; a.z_fixed = 1184 << 16;
+    a.x_int = right_rope + 20; a.x_fixed = a.x_int << 16;
+    a.hurt_box.x1 = a.x_int - 60; a.hurt_box.x2 = a.x_int;
+    wm_arcade_confine_wrestler(&a);
+    CHECK(a.can_move_dir == WM_MOVE_RIGHT);
+    CHECK(a.x_int == right_rope);
+}
+
+/* WRESTLE.ASM:3078-3084 #no_confine: MODE_NOCONFINE and PLYRMODE==ATTACHED
+   both skip straight to CAN_MOVE_DIR=0, no clamp, even from way outside
+   the ropes. */
+static void test_arcade_confine_wrestler_noconfine_and_attached_skip(void) {
+    wm_arcade_actor_t a;
+
+    memset(&a, 0, sizeof(a));
+    a.anim_mode = WM_MODE_NOCONFINE;
+    a.x_int = 0; a.x_fixed = 0;
+    a.z_int = 0; a.z_fixed = 0;
+    wm_arcade_confine_wrestler(&a);
+    CHECK(a.can_move_dir == 0);
+    CHECK(a.x_int == 0);
+    CHECK(a.z_int == 0);
+
+    memset(&a, 0, sizeof(a));
+    a.player_mode = WM_PMODE_ATTACHED;
+    a.x_int = 0; a.x_fixed = 0;
+    a.z_int = 0; a.z_fixed = 0;
+    wm_arcade_confine_wrestler(&a);
+    CHECK(a.can_move_dir == 0);
+    CHECK(a.x_int == 0);
+    CHECK(a.z_int == 0);
+
+    /* NULL: no-op, doesn't crash. */
+    wm_arcade_confine_wrestler(NULL);
 }
 
 static void test_integrate_position(void) {
@@ -2132,6 +2317,59 @@ static void test_match_human_bret_walks_right(void) {
 }
 
 /*
+ * End-to-end: wm_arcade_confine_wrestler (wm/arcade/wm_arcade_confine.h),
+ * wired into wm_match_tick, actually stops a human-controlled Bret actor
+ * from walking through the ring rope -- through ordinary human-input play,
+ * not a direct/synthetic wm_arcade_confine_wrestler call.
+ */
+static void test_match_human_bret_stopped_by_right_rope(void) {
+    WmRng rng;
+    wm_match_state m;
+    wm_arcade_drone_callbacks_t cb;
+    wm_input_state right;
+    int32_t right_rope;
+    int guard;
+
+    wm_rng_init(&rng, 0x42u, NULL, NULL, NULL);
+    wm_match_init(&m);
+    wm_match_start_selected(&m, &rng, WM_ROSTER_BRET);
+
+    /* Real starting Z (WM_MATCH_P1_START_Z, see wm/match.h's
+       place_wrestler) never changes in this test (pure X walking), so the
+       right rope's X at that Z is a fixed target throughout. */
+    right_rope = wm_ring_calc_line_x(
+        wm_ring_boundary_seed(WM_RING_BOUNDARY_RIGHT_ROPE), m.actors[0].z_int);
+
+    /* Start close to the right rope. */
+    m.actors[0].x_int = right_rope - 15;
+    m.actors[0].x_fixed = m.actors[0].x_int << 16;
+
+    memset(&cb, 0, sizeof(cb));
+    cb.rndrng0_upto = test_match_rndrng0_cb;
+    cb.user = &rng;
+
+    memset(&right, 0, sizeof(right));
+    right.stick_x = 100;
+    for (guard = 0; guard < 60 && !(m.actors[0].can_move_dir & WM_MOVE_RIGHT); ++guard)
+        wm_match_tick(&m, &cb, &right);
+
+    CHECK(m.actors[0].can_move_dir & WM_MOVE_RIGHT);
+
+    /* Held right for many more ticks: WM_BRET_WALK_VEL (~3.6 px/tick in
+       16.16) would carry x_int roughly 250+ px past the rope over 60 more
+       ticks with no confinement at all. The real per-tick correction only
+       ever re-anchors the *current* frame's hurt_box exactly on the rope,
+       and the walk cycle's own hurt_box width varies frame to frame, so a
+       wider next frame can still poke a few pixels past before the very
+       next tick corrects it again -- a real, faithful "held at the
+       boundary, not a hard wall" wobble, not unconfined drift. */
+    for (guard = 0; guard < 60; ++guard) {
+        wm_match_tick(&m, &cb, &right);
+        CHECK(m.actors[0].hurt_box.x2 < right_rope + 20);
+    }
+}
+
+/*
  * Regression for the do_punch/near() gap this port previously documented as
  * its next real blocker (README, port/translation_manifest.json): before
  * wm_arcade_calc_closest (wm/arcade/wm_arcade_closest.h) was wired into
@@ -2218,11 +2456,20 @@ static void test_match_tick_updates_newfacing_for_both_actors(void) {
        wm_integrate_position resyncs x_int/z_int from x_fixed/z_fixed every
        tick (actor 0 is a Bret actor, ticked within this same call), so a
        stale _fixed would silently overwrite the _int override below before
-       actor 1's own wm_arcade_update_newfacing call reads it. */
-    m.actors[0].x_int = 0;   m.actors[0].x_fixed = 0;
-    m.actors[0].z_int = 0;   m.actors[0].z_fixed = 0;
-    m.actors[1].x_int = 100; m.actors[1].x_fixed = 100 << 16;
-    m.actors[1].z_int = -50; m.actors[1].z_fixed = -50 << 16; /* opponent up-right */
+       actor 1's own wm_arcade_update_newfacing call reads it.
+
+       Positions are chosen well inside the real ring (RING_TOP=1023,
+       RING_BOT=1345, ropes around x=835-1317 at these Z values) so
+       wm_arcade_confine_wrestler -- now real, and run on actor 0 (always
+       Bret) before actor 1's own wm_arcade_update_newfacing call reads
+       actor 0's position -- has nothing to correct. Out-of-ring coordinates
+       like the origin would get actor 0 pulled back into the ring by that
+       same real confinement before this tick finishes, changing what actor
+       1 sees; that's correct behavior, just not what this test is about. */
+    m.actors[0].x_int = 1074;  m.actors[0].x_fixed = 1074 << 16;
+    m.actors[0].z_int = 1150;  m.actors[0].z_fixed = 1150 << 16;
+    m.actors[1].x_int = 1174;  m.actors[1].x_fixed = 1174 << 16;
+    m.actors[1].z_int = 1100;  m.actors[1].z_fixed = 1100 << 16; /* opponent up-right */
 
     memset(&cb, 0, sizeof(cb));
     cb.rndrng0_upto = test_match_rndrng0_cb;
@@ -2604,11 +2851,18 @@ int main(void) {
     test_set_velocities_backward_reduction();
     test_set_velocities_ground_boost();
     test_execute_walk_flip_and_zip();
+    test_execute_walk_can_move_dir_redirect();
     test_arcade_update_newfacing();
+    test_ring_calc_line_x();
+    test_arcade_confine_wrestler_inside_ring_no_clamp();
+    test_arcade_confine_wrestler_clamps_z();
+    test_arcade_confine_wrestler_clamps_x();
+    test_arcade_confine_wrestler_noconfine_and_attached_skip();
     test_integrate_position();
     test_human_input_commit();
     test_match_start_selected();
     test_match_human_bret_walks_right();
+    test_match_human_bret_stopped_by_right_rope();
     test_match_human_punch_from_range_selects_real_punch();
     test_match_tick_updates_newfacing_for_both_actors();
     test_match_round_decided_after_real_kill();

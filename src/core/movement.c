@@ -79,6 +79,15 @@ void wm_execute_walk(wm_arcade_actor_t *actor,
     if (!actor || !table) return;
     dir = actor->move_dir;
 
+    /* WRESTLE.ASM #down_right/#down_left (WRESTLE.ASM:5339-5384): redirect
+       to the pure right/left handler when CAN_MOVE_DIR's real MOVE_DOWN
+       bit (wm/arcade/wm_arcade_confine.h) blocks downward movement --
+       walks along the rope/boundary instead of trying to walk through it. */
+    if (actor->can_move_dir & WM_MOVE_DOWN) {
+        if (dir == WM_MOVE_DOWN_RIGHT) dir = WM_MOVE_RIGHT;
+        else if (dir == WM_MOVE_DOWN_LEFT) dir = WM_MOVE_LEFT;
+    }
+
     switch (dir) {
         case WM_MOVE_ZIP:
             actor->move_dir = 0;

@@ -67,3 +67,25 @@ bool wm_ring_boundary_seed_consistent(const WmRingBoundarySeed *seed)
 
     return depth == seed->depth && width == seed->width;
 }
+
+int32_t wm_ring_calc_line_x(const WmRingBoundarySeed *seed, int32_t zpos)
+{
+    int32_t i, count;
+    int64_t top_x_fixed, delta_fixed, value_fixed;
+
+    if (!seed) return 0;
+    if (zpos > seed->bottom_z) return 0;
+    i = zpos - seed->top_z;
+    if (i < 0) return 0;
+
+    count = (int32_t)seed->depth + 1;
+    top_x_fixed = (int64_t)seed->top_x << 16;
+    delta_fixed = ((int64_t)seed->width << 16) / count;
+
+    if (seed->top_x > seed->bottom_x)
+        value_fixed = top_x_fixed - (int64_t)(i + 1) * delta_fixed;
+    else
+        value_fixed = top_x_fixed + (int64_t)(i + 1) * delta_fixed;
+
+    return (int32_t)(value_fixed >> 16);
+}

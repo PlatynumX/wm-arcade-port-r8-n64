@@ -516,7 +516,6 @@ static void test_bret_anim_sequence_mapping(void) {
     /* Deliberately unmapped: no "hrt_2_super_punch_anim" exists in the
        source tree at all -- see wm/bret_backend.h. */
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_SUPER_PUNCH2_2) == NULL);
-    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_SUPER_PUNCH4) == NULL);
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_PIN2) == NULL);
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_FINISH1) == NULL);
 }
@@ -748,25 +747,22 @@ static void test_bret_backend_i_will_die_resolves_through_move_bret(void) {
    wm_arcade_joystat.h): a human genuinely typing the supercut input
    (down, down, punch, each a distinct press) now fires the real secret
    move (wm_arcade_bret_fire_secret's own WM_BRET_SECRET_SUPERCUT case),
-   not just a direct call with a hand-picked id.
-   Exercised through cb.check_secret_moves directly (the callback
-   wm_arcade_move_bret's own top-of-function call reaches) rather than a
-   full wm_arcade_move_bret call: WM_BRET_ANIM_SUPER_PUNCH4 has no real
-   extracted wm_visual_sequence yet (see test_bret_anim_sequence_mapping),
-   so wm_bret_backend_change_anim can't set WM_MODE_UNINT for it the way
-   it does for the 6 anim ids that do -- exactly the same, already-
-   accepted gap test_bret_backend_i_will_die_resolves_through_move_bret
-   documents for WM_BRET_ANIM_FALL_BACK ("current_id is still recorded
-   even though no wm_visual_sequence exists for it"). Without that guard,
-   a *second* wm_arcade_move_bret call this same tick would see
-   player_mode still NORMAL and let mode_normal's own action-selection
-   immediately overwrite current_id again -- a real limitation, but
-   orthogonal to the recognizer itself, which this test isolates. */
+   not just a direct call with a hand-picked id -- and it survives the
+   rest of the very same wm_arcade_move_bret call, because
+   WM_BRET_SECRET_SUPERCUT now dispatches to WM_BRET_ANIM_SUPER_PUNCH2_4
+   (BRET.ASM's real hrt_4_super_punch_anim, the exact animation #scrt_cut
+   itself selects) instead of a separate, permanently-unmapped id: real
+   frame data means wm_bret_backend_change_anim sets WM_MODE_UNINT for
+   real, so mode_normal's own top-of-function guard (`if (ANIMODE&
+   MODE_UNINT) return`) stops the switch statement's own continuation,
+   still within this same call, from immediately reselecting an idle/
+   attack animation over it. */
 static void test_bret_backend_secret_move_fires_through_real_input(void) {
     wm_arcade_actor_t actor, opp;
     wm_bret_backend_actor bva;
     wm_human_input_state hs;
     wm_input_state in;
+    wm_arcade_bret_env_t env;
     wm_arcade_bret_callbacks_t cb;
 
     memset(&actor, 0, sizeof(actor));
@@ -780,38 +776,135 @@ static void test_bret_backend_secret_move_fires_through_real_input(void) {
     bva.opponent = &opp;
     wm_human_input_init(&hs);
     cb = wm_bret_backend_callbacks(&bva);
+    memset(&env, 0, sizeof(env));
 
     /* Tick 0: press DOWN. */
     memset(&in, 0, sizeof(in));
     in.stick_y = -50;
     wm_human_input_commit(&actor, &hs, &in);
     bva.pcnt = 0;
-    cb.check_secret_moves(&actor, wm_arcade_bret_secret_patterns, 8, cb.user);
-    CHECK(bva.current_id != WM_BRET_ANIM_SUPER_PUNCH4);
+    (void)wm_arcade_move_bret(&actor, &opp, &env, &cb);
+    CHECK(bva.current_id != WM_BRET_ANIM_SUPER_PUNCH2_4);
 
     /* Tick 1: release to neutral, so the next DOWN is a fresh edge too. */
     memset(&in, 0, sizeof(in));
     wm_human_input_commit(&actor, &hs, &in);
     bva.pcnt = 1;
-    cb.check_secret_moves(&actor, wm_arcade_bret_secret_patterns, 8, cb.user);
+    (void)wm_arcade_move_bret(&actor, &opp, &env, &cb);
 
     /* Tick 2: press DOWN again. */
     memset(&in, 0, sizeof(in));
     in.stick_y = -50;
     wm_human_input_commit(&actor, &hs, &in);
     bva.pcnt = 2;
-    cb.check_secret_moves(&actor, wm_arcade_bret_secret_patterns, 8, cb.user);
+    (void)wm_arcade_move_bret(&actor, &opp, &env, &cb);
 
     /* Tick 3: release, then press PUNCH -- completes the real supercut
        sequence (BRET.ASM's #supercut: B_PUNCH, J_DOWN, J_DOWN) well
-       within its real 16-tick window. */
+       within its real 16-tick window. A single wm_arcade_move_bret call
+       both fires the secret move AND runs its own player_mode switch
+       right after -- this checks the animation survives that same call. */
     memset(&in, 0, sizeof(in));
     in.light_punch = true;
     wm_human_input_commit(&actor, &hs, &in);
     bva.pcnt = 3;
-    cb.check_secret_moves(&actor, wm_arcade_bret_secret_patterns, 8, cb.user);
+    (void)wm_arcade_move_bret(&actor, &opp, &env, &cb);
 
-    CHECK(bva.current_id == WM_BRET_ANIM_SUPER_PUNCH4);
+    CHECK(bva.current_id == WM_BRET_ANIM_SUPER_PUNCH2_4);
+    CHECK(actor.anim_mode & WM_MODE_UNINT);
+
+    /* A further wm_arcade_move_bret call the very next tick -- with the
+       human now pressing nothing at all -- still doesn't get reselected
+       out from under it while the real animation is still playing. */
+    memset(&in, 0, sizeof(in));
+    wm_human_input_commit(&actor, &hs, &in);
+    bva.pcnt = 4;
+    (void)wm_arcade_move_bret(&actor, &opp, &env, &cb);
+    CHECK(bva.current_id == WM_BRET_ANIM_SUPER_PUNCH2_4);
+}
+
+/* WM_BRET_ANIM_JUMP_KICK4 (hrt_4_jump_kick_anim) has no real extracted
+   frame data, unlike SUPER_PUNCH2_4 above -- secret_move_sets_mode_uninit
+   still lets it survive the same-tick reselection (its own real header
+   does set MODE_UNINT), but with no wm_visual_state to time a real end
+   from, wm_bret_backend_tick clears that protection back off the very
+   next tick instead of leaving it set indefinitely -- see both functions'
+   own comments for why. This checks both halves: survives its own tick,
+   free again the next. */
+static void test_bret_backend_secret_move_no_frame_data_survives_one_tick(void) {
+    wm_arcade_actor_t actor, opp;
+    wm_bret_backend_actor bva;
+    wm_human_input_state hs;
+    wm_input_state in;
+    wm_arcade_bret_env_t env;
+    wm_arcade_bret_callbacks_t cb;
+
+    memset(&actor, 0, sizeof(actor));
+    actor.facing_dir = WM_MOVE_UP_RIGHT; /* no LEFT bit -- no xflip needed */
+    actor.player_mode = WM_PMODE_NORMAL;
+
+    memset(&opp, 0, sizeof(opp));
+    opp.player_mode = WM_PMODE_NORMAL;
+
+    wm_bret_backend_init(&bva);
+    bva.opponent = &opp;
+    wm_human_input_init(&hs);
+    cb = wm_bret_backend_callbacks(&bva);
+    memset(&env, 0, sizeof(env));
+
+    /* Tick 0: push AWAY (LEFT, since facing right). */
+    memset(&in, 0, sizeof(in));
+    in.stick_x = -50;
+    wm_human_input_commit(&actor, &hs, &in);
+    bva.pcnt = 0;
+    (void)wm_arcade_move_bret(&actor, &opp, &env, &cb);
+    wm_bret_backend_tick(&bva, &actor, 0);
+
+    /* Tick 1: release to neutral, so the next AWAY is a fresh edge too. */
+    memset(&in, 0, sizeof(in));
+    wm_human_input_commit(&actor, &hs, &in);
+    bva.pcnt = 1;
+    (void)wm_arcade_move_bret(&actor, &opp, &env, &cb);
+    wm_bret_backend_tick(&bva, &actor, 1);
+
+    /* Tick 2: push AWAY again. */
+    memset(&in, 0, sizeof(in));
+    in.stick_x = -50;
+    wm_human_input_commit(&actor, &hs, &in);
+    bva.pcnt = 2;
+    (void)wm_arcade_move_bret(&actor, &opp, &env, &cb);
+    wm_bret_backend_tick(&bva, &actor, 2);
+
+    /* Tick 3: release, then power-kick -- completes the real jump-kick
+       sequence (BRET.ASM's #jump_kick: B_SKICK, J_AWAY, J_AWAY). It
+       survives this same wm_arcade_move_bret call's own player_mode
+       switch continuation. */
+    memset(&in, 0, sizeof(in));
+    in.power_kick = true;
+    wm_human_input_commit(&actor, &hs, &in);
+    bva.pcnt = 3;
+    (void)wm_arcade_move_bret(&actor, &opp, &env, &cb);
+    CHECK(bva.current_id == WM_BRET_ANIM_JUMP_KICK4);
+    CHECK(actor.anim_mode & WM_MODE_UNINT);
+
+    /* wm_bret_backend_tick, still this same tick, consumes the one-tick
+       protection -- deliberately, since there is no real frame duration
+       to time a longer one from. */
+    wm_bret_backend_tick(&bva, &actor, 3);
+    CHECK(!(actor.anim_mode & WM_MODE_UNINT));
+
+    /* Tick 4: Bret is genuinely free to act again -- no soft-lock. An
+       ordinary punch now reaches mode_normal's own action selection (which
+       picks PUNCH2/4 or, at this zero closest_xdist/zdist, the unwired
+       near() headbutt branch -- either way, a different real id than
+       JUMP_KICK4) instead of being blocked by a still-set WM_MODE_UNINT. */
+    memset(&in, 0, sizeof(in));
+    in.light_punch = true;
+    wm_human_input_commit(&actor, &hs, &in);
+    bva.pcnt = 4;
+    (void)wm_arcade_move_bret(&actor, &opp, &env, &cb);
+    CHECK(bva.current_id != WM_BRET_ANIM_JUMP_KICK4);
+    CHECK(bva.current_id != WM_BRET_ANIM_NONE);
 }
 
 /* HRTSEQ2.ASM:204 ANI_ATTACK_ON_Z, AMODE_PUNCH,30,91,-45,50,15,45, hand-traced
@@ -3164,6 +3257,7 @@ int main(void) {
     test_bret_backend_change_anim_sets_facing_on_attack_start();
     test_bret_backend_i_will_die_resolves_through_move_bret();
     test_bret_backend_secret_move_fires_through_real_input();
+    test_bret_backend_secret_move_no_frame_data_survives_one_tick();
     test_bret_attack_window_punch2();
     test_bret_attack_windows_remaining();
     test_bret_hurt_box_for_frame_real_geometry();

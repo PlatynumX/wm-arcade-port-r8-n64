@@ -405,8 +405,15 @@ int wm_arcade_bret_fire_secret(wm_arcade_actor_t*a,wm_arcade_actor_t*o,wm_arcade
     if(!a)return 0;
     switch(id){
     case WM_BRET_SECRET_SUPERCUT:
+        /* BRET.ASM #scrt_cut: "movi hrt_4_super_punch_anim,a0" -- the exact
+           same real label WM_BRET_ANIM_SUPER_PUNCH2_4 already maps to
+           (wm/bret_backend.h's own comment), not the separate, permanently-
+           unmapped WM_BRET_ANIM_SUPER_PUNCH4 id this used to dispatch to.
+           Reusing the already-wired id also means this now gets real frame
+           data, its existing attack window, and real WM_MODE_UNINT/
+           ANI_SETFACING protection for free. */
         if((a->anim_mode&WM_MODE_UNINT)||!o||o->player_mode==WM_PMODE_ONGROUND||o->player_mode==WM_PMODE_DEAD||o->player_mode==WM_PMODE_HEADHELD||o->player_mode==WM_PMODE_ATTACHED)return 0;
-        anim(a,WM_BRET_ANIM_SUPER_PUNCH4,cb);snd(a,WM_BRET_SND_PUNCH,cb);return 1;
+        anim(a,WM_BRET_ANIM_SUPER_PUNCH2_4,cb);snd(a,WM_BRET_SND_PUNCH,cb);return 1;
     case WM_BRET_SECRET_JUMP_KICK:
         if((a->anim_mode&WM_MODE_UNINT)||!o||o->player_mode==WM_PMODE_ONGROUND||o->player_mode==WM_PMODE_DEAD||o->player_mode==WM_PMODE_HEADHELD||o->player_mode==WM_PMODE_ATTACHED)return 0;
         anim(a,WM_BRET_ANIM_JUMP_KICK4,cb);snd(a,WM_BRET_SND_FLYKICK,cb);return 1;

@@ -48,7 +48,11 @@ typedef enum wm_arcade_bret_anim_id {
     WM_BRET_ANIM_UPPERCUTS_TO_HEAD,
     WM_BRET_ANIM_KNEES_TO_HEAD,
     WM_BRET_ANIM_KNEE_TO_HEAD4,
-    WM_BRET_ANIM_SUPER_PUNCH4,
+    /* No separate SUPER_PUNCH4 id: BRET.ASM's #scrt_cut (the supercut
+       secret move) dispatches to hrt_4_super_punch_anim, the exact same
+       real label WM_BRET_ANIM_SUPER_PUNCH2_4 already names -- see
+       wm/bret_backend.h's own comment. wm_arcade_bret_fire_secret reuses
+       that id directly instead of a second, permanently-unmapped one. */
     WM_BRET_ANIM_JUMP_KICK4,
     WM_BRET_ANIM_FAKE_HOLD3,
     WM_BRET_ANIM_HEAD_HOLD2_3,

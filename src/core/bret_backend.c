@@ -273,7 +273,13 @@ static const wm_bret_attack_window_t *find_attack_window(wm_arcade_bret_anim_id_
  * there, but still before any WL frame -- same "instant, on start"
  * timing; SUPER_KICK2 and SUPER_KICK4 share this one body). hrt_4_kick_anim
  * is the one real exception: no ANI_SETFACING at all, verified by reading
- * its header directly, not assumed from the other 5. */
+ * its header directly, not assumed from the other 5.
+ *
+ * hrt_4_jump_kick_anim (HRTSEQ2.ASM:1265), hrt_hiptoss_anim (HRTSEQ3.ASM:
+ * 445) and hrt_2/4_grabfling_anim (HRTSEQ2.ASM:2421/2433) -- three more of
+ * wm_arcade_bret_fire_secret's own real secret-move targets -- carry the
+ * identical instant ANI_SETFACING too, read directly from their own
+ * headers the same way. */
 static bool attack_sets_facing_on_start(wm_arcade_bret_anim_id_t id) {
     switch (id) {
         case WM_BRET_ANIM_PUNCH2:
@@ -282,6 +288,45 @@ static bool attack_sets_facing_on_start(wm_arcade_bret_anim_id_t id) {
         case WM_BRET_ANIM_KICK2:
         case WM_BRET_ANIM_SUPER_KICK2:
         case WM_BRET_ANIM_SUPER_KICK4:
+        case WM_BRET_ANIM_JUMP_KICK4:
+        case WM_BRET_ANIM_HIPTOSS:
+        case WM_BRET_ANIM_GRABFLING_FACE24:
+            return true;
+        default:
+            return false;
+    }
+}
+
+/*
+ * wm_arcade_bret_fire_secret's remaining secret-move targets that have no
+ * real extracted wm_visual_sequence data yet (see wm_bret_anim_sequence),
+ * but whose own real HRTSEQ header does lead with `ANI_SETMODE,MODE_UNINT
+ * |MODE_NOAUTOFLIP` exactly like the attacks find_attack_window covers --
+ * read directly from each header, not assumed: hrt_4_jump_kick_anim
+ * (HRTSEQ2.ASM:1265), hrt_running_ddt_anim (HRTSEQ3.ASM:1614),
+ * hrt_hh_2_ddt_anim (HRTSEQ3.ASM:1288), hrt_hiptoss_anim (HRTSEQ3.ASM:445),
+ * hrt_2/4_grabfling_anim (HRTSEQ2.ASM:2421/2433), hrt_rake_face_anim
+ * (HRTSEQ3.ASM:2465), hrt_3_head_hold_anim/hrt_3_head_hold2_anim/
+ * hrt_3_fake_hold_anim (HRTSEQ3.ASM:1126/1105/1089).
+ *
+ * Without frame data there is no wm_visual_state to time a real end from
+ * (the mechanism find_attack_window's own ids use, see
+ * wm_bret_backend_tick), so wm_bret_backend_change_anim clears this back
+ * off itself, same tick, via bva->pending_uninit_clear rather than leaving
+ * it set indefinitely -- a deliberate, documented simplification (real
+ * per-frame duration data would be needed to protect these for their own
+ * actual length, matching the source, rather than just this one tick). */
+static bool secret_move_sets_mode_uninit(wm_arcade_bret_anim_id_t id) {
+    switch (id) {
+        case WM_BRET_ANIM_JUMP_KICK4:
+        case WM_BRET_ANIM_RUNNING_DDT:
+        case WM_BRET_ANIM_HH_DDT2:
+        case WM_BRET_ANIM_HIPTOSS:
+        case WM_BRET_ANIM_GRABFLING_FACE24:
+        case WM_BRET_ANIM_RAKE_FACE:
+        case WM_BRET_ANIM_HEAD_HOLD2_3:
+        case WM_BRET_ANIM_HEAD_HOLD3:
+        case WM_BRET_ANIM_FAKE_HOLD3:
             return true;
         default:
             return false;
@@ -310,11 +355,21 @@ wm_arcade_frame_box_t wm_bret_hurt_box_for_frame(const char *source_frame) {
 void wm_bret_backend_change_anim(wm_arcade_actor_t *actor,
                                  wm_arcade_bret_anim_id_t id, void *user) {
     wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
-    bool restarted;
+    const wm_visual_sequence *seq;
+    bool is_new_selection;
     if (!bva) return;
-    restarted = start_if_new(&bva->visual, wm_bret_anim_sequence(id));
+
+    /* start_if_new's own "restarted" answer only exists when this id has
+       real extracted frame data to time an end from. Ids without any
+       (secret_move_sets_mode_uninit's own list) still need to tell a
+       genuinely new selection from a repeated call with the same id
+       already in progress -- current_id changing is the only signal
+       available without real timing data. */
+    seq = wm_bret_anim_sequence(id);
+    is_new_selection = seq ? start_if_new(&bva->visual, seq)
+                           : (bva->current_id != id);
     bva->current_id = id;
-    if (!actor || !restarted) return;
+    if (!actor || !is_new_selection) return;
 
     /* HRTSEQ2.ASM's own attack headers (hrt_2_punch_anim etc., HRTSEQ2.ASM:
        184/303/...) all lead with `ANI_SETMODE,MODE_UNINT|MODE_NOAUTOFLIP`.
@@ -328,15 +383,22 @@ void wm_bret_backend_change_anim(wm_arcade_actor_t *actor,
        Cleared back to MODE_NORMAL when the attack animation naturally
        ends (matching that same header's `ANI_SETMODE,MODE_NORMAL` right
        before its own ANI_END) -- see wm_bret_backend_tick. */
-    if (find_attack_window(id))
+    if (find_attack_window(id)) {
         actor->anim_mode |= (uint16_t)(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
+    } else if (secret_move_sets_mode_uninit(id)) {
+        /* secret_move_sets_mode_uninit's own comment: no frame data means
+           no real way to time this back off, so it's cleared this same
+           tick instead (wm_bret_backend_tick) rather than left set. */
+        actor->anim_mode |= (uint16_t)(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
+        bva->pending_uninit_clear = true;
+    }
 
     /* attack_sets_facing_on_start's own comment: 5 of the 6 wired attacks
-       also carry a real, instant ANI_SETFACING right at their own start
-       (before hrt_4_kick_anim's real exception). Gated on `restarted`, not
-       every call, since the source command fires exactly once, the instant
-       the animation is selected -- not continuously for as long as it
-       plays. */
+       (plus 3 more secret-move targets) also carry a real, instant
+       ANI_SETFACING right at their own start (before hrt_4_kick_anim's
+       real exception). Gated on `is_new_selection`, not every call, since
+       the source command fires exactly once, the instant the animation is
+       selected -- not continuously for as long as it plays. */
     if (attack_sets_facing_on_start(id))
         actor->facing_dir = actor->new_facing_dir;
 }
@@ -585,6 +647,19 @@ void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
        as its own HRTSEQ2.ASM header's trailing `ANI_SETMODE,MODE_NORMAL`. */
     if (w && bva->visual.sequence == wm_bret_anim_sequence(bva->current_id) && bva->visual.ended)
         actor->anim_mode &= (uint16_t)~(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
+
+    /* secret_move_sets_mode_uninit's own ids have no frame data to time a
+       real end from, so the WM_MODE_UNINT wm_bret_backend_change_anim set
+       for one of them earlier this same tick (protecting it from being
+       reselected by this tick's own player_mode dispatch continuation)
+       gets cleared right back off here, rather than left set indefinitely
+       -- see that function's own comment for why this is a deliberate,
+       bounded simplification rather than the source's real per-animation
+       duration. */
+    if (bva->pending_uninit_clear) {
+        actor->anim_mode &= (uint16_t)~(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
+        bva->pending_uninit_clear = false;
+    }
 }
 
 void wm_bret_backend_tick_position(wm_arcade_actor_t *actor) {

@@ -24,7 +24,10 @@ extern "C" {
  *   - WM_BRET_ANIM_PUNCH2/PUNCH4 (light punch, HRTSEQ2.ASM hrt_2/4_punch_anim)
  *   - WM_BRET_ANIM_SUPER_PUNCH2_4 (power punch, hrt_4_super_punch_anim --
  *     hrt_2_super_punch_anim does not exist in the source tree, so
- *     WM_BRET_ANIM_SUPER_PUNCH2_2/SUPER_PUNCH4 stay unmapped)
+ *     WM_BRET_ANIM_SUPER_PUNCH2_2 stays unmapped; the supercut secret
+ *     move's own #scrt_cut dispatches to this exact same real label, so
+ *     wm_arcade_bret_fire_secret reuses this id directly rather than a
+ *     second one)
  *   - WM_BRET_ANIM_KICK2/KICK4 (light kick, hrt_2/4_kick_anim)
  *   - WM_BRET_ANIM_SUPER_KICK2/SUPER_KICK4 (power kick, hrt_2_super_kick_anim
  *     -- hrt_4_super_kick_anim, HRTSEQ2.ASM:1335, is a literal SUBR alias of
@@ -94,6 +97,12 @@ typedef struct {
        now -- see wm_bret_backend_tick's own comment. */
     wm_arcade_bret_anim_id_t current_id;
     bool attack_active;
+    /* Set by wm_bret_backend_change_anim when it applies WM_MODE_UNINT for
+       an id with no real extracted frame data (so there is no wm_visual_
+       state to time a real end from) -- see wm_bret_backend_tick's own
+       comment for why this gets cleared there, same tick, rather than
+       left set indefinitely. */
+    bool pending_uninit_clear;
     /* Set once by the caller at match creation (wm/match.h's
        init_bret_backends: !has_human) and read by the adjust_health
        callback -- LIFEBAR.ASM adjust_health's "attract mode never dies"

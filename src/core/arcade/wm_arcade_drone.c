@@ -599,8 +599,19 @@ wm_arcade_drone_step_result_t wm_arcade_drone_main(
 
     if (self->closest_dist <= 200 && opmode == WM_PMODE_BLOCK) {
         if (self->closest_zdist <= 40 && self->closest_xdist <= 60) {
+            /* Source reads *a8(STICK_REL_CUR) (PLYR.EQU: "facing reletive"),
+               not the raw STICK_VAL_CUR -- WRESTLE2.ASM's own
+               wres_get_stick_rel_cur is exactly this: the raw stick value
+               unchanged if the opponent faces right, or run through the
+               same xflip_table flip_lr_dir already implements if they face
+               left. Comparing raw stick_val_cur here would answer "is the
+               opponent physically pushing down-left" instead of the
+               source's own "is the opponent pushing down-and-toward-self",
+               silently swapped whenever the opponent faces left. */
+            uint16_t opp_rel = (opp->facing_dir & WM_MOVE_RIGHT) == 0
+                ? flip_lr_dir(opp->stick_val_cur) : opp->stick_val_cur;
             select_script(self, d,
-                opp->stick_val_cur == WM_MOVE_DOWN_LEFT ? "M_shrtblkrdl" : "M_shrtblkr", cb);
+                opp_rel == WM_MOVE_DOWN_LEFT ? "M_shrtblkrdl" : "M_shrtblkr", cb);
         } else {
             select_script(self, d, "drn_seekclose", cb);
         }

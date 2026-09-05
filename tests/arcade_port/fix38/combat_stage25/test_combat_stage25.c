@@ -118,6 +118,36 @@ int main(void){
     assert(d.missed_blocks[WM_AT_KICK]==1);assert(d.missed_blocks[WM_AT_PUNCH]==0);
     c=mkcb(&t);
 
+    /* M_shrtblkr[dl] selection must read the *facing-relative* stick value
+       (source's own STICK_REL_CUR, PLYR.EQU: "facing reletive"), not raw
+       stick_val_cur -- WRESTLE2.ASM's own wres_get_stick_rel_cur: unchanged
+       if the opponent faces right, else run through the same xflip_table
+       flip_lr_dir already implements. Comparing raw stick_val_cur answers
+       "is the opponent physically pushing down-left" instead of "is the
+       opponent pushing down-and-toward-self", silently swapped whenever
+       the opponent faces left. */
+    wm_arcade_drone_init(&d,10);b.attack_time=0;b.getup_time=0;
+    /* MODE_NORMAL's own passive/aggressive scheduling only reaches #doact
+       (where M_shrtblkr[dl] lives) on a "PCNT+1 multiple of 16" tick;
+       satisfy that gate so this reaches the code under test. */
+    w.pcnt=15;
+    d.script=NULL;t.last=NULL;a.player_mode=WM_PMODE_NORMAL;b.player_mode=WM_PMODE_BLOCK;
+    a.closest_dist=50;a.closest_xdist=40;a.closest_zdist=20;
+    b.facing_dir=WM_MOVE_RIGHT;b.stick_val_cur=WM_MOVE_DOWN_LEFT;
+    assert(wm_arcade_drone_main(&a,&d,&w,&c)==WM_DRONE_STEP_SCRIPT);
+    assert(t.last && strcmp(t.last,"M_shrtblkrdl")==0);
+
+    d.script=NULL;t.last=NULL;
+    b.facing_dir=WM_MOVE_LEFT;b.stick_val_cur=WM_MOVE_DOWN_RIGHT; /* flips to DOWN_LEFT relative */
+    assert(wm_arcade_drone_main(&a,&d,&w,&c)==WM_DRONE_STEP_SCRIPT);
+    assert(t.last && strcmp(t.last,"M_shrtblkrdl")==0);
+
+    d.script=NULL;t.last=NULL;
+    b.facing_dir=WM_MOVE_LEFT;b.stick_val_cur=WM_MOVE_DOWN_LEFT; /* flips to DOWN_RIGHT relative */
+    assert(wm_arcade_drone_main(&a,&d,&w,&c)==WM_DRONE_STEP_SCRIPT);
+    assert(t.last && strcmp(t.last,"M_shrtblkr")==0);
+    w.pcnt=1;
+
     /* GETUP_TIME always aborts script; successful roll also subtracts five. */
     wm_arcade_drone_init(&d,10);d.script="vm_exact";a.getup_time=7;b.attack_time=0;t.r[0]=0;t.p=0;
     assert(wm_arcade_drone_main(&a,&d,&w,&c)==WM_DRONE_STEP_ABORT_SCRIPT);

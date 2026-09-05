@@ -1,6 +1,7 @@
 #include "wm/bret_backend.h"
 #include "wm/arcade/wm_arcade_anim_combat.h"
 #include "wm/arcade/wm_arcade_lifebar.h"
+#include "wm/arcade/wm_arcade_mode_dead.h"
 #include "wm/bret_visuals.h"
 #include <string.h>
 
@@ -442,6 +443,14 @@ void wm_bret_backend_execute_walk(wm_arcade_actor_t *actor, void *user) {
     }
 }
 
+/* wm_arcade_bret_callbacks_t.mode_dead body: DOINK.ASM's shared mode_dead
+   (see wm/arcade/wm_arcade_mode_dead.h) needs nothing but the actor
+   itself in this port's always-reached subset. */
+static void wm_bret_backend_mode_dead(wm_arcade_actor_t *actor, void *user) {
+    (void)user;
+    wm_arcade_mode_dead(actor);
+}
+
 wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva) {
     wm_arcade_bret_callbacks_t cb;
     memset(&cb, 0, sizeof(cb));
@@ -449,6 +458,7 @@ wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva)
     cb.change_torso_anim = wm_bret_backend_change_torso_anim;
     cb.execute_walk = wm_bret_backend_execute_walk;
     cb.adjust_health = wm_bret_backend_adjust_health;
+    cb.mode_dead = wm_bret_backend_mode_dead;
     cb.user = bva;
     return cb;
 }

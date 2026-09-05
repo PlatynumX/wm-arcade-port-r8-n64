@@ -4,6 +4,7 @@
 #include "wm/anim.h"
 #include "wm/app.h"
 #include "wm/arcade/wm_arcade_confine.h"
+#include "wm/arcade/wm_arcade_mode_dead.h"
 #include "wm/arcade/wmania_ring_geometry.h"
 #include "wm/bmod.h"
 #include "wm/source_clock.h"
@@ -1426,6 +1427,14 @@ static void test_match_round_decided_after_real_kill(void) {
     CHECK(m.actors[1].player_mode == WM_PMODE_DEAD);
     CHECK(!m.round_state.decided);
 
+    /* wm_arcade_move_bret's real MODE_DEAD dispatch now reaches the wired
+       mode_dead callback (wm_bret_backend_mode_dead ->
+       wm_arcade_mode_dead) on the very next tick, setting
+       WM_STATUS_NO_BUCKOFF exactly like DOINK.ASM's shared mode_dead --
+       not just when called directly, but through real match play. */
+    wm_match_tick(&m, &cb, &punch);
+    CHECK((m.actors[1].status_flags & WM_STATUS_NO_BUCKOFF) != 0);
+
     for (guard = 0; guard < WM_ARCADE_PIN_TIMEOUT_TICKS + 5 && !m.round_state.decided; ++guard)
         wm_match_tick(&m, &cb, &punch);
 
@@ -2172,6 +2181,42 @@ static void test_arcade_confine_wrestler_noconfine_and_attached_skip(void) {
     wm_arcade_confine_wrestler(NULL);
 }
 
+static void test_arcade_mode_dead(void) {
+    wm_arcade_actor_t a;
+
+    /* First dead tick: real routine's own royal_rumble/is_8_on_1/
+       CHECK_COMBO_GO checks all provably resolve to "#nobuck" in this
+       port (see wm_arcade_mode_dead.h) -- sets WM_STATUS_NO_BUCKOFF. */
+    memset(&a, 0, sizeof(a));
+    wm_arcade_mode_dead(&a);
+    CHECK((a.status_flags & WM_STATUS_NO_BUCKOFF) != 0);
+    CHECK((a.status_flags & WM_STATUS_ZOMBIE) == 0);
+
+    /* Every following tick: real top-of-function B_NO_BUCKOFF early-out,
+       a genuine no-op. */
+    a.status_flags = WM_STATUS_NO_BUCKOFF;
+    wm_arcade_mode_dead(&a);
+    CHECK(a.status_flags == WM_STATUS_NO_BUCKOFF);
+
+    /* Same real early-out for WM_STATUS_DID_BUCKOFF/DO_BUCKOFF. */
+    a.status_flags = WM_STATUS_DID_BUCKOFF;
+    wm_arcade_mode_dead(&a);
+    CHECK(a.status_flags == WM_STATUS_DID_BUCKOFF);
+
+    a.status_flags = WM_STATUS_DO_BUCKOFF;
+    wm_arcade_mode_dead(&a);
+    CHECK(a.status_flags == WM_STATUS_DO_BUCKOFF);
+
+    /* WM_STATUS_ZOMBIE: real #zmb early-out, also untouched (the
+       zombie-transform tail is out of this port's scope, see header). */
+    a.status_flags = WM_STATUS_ZOMBIE;
+    wm_arcade_mode_dead(&a);
+    CHECK(a.status_flags == WM_STATUS_ZOMBIE);
+
+    /* NULL: no-op, doesn't crash. */
+    wm_arcade_mode_dead(NULL);
+}
+
 static void test_integrate_position(void) {
     wm_arcade_actor_t a;
     memset(&a, 0, sizeof(a));
@@ -2858,6 +2903,7 @@ int main(void) {
     test_arcade_confine_wrestler_clamps_z();
     test_arcade_confine_wrestler_clamps_x();
     test_arcade_confine_wrestler_noconfine_and_attached_skip();
+    test_arcade_mode_dead();
     test_integrate_position();
     test_human_input_commit();
     test_match_start_selected();

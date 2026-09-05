@@ -51,6 +51,7 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_drone.c
     src/core/arcade/wm_arcade_lex.c
     src/core/arcade/wm_arcade_lifebar.c
+    src/core/arcade/wm_arcade_mode_dead.c
     src/core/arcade/wm_arcade_move_dispatch.c
     src/core/arcade/wm_arcade_razor.c
     src/core/arcade/wm_arcade_razor_tables.c

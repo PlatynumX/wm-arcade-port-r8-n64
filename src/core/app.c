@@ -377,6 +377,37 @@ static bool tick_title(wm_app *app, const wm_input_state *input) {
     return a->call_ticks >= WM_TITLE_TOTAL_TICKS;
 }
 
+/*
+ * The shared @RAND stream's two hardware entropy inputs.
+ *
+ * WRESTLE.ASM's randomize step is `rl RAND,RAND / rl HCOUNT,RAND / add sp`
+ * -- and `add sp` is the only part that can change RAND's value at all (see
+ * wm/arcade/wmania_rng.h). Left at zero, as this port did until now, RAND
+ * could only rotate: seeded from 0 it stayed 0, so every RNDRNG0 in the game
+ * returned 0 forever. That silently pinned every drone decision to the first
+ * entry of whatever table it rolled against -- the AI only ever chose
+ * `#run`.
+ *
+ * Neither input has a true N64 equivalent: HCOUNT is the arcade's video-beam
+ * line counter and SP is the TMS34010 stack pointer at the moment of the
+ * call. Both are derived here from the real source clock instead, the same
+ * surrogate approach (and the same `tick * 8 & 0x1ff` beam derivation) this
+ * file's own title-sparkle RNG already uses. Deterministic, unlike the
+ * hardware, which is what the host tests want.
+ */
+static uint32_t app_rng_hcount(void *user) {
+    const wm_app *app = (const wm_app *)user;
+    return app ? ((app->scheduler.tick * 8u) & 0x1ffu) : 0u;
+}
+
+static uint32_t app_rng_sp(void *user) {
+    const wm_app *app = (const wm_app *)user;
+    /* A TMS34010 stack pointer counts *down* from the top of its region as
+       calls nest; this mirrors that shape rather than reusing the HCOUNT
+       ramp, so the two inputs never move in lockstep. */
+    return app ? (0x00010000u - (app->scheduler.tick * 64u)) : 0u;
+}
+
 static bool tick_gameplay(wm_app *app, const wm_input_state *input) {
     wm_attract_state *a = &app->attract;
 
@@ -410,7 +441,7 @@ void wm_app_init(wm_app *app) {
     wm_award_init(&app->awards);
     wm_demo_init(&app->demo);
     wm_match_init(&app->match);
-    wm_rng_init(&app->rng, 0, NULL, NULL, NULL);
+    wm_rng_init(&app->rng, 0, app_rng_hcount, app_rng_sp, app);
     wm_source_clock_init(&app->source_clock);
     wm_scheduler_init(&app->scheduler);
     app->p1_choice = WM_WRESTLER_BRET;

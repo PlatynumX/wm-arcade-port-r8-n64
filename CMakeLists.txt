@@ -35,6 +35,7 @@ add_library(wmcore STATIC
     src/generated/finish_sequences.c
     src/generated/bret_visuals.c
     src/generated/bret_attacks.c
+    src/generated/bret_defense.c
     src/generated/bret_frame_geometry.c
     src/generated/progress_wrestlers.c
 )

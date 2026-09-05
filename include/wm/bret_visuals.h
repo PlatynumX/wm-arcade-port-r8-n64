@@ -31,6 +31,20 @@ extern const wm_visual_sequence wm_bret_walk8_f4_anim;
 extern const wm_visual_sequence wm_bret_run_anim;
 
 /*
+ * HRTSEQ4.ASM:104 hrt_4_block_anim. The 2-facing twin (hrt_2_block_anim,
+ * HRTSEQ4.ASM:68) is entirely commented out in the source, so BLOCK4 is
+ * the only real block animation Bret has -- matching his own do_block,
+ * which only ever selects WM_BRET_ANIM_BLOCK4.
+ *
+ * This one carries three real ANIM.ASM commands the backend executes at
+ * their traced positions rather than as flat frames: ANI_SETPLYRMODE,
+ * MODE_BLOCK before frame 0, ANI_WAITRELEASE,PLAYER_BLOCK_BIT parked on
+ * frame 1, and ANI_SETPLYRMODE,MODE_NORMAL after frame 2 -- see
+ * wm_bret_backend_change_anim/tick.
+ */
+extern const wm_visual_sequence wm_bret_block4_anim;
+
+/*
  * BRET.ASM:2871 hrt_rotate_anims_table's 12 off-diagonal turn-transition
  * entries (the "TURNS (STANDS)" block, HRTSEQ1.ASM:390-454) -- played by
  * set_rotate_anim/change_anim1 for the idle (#zip/stance) facing-change

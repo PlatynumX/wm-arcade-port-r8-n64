@@ -197,8 +197,44 @@ const wm_visual_sequence *wm_bret_anim_sequence(wm_arcade_bret_anim_id_t id) {
            artwork, so both ids resolve to the same extracted sequence. */
         case WM_BRET_ANIM_SUPER_KICK2: return &wm_bret_power_kick_anim;
         case WM_BRET_ANIM_SUPER_KICK4: return &wm_bret_power_kick_anim;
+        /* HRTSEQ4.ASM:104 hrt_4_block_anim -- the only real block animation
+           Bret has (its 2-facing twin is commented out in the source). */
+        case WM_BRET_ANIM_BLOCK4: return &wm_bret_block4_anim;
         default: return NULL;
     }
+}
+
+/*
+ * hrt_4_block_anim's own ANI_WAITRELEASE,PLAYER_BLOCK_BIT sits between its
+ * second and third frames (HRTSEQ4.ASM:104):
+ *
+ *     ANI_SETPLYRMODE,MODE_BLOCK
+ *     WL 3,H4BK3A+FR1                       <- frame 0
+ *   #4block:
+ *     WL 3,H4BK3A+FR2                       <- frame 1
+ *     ANI_SETMODE,...|MODE_FRICTION
+ *     ANI_WAITRELEASE,PLAYER_BLOCK_BIT      <- parks here
+ *     ANI_SETMODE,MODE_NOAUTOFLIP
+ *     ANI_SETFACING
+ *     WL 3,H4BK3A+FR1                       <- frame 2
+ *     ANI_SETPLYRMODE,MODE_NORMAL
+ *     ANI_END
+ *
+ * So the animation holds on frame 1 for exactly as long as the block button
+ * is held, then plays its last frame and hands the wrestler back to
+ * MODE_NORMAL. That hold is what actually keeps a blocking wrestler in
+ * WM_PMODE_BLOCK, which is in turn what makes wm_arcade_try_attack_hit's own
+ * hit_blocker check and mode_block's 160-tick push counter reachable at all.
+ */
+#define WM_BRET_BLOCK_WAITRELEASE_FRAME ((size_t)1)
+
+static bool block_holding_waitrelease(const wm_bret_backend_actor *bva,
+                                      const wm_arcade_actor_t *actor) {
+    if (!bva || !actor) return false;
+    if (bva->visual.sequence != &wm_bret_block4_anim) return false;
+    if (bva->visual.ended) return false;
+    if (bva->visual.frame_index != WM_BRET_BLOCK_WAITRELEASE_FRAME) return false;
+    return (actor->but_val_cur & WM_BTN_BLOCK) != 0;
 }
 
 /* Returns true iff this call actually (re)started the sequence -- callers
@@ -401,6 +437,21 @@ void wm_bret_backend_change_anim(wm_arcade_actor_t *actor,
        selected -- not continuously for as long as it plays. */
     if (attack_sets_facing_on_start(id))
         actor->facing_dir = actor->new_facing_dir;
+
+    /* hrt_4_block_anim's own instant header commands, all before its first
+       WL frame: ANI_SETMODE,MODE_UNINT|MODE_NOAUTOFLIP, ANI_ZEROVELS,
+       ANI_SETFACING, and -- the one that matters for gameplay --
+       ANI_SETPLYRMODE,MODE_BLOCK. MODE_BLOCK is never set by BRET.ASM
+       itself (his do_block only selects this animation); it is the
+       animation that puts him in the mode, which is why he could never
+       actually block until this was wired. */
+    if (id == WM_BRET_ANIM_BLOCK4) {
+        actor->anim_mode |= (uint16_t)(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
+        actor->x_vel = 0;
+        actor->z_vel = 0;
+        actor->facing_dir = actor->new_facing_dir;
+        actor->player_mode = WM_PMODE_BLOCK;
+    }
 }
 
 void wm_bret_backend_change_torso_anim(wm_arcade_actor_t *actor,
@@ -631,6 +682,11 @@ void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
     size_t leg_old_frame_index, torso_old_frame_index;
 
     if (!bva) return;
+    /* hrt_4_block_anim's ANI_WAITRELEASE,PLAYER_BLOCK_BIT: park on its own
+       frame 1 while the block button is still held, so the animation (and
+       with it WM_PMODE_BLOCK) lasts exactly as long as the player holds
+       block, instead of running straight through in nine ticks. */
+    if (block_holding_waitrelease(bva, actor)) bva->visual.ticks_left = 2;
     leg_old_frame_index = bva->visual.frame_index;
     wm_visual_tick(&bva->visual);
     torso_old_frame_index = bva->torso_visual.frame_index;
@@ -693,6 +749,16 @@ void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
     if (bva->pending_uninit_clear) {
         actor->anim_mode &= (uint16_t)~(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
         bva->pending_uninit_clear = false;
+    }
+
+    /* hrt_4_block_anim's own tail, once the WAITRELEASE hold above has let
+       it run off its last frame: ANI_SETPLYRMODE,MODE_NORMAL followed by
+       ANI_END, plus the matching clear of the MODE_UNINT|MODE_NOAUTOFLIP
+       its header set. */
+    if (actor && bva->visual.sequence == &wm_bret_block4_anim && bva->visual.ended) {
+        if (actor->player_mode == WM_PMODE_BLOCK)
+            actor->player_mode = WM_PMODE_NORMAL;
+        actor->anim_mode &= (uint16_t)~(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
     }
 }
 

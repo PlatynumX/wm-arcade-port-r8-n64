@@ -4,7 +4,24 @@
 
 #include "wm_arcade_drone.h"
 #include "wm_arcade_drone_data.h"
+#include "wm/bret_backend.h"
 #include "wm/match.h"
+
+/*
+ * @RAND's two hardware entropy inputs. `add sp` is the only value-changing
+ * step in WRESTLE.ASM's randomize mix, so a WmRng left with both at zero
+ * degenerates to returning 0 forever (see wm/arcade/wmania_rng.h) -- which
+ * would silently pin every drone decision below to table index 0 and make
+ * these tests assert nothing. Same source-clock surrogates app.c wires.
+ */
+static uint32_t g_rng_tick;
+static uint32_t test_rng_hcount(void *u) { (void)u; return (g_rng_tick * 8u) & 0x1ffu; }
+static uint32_t test_rng_sp(void *u) { (void)u; return 0x00010000u - (g_rng_tick * 64u); }
+
+static void test_rng_init(WmRng *rng) {
+    g_rng_tick = 0;
+    wm_rng_init(rng, 0, test_rng_hcount, test_rng_sp, NULL);
+}
 
 /* ---- Interpreter-extension unit tests (skip/abort/redirect/cross-script
    jump/DS_SLP1-yield) -- exercised directly against wm_arcade_drone_script_
@@ -207,7 +224,7 @@ static void test_cpu_opponent_fights(void) {
     int32_t start_x0, start_z0, start_x1, start_z1;
     int moved = 0;
 
-    wm_rng_init(&rng, 0x1234u, NULL, NULL, NULL);
+    test_rng_init(&rng);
     wm_match_init(&m);
     wm_match_start_attract(&m, &rng);
 
@@ -222,6 +239,7 @@ static void test_cpu_opponent_fights(void) {
     start_x1 = m.actors[1].x_int; start_z1 = m.actors[1].z_int;
 
     for (tick = 0; tick < 2000 && m.active; ++tick) {
+        g_rng_tick = tick;
         wm_match_tick(&m, &cb, NULL);
         if (m.actors[0].but_val_cur != 0 || m.actors[1].but_val_cur != 0)
             saw_button = 1;
@@ -261,7 +279,7 @@ static void test_all_wrestlers_move(void) {
         int32_t sx0, sz0, sx1, sz1;
         int moved = 0, attacked = 0, left_block = 0;
 
-        wm_rng_init(&rng, 0x2000u + (uint32_t)k, NULL, NULL, NULL);
+        test_rng_init(&rng);
         wm_match_init(&m);
         wm_match_start_attract(&m, &rng);
         m.actors[0].wrestler_num = ids[k];
@@ -273,6 +291,7 @@ static void test_all_wrestlers_move(void) {
 
         for (tick = 0; tick < 2000 && m.active; ++tick) {
             uint16_t but;
+            g_rng_tick = tick;
             wm_match_tick(&m, &cb, NULL);
             if (m.actors[0].x_int != sx0 || m.actors[0].z_int != sz0 ||
                 m.actors[1].x_int != sx1 || m.actors[1].z_int != sz1)
@@ -293,7 +312,92 @@ static void test_all_wrestlers_move(void) {
     puts("drone_data all_wrestlers_move: PASS");
 }
 
+/* ---- @RAND must not be degenerate ---- */
+
+static void test_rng_not_degenerate(void) {
+    WmRng zero, real;
+    int distinct_zero = 0, distinct_real = 0;
+    int seen_zero[100], seen_real[100];
+    int i;
+
+    memset(seen_zero, 0, sizeof(seen_zero));
+    memset(seen_real, 0, sizeof(seen_real));
+
+    /* Both entropy inputs left at zero: `add sp` is the only value-changing
+       step of the source mix, so RAND can only rotate -- and a zero seed
+       rotates to zero forever. This is the trap that silently pinned every
+       drone table roll to index 0. */
+    wm_rng_init(&zero, 0, NULL, NULL, NULL);
+    for (i = 0; i < 200; ++i) {
+        uint32_t v = wm_rng_rndrng0(&zero, 99);
+        if (v < 100 && !seen_zero[v]) { seen_zero[v] = 1; ++distinct_zero; }
+    }
+    assert(distinct_zero == 1 && "zero-entropy RAND is expected to be degenerate");
+
+    /* Real (surrogate) HCOUNT/SP, as app.c now supplies: uniform again. */
+    test_rng_init(&real);
+    for (i = 0; i < 200; ++i) {
+        uint32_t v;
+        g_rng_tick = (uint32_t)i;
+        v = wm_rng_rndrng0(&real, 99);
+        if (v < 100 && !seen_real[v]) { seen_real[v] = 1; ++distinct_real; }
+    }
+    assert(distinct_real > 50 && "entropy-fed RAND must span its range");
+    puts("drone_data rng_not_degenerate: PASS");
+}
+
+/* ---- Bret actually blocks ---- */
+
+static void test_bret_blocks(void) {
+    wm_arcade_actor_t a, o;
+    wm_bret_backend_actor bva;
+    wm_arcade_bret_callbacks_t cb;
+    wm_arcade_bret_env_t env;
+    int i;
+
+    memset(&a, 0, sizeof(a)); memset(&o, 0, sizeof(o));
+    memset(&env, 0, sizeof(env));
+    a.active = o.active = 1;
+    a.in_ring = o.in_ring = 1;
+    a.player_mode = o.player_mode = WM_PMODE_NORMAL;
+    a.facing_dir = a.new_facing_dir = WM_MOVE_RIGHT;
+    a.smart_target = &o; o.smart_target = &a;
+    a.life = o.life = WM_ARCADE_LIFE_MAX;
+
+    wm_bret_backend_init(&bva);
+    bva.opponent = &o;
+    cb = wm_bret_backend_callbacks(&bva);
+
+    /* Holding block: hrt_4_block_anim's own ANI_SETPLYRMODE,MODE_BLOCK puts
+       him in the mode the instant the animation is selected. */
+    a.but_val_cur = WM_BTN_BLOCK;
+    (void)wm_arcade_move_bret(&a, &o, &env, &cb);
+    assert(a.player_mode == WM_PMODE_BLOCK && "block animation must set MODE_BLOCK");
+
+    /* ANI_WAITRELEASE,PLAYER_BLOCK_BIT: it lasts as long as block is held,
+       not just the animation's own nine ticks. */
+    for (i = 0; i < 200; ++i) {
+        wm_bret_backend_tick(&bva, &a, (uint16_t)i);
+        assert(a.player_mode == WM_PMODE_BLOCK && "block must hold while the button is held");
+    }
+
+    /* Released: the animation runs off its last frame and its trailing
+       ANI_SETPLYRMODE,MODE_NORMAL hands him back. */
+    a.but_val_cur = 0;
+    for (i = 0; i < 40; ++i) wm_bret_backend_tick(&bva, &a, (uint16_t)(200 + i));
+    assert(a.player_mode == WM_PMODE_NORMAL && "block must release once the button is up");
+    assert((a.anim_mode & WM_MODE_UNINT) == 0);
+
+    /* And a blocking Bret is now visible to the hit path as a blocker. */
+    a.but_val_cur = WM_BTN_BLOCK;
+    (void)wm_arcade_move_bret(&a, &o, &env, &cb);
+    assert(a.player_mode == WM_PMODE_BLOCK);
+    puts("drone_data bret_blocks: PASS");
+}
+
 int main(void) {
+    test_rng_not_degenerate();
+    test_bret_blocks();
     test_skip_next();
     test_abort_result();
     test_redirect_same_tick();

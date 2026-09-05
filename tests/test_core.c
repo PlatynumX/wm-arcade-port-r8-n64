@@ -542,6 +542,17 @@ static void test_bret_anim_sequence_mapping(void) {
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_KICK_TB) == &wm_bret_kick_tb_anim);
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_HEAD_HELD_STAND3) ==
           &wm_bret_head_held_stand3_anim);
+    /* Batch 4: neither routine ends where its own text does --
+       hrt_4_knee_to_head_anim ends in ANI_GOTO,#cont and
+       hrt_3_fake_hold_anim in ANI_GOTO,#missed, both landing in the shared
+       tail that follows. Before wlanim.py followed those, they extracted
+       as 1 and 3 frames; the real streams are 8 and 6. */
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_KNEE_TO_HEAD4) ==
+          &wm_bret_knee_to_head4_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_FAKE_HOLD3) ==
+          &wm_bret_fake_hold3_anim);
+    CHECK(wm_bret_knee_to_head4_anim.frame_count == 8);
+    CHECK(wm_bret_fake_hold3_anim.frame_count == 6);
     /* hrt_climb_down_anim passes tools/wlattack.py --audit, but its own
        third frame (H4HU4B+FR10) has no artwork: BRET.LOD carries only
        H4HU4B01/02/03/04/07, and hrt_jms.img itself has no FR10 either, so
@@ -1559,6 +1570,58 @@ static void test_bret_midanim_setplyrmode(void) {
     for (guard = 0; guard < 40 && (a.anim_mode & WM_MODE_UNINT); ++guard)
         wm_bret_backend_tick(&bva, &a, 0);
     CHECK(!(a.anim_mode & WM_MODE_UNINT));
+}
+
+/* Batch 4. hrt_4_knee_to_head_anim's ANI_ATTACK_ON sits at frame 2 of its
+   chained 8-frame stream -- past the end of the 1-frame fragment its own
+   label alone yields, so this window simply could not exist before the
+   extractor followed the routine's trailing ANI_GOTO.
+   hrt_3_fake_hold_anim carries no ANI_ATTACK_ON at all (it is a feint),
+   but does carry the MODE_UNINT|MODE_OVERLAP header and an
+   ANI_SETPLYRMODE,MODE_NORMAL, so it exercises the non-attacking wired
+   path. */
+static void test_bret_attack_windows_batch4(void) {
+    wm_arcade_actor_t a;
+    wm_bret_backend_actor bva;
+    int guard;
+
+    memset(&a, 0, sizeof(a));
+    wm_bret_backend_init(&bva);
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_KNEE_TO_HEAD4, &bva);
+    CHECK(bva.visual.sequence == &wm_bret_knee_to_head4_anim);
+    CHECK(a.anim_mode & WM_MODE_UNINT);
+
+    for (guard = 0; guard < 40 && bva.visual.frame_index != 2; ++guard)
+        wm_bret_backend_tick(&bva, &a, 0);
+    CHECK(bva.visual.frame_index == 2);
+    CHECK(a.anim_mode & WM_MODE_CHECKHIT);
+    CHECK(a.attack_mode == WM_AMODE_KNEE);
+    CHECK(a.attack_xoff == 11);
+    CHECK(a.attack_yoff == 44);
+    CHECK(a.attack_width == 51);
+    CHECK(a.attack_height == 49);
+
+    for (guard = 0; guard < 60 && (a.anim_mode & WM_MODE_UNINT); ++guard)
+        wm_bret_backend_tick(&bva, &a, 9);
+    CHECK(!(a.anim_mode & WM_MODE_UNINT));
+    CHECK(!(a.anim_mode & WM_MODE_CHECKHIT));
+
+    /* fake_hold3: real frame data now, so its MODE_UNINT is timed off the
+       animation instead of the one-tick stopgap it used to get. */
+    memset(&a, 0, sizeof(a));
+    a.player_mode = WM_PMODE_HEADHOLD;
+    wm_bret_backend_init(&bva);
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_FAKE_HOLD3, &bva);
+    CHECK(bva.visual.sequence == &wm_bret_fake_hold3_anim);
+    CHECK(a.anim_mode & WM_MODE_UNINT);
+    CHECK(a.anim_mode & WM_MODE_OVERLAP);
+    CHECK(a.player_mode == WM_PMODE_NORMAL);
+    wm_bret_backend_tick(&bva, &a, 0);
+    CHECK(a.anim_mode & WM_MODE_UNINT);   /* not cleared same tick any more */
+    for (guard = 0; guard < 60 && (a.anim_mode & WM_MODE_UNINT); ++guard)
+        wm_bret_backend_tick(&bva, &a, 0);
+    CHECK(!(a.anim_mode & WM_MODE_UNINT));
+    CHECK(!(a.anim_mode & WM_MODE_OVERLAP));
 }
 
 /* ATTRACT.ASM:669 TURN_SOUNDS_OFF_IF_NEED gates the DCS_LOGO music on
@@ -3859,6 +3922,7 @@ int main(void) {
     test_bret_attack_windows_multi_pulse();
     test_bret_attack_windows_batch3();
     test_bret_midanim_setplyrmode();
+    test_bret_attack_windows_batch4();
     test_attract_dcs_logo_does_not_fall_through();
     test_bret_hurt_box_for_frame_real_geometry();
     test_bret_backend_tick_sets_real_hurt_box();

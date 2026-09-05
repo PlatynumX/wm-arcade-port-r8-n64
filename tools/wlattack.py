@@ -137,32 +137,38 @@ def _routine_local_labels(path: pathlib.Path, label: str) -> set[str]:
 
 
 def audit(path: pathlib.Path, label: str):
-    """Report why (or whether) a flat --slice of this routine is faithful."""
-    active = False
-    saw_frame = False
-    own_labels = _routine_local_labels(path, label)
+    """Report why (or whether) a flat --slice of this routine is faithful.
+
+    Walks exactly the line order wlanim.slice_line_order walks, so a routine
+    that runs on into another is judged on the whole stream that would be
+    extracted -- it is only as sliceable as everything it chains through.
+    """
+    lines = [wlanim.strip_comment(raw)
+             for raw in path.read_text(errors="replace").splitlines()]
+    try:
+        order = wlanim.slice_line_order(lines, label)
+    except ValueError as exc:
+        return [("blocking", str(exc))], None
+
+    # Local labels reachable anywhere in the walked stream: a GOTO forward
+    # into a chained-in routine is a forward skip, not a jump out.
+    own_labels = {m.group(1) for m in
+                  (LOCAL_LABEL_RE.match(lines[i]) for i in order) if m}
+
     seen_labels: set[str] = set()
     findings: list[tuple[str, str]] = []
     terminator = None
-    wanted = label.upper()
+    saw_frame = False
+    chained: list[str] = []
 
-    for raw in path.read_text(errors="replace").splitlines():
-        line = wlanim.strip_comment(raw)
+    for idx in order:
+        line = lines[idx]
         if not line:
             continue
         sub = wlanim.SUBR_RE.match(line)
         if sub:
-            if active and saw_frame:
-                # Slice stops here. Reaching the next SUBR without ever
-                # seeing ANI_END/ANI_REPEAT means execution really runs on
-                # into the following routine.
-                terminator = terminator or ("fallthrough", sub.group(1))
-                break
-            if active:
-                continue
-            active = sub.group(1).upper() == wanted
-            continue
-        if not active:
+            if saw_frame:
+                chained.append(sub.group(1))
             continue
 
         lbl = LOCAL_LABEL_RE.match(line)
@@ -190,13 +196,13 @@ def audit(path: pathlib.Path, label: str):
             elif target in own_labels:
                 sev = "tolerated"
                 why = (f"ANI_GOTO,{target}: forward skip to a later label in "
-                       f"this same routine; --slice keeps the skipped frames, "
+                       f"the walked stream; --slice keeps the skipped frames, "
                        f"i.e. the longer path")
             else:
                 sev = "blocking"
-                why = (f"ANI_GOTO,{target}: {target} is not defined in this "
-                       f"routine, so the animation continues somewhere "
-                       f"--slice cannot follow")
+                why = (f"ANI_GOTO,{target}: {target} is not reached anywhere "
+                       f"in the walked stream, so the animation continues "
+                       f"where --slice cannot follow")
             if (sev, why) not in findings:
                 findings.append((sev, why))
             continue
@@ -209,42 +215,40 @@ def audit(path: pathlib.Path, label: str):
 
     if not saw_frame:
         raise ValueError(f"no WL frames found for {label}")
-    if terminator and terminator[0] == "fallthrough":
-        findings.append(("blocking",
-                         f"falls through into {terminator[1]} with no ANI_END: "
-                         f"the real animation continues past what --slice keeps"))
+    if chained:
+        findings.insert(0, ("chained",
+                            "runs on into " + ", ".join(chained) +
+                            " (no ANI_END of its own), so those routines' "
+                            "frames and commands are part of this animation "
+                            "and are judged here too"))
     return findings, terminator
 
 
 def trace(path: pathlib.Path, label: str):
-    """Yield (frame_index, command, operands) plus the frame list."""
-    active = False
+    """Yield (frame_index, command, operands) plus the frame list.
+
+    Walks wlanim.slice_line_order, the same order extract_visual_slice
+    walks, so a reported index always refers to the same frame the
+    generated wm_visual_sequence has at that position -- chained
+    continuations included.
+    """
+    lines = [wlanim.strip_comment(raw)
+             for raw in path.read_text(errors="replace").splitlines()]
+    order = wlanim.slice_line_order(lines, label)
+
     frames: list[wlanim.Frame] = []
     events: list[tuple[int, str, str]] = []
-    wanted = label.upper()
 
-    for raw in path.read_text(errors="replace").splitlines():
-        line = wlanim.strip_comment(raw)
-        if not line:
+    for idx in order:
+        line = lines[idx]
+        if not line or wlanim.SUBR_RE.match(line):
             continue
-        sub = wlanim.SUBR_RE.match(line)
-        if sub:
-            if active and frames:
-                break
-            if active:
-                continue
-            active = sub.group(1).upper() == wanted
-            continue
-        if not active:
-            continue
-
         frame = wlanim._frame_from_line(line)
         if frame:
             frames.append(frame)
             continue
         if wlanim.REPEAT_RE.match(line) or wlanim.END_RE.match(line):
             break
-
         cmd = COMMAND_RE.match(line)
         if cmd:
             events.append((len(frames), cmd.group(1).upper(), cmd.group(2).strip()))
@@ -272,9 +276,9 @@ def main(argv=None) -> int:
             end = terminator[0] if terminator else "end of file"
             verdict = "NOT SAFELY SLICEABLE" if blocking else "sliceable"
             print(f"{label}: {verdict}  (slice ends at {end})")
-            for sev in ("blocking", "unported", "tolerated"):
+            for sev in ("chained", "blocking", "unported", "tolerated"):
                 tag = {"blocking": "BLOCKING ", "unported": "unported ",
-                       "tolerated": "tolerated"}[sev]
+                       "tolerated": "tolerated", "chained": "chained  "}[sev]
                 for s_, why in findings:
                     if s_ == sev:
                         print(f"    {tag} {why}")

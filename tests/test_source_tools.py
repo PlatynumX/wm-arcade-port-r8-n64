@@ -69,9 +69,30 @@ def test_wlattack_audit() -> None:
     assert any("ANI_SET_RPTCOUNT" in w for w in butts)
     assert any("ANI_CHANGEANIM" in w for w in butts)
 
+    # hrt_2_raise_arm_anim has no ANI_END of its own: it ends in
+    # `ANI_GOTO,#cont`, a label inside hrt_4_raise_arm_anim. The extractor
+    # follows that, so the GOTO is no longer a blocker -- but the routine it
+    # lands in has a repeat loop, and the audit inherits that. A routine is
+    # only as sliceable as everything it chains through.
     raise_arm = verdict("hrt_2_raise_arm_anim")
-    assert any("ANI_GOTO,#cont" in w for w in raise_arm)
-    assert any("falls through" in w for w in raise_arm)
+    assert any("ANI_SET_RPTCOUNT" in w for w in raise_arm)
+    assert not any("#cont" in w for w in raise_arm)
+
+    # Chaining is what makes that true: the extracted stream really is the
+    # two frames under its own label plus the shared tail at #cont, not the
+    # 2-frame fragment the label alone would give.
+    seq = wlanim.extract_visual_slice(p, "hrt_2_raise_arm_anim", False)
+    names = [f.name for f in seq.frames]
+    assert names[:2] == ["H1TL5A03", "H1TL5A04"], names[:2]
+    assert len(names) == 18, len(names)
+    # The frame sharing a line with the #cont label must not be dropped.
+    assert names[2] == "H4SL4C01", names[2]
+
+    # Local labels are reused across routines (#cont, #hit, #missed appear
+    # in many), so a chain target must resolve forward from the routine
+    # itself -- resolving from the top of the file picked up an unrelated
+    # earlier #cont and produced frames from the wrong animation entirely.
+    assert not any(n.startswith("H4NM3A") for n in names), names
 
     # Every attack animation actually wired into the Bret backend must be
     # sliceable, or the extraction backing it is not a real playthrough.

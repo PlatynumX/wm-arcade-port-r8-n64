@@ -458,3 +458,22 @@ const wm_visual_sequence wm_bret_kick_tb_anim = {
     .frame_count = sizeof(bret_kick_tb_frames) / sizeof(bret_kick_tb_frames[0]),
     .repeat = false,
 };
+
+static const wm_visual_frame bret_knee_to_head4_frames[] = {
+    {"H2NM3A02", 2},
+    {"H2NM3A03", 2},
+    {"H2NM3A04", 3},
+    {"H2NM3A04", 1},
+    {"H2NM3A04", 6},
+    {"H2NM3A04", 10},
+    {"H2NM3A05", 3},
+    {"H2NM3A06", 3},
+};
+
+const wm_visual_sequence wm_bret_knee_to_head4_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_4_knee_to_head_anim",
+    .frames = bret_knee_to_head4_frames,
+    .frame_count = sizeof(bret_knee_to_head4_frames) / sizeof(bret_knee_to_head4_frames[0]),
+    .repeat = false,
+};

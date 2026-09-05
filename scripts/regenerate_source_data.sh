@@ -70,6 +70,7 @@ python3 "$ROOT/tools/wlanim.py" \
     --slice hrt_4_jump_kick_anim wm_bret_jump_kick4_anim bret_jump_kick4_frames false \
     --slice hrt_4_knee_fall_anim wm_bret_knee_fall4_anim bret_knee_fall4_frames false \
     --slice hrt_kick_TB_anim wm_bret_kick_tb_anim bret_kick_tb_frames false \
+    --slice hrt_4_knee_to_head_anim wm_bret_knee_to_head4_anim bret_knee_to_head4_frames false \
     --out "$ROOT/src/generated/bret_attacks.c"
 python3 "$ROOT/tools/wlanim.py" \
     --source "$ORIG/HRTSEQ4.ASM" \
@@ -78,6 +79,7 @@ python3 "$ROOT/tools/wlanim.py" \
 python3 "$ROOT/tools/wlanim.py" \
     --source "$ORIG/HRTSEQ3.ASM" \
     --slice hrt_3_head_held_stand_anim wm_bret_head_held_stand3_anim bret_head_held_stand3_frames false \
+    --slice hrt_3_fake_hold_anim wm_bret_fake_hold3_anim bret_fake_hold3_frames false \
     --out "$ROOT/src/generated/bret_grapple.c"
 if [ ! -f "$ORIG/IMG/BRET.LOD" ]; then
     sh "$ROOT/scripts/fetch_original.sh"

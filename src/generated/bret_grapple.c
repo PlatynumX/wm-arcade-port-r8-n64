@@ -13,3 +13,20 @@ const wm_visual_sequence wm_bret_head_held_stand3_anim = {
     .frame_count = sizeof(bret_head_held_stand3_frames) / sizeof(bret_head_held_stand3_frames[0]),
     .repeat = false,
 };
+
+static const wm_visual_frame bret_fake_hold3_frames[] = {
+    {"H4GH3C01", 3},
+    {"H4GH3C02", 3},
+    {"H4GH3C03", 3},
+    {"H4GH3C03", 3},
+    {"H4GH3C02", 3},
+    {"H4GH3C01", 3},
+};
+
+const wm_visual_sequence wm_bret_fake_hold3_anim = {
+    .source_file = "HRTSEQ3.ASM",
+    .source_label = "hrt_3_fake_hold_anim",
+    .frames = bret_fake_hold3_frames,
+    .frame_count = sizeof(bret_fake_hold3_frames) / sizeof(bret_fake_hold3_frames[0]),
+    .repeat = false,
+};

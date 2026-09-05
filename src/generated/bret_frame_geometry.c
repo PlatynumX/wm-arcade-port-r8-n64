@@ -268,6 +268,9 @@ static const wm_bret_frame_geometry_t frames[] = {
     {"H4BK3A01", 58, 118, 23, 111},
     {"H4BK3A02", 58, 114, 23, 109},
     {"H3HB3A03", 47, 111, 16, 103},
+    {"H4GH3C01", 65, 116, 26, 109},
+    {"H4GH3C02", 68, 118, 27, 111},
+    {"H4GH3C03", 83, 124, 34, 118},
 };
 
 const wm_bret_frame_geometry_t *wm_bret_frame_geometry_find(const char *source_frame) {

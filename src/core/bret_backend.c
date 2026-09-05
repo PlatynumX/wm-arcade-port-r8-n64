@@ -220,6 +220,8 @@ const wm_visual_sequence *wm_bret_anim_sequence(wm_arcade_bret_anim_id_t id) {
         case WM_BRET_ANIM_KNEE_FALL4: return &wm_bret_knee_fall4_anim;
         case WM_BRET_ANIM_KICK_TB: return &wm_bret_kick_tb_anim;
         case WM_BRET_ANIM_HEAD_HELD_STAND3: return &wm_bret_head_held_stand3_anim;
+        case WM_BRET_ANIM_KNEE_TO_HEAD4: return &wm_bret_knee_to_head4_anim;
+        case WM_BRET_ANIM_FAKE_HOLD3: return &wm_bret_fake_hold3_anim;
         default: return NULL;
     }
 }
@@ -397,6 +399,11 @@ static const wm_bret_attack_window_t attack_windows[] = {
       { WM_AMODE_SPINKICK, 5, 54, 70, 34 }, {0,0,0,0,0,0,0} },
     { WM_BRET_ANIM_KICK_TB, 3, false,
       { WM_AMODE_SPINKICK, 5, 54, 70, 34 }, {0,0,0,0,0,0,0} },
+    /* hrt_4_knee_to_head_anim: ANI_ATTACK_ON,AMODE_KNEE,11,44,51,49 at
+       frame 2 of the chained 8-frame stream (1 frame before chaining, and
+       the window sat past its end). */
+    { WM_BRET_ANIM_KNEE_TO_HEAD4, 2, false,
+      { WM_AMODE_KNEE, 11, 44, 51, 49 }, {0,0,0,0,0,0,0} },
 };
 #define WM_BRET_ATTACK_WINDOW_COUNT \
     (sizeof(attack_windows) / sizeof(attack_windows[0]))
@@ -411,6 +418,8 @@ static bool anim_header_sets_overlap(wm_arcade_bret_anim_id_t id) {
         case WM_BRET_ANIM_STOMP4:
         case WM_BRET_ANIM_GROUND_PUNCH2:
         case WM_BRET_ANIM_GROUND_PUNCH4:
+        /* hrt_3_fake_hold_anim's header carries MODE_OVERLAP too. */
+        case WM_BRET_ANIM_FAKE_HOLD3:
             return true;
         default:
             return false;
@@ -443,6 +452,8 @@ static const wm_bret_plyrmode_change_t plyrmode_changes[] = {
        is what actually releases mode_headhold. */
     { WM_BRET_ANIM_PUSH4, 0, WM_PMODE_NORMAL },
     { WM_BRET_ANIM_HEAD_HELD_STAND3, 0, WM_PMODE_NORMAL },
+    /* hrt_3_fake_hold_anim's own ANI_SETPLYRMODE,MODE_NORMAL header. */
+    { WM_BRET_ANIM_FAKE_HOLD3, 0, WM_PMODE_NORMAL },
     /* hrt_2/4_stomp_anim's own header, previously special-cased. */
     { WM_BRET_ANIM_STOMP2, 0, WM_PMODE_NORMAL },
     { WM_BRET_ANIM_STOMP4, 0, WM_PMODE_NORMAL },
@@ -488,7 +499,8 @@ static const wm_bret_attack_window_t *find_attack_window_at(wm_arcade_bret_anim_
    its own block below.) */
 static bool anim_header_sets_uninit(wm_arcade_bret_anim_id_t id) {
     if (anim_has_attack_window(id)) return true;
-    return id == WM_BRET_ANIM_HEAD_HELD_STAND3;
+    return id == WM_BRET_ANIM_HEAD_HELD_STAND3 ||
+           id == WM_BRET_ANIM_FAKE_HOLD3;
 }
 
 /*
@@ -571,7 +583,6 @@ static bool secret_move_sets_mode_uninit(wm_arcade_bret_anim_id_t id) {
         case WM_BRET_ANIM_RAKE_FACE:
         case WM_BRET_ANIM_HEAD_HOLD2_3:
         case WM_BRET_ANIM_HEAD_HOLD3:
-        case WM_BRET_ANIM_FAKE_HOLD3:
             return true;
         default:
             return false;

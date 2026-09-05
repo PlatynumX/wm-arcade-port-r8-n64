@@ -103,6 +103,19 @@ extern const wm_visual_sequence wm_bret_super_punch2_2_anim;
 extern const wm_visual_sequence wm_bret_super_punch2_4_anim;
 
 /*
+ * Batch 4, unlocked by wlanim.py's routine chaining: neither of these
+ * routines ends where its own text does. hrt_4_knee_to_head_anim
+ * (HRTSEQ2.ASM) ends in `ANI_GOTO,#cont` and hrt_3_fake_hold_anim
+ * (HRTSEQ3.ASM) in `ANI_GOTO,#missed`, both landing in the shared tail
+ * that follows -- extracted as 1 and 3 frames before chaining, 8 and 6
+ * after. mode_headheld's punch/kick/punchkick branches select
+ * knee_to_head4; the head-hold monitor selects fake_hold3 when the last
+ * headhold was under 120 ticks ago.
+ */
+extern const wm_visual_sequence wm_bret_knee_to_head4_anim;
+extern const wm_visual_sequence wm_bret_fake_hold3_anim;
+
+/*
  * BRET.ASM:2871 hrt_rotate_anims_table's 12 off-diagonal turn-transition
  * entries (the "TURNS (STANDS)" block, HRTSEQ1.ASM:390-454) -- played by
  * set_rotate_anim/change_anim1 for the idle (#zip/stance) facing-change

@@ -53,8 +53,17 @@ def eval_ticks(expr: str) -> int:
     return value
 
 
+# A local label can sit on the same line as the frame it names
+# (`#cont\tWL\t5,H4SL4C+FR1`). The label is an address, not part of the
+# instruction, so it is stripped before matching -- otherwise that frame is
+# silently dropped, which matters as soon as a chained continuation lands
+# on one.
+LEADING_LOCAL_LABEL_RE = re.compile(r"^\s*#[A-Za-z_][A-Za-z0-9_]*\s+(?=\S)")
+
+
 def _frame_from_line(line: str) -> Frame | None:
-    m = WL_RE.match(line) or WAIT_FRAME_RE.match(line)
+    body = LEADING_LOCAL_LABEL_RE.sub("", line)
+    m = WL_RE.match(body) or WAIT_FRAME_RE.match(body)
     if not m:
         return None
     return Frame(f"{m.group(2).upper()}{int(m.group(3)):02d}", eval_ticks(m.group(1)))
@@ -104,30 +113,130 @@ def extract(path: pathlib.Path, label: str) -> Sequence:
     return Sequence(label=label, frames=tuple(frames), repeat=repeat)
 
 
+GOTO_TARGET_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_GOTO\s*,\s*(#?[A-Za-z_][A-Za-z0-9_]*)\s*$", re.I)
+LOCAL_LABEL_RE = re.compile(r"^\s*(#[A-Za-z_][A-Za-z0-9_]*)\b")
+
+
+def _body_stop(lines: list[str], start: int) -> int:
+    """End of the body beginning at `start`: the next SUBR that follows at
+    least one frame. A SUBR reached before any frame is an alias for the
+    routine after it (HRTSEQ2.ASM:1334-1335 hrt_2/4_super_kick_anim), so the
+    body runs on through it."""
+    saw_frame = False
+    for j in range(start, len(lines)):
+        if SUBR_RE.match(lines[j]):
+            if saw_frame:
+                return j
+            continue
+        if _frame_from_line(lines[j]):
+            saw_frame = True
+    return len(lines)
+
+
+def _routine_span(lines: list[str], label: str) -> tuple[int, int] | None:
+    wanted = label.upper()
+    for i, line in enumerate(lines):
+        sub = SUBR_RE.match(line)
+        if sub and sub.group(1).upper() == wanted:
+            return (i + 1, _body_stop(lines, i + 1))
+    return None
+
+
+def _routine_terminates(lines: list[str], span: tuple[int, int]) -> bool:
+    """Does this body actually end, rather than run on? ANI_END/ANI_REPEAT
+    is a real terminator; a body with neither does not stop where its text
+    stops, because execution simply continues into the words that follow."""
+    return any(END_RE.match(l) or REPEAT_RE.match(l)
+               for l in lines[span[0]:span[1]])
+
+
+def _chain_target(lines: list[str], span: tuple[int, int]) -> int | None:
+    """Where a non-terminating body's execution actually continues: at its
+    own trailing unconditional ANI_GOTO's label (nothing after that GOTO is
+    reachable any other way, e.g. hrt_2_raise_arm_anim's `WL ANI_GOTO,#cont`
+    into the middle of hrt_4_raise_arm_anim), else by falling off the end
+    into the next SUBR (hrt_2_hair_pickup_anim into hrt_4_hair_pickup_anim,
+    HRTSEQ3.ASM:855/866)."""
+    last_goto = None
+    for i in range(span[0], span[1]):
+        m = GOTO_TARGET_RE.match(lines[i])
+        if m:
+            last_goto = m.group(1)
+    if last_goto is None:
+        return span[1]
+    # Local labels are scoped, and the same name (#cont, #hit, #missed) is
+    # reused all over these files. Resolve forward from this routine's own
+    # start so the match is either later in this body or in the routine it
+    # runs on into -- never some unrelated earlier routine's label.
+    for i in range(span[0], len(lines)):
+        m = LOCAL_LABEL_RE.match(lines[i])
+        if m and m.group(1) == last_goto:
+            return i
+    return None
+
+
+def slice_line_order(lines: list[str], label: str) -> list[int]:
+    """The real line order a visual slice of `label` walks.
+
+    Shared with tools/wlattack.py so the audit judges exactly the stream
+    that would be extracted, chained continuations included, instead of
+    only the text under the routine's own label.
+    """
+    span = _routine_span(lines, label)
+    if span is None:
+        raise ValueError(f"no visual WL frames found for {label}")
+
+    order: list[int] = []
+    walked: set[int] = set()
+    cur = span
+    while True:
+        order.extend(range(cur[0], cur[1]))
+        walked.update(range(cur[0], cur[1]))
+        if _routine_terminates(lines, cur):
+            break
+        nxt = _chain_target(lines, cur)
+        if nxt is None:
+            raise ValueError(
+                f"{label}: ends in an ANI_GOTO to a label that is not "
+                f"defined in this file; the animation continues where this "
+                f"extractor cannot follow")
+        if nxt >= len(lines):
+            break
+        if nxt in walked:
+            # A backward jump into ground already covered is a repeat loop,
+            # not a continuation into new artwork -- hrt_run_anim's own
+            # endless `ANI_GOTO #lp1`. Stop here and let the frame walk
+            # below apply its existing repeat handling.
+            break
+        cur = (nxt, _body_stop(lines, nxt))
+    return order
+
+
 def extract_visual_slice(path: pathlib.Path, label: str, repeat: bool | None = None) -> Sequence:
     """Extract only visible WL frame rows from a gameplay-heavy routine.
 
     This deliberately ignores non-image opcodes. It is a visual bring-up aid, not a
     claim that the gameplay routine itself has been translated.
+
+    A routine whose body carries no ANI_END/ANI_REPEAT does not end where
+    its text ends: execution runs on into the next SUBR, or to the label of
+    its own trailing unconditional ANI_GOTO. Those continuations are
+    followed, so what comes out is the stream the machine really plays
+    rather than the fragment that happens to sit under one label. Routines
+    that do terminate are walked exactly as before.
     """
-    active = False
+    lines = [strip_comment(raw)
+             for raw in path.read_text(errors="replace").splitlines()]
+
+    order = slice_line_order(lines, label)
+
     frames: list[Frame] = []
     inferred_repeat = False
-    wanted = label.upper()
 
-    for raw in path.read_text(errors="replace").splitlines():
-        line = strip_comment(raw)
-        if not line:
-            continue
-        sub = SUBR_RE.match(line)
-        if sub:
-            if active and frames:
-                break
-            if active:
-                continue
-            active = sub.group(1).upper() == wanted
-            continue
-        if not active:
+    for idx in order:
+        line = lines[idx]
+        if not line or SUBR_RE.match(line):
             continue
         frame = _frame_from_line(line)
         if frame:

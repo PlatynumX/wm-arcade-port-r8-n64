@@ -73,6 +73,23 @@ extern const wm_visual_sequence wm_bret_ground_punch2_anim;
 extern const wm_visual_sequence wm_bret_ground_punch4_anim;
 
 /*
+ * Batch 3 (HRTSEQ2.ASM / HRTSEQ3.ASM). Picked by tools/wlattack.py --audit
+ * rather than by eye: of every remaining animation Bret's dispatcher can
+ * select, these are the ones whose control flow a flat wlanim.py --slice
+ * genuinely represents. mode_block's shove-off-a-blocker and its
+ * down-input branch select push4; wm_arcade_bret_fire_secret selects
+ * jump_kick4; do_kick's own "stick matches facing" branch selects
+ * knee_fall4; do_kick selects kick_tb against an INAIR2 (turnbuckle-leaping)
+ * opponent; and mode_headhold selects head_held_stand3 once the grapple
+ * has no attached process left.
+ */
+extern const wm_visual_sequence wm_bret_push4_anim;
+extern const wm_visual_sequence wm_bret_jump_kick4_anim;
+extern const wm_visual_sequence wm_bret_knee_fall4_anim;
+extern const wm_visual_sequence wm_bret_kick_tb_anim;
+extern const wm_visual_sequence wm_bret_head_held_stand3_anim;
+
+/*
  * BRET.ASM:2871 hrt_rotate_anims_table's 12 off-diagonal turn-transition
  * entries (the "TURNS (STANDS)" block, HRTSEQ1.ASM:390-454) -- played by
  * set_rotate_anim/change_anim1 for the idle (#zip/stance) facing-change

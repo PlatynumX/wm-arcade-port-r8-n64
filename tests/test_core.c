@@ -524,6 +524,18 @@ static void test_bret_anim_sequence_mapping(void) {
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_STOMP4) == &wm_bret_stomp4_anim);
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_GROUND_PUNCH2) == &wm_bret_ground_punch2_anim);
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_GROUND_PUNCH4) == &wm_bret_ground_punch4_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_PUSH4) == &wm_bret_push4_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_JUMP_KICK4) == &wm_bret_jump_kick4_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_KNEE_FALL4) == &wm_bret_knee_fall4_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_KICK_TB) == &wm_bret_kick_tb_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_HEAD_HELD_STAND3) ==
+          &wm_bret_head_held_stand3_anim);
+    /* hrt_climb_down_anim passes tools/wlattack.py --audit, but its own
+       third frame (H4HU4B+FR10) has no artwork: BRET.LOD carries only
+       H4HU4B01/02/03/04/07, and hrt_jms.img itself has no FR10 either, so
+       the frame the source asks for genuinely does not exist in the
+       shipped art. Wiring it would mean inventing a shortened animation. */
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_CLIMB_DOWN) == NULL);
 
     /* Deliberately unmapped: no "hrt_2_super_punch_anim" exists in the
        source tree at all -- see wm/bret_backend.h. */
@@ -926,21 +938,47 @@ static void test_bret_backend_secret_move_no_frame_data_survives_one_tick(void) 
     CHECK(bva.current_id == WM_BRET_ANIM_JUMP_KICK4);
     CHECK(actor.anim_mode & WM_MODE_UNINT);
 
-    /* wm_bret_backend_tick, still this same tick, consumes the one-tick
-       protection -- deliberately, since there is no real frame duration
-       to time a longer one from. */
+    /* JUMP_KICK4 now has real extracted hrt_4_jump_kick_anim frame data
+       and a real attack window, so its MODE_UNINT is timed off the actual
+       animation the way every wired attack's is -- it is no longer the
+       one-tick stopgap this test used to assert (that stopgap's own stated
+       premise, "no real frame duration to time a longer one from", stopped
+       being true when the animation was extracted). Ticking once leaves it
+       set, mid-swing. */
     wm_bret_backend_tick(&bva, &actor, 3);
-    CHECK(!(actor.anim_mode & WM_MODE_UNINT));
+    CHECK(actor.anim_mode & WM_MODE_UNINT);
+    CHECK(bva.visual.sequence == &wm_bret_jump_kick4_anim);
 
-    /* Tick 4: Bret is genuinely free to act again -- no soft-lock. An
-       ordinary punch now reaches mode_normal's own action selection (which
-       picks PUNCH2/4 or, at this zero closest_xdist/zdist, the unwired
-       near() headbutt branch -- either way, a different real id than
-       JUMP_KICK4) instead of being blocked by a still-set WM_MODE_UNINT. */
+    /* Tick 4: still uninterruptible, so an ordinary punch genuinely does
+       not displace the jump kick -- which is the real behavior the source
+       has and the stopgap could not reproduce. */
     memset(&in, 0, sizeof(in));
     in.light_punch = true;
     wm_human_input_commit(&actor, &hs, &in);
     bva.pcnt = 4;
+    (void)wm_arcade_move_bret(&actor, &opp, &env, &cb);
+    CHECK(bva.current_id == WM_BRET_ANIM_JUMP_KICK4);
+
+    /* Once the animation genuinely ends, its own trailing
+       ANI_SETMODE,MODE_NORMAL clears the protection and Bret is free
+       again -- no soft-lock. */
+    {
+        int guard;
+        for (guard = 0; guard < 80 && (actor.anim_mode & WM_MODE_UNINT); ++guard)
+            wm_bret_backend_tick(&bva, &actor, (uint16_t)(5 + guard));
+        CHECK(!(actor.anim_mode & WM_MODE_UNINT));
+    }
+    /* Release first: mode_normal dispatches on but_val_down (the press
+       edge), so a button already held since tick 4 is not a new press. */
+    memset(&in, 0, sizeof(in));
+    wm_human_input_commit(&actor, &hs, &in);
+    bva.pcnt = 89;
+    (void)wm_arcade_move_bret(&actor, &opp, &env, &cb);
+
+    memset(&in, 0, sizeof(in));
+    in.light_punch = true;
+    wm_human_input_commit(&actor, &hs, &in);
+    bva.pcnt = 90;
     (void)wm_arcade_move_bret(&actor, &opp, &env, &cb);
     CHECK(bva.current_id != WM_BRET_ANIM_JUMP_KICK4);
     CHECK(bva.current_id != WM_BRET_ANIM_NONE);
@@ -982,9 +1020,17 @@ static void test_bret_backend_charge_flying_kick_fires_on_release(void) {
         wm_human_input_commit(&actor, &hs, &in);
         bva.pcnt = (uint32_t)i;
         (void)wm_arcade_move_bret(&actor, &opp, &env, &cb);
+        /* Same reason test_bret_backend_charge_face_rake_fires_on_release
+           ticks: the press edge on tick 0 really does select an attack
+           (do_super_kick's own knee-fall branch at these zero distances),
+           whose header sets MODE_UNINT. Advancing the animation lets it
+           finish, which is what makes the charge release below reachable
+           at all -- and is what the live match loop does every tick. */
+        wm_bret_backend_tick(&bva, &actor, (uint16_t)i);
     }
     CHECK(actor.powerk_dtime == 100);
     CHECK(actor.special_move_addr == 0);
+    CHECK(!(actor.anim_mode & WM_MODE_UNINT));
 
     /* Release: fires for real, but only sets INAIR + queues the anim. */
     memset(&in, 0, sizeof(in));
@@ -1379,6 +1425,122 @@ static void test_bret_attack_windows_multi_pulse(void) {
         CHECK(!(a.anim_mode & WM_MODE_OVERLAP));
         CHECK(!(a.anim_mode & WM_MODE_CHECKHIT));
     }
+}
+
+/* Batch 3: the animations tools/wlattack.py --audit says a flat
+   wlanim.py --slice genuinely represents. Traced out of HRTSEQ2.ASM:
+
+     hrt_4_push_anim       [3] AMODE_PUSH,11,83,70,20
+     hrt_4_jump_kick_anim  [4] AMODE_FLYKICK,15,69,64,38
+     hrt_4_knee_fall_anim  [2] AMODE_BIGKNEE,11,44,51,49
+     hrt_kick_TB_anim      [2] AMODE_SPINKICK,5,54,70,34, ATTACK_OFF two
+                               frames later rather than one
+
+   None is an ANI_ATTACK_ON_Z, so all take wm_arcade_ani_attack_on's real
+   z defaults. */
+static void test_bret_attack_windows_batch3(void) {
+    static const struct {
+        wm_arcade_bret_anim_id_t id;
+        const wm_visual_sequence *seq;
+        size_t frame;
+        uint16_t attack_mode;
+        int16_t xoff, yoff, width, height;
+        bool sets_facing;
+    } cases[] = {
+        { WM_BRET_ANIM_PUSH4, &wm_bret_push4_anim, 3,
+          WM_AMODE_PUSH, 11, 83, 70, 20, true },
+        { WM_BRET_ANIM_JUMP_KICK4, &wm_bret_jump_kick4_anim, 4,
+          WM_AMODE_FLYKICK, 15, 69, 64, 38, true },
+        { WM_BRET_ANIM_KNEE_FALL4, &wm_bret_knee_fall4_anim, 2,
+          WM_AMODE_BIGKNEE, 11, 44, 51, 49, false },
+        { WM_BRET_ANIM_KICK_TB, &wm_bret_kick_tb_anim, 2,
+          WM_AMODE_SPINKICK, 5, 54, 70, 34, true },
+    };
+    size_t i;
+    for (i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+        wm_arcade_actor_t a;
+        wm_bret_backend_actor bva;
+        int guard;
+
+        memset(&a, 0, sizeof(a));
+        a.new_facing_dir = WM_MOVE_UP_RIGHT;
+        a.facing_dir = WM_MOVE_DOWN_LEFT;
+        a.x_vel = 0x999;
+        a.z_vel = 0x999;
+        wm_bret_backend_init(&bva);
+        wm_bret_backend_change_anim(&a, cases[i].id, &bva);
+        CHECK(bva.visual.sequence == cases[i].seq);
+        CHECK(a.anim_mode & WM_MODE_UNINT);
+        CHECK(a.anim_mode & WM_MODE_NOAUTOFLIP);
+        CHECK(a.x_vel == 0);   /* every one leads with ANI_ZEROVELS */
+        CHECK(a.z_vel == 0);
+        if (cases[i].sets_facing)
+            CHECK(a.facing_dir == WM_MOVE_UP_RIGHT);
+        else
+            CHECK(a.facing_dir == WM_MOVE_DOWN_LEFT);
+
+        for (guard = 0; guard < 60 && bva.visual.frame_index != cases[i].frame; ++guard)
+            wm_bret_backend_tick(&bva, &a, 0);
+        CHECK(bva.visual.frame_index == cases[i].frame);
+        CHECK(a.anim_mode & WM_MODE_CHECKHIT);
+        CHECK(a.attack_mode == cases[i].attack_mode);
+        CHECK(a.attack_xoff == cases[i].xoff);
+        CHECK(a.attack_yoff == cases[i].yoff);
+        CHECK(a.attack_width == cases[i].width);
+        CHECK(a.attack_height == cases[i].height);
+        CHECK(a.attack_zoff == -40);
+        CHECK(a.attack_depth == 80);
+
+        for (guard = 0; guard < 80 && (a.anim_mode & WM_MODE_UNINT); ++guard)
+            wm_bret_backend_tick(&bva, &a, 3);
+        CHECK(!(a.anim_mode & WM_MODE_UNINT));
+        CHECK(!(a.anim_mode & WM_MODE_CHECKHIT));
+    }
+}
+
+/* ANIM.ASM's ANI_SETPLYRMODE where it falls partway through an animation
+   rather than in the header. hrt_kick_TB_anim is the first wired animation
+   that has one: MODE_INAIR2 before its own frame 0 (Bret really is
+   airborne through the leap) and back to MODE_NORMAL before frame 4, once
+   he lands. */
+static void test_bret_midanim_setplyrmode(void) {
+    wm_arcade_actor_t a;
+    wm_bret_backend_actor bva;
+    int guard;
+
+    memset(&a, 0, sizeof(a));
+    a.player_mode = WM_PMODE_RUNNING;
+    wm_bret_backend_init(&bva);
+
+    /* the header's own ANI_SETPLYRMODE, instant on selection */
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_KICK_TB, &bva);
+    CHECK(a.player_mode == WM_PMODE_INAIR2);
+
+    /* still airborne right up to the frame the source lands on */
+    for (guard = 0; guard < 40 && bva.visual.frame_index < 3; ++guard) {
+        wm_bret_backend_tick(&bva, &a, 0);
+        if (bva.visual.frame_index < 4) CHECK(a.player_mode == WM_PMODE_INAIR2);
+    }
+    for (guard = 0; guard < 40 && bva.visual.frame_index != 4; ++guard)
+        wm_bret_backend_tick(&bva, &a, 0);
+    CHECK(bva.visual.frame_index == 4);
+    CHECK(a.player_mode == WM_PMODE_NORMAL);
+
+    /* hrt_3_head_held_stand_anim's own header ANI_SETPLYRMODE,MODE_NORMAL
+       is what actually releases mode_headhold -- the whole point of the
+       animation, and it has no attack window at all, so it exercises the
+       header path for a non-attacking wired animation. */
+    memset(&a, 0, sizeof(a));
+    a.player_mode = WM_PMODE_HEADHOLD;
+    wm_bret_backend_init(&bva);
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_HEAD_HELD_STAND3, &bva);
+    CHECK(bva.visual.sequence == &wm_bret_head_held_stand3_anim);
+    CHECK(a.player_mode == WM_PMODE_NORMAL);
+    CHECK(a.anim_mode & WM_MODE_UNINT);
+    CHECK(a.anim_mode & WM_MODE_NOAUTOFLIP);
+    for (guard = 0; guard < 40 && (a.anim_mode & WM_MODE_UNINT); ++guard)
+        wm_bret_backend_tick(&bva, &a, 0);
+    CHECK(!(a.anim_mode & WM_MODE_UNINT));
 }
 
 /* wm_bret_hurt_box_for_frame against real numbers independently confirmed
@@ -3640,6 +3802,8 @@ int main(void) {
     test_bret_attack_windows_remaining();
     test_bret_attack_windows_batch1();
     test_bret_attack_windows_multi_pulse();
+    test_bret_attack_windows_batch3();
+    test_bret_midanim_setplyrmode();
     test_bret_hurt_box_for_frame_real_geometry();
     test_bret_backend_tick_sets_real_hurt_box();
     test_hurt_box_connects_a_real_hit();

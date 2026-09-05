@@ -16,6 +16,16 @@ window table needs -- using the same routine-scanning and stop rules as
 wlanim.py's --slice mode so the two always agree on what "frame N" means.
 A command after the final WL row is reported as index == frame_count.
 
+--audit additionally answers a question the frame indices alone cannot: is a
+flat `--slice` extraction of this routine actually faithful to any single
+real playthrough? `--slice` linearly concatenates whatever WL rows it walks
+past, so it is only honest for routines whose control flow is a straight
+line plus forward skips. A routine that loops backwards, changes into a
+different animation, or falls through into the next SUBR produces a flat
+frame list that no real playthrough ever plays. Wiring one of those is
+inventing an animation, not porting one, so --audit names the specific
+construct instead of leaving it to be spotted by hand.
+
 This is a reading aid over the original source. It does not decide what any
 command means, and it does not emit code.
 """
@@ -37,6 +47,173 @@ COMMAND_RE = re.compile(
     r"ANI_STARTATTACK|ANI_ZEROVELS|ANI_ZERO_XZVELS|ANI_ADD_MOVE|ANI_OFFSET)\b"
     r"\s*,?\s*(.*)$",
     re.I)
+
+
+# Control-flow constructs a flat slice cannot represent. Each entry is
+# (regex, severity, explanation). "blocking" means a flat extraction is not a
+# faithful rendering of any single playthrough; "tolerated" means the flat
+# list is a real playthrough (the longest one), which is the precedent the
+# already-wired attacks set -- hrt_2_punch_anim's own ANI_IFBUTTONS early
+# exits and its ANI_SLIDE_BACK forward skip are both of this kind.
+FLOW_RULES = (
+    # blocking: a flat list is not any single real playthrough.
+    (re.compile(r"^\s*(?:\.word|WL|WWL)\s+ANI_SET_RPTCOUNT\b", re.I), "blocking",
+     "ANI_SET_RPTCOUNT: the routine repeats a span, so its real frame stream "
+     "is longer than one pass and its ANI_ATTACK_ON fires once per iteration"),
+    (re.compile(r"^\s*(?:\.word|WL|WWL)\s+ANI_IF_RPTCOUNT\b", re.I), "blocking",
+     "ANI_IF_RPTCOUNT: backward branch closing a repeat loop"),
+    (re.compile(r"^\s*(?:\.word|WL|WWL)\s+ANI_CHANGEANIM\b", re.I), "blocking",
+     "ANI_CHANGEANIM: the routine turns into a different animation rather "
+     "than ending, so its own frame list is not the whole story"),
+    (re.compile(r"^\s*W+L+W*\s+ANI_SUPERSLAVE2?\b", re.I), "blocking",
+     "ANI_SUPERSLAVE: its WWLLW rows carry this actor's own frames in a "
+     "shape wlanim.py's WL matcher does not parse, so those frames are "
+     "silently missing from the extraction"),
+
+    # unported: the frame list is faithful, but the routine carries real
+    # gameplay commands this port does not translate. Worth knowing before
+    # wiring; not a reason the frame data itself would be wrong.
+    (re.compile(r"^\s*LEAPATOPP\b", re.I), "unported",
+     "LEAPATOPP: real launch-at-opponent trajectory, not translated (the "
+     "frames still play; the movement does not happen)"),
+    (re.compile(r"^\s*(?:\.word|WL|WWL)\s+ANI_ATTACHZ?\b", re.I), "unported",
+     "ANI_ATTACH: grapples the opponent onto this actor (paired-actor state "
+     "this port does not model)"),
+    (re.compile(r"^\s*(?:\.word|WL|WWL)\s+ANI_SETOPPMODE\b", re.I), "unported",
+     "ANI_SETOPPMODE: writes the opponent's player_mode"),
+    (re.compile(r"^\s*(?:\.word|WL|WWL)\s+ANI_ADD_MOVE\b", re.I), "unported",
+     "ANI_ADD_MOVE: real per-frame velocity impulse, not translated"),
+
+    # tolerated: a forward skip or fork. The flat list keeps the longest real
+    # path, which is the precedent every already-wired attack sets --
+    # hrt_2_punch_anim carries both of the first two and is wired.
+    (re.compile(r"^\s*(?:\.word|WL|WWL)\s+ANI_IFBUTTONS\b", re.I), "tolerated",
+     "ANI_IFBUTTONS: forward early-exit into another animation"),
+    (re.compile(r"^\s*(?:\.word|WL|WWL)\s+ANI_SLIDE_BACK\b", re.I), "tolerated",
+     "ANI_SLIDE_BACK: forward skip over the connected-hit frames"),
+    (re.compile(r"^\s*(?:\.word|WL|WWL)\s+ANI_IFNOTSTATUS\b", re.I), "tolerated",
+     "ANI_IFNOTSTATUS: hit/miss fork; the flat list keeps the hit path"),
+    (re.compile(r"^\s*(?:\.word|WL|WWL)\s+ANI_IFBLOCKED\b", re.I), "tolerated",
+     "ANI_IFBLOCKED: blocked fork; the flat list keeps the unblocked path"),
+    (re.compile(r"^\s*(?:\.word|WL|WWL)\s+ANI_IF_BUTCOUNT_LT\b", re.I), "tolerated",
+     "ANI_IF_BUTCOUNT_LT: forward skip on a button-mash count"),
+)
+
+LOCAL_LABEL_RE = re.compile(r"^\s*(#[A-Za-z_][A-Za-z0-9_]*)\b")
+GOTO_TARGET_RE = re.compile(
+    r"^\s*(?:\.word|WL|WWL)\s+ANI_GOTO\s*,\s*(#?[A-Za-z_][A-Za-z0-9_]*)", re.I)
+
+
+def _routine_local_labels(path: pathlib.Path, label: str) -> set[str]:
+    """Every local (#foo) label defined between this SUBR and the next."""
+    active = False
+    saw_frame = False
+    labels: set[str] = set()
+    wanted = label.upper()
+    for raw in path.read_text(errors="replace").splitlines():
+        line = wlanim.strip_comment(raw)
+        if not line:
+            continue
+        sub = wlanim.SUBR_RE.match(line)
+        if sub:
+            # Same rule wlanim.py's own slice scan uses: a SUBR reached
+            # before any frame is an alias for the routine that follows
+            # (HRTSEQ2.ASM:1334-1335 hrt_2/4_super_kick_anim), so keep
+            # scanning; a SUBR after frames genuinely ends the routine.
+            if active and saw_frame:
+                break
+            if active:
+                continue
+            active = sub.group(1).upper() == wanted
+            continue
+        if not active:
+            continue
+        if wlanim._frame_from_line(line):
+            saw_frame = True
+        m = LOCAL_LABEL_RE.match(line)
+        if m:
+            labels.add(m.group(1))
+    return labels
+
+
+def audit(path: pathlib.Path, label: str):
+    """Report why (or whether) a flat --slice of this routine is faithful."""
+    active = False
+    saw_frame = False
+    own_labels = _routine_local_labels(path, label)
+    seen_labels: set[str] = set()
+    findings: list[tuple[str, str]] = []
+    terminator = None
+    wanted = label.upper()
+
+    for raw in path.read_text(errors="replace").splitlines():
+        line = wlanim.strip_comment(raw)
+        if not line:
+            continue
+        sub = wlanim.SUBR_RE.match(line)
+        if sub:
+            if active and saw_frame:
+                # Slice stops here. Reaching the next SUBR without ever
+                # seeing ANI_END/ANI_REPEAT means execution really runs on
+                # into the following routine.
+                terminator = terminator or ("fallthrough", sub.group(1))
+                break
+            if active:
+                continue
+            active = sub.group(1).upper() == wanted
+            continue
+        if not active:
+            continue
+
+        lbl = LOCAL_LABEL_RE.match(line)
+        if lbl:
+            seen_labels.add(lbl.group(1))
+
+        if wlanim._frame_from_line(line):
+            saw_frame = True
+            continue
+        if wlanim.REPEAT_RE.match(line):
+            terminator = ("ANI_REPEAT", None)
+            break
+        if wlanim.END_RE.match(line):
+            terminator = ("ANI_END", None)
+            break
+
+        goto = GOTO_TARGET_RE.match(line)
+        if goto:
+            target = goto.group(1)
+            if target in seen_labels:
+                sev = "blocking"
+                why = (f"ANI_GOTO,{target}: backward jump to a label already "
+                       f"passed -- a loop, so the real frame stream is longer "
+                       f"than one pass")
+            elif target in own_labels:
+                sev = "tolerated"
+                why = (f"ANI_GOTO,{target}: forward skip to a later label in "
+                       f"this same routine; --slice keeps the skipped frames, "
+                       f"i.e. the longer path")
+            else:
+                sev = "blocking"
+                why = (f"ANI_GOTO,{target}: {target} is not defined in this "
+                       f"routine, so the animation continues somewhere "
+                       f"--slice cannot follow")
+            if (sev, why) not in findings:
+                findings.append((sev, why))
+            continue
+
+        for rx, severity, why in FLOW_RULES:
+            if rx.match(line):
+                if (severity, why) not in findings:
+                    findings.append((severity, why))
+                break
+
+    if not saw_frame:
+        raise ValueError(f"no WL frames found for {label}")
+    if terminator and terminator[0] == "fallthrough":
+        findings.append(("blocking",
+                         f"falls through into {terminator[1]} with no ANI_END: "
+                         f"the real animation continues past what --slice keeps"))
+    return findings, terminator
 
 
 def trace(path: pathlib.Path, label: str):
@@ -81,8 +258,29 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--source", required=True)
     ap.add_argument("--label", required=True, action="append")
+    ap.add_argument("--audit", action="store_true",
+                    help="report whether a flat --slice of each routine is "
+                         "faithful, instead of listing frames and commands")
     ns = ap.parse_args(argv)
     path = pathlib.Path(ns.source)
+
+    if ns.audit:
+        unsafe = 0
+        for label in ns.label:
+            findings, terminator = audit(path, label)
+            blocking = [f for f in findings if f[0] == "blocking"]
+            end = terminator[0] if terminator else "end of file"
+            verdict = "NOT SAFELY SLICEABLE" if blocking else "sliceable"
+            print(f"{label}: {verdict}  (slice ends at {end})")
+            for sev in ("blocking", "unported", "tolerated"):
+                tag = {"blocking": "BLOCKING ", "unported": "unported ",
+                       "tolerated": "tolerated"}[sev]
+                for s_, why in findings:
+                    if s_ == sev:
+                        print(f"    {tag} {why}")
+            if blocking:
+                unsafe += 1
+        return 1 if unsafe else 0
 
     for label in ns.label:
         frames, events = trace(path, label)

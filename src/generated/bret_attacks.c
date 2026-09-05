@@ -335,3 +335,84 @@ const wm_visual_sequence wm_bret_ground_punch4_anim = {
     .frame_count = sizeof(bret_ground_punch4_frames) / sizeof(bret_ground_punch4_frames[0]),
     .repeat = false,
 };
+
+static const wm_visual_frame bret_push4_frames[] = {
+    {"H4PS3A01", 3},
+    {"H4PS3A02", 3},
+    {"H4PS3A03", 3},
+    {"H4PS3A04", 3},
+    {"H4PS3A04", 15},
+    {"H4PS3A04", 3},
+    {"H4PS3A04", 5},
+    {"H4PS3A05", 3},
+    {"H4PS3A06", 3},
+    {"H4PS3A07", 3},
+    {"H4PS3A08", 3},
+};
+
+const wm_visual_sequence wm_bret_push4_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_4_push_anim",
+    .frames = bret_push4_frames,
+    .frame_count = sizeof(bret_push4_frames) / sizeof(bret_push4_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_jump_kick4_frames[] = {
+    {"H4KM3D01", 3},
+    {"H4KM3D02", 3},
+    {"H4KM3D03", 3},
+    {"H4KM3D04", 4},
+    {"H4KM3D05", 3},
+    {"H4KM3D05", 3},
+    {"H4KM3D07", 3},
+    {"H4KM3D08", 3},
+    {"H4KM3D09", 3},
+};
+
+const wm_visual_sequence wm_bret_jump_kick4_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_4_jump_kick_anim",
+    .frames = bret_jump_kick4_frames,
+    .frame_count = sizeof(bret_jump_kick4_frames) / sizeof(bret_jump_kick4_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_knee_fall4_frames[] = {
+    {"H2NM3A02", 3},
+    {"H2NM3A03", 3},
+    {"H2NM3A04", 3},
+    {"H2NM3A04", 1},
+    {"H2NM3A04", 1},
+    {"H4NM3A05", 3},
+    {"H4NM3A06", 3},
+    {"H4NM3A07", 3},
+};
+
+const wm_visual_sequence wm_bret_knee_fall4_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_4_knee_fall_anim",
+    .frames = bret_knee_fall4_frames,
+    .frame_count = sizeof(bret_knee_fall4_frames) / sizeof(bret_knee_fall4_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_kick_tb_frames[] = {
+    {"H4KM3C01", 3},
+    {"H4KM3C02", 3},
+    {"H4KM3C03", 2},
+    {"H4KM3C04", 8},
+    {"H4KM3C05", 2},
+    {"H4KM3C06", 2},
+    {"H4KM3C07", 2},
+    {"H4KM3C08", 2},
+    {"H4KM3C09", 2},
+};
+
+const wm_visual_sequence wm_bret_kick_tb_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_kick_TB_anim",
+    .frames = bret_kick_tb_frames,
+    .frame_count = sizeof(bret_kick_tb_frames) / sizeof(bret_kick_tb_frames[0]),
+    .repeat = false,
+};

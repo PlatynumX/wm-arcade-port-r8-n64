@@ -19,6 +19,7 @@ def load(name: str, path: pathlib.Path):
     return module
 
 wlanim = load("wlanim", ROOT / "tools" / "wlanim.py")
+wlattack = load("wlattack", ROOT / "tools" / "wlattack.py")
 manifest = load("bret_manifest", ROOT / "tools" / "bret_manifest.py")
 wimp = load("wimpimg", ROOT / "tools" / "wimpimg.py")
 bundle = load("bret_bundle", ROOT / "tools" / "bret_bundle.py")
@@ -35,6 +36,90 @@ bmod_source = load("bmod_source", ROOT / "tools" / "bmod_source.py")
 source_ir = load("source_ir", ROOT / "tools" / "source_ir.py")
 animation_ir = load("animation_ir", ROOT / "tools" / "animation_ir.py")
 select_source = load("select_source", ROOT / "tools" / "select_source.py")
+
+
+def test_wlattack_audit() -> None:
+    """tools/wlattack.py --audit's job is to answer "would a flat
+    wlanim.py --slice of this routine be faithful to any single real
+    playthrough?" -- the question that decides whether an animation can
+    honestly be wired at all. Checked against real HRTSEQ2.ASM routines
+    whose control flow is known by reading them:
+
+      hrt_2_punch_anim   straight line plus forward skips -> sliceable
+      hrt_2_butts_anim   ANI_SET_RPTCOUNT repeat loop and a terminal
+                         ANI_CHANGEANIM -> not sliceable
+      hrt_2_raise_arm_anim  no ANI_END; ANI_GOTO,#cont into the middle of
+                         hrt_4_raise_arm_anim -> not sliceable
+
+    The first of those is load-bearing in the other direction too: every
+    already-wired attack has to keep passing, or the audit is calling
+    shipped work broken.
+    """
+    p = ROOT / "original" / "wwf-wrestlemania" / "HRTSEQ2.ASM"
+    if not p.exists():
+        return  # original source not fetched in this checkout
+
+    def verdict(label):
+        findings, _term = wlattack.audit(p, label)
+        return [why for sev, why in findings if sev == "blocking"]
+
+    assert verdict("hrt_2_punch_anim") == []
+
+    butts = verdict("hrt_2_butts_anim")
+    assert any("ANI_SET_RPTCOUNT" in w for w in butts)
+    assert any("ANI_CHANGEANIM" in w for w in butts)
+
+    raise_arm = verdict("hrt_2_raise_arm_anim")
+    assert any("ANI_GOTO,#cont" in w for w in raise_arm)
+    assert any("falls through" in w for w in raise_arm)
+
+    # Every attack animation actually wired into the Bret backend must be
+    # sliceable, or the extraction backing it is not a real playthrough.
+    for label in ("hrt_2_punch_anim", "hrt_4_punch_anim",
+                  "hrt_4_super_punch_anim", "hrt_2_kick_anim",
+                  "hrt_4_kick_anim", "hrt_2_super_kick_anim",
+                  "hrt_2_butt_anim", "hrt_4_butt_anim",
+                  "hrt_2_knee_anim", "hrt_4_knee_anim",
+                  "hrt_4_uppercut_anim", "hrt_2_stomp_anim",
+                  "hrt_4_stomp_anim", "hrt_2_ground_punch_anim",
+                  "hrt_4_ground_punch_anim", "hrt_4_push_anim",
+                  "hrt_4_jump_kick_anim", "hrt_4_knee_fall_anim",
+                  "hrt_kick_TB_anim"):
+        assert verdict(label) == [], (label, verdict(label))
+
+    # A SUBR alias (HRTSEQ2.ASM:1334-1335 hrt_2/4_super_kick_anim) must not
+    # be mistaken for an empty routine: its own local labels live in the
+    # body that follows, and missing them made #missed read as an
+    # out-of-routine jump.
+    assert "#missed" in wlattack._routine_local_labels(p, "hrt_2_super_kick_anim")
+
+
+def test_wlattack_frame_indices() -> None:
+    """The frame index each inline command falls at -- the number an
+    attack window table needs. Checked against windows that were hand
+    traced from the .ASM long before this tool existed, which is the whole
+    basis for trusting it on animations nobody has traced."""
+    p = ROOT / "original" / "wwf-wrestlemania" / "HRTSEQ2.ASM"
+    if not p.exists():
+        return
+
+    def attack_ons(label):
+        _frames, events = wlattack.trace(p, label)
+        return [(idx, ops) for idx, cmd, ops in events
+                if cmd in ("ANI_ATTACK_ON", "ANI_ATTACK_ON_Z")]
+
+    assert attack_ons("hrt_2_punch_anim") == [
+        (5, "AMODE_PUNCH,30,91,-45,50,15,45")]
+    assert attack_ons("hrt_2_super_kick_anim") == [
+        (4, "AMODE_SUPER_KICK,5,54,70,34")]
+    # Multi-pulse: two and three real ANI_ATTACK_ON commands respectively.
+    assert attack_ons("hrt_2_stomp_anim") == [
+        (4, "AMODE_HITCHECK,7,-10,-40,28,31,50"),
+        (7, "AMODE_STOMP2,7,-10,-40,28,31,50")]
+    assert attack_ons("hrt_2_ground_punch_anim") == [
+        (2, "AMODE_HITCHECK,5-10,-8,-40,32,32,50"),
+        (5, "AMODE_LBOWDROP2,5,-8,-40,32,32,50"),
+        (8, "AMODE_LBOWDROP2,5,-8,-40,32,32,50")]
 
 
 def test_wlanim() -> None:
@@ -543,6 +628,8 @@ def test_source_text_bundle() -> None:
 
 def main() -> int:
     test_wlanim()
+    test_wlattack_audit()
+    test_wlattack_frame_indices()
     test_manifest()
     test_wimp_probe()
     test_wimp_emit_c()

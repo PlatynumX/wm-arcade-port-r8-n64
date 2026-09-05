@@ -520,6 +520,10 @@ static void test_bret_anim_sequence_mapping(void) {
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_KNEE2) == &wm_bret_knee2_anim);
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_KNEE4) == &wm_bret_knee4_anim);
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_UPPERCUT4) == &wm_bret_uppercut4_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_STOMP2) == &wm_bret_stomp2_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_STOMP4) == &wm_bret_stomp4_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_GROUND_PUNCH2) == &wm_bret_ground_punch2_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_GROUND_PUNCH4) == &wm_bret_ground_punch4_anim);
 
     /* Deliberately unmapped: no "hrt_2_super_punch_anim" exists in the
        source tree at all -- see wm/bret_backend.h. */
@@ -1268,6 +1272,112 @@ static void test_bret_attack_windows_batch1(void) {
         CHECK(!(a.anim_mode & WM_MODE_NOAUTOFLIP));
         CHECK(!(a.anim_mode & WM_MODE_CHECKHIT));
         CHECK(a.attack_time == 7);
+    }
+}
+
+/* Batch 2: the first wired animations carrying more than one real
+   ANI_ATTACK_ON pulse each, so this checks the whole ON/OFF/ON shape in
+   order rather than one window in isolation. Traced with
+   tools/wlattack.py out of HRTSEQ2.ASM:
+
+     hrt_2_stomp_anim         [4] AMODE_HITCHECK,7,-10,-40,28,31,50
+                              [7] AMODE_STOMP2,7,-10,-40,28,31,50
+     hrt_4_stomp_anim         [4] AMODE_HITCHECK,7,-12,-10,29,35,50
+                              [7] AMODE_STOMP2,7,-12,-10,29,35,50
+     hrt_2_ground_punch_anim  [2] AMODE_HITCHECK,5-10,-8,-40,32,32,50
+                              [5] AMODE_LBOWDROP2,5,-8,-40,32,32,50
+                              [8] AMODE_LBOWDROP2,5,-8,-40,32,32,50
+     hrt_4_ground_punch_anim  [2] AMODE_HITCHECK,5,-6,-10,36,30,50
+                              [5] AMODE_LBOWDROP2,5,-6,-10,36,30,50
+                              [8] AMODE_LBOWDROP2,5,-6,-10,36,30,50
+
+   All four are ANI_ATTACK_ON_Z throughout, and all four lead with
+   ANI_SETMODE,MODE_UNINT|MODE_NOAUTOFLIP|MODE_OVERLAP (the only wired
+   attacks that carry the third bit) plus ANI_ZEROVELS, and no
+   ANI_SETFACING. */
+static void test_bret_attack_windows_multi_pulse(void) {
+    typedef struct { size_t frame; uint16_t mode; int16_t x, y, z, w, h, d; } pulse_t;
+    static const struct {
+        wm_arcade_bret_anim_id_t id;
+        const wm_visual_sequence *seq;
+        bool sets_plyrmode_normal;
+        size_t count;
+        pulse_t pulses[3];
+    } cases[] = {
+        { WM_BRET_ANIM_STOMP2, &wm_bret_stomp2_anim, true, 2, {
+            { 4, WM_AMODE_HITCHECK, 7, -10, -40, 28, 31, 50 },
+            { 7, WM_AMODE_STOMP2,   7, -10, -40, 28, 31, 50 },
+            { 0, 0, 0, 0, 0, 0, 0, 0 } } },
+        { WM_BRET_ANIM_STOMP4, &wm_bret_stomp4_anim, true, 2, {
+            { 4, WM_AMODE_HITCHECK, 7, -12, -10, 29, 35, 50 },
+            { 7, WM_AMODE_STOMP2,   7, -12, -10, 29, 35, 50 },
+            { 0, 0, 0, 0, 0, 0, 0, 0 } } },
+        { WM_BRET_ANIM_GROUND_PUNCH2, &wm_bret_ground_punch2_anim, false, 3, {
+            { 2, WM_AMODE_HITCHECK,   5 - 10, -8, -40, 32, 32, 50 },
+            { 5, WM_AMODE_LBOWDROP2,  5,      -8, -40, 32, 32, 50 },
+            { 8, WM_AMODE_LBOWDROP2,  5,      -8, -40, 32, 32, 50 } } },
+        { WM_BRET_ANIM_GROUND_PUNCH4, &wm_bret_ground_punch4_anim, false, 3, {
+            { 2, WM_AMODE_HITCHECK,   5, -6, -10, 36, 30, 50 },
+            { 5, WM_AMODE_LBOWDROP2,  5, -6, -10, 36, 30, 50 },
+            { 8, WM_AMODE_LBOWDROP2,  5, -6, -10, 36, 30, 50 } } },
+    };
+    size_t i, k;
+    for (i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+        wm_arcade_actor_t a;
+        wm_bret_backend_actor bva;
+        int guard;
+        int seen_off_between = 0;
+
+        memset(&a, 0, sizeof(a));
+        a.player_mode = WM_PMODE_RUNNING;
+        a.new_facing_dir = WM_MOVE_UP_RIGHT;
+        a.facing_dir = WM_MOVE_DOWN_LEFT;
+        a.x_vel = 0x1234;
+        a.z_vel = -0x1234;
+        wm_bret_backend_init(&bva);
+        wm_bret_backend_change_anim(&a, cases[i].id, &bva);
+        CHECK(bva.visual.sequence == cases[i].seq);
+
+        /* the header's own instant commands */
+        CHECK(a.anim_mode & WM_MODE_UNINT);
+        CHECK(a.anim_mode & WM_MODE_NOAUTOFLIP);
+        CHECK(a.anim_mode & WM_MODE_OVERLAP);
+        CHECK(a.x_vel == 0);
+        CHECK(a.z_vel == 0);
+        /* no ANI_SETFACING in any of these four headers */
+        CHECK(a.facing_dir == WM_MOVE_DOWN_LEFT);
+        if (cases[i].sets_plyrmode_normal)
+            CHECK(a.player_mode == WM_PMODE_NORMAL);
+        else
+            CHECK(a.player_mode == WM_PMODE_RUNNING);
+
+        for (k = 0; k < cases[i].count; ++k) {
+            for (guard = 0; guard < 60 && bva.visual.frame_index != cases[i].pulses[k].frame;
+                 ++guard) {
+                wm_bret_backend_tick(&bva, &a, 5);
+                if (!(a.anim_mode & WM_MODE_CHECKHIT)) seen_off_between = 1;
+            }
+            CHECK(bva.visual.frame_index == cases[i].pulses[k].frame);
+            CHECK(a.anim_mode & WM_MODE_CHECKHIT);
+            CHECK(a.attack_mode == cases[i].pulses[k].mode);
+            CHECK(a.attack_xoff == cases[i].pulses[k].x);
+            CHECK(a.attack_yoff == cases[i].pulses[k].y);
+            CHECK(a.attack_zoff == cases[i].pulses[k].z);
+            CHECK(a.attack_width == cases[i].pulses[k].w);
+            CHECK(a.attack_height == cases[i].pulses[k].h);
+            CHECK(a.attack_depth == cases[i].pulses[k].d);
+        }
+        /* the ANI_ATTACK_OFF between two pulses genuinely ran -- without it
+           the second ANI_ATTACK_ON would never be reached */
+        CHECK(seen_off_between == 1);
+
+        /* the closing ANI_SETMODE,MODE_NORMAL clears all three bits */
+        for (guard = 0; guard < 80 && (a.anim_mode & WM_MODE_UNINT); ++guard)
+            wm_bret_backend_tick(&bva, &a, 11);
+        CHECK(!(a.anim_mode & WM_MODE_UNINT));
+        CHECK(!(a.anim_mode & WM_MODE_NOAUTOFLIP));
+        CHECK(!(a.anim_mode & WM_MODE_OVERLAP));
+        CHECK(!(a.anim_mode & WM_MODE_CHECKHIT));
     }
 }
 
@@ -3529,6 +3639,7 @@ int main(void) {
     test_bret_attack_window_punch2();
     test_bret_attack_windows_remaining();
     test_bret_attack_windows_batch1();
+    test_bret_attack_windows_multi_pulse();
     test_bret_hurt_box_for_frame_real_geometry();
     test_bret_backend_tick_sets_real_hurt_box();
     test_hurt_box_connects_a_real_hit();

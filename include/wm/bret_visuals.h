@@ -58,6 +58,21 @@ extern const wm_visual_sequence wm_bret_knee4_anim;
 extern const wm_visual_sequence wm_bret_uppercut4_anim;
 
 /*
+ * Batch 2 (HRTSEQ2.ASM): the two ids do_kick selects on a grounded
+ * opponent inside near(160,140), and the two do_punch selects on the same
+ * test. These are the first wired animations that carry more than one real
+ * ANI_ATTACK_ON pulse each -- stomp two (an AMODE_HITCHECK probe then the
+ * AMODE_STOMP2 hit), ground punch three (a probe then two separate
+ * AMODE_LBOWDROP2 elbow drops) -- which is why src/core/bret_backend.c's
+ * attack window table is keyed on (id, frame) rather than id alone. Their
+ * headers also add a real MODE_OVERLAP the other wired attacks don't have.
+ */
+extern const wm_visual_sequence wm_bret_stomp2_anim;
+extern const wm_visual_sequence wm_bret_stomp4_anim;
+extern const wm_visual_sequence wm_bret_ground_punch2_anim;
+extern const wm_visual_sequence wm_bret_ground_punch4_anim;
+
+/*
  * BRET.ASM:2871 hrt_rotate_anims_table's 12 off-diagonal turn-transition
  * entries (the "TURNS (STANDS)" block, HRTSEQ1.ASM:390-454) -- played by
  * set_rotate_anim/change_anim1 for the idle (#zip/stance) facing-change

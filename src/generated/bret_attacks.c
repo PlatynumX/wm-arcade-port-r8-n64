@@ -241,3 +241,97 @@ const wm_visual_sequence wm_bret_uppercut4_anim = {
     .frame_count = sizeof(bret_uppercut4_frames) / sizeof(bret_uppercut4_frames[0]),
     .repeat = false,
 };
+
+static const wm_visual_frame bret_stomp2_frames[] = {
+    {"H2MP2B01", 1},
+    {"H2MP2B01", 1},
+    {"H2MP2B01", 1},
+    {"H2MP2B02", 3},
+    {"H2MP2B02", 1},
+    {"H2MP2B03", 3},
+    {"H2MP2B04", 1},
+    {"H2MP2B05", 1},
+    {"H2MP2B05", 3},
+    {"H2MP2B06", 3},
+    {"H2MP2B07", 3},
+    {"H2MP2B08", 3},
+};
+
+const wm_visual_sequence wm_bret_stomp2_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_2_stomp_anim",
+    .frames = bret_stomp2_frames,
+    .frame_count = sizeof(bret_stomp2_frames) / sizeof(bret_stomp2_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_stomp4_frames[] = {
+    {"H4MP4A01", 1},
+    {"H4MP4A01", 1},
+    {"H4MP4A01", 1},
+    {"H4MP4A02", 3},
+    {"H4MP4A02", 1},
+    {"H4MP4A03", 3},
+    {"H4MP4A04", 1},
+    {"H4MP4A05", 1},
+    {"H4MP4A05", 3},
+    {"H4MP4A06", 3},
+    {"H4MP4A07", 3},
+    {"H4MP4A08", 3},
+};
+
+const wm_visual_sequence wm_bret_stomp4_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_4_stomp_anim",
+    .frames = bret_stomp4_frames,
+    .frame_count = sizeof(bret_stomp4_frames) / sizeof(bret_stomp4_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_ground_punch2_frames[] = {
+    {"H2PF2B01", 2},
+    {"H2PF2B02", 2},
+    {"H2PF2B02", 1},
+    {"H2PF2B03", 2},
+    {"H2PF2B04", 3},
+    {"H2PF2B05", 4},
+    {"H2PF2B03", 10},
+    {"H2PF2B04", 4},
+    {"H2PF2B05", 1},
+    {"H2PF2B05", 2},
+    {"H2PF2B06", 3},
+    {"H2PF2B07", 2},
+    {"H2PF2B08", 3},
+};
+
+const wm_visual_sequence wm_bret_ground_punch2_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_2_ground_punch_anim",
+    .frames = bret_ground_punch2_frames,
+    .frame_count = sizeof(bret_ground_punch2_frames) / sizeof(bret_ground_punch2_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_ground_punch4_frames[] = {
+    {"H4PF4B01", 2},
+    {"H4PF4B02", 2},
+    {"H4PF4B02", 1},
+    {"H4PF4B03", 2},
+    {"H4PF4B04", 3},
+    {"H4PF4B05", 4},
+    {"H4PF4B03", 1},
+    {"H4PF4B04", 2},
+    {"H4PF4B05", 2},
+    {"H4PF4B05", 2},
+    {"H4PF4B06", 3},
+    {"H4PF4B07", 2},
+    {"H4PF4B08", 3},
+};
+
+const wm_visual_sequence wm_bret_ground_punch4_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_4_ground_punch_anim",
+    .frames = bret_ground_punch4_frames,
+    .frame_count = sizeof(bret_ground_punch4_frames) / sizeof(bret_ground_punch4_frames[0]),
+    .repeat = false,
+};

@@ -55,7 +55,20 @@ python3 "$ROOT/tools/wlanim.py" \
     --slice hrt_2_kick_anim wm_bret_light_kick2_anim bret_light_kick2_frames false \
     --slice hrt_4_kick_anim wm_bret_light_kick4_anim bret_light_kick4_frames false \
     --slice hrt_2_super_kick_anim wm_bret_power_kick_anim bret_power_kick_frames false \
+    --slice hrt_2_butt_anim wm_bret_butt2_anim bret_butt2_frames false \
+    --slice hrt_4_butt_anim wm_bret_butt4_anim bret_butt4_frames false \
+    --slice hrt_2_knee_anim wm_bret_knee2_anim bret_knee2_frames false \
+    --slice hrt_4_knee_anim wm_bret_knee4_anim bret_knee4_frames false \
+    --slice hrt_4_uppercut_anim wm_bret_uppercut4_anim bret_uppercut4_frames false \
+    --slice hrt_2_stomp_anim wm_bret_stomp2_anim bret_stomp2_frames false \
+    --slice hrt_4_stomp_anim wm_bret_stomp4_anim bret_stomp4_frames false \
+    --slice hrt_2_ground_punch_anim wm_bret_ground_punch2_anim bret_ground_punch2_frames false \
+    --slice hrt_4_ground_punch_anim wm_bret_ground_punch4_anim bret_ground_punch4_frames false \
     --out "$ROOT/src/generated/bret_attacks.c"
+python3 "$ROOT/tools/wlanim.py" \
+    --source "$ORIG/HRTSEQ4.ASM" \
+    --slice hrt_4_block_anim wm_bret_block4_anim bret_block4_frames false \
+    --out "$ROOT/src/generated/bret_defense.c"
 if [ ! -f "$ORIG/IMG/BRET.LOD" ]; then
     sh "$ROOT/scripts/fetch_original.sh"
 fi
@@ -64,6 +77,7 @@ python3 "$ROOT/tools/bret_geometry_bundle.py" \
     --img-dir "$ORIG/IMG" \
     --visual-source "$ROOT/src/generated/bret_visuals.c" \
     --visual-source "$ROOT/src/generated/bret_attacks.c" \
+    --visual-source "$ROOT/src/generated/bret_defense.c" \
     --out "$ROOT/src/generated/bret_frame_geometry.c"
 python3 "$ROOT/tools/select_source.py" \
     --source "$ORIG/SELECT.ASM" \

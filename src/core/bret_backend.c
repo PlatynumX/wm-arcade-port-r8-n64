@@ -200,6 +200,11 @@ const wm_visual_sequence *wm_bret_anim_sequence(wm_arcade_bret_anim_id_t id) {
         /* HRTSEQ4.ASM:104 hrt_4_block_anim -- the only real block animation
            Bret has (its 2-facing twin is commented out in the source). */
         case WM_BRET_ANIM_BLOCK4: return &wm_bret_block4_anim;
+        case WM_BRET_ANIM_BUTT2: return &wm_bret_butt2_anim;
+        case WM_BRET_ANIM_BUTT4: return &wm_bret_butt4_anim;
+        case WM_BRET_ANIM_KNEE2: return &wm_bret_knee2_anim;
+        case WM_BRET_ANIM_KNEE4: return &wm_bret_knee4_anim;
+        case WM_BRET_ANIM_UPPERCUT4: return &wm_bret_uppercut4_anim;
         default: return NULL;
     }
 }
@@ -288,6 +293,23 @@ static const wm_bret_attack_window_t attack_windows[] = {
       { WM_AMODE_SUPER_KICK, 5, 54, 70, 34 }, {0,0,0,0,0,0,0} },
     { WM_BRET_ANIM_SUPER_KICK4, 4, false,
       { WM_AMODE_SUPER_KICK, 5, 54, 70, 34 }, {0,0,0,0,0,0,0} },
+    /* HRTSEQ2.ASM hrt_2/4_butt_anim: ANI_ATTACK_ON,AMODE_HDBUTT,19,75,35,24
+       -- the close-range headbutt do_punch selects (identical window in
+       both facing banks). */
+    { WM_BRET_ANIM_BUTT2, 5, false,
+      { WM_AMODE_HDBUTT, 19, 75, 35, 24 }, {0,0,0,0,0,0,0} },
+    { WM_BRET_ANIM_BUTT4, 5, false,
+      { WM_AMODE_HDBUTT, 19, 75, 35, 24 }, {0,0,0,0,0,0,0} },
+    /* HRTSEQ2.ASM hrt_2/4_knee_anim: ANI_ATTACK_ON,AMODE_KNEE,11,44,51,49
+       -- the close-range knee do_kick selects. */
+    { WM_BRET_ANIM_KNEE2, 4, false,
+      { WM_AMODE_KNEE, 11, 44, 51, 49 }, {0,0,0,0,0,0,0} },
+    { WM_BRET_ANIM_KNEE4, 4, false,
+      { WM_AMODE_KNEE, 11, 44, 51, 49 }, {0,0,0,0,0,0,0} },
+    /* HRTSEQ2.ASM hrt_4_uppercut_anim: ANI_ATTACK_ON,AMODE_UPRCUT,-6,22,64,100.
+       Distinct from SUPER_PUNCH2_4's own -6,40,64,90 window. */
+    { WM_BRET_ANIM_UPPERCUT4, 5, false,
+      { WM_AMODE_UPRCUT, -6, 22, 64, 100 }, {0,0,0,0,0,0,0} },
 };
 #define WM_BRET_ATTACK_WINDOW_COUNT \
     (sizeof(attack_windows) / sizeof(attack_windows[0]))
@@ -327,6 +349,11 @@ static bool attack_sets_facing_on_start(wm_arcade_bret_anim_id_t id) {
         case WM_BRET_ANIM_JUMP_KICK4:
         case WM_BRET_ANIM_HIPTOSS:
         case WM_BRET_ANIM_GRABFLING_FACE24:
+        case WM_BRET_ANIM_BUTT2:
+        case WM_BRET_ANIM_BUTT4:
+        case WM_BRET_ANIM_KNEE2:
+        case WM_BRET_ANIM_KNEE4:
+        case WM_BRET_ANIM_UPPERCUT4:
             return true;
         default:
             return false;

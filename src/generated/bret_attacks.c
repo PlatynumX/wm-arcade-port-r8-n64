@@ -133,3 +133,111 @@ const wm_visual_sequence wm_bret_power_kick_anim = {
     .frame_count = sizeof(bret_power_kick_frames) / sizeof(bret_power_kick_frames[0]),
     .repeat = false,
 };
+
+static const wm_visual_frame bret_butt2_frames[] = {
+    {"H2BC3A01", 1},
+    {"H2BC3A01", 1},
+    {"H2BC3A01", 1},
+    {"H2BC3A02", 2},
+    {"H2BC3A03", 2},
+    {"H2BC3A04", 3},
+    {"H2BC3A05", 6},
+    {"H2BC3A05", 2},
+    {"H2BC3A06", 2},
+    {"H2BC3A07", 2},
+    {"H2BC3A08", 2},
+};
+
+const wm_visual_sequence wm_bret_butt2_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_2_butt_anim",
+    .frames = bret_butt2_frames,
+    .frame_count = sizeof(bret_butt2_frames) / sizeof(bret_butt2_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_butt4_frames[] = {
+    {"H4BC3A01", 1},
+    {"H4BC3A01", 1},
+    {"H4BC3A01", 1},
+    {"H4BC3A02", 2},
+    {"H4BC3A03", 2},
+    {"H4BC3A04", 3},
+    {"H4BC3A05", 6},
+    {"H4BC3A05", 2},
+    {"H4BC3A06", 2},
+    {"H4BC3A07", 2},
+    {"H4BC3A08", 2},
+};
+
+const wm_visual_sequence wm_bret_butt4_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_4_butt_anim",
+    .frames = bret_butt4_frames,
+    .frame_count = sizeof(bret_butt4_frames) / sizeof(bret_butt4_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_knee2_frames[] = {
+    {"H4NM3A02", 1},
+    {"H4NM3A02", 1},
+    {"H4NM3A02", 1},
+    {"H4NM3A03", 2},
+    {"H4NM3A04", 2},
+    {"H4NM3A04", 3},
+    {"H4NM3A04", 6},
+    {"H4NM3A05", 3},
+    {"H4NM3A06", 3},
+    {"H4NM3A07", 3},
+};
+
+const wm_visual_sequence wm_bret_knee2_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_2_knee_anim",
+    .frames = bret_knee2_frames,
+    .frame_count = sizeof(bret_knee2_frames) / sizeof(bret_knee2_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_knee4_frames[] = {
+    {"H2NM3A02", 1},
+    {"H2NM3A02", 1},
+    {"H2NM3A02", 1},
+    {"H2NM3A03", 2},
+    {"H2NM3A04", 3},
+    {"H2NM3A04", 1},
+    {"H2NM3A04", 6},
+    {"H2NM3A04", 10},
+    {"H2NM3A05", 3},
+    {"H2NM3A06", 3},
+};
+
+const wm_visual_sequence wm_bret_knee4_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_4_knee_anim",
+    .frames = bret_knee4_frames,
+    .frame_count = sizeof(bret_knee4_frames) / sizeof(bret_knee4_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_uppercut4_frames[] = {
+    {"H4UP3C01", 1},
+    {"H4UP3C02", 1},
+    {"H4UP3C03", 2},
+    {"H4UP3C04", 1},
+    {"H4UP3C05", 2},
+    {"H4UP3C06", 3},
+    {"H4UP3C07", 12},
+    {"H4UP3C08", 3},
+    {"H4UP3C09", 3},
+    {"H4UP3C10", 3},
+    {"H4UP3C11", 3},
+};
+
+const wm_visual_sequence wm_bret_uppercut4_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_4_uppercut_anim",
+    .frames = bret_uppercut4_frames,
+    .frame_count = sizeof(bret_uppercut4_frames) / sizeof(bret_uppercut4_frames[0]),
+    .repeat = false,
+};

@@ -512,6 +512,14 @@ static void test_bret_anim_sequence_mapping(void) {
     /* HRTSEQ2.ASM:1334-1335: hrt_4_super_kick_anim is a literal SUBR alias
        of hrt_2_super_kick_anim, not distinct artwork. */
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_SUPER_KICK4) == &wm_bret_power_kick_anim);
+    /* Batch 1 of Bret's previously-unmapped strike set: four ids his own
+       do_punch/do_kick already selected on the close-range branch, plus the
+       crouching uppercut do_super_punch selects on a down input. */
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_BUTT2) == &wm_bret_butt2_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_BUTT4) == &wm_bret_butt4_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_KNEE2) == &wm_bret_knee2_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_KNEE4) == &wm_bret_knee4_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_UPPERCUT4) == &wm_bret_uppercut4_anim);
 
     /* Deliberately unmapped: no "hrt_2_super_punch_anim" exists in the
        source tree at all -- see wm/bret_backend.h. */
@@ -1018,8 +1026,20 @@ static void test_bret_backend_charge_face_rake_fires_on_release(void) {
         wm_human_input_commit(&actor, &hs, &in);
         bva.pcnt = (uint32_t)i;
         (void)wm_arcade_move_bret(&actor, NULL, &env, &cb);
+        /* The press edge on tick 0 selects a real close-range headbutt
+           (do_punch's own near(50,45) branch), whose HRTSEQ2.ASM header
+           leads with ANI_SETMODE,MODE_UNINT|MODE_NOAUTOFLIP. Advancing the
+           animation here -- the same wm_bret_backend_tick the live match
+           loop runs every tick -- lets that 11-frame animation reach its
+           own closing ANI_SETMODE,MODE_NORMAL and drop MODE_UNINT, which
+           is what makes the charge release below reachable at all. Without
+           it the headbutt would stay mid-swing for all 100 ticks and
+           wm_arcade_bret_release_charge_face_rake's real MODE_UNINT
+           precondition would (correctly) refuse to fire. */
+        wm_bret_backend_tick(&bva, &actor, (uint16_t)i);
     }
     CHECK(actor.punch_dtime == 100);
+    CHECK((actor.anim_mode & WM_MODE_UNINT) == 0);
 
     memset(&in, 0, sizeof(in));
     wm_human_input_commit(&actor, &hs, &in);
@@ -1181,6 +1201,73 @@ static void test_bret_attack_windows_remaining(void) {
             CHECK(a.attack_zoff == -40);
             CHECK(a.attack_depth == 80);
         }
+    }
+}
+
+/* Batch 1's own attack windows, traced out of HRTSEQ2.ASM with
+   tools/wlattack.py (which reproduces all six hand-traced windows above
+   exactly, so the same reading applies here):
+
+     hrt_2/4_butt_anim      ANI_ATTACK_ON,AMODE_HDBUTT,19,75,35,24 @ [5]
+     hrt_2/4_knee_anim      ANI_ATTACK_ON,AMODE_KNEE,11,44,51,49   @ [4]
+     hrt_4_uppercut_anim    ANI_ATTACK_ON,AMODE_UPRCUT,-6,22,64,100 @ [5]
+
+   All five also lead with ANI_SETMODE,MODE_UNINT|MODE_NOAUTOFLIP and
+   ANI_SETFACING before their own frame [0], which is what the added
+   attack_sets_facing_on_start entries and the MODE_UNINT check below
+   cover. None of these is an ANI_ATTACK_ON_Z, so the z offset/depth take
+   wm_arcade_ani_attack_on's real defaults. */
+static void test_bret_attack_windows_batch1(void) {
+    static const struct {
+        wm_arcade_bret_anim_id_t id;
+        const wm_visual_sequence *seq;
+        size_t frame;
+        uint16_t attack_mode;
+        int16_t xoff, yoff, width, height;
+    } cases[] = {
+        { WM_BRET_ANIM_BUTT2, &wm_bret_butt2_anim, 5, WM_AMODE_HDBUTT, 19, 75, 35, 24 },
+        { WM_BRET_ANIM_BUTT4, &wm_bret_butt4_anim, 5, WM_AMODE_HDBUTT, 19, 75, 35, 24 },
+        { WM_BRET_ANIM_KNEE2, &wm_bret_knee2_anim, 4, WM_AMODE_KNEE, 11, 44, 51, 49 },
+        { WM_BRET_ANIM_KNEE4, &wm_bret_knee4_anim, 4, WM_AMODE_KNEE, 11, 44, 51, 49 },
+        { WM_BRET_ANIM_UPPERCUT4, &wm_bret_uppercut4_anim, 5, WM_AMODE_UPRCUT, -6, 22, 64, 100 },
+    };
+    size_t i;
+    for (i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+        wm_arcade_actor_t a;
+        wm_bret_backend_actor bva;
+        int guard;
+
+        memset(&a, 0, sizeof(a));
+        a.new_facing_dir = WM_MOVE_UP_RIGHT;
+        wm_bret_backend_init(&bva);
+        wm_bret_backend_change_anim(&a, cases[i].id, &bva);
+        CHECK(bva.visual.sequence == cases[i].seq);
+        /* the header's own ANI_SETMODE + ANI_SETFACING, both instant */
+        CHECK(a.anim_mode & WM_MODE_UNINT);
+        CHECK(a.anim_mode & WM_MODE_NOAUTOFLIP);
+        CHECK(a.facing_dir == WM_MOVE_UP_RIGHT);
+        CHECK(!(a.anim_mode & WM_MODE_CHECKHIT));
+
+        for (guard = 0; guard < 40 && bva.visual.frame_index != cases[i].frame; ++guard)
+            wm_bret_backend_tick(&bva, &a, 0);
+        CHECK(bva.visual.frame_index == cases[i].frame);
+        CHECK(a.anim_mode & WM_MODE_CHECKHIT);
+        CHECK(a.attack_mode == cases[i].attack_mode);
+        CHECK(a.attack_xoff == cases[i].xoff);
+        CHECK(a.attack_yoff == cases[i].yoff);
+        CHECK(a.attack_width == cases[i].width);
+        CHECK(a.attack_height == cases[i].height);
+        CHECK(a.attack_zoff == -40);
+        CHECK(a.attack_depth == 80);
+
+        /* ANI_ATTACK_OFF one frame later, then the closing
+           ANI_SETMODE,MODE_NORMAL once the animation runs out. */
+        for (guard = 0; guard < 40 && (a.anim_mode & WM_MODE_UNINT); ++guard)
+            wm_bret_backend_tick(&bva, &a, 7);
+        CHECK(!(a.anim_mode & WM_MODE_UNINT));
+        CHECK(!(a.anim_mode & WM_MODE_NOAUTOFLIP));
+        CHECK(!(a.anim_mode & WM_MODE_CHECKHIT));
+        CHECK(a.attack_time == 7);
     }
 }
 
@@ -3441,6 +3528,7 @@ int main(void) {
     test_bret_backend_charge_ddt_fires_on_release();
     test_bret_attack_window_punch2();
     test_bret_attack_windows_remaining();
+    test_bret_attack_windows_batch1();
     test_bret_hurt_box_for_frame_real_geometry();
     test_bret_backend_tick_sets_real_hurt_box();
     test_hurt_box_connects_a_real_hit();

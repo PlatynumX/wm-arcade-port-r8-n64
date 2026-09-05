@@ -45,6 +45,19 @@ extern const wm_visual_sequence wm_bret_run_anim;
 extern const wm_visual_sequence wm_bret_block4_anim;
 
 /*
+ * Batch 1 of Bret's remaining strike set (HRTSEQ2.ASM), each one an id his
+ * own mode_normal already selected but which resolved to nothing: the
+ * close-range headbutt do_punch falls back to, the close-range knee
+ * do_kick falls back to, and the crouching uppercut do_super_punch selects
+ * on a down input. Attack windows traced with tools/wlattack.py.
+ */
+extern const wm_visual_sequence wm_bret_butt2_anim;
+extern const wm_visual_sequence wm_bret_butt4_anim;
+extern const wm_visual_sequence wm_bret_knee2_anim;
+extern const wm_visual_sequence wm_bret_knee4_anim;
+extern const wm_visual_sequence wm_bret_uppercut4_anim;
+
+/*
  * BRET.ASM:2871 hrt_rotate_anims_table's 12 off-diagonal turn-transition
  * entries (the "TURNS (STANDS)" block, HRTSEQ1.ASM:390-454) -- played by
  * set_rotate_anim/change_anim1 for the idle (#zip/stance) facing-change

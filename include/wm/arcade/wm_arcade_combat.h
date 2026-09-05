@@ -131,6 +131,14 @@ struct wm_arcade_actor {
     uint16_t but_val_up;
     uint16_t stick_val_down;
     uint16_t stick_val_up;
+    /* WRESTLE.ASM's punch_dtime1/powerp_dtime1/powerk_dtime1 (BSSX,
+       WRESTLE.ASM:3954-3958): consecutive ticks that button has been held,
+       reset to 0 the instant it's released -- see
+       wm_arcade_update_joy_dtime. block_dtime1/kick_dtime1 aren't tracked
+       here since nothing in this port reads them yet. */
+    uint16_t punch_dtime;
+    uint16_t powerp_dtime;
+    uint16_t powerk_dtime;
     int32_t closest_dist;
     int32_t closest_xdist;
     int32_t closest_ydist;
@@ -177,6 +185,13 @@ void wm_arcade_set_getup_time(
     const wm_arcade_actor_t *attacker,
     wm_arcade_actor_t *victim,
     const wm_arcade_combat_callbacks_t *callbacks);
+
+/* WRESTLE.ASM:4023 update_joy_dtime's #update_but half (the direction half,
+   #update_stick, isn't translated -- nothing in this port reads a stick
+   hold-duration yet). Reads but_val_cur, so call this after but_val_cur is
+   set for the tick (wm_human_input_commit) and before anything that reads
+   punch_dtime/powerp_dtime/powerk_dtime this same tick. */
+void wm_arcade_update_joy_dtime(wm_arcade_actor_t *actor);
 
 #ifdef __cplusplus
 }

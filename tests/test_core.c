@@ -626,6 +626,33 @@ static void test_joystat_matches(void) {
     }
 }
 
+/* WRESTLE.ASM:4059 update_joy_dtime's #update_but half: consecutive ticks
+   held, reset to 0 the instant released. */
+static void test_arcade_update_joy_dtime(void) {
+    wm_arcade_actor_t a;
+    int i;
+
+    memset(&a, 0, sizeof(a));
+    a.but_val_cur = WM_BTN_PUNCH;
+    for (i = 1; i <= 5; ++i) {
+        wm_arcade_update_joy_dtime(&a);
+        CHECK(a.punch_dtime == (uint16_t)i);
+        CHECK(a.powerp_dtime == 0);
+        CHECK(a.powerk_dtime == 0);
+    }
+
+    a.but_val_cur = 0;
+    wm_arcade_update_joy_dtime(&a);
+    CHECK(a.punch_dtime == 0);
+
+    a.but_val_cur = (uint16_t)(WM_BTN_SPUNCH | WM_BTN_SKICK);
+    wm_arcade_update_joy_dtime(&a);
+    wm_arcade_update_joy_dtime(&a);
+    CHECK(a.powerp_dtime == 2);
+    CHECK(a.powerk_dtime == 2);
+    CHECK(a.punch_dtime == 0);
+}
+
 static void test_bret_backend_change_anim(void) {
     wm_bret_backend_actor bva;
     wm_bret_backend_init(&bva);
@@ -905,6 +932,156 @@ static void test_bret_backend_secret_move_no_frame_data_survives_one_tick(void) 
     (void)wm_arcade_move_bret(&actor, &opp, &env, &cb);
     CHECK(bva.current_id != WM_BRET_ANIM_JUMP_KICK4);
     CHECK(bva.current_id != WM_BRET_ANIM_NONE);
+}
+
+/* BRET.ASM:543 hrt_charge_flying_kick: hold SKICK 100+ ticks then release
+   it -- a real, independent "charge and release" watcher, translated via
+   wm_arcade_update_joy_dtime's real per-button hold-duration counter
+   (wm/arcade/wm_arcade_combat.h) and wm_arcade_bret_release_charge_
+   flying_kick's own already-real preconditions/dispatch. The fired move
+   itself is deferred through the real SPECIAL_MOVE_ADDR handoff
+   (WRESTLE.ASM:3843-3849 move_wrestler) -- picked up by the very next
+   wm_arcade_move_bret call, not the one that fires it. */
+static void test_bret_backend_charge_flying_kick_fires_on_release(void) {
+    wm_arcade_actor_t actor, opp;
+    wm_bret_backend_actor bva;
+    wm_human_input_state hs;
+    wm_input_state in;
+    wm_arcade_bret_env_t env;
+    wm_arcade_bret_callbacks_t cb;
+    int i;
+
+    memset(&actor, 0, sizeof(actor));
+    actor.facing_dir = WM_MOVE_UP_RIGHT;
+    actor.player_mode = WM_PMODE_NORMAL;
+
+    memset(&opp, 0, sizeof(opp));
+    opp.player_mode = WM_PMODE_NORMAL;
+
+    wm_bret_backend_init(&bva);
+    bva.opponent = &opp;
+    wm_human_input_init(&hs);
+    cb = wm_bret_backend_callbacks(&bva);
+    memset(&env, 0, sizeof(env));
+
+    memset(&in, 0, sizeof(in));
+    in.power_kick = true;
+    for (i = 0; i < 100; ++i) {
+        wm_human_input_commit(&actor, &hs, &in);
+        bva.pcnt = (uint32_t)i;
+        (void)wm_arcade_move_bret(&actor, &opp, &env, &cb);
+    }
+    CHECK(actor.powerk_dtime == 100);
+    CHECK(actor.special_move_addr == 0);
+
+    /* Release: fires for real, but only sets INAIR + queues the anim. */
+    memset(&in, 0, sizeof(in));
+    wm_human_input_commit(&actor, &hs, &in);
+    bva.pcnt = 100;
+    (void)wm_arcade_move_bret(&actor, &opp, &env, &cb);
+    CHECK(actor.player_mode == WM_PMODE_INAIR);
+    CHECK(actor.special_move_addr == (uintptr_t)WM_BRET_ANIM_FLYING_KICK);
+    CHECK(bva.current_id != WM_BRET_ANIM_FLYING_KICK);
+
+    /* The next call picks up SPECIAL_MOVE_ADDR for real. */
+    bva.pcnt = 101;
+    (void)wm_arcade_move_bret(&actor, &opp, &env, &cb);
+    CHECK(actor.special_move_addr == 0);
+    CHECK(bva.current_id == WM_BRET_ANIM_FLYING_KICK);
+}
+
+/* BRET.ASM:614 hrt_charge_face_rake: same shape as the flying kick above,
+   holding ordinary PUNCH instead of SKICK, and never leaving player_mode
+   NORMAL (no setmode call in the source's own #scrt_facerake-adjacent
+   release path). */
+static void test_bret_backend_charge_face_rake_fires_on_release(void) {
+    wm_arcade_actor_t actor;
+    wm_bret_backend_actor bva;
+    wm_human_input_state hs;
+    wm_input_state in;
+    wm_arcade_bret_env_t env;
+    wm_arcade_bret_callbacks_t cb;
+    int i;
+
+    memset(&actor, 0, sizeof(actor));
+    actor.facing_dir = WM_MOVE_UP_RIGHT;
+    actor.player_mode = WM_PMODE_NORMAL;
+
+    wm_bret_backend_init(&bva);
+    wm_human_input_init(&hs);
+    cb = wm_bret_backend_callbacks(&bva);
+    memset(&env, 0, sizeof(env));
+
+    memset(&in, 0, sizeof(in));
+    in.light_punch = true;
+    for (i = 0; i < 100; ++i) {
+        wm_human_input_commit(&actor, &hs, &in);
+        bva.pcnt = (uint32_t)i;
+        (void)wm_arcade_move_bret(&actor, NULL, &env, &cb);
+    }
+    CHECK(actor.punch_dtime == 100);
+
+    memset(&in, 0, sizeof(in));
+    wm_human_input_commit(&actor, &hs, &in);
+    bva.pcnt = 100;
+    (void)wm_arcade_move_bret(&actor, NULL, &env, &cb);
+    CHECK(actor.special_move_addr == (uintptr_t)WM_BRET_ANIM_RAKE_FACE);
+
+    bva.pcnt = 101;
+    (void)wm_arcade_move_bret(&actor, NULL, &env, &cb);
+    CHECK(bva.current_id == WM_BRET_ANIM_RAKE_FACE);
+    CHECK(actor.special_move_addr == 0);
+}
+
+/* BRET.ASM:253 #charge_ddt (bret_secret_moves' own real first entry):
+   holding SPUNCH 100+ ticks then releasing it takes priority over the
+   joystick-history table scan, exactly like the source's own
+   "call a0 / jrc #done" -- fires wm_arcade_bret_fire_secret's
+   WM_BRET_SECRET_CHARGE_DDT case for real. Unlike the charge flying kick/
+   face rake above, #scrt_ddt calls change_anim1a directly (BRET.ASM:277
+   "calla change_anim1a") rather than going through SPECIAL_MOVE_ADDR --
+   #charge_ddt runs synchronously inside the wrestler's own process (via
+   check_secret_moves), not as a separate CREATEd process like
+   hrt_charge_flying_kick/hrt_charge_face_rake, so it never needed the
+   cross-process handoff those two do. */
+static void test_bret_backend_charge_ddt_fires_on_release(void) {
+    wm_arcade_actor_t actor, opp;
+    wm_bret_backend_actor bva;
+    wm_human_input_state hs;
+    wm_input_state in;
+    wm_arcade_bret_env_t env;
+    wm_arcade_bret_callbacks_t cb;
+    int i;
+
+    memset(&actor, 0, sizeof(actor));
+    actor.facing_dir = WM_MOVE_UP_RIGHT;
+    actor.player_mode = WM_PMODE_NORMAL;
+    actor.new_facing_dir = WM_MOVE_DOWN_LEFT; /* != STICK_VAL_CUR at release -> hh_2_ddt_anim path */
+
+    memset(&opp, 0, sizeof(opp));
+    opp.player_mode = WM_PMODE_NORMAL;
+
+    wm_bret_backend_init(&bva);
+    bva.opponent = &opp;
+    wm_human_input_init(&hs);
+    cb = wm_bret_backend_callbacks(&bva);
+    memset(&env, 0, sizeof(env));
+
+    memset(&in, 0, sizeof(in));
+    in.power_punch = true;
+    for (i = 0; i < 100; ++i) {
+        wm_human_input_commit(&actor, &hs, &in);
+        bva.pcnt = (uint32_t)i;
+        (void)wm_arcade_move_bret(&actor, &opp, &env, &cb);
+    }
+    CHECK(actor.powerp_dtime == 100);
+
+    memset(&in, 0, sizeof(in));
+    wm_human_input_commit(&actor, &hs, &in);
+    bva.pcnt = 100;
+    (void)wm_arcade_move_bret(&actor, &opp, &env, &cb);
+    CHECK(actor.special_move_addr == 0);
+    CHECK(bva.current_id == WM_BRET_ANIM_HH_DDT2);
 }
 
 /* HRTSEQ2.ASM:204 ANI_ATTACK_ON_Z, AMODE_PUNCH,30,91,-45,50,15,45, hand-traced
@@ -3253,11 +3430,15 @@ int main(void) {
     test_bret_anim_sequence_mapping();
     test_joystat_update();
     test_joystat_matches();
+    test_arcade_update_joy_dtime();
     test_bret_backend_change_anim();
     test_bret_backend_change_anim_sets_facing_on_attack_start();
     test_bret_backend_i_will_die_resolves_through_move_bret();
     test_bret_backend_secret_move_fires_through_real_input();
     test_bret_backend_secret_move_no_frame_data_survives_one_tick();
+    test_bret_backend_charge_flying_kick_fires_on_release();
+    test_bret_backend_charge_face_rake_fires_on_release();
+    test_bret_backend_charge_ddt_fires_on_release();
     test_bret_attack_window_punch2();
     test_bret_attack_windows_remaining();
     test_bret_hurt_box_for_frame_real_geometry();

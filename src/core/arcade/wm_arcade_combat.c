@@ -289,3 +289,13 @@ void wm_arcade_set_getup_time(
     if (callbacks && callbacks->maybe_gidd_up)
         callbacks->maybe_gidd_up(victim, callbacks->user);
 }
+
+void wm_arcade_update_joy_dtime(wm_arcade_actor_t *actor) {
+    if (!actor) return;
+    actor->punch_dtime = (actor->but_val_cur & WM_BTN_PUNCH)
+        ? (uint16_t)(actor->punch_dtime + 1) : 0;
+    actor->powerp_dtime = (actor->but_val_cur & WM_BTN_SPUNCH)
+        ? (uint16_t)(actor->powerp_dtime + 1) : 0;
+    actor->powerk_dtime = (actor->but_val_cur & WM_BTN_SKICK)
+        ? (uint16_t)(actor->powerk_dtime + 1) : 0;
+}

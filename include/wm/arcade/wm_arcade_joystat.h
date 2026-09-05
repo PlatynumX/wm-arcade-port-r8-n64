@@ -56,23 +56,21 @@ extern "C" {
  * same elapsed_word truncation already used by wm_arcade_react.c's
  * reduced-damage window).
  *
- * The one real, deliberate omission: WRESTLE.ASM's own `bret_secret_moves`
- * table (BRET.ASM:148) has a 9th, *first* entry, `#charge_ddt`, that is
- * executable "hold test" code rather than a value/mask table -- checked
- * once, before the table scan, and skipping the scan entirely if it fires
- * (holding SPUNCH for 100+ ticks then releasing it triggers a running/
- * standing DDT directly, no directional gesture needed). This port
- * already has that move's own real condition/dispatch logic separately
- * (wm_arcade_bret_try_charge_ddt), but nothing tracks the underlying
- * "how long has SPUNCH been held" charge timer it needs
- * (`get_powerp_dtime`) -- a distinct, not-yet-translated piece of state
- * unrelated to the joystick-history mechanism here, deliberately not
- * conflated with it. wm_arcade_bret_secret_patterns' own 8 entries
- * already exclude #charge_ddt for exactly this reason (see its own
- * comment), so wm_arcade_joystat_matches simply never sees it -- this
- * port's table scan always runs, matching the source exactly whenever the
- * hold test itself would have returned "no" (the overwhelming majority of
- * ticks, since it requires actively charging that one specific button).
+ * One real, deliberate exclusion from wm_arcade_joystat_matches itself:
+ * WRESTLE.ASM's own `bret_secret_moves` table (BRET.ASM:148) has a 9th,
+ * *first* entry, `#charge_ddt`, that is executable "hold test" code
+ * rather than a value/mask table -- checked once, before the table scan,
+ * skipping the scan entirely if it fires (holding SPUNCH for 100+ ticks
+ * then releasing it triggers a running/standing DDT directly, no
+ * directional gesture needed). `wm_arcade_bret_secret_patterns`' own 8
+ * entries exclude it for exactly this reason, so `wm_arcade_joystat_matches`
+ * never sees it; `wm_bret_backend_check_secret_moves` (src/core/
+ * bret_backend.c) checks it directly instead, every tick, ahead of the
+ * table scan -- along with `hrt_charge_flying_kick`/`hrt_charge_face_rake`
+ * (BRET.ASM:543/614), two more real "hold, then release" watchers with the
+ * identical shape, using `wm_arcade_update_joy_dtime`'s real per-button
+ * hold-duration counters (`wm/arcade/wm_arcade_combat.h`, WRESTLE.ASM's
+ * own `update_joy_dtime`) for all three.
  */
 
 #define WM_JOYSTAT_DEPTH 16

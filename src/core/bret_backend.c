@@ -540,6 +540,7 @@ static void wm_bret_backend_check_secret_moves(wm_arcade_actor_t *actor,
     wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
     wm_arcade_bret_callbacks_t cb;
     uint16_t now;
+    uint16_t punch_dtime, powerp_dtime, powerk_dtime;
     size_t i;
 
     if (!actor || !bva) return;
@@ -547,16 +548,50 @@ static void wm_bret_backend_check_secret_moves(wm_arcade_actor_t *actor,
     now = (uint16_t)bva->pcnt;
     wm_arcade_joystat_update(&bva->joystat, actor, now);
 
+    /* wm_arcade_update_joy_dtime resets a button's dtime to 0 the instant
+       BUT_VAL_CUR reads it as no longer held -- the exact tick a release
+       is checked below. The real source's own update_joy_dtime and
+       check_secret_moves run from two different points in the per-process
+       loop, in an order that only makes sense if the dtime read on a
+       release tick reflects the duration accumulated *through the
+       previous tick*, not this tick's already-reset value -- so these are
+       captured before updating, not after. */
+    punch_dtime = actor->punch_dtime;
+    powerp_dtime = actor->powerp_dtime;
+    powerk_dtime = actor->powerk_dtime;
+    wm_arcade_update_joy_dtime(actor);
+
     /* WRESTLE.ASM:4851-4862 top-of-function gates. */
     if (actor->immobilize_time) return;
     if (actor->player_mode == WM_PMODE_DIZZY || actor->player_mode == WM_PMODE_WAITANIM) return;
     if (actor->getup_time) return;
 
-    /* WRESTLE.ASM's own charge_ddt "hold test" (bret_secret_moves' real
-       first entry) is deliberately not checked here -- see
-       wm/arcade/wm_arcade_joystat.h's own comment for why that's a
-       separate, not-yet-tracked charge-timer gap, not part of this
-       recognizer. */
+    cb = wm_bret_backend_callbacks(bva);
+
+    /* hrt_charge_flying_kick/hrt_charge_face_rake (BRET.ASM:543/614): two
+       real, independent persistent-process "hold the button, then release
+       it" watchers -- checked every tick, same as bret_secret_moves' own
+       first entry below, regardless of the joystick-history recognizer
+       that follows. wm_arcade_bret_release_charge_flying_kick/
+       release_charge_face_rake already carry their own real preconditions
+       (charge>=100, GETUP_TIME, PLYRMODE, MODE_UNINT, ...); this just
+       supplies the real BUT_VAL_UP edge and dtime they need. */
+    if ((actor->but_val_up & WM_BTN_SKICK) &&
+        wm_arcade_bret_release_charge_flying_kick(actor, bva->opponent, powerk_dtime, &cb)) {
+        return;
+    }
+    if ((actor->but_val_up & WM_BTN_PUNCH) &&
+        wm_arcade_bret_release_charge_face_rake(actor, punch_dtime, &cb)) {
+        return;
+    }
+
+    /* WRESTLE.ASM's own charge_ddt "hold test": bret_secret_moves' real
+       first entry (executable code, not a value/mask table -- see
+       wm/arcade/wm_arcade_joystat.h's own comment), checked every tick and
+       taking priority over the table scan below when it fires, exactly
+       like the source's own "call a0 / jrc #done". */
+    if (wm_arcade_bret_try_charge_ddt(actor, bva->opponent, powerp_dtime, &cb))
+        return;
 
     /* "only check if newest entry in queue is fresh": nothing was
        recorded this exact tick, so no pattern can possibly be the one
@@ -567,7 +602,6 @@ static void wm_bret_backend_check_secret_moves(wm_arcade_actor_t *actor,
        is never set on a Bret actor in this port (see wm/arcade/
        wm_arcade_mode_dead.h's own boundary), so it would never fire. */
 
-    cb = wm_bret_backend_callbacks(bva);
     for (i = 0; i < count; ++i) {
         if (wm_arcade_joystat_matches(&bva->joystat, now, patterns[i].steps,
                                       patterns[i].step_count, patterns[i].max_ticks)) {

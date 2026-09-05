@@ -71,6 +71,9 @@ python3 "$ROOT/tools/wlanim.py" \
     --slice hrt_4_knee_fall_anim wm_bret_knee_fall4_anim bret_knee_fall4_frames false \
     --slice hrt_kick_TB_anim wm_bret_kick_tb_anim bret_kick_tb_frames false \
     --slice hrt_4_knee_to_head_anim wm_bret_knee_to_head4_anim bret_knee_to_head4_frames false \
+    --slice hrt_knees_to_head_anim wm_bret_knees_to_head_anim bret_knees_to_head_frames false \
+    --slice hrt_2_pin_anim wm_bret_pin2_anim bret_pin2_frames false \
+    --slice hrt_4_pin_anim wm_bret_pin4_anim bret_pin4_frames false \
     --out "$ROOT/src/generated/bret_attacks.c"
 python3 "$ROOT/tools/wlanim.py" \
     --source "$ORIG/HRTSEQ4.ASM" \

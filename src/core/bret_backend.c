@@ -222,6 +222,9 @@ const wm_visual_sequence *wm_bret_anim_sequence(wm_arcade_bret_anim_id_t id) {
         case WM_BRET_ANIM_HEAD_HELD_STAND3: return &wm_bret_head_held_stand3_anim;
         case WM_BRET_ANIM_KNEE_TO_HEAD4: return &wm_bret_knee_to_head4_anim;
         case WM_BRET_ANIM_FAKE_HOLD3: return &wm_bret_fake_hold3_anim;
+        case WM_BRET_ANIM_KNEES_TO_HEAD: return &wm_bret_knees_to_head_anim;
+        case WM_BRET_ANIM_PIN2: return &wm_bret_pin2_anim;
+        case WM_BRET_ANIM_PIN4: return &wm_bret_pin4_anim;
         default: return NULL;
     }
 }
@@ -404,6 +407,15 @@ static const wm_bret_attack_window_t attack_windows[] = {
        the window sat past its end). */
     { WM_BRET_ANIM_KNEE_TO_HEAD4, 2, false,
       { WM_AMODE_KNEE, 11, 44, 51, 49 }, {0,0,0,0,0,0,0} },
+    /* hrt_knees_to_head_anim: two real pulses with different boxes. The
+       first sits INSIDE the routine's ANI_SET_RPTCOUNT,3 span (frames
+       1..5), so the visual runtime's loop genuinely re-fires it once per
+       pass, exactly as the source's own ANI_ATTACK_ON does inside its
+       loop body; the second is after the loop. */
+    { WM_BRET_ANIM_KNEES_TO_HEAD, 3, false,
+      { WM_AMODE_HEADKNEES, 4, 34, 70, 54 }, {0,0,0,0,0,0,0} },
+    { WM_BRET_ANIM_KNEES_TO_HEAD, 8, false,
+      { WM_AMODE_HEADKNEES, 4, 54, 70, 34 }, {0,0,0,0,0,0,0} },
 };
 #define WM_BRET_ATTACK_WINDOW_COUNT \
     (sizeof(attack_windows) / sizeof(attack_windows[0]))
@@ -418,8 +430,10 @@ static bool anim_header_sets_overlap(wm_arcade_bret_anim_id_t id) {
         case WM_BRET_ANIM_STOMP4:
         case WM_BRET_ANIM_GROUND_PUNCH2:
         case WM_BRET_ANIM_GROUND_PUNCH4:
-        /* hrt_3_fake_hold_anim's header carries MODE_OVERLAP too. */
+        /* hrt_3_fake_hold_anim and both pins carry MODE_OVERLAP too. */
         case WM_BRET_ANIM_FAKE_HOLD3:
+        case WM_BRET_ANIM_PIN2:
+        case WM_BRET_ANIM_PIN4:
             return true;
         default:
             return false;
@@ -500,7 +514,8 @@ static const wm_bret_attack_window_t *find_attack_window_at(wm_arcade_bret_anim_
 static bool anim_header_sets_uninit(wm_arcade_bret_anim_id_t id) {
     if (anim_has_attack_window(id)) return true;
     return id == WM_BRET_ANIM_HEAD_HELD_STAND3 ||
-           id == WM_BRET_ANIM_FAKE_HOLD3;
+           id == WM_BRET_ANIM_FAKE_HOLD3 ||
+           id == WM_BRET_ANIM_PIN2 || id == WM_BRET_ANIM_PIN4;
 }
 
 /*

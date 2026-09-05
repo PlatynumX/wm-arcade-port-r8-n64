@@ -65,33 +65,67 @@ def test_wlattack_audit() -> None:
 
     assert verdict("hrt_2_punch_anim") == []
 
+    # hrt_2_butts_anim's ANI_SET_RPTCOUNT,3 span is representable now
+    # (wm_visual_sequence carries the loop), so the loop is no longer what
+    # blocks it -- the terminal ANI_CHANGEANIM into the uppercut still is.
     butts = verdict("hrt_2_butts_anim")
-    assert any("ANI_SET_RPTCOUNT" in w for w in butts)
     assert any("ANI_CHANGEANIM" in w for w in butts)
+    assert not any("RPTCOUNT" in w for w in butts), butts
+
+    # A deterministic loop is carried, not flattened.
+    bseq = wlanim.extract_visual_slice(p, "hrt_2_butts_anim", False)
+    assert (bseq.loop_first, bseq.loop_last, bseq.loop_count) == (0, 7, 3)
 
     # hrt_2_raise_arm_anim has no ANI_END of its own: it ends in
     # `ANI_GOTO,#cont`, a label inside hrt_4_raise_arm_anim. The extractor
-    # follows that, so the GOTO is no longer a blocker -- but the routine it
-    # lands in has a repeat loop, and the audit inherits that. A routine is
-    # only as sliceable as everything it chains through.
+    # follows that, so the GOTO is not the blocker -- what it lands in is.
+    # hrt_4_raise_arm_anim's ANI_SET_RPTCOUNT is NEGATIVE (-4), i.e.
+    # RNDRNG0(4) drawn at runtime (ANIM.ASM:3538), so its iteration count is
+    # not fixed and no static table can carry it. Refusing that is the point:
+    # baking in a number the source rolls for would be inventing data.
     raise_arm = verdict("hrt_2_raise_arm_anim")
-    assert any("ANI_SET_RPTCOUNT" in w for w in raise_arm)
+    assert any("negative" in w or "RNDRNG0" in w for w in raise_arm), raise_arm
     assert not any("#cont" in w for w in raise_arm)
 
-    # Chaining is what makes that true: the extracted stream really is the
-    # two frames under its own label plus the shared tail at #cont, not the
-    # 2-frame fragment the label alone would give.
-    seq = wlanim.extract_visual_slice(p, "hrt_2_raise_arm_anim", False)
-    names = [f.name for f in seq.frames]
+    # An ANI_IF_RPTCOUNT that branches FORWARD is a first pass plus a
+    # separate repeated block sharing one RPT_COUNT, which a single loop
+    # span cannot represent -- also refused rather than emitted inverted.
+    ups = verdict("hrt_uppercuts_to_head_anim")
+    assert any("FORWARD" in w for w in ups), ups
+
+    # The three that the loop fields genuinely do make representable.
+    for lab, span in (("hrt_2_pin_anim", (18, 27, 3)),
+                      ("hrt_4_pin_anim", (16, 25, 3)),
+                      ("hrt_knees_to_head_anim", (1, 5, 3))):
+        assert verdict(lab) == [], (lab, verdict(lab))
+        q = wlanim.extract_visual_slice(p, lab, False)
+        assert (q.loop_first, q.loop_last, q.loop_count) == span, (lab, q)
+
+    # Chaining, on a routine whose continuation is representable end to end:
+    # hrt_4_knee_to_head_anim ends in ANI_GOTO,#cont with no ANI_END of its
+    # own, so under its own label it is a single frame; followed, it is the
+    # real 8-frame stream, and its ANI_ATTACK_ON lands at index 2 -- past the
+    # end of the unchained fragment entirely.
+    seq = wlanim.extract_visual_slice(p, "hrt_4_knee_to_head_anim", False)
+    assert len(seq.frames) == 8, len(seq.frames)
+    frames, events = wlattack.trace(p, "hrt_4_knee_to_head_anim")
+    assert len(frames) == 8
+    assert [(i, o) for i, c, o in events if c == "ANI_ATTACK_ON"] == [
+        (2, "AMODE_KNEE,11,44,51,49")]
+
+    # Local labels are reused across routines (#cont, #hit, #missed appear in
+    # many), so a chain target must resolve forward from the routine itself.
+    # Resolving from the top of the file picked up an unrelated earlier
+    # #cont, which for hrt_2_raise_arm_anim produced frames from a different
+    # animation entirely (H4NM3A*) instead of its own shared tail (H4SL4C*).
+    lines = [wlanim.strip_comment(r)
+             for r in p.read_text(errors="replace").splitlines()]
+    order = wlanim.slice_line_order(lines, "hrt_2_raise_arm_anim")
+    chained = [wlanim._frame_from_line(lines[i]) for i in order]
+    names = [f.name for f in chained if f]
     assert names[:2] == ["H1TL5A03", "H1TL5A04"], names[:2]
-    assert len(names) == 18, len(names)
     # The frame sharing a line with the #cont label must not be dropped.
     assert names[2] == "H4SL4C01", names[2]
-
-    # Local labels are reused across routines (#cont, #hit, #missed appear
-    # in many), so a chain target must resolve forward from the routine
-    # itself -- resolving from the top of the file picked up an unrelated
-    # earlier #cont and produced frames from the wrong animation entirely.
     assert not any(n.startswith("H4NM3A") for n in names), names
 
     # Every attack animation actually wired into the Bret backend must be

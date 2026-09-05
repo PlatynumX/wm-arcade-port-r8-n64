@@ -116,6 +116,19 @@ extern const wm_visual_sequence wm_bret_knee_to_head4_anim;
 extern const wm_visual_sequence wm_bret_fake_hold3_anim;
 
 /*
+ * Batch 5, unlocked by wm_visual_sequence's ANIM.ASM RPT_COUNT loop
+ * fields. All three carry a real ANI_SET_RPTCOUNT,3 span that plays three
+ * times before the stream continues -- carried as loop_first/loop_last/
+ * loop_count rather than flattened, so an attack window inside the span
+ * genuinely re-fires once per pass, as the source does.
+ * hrt_knees_to_head_anim's first ANI_ATTACK_ON sits inside its loop and
+ * its second after it; the two pins carry no attack window at all.
+ */
+extern const wm_visual_sequence wm_bret_knees_to_head_anim;
+extern const wm_visual_sequence wm_bret_pin2_anim;
+extern const wm_visual_sequence wm_bret_pin4_anim;
+
+/*
  * BRET.ASM:2871 hrt_rotate_anims_table's 12 off-diagonal turn-transition
  * entries (the "TURNS (STANDS)" block, HRTSEQ1.ASM:390-454) -- played by
  * set_rotate_anim/change_anim1 for the idle (#zip/stance) facing-change

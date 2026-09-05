@@ -57,11 +57,6 @@ COMMAND_RE = re.compile(
 # exits and its ANI_SLIDE_BACK forward skip are both of this kind.
 FLOW_RULES = (
     # blocking: a flat list is not any single real playthrough.
-    (re.compile(r"^\s*(?:\.word|WL|WWL)\s+ANI_SET_RPTCOUNT\b", re.I), "blocking",
-     "ANI_SET_RPTCOUNT: the routine repeats a span, so its real frame stream "
-     "is longer than one pass and its ANI_ATTACK_ON fires once per iteration"),
-    (re.compile(r"^\s*(?:\.word|WL|WWL)\s+ANI_IF_RPTCOUNT\b", re.I), "blocking",
-     "ANI_IF_RPTCOUNT: backward branch closing a repeat loop"),
     (re.compile(r"^\s*(?:\.word|WL|WWL)\s+ANI_CHANGEANIM\b", re.I), "blocking",
      "ANI_CHANGEANIM: the routine turns into a different animation rather "
      "than ending, so its own frame list is not the whole story"),
@@ -150,6 +145,24 @@ def audit(path: pathlib.Path, label: str):
     except ValueError as exc:
         return [("blocking", str(exc))], None
 
+    # A deterministic ANI_SET_RPTCOUNT / ANI_IF_RPTCOUNT span is representable
+    # now (wm_visual_sequence carries loop_first/loop_last/loop_count and the
+    # runtime re-fires any attack window inside it once per pass, as the
+    # source does). One that is not -- a negative count, i.e. RNDRNG0 drawn
+    # at runtime, or an effectively endless one -- still blocks, and
+    # extract_visual_slice says exactly why.
+    loop_note = None
+    try:
+        seq = wlanim.extract_visual_slice(path, label, False)
+        if seq.loop_count:
+            loop_note = ("looped",
+                         f"ANI_SET_RPTCOUNT,{seq.loop_count}: frames "
+                         f"[{seq.loop_first}..{seq.loop_last}] play "
+                         f"{seq.loop_count} times; carried as the sequence's "
+                         f"own loop fields, not flattened")
+    except ValueError as exc:
+        return [("blocking", str(exc))], None
+
     # Local labels reachable anywhere in the walked stream: a GOTO forward
     # into a chained-in routine is a forward skip, not a jump out.
     own_labels = {m.group(1) for m in
@@ -191,8 +204,8 @@ def audit(path: pathlib.Path, label: str):
             if target in seen_labels:
                 sev = "blocking"
                 why = (f"ANI_GOTO,{target}: backward jump to a label already "
-                       f"passed -- a loop, so the real frame stream is longer "
-                       f"than one pass")
+                       f"passed -- a loop with no ANI_SET_RPTCOUNT bound, so "
+                       f"the real frame stream has no fixed length")
             elif target in own_labels:
                 sev = "tolerated"
                 why = (f"ANI_GOTO,{target}: forward skip to a later label in "
@@ -215,6 +228,8 @@ def audit(path: pathlib.Path, label: str):
 
     if not saw_frame:
         raise ValueError(f"no WL frames found for {label}")
+    if loop_note:
+        findings.insert(0, loop_note)
     if chained:
         findings.insert(0, ("chained",
                             "runs on into " + ", ".join(chained) +
@@ -276,9 +291,10 @@ def main(argv=None) -> int:
             end = terminator[0] if terminator else "end of file"
             verdict = "NOT SAFELY SLICEABLE" if blocking else "sliceable"
             print(f"{label}: {verdict}  (slice ends at {end})")
-            for sev in ("chained", "blocking", "unported", "tolerated"):
+            for sev in ("chained", "looped", "blocking", "unported", "tolerated"):
                 tag = {"blocking": "BLOCKING ", "unported": "unported ",
-                       "tolerated": "tolerated", "chained": "chained  "}[sev]
+                       "tolerated": "tolerated", "chained": "chained  ",
+                       "looped": "looped   "}[sev]
                 for s_, why in findings:
                     if s_ == sev:
                         print(f"    {tag} {why}")

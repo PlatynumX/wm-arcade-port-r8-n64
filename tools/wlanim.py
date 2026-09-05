@@ -37,6 +37,11 @@ class Sequence:
     label: str
     frames: tuple[Frame, ...]
     repeat: bool
+    # ANIM.ASM RPT_COUNT loop, as frame indices into `frames`; loop_count 0
+    # means the routine has no such loop.
+    loop_first: int = 0
+    loop_last: int = 0
+    loop_count: int = 0
 
 
 def strip_comment(s: str) -> str:
@@ -176,6 +181,83 @@ def _chain_target(lines: list[str], span: tuple[int, int]) -> int | None:
     return None
 
 
+SET_RPT_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_SET_RPTCOUNT\s*,\s*(-?\d+)\s*$", re.I)
+IF_RPT_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_IF_RPTCOUNT\s*,\s*(#?[A-Za-z_][A-Za-z0-9_]*)\s*$",
+    re.I)
+
+
+def _find_rpt_loop(lines, order, frame_at):
+    """Locate an ANI_SET_RPTCOUNT / ANI_IF_RPTCOUNT span in the walked stream.
+
+    Returns (loop_first, loop_last, count) as frame indices plus the literal
+    iteration count, or None when there is no loop. Raises when the loop is
+    real but cannot be represented statically, rather than guessing:
+
+      - a negative ANI_SET_RPTCOUNT means RNDRNG0(-n) (ANIM.ASM:3538), a
+        count drawn fresh at runtime
+      - a count large enough to be an "until something else stops it" loop
+        (hrt_4_raise_arm_anim's own 1000) is not a fixed-length animation
+    """
+    count = None
+    for idx in order:
+        m = SET_RPT_RE.match(lines[idx])
+        if m:
+            if count is not None:
+                raise ValueError(
+                    "more than one ANI_SET_RPTCOUNT in the walked stream; "
+                    "nested or re-seeded repeat loops are not represented")
+            count = int(m.group(1))
+            continue
+        m = IF_RPT_RE.match(lines[idx])
+        if m:
+            if count is None:
+                raise ValueError("ANI_IF_RPTCOUNT with no ANI_SET_RPTCOUNT")
+            if count < 0:
+                raise ValueError(
+                    "ANI_SET_RPTCOUNT,%d is negative, i.e. RNDRNG0(%d) drawn "
+                    "at runtime (ANIM.ASM:3538) -- the iteration count is not "
+                    "fixed and cannot be tabled" % (count, -count))
+            if count > 64:
+                raise ValueError(
+                    "ANI_SET_RPTCOUNT,%d is an effectively endless loop, not "
+                    "a fixed-length animation" % count)
+            target = m.group(1)
+            first_line = None
+            for j in order:
+                lm = LOCAL_LABEL_RE.match(lines[j])
+                if lm and lm.group(1) == target:
+                    first_line = j
+                    break
+            if first_line is None:
+                raise ValueError(
+                    "ANI_IF_RPTCOUNT,%s: label not in the walked stream" % target)
+            firsts = [frame_at[j] for j in order
+                      if j >= first_line and j in frame_at]
+            lasts = [frame_at[j] for j in order if j <= idx and j in frame_at]
+            if not firsts or not lasts:
+                raise ValueError("repeat loop span contains no frames")
+            if firsts[0] > lasts[-1]:
+                # A FORWARD ANI_IF_RPTCOUNT: the label sits after the branch,
+                # so this is not one span played N times but a first pass
+                # followed by a different repeated block, sharing one
+                # RPT_COUNT (hrt_uppercuts_to_head_anim, HRTSEQ2.ASM:2310).
+                # wm_visual_sequence carries a single span, so refuse rather
+                # than emit an inverted or invented one.
+                raise ValueError(
+                    "ANI_IF_RPTCOUNT,%s branches FORWARD: a first pass plus a "
+                    "separate repeated block sharing one RPT_COUNT, which a "
+                    "single loop span cannot represent" % target)
+            branches = sum(1 for j in order if IF_RPT_RE.match(lines[j]))
+            if branches != 1:
+                raise ValueError(
+                    "%d ANI_IF_RPTCOUNT branches share one ANI_SET_RPTCOUNT; "
+                    "only a single repeated span is represented" % branches)
+            return (firsts[0], lasts[-1], count)
+    return None
+
+
 def slice_line_order(lines: list[str], label: str) -> list[int]:
     """The real line order a visual slice of `label` walks.
 
@@ -233,13 +315,17 @@ def extract_visual_slice(path: pathlib.Path, label: str, repeat: bool | None = N
 
     frames: list[Frame] = []
     inferred_repeat = False
+    frame_at: dict[int, int] = {}
+    walked: list[int] = []
 
     for idx in order:
+        walked.append(idx)
         line = lines[idx]
         if not line or SUBR_RE.match(line):
             continue
         frame = _frame_from_line(line)
         if frame:
+            frame_at[idx] = len(frames)
             frames.append(frame)
             continue
         if REPEAT_RE.match(line):
@@ -262,8 +348,14 @@ def extract_visual_slice(path: pathlib.Path, label: str, repeat: bool | None = N
 
     if not frames:
         raise ValueError(f"no visual WL frames found for {label}")
+
+    loop = _find_rpt_loop(lines, walked, frame_at)
+    loop_first, loop_last, loop_count = loop if loop else (0, 0, 0)
+
     return Sequence(label=label, frames=tuple(frames),
-                    repeat=inferred_repeat if repeat is None else repeat)
+                    repeat=inferred_repeat if repeat is None else repeat,
+                    loop_first=loop_first, loop_last=loop_last,
+                    loop_count=loop_count)
 
 
 def render(entries: list[tuple[str, str, str, Sequence]]) -> str:
@@ -285,6 +377,17 @@ def render(entries: list[tuple[str, str, str, Sequence]]) -> str:
             f"    .frames = {array_symbol},",
             f"    .frame_count = sizeof({array_symbol}) / sizeof({array_symbol}[0]),",
             f"    .repeat = {'true' if seq.repeat else 'false'},",
+        ]
+        if seq.loop_count:
+            out += [
+                f"    /* ANI_SET_RPTCOUNT,{seq.loop_count}: frames "
+                f"[{seq.loop_first}..{seq.loop_last}] play {seq.loop_count} "
+                f"times before the stream continues. */",
+                f"    .loop_first = {seq.loop_first},",
+                f"    .loop_last = {seq.loop_last},",
+                f"    .loop_count = {seq.loop_count},",
+            ]
+        out += [
             "};",
             "",
         ]

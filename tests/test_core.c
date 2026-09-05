@@ -560,7 +560,21 @@ static void test_bret_anim_sequence_mapping(void) {
        shipped art. Wiring it would mean inventing a shortened animation. */
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_CLIMB_DOWN) == NULL);
 
-    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_PIN2) == NULL);
+    /* Batch 5: all three carry an ANI_SET_RPTCOUNT,3 span, representable
+       now that wm_visual_sequence carries the loop rather than needing it
+       flattened. */
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_PIN2) == &wm_bret_pin2_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_PIN4) == &wm_bret_pin4_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_KNEES_TO_HEAD) ==
+          &wm_bret_knees_to_head_anim);
+    CHECK(wm_bret_pin2_anim.loop_count == 3);
+    CHECK(wm_bret_knees_to_head_anim.loop_count == 3);
+    /* hrt_uppercuts_to_head_anim stays unmapped on purpose: its
+       ANI_IF_RPTCOUNT branches FORWARD, so it is a first pass plus a
+       separate repeated block sharing one RPT_COUNT, which a single loop
+       span cannot represent -- wlanim.py refuses it rather than emitting
+       an inverted or invented span. */
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_UPPERCUTS_TO_HEAD) == NULL);
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_FINISH1) == NULL);
 }
 
@@ -1622,6 +1636,71 @@ static void test_bret_attack_windows_batch4(void) {
         wm_bret_backend_tick(&bva, &a, 0);
     CHECK(!(a.anim_mode & WM_MODE_UNINT));
     CHECK(!(a.anim_mode & WM_MODE_OVERLAP));
+}
+
+/* ANIM.ASM's RPT_COUNT loop (_ani_set_rptcount:3530, _ani_dec_rptcount:3552,
+   _ani_if_rptcount:3257): ANI_SET_RPTCOUNT,N seeds the count, the span
+   between the loop label and ANI_IF_RPTCOUNT plays N times, then the stream
+   continues past it. hrt_knees_to_head_anim is the case that matters most,
+   because its FIRST ANI_ATTACK_ON sits inside that span -- so the window has
+   to fire once per pass, exactly like the source, rather than once. */
+static void test_bret_rptcount_loop(void) {
+    wm_arcade_actor_t a;
+    wm_bret_backend_actor bva;
+    int guard;
+    int visits_to_loop_start = 0;
+    int attack_on_edges = 0;
+    bool was_on = false;
+    size_t prev_index;
+
+    CHECK(wm_bret_knees_to_head_anim.loop_count == 3);
+    CHECK(wm_bret_knees_to_head_anim.loop_first == 1);
+    CHECK(wm_bret_knees_to_head_anim.loop_last == 5);
+
+    memset(&a, 0, sizeof(a));
+    wm_bret_backend_init(&bva);
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_KNEES_TO_HEAD, &bva);
+    CHECK(bva.visual.sequence == &wm_bret_knees_to_head_anim);
+    CHECK(bva.visual.rpt_count == 3);
+
+    prev_index = bva.visual.frame_index;
+    for (guard = 0; guard < 400 && !bva.visual.ended; ++guard) {
+        bool on;
+        wm_bret_backend_tick(&bva, &a, 4);
+        if (bva.visual.frame_index != prev_index &&
+            bva.visual.frame_index == wm_bret_knees_to_head_anim.loop_first)
+            ++visits_to_loop_start;
+        prev_index = bva.visual.frame_index;
+        on = (a.anim_mode & WM_MODE_CHECKHIT) != 0;
+        if (on && !was_on) ++attack_on_edges;
+        was_on = on;
+    }
+    CHECK(bva.visual.ended);
+
+    /* Entered the span once by falling into it, then branched back twice
+       (count 3 -> 2 -> 1, the third decrement reaching 0 and falling
+       through), so the loop's first frame is reached three times. */
+    CHECK(visits_to_loop_start == 3);
+
+    /* Three passes each firing the in-loop window at frame 3, plus the one
+       after the loop at frame 8. */
+    CHECK(attack_on_edges == 4);
+
+    /* Without the loop the stream would be its 13 frames once; the pins
+       carry the same shape and no attack window at all. */
+    memset(&a, 0, sizeof(a));
+    wm_bret_backend_init(&bva);
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_PIN2, &bva);
+    CHECK(bva.visual.rpt_count == 3);
+    CHECK(a.anim_mode & WM_MODE_UNINT);
+    CHECK(a.anim_mode & WM_MODE_OVERLAP);
+    /* The pin is genuinely long -- 35 frames with real holds, plus its
+       own 10-frame span three times, ~1300 ticks end to end. */
+    for (guard = 0; guard < 3000 && !bva.visual.ended; ++guard) {
+        wm_bret_backend_tick(&bva, &a, 0);
+        CHECK(!(a.anim_mode & WM_MODE_CHECKHIT));
+    }
+    CHECK(bva.visual.ended);
 }
 
 /* ATTRACT.ASM:669 TURN_SOUNDS_OFF_IF_NEED gates the DCS_LOGO music on
@@ -3923,6 +4002,7 @@ int main(void) {
     test_bret_attack_windows_batch3();
     test_bret_midanim_setplyrmode();
     test_bret_attack_windows_batch4();
+    test_bret_rptcount_loop();
     test_attract_dcs_logo_does_not_fall_through();
     test_bret_hurt_box_for_frame_real_geometry();
     test_bret_backend_tick_sets_real_hurt_box();

@@ -125,6 +125,16 @@ if(WM_BUILD_TESTS)
     add_test(NAME wm_source_tools
              COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_source_tools.py)
 
+    # The ROM is built with libdragon, which is not present in every
+    # checkout, so nothing here ever compiled the N64 target and its source
+    # list silently drifted from this one -- six symbols' worth by the time
+    # it was checked. This compiles the ROM's own C list for mips64 and
+    # link-checks it, which needs only an ordinary cross-compiler, and skips
+    # itself when that is not installed.
+    add_test(NAME wm_n64_link
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/n64_link_check.py
+             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
     # Fix38 combat/ring/RNG/hiscore host verification tests. These were staged
     # under tests/arcade_port/fix38 alongside the src/core/arcade sources they
     # exercise but were never registered with CTest; the src/core/arcade code

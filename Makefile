@@ -29,6 +29,7 @@ CORE_C := \
     src/core/match.c \
     src/core/movement.c \
     src/core/bret_backend.c \
+    src/core/wrestler_backend.c \
     src/core/human_input.c \
     src/core/visual.c \
     src/core/roster.c \
@@ -48,6 +49,10 @@ CORE_C := \
 # BEGIN FIX38 CUMULATIVE ARCADE SOURCE PORTS
 FIX38_ARCADE_C := \
     src/core/arcade/wm_arcade_anim_combat.c \
+    src/core/arcade/wm_arcade_confine.c \
+    src/core/arcade/wm_arcade_drone_data.c \
+    src/core/arcade/wm_arcade_joystat.c \
+    src/core/arcade/wm_arcade_mode_dead.c \
     src/core/arcade/wm_arcade_attach_anim.c \
     src/core/arcade/wm_arcade_bam.c \
     src/core/arcade/wm_arcade_bret.c \

@@ -2,6 +2,7 @@
 #define WM_BRET_BACKEND_H
 
 #include "wm/arcade/wm_arcade_bret.h"
+#include "wm/arcade/wm_arcade_joystat.h"
 #include "wm/bret_frame_geometry.h"
 #include "wm/movement.h"
 #include "wm/visual.h"
@@ -102,6 +103,10 @@ typedef struct {
        the same value) and read by the adjust_health callback for
        LIFEBAR.ASM adjust_health's LAST_DAMAGE timestamp update. */
     uint32_t pcnt;
+    /* WRESTLE.ASM's per-wrestler wrest_joystat input-history ring buffer
+       -- see wm/arcade/wm_arcade_joystat.h. Updated by the
+       check_secret_moves callback itself each tick, before matching. */
+    wm_arcade_joystat_t joystat;
 } wm_bret_backend_actor;
 
 void wm_bret_backend_init(wm_bret_backend_actor *bva);

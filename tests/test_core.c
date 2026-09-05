@@ -4,6 +4,7 @@
 #include "wm/anim.h"
 #include "wm/app.h"
 #include "wm/arcade/wm_arcade_confine.h"
+#include "wm/arcade/wm_arcade_joystat.h"
 #include "wm/arcade/wm_arcade_mode_dead.h"
 #include "wm/arcade/wmania_ring_geometry.h"
 #include "wm/bmod.h"
@@ -520,6 +521,112 @@ static void test_bret_anim_sequence_mapping(void) {
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_FINISH1) == NULL);
 }
 
+/* WRESTLE.ASM:4650 xflip_table + update_joystat's own insert conditions
+   (wm/arcade/wm_arcade_joystat.h). */
+static void test_joystat_update(void) {
+    wm_arcade_actor_t a;
+    wm_arcade_joystat_t js;
+
+    /* No stick/button activity at all: no insert. */
+    memset(&a, 0, sizeof(a));
+    wm_arcade_joystat_init(&js);
+    wm_arcade_joystat_update(&js, &a, 12);
+    CHECK(js.entries[0].value == 0 && js.entries[0].tickcount == 0);
+
+    /* Facing right: raw stick value used as-is (no flip). */
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_RIGHT;
+    a.stick_val_cur = WM_MOVE_LEFT;
+    a.stick_val_down = WM_MOVE_LEFT; /* fresh edge */
+    wm_arcade_joystat_init(&js);
+    wm_arcade_joystat_update(&js, &a, 50);
+    CHECK((js.entries[0].value & 0x0Fu) == WM_MOVE_LEFT);
+    CHECK(js.entries[0].tickcount == 50);
+
+    /* Facing left: xflip_table swaps LEFT<->RIGHT, so raw LEFT records as
+       the facing-relative WM_J_TOWARD. */
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_LEFT;
+    a.stick_val_cur = WM_MOVE_LEFT;
+    a.stick_val_down = WM_MOVE_LEFT;
+    wm_arcade_joystat_init(&js);
+    wm_arcade_joystat_update(&js, &a, 50);
+    CHECK((js.entries[0].value & 0x0Fu) == WM_J_TOWARD);
+
+    /* A button press inserts its own entry, tagged with whatever direction
+       is currently held, even without a fresh vertical edge. */
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_RIGHT;
+    a.stick_val_cur = WM_MOVE_DOWN;
+    a.but_val_down = WM_BTN_PUNCH;
+    wm_arcade_joystat_init(&js);
+    wm_arcade_joystat_update(&js, &a, 77);
+    CHECK(js.entries[0].value == (uint16_t)(WM_B_PUNCH | WM_J_DOWN));
+    CHECK(js.entries[0].tickcount == 77);
+}
+
+/* WRESTLE.ASM:4851 check_secret_moves' own matching algorithm (wm/arcade/
+   wm_arcade_joystat.h): step 0 (the trigger) must be the exact queue
+   head, later steps get a shared 8-entry skip budget, and a full match
+   must still fit inside max_ticks. */
+static void test_joystat_matches(void) {
+    wm_arcade_joystat_t js;
+    static const wm_arcade_bret_sequence_step_t supercut[] = {
+        { WM_B_PUNCH, WM_J_ALL }, { WM_J_DOWN, WM_J_REAL_LR }, { WM_J_DOWN, WM_J_REAL_LR }
+    };
+    static const wm_arcade_bret_sequence_step_t jump_kick[] = {
+        { WM_B_SKICK, WM_J_ALL },
+        { WM_J_AWAY, (uint16_t)(WM_J_REAL_LR | WM_J_UP | WM_J_DOWN) },
+        { WM_J_AWAY, (uint16_t)(WM_J_REAL_LR | WM_J_UP | WM_J_DOWN) }
+    };
+
+    wm_arcade_joystat_init(&js);
+    js.entries[0].value = WM_B_PUNCH; js.entries[0].tickcount = 100;
+    js.entries[1].value = WM_J_DOWN;  js.entries[1].tickcount = 99;
+    js.entries[2].value = WM_J_DOWN;  js.entries[2].tickcount = 98;
+    CHECK(wm_arcade_joystat_matches(&js, 100, supercut, 3, 16));
+
+    /* Too slow: elapsed (100-80=20) exceeds max_ticks (16). */
+    js.entries[2].tickcount = 80;
+    CHECK(!wm_arcade_joystat_matches(&js, 100, supercut, 3, 16));
+
+    /* Wrong trigger button. */
+    js.entries[2].tickcount = 98;
+    js.entries[0].value = WM_B_SPUNCH;
+    CHECK(!wm_arcade_joystat_matches(&js, 100, supercut, 3, 16));
+
+    /* Wrong direction at an intermediate step. */
+    js.entries[0].value = WM_B_PUNCH;
+    js.entries[1].value = WM_J_UP;
+    CHECK(!wm_arcade_joystat_matches(&js, 100, supercut, 3, 16));
+
+    /* A masked-to-zero entry between real steps is skipped (up to the
+       shared 8-entry budget), not treated as a mismatch. */
+    wm_arcade_joystat_init(&js);
+    js.entries[0].value = WM_B_SKICK;  js.entries[0].tickcount = 100;
+    js.entries[1].value = WM_J_AWAY;   js.entries[1].tickcount = 99;
+    js.entries[2].value = WM_J_LEFT;   js.entries[2].tickcount = 98; /* masks to 0 */
+    js.entries[3].value = WM_J_AWAY;   js.entries[3].tickcount = 97;
+    CHECK(wm_arcade_joystat_matches(&js, 100, jump_kick, 3, 32));
+
+    /* Skip budget exhausted (all entries masked-to-zero, never finds the
+       second step): rejected. */
+    {
+        int i;
+        static const wm_arcade_bret_sequence_step_t two_step[] = {
+            { WM_B_SKICK, WM_J_ALL },
+            { WM_J_AWAY, (uint16_t)(WM_J_REAL_LR | WM_J_UP | WM_J_DOWN) }
+        };
+        wm_arcade_joystat_init(&js);
+        js.entries[0].value = WM_B_SKICK; js.entries[0].tickcount = 100;
+        for (i = 1; i < WM_JOYSTAT_DEPTH; ++i) {
+            js.entries[i].value = WM_J_LEFT;
+            js.entries[i].tickcount = (uint16_t)(100 - i);
+        }
+        CHECK(!wm_arcade_joystat_matches(&js, 100, two_step, 2, 32));
+    }
+}
+
 static void test_bret_backend_change_anim(void) {
     wm_bret_backend_actor bva;
     wm_bret_backend_init(&bva);
@@ -635,6 +742,76 @@ static void test_bret_backend_i_will_die_resolves_through_move_bret(void) {
     CHECK(actor.life == 0);
     CHECK(actor.player_mode == WM_PMODE_DEAD);
     CHECK(actor.i_will_die == 0);
+}
+
+/* WRESTLE.ASM's real check_secret_moves/update_joystat (wm/arcade/
+   wm_arcade_joystat.h): a human genuinely typing the supercut input
+   (down, down, punch, each a distinct press) now fires the real secret
+   move (wm_arcade_bret_fire_secret's own WM_BRET_SECRET_SUPERCUT case),
+   not just a direct call with a hand-picked id.
+   Exercised through cb.check_secret_moves directly (the callback
+   wm_arcade_move_bret's own top-of-function call reaches) rather than a
+   full wm_arcade_move_bret call: WM_BRET_ANIM_SUPER_PUNCH4 has no real
+   extracted wm_visual_sequence yet (see test_bret_anim_sequence_mapping),
+   so wm_bret_backend_change_anim can't set WM_MODE_UNINT for it the way
+   it does for the 6 anim ids that do -- exactly the same, already-
+   accepted gap test_bret_backend_i_will_die_resolves_through_move_bret
+   documents for WM_BRET_ANIM_FALL_BACK ("current_id is still recorded
+   even though no wm_visual_sequence exists for it"). Without that guard,
+   a *second* wm_arcade_move_bret call this same tick would see
+   player_mode still NORMAL and let mode_normal's own action-selection
+   immediately overwrite current_id again -- a real limitation, but
+   orthogonal to the recognizer itself, which this test isolates. */
+static void test_bret_backend_secret_move_fires_through_real_input(void) {
+    wm_arcade_actor_t actor, opp;
+    wm_bret_backend_actor bva;
+    wm_human_input_state hs;
+    wm_input_state in;
+    wm_arcade_bret_callbacks_t cb;
+
+    memset(&actor, 0, sizeof(actor));
+    actor.facing_dir = WM_MOVE_UP_RIGHT; /* no LEFT bit -- no xflip needed */
+    actor.player_mode = WM_PMODE_NORMAL;
+
+    memset(&opp, 0, sizeof(opp));
+    opp.player_mode = WM_PMODE_NORMAL;
+
+    wm_bret_backend_init(&bva);
+    bva.opponent = &opp;
+    wm_human_input_init(&hs);
+    cb = wm_bret_backend_callbacks(&bva);
+
+    /* Tick 0: press DOWN. */
+    memset(&in, 0, sizeof(in));
+    in.stick_y = -50;
+    wm_human_input_commit(&actor, &hs, &in);
+    bva.pcnt = 0;
+    cb.check_secret_moves(&actor, wm_arcade_bret_secret_patterns, 8, cb.user);
+    CHECK(bva.current_id != WM_BRET_ANIM_SUPER_PUNCH4);
+
+    /* Tick 1: release to neutral, so the next DOWN is a fresh edge too. */
+    memset(&in, 0, sizeof(in));
+    wm_human_input_commit(&actor, &hs, &in);
+    bva.pcnt = 1;
+    cb.check_secret_moves(&actor, wm_arcade_bret_secret_patterns, 8, cb.user);
+
+    /* Tick 2: press DOWN again. */
+    memset(&in, 0, sizeof(in));
+    in.stick_y = -50;
+    wm_human_input_commit(&actor, &hs, &in);
+    bva.pcnt = 2;
+    cb.check_secret_moves(&actor, wm_arcade_bret_secret_patterns, 8, cb.user);
+
+    /* Tick 3: release, then press PUNCH -- completes the real supercut
+       sequence (BRET.ASM's #supercut: B_PUNCH, J_DOWN, J_DOWN) well
+       within its real 16-tick window. */
+    memset(&in, 0, sizeof(in));
+    in.light_punch = true;
+    wm_human_input_commit(&actor, &hs, &in);
+    bva.pcnt = 3;
+    cb.check_secret_moves(&actor, wm_arcade_bret_secret_patterns, 8, cb.user);
+
+    CHECK(bva.current_id == WM_BRET_ANIM_SUPER_PUNCH4);
 }
 
 /* HRTSEQ2.ASM:204 ANI_ATTACK_ON_Z, AMODE_PUNCH,30,91,-45,50,15,45, hand-traced
@@ -2981,9 +3158,12 @@ int main(void) {
     test_match_start_attract();
     test_match_tick_runs_without_crashing();
     test_bret_anim_sequence_mapping();
+    test_joystat_update();
+    test_joystat_matches();
     test_bret_backend_change_anim();
     test_bret_backend_change_anim_sets_facing_on_attack_start();
     test_bret_backend_i_will_die_resolves_through_move_bret();
+    test_bret_backend_secret_move_fires_through_real_input();
     test_bret_attack_window_punch2();
     test_bret_attack_windows_remaining();
     test_bret_hurt_box_for_frame_real_geometry();

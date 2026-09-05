@@ -49,6 +49,7 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_confine.c
     src/core/arcade/wm_arcade_doink.c
     src/core/arcade/wm_arcade_drone.c
+    src/core/arcade/wm_arcade_joystat.c
     src/core/arcade/wm_arcade_lex.c
     src/core/arcade/wm_arcade_lifebar.c
     src/core/arcade/wm_arcade_mode_dead.c

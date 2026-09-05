@@ -465,6 +465,56 @@ static void wm_bret_backend_mode_dead(wm_arcade_actor_t *actor, void *user) {
     wm_arcade_mode_dead(actor);
 }
 
+/* wm_arcade_bret_callbacks_t.check_secret_moves body: WRESTLE.ASM's real
+   update_joystat + check_secret_moves (see wm/arcade/wm_arcade_joystat.h
+   for the full derivation). update_joystat's own recording happens here,
+   first, so this tick's input is guaranteed fresh by the time the
+   patterns are scanned -- the source relies on its own per-process
+   instruction ordering (update_joystat runs earlier in the same tick,
+   before move_bret gets called) for the same guarantee. */
+static void wm_bret_backend_check_secret_moves(wm_arcade_actor_t *actor,
+                                               const wm_arcade_bret_secret_pattern_t *patterns,
+                                               size_t count, void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    wm_arcade_bret_callbacks_t cb;
+    uint16_t now;
+    size_t i;
+
+    if (!actor || !bva) return;
+
+    now = (uint16_t)bva->pcnt;
+    wm_arcade_joystat_update(&bva->joystat, actor, now);
+
+    /* WRESTLE.ASM:4851-4862 top-of-function gates. */
+    if (actor->immobilize_time) return;
+    if (actor->player_mode == WM_PMODE_DIZZY || actor->player_mode == WM_PMODE_WAITANIM) return;
+    if (actor->getup_time) return;
+
+    /* WRESTLE.ASM's own charge_ddt "hold test" (bret_secret_moves' real
+       first entry) is deliberately not checked here -- see
+       wm/arcade/wm_arcade_joystat.h's own comment for why that's a
+       separate, not-yet-tracked charge-timer gap, not part of this
+       recognizer. */
+
+    /* "only check if newest entry in queue is fresh": nothing was
+       recorded this exact tick, so no pattern can possibly be the one
+       that just completed. */
+    if (bva->joystat.entries[0].tickcount != now) return;
+
+    /* WRESTLE.ASM's own zombie check (B_ZOMBIE) is skipped: WM_STATUS_ZOMBIE
+       is never set on a Bret actor in this port (see wm/arcade/
+       wm_arcade_mode_dead.h's own boundary), so it would never fire. */
+
+    cb = wm_bret_backend_callbacks(bva);
+    for (i = 0; i < count; ++i) {
+        if (wm_arcade_joystat_matches(&bva->joystat, now, patterns[i].steps,
+                                      patterns[i].step_count, patterns[i].max_ticks)) {
+            wm_arcade_bret_fire_secret(actor, bva->opponent, patterns[i].id, now, &cb);
+            return;
+        }
+    }
+}
+
 wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva) {
     wm_arcade_bret_callbacks_t cb;
     memset(&cb, 0, sizeof(cb));
@@ -473,6 +523,7 @@ wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva)
     cb.execute_walk = wm_bret_backend_execute_walk;
     cb.adjust_health = wm_bret_backend_adjust_health;
     cb.mode_dead = wm_bret_backend_mode_dead;
+    cb.check_secret_moves = wm_bret_backend_check_secret_moves;
     cb.user = bva;
     return cb;
 }

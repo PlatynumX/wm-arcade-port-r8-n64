@@ -349,6 +349,17 @@ void wm_bret_backend_change_torso_anim(wm_arcade_actor_t *actor,
     start_if_new(&bva->torso_visual, wm_bret_anim_sequence(id));
 }
 
+/* wm_arcade_adjust_health's death_anim bridge: the only id it ever passes
+   is WM_R1_ANIM_FALL_BACK (see wm/arcade/wm_arcade_lifebar.h), which is the
+   real hrt_fall_back_anim -- already wired as WM_BRET_ANIM_FALL_BACK by
+   Bret's own I_WILL_DIE self-death case (wm_arcade_bret.c). */
+static void wm_bret_backend_death_change_anim(wm_arcade_actor_t *actor,
+                                              wm_arcade_react1_anim_group_t anim,
+                                              void *user) {
+    if (anim != WM_R1_ANIM_FALL_BACK) return;
+    wm_bret_backend_change_anim(actor, WM_BRET_ANIM_FALL_BACK, user);
+}
+
 /* wm_arcade_bret_callbacks_t.adjust_health body: mode_normal's own
    I_WILL_DIE self-death call (BRET.ASM:1341-1343, "movi -10,a0 ... calla
    adjust_health") reads WHOHITME itself for the shared routine's
@@ -357,13 +368,16 @@ void wm_bret_backend_change_torso_anim(wm_arcade_actor_t *actor,
 static void wm_bret_backend_adjust_health(wm_arcade_actor_t *actor, int delta,
                                           void *user) {
     wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    wm_arcade_death_anim_callback_t death_anim;
     if (!actor) return;
+    death_anim.change_anim = wm_bret_backend_death_change_anim;
+    death_anim.user = bva;
     /* No wm_arcade_combat_runtime_t reachable from this self-death path
        (see wm_arcade_adjust_health's own comment): DAM_MULT tracking is
        skipped here, not guessed at. */
     wm_arcade_adjust_health(actor, (int16_t)delta, actor->who_hit_me,
                             bva ? bva->attract_mode : false,
-                            bva ? bva->pcnt : 0, NULL);
+                            bva ? bva->pcnt : 0, NULL, &death_anim);
 }
 
 void wm_bret_backend_execute_walk(wm_arcade_actor_t *actor, void *user) {

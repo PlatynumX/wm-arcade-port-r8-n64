@@ -3,7 +3,8 @@
 void wm_arcade_adjust_health(wm_arcade_actor_t *victim, int16_t delta,
                              wm_arcade_actor_t *damage_source,
                              bool attract_mode, uint32_t pcnt,
-                             int32_t *dam_mult) {
+                             int32_t *dam_mult,
+                             const wm_arcade_death_anim_callback_t *death_anim) {
     int32_t life;
     int32_t d = delta;
 
@@ -62,6 +63,65 @@ void wm_arcade_adjust_health(wm_arcade_actor_t *victim, int16_t delta,
                     life = 1;
                     victim->i_will_die = 1;
                 } else {
+                    /* LIFEBAR.ASM:1591-1725 death-dispatch tail -- see
+                       wm_arcade_lifebar.h for the full derivation. Reads
+                       victim's own player_mode/attack_mode below before
+                       overwriting it to WM_PMODE_DEAD at the end. */
+                    uint16_t old_mode = victim->player_mode;
+                    bool play_death_anim = true;
+
+                    victim->roll_pos = 0;
+
+                    if (damage_source) {
+                        uint16_t am = damage_source->attack_mode;
+                        if (am == WM_AMODE_BLBOWDROP || am == WM_AMODE_BSTOMP ||
+                            am == WM_AMODE_BUTTSTOMP) {
+                            play_death_anim = false;
+                        } else if (am == WM_AMODE_BUZZ && old_mode != WM_PMODE_BLOCK) {
+                            play_death_anim = false;
+                        }
+                    }
+                    if (victim->status_flags & WM_STATUS_DEAD_ANIM) {
+                        play_death_anim = false;
+                    }
+
+                    if (play_death_anim) {
+                        switch (old_mode) {
+                        case WM_PMODE_NORMAL: case WM_PMODE_RUNNING:
+                        case WM_PMODE_INAIR: case WM_PMODE_INAIR2:
+                        case WM_PMODE_BOUNCING: case WM_PMODE_ONTURNBKL:
+                        case WM_PMODE_BLOCK: case WM_PMODE_DIZZY:
+                        case WM_PMODE_CLIMBTURNBKL: {
+                            /* LIFEBAR.ASM #fallbk: knock the corpse away
+                               from whoever killed it, unless it's already
+                               moving away faster than that. */
+                            const int32_t away = 2 << 16;
+                            if (victim->x_vel <= away) {
+                                victim->x_vel = (damage_source &&
+                                    damage_source->x_int < victim->x_int)
+                                    ? away : -away;
+                            }
+                            if (death_anim && death_anim->change_anim) {
+                                death_anim->change_anim(victim,
+                                    WM_R1_ANIM_FALL_BACK, death_anim->user);
+                            }
+                            break;
+                        }
+                        default:
+                            /* LIFEBAR.ASM's own unmatched-mode catch-all
+                               (also covers HEADHELD's real #will_die
+                               deferral and ONGROUND/DEAD's real convulse_t
+                               dispatch -- see wm_arcade_lifebar.h for why
+                               neither is reachable in this port and isn't
+                               guessed at here): zero all velocities, no
+                               anim change. */
+                            victim->x_vel = 0;
+                            victim->y_vel = 0;
+                            victim->z_vel = 0;
+                            break;
+                        }
+                    }
+
                     /* LIFEBAR.ASM:1723-1725 SETMODE DEAD + wres_collis_off. */
                     victim->player_mode = WM_PMODE_DEAD;
                     wm_arcade_wrestler_collisions_off(victim);

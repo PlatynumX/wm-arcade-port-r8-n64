@@ -157,16 +157,43 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
     wm_arcade_match_score_init(&m->score);
 }
 
+/* wm_arcade_adjust_health's death_anim bridge for the generic hit path:
+   unlike wm_bret_backend_adjust_health (which always IS a Bret actor), the
+   hit path's victim could be either actor[], and only the one carrying
+   WM_ROSTER_BRET has a real backend to dispatch through -- everyone else
+   simply gets no death anim, same as this port's every other Bret-only
+   boundary. */
+static void wm_match_death_change_anim(wm_arcade_actor_t *victim,
+                                       wm_arcade_react1_anim_group_t anim,
+                                       void *user) {
+    wm_match_state *m = (wm_match_state *)user;
+    unsigned i;
+    if (!m || anim != WM_R1_ANIM_FALL_BACK) return;
+    for (i = 0; i < m->actor_count; ++i) {
+        if (&m->actors[i] == victim) {
+            if (m->actors[i].wrestler_num == WM_ROSTER_BRET) {
+                wm_bret_backend_change_anim(victim, WM_BRET_ANIM_FALL_BACK,
+                                            &m->bret_visual[i]);
+            }
+            return;
+        }
+    }
+}
+
 /* wm_arcade_react_callbacks_t.adjust_health adapter: the real logic lives
    in wm_arcade_adjust_health (wm/arcade/wm_arcade_lifebar.h), shared with
    BRET.ASM's own self-death path (wm_bret_backend_callbacks). */
 static void wm_match_adjust_health(wm_arcade_actor_t *victim, int16_t signed_delta,
                                    wm_arcade_actor_t *damage_source, void *user) {
     wm_match_state *m = (wm_match_state *)user;
+    wm_arcade_death_anim_callback_t death_anim;
+    death_anim.change_anim = wm_match_death_change_anim;
+    death_anim.user = m;
     wm_arcade_adjust_health(victim, signed_delta, damage_source,
                             m ? !m->has_human : false,
                             m ? m->tick_count : 0,
-                            m ? &m->combat_runtime.dam_mult : NULL);
+                            m ? &m->combat_runtime.dam_mult : NULL,
+                            &death_anim);
 }
 
 void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,

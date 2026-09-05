@@ -4,10 +4,28 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "wm/arcade/wm_arcade_combat.h"
+#include "wm/arcade/wm_arcade_react1_core.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/*
+ * wm_arcade_adjust_health's own death-anim hook. Only ever invoked with
+ * WM_R1_ANIM_FALL_BACK -- the same wrestler-agnostic id REACT1.ASM's own
+ * hit-reaction code already uses for this identical per-wrestler anim
+ * (LIFEBAR.ASM's fallbacks_t and REACT1.ASM's fall_back_anim dispatches
+ * are the same real animation data, just invoked from two different
+ * subroutines), so this doesn't invent a second naming scheme for it. May
+ * be NULL (no wired backend for this victim -- true for every wrestler but
+ * Bret in this port).
+ */
+typedef struct wm_arcade_death_anim_callback {
+    void (*change_anim)(wm_arcade_actor_t *victim,
+                        wm_arcade_react1_anim_group_t anim,
+                        void *user);
+    void *user;
+} wm_arcade_death_anim_callback_t;
 
 /* LIFEBAR.ASM:135 LIFE_MAX equ 163 (green pixels in life bar). */
 #define WM_ARCADE_LIFE_MAX 163
@@ -82,10 +100,46 @@ extern "C" {
  *       port: nothing yet increments combo_count anywhere (which also
  *       means the delta-override branch above is currently unreachable the
  *       same way).
- *     - LIFEBAR.ASM:1723-1725: a genuine death (life reaches 0, not
- *       deferred) sets player_mode to WM_PMODE_DEAD and turns off further
- *       hit checks (wm_arcade_wrestler_collisions_off, matching SETMODE
- *       DEAD + calla wres_collis_off).
+ *     - LIFEBAR.ASM:1591-1725: a genuine death (life reaches 0, not
+ *       deferred) runs the real death-dispatch tail before finally setting
+ *       player_mode to WM_PMODE_DEAD and turning off further hit checks
+ *       (wm_arcade_wrestler_collisions_off, matching SETMODE DEAD + calla
+ *       wres_collis_off):
+ *         - victim->roll_pos is reset to 0 (LIFEBAR.ASM:1608).
+ *         - LIFEBAR.ASM:1691-1710's own pre-checks: if damage_source's
+ *           attack_mode is WM_AMODE_BLBOWDROP/BSTOMP/BUTTSTOMP, or it's
+ *           WM_AMODE_BUZZ and victim's own player_mode (read here, before
+ *           it's overwritten to DEAD below) wasn't WM_PMODE_BLOCK, or
+ *           victim->status_flags has WM_STATUS_DEAD_ANIM set, the whole
+ *           death-animation dispatch below is skipped entirely (velocities
+ *           untouched). None of Bret's wired attacks use those attack_mode
+ *           ids and nothing in this port ever sets WM_STATUS_DEAD_ANIM on a
+ *           path the live match reaches, so this is always false in
+ *           practice today -- translated anyway since it's real, cheap, and
+ *           correct the moment either changes.
+ *         - Otherwise, victim's own player_mode (again, before being
+ *           overwritten) selects the dispatch, exactly like LIFEBAR.ASM's
+ *           own #fall check: WM_PMODE_NORMAL/RUNNING/INAIR/INAIR2/BOUNCING/
+ *           ONTURNBKL/BLOCK/DIZZY/CLIMBTURNBKL (LIFEBAR.ASM's #fallbk) --
+ *           every player_mode Bret's own real dispatcher (wm/arcade/
+ *           wm_arcade_bret.h) can actually be in at the moment of death --
+ *           fire death_anim->change_anim(victim, WM_R1_ANIM_FALL_BACK, ...)
+ *           (the real hrt_fall_back_anim, already wired for real as
+ *           WM_BRET_ANIM_FALL_BACK by Bret's own I_WILL_DIE self-death
+ *           case) and apply LIFEBAR.ASM:1739-1753's own knockback: unless
+ *           victim->x_vel is already > 2.0 px/tick, force it to +/-2.0 away
+ *           from damage_source->x_int (matching the source's own default-
+ *           then-override-by-side construction exactly, including its real
+ *           quirk of only checking rightward speed -- a wrestler already
+ *           flying left fast gets its velocity reduced to a flat -2.0, not
+ *           left alone). Any other player_mode (LIFEBAR.ASM's own
+ *           unmatched-mode catch-all, WM_PMODE_ATTACHED included) zeroes
+ *           all three velocities and fires no anim, matching the source
+ *           exactly for that catch-all case.
+ *         - death_anim may be NULL (no wired backend for this victim --
+ *           true for every wrestler but Bret in this port); the anim/
+ *           knockback step is then simply skipped, same as if the pre-
+ *           checks above had matched.
  *   - LIFEBAR.ASM:1593-1595 "update LAST_DAMAGE": unconditionally, on every
  *     call (fudged, attract-saved, genuinely dying, or a plain clamp
  *     alike), victim->last_damage is stamped with pcnt. This is what makes
@@ -94,20 +148,39 @@ extern "C" {
  *     rapid-hit check) but nothing ever wrote it before this, so repeated
  *     attacks always dealt full_damage regardless of timing.
  *
- * NOT translated: CHECK_COMBO_GO (an unlocated global "is the combo
- * mechanic enabled" gate -- this function always allows both combo_count
- * branches above, stricter than the source in a
- * way that currently never matters since combo_count is always 0), the
- * lifebar flash-warning process, ACTUAL_PLYRNUM/royal-rumble teammate
- * propagation, 8-on-1 wrestler_count bookkeeping, and everything past
- * SETMODE DEAD (death sound, wrestler-type death-animation dispatch,
- * ROLL_POS reset, flash_red) -- all rendering/team-mode features this port
- * doesn't have.
+ * NOT translated: CHECK_COMBO_GO (LIFEBAR.ASM:718 -- now actually located,
+ * see wm/arcade/wm_arcade_mode_dead.h's own full derivation for why it's
+ * provably always "not lit" in this port: no per-player combo-meter-fill
+ * tracking at all, and instant_combos_on's 0-threshold bypass is an
+ * AWARD.ASM credit-screen powerup toggle this port's credit system never
+ * sets either -- so this function always allowing both combo_count
+ * branches above, rather than gating them on CHECK_COMBO_GO like the
+ * source does, is stricter than the source in a way that provably never
+ * matters here), the lifebar flash-warning process (needs `ck_any_
+ * teammates` and a `flash_obj`/`FLASH_PID` rendering process this port
+ * doesn't have -- see wm_arcade_calc_closest's own note on the fixed
+ * 2-actor boundary), ACTUAL_PLYRNUM/royal-rumble teammate propagation,
+ * 8-on-1 wrestler_count bookkeeping, death sound (LIFEBAR.ASM's own
+ * `triple_sound 034h` -- real, but this port's Bret backend leaves every
+ * other real sound call a no-op too, wm_arcade_bret_callbacks_t.sound is
+ * never wired anywhere, so adding a bridge for only this one call would be
+ * inconsistent with every other already-real Bret sound cue), the #grnd
+ * convulse_t/hitonground dispatch (real, but only reachable when a
+ * wrestler's own player_mode is already WM_PMODE_ONGROUND or WM_PMODE_DEAD
+ * at the moment of death, which this port's Bret dispatcher never sets --
+ * so not guessed at, since no hrt_hitonground_anim data has been extracted
+ * either), the #will_die HEADHELD deferral (sets i_will_die=180 without
+ * immediately dying, but needs an eventual consumer this port doesn't have
+ * and WM_PMODE_HEADHELD is likewise never set on Bret -- folded into the
+ * same immediate catch-all as every other unmatched mode instead of
+ * guessing at that consumer), and flash_red (pure lifebar-rendering
+ * feedback, no rendering system exists here).
  */
 void wm_arcade_adjust_health(wm_arcade_actor_t *victim, int16_t delta,
                              wm_arcade_actor_t *damage_source,
                              bool attract_mode, uint32_t pcnt,
-                             int32_t *dam_mult);
+                             int32_t *dam_mult,
+                             const wm_arcade_death_anim_callback_t *death_anim);
 
 #ifdef __cplusplus
 }

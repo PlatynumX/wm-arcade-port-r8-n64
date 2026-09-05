@@ -903,7 +903,7 @@ static void test_arcade_adjust_health_normal_damage(void) {
     victim.life = 100;
     /* LIFEBAR.ASM:1471-1521: -30 scaled by _85PCT (218/256) -> -26, not a
        plain -30 -- see wm_arcade_adjust_health's own comment. */
-    wm_arcade_adjust_health(&victim, -30, NULL, false, 12345u, NULL);
+    wm_arcade_adjust_health(&victim, -30, NULL, false, 12345u, NULL, NULL);
     CHECK(victim.life == 74);
     CHECK(victim.player_mode == WM_PMODE_NORMAL);
     /* LIFEBAR.ASM:1593-1595: unconditional on every call. */
@@ -914,7 +914,7 @@ static void test_arcade_adjust_health_clamps_to_life_max(void) {
     wm_arcade_actor_t victim;
     memset(&victim, 0, sizeof(victim));
     victim.life = WM_ARCADE_LIFE_MAX - 5;
-    wm_arcade_adjust_health(&victim, 50, NULL, false, 0, NULL);
+    wm_arcade_adjust_health(&victim, 50, NULL, false, 0, NULL, NULL);
     CHECK(victim.life == WM_ARCADE_LIFE_MAX);
 }
 
@@ -929,7 +929,7 @@ static void test_arcade_adjust_health_speed_adjustment_is_identity(void) {
 
     memset(&victim, 0, sizeof(victim));
     victim.life = 50;
-    wm_arcade_adjust_health(&victim, 7, NULL, false, 0, NULL); /* healing */
+    wm_arcade_adjust_health(&victim, 7, NULL, false, 0, NULL, NULL); /* healing */
     CHECK(victim.life == 57);
 }
 
@@ -940,7 +940,7 @@ static void test_arcade_adjust_health_fudge_saves_a_near_death_hit(void) {
        > -10 (not overkilled by 10+) and the scaled delta is <= -20 (a 20+
        point hit) -- LIFEBAR.ASM:1561-1569 fudge applies: life = 5. */
     victim.life = 15;
-    wm_arcade_adjust_health(&victim, -24, NULL, false, 0, NULL);
+    wm_arcade_adjust_health(&victim, -24, NULL, false, 0, NULL, NULL);
     CHECK(victim.life == 5);
     CHECK(victim.player_mode == WM_PMODE_NORMAL);
 }
@@ -949,7 +949,7 @@ static void test_arcade_adjust_health_attract_mode_never_dies(void) {
     wm_arcade_actor_t victim;
     memset(&victim, 0, sizeof(victim));
     victim.life = 5;
-    wm_arcade_adjust_health(&victim, -5, NULL, true, 0, NULL);
+    wm_arcade_adjust_health(&victim, -5, NULL, true, 0, NULL, NULL);
     CHECK(victim.life == WM_ARCADE_LIFE_MAX);
     CHECK(victim.player_mode == WM_PMODE_NORMAL);
 }
@@ -959,7 +959,7 @@ static void test_arcade_adjust_health_death(void) {
     memset(&victim, 0, sizeof(victim));
     victim.life = 5;
     victim.anim_mode = WM_MODE_CHECKHIT;
-    wm_arcade_adjust_health(&victim, -5, NULL, false, 0, NULL);
+    wm_arcade_adjust_health(&victim, -5, NULL, false, 0, NULL, NULL);
     CHECK(victim.life == 0);
     CHECK(victim.player_mode == WM_PMODE_DEAD);
     /* LIFEBAR.ASM:1725 calla wres_collis_off. */
@@ -972,7 +972,7 @@ static void test_arcade_adjust_health_combo_revival_defers_death(void) {
     memset(&attacker, 0, sizeof(attacker));
     victim.life = 5;
     attacker.combo_count = 3;
-    wm_arcade_adjust_health(&victim, -5, &attacker, false, 0, NULL);
+    wm_arcade_adjust_health(&victim, -5, &attacker, false, 0, NULL, NULL);
     CHECK(victim.life == 1);
     CHECK(victim.i_will_die == 1);
     CHECK(victim.player_mode == WM_PMODE_NORMAL);
@@ -991,7 +991,7 @@ static void test_arcade_adjust_health_combo_damage_overrides_delta(void) {
     attacker.combo_count = 1; /* magnitude = max(10-1,4) = 9, then scaled
                                  by _85PCT (LIFEBAR.ASM:1471-1521) -> -8 */
     dam_mult = 4;
-    wm_arcade_adjust_health(&victim, -1, &attacker, false, 0, &dam_mult);
+    wm_arcade_adjust_health(&victim, -1, &attacker, false, 0, &dam_mult, NULL);
     CHECK(victim.life == 92); /* not 99: the original -1 delta is ignored */
     CHECK(dam_mult == 0);
 
@@ -999,7 +999,7 @@ static void test_arcade_adjust_health_combo_damage_overrides_delta(void) {
     victim.life = 100;
     attacker.combo_count = 20; /* magnitude = max(10-20,4) = 4 (floored),
                                    scaled by _85PCT -> -4 (unchanged) */
-    wm_arcade_adjust_health(&victim, -1, &attacker, false, 0, NULL);
+    wm_arcade_adjust_health(&victim, -1, &attacker, false, 0, NULL, NULL);
     CHECK(victim.life == 96);
 }
 
@@ -1013,14 +1013,14 @@ static void test_arcade_adjust_health_dam_mult_scales_delta(void) {
     memset(&victim, 0, sizeof(victim));
     victim.life = 100;
     dam_mult = 2; /* x1.5: -10*3/2 = -15, then *_85PCT -> -13 */
-    wm_arcade_adjust_health(&victim, -10, NULL, false, 0, &dam_mult);
+    wm_arcade_adjust_health(&victim, -10, NULL, false, 0, &dam_mult, NULL);
     CHECK(victim.life == 87);
     CHECK(dam_mult == 0);
 
     memset(&victim, 0, sizeof(victim));
     victim.life = 100;
     dam_mult = 4; /* x2.5: -10*5/2 = -25, then *_85PCT -> -22 */
-    wm_arcade_adjust_health(&victim, -10, NULL, false, 0, &dam_mult);
+    wm_arcade_adjust_health(&victim, -10, NULL, false, 0, &dam_mult, NULL);
     CHECK(victim.life == 78);
     CHECK(dam_mult == 0);
 
@@ -1029,7 +1029,7 @@ static void test_arcade_adjust_health_dam_mult_scales_delta(void) {
     memset(&victim, 0, sizeof(victim));
     victim.life = 100;
     dam_mult = 0;
-    wm_arcade_adjust_health(&victim, -10, NULL, false, 0, &dam_mult);
+    wm_arcade_adjust_health(&victim, -10, NULL, false, 0, &dam_mult, NULL);
     CHECK(victim.life == 91);
 }
 
@@ -1042,15 +1042,138 @@ static void test_arcade_adjust_health_stamps_last_damage_for_reduced_window(void
     victim.life = 100;
     CHECK(victim.last_damage == 0);
 
-    wm_arcade_adjust_health(&victim, -8, NULL, false, 1000u, NULL);
+    wm_arcade_adjust_health(&victim, -8, NULL, false, 1000u, NULL, NULL);
     CHECK(victim.last_damage == 1000u);
 
     /* A later hit within REACT1.ASM's 50-tick window would now see a
        nonzero, recent last_damage -- see
        test_arcade_wrestler_hit_reduced_damage_within_window below for the
        actual reduced_damage effect. */
-    wm_arcade_adjust_health(&victim, -8, NULL, false, 1010u, NULL);
+    wm_arcade_adjust_health(&victim, -8, NULL, false, 1010u, NULL, NULL);
     CHECK(victim.last_damage == 1010u);
+}
+
+static int g_death_anim_calls;
+static wm_arcade_react1_anim_group_t g_death_anim_last;
+static void test_death_anim_recorder(wm_arcade_actor_t *victim,
+                                     wm_arcade_react1_anim_group_t anim,
+                                     void *user) {
+    (void)victim;
+    ++g_death_anim_calls;
+    g_death_anim_last = anim;
+    (void)user;
+}
+
+/* LIFEBAR.ASM #fallbk: real death-dispatch tail (see
+   wm_arcade_lifebar.h) -- fall_back anim + knockback away from the
+   attacker, unless already moving away fast enough. */
+static void test_arcade_adjust_health_death_fallback_anim_and_knockback(void) {
+    wm_arcade_actor_t victim, attacker;
+    wm_arcade_death_anim_callback_t death_anim;
+    death_anim.change_anim = test_death_anim_recorder;
+    death_anim.user = NULL;
+
+    /* Attacker to the left of victim -> knocked right (+2.0 px/tick). */
+    memset(&victim, 0, sizeof(victim));
+    memset(&attacker, 0, sizeof(attacker));
+    victim.life = 5;
+    victim.player_mode = WM_PMODE_RUNNING;
+    victim.x_int = 100;
+    attacker.x_int = 50;
+    g_death_anim_calls = 0;
+    wm_arcade_adjust_health(&victim, -5, &attacker, false, 0, NULL, &death_anim);
+    CHECK(victim.player_mode == WM_PMODE_DEAD);
+    CHECK(victim.x_vel == (2 << 16));
+    CHECK(g_death_anim_calls == 1);
+    CHECK(g_death_anim_last == WM_R1_ANIM_FALL_BACK);
+
+    /* Attacker to the right of victim -> knocked left (-2.0 px/tick). */
+    memset(&victim, 0, sizeof(victim));
+    memset(&attacker, 0, sizeof(attacker));
+    victim.life = 5;
+    victim.player_mode = WM_PMODE_NORMAL;
+    victim.x_int = 50;
+    attacker.x_int = 100;
+    g_death_anim_calls = 0;
+    wm_arcade_adjust_health(&victim, -5, &attacker, false, 0, NULL, &death_anim);
+    CHECK(victim.x_vel == -(2 << 16));
+    CHECK(g_death_anim_calls == 1);
+
+    /* Already moving away faster than 2.0 px/tick -- left alone. */
+    memset(&victim, 0, sizeof(victim));
+    memset(&attacker, 0, sizeof(attacker));
+    victim.life = 5;
+    victim.player_mode = WM_PMODE_NORMAL;
+    victim.x_vel = 5 << 16;
+    g_death_anim_calls = 0;
+    wm_arcade_adjust_health(&victim, -5, &attacker, false, 0, NULL, &death_anim);
+    CHECK(victim.x_vel == (5 << 16));
+    CHECK(g_death_anim_calls == 1);
+
+    /* ROLL_POS always reset on genuine death. */
+    CHECK(victim.roll_pos == 0);
+}
+
+/* LIFEBAR.ASM:1691-1710's own pre-checks: certain attack_mode ids, or the
+   victim's own WM_STATUS_DEAD_ANIM bit, skip the whole death-anim dispatch
+   (no anim call, velocities untouched). */
+static void test_arcade_adjust_health_death_anim_skip_cases(void) {
+    wm_arcade_actor_t victim, attacker;
+    wm_arcade_death_anim_callback_t death_anim;
+    death_anim.change_anim = test_death_anim_recorder;
+    death_anim.user = NULL;
+
+    memset(&victim, 0, sizeof(victim));
+    memset(&attacker, 0, sizeof(attacker));
+    victim.life = 5;
+    victim.player_mode = WM_PMODE_NORMAL;
+    victim.x_vel = 42;
+    attacker.attack_mode = WM_AMODE_BSTOMP;
+    g_death_anim_calls = 0;
+    wm_arcade_adjust_health(&victim, -5, &attacker, false, 0, NULL, &death_anim);
+    CHECK(g_death_anim_calls == 0);
+    CHECK(victim.x_vel == 42); /* untouched, unlike the catch-all's zeroing */
+    CHECK(victim.player_mode == WM_PMODE_DEAD);
+
+    memset(&victim, 0, sizeof(victim));
+    memset(&attacker, 0, sizeof(attacker));
+    victim.life = 5;
+    victim.player_mode = WM_PMODE_NORMAL;
+    victim.x_vel = 42;
+    victim.status_flags = WM_STATUS_DEAD_ANIM;
+    g_death_anim_calls = 0;
+    wm_arcade_adjust_health(&victim, -5, NULL, false, 0, NULL, &death_anim);
+    CHECK(g_death_anim_calls == 0);
+    CHECK(victim.x_vel == 42);
+
+    /* AMODE_BUZZ only skips when the victim was unblocked (not MODE_BLOCK). */
+    memset(&victim, 0, sizeof(victim));
+    memset(&attacker, 0, sizeof(attacker));
+    victim.life = 5;
+    victim.player_mode = WM_PMODE_BLOCK;
+    attacker.attack_mode = WM_AMODE_BUZZ;
+    g_death_anim_calls = 0;
+    wm_arcade_adjust_health(&victim, -5, &attacker, false, 0, NULL, &death_anim);
+    CHECK(g_death_anim_calls == 1); /* blocked -- real anim dispatch runs */
+}
+
+/* LIFEBAR.ASM's own unmatched-mode catch-all: zero all velocities, no anim. */
+static void test_arcade_adjust_health_death_unmatched_mode_zeroes_vels(void) {
+    wm_arcade_actor_t victim;
+    wm_arcade_death_anim_callback_t death_anim;
+    death_anim.change_anim = test_death_anim_recorder;
+    death_anim.user = NULL;
+
+    memset(&victim, 0, sizeof(victim));
+    victim.life = 5;
+    victim.player_mode = WM_PMODE_ATTACHED;
+    victim.x_vel = 7 << 16; victim.y_vel = 3 << 16; victim.z_vel = -(2 << 16);
+    g_death_anim_calls = 0;
+    wm_arcade_adjust_health(&victim, -5, NULL, false, 0, NULL, &death_anim);
+    CHECK(victim.x_vel == 0);
+    CHECK(victim.y_vel == 0);
+    CHECK(victim.z_vel == 0);
+    CHECK(g_death_anim_calls == 0);
 }
 
 static void test_hurt_box_real_adjust_health(wm_arcade_actor_t *victim, int16_t delta,
@@ -1060,7 +1183,7 @@ static void test_hurt_box_real_adjust_health(wm_arcade_actor_t *victim, int16_t 
        (attract_mode=false, matching wm_match_start_selected). */
     wm_arcade_adjust_health(victim, delta, damage_source, false,
                             runtime ? runtime->pcnt : 0,
-                            runtime ? &runtime->dam_mult : NULL);
+                            runtime ? &runtime->dam_mult : NULL, NULL);
 }
 
 /* End-to-end through wm_arcade_wrestler_hit (REACT1.ASM): a second PUNCH
@@ -1426,6 +1549,14 @@ static void test_match_round_decided_after_real_kill(void) {
         wm_match_tick(&m, &cb, &punch);
     CHECK(m.actors[1].player_mode == WM_PMODE_DEAD);
     CHECK(!m.round_state.decided);
+
+    /* wm_arcade_adjust_health's real death-dispatch tail reaches
+       wm_match_death_change_anim -> wm_bret_backend_change_anim for real
+       through the actual hit path, not just a direct call -- see
+       wm_arcade_lifebar.h's own derivation for why WM_PMODE_NORMAL (this
+       actor's mode at the moment of the killing hit) selects the real
+       fall_back anim. */
+    CHECK(m.bret_visual[1].current_id == WM_BRET_ANIM_FALL_BACK);
 
     /* wm_arcade_move_bret's real MODE_DEAD dispatch now reaches the wired
        mode_dead callback (wm_bret_backend_mode_dead ->
@@ -2868,6 +2999,9 @@ int main(void) {
     test_arcade_adjust_health_combo_damage_overrides_delta();
     test_arcade_adjust_health_dam_mult_scales_delta();
     test_arcade_adjust_health_stamps_last_damage_for_reduced_window();
+    test_arcade_adjust_health_death_fallback_anim_and_knockback();
+    test_arcade_adjust_health_death_anim_skip_cases();
+    test_arcade_adjust_health_death_unmatched_mode_zeroes_vels();
     test_arcade_wrestler_hit_reduced_damage_within_window();
     test_arcade_wrestler_hit_first_hit_bonus_deals_more_damage();
     test_hurt_box_hit_kills_at_zero_life();

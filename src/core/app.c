@@ -216,12 +216,21 @@ static void begin_call(wm_app *app, wm_attract_call call) {
     switch (call) {
         case WM_ATTRACT_DCS_LOGO:
             a->dcs_phase = WM_DCS_STATIC;
-            /* Source-owned DCS command: start at DCS_LOGO entry, tick 0. */
-            (void)wm_audio_send_command(&app->audio, 1005);
-            /* ATTR.ASM::DCS_LOGO SNDSND 1005 after display_unblank.
-               Source suppresses it once AMODE_LOOPS >= 2. ADJMUSIC is
-               not exposed yet; this frontend's default is enabled. */
+            /* ATTR.ASM::DCS_LOGO SNDSND 1005 after display_unblank, gated
+               by TURN_SOUNDS_OFF_IF_NEED (ATTRACT.ASM:669): once
+               AMODE_LOOPS >= 2 the source sets SOUNDSUP and the attract
+               loop plays silent. ADJMUSIC is not exposed yet; this
+               frontend's default is enabled, so only the loop count gates
+               it here.
+
+               This guard used to sit below the send with no body of its
+               own, so it captured the following `break` instead: the
+               command was sent unconditionally, and on the third attract
+               loop onward WM_ATTRACT_DCS_LOGO fell through into
+               WM_ATTRACT_SHOW_SPORTS_LOGO and reset that call's own
+               world/scroll state while the call was still DCS_LOGO. */
             if (a->amode_loops < 2u)
+                (void)wm_audio_send_command(&app->audio, 1005);
             break;
         case WM_ATTRACT_SHOW_SPORTS_LOGO:
             a->sports_world_x = 0;

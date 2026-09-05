@@ -189,7 +189,13 @@ const wm_visual_sequence *wm_bret_anim_sequence(wm_arcade_bret_anim_id_t id) {
         case WM_BRET_ANIM_TORSO4: return &wm_bret_torso4_anim;
         case WM_BRET_ANIM_PUNCH2: return &wm_bret_light_punch2_anim;
         case WM_BRET_ANIM_PUNCH4: return &wm_bret_light_punch4_anim;
-        case WM_BRET_ANIM_SUPER_PUNCH2_4: return &wm_bret_power_punch_anim;
+        /* HRTSEQ2.ASM:618/677 -- BRET.ASM #spunch_slap's own FACE24 pair,
+           which is what do_super_punch selects. Not hrt_4_super_punch_anim:
+           that is WM_BRET_ANIM_SUPER_PUNCH4 below, #scrt_cut's supercut
+           target, a different animation with a different attack box. */
+        case WM_BRET_ANIM_SUPER_PUNCH2_2: return &wm_bret_super_punch2_2_anim;
+        case WM_BRET_ANIM_SUPER_PUNCH2_4: return &wm_bret_super_punch2_4_anim;
+        case WM_BRET_ANIM_SUPER_PUNCH4: return &wm_bret_power_punch_anim;
         case WM_BRET_ANIM_KICK2: return &wm_bret_light_kick2_anim;
         case WM_BRET_ANIM_KICK4: return &wm_bret_light_kick4_anim;
         /* HRTSEQ2.ASM:1334-1335: hrt_4_super_kick_anim is a literal SUBR
@@ -296,9 +302,18 @@ static const wm_bret_attack_window_t attack_windows[] = {
     /* HRTSEQ2.ASM:322 ANI_ATTACK_ON_Z, AMODE_PUNCH,30,91,0,50,15,45 */
     { WM_BRET_ANIM_PUNCH4, 5, true, {0,0,0,0,0},
       { WM_AMODE_PUNCH, 30, 91, 0, 50, 15, 45 } },
-    /* HRTSEQ2.ASM:247 ANI_ATTACK_ON,AMODE_UPRCUT,-6,40,64,90 */
-    { WM_BRET_ANIM_SUPER_PUNCH2_4, 5, false,
+    /* HRTSEQ2.ASM:247 hrt_4_super_punch_anim,
+       ANI_ATTACK_ON,AMODE_UPRCUT,-6,40,64,90 -- #scrt_cut's supercut. */
+    { WM_BRET_ANIM_SUPER_PUNCH4, 5, false,
       { WM_AMODE_UPRCUT, -6, 40, 64, 90 }, {0,0,0,0,0,0,0} },
+    /* HRTSEQ2.ASM:618/677 hrt_2/4_super_punch2_anim,
+       ANI_ATTACK_ON,AMODE_URN,19,75,35,24 -- the ordinary super punch.
+       Same box numbers as the headbutt, a different AMODE, and a
+       different frame index from the supercut above. */
+    { WM_BRET_ANIM_SUPER_PUNCH2_2, 3, false,
+      { WM_AMODE_URN, 19, 75, 35, 24 }, {0,0,0,0,0,0,0} },
+    { WM_BRET_ANIM_SUPER_PUNCH2_4, 3, false,
+      { WM_AMODE_URN, 19, 75, 35, 24 }, {0,0,0,0,0,0,0} },
     /* HRTSEQ2.ASM:1074 ANI_ATTACK_ON,AMODE_KICK,23,73,50,17 */
     { WM_BRET_ANIM_KICK2, 5, false,
       { WM_AMODE_KICK, 23, 73, 50, 17 }, {0,0,0,0,0,0,0} },
@@ -326,7 +341,7 @@ static const wm_bret_attack_window_t attack_windows[] = {
     { WM_BRET_ANIM_KNEE4, 4, false,
       { WM_AMODE_KNEE, 11, 44, 51, 49 }, {0,0,0,0,0,0,0} },
     /* HRTSEQ2.ASM hrt_4_uppercut_anim: ANI_ATTACK_ON,AMODE_UPRCUT,-6,22,64,100.
-       Distinct from SUPER_PUNCH2_4's own -6,40,64,90 window. */
+       Distinct from SUPER_PUNCH4's own -6,40,64,90 window. */
     { WM_BRET_ANIM_UPPERCUT4, 5, false,
       { WM_AMODE_UPRCUT, -6, 22, 64, 100 }, {0,0,0,0,0,0,0} },
     /* hrt_2_stomp_anim: two real pulses, the first an AMODE_HITCHECK probe
@@ -497,6 +512,10 @@ static bool attack_sets_facing_on_start(wm_arcade_bret_anim_id_t id) {
     switch (id) {
         case WM_BRET_ANIM_PUNCH2:
         case WM_BRET_ANIM_PUNCH4:
+        /* hrt_4_super_punch_anim and both hrt_2/4_super_punch2_anim carry
+           the same instant ANI_SETFACING in their own headers. */
+        case WM_BRET_ANIM_SUPER_PUNCH4:
+        case WM_BRET_ANIM_SUPER_PUNCH2_2:
         case WM_BRET_ANIM_SUPER_PUNCH2_4:
         case WM_BRET_ANIM_KICK2:
         case WM_BRET_ANIM_SUPER_KICK2:

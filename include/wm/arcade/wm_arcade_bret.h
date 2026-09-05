@@ -48,11 +48,21 @@ typedef enum wm_arcade_bret_anim_id {
     WM_BRET_ANIM_UPPERCUTS_TO_HEAD,
     WM_BRET_ANIM_KNEES_TO_HEAD,
     WM_BRET_ANIM_KNEE_TO_HEAD4,
-    /* No separate SUPER_PUNCH4 id: BRET.ASM's #scrt_cut (the supercut
-       secret move) dispatches to hrt_4_super_punch_anim, the exact same
-       real label WM_BRET_ANIM_SUPER_PUNCH2_4 already names -- see
-       wm/bret_backend.h's own comment. wm_arcade_bret_fire_secret reuses
-       that id directly instead of a second, permanently-unmapped one. */
+    /* hrt_4_super_punch_anim, BRET.ASM #scrt_cut's own supercut target
+       ("movi hrt_4_super_punch_anim,a0", BRET.ASM:213). This id was
+       removed in an earlier cycle on the claim that it was the same real
+       label WM_BRET_ANIM_SUPER_PUNCH2_4 already named. That was wrong, and
+       is restored here: HRTSEQ2.ASM has BOTH hrt_4_super_punch_anim
+       (:223) and hrt_4_super_punch2_anim (:677), and they are different
+       animations with different attack boxes --
+       AMODE_UPRCUT,-6,40,64,90 at frame 5 versus
+       AMODE_URN,19,75,35,24 at frame 3. The SUPER_PUNCH2_* pair is named
+       after super_punch2_anim and is what BRET.ASM #spunch_slap's own
+       `FACE24 hrt,super_punch2_anim` selects (MACROS.H:51 expands FACE24
+       to the _2_/_4_ pair on the MOVE_UP facing bit), which is the pair
+       do_super_punch reaches in ordinary play. Conflating the two made an
+       ordinary super punch fire the supercut's box. */
+    WM_BRET_ANIM_SUPER_PUNCH4,
     WM_BRET_ANIM_JUMP_KICK4,
     WM_BRET_ANIM_FAKE_HOLD3,
     WM_BRET_ANIM_HEAD_HOLD2_3,

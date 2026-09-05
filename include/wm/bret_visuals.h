@@ -90,6 +90,19 @@ extern const wm_visual_sequence wm_bret_kick_tb_anim;
 extern const wm_visual_sequence wm_bret_head_held_stand3_anim;
 
 /*
+ * HRTSEQ2.ASM:618/677 hrt_2/4_super_punch2_anim -- BRET.ASM #spunch_slap's
+ * own `FACE24 hrt,super_punch2_anim` pair, i.e. what do_super_punch
+ * actually selects in ordinary play. Distinct animations from
+ * wm_bret_power_punch_anim (hrt_4_super_punch_anim, HRTSEQ2.ASM:223),
+ * which is #scrt_cut's supercut target: different frames, and a different
+ * real attack box (AMODE_URN,19,75,35,24 at frame 3 versus
+ * AMODE_UPRCUT,-6,40,64,90 at frame 5). The port previously mapped both to
+ * the latter.
+ */
+extern const wm_visual_sequence wm_bret_super_punch2_2_anim;
+extern const wm_visual_sequence wm_bret_super_punch2_4_anim;
+
+/*
  * BRET.ASM:2871 hrt_rotate_anims_table's 12 off-diagonal turn-transition
  * entries (the "TURNS (STANDS)" block, HRTSEQ1.ASM:390-454) -- played by
  * set_rotate_anim/change_anim1 for the idle (#zip/stance) facing-change

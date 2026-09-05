@@ -52,6 +52,8 @@ python3 "$ROOT/tools/wlanim.py" \
     --slice hrt_2_punch_anim wm_bret_light_punch2_anim bret_light_punch2_frames false \
     --slice hrt_4_punch_anim wm_bret_light_punch4_anim bret_light_punch4_frames false \
     --slice hrt_4_super_punch_anim wm_bret_power_punch_anim bret_power_punch_frames false \
+    --slice hrt_2_super_punch2_anim wm_bret_super_punch2_2_anim bret_super_punch2_2_frames false \
+    --slice hrt_4_super_punch2_anim wm_bret_super_punch2_4_anim bret_super_punch2_4_frames false \
     --slice hrt_2_kick_anim wm_bret_light_kick2_anim bret_light_kick2_frames false \
     --slice hrt_4_kick_anim wm_bret_light_kick4_anim bret_light_kick4_frames false \
     --slice hrt_2_super_kick_anim wm_bret_power_kick_anim bret_power_kick_frames false \

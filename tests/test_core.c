@@ -505,7 +505,19 @@ static void test_bret_anim_sequence_mapping(void) {
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_TORSO4) == &wm_bret_torso4_anim);
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_PUNCH2) == &wm_bret_light_punch2_anim);
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_PUNCH4) == &wm_bret_light_punch4_anim);
-    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_SUPER_PUNCH2_4) == &wm_bret_power_punch_anim);
+    /* HRTSEQ2.ASM has two different super-punch routines and the port used
+       to conflate them. hrt_2/4_super_punch2_anim (:618/:677) is BRET.ASM
+       #spunch_slap's own `FACE24 hrt,super_punch2_anim` pair, which is what
+       do_super_punch selects in ordinary play; hrt_4_super_punch_anim
+       (:223) is #scrt_cut's supercut target. Different frames, different
+       attack boxes. */
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_SUPER_PUNCH2_2) ==
+          &wm_bret_super_punch2_2_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_SUPER_PUNCH2_4) ==
+          &wm_bret_super_punch2_4_anim);
+    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_SUPER_PUNCH4) ==
+          &wm_bret_power_punch_anim);
+    CHECK(wm_bret_super_punch2_2_anim.frames != wm_bret_power_punch_anim.frames);
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_KICK2) == &wm_bret_light_kick2_anim);
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_KICK4) == &wm_bret_light_kick4_anim);
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_SUPER_KICK2) == &wm_bret_power_kick_anim);
@@ -537,9 +549,6 @@ static void test_bret_anim_sequence_mapping(void) {
        shipped art. Wiring it would mean inventing a shortened animation. */
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_CLIMB_DOWN) == NULL);
 
-    /* Deliberately unmapped: no "hrt_2_super_punch_anim" exists in the
-       source tree at all -- see wm/bret_backend.h. */
-    CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_SUPER_PUNCH2_2) == NULL);
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_PIN2) == NULL);
     CHECK(wm_bret_anim_sequence(WM_BRET_ANIM_FINISH1) == NULL);
 }
@@ -861,7 +870,11 @@ static void test_bret_backend_secret_move_fires_through_real_input(void) {
     bva.pcnt = 3;
     (void)wm_arcade_move_bret(&actor, &opp, &env, &cb);
 
-    CHECK(bva.current_id == WM_BRET_ANIM_SUPER_PUNCH2_4);
+    /* #scrt_cut's own target is hrt_4_super_punch_anim, i.e.
+       WM_BRET_ANIM_SUPER_PUNCH4 -- not the SUPER_PUNCH2_* pair
+       do_super_punch selects, which is hrt_2/4_super_punch2_anim. */
+    CHECK(bva.current_id == WM_BRET_ANIM_SUPER_PUNCH4);
+    CHECK(bva.visual.sequence == &wm_bret_power_punch_anim);
     CHECK(actor.anim_mode & WM_MODE_UNINT);
 
     /* A further wm_arcade_move_bret call the very next tick -- with the
@@ -871,7 +884,7 @@ static void test_bret_backend_secret_move_fires_through_real_input(void) {
     wm_human_input_commit(&actor, &hs, &in);
     bva.pcnt = 4;
     (void)wm_arcade_move_bret(&actor, &opp, &env, &cb);
-    CHECK(bva.current_id == WM_BRET_ANIM_SUPER_PUNCH2_4);
+    CHECK(bva.current_id == WM_BRET_ANIM_SUPER_PUNCH4);
 }
 
 /* WM_BRET_ANIM_JUMP_KICK4 (hrt_4_jump_kick_anim) has no real extracted
@@ -1209,8 +1222,13 @@ static void test_bret_attack_windows_remaining(void) {
     } cases[] = {
         { WM_BRET_ANIM_PUNCH4, &wm_bret_light_punch4_anim, 5,
           WM_AMODE_PUNCH, 30, 91, 0, 50, 15, 45, true },
-        { WM_BRET_ANIM_SUPER_PUNCH2_4, &wm_bret_power_punch_anim, 5,
+        { WM_BRET_ANIM_SUPER_PUNCH4, &wm_bret_power_punch_anim, 5,
           WM_AMODE_UPRCUT, -6, 40, 0, 64, 90, 0, false },
+        /* the ordinary super punch's own, genuinely different, window */
+        { WM_BRET_ANIM_SUPER_PUNCH2_2, &wm_bret_super_punch2_2_anim, 3,
+          WM_AMODE_URN, 19, 75, 0, 35, 24, 0, false },
+        { WM_BRET_ANIM_SUPER_PUNCH2_4, &wm_bret_super_punch2_4_anim, 3,
+          WM_AMODE_URN, 19, 75, 0, 35, 24, 0, false },
         { WM_BRET_ANIM_KICK2, &wm_bret_light_kick2_anim, 5,
           WM_AMODE_KICK, 23, 73, 0, 50, 17, 0, false },
         { WM_BRET_ANIM_KICK4, &wm_bret_light_kick4_anim, 5,
@@ -1541,6 +1559,43 @@ static void test_bret_midanim_setplyrmode(void) {
     for (guard = 0; guard < 40 && (a.anim_mode & WM_MODE_UNINT); ++guard)
         wm_bret_backend_tick(&bva, &a, 0);
     CHECK(!(a.anim_mode & WM_MODE_UNINT));
+}
+
+/* ATTRACT.ASM:669 TURN_SOUNDS_OFF_IF_NEED gates the DCS_LOGO music on
+   AMODE_LOOPS < 2 -- it suppresses sound, and never skips or re-enters an
+   attract call. app.c's guard for that had no body of its own and captured
+   the following `break` instead, so from the third attract loop onward
+   WM_ATTRACT_DCS_LOGO fell straight through into
+   WM_ATTRACT_SHOW_SPORTS_LOGO's entry body and ran it while the call was
+   still DCS_LOGO.
+
+   The observable that separates the two is that body's own
+   `sports_world_x = 0; sports_world_y = 0;`. Driving the real app past two
+   attract loops reaches DCS_LOGO with AMODE_LOOPS >= 2 in ~12k ticks, and
+   at that moment the sports offsets legitimately hold -900/900; the
+   fallthrough zeroed them. Confirmed to fail against the original code and
+   pass against the fix, rather than merely asserting the shape of it. */
+static void test_attract_dcs_logo_does_not_fall_through(void) {
+    static wm_app app;
+    wm_attract_call prev;
+    int i;
+    int entries = 0;
+
+    wm_app_init(&app);
+    prev = app.attract.call;
+    for (i = 0; i < 200000 && app.attract.amode_loops < 3u; ++i) {
+        wm_app_tick(&app, NULL);
+        if (app.attract.call == WM_ATTRACT_DCS_LOGO &&
+            prev != WM_ATTRACT_DCS_LOGO &&
+            app.attract.amode_loops >= 2u) {
+            ++entries;
+            CHECK(app.attract.sports_world_x != 0 ||
+                  app.attract.sports_world_y != 0);
+        }
+        prev = app.attract.call;
+    }
+    CHECK(app.attract.amode_loops >= 3u);
+    CHECK(entries >= 1);
 }
 
 /* wm_bret_hurt_box_for_frame against real numbers independently confirmed
@@ -3804,6 +3859,7 @@ int main(void) {
     test_bret_attack_windows_multi_pulse();
     test_bret_attack_windows_batch3();
     test_bret_midanim_setplyrmode();
+    test_attract_dcs_logo_does_not_fall_through();
     test_bret_hurt_box_for_frame_real_geometry();
     test_bret_backend_tick_sets_real_hurt_box();
     test_hurt_box_connects_a_real_hit();

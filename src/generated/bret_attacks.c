@@ -66,6 +66,48 @@ const wm_visual_sequence wm_bret_power_punch_anim = {
     .repeat = false,
 };
 
+static const wm_visual_frame bret_super_punch2_2_frames[] = {
+    {"H2BC3A01", 3},
+    {"H2BC3A02", 3},
+    {"H2BC3A03", 8},
+    {"H2BC3A04", 3},
+    {"H2BC3A05", 6},
+    {"H2BC3A05", 20},
+    {"H2BC3A05", 2},
+    {"H2BC3A06", 2},
+    {"H2BC3A07", 2},
+    {"H2BC3A08", 2},
+};
+
+const wm_visual_sequence wm_bret_super_punch2_2_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_2_super_punch2_anim",
+    .frames = bret_super_punch2_2_frames,
+    .frame_count = sizeof(bret_super_punch2_2_frames) / sizeof(bret_super_punch2_2_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_super_punch2_4_frames[] = {
+    {"H4BC3A01", 3},
+    {"H4BC3A02", 9},
+    {"H4BC3A03", 2},
+    {"H4BC3A04", 3},
+    {"H4BC3A05", 6},
+    {"H4BC3A05", 20},
+    {"H4BC3A05", 2},
+    {"H4BC3A06", 2},
+    {"H4BC3A07", 2},
+    {"H4BC3A08", 2},
+};
+
+const wm_visual_sequence wm_bret_super_punch2_4_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_4_super_punch2_anim",
+    .frames = bret_super_punch2_4_frames,
+    .frame_count = sizeof(bret_super_punch2_4_frames) / sizeof(bret_super_punch2_4_frames[0]),
+    .repeat = false,
+};
+
 static const wm_visual_frame bret_light_kick2_frames[] = {
     {"H2KM3A01", 1},
     {"H2KM3A01", 1},

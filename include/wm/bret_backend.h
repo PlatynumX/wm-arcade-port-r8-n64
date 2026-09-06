@@ -105,6 +105,10 @@ typedef struct {
     bool pending_uninit_clear;
     /* Source label an ANI_IFBUTTONS asked this animation to become. */
     const char *pending_become;
+    /* Last round_tickcount wm_bret_backend_tick was given. ANIM.ASM's
+       ANI_STARTATTACK (:117) computes ATTACK_TIME from it, and a header
+       command runs at change_anim time, which has no tick of its own. */
+    uint16_t round_tickcount;
     /* Set once by the caller at match creation (wm/match.h's
        init_bret_backends: !has_human) and read by the adjust_health
        callback -- LIFEBAR.ASM adjust_health's "attract mode never dies"

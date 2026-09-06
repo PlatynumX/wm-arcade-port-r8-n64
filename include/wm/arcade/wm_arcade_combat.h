@@ -112,6 +112,13 @@ struct wm_arcade_actor {
     /* PLYR.EQU OBJ_FRICTION, set by ANIM.ASM's ANI_FRICTION (:22) together
        with MODE_FRICTION. */
     int32_t friction;
+    /* PLYR.EQU PUNCHB_COUNT/SPUNCHB_COUNT/SKICKB_COUNT: the button-mash
+       counters ANIM.ASM's ANI_CLR_BUTCOUNT (:97) resets. The source's own
+       commented-out lines show BLOCKB_COUNT and KICKB_COUNT were dropped
+       from that reset, so they are not tracked here either. */
+    int32_t punchb_count;
+    int32_t spunchb_count;
+    int32_t skickb_count;
     int32_t roll_pos;
     int32_t usr_var1;
     int32_t usr_var2;              /* PLYR.EQU USR_VAR2; Yoko salt failure flag. */

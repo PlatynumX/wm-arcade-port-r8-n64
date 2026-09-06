@@ -2011,6 +2011,68 @@ static void test_bret_ifbuttons_run_cancel(void) {
     CHECK(bva.current_id == WM_BRET_ANIM_BUTT4);
 }
 
+/* The instant state commands ANIM.ASM carries inline, each self-contained:
+   ANI_SETSPEED (:38), ANI_STARTATTACK (:117), ANI_SET_WRESTLER_XFLIP (:95),
+   ANI_FACEUP (:33) / ANI_FACEDOWN (:34), ANI_CLR_BUTCOUNT (:97),
+   ANI_SAFE_TIME (:104), ANI_GRAVITY_ON (:15), ANI_CLR_STATUS (:58). */
+static void test_bret_instant_state_commands(void) {
+    wm_arcade_actor_t a;
+    wm_bret_backend_actor bva;
+    int guard;
+
+    /* hrt_2_punch_anim's header: ANI_SETSPEED,100h,
+       ANI_SET_WRESTLER_XFLIP, then ANI_STARTATTACK,AT_PUNCH,5 at frame 3. */
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_UP_RIGHT;
+    a.obj_control = WM_OBJ_FLIPH;    /* stale flip, facing right */
+    a.punchb_count = 7;
+    a.spunchb_count = 7;
+    a.skickb_count = 7;
+    wm_bret_backend_init(&bva);
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_PUNCH2, &bva);
+
+    /* Every ANI_SETSPEED across HRTSEQ2-4 is 100h, the identity rate. */
+    CHECK(a.ani_speed == 0x100);
+    /* facing right -> the mirror is cleared */
+    CHECK((a.obj_control & WM_OBJ_FLIPH) == 0);
+
+    for (guard = 0; guard < 40 && bva.visual.frame_index != 3; ++guard)
+        wm_bret_backend_tick(&bva, &a, 11);
+    CHECK(bva.visual.frame_index == 3);
+    /* AT_PUNCH is 0 (DAMAGE.EQU:174); ATTACK_TIME is round_tickcount + 5. */
+    CHECK(a.attack_type == 0);
+    CHECK(a.attack_time == 11 + 5);
+
+    /* Facing left, the same header command sets the mirror instead. */
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_UP_LEFT;
+    wm_bret_backend_init(&bva);
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_PUNCH2, &bva);
+    CHECK(a.obj_control & WM_OBJ_FLIPH);
+
+    /* hrt_facedown_getup_anim carries ANI_SAFE_TIME,50 and, being a getup,
+       an ANI_FACEDOWN at the end. hrt_2_butts_anim carries
+       ANI_CLR_BUTCOUNT inside its repeat span. */
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_UP_RIGHT;
+    a.punchb_count = 4;
+    a.spunchb_count = 4;
+    a.skickb_count = 4;
+    wm_bret_backend_init(&bva);
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_BUTTS2, &bva);
+    CHECK(a.punchb_count == 0);
+    CHECK(a.spunchb_count == 0);
+    CHECK(a.skickb_count == 0);
+
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_UP_RIGHT;
+    wm_bret_backend_init(&bva);
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_FACEDOWN_GETUP, &bva);
+    for (guard = 0; guard < 80 && a.safe_time == 0; ++guard)
+        wm_bret_backend_tick(&bva, &a, 0);
+    CHECK(a.safe_time == 50);
+}
+
 /* ATTRACT.ASM:669 TURN_SOUNDS_OFF_IF_NEED gates the DCS_LOGO music on
    AMODE_LOOPS < 2 -- it suppresses sound, and never skips or re-enters an
    attract call. app.c's guard for that had no body of its own and captured
@@ -2164,6 +2226,16 @@ static void test_hurt_box_connects_a_real_hit(void) {
        on all three axes (z/y stay at the actors' shared defaults). */
     attacker.x_int = 0;
     victim.x_int = 60;
+    /* A real actor always has a facing, and hrt_2_punch_anim's header
+       carries ANI_SET_WRESTLER_XFLIP (ANIM.ASM:95), which mirrors the
+       sprite -- and so the attack box -- whenever the MOVE_RIGHT bit is
+       clear. Leaving facing_dir memset to 0 made the attacker face nowhere,
+       and once that command was translated his box mirrored away from the
+       victim. He faces right, toward the victim at +60. */
+    attacker.facing_dir = WM_MOVE_UP_RIGHT;
+    attacker.new_facing_dir = WM_MOVE_UP_RIGHT;
+    victim.facing_dir = WM_MOVE_UP_LEFT;
+    victim.new_facing_dir = WM_MOVE_UP_LEFT;
 
     wm_bret_backend_init(&bva_attacker);
     wm_bret_backend_init(&bva_victim);
@@ -2621,6 +2693,13 @@ static void test_hurt_box_hit_kills_at_zero_life(void) {
     victim.smart_target = &attacker;
     attacker.x_int = 0;
     victim.x_int = 60;
+    /* Same reason as the hurt-box test above: hrt_2_punch_anim's
+       ANI_SET_WRESTLER_XFLIP mirrors the attack box when the MOVE_RIGHT bit
+       is clear, so the attacker needs a real facing. */
+    attacker.facing_dir = WM_MOVE_UP_RIGHT;
+    attacker.new_facing_dir = WM_MOVE_UP_RIGHT;
+    victim.facing_dir = WM_MOVE_UP_LEFT;
+    victim.new_facing_dir = WM_MOVE_UP_LEFT;
 
     wm_bret_backend_init(&bva_attacker);
     wm_bret_backend_init(&bva_victim);
@@ -4315,6 +4394,7 @@ int main(void) {
     test_bret_anim_transition_chain();
     test_bret_frame_motion_commands();
     test_bret_ifbuttons_run_cancel();
+    test_bret_instant_state_commands();
     test_attract_dcs_logo_does_not_fall_through();
     test_bret_hurt_box_for_frame_real_geometry();
     test_bret_backend_tick_sets_real_hurt_box();

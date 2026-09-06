@@ -817,7 +817,8 @@ void wm_bret_backend_change_anim(wm_arcade_actor_t *actor,
            offsets and friction the approximation missed. */
         if (seq) {
             const char *become =
-                wm_anim_apply_frame_commands(actor, seq->source_label, 0);
+                wm_anim_apply_frame_commands(actor, seq->source_label, 0,
+                                             bva->round_tickcount);
             if (become) bva->pending_become = become;
         }
 
@@ -1090,6 +1091,7 @@ void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
     size_t leg_old_frame_index, torso_old_frame_index;
 
     if (!bva) return;
+    bva->round_tickcount = round_tickcount;
     /* hrt_4_block_anim's ANI_WAITRELEASE,PLAYER_BLOCK_BIT: park on its own
        frame 1 while the block button is still held, so the animation (and
        with it WM_PMODE_BLOCK) lasts exactly as long as the player holds
@@ -1142,7 +1144,8 @@ void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
         bva->visual.sequence &&
         bva->visual.frame_index != leg_old_frame_index) {
         const char *become = wm_anim_apply_frame_commands(
-            actor, bva->visual.sequence->source_label, bva->visual.frame_index);
+            actor, bva->visual.sequence->source_label,
+            bva->visual.frame_index, round_tickcount);
         if (become) bva->pending_become = become;
     }
 

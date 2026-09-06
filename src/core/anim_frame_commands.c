@@ -22,7 +22,8 @@ static int32_t directional(const wm_arcade_actor_t *actor, int32_t value,
 
 const char *wm_anim_apply_frame_commands(wm_arcade_actor_t *actor,
                                          const char *source_label,
-                                         size_t frame_index) {
+                                         size_t frame_index,
+                                         uint16_t round_tickcount) {
     const wm_anim_frame_command *cmds;
     size_t count, i;
     const char *become = NULL;
@@ -77,6 +78,46 @@ const char *wm_anim_apply_frame_commands(wm_arcade_actor_t *actor,
                 actor->z_fixed = actor->z_int << 16;
                 break;
             }
+            case WM_ANICMD_SETSPEED:
+                /* Every ANI_SETSPEED across HRTSEQ2-4 is 100h, the identity
+                   rate, so this changes nothing today -- but it is the real
+                   command and carries a real value for when it is not. */
+                actor->ani_speed = (uint16_t)c->a;
+                break;
+            case WM_ANICMD_STARTATTACK:
+                actor->attack_type = (uint16_t)c->a;
+                actor->attack_time = (uint16_t)(round_tickcount +
+                                                (c->b > 0 ? c->b : 30));
+                break;
+            case WM_ANICMD_FACEUP:
+                actor->facing_dir = (actor->obj_control & WM_OBJ_FLIPH)
+                    ? WM_MOVE_UP_LEFT : WM_MOVE_UP_RIGHT;
+                break;
+            case WM_ANICMD_FACEDOWN:
+                actor->facing_dir = (actor->obj_control & WM_OBJ_FLIPH)
+                    ? WM_MOVE_DOWN_LEFT : WM_MOVE_DOWN_RIGHT;
+                break;
+            case WM_ANICMD_SET_WRESTLER_XFLIP:
+                /* PLAYER_RIGHT_BIT is bit 3, i.e. the MOVE_RIGHT bit. */
+                if (actor->facing_dir & WM_MOVE_RIGHT)
+                    actor->obj_control &= (uint16_t)~WM_OBJ_FLIPH;
+                else
+                    actor->obj_control |= (uint16_t)WM_OBJ_FLIPH;
+                break;
+            case WM_ANICMD_CLR_BUTCOUNT:
+                actor->punchb_count = 0;
+                actor->spunchb_count = 0;
+                actor->skickb_count = 0;
+                break;
+            case WM_ANICMD_SAFE_TIME:
+                actor->safe_time = c->a;
+                break;
+            case WM_ANICMD_GRAVITY_ON:
+                actor->anim_mode &= (uint16_t)~WM_MODE_NOGRAVITY;
+                break;
+            case WM_ANICMD_CLR_STATUS:
+                actor->anim_mode &= (uint16_t)~WM_MODE_STATUS;
+                break;
             case WM_ANICMD_IFBUTTONS:
                 /* "and a1,a0 / cmp a1,a0 / jrne #fail": every named button
                    must be held, not just any of them. */

@@ -42,7 +42,25 @@ typedef enum {
        this animation becomes `target`. Across HRTSEQ2-4 it is always
        punch+kick -> start_run_anim, i.e. the run cancel out of an attack's
        opening frames. */
-    WM_ANICMD_IFBUTTONS
+    WM_ANICMD_IFBUTTONS,
+    /* Instant state commands, each self-contained in ANIM.ASM:
+       SETSPEED (:38) ANI_SPEED; STARTATTACK (:117) ATTACK_TYPE plus
+       ATTACK_TIME = round_tickcount + ticks (30 when the operand is not
+       positive); FACEUP (:33) / FACEDOWN (:34) set FACING_DIR to the
+       up/down variant, left when OBJ_CONTROL is flipped;
+       SET_WRESTLER_XFLIP (:95) mirrors the sprite from FACING_DIR;
+       CLR_BUTCOUNT (:97) resets the mash counters; SAFE_TIME (:104);
+       GRAVITY_ON (:15) clears MODE_NOGRAVITY; CLR_STATUS (:58) clears
+       MODE_STATUS. */
+    WM_ANICMD_SETSPEED,
+    WM_ANICMD_STARTATTACK,
+    WM_ANICMD_FACEUP,
+    WM_ANICMD_FACEDOWN,
+    WM_ANICMD_SET_WRESTLER_XFLIP,
+    WM_ANICMD_CLR_BUTCOUNT,
+    WM_ANICMD_SAFE_TIME,
+    WM_ANICMD_GRAVITY_ON,
+    WM_ANICMD_CLR_STATUS
 } wm_anim_frame_command_kind;
 
 typedef struct {
@@ -68,6 +86,7 @@ const wm_anim_frame_command *wm_anim_frame_commands(size_t *count);
  */
 const char *wm_anim_apply_frame_commands(wm_arcade_actor_t *actor,
                                          const char *source_label,
-                                         size_t frame_index);
+                                         size_t frame_index,
+                                         uint16_t round_tickcount);
 
 #endif

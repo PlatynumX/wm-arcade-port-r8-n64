@@ -45,6 +45,16 @@ COMMANDS = {
     "ANI_MIN_YVEL":    ("MIN_YVEL", 1, False),
     "ANI_FRICTION":    ("FRICTION", 1, False),
     "ANI_OFFSET":      ("OFFSET", 3, False),
+    # Instant state commands with no new subsystem behind them.
+    "ANI_SETSPEED":    ("SETSPEED", 1, False),
+    "ANI_STARTATTACK": ("STARTATTACK", 2, False),
+    "ANI_FACEUP":      ("FACEUP", 0, False),
+    "ANI_FACEDOWN":    ("FACEDOWN", 0, False),
+    "ANI_SET_WRESTLER_XFLIP": ("SET_WRESTLER_XFLIP", 0, False),
+    "ANI_CLR_BUTCOUNT": ("CLR_BUTCOUNT", 0, False),
+    "ANI_SAFE_TIME":   ("SAFE_TIME", 1, False),
+    "ANI_GRAVITY_ON":  ("GRAVITY_ON", 0, False),
+    "ANI_CLR_STATUS":  ("CLR_STATUS", 0, False),
 }
 
 # ANIM.ASM:71 _ani_ifbuttons -- "if EVERY named button is currently held,
@@ -77,10 +87,30 @@ EQU_RE = re.compile(r"^\s*(#[A-Za-z_][A-Za-z0-9_]*)\s+equ\s+(.+)$", re.I)
 HEX_RE = re.compile(r"\b([0-9A-Fa-f]+)h\b")
 
 
+def _load_equ(path: pathlib.Path, prefix: str) -> dict[str, int]:
+    """`NAME .equ VALUE` constants from one of the original .EQU files."""
+    out: dict[str, int] = {}
+    if not path.exists():
+        return out
+    for line in path.read_text(errors="replace").splitlines():
+        m = re.match(rf"^({prefix}[A-Z0-9_]*)\s+\.?equ\s+([0-9]+)\s*$",
+                     line.strip(), re.I)
+        if m:
+            out[m.group(1).upper()] = int(m.group(2))
+    return out
+
+
+# DAMAGE.EQU:174+ AT_* attack types, the operand ANI_STARTATTACK names.
+_ORIG = pathlib.Path(__file__).resolve().parents[1] / "original" / "wwf-wrestlemania"
+AT_TYPES = _load_equ(_ORIG / "DAMAGE.EQU", "AT_")
+
+
 def _value(tok: str, equates: dict[str, int]) -> int:
     tok = tok.strip()
     if tok.upper() in AM_MODES:
         return AM_MODES[tok.upper()]
+    if tok.upper() in AT_TYPES:
+        return AT_TYPES[tok.upper()]
     expr = tok
     for name, val in equates.items():
         expr = re.sub(re.escape(name) + r"\b", str(val), expr)

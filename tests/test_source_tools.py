@@ -1296,6 +1296,47 @@ def test_per_wrestler_aux_tables() -> None:
             assert f'"{label}"' in text, label
 
 
+def test_anim_code_registry_reaches_its_call_sites() -> None:
+    """Every ANI_CODE registry row must match a real call site, exactly.
+
+    A `#`-prefixed label is file-scoped and the emitter carries the `#`
+    into the generated op, so a row spelled without it never matches and
+    the routine is simply never called. That is not hypothetical: thirteen
+    rows shipped that way, and their unit tests passed because they called
+    wm_anim_code_run with the un-prefixed name directly -- testing the row
+    rather than the wiring. This checks the spelling against the source.
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    src = ROOT / "src" / "core" / "anim_code.c"
+    if not (base / "ANIM.ASM").exists() or not src.exists():
+        return
+
+    use = re.compile(r"^\s*(?:\.word|W+L+W*)\s+ANI_CODE\s*,\s*(#?\w+)", re.I)
+    sites = {}
+    for who in ("HRT", "RZR", "UND", "YOK", "SHN", "BAM", "DNK", "LEX"):
+        for p in sorted(q for q in base.glob(who + "SEQ*.ASM")
+                        if "'" not in q.name):
+            for raw in p.read_text(errors="replace").splitlines():
+                m = use.match(wlanim.strip_comment(raw))
+                if m:
+                    sites.setdefault(m.group(1), set()).add(p.name)
+
+    rows = re.findall(r'\{\s*"(#?[A-Za-z_0-9]+)"\s*,\s*(NULL|"[^"]+")',
+                      src.read_text())
+    assert rows, "no registry rows found -- the pattern stopped matching"
+
+    unreachable = []
+    for name, where in rows:
+        if name not in sites:
+            unreachable.append((name, where, "no call site spells it this way"))
+            continue
+        if where != "NULL":
+            f = where.strip('"')
+            if f not in sites[name]:
+                unreachable.append((name, where, "not called from that file"))
+    assert not unreachable, unreachable
+
+
 def main() -> int:
     test_wlanim()
     test_wlprogram()
@@ -1311,6 +1352,7 @@ def main() -> int:
     test_roll_tables()
     test_self_contained_command_ops()
     test_per_wrestler_aux_tables()
+    test_anim_code_registry_reaches_its_call_sites()
     test_waithitopp_is_a_mode_and_a_frame()
     test_roster_dispatcher_labels_all_emit()
     test_wlprogram_tick_expressions()

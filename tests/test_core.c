@@ -3886,26 +3886,26 @@ static void test_anim_code_tail(void) {
     /* #set_zvel2: -5.0 for most, -6.75 for Doink, -5.75 for the Taker.
        Resolving by bare name would give six wrestlers the wrong one. */
     memset(&a, 0, sizeof(a));
-    CHECK(wm_anim_code_run(&a, &env, "set_zvel2", "HRTSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#set_zvel2", "HRTSEQ2.ASM"));
     CHECK(a.z_vel == -0x50000);
-    CHECK(wm_anim_code_run(&a, &env, "set_zvel2", "DNKSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#set_zvel2", "DNKSEQ2.ASM"));
     CHECK(a.z_vel == -0x6c000);
-    CHECK(wm_anim_code_run(&a, &env, "set_zvel2", "UNDSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#set_zvel2", "UNDSEQ2.ASM"));
     CHECK(a.z_vel == -0x5c000);
-    CHECK(wm_anim_code_run(&a, &env, "set_zvel3", "DNKSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#set_zvel3", "DNKSEQ2.ASM"));
     CHECK(a.z_vel == -0x7c000);
 
     /* #half_vels: halve X, and a fixed 2.0 up. */
     memset(&a, 0, sizeof(a));
     a.x_vel = 0x40000;
-    CHECK(wm_anim_code_run(&a, &env, "half_vels", "HRTSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#half_vels", "HRTSEQ3.ASM"));
     CHECK(a.x_vel == 0x20000);
     CHECK(a.y_vel == 0x20000);
 
     /* #reverse_xvel: turn him round at a quarter of the speed. */
     memset(&a, 0, sizeof(a));
     a.x_vel = 0x40000;
-    CHECK(wm_anim_code_run(&a, &env, "reverse_xvel", "SHNSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#reverse_xvel", "SHNSEQ3.ASM"));
     CHECK(a.x_vel == -0x10000);
 
     /* #zero_x: "Don't float if dropping straight down" -- only when the
@@ -3913,10 +3913,10 @@ static void test_anim_code_tail(void) {
     memset(&a, 0, sizeof(a));
     a.x_vel = 0x30000;
     a.closest_xdist = 0x100;
-    CHECK(wm_anim_code_run(&a, &env, "zero_x", "DNKSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#zero_x", "DNKSEQ2.ASM"));
     CHECK(a.x_vel == 0x30000);
     a.closest_xdist = 0x20;
-    CHECK(wm_anim_code_run(&a, &env, "zero_x", "DNKSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#zero_x", "DNKSEQ2.ASM"));
     CHECK(a.x_vel == 0);
 
     /* #store_opp_xvel / #merge_xvels: remember his, then average -- a
@@ -3925,9 +3925,9 @@ static void test_anim_code_tail(void) {
     memset(&v, 0, sizeof(v));
     v.x_vel = 0x60000;
     env.opponent = &v;
-    CHECK(wm_anim_code_run(&a, &env, "store_opp_xvel", "SHNSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#store_opp_xvel", "SHNSEQ3.ASM"));
     a.x_vel = 0x20000;
-    CHECK(wm_anim_code_run(&a, &env, "merge_xvels", "SHNSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#merge_xvels", "SHNSEQ3.ASM"));
     CHECK(a.x_vel == 0x20000);
     env.opponent = NULL;
 
@@ -3935,24 +3935,24 @@ static void test_anim_code_tail(void) {
        he is, set when FACING_DIR's MOVE_UP bit is CLEAR. */
     memset(&a, 0, sizeof(a));
     a.facing_dir = WM_MOVE_UP_RIGHT;
-    CHECK(wm_anim_code_run(&a, &env, "set_zvel1", "HRTSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#set_zvel1", "HRTSEQ2.ASM"));
     CHECK(!(a.anim_mode & WM_MODE_STATUS));
     a.facing_dir = WM_MOVE_DOWN_RIGHT;
-    CHECK(wm_anim_code_run(&a, &env, "ckspin", "HRTSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#ckspin", "HRTSEQ2.ASM"));
     CHECK(a.anim_mode & WM_MODE_STATUS);
 
     /* #holdup: "Max time to hold up in air (*2 ticks)" is 25, and letting
        go of super kick ends it early. */
     memset(&a, 0, sizeof(a));
     a.but_val_cur = (uint16_t)WM_BTN_SKICK;
-    CHECK(wm_anim_code_run(&a, &env, "holdup", "DNKSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#holdup", "DNKSEQ2.ASM"));
     CHECK(a.anim_mode & WM_MODE_STATUS);
     a.but_val_cur = 0;
-    CHECK(wm_anim_code_run(&a, &env, "holdup", "DNKSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#holdup", "DNKSEQ2.ASM"));
     CHECK(!(a.anim_mode & WM_MODE_STATUS));
     a.but_val_cur = (uint16_t)WM_BTN_SKICK;
     a.but_count = 25;
-    CHECK(wm_anim_code_run(&a, &env, "holdup", "DNKSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#holdup", "DNKSEQ2.ASM"));
     CHECK(!(a.anim_mode & WM_MODE_STATUS));   /* 26 is past the limit */
 
     /* NOT_IN_RING is global, and one of the places PLYR.EQU's inverted
@@ -3967,16 +3967,16 @@ static void test_anim_code_tail(void) {
     memset(&v, 0, sizeof(v));
     a.who_i_hit = &v;
     v.new_facing_dir = WM_MOVE_UP_RIGHT;
-    CHECK(wm_anim_code_run(&a, &env, "set_opp_y", "BAMSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#set_opp_y", "BAMSEQ3.ASM"));
     CHECK(v.y_vel == 0x50000);
     CHECK(v.z_vel == 0x20000);
     CHECK(v.x_vel == -0x30000);      /* facing right -> pushed left */
     v.new_facing_dir = WM_MOVE_UP_LEFT;
-    CHECK(wm_anim_code_run(&a, &env, "set_opp_y", "BAMSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#set_opp_y", "BAMSEQ3.ASM"));
     CHECK(v.x_vel == 0x30000);
     /* Doink's own copy only lifts. */
     memset(&v, 0, sizeof(v));
-    CHECK(wm_anim_code_run(&a, &env, "set_opp_y", "DNKSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#set_opp_y", "DNKSEQ3.ASM"));
     CHECK(v.y_vel == 0x40000);
     CHECK(v.x_vel == 0 && v.z_vel == 0);
 

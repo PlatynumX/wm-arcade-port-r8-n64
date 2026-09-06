@@ -1,6 +1,7 @@
 #include "wm/anim_program.h"
 #include "wm/arcade/wm_arcade_combat_defs.h"
 #include "wm/arcade/wm_arcade_anim_combat.h"
+#include "wm/arcade/wm_arcade_butcount.h"
 
 #include <string.h>
 
@@ -94,9 +95,14 @@ static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
                 actor->obj_control |= (uint16_t)WM_OBJ_FLIPH;
             break;
         case WM_AOP_CLR_BUTCOUNT:
-            actor->punchb_count = 0;
-            actor->spunchb_count = 0;
-            actor->skickb_count = 0;
+            /* ANIM.ASM:3512 clears all five, not three: the two `,L` writes
+               are 32-bit and each covers two adjacent PLYR.EQU WORDs
+               (punch+block, super punch+kick), with a plain 16-bit write
+               for super kick. See wm_arcade_combat.h's own note -- the
+               commented-out single-WORD lines above them in the source are
+               the unoptimised version of the same clear, not evidence that
+               block and kick were dropped from it. */
+            wm_arcade_clear_button_presses(actor);
             break;
         case WM_AOP_SAFE_TIME:
             actor->safe_time = o->a;
@@ -191,6 +197,19 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
                 continue;
             case WM_AOP_IF_RPTCOUNT:
                 pc = exec->rpt_count ? (size_t)o->target : pc + 1;
+                continue;
+            /* ANIM.ASM:3214 `cmp a0,a14 / jrlt #fail`: the branch is taken
+               when the count is at least the operand -- and :3239's
+               `jrge #fail2` is its exact complement. */
+            case WM_AOP_IF_BUTCOUNT_GE:
+                pc = (actor &&
+                      wm_arcade_button_count(actor, (int)o->a) >= o->b)
+                    ? (size_t)o->target : pc + 1;
+                continue;
+            case WM_AOP_IF_BUTCOUNT_LT:
+                pc = (actor &&
+                      wm_arcade_button_count(actor, (int)o->a) < o->b)
+                    ? (size_t)o->target : pc + 1;
                 continue;
             case WM_AOP_CHANGEANIM:
                 exec->become = o->text;

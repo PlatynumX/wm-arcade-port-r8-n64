@@ -31,6 +31,12 @@ typedef enum {
     WM_AOP_IFNOTSTATUS,    /* ANIM.ASM:45  MODE_STATUS clear -> branch */
     WM_AOP_IFBLOCKED,      /* ANIM.ASM:83  hitblocker set    -> branch */
     WM_AOP_IF_RPTCOUNT,    /* ANIM.ASM:90  rpt_count nonzero -> branch */
+    /* ANIM.ASM:3214/:3239 -- `a` is the button's PLYR.EQU:152-156 index
+       (0 punch, 1 block, 2 super punch, 3 kick, 4 super kick), `b` the
+       number of presses compared against. The mash mechanic: 239 uses
+       across the eight playable wrestlers' sequence files. */
+    WM_AOP_IF_BUTCOUNT_GE, /* ANIM.ASM:88  count >= b -> branch */
+    WM_AOP_IF_BUTCOUNT_LT, /* ANIM.ASM:89  count <  b -> branch */
     WM_AOP_SLIDE_BACK,     /* MODE_STATUS clear -> branch (no slide) */
 
     /* become another animation */

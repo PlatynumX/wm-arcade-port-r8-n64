@@ -59,6 +59,27 @@ SLIDE_RE = re.compile(
 
 SET_RPT_RE = wlanim.SET_RPT_RE
 
+# ANIM.ASM:3214/:3239 ANI_IF_BUTCOUNT_GE / _LT -- the button-mash branches:
+#
+#     WWWL ANI_IF_BUTCOUNT_LT,KICKB_COUNT,1,#exit
+#
+# The first operand is one of PLYR.EQU:152-156's five adjacent WORDs, which
+# the source passes as a struct offset and reads with `add a13,a14`. They
+# are declared in a fixed order the source itself marks "keep ordered",
+# because WRESTLE.ASM:4681 count_button_presses walks them by bit position;
+# that order is the index carried in the op.
+BUTCOUNT_FIELDS = {
+    "PUNCHB_COUNT": 0,
+    "BLOCKB_COUNT": 1,
+    "SPUNCHB_COUNT": 2,
+    "KICKB_COUNT": 3,
+    "SKICKB_COUNT": 4,
+}
+BUTCOUNT_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+(ANI_IF_BUTCOUNT_GE|ANI_IF_BUTCOUNT_LT)\s*,\s*"
+    r"([A-Za-z_][A-Za-z0-9_]*)\s*,\s*([^,]+)\s*,\s*"
+    r"(#?[A-Za-z_][A-Za-z0-9_]*)\s*$", re.I)
+
 # The rest of what an animation does: attack boxes and the mode/facing
 # commands the backend had been carrying in side tables keyed on a frame
 # index. In a program they are just ops, which is what they are in the
@@ -157,7 +178,8 @@ def program_for(path: pathlib.Path, label: str):
     while True:
         wanted = set()
         for i in range(start, stop):
-            bm = BRANCH_RE.match(lines[i]) or SLIDE_RE.match(lines[i])
+            bm = (BRANCH_RE.match(lines[i]) or SLIDE_RE.match(lines[i])
+                  or BUTCOUNT_RE.match(lines[i]))
             if bm:
                 wanted.add(bm.group(bm.re.groups))
         have = {name for name in
@@ -255,6 +277,20 @@ def program_for(path: pathlib.Path, label: str):
             ops.append((BRANCHES[bm.group(1).upper()], -1))
             continue
 
+        bc = BUTCOUNT_RE.match(line)
+        if bc:
+            field = bc.group(2).upper()
+            if field not in BUTCOUNT_FIELDS:
+                raise ValueError(
+                    f"{label}: ANI_IF_BUTCOUNT names {bc.group(2)!r}, which is "
+                    f"not one of PLYR.EQU's five button counters")
+            fixups.append((len(ops), bc.group(4)))
+            ops.append(("IF_BUTCOUNT_GE" if bc.group(1).upper().endswith("GE")
+                        else "IF_BUTCOUNT_LT",
+                        -1, BUTCOUNT_FIELDS[field],
+                        wlcommands._value(bc.group(3), equates)))
+            continue
+
         sm = SLIDE_RE.match(line)
         if sm:
             fixups.append((len(ops), sm.group(3)))
@@ -330,7 +366,7 @@ def program_for(path: pathlib.Path, label: str):
 
 
 BRANCH_OPS = {"GOTO", "IFSTATUS", "IFNOTSTATUS", "IFBLOCKED", "IF_RPTCOUNT",
-              "SLIDE_BACK"}
+              "SLIDE_BACK", "IF_BUTCOUNT_GE", "IF_BUTCOUNT_LT"}
 # Ops carrying (mode, a, b, c, d, e) from wlcommands' 5-tuple shape.
 MOTION_OPS = {"ZEROVELS", "ZERO_XZVELS", "SET_XVEL", "SET_YVEL", "SET_ZVEL",
               "MIN_YVEL", "FRICTION", "OFFSET", "SETSPEED", "STARTATTACK",
@@ -349,7 +385,7 @@ def _c_op(op) -> str:
         args[0] = op[2]
     elif kind in BRANCH_OPS:
         target = op[1]
-        if kind == "SLIDE_BACK":
+        if kind in ("SLIDE_BACK", "IF_BUTCOUNT_GE", "IF_BUTCOUNT_LT"):
             args[0], args[1] = op[2], op[3]
     elif kind in ("CHANGEANIM",):
         text = f'"{op[1]}"'
@@ -406,16 +442,25 @@ def render_c(entries) -> str:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--source", required=True)
-    ap.add_argument("--label", required=True, action="append")
+    ap.add_argument("--source")
+    ap.add_argument("--label", action="append", default=[])
+    # An animation names its own file, so one run can emit programs that
+    # span HRTSEQ2/3/4 -- the same shape tools/wlcommands.py takes.
+    ap.add_argument("--animation", nargs=2, action="append", default=[],
+                    metavar=("SOURCE", "LABEL"))
     ap.add_argument("--out")
     ns = ap.parse_args(argv)
+    entries = [(src, lab) for src, lab in ns.animation]
+    if ns.source:
+        entries += [(ns.source, l) for l in ns.label]
+    if not entries:
+        ap.error("nothing to emit: pass --animation, or --source with --label")
     if ns.out:
-        pathlib.Path(ns.out).write_text(
-            render_c([(ns.source, l) for l in ns.label]))
+        pathlib.Path(ns.out).write_text(render_c(entries))
+        print(f"wrote {len(entries)} animation programs -> {ns.out}")
         return 0
-    for label in ns.label:
-        ops = program_for(pathlib.Path(ns.source), label)
+    for source, label in entries:
+        ops = program_for(pathlib.Path(source), label)
         print(f"{label}  ({len(ops)} ops)")
         for i, op in enumerate(ops):
             print(f"    {i:3d}  {op[0]:<20} {op[1:]}")

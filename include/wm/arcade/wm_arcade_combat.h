@@ -112,10 +112,24 @@ struct wm_arcade_actor {
     /* PLYR.EQU OBJ_FRICTION, set by ANIM.ASM's ANI_FRICTION (:22) together
        with MODE_FRICTION. */
     int32_t friction;
-    /* PLYR.EQU PUNCHB_COUNT/SPUNCHB_COUNT/SKICKB_COUNT: the button-mash
-       counters ANIM.ASM's ANI_CLR_BUTCOUNT (:97) resets. The source's own
-       commented-out lines show BLOCKB_COUNT and KICKB_COUNT were dropped
-       from that reset, so they are not tracked here either. */
+    /*
+     * PLYR.EQU:152-156's five button-mash counters, in the source's own
+     * order -- it comments them "keep ordered", because two pieces of code
+     * depend on the layout:
+     *
+     *   WRESTLE.ASM:4681 count_button_presses walks them with `addi 16,a2`,
+     *   one 16-bit WORD per button, testing BUT_VAL_DOWN bit 0 upward:
+     *   punch, block, super punch, kick, super kick.
+     *
+     *   ANIM.ASM:3512 _ani_clr_butcount clears all five with three writes,
+     *   two of them 32-bit: `move a14,*a13(PUNCHB_COUNT),L` covers punch
+     *   AND block, `*a13(SPUNCHB_COUNT),L` covers super punch AND kick, and
+     *   the plain 16-bit write covers super kick. The five commented-out
+     *   single-WORD lines above them in the source are the unoptimised
+     *   version of the same thing -- reading the comments rather than the
+     *   widths is what made an earlier pass here believe block and kick
+     *   were dropped from the reset. They are not.
+     */
     /* PLYR.EQU HITBLOCKER: the wrestler who blocked this attack, which
        ANIM.ASM:83 ANI_IFBLOCKED branches on. Nothing sets it yet -- the
        blocked-reaction dispatch that would is still unwired -- so the
@@ -123,7 +137,9 @@ struct wm_arcade_actor {
        the flat model always took. */
     int32_t hitblocker;
     int32_t punchb_count;
+    int32_t blockb_count;
     int32_t spunchb_count;
+    int32_t kickb_count;
     int32_t skickb_count;
     int32_t roll_pos;
     int32_t usr_var1;

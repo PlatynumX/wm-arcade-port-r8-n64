@@ -14,6 +14,7 @@
 #include "wm/composite.h"
 #include "wm/demo.h"
 #include "wm/bret_backend.h"
+#include "wm/arcade/wm_arcade_butcount.h"
 #include "wm/game.h"
 #include "wm/human_input.h"
 #include "wm/match.h"
@@ -1751,16 +1752,23 @@ static void test_bret_rptcount_loop(void) {
     CHECK(bva.visual.sequence == &wm_bret_knees_to_head_anim);
     CHECK(bva.visual.rpt_count == 3);
 
-    /* The loop is gated on the knee CONNECTING: HRTSEQ2.ASM writes
-       `WL ANI_IFNOTSTATUS,#missed` between the ANI_ATTACK_OFF and the
-       ANI_DEC_RPTCOUNT, so a whiffed knee leaves the span at once and the
-       repeat never happens. Connect each pulse the way
-       wm_arcade_try_attack_hit does, and the span runs its full three. */
+    /* The loop is gated on TWO things, and the source spells out both
+       between the ANI_ATTACK_OFF and the ANI_DEC_RPTCOUNT:
+
+         WL   ANI_IFNOTSTATUS,#missed
+         ...
+         WWWL ANI_IF_BUTCOUNT_LT,KICKB_COUNT,1,#exit
+
+       the knee has to connect, AND the player has to have pressed kick
+       again since the span's own ANI_CLR_BUTCOUNT. Do both and it runs its
+       full three. */
     prev_index = bva.prog.pc;
     for (guard = 0; guard < 400 && !bva.prog.ended; ++guard) {
         bool on;
         if (a.anim_mode & WM_MODE_CHECKHIT)
             a.anim_mode |= (uint16_t)WM_MODE_STATUS;
+        a.but_val_down = (uint16_t)WM_BTN_KICK;
+        wm_arcade_count_button_presses(&a);
         wm_bret_backend_tick(&bva, &a, 4);
         /* op 8 is the first frame inside the ANI_IF_RPTCOUNT span */
         if (bva.prog.pc != prev_index && bva.prog.pc == 8)
@@ -1780,6 +1788,48 @@ static void test_bret_rptcount_loop(void) {
     /* Three passes each firing the in-loop window, plus the one after the
        loop. */
     CHECK(attack_on_edges == 4);
+
+    /* Connecting but never pressing kick again: the ANI_IF_BUTCOUNT_LT
+       leaves the span even though every knee landed. Stop mashing and the
+       repeat stops -- which is the mechanic. */
+    memset(&a, 0, sizeof(a));
+    wm_bret_backend_init(&bva);
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_KNEES_TO_HEAD, &bva);
+    attack_on_edges = 0;
+    was_on = false;
+    for (guard = 0; guard < 400 && !bva.prog.ended; ++guard) {
+        bool on;
+        if (a.anim_mode & WM_MODE_CHECKHIT)
+            a.anim_mode |= (uint16_t)WM_MODE_STATUS;
+        wm_bret_backend_tick(&bva, &a, 4);
+        on = (a.anim_mode & WM_MODE_CHECKHIT) != 0;
+        if (on && !was_on) ++attack_on_edges;
+        was_on = on;
+    }
+    CHECK(bva.prog.ended);
+    CHECK(attack_on_edges == 1);
+
+    /* Mashing SUPER kick as well takes the other branch out of the last
+       knee: `WWWL ANI_IF_BUTCOUNT_GE,SKICKB_COUNT,1,#do_pile`, which ends
+       in an ANI_CHANGEANIM into hrt_3_pile_driver_anim. Nothing in this
+       port could reach that animation before ANI_IF_BUTCOUNT_GE was
+       translated -- the id existed with no sequence behind it. */
+    memset(&a, 0, sizeof(a));
+    wm_bret_backend_init(&bva);
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_KNEES_TO_HEAD, &bva);
+    for (guard = 0; guard < 400 && bva.prog.program &&
+                    strcmp(bva.prog.program->source_label,
+                           "hrt_knees_to_head_anim") == 0; ++guard) {
+        if (a.anim_mode & WM_MODE_CHECKHIT)
+            a.anim_mode |= (uint16_t)WM_MODE_STATUS;
+        a.but_val_down = (uint16_t)(WM_BTN_KICK | WM_BTN_SKICK);
+        wm_arcade_count_button_presses(&a);
+        wm_bret_backend_tick(&bva, &a, 4);
+    }
+    CHECK(bva.prog.program != NULL);
+    CHECK(strcmp(bva.prog.program->source_label,
+                 "hrt_3_pile_driver_anim") == 0);
+    CHECK(bva.current_id == WM_BRET_ANIM_PILE_DRIVER3);
 
     /* Missed instead: the same animation leaves the span on the first
        ANI_IFNOTSTATUS, so it fires its box exactly once and never repeats.
@@ -2218,8 +2268,14 @@ static void test_bret_instant_state_commands(void) {
    path they must NOT agree -- the whole point is that a miss really plays
    fewer frames, because ANI_SLIDE_BACK and ANI_IFNOTSTATUS branch past the
    connected-hit ones, and a flat list cannot express that. */
-static int program_vs_flat(const char *label, const wm_visual_sequence *seq,
-                           bool hit, int *ticks_out) {
+/* `buttons` is what the player is holding down each tick. It matters
+   because some animations branch on it: hrt_knees_to_head_anim's repeat
+   span is gated on ANI_IF_BUTCOUNT_LT,KICKB_COUNT,1, so reproducing the
+   path the flat extractor kept means actually mashing kick. */
+static int program_vs_flat_buttons(const char *label,
+                                   const wm_visual_sequence *seq,
+                                   bool hit, uint16_t buttons,
+                                   int *ticks_out) {
     wm_anim_exec ex;
     wm_visual_state vs;
     wm_arcade_actor_t a;
@@ -2242,11 +2298,18 @@ static int program_vs_flat(const char *label, const wm_visual_sequence *seq,
         if (strcmp(pf, vf->source_frame) != 0) ++diff;
         if (hit) a.anim_mode |= (uint16_t)WM_MODE_STATUS;
         else a.anim_mode &= (uint16_t)~WM_MODE_STATUS;
+        a.but_val_down = buttons;
+        wm_arcade_count_button_presses(&a);
         wm_anim_exec_tick(&ex, &a, 0);
         wm_visual_tick(&vs);
     }
     if (ticks_out) *ticks_out = n;
     return diff;
+}
+
+static int program_vs_flat(const char *label, const wm_visual_sequence *seq,
+                           bool hit, int *ticks_out) {
+    return program_vs_flat_buttons(label, seq, hit, 0, ticks_out);
 }
 
 static void test_anim_program_interpreter(void) {
@@ -2274,8 +2337,11 @@ static void test_anim_program_interpreter(void) {
                           true, NULL) == 0);
     CHECK(program_vs_flat("hrt_4_block_anim", &wm_bret_block4_anim,
                           true, NULL) == 0);
-    CHECK(program_vs_flat("hrt_knees_to_head_anim", &wm_bret_knees_to_head_anim,
-                          true, NULL) == 0);
+    /* Kick held: its repeat span is gated on ANI_IF_BUTCOUNT_LT, so the
+       path the flat list represents is the mashing one. */
+    CHECK(program_vs_flat_buttons("hrt_knees_to_head_anim",
+                                  &wm_bret_knees_to_head_anim,
+                                  true, WM_BTN_KICK, NULL) == 0);
 
     /* hrt_4_push_anim is the one that does NOT match even on the hit path,
        and it is right not to: its ANI_IFSTATUS skips a 5-tick frame when

@@ -116,6 +116,14 @@ extern const wm_visual_sequence wm_bret_knee_to_head4_anim;
 extern const wm_visual_sequence wm_bret_fake_hold3_anim;
 
 /*
+ * HRTSEQ3.ASM hrt_3_pile_driver_anim: hrt_knees_to_head_anim's finish,
+ * behind its own `ANI_IF_BUTCOUNT_GE,SKICKB_COUNT,1,#do_pile` -- the
+ * player has to keep mashing super kick through the last knee to get it.
+ * Nothing could reach it until ANI_IF_BUTCOUNT_GE was translated.
+ */
+extern const wm_visual_sequence wm_bret_pile_driver3_anim;
+
+/*
  * Batch 5, unlocked by wm_visual_sequence's ANIM.ASM RPT_COUNT loop
  * fields. All three carry a real ANI_SET_RPTCOUNT,3 span that plays three
  * times before the stream continues -- carried as loop_first/loop_last/

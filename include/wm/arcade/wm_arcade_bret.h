@@ -42,6 +42,10 @@ typedef enum wm_arcade_bret_anim_id {
     WM_BRET_ANIM_CLIMB_DOWN,
     WM_BRET_ANIM_TBUKL_LEAP,
     WM_BRET_ANIM_PUSH4,
+    /* HRTSEQ3.ASM hrt_3_pile_driver_anim: reached only through
+       hrt_knees_to_head_anim's own `ANI_IF_BUTCOUNT_GE,SKICKB_COUNT,1,
+       #do_pile`, so nothing could select it until that opcode was
+       translated -- which is why it sat here without a sequence. */
     WM_BRET_ANIM_PILE_DRIVER3,
     WM_BRET_ANIM_HH_DDT2,
     WM_BRET_ANIM_HEAD_HELD_STAND3,

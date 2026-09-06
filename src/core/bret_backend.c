@@ -240,6 +240,10 @@ const wm_visual_sequence *wm_bret_anim_sequence(wm_arcade_bret_anim_id_t id) {
         case WM_BRET_ANIM_FACEUP_GETUP2_4: return &wm_bret_faceup_getup2_4_anim;
         case WM_BRET_ANIM_HITONGROUND_FACEDOWN:
             return &wm_bret_hitonground_facedown_anim;
+        /* HRTSEQ3.ASM hrt_3_pile_driver_anim: the finish
+           hrt_knees_to_head_anim hands off to when the player has kept
+           mashing super kick through the last knee. */
+        case WM_BRET_ANIM_PILE_DRIVER3: return &wm_bret_pile_driver3_anim;
         /* WRESTLE2.ASM:3443 start_run_anim has no WL frames of its own: it
            is a state-setup routine that ends by selecting the wrestler's
            own run animation out of #run_anims[WRESTLERNUM]. For Bret that

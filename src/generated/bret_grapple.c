@@ -30,3 +30,19 @@ const wm_visual_sequence wm_bret_fake_hold3_anim = {
     .frame_count = sizeof(bret_fake_hold3_frames) / sizeof(bret_fake_hold3_frames[0]),
     .repeat = false,
 };
+
+static const wm_visual_frame bret_pile_driver3_frames[] = {
+    {"H3PG3A01", 4},
+    {"H3ZZ3T08", 12},
+    {"H3ZZ3T09", 3},
+    {"H3ZZ3T10", 3},
+    {"H3PG3A01", 3},
+};
+
+const wm_visual_sequence wm_bret_pile_driver3_anim = {
+    .source_file = "HRTSEQ3.ASM",
+    .source_label = "hrt_3_pile_driver_anim",
+    .frames = bret_pile_driver3_frames,
+    .frame_count = sizeof(bret_pile_driver3_frames) / sizeof(bret_pile_driver3_frames[0]),
+    .repeat = false,
+};

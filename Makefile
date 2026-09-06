@@ -54,6 +54,7 @@ FIX38_ARCADE_C := \
     src/core/arcade/wm_arcade_anim_combat.c \
     src/core/arcade/wm_arcade_confine.c \
     src/core/arcade/wm_arcade_drone_data.c \
+    src/core/arcade/wm_arcade_butcount.c \
     src/core/arcade/wm_arcade_joystat.c \
     src/core/arcade/wm_arcade_mode_dead.c \
     src/core/arcade/wm_arcade_attach_anim.c \

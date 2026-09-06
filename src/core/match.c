@@ -1,4 +1,5 @@
 #include "wm/match.h"
+#include "wm/arcade/wm_arcade_butcount.h"
 #include <string.h>
 
 /* PLYR.EQU: PSIDE_PLYR1 equ 0, PSIDE_PLYR2 equ 1. */
@@ -249,6 +250,18 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             (void)wm_arcade_drone_main(&m->actors[i], &m->drones[i], &world, cb);
             wm_arcade_drone_commit_inputs(&m->actors[i], &m->drones[i], old_but, old_joy);
         }
+
+        /* WRESTLE.ASM:2453 `callr count_button_presses`, right after
+           update_joystat and before animate_wrestler: every newly-pressed
+           button bumps its own PLYR.EQU counter, and the animation VM's
+           ANI_IF_BUTCOUNT_GE/LT branch on those counts. That is the whole
+           button-mash mechanic -- a repeated knee to the head keeps going
+           only while kick keeps being pressed. Runs for every wrestler,
+           human or drone, since it is shared WRESTLE.ASM code and a
+           drone's own presses count exactly like a player's; it has to
+           happen after this tick's input is committed and before the
+           animation reads a count. */
+        wm_arcade_count_button_presses(&m->actors[i]);
 
         /* WRESTLE.ASM::move_wrestler dispatches every wrestler process
            through its own move_xxx; wm_arcade_move_ported_wrestler is that

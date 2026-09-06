@@ -182,6 +182,19 @@ void wm_arcade_adjust_health(wm_arcade_actor_t *victim, int16_t delta,
                              int32_t *dam_mult,
                              const wm_arcade_death_anim_callback_t *death_anim);
 
+/*
+ * LIFEBAR.ASM:5310 SUBR clear_lifebar -- zero this wrestler's PLT_LIFE and
+ * refresh his meter. Only the life half is translated; update_meter is
+ * pure rendering and there is no meter to draw.
+ *
+ * ANIM.ASM:2990 _ani_waitroll is what calls it, and it is also the
+ * consumer the note above says i_will_die lacked: adjust_health's #will_die
+ * path defers a death by setting i_will_die instead of killing outright,
+ * and ANI_WAITROLL is where that debt comes due once IMMOBILIZE_TIME runs
+ * out.
+ */
+void wm_arcade_clear_lifebar(wm_arcade_actor_t *a);
+
 #ifdef __cplusplus
 }
 #endif

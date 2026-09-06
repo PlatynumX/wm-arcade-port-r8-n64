@@ -2,6 +2,7 @@
 #include "wm/anim_program.h"
 #include "wm/arcade/wm_arcade_butcount.h"
 #include "wm/arcade/wm_arcade_veladd.h"
+#include "wm/arcade/wm_arcade_roll.h"
 #include <string.h>
 
 /* PLYR.EQU: PSIDE_PLYR1 equ 0, PSIDE_PLYR2 equ 1. */
@@ -300,6 +301,14 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
                                : &m->wrestler_visual[i].prog,
                            0 /* this port has no INPREGAME2 phase */);
         wm_wrestler_friction(&m->actors[i]);
+
+        /*
+         * WRESTLE.ASM:2538's getup meter, in the same main-loop pass and
+         * before the animation runs -- ANI_WAITROLL reads GETUP_TIME to
+         * decide whether the wrestler may start rolling yet, so it has to
+         * see this tick's value.
+         */
+        wm_arcade_tick_getup_time(&m->actors[i]);
 
         /* WRESTLE.ASM::move_wrestler dispatches every wrestler process
            through its own move_xxx; wm_arcade_move_ported_wrestler is that

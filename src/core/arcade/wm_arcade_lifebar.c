@@ -137,3 +137,8 @@ void wm_arcade_adjust_health(wm_arcade_actor_t *victim, int16_t delta,
     /* LIFEBAR.ASM:1593-1595, unconditional on every call. */
     victim->last_damage = (uint16_t)pcnt;
 }
+
+void wm_arcade_clear_lifebar(wm_arcade_actor_t *a) {
+    if (!a) return;
+    a->life = 0;
+}

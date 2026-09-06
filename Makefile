@@ -48,12 +48,14 @@ CORE_C := \
     src/generated/bret_defense.c \
     src/generated/bret_grapple.c \
     src/generated/anim_programs.c \
-    src/generated/frame_geometry.c
+    src/generated/frame_geometry.c \
+    src/generated/roll_frames.c
 # BEGIN FIX38 CUMULATIVE ARCADE SOURCE PORTS
 FIX38_ARCADE_C := \
     src/core/arcade/wm_arcade_anim_combat.c \
     src/core/arcade/wm_arcade_confine.c \
     src/core/arcade/wm_arcade_veladd.c \
+    src/core/arcade/wm_arcade_roll.c \
     src/core/arcade/wm_arcade_drone_data.c \
     src/core/anim_code.c \
     src/core/anim_puppet.c \

@@ -272,7 +272,8 @@ def program_for(path: pathlib.Path, label: str):
                         if wlanim.SUBR_RE.match(lines[j]) and j > i:
                             break
                         if (wlanim.END_RE.match(lines[j]) or
-                                wlanim.REPEAT_RE.match(lines[j])):
+                                wlanim.REPEAT_RE.match(lines[j]) or
+                                wlanim.ROT_RE.match(lines[j])):
                             j += 1
                             break
                         j += 1
@@ -329,6 +330,9 @@ def program_for(path: pathlib.Path, label: str):
             ops.append(("FRAME", frame.name, frame.ticks))
             continue
 
+        if wlanim.ROT_RE.match(line):
+            ops.append(("ROT",))
+            continue
         if wlanim.END_RE.match(line):
             ops.append(("END",))
             continue
@@ -518,10 +522,13 @@ def program_for(path: pathlib.Path, label: str):
 BRANCH_OPS = {"GOTO", "IFSTATUS", "IFNOTSTATUS", "IFBLOCKED", "IF_RPTCOUNT",
               "SLIDE_BACK", "IF_BUTCOUNT_GE", "IF_BUTCOUNT_LT", "IFOPPMODE"}
 # Ops carrying (mode, a, b, c, d, e) from wlcommands' 5-tuple shape.
-MOTION_OPS = {"ZEROVELS", "ZERO_XZVELS", "SET_XVEL", "SET_YVEL", "SET_ZVEL",
-              "MIN_YVEL", "FRICTION", "OFFSET", "SETSPEED", "STARTATTACK",
-              "FACEUP", "FACEDOWN", "SET_WRESTLER_XFLIP", "CLR_BUTCOUNT",
-              "SAFE_TIME", "GRAVITY_ON", "CLR_STATUS"}
+# Every op that comes out of wlcommands' command table carries the same
+# (kind, mode, a, b, c) shape, so this is DERIVED from that table rather
+# than listed by hand. It used to be a hand-kept set, and anything added to
+# the command table without also being added here fell through to the
+# no-operand default and had its operands silently written out as zero --
+# which is exactly what happened to ANI_BOUNCE and ANI_GETUP.
+MOTION_OPS = {kind for kind, _nargs, _has_mode in wlcommands.COMMANDS.values()}
 
 
 def _c_op(op) -> str:

@@ -3,6 +3,14 @@
    op indices. */
 #include "wm/anim_program.h"
 
+static const wm_anim_op prog_xxx_dead_anim_ops[] = {
+    { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 9, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "#set_pinable_bit" },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "#ko_if_drone" },
+    { WM_AOP_ROT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
 static const wm_anim_op prog_hrt_2_punch_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -866,7 +874,7 @@ static const wm_anim_op prog_hrt_2_pin_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_CROWD_CHEER" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "grnd_hit" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "H3PN5A08" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
@@ -926,7 +934,7 @@ static const wm_anim_op prog_hrt_4_pin_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_CROWD_CHEER" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "grnd_hit" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "H3PN5A08" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
@@ -1122,7 +1130,7 @@ static const wm_anim_op prog_hrt_tbukl_leap_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_IFNOTSTATUS, 0, 34, 0, 0, 0, 0, 0, 0, 0 },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 5, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "H4JP4C06" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
@@ -1155,7 +1163,7 @@ static const wm_anim_op prog_hrt_running_ground_punch_anim_ops[] = {
     { WM_AOP_ATTACK_ON, 30, -1, -50, -6, 36, 23, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "H4JK4C06" },
     { WM_AOP_ATTACK_OFF, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 3, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "H4JK4C07" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
@@ -1584,7 +1592,7 @@ static const wm_anim_op prog_hrt_fall_back_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_FRICTION, 0, -1, 12288, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "H3UC3X06" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 5, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "H3UC3X06" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H3UC3X07" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H3UC3X08" },
@@ -1598,6 +1606,7 @@ static const wm_anim_op prog_hrt_fall_back_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "H3RL1A01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_faceup_getup_anim" },
 };
 
@@ -1716,12 +1725,13 @@ static const wm_anim_op prog_hrt_hitonground_facedown_anim_ops[] = {
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 3, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H3MS3X01" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H3MS3X02" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H3MS3X03" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H3MS3X04" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H3MS3X05" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_faceup_getup_anim" },
 };
 
@@ -2077,7 +2087,7 @@ static const wm_anim_op prog_bam_2_pin_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_CROWD_CHEER" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "grnd_hit" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B2PN5A06" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
@@ -2712,7 +2722,7 @@ static const wm_anim_op prog_bam_4_pin_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_CROWD_CHEER" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "grnd_hit" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B2PN5A06" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
@@ -2987,7 +2997,7 @@ static const wm_anim_op prog_bam_bellyflop_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "B4FK4B09" },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "B4FK4B10" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_4_faceup_getup3_anim" },
@@ -3033,7 +3043,7 @@ static const wm_anim_op prog_bam_fall_back_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_FRICTION, 0, -1, 8192, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "B4UC3B06" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 5, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "B4UC3B06" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
@@ -3046,6 +3056,7 @@ static const wm_anim_op prog_bam_fall_back_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETLONG, 0, -1, 1, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "B3RL1A01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_faceup_getup_anim" },
 };
 
@@ -3073,7 +3084,7 @@ static const wm_anim_op prog_bam_flying_kick_anim_ops[] = {
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 3, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B3DC3B11" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
@@ -3597,13 +3608,13 @@ static const wm_anim_op prog_dnk_2_lbowdrop_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "D2PJ2A12" },
     { WM_AOP_ATTACK_OFF, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_IFSTATUS, 0, 33, 0, 0, 0, 0, 0, 0, 0 },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 3, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_MISSES" },
     { WM_AOP_FRAME, 0, -1, 40, 0, 0, 0, 0, 0, "D2PJ2A12" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_GOTO, 0, 36, 0, 0, 0, 0, 0, 0, 0 },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_FRAME, 0, -1, 15, 0, 0, 0, 0, 0, "D2PJ2A12" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D5GD3A05" },
@@ -3637,7 +3648,7 @@ static const wm_anim_op prog_dnk_2_pin_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "grnd_hit" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_CROWD_CHEER" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "D4PN5A05" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
@@ -3853,7 +3864,7 @@ static const wm_anim_op prog_dnk_4_bstomp_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "shake_all_ropes" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 6, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_FRAME, 0, -1, 6, 0, 0, 0, 0, 0, "D4MP4D06" },
     { WM_AOP_ATTACK_OFF, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -4148,13 +4159,13 @@ static const wm_anim_op prog_dnk_4_lbowdrop_anim_ops[] = {
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ATTACK_OFF, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_IFSTATUS, 0, 33, 0, 0, 0, 0, 0, 0, 0 },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 3, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_MISSES" },
     { WM_AOP_FRAME, 0, -1, 40, 0, 0, 0, 0, 0, "D4PJ4A10" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_GOTO, 0, 36, 0, 0, 0, 0, 0, 0, 0 },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_FRAME, 0, -1, 15, 0, 0, 0, 0, 0, "D4PJ4A10" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -4200,7 +4211,7 @@ static const wm_anim_op prog_dnk_4_pin_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "grnd_hit" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_CROWD_CHEER" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "D4PN5A05" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
@@ -4409,7 +4420,7 @@ static const wm_anim_op prog_dnk_diveofftb_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "shake_all_ropes" },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_hitonground_xflip_anim" },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 6, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "D4FM4A07" },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "D4FM4A06" },
@@ -4464,7 +4475,7 @@ static const wm_anim_op prog_dnk_fall_back_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_FRICTION, 0, -1, 12288, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "D3UC3A08" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 5, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "D3UC3A08" },
     { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "D3UC3A09" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -4478,6 +4489,7 @@ static const wm_anim_op prog_dnk_fall_back_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 6, 0, 0, 0, 0, 0, "D3SA3A09" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
 };
 
@@ -4507,7 +4519,7 @@ static const wm_anim_op prog_dnk_flying_kick_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_IFSTATUS, 0, 31, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "D3DC3C09" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 3, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "D3DC3C09" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_MISSES" },
@@ -5585,7 +5597,7 @@ static const wm_anim_op prog_lex_2_pin_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_CROWD_CHEER" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "grnd_hit" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "L3PN5B08" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
@@ -6068,7 +6080,7 @@ static const wm_anim_op prog_lex_4_pin_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_CROWD_CHEER" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "grnd_hit" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "L3PN5B08" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
@@ -6324,7 +6336,7 @@ static const wm_anim_op prog_lex_buckle_leap_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_IFSTATUS, 0, 41, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_MISSES" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 5, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_GOTO, 0, 42, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_ANI_AVERAGE_MOVE" },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "L3PJ3F09" },
@@ -6632,7 +6644,7 @@ static const wm_anim_op prog_lex_fall_back_anim_ops[] = {
     { WM_AOP_SETLONG, 0, -1, 1, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "L3CP3X02" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 5, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_hitonground_anim" },
 };
 
@@ -6773,7 +6785,7 @@ static const wm_anim_op prog_shn_2_falling_punch_anim_ops[] = {
     { WM_AOP_GOTO, 0, 29, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_ANI_AVERAGE_MOVE" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "S2PJ3D07" },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "S2PJ3D08" },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -6866,7 +6878,7 @@ static const wm_anim_op prog_shn_2_pin_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_CROWD_CHEER" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "grnd_hit" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S3PN5C07" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
@@ -7124,7 +7136,7 @@ static const wm_anim_op prog_shn_4_falling_punch_anim_ops[] = {
     { WM_AOP_GOTO, 0, 29, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_ANI_AVERAGE_MOVE" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "S4PJ3F07" },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "S4PJ3F08" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -7243,7 +7255,7 @@ static const wm_anim_op prog_shn_4_pin_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_CROWD_CHEER" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "grnd_hit" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S3PN5C07" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
@@ -7482,7 +7494,7 @@ static const wm_anim_op prog_shn_belbow_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_MISSES" },
     { WM_AOP_GOTO, 0, 28, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_ANI_AVERAGE_MOVE" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 5, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "S4PJ3E08" },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "S4PJ3E09" },
@@ -7516,7 +7528,7 @@ static const wm_anim_op prog_shn_bstomp_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_IFSTATUS, 0, 25, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_MISSES" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_GOTO, 0, 28, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SET_YVEL, 0, -1, 262144, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SET_ZVEL, 0, -1, -131072, 0, 0, 0, 0, 0, 0 },
@@ -7783,7 +7795,7 @@ static const wm_anim_op prog_shn_fstein_anim_ops[] = {
     { WM_AOP_WAITHITOPP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "S3ZI3A02" },
     { WM_AOP_ATTACK_OFF, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-    { WM_AOP_IFNOTSTATUS, 0, 103, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFNOTSTATUS, 0, 104, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_IFBLOCKED, 0, 73, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CLR_STATUS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "#merge_xvels" },
@@ -7868,6 +7880,7 @@ static const wm_anim_op prog_shn_fstein_anim_ops[] = {
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S3CP3B06" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S3CP3B07" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_MISSES" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -7890,6 +7903,7 @@ static const wm_anim_op prog_shn_fstein_anim_ops[] = {
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S3CP3B06" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S3CP3B07" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
 
@@ -7978,7 +7992,7 @@ static const wm_anim_op prog_shn_fall_back_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_FRICTION, 0, -1, 12288, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "S3UC3X07" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 5, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "S3UC3X07" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
@@ -7989,6 +8003,7 @@ static const wm_anim_op prog_shn_fall_back_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S3CP3B07" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
 
@@ -8799,7 +8814,7 @@ static const wm_anim_op prog_und_fall_back_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_FRICTION, 0, -1, 12288, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "U3FD3B06" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "U3FD3B07" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
@@ -8810,6 +8825,7 @@ static const wm_anim_op prog_und_fall_back_anim_ops[] = {
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "U3CP3B01" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "U3CP3B01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_getup_anim" },
 };
 
@@ -8839,7 +8855,7 @@ static const wm_anim_op prog_und_flying_kick_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "U3DC3A08" },
     { WM_AOP_IFSTATUS, 0, 30, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_MISSES" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 3, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "U3DC3A08" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
@@ -9505,7 +9521,7 @@ static const wm_anim_op prog_yok_2_pin_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y3PF3C12" },
     { WM_AOP_ATTACK_OFF, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_CROWD_CHEER" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 3, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y3PF3C12" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETLONG, 0, -1, 1, 0, 0, 0, 0, 0, 0 },
@@ -10025,7 +10041,7 @@ static const wm_anim_op prog_yok_4_pin_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y3PF3C12" },
     { WM_AOP_ATTACK_OFF, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_CROWD_CHEER" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 3, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y3PF3C12" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETLONG, 0, -1, 1, 0, 0, 0, 0, 0, 0 },
@@ -10406,7 +10422,7 @@ static const wm_anim_op prog_yok_tbukl_buttdrop_anim_ops[] = {
     { WM_AOP_IFSTATUS, 0, 31, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_MISSES" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 6, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y2ZZ2X05" },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y2ZZ2X04" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -10414,7 +10430,7 @@ static const wm_anim_op prog_yok_tbukl_buttdrop_anim_ops[] = {
     { WM_AOP_GOTO, 0, 41, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_ANI_AVERAGE_MOVE" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 6, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SET_ZVEL, 0, -1, 131072, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y2ZZ2X05" },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y2ZZ2X04" },
@@ -10799,7 +10815,7 @@ static const wm_anim_op prog_yok_scissor_anim_ops[] = {
     { WM_AOP_SLAVEANIM, 0, -1, 93, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_IMMOBILIZE, 0, -1, 35, 0, 0, 0, 0, 0, 0 },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 6, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y3JK3Z05" },
     { WM_AOP_SETLONG, 0, -1, 1, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -10829,7 +10845,7 @@ static const wm_anim_op prog_yok_scissor_anim_ops[] = {
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 5, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3JK3A06" },
     { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "Y3JK3Z05" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -10877,7 +10893,7 @@ static const wm_anim_op prog_yok_fall_back_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_FRICTION, 0, -1, 12288, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y3FD3A06" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y3FD3A06" },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y3FD3A07" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -10888,6 +10904,7 @@ static const wm_anim_op prog_yok_fall_back_anim_ops[] = {
     { WM_AOP_SETLONG, 0, -1, 1, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "Y3RL1A01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup_anim" },
 };
 
@@ -11185,7 +11202,7 @@ static const wm_anim_op prog_rzr_2_pin_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_CROWD_CHEER" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "grnd_hit" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "R3PN5A06" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
@@ -11905,7 +11922,7 @@ static const wm_anim_op prog_rzr_4_pin_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_CROWD_CHEER" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "grnd_hit" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "R3PN5A06" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
@@ -12536,7 +12553,7 @@ static const wm_anim_op prog_rzr_tbukl_elbow_anim_ops[] = {
     { WM_AOP_ATTACK_OFF, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_IFSTATUS, 0, 36, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_MISSES" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 5, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 7, 0, 0, 0, 0, 0, "R4PJ4B06" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -13025,7 +13042,7 @@ static const wm_anim_op prog_rzr_3_pile_driver_anim_ops[] = {
     { WM_AOP_CLROPPMODE, 0, -1, 2048, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "R3PG3B09" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
@@ -13785,7 +13802,7 @@ static const wm_anim_op prog_rzr_fall_back_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_FRICTION, 0, -1, 12288, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "R3FD3B06" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 5, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "R3FD3B06" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R3FD3B07" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R3FD3B08" },
@@ -13798,6 +13815,7 @@ static const wm_anim_op prog_rzr_fall_back_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R3GU2A01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_faceup_getup_anim" },
 };
 
@@ -13858,6 +13876,7 @@ static const wm_anim_op prog_start_run_flung_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "#x_flip" },
     { WM_AOP_OFFSET, 0, -1, 20, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "#ok2" },
+    { WM_AOP_GETUP, 0, -1, 120, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
@@ -14011,6 +14030,7 @@ static const wm_anim_op prog_lex_flyout_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "L3UC3X10" },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "L3CP3X01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_faceup_getup_anim" },
 };
 
@@ -14025,6 +14045,7 @@ static const wm_anim_op prog_hrt_tossed2_anim_ops[] = {
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
+    { WM_AOP_GETUP, 0, -1, 270, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "H3FR3A05" },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_OFFSET, 0, -1, 15, 0, 0, 0, 0, 0, 0 },
@@ -14042,6 +14063,7 @@ static const wm_anim_op prog_hrt_tossed2_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "H2CP3A08" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_faceup_getup_anim" },
 };
 
@@ -14056,6 +14078,7 @@ static const wm_anim_op prog_rzr_tossed2_anim_ops[] = {
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
+    { WM_AOP_GETUP, 0, -1, 270, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "R3TD3A08" },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R3GU2A01" },
@@ -14071,6 +14094,7 @@ static const wm_anim_op prog_rzr_tossed2_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "R3AM3D01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_faceup_getup_anim" },
 };
 
@@ -14085,6 +14109,7 @@ static const wm_anim_op prog_und_tossed2_anim_ops[] = {
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
+    { WM_AOP_GETUP, 0, -1, 270, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "U3FH3A04" },
     { WM_AOP_OFFSET, 0, -1, 35, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "U3CP3B01" },
@@ -14098,6 +14123,7 @@ static const wm_anim_op prog_und_tossed2_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "U3CP3B01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_getup_anim" },
 };
 
@@ -14113,6 +14139,7 @@ static const wm_anim_op prog_yok_tossed2_anim_ops[] = {
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
+    { WM_AOP_GETUP, 0, -1, 270, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y3FL3W07" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3FD3A07" },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -14132,6 +14159,7 @@ static const wm_anim_op prog_yok_tossed2_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "Y3RL1A01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup_anim" },
 };
 
@@ -14146,6 +14174,7 @@ static const wm_anim_op prog_shn_tossed2_anim_ops[] = {
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
+    { WM_AOP_GETUP, 0, -1, 270, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "S3OS3X09" },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "S3OS3X10" },
     { WM_AOP_SET_XVEL, 2, -1, 131072, 2, 0, 0, 0, 0, 0 },
@@ -14161,6 +14190,7 @@ static const wm_anim_op prog_shn_tossed2_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "S3CP3B07" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
 
@@ -14175,6 +14205,7 @@ static const wm_anim_op prog_bam_tossed2_anim_ops[] = {
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
+    { WM_AOP_GETUP, 0, -1, 270, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B4TD3B08" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B4TD3B09" },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -14192,6 +14223,7 @@ static const wm_anim_op prog_bam_tossed2_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B3RL1A01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_faceup_getup_anim" },
 };
 
@@ -14206,6 +14238,7 @@ static const wm_anim_op prog_dnk_tossed2_anim_ops[] = {
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
+    { WM_AOP_GETUP, 0, -1, 270, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D3FD3E02" },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_OFFSET, 0, -1, 20, 0, 0, 0, 0, 0, 0 },
@@ -14222,6 +14255,7 @@ static const wm_anim_op prog_dnk_tossed2_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D3SA3A09" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
 };
 
@@ -14236,6 +14270,7 @@ static const wm_anim_op prog_lex_tossed2_anim_ops[] = {
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
+    { WM_AOP_GETUP, 0, -1, 270, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "L3FH3A06" },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_OFFSET, 0, -1, 20, 0, 0, 0, 0, 0, 0 },
@@ -14252,6 +14287,7 @@ static const wm_anim_op prog_lex_tossed2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "L3CP3X06" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "L3CP3X07" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "L3CP3X01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_faceup_getup_anim" },
 };
 
@@ -14287,6 +14323,7 @@ static const wm_anim_op prog_hrt_break_neck3_anim_ops[] = {
     { WM_AOP_OFFSET, 0, -1, -20, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "H3RL1A08" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_faceup_getup_anim" },
 };
 
@@ -14311,6 +14348,7 @@ static const wm_anim_op prog_rzr_break_neck3_anim_ops[] = {
     { WM_AOP_OFFSET, 0, -1, -7, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "R3RL1B06" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_facedown_getup_anim" },
 };
 
@@ -14337,6 +14375,7 @@ static const wm_anim_op prog_und_break_neck3_anim_ops[] = {
     { WM_AOP_OFFSET, 0, -1, -22, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "U3CR3A07" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_getup_anim" },
 };
 
@@ -14368,6 +14407,7 @@ static const wm_anim_op prog_yok_break_neck3_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3KF3B05" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3KF3B06" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3KF3B06" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup_anim" },
 };
 
@@ -14394,6 +14434,7 @@ static const wm_anim_op prog_shn_break_neck4_anim_ops[] = {
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "S3RL3A05" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
 
@@ -14414,6 +14455,7 @@ static const wm_anim_op prog_bam_break_neck3_anim_ops[] = {
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 23, 0, 0, 0, 0, 0, "B3RL1A07" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_OFFSET, 0, -1, 10, 0, -6, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_4_faceup_getup_anim" },
 };
@@ -14439,6 +14481,7 @@ static const wm_anim_op prog_dnk_break_neck3_anim_ops[] = {
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "D3RC3A09" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
 };
 
@@ -14467,6 +14510,7 @@ static const wm_anim_op prog_lex_break_neck3_anim_ops[] = {
     { WM_AOP_OFFSET, 0, -1, -15, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 20, 0, 0, 0, 0, 0, "L3RL1A05" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_faceup_getup_anim" },
 };
 
@@ -14780,6 +14824,7 @@ static const wm_anim_op prog_hrt_break_neck2_anim_ops[] = {
     { WM_AOP_OFFSET, 0, -1, -20, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "H3RL1A08" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_faceup_getup_anim" },
 };
 
@@ -14800,6 +14845,7 @@ static const wm_anim_op prog_rzr_break_neck2_anim_ops[] = {
     { WM_AOP_OFFSET, 0, -1, -7, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "R3RL1B06" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_facedown_getup_anim" },
 };
 
@@ -14822,6 +14868,7 @@ static const wm_anim_op prog_und_break_neck2_anim_ops[] = {
     { WM_AOP_OFFSET, 0, -1, -22, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "U3CR3A07" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_getup_anim" },
 };
 
@@ -14850,6 +14897,7 @@ static const wm_anim_op prog_yok_break_neck2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3KF3B05" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3KF3B06" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3KF3B06" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup_anim" },
 };
 
@@ -14872,6 +14920,7 @@ static const wm_anim_op prog_shn_break_neck2_anim_ops[] = {
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "S3RL3A05" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
 
@@ -14894,6 +14943,7 @@ static const wm_anim_op prog_bam_break_neck2_anim_ops[] = {
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 23, 0, 0, 0, 0, 0, "B3RL1A07" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_OFFSET, 0, -1, 10, 0, -6, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_4_faceup_getup_anim" },
 };
@@ -14916,6 +14966,7 @@ static const wm_anim_op prog_dnk_break_neck2_anim_ops[] = {
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 20, 0, 0, 0, 0, 0, "D3RC3A09" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
 };
 
@@ -14938,6 +14989,7 @@ static const wm_anim_op prog_lex_break_neck2_anim_ops[] = {
     { WM_AOP_OFFSET, 0, -1, -15, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 20, 0, 0, 0, 0, 0, "L3RL1A05" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_faceup_getup_anim" },
 };
 
@@ -14963,6 +15015,7 @@ static const wm_anim_op prog_hrt_slambounce2_anim_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "H2CP3A07" },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "H2CP3A08" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_faceup_getup_anim" },
 };
 
@@ -14988,6 +15041,7 @@ static const wm_anim_op prog_rzr_slambounce2_anim_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "R3AM3D07" },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "R3AM3D01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_faceup_getup_anim" },
 };
 
@@ -15014,6 +15068,7 @@ static const wm_anim_op prog_und_slambounce2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "U3CP3B07" },
     { WM_AOP_OFFSET, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "U3CP3B01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_getup_anim" },
 };
 
@@ -15040,6 +15095,7 @@ static const wm_anim_op prog_yok_slambounce2_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y3CP3B06" },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "Y3RL1A01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup_anim" },
 };
 
@@ -15063,6 +15119,7 @@ static const wm_anim_op prog_shn_slambounce2_anim_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "S3CP3B06" },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "S3CP3B07" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
 
@@ -15088,6 +15145,7 @@ static const wm_anim_op prog_bam_slambounce2_anim_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "B3CP3B07" },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "B3RL1A01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_faceup_getup_anim" },
 };
 
@@ -15112,6 +15170,7 @@ static const wm_anim_op prog_dnk_slambounce2_anim_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "D3SA3A08" },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "D3SA3A09" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
 };
 
@@ -15134,6 +15193,7 @@ static const wm_anim_op prog_lex_slambounce2_anim_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "L3CP3X07" },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "L3CP3X01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_faceup_getup_anim" },
 };
 
@@ -15448,6 +15508,7 @@ static const wm_anim_op prog_hrt_break_face_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H3MS3X05" },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H3MS3X05" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_faceup_getup_anim" },
 };
 
@@ -15467,6 +15528,7 @@ static const wm_anim_op prog_rzr_break_face_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R3MS3Q04" },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "R3RL1B06" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_faceup_getup_anim" },
 };
 
@@ -15488,6 +15550,7 @@ static const wm_anim_op prog_und_break_face_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "U3CF3Q04" },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "U3CF3Q01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_getup_anim" },
 };
 
@@ -15511,6 +15574,7 @@ static const wm_anim_op prog_yok_break_face_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3KF3B05" },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3KF3B06" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup_anim" },
 };
 
@@ -15536,6 +15600,7 @@ static const wm_anim_op prog_shn_break_face_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S3CF3Z06" },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S3CF3Z01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
 
@@ -15555,6 +15620,7 @@ static const wm_anim_op prog_bam_break_face_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "B3MS3X03" },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "B3RL1A07" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_4_faceup_getup_anim" },
 };
 
@@ -15575,6 +15641,7 @@ static const wm_anim_op prog_dnk_break_face_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "D3GS3X08" },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "D3GS3X08" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
 };
 
@@ -15597,6 +15664,7 @@ static const wm_anim_op prog_lex_break_face_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "L3TF3X05" },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "L3TF3X05" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_faceup_getup_anim" },
 };
 
@@ -15614,7 +15682,7 @@ static const wm_anim_op prog_hrt_backbroken_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "H3RL1A08" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
@@ -15626,6 +15694,7 @@ static const wm_anim_op prog_hrt_backbroken_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "H3RL1A08" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_faceup_getup_anim" },
 };
 
@@ -15641,7 +15710,7 @@ static const wm_anim_op prog_rzr_backbroken_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "R3FD3B05" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R3AM3D02" },
@@ -15654,6 +15723,7 @@ static const wm_anim_op prog_rzr_backbroken_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "R3AM3D01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_faceup_getup_anim" },
 };
 
@@ -15670,7 +15740,7 @@ static const wm_anim_op prog_und_backbroken_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "U3CP3B02" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
@@ -15683,6 +15753,7 @@ static const wm_anim_op prog_und_backbroken_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "U3CP3B01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_getup_anim" },
 };
 
@@ -15699,7 +15770,7 @@ static const wm_anim_op prog_yok_backbroken_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y3CP3B05" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
@@ -15715,6 +15786,7 @@ static const wm_anim_op prog_yok_backbroken_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3RL1A01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup_anim" },
 };
 
@@ -15731,7 +15803,7 @@ static const wm_anim_op prog_shn_backbroken_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "S3UC3X05" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
@@ -15746,6 +15818,7 @@ static const wm_anim_op prog_shn_backbroken_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "S3CP3B07" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
 
@@ -15763,7 +15836,7 @@ static const wm_anim_op prog_bam_backbroken_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "B3RL1A03" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
@@ -15773,6 +15846,7 @@ static const wm_anim_op prog_bam_backbroken_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 20, 0, 0, 0, 0, 0, "B3RL1A07" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_faceup_getup_anim" },
 };
 
@@ -15788,7 +15862,7 @@ static const wm_anim_op prog_dnk_backbroken_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "D3BK3Z06" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
@@ -15803,6 +15877,7 @@ static const wm_anim_op prog_dnk_backbroken_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "D3SA3A09" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
 };
 
@@ -15818,7 +15893,7 @@ static const wm_anim_op prog_lex_backbroken_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "L3UC3A06" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
@@ -15833,6 +15908,7 @@ static const wm_anim_op prog_lex_backbroken_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "L3CP3X01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_faceup_getup_anim" },
 };
 
@@ -15841,6 +15917,7 @@ static const wm_anim_op prog_hrt_tossed_anim_ops[] = {
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "ckzpos" },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_GETUP, 0, -1, 270, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_SET_XVEL, 2, -1, 131072, 2, 0, 0, 0, 0, 0 },
     { WM_AOP_SET_YVEL, 0, -1, 327680, 0, 0, 0, 0, 0, 0 },
@@ -15855,6 +15932,7 @@ static const wm_anim_op prog_hrt_tossed_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H2CP3A08" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_faceup_getup_anim" },
 };
 
@@ -15863,6 +15941,7 @@ static const wm_anim_op prog_rzr_tossed_anim_ops[] = {
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "ckzpos" },
+    { WM_AOP_GETUP, 0, -1, 270, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_SET_XVEL, 2, -1, 131072, 2, 0, 0, 0, 0, 0 },
     { WM_AOP_SET_YVEL, 0, -1, 327680, 0, 0, 0, 0, 0, 0 },
@@ -15876,6 +15955,7 @@ static const wm_anim_op prog_rzr_tossed_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "R3AM3D01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_faceup_getup_anim" },
 };
 
@@ -15884,6 +15964,7 @@ static const wm_anim_op prog_und_tossed_anim_ops[] = {
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "ckzpos" },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_GETUP, 0, -1, 270, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_SET_XVEL, 2, -1, 131072, 2, 0, 0, 0, 0, 0 },
     { WM_AOP_SET_YVEL, 0, -1, 327680, 0, 0, 0, 0, 0, 0 },
@@ -15895,6 +15976,7 @@ static const wm_anim_op prog_und_tossed_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "U3CP3B01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_getup_anim" },
 };
 
@@ -15904,6 +15986,7 @@ static const wm_anim_op prog_yok_tossed_anim_ops[] = {
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "ckzpos" },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_GETUP, 0, -1, 270, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_SET_XVEL, 2, -1, 131072, 2, 0, 0, 0, 0, 0 },
     { WM_AOP_SET_YVEL, 0, -1, 327680, 0, 0, 0, 0, 0, 0 },
@@ -15921,6 +16004,7 @@ static const wm_anim_op prog_yok_tossed_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3RL1A01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup_anim" },
 };
 
@@ -15929,6 +16013,7 @@ static const wm_anim_op prog_shn_tossed_anim_ops[] = {
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "ckzpos" },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_GETUP, 0, -1, 270, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_SET_XVEL, 2, -1, 131072, 2, 0, 0, 0, 0, 0 },
     { WM_AOP_SET_YVEL, 0, -1, 327680, 0, 0, 0, 0, 0, 0 },
@@ -15943,6 +16028,7 @@ static const wm_anim_op prog_shn_tossed_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "S3CP3B07" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
 
@@ -15952,6 +16038,7 @@ static const wm_anim_op prog_bam_tossed_anim_ops[] = {
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "ckzpos" },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_GETUP, 0, -1, 270, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_SET_XVEL, 2, -1, 131072, 2, 0, 0, 0, 0, 0 },
     { WM_AOP_OFFSET, 0, -1, 15, 0, 0, 0, 0, 0, 0 },
@@ -15968,6 +16055,7 @@ static const wm_anim_op prog_bam_tossed_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B3RL1A01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_faceup_getup_anim" },
 };
 
@@ -15976,6 +16064,7 @@ static const wm_anim_op prog_dnk_tossed_anim_ops[] = {
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "ckzpos" },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_GETUP, 0, -1, 270, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_SET_XVEL, 2, -1, 131072, 2, 0, 0, 0, 0, 0 },
     { WM_AOP_SET_YVEL, 0, -1, 196608, 0, 0, 0, 0, 0, 0 },
@@ -15989,6 +16078,7 @@ static const wm_anim_op prog_dnk_tossed_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D3SA3A09" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
 };
 
@@ -15997,6 +16087,7 @@ static const wm_anim_op prog_lex_tossed_anim_ops[] = {
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "ckzpos" },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_GETUP, 0, -1, 270, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_SET_XVEL, 2, -1, 131072, 2, 0, 0, 0, 0, 0 },
     { WM_AOP_SET_YVEL, 0, -1, 327680, 0, 0, 0, 0, 0, 0 },
@@ -16010,6 +16101,7 @@ static const wm_anim_op prog_lex_tossed_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "L3CP3X06" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "L3CP3X07" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "L3CP3X01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_faceup_getup_anim" },
 };
 
@@ -16024,6 +16116,7 @@ static const wm_anim_op prog_hrt_break_face2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H3MS3X05" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H3MS3X05" },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_faceup_getup_anim" },
 };
@@ -16038,6 +16131,7 @@ static const wm_anim_op prog_rzr_break_face2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R3MS3Q04" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R3MS3Q01" },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_faceup_getup_anim" },
 };
@@ -16053,6 +16147,7 @@ static const wm_anim_op prog_und_break_face2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "U3CF3Q04" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "U3CF3Q01" },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_getup_anim" },
 };
@@ -16069,6 +16164,7 @@ static const wm_anim_op prog_yok_break_face2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3KF3B06" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3KF3B01" },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup_anim" },
 };
@@ -16086,6 +16182,7 @@ static const wm_anim_op prog_shn_break_face2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S3CF3Z06" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S3CF3Z01" },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
@@ -16100,6 +16197,7 @@ static const wm_anim_op prog_bam_break_face2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "B3MS3X03" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B3RL1A07" },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_4_faceup_getup_anim" },
 };
@@ -16113,6 +16211,7 @@ static const wm_anim_op prog_dnk_break_face2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "D3GS3X10" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D3GS3X09" },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
 };
@@ -16129,6 +16228,7 @@ static const wm_anim_op prog_lex_break_face2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "L3TF3X05" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "L3TF3X01" },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_faceup_getup_anim" },
 };
@@ -16141,6 +16241,7 @@ static const wm_anim_op prog_hrt_break_face3_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 100, 0, 0, 0, 0, 0, "H3MS3Z04" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_faceup_getup_anim" },
 };
 
@@ -16152,6 +16253,7 @@ static const wm_anim_op prog_rzr_break_face3_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 100, 0, 0, 0, 0, 0, "R3MS3Z03" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_faceup_getup_anim" },
 };
 
@@ -16163,6 +16265,7 @@ static const wm_anim_op prog_und_break_face3_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 100, 0, 0, 0, 0, 0, "U3MS3Z03" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_getup_anim" },
 };
 
@@ -16174,6 +16277,7 @@ static const wm_anim_op prog_yok_break_face3_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 100, 0, 0, 0, 0, 0, "Y3MS3Z04" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup_anim" },
 };
 
@@ -16185,6 +16289,7 @@ static const wm_anim_op prog_shn_break_face3_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 100, 0, 0, 0, 0, 0, "S3MS3Z03" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
 
@@ -16196,6 +16301,7 @@ static const wm_anim_op prog_bam_break_face3_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 100, 0, 0, 0, 0, 0, "B3MS3Z03" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_4_faceup_getup_anim" },
 };
 
@@ -16207,6 +16313,7 @@ static const wm_anim_op prog_dnk_break_face3_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 100, 0, 0, 0, 0, 0, "D3GS3X04" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
 };
 
@@ -16218,6 +16325,7 @@ static const wm_anim_op prog_lex_break_face3_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 100, 0, 0, 0, 0, 0, "L3MS3Z04" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_faceup_getup_anim" },
 };
 
@@ -16413,6 +16521,7 @@ static const wm_anim_op prog_hrt_slamnobounce_anim_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "H2CP3A07" },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "H2CP3A08" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_faceup_getup_anim" },
 };
 
@@ -16431,6 +16540,7 @@ static const wm_anim_op prog_rzr_slamnobounce_anim_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "R3AM3D07" },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "R3AM3D01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_faceup_getup_anim" },
 };
 
@@ -16449,6 +16559,7 @@ static const wm_anim_op prog_und_slamnobounce_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "U3CP3B07" },
     { WM_AOP_OFFSET, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "U3CP3B01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_getup_anim" },
 };
 
@@ -16467,6 +16578,7 @@ static const wm_anim_op prog_yok_slamnobounce_anim_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y3CP3B06" },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "Y3RL1A01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup_anim" },
 };
 
@@ -16482,6 +16594,7 @@ static const wm_anim_op prog_shn_slamnobounce_anim_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "S3CP3B06" },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "S3CP3B07" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
 
@@ -16500,6 +16613,7 @@ static const wm_anim_op prog_bam_slamnobounce_anim_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "B3CP3B07" },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "B3RL1A01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_faceup_getup_anim" },
 };
 
@@ -16517,6 +16631,7 @@ static const wm_anim_op prog_dnk_slamnobounce_anim_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "D3SA3A08" },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "D3SA3A09" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_2_faceup_getup_anim" },
 };
 
@@ -16532,6 +16647,7 @@ static const wm_anim_op prog_lex_slamnobounce_anim_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "L3CP3X07" },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "L3CP3X01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_faceup_getup_anim" },
 };
 
@@ -16553,6 +16669,7 @@ static const wm_anim_op prog_hrt_hitonground_anim_ops[] = {
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "H2CP3A08" },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "H2CP3A08" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_faceup_getup_anim" },
 };
 
@@ -16574,6 +16691,7 @@ static const wm_anim_op prog_rzr_hitonground_anim_ops[] = {
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "R3AM3D01" },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "R3AM3D01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_faceup_getup_anim" },
 };
 
@@ -16594,6 +16712,7 @@ static const wm_anim_op prog_und_hitonground_anim_ops[] = {
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "U3CP3B07" },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "U3CP3B01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_getup_anim" },
 };
 
@@ -16617,6 +16736,7 @@ static const wm_anim_op prog_yok_hitonground_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y3CP3B07" },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y3CP3B08" },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "Y3RL1A01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup_anim" },
 };
 
@@ -16639,6 +16759,7 @@ static const wm_anim_op prog_shn_hitonground_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "S3CP3B06" },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "S3CP3B07" },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "S3CP3B07" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
 
@@ -16660,6 +16781,7 @@ static const wm_anim_op prog_bam_hitonground_anim_ops[] = {
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "B3CP3B07" },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "B3RL1A01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_faceup_getup_anim" },
 };
 
@@ -16680,6 +16802,7 @@ static const wm_anim_op prog_dnk_hitonground_anim_ops[] = {
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "D3SA3A09" },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "D3SA3A09" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
 };
 
@@ -16700,6 +16823,7 @@ static const wm_anim_op prog_lex_hitonground_anim_ops[] = {
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "L3CP3X07" },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "L3CP3X01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_faceup_getup_anim" },
 };
 
@@ -16772,6 +16896,7 @@ static const wm_anim_op prog_yok_flyout2_anim_ops[] = {
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "ckzpos" },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_GETUP, 0, -1, 270, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_SET_XVEL, 2, -1, 131072, 2, 0, 0, 0, 0, 0 },
     { WM_AOP_SET_YVEL, 0, -1, 327680, 0, 0, 0, 0, 0, 0 },
@@ -16789,6 +16914,7 @@ static const wm_anim_op prog_yok_flyout2_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3RL1A01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup_anim" },
 };
 
@@ -16811,6 +16937,7 @@ static const wm_anim_op prog_bam_flyout2_anim_ops[] = {
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "ckzpos" },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_GETUP, 0, -1, 270, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_SET_XVEL, 2, -1, 131072, 2, 0, 0, 0, 0, 0 },
     { WM_AOP_OFFSET, 0, -1, 15, 0, 0, 0, 0, 0, 0 },
@@ -16827,6 +16954,7 @@ static const wm_anim_op prog_bam_flyout2_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B3RL1A01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_faceup_getup_anim" },
 };
 
@@ -16887,6 +17015,7 @@ static const wm_anim_op prog_lex_flyout2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "L3UC3X10" },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "L3CP3X01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_faceup_getup_anim" },
     { WM_AOP_SETMODE, 0, -1, 1164, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
@@ -16898,7 +17027,7 @@ static const wm_anim_op prog_lex_flyout2_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "choose_2or4" },
-    { WM_AOP_IFSTATUS, 0, 49, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFSTATUS, 0, 50, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "L3GU2A01" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "L3GU2A02" },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "L3GU2A03" },
@@ -16913,11 +17042,11 @@ static const wm_anim_op prog_lex_flyout2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "L3GU2A10" },
     { WM_AOP_SAFE_TIME, 0, -1, 50, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "free_toss_check" },
-    { WM_AOP_IFNOTSTATUS, 0, 46, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFNOTSTATUS, 0, 47, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ATTACK_ON, 38, -1, 11, 47, 91, 50, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "L3GU2A10" },
     { WM_AOP_ATTACK_OFF, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-    { WM_AOP_IFNOTSTATUS, 0, 46, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFNOTSTATUS, 0, 47, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "setup_freetoss" },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_4_push_anim" },
     { WM_AOP_FACEUP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -16937,11 +17066,11 @@ static const wm_anim_op prog_lex_flyout2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "L3GU4A10" },
     { WM_AOP_SAFE_TIME, 0, -1, 50, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "free_toss_check" },
-    { WM_AOP_IFNOTSTATUS, 0, 70, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFNOTSTATUS, 0, 71, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ATTACK_ON, 38, -1, 11, 47, 91, 50, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "L3GU4A10" },
     { WM_AOP_ATTACK_OFF, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-    { WM_AOP_IFNOTSTATUS, 0, 70, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFNOTSTATUS, 0, 71, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "setup_freetoss" },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_4_push_anim" },
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -16966,6 +17095,7 @@ static const wm_anim_op prog_hrt_slambounce_anim_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "H2CP3A07" },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "H2CP3A08" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_faceup_getup_anim" },
 };
 
@@ -16986,6 +17116,7 @@ static const wm_anim_op prog_rzr_slambounce_anim_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "R3AM3D07" },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "R3AM3D01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_faceup_getup_anim" },
 };
 
@@ -17008,6 +17139,7 @@ static const wm_anim_op prog_und_slambounce_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "U3CP3B07" },
     { WM_AOP_OFFSET, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "U3CP3B01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_getup_anim" },
 };
 
@@ -17028,6 +17160,7 @@ static const wm_anim_op prog_yok_slambounce_anim_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y3CP3B06" },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "Y3RL1A01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup_anim" },
 };
 
@@ -17045,6 +17178,7 @@ static const wm_anim_op prog_shn_slambounce_anim_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "S3CP3B06" },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "S3CP3B07" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
 
@@ -17065,6 +17199,7 @@ static const wm_anim_op prog_bam_slambounce_anim_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "B3CP3B07" },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "B3RL1A01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_faceup_getup_anim" },
 };
 
@@ -17084,6 +17219,7 @@ static const wm_anim_op prog_dnk_slambounce_anim_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "D3SA3A08" },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "D3SA3A09" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
 };
 
@@ -17102,6 +17238,7 @@ static const wm_anim_op prog_lex_slambounce_anim_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "L3CP3X07" },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "L3CP3X01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_faceup_getup_anim" },
 };
 
@@ -17126,6 +17263,7 @@ static const wm_anim_op prog_hrt_breakneck2_anim_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_FRAME, 0, -1, 8, 0, 0, 0, 0, 0, "H3RL1A08" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_facedown_getup_anim" },
 };
 
@@ -17150,6 +17288,7 @@ static const wm_anim_op prog_rzr_breakneck2_anim_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_FRAME, 0, -1, 8, 0, 0, 0, 0, 0, "R3RL1B06" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_facedown_getup_anim" },
 };
 
@@ -17175,6 +17314,7 @@ static const wm_anim_op prog_und_breakneck2_anim_ops[] = {
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_FRAME, 0, -1, 8, 0, 0, 0, 0, 0, "U3CR3A07" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_getup_anim" },
 };
 
@@ -17189,7 +17329,7 @@ static const wm_anim_op prog_yok_breakneck2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y3FD3A05" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
-    { WM_AOP_BOUNCE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 3, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRICTION, 0, -1, 8192, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y3FD3A06" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3FD3N01" },
@@ -17203,6 +17343,7 @@ static const wm_anim_op prog_yok_breakneck2_anim_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_FRAME, 0, -1, 8, 0, 0, 0, 0, 0, "Y3RL1A06" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup_anim" },
 };
 
@@ -17229,6 +17370,7 @@ static const wm_anim_op prog_shn_breakneck2_anim_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_FRAME, 0, -1, 8, 0, 0, 0, 0, 0, "S3RL3A05" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
 
@@ -17251,6 +17393,7 @@ static const wm_anim_op prog_bam_breakneck2_anim_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_FRAME, 0, -1, 8, 0, 0, 0, 0, 0, "B3RL1A07" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_faceup_getup_anim" },
 };
 
@@ -17276,6 +17419,7 @@ static const wm_anim_op prog_dnk_breakneck2_anim_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_FRAME, 0, -1, 8, 0, 0, 0, 0, 0, "D3RL1B06" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
 };
 
@@ -17300,6 +17444,7 @@ static const wm_anim_op prog_lex_breakneck2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "L3CP3X07" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_FRAME, 0, -1, 6, 0, 0, 0, 0, 0, "L3CP3X01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_faceup_getup_anim" },
 };
 
@@ -17322,6 +17467,7 @@ static const wm_anim_op prog_bam_hitonground_xflip_anim_ops[] = {
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "B3CP3B07" },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "B3RL1A01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_faceup_getup_anim" },
 };
 
@@ -17346,6 +17492,7 @@ static const wm_anim_op prog_yok_hitonground_xflip_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y3CP3B07" },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y3CP3B08" },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "Y3RL1A01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup_anim" },
 };
 
@@ -17367,6 +17514,7 @@ static const wm_anim_op prog_dnk_hitonground_xflip_anim_ops[] = {
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "D3SA3A09" },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "D3SA3A09" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
 };
 
@@ -17381,6 +17529,7 @@ static const wm_anim_op prog_hrt_up_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H2CP3A08" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_faceup_getup_anim" },
 };
 
@@ -17394,6 +17543,7 @@ static const wm_anim_op prog_rzr_up_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R3AM3D01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_faceup_getup_anim" },
 };
 
@@ -17409,6 +17559,7 @@ static const wm_anim_op prog_und_up_anim_ops[] = {
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "U3CP3B07" },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "U3CP3B01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_getup_anim" },
 };
 
@@ -17427,6 +17578,7 @@ static const wm_anim_op prog_yok_up_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3CP3B07" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3CP3B08" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3RL1A01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup_anim" },
 };
 
@@ -17442,6 +17594,7 @@ static const wm_anim_op prog_shn_up_anim_ops[] = {
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S3CP3B06" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S3CP3B07" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
 
@@ -17457,6 +17610,7 @@ static const wm_anim_op prog_bam_up_anim_ops[] = {
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B3CP3B07" },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "B3RL1A01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_faceup_getup_anim" },
 };
 
@@ -17471,6 +17625,7 @@ static const wm_anim_op prog_dnk_up_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D3SA3A09" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
 };
 
@@ -17486,6 +17641,7 @@ static const wm_anim_op prog_lex_up_anim_ops[] = {
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "L3CP3X07" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "L3CP3X01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_faceup_getup_anim" },
 };
 
@@ -17507,6 +17663,7 @@ static const wm_anim_op prog_und_hitonground_xflip_anim_ops[] = {
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "U3CP3B07" },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "U3CP3B01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_getup_anim" },
 };
 
@@ -17530,6 +17687,7 @@ static const wm_anim_op prog_shn_hitonground_xflip_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "S3CP3B06" },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "S3CP3B07" },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "S3CP3B07" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
 
@@ -17733,6 +17891,7 @@ static const wm_anim_op prog_hrt_break_neck_anim_ops[] = {
     { WM_AOP_OFFSET, 0, -1, -28, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H3RL1A08" },
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_facedown_getup_anim" },
     { WM_AOP_FRAME, 0, -1, 6, 0, 0, 0, 0, 0, "H3UC3Z02" },
     { WM_AOP_OFFSET, 0, -1, -8, 0, 0, 0, 0, 0, 0 },
@@ -17745,6 +17904,7 @@ static const wm_anim_op prog_hrt_break_neck_anim_ops[] = {
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H2CP3A08" },
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_facedown_getup_anim" },
 };
 
@@ -17767,6 +17927,7 @@ static const wm_anim_op prog_rzr_break_neck4_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R3HG3B06" },
     { WM_AOP_OFFSET, 0, -1, 23, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "R3RL1B06" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_facedown_getup_anim" },
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -17778,6 +17939,7 @@ static const wm_anim_op prog_rzr_break_neck4_anim_ops[] = {
     { WM_AOP_OFFSET, 0, -1, -28, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "R3GU2A01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_facedown_getup_anim" },
 };
 
@@ -17798,6 +17960,7 @@ static const wm_anim_op prog_und_break_neck_anim_ops[] = {
     { WM_AOP_OFFSET, 0, -1, -22, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "U3CR3A07" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_getup_anim" },
 };
 
@@ -17817,6 +17980,7 @@ static const wm_anim_op prog_yok_break_neck_anim_ops[] = {
     { WM_AOP_OFFSET, 0, -1, -39, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3RL1A06" },
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup_anim" },
     { WM_AOP_OFFSET, 0, -1, -2, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 6, 0, 0, 0, 0, 0, "Y3FD3N03" },
@@ -17828,6 +17992,7 @@ static const wm_anim_op prog_yok_break_neck_anim_ops[] = {
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 6, 0, 0, 0, 0, 0, "Y3RL1A01" },
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup_anim" },
 };
 
@@ -17863,6 +18028,7 @@ static const wm_anim_op prog_bam_break_neck4_anim_ops[] = {
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_4_faceup_getup_anim" },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "B4UC3B06" },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "B4UC3B07" },
@@ -17870,6 +18036,7 @@ static const wm_anim_op prog_bam_break_neck4_anim_ops[] = {
     { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_4_faceup_getup_anim" },
 };
 
@@ -17891,6 +18058,7 @@ static const wm_anim_op prog_dnk_break_neck_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "D3GS3X08" },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
     { WM_AOP_FRAME, 0, -1, 7, 0, 0, 0, 0, 0, "D3FD3E03" },
     { WM_AOP_OFFSET, 0, -1, -12, 0, 0, 0, 0, 0, 0 },
@@ -17904,6 +18072,7 @@ static const wm_anim_op prog_dnk_break_neck_anim_ops[] = {
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "D3SA3A09" },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
 };
 
@@ -18133,6 +18302,7 @@ static const wm_anim_op prog_rzr_break_neck_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R3HG3B06" },
     { WM_AOP_OFFSET, 0, -1, -23, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "R3RL1B06" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_facedown_getup_anim" },
     { WM_AOP_OFFSET, 0, -1, -11, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "R3HG3B01" },
@@ -18141,6 +18311,7 @@ static const wm_anim_op prog_rzr_break_neck_anim_ops[] = {
     { WM_AOP_OFFSET, 0, -1, -28, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R3GU2A01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_facedown_getup_anim" },
 };
 
@@ -18164,6 +18335,7 @@ static const wm_anim_op prog_shn_break_neck_anim_ops[] = {
     { WM_AOP_OFFSET, 0, -1, 6, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S3RL3A05" },
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
     { WM_AOP_FRAME, 0, -1, 6, 0, 0, 0, 0, 0, "S3FD3X03" },
     { WM_AOP_OFFSET, 0, -1, -9, 0, 0, 0, 0, 0, 0 },
@@ -18174,6 +18346,7 @@ static const wm_anim_op prog_shn_break_neck_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S3UC3X08" },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "S3CP3B07" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
 
@@ -18187,6 +18360,7 @@ static const wm_anim_op prog_bam_break_neck_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "B3FD3C05" },
     { WM_AOP_OFFSET, 0, -1, -51, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "B3RL1A07" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_4_faceup_getup_anim" },
     { WM_AOP_OFFSET, 0, -1, 14, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "B4TD3B07" },
@@ -18197,6 +18371,7 @@ static const wm_anim_op prog_bam_break_neck_anim_ops[] = {
     { WM_AOP_OFFSET, 0, -1, -16, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "B3RL1A01" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_4_faceup_getup_anim" },
 };
 
@@ -18215,6 +18390,7 @@ static const wm_anim_op prog_lex_break_neck_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "L3FD3B06" },
     { WM_AOP_OFFSET, 0, -1, -32, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "L3RL1A05" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_faceup_getup_anim" },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "L3FD3B02" },
     { WM_AOP_OFFSET, 0, -1, -15, 0, 0, 0, 0, 0, 0 },
@@ -18224,6 +18400,7 @@ static const wm_anim_op prog_lex_break_neck_anim_ops[] = {
     { WM_AOP_OFFSET, 0, -1, -17, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "L3RL1A11" },
+    { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_faceup_getup_anim" },
 };
 
@@ -18384,6 +18561,8 @@ static const wm_anim_op prog_lex_choking_anim_ops[] = {
 };
 
 static const wm_anim_program programs[] = {
+    { "xxx_dead_anim", "WRESTLE2.ASM", prog_xxx_dead_anim_ops,
+      sizeof(prog_xxx_dead_anim_ops) / sizeof(prog_xxx_dead_anim_ops[0]) },
     { "hrt_2_punch_anim", "HRTSEQ2.ASM", prog_hrt_2_punch_anim_ops,
       sizeof(prog_hrt_2_punch_anim_ops) / sizeof(prog_hrt_2_punch_anim_ops[0]) },
     { "hrt_4_punch_anim", "HRTSEQ2.ASM", prog_hrt_4_punch_anim_ops,

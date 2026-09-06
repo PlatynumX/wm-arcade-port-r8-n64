@@ -193,6 +193,30 @@ struct wm_arcade_actor {
     const char *puppet_frame;
     int32_t puppet_flip;
     int32_t roll_pos;
+    /*
+     * PLYR.EQU:91 Z_BOUND. WRESTLE2.ASM:1290 do_roll stops a knocked-down
+     * wrestler rolling once he is within 6 of it -- it is how far along Z
+     * he is allowed to travel. Zero means unbounded, and ANIM.ASM:3035's
+     * `#repeat` clears it on every tick the roll keeps going.
+     */
+    int32_t z_bound;
+    /*
+     * PLYR.EQU CUR_FRAME as do_roll writes it: the frame a wrestler shows
+     * while his own animation is parked. It is not the puppet field above
+     * -- that is an ATTACKER choosing the frame; this is the wrestler
+     * choosing his own, outside the animation that is waiting on him.
+     * NULL means his animation's frame stands.
+     */
+    const char *roll_frame;
+    /*
+     * PLYR.EQU PLYR_DIZZY. ANIM.ASM:_ani_getup refuses to set GETUP_TIME
+     * while it is set, and WRESTLE.ASM:2613's #clr_dizzy clears it together
+     * with STARS_FLAG the moment GETUP_TIME reaches zero. Nothing in this
+     * port sets it yet -- check_dizzy, the routine that would, is commented
+     * out in the original too (WRESTLE2.ASM:1370 onward) -- so it reads as
+     * "not dizzy" throughout, which is what the shipped game does.
+     */
+    int32_t plyr_dizzy;
     int32_t usr_var1;
     int32_t usr_var2;              /* PLYR.EQU USR_VAR2; Yoko salt failure flag. */
     int32_t player_side;           /* PLYR.EQU PLYR_SIDE: 0, 1, or -1. */

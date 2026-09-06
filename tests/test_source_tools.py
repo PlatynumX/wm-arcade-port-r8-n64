@@ -24,6 +24,7 @@ wlanim = load("wlanim", ROOT / "tools" / "wlanim.py")
 wlattack = load("wlattack", ROOT / "tools" / "wlattack.py")
 wlcommands = load("wlcommands", ROOT / "tools" / "wlcommands.py")
 wlpuppet = load("wlpuppet", ROOT / "tools" / "wlpuppet.py")
+wlroll = load("wlroll", ROOT / "tools" / "wlroll.py")
 wlprogram = load("wlprogram", ROOT / "tools" / "wlprogram.py")
 manifest = load("bret_manifest", ROOT / "tools" / "bret_manifest.py")
 wimp = load("wimpimg", ROOT / "tools" / "wimpimg.py")
@@ -1153,6 +1154,73 @@ def test_waithitopp_is_a_mode_and_a_frame() -> None:
     assert "ANI_WAITHITOPP,4,H3HT3X+FR3" in text.replace("\r", "")
 
 
+def test_command_table_ops_keep_their_operands() -> None:
+    """Every op from wlcommands' table must reach the C with its operands.
+
+    tools/wlprogram.py's MOTION_OPS decides which ops get their (mode, a,
+    b, c) written out. It used to be a hand-kept set, so an op added to the
+    command table but not to that set fell through to the no-operand
+    default and was emitted with its operands silently zeroed -- which is
+    what happened to ANI_BOUNCE (its upward kick became 0) and ANI_GETUP
+    (its GETUP_TIME became 0). The set is derived from the table now, and
+    this checks it stays that way.
+    """
+    kinds = {k for k, _n, _m in wlcommands.COMMANDS.values()}
+    assert kinds <= wlprogram.MOTION_OPS, kinds - wlprogram.MOTION_OPS
+
+    base = ROOT / "original" / "wwf-wrestlemania"
+    generated = ROOT / "src" / "generated" / "anim_programs.c"
+    if not (base / "HRTSEQ4.ASM").exists() or not generated.exists():
+        return
+
+    # hrt_fall_back_anim's ANI_BOUNCE,5 and hrt_tossed_anim's
+    # ANI_GETUP,STAY_TIME (270), both read straight out of the source.
+    ops = wlprogram.program_for(base / "HRTSEQ4.ASM", "hrt_fall_back_anim")
+    assert [o for o in ops if o[0] == "BOUNCE"][0][2] == 5
+    ops = wlprogram.program_for(base / "HRTSEQ2.ASM", "hrt_tossed_anim")
+    assert [o for o in ops if o[0] == "GETUP"][0][2] == 270
+
+    text = generated.read_text()
+    assert "{ WM_AOP_BOUNCE, 0, -1, 5," in text, "ANI_BOUNCE lost its operand"
+    assert "{ WM_AOP_GETUP, 0, -1, 270," in text, "ANI_GETUP lost its operand"
+
+
+def test_roll_tables() -> None:
+    """WRESTLE2.ASM:1290 do_roll's per-wrestler roll tables.
+
+    Every playable wrestler has one, they all share the same speed and z
+    velocity, and -- the check that matters -- the largest index the
+    multiplier can produce from a 0..255 ROLL_POS is inside the frame list,
+    so do_roll can never read past the end of one.
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    if not (base / "WRESTLE2.ASM").exists():
+        return
+
+    rows = wlroll.tables()
+    assert len(rows) == 9, len(rows)
+    assert rows[7] is None, "slot 7 is Adam Bomb's `.long 0`"
+    for r in rows:
+        if not r:
+            continue
+        assert r["speed"] == 7, r
+        assert r["zvel"] == 0x50000, r
+        assert (255 * r["multiplier"]) >> 16 < len(r["frames"]), r
+
+    # Bret's list is not in ascending frame order: it runs FR1, then FR13
+    # down to FR2, because that is the direction his artwork rolls.
+    hrt = rows[0]
+    assert hrt["frames"][0] == "H3RL1A01", hrt["frames"][:3]
+    assert hrt["frames"][1] == "H3RL1A13", hrt["frames"][:3]
+    assert hrt["frames"][2] == "H3RL1A12", hrt["frames"][:3]
+
+    # The multiplier is written `10000h*12/255` and the assembler's divide
+    # truncates, so 255 reaches index 11 and the thirteenth frame is
+    # unreachable. That is the shipped data, not an extraction error.
+    assert hrt["multiplier"] == 3084, hrt["multiplier"]
+    assert hrt["top"] == 11 and len(hrt["frames"]) == 13, hrt
+
+
 def main() -> int:
     test_wlanim()
     test_wlprogram()
@@ -1164,6 +1232,8 @@ def main() -> int:
     test_slave_targets_all_emit()
     test_truncated_frame_names()
     test_gravity_opcodes()
+    test_command_table_ops_keep_their_operands()
+    test_roll_tables()
     test_waithitopp_is_a_mode_and_a_frame()
     test_roster_dispatcher_labels_all_emit()
     test_wlprogram_tick_expressions()

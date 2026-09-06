@@ -59,6 +59,10 @@ COMMANDS = {
     # no operands at all; ANI_BOUNCE (:950) takes one, which it shifts
     # left 16 into OBJ_YVEL.
     "ANI_WAITHITGND": ("WAITHITGND", 0, False),
+    "ANI_WAITROLL":   ("WAITROLL", 0, False),
+    # ANIM.ASM:_ani_getup -- how long the wrestler is stuck on the
+    # ground, refused while PLYR_DIZZY is set.
+    "ANI_GETUP":      ("GETUP", 1, False),
     "ANI_BOUNCE":     ("BOUNCE", 1, False),
     "ANI_CLR_STATUS":  ("CLR_STATUS", 0, False),
 }

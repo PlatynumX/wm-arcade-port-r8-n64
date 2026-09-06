@@ -1,5 +1,6 @@
 #include "wm/anim_program.h"
 #include "wm/arcade/wm_arcade_veladd.h"
+#include "wm/arcade/wm_arcade_roll.h"
 #include "wm/arcade/wm_arcade_combat_defs.h"
 #include "wm/arcade/wm_arcade_anim_combat.h"
 #include "wm/arcade/wm_arcade_butcount.h"
@@ -121,6 +122,11 @@ static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
             break;
         case WM_AOP_WAITHITOPP:
             actor->anim_mode |= (uint16_t)WM_MODE_WAITHITOPP;
+            break;
+        case WM_AOP_GETUP:
+            /* `move *a13(PLYR_DIZZY),a14 / jrnz #skip` -- a dizzy wrestler
+               keeps whatever getup time he already had. */
+            if (!actor->plyr_dizzy) actor->getup_time = o->a;
             break;
         case WM_AOP_SETLONG:
             if (o->a == 0) actor->gravity = o->b;
@@ -399,6 +405,75 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
                                             NULL);
                 pc = pc + 1;
                 continue;
+            }
+            case WM_AOP_ROT:
+                /* Park here: the frame showing stays up and this op comes
+                   back round every tick, exactly as OANICNT=1 with OANIPC
+                   untouched does. Not an end -- the animation is still
+                   running, it just never goes anywhere. */
+                exec->next_pc = pc;
+                exec->ticks_left = 1;
+                return;
+            case WM_AOP_WAITROLL: {
+                /*
+                 * ANIM.ASM:2990 _ani_waitroll. The order is the source's:
+                 * a zombie always rolls up; a wrestler already MODE_DEAD,
+                 * or one whose I_WILL_DIE has come due with IMMOBILIZE_TIME
+                 * spent, becomes his dead animation; everyone else is put
+                 * MODE_ONGROUND ("just to be safe", the source says) and
+                 * waits out IMMOBILIZE_TIME and GETUP_TIME before rolling.
+                 *
+                 * NOT translated, and unreachable in this port's match
+                 * mode rather than skipped: the `#dead` path's drone
+                 * branches (is_8_on_1, royal_rumble, FINAL_PTR's zombie
+                 * promotion, adjust_health). In an ordinary match a player
+                 * takes `jreq #die` straight away, and a drone reaches the
+                 * same `jruc #die` with is_8_on_1 false and royal_rumble
+                 * zero -- so both land on the same hand-off this runs.
+                 */
+                int rolled;
+                if (!actor) { exec->ended = true; return; }
+
+                if (actor->status_flags & WM_STATUS_ZOMBIE) {
+                    /* `movi J_UP,a14` into both DRN_JOY and STICK_VAL_CUR:
+                       a zombie rolls up whatever the player does. */
+                    actor->stick_val_cur = (uint16_t)WM_MOVE_UP;
+                } else if (actor->player_mode == WM_PMODE_DEAD) {
+                    exec->become = "xxx_dead_anim";
+                    exec->ended = true;
+                    return;
+                } else if (actor->i_will_die) {
+                    if (actor->immobilize_time) goto waitroll_repeat;
+                    actor->immobilize_time = 0;
+                    actor->i_will_die = 0;
+                    actor->player_mode = WM_PMODE_DEAD;
+                    wm_arcade_clear_lifebar(actor);
+                    exec->become = "xxx_dead_anim";
+                    exec->ended = true;
+                    return;
+                } else {
+                    actor->player_mode = WM_PMODE_ONGROUND;
+                    if (actor->immobilize_time) goto waitroll_repeat;
+                    if (actor->getup_time) goto waitroll_repeat;
+                }
+
+                actor->stars_flag = 0;
+                rolled = wm_arcade_do_roll(actor);
+                if (!rolled) {
+                    /* `jrz #getup`: he stopped rolling, so he gets up --
+                       the animation runs on past this op. */
+                    exec->waiting = false;
+                    actor->roll_frame = 0;
+                    pc = pc + 1;
+                    continue;
+                }
+            waitroll_repeat:
+                /* `#repeat`: clear Z_BOUND, hold the frame one tick. */
+                actor->z_bound = 0;
+                exec->next_pc = pc;
+                exec->ticks_left = 1;
+                exec->waiting = true;
+                return;
             }
             case WM_AOP_SUPERSLAVE2:
                 /* It sets OANICNT and stops, so it yields exactly like a

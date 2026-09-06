@@ -22,6 +22,12 @@ WL_RE = re.compile(r"^\s*WL\s+([^,]+),\s*([A-Za-z_][A-Za-z0-9_]*)\s*\+\s*FR([0-9
 WAIT_FRAME_RE = re.compile(r"^\s*WWL\s+ANI_WAITHITOPP\s*,\s*([^,]+),\s*([A-Za-z_][A-Za-z0-9_]*)\s*\+\s*FR([0-9]+)\s*$", re.I)
 REPEAT_RE = re.compile(r"^\s*\.word\s+ANI_REPEAT\s*$", re.I)
 END_RE = re.compile(r"^\s*\.word\s+ANI_END\s*$", re.I)
+# ANIM.ASM:4441 _ani_rot -- "just sit and do nothing": it stuffs a 1 in
+# OANICNT and returns WITHOUT advancing OANIPC, so the animation parks on
+# its current frame forever. That makes it a terminator for span purposes
+# even though it is not an ANI_END: nothing after it in the source is ever
+# reached. WRESTLE2.ASM:3992 xxx_dead_anim is four commands ending in one.
+ROT_RE = re.compile(r"^\s*\.word\s+ANI_ROT\s*$", re.I)
 GOTO_RE = re.compile(r"^\s*WL\s+ANI_GOTO\s*,\s*#?[A-Za-z_][A-Za-z0-9_]*\s*$", re.I)
 PREFIX_WORD_RE = re.compile(
     r"^\s*\.word\s+(ANI_SETMODE|ANI_SETSPEED|ANI_SETFACING|ANI_XFLIP)\b", re.I)
@@ -266,7 +272,8 @@ def _body_stop(lines: list[str], start: int) -> int:
             break
         if _frame_from_line(lines[j]) or SUPERSLAVE2_LINE_RE.match(lines[j]):
             break
-        if END_RE.match(lines[j]) or REPEAT_RE.match(lines[j]):
+        if (END_RE.match(lines[j]) or REPEAT_RE.match(lines[j]) or
+                ROT_RE.match(lines[j])):
             return j + 1
 
     saw_frame = False
@@ -295,7 +302,8 @@ def _label_body_stop(lines: list[str], start: int) -> int:
     for j in range(start, len(lines)):
         if SUBR_RE.match(lines[j]) or GLOBAL_LABEL_RE.match(lines[j]):
             return j
-        if END_RE.match(lines[j]) or REPEAT_RE.match(lines[j]):
+        if (END_RE.match(lines[j]) or REPEAT_RE.match(lines[j]) or
+                ROT_RE.match(lines[j])):
             return j + 1
     return len(lines)
 
@@ -321,7 +329,8 @@ def _routine_terminates(lines: list[str], span: tuple[int, int]) -> bool:
     is a real terminator; a body with neither does not stop where its text
     stops, because execution simply continues into the words that follow."""
     body = lines[span[0]:span[1]]
-    if any(END_RE.match(l) or REPEAT_RE.match(l) for l in body):
+    if any(END_RE.match(l) or REPEAT_RE.match(l) or ROT_RE.match(l)
+           for l in body):
         return True
     # An ANI_CHANGEANIM terminates only when it genuinely REPLACES the
     # terminator -- i.e. nothing in the body ends it any other way. That is

@@ -93,6 +93,26 @@ typedef enum {
     /* ANIM.ASM:3913 _ani_setlong writes a LONG into a process field.
        `a` is the field (0 = OBJ_GRAVITY, 1 = DEBRIS_X), `b` the value. */
     WM_AOP_SETLONG,
+    /*
+     * ANIM.ASM:2990 _ani_waitroll (171 uses) -- what a knocked-down
+     * wrestler's animation parks on while the player rolls him. Like
+     * ANI_WAITHITGND it holds the frame and re-tests every tick; unlike
+     * it, the wrestler is not passive. Each tick it forces MODE_ONGROUND,
+     * waits out IMMOBILIZE_TIME and GETUP_TIME, then calls do_roll --
+     * and it is do_roll returning "did NOT roll" that lets the animation
+     * move on, so letting go of the stick is what gets him up.
+     */
+    WM_AOP_WAITROLL,
+    /*
+     * ANIM.ASM:4441 _ani_rot -- "just sit and do nothing", the source's own
+     * comment. It holds the current frame and never advances, so an
+     * animation that reaches one is parked for good: WRESTLE2.ASM:3992
+     * xxx_dead_anim ends on one, which is how a dead wrestler stays down.
+     */
+    WM_AOP_ROT,
+    /* ANIM.ASM:_ani_getup (52): GETUP_TIME = operand, unless PLYR_DIZZY.
+       ANI_WAITROLL is what waits it out. */
+    WM_AOP_GETUP,
     WM_AOP_CLR_STATUS,
 
     /* ANIM.ASM:1277 _ani_code -- `move *a4+,a0,L / call a0`: an ordinary

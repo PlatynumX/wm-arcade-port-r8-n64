@@ -12,6 +12,8 @@
 #include "wm/bret_visuals.h"
 #include "wm/anim_program.h"
 #include "wm/arcade/wm_arcade_veladd.h"
+#include "wm/arcade/wm_arcade_roll.h"
+#include "wm/roll_frames.h"
 #include "wm/composite.h"
 #include "wm/demo.h"
 #include "wm/bret_backend.h"
@@ -3418,6 +3420,202 @@ static void test_gravity_reset_and_setlong(void) {
     }
 }
 
+/*
+ * ANIM.ASM:2990 _ani_waitroll (171 uses) and WRESTLE2.ASM:1290 do_roll --
+ * the whole knockdown loop, end to end, on hrt_tossed_anim: thrown,
+ * launched, ANI_WAITHITGND for the landing, ANI_GETUP's stay time, the
+ * roll, and ANI_CHANGEANIM to the getup when the player lets go.
+ */
+static void test_waitroll_and_do_roll(void) {
+    const wm_anim_program *p = wm_anim_program_find("hrt_tossed_anim");
+    wm_arcade_actor_t a;
+    wm_anim_exec ex;
+    int t;
+    int32_t peak, z_at_roll_start = 0;
+    const char *first_roll_frame = 0;
+    int rolled_ticks = 0;
+
+    if (!p) return;
+
+    memset(&a, 0, sizeof(a));
+    stand_in_ring(&a);
+    a.wrestler_num = WM_ROSTER_BRET;
+    wm_anim_exec_start(&ex, p, &a, 0, NULL);
+
+    /* ANI_GETUP,STAY_TIME. He is stuck on the ground for this long, and
+       ANI_WAITROLL will not even let him start rolling until it is spent. */
+    CHECK(a.getup_time == 270);
+
+    peak = a.y_int;
+    for (t = 0; t < 400 && !ex.ended; ++t) {
+        /* Hold down, and mash: WRESTLE.ASM:2538 takes one off a tick and
+           three more for a press or its release edge. Let go at t == 120,
+           while he is still inside the ring -- roll far enough and he goes
+           over the mat edge, where calc_ground_y drops the floor to 0 and
+           he really does fall off it. */
+        a.stick_val_cur = (t < 120) ? (uint16_t)WM_MOVE_DOWN : 0u;
+        a.stick_val_down = (t < 120 && (t & 1)) ? (uint16_t)WM_MOVE_DOWN : 0u;
+
+        wm_wrestler_veladd(&a, &ex, 0);
+        wm_arcade_tick_getup_time(&a);
+        wm_anim_exec_tick(&ex, &a, 0);
+
+        if (a.y_int > peak) peak = a.y_int;
+        if (a.roll_frame) {
+            if (!first_roll_frame) {
+                first_roll_frame = a.roll_frame;
+                z_at_roll_start = a.z_int;
+            }
+            ++rolled_ticks;
+        }
+    }
+
+    /* The throw itself: he really left the mat and came back to it. */
+    CHECK(peak > WM_MAT_Y);
+    CHECK(a.y_int == a.ground_y);
+    CHECK(a.ground_y == WM_MAT_Y);
+
+    /* Mashing cut the 270-tick stay time to well under it. */
+    CHECK(a.getup_time == 0);
+
+    /* He rolled, along Z, showing frames off his own table. Bret's list
+       starts H3RL1A01 -- and then runs BACKWARDS from FR13, which is the
+       direction his artwork rolls. */
+    CHECK(rolled_ticks > 10);
+    CHECK(first_roll_frame != NULL);
+    CHECK(strcmp(first_roll_frame, "H3RL1A01") == 0);
+    CHECK(a.z_int > z_at_roll_start);
+
+    /* Letting go is what gets him up: do_roll returns "did not roll", the
+       animation runs past ANI_WAITROLL and hands off. */
+    CHECK(ex.ended);
+    CHECK(ex.become != NULL);
+    CHECK(strcmp(ex.become, "hrt_faceup_getup_anim") == 0);
+}
+
+/* do_roll on its own: the stick, the Z bound, and the per-wrestler table. */
+static void test_do_roll(void) {
+    wm_arcade_actor_t a;
+    int i;
+    const char *up_first;
+
+    memset(&a, 0, sizeof(a));
+    stand_in_ring(&a);
+    a.wrestler_num = WM_ROSTER_BRET;
+
+    /* No up or down on the stick: no roll, and the z velocity is cleared
+       rather than left running. */
+    a.z_vel = 0x12345;
+    a.stick_val_cur = (uint16_t)WM_MOVE_LEFT;
+    CHECK(wm_arcade_do_roll(&a) == 0);
+    CHECK(a.z_vel == 0);
+    CHECK(a.roll_frame == NULL);
+
+    /* Down rolls down the ring, at the table's own 5.0 per tick. */
+    a.stick_val_cur = (uint16_t)WM_MOVE_DOWN;
+    CHECK(wm_arcade_do_roll(&a) != 0);
+    CHECK(a.z_vel == 0x50000);
+    CHECK(a.roll_frame != NULL);
+
+    /* Up negates both, so the frames run the other way too. */
+    a.roll_pos = 0;
+    a.stick_val_cur = (uint16_t)WM_MOVE_UP;
+    CHECK(wm_arcade_do_roll(&a) != 0);
+    CHECK(a.z_vel == -0x50000);
+    up_first = a.roll_frame;
+    CHECK(up_first != NULL);
+
+    /*
+     * Z_BOUND: zero means unbounded, but once he is within 6 of a real one
+     * he has arrived and stops. `abs` in the source, so either side counts.
+     */
+    a.stick_val_cur = (uint16_t)WM_MOVE_DOWN;
+    a.z_bound = a.z_int + 6;
+    CHECK(wm_arcade_do_roll(&a) == 0);
+    a.z_bound = a.z_int - 6;
+    CHECK(wm_arcade_do_roll(&a) == 0);
+    a.z_bound = a.z_int + 7;
+    CHECK(wm_arcade_do_roll(&a) != 0);
+    a.z_bound = 0;
+    CHECK(wm_arcade_do_roll(&a) != 0);
+
+    /* Every playable wrestler has a table of his own; Adam Bomb's cut
+       seventh slot is a `.long 0` in the source and rolls nobody. */
+    for (i = 0; i < WM_ROLL_SLOTS; ++i) {
+        memset(&a, 0, sizeof(a));
+        stand_in_ring(&a);
+        a.wrestler_num = i;
+        a.stick_val_cur = (uint16_t)WM_MOVE_DOWN;
+        if (i == 7) {
+            CHECK(wm_arcade_do_roll(&a) == 0);
+        } else {
+            CHECK(wm_arcade_do_roll(&a) != 0);
+            CHECK(a.roll_frame != NULL);
+        }
+    }
+
+    /* An out-of-range WRESTLERNUM reads no table at all. */
+    memset(&a, 0, sizeof(a));
+    a.wrestler_num = WM_ROLL_SLOTS;
+    a.stick_val_cur = (uint16_t)WM_MOVE_DOWN;
+    CHECK(wm_arcade_do_roll(&a) == 0);
+    CHECK(wm_arcade_do_roll(NULL) == 0);
+}
+
+/* WRESTLE.ASM:2538's getup meter. */
+static void test_getup_meter(void) {
+    wm_arcade_actor_t a;
+
+    /* Plain countdown, one a tick. */
+    memset(&a, 0, sizeof(a));
+    a.getup_time = 10;
+    wm_arcade_tick_getup_time(&a);
+    CHECK(a.getup_time == 9);
+
+    /* A press takes three more -- and so does its release edge the tick
+       after, which is what M_PRESS_LAST is for. */
+    a.but_val_down = (uint16_t)WM_BTN_PUNCH;
+    wm_arcade_tick_getup_time(&a);
+    CHECK(a.getup_time == 5);
+    CHECK(a.status_flags & WM_STATUS_PRESS_LAST);
+    a.but_val_down = 0;
+    wm_arcade_tick_getup_time(&a);
+    CHECK(a.getup_time == 1);
+    CHECK(!(a.status_flags & WM_STATUS_PRESS_LAST));
+
+    /* It never goes negative, and reaching zero clears the stars. */
+    memset(&a, 0, sizeof(a));
+    a.getup_time = 2;
+    a.stars_flag = 1;
+    a.plyr_dizzy = 1;
+    a.but_val_down = (uint16_t)WM_BTN_KICK;
+    wm_arcade_tick_getup_time(&a);
+    CHECK(a.getup_time == 0);
+
+    memset(&a, 0, sizeof(a));
+    a.getup_time = 1;
+    a.stars_flag = 1;
+    a.plyr_dizzy = 1;
+    wm_arcade_tick_getup_time(&a);
+    CHECK(a.getup_time == 0);
+    CHECK(a.stars_flag == 0);
+    CHECK(a.plyr_dizzy == 0);
+
+    /* DELAY_METER wipes it outright: "don't want to allow getup time to be
+       set this close to last time!" */
+    memset(&a, 0, sizeof(a));
+    a.getup_time = 200;
+    a.delay_meter = 1;
+    wm_arcade_tick_getup_time(&a);
+    CHECK(a.getup_time == 0);
+
+    /* Nothing to do with no getup time, and NULL is a no-op. */
+    memset(&a, 0, sizeof(a));
+    wm_arcade_tick_getup_time(&a);
+    CHECK(a.getup_time == 0);
+    wm_arcade_tick_getup_time(NULL);
+}
+
 static void test_anim_program_interpreter(void) {
     int hit_ticks = 0, miss_ticks = 0;
 
@@ -5882,6 +6080,9 @@ int main(void) {
     test_bret_instant_state_commands();
     test_anim_program_interpreter();
     test_waithitgnd();
+    test_waitroll_and_do_roll();
+    test_do_roll();
+    test_getup_meter();
     test_gravity_reset_and_setlong();
     test_attract_dcs_logo_does_not_fall_through();
     test_bret_hurt_box_for_frame_real_geometry();

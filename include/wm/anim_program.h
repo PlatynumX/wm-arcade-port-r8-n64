@@ -75,6 +75,24 @@ typedef enum {
     WM_AOP_CLR_BUTCOUNT,
     WM_AOP_SAFE_TIME,
     WM_AOP_GRAVITY_ON,
+    /*
+     * ANIM.ASM:890 _ani_waithitgnd. Not an instant command: it holds the
+     * frame that is showing for one tick and re-tests, over and over,
+     * until the wrestler is on the ground -- then plays SMALL_BOUNCE and
+     * runs on. 767 uses across the eight playable wrestlers, the single
+     * most common untranslated opcode in the machine, because it is how
+     * every knockdown, slam and throw waits for the landing.
+     */
+    WM_AOP_WAITHITGND,
+    /* ANIM.ASM:950 _ani_bounce: OBJ_YVEL = operand << 16. */
+    WM_AOP_BOUNCE,
+    /* ANIM.ASM:2300 _ani_waithitopp sets MODE_WAITHITOPP and hands its
+       operands back to the dispatcher, so the frame that follows is an
+       ordinary one -- landing (or hitting) cuts its hold short. */
+    WM_AOP_WAITHITOPP,
+    /* ANIM.ASM:3913 _ani_setlong writes a LONG into a process field.
+       `a` is the field (0 = OBJ_GRAVITY, 1 = DEBRIS_X), `b` the value. */
+    WM_AOP_SETLONG,
     WM_AOP_CLR_STATUS,
 
     /* ANIM.ASM:1277 _ani_code -- `move *a4+,a0,L / call a0`: an ordinary
@@ -174,6 +192,15 @@ typedef struct {
     uint16_t rpt_count;
     bool ended;
     bool just_started;
+    /*
+     * The program is parked on an ANI_WAITHITGND, holding the frame that
+     * is showing until the wrestler lands. Callers that keep a second,
+     * flat frame track beside the program (wm/bret_backend.h) have to hold
+     * it too while this is set, or the two drift apart by however long the
+     * fall takes -- the same reason hrt_4_block_anim's ANI_WAITRELEASE
+     * holds both.
+     */
+    bool waiting;
     const char *become;    /* set when the program asks to become another */
     const wm_anim_env *env;   /* services ANI_CODE routines may reach for */
 } wm_anim_exec;

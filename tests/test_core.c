@@ -11,6 +11,7 @@
 #include "wm/source_clock.h"
 #include "wm/bret_visuals.h"
 #include "wm/anim_program.h"
+#include "wm/arcade/wm_arcade_veladd.h"
 #include "wm/composite.h"
 #include "wm/demo.h"
 #include "wm/bret_backend.h"
@@ -31,6 +32,39 @@
         exit(1); \
     } \
 } while (0)
+
+/*
+ * A wrestler standing on the mat, well inside the ropes. Anything that has
+ * to fall needs this: WRESTLE2.ASM:2385 calc_ground_y decides GROUND_Y from
+ * where he actually is, and at the origin -- outside the mat edges -- the
+ * floor is 0, not MAT_Y, so a memset actor falls off the mat instead of
+ * landing on it. The coordinates are the same in-ring pair used elsewhere
+ * in this file (RING_TOP=1023, RING_BOT=1345, ropes near x=835-1317 here).
+ */
+static void stand_in_ring(wm_arcade_actor_t *a) {
+    a->in_ring = 1;
+    a->x_int = 1074; a->x_fixed = 1074 << 16;
+    a->z_int = 1150; a->z_fixed = 1150 << 16;
+    a->ground_y = WM_MAT_Y;
+    a->y_int = WM_MAT_Y;
+    a->y_fixed = (int32_t)WM_MAT_Y << 16;
+    a->y_vel = 0;
+    a->gravity = WM_GRAVITY;
+}
+
+/*
+ * One tick of a Bret wrestler exactly as wm_match_tick runs one:
+ * WRESTLE.ASM:2457 calls wrestler_veladd BEFORE animate_wrestler, so the
+ * animation this tick sees the position the velocities just produced.
+ * Every ANI_WAITHITGND in the roster depends on it -- without the
+ * integrator a wrestler who has been launched never comes down, and the
+ * animation waits for a landing that cannot happen.
+ */
+static void tick_bret(wm_bret_backend_actor *bva, wm_arcade_actor_t *a,
+                      uint16_t round_tickcount) {
+    wm_wrestler_veladd(a, &bva->prog, 0);
+    wm_bret_backend_tick(bva, a, round_tickcount);
+}
 
 static int runs;
 static void sleeper(wm_process *p, void *user) {
@@ -1241,7 +1275,7 @@ static void test_bret_attack_window_punch2(void) {
     CHECK(!(a.anim_mode & WM_MODE_CHECKHIT));
 
     for (guard = 0; guard < 20 && bva.visual.frame_index != 5; ++guard)
-        wm_bret_backend_tick(&bva, &a, (uint16_t)guard);
+        tick_bret(&bva, &a, (uint16_t)guard);
     CHECK(bva.visual.frame_index == 5);
     CHECK(a.anim_mode & WM_MODE_CHECKHIT);
     CHECK(a.attack_mode == WM_AMODE_PUNCH);
@@ -1255,13 +1289,13 @@ static void test_bret_attack_window_punch2(void) {
     /* Re-ticking the same active frame does not refire (attack_time only
        moves when ATTACK_OFF actually runs). */
     uint16_t attack_time_before = a.attack_time;
-    wm_bret_backend_tick(&bva, &a, 999);
+    tick_bret(&bva, &a, 999);
     CHECK(a.attack_time == attack_time_before);
 
     /* Advancing past the active frame turns WM_MODE_CHECKHIT back off
        (ATTACK_OFF, HRTSEQ2.ASM:206) and records attack_time. */
     for (guard = 0; guard < 20 && bva.visual.frame_index == 5; ++guard)
-        wm_bret_backend_tick(&bva, &a, 42);
+        tick_bret(&bva, &a, 42);
     CHECK(bva.visual.frame_index != 5);
     CHECK(!(a.anim_mode & WM_MODE_CHECKHIT));
     CHECK(a.attack_time == 42);
@@ -1311,7 +1345,7 @@ static void test_bret_attack_windows_remaining(void) {
         CHECK(bva.visual.sequence == cases[i].seq);
 
         for (guard = 0; guard < 30 && bva.visual.frame_index != cases[i].frame; ++guard)
-            wm_bret_backend_tick(&bva, &a, 0);
+            tick_bret(&bva, &a, 0);
         CHECK(bva.visual.frame_index == cases[i].frame);
         CHECK(a.anim_mode & WM_MODE_CHECKHIT);
         CHECK(a.attack_mode == cases[i].attack_mode);
@@ -1376,7 +1410,7 @@ static void test_bret_attack_windows_batch1(void) {
         CHECK(!(a.anim_mode & WM_MODE_CHECKHIT));
 
         for (guard = 0; guard < 40 && bva.visual.frame_index != cases[i].frame; ++guard)
-            wm_bret_backend_tick(&bva, &a, 0);
+            tick_bret(&bva, &a, 0);
         CHECK(bva.visual.frame_index == cases[i].frame);
         CHECK(a.anim_mode & WM_MODE_CHECKHIT);
         CHECK(a.attack_mode == cases[i].attack_mode);
@@ -1390,7 +1424,7 @@ static void test_bret_attack_windows_batch1(void) {
         /* ANI_ATTACK_OFF one frame later, then the closing
            ANI_SETMODE,MODE_NORMAL once the animation runs out. */
         for (guard = 0; guard < 40 && (a.anim_mode & WM_MODE_UNINT); ++guard)
-            wm_bret_backend_tick(&bva, &a, 7);
+            tick_bret(&bva, &a, 7);
         CHECK(!(a.anim_mode & WM_MODE_UNINT));
         CHECK(!(a.anim_mode & WM_MODE_NOAUTOFLIP));
         CHECK(!(a.anim_mode & WM_MODE_CHECKHIT));
@@ -2247,6 +2281,7 @@ static void test_anim_code_state_routines(void) {
     CHECK(!(a.obj_control & WM_OBJ_FLIPH));
 }
 
+
 /* And the op really runs from inside a playing animation, not just when
    called by hand: hrt_fall_back_anim carries HIT_THE_MAT and SMALL_BOUNCE
    as real ANI_CODE commands partway through its stream. */
@@ -2268,12 +2303,22 @@ static void test_anim_code_runs_from_program(void) {
     env.sound = code_sound_sink;
 
     memset(&a, 0, sizeof(a));
+    /*
+     * hrt_fall_back_anim is a real fall: ANI_MIN_YVEL launches him UP at
+     * 6.0, five frames carry him back, and then ANI_WAITHITGND waits for
+     * the landing before HIT_THE_MAT plays. Nothing reaches those sounds
+     * unless something actually brings him down, so this drives the same
+     * integrator the match does (WRESTLE.ASM:2457 wrestler_veladd, before
+     * animate_wrestler) with him standing on the mat.
+     */
+    stand_in_ring(&a);
     wm_bret_backend_init(&bva);
     bva.anim_env = env;
     wm_bret_backend_change_anim(&a, WM_BRET_ANIM_FALL_BACK, &bva);
     CHECK(bva.prog.program != NULL);
-    for (guard = 0; guard < 200 && !bva.prog.ended; ++guard)
-        wm_bret_backend_tick(&bva, &a, 0);
+    for (guard = 0; guard < 200 && !bva.prog.ended; ++guard) {
+        tick_bret(&bva, &a, 0);
+    }
     CHECK(log.count > 0);
     for (i = 0; i < log.count && i < 8; ++i)
         if (log.calls[i] == 0x0C1u) saw_mat = true;
@@ -2406,7 +2451,7 @@ static void test_bret_attack_windows_multi_pulse(void) {
             }
             if (!on && was_on) saw_off_between = 1;
             was_on = on;
-            wm_bret_backend_tick(&bva, &a, 5);
+            tick_bret(&bva, &a, 5);
         }
 
         CHECK(seen_count == cases[i].count);
@@ -2471,6 +2516,10 @@ static void test_bret_attack_windows_batch3(void) {
         a.facing_dir = WM_MOVE_DOWN_LEFT;
         a.x_vel = 0x999;
         a.z_vel = 0x999;
+        /* hrt_kick_TB_anim is a leap, and a leap ends on an
+           ANI_WAITHITGND: it does not finish until he lands. Stand him on
+           the mat and run the same integrator the match does. */
+        stand_in_ring(&a);
         wm_bret_backend_init(&bva);
         wm_bret_backend_change_anim(&a, cases[i].id, &bva);
         CHECK(bva.visual.sequence == cases[i].seq);
@@ -2495,8 +2544,9 @@ static void test_bret_attack_windows_batch3(void) {
         else
             CHECK(a.facing_dir == WM_MOVE_DOWN_LEFT);
 
-        for (guard = 0; guard < 60 && bva.visual.frame_index != cases[i].frame; ++guard)
-            wm_bret_backend_tick(&bva, &a, 0);
+        for (guard = 0; guard < 60 && bva.visual.frame_index != cases[i].frame; ++guard) {
+            tick_bret(&bva, &a, 0);
+        }
         CHECK(bva.visual.frame_index == cases[i].frame);
         CHECK(a.anim_mode & WM_MODE_CHECKHIT);
         CHECK(a.attack_mode == cases[i].attack_mode);
@@ -2507,8 +2557,9 @@ static void test_bret_attack_windows_batch3(void) {
         CHECK(a.attack_zoff == -40);
         CHECK(a.attack_depth == 80);
 
-        for (guard = 0; guard < 80 && (a.anim_mode & WM_MODE_UNINT); ++guard)
-            wm_bret_backend_tick(&bva, &a, 3);
+        for (guard = 0; guard < 80 && (a.anim_mode & WM_MODE_UNINT); ++guard) {
+            tick_bret(&bva, &a, 3);
+        }
         CHECK(!(a.anim_mode & WM_MODE_UNINT));
         CHECK(!(a.anim_mode & WM_MODE_CHECKHIT));
     }
@@ -2523,24 +2574,44 @@ static void test_bret_midanim_setplyrmode(void) {
     wm_arcade_actor_t a;
     wm_bret_backend_actor bva;
     int guard;
+    int32_t peak;
 
     memset(&a, 0, sizeof(a));
     a.player_mode = WM_PMODE_RUNNING;
+    /* "once he lands" is now literal: the MODE_NORMAL sits behind the
+       leap's ANI_WAITHITGND, so he has to actually come down. */
+    stand_in_ring(&a);
     wm_bret_backend_init(&bva);
 
     /* the header's own ANI_SETPLYRMODE, instant on selection */
     wm_bret_backend_change_anim(&a, WM_BRET_ANIM_KICK_TB, &bva);
     CHECK(a.player_mode == WM_PMODE_INAIR2);
 
-    /* still airborne right up to the frame the source lands on */
-    for (guard = 0; guard < 40 && bva.visual.frame_index < 3; ++guard) {
-        wm_bret_backend_tick(&bva, &a, 0);
-        if (bva.visual.frame_index < 4) CHECK(a.player_mode == WM_PMODE_INAIR2);
+    /*
+     * He is airborne for the whole leap. The frame checked here is the
+     * PROGRAM's, not the flat visual track's -- that track keeps running on
+     * its own timing purely so callers can see which sequence is playing,
+     * and an ANI_WAITHITGND holds the program without holding it.
+     *
+     * hrt_kick_TB_anim's landing frame is H4KM3C05, which the source puts
+     * immediately after ANI_WAITHITGND / ANI_ZEROVELS / ANI_SETPLYRMODE
+     * MODE_NORMAL: he lands, stops, and is a normal wrestler again on the
+     * same tick.
+     */
+    peak = a.y_int;
+    for (guard = 0; guard < 80; ++guard) {
+        const char *f = wm_anim_exec_frame(&bva.prog);
+        if (f && strcmp(f, "H4KM3C05") == 0) break;
+        CHECK(a.player_mode == WM_PMODE_INAIR2);
+        tick_bret(&bva, &a, 0);
+        if (a.y_int > peak) peak = a.y_int;
     }
-    for (guard = 0; guard < 40 && bva.visual.frame_index != 4; ++guard)
-        wm_bret_backend_tick(&bva, &a, 0);
-    CHECK(bva.visual.frame_index == 4);
+    CHECK(strcmp(wm_anim_exec_frame(&bva.prog), "H4KM3C05") == 0);
     CHECK(a.player_mode == WM_PMODE_NORMAL);
+    /* He really did leave the ground and really did come back to it. */
+    CHECK(peak > WM_MAT_Y + 30);
+    CHECK(a.y_int == WM_MAT_Y);
+    CHECK(a.y_vel == 0);
 
     /* hrt_3_head_held_stand_anim's own header ANI_SETPLYRMODE,MODE_NORMAL
        is what actually releases mode_headhold -- the whole point of the
@@ -2555,7 +2626,7 @@ static void test_bret_midanim_setplyrmode(void) {
     CHECK(a.anim_mode & WM_MODE_UNINT);
     CHECK(a.anim_mode & WM_MODE_NOAUTOFLIP);
     for (guard = 0; guard < 40 && (a.anim_mode & WM_MODE_UNINT); ++guard)
-        wm_bret_backend_tick(&bva, &a, 0);
+        tick_bret(&bva, &a, 0);
     CHECK(!(a.anim_mode & WM_MODE_UNINT));
 }
 
@@ -2579,7 +2650,7 @@ static void test_bret_attack_windows_batch4(void) {
     CHECK(a.anim_mode & WM_MODE_UNINT);
 
     for (guard = 0; guard < 40 && bva.visual.frame_index != 2; ++guard)
-        wm_bret_backend_tick(&bva, &a, 0);
+        tick_bret(&bva, &a, 0);
     CHECK(bva.visual.frame_index == 2);
     CHECK(a.anim_mode & WM_MODE_CHECKHIT);
     CHECK(a.attack_mode == WM_AMODE_KNEE);
@@ -2589,7 +2660,7 @@ static void test_bret_attack_windows_batch4(void) {
     CHECK(a.attack_height == 49);
 
     for (guard = 0; guard < 60 && (a.anim_mode & WM_MODE_UNINT); ++guard)
-        wm_bret_backend_tick(&bva, &a, 9);
+        tick_bret(&bva, &a, 9);
     CHECK(!(a.anim_mode & WM_MODE_UNINT));
     CHECK(!(a.anim_mode & WM_MODE_CHECKHIT));
 
@@ -2603,10 +2674,10 @@ static void test_bret_attack_windows_batch4(void) {
     CHECK(a.anim_mode & WM_MODE_UNINT);
     CHECK(a.anim_mode & WM_MODE_OVERLAP);
     CHECK(a.player_mode == WM_PMODE_NORMAL);
-    wm_bret_backend_tick(&bva, &a, 0);
+    tick_bret(&bva, &a, 0);
     CHECK(a.anim_mode & WM_MODE_UNINT);   /* not cleared same tick any more */
     for (guard = 0; guard < 60 && (a.anim_mode & WM_MODE_UNINT); ++guard)
-        wm_bret_backend_tick(&bva, &a, 0);
+        tick_bret(&bva, &a, 0);
     CHECK(!(a.anim_mode & WM_MODE_UNINT));
     CHECK(!(a.anim_mode & WM_MODE_OVERLAP));
 }
@@ -2653,7 +2724,7 @@ static void test_bret_rptcount_loop(void) {
             a.anim_mode |= (uint16_t)WM_MODE_STATUS;
         a.but_val_down = (uint16_t)WM_BTN_KICK;
         wm_arcade_count_button_presses(&a);
-        wm_bret_backend_tick(&bva, &a, 4);
+        tick_bret(&bva, &a, 4);
         /* op 8 is the first frame inside the ANI_IF_RPTCOUNT span */
         if (bva.prog.pc != prev_index && bva.prog.pc == 8)
             ++visits_to_loop_start;
@@ -2685,7 +2756,7 @@ static void test_bret_rptcount_loop(void) {
         bool on;
         if (a.anim_mode & WM_MODE_CHECKHIT)
             a.anim_mode |= (uint16_t)WM_MODE_STATUS;
-        wm_bret_backend_tick(&bva, &a, 4);
+        tick_bret(&bva, &a, 4);
         on = (a.anim_mode & WM_MODE_CHECKHIT) != 0;
         if (on && !was_on) ++attack_on_edges;
         was_on = on;
@@ -2708,7 +2779,7 @@ static void test_bret_rptcount_loop(void) {
             a.anim_mode |= (uint16_t)WM_MODE_STATUS;
         a.but_val_down = (uint16_t)(WM_BTN_KICK | WM_BTN_SKICK);
         wm_arcade_count_button_presses(&a);
-        wm_bret_backend_tick(&bva, &a, 4);
+        tick_bret(&bva, &a, 4);
     }
     CHECK(bva.prog.program != NULL);
     CHECK(strcmp(bva.prog.program->source_label,
@@ -2726,7 +2797,7 @@ static void test_bret_rptcount_loop(void) {
     was_on = false;
     for (guard = 0; guard < 400 && !bva.prog.ended; ++guard) {
         bool on;
-        wm_bret_backend_tick(&bva, &a, 4);
+        tick_bret(&bva, &a, 4);
         on = (a.anim_mode & WM_MODE_CHECKHIT) != 0;
         if (on && !was_on) ++attack_on_edges;
         was_on = on;
@@ -2737,6 +2808,10 @@ static void test_bret_rptcount_loop(void) {
     /* Without the loop the stream would be its 13 frames once; the pins
        carry the same shape and no attack window at all. */
     memset(&a, 0, sizeof(a));
+    /* The pin drops him on the mat, ANI_BOUNCE pops him back up, and two
+       ANI_WAITHITGNDs wait for those landings -- so it needs the ground
+       under him and the integrator running, like the match. */
+    stand_in_ring(&a);
     wm_bret_backend_init(&bva);
     wm_bret_backend_change_anim(&a, WM_BRET_ANIM_PIN2, &bva);
     CHECK(bva.visual.rpt_count == 3);
@@ -2745,7 +2820,7 @@ static void test_bret_rptcount_loop(void) {
     /* The pin is genuinely long -- 35 frames with real holds, plus its
        own 10-frame span three times, ~1300 ticks end to end. */
     for (guard = 0; guard < 3000 && !bva.prog.ended; ++guard) {
-        wm_bret_backend_tick(&bva, &a, 0);
+        tick_bret(&bva, &a, 0);
         CHECK(!(a.anim_mode & WM_MODE_CHECKHIT));
     }
     CHECK(bva.prog.ended);
@@ -2782,13 +2857,20 @@ static void test_bret_attack_windows_batch6(void) {
         int guard;
 
         memset(&a, 0, sizeof(a));
+        /* hrt_flying_kick_anim and hrt_running_ground_punch_anim are both
+           dives: ANI_OFFSET lifts him off the mat and ANI_WAITHITGND holds
+           the animation until he comes back down -- the ground punch's own
+           attack window is BEHIND that wait, because the punch lands when
+           he does. Neither reaches its box without the integrator. */
+        stand_in_ring(&a);
         wm_bret_backend_init(&bva);
         wm_bret_backend_change_anim(&a, cases[i].id, &bva);
         CHECK(bva.visual.sequence == cases[i].seq);
         CHECK(a.anim_mode & WM_MODE_UNINT);
 
-        for (guard = 0; guard < 80 && bva.visual.frame_index != cases[i].frame; ++guard)
-            wm_bret_backend_tick(&bva, &a, 0);
+        for (guard = 0; guard < 200 && bva.visual.frame_index != cases[i].frame; ++guard) {
+            tick_bret(&bva, &a, 0);
+        }
         CHECK(bva.visual.frame_index == cases[i].frame);
         CHECK(a.anim_mode & WM_MODE_CHECKHIT);
         CHECK(a.attack_mode == cases[i].attack_mode);
@@ -2806,32 +2888,36 @@ static void test_bret_attack_windows_batch6(void) {
         int guard;
 
         memset(&a, 0, sizeof(a));
+        stand_in_ring(&a);
         wm_bret_backend_init(&bva);
         wm_bret_backend_change_anim(&a, WM_BRET_ANIM_TBUKL_LEAP, &bva);
         CHECK(a.anim_mode & WM_MODE_OVERLAP);
         CHECK(a.anim_mode & WM_MODE_NOCONFINE);
         CHECK(a.anim_mode & WM_MODE_NOGRAVITY);
-        for (guard = 0; guard < 60 && !(a.anim_mode & WM_MODE_CHECKHIT); ++guard)
-            wm_bret_backend_tick(&bva, &a, 0);
+        for (guard = 0; guard < 60 && !(a.anim_mode & WM_MODE_CHECKHIT); ++guard) {
+            tick_bret(&bva, &a, 0);
+        }
         CHECK(a.attack_mode == WM_AMODE_BSTOMP);
         CHECK(a.attack_zoff == -10);
         CHECK(a.attack_depth == 70);
         /* Lands on the ground partway through -- ANI_SETPLYRMODE,
            MODE_ONGROUND, immediately after the long airborne frame's own
            ANI_ZEROVELS and ANI_ATTACK_OFF. */
-        for (guard = 0; guard < 90 && a.player_mode != WM_PMODE_ONGROUND;
-             ++guard)
-            wm_bret_backend_tick(&bva, &a, 0);
+        for (guard = 0; guard < 200 && a.player_mode != WM_PMODE_ONGROUND;
+             ++guard) {
+            tick_bret(&bva, &a, 0);
+        }
         CHECK(a.player_mode == WM_PMODE_ONGROUND);
         /* The very next op is an ANI_IFNOTSTATUS, and with nothing hit it
            takes the branch straight into an ANI_CHANGEANIM: a missed leap
            genuinely becomes hrt_hitonground_facedown_anim rather than
            playing the connected-hit recovery the flat list spliced in
            after it. */
-        for (guard = 0; guard < 90 && bva.prog.program &&
+        for (guard = 0; guard < 200 && bva.prog.program &&
                         strcmp(bva.prog.program->source_label,
-                               "hrt_tbukl_leap_anim") == 0; ++guard)
-            wm_bret_backend_tick(&bva, &a, 0);
+                               "hrt_tbukl_leap_anim") == 0; ++guard) {
+            tick_bret(&bva, &a, 0);
+        }
         CHECK(bva.prog.program != NULL);
         CHECK(strcmp(bva.prog.program->source_label,
                      "hrt_hitonground_facedown_anim") == 0);
@@ -2846,13 +2932,14 @@ static void test_bret_attack_windows_batch6(void) {
         int guard;
 
         memset(&a, 0, sizeof(a));
+        stand_in_ring(&a);
         wm_bret_backend_init(&bva);
         wm_bret_backend_change_anim(&a, WM_BRET_ANIM_FALL_BACK, &bva);
         CHECK(a.anim_mode & WM_MODE_UNINT);
         CHECK(a.anim_mode & WM_MODE_OVERLAP);
         CHECK(a.anim_mode & WM_MODE_NOCOLLIS);
-        for (guard = 0; guard < 200 && bva.visual.frame_index != 11; ++guard) {
-            wm_bret_backend_tick(&bva, &a, 0);
+        for (guard = 0; guard < 400 && bva.visual.frame_index != 11; ++guard) {
+            tick_bret(&bva, &a, 0);
             CHECK(!(a.anim_mode & WM_MODE_CHECKHIT));
         }
         CHECK(bva.visual.frame_index == 11);
@@ -2872,12 +2959,13 @@ static void test_bret_anim_transition_chain(void) {
     int saw_hitground = 0, saw_getup = 0;
 
     memset(&a, 0, sizeof(a));
+    stand_in_ring(&a);
     wm_bret_backend_init(&bva);
     wm_bret_backend_change_anim(&a, WM_BRET_ANIM_TBUKL_LEAP, &bva);
     CHECK(bva.current_id == WM_BRET_ANIM_TBUKL_LEAP);
 
     for (guard = 0; guard < 600; ++guard) {
-        wm_bret_backend_tick(&bva, &a, 0);
+        tick_bret(&bva, &a, 0);
         if (bva.current_id == WM_BRET_ANIM_HITONGROUND_FACEDOWN) saw_hitground = 1;
         if (bva.current_id == WM_BRET_ANIM_FACEUP_GETUP) saw_getup = 1;
     }
@@ -2891,12 +2979,14 @@ static void test_bret_anim_transition_chain(void) {
     /* fall_back -> faceup_getup, the single-step case, and the one the
        death path already selects. */
     memset(&a, 0, sizeof(a));
+    stand_in_ring(&a);
     wm_bret_backend_init(&bva);
     wm_bret_backend_change_anim(&a, WM_BRET_ANIM_FALL_BACK, &bva);
     CHECK(a.anim_mode & WM_MODE_NOCOLLIS);
     for (guard = 0; guard < 600 &&
-                    bva.current_id != WM_BRET_ANIM_FACEUP_GETUP; ++guard)
-        wm_bret_backend_tick(&bva, &a, 0);
+                    bva.current_id != WM_BRET_ANIM_FACEUP_GETUP; ++guard) {
+        tick_bret(&bva, &a, 0);
+    }
     CHECK(bva.current_id == WM_BRET_ANIM_FACEUP_GETUP);
     /* the target's own header replaced the source animation's mode bits
        rather than inheriting them */
@@ -2908,7 +2998,7 @@ static void test_bret_anim_transition_chain(void) {
     wm_bret_backend_init(&bva);
     wm_bret_backend_change_anim(&a, WM_BRET_ANIM_BUTTS2, &bva);
     for (guard = 0; guard < 600 && !bva.visual.ended; ++guard)
-        wm_bret_backend_tick(&bva, &a, 0);
+        tick_bret(&bva, &a, 0);
     CHECK(bva.visual.ended);
     CHECK(bva.current_id == WM_BRET_ANIM_BUTTS2);
 }
@@ -2919,6 +3009,7 @@ static void test_bret_anim_transition_chain(void) {
    port previously approximated the headers by zeroing x and z velocity on
    every attack, which is wrong for any attack that leaps. */
 static void test_bret_frame_motion_commands(void) {
+    int saw_yvel;
     wm_arcade_actor_t a;
     wm_bret_backend_actor bva;
     int guard;
@@ -2978,13 +3069,18 @@ static void test_bret_frame_motion_commands(void) {
     wm_bret_backend_init(&bva);
     wm_bret_backend_change_anim(&a, WM_BRET_ANIM_PUNCH2, &bva);
     CHECK(a.y_vel == 0);
+    /* The velocity is no longer still sitting there at the end -- gravity
+       starts working on it the moment it is set, which is the point of it
+       -- so what is checked is that the command RAN. */
+    saw_yvel = 0;
     for (guard = 0; guard < 60 && !bva.prog.ended; ++guard) {
         /* connect, the way wm_arcade_try_attack_hit does */
         if (a.anim_mode & WM_MODE_CHECKHIT)
             a.anim_mode |= (uint16_t)WM_MODE_STATUS;
-        wm_bret_backend_tick(&bva, &a, 0);
+        tick_bret(&bva, &a, 0);
+        if (a.y_vel == 0x30000) saw_yvel = 1;
     }
-    CHECK(a.y_vel == 0x30000);
+    CHECK(saw_yvel == 1);
 
     /* The same punch, missed: the ANI_SLIDE_BACK branch skips it. */
     memset(&a, 0, sizeof(a));
@@ -2992,9 +3088,12 @@ static void test_bret_frame_motion_commands(void) {
     a.new_facing_dir = WM_MOVE_UP_RIGHT;
     wm_bret_backend_init(&bva);
     wm_bret_backend_change_anim(&a, WM_BRET_ANIM_PUNCH2, &bva);
-    for (guard = 0; guard < 60 && !bva.prog.ended; ++guard)
-        wm_bret_backend_tick(&bva, &a, 0);
-    CHECK(a.y_vel == 0);
+    saw_yvel = 0;
+    for (guard = 0; guard < 60 && !bva.prog.ended; ++guard) {
+        tick_bret(&bva, &a, 0);
+        if (a.y_vel > 0) saw_yvel = 1;
+    }
+    CHECK(saw_yvel == 0);
 
     /* hrt_4_knee_fall_anim carries an unconditional ANI_OFFSET,23,0,0 after
        its first frame, and both a y and a z velocity after the
@@ -3008,13 +3107,13 @@ static void test_bret_frame_motion_commands(void) {
     wm_bret_backend_change_anim(&a, WM_BRET_ANIM_KNEE_FALL4, &bva);
     CHECK(a.x_int == 0);        /* the offset is not a header command */
     for (guard = 0; guard < 60 && a.x_int == 0; ++guard)
-        wm_bret_backend_tick(&bva, &a, 0);
+        tick_bret(&bva, &a, 0);
     CHECK(a.x_int == 23);
     for (guard = 0; guard < 60 && !bva.prog.ended; ++guard) {
         if (a.anim_mode & WM_MODE_CHECKHIT)
             a.anim_mode |= (uint16_t)WM_MODE_STATUS;
         if (a.y_vel == 0x50000) break;
-        wm_bret_backend_tick(&bva, &a, 0);
+        tick_bret(&bva, &a, 0);
     }
     CHECK(a.y_vel == 0x50000);
     CHECK(a.z_vel != 0);
@@ -3041,7 +3140,7 @@ static void test_bret_ifbuttons_run_cancel(void) {
     wm_bret_backend_change_anim(&a, WM_BRET_ANIM_BUTT4, &bva);
     CHECK(bva.current_id == WM_BRET_ANIM_BUTT4);
     for (guard = 0; guard < 10; ++guard)
-        wm_bret_backend_tick(&bva, &a, 0);
+        tick_bret(&bva, &a, 0);
     CHECK(bva.current_id == WM_BRET_ANIM_BUTT4);
     CHECK(a.player_mode != WM_PMODE_RUNNING);
 
@@ -3055,7 +3154,7 @@ static void test_bret_ifbuttons_run_cancel(void) {
     a.run_time = 9;
     wm_bret_backend_init(&bva);
     wm_bret_backend_change_anim(&a, WM_BRET_ANIM_BUTT4, &bva);
-    wm_bret_backend_tick(&bva, &a, 0);
+    tick_bret(&bva, &a, 0);
     CHECK(bva.current_id == WM_BRET_ANIM_START_RUN);
     CHECK(bva.visual.sequence == &wm_bret_run_anim);
     /* #dorun's own state: timers cleared, MODE RUNNING, DELAY_BUTNS set. */
@@ -3072,7 +3171,7 @@ static void test_bret_ifbuttons_run_cancel(void) {
     wm_bret_backend_init(&bva);
     wm_bret_backend_change_anim(&a, WM_BRET_ANIM_BUTT4, &bva);
     for (guard = 0; guard < 10; ++guard)
-        wm_bret_backend_tick(&bva, &a, 0);
+        tick_bret(&bva, &a, 0);
     CHECK(bva.current_id == WM_BRET_ANIM_BUTT4);
 }
 
@@ -3103,7 +3202,7 @@ static void test_bret_instant_state_commands(void) {
     CHECK((a.obj_control & WM_OBJ_FLIPH) == 0);
 
     for (guard = 0; guard < 40 && bva.visual.frame_index != 3; ++guard)
-        wm_bret_backend_tick(&bva, &a, 11);
+        tick_bret(&bva, &a, 11);
     CHECK(bva.visual.frame_index == 3);
     /* AT_PUNCH is 0 (DAMAGE.EQU:174); ATTACK_TIME is round_tickcount + 5. */
     CHECK(a.attack_type == 0);
@@ -3138,7 +3237,7 @@ static void test_bret_instant_state_commands(void) {
     wm_bret_backend_init(&bva);
     wm_bret_backend_change_anim(&a, WM_BRET_ANIM_FACEDOWN_GETUP, &bva);
     for (guard = 0; guard < 80 && a.safe_time == 0; ++guard)
-        wm_bret_backend_tick(&bva, &a, 0);
+        tick_bret(&bva, &a, 0);
     CHECK(a.safe_time == 50);
 }
 
@@ -3170,6 +3269,10 @@ static int program_vs_flat_buttons(const char *label,
     memset(&a, 0, sizeof(a));
     a.facing_dir = WM_MOVE_UP_RIGHT;
     a.new_facing_dir = WM_MOVE_UP_RIGHT;
+    /* On the mat, with the integrator running: an animation that launches
+       him and then waits on ANI_WAITHITGND has to be able to land, or the
+       comparison is against a program that is simply stuck. */
+    stand_in_ring(&a);
     wm_anim_exec_start(&ex, p, &a, 0, NULL);
     wm_visual_start(&vs, seq);
 
@@ -3184,6 +3287,7 @@ static int program_vs_flat_buttons(const char *label,
         else a.anim_mode &= (uint16_t)~WM_MODE_STATUS;
         a.but_val_down = buttons;
         wm_arcade_count_button_presses(&a);
+        wm_wrestler_veladd(&a, &ex, 0);
         wm_anim_exec_tick(&ex, &a, 0);
         wm_visual_tick(&vs);
     }
@@ -3194,6 +3298,124 @@ static int program_vs_flat_buttons(const char *label,
 static int program_vs_flat(const char *label, const wm_visual_sequence *seq,
                            bool hit, int *ticks_out) {
     return program_vs_flat_buttons(label, seq, hit, 0, ticks_out);
+}
+
+/*
+ * ANIM.ASM:890 _ani_waithitgnd, the single most common untranslated opcode
+ * in the machine until now (767 uses): every knockdown, slam and throw
+ * ends by waiting for a landing.
+ */
+static void test_waithitgnd(void) {
+    const wm_anim_program *p = wm_anim_program_find("hrt_fall_back_anim");
+    wm_arcade_actor_t a, opp;
+    wm_anim_exec ex;
+    int t, airborne = 0;
+    int32_t peak;
+
+    if (!p) return;
+
+    /* hrt_fall_back_anim: ANI_MIN_YVEL launches him, five frames carry him
+       back, ANI_WAITHITGND holds the animation until he lands, then
+       ANI_BOUNCE,5 pops him up and a SECOND ANI_WAITHITGND waits for that
+       one too. He is off the mat for most of it. */
+    memset(&a, 0, sizeof(a));
+    stand_in_ring(&a);
+    wm_anim_exec_start(&ex, p, &a, 0, NULL);
+    peak = a.y_int;
+    for (t = 0; t < 400 && !ex.ended; ++t) {
+        wm_wrestler_veladd(&a, &ex, 0);
+        wm_anim_exec_tick(&ex, &a, 0);
+        if (a.y_int > a.ground_y) ++airborne;
+        if (a.y_int > peak) peak = a.y_int;
+    }
+    CHECK(ex.ended);
+    CHECK(airborne > 10);
+    CHECK(peak > WM_MAT_Y);
+    CHECK(a.y_int == WM_MAT_Y);
+
+    /* Without gravity nothing lands, so the wait never ends -- and the op
+       parks the animation rather than running past it. That is the whole
+       behaviour: it is a wait, not a no-op. */
+    memset(&a, 0, sizeof(a));
+    stand_in_ring(&a);
+    wm_anim_exec_start(&ex, p, &a, 0, NULL);
+    for (t = 0; t < 400 && !ex.ended; ++t)
+        wm_anim_exec_tick(&ex, &a, 0);
+    CHECK(!ex.ended);
+    CHECK(ex.waiting);
+
+    /*
+     * The master/puppet rule: while MODE_KEEPATTACHED holds a live grapple,
+     * it is the VICTIM hitting the ground that ends the wait, not the
+     * attacker -- a slam ends when the man being slammed lands. Here the
+     * attacker is held in the air and never lands himself, so only the
+     * victim's landing can finish it.
+     */
+    memset(&a, 0, sizeof(a));
+    memset(&opp, 0, sizeof(opp));
+    stand_in_ring(&a);
+    stand_in_ring(&opp);
+    a.attach_proc = &opp;
+    opp.attach_proc = &a;
+    a.y_int = WM_MAT_Y + 40;                 /* attacker still up */
+    a.y_fixed = (int32_t)(WM_MAT_Y + 40) << 16;
+    opp.y_int = WM_MAT_Y + 40;               /* victim up too */
+    opp.y_fixed = (int32_t)(WM_MAT_Y + 40) << 16;
+    wm_anim_exec_start(&ex, p, &a, 0, NULL);
+    for (t = 0; t < 60 && !ex.waiting; ++t)
+        wm_anim_exec_tick(&ex, &a, 0);
+    CHECK(ex.waiting);
+    /* Neither is on the ground, so it keeps waiting. */
+    wm_anim_exec_tick(&ex, &a, 0);
+    CHECK(ex.waiting);
+    /*
+     * Now hold the grapple and drop the VICTIM only. The mode bit has to
+     * be set here rather than before the start: the animation's own header
+     * ANI_SETMODE is an absolute write and replaces whatever was there.
+     * "must have down velocity" gates the whole op, so the attacker is
+     * stopped rather than rising.
+     */
+    a.anim_mode |= (uint16_t)WM_MODE_KEEPATTACHED;
+    a.y_vel = 0;
+    opp.y_int = WM_MAT_Y;
+    opp.y_fixed = (int32_t)WM_MAT_Y << 16;
+    wm_anim_exec_tick(&ex, &a, 0);
+    CHECK(!ex.waiting);
+    CHECK(a.y_int > a.ground_y);             /* he never came down */
+}
+
+/* ANIM.ASM:4553 change_anim1's "reset gravity", and ANI_SETLONG's
+   override of it (ANIM.ASM:3913, 115 uses across the roster). */
+static void test_gravity_reset_and_setlong(void) {
+    const wm_anim_program *p = wm_anim_program_find("hrt_2_punch_anim");
+    wm_arcade_actor_t a;
+    wm_anim_exec ex;
+
+    if (!p) return;
+    memset(&a, 0, sizeof(a));
+    a.gravity = 0x1234;
+    wm_anim_exec_start(&ex, p, &a, 0, NULL);
+    CHECK(a.gravity == WM_GRAVITY);
+
+    /* hrt_flyout_anim -- thrown out of the ring -- gives itself a heavier
+       fall (ANI_SETLONG,OBJ_GRAVITY,0E000h) for the drop and puts the
+       default back afterwards (ANI_SETLONG,OBJ_GRAVITY,GRAVITY). */
+    p = wm_anim_program_find("hrt_flyout_anim");
+    if (p) {
+        int t;
+        int saw_heavy = 0, saw_default = 0;
+        memset(&a, 0, sizeof(a));
+        stand_in_ring(&a);
+        wm_anim_exec_start(&ex, p, &a, 0, NULL);
+        for (t = 0; t < 600 && !ex.ended; ++t) {
+            wm_wrestler_veladd(&a, &ex, 0);
+            wm_anim_exec_tick(&ex, &a, 0);
+            if (a.gravity == 0xE000) saw_heavy = 1;
+            else if (saw_heavy && a.gravity == WM_GRAVITY) saw_default = 1;
+        }
+        CHECK(saw_heavy == 1);
+        CHECK(saw_default == 1);
+    }
 }
 
 static void test_anim_program_interpreter(void) {
@@ -3329,7 +3551,7 @@ static void test_bret_backend_tick_sets_real_hurt_box(void) {
     wm_bret_backend_change_anim(&a, WM_BRET_ANIM_STAND2, &bva);
     CHECK(bva.visual.sequence == &wm_bret_stand2_anim);
 
-    wm_bret_backend_tick(&bva, &a, 0);
+    tick_bret(&bva, &a, 0);
 
     cur = wm_visual_current(&bva.visual);
     CHECK(cur != NULL);
@@ -4383,7 +4605,7 @@ static void test_bret_backend_tick_promotes_facing_dir_via_setfacing(void) {
     wm_visual_start(&bva.torso_visual, &wm_bret_4_to_8_turn2_anim);
 
     for (guard = 0; guard < 10 && a.facing_dir != WM_MOVE_LEFT; ++guard)
-        wm_bret_backend_tick(&bva, &a, 0);
+        tick_bret(&bva, &a, 0);
     CHECK(a.facing_dir == WM_MOVE_LEFT);
     CHECK(bva.torso_visual.frame_index == 1);
     CHECK(!bva.torso_visual.ended);
@@ -4393,7 +4615,7 @@ static void test_bret_backend_tick_promotes_facing_dir_via_setfacing(void) {
        the second marker and confirm the second firing picks up the change. */
     a.new_facing_dir = WM_MOVE_DOWN;
     for (guard = 0; guard < 10 && a.facing_dir != WM_MOVE_DOWN; ++guard)
-        wm_bret_backend_tick(&bva, &a, 0);
+        tick_bret(&bva, &a, 0);
     CHECK(a.facing_dir == WM_MOVE_DOWN);
     CHECK(bva.torso_visual.frame_index == 3);
 
@@ -4401,7 +4623,7 @@ static void test_bret_backend_tick_promotes_facing_dir_via_setfacing(void) {
        out its own 3-tick duration before the one-shot, non-repeat sequence
        actually ends. */
     for (guard = 0; guard < 10 && !bva.torso_visual.ended; ++guard)
-        wm_bret_backend_tick(&bva, &a, 0);
+        tick_bret(&bva, &a, 0);
     CHECK(bva.torso_visual.ended);
     CHECK(a.facing_dir == WM_MOVE_DOWN); /* no further/spurious promotion */
 }
@@ -4424,7 +4646,7 @@ static void test_bret_backend_tick_toggles_flip_via_xflip(void) {
     wm_visual_start(&bva.visual, &wm_bret_4_to_8_turn_anim);
 
     for (guard = 0; guard < 15 && (a.obj_control & WM_OBJ_FLIPH) == start_flip; ++guard)
-        wm_bret_backend_tick(&bva, &a, 0);
+        tick_bret(&bva, &a, 0);
     CHECK((a.obj_control & WM_OBJ_FLIPH) != start_flip);
     CHECK(bva.visual.frame_index == 3);
     CHECK(!bva.visual.ended);
@@ -4433,7 +4655,7 @@ static void test_bret_backend_tick_toggles_flip_via_xflip(void) {
        past the sequence naturally ending) don't toggle it again. */
     after_first = (uint16_t)(a.obj_control & WM_OBJ_FLIPH);
     for (guard = 0; guard < 10 && !bva.visual.ended; ++guard)
-        wm_bret_backend_tick(&bva, &a, 0);
+        tick_bret(&bva, &a, 0);
     CHECK(bva.visual.ended);
     CHECK((uint16_t)(a.obj_control & WM_OBJ_FLIPH) == after_first);
 }
@@ -4454,7 +4676,7 @@ static void test_bret_backend_tick_no_xflip_for_adjacent_quadrant_turn(void) {
     wm_visual_start(&bva.visual, &wm_bret_2_to_4_turn_anim);
 
     for (guard = 0; guard < 10 && !bva.visual.ended; ++guard)
-        wm_bret_backend_tick(&bva, &a, 0);
+        tick_bret(&bva, &a, 0);
     CHECK(bva.visual.ended);
     CHECK((uint16_t)(a.obj_control & WM_OBJ_FLIPH) == start_flip);
 }
@@ -4918,16 +5140,92 @@ static void test_arcade_mode_dead(void) {
     wm_arcade_mode_dead(NULL);
 }
 
-static void test_integrate_position(void) {
+/*
+ * WRESTLE2.ASM:2282 wrestler_veladd, which replaced the wm_integrate_position
+ * placeholder this test used to drive. The placeholder moved X and Z with no
+ * ground and no gravity; the real routine does all three axes, so this checks
+ * the walk it always checked AND the fall it never could.
+ */
+static void test_wrestler_veladd(void) {
     wm_arcade_actor_t a;
+    int i;
+    int32_t peak;
+
+    /* Standing in the ring: X and Z integrate exactly as before, and the
+       ground holds him at MAT_Y. */
     memset(&a, 0, sizeof(a));
-    a.x_vel = WM_BRET_WALK_VEL;
+    a.in_ring = 1;
+    a.x_int = 1074; a.x_fixed = 1074 << 16;
+    a.z_int = 1150; a.z_fixed = 1150 << 16;
+    a.ground_y = WM_MAT_Y; a.y_int = WM_MAT_Y;
+    a.y_fixed = (int32_t)WM_MAT_Y << 16;
+    a.gravity = WM_GRAVITY;
     a.z_vel = -WM_BRET_WALK_VEL;
-    for (int i = 0; i < 10; ++i) wm_integrate_position(&a);
-    CHECK(a.x_fixed == (int32_t)(WM_BRET_WALK_VEL * 10));
-    CHECK(a.z_fixed == (int32_t)(-WM_BRET_WALK_VEL * 10));
-    CHECK(a.x_int == a.x_fixed >> 16);
+    for (i = 0; i < 10; ++i) wm_wrestler_veladd(&a, NULL, 0);
+    CHECK(a.z_fixed == (int32_t)((1150 << 16) - WM_BRET_WALK_VEL * 10));
     CHECK(a.z_int == a.z_fixed >> 16);
+    CHECK(a.x_int == 1074);
+    /* He never left the mat, so gravity never pulled. */
+    CHECK(a.y_int == WM_MAT_Y);
+    CHECK(a.y_vel == 0);
+
+    /* Launched upward: he rises, slows, comes back and STOPS on the mat
+       rather than falling through it. GRAVITY is 0x8000 a tick, so a 6.0
+       launch is spent after twelve. */
+    a.y_vel = 0x60000;
+    peak = a.y_int;
+    for (i = 0; i < 40; ++i) {
+        wm_wrestler_veladd(&a, NULL, 0);
+        if (a.y_int > peak) peak = a.y_int;
+    }
+    CHECK(peak > WM_MAT_Y);
+    CHECK(a.y_int == WM_MAT_Y);
+    CHECK(a.y_vel == 0);
+
+    /* MODE_NOGRAVITY floats: nothing pulls him back down. */
+    a.anim_mode = (uint16_t)WM_MODE_NOGRAVITY;
+    a.y_vel = 0x60000;
+    for (i = 0; i < 10; ++i) wm_wrestler_veladd(&a, NULL, 0);
+    CHECK(a.y_vel == 0x60000);
+    CHECK(a.y_int > WM_MAT_Y);
+
+    /* And the fall is capped: MAX_YVEL is a floor on downward speed, not a
+       ceiling, however long he falls. */
+    a.anim_mode = 0;
+    for (i = 0; i < 2000; ++i) wm_wrestler_veladd(&a, NULL, 0);
+    CHECK(a.y_vel >= WM_MAX_YVEL);
+
+    wm_wrestler_veladd(NULL, NULL, 0);
+}
+
+/* WRESTLE.ASM:2456 wrestler_friction: only with MODE_FRICTION, and it
+   never carries OBJ_XVEL past zero into the other direction. */
+static void test_wrestler_friction(void) {
+    wm_arcade_actor_t a;
+
+    memset(&a, 0, sizeof(a));
+    a.friction = 0x3000;
+    a.x_vel = 0x10000;
+    wm_wrestler_friction(&a);
+    CHECK(a.x_vel == 0x10000);        /* no MODE_FRICTION: untouched */
+
+    a.anim_mode = (uint16_t)WM_MODE_FRICTION;
+    wm_wrestler_friction(&a);
+    CHECK(a.x_vel == 0xd000);
+    wm_wrestler_friction(&a);
+    wm_wrestler_friction(&a);
+    wm_wrestler_friction(&a);
+    wm_wrestler_friction(&a);
+    wm_wrestler_friction(&a);
+    CHECK(a.x_vel == 0);              /* stops at zero, does not reverse */
+
+    a.x_vel = -0x4000;
+    wm_wrestler_friction(&a);
+    CHECK(a.x_vel == -0x1000);
+    wm_wrestler_friction(&a);
+    CHECK(a.x_vel == 0);
+
+    wm_wrestler_friction(NULL);
 }
 
 static void test_human_input_commit(void) {
@@ -5583,6 +5881,8 @@ int main(void) {
     test_bret_ifbuttons_run_cancel();
     test_bret_instant_state_commands();
     test_anim_program_interpreter();
+    test_waithitgnd();
+    test_gravity_reset_and_setlong();
     test_attract_dcs_logo_does_not_fall_through();
     test_bret_hurt_box_for_frame_real_geometry();
     test_bret_backend_tick_sets_real_hurt_box();
@@ -5636,7 +5936,8 @@ int main(void) {
     test_arcade_confine_wrestler_clamps_x();
     test_arcade_confine_wrestler_noconfine_and_attached_skip();
     test_arcade_mode_dead();
-    test_integrate_position();
+    test_wrestler_veladd();
+    test_wrestler_friction();
     test_human_input_commit();
     test_match_start_selected();
     test_match_human_bret_walks_right();

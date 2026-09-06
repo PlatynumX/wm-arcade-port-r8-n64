@@ -1,6 +1,7 @@
 #include "wm/match.h"
 #include "wm/anim_program.h"
 #include "wm/arcade/wm_arcade_butcount.h"
+#include "wm/arcade/wm_arcade_veladd.h"
 #include <string.h>
 
 /* PLYR.EQU: PSIDE_PLYR1 equ 0, PSIDE_PLYR2 equ 1. */
@@ -30,6 +31,19 @@ static void place_wrestler(wm_arcade_actor_t *a, int32_t x, int32_t z, int32_t f
     a->z_int = z;
     a->z_fixed = z << 16;
     a->facing_dir = a->new_facing_dir = facing;
+    /*
+     * WRESTLE.ASM:2724-2728 creates the wrestler with OBJ_YPOS = 0 and
+     * GROUND_Y = MAT_Y, then runs the veladd clamp inline right there
+     * (:2730, the source's own ";From veladd" comment): 0 is below the mat,
+     * so he is lifted to it with OBJ_YVEL cleared. That settled position is
+     * what this sets directly. OBJ_GRAVITY starts at GAME.EQU's GRAVITY,
+     * which every change_anim resets it to anyway (ANIM.ASM:4520/:4553).
+     */
+    a->ground_y = WM_MAT_Y;
+    a->y_int = WM_MAT_Y;
+    a->y_fixed = (int32_t)WM_MAT_Y << 16;
+    a->y_vel = 0;
+    a->gravity = WM_GRAVITY;
 }
 
 void wm_match_init(wm_match_state *m) {
@@ -268,6 +282,25 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
            animation reads a count. */
         wm_arcade_count_button_presses(&m->actors[i]);
 
+        /*
+         * WRESTLE.ASM:2457 `calla wrestler_veladd` / `callr
+         * wrestler_friction`, in the source's own main-loop order: after
+         * count_button_presses, BEFORE the animation ticks, and before the
+         * confinement pass -- so this tick's animation and this tick's
+         * confinement both see the position the velocities just produced.
+         *
+         * The exec handed over is the wrestler's own running animation:
+         * landing stuffs a 1 into ANICNT when MODE_WAITHITOPP is set, which
+         * is how an ANI_WAITHITOPP hold ends early. Bret runs the full
+         * visual backend, the other seven the shared one.
+         */
+        wm_wrestler_veladd(&m->actors[i],
+                           m->actors[i].wrestler_num == WM_ROSTER_BRET
+                               ? &m->bret_visual[i].prog
+                               : &m->wrestler_visual[i].prog,
+                           0 /* this port has no INPREGAME2 phase */);
+        wm_wrestler_friction(&m->actors[i]);
+
         /* WRESTLE.ASM::move_wrestler dispatches every wrestler process
            through its own move_xxx; wm_arcade_move_ported_wrestler is that
            dispatcher, and all eight per-wrestler modules behind it are real
@@ -348,10 +381,15 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
                    OBJ_COLLX1/X2, which is what the hurt box is. */
                 wm_arcade_confine_wrestler(&m->actors[i]);
             }
-            /* WRESTLE.ASM integrates every wrestler process's own velocity
-               every tick, not just Bret's -- all eight now set real
-               velocities through their own execute_walk. */
-            wm_integrate_position(&m->actors[i]);
+            /*
+             * Position integration used to happen here, through
+             * wm_integrate_position -- a placeholder that moved X and Z and
+             * was documented as "NOT a source routine". The real one is
+             * WRESTLE2.ASM:2282 wrestler_veladd, called above at the
+             * source's own place in the loop, and it does X, Y and Z with
+             * the ground and gravity. Integrating again here would move
+             * every wrestler twice per tick.
+             */
         }
     }
 

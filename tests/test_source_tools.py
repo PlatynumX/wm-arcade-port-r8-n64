@@ -1099,6 +1099,60 @@ def test_truncated_frame_names() -> None:
         "NOTHERE01", ["NOTHERE01"], images, by_name) is None
 
 
+def test_gravity_opcodes() -> None:
+    """The gravity/ground group, read off the source rather than assumed.
+
+    ANI_WAITHITGND takes no operands at all; ANI_BOUNCE takes one that the
+    handler shifts left 16 into OBJ_YVEL; ANI_SETLONG names a process field
+    and a LONG, and across the eight playable wrestlers it names exactly
+    two -- OBJ_GRAVITY and DEBRIS_X -- so a third would be a silent hole
+    and refuses instead.
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    if not (base / "HRTSEQ4.ASM").exists():
+        return
+
+    ops = wlprogram.program_for(base / "HRTSEQ4.ASM", "hrt_fall_back_anim")
+    kinds = [o[0] for o in ops]
+    assert kinds.count("WAITHITGND") == 2, kinds
+    assert "BOUNCE" in kinds, kinds
+    # ANI_BOUNCE,5 -- the operand is carried through unshifted; the shift
+    # is the runtime's, exactly as ANIM.ASM:950 does it.
+    assert [o for o in ops if o[0] == "BOUNCE"][0][2] == 5, ops
+
+    # hrt_flyout_anim gives itself a heavier fall and puts the default back.
+    ops = wlprogram.program_for(base / "HRTSEQ4.ASM", "hrt_flyout_anim")
+    setlongs = [o for o in ops if o[0] == "SETLONG"]
+    assert len(setlongs) == 2, setlongs
+    assert all(o[1] == 0 for o in setlongs), setlongs   # field 0 = OBJ_GRAVITY
+    assert setlongs[0][2] == 0xE000 and setlongs[1][2] == 0x8000, setlongs
+
+    # Only the two known fields; anything else is refused rather than
+    # written to whatever happens to be at that offset.
+    assert set(wlprogram.SETLONG_FIELDS) == {"OBJ_GRAVITY", "DEBRIS_X"}
+
+
+def test_waithitopp_is_a_mode_and_a_frame() -> None:
+    """ANIM.ASM:2300's own note: "just like an ordinary WL ticks,frame type
+    command except that the ANICNT is zeroed if we hit the opponent." The
+    handler only sets MODE_WAITHITOPP and hands the operands back to the
+    dispatcher, so one source line is two ops. The frame was always being
+    read (wlanim's WAIT_FRAME_RE); the mode was what got dropped.
+    """
+    src = ROOT / "original" / "wwf-wrestlemania" / "HRTSEQ3.ASM"
+    if not src.exists():
+        return
+
+    ops = wlprogram.program_for(src, "hrt_3_pile_driver_anim")
+    kinds = [o[0] for o in ops]
+    for i, k in enumerate(kinds):
+        if k == "WAITHITOPP":
+            assert kinds[i + 1] == "FRAME", (i, kinds[i:i + 3])
+    # HRTSEQ3.ASM:317 is `WWL ANI_WAITHITOPP,4,H3HT3X+FR3`.
+    text = src.read_text(errors="replace")
+    assert "ANI_WAITHITOPP,4,H3HT3X+FR3" in text.replace("\r", "")
+
+
 def main() -> int:
     test_wlanim()
     test_wlprogram()
@@ -1109,6 +1163,8 @@ def main() -> int:
     test_bare_label_routines()
     test_slave_targets_all_emit()
     test_truncated_frame_names()
+    test_gravity_opcodes()
+    test_waithitopp_is_a_mode_and_a_frame()
     test_roster_dispatcher_labels_all_emit()
     test_wlprogram_tick_expressions()
     test_wlanim_label_def()

@@ -1,4 +1,5 @@
 #include "wm/anim_program.h"
+#include "wm/arcade/wm_arcade_veladd.h"
 #include "wm/arcade/wm_arcade_combat_defs.h"
 #include "wm/arcade/wm_arcade_anim_combat.h"
 #include "wm/arcade/wm_arcade_butcount.h"
@@ -112,6 +113,18 @@ static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
             break;
         case WM_AOP_GRAVITY_ON:
             actor->anim_mode &= (uint16_t)~WM_MODE_NOGRAVITY;
+            break;
+        case WM_AOP_BOUNCE:
+            /* ANIM.ASM:950: `move *a4+,a0 / sll 16,a0` -- the operand is a
+               whole-pixel-per-tick upward kick. */
+            actor->y_vel = o->a << 16;
+            break;
+        case WM_AOP_WAITHITOPP:
+            actor->anim_mode |= (uint16_t)WM_MODE_WAITHITOPP;
+            break;
+        case WM_AOP_SETLONG:
+            if (o->a == 0) actor->gravity = o->b;
+            else actor->debris_x = o->b;
             break;
         case WM_AOP_CLR_STATUS:
             actor->anim_mode &= (uint16_t)~WM_MODE_STATUS;
@@ -349,7 +362,44 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
                 exec->pc = pc;
                 exec->next_pc = pc + 1;
                 exec->ticks_left = (uint16_t)(o->a > 0 ? o->a : 1);
+                exec->waiting = false;
                 return;
+            case WM_AOP_WAITHITGND: {
+                /*
+                 * ANIM.ASM:890 _ani_waithitgnd. "must have down velocity":
+                 * a POSITIVE OBJ_YVEL is rising, so it is never a landing.
+                 * Then, if this wrestler is the master of a live grapple
+                 * and his victim is not MODE_GHOST, HIS victim hitting the
+                 * ground counts as the landing -- a slam ends when the man
+                 * being slammed lands, not when the slammer does.
+                 */
+                int landed = 0;
+                if (actor && actor->y_vel <= 0) {
+                    wm_arcade_actor_t *opp = actor->attach_proc;
+                    if ((actor->anim_mode & WM_MODE_KEEPATTACHED) && opp &&
+                        opp->attach_proc == actor &&
+                        !(opp->anim_mode & WM_MODE_GHOST) &&
+                        opp->y_int <= opp->ground_y) {
+                        landed = 1;
+                    } else if (actor->y_int <= actor->ground_y) {
+                        landed = 1;
+                    }
+                }
+                if (!landed) {
+                    /* `movk 1,a0 / move a0,*a10(OANICNT)`: hold the frame
+                       already showing for one tick and come back here.
+                       OANIPC is untouched, so exec->pc must not move. */
+                    exec->next_pc = pc;
+                    exec->ticks_left = 1;
+                    exec->waiting = true;
+                    return;
+                }
+                exec->waiting = false;
+                if (actor) wm_anim_code_run(actor, exec->env, "SMALL_BOUNCE",
+                                            NULL);
+                pc = pc + 1;
+                continue;
+            }
             case WM_AOP_SUPERSLAVE2:
                 /* It sets OANICNT and stops, so it yields exactly like a
                    frame -- it IS the attacker's frame, and it chooses the
@@ -459,6 +509,15 @@ void wm_anim_exec_start(wm_anim_exec *exec, const wm_anim_program *program,
     memset(exec, 0, sizeof(*exec));
     exec->program = program;
     exec->env = env;
+    /*
+     * ANIM.ASM:4553 change_anim1 (and :4520 change_anim_anim) both do
+     * `movi GRAVITY,a0 / move a0,*a13(OBJ_GRAVITY),L` -- "reset gravity",
+     * their own comment. Every animation therefore starts at the default
+     * fall rate, and an animation that wants its own must say so with
+     * ANI_SETLONG,OBJ_GRAVITY. Without this reset a single heavy fall
+     * would make the wrestler heavy for the rest of the match.
+     */
+    if (actor) actor->gravity = WM_GRAVITY;
     if (!program || program->op_count == 0) {
         exec->ended = true;
         return;

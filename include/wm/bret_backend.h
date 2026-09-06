@@ -206,7 +206,7 @@ void wm_bret_backend_execute_walk(wm_arcade_actor_t *actor, void *user);
 
 /*
  * Advances both visual tracks by one source tick (does not move the actor
- * -- see wm_bret_backend_tick_position()), then fires ANIM.ASM's real
+ * -- see wm/arcade/wm_arcade_veladd.h), then fires ANIM.ASM's real
  * ATTACK_ON/ATTACK_ON_Z/ATTACK_OFF (wm/arcade/wm_arcade_anim_combat.h,
  * real and ctest-verified since fix38) for whichever of the 6 mapped
  * attack animations (wm_bret_anim_sequence) is playing, using literal
@@ -251,9 +251,6 @@ void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
  */
 wm_arcade_frame_box_t wm_hurt_box_for_frame(const char *source_frame);
 
-/* Not a source routine (see wm/movement.h's wm_integrate_position): applies
-   actor->x_vel/z_vel to its position for one tick. */
-void wm_bret_backend_tick_position(wm_arcade_actor_t *actor);
 
 #ifdef __cplusplus
 }

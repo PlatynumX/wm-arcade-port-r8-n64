@@ -54,6 +54,12 @@ COMMANDS = {
     "ANI_CLR_BUTCOUNT": ("CLR_BUTCOUNT", 0, False),
     "ANI_SAFE_TIME":   ("SAFE_TIME", 1, False),
     "ANI_GRAVITY_ON":  ("GRAVITY_ON", 0, False),
+    # Gravity and ground (WRESTLE2.ASM:2282 wrestler_veladd is what
+    # makes either mean anything). ANI_WAITHITGND (ANIM.ASM:890) takes
+    # no operands at all; ANI_BOUNCE (:950) takes one, which it shifts
+    # left 16 into OBJ_YVEL.
+    "ANI_WAITHITGND": ("WAITHITGND", 0, False),
+    "ANI_BOUNCE":     ("BOUNCE", 1, False),
     "ANI_CLR_STATUS":  ("CLR_STATUS", 0, False),
 }
 

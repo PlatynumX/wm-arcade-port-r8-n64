@@ -154,6 +154,16 @@ def _mode_value(expr: str, table: dict) -> int:
             continue
         raise ValueError(f"unknown mode {tok!r}")
     return total
+# ANIM.ASM:3913 _ani_setlong writes a LONG straight into the wrestler
+# process at a field offset. Across the eight playable wrestlers it names
+# exactly two fields: OBJ_GRAVITY (115 uses -- an animation choosing its own
+# fall rate) and DEBRIS_X (148, the renderer's). Both are real fields on the
+# port's actor, so both are emitted; a THIRD field would be a silent hole,
+# so anything else refuses.
+SETLONG_FIELDS = {"OBJ_GRAVITY": 0, "DEBRIS_X": 1}
+SETLONG_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_SETLONG\s*,\s*(\w+)\s*,\s*([^,]+)\s*$", re.I)
+
 DEC_RPT_RE = re.compile(r"^\s*(?:\.word|W+L+W*)\s+ANI_DEC_RPTCOUNT\s*$", re.I)
 
 
@@ -306,6 +316,16 @@ def program_for(path: pathlib.Path, label: str):
 
         frame = wlanim._frame_from_line(line)
         if frame:
+            # ANIM.ASM:2300 _ani_waithitopp, the source's own note: "This is
+            # just like an ordinary WL ticks,frame type command except that
+            # the ANICNT is zeroed if we hit the opponent." The handler only
+            # sets MODE_WAITHITOPP and hands the same operands straight back
+            # to the dispatcher, so one source line is two ops -- the mode
+            # set, then the ordinary frame. wlanim's WAIT_FRAME_RE already
+            # read the frame out of it; what was being dropped is the mode,
+            # which is what lets landing cut the hold short.
+            if wlanim.WAIT_FRAME_RE.match(line):
+                ops.append(("WAITHITOPP",))
             ops.append(("FRAME", frame.name, frame.ticks))
             continue
 
@@ -447,6 +467,17 @@ def program_for(path: pathlib.Path, label: str):
                 ops.append(("SETPLYRMODE", _mode_value(mm.group(2), PLYR_MODES)))
             continue
 
+        sl = SETLONG_RE.match(line)
+        if sl:
+            field = sl.group(1).upper()
+            if field not in SETLONG_FIELDS:
+                raise ValueError(
+                    f"{label}: ANI_SETLONG writes {sl.group(1)!r}, a process "
+                    f"field this port does not model")
+            ops.append(("SETLONG", SETLONG_FIELDS[field],
+                        wlcommands._value(sl.group(2), equates)))
+            continue
+
         cmd = wlcommands.CMD_RE.match(line)
         if cmd:
             kind, nargs, has_mode = wlcommands.COMMANDS[cmd.group(1).upper()]
@@ -524,6 +555,8 @@ def _c_op(op) -> str:
         args[0], args[1] = op[1], op[2]
     elif kind == "SLAVEANIM":
         args[0] = op[1]
+    elif kind == "SETLONG":
+        args[0], args[1] = op[1], op[2]
     elif kind in ("SETMODE", "SETPLYRMODE"):
         args[0] = op[1]
     elif kind in ("ATTACK_ON", "ATTACK_ON_Z"):

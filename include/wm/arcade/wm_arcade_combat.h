@@ -124,6 +124,30 @@ struct wm_arcade_actor {
     int32_t y_vel;
     int32_t z_vel;
     int32_t ground_y;
+    /*
+     * PLYR.EQU:64 OBJ_GRAVITY, the per-tick pull WRESTLE2.ASM:2282
+     * wrestler_veladd subtracts from OBJ_YVEL. It is not a constant: every
+     * animation change resets it to GAME.EQU:436's GRAVITY (0x8000) --
+     * ANIM.ASM:4520 change_anim_anim and :4553 change_anim1 both do it --
+     * and an animation can then override it for itself with
+     * ANI_SETLONG,OBJ_GRAVITY (115 uses, e.g. BAMSEQ2.ASM:3746's 0E000h
+     * for a heavier fall).
+     */
+    int32_t gravity;
+    /* PLYR.EQU:33 OBJ_PRIORITY, written by WRESTLE2.ASM:2385 calc_ground_y
+       from where the wrestler is standing: 112 in the ring, 103 or 117
+       outside it depending on Z. It is the sprite's draw order. */
+    int32_t obj_priority;
+    /*
+     * PLYR.EQU:149 CLIMBING_THRU. calc_ground_y reads it to decide that a
+     * wrestler between the mat edges is climbing IN rather than standing
+     * outside, and puts him on MAT_Y. The climb subsystem this port has
+     * (wm/arcade/wmania_ring_climb.h) keeps its own player struct and is
+     * not joined to wm_arcade_actor yet, so nothing sets this field and
+     * that branch does not fire -- which is the same path a wrestler who
+     * is not climbing takes anyway.
+     */
+    int32_t climbing_thru;
     /* PLYR.EQU OBJ_FRICTION, set by ANIM.ASM's ANI_FRICTION (:22) together
        with MODE_FRICTION. */
     int32_t friction;

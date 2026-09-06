@@ -129,10 +129,3 @@ void wm_execute_walk(wm_arcade_actor_t *actor,
     wm_set_velocities(actor, opponent, table);
 }
 
-void wm_integrate_position(wm_arcade_actor_t *actor) {
-    if (!actor) return;
-    actor->x_fixed += actor->x_vel;
-    actor->z_fixed += actor->z_vel;
-    actor->x_int = actor->x_fixed >> 16;
-    actor->z_int = actor->z_fixed >> 16;
-}

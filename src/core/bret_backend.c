@@ -716,6 +716,19 @@ static void wm_bret_backend_check_secret_moves(wm_arcade_actor_t *actor,
  * commands move the wrestler -- all of them run by the interpreter as it
  * reaches them, on whichever branch the animation actually took.
  */
+/*
+ * Step the flat track one frame, whatever its own timing says. Matching on
+ * the frame NAME cannot work: hrt_2_punch_anim shows H2PL3B01 twice in a
+ * row and H2PL3B02 twice in a row, so a name search finds the frame the
+ * track is already on and never leaves it.
+ */
+static void step_visual_one_frame(wm_visual_state *v) {
+    if (!v || v->ended || !v->sequence) return;
+    v->just_started = false;
+    v->ticks_left = 1;
+    wm_visual_tick(v);
+}
+
 static void wm_bret_backend_tick_program(wm_bret_backend_actor *bva,
                                          wm_arcade_actor_t *actor,
                                          uint16_t round_tickcount) {
@@ -795,8 +808,17 @@ void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
         bva->visual.ticks_left = 2;
         if (bva->prog.program) bva->prog.ticks_left = 2;
     }
+    /*
+     * The flat leg track no longer runs on its own timing while a program
+     * is driving. It never could keep up once ANI_WAITHITGND existed -- a
+     * fall parks the program on one frame for as long as it takes to land,
+     * and the flat list has no such command in it, so the two drifted
+     * apart by the whole length of every fall. The program is what runs
+     * the animation; the flat track is synced to the frame IT is showing,
+     * below, so callers reading `visual` see the wrestler's real frame.
+     */
     leg_old_frame_index = bva->visual.frame_index;
-    wm_visual_tick(&bva->visual);
+    if (!bva->prog.program) wm_visual_tick(&bva->visual);
     torso_old_frame_index = bva->torso_visual.frame_index;
     wm_visual_tick(&bva->torso_visual);
 
@@ -829,7 +851,18 @@ void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
      * sequence is playing.
      */
     if (bva->prog.program) {
+        /*
+         * The flat track steps when the PROGRAM steps, one frame for one
+         * frame, rather than running on its own clock. Both lists come out
+         * of the same source stream in the same order, so they stay in
+         * step -- and an ANI_WAITHITGND that parks the program for the
+         * length of a fall now parks the flat track with it, instead of
+         * letting it run away through the rest of the animation while the
+         * wrestler is still in the air.
+         */
+        size_t pc_before = bva->prog.pc;
         wm_bret_backend_tick_program(bva, actor, round_tickcount);
+        if (bva->prog.pc != pc_before) step_visual_one_frame(&bva->visual);
         return;
     }
 
@@ -860,6 +893,3 @@ void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
     }
 }
 
-void wm_bret_backend_tick_position(wm_arcade_actor_t *actor) {
-    wm_integrate_position(actor);
-}

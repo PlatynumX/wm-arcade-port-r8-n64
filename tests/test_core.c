@@ -1495,6 +1495,93 @@ static void test_roster_backend_animates(void) {
 }
 
 /*
+ * Razor, the eighth. He is the one wrestler whose dispatcher selects
+ * animations by a typed id rather than by the source's routine name, so
+ * where the other six needed nothing but the program registry, he needed a
+ * map -- src/core/arcade/wm_arcade_razor_anim_labels.c, every row checked
+ * against RZRSEQ1-4.ASM.
+ */
+static void test_razor_backend_animates(void) {
+    static const wm_arcade_razor_anim_id_t attacks[] = {
+        WM_RZR_ANIM_PUNCH2, WM_RZR_ANIM_KICK4, WM_RZR_ANIM_UPPERCUT4,
+        WM_RZR_ANIM_KICK_TB, WM_RZR_ANIM_RAZORS_EDGE
+    };
+    size_t i;
+
+    /* Three labels could not be derived from the id name and were read out
+       of the source: "uprcut" rather than "uppercut" (RAZOR.ASM:1565's own
+       #ck_up), the capital TB Bret's kick_TB also keeps, and the shared
+       WRESTLE2 run routine. */
+    CHECK(strcmp(wm_arcade_razor_anim_label(WM_RZR_ANIM_UPPERCUT4),
+                 "rzr_4_uprcut_anim") == 0);
+    CHECK(strcmp(wm_arcade_razor_anim_label(WM_RZR_ANIM_KICK_TB),
+                 "rzr_kick_TB_anim") == 0);
+    CHECK(strcmp(wm_arcade_razor_anim_label(WM_RZR_ANIM_START_RUN),
+                 "start_run_anim") == 0);
+    /* FINISEQ.ASM's two finish moves are eight lines of commands ending in
+       ANI_END behind a .if NUM_RAZOR_FINISHES guard, with no WL frames at
+       all -- there is no animation there to map, in the original either. */
+    CHECK(wm_arcade_razor_anim_label(WM_RZR_ANIM_FINISH1) == NULL);
+    CHECK(wm_arcade_razor_anim_label(WM_RZR_ANIM_FINISH2) == NULL);
+    CHECK(wm_arcade_razor_anim_label(WM_RZR_ANIM_NONE) == NULL);
+
+    for (i = 0; i < sizeof(attacks) / sizeof(attacks[0]); ++i) {
+        wm_arcade_actor_t a, opp;
+        wm_wrestler_backend_actor st;
+        wm_arcade_razor_callbacks_t cb;
+        int t, frames = 0, boxes = 0, was = 0;
+
+        memset(&a, 0, sizeof(a));
+        memset(&opp, 0, sizeof(opp));
+        memset(&st, 0, sizeof(st));
+        a.wrestler_num = WM_ROSTER_RAZOR;
+        a.facing_dir = WM_MOVE_UP_RIGHT;
+        a.new_facing_dir = WM_MOVE_UP_RIGHT;
+        st.wrestler_num = WM_ROSTER_RAZOR;
+        st.opponent = &opp;
+        cb = wm_wrestler_razor_callbacks(&st);
+        CHECK(cb.change_anim != NULL);
+
+        cb.change_anim(&a, attacks[i], cb.user);
+        CHECK(st.prog.program != NULL);
+        for (t = 0; t < 200 && st.prog.program && !st.prog.ended; ++t) {
+            int on;
+            if (wm_anim_exec_frame(&st.prog)) ++frames;
+            wm_wrestler_backend_tick(&st, &a);
+            on = (a.anim_mode & WM_MODE_CHECKHIT) ? 1 : 0;
+            if (on && !was) ++boxes;
+            was = on;
+        }
+        CHECK(frames > 4);
+        CHECK(a.hurt_box.x2 > a.hurt_box.x1);
+        CHECK(a.hurt_box.y2 > a.hurt_box.y1);
+        CHECK(boxes >= 1);
+    }
+
+    /* start_run_anim has no frames of its own -- it is state setup, and
+       what it does IS the setup, the same fork Bret's backend takes. */
+    {
+        wm_arcade_actor_t a;
+        wm_wrestler_backend_actor st;
+        wm_arcade_razor_callbacks_t cb;
+        memset(&a, 0, sizeof(a));
+        memset(&st, 0, sizeof(st));
+        a.wrestler_num = WM_ROSTER_RAZOR;
+        a.facing_dir = WM_MOVE_UP_RIGHT;
+        a.new_facing_dir = WM_MOVE_UP_RIGHT;
+        a.getup_time = 5;
+        a.run_time = 9;
+        st.wrestler_num = WM_ROSTER_RAZOR;
+        cb = wm_wrestler_razor_callbacks(&st);
+        cb.change_anim(&a, WM_RZR_ANIM_START_RUN, cb.user);
+        CHECK(a.player_mode == WM_PMODE_RUNNING);
+        CHECK(a.getup_time == 0);
+        CHECK(a.run_time == 0);
+        CHECK(a.anim_mode & WM_MODE_UNINT);
+    }
+}
+
+/*
  * ANIM.ASM:1277 ANI_CODE's targets (src/core/anim_code.c).
  *
  * `_ani_code` is the plainest opcode in the machine and the biggest hole
@@ -5295,6 +5382,7 @@ int main(void) {
     test_bret_attack_windows_remaining();
     test_bret_attack_windows_batch1();
     test_roster_backend_animates();
+    test_razor_backend_animates();
     test_anim_code_sound_routines();
     test_anim_code_state_routines();
     test_anim_code_runs_from_program();

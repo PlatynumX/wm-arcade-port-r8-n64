@@ -113,6 +113,12 @@ void wm_wrestler_backend_tick(wm_wrestler_backend_actor *state,
 /* Label-based callback set (TAKER/YOKO/SHAWN/BAM/DOINK/LEX). */
 wm_arcade_roster_callbacks_t wm_wrestler_roster_callbacks(wm_wrestler_backend_actor *state);
 
+/* Razor's animation ids as the source's own routine names, so his typed
+   dispatcher reaches the same label-keyed programs the other six do. NULL
+   for an id with no routine behind it -- see the file's own comment for
+   which, and why. */
+const char *wm_arcade_razor_anim_label(wm_arcade_razor_anim_id_t id);
+
 /* Razor's own typed-anim-id callback set, same shared bodies. */
 wm_arcade_razor_callbacks_t wm_wrestler_razor_callbacks(wm_wrestler_backend_actor *state);
 

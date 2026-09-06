@@ -4,6 +4,7 @@
 #include "wm/arcade/wm_arcade_mode_dead.h"
 #include "wm/arcade/wm_arcade_anim_combat.h"
 #include "wm/bret_backend.h"
+#include "wm/arcade/wm_arcade_start_run.h"
 
 #include <string.h>
 
@@ -166,10 +167,35 @@ wm_arcade_roster_callbacks_t wm_wrestler_roster_callbacks(
     return cb;
 }
 
+/*
+ * wm_arcade_razor_callbacks_t.change_anim.
+ *
+ * Razor is the one wrestler whose dispatcher selects by a typed id rather
+ * than by the source's routine name, so his ids are turned back into those
+ * names (src/core/arcade/wm_arcade_razor_anim_labels.c) and then take the
+ * identical path the other six do.
+ */
+static void backend_razor_change_anim(wm_arcade_actor_t *actor,
+                                      wm_arcade_razor_anim_id_t id,
+                                      void *user) {
+    const char *label = wm_arcade_razor_anim_label(id);
+    if (!actor || !label) return;
+    /* WRESTLE2.ASM:3443 start_run_anim is state setup with no WL frames of
+       its own, so there is no program to run -- what it does IS the setup.
+       Bret's backend takes the same fork for the same reason. */
+    if (strcmp(label, "start_run_anim") == 0) {
+        wm_arcade_start_run(actor);
+        actor->anim_mode |= (uint16_t)(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
+        return;
+    }
+    backend_change_anim_label(actor, label, user);
+}
+
 wm_arcade_razor_callbacks_t wm_wrestler_razor_callbacks(
     wm_wrestler_backend_actor *state) {
     wm_arcade_razor_callbacks_t cb;
     memset(&cb, 0, sizeof(cb));
+    cb.change_anim = backend_razor_change_anim;
     cb.execute_walk = backend_execute_walk;
     cb.adjust_health = backend_adjust_health;
     cb.mode_dead = backend_mode_dead;

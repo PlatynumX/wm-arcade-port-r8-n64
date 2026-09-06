@@ -58,6 +58,7 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_drone_data.c
     src/core/anim_code.c
     src/core/arcade/wm_arcade_butcount.c
+    src/core/arcade/wm_arcade_razor_anim_labels.c
     src/core/arcade/wm_arcade_joystat.c
     src/core/arcade/wm_arcade_lex.c
     src/core/arcade/wm_arcade_lifebar.c

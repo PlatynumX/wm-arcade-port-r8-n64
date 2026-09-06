@@ -371,6 +371,67 @@ python3 "$ROOT/tools/wlprogram.py" \
     --animation "$ORIG/YOKSEQ3.ASM" yok_scissor_anim \
     --animation "$ORIG/YOKSEQ4.ASM" yok_4_block_anim \
     --animation "$ORIG/YOKSEQ4.ASM" yok_fall_back_anim \
+    --animation "$ORIG/RZRSEQ1.ASM" rzr_run2_anim \
+    --animation "$ORIG/RZRSEQ1.ASM" rzr_stand2_anim \
+    --animation "$ORIG/RZRSEQ1.ASM" rzr_stand4_anim \
+    --animation "$ORIG/RZRSEQ1.ASM" rzr_torso2_anim \
+    --animation "$ORIG/RZRSEQ1.ASM" rzr_torso4_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_2_butt_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_2_grabfling_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_2_ground_punch_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_2_kick_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_2_knee_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_2_pin_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_2_pummel_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_2_punch_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_2_raise_arm_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_2_stomp_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_2_super_kick_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_3_dslash_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_3_uslash_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_4_bigboot_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_4_butt_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_4_grabfling_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_4_ground_punch_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_4_kick2_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_4_kick_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_4_knee_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_4_knee_fall_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_4_pin_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_4_pummel_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_4_punch_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_4_push_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_4_raise_arm_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_4_stomp_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_4_super_kick_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_4_uprcut_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_combo_kick_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_combo_punch_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_flying_elbow_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_flying_kick_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_kick_TB_anim \
+    --animation "$ORIG/RZRSEQ2.ASM" rzr_tbukl_elbow_anim \
+    --animation "$ORIG/RZRSEQ3.ASM" rzr_2_hair_pickup_anim \
+    --animation "$ORIG/RZRSEQ3.ASM" rzr_2_hiptoss2_anim \
+    --animation "$ORIG/RZRSEQ3.ASM" rzr_2_hiptoss_anim \
+    --animation "$ORIG/RZRSEQ3.ASM" rzr_3_fake_hold_anim \
+    --animation "$ORIG/RZRSEQ3.ASM" rzr_3_head_held_stand_anim \
+    --animation "$ORIG/RZRSEQ3.ASM" rzr_3_head_hold2_anim \
+    --animation "$ORIG/RZRSEQ3.ASM" rzr_3_head_hold_anim \
+    --animation "$ORIG/RZRSEQ3.ASM" rzr_3_pile_driver_anim \
+    --animation "$ORIG/RZRSEQ3.ASM" rzr_4_hair_pickup_anim \
+    --animation "$ORIG/RZRSEQ3.ASM" rzr_4_hiptoss2_anim \
+    --animation "$ORIG/RZRSEQ3.ASM" rzr_4_hiptoss_anim \
+    --animation "$ORIG/RZRSEQ3.ASM" rzr_climb_down_anim \
+    --animation "$ORIG/RZRSEQ3.ASM" rzr_dslashes_to_head_anim \
+    --animation "$ORIG/RZRSEQ3.ASM" rzr_razors_edge_anim \
+    --animation "$ORIG/RZRSEQ3.ASM" rzr_repeat_slash_anim \
+    --animation "$ORIG/RZRSEQ3.ASM" rzr_rugshake_anim \
+    --animation "$ORIG/RZRSEQ3.ASM" rzr_sliding_rug_anim \
+    --animation "$ORIG/RZRSEQ3.ASM" rzr_uslashes_to_head_anim \
+    --animation "$ORIG/RZRSEQ4.ASM" rzr_2_block_anim \
+    --animation "$ORIG/RZRSEQ4.ASM" rzr_4_block_anim \
+    --animation "$ORIG/RZRSEQ4.ASM" rzr_fall_back_anim \
     --out "$ROOT/src/generated/anim_programs.c"
 if [ ! -f "$ORIG/IMG/BRET.LOD" ]; then
     sh "$ROOT/scripts/fetch_original.sh"

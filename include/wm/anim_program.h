@@ -222,6 +222,16 @@ typedef enum {
     WM_AOP_WAITRELEASE,
     /* ANIM.ASM:119 -- branch when RPT_COUNT is at least the operand. */
     WM_AOP_IF_RPTCOUNT_GE,
+    /*
+     * The three per-wrestler table opcodes (wm/anim_puppet.h). `a` is the
+     * generated table id in each case. ANI_CHANGEANIM_TBL (ANIM.ASM:118)
+     * hands off to the animation HIS OWN number selects; ANI_XFLIP_TBL
+     * (:109) flips the held wrestler's sprite when the table says so for
+     * HIM; ANI_OPPOFFSET (:82) reads an x/y pair for him.
+     */
+    WM_AOP_CHANGEANIM_TBL,
+    WM_AOP_XFLIP_TBL,
+    WM_AOP_OPPOFFSET,
     WM_AOP_CLR_STATUS,
 
     /* ANIM.ASM:1277 _ani_code -- `move *a4+,a0,L / call a0`: an ordinary

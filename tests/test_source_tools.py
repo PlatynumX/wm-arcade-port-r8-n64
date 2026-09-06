@@ -1254,6 +1254,48 @@ def test_self_contained_command_ops() -> None:
         assert any(re.search(r"-1, (?!0,)", l) for l in rows), op
 
 
+def test_per_wrestler_aux_tables() -> None:
+    """ANI_CHANGEANIM_TBL, ANI_XFLIP_TBL and ANI_OPPOFFSET's tables.
+
+    Same family as the puppet and slave tables, and the same trap: the
+    labels are `#local` and reused across files, so they resolve per use
+    site rather than by name.
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    if not (base / "ANIM.ASM").exists():
+        return
+
+    ca = wlpuppet.aux_table_ids("changeanim")
+    xf = wlpuppet.aux_table_ids("xflip")
+    oo = wlpuppet.aux_table_ids("oppoffset")
+    assert len(ca) == 4, len(ca)
+    assert len(xf) >= 15, len(xf)
+    assert len(oo) >= 15, len(oo)
+
+    # Every row list is exactly the nine roster slots.
+    for kind in ("changeanim", "xflip", "oppoffset"):
+        for path in wlpuppet.canonical_files():
+            for rows in wlpuppet._aux_tables_in(path, kind).values():
+                assert len(rows) == wlpuppet.ROSTER_SLOTS, (kind, rows)
+
+    # `#xflip_tbl` is defined in more than one file with different
+    # contents, which is exactly why resolution is per use site.
+    seen = {}
+    for path in wlpuppet.canonical_files():
+        for key, rows in wlpuppet._aux_tables_in(path, "xflip").items():
+            seen[key] = rows
+    assert len({tuple(v[0] for v in r) for r in seen.values()}) > 1, \
+        "every xflip table came out identical -- resolution collapsed"
+
+    # ANI_CHANGEANIM_TBL names whole animations, so like the slave targets
+    # every one of them has to be emitted.
+    generated = ROOT / "src" / "generated" / "anim_programs.c"
+    if generated.exists():
+        text = generated.read_text()
+        for _path, label in wlpuppet.changeanim_targets():
+            assert f'"{label}"' in text, label
+
+
 def main() -> int:
     test_wlanim()
     test_wlprogram()
@@ -1268,6 +1310,7 @@ def main() -> int:
     test_command_table_ops_keep_their_operands()
     test_roll_tables()
     test_self_contained_command_ops()
+    test_per_wrestler_aux_tables()
     test_waithitopp_is_a_mode_and_a_frame()
     test_roster_dispatcher_labels_all_emit()
     test_wlprogram_tick_expressions()

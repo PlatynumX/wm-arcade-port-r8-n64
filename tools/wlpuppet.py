@@ -259,7 +259,67 @@ def slave_key_for(path: pathlib.Path, lines: list[str], use_line: int,
     return key, home, home_lines, at
 
 
-def slave_tables_in(path: pathlib.Path) -> dict[str, list[str]]:
+CHANGEANIM_TBL_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_CHANGEANIM_TBL\s*,\s*(#?\w+)\s*$", re.I)
+# ANIM.ASM:109 _ani_xflip_tbl and :82 _ani_oppoffset both index a nine-slot
+# per-wrestler table of WORDs -- one value each for the flip flag, two (x
+# and y) for the release offset.
+XFLIP_TBL_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_XFLIP_TBL\s*,\s*(#?\w+)\s*$", re.I)
+OPPOFFSET_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_OPPOFFSET\s*,\s*(#?\w+)\s*$", re.I)
+WORD_LIST_RE = re.compile(r"^\s*\.word\s+(.+)$", re.I)
+
+
+def word_tables_in(path: pathlib.Path, use_re, per_row: int
+                   ) -> dict[str, list[tuple]]:
+    """{definition line: nine per-wrestler rows of `per_row` WORDs}.
+
+    Same resolution as the slave tables -- per use site, forward, across
+    files -- because these labels are `#local` and reused just as freely
+    (`#xflip_tbl` and `#release_table` both appear in several files).
+    """
+    lines = [wlanim.strip_comment(r)
+             for r in path.read_text(errors="replace").splitlines()]
+    out: dict[str, list[tuple]] = {}
+    for i, line in enumerate(lines):
+        m = use_re.match(line)
+        if not m:
+            continue
+        key, home, at_lines, at = slave_key_for(path, lines, i, m.group(1))
+        if key in out:
+            continue
+        vals: list[int] = []
+        j = at + 1
+        while len(vals) < ROSTER_SLOTS * per_row and j < len(at_lines):
+            if not at_lines[j]:
+                j += 1
+                continue
+            if REF_RE.match(at_lines[j]):
+                j += 1
+                continue
+            wm = WORD_LIST_RE.match(at_lines[j])
+            if not wm:
+                if not vals and wlanim.label_def(at_lines[j]):
+                    j += 1
+                    continue
+                break
+            for part in wm.group(1).split(","):
+                part = part.strip()
+                if part:
+                    vals.append(_num(part))
+            j += 1
+        want = ROSTER_SLOTS * per_row
+        if len(vals) < want:
+            raise ValueError(
+                f"{home.name}:{at + 1}: word table has {len(vals)} values, "
+                f"not {want}")
+        out[key] = [tuple(vals[k * per_row:(k + 1) * per_row])
+                    for k in range(ROSTER_SLOTS)]
+    return out
+
+
+def slave_tables_in(path: pathlib.Path, use_re=None) -> dict[str, list[str]]:
     """{definition line: nine victim animation labels} for one file.
 
     Keyed on the line for the same reason the puppet tables are: the label
@@ -269,7 +329,7 @@ def slave_tables_in(path: pathlib.Path) -> dict[str, list[str]]:
              for r in path.read_text(errors="replace").splitlines()]
     out: dict[str, list[str]] = {}
     for i, line in enumerate(lines):
-        m = SLAVEANIM_RE.match(line)
+        m = (use_re or SLAVEANIM_RE).match(line)
         if not m:
             continue
         key, home, at_lines, at = slave_key_for(path, lines, i, m.group(1))
@@ -308,6 +368,35 @@ def slave_tables_in(path: pathlib.Path) -> dict[str, list[str]]:
                 f"{home.name}:{at + 1}: slave table has {len(names)} entries, "
                 f"not {ROSTER_SLOTS}")
         out[key] = names[:ROSTER_SLOTS]
+    return out
+
+
+def changeanim_targets() -> list[tuple[pathlib.Path, str]]:
+    """Every animation an ANI_CHANGEANIM_TBL row can hand off to.
+
+    Same principle as slave_targets: the op names a whole animation, so
+    naming one the port cannot play would be a hole. Read out of the
+    tables rather than listed.
+    """
+    wanted: list[tuple[str, str]] = []
+    for path in canonical_files():
+        for key, rows in sorted(_aux_tables_in(path, "changeanim").items()):
+            home = key.split(":")[0].lstrip("@")
+            for name in rows:
+                if name and (name, home) not in wanted:
+                    wanted.append((name, home))
+    subr_in: dict[str, pathlib.Path] = {}
+    for q in wlanim.linked_files():
+        for line in q.read_text(errors="replace").splitlines():
+            m = wlanim.SUBR_RE.match(line)
+            if m:
+                subr_in.setdefault(m.group(1), q)
+    out, seen = [], set()
+    for name, home in wanted:
+        if name in seen:
+            continue
+        seen.add(name)
+        out.append((subr_in.get(name, _ORIG / home), name))
     return out
 
 
@@ -476,13 +565,123 @@ def table_id_for(path: pathlib.Path, use_line: int, label: str) -> int:
     return ids[key]
 
 
+
+# The three remaining per-wrestler tables, all resolved and keyed exactly
+# like the slave tables above.
+_AUX = (("changeanim", CHANGEANIM_TBL_RE, None),
+        ("xflip", XFLIP_TBL_RE, 1),
+        ("oppoffset", OPPOFFSET_RE, 2))
+
+
+def _aux_tables_in(path: pathlib.Path, kind: str):
+    for name, use_re, per in _AUX:
+        if name != kind:
+            continue
+        if per is None:
+            return slave_tables_in(path, use_re)
+        return word_tables_in(path, use_re, per)
+    raise ValueError(kind)
+
+
+def aux_table_ids(kind: str) -> dict[str, int]:
+    ids: dict[str, int] = {}
+    for path in canonical_files():
+        for key in sorted(_aux_tables_in(path, kind)):
+            if key not in ids:
+                ids[key] = len(ids)
+    return ids
+
+
+_AUX_ID_CACHE: dict[str, dict[str, int]] = {}
+
+
+def aux_table_id_for(kind: str, path: pathlib.Path, use_line: int,
+                     label: str) -> int:
+    if kind not in _AUX_ID_CACHE:
+        _AUX_ID_CACHE[kind] = aux_table_ids(kind)
+    lines = [wlanim.strip_comment(r)
+             for r in path.read_text(errors="replace").splitlines()]
+    key, _home, _hl, _at = slave_key_for(path, lines, use_line, label)
+    if key not in _AUX_ID_CACHE[kind]:
+        raise ValueError(f"no generated {kind} table for {key}")
+    return _AUX_ID_CACHE[kind][key]
+
+
+def render_aux_c() -> str:
+    out = ["/* Auto-generated by tools/wlpuppet.py: the per-wrestler tables",
+           "   ANI_CHANGEANIM_TBL, ANI_XFLIP_TBL and ANI_OPPOFFSET index. */",
+           '#include "wm/anim_puppet.h"', ""]
+
+    rows = {}
+    for path in canonical_files():
+        for kind, _re, _per in _AUX:
+            for key, val in _aux_tables_in(path, kind).items():
+                rows.setdefault(kind, {}).setdefault(key, val)
+
+    ids = {k: aux_table_ids(k) for k, _r, _p in _AUX}
+
+    ca = rows.get("changeanim", {})
+    out.append("static const char *const changeanim_rows[][WM_ANIM_ROSTER_SLOTS] = {")
+    for key in sorted(ca, key=lambda k: ids["changeanim"][k]):
+        cells = ", ".join("0" if not n else '"%s"' % n for n in ca[key])
+        out.append("    { %s },   /* %s */" % (cells, key))
+    out += ["};", ""]
+
+    xf = rows.get("xflip", {})
+    out.append("static const int16_t xflip_rows[][WM_ANIM_ROSTER_SLOTS] = {")
+    for key in sorted(xf, key=lambda k: ids["xflip"][k]):
+        out.append("    { %s },   /* %s */"
+                   % (", ".join(str(v[0]) for v in xf[key]), key))
+    out += ["};", ""]
+
+    oo = rows.get("oppoffset", {})
+    out.append("static const int16_t oppoffset_rows[][WM_ANIM_ROSTER_SLOTS][2] = {")
+    for key in sorted(oo, key=lambda k: ids["oppoffset"][k]):
+        cells = ", ".join("{%d, %d}" % (v[0], v[1]) for v in oo[key])
+        out.append("    { %s },   /* %s */" % (cells, key))
+    out += ["};", ""]
+
+    out += [
+        "const char *wm_anim_changeanim_label(size_t id, int32_t num) {",
+        "    if (id >= sizeof(changeanim_rows) / sizeof(changeanim_rows[0]))",
+        "        return 0;",
+        "    if (num < 0 || num >= WM_ANIM_ROSTER_SLOTS) return 0;",
+        "    return changeanim_rows[id][num];",
+        "}",
+        "",
+        "int wm_anim_xflip_for(size_t id, int32_t num) {",
+        "    if (id >= sizeof(xflip_rows) / sizeof(xflip_rows[0])) return 0;",
+        "    if (num < 0 || num >= WM_ANIM_ROSTER_SLOTS) return 0;",
+        "    return xflip_rows[id][num];",
+        "}",
+        "",
+        "int wm_anim_oppoffset_for(size_t id, int32_t num,",
+        "                          int16_t *x, int16_t *y) {",
+        "    if (id >= sizeof(oppoffset_rows) / sizeof(oppoffset_rows[0]))",
+        "        return 0;",
+        "    if (num < 0 || num >= WM_ANIM_ROSTER_SLOTS) return 0;",
+        "    if (x) *x = oppoffset_rows[id][num][0];",
+        "    if (y) *y = oppoffset_rows[id][num][1];",
+        "    return 1;",
+        "}",
+        "",
+    ]
+    return "\n".join(out)
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--source", action="append", default=[], type=pathlib.Path)
     ap.add_argument("--out")
+    ap.add_argument("--aux-out")
     ns = ap.parse_args(argv)
     paths = [p for p in ns.source if p.exists()] or None
     text = render_c(paths)
+    if ns.aux_out:
+        pathlib.Path(ns.aux_out).write_text(render_aux_c())
+        print("wrote %d changeanim / %d xflip / %d oppoffset tables -> %s"
+              % (len(aux_table_ids("changeanim")), len(aux_table_ids("xflip")),
+                 len(aux_table_ids("oppoffset")), ns.aux_out))
+        return 0
     if ns.out:
         pathlib.Path(ns.out).write_text(text)
         n = len(table_ids(paths))

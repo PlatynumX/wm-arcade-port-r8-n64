@@ -103,6 +103,10 @@ python3 "$ROOT/tools/wlanim.py" \
 python3 "$ROOT/tools/wlpuppet.py" \
     --out "$ROOT/src/generated/puppet_tables.c"
 
+# ...and the three smaller per-wrestler tables beside them.
+python3 "$ROOT/tools/wlpuppet.py" \
+    --aux-out "$ROOT/src/generated/anim_aux_tables.c"
+
 # WRESTLE2.ASM:1290 do_roll's per-wrestler roll tables -- the frames a
 # knocked-down wrestler shows while the player rolls him along Z.
 python3 "$ROOT/tools/wlroll.py" \

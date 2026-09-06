@@ -54,4 +54,25 @@ const wm_anim_puppet_row *wm_anim_puppet_row_at(size_t id,
 const char *wm_anim_slave_label(size_t id, int32_t wrestler_num);
 size_t wm_anim_slave_table_count(void);
 
+/* GAME.EQU's nine WRESTLERNUM slots, Adam Bomb's cut seventh included. */
+#define WM_ANIM_ROSTER_SLOTS 9
+
+/*
+ * The three remaining per-wrestler tables the animation VM indexes, all
+ * extracted and resolved exactly like the slave tables above -- per use
+ * site, forward, across files -- because their labels are `#local` and
+ * reused as freely (`#xflip_tbl` and `#release_table` each appear in
+ * several files with different contents).
+ *
+ * ANIM.ASM:118 ANI_CHANGEANIM_TBL picks the animation to BECOME from the
+ * running wrestler's own number; :109 ANI_XFLIP_TBL flips the HELD
+ * wrestler's sprite when his row says so; :82 ANI_OPPOFFSET reads an x/y
+ * pair for him.
+ */
+const char *wm_anim_changeanim_label(size_t id, int32_t wrestler_num);
+int wm_anim_xflip_for(size_t id, int32_t wrestler_num);
+int wm_anim_oppoffset_for(size_t id, int32_t wrestler_num,
+                          int16_t *x, int16_t *y);
+
+
 #endif

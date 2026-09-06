@@ -500,6 +500,21 @@ def program_for(path: pathlib.Path, label: str):
                 ops.append(("SETPLYRMODE", _mode_value(mm.group(2), PLYR_MODES)))
             continue
 
+        for _kind, _re, _op in (("changeanim", wlpuppet.CHANGEANIM_TBL_RE,
+                                 "CHANGEANIM_TBL"),
+                                ("xflip", wlpuppet.XFLIP_TBL_RE, "XFLIP_TBL"),
+                                ("oppoffset", wlpuppet.OPPOFFSET_RE,
+                                 "OPPOFFSET")):
+            _m = _re.match(line)
+            if _m:
+                ops.append((_op, wlpuppet.aux_table_id_for(
+                    _kind, path, i, _m.group(1))))
+                break
+        else:
+            _m = None
+        if _m:
+            continue
+
         cw = CHECKWORD_RE.match(line)
         if cw:
             field = cw.group(1).upper()
@@ -634,7 +649,7 @@ def _c_op(op) -> str:
         args[0] = op[1]
     elif kind in ("SETLONG", "SETWORD"):
         args[0], args[1] = op[1], op[2]
-    elif kind == "CHECKWORD":
+    elif kind in ("CHECKWORD", "CHANGEANIM_TBL", "XFLIP_TBL", "OPPOFFSET"):
         args[0] = op[1]
     elif kind == "IFOPP":
         # A bit per wrestler number, so the variable-length source list
@@ -708,6 +723,9 @@ def main(argv=None) -> int:
         entries += [(ns.source, l) for l in ns.label]
     if ns.slave_targets:
         entries += [(str(p), lab) for p, lab in wlpuppet.slave_targets()]
+        # ANI_CHANGEANIM_TBL names whole animations too.
+        entries += [(str(p), lab)
+                    for p, lab in wlpuppet.changeanim_targets()]
     if not entries:
         ap.error("nothing to emit: pass --animation, or --source with --label")
     seen, unique = set(), []

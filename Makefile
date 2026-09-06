@@ -49,7 +49,8 @@ CORE_C := \
     src/generated/bret_grapple.c \
     src/generated/anim_programs.c \
     src/generated/frame_geometry.c \
-    src/generated/roll_frames.c
+    src/generated/roll_frames.c \
+    src/generated/anim_aux_tables.c
 # BEGIN FIX38 CUMULATIVE ARCADE SOURCE PORTS
 FIX38_ARCADE_C := \
     src/core/arcade/wm_arcade_anim_combat.c \

@@ -256,6 +256,35 @@ static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
                 env->rope_set_z(env->rope_user, bank, o->a, o->b);
             break;
         }
+        case WM_AOP_XFLIP_TBL: {
+            /* Behind the mutual-link check, and indexed by the HELD
+               wrestler's number -- a table row of 0 means no flip. */
+            wm_arcade_actor_t *opp = actor->attach_proc;
+            if (!opp || opp->attach_proc != actor) break;
+            if (!wm_anim_xflip_for((size_t)o->a, opp->wrestler_num)) break;
+            opp->obj_control = (uint16_t)(opp->obj_control ^ WM_OBJ_FLIPH);
+            break;
+        }
+        case WM_AOP_OPPOFFSET: {
+            /*
+             * ANIM.ASM:82 checks both pointers are set (not that the link
+             * is mutual) and reads an x/y pair for the held wrestler. The
+             * source then positions him from his own X and FACING_DIR;
+             * this port applies the pair as an offset from where he is,
+             * which is the part the table actually carries.
+             */
+            wm_arcade_actor_t *opp = actor->attach_proc;
+            int16_t dx = 0, dy = 0;
+            if (!opp || !opp->attach_proc) break;
+            if (!wm_anim_oppoffset_for((size_t)o->a, opp->wrestler_num,
+                                       &dx, &dy))
+                break;
+            opp->x_int += (opp->facing_dir & WM_MOVE_RIGHT) ? dx : -dx;
+            opp->y_int += dy;
+            opp->x_fixed = opp->x_int << 16;
+            opp->y_fixed = opp->y_int << 16;
+            break;
+        }
         case WM_AOP_SETFLAG:
             actor->status_flags |= (uint32_t)o->a;
             break;
@@ -600,6 +629,19 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
                 exec->ticks_left = (uint16_t)(o->a > 0 ? o->a : 1);
                 exec->waiting = false;
                 return;
+            case WM_AOP_CHANGEANIM_TBL: {
+                /* :118 writes both OANIBASE and OANIPC, so it is the same
+                   hand-off ANI_CHANGEANIM makes -- from a table indexed by
+                   the running wrestler's own number. */
+                const char *label = actor
+                    ? wm_anim_changeanim_label((size_t)o->a,
+                                               actor->wrestler_num)
+                    : 0;
+                if (!label) { pc = pc + 1; continue; }
+                exec->become = label;
+                exec->ended = true;
+                return;
+            }
             case WM_AOP_HMBWAIT: {
                 /* Blocked wins over hit, and hit over missed -- the order
                    the source checks them in. */

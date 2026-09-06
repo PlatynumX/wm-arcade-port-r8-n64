@@ -77,6 +77,22 @@ COMMANDS = {
     "ANI_SETOPP_PLYRMODE": ("SETOPP_PLYRMODE", 1, False),
     "ANI_OPP_GETUP":   ("OPP_GETUP", 1, False),
     "ANI_ATTACHVEL":   ("ATTACHVEL", 3, False),
+    "ANI_SOUND":       ("SOUND", 1, False),
+    # The ropes. ANI_BOUNCEROPE/ANI_BENDROPE carry a selector whose
+    # SIGN picks the release variant; ANI_ROPE_Z names a strand and
+    # an action; ANI_CLEAR_CLIMB takes nothing.
+    "ANI_BOUNCEROPE":  ("BOUNCEROPE", 1, False),
+    "ANI_BENDROPE":    ("BENDROPE", 1, False),
+    "ANI_ROPE_Z":      ("ROPE_Z", 2, False),
+    "ANI_CLEAR_CLIMB": ("CLEAR_CLIMB", 0, False),
+    # The last of the opponent-facing state commands, all behind the
+    # same mutual-link check.
+    "ANI_XFLIP_OPP":   ("XFLIP_OPP", 0, False),
+    "ANI_SETOPPFACING": ("SETOPPFACING", 0, False),
+    "ANI_SET_OPP_XVEL": ("SET_OPP_XVEL", 1, True),
+    # ANIM.ASM:28 -- "hold current frame for a few ticks", a frame
+    # hold with no frame of its own.
+    "ANI_PAUSE":       ("PAUSE", 1, False),
     "ANI_BOUNCE":     ("BOUNCE", 1, False),
     "ANI_CLR_STATUS":  ("CLR_STATUS", 0, False),
 }
@@ -140,9 +156,13 @@ def _value(tok: str, equates: dict[str, int]) -> int:
             if name in expr:
                 expr = re.sub(re.escape(name) + r"\b", str(val), expr)
         for name in re.findall(r"\b[A-Za-z_][A-Za-z0-9_]*\b", expr):
-            if name in GLOBAL_EQU:
+            # The symbol table is keyed upper-case, and the source writes
+            # its constants either way -- `ANI_SOUND,run_snd` sits beside
+            # `ANI_SOUND,0C1h` and `ANI_SOUND,bounce_l1`.
+            val = GLOBAL_EQU.get(name, GLOBAL_EQU.get(name.upper()))
+            if val is not None:
                 expr = re.sub(r"\b" + re.escape(name) + r"\b",
-                              str(GLOBAL_EQU[name]), expr)
+                              str(val), expr)
     expr = HEX_RE.sub(lambda m: "0x" + m.group(1), expr)
     # Operands are written as small arithmetic expressions: `5-10`,
     # `-1+15`, `60*60`, `TSEC*60`. Multiplication is as real as the rest.

@@ -145,7 +145,10 @@ def linked_files() -> list[pathlib.Path]:
 # of -- TSEC (DISPLAY.EQU:46, ticks per second) shows up as `TSEC*60`, the
 # one-minute hold at the head of every wrestler's `*_zip_anim`.
 GLOBAL_EQU: dict[str, int] = {}
-for _f in ("DISPLAY.EQU", "GAME.EQU", "PLYR.EQU", "ANIM.EQU", "DAMAGE.EQU"):
+# SOUND.H is not a .EQU but is the same shape, and ANI_SOUND names its
+# constants directly (`ANI_SOUND,run_snd`, `ANI_SOUND,bounce_l1`).
+for _f in ("DISPLAY.EQU", "GAME.EQU", "PLYR.EQU", "ANIM.EQU", "DAMAGE.EQU",
+           "SOUND.H"):
     GLOBAL_EQU.update(load_equ(ORIG / _f, ""))
 
 

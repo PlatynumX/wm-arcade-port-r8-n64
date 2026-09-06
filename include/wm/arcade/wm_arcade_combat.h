@@ -238,6 +238,12 @@ struct wm_arcade_actor {
      * "not dizzy" throughout, which is what the shipped game does.
      */
     int32_t plyr_dizzy;
+    /*
+     * PLYR.EQU FOOT_PCNT. ANIM.ASM:26 _ani_sound debounces the footstep
+     * sound against it: "if there's been another foot noise from this guy
+     * within the last 12 ticks, give it a miss."
+     */
+    uint16_t foot_pcnt;
     int32_t usr_var1;
     int32_t usr_var2;              /* PLYR.EQU USR_VAR2; Yoko salt failure flag. */
     int32_t player_side;           /* PLYR.EQU PLYR_SIDE: 0, 1, or -1. */

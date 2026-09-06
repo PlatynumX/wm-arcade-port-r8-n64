@@ -2,6 +2,8 @@
 #include "wm/arcade/wm_arcade_veladd.h"
 #include "wm/arcade/wm_arcade_roll.h"
 #include "wm/arcade/wm_arcade_combo.h"
+#include "wm/arcade/wmania_ring_geometry.h"
+#include "wm/arcade/wmania_rope_command.h"
 #include "wm/arcade/wm_arcade_combat_defs.h"
 #include "wm/arcade/wm_arcade_anim_combat.h"
 #include "wm/arcade/wm_arcade_butcount.h"
@@ -204,6 +206,81 @@ static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
             actor->facing_dir = dir;
             break;
         }
+        /* ANIM.ASM:26 _ani_sound -- see wm/anim_program.h. */
+        case WM_AOP_SOUND: {
+            uint16_t call = (uint16_t)o->a;
+            if (!env || !env->sound) break;
+            if (call == WM_SND_RUN) {
+                uint16_t now = (uint16_t)env->pcnt;
+                int32_t since = (int32_t)now - (int32_t)actor->foot_pcnt;
+                if (since < 0) since = -since;
+                if (since < 12) break;
+                actor->foot_pcnt = now;
+            }
+            env->sound(env->sound_user, call);
+            break;
+        }
+        /*
+         * ANIM.ASM:35/:37 -- the bank is chosen by which side of the ring
+         * he is on, and a NEGATIVE operand means the release variant.
+         * `movi ROPE_LEFT / cmpi RING_X_CENTER / jrle #dir_set`: at or
+         * left of centre is the LEFT bank.
+         */
+        case WM_AOP_BOUNCEROPE:
+        case WM_AOP_BENDROPE: {
+            int bank = (actor->x_int <= WM_RING_X_CENTER)
+                ? WM_ROPE_LEFT : WM_ROPE_RIGHT;
+            int release = o->a < 0;
+            int action = (o->op == WM_AOP_BOUNCEROPE)
+                ? (release ? WM_ROPE_SIDE_SPRING_RELEASE : WM_ROPE_SIDE_SPRING)
+                : (release ? WM_ROPE_DOWN_SPRING_RELEASE : WM_ROPE_DOWN_SPRING);
+            /* The release tables ignore the selector -- rope_command routes
+               them to a fixed transition script -- so the source's
+               negative a2 never reaches a table index. */
+            int selector = release ? 0 : o->a;
+            if (env && env->rope_command)
+                env->rope_command(env->rope_user, bank, action, selector,
+                                  actor->z_fixed);
+            /* `movi 3ch,a0 / calla triple_sound` -- only the bounce. */
+            if (o->op == WM_AOP_BOUNCEROPE && env && env->sound)
+                env->sound(env->sound_user, 0x3Cu);
+            break;
+        }
+        case WM_AOP_ROPE_Z: {
+            /* :41 picks the bank from OBJ_XPOS against RING_X_CENTER with
+               `jrgt #right`, so strictly greater is the RIGHT bank -- the
+               opposite boundary case from the two above, as written. */
+            int bank = (actor->x_int > WM_RING_X_CENTER)
+                ? WM_ROPE_RIGHT : WM_ROPE_LEFT;
+            if (env && env->rope_set_z)
+                env->rope_set_z(env->rope_user, bank, o->a, o->b);
+            break;
+        }
+        case WM_AOP_XFLIP_OPP: {
+            wm_arcade_actor_t *opp = actor->attach_proc;
+            if (!opp || opp->attach_proc != actor) break;
+            opp->obj_control = (uint16_t)(opp->obj_control ^ WM_OBJ_FLIPH);
+            break;
+        }
+        case WM_AOP_SETOPPFACING: {
+            /* :85 checks both pointers are set but NOT that the link is
+               mutual, unlike :106 beside it. Kept as written. */
+            wm_arcade_actor_t *opp = actor->attach_proc;
+            if (!opp || !opp->attach_proc) break;
+            opp->facing_dir = opp->new_facing_dir;
+            break;
+        }
+        case WM_AOP_SET_OPP_XVEL: {
+            wm_arcade_actor_t *opp = actor->attach_proc;
+            if (!opp || opp->attach_proc != actor) break;
+            opp->x_vel = directional(opp, o->a, o->mode,
+                                     (uint16_t)WM_MOVE_RIGHT);
+            break;
+        }
+        case WM_AOP_CLEAR_CLIMB:
+            actor->climbing_thru = 0;
+            actor->safe_time = 1;
+            break;
         case WM_AOP_GRAVITY_OFF:
             actor->anim_mode |= (uint16_t)WM_MODE_NOGRAVITY;
             break;
@@ -492,6 +569,12 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
                 exec->next_pc = pc + 1;
                 exec->ticks_left = (uint16_t)(o->a > 0 ? o->a : 1);
                 exec->waiting = false;
+                return;
+            case WM_AOP_PAUSE:
+                /* ANIM.ASM:28 -- OANICNT without touching the frame, so
+                   whatever is showing stays up for the operand's ticks. */
+                exec->next_pc = pc + 1;
+                exec->ticks_left = (uint16_t)(o->a > 0 ? o->a : 1);
                 return;
             case WM_AOP_WAITHITGND: {
                 /*

@@ -148,6 +148,48 @@ typedef enum {
     /* ANIM.ASM:91 _ani_ifnot_rptcount -- branch when RPT_COUNT has run
        out, the inverse of ANI_IF_RPTCOUNT. */
     WM_AOP_IFNOT_RPTCOUNT,
+    /*
+     * ANIM.ASM:26 _ani_sound (104 uses): the sound's own index straight
+     * into triple_sound, through wm_anim_env::sound like every other
+     * sound in this port. Two special cases in the source, one live and
+     * one not: SOUND.H's run_snd (0C0h) is debounced against FOOT_PCNT so
+     * footsteps cannot stack, and a NEGATIVE operand would go to
+     * wrtable_sound's per-wrestler table instead -- no use across the
+     * eight playable wrestlers is negative, so that branch is unreached
+     * here rather than skipped.
+     */
+    WM_AOP_SOUND,
+    /*
+     * The ropes. ANIM.ASM:35 _ani_bouncerope and :37 _ani_bendrope both
+     * pick the bank from which side of RING_X_CENTER the wrestler is on,
+     * then call ROPES.ASM's rope_command -- side spring and down spring
+     * respectively, and their RELEASE variants when the operand is
+     * NEGATIVE (16 ANI_BENDROPE,-1 and 9 ANI_BOUNCEROPE,-1 across the
+     * roster, so that branch is real). A bounce also plays sound 3Ch.
+     * ANIM.ASM:41 _ani_rope_z picks the same bank and calls set_rope_z
+     * with a strand and an action.
+     *
+     * These reach the rope subsystem through wm_anim_env::rope_command,
+     * because the animation cannot own the rope processes.
+     */
+    WM_AOP_BOUNCEROPE,
+    WM_AOP_BENDROPE,
+    WM_AOP_ROPE_Z,
+    /* ANIM.ASM:128 _ani_clear_climb: done climbing through the ropes, and
+       one tick of SAFE_TIME so the collision that follows is skipped. */
+    WM_AOP_CLEAR_CLIMB,
+    /*
+     * The last of the opponent-facing state commands, all behind the same
+     * mutual-link check: ANIM.ASM:106 flips the held wrestler's sprite,
+     * :85 snaps his FACING_DIR to his NEW_FACING_DIR, :112 writes his
+     * X velocity with the same AM_* relative modes ANI_SET_XVEL uses.
+     */
+    WM_AOP_XFLIP_OPP,
+    WM_AOP_SETOPPFACING,
+    WM_AOP_SET_OPP_XVEL,
+    /* ANIM.ASM:28 _ani_pause -- "hold current frame for a few ticks": it
+       stuffs OANICNT and returns without a frame of its own. */
+    WM_AOP_PAUSE,
     WM_AOP_CLR_STATUS,
 
     /* ANIM.ASM:1277 _ani_code -- `move *a4+,a0,L / call a0`: an ordinary
@@ -210,6 +252,9 @@ typedef struct {
  * missing does nothing rather than inventing a result, which is why the
  * host tests can run programs with no environment at all.
  */
+/* SOUND.H:12 run_snd -- the footstep _ani_sound debounces. */
+#define WM_SND_RUN 0xC0u
+
 typedef struct wm_anim_env {
     /* The wrestler this one is fighting, for the routines that read
        *a13(ATTACH_PROC) or the opponent's own fields. */
@@ -237,6 +282,30 @@ typedef struct wm_anim_env {
     void *slave_user;
     void (*change_opp_anim)(wm_arcade_actor_t *opp, const char *label,
                             void *user);
+    /*
+     * ROPES.ASM's rope_command / set_rope_z. The animation says WHICH rope
+     * and WHAT to do to it; the rope processes themselves belong to the
+     * match, so the caller supplies this. `bank` is a WmRopeBank, `action`
+     * a WmRopeAction, `selector` the source's own a2. For ANI_ROPE_Z the
+     * action is WM_ROPE_Z_HIGH/NORM and `selector` is the strand.
+     */
+    void *rope_user;
+    void (*rope_command)(void *user, int bank, int action, int selector,
+                         int32_t wrestler_z_fp16);
+    void (*rope_set_z)(void *user, int bank, int strand, int action);
+    /*
+     * These are NOT wired in wm_match_tick yet, and the reason is a real
+     * pre-existing conflict rather than missing work: this port carries
+     * TWO independent rope translations -- wm/ropes.h's wm_rope_group and
+     * wm/arcade/wmania_rope_command.h's WmRopeBank -- and both define
+     * WM_ROPE_FRONT. They have never collided because nothing included
+     * both. The arcade one has the whole ROPES.ASM script corpus and a
+     * runtime behind it (wm_rope_runtime_apply_resolved_command) and is
+     * the one these commands belong to, but joining it to the match means
+     * reconciling the two headers first. Until then the opcodes are
+     * extracted, carry their real operands, and reach a seam that is
+     * defined -- a named, countable gap rather than a dropped line.
+     */
 } wm_anim_env;
 
 typedef struct {

@@ -54,6 +54,14 @@ struct wm_arcade_actor {
     int32_t combo_count;
     /* Stage 4: REACT2 combo-uppercut reads WHOHITME->RPT_COUNT. */
     int32_t rpt_count;
+    /*
+     * PLYR.EQU:103 INRING, WITH THE POLARITY INVERTED. The source's own
+     * comment there reads "0 = in ring, 1 = outside"; this port stores the
+     * ordinary boolean instead -- non-zero means IN the ring -- which is
+     * what wm_match_start's own `a->in_ring = 1` and every reader here
+     * already assume. Translating a source routine that tests INRING means
+     * flipping the test, not copying it.
+     */
     int32_t in_ring;
     /* WRESTLE.ASM PLYR.EQU CAN_MOVE_DIR: WM_MOVE_* bits the wrestler is
        currently confined against (real, see wm/arcade/wm_arcade_confine.h). */

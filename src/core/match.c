@@ -301,6 +301,7 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             m->bret_visual[i].pcnt = m->tick_count;
             m->bret_visual[i].anim_env.opponent = opp;
             m->bret_visual[i].anim_env.rng = m->anim_rng;
+            m->bret_visual[i].anim_env.pcnt = m->tick_count;
             m->bret_visual[i].anim_env.sound_user = m->anim_sound_user;
             m->bret_visual[i].anim_env.sound = m->anim_sound;
 

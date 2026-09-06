@@ -20,7 +20,8 @@ static int32_t directional(const wm_arcade_actor_t *actor, int32_t value,
 }
 
 static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
-                        uint16_t round_tickcount, const wm_anim_env *env) {
+                        uint16_t round_tickcount, const wm_anim_env *env,
+                        const char *source_file) {
     switch (o->op) {
         case WM_AOP_SETMODE:
             /* ANI_SETMODE is absolute -- it replaces ANIMODE rather than
@@ -139,8 +140,10 @@ static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
                the op a no-op -- the same thing the flat extractor did by
                dropping the line, except that the name is now in the
                program, where it can be counted. */
-            wm_anim_code_fn fn = wm_anim_code_find(o->text);
-            if (fn) fn(actor, env);
+            /* The file matters: a '#'-prefixed target is a local label,
+               scoped to the sequence file that defines it, and those names
+               are reused across files with different bodies behind them. */
+            (void)wm_anim_code_run(actor, env, o->text, source_file);
             break;
         }
         default:
@@ -236,8 +239,8 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
                 pc += 1;
                 continue;
             default:
-                if (actor) run_command(o, actor, round_tickcount,
-                                       exec->env);
+                if (actor) run_command(o, actor, round_tickcount, exec->env,
+                                       p ? p->source_file : 0);
                 pc += 1;
                 continue;
         }

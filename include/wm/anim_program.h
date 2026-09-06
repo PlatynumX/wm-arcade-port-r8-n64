@@ -122,6 +122,10 @@ typedef struct wm_anim_env {
     /* UTIL.ASM RNDRNG0/RNDPER, which the sound pickers use to choose
        between the entries of their real tables. */
     WmRng *rng;
+    /* The source's own global PCNT, the free-running 32-bit frame counter
+       the timestamping routines stamp with (head_grab_time's LAST_HEADHOLD,
+       and the delay checks that read it back). */
+    uint32_t pcnt;
     /* DCSSOUND.ASM triple_sound: `call` is the sound's own index into
        triple_sndtab, passed through unchanged. Channel arbitration and
        priority are triple_sound's own job and belong to a DCSSOUND port,
@@ -145,16 +149,34 @@ typedef struct {
 const wm_anim_program *wm_anim_program_find(const char *source_label);
 
 /*
- * An ANI_CODE routine, by the name the source calls it by. NULL for one
- * this port has not translated -- the op still runs, as the no-op it has
- * always effectively been, but now it is a named and countable gap rather
- * than a line the extractor silently dropped.
+ * An ANI_CODE routine. `param` is the constant its registry row carries,
+ * for the routines the source writes once per file with a different value
+ * in each -- see wm_anim_code_run.
  */
 typedef void (*wm_anim_code_fn)(wm_arcade_actor_t *actor,
-                                const wm_anim_env *env);
-wm_anim_code_fn wm_anim_code_find(const char *name);
+                                const wm_anim_env *env, int32_t param);
 
-/* How many ANI_CODE routines are translated, for coverage reporting. */
+/*
+ * Run the ANI_CODE routine `name`, as called from `source_file`. Returns
+ * false for one this port has not translated -- the op is then the no-op
+ * it has always effectively been, but a named and countable gap rather
+ * than a line the extractor silently dropped.
+ *
+ * The file matters. A target beginning with '#' is a LOCAL label, scoped
+ * to the file that defines it, and the sequence files reuse those names
+ * freely: 22 of the 59 local ANI_CODE targets are defined in more than one
+ * file, and they are not copies -- #make_black has SEVEN distinct bodies
+ * across eight files, because (as the source says at each one) "this is a
+ * black color within the wrestler's pal, it is different for each
+ * wrestler". Resolving those by bare name hands one wrestler's routine to
+ * all the others.
+ */
+bool wm_anim_code_run(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                      const char *name, const char *source_file);
+
+/* How many ANI_CODE registry rows are translated, for coverage reporting.
+   A routine written once per file counts once per file, since each is a
+   different body. */
 size_t wm_anim_code_count(void);
 
 /* DCSSOUND.ASM's DUMMY_WAIT lockout, one tick. Call once per game tick. */

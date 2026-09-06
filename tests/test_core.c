@@ -1420,7 +1420,7 @@ static void test_anim_code_sound_routines(void) {
     code_sound_log log;
     wm_anim_env env;
     wm_arcade_actor_t a, opp;
-    wm_anim_code_fn fn;
+    const char *code_name = NULL;
     size_t i;
 
     memset(&env, 0, sizeof(env));
@@ -1431,18 +1431,18 @@ static void test_anim_code_sound_routines(void) {
 
     /* The registry answers by the source's own name, and says so plainly
        when a routine is not translated rather than pretending. */
-    CHECK(wm_anim_code_find("HIT_THE_MAT") != NULL);
-    CHECK(wm_anim_code_find("SMALL_BOUNCE") != NULL);
-    CHECK(wm_anim_code_find("CALL_MISSES") == NULL);   /* announcer speech */
-    CHECK(wm_anim_code_find("no_such_routine") == NULL);
-    CHECK(wm_anim_code_find(NULL) == NULL);
+    CHECK(wm_anim_code_run(&a, NULL, "HIT_THE_MAT", NULL));
+    CHECK(wm_anim_code_run(&a, NULL, "SMALL_BOUNCE", NULL));
+    CHECK(!wm_anim_code_run(&a, NULL, "CALL_MISSES", NULL));  /* speech */
+    CHECK(!wm_anim_code_run(&a, NULL, "no_such_routine", NULL));
+    CHECK(!wm_anim_code_run(&a, NULL, NULL, NULL));
     CHECK(wm_anim_code_count() >= 16u);
 
     /* DCSSOUND.ASM:3999 HIT_THE_MAT: a fixed 0C1h, then one of the three
        low-priority mat hits {76h,77h,78h}. Two calls, in that order. */
     memset(&a, 0, sizeof(a));
     memset(&log, 0, sizeof(log));
-    wm_anim_code_find("HIT_THE_MAT")(&a, &env);
+    wm_anim_code_run(&a, &env, "HIT_THE_MAT", NULL);
     CHECK(log.count == 2);
     CHECK(log.calls[0] == 0x0C1u);
     CHECK(log.calls[1] >= 0x76u && log.calls[1] <= 0x78u);
@@ -1454,7 +1454,7 @@ static void test_anim_code_sound_routines(void) {
         code_sound_log one;
         memset(&one, 0, sizeof(one));
         env.sound_user = &one;
-        wm_anim_code_find("SMALL_BOUNCE")(&a, &env);
+        wm_anim_code_run(&a, &env, "SMALL_BOUNCE", NULL);
         CHECK(one.count == 1);
         CHECK(one.calls[0] == 0x0C0u || one.calls[0] == 0x0C2u ||
               one.calls[0] == 0x00Du);
@@ -1464,18 +1464,18 @@ static void test_anim_code_sound_routines(void) {
     /* DCSSOUND.ASM:4134 DO_WAIL is indexed by WRESTLERNUM, and index 7 --
        the spare roster slot -- is a real zero in the table, meaning no
        sound at all rather than sound zero. */
-    fn = wm_anim_code_find("DO_WAIL");
+    code_name = "DO_WAIL";
     memset(&log, 0, sizeof(log));
     a.wrestler_num = 0;            /* Bret */
-    fn(&a, &env);
+    wm_anim_code_run(&a, &env, code_name, NULL);
     CHECK(log.count == 1 && log.calls[0] == 0x25Fu);
     memset(&log, 0, sizeof(log));
     a.wrestler_num = 1;            /* Razor */
-    fn(&a, &env);
+    wm_anim_code_run(&a, &env, code_name, NULL);
     CHECK(log.count == 1 && log.calls[0] == 0x270u);
     memset(&log, 0, sizeof(log));
     a.wrestler_num = 7;            /* the spare slot */
-    fn(&a, &env);
+    wm_anim_code_run(&a, &env, code_name, NULL);
     CHECK(log.count == 0);
 
     /* DO_NONO reads the number of the wrestler ATTACHED to this one (the
@@ -1487,15 +1487,15 @@ static void test_anim_code_sound_routines(void) {
     opp.wrestler_num = 6;          /* Doink held */
     a.attach_proc = &opp;
     memset(&log, 0, sizeof(log));
-    wm_anim_code_find("DO_NONO")(&a, &env);
+    wm_anim_code_run(&a, &env, "DO_NONO", NULL);
     CHECK(log.count == 1 && log.calls[0] == 0x219u);      /* Doink's */
     memset(&log, 0, sizeof(log));
-    wm_anim_code_find("DO_OTHERNONO")(&a, &env);
+    wm_anim_code_run(&a, &env, "DO_OTHERNONO", NULL);
     CHECK(log.count == 1 && log.calls[0] == 0x23Cu);      /* Bret's */
     /* DO_CHOKE and the NONOs are the endless sounds: the last one started
        is the one FIND_AND_KILL_ENDLESS would stop. */
     CHECK(wm_anim_code_endless_sound() == 0x23Cu);
-    wm_anim_code_find("FIND_AND_KILL_ENDLESS")(&a, &env);
+    wm_anim_code_run(&a, &env, "FIND_AND_KILL_ENDLESS", NULL);
     CHECK(wm_anim_code_endless_sound() == 0u);
 
     /* DCSSOUND.ASM:4153 DO_DOINK_SLAM picks by RPT_COUNT: 0 and 1 are the
@@ -1504,24 +1504,24 @@ static void test_anim_code_sound_routines(void) {
        ROM; this port plays nothing there rather than inventing the value
        that assembled after it.) */
     memset(&a, 0, sizeof(a));
-    fn = wm_anim_code_find("DO_DOINK_SLAM");
+    code_name = "DO_DOINK_SLAM";
     for (i = 0; i < 2; ++i) {
         memset(&log, 0, sizeof(log));
         a.rpt_count = (int32_t)i;
-        fn(&a, &env);
+        wm_anim_code_run(&a, &env, code_name, NULL);
         CHECK(log.count == 1 && log.calls[0] == 0x218u);
     }
     memset(&log, 0, sizeof(log));
     a.rpt_count = 2;
-    fn(&a, &env);
+    wm_anim_code_run(&a, &env, code_name, NULL);
     CHECK(log.count == 1 && log.calls[0] == 0x216u);
     memset(&log, 0, sizeof(log));
     a.rpt_count = 3;
-    fn(&a, &env);
+    wm_anim_code_run(&a, &env, code_name, NULL);
     CHECK(log.count == 1 && log.calls[0] == 0x217u);
     memset(&log, 0, sizeof(log));
     a.rpt_count = 9;
-    fn(&a, &env);
+    wm_anim_code_run(&a, &env, code_name, NULL);
     CHECK(log.count == 0);
 
     /* DCSSOUND.ASM:4319 MAKE_HIM_SCREAM screams as the wrestler he just
@@ -1533,12 +1533,12 @@ static void test_anim_code_sound_routines(void) {
     opp.wrestler_num = 6;          /* Doink taking it */
     a.who_i_hit = &opp;
     memset(&log, 0, sizeof(log));
-    wm_anim_code_find("MAKE_HIM_SCREAM")(&a, &env);
+    wm_anim_code_run(&a, &env, "MAKE_HIM_SCREAM", NULL);
     CHECK(log.count == 1);
     CHECK(log.calls[0] == 0x071u || log.calls[0] == 0x072u ||
           log.calls[0] == 0x20Au || log.calls[0] == 0x20Cu);   /* Doink's */
     memset(&log, 0, sizeof(log));
-    wm_anim_code_find("DO_SCREAM")(&a, &env);
+    wm_anim_code_run(&a, &env, "DO_SCREAM", NULL);
     CHECK(log.count == 1);
     CHECK(log.calls[0] == 0x265u || log.calls[0] == 0x266u ||
           log.calls[0] == 0x262u || log.calls[0] == 0x263u);   /* Bret's */
@@ -1546,7 +1546,7 @@ static void test_anim_code_sound_routines(void) {
     /* The spare roster slot is four real zeros, i.e. silence. */
     memset(&log, 0, sizeof(log));
     a.wrestler_num = 7;
-    wm_anim_code_find("DO_SCREAM")(&a, &env);
+    wm_anim_code_run(&a, &env, "DO_SCREAM", NULL);
     CHECK(log.count == 0);
 
     /* DCSSOUND.ASM:4280 DO_RAZOR_RUG_SPEECH steps Razor's four lines by
@@ -1555,29 +1555,29 @@ static void test_anim_code_sound_routines(void) {
     memset(&a, 0, sizeof(a));
     memset(&log, 0, sizeof(log));
     a.rpt_count = 0;
-    wm_anim_code_find("DO_RAZOR_RUG_SPEECH")(&a, &env);
+    wm_anim_code_run(&a, &env, "DO_RAZOR_RUG_SPEECH", NULL);
     CHECK(log.count == 0);
     memset(&log, 0, sizeof(log));
     a.rpt_count = 1;
-    wm_anim_code_find("DO_RAZOR_RUG_SPEECH")(&a, &env);
+    wm_anim_code_run(&a, &env, "DO_RAZOR_RUG_SPEECH", NULL);
     CHECK(log.count == 1 && log.calls[0] == 0x27Du);
     memset(&log, 0, sizeof(log));
     a.rpt_count = 4;
-    wm_anim_code_find("DO_RAZOR_RUG_SPEECH")(&a, &env);
+    wm_anim_code_run(&a, &env, "DO_RAZOR_RUG_SPEECH", NULL);
     CHECK(log.count == 1 && log.calls[0] == 0x27Au);
     memset(&log, 0, sizeof(log));
     a.rpt_count = 5;
-    wm_anim_code_find("DO_RAZOR_RUG_SPEECH")(&a, &env);
+    wm_anim_code_run(&a, &env, "DO_RAZOR_RUG_SPEECH", NULL);
     CHECK(log.count == 0);
 
     /* GOUGE_SOUND is one fixed call and nothing else. */
     memset(&log, 0, sizeof(log));
-    wm_anim_code_find("GOUGE_SOUND")(&a, &env);
+    wm_anim_code_run(&a, &env, "GOUGE_SOUND", NULL);
     CHECK(log.count == 1 && log.calls[0] == 0x0A9u);
 
     /* With no environment at all a routine does nothing rather than
        reaching through a NULL service. */
-    wm_anim_code_find("HIT_THE_MAT")(&a, NULL);
+    wm_anim_code_run(&a, NULL, "HIT_THE_MAT", NULL);
 
     /* DCSSOUND.ASM's shove taunts are behind a 50% RNDPER and a 60-tick
        lockout (its DUMMY_WAIT process): once one has fired, no other can
@@ -1585,13 +1585,13 @@ static void test_anim_code_sound_routines(void) {
     wm_anim_code_reset();
     memset(&log, 0, sizeof(log));
     for (i = 0; i < 200; ++i)
-        wm_anim_code_find("DO_RAZOR_PUSH")(&a, &env);
+        wm_anim_code_run(&a, &env, "DO_RAZOR_PUSH", NULL);
     CHECK(log.count == 1);
     CHECK(log.calls[0] >= 0x27Eu && log.calls[0] <= 0x280u);
     for (i = 0; i < 60; ++i) wm_anim_code_tick();
     memset(&log, 0, sizeof(log));
     for (i = 0; i < 200; ++i)
-        wm_anim_code_find("DO_BRET_PUSH")(&a, &env);
+        wm_anim_code_run(&a, &env, "DO_BRET_PUSH", NULL);
     CHECK(log.count == 1);
     CHECK(log.calls[0] == 0x285u);
     wm_anim_code_reset();
@@ -1605,73 +1605,72 @@ static void test_anim_code_sound_routines(void) {
 static void test_anim_code_state_routines(void) {
     wm_arcade_actor_t a, opp;
     wm_anim_env env;
-    wm_anim_code_fn fn;
+    const char *code_name = NULL;
 
     memset(&env, 0, sizeof(env));
 
     /* DNKSEQ2.ASM:1886 ckzpos -- slide toward the middle of the ring when
        falling near the front or rear ropes, and do nothing in between. */
-    fn = wm_anim_code_find("ckzpos");
-    CHECK(fn != NULL);
+    code_name = "ckzpos";
     memset(&a, 0, sizeof(a));
-    a.z_int = 0x600;  fn(&a, &env);  CHECK(a.z_vel == -0x24000);
+    a.z_int = 0x600;  wm_anim_code_run(&a, &env, code_name, NULL);  CHECK(a.z_vel == -0x24000);
     memset(&a, 0, sizeof(a));
-    a.z_int = 0x400;  fn(&a, &env);  CHECK(a.z_vel == 0x24000);
+    a.z_int = 0x400;  wm_anim_code_run(&a, &env, code_name, NULL);  CHECK(a.z_vel == 0x24000);
     memset(&a, 0, sizeof(a));
-    a.z_int = 0x480;  fn(&a, &env);  CHECK(a.z_vel == 0);   /* already clear */
+    a.z_int = 0x480;  wm_anim_code_run(&a, &env, code_name, NULL);  CHECK(a.z_vel == 0);   /* already clear */
     /* Both tests are the source's own `jrgt`, i.e. strictly greater, so
        each boundary value itself belongs to the range BELOW it: 510h is
        still "already clear", and 442h is low enough to slide down. */
     memset(&a, 0, sizeof(a));
-    a.z_int = 0x510;  fn(&a, &env);  CHECK(a.z_vel == 0);
+    a.z_int = 0x510;  wm_anim_code_run(&a, &env, code_name, NULL);  CHECK(a.z_vel == 0);
     memset(&a, 0, sizeof(a));
-    a.z_int = 0x442;  fn(&a, &env);  CHECK(a.z_vel == 0x24000);
+    a.z_int = 0x442;  wm_anim_code_run(&a, &env, code_name, NULL);  CHECK(a.z_vel == 0x24000);
     memset(&a, 0, sizeof(a));
-    a.z_int = 0x511;  fn(&a, &env);  CHECK(a.z_vel == -0x24000);
+    a.z_int = 0x511;  wm_anim_code_run(&a, &env, code_name, NULL);  CHECK(a.z_vel == -0x24000);
     memset(&a, 0, sizeof(a));
-    a.z_int = 0x443;  fn(&a, &env);  CHECK(a.z_vel == 0);
+    a.z_int = 0x443;  wm_anim_code_run(&a, &env, code_name, NULL);  CHECK(a.z_vel == 0);
 
     /* SHNSEQ3.ASM:3260 no_bk_xvel -- kill x velocity that is carrying him
        backward, keep it when it carries him forward. Which is which
        depends on FACING_DIR, so the same velocity survives one way and is
        zeroed the other. */
-    fn = wm_anim_code_find("no_bk_xvel");
+    code_name = "no_bk_xvel";
     memset(&a, 0, sizeof(a));
     a.facing_dir = WM_MOVE_UP_RIGHT;   a.x_vel = 0x10000;
-    fn(&a, &env);  CHECK(a.x_vel == 0x10000);          /* forward, kept */
+    wm_anim_code_run(&a, &env, code_name, NULL);  CHECK(a.x_vel == 0x10000);          /* forward, kept */
     a.x_vel = -0x10000;
-    fn(&a, &env);  CHECK(a.x_vel == 0);                /* backward, killed */
+    wm_anim_code_run(&a, &env, code_name, NULL);  CHECK(a.x_vel == 0);                /* backward, killed */
     memset(&a, 0, sizeof(a));
     a.facing_dir = WM_MOVE_UP_LEFT;    a.x_vel = -0x10000;
-    fn(&a, &env);  CHECK(a.x_vel == -0x10000);         /* forward, kept */
+    wm_anim_code_run(&a, &env, code_name, NULL);  CHECK(a.x_vel == -0x10000);         /* forward, kept */
     a.x_vel = 0x10000;
-    fn(&a, &env);  CHECK(a.x_vel == 0);
+    wm_anim_code_run(&a, &env, code_name, NULL);  CHECK(a.x_vel == 0);
 
     /* HRTSEQ4.ASM:1081 choose_2or4 reports the facing bank through
        MODE_STATUS: clear for the 2-bank when NEW_FACING_DIR points up. */
-    fn = wm_anim_code_find("choose_2or4");
+    code_name = "choose_2or4";
     memset(&a, 0, sizeof(a));
     a.new_facing_dir = WM_MOVE_UP_RIGHT;
     a.anim_mode = (uint16_t)WM_MODE_STATUS;
-    fn(&a, &env);  CHECK(!(a.anim_mode & WM_MODE_STATUS));
+    wm_anim_code_run(&a, &env, code_name, NULL);  CHECK(!(a.anim_mode & WM_MODE_STATUS));
     a.new_facing_dir = WM_MOVE_DOWN_RIGHT;
-    fn(&a, &env);  CHECK(a.anim_mode & WM_MODE_STATUS);
+    wm_anim_code_run(&a, &env, code_name, NULL);  CHECK(a.anim_mode & WM_MODE_STATUS);
 
     /* DNKSEQ3.ASM:428 am_I_dead. The live path is subtler than clearing
        the bit: a wrestler already in MODE_DEAD keeps answering yes. */
-    fn = wm_anim_code_find("am_I_dead");
+    code_name = "am_I_dead";
     memset(&a, 0, sizeof(a));
     a.life = 0;
-    fn(&a, &env);
+    wm_anim_code_run(&a, &env, code_name, NULL);
     CHECK(a.anim_mode & WM_MODE_STATUS);
     CHECK(a.player_mode == WM_PMODE_DEAD);
     memset(&a, 0, sizeof(a));
     a.life = 50;
     a.anim_mode = (uint16_t)WM_MODE_STATUS;
-    fn(&a, &env);
+    wm_anim_code_run(&a, &env, code_name, NULL);
     CHECK(!(a.anim_mode & WM_MODE_STATUS));
     a.player_mode = WM_PMODE_DEAD;
-    fn(&a, &env);
+    wm_anim_code_run(&a, &env, code_name, NULL);
     CHECK(a.anim_mode & WM_MODE_STATUS);
 
     /* DNKSEQ3.ASM's buzzer flash: make_white/#make_black load different
@@ -1680,14 +1679,38 @@ static void test_anim_code_state_routines(void) {
        clear the low four control bits first and leave the rest alone. */
     memset(&a, 0, sizeof(a));
     a.obj_control = (uint16_t)(0x0100u | 0x000Fu);
-    wm_anim_code_find("make_white")(&a, &env);
+    wm_anim_code_run(&a, &env, "make_white", NULL);
     CHECK(a.obj_const == 0x0101u);
     CHECK((a.obj_control & 0x000Fu) == 0x0008u);
     CHECK(a.obj_control & 0x0100u);            /* untouched bits survive */
-    wm_anim_code_find("#make_black")(&a, &env);
-    CHECK(a.obj_const == 0x0B0Bu);
-    CHECK((a.obj_control & 0x000Fu) == 0x0008u);
-    wm_anim_code_find("make_norm")(&a, &env);
+    /* #make_black is a LOCAL label: the source writes it once per sequence
+       file, with a different constant in each, and says why at every copy
+       -- "This is a black color within the wrestler's pal. It is different
+       for each wrestler." Seven distinct values across the eight files, so
+       resolving it without knowing the file is not answerable, and
+       answering anyway would paint six wrestlers in Doink's black. */
+    CHECK(!wm_anim_code_run(&a, &env, "#make_black", NULL));
+    CHECK(!wm_anim_code_run(&a, &env, "#make_black", "NOSUCH.ASM"));
+    {
+        static const struct { const char *file; uint16_t konst; } blacks[] = {
+            { "HRTSEQ4.ASM", 0x2F2Fu },   /* Bret */
+            { "RZRSEQ3.ASM", 0x0D0Du },   /* Razor */
+            { "UNDSEQ3.ASM", 0x3F3Fu },   /* Undertaker */
+            { "YOKSEQ3.ASM", 0x0F0Fu },   /* Yokozuna */
+            { "SHNSEQ4.ASM", 0x2121u },   /* Shawn */
+            { "BAMSEQ3.ASM", 0x0B0Bu },   /* Bam Bam */
+            { "DNKSEQ3.ASM", 0x0B0Bu },   /* Doink -- shares Bam Bam's */
+            { "LEXSEQ3.ASM", 0x1A1Au }    /* Lex */
+        };
+        size_t b;
+        for (b = 0; b < sizeof(blacks) / sizeof(blacks[0]); ++b) {
+            a.obj_const = 0;
+            CHECK(wm_anim_code_run(&a, &env, "#make_black", blacks[b].file));
+            CHECK(a.obj_const == blacks[b].konst);
+            CHECK((a.obj_control & 0x000Fu) == 0x0008u);
+        }
+    }
+    wm_anim_code_run(&a, &env, "make_norm", NULL);
     CHECK((a.obj_control & 0x800Fu) == 0x8002u);   /* DMAWNZ */
 
     /* The palette pair swaps OBJ_PAL and tracks PLYR.EQU's own TEMP_PAL
@@ -1696,12 +1719,85 @@ static void test_anim_code_state_routines(void) {
     a.my_pal = 11;
     a.skeleton_pal = 77;
     a.obj_pal = 11;
-    wm_anim_code_find("set_skeleton_pal")(&a, &env);
+    wm_anim_code_run(&a, &env, "set_skeleton_pal", NULL);
     CHECK(a.obj_pal == 77);
     CHECK(a.status_flags & 0x4u);
-    wm_anim_code_find("set_my_pal")(&a, &env);
+    wm_anim_code_run(&a, &env, "set_my_pal", NULL);
     CHECK(a.obj_pal == 11);
     CHECK(!(a.status_flags & 0x4u));
+
+    /* DNKSEQ2.ASM:5486 SET_DIR_FACE -- face the ring while climbing. The
+       source's own note says the outside version is "identical, but with
+       the a0's switched", so the corner test is the same and only the two
+       answers trade places. 10 is DOWN|RIGHT, 6 is DOWN|LEFT. */
+    memset(&a, 0, sizeof(a));
+    a.in_ring = 1;                       /* in the ring (this port's sense) */
+    a.x_int = WM_RING_X_CENTER - 100;
+    wm_anim_code_run(&a, &env, "SET_DIR_FACE", NULL);
+    CHECK(a.new_facing_dir == 6);
+    a.x_int = WM_RING_X_CENTER + 100;
+    wm_anim_code_run(&a, &env, "SET_DIR_FACE", NULL);
+    CHECK(a.new_facing_dir == 10);
+    a.in_ring = 0;                       /* outside: the answers swap */
+    a.x_int = WM_RING_X_CENTER - 100;
+    wm_anim_code_run(&a, &env, "SET_DIR_FACE", NULL);
+    CHECK(a.new_facing_dir == 10);
+    a.x_int = WM_RING_X_CENTER + 100;
+    wm_anim_code_run(&a, &env, "SET_DIR_FACE", NULL);
+    CHECK(a.new_facing_dir == 6);
+
+    /* WRESTLE2.ASM:4951 set_tbukl_airmode -- MODE_INAIR2 is the mode that
+       says "this is a turnbuckle leap", which an opponent's do_kick tests
+       for. Against a dead opponent there is nothing to answer it, so it is
+       the plain MODE_INAIR instead. */
+    memset(&a, 0, sizeof(a));
+    memset(&opp, 0, sizeof(opp));
+    env.opponent = &opp;
+    opp.player_mode = WM_PMODE_NORMAL;
+    wm_anim_code_run(&a, &env, "set_tbukl_airmode", NULL);
+    CHECK(a.player_mode == WM_PMODE_INAIR2);
+    opp.player_mode = WM_PMODE_DEAD;
+    wm_anim_code_run(&a, &env, "set_tbukl_airmode", NULL);
+    CHECK(a.player_mode == WM_PMODE_INAIR);
+
+    /* WRESTLE2.ASM:4527 check_raisearm_bit -- the sense is INVERTED from
+       what the name suggests: the bit being SET clears MODE_STATUS, so the
+       celebration forks in only the first time. */
+    memset(&a, 0, sizeof(a));
+    wm_anim_code_run(&a, &env, "check_raisearm_bit", NULL);
+    CHECK(a.anim_mode & WM_MODE_STATUS);
+    a.status_flags |= (1u << 16);        /* PLYR.EQU:414 B_DID_RAISEARM */
+    wm_anim_code_run(&a, &env, "check_raisearm_bit", NULL);
+    CHECK(!(a.anim_mode & WM_MODE_STATUS));
+
+    /* DNKSEQ3.ASM:1509/1516 head_grab_time falls straight through into
+       clear_opp_counts: stamp when the hold started, and zero all five of
+       the HELD wrestler's button counts so the mash gates in the grapple
+       measure struggling from the hold rather than from the round. */
+    memset(&a, 0, sizeof(a));
+    memset(&opp, 0, sizeof(opp));
+    a.attach_proc = &opp;
+    opp.punchb_count = 5; opp.blockb_count = 5; opp.spunchb_count = 5;
+    opp.kickb_count = 5;  opp.skickb_count = 5;
+    env.pcnt = 4242u;
+    wm_anim_code_run(&a, &env, "head_grab_time", NULL);
+    CHECK(a.last_headhold == 4242u);
+    CHECK(opp.punchb_count == 0 && opp.blockb_count == 0);
+    CHECK(opp.spunchb_count == 0 && opp.kickb_count == 0);
+    CHECK(opp.skickb_count == 0);
+    env.pcnt = 0u;
+
+    /* WRESTLE2.ASM:1622 halve_bk_xvel is no_bk_xvel's gentler twin: it
+       halves a backward velocity where the other zeroes it, and leaves a
+       forward one alone. */
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_UP_RIGHT;
+    a.x_vel = 0x10000;
+    wm_anim_code_run(&a, &env, "halve_bk_xvel", NULL);
+    CHECK(a.x_vel == 0x10000);
+    a.x_vel = -0x10000;
+    wm_anim_code_run(&a, &env, "halve_bk_xvel", NULL);
+    CHECK(a.x_vel == -0x8000);
 
     /* WRESTLE2.ASM:4967 free_toss_check -- a free hiptoss is on when the
        two are within 15 units in z, OR he is holding block. The block test
@@ -1712,16 +1808,16 @@ static void test_anim_code_state_routines(void) {
     env.opponent = &opp;
     a.z_fixed = 100 << 16;
     opp.z_fixed = 110 << 16;                 /* 10 apart */
-    wm_anim_code_find("free_toss_check")(&a, &env);
+    wm_anim_code_run(&a, &env, "free_toss_check", NULL);
     CHECK(a.anim_mode & WM_MODE_STATUS);
     opp.z_fixed = 200 << 16;                 /* 100 apart, no block held */
-    wm_anim_code_find("free_toss_check")(&a, &env);
+    wm_anim_code_run(&a, &env, "free_toss_check", NULL);
     CHECK(!(a.anim_mode & WM_MODE_STATUS));
     a.but_val_cur = (uint16_t)WM_BTN_BLOCK;  /* block alone earns it */
-    wm_anim_code_find("free_toss_check")(&a, &env);
+    wm_anim_code_run(&a, &env, "free_toss_check", NULL);
     CHECK(a.anim_mode & WM_MODE_STATUS);
     a.but_val_cur = (uint16_t)(WM_BTN_BLOCK | WM_BTN_PUNCH);
-    wm_anim_code_find("free_toss_check")(&a, &env);
+    wm_anim_code_run(&a, &env, "free_toss_check", NULL);
     CHECK(!(a.anim_mode & WM_MODE_STATUS));
 
     /* WRESTLE2.ASM:5004 setup_freetoss: mode normal, and the victim is
@@ -1730,7 +1826,7 @@ static void test_anim_code_state_routines(void) {
     memset(&opp, 0, sizeof(opp));
     a.player_mode = WM_PMODE_RUNNING;
     a.who_i_hit = &opp;
-    wm_anim_code_find("setup_freetoss")(&a, &env);
+    wm_anim_code_run(&a, &env, "setup_freetoss", NULL);
     CHECK(a.player_mode == WM_PMODE_NORMAL);
     CHECK(opp.immobilize_time == 20);
 
@@ -1740,46 +1836,46 @@ static void test_anim_code_state_routines(void) {
     memset(&a, 0, sizeof(a));
     memset(&opp, 0, sizeof(opp));
     env.opponent = &opp;
-    opp.in_ring = 0;
+    opp.in_ring = 1;                     /* opponent IS in the ring */
     a.x_int = WM_RING_X_CENTER + 100;
-    wm_anim_code_find("tbukl_flip")(&a, &env);
+    wm_anim_code_run(&a, &env, "tbukl_flip", NULL);
     CHECK(a.obj_control & WM_OBJ_FLIPH);
     a.x_int = WM_RING_X_CENTER - 100;
-    wm_anim_code_find("tbukl_flip")(&a, &env);
+    wm_anim_code_run(&a, &env, "tbukl_flip", NULL);
     CHECK(!(a.obj_control & WM_OBJ_FLIPH));
 
     /* Opponent outside the ring: neither corner decides it any more, the
        source goes by NEW_FACING_DIR's left bit instead. */
-    opp.in_ring = 1;
+    opp.in_ring = 0;
     a.x_int = WM_RING_X_CENTER - 100;
     a.new_facing_dir = WM_MOVE_UP_LEFT;
-    wm_anim_code_find("tbukl_flip")(&a, &env);
+    wm_anim_code_run(&a, &env, "tbukl_flip", NULL);
     CHECK(a.obj_control & WM_OBJ_FLIPH);
     a.new_facing_dir = WM_MOVE_UP_RIGHT;
-    wm_anim_code_find("tbukl_flip")(&a, &env);
+    wm_anim_code_run(&a, &env, "tbukl_flip", NULL);
     CHECK(!(a.obj_control & WM_OBJ_FLIPH));
 
     /* "doink is the opposite... so is yoko" -- the source's own comment,
        because their artwork is drawn facing the other way. Same state,
        inverted answer. */
-    opp.in_ring = 0;
+    opp.in_ring = 1;
     a.x_int = WM_RING_X_CENTER + 100;
     a.wrestler_num = WM_ROSTER_DOINK;
-    wm_anim_code_find("tbukl_flip")(&a, &env);
+    wm_anim_code_run(&a, &env, "tbukl_flip", NULL);
     CHECK(!(a.obj_control & WM_OBJ_FLIPH));
     a.wrestler_num = WM_ROSTER_YOKO;
-    wm_anim_code_find("tbukl_flip")(&a, &env);
+    wm_anim_code_run(&a, &env, "tbukl_flip", NULL);
     CHECK(!(a.obj_control & WM_OBJ_FLIPH));
     a.wrestler_num = WM_ROSTER_BRET;
-    wm_anim_code_find("tbukl_flip")(&a, &env);
+    wm_anim_code_run(&a, &env, "tbukl_flip", NULL);
     CHECK(a.obj_control & WM_OBJ_FLIPH);
 
     /* face_inside ignores where the opponent is: it always answers as if
        the opponent were in the ring. */
-    opp.in_ring = 1;
+    opp.in_ring = 0;
     a.new_facing_dir = WM_MOVE_UP_LEFT;
     a.x_int = WM_RING_X_CENTER - 100;
-    wm_anim_code_find("face_inside")(&a, &env);
+    wm_anim_code_run(&a, &env, "face_inside", NULL);
     CHECK(!(a.obj_control & WM_OBJ_FLIPH));
 }
 

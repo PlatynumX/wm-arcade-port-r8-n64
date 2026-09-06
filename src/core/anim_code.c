@@ -31,6 +31,7 @@
 #include "wm/arcade/wm_arcade_combat_defs.h"
 #include "wm/arcade/wm_arcade_roster.h"
 #include "wm/arcade/wmania_ring_geometry.h"
+#include "wm/arcade/wm_arcade_butcount.h"
 
 #include <string.h>
 
@@ -79,7 +80,9 @@ static uint16_t by_wrestler(const wm_arcade_actor_t *actor,
  * ---------------------------------------------------------------- */
 static const uint16_t MAT_HITS[3] = { 0x76u, 0x77u, 0x78u };
 
-static void hit_the_mat(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void hit_the_mat(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     (void)actor;
     play(env, 0x0C1u);
     play(env, MAT_HITS[rnd0(env, 2u)]);
@@ -90,12 +93,16 @@ static void hit_the_mat(wm_arcade_actor_t *actor, const wm_anim_env *env) {
 static const uint16_t SMALL_BOUNCE_SOUNDS[3] = { 0x0C0u, 0x0C2u, 0x00Du };
 static const uint16_t SMALL_RUN_SOUNDS[3]    = { 0x0C0u, 0x0C2u, 0x0C0u };
 
-static void small_bounce(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void small_bounce(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     (void)actor;
     play(env, SMALL_BOUNCE_SOUNDS[rnd0(env, 2u)]);
 }
 
-static void small_run(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void small_run(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     (void)actor;
     play(env, SMALL_RUN_SOUNDS[rnd0(env, 2u)]);
 }
@@ -105,12 +112,16 @@ static const uint16_t FLAME_SOUNDS[2]     = { 0x99u, 0x9Au };
 static const uint16_t FLAME_HIT_SOUNDS[5] = { 0x9Du, 0x9Eu, 0x9Fu,
                                               0x0A0u, 0x0A1u };
 
-static void do_flame_snd(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void do_flame_snd(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     (void)actor;
     play(env, FLAME_SOUNDS[rnd0(env, 1u)]);
 }
 
-static void do_flame_hit_snd(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void do_flame_hit_snd(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     (void)actor;
     play(env, FLAME_HIT_SOUNDS[rnd0(env, 4u)]);
 }
@@ -121,7 +132,9 @@ static const uint16_t WHICH_WAIL[9] = {
     0x25Fu, 0x270u, 0x20Du, 0x20Du, 0x20Du, 0x20Du, 0x20Du, 0u, 0x20Du
 };
 
-static void do_wail(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void do_wail(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     play(env, by_wrestler(actor, WHICH_WAIL, 9u));
 }
 
@@ -150,7 +163,9 @@ static const uint16_t WHICH_NONO[9] = {
     0x23Cu, 0x281u, 0x23Cu, 0x23Cu, 0x23Cu, 0x23Cu, 0x219u, 0u, 0x23Cu
 };
 
-static void do_choke(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void do_choke(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     uint16_t call = by_wrestler(actor, WHICH_CHOKE, 9u);
     find_and_kill_endless(actor, env);
     play(env, call);
@@ -160,14 +175,18 @@ static void do_choke(wm_arcade_actor_t *actor, const wm_anim_env *env) {
 /* DO_OTHERNONO reads its OWN wrestler number; DO_NONO reads the number of
    the wrestler attached to it (*a13(ATTACH_PROC)), which is the one being
    held -- the two differ only in whose voice objects. */
-static void do_othernono(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void do_othernono(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     uint16_t call = by_wrestler(actor, WHICH_NONO, 9u);
     find_and_kill_endless(actor, env);
     play(env, call);
     endless_sound = call;
 }
 
-static void do_nono(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void do_nono(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     const wm_arcade_actor_t *held = actor ? actor->attach_proc : NULL;
     uint16_t call = by_wrestler(held, WHICH_NONO, 9u);
     find_and_kill_endless(actor, env);
@@ -187,7 +206,9 @@ static void do_nono(wm_arcade_actor_t *actor, const wm_anim_env *env) {
  */
 static const uint16_t DOINK_WHICH_SLAM[3] = { 0x215u, 0x216u, 0x217u };
 
-static void do_doink_slam(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void do_doink_slam(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     int32_t rpt = actor ? actor->rpt_count : 0;
     if (rpt == 0 || rpt == 1) { play(env, 0x218u); return; }
     if (rpt - 1 >= 4) return;
@@ -253,7 +274,9 @@ static const uint16_t WHICH_BLOCK_SPEECH[9] = {
     0x236u, 0x280u, 0x23Du, 0x23Eu, 0x284u, 0x06Au, 0x212u, 0u, 0x287u
 };
 
-static void do_blocked(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void do_blocked(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     if (!rndper(env, 50u)) return;
     play(env, by_wrestler(actor, WHICH_BLOCK_SPEECH, 9u));
 }
@@ -286,16 +309,22 @@ static void scream_as(const wm_arcade_actor_t *who, const wm_anim_env *env) {
     play(env, WHICH_SCREAM[i][rnd0(env, 3u)]);
 }
 
-static void make_him_scream(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void make_him_scream(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     scream_as(actor ? actor->who_i_hit : NULL, env);
 }
 
-static void do_scream(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void do_scream(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     scream_as(actor, env);
 }
 
 /* DCSSOUND.ASM:4350 GOUGE_SOUND -- one fixed call, nothing else. */
-static void gouge_sound(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void gouge_sound(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     (void)actor;
     play(env, 0x0A9u);
 }
@@ -325,7 +354,9 @@ static void do_razor_rug_speech(wm_arcade_actor_t *actor,
  */
 static const uint16_t BONE_BREAK_SOUNDS[3] = { 0x01Du, 0x09Bu, 0x098u };
 
-static void call_bone_break(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void call_bone_break(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     (void)actor;
     play(env, BONE_BREAK_SOUNDS[rnd0(env, 2u)]);
 }
@@ -346,7 +377,9 @@ static void call_bone_break(wm_arcade_actor_t *actor, const wm_anim_env *env) {
  * opponent to walk around him." Above 510h he slides up the screen, below
  * 442h he slides down, and in between he is already clear.
  */
-static void ckzpos(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void ckzpos(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     (void)env;
     if (!actor) return;
     if (actor->z_int > 0x510) { actor->z_vel = -0x24000; return; }
@@ -360,7 +393,9 @@ static void ckzpos(wm_arcade_actor_t *actor, const wm_anim_env *env) {
  * clear -- turning it into a forward-relative figure -- and zeroes it if
  * that comes out negative.
  */
-static void no_bk_xvel(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void no_bk_xvel(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     int32_t v;
     (void)env;
     if (!actor) return;
@@ -375,7 +410,9 @@ static void no_bk_xvel(wm_arcade_actor_t *actor, const wm_anim_env *env) {
  * NEW_FACING_DIR points up, set for the 4-bank otherwise. The animation
  * then forks on it with an ordinary ANI_IFSTATUS.
  */
-static void choose_2or4(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void choose_2or4(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     (void)env;
     if (!actor) return;
     if (actor->new_facing_dir & WM_MOVE_UP)
@@ -392,7 +429,9 @@ static void choose_2or4(wm_arcade_actor_t *actor, const wm_anim_env *env) {
  * a wrestler who died earlier keeps answering yes even once the lifebar
  * has been reset.
  */
-static void am_i_dead(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void am_i_dead(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     (void)env;
     if (!actor) return;
     if (actor->life == 0) {
@@ -422,21 +461,34 @@ static void set_dma_mode(wm_arcade_actor_t *actor, uint16_t mode) {
         (uint16_t)((actor->obj_control & (uint16_t)~WM_DMA_MODE_MASK) | mode);
 }
 
-static void make_white(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void make_white(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     (void)env;
     if (!actor) return;
     actor->obj_const = 0x0101u;
     set_dma_mode(actor, WM_M_CONNON);
 }
 
-static void make_black(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+/*
+ * #make_black is written once per sequence file, and the source says why
+ * at every copy: "This is a black color within the wrestler's pal. It is
+ * different for each wrestler." Seven distinct values across the eight
+ * files -- Bam Bam and Doink happen to share 0B0Bh -- so the value comes
+ * from the registry row for the file the call was made from, and getting
+ * that wrong paints six wrestlers in Doink's black.
+ */
+static void make_black(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                       int32_t param) {
     (void)env;
     if (!actor) return;
-    actor->obj_const = 0x0B0Bu;
+    actor->obj_const = (uint16_t)param;
     set_dma_mode(actor, WM_M_CONNON);
 }
 
-static void make_norm(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void make_norm(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     (void)env;
     if (!actor) return;
     /* `andni 01111b / ori DMAWNZ` -- DMAWNZ is 8002h, so this ORs a whole
@@ -444,14 +496,18 @@ static void make_norm(wm_arcade_actor_t *actor, const wm_anim_env *env) {
     set_dma_mode(actor, WM_DMAWNZ);
 }
 
-static void set_skeleton_pal(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void set_skeleton_pal(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     (void)env;
     if (!actor) return;
     actor->obj_pal = actor->skeleton_pal;
     actor->status_flags |= WM_M_TEMP_PAL;
 }
 
-static void set_my_pal(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void set_my_pal(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     (void)env;
     if (!actor) return;
     actor->obj_pal = actor->my_pal;
@@ -492,17 +548,23 @@ static void turnbuckle_face(wm_arcade_actor_t *actor, bool opponent_outside) {
     else        actor->obj_control &= (uint16_t)~WM_OBJ_FLIPH;
 }
 
-static void tbukl_flip(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void tbukl_flip(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     bool outside = false;
     if (!actor) return;
-    /* `calla get_opp_process / move *a0(INRING),a0`. With no opponent
-       reachable the source would read a null process; treating that as
-       "in the ring" keeps him facing inward rather than guessing. */
-    if (env && env->opponent) outside = (env->opponent->in_ring != 0);
+    /* `calla get_opp_process / move *a0(INRING),a0`. PLYR.EQU's INRING is
+       0 for "in the ring"; this port's in_ring is the ordinary boolean, so
+       the test flips. With no opponent reachable the source would read a
+       null process; treating that as in the ring keeps him facing inward
+       rather than guessing. */
+    if (env && env->opponent) outside = (env->opponent->in_ring == 0);
     turnbuckle_face(actor, outside);
 }
 
-static void face_inside(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void face_inside(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     (void)env;
     if (!actor) return;
     turnbuckle_face(actor, false);
@@ -519,7 +581,9 @@ static void face_inside(wm_arcade_actor_t *actor, const wm_anim_env *env) {
  * required the stick pulled away instead; it was replaced by the block
  * test, and the dead lines are left in place there.
  */
-static void free_toss_check(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void free_toss_check(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     int32_t dz;
     if (!actor) return;
     actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
@@ -540,57 +604,196 @@ static void free_toss_check(wm_arcade_actor_t *actor, const wm_anim_env *env) {
  * The SMRTTGT smart-target call at the end is a display service (it points
  * the camera's target at the victim) and is not modelled here.
  */
-static void setup_freetoss(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+static void setup_freetoss(wm_arcade_actor_t *actor, const wm_anim_env *env,
+int32_t param) {
+    (void)param;
     (void)env;
     if (!actor) return;
     actor->player_mode = WM_PMODE_NORMAL;
     if (actor->who_i_hit) actor->who_i_hit->immobilize_time = 20;
 }
 
-static const struct { const char *name; wm_anim_code_fn fn; } code_table[] = {
-    { "ckzpos",                ckzpos },
-    { "free_toss_check",       free_toss_check },
-    { "setup_freetoss",        setup_freetoss },
-    { "no_bk_xvel",            no_bk_xvel },
-    { "choose_2or4",           choose_2or4 },
-    { "am_I_dead",             am_i_dead },
-    { "make_white",            make_white },
-    { "#make_black",           make_black },
-    { "make_norm",             make_norm },
-    { "set_skeleton_pal",      set_skeleton_pal },
-    { "set_my_pal",            set_my_pal },
-    { "tbukl_flip",            tbukl_flip },
-    { "face_inside",           face_inside },
-    { "HIT_THE_MAT",           hit_the_mat },
-    { "DO_BLOCKED",            do_blocked },
-    { "MAKE_HIM_SCREAM",       make_him_scream },
-    { "DO_SCREAM",             do_scream },
-    { "GOUGE_SOUND",           gouge_sound },
-    { "DO_RAZOR_RUG_SPEECH",   do_razor_rug_speech },
-    { "CALL_BONE_BREAK",       call_bone_break },
-    { "SMALL_BOUNCE",          small_bounce },
-    { "SMALL_RUN",             small_run },
-    { "DO_FLAME_SND",          do_flame_snd },
-    { "DO_FLAME_HIT_SND",      do_flame_hit_snd },
-    { "DO_WAIL",               do_wail },
-    { "DO_CHOKE",              do_choke },
-    { "DO_NONO",               do_nono },
-    { "DO_OTHERNONO",          do_othernono },
-    { "DO_DOINK_SLAM",         do_doink_slam },
-    { "FIND_AND_KILL_ENDLESS", find_and_kill_endless },
-    { "DO_RAZOR_PUSH",         do_razor_push },
-    { "DO_DOINK_PUSH",         do_doink_push },
-    { "DO_SHAWN_PUSH",         do_shawn_push },
-    { "DO_BRET_PUSH",          do_bret_push },
-    { "DO_LEX_PUSH",           do_lex_push },
+/*
+ * DNKSEQ2.ASM:5486 SET_DIR_FACE -- point NEW_FACING_DIR at the ring while
+ * climbing in or out. The source's own note: "this is now used for both
+ * climbins and climbouts. If we're outside, use an identical version, but
+ * with the a0's switched." So the corner test is the same and only the two
+ * answers trade places. 10 is DOWN|RIGHT, 6 is DOWN|LEFT.
+ */
+static void set_dir_face(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                         int32_t param) {
+    bool left_of_centre;
+    (void)env; (void)param;
+    if (!actor) return;
+    left_of_centre = actor->x_int < WM_RING_X_CENTER;
+    /* `move *a13(INRING),a14 / jrz #method2` -- the source branches to its
+       second version when INRING is 0, which is its own encoding for IN
+       the ring. This port's in_ring is the ordinary boolean, so the test
+       flips: in the ring takes #method2. */
+    if (actor->in_ring != 0)
+        actor->new_facing_dir = left_of_centre ? 6 : 10;    /* #method2 */
+    else
+        actor->new_facing_dir = left_of_centre ? 10 : 6;
+}
+
+/*
+ * WRESTLE2.ASM:4951 set_tbukl_airmode -- leaping off a turnbuckle puts him
+ * in MODE_INAIR2, the mode that says "this one is a turnbuckle leap", which
+ * is what an opponent's own do_kick tests to answer it. Against a dead
+ * opponent there is nothing to answer, so it is the plain MODE_INAIR.
+ */
+static void set_tbukl_airmode(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                              int32_t param) {
+    (void)param;
+    if (!actor) return;
+    actor->player_mode =
+        (env && env->opponent && env->opponent->player_mode == WM_PMODE_DEAD)
+            ? WM_PMODE_INAIR : WM_PMODE_INAIR2;
+}
+
+/*
+ * WRESTLE2.ASM:4527 check_raisearm_bit -- report through MODE_STATUS
+ * whether he has NOT already done his raise-arm celebration. The sense is
+ * inverted from what the name suggests: the bit being SET clears
+ * MODE_STATUS, so the animation forks into the celebration only the first
+ * time.
+ */
+#define WM_M_DID_RAISEARM (1u << 16)   /* PLYR.EQU:414 B_DID_RAISEARM */
+
+static void check_raisearm_bit(wm_arcade_actor_t *actor,
+                               const wm_anim_env *env, int32_t param) {
+    (void)env; (void)param;
+    if (!actor) return;
+    if (actor->status_flags & WM_M_DID_RAISEARM)
+        actor->anim_mode &= (uint16_t)~WM_MODE_STATUS;
+    else
+        actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
+}
+
+/*
+ * DNKSEQ3.ASM:1516 clear_opp_counts, with the source's own comment: "Zero
+ * opponents buttons for later counting." It clears all five of the wrestler
+ * he is HOLDING, which is what makes the mash gates in a grapple measure
+ * struggling from the moment the hold starts rather than from the round.
+ */
+static void clear_opp_counts(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                             int32_t param) {
+    (void)env; (void)param;
+    if (!actor || !actor->attach_proc) return;
+    wm_arcade_clear_button_presses(actor->attach_proc);
+}
+
+/*
+ * DNKSEQ3.ASM:1509 head_grab_time -- stamp when this head hold started,
+ * then fall straight through into clear_opp_counts. (The CALL_SETUP
+ * announcer line between them belongs to the speech queue and is not
+ * translated.) The stamp is what the head-hold monitor reads to decide
+ * whether a repeat grab within 120 ticks becomes a fake hold instead.
+ */
+static void head_grab_time(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                           int32_t param) {
+    if (!actor) return;
+    actor->last_headhold = (env ? env->pcnt : 0u);
+    clear_opp_counts(actor, env, param);
+}
+
+/*
+ * WRESTLE2.ASM:1622 halve_bk_xvel -- the gentler twin of no_bk_xvel: where
+ * that one zeroes a velocity carrying him backward, this one halves it.
+ */
+static void halve_bk_xvel(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                          int32_t param) {
+    int32_t v;
+    (void)env; (void)param;
+    if (!actor) return;
+    v = actor->x_vel;
+    if (!(actor->facing_dir & WM_MOVE_RIGHT)) v = -v;
+    if (v < 0) actor->x_vel >>= 1;      /* the source's own `sra 1` */
+}
+
+/*
+ * The registry. `file` NULL means a global label, which resolves the same
+ * from anywhere; a non-NULL file scopes the row to that sequence file,
+ * which is what a leading '#' in the source means.
+ */
+static const struct {
+    const char *name;
+    const char *file;      /* NULL = global */
+    wm_anim_code_fn fn;
+    int32_t param;
+} code_table[] = {
+    { "ckzpos", NULL, ckzpos, 0 },
+    { "SET_DIR_FACE", NULL, set_dir_face, 0 },
+    { "set_tbukl_airmode", NULL, set_tbukl_airmode, 0 },
+    { "check_raisearm_bit", NULL, check_raisearm_bit, 0 },
+    { "clear_opp_counts", NULL, clear_opp_counts, 0 },
+    { "head_grab_time", NULL, head_grab_time, 0 },
+    { "halve_bk_xvel", NULL, halve_bk_xvel, 0 },
+    { "free_toss_check", NULL, free_toss_check, 0 },
+    { "setup_freetoss", NULL, setup_freetoss, 0 },
+    { "no_bk_xvel", NULL, no_bk_xvel, 0 },
+    { "choose_2or4", NULL, choose_2or4, 0 },
+    { "am_I_dead", NULL, am_i_dead, 0 },
+    { "make_white", NULL, make_white, 0 },
+    { "make_norm", NULL, make_norm, 0 },
+    { "set_skeleton_pal", NULL, set_skeleton_pal, 0 },
+    { "set_my_pal", NULL, set_my_pal, 0 },
+    { "tbukl_flip", NULL, tbukl_flip, 0 },
+    { "face_inside", NULL, face_inside, 0 },
+    { "HIT_THE_MAT", NULL, hit_the_mat, 0 },
+    { "DO_BLOCKED", NULL, do_blocked, 0 },
+    { "MAKE_HIM_SCREAM", NULL, make_him_scream, 0 },
+    { "DO_SCREAM", NULL, do_scream, 0 },
+    { "GOUGE_SOUND", NULL, gouge_sound, 0 },
+    { "DO_RAZOR_RUG_SPEECH", NULL, do_razor_rug_speech, 0 },
+    { "CALL_BONE_BREAK", NULL, call_bone_break, 0 },
+    { "SMALL_BOUNCE", NULL, small_bounce, 0 },
+    { "SMALL_RUN", NULL, small_run, 0 },
+    { "DO_FLAME_SND", NULL, do_flame_snd, 0 },
+    { "DO_FLAME_HIT_SND", NULL, do_flame_hit_snd, 0 },
+    { "DO_WAIL", NULL, do_wail, 0 },
+    { "DO_CHOKE", NULL, do_choke, 0 },
+    { "DO_NONO", NULL, do_nono, 0 },
+    { "DO_OTHERNONO", NULL, do_othernono, 0 },
+    { "DO_DOINK_SLAM", NULL, do_doink_slam, 0 },
+    { "FIND_AND_KILL_ENDLESS", NULL, find_and_kill_endless, 0 },
+    { "DO_RAZOR_PUSH", NULL, do_razor_push, 0 },
+    { "DO_DOINK_PUSH", NULL, do_doink_push, 0 },
+    { "DO_SHAWN_PUSH", NULL, do_shawn_push, 0 },
+    { "DO_BRET_PUSH", NULL, do_bret_push, 0 },
+    { "DO_LEX_PUSH", NULL, do_lex_push, 0 },
+    /* #make_black, once per file, each with its own palette black. */
+    { "#make_black", "HRTSEQ4.ASM", make_black, 0x2F2F },
+    { "#make_black", "RZRSEQ3.ASM", make_black, 0x0D0D },
+    { "#make_black", "UNDSEQ3.ASM", make_black, 0x3F3F },
+    { "#make_black", "YOKSEQ3.ASM", make_black, 0x0F0F },
+    { "#make_black", "SHNSEQ4.ASM", make_black, 0x2121 },
+    { "#make_black", "BAMSEQ3.ASM", make_black, 0x0B0B },
+    { "#make_black", "DNKSEQ3.ASM", make_black, 0x0B0B },
+    { "#make_black", "LEXSEQ3.ASM", make_black, 0x1A1A },
 };
 
-wm_anim_code_fn wm_anim_code_find(const char *name) {
+bool wm_anim_code_run(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                      const char *name, const char *source_file) {
     size_t i;
-    if (!name) return 0;
-    for (i = 0; i < sizeof(code_table) / sizeof(code_table[0]); ++i)
-        if (strcmp(code_table[i].name, name) == 0) return code_table[i].fn;
-    return 0;
+    const size_t n = sizeof(code_table) / sizeof(code_table[0]);
+    if (!name) return false;
+    /* A row scoped to this exact file wins over a global of the same name;
+       nothing in the source relies on that today, but a local label really
+       does shadow, so resolving in that order is the assembler's own. */
+    for (i = 0; i < n; ++i)
+        if (code_table[i].file && source_file &&
+            strcmp(code_table[i].name, name) == 0 &&
+            strcmp(code_table[i].file, source_file) == 0) {
+            code_table[i].fn(actor, env, code_table[i].param);
+            return true;
+        }
+    for (i = 0; i < n; ++i)
+        if (!code_table[i].file && strcmp(code_table[i].name, name) == 0) {
+            code_table[i].fn(actor, env, code_table[i].param);
+            return true;
+        }
+    return false;
 }
 
 size_t wm_anim_code_count(void) {

@@ -49,6 +49,7 @@ CORE_C := \
     src/generated/anim_programs.c \
     src/generated/frame_geometry.c \
     src/generated/roll_frames.c \
+    src/generated/announce_tables.c \
     src/generated/anim_aux_tables.c
 # BEGIN FIX38 CUMULATIVE ARCADE SOURCE PORTS
 FIX38_ARCADE_C := \
@@ -58,6 +59,7 @@ FIX38_ARCADE_C := \
     src/core/arcade/wm_arcade_roll.c \
     src/core/arcade/wm_arcade_combo.c \
     src/core/arcade/wm_arcade_announcer.c \
+    src/core/arcade/wm_arcade_announce_call.c \
     src/core/arcade/wm_arcade_drone_data.c \
     src/core/anim_code.c \
     src/core/anim_puppet.c \

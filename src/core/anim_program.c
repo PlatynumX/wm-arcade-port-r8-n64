@@ -153,9 +153,9 @@ static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
             ++actor->combo_count;
             /* `CMPI 8,A0 / JRNE NO_BESERKER` -- at exactly eight, and
                through IF_SILENT_ADD_VOICE rather than a direct sound. */
-            if (actor->combo_count == 8 && env && env->announce_if_silent)
-                env->announce_if_silent(env->announcer_user,
-                                        WM_VOICE_HES_JUST_GONE_BERSERK);
+            if (actor->combo_count == 8 && env && env->announcer)
+                (void)wm_announcer_add_if_silent(
+                    env->announcer, WM_VOICE_HES_JUST_GONE_BERSERK);
             if (actor->who_i_hit) actor->who_i_hit->immobilize_time = 30;
             break;
         /*

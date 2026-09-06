@@ -26,6 +26,9 @@ extern "C" {
  */
 #define WM_ANNOUNCE_QUEUE_SLOTS 40
 
+/* ARE_WE_REPEATING's `MOVK 4,A3` -- four lines of memory. */
+#define WM_ANNOUNCE_REPEAT_MEMORY 4
+
 /*
  * DCSSOUND.ASM:2880's split. ANNOUNCE_VOICE routes each queued index by
  * value: below 0E0h it is an ordinary sound and goes to triple_sound;
@@ -54,6 +57,23 @@ typedef struct {
      */
     uint16_t busy;
     uint16_t busy_ticks;
+    /*
+     * ARE_WE_REPEATING's LAST_VOICE: the last four lines said, and the
+     * write cursor ADD_SPEECH_TO_LIST advances through them. A drawn row
+     * that matches any of the four is rejected. The source's cursor
+     * starts ON slot 0 and pre-increments, so the first line written
+     * lands in slot 1 and slot 0 is not reused until the fifth.
+     */
+    int16_t last_voice[WM_ANNOUNCE_REPEAT_MEMORY];
+    uint8_t which_last_voice;
+    /*
+     * REPEAT_STATE and the REPEAT_DUMMY process that clears it. A
+     * REPEAT_MODE row starts the counter at 4 and every announce call
+     * while it lives decrements it, walking ASCENDING_TABLE's four lines;
+     * the process is re-slept to 80 ticks each time.
+     */
+    uint8_t repeat_state;
+    uint16_t repeat_ticks;
 } wm_announcer_state;
 
 /* DCSSOUND.ASM RESET_VOICE_QUEUE. */

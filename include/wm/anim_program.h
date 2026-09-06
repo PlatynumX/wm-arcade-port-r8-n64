@@ -8,6 +8,7 @@
 #include "wm/arcade/wm_arcade_combat.h"
 #include "wm/anim_puppet.h"
 #include "wm/arcade/wmania_rng.h"
+#include "wm/arcade/wm_arcade_announcer.h"
 
 /*
  * An animation as the program it is in ANIM.ASM, rather than as a flat list
@@ -336,10 +337,15 @@ typedef struct wm_anim_env {
      * ANI_INC_COMBO asks for HES_JUST_GONE_BERSERK at exactly eight hits,
      * and it asks through IF_SILENT_ADD_VOICE -- "say this only if the
      * announcer has nothing else to say" -- which is why it needed the
-     * queue rather than a direct sound.
+     * queue rather than a direct sound. The whole CALL_x announcer group
+     * reaches it the same way, through wm/announce_tables.h.
      */
+    wm_announcer_state *announcer;
+    /* DO_END_STUFF's `get_health` sweep over every wrestler: is anybody
+       under 40 health? NULL means "cannot tell", and the announcer then
+       keeps walking the ordinary table exactly as a healthy roster does. */
+    bool (*anyone_near_death)(void *user);
     void *announcer_user;
-    void (*announce_if_silent)(void *user, uint16_t call);
 
     void *rope_user;
     void (*rope_command)(void *user, int bank, int action, int selector,

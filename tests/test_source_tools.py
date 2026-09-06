@@ -25,6 +25,7 @@ wlattack = load("wlattack", ROOT / "tools" / "wlattack.py")
 wlcommands = load("wlcommands", ROOT / "tools" / "wlcommands.py")
 wlpuppet = load("wlpuppet", ROOT / "tools" / "wlpuppet.py")
 wlroll = load("wlroll", ROOT / "tools" / "wlroll.py")
+wlvoice = load("wlvoice", ROOT / "tools" / "wlvoice.py")
 wlprogram = load("wlprogram", ROOT / "tools" / "wlprogram.py")
 manifest = load("bret_manifest", ROOT / "tools" / "bret_manifest.py")
 wimp = load("wimpimg", ROOT / "tools" / "wimpimg.py")
@@ -1337,6 +1338,114 @@ def test_anim_code_registry_reaches_its_call_sites() -> None:
     assert not unreachable, unreachable
 
 
+
+def test_announce_tables() -> None:
+    """DCSSOUND.ASM's announcer tables, against their own headers.
+
+    Every table writes its shape in three values immediately BEFORE its
+    label, which ADD_TO_QUEUE reads at negative offsets: a reset-repeat
+    flag at -050H, a crowd table at -040H, and the last row index and the
+    row stride at -020H/-010H. The stride is a TMS34010 BIT count, so
+    010H is one word. If the extractor ever reads those in the wrong
+    order it will silently produce a table that draws the wrong rows, so
+    each one is checked against the data that follows it.
+    """
+    if not (wlanim.ORIG / "DCSSOUND.ASM").exists():
+        return
+    tables = wlvoice.announce_tables()
+    calls = wlvoice.callers()
+    assert len(tables) >= 20, len(tables)
+
+    for name, t in tables.items():
+        assert t["stride"] in (1, 2), (name, t["stride"])
+        rows = t["rows"]
+        assert all(len(r) == t["stride"] for r in rows), name
+        # RNDRNG0's maximum has to be inside the data.
+        assert t["last_index"] < len(rows), (name, t["last_index"], len(rows))
+
+    # ARE_WE_REPEATING's walk-forward runs off the end of the drawn range,
+    # so every table a rejected draw can reach the end of carries rows
+    # past it. Mostly those repeat lines from the table's own opening, but
+    # not always: FACE_HIT, MID_HIT, MISSES and MISS_YOKO each put a line
+    # there that appears nowhere in the drawn range, so the ONLY way the
+    # game ever says it is through the anti-repeat walk. They are part of
+    # the table for that reason, and are extracted with it. (The one-line
+    # *_FINISHES tables have no such rows: there is nowhere to walk to.)
+    for name in wlvoice.wanted_tables(calls):
+        t = tables[name]
+        assert t["rows"][t["last_index"] + 1:], name
+
+    # Every CALL_x names a table that exists, with a real percentage.
+    for name, c in calls.items():
+        assert c["table"] in tables, (name, c["table"])
+        assert 0 < c["percent"] <= 1000, (name, c["percent"])
+        assert 0 <= c["sleep"] <= 60, (name, c["sleep"])
+
+    # DCSSOUND.ASM:3282 PROC_MISSES, read straight off the source.
+    assert calls["CALL_MISSES"]["table"] == "MISSES"
+    assert calls["CALL_MISSES"]["sleep"] == 5
+    assert calls["CALL_MISSES"]["percent"] == 350
+    # It never copies WRESTLERNUM into A5, and CALL_SPECIAL_MOVE does.
+    assert calls["CALL_MISSES"]["personal"] is False
+    assert calls["CALL_SPECIAL_MOVE"]["personal"] is True
+
+    # The five per-wrestler tables all have the cut wrestler's zero slot.
+    personal = wlvoice.personal_tables()
+    for want, rows in personal.items():
+        assert len(rows) == 9, want
+        assert rows[7] == 0, want
+        assert all(v > 0 for i, v in enumerate(rows) if i != 7), want
+
+    # ASCENDING_TABLE climbs as REPEAT_STATE counts down 3, 2, 1, 0.
+    for i, row in enumerate(wlvoice.ascending_table()):
+        if i == 7:
+            assert row == [0, 0, 0, 0]
+            continue
+        assert row == sorted(row, reverse=True), (i, row)
+
+
+def test_announce_tables_generate_the_shipped_file() -> None:
+    """The checked-in generated file is what the tool produces today."""
+    out = ROOT / "src" / "generated" / "announce_tables.c"
+    if not (wlanim.ORIG / "DCSSOUND.ASM").exists() or not out.exists():
+        return
+    assert wlvoice.render_c() == out.read_text()
+
+
+def test_announce_calls_are_spelled_as_the_call_sites_spell_them() -> None:
+    """The same guard the ANI_CODE registry has, for the announcer group.
+
+    These routines resolve by name out of wm_announce_calls[] rather than
+    from a hand-kept row, so the spelling comes from DCSSOUND.ASM itself.
+    That only helps if the sequence files spell them the same way, which
+    is what this checks -- and it is how the group's real reach is known.
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    if not (base / "ANIM.ASM").exists():
+        return
+    use = re.compile(r"^\s*(?:\.word|W+L+W*)\s+ANI_CODE\s*,\s*(#?\w+)", re.I)
+    sites: dict[str, int] = {}
+    for who in ("HRT", "RZR", "UND", "YOK", "SHN", "BAM", "DNK", "LEX"):
+        for p in sorted(q for q in base.glob(who + "SEQ*.ASM")
+                        if "'" not in q.name):
+            for raw in p.read_text(errors="replace").splitlines():
+                m = use.match(wlanim.strip_comment(raw))
+                if m:
+                    sites[m.group(1)] = sites.get(m.group(1), 0) + 1
+
+    calls = wlvoice.callers()
+    reached = {n: sites[n] for n in calls if n in sites}
+    # CALL_MISSES alone is the biggest single ANI_CODE routine in the game.
+    assert reached.get("CALL_MISSES", 0) >= 150, reached.get("CALL_MISSES")
+    assert sum(reached.values()) >= 300, sum(reached.values())
+    # The callers that are NOT reached from an animation are reached from
+    # the wrestler control layer instead (CALL_DROP_KICK, CALL_FACE_HIT,
+    # CALL_MID_HIT, CALL_AVERAGE_MOVE, DO_REVERSAL) -- they are extracted
+    # because they share the tables, not because a sequence file calls
+    # them, so this only requires that the ones that ARE reached match.
+    assert reached, "no announcer routine is reached from any animation"
+
+
 def main() -> int:
     test_wlanim()
     test_wlprogram()
@@ -1353,6 +1462,9 @@ def main() -> int:
     test_self_contained_command_ops()
     test_per_wrestler_aux_tables()
     test_anim_code_registry_reaches_its_call_sites()
+    test_announce_tables()
+    test_announce_tables_generate_the_shipped_file()
+    test_announce_calls_are_spelled_as_the_call_sites_spell_them()
     test_waithitopp_is_a_mode_and_a_frame()
     test_roster_dispatcher_labels_all_emit()
     test_wlprogram_tick_expressions()

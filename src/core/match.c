@@ -1,4 +1,5 @@
 #include "wm/match.h"
+#include "wm/announce_tables.h"
 #include "wm/anim_program.h"
 #include "wm/arcade/wm_arcade_butcount.h"
 #include "wm/arcade/wm_arcade_veladd.h"
@@ -33,10 +34,17 @@
  * bank and what to do to it; the rope processes belong to the match, so
  * the VM calls out through wm_anim_env and this is what it lands on.
  */
-/* IF_SILENT_ADD_VOICE, reached from the animation VM. */
-static void match_announce_if_silent(void *user, uint16_t call) {
+/*
+ * DO_END_STUFF's health sweep: `MOVI NUM_WRES,A1 / get_health / CMPI 40`.
+ * The match knows both actors, so this is the whole sweep here.
+ */
+static bool match_anyone_near_death(void *user) {
     wm_match_state *m = (wm_match_state *)user;
-    if (m) (void)wm_announcer_add_if_silent(&m->announcer, call);
+    unsigned i;
+    if (!m) return false;
+    for (i = 0; i < m->actor_count; ++i)
+        if (m->actors[i].life < WM_ANNOUNCE_END_GAME_HEALTH) return true;
+    return false;
 }
 
 static void match_rope_command(void *user, int bank, int action,
@@ -171,6 +179,7 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
             wm_rope_runtime_init_bank(&m->ropes[b], (WmRopeBank)b, false);
     }
     wm_announcer_init(&m->announcer);       /* RESET_VOICE_QUEUE */
+    wm_anim_code_reset();
     wm_arcade_round_state_init(&m->round_state);
     wm_arcade_match_score_init(&m->score);
 }
@@ -230,6 +239,7 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
             wm_rope_runtime_init_bank(&m->ropes[b], (WmRopeBank)b, false);
     }
     wm_announcer_init(&m->announcer);       /* RESET_VOICE_QUEUE */
+    wm_anim_code_reset();
     wm_arcade_round_state_init(&m->round_state);
     wm_arcade_match_score_init(&m->score);
 }
@@ -422,12 +432,14 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             m->bret_visual[i].anim_env.rope_user = m;
             m->bret_visual[i].anim_env.rope_command = match_rope_command;
             m->bret_visual[i].anim_env.rope_set_z = match_rope_set_z;
+            m->wrestler_visual[i].anim_env.announcer = &m->announcer;
+            m->wrestler_visual[i].anim_env.anyone_near_death =
+                match_anyone_near_death;
             m->wrestler_visual[i].anim_env.announcer_user = m;
-            m->wrestler_visual[i].anim_env.announce_if_silent =
-                match_announce_if_silent;
+            m->bret_visual[i].anim_env.announcer = &m->announcer;
+            m->bret_visual[i].anim_env.anyone_near_death =
+                match_anyone_near_death;
             m->bret_visual[i].anim_env.announcer_user = m;
-            m->bret_visual[i].anim_env.announce_if_silent =
-                match_announce_if_silent;
 
             bret_cb = wm_bret_backend_callbacks(&m->bret_visual[i]);
             razor_cb = wm_wrestler_razor_callbacks(&m->wrestler_visual[i]);
@@ -491,6 +503,7 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
 
     /* ANNOUNCE_VOICE, one line a tick, out through the same audio seam
        every other sound in this port uses. */
+    wm_announce_tick_repeat(&m->announcer);   /* REPEAT_DUMMY */
     (void)wm_announcer_tick(&m->announcer, m->anim_sound_user, m->anim_sound,
                             NULL);
 

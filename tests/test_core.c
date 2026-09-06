@@ -13,6 +13,7 @@
 #include "wm/anim_program.h"
 #include "wm/arcade/wm_arcade_veladd.h"
 #include "wm/arcade/wm_arcade_roll.h"
+#include "wm/announce_tables.h"
 #include "wm/arcade/wm_arcade_announcer.h"
 #include "wm/arcade/wm_arcade_combo.h"
 #include "wm/arcade/wmania_rope_command.h"
@@ -1834,7 +1835,9 @@ static void test_anim_code_sound_routines(void) {
        when a routine is not translated rather than pretending. */
     CHECK(wm_anim_code_run(&a, NULL, "HIT_THE_MAT", NULL));
     CHECK(wm_anim_code_run(&a, NULL, "SMALL_BOUNCE", NULL));
-    CHECK(!wm_anim_code_run(&a, NULL, "CALL_MISSES", NULL));  /* speech */
+    /* The announcer group resolves out of wm_announce_calls[] rather than
+       the registry, so it answers too -- see test_announcer_call_tables. */
+    CHECK(wm_anim_code_run(&a, NULL, "CALL_MISSES", NULL));
     CHECK(!wm_anim_code_run(&a, NULL, "no_such_routine", NULL));
     CHECK(!wm_anim_code_run(&a, NULL, NULL, NULL));
     CHECK(wm_anim_code_count() >= 16u);
@@ -3743,10 +3746,6 @@ static void ann_sound(void *user, uint16_t call) {
     ++l->n;
 }
 
-static void ann_if_silent(void *user, uint16_t call) {
-    (void)wm_announcer_add_if_silent((wm_announcer_state *)user, call);
-}
-
 static void test_announcer_queue(void) {
     wm_announcer_state a;
     struct ann_log log;
@@ -3867,8 +3866,7 @@ static void test_inc_combo_asks_the_announcer(void) {
 
     wm_announcer_init(&ann);
     memset(&env, 0, sizeof(env));
-    env.announcer_user = &ann;
-    env.announce_if_silent = ann_if_silent;
+    env.announcer = &ann;
 
     memset(&a, 0, sizeof(a));
     memset(&v, 0, sizeof(v));
@@ -3901,6 +3899,289 @@ static void test_inc_combo_asks_the_announcer(void) {
         wm_anim_exec_tick(&ex, &a, 0);
     }
     CHECK(a.combo_count == 8);
+}
+
+/*
+ * DCSSOUND.ASM:2911 ADD_TO_QUEUE over the real tables: the percentage
+ * gate, the random row, the six sentinels SET_UP_PERSONAL_CALL resolves,
+ * ARE_WE_REPEATING's walk-forward, and DO_END_STUFF.
+ *
+ * The algorithm is exercised over small probe tables written HERE, so a
+ * draw is deterministic; the real DCSSOUND.ASM tables are checked as data
+ * further down, against the shape their own headers declare.
+ */
+static void ann_ctx_init(wm_announce_ctx *ctx, WmRng *rng, int who) {
+    memset(ctx, 0, sizeof(*ctx));
+    wm_rng_init(rng, 0x2468u, NULL, NULL, NULL);
+    ctx->rng = rng;
+    ctx->wrestler_num = who;
+}
+
+static bool ann_near_death_yes(void *user) { (void)user; return true; }
+
+static void test_announce_from_table(void) {
+    /* Two rows the header can draw, then two the walk-forward can reach --
+       which is exactly how every real table is padded. */
+    static const int16_t probe_rows[] = { 0x310, 0x311, 0x312, 0x313 };
+    static const wm_announce_table probe = {
+        "PROBE", probe_rows, 4, 1, 1, false
+    };
+    static const int16_t special_rows[] = { WM_ANN_VERY_IMPRESSIVE, 0x311 };
+    static const wm_announce_table special = {
+        "PROBE_SPECIAL", special_rows, 2, 0, 1, false
+    };
+    static const int16_t repeat_rows[] = { WM_ANN_REPEAT_MODE, 0x311 };
+    static const wm_announce_table repeat = {
+        "PROBE_REPEAT", repeat_rows, 2, 0, 1, false
+    };
+    static const int16_t endgame_rows[] = { WM_ANN_END_GAME_STUFF, 0x311 };
+    static const wm_announce_table endgame = {
+        "PROBE_END", endgame_rows, 2, 0, 1, false
+    };
+    /* Two lines in one row: NASTY_MOVE and SPECIAL_MOVE are shaped so. */
+    static const int16_t pair_rows[] = { 0x320, 0x321, 0x322, 0 };
+    static const wm_announce_table pair = {
+        "PROBE_PAIR", pair_rows, 4, 0, 2, false
+    };
+    wm_announcer_state a;
+    wm_announce_ctx ctx;
+    WmRng rng;
+    int i;
+
+    /* RNDPER is the first gate: 0 says nothing, ever. */
+    wm_announcer_init(&a);
+    ann_ctx_init(&ctx, &rng, 0);
+    for (i = 0; i < 50; ++i)
+        CHECK(wm_announce_from_table(&a, &probe, 0, true, &ctx) == 0);
+    CHECK(wm_announcer_is_silent(&a));
+
+    /* At 1000 per mille it always speaks, and always one of the two rows
+       the header actually lets RNDRNG0 draw. */
+    for (i = 0; i < 20; ++i) {
+        wm_announcer_init(&a);
+        CHECK(wm_announce_from_table(&a, &probe, 1000, true, &ctx) == 1);
+        CHECK(a.slot[0] == 0x310u || a.slot[0] == 0x311u);
+    }
+
+    /* ARE_WE_REPEATING: a drawn row said in the last four is rejected and
+       the call walks FORWARD into the padding rather than giving up. */
+    wm_announcer_init(&a);
+    a.last_voice[0] = 0x310;
+    a.last_voice[1] = 0x311;
+    CHECK(wm_announce_from_table(&a, &probe, 1000, true, &ctx) == 1);
+    CHECK(a.slot[0] == 0x312u);
+    /* And when every row it can reach was said too recently, it says
+       nothing -- the walk stops at the end of the data rather than
+       reading past it, which is the one place this differs from the
+       original's unbounded `ADD A3,A1`. */
+    wm_announcer_init(&a);
+    a.last_voice[0] = 0x310;
+    a.last_voice[1] = 0x311;
+    a.last_voice[2] = 0x312;
+    a.last_voice[3] = 0x313;
+    CHECK(wm_announce_from_table(&a, &probe, 1000, true, &ctx) == 0);
+    CHECK(wm_announcer_is_silent(&a));
+
+    /* SET_UP_PERSONAL_CALL: VERY_IMPRESSIVE becomes that wrestler's own
+       line out of VERY_IMPRESSIVE_MOVE. */
+    for (i = 0; i < WM_ANNOUNCE_WRESTLERS; ++i) {
+        int16_t want = wm_announce_personal[1][i];
+        wm_announcer_init(&a);
+        ann_ctx_init(&ctx, &rng, i);
+        if (want == 0) {
+            /* Slot 7 is Adam Bomb, the cut wrestler: a literal 0, which
+               is "no line" and not line zero. */
+            CHECK(wm_announce_from_table(&a, &special, 1000, true, &ctx) == 0);
+            continue;
+        }
+        CHECK(wm_announce_from_table(&a, &special, 1000, true, &ctx) == 1);
+        CHECK(a.slot[0] == (uint16_t)want);
+    }
+
+    /* With no wrestler number -- the two callers whose process never sets
+       A5 -- a personal row says nothing rather than crediting a wrestler
+       the source does not name. */
+    wm_announcer_init(&a);
+    ann_ctx_init(&ctx, &rng, -1);
+    CHECK(wm_announce_from_table(&a, &special, 1000, true, &ctx) == 0);
+
+    /*
+     * REPEAT_MODE: the counter starts at 4, is decremented on use, and
+     * indexes ASCENDING_TABLE -- so the lines climb. While it is live the
+     * next call skips the draw and the percentage entirely.
+     */
+    wm_announcer_init(&a);
+    ann_ctx_init(&ctx, &rng, 0);
+    CHECK(wm_announce_from_table(&a, &repeat, 1000, true, &ctx) == 1);
+    CHECK(a.slot[0] == (uint16_t)wm_announce_ascending[0][3]);
+    CHECK(a.repeat_state == 3);
+    CHECK(a.repeat_ticks == WM_ANNOUNCE_REPEAT_TICKS);
+    /* ...even at a zero percentage, and even from a different table. */
+    CHECK(wm_announce_from_table(&a, &probe, 0, false, &ctx) == 1);
+    CHECK(a.slot[1] == (uint16_t)wm_announce_ascending[0][2]);
+    CHECK(a.repeat_state == 2);
+    /* REPEAT_DUMMY's 80 ticks end it. */
+    for (i = 0; i < WM_ANNOUNCE_REPEAT_TICKS; ++i)
+        wm_announce_tick_repeat(&a);
+    CHECK(a.repeat_state == 0 && a.repeat_ticks == 0);
+    /* A table whose `.WORD -1` sits at -050H clears it outright. */
+    {
+        wm_announce_table resetting = probe;
+        resetting.reset_repeat = true;
+        wm_announcer_init(&a);
+        CHECK(wm_announce_from_table(&a, &repeat, 1000, true, &ctx) == 1);
+        CHECK(a.repeat_state == 3);
+        CHECK(wm_announce_from_table(&a, &resetting, 1000, false, &ctx) == 1);
+        CHECK(a.repeat_state == 0);
+    }
+
+    /*
+     * DO_END_STUFF. An END_GAME_STUFF row asks whether anybody is nearly
+     * dead. If nobody is -- or nothing can tell -- the call falls through
+     * to the walk-forward and takes the next row instead.
+     */
+    wm_announcer_init(&a);
+    ann_ctx_init(&ctx, &rng, 0);
+    CHECK(wm_announce_from_table(&a, &endgame, 1000, true, &ctx) == 1);
+    CHECK(a.slot[0] == 0x311u);
+    /* And when somebody is, the line comes out of SPECIAL_LAST_STUFF. */
+    {
+        const wm_announce_table *last =
+            wm_announce_table_find("SPECIAL_LAST_STUFF");
+        int found = 0;
+        size_t w;
+        CHECK(last != NULL);
+        wm_announcer_init(&a);
+        ann_ctx_init(&ctx, &rng, 0);
+        ctx.anyone_near_death = ann_near_death_yes;
+        CHECK(wm_announce_from_table(&a, &endgame, 1000, true, &ctx) == 1);
+        for (w = 0; last && w < last->word_count; ++w)
+            if (last->rows[w] == (int16_t)a.slot[0]) found = 1;
+        CHECK(found);
+    }
+
+    /* A two-word row queues both lines, and stops at a zero word. */
+    wm_announcer_init(&a);
+    ann_ctx_init(&ctx, &rng, 0);
+    CHECK(wm_announce_from_table(&a, &pair, 1000, false, &ctx) == 2);
+    CHECK(a.slot[0] == 0x320u && a.slot[1] == 0x321u);
+
+    /* ADD_IF_SILENT declines while the announcer is talking; ADD_TO_QUEUE
+       does not. */
+    wm_announcer_init(&a);
+    CHECK(wm_announcer_add(&a, 0x300u));
+    CHECK(wm_announce_from_table(&a, &probe, 1000, true, &ctx) == 0);
+    CHECK(wm_announce_from_table(&a, &probe, 1000, false, &ctx) == 1);
+
+    /* Nothing crashes without an RNG or a table. */
+    CHECK(wm_announce_from_table(&a, &probe, 1000, true, NULL) == 0);
+    CHECK(wm_announce_from_table(&a, NULL, 1000, true, &ctx) == 0);
+    CHECK(wm_announce_from_table(NULL, &probe, 1000, true, &ctx) == 0);
+}
+
+/* The generated DCSSOUND.ASM data itself, against the shape its own
+   headers declare and against the callers that name it. */
+static void test_announce_tables_are_real(void) {
+    size_t i;
+
+    CHECK(wm_announce_table_count >= 13u);
+    for (i = 0; i < wm_announce_table_count; ++i) {
+        const wm_announce_table *t = &wm_announce_tables[i];
+        /* RNDRNG0's inclusive maximum must be inside the data... */
+        CHECK(t->stride == 1u || t->stride == 2u);
+        CHECK((size_t)(t->last_index + 1) * t->stride <= t->word_count);
+        /* ...and there are rows past it for a rejected draw to walk
+           into, which is what makes the last row survivable. Some of
+           those rows carry lines that appear nowhere in the drawn range,
+           so the anti-repeat walk is the only way the game says them. */
+        CHECK((size_t)(t->last_index + 1) * t->stride < t->word_count);
+    }
+
+    CHECK(wm_announce_call_count >= 12u);
+    for (i = 0; i < wm_announce_call_count; ++i) {
+        const wm_announce_call *c = &wm_announce_calls[i];
+        CHECK(wm_announce_table_find(c->table) != NULL);
+        CHECK(c->percent > 0u && c->percent <= 1000u);
+    }
+
+    /* DCSSOUND.ASM:3282 PROC_MISSES, spelled out. */
+    {
+        const wm_announce_call *c = wm_announce_call_find("CALL_MISSES");
+        CHECK(c != NULL);
+        if (c) {
+            CHECK(strcmp(c->table, "MISSES") == 0);
+            CHECK(c->sleep == 5u);
+            CHECK(c->percent == 350u);
+            CHECK(!c->personal);       /* it never sets A5 */
+        }
+    }
+    /* ...and CALL_SPECIAL_MOVE, which does. */
+    {
+        const wm_announce_call *c = wm_announce_call_find("CALL_SPECIAL_MOVE");
+        CHECK(c != NULL);
+        if (c) {
+            CHECK(strcmp(c->table, "SPECIAL_MOVE") == 0);
+            CHECK(c->sleep == 10u);
+            CHECK(c->percent == 550u);
+            CHECK(c->personal);
+        }
+    }
+    CHECK(wm_announce_call_find("CALL_NOT_A_ROUTINE") == NULL);
+    CHECK(wm_announce_table_find(NULL) == NULL);
+}
+
+/*
+ * And the whole path from an animation: ANI_CODE CALL_MISSES CREATEs a
+ * process that sleeps 5 ticks before it says anything, so nothing may
+ * reach the queue until wm_anim_code_tick has run that many times.
+ */
+static void test_announce_call_from_the_vm(void) {
+    static const wm_anim_op ops[] = {
+        { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_MISSES" },
+        { WM_AOP_END,  0, -1, 0, 0, 0, 0, 0, 0, NULL }
+    };
+    static const wm_anim_program prog = { "test_call", "HRTSEQ2.ASM", ops, 2 };
+    const wm_announce_table *misses = wm_announce_table_find("MISSES");
+    wm_arcade_actor_t a;
+    wm_announcer_state ann;
+    wm_anim_env env;
+    wm_anim_exec ex;
+    WmRng rng;
+    int trial, spoke = 0;
+
+    CHECK(misses != NULL);
+    wm_rng_init(&rng, 0x1357u, NULL, NULL, NULL);
+    memset(&env, 0, sizeof(env));
+    env.rng = &rng;
+    env.announcer = &ann;
+
+    for (trial = 0; trial < 200 && !spoke; ++trial) {
+        int t;
+        wm_anim_code_reset();
+        wm_announcer_init(&ann);
+        memset(&a, 0, sizeof(a));
+        wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        /* The CREATE itself says nothing: the process is asleep. */
+        CHECK(wm_announcer_is_silent(&ann));
+        for (t = 0; t < 4; ++t) {
+            wm_anim_code_tick();
+            CHECK(wm_announcer_is_silent(&ann));   /* SLEEP 5 */
+        }
+        wm_anim_code_tick();                       /* ...fires here */
+        if (!wm_announcer_is_silent(&ann)) {
+            size_t w;
+            int found = 0;
+            spoke = 1;
+            for (w = 0; misses && w < misses->word_count; ++w)
+                if (misses->rows[w] == (int16_t)ann.slot[0]) found = 1;
+            CHECK(found);         /* a real MISSES line, not an invention */
+        }
+    }
+    /* RNDPER(350) is a 35% gate, so 200 tries without a single line would
+       mean the path is dead rather than unlucky. */
+    CHECK(spoke);
+    wm_anim_code_reset();
 }
 
 /* The self-contained state commands: no subsystem behind any of them. */
@@ -6714,6 +6995,9 @@ int main(void) {
     test_combo_meter();
     test_announcer_queue();
     test_inc_combo_asks_the_announcer();
+    test_announce_from_table();
+    test_announce_tables_are_real();
+    test_announce_call_from_the_vm();
     test_self_contained_ops();
     test_anim_code_tail();
     test_rope_commands_from_animation();

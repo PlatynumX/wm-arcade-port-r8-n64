@@ -41,6 +41,7 @@ add_library(wmcore STATIC
     src/generated/anim_programs.c
     src/generated/frame_geometry.c
     src/generated/roll_frames.c
+    src/generated/announce_tables.c
     src/generated/progress_wrestlers.c
 )
 # BEGIN FIX38 CUMULATIVE ARCADE SOURCE PORTS
@@ -57,6 +58,7 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_roll.c
     src/core/arcade/wm_arcade_combo.c
     src/core/arcade/wm_arcade_announcer.c
+    src/core/arcade/wm_arcade_announce_call.c
     src/core/arcade/wm_arcade_doink.c
     src/core/arcade/wm_arcade_drone.c
     src/core/arcade/wm_arcade_drone_data.c

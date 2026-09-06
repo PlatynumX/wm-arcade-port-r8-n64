@@ -39,6 +39,7 @@ import sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import wlanim      # noqa: E402
 import wlcommands  # noqa: E402
+import wlpuppet    # noqa: E402
 
 BRANCHES = {
     "ANI_IFSTATUS":    "IFSTATUS",
@@ -298,6 +299,18 @@ def program_for(path: pathlib.Path, label: str):
             ops.append((BRANCHES[bm.group(1).upper()], -1))
             continue
 
+        ss = wlpuppet.SUPERSLAVE2_RE.match(line)
+        if ss:
+            # The table is named by a local label the files reuse, so it is
+            # resolved from THIS line rather than by name -- see
+            # wlpuppet.table_line_for.
+            ops.append(("SUPERSLAVE2",
+                        wlanim.eval_ticks(ss.group(1)),
+                        "%s%02d" % (ss.group(2).upper(), int(ss.group(3))),
+                        wlpuppet.table_id_for(path, i, ss.group(4)),
+                        int(ss.group(5))))
+            continue
+
         cd = CODE_RE.match(line)
         if cd:
             ops.append(("CODE", cd.group(1)))
@@ -413,6 +426,9 @@ def _c_op(op) -> str:
         target = op[1]
         if kind in ("SLIDE_BACK", "IF_BUTCOUNT_GE", "IF_BUTCOUNT_LT"):
             args[0], args[1] = op[2], op[3]
+    elif kind == "SUPERSLAVE2":
+        text = f'"{op[2]}"'
+        args[0], args[1], args[2] = op[1], op[3], op[4]
     elif kind in ("CHANGEANIM", "CODE"):
         text = f'"{op[1]}"'
     elif kind == "IFBUTTONS":

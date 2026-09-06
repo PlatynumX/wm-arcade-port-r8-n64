@@ -21,6 +21,11 @@ FRAME_RE = re.compile(r'\{"([A-Z][A-Z0-9_]*[0-9]{2})"\s*,\s*[0-9]+\}')
 # wm_visual_sequence to collect from, so this is where its frames come from.
 PROGRAM_FRAME_RE = re.compile(
     r'WM_AOP_FRAME[^"\n]*"([A-Z][A-Z0-9_]*[0-9]{2})"')
+# ANI_SUPERSLAVE2's puppet tables name the DEFENDER's frames, and those need
+# geometry too -- the attach offset is built from both frames' own animation
+# origins, so a missing victim frame leaves the victim hanging at (0,0).
+PUPPET_FRAME_RE = re.compile(
+    r'\{"([A-Z][A-Z0-9_]*[0-9]{2})"\s*,\s*-?[0-9]+\s*,\s*-?[0-9]+\s*,\s*-?[0-9]+\}')
 
 
 def c_ident(s: str) -> str:
@@ -32,8 +37,9 @@ def collect_frames(paths: list[pathlib.Path]) -> list[str]:
     seen: set[str] = set()
     for path in paths:
         text = path.read_text(errors="replace")
-        for match in list(FRAME_RE.finditer(text)) + \
-                     list(PROGRAM_FRAME_RE.finditer(text)):
+        for match in (list(FRAME_RE.finditer(text)) +
+                      list(PROGRAM_FRAME_RE.finditer(text)) +
+                      list(PUPPET_FRAME_RE.finditer(text))):
             name = match.group(1).upper()
             if name not in seen:
                 seen.add(name)

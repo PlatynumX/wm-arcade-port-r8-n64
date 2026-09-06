@@ -57,6 +57,8 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_drone.c
     src/core/arcade/wm_arcade_drone_data.c
     src/core/anim_code.c
+    src/core/anim_puppet.c
+    src/generated/puppet_tables.c
     src/core/arcade/wm_arcade_butcount.c
     src/core/arcade/wm_arcade_razor_anim_labels.c
     src/core/arcade/wm_arcade_joystat.c

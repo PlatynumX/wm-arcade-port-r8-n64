@@ -156,6 +156,18 @@ struct wm_arcade_actor {
     int32_t spunchb_count;
     int32_t kickb_count;
     int32_t skickb_count;
+    /*
+     * ANIM.ASM:2681 _ani_superslave2 writes the wrestler it is holding
+     * directly: `move a0,*a11(CUR_FRAME)` plus ATTACH_XOFF/ATTACH_YOFF.
+     * While a grapple is running, the victim's frame is not chosen by his
+     * own animation at all -- the attacker's is choosing it for him, which
+     * is why one throw shows a different victim pose per wrestler.
+     *
+     * puppet_frame NULL means nobody is driving him and his own animation
+     * decides, as usual.
+     */
+    const char *puppet_frame;
+    int32_t puppet_flip;
     int32_t roll_pos;
     int32_t usr_var1;
     int32_t usr_var2;              /* PLYR.EQU USR_VAR2; Yoko salt failure flag. */

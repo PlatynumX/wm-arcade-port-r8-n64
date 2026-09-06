@@ -2,6 +2,7 @@
 #include "wm/arcade/wm_arcade_combat_defs.h"
 #include "wm/arcade/wm_arcade_anim_combat.h"
 #include "wm/arcade/wm_arcade_butcount.h"
+#include "wm/frame_geometry.h"
 
 #include <string.h>
 
@@ -154,6 +155,58 @@ static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
     }
 }
 
+/*
+ * ANIM.ASM:2681 _ani_superslave2 -- the puppet step.
+ *
+ * The source verifies the links first ("move *a13(ATTACH_PROC),a11 / move
+ * *a11(ATTACH_PROC),a0 / cmp a13,a0 / jrne #done"): both wrestlers must
+ * point at each other, so a grapple that has already been broken quietly
+ * does nothing rather than driving someone who is no longer held.
+ *
+ * Then it sets its own frame, looks the defender's up by the DEFENDER's
+ * WRESTLERNUM, and hangs it at an offset built from the raw table values
+ * adjusted by both frames' animation origins:
+ *
+ *     attach Y = raw y - defender aniY + attacker aniY
+ *     attach X = raw x + defender part - attacker aniX
+ *
+ * where the defender part is its aniX, or (xsize - aniX) when the table's
+ * flip disagrees with the attacker's own -- the source's own
+ * #attacker_flip_test. This port has real per-frame geometry for every
+ * wrestler (wm/frame_geometry.h), so those are read rather than guessed.
+ */
+static void run_superslave2(const wm_anim_op *o, wm_arcade_actor_t *actor,
+                            const wm_anim_env *env) {
+    wm_arcade_actor_t *def = env ? env->opponent : 0;
+    const wm_anim_puppet_row *row;
+    const wm_frame_geometry_t *ag, *dg;
+    int32_t part;
+
+    /* "verify the links" -- a13 and a11 must hold each other. */
+    if (!def || actor->attach_proc != def || def->attach_proc != actor) return;
+
+    row = wm_anim_puppet_row_at((size_t)o->b, def->wrestler_num,
+                                (size_t)o->c);
+    if (!row) return;
+
+    def->puppet_frame = row->frame;
+    def->puppet_flip = row->flip;
+
+    ag = wm_frame_geometry_find(o->text);
+    dg = wm_frame_geometry_find(row->frame);
+    if (!ag || !dg) return;
+
+    def->attach_yoff = row->yoff - dg->yani + ag->yani;
+
+    /* The defender's own part, mirrored when the table's flip disagrees
+       with which way the attacker is facing. */
+    part = dg->xani;
+    if ((row->flip != 0) != ((actor->obj_control & WM_OBJ_FLIPH) != 0))
+        part = dg->width - part;
+    def->attach_xoff = row->xoff + part - ag->xani;
+}
+
+
 /* Walk from `pc` executing commands and taking branches until a frame is
    reached (which is what a tick shows) or the program stops. */
 static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
@@ -171,6 +224,15 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
                 exec->pc = pc;
                 exec->next_pc = pc + 1;
                 exec->ticks_left = (uint16_t)(o->a > 0 ? o->a : 1);
+                return;
+            case WM_AOP_SUPERSLAVE2:
+                /* It sets OANICNT and stops, so it yields exactly like a
+                   frame -- it IS the attacker's frame, and it chooses the
+                   defender's at the same time. */
+                exec->pc = pc;
+                exec->next_pc = pc + 1;
+                exec->ticks_left = (uint16_t)(o->a > 0 ? o->a : 1);
+                if (actor) run_superslave2(o, actor, exec->env);
                 return;
             case WM_AOP_END:
             case WM_AOP_REPEAT:

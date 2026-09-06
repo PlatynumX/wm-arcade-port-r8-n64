@@ -1495,6 +1495,94 @@ static void test_roster_backend_animates(void) {
 }
 
 /*
+ * ANIM.ASM:2681 ANI_SUPERSLAVE2 -- the puppet step, and with it the first
+ * grapple this port has ever been able to run.
+ *
+ * A throw is ONE animation driving BOTH wrestlers: the attacker's routine
+ * names its own frame inline and looks the victim's up in a table indexed
+ * by the VICTIM's WRESTLERNUM. That is why the same hiptoss shows a
+ * different victim pose for each wrestler, and it is why none of this could
+ * be approximated -- the data is per-pairing.
+ */
+static void test_superslave2_puppets_the_victim(void) {
+    static const struct { int32_t num; const char *who; } victims[] = {
+        { WM_ROSTER_RAZOR, "Razor" },
+        { WM_ROSTER_YOKO,  "Yokozuna" },
+        { WM_ROSTER_DOINK, "Doink" }
+    };
+    const wm_anim_program *p = wm_anim_program_find("hrt_hiptoss_anim");
+    const char *seen[3];
+    size_t i;
+
+    if (!p) return;
+
+    for (i = 0; i < 3; ++i) {
+        wm_arcade_actor_t a, opp;
+        wm_anim_exec ex;
+        wm_anim_env env;
+        int t, puppeted = 0;
+
+        memset(&a, 0, sizeof(a));
+        memset(&opp, 0, sizeof(opp));
+        memset(&env, 0, sizeof(env));
+        a.wrestler_num = WM_ROSTER_BRET;
+        opp.wrestler_num = victims[i].num;
+        a.facing_dir = WM_MOVE_UP_RIGHT;
+        a.new_facing_dir = WM_MOVE_UP_RIGHT;
+        /* the source's own link check: both must hold each other */
+        a.attach_proc = &opp;
+        opp.attach_proc = &a;
+        env.opponent = &opp;
+
+        wm_anim_exec_start(&ex, p, &a, 0, &env);
+        for (t = 0; t < 200 && !ex.ended; ++t) {
+            /* the grapple only happens on a connected hit; a missed
+               hiptoss branches past the whole puppet section */
+            if (a.anim_mode & WM_MODE_CHECKHIT)
+                a.anim_mode |= (uint16_t)WM_MODE_STATUS;
+            wm_anim_exec_tick(&ex, &a, 0);
+            if (opp.puppet_frame) ++puppeted;
+        }
+        CHECK(puppeted > 10);
+        CHECK(opp.puppet_frame != NULL);
+        /* The victim is hung at a real offset, built from BOTH frames' own
+           animation origins -- not left at the origin. */
+        CHECK(opp.attach_xoff != 0);
+        seen[i] = opp.puppet_frame;
+    }
+
+    /* Each victim was shown his OWN artwork, not a shared pose. */
+    CHECK(strcmp(seen[0], seen[1]) != 0);
+    CHECK(strcmp(seen[1], seen[2]) != 0);
+    CHECK(strcmp(seen[0], seen[2]) != 0);
+
+    /* And with the grapple already broken, nobody is driven at all --
+       "verify the links" in the source, which is what stops an attacker
+       puppeting a wrestler who has got away. */
+    {
+        wm_arcade_actor_t a, opp;
+        wm_anim_exec ex;
+        wm_anim_env env;
+        int t;
+        memset(&a, 0, sizeof(a));
+        memset(&opp, 0, sizeof(opp));
+        memset(&env, 0, sizeof(env));
+        a.wrestler_num = WM_ROSTER_BRET;
+        opp.wrestler_num = WM_ROSTER_RAZOR;
+        a.facing_dir = WM_MOVE_UP_RIGHT;
+        a.new_facing_dir = WM_MOVE_UP_RIGHT;
+        env.opponent = &opp;               /* but no mutual attach_proc */
+        wm_anim_exec_start(&ex, p, &a, 0, &env);
+        for (t = 0; t < 200 && !ex.ended; ++t) {
+            if (a.anim_mode & WM_MODE_CHECKHIT)
+                a.anim_mode |= (uint16_t)WM_MODE_STATUS;
+            wm_anim_exec_tick(&ex, &a, 0);
+            CHECK(opp.puppet_frame == NULL);
+        }
+    }
+}
+
+/*
  * Razor, the eighth. He is the one wrestler whose dispatcher selects
  * animations by a typed id rather than by the source's routine name, so
  * where the other six needed nothing but the program registry, he needed a
@@ -5383,6 +5471,7 @@ int main(void) {
     test_bret_attack_windows_batch1();
     test_roster_backend_animates();
     test_razor_backend_animates();
+    test_superslave2_puppets_the_victim();
     test_anim_code_sound_routines();
     test_anim_code_state_routines();
     test_anim_code_runs_from_program();

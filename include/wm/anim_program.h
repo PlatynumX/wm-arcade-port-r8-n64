@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "wm/arcade/wm_arcade_combat.h"
+#include "wm/anim_puppet.h"
 #include "wm/arcade/wmania_rng.h"
 
 /*
@@ -83,6 +84,14 @@ typedef enum {
        named gaps they are. 2303 uses across the eight playable wrestlers,
        but only 145 distinct targets. */
     WM_AOP_CODE,
+
+    /* ANIM.ASM:2681 _ani_superslave2 -- one animation driving BOTH
+       wrestlers, which is what a grapple, slam, suplex or throw IS. `a` is
+       the tick count, `text` the attacker's own frame, `b` the puppet
+       table id (wm/anim_puppet.h) and `c` the row index within it. Yields
+       like a frame, because it is one: it sets OANICNT and stops. 927 uses
+       across the eight playable wrestlers. */
+    WM_AOP_SUPERSLAVE2,
 
     /* Present in the source but needing a system this port does not have
        (a renderer, paired actors, a callback bridge). Carried so the

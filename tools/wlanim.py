@@ -51,9 +51,46 @@ def strip_comment(s: str) -> str:
     return s.split(";", 1)[0].strip()
 
 
+def load_equ(path: pathlib.Path, prefix: str) -> dict[str, int]:
+    """`NAME .equ VALUE` constants from one of the original .EQU files."""
+    out: dict[str, int] = {}
+    if not path.exists():
+        return out
+    for raw in path.read_text(errors="replace").splitlines():
+        line = raw.split(";", 1)[0]
+        # Values are written either decimal or with the assembler's own
+        # trailing-h hex (MODE_UNINT is 04h, MODE_STATUS 200h).
+        m = re.match(rf"^({prefix}[A-Z0-9_]*)\s+\.?equ\s+"
+                     rf"([0-9A-Fa-f]+h|[0-9]+)\s*$", line.strip(), re.I)
+        if m:
+            val = m.group(2)
+            out[m.group(1).upper()] = (int(val[:-1], 16) if val[-1] in "hH"
+                                       else int(val))
+    return out
+
+
+ORIG = pathlib.Path(__file__).resolve().parents[1] / "original" / "wwf-wrestlemania"
+
+# Plain global constants an operand or a tick count can be written in terms
+# of -- TSEC (DISPLAY.EQU:46, ticks per second) shows up as `TSEC*60`, the
+# one-minute hold at the head of every wrestler's `*_zip_anim`.
+GLOBAL_EQU: dict[str, int] = {}
+for _f in ("DISPLAY.EQU", "GAME.EQU", "PLYR.EQU", "ANIM.EQU", "DAMAGE.EQU"):
+    GLOBAL_EQU.update(load_equ(ORIG / _f, ""))
+
+
 def eval_ticks(expr: str) -> int:
-    expr = HEX_SUFFIX_RE.sub(lambda m: "0x" + m.group(1), expr.strip())
-    if not re.fullmatch(r"[0-9xXa-fA-F+() \t-]+", expr):
+    expr = expr.strip()
+    # A tick count is usually a literal, but the long attract-mode holds are
+    # written as products -- `60*60` and `TSEC*60` are both a minute.
+    if re.search(r"[A-Za-z_]", expr):
+        for name in set(re.findall(r"\b[A-Za-z_][A-Za-z0-9_]*\b", expr)):
+            if name.upper() in GLOBAL_EQU and not re.fullmatch(
+                    r"[0-9A-Fa-f]+h", name, re.I):
+                expr = re.sub(r"\b" + re.escape(name) + r"\b",
+                              str(GLOBAL_EQU[name.upper()]), expr)
+    expr = HEX_SUFFIX_RE.sub(lambda m: "0x" + m.group(1), expr)
+    if not re.fullmatch(r"[0-9xXa-fA-F+*() \t-]+", expr):
         raise ValueError(f"unsupported WL tick expression: {expr!r}")
     value = eval(expr, {"__builtins__": {}}, {})
     if not isinstance(value, int) or not 1 <= value <= 65535:
@@ -124,6 +161,23 @@ def extract(path: pathlib.Path, label: str) -> Sequence:
 GOTO_TARGET_RE = re.compile(
     r"^\s*(?:\.word|W+L+W*)\s+ANI_GOTO\s*,\s*(#?[A-Za-z_][A-Za-z0-9_]*)\s*$", re.I)
 LOCAL_LABEL_RE = re.compile(r"^\s*(#[A-Za-z_][A-Za-z0-9_]*)\b")
+
+# A branch target is not always a `#local`. The sequence files also place
+# plain file-scope labels in column 0 on a line of their own -- SHNSEQ2's
+# `getup_in_4`, RZRSEQ3's `missed_rug`, SHNSEQ3's `last_hitx`,
+# BAMSEQ3's `START_OF_BREAKER` -- and branch to them from routines that do
+# not otherwise contain them. To the assembler these resolve exactly like a
+# local does; the only difference is the sigil.
+GLOBAL_LABEL_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)[ \t]*$")
+
+
+def label_def(line: str) -> str | None:
+    """The label this line defines, `#local` or file-scope, else None."""
+    m = LOCAL_LABEL_RE.match(line)
+    if m:
+        return m.group(1)
+    m = GLOBAL_LABEL_RE.match(line)
+    return m.group(1) if m else None
 
 
 def _body_stop(lines: list[str], start: int) -> int:

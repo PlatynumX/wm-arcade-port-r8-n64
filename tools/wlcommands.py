@@ -87,27 +87,16 @@ EQU_RE = re.compile(r"^\s*(#[A-Za-z_][A-Za-z0-9_]*)\s+equ\s+(.+)$", re.I)
 HEX_RE = re.compile(r"\b([0-9A-Fa-f]+)h\b")
 
 
-def _load_equ(path: pathlib.Path, prefix: str) -> dict[str, int]:
-    """`NAME .equ VALUE` constants from one of the original .EQU files."""
-    out: dict[str, int] = {}
-    if not path.exists():
-        return out
-    for raw in path.read_text(errors="replace").splitlines():
-        line = raw.split(";", 1)[0]
-        # Values are written either decimal or with the assembler's own
-        # trailing-h hex (MODE_UNINT is 04h, MODE_STATUS 200h).
-        m = re.match(rf"^({prefix}[A-Z0-9_]*)\s+\.?equ\s+"
-                     rf"([0-9A-Fa-f]+h|[0-9]+)\s*$", line.strip(), re.I)
-        if m:
-            raw = m.group(2)
-            out[m.group(1).upper()] = (int(raw[:-1], 16) if raw[-1] in "hH"
-                                       else int(raw))
-    return out
-
+# The `.EQU` reader and the table of plain global constants live in
+# wlanim, so the tick-count path and the operand path resolve a symbol the
+# same way rather than from two drifting copies.
+_load_equ = wlanim.load_equ
+_ORIG = wlanim.ORIG
 
 # DAMAGE.EQU:174+ AT_* attack types, the operand ANI_STARTATTACK names.
-_ORIG = pathlib.Path(__file__).resolve().parents[1] / "original" / "wwf-wrestlemania"
 AT_TYPES = _load_equ(_ORIG / "DAMAGE.EQU", "AT_")
+
+GLOBAL_EQU = wlanim.GLOBAL_EQU
 
 
 def _value(tok: str, equates: dict[str, int]) -> int:
@@ -117,10 +106,21 @@ def _value(tok: str, equates: dict[str, int]) -> int:
     if tok.upper() in AT_TYPES:
         return AT_TYPES[tok.upper()]
     expr = tok
-    for name, val in equates.items():
-        expr = re.sub(re.escape(name) + r"\b", str(val), expr)
+    # Only touch the symbol tables when the operand actually names a symbol
+    # -- most are plain numbers, and substituting several hundred globals
+    # into every one of them is what made a roster-wide sweep crawl.
+    if re.search(r"[A-Za-z_#]", expr):
+        for name, val in equates.items():
+            if name in expr:
+                expr = re.sub(re.escape(name) + r"\b", str(val), expr)
+        for name in re.findall(r"\b[A-Za-z_][A-Za-z0-9_]*\b", expr):
+            if name in GLOBAL_EQU:
+                expr = re.sub(r"\b" + re.escape(name) + r"\b",
+                              str(GLOBAL_EQU[name]), expr)
     expr = HEX_RE.sub(lambda m: "0x" + m.group(1), expr)
-    if not re.fullmatch(r"[-+0-9xXa-fA-F() \t]+", expr):
+    # Operands are written as small arithmetic expressions: `5-10`,
+    # `-1+15`, `60*60`, `TSEC*60`. Multiplication is as real as the rest.
+    if not re.fullmatch(r"[-+*0-9xXa-fA-F() \t]+", expr):
         raise ValueError(f"unresolved operand {tok!r}")
     return int(eval(expr, {"__builtins__": {}}, {}))
 

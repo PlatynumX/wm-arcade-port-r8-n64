@@ -76,12 +76,25 @@ SETMODE_RE = re.compile(
 
 
 def _mode_value(expr: str, table: dict) -> int:
+    # Written with either separator: MODE_UNINT|MODE_NOAUTOFLIP in most
+    # files, MODE_UNINT+MODE_NOAUTOFLIP throughout ADMSEQ.
     total = 0
-    for tok in expr.split("|"):
+    for tok in re.split(r"[|+]", expr):
         tok = tok.strip().upper()
-        if tok not in table:
-            raise ValueError(f"unknown mode {tok!r}")
-        total |= table[tok]
+        if tok in table:
+            total |= table[tok]
+            continue
+        # The assembler has one flat symbol table, so an operand naming a
+        # MODE_* from the *other* file still assembles -- RZRSEQ2.ASM:2203
+        # writes `ANI_SETMODE,MODE_INAIR`, and since MODE_INAIR is
+        # PLYR.EQU's player-mode ordinal 2, the shipped ROM sets ANIM.EQU's
+        # 02h, MODE_INTURN. Resolving the same way it does keeps the port
+        # faithful to the game rather than to what the line looks like it
+        # meant.
+        if tok in wlanim.GLOBAL_EQU:
+            total |= wlanim.GLOBAL_EQU[tok]
+            continue
+        raise ValueError(f"unknown mode {tok!r}")
     return total
 DEC_RPT_RE = re.compile(r"^\s*(?:\.word|W+L+W*)\s+ANI_DEC_RPTCOUNT\s*$", re.I)
 
@@ -91,6 +104,31 @@ def _body(lines: list[str], label: str) -> tuple[int, int]:
     if span is None:
         raise ValueError(f"no routine {label}")
     return span
+
+
+_FILE_EQU_CACHE: dict[str, dict] = {}
+
+
+def _file_equates(path: pathlib.Path, lines: list[str]) -> dict:
+    """Every local equate in the file, cached per file.
+
+    Local equates are scoped and the in-scope pass overrides this, but some
+    files define a constant only AFTER the routine that names it
+    (ADMSEQ1.ASM's #RUN_SPD), so a whole-file sweep is the fallback. Cached
+    because sweeping per routine is quadratic over 1500+ routines.
+    """
+    key = str(path)
+    if key not in _FILE_EQU_CACHE:
+        found: dict[str, int] = {}
+        for line in lines:
+            m = wlcommands.EQU_RE.match(line)
+            if m:
+                try:
+                    found[m.group(1)] = wlcommands._value(m.group(2), found)
+                except ValueError:
+                    pass
+        _FILE_EQU_CACHE[key] = found
+    return _FILE_EQU_CACHE[key]
 
 
 def program_for(path: pathlib.Path, label: str):
@@ -122,17 +160,28 @@ def program_for(path: pathlib.Path, label: str):
             bm = BRANCH_RE.match(lines[i]) or SLIDE_RE.match(lines[i])
             if bm:
                 wanted.add(bm.group(bm.re.groups))
-        have = {m.group(1) for m in
-                (wlanim.LOCAL_LABEL_RE.match(lines[i]) for i in range(start, stop))
-                if m}
+        have = {name for name in
+                (wlanim.label_def(lines[i]) for i in range(start, stop))
+                if name}
         missing = wanted - have
         if not missing:
             break
+        # A target can also sit BEFORE this routine -- shared blocks earlier
+        # in the file that several routines branch back into. Pull the
+        # region in by starting the body there instead.
+        for name in list(missing):
+            for i in range(start - 1, -1, -1):
+                if wlanim.label_def(lines[i]) == name:
+                    start = i
+                    missing.discard(name)
+                    break
+        if not missing:
+            continue
+
         grew = stop
         for name in missing:
             for i in range(stop, len(lines)):
-                m = wlanim.LOCAL_LABEL_RE.match(lines[i])
-                if m and m.group(1) == name:
+                if wlanim.label_def(lines[i]) == name:
                     # Include the code the label names, not just the label
                     # line: stopping at the label itself resolves the branch
                     # to one past the last op, which is not a real target.
@@ -151,7 +200,11 @@ def program_for(path: pathlib.Path, label: str):
             break
         stop = grew
 
-    equates: dict[str, int] = {}
+    # Local equates are scoped, so definitions before this routine win --
+    # but some files define a speed constant only after the routine that
+    # names it (ADMSEQ1.ASM's #RUN_SPD), so the whole file is swept first
+    # as a fallback and the in-scope pass overwrites it.
+    equates = dict(_file_equates(path, lines))
     for i in range(0, start):
         m = wlcommands.EQU_RE.match(lines[i])
         if m:
@@ -169,9 +222,9 @@ def program_for(path: pathlib.Path, label: str):
         if not line:
             continue
 
-        lm = wlanim.LOCAL_LABEL_RE.match(line)
+        lm = wlanim.label_def(line)
         if lm:
-            label_at.setdefault(lm.group(1), len(ops))
+            label_at.setdefault(lm, len(ops))
             # a label can share its line with an instruction, so fall through
 
         m = wlcommands.EQU_RE.match(line)

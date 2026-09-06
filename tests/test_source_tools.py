@@ -86,6 +86,94 @@ def test_wlprogram() -> None:
                 assert 0 <= o[1] < len(prog), (label, o)
 
 
+def test_wlprogram_roster_wide() -> None:
+    """The emitter reads the whole roster, not just the wrestler it was
+    written against.
+
+    Every animation in the port comes out of one of these nine sequence
+    files, so a parser gap is not a one-animation problem -- it multiplies
+    by eight. This walks every SUBR in all of them and asserts the playable
+    roster still emits essentially completely, which is what makes bringing
+    the other seven wrestlers up a data job rather than a translation job.
+
+    A SUBR holding no frames is a helper the animations CALL (HRTSEQ3's
+    `set_zvel`, `rope_check`), not an animation, so it is counted apart
+    rather than scored as a failure.
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    if not (base / "HRTSEQ2.ASM").exists():
+        return
+
+    playable = ["HRT", "RZR", "UND", "YOK", "SHN", "BAM", "DNK", "LEX"]
+    emitted = refused = helpers = 0
+    per_wrestler = {}
+    for who in playable:
+        got = 0
+        for path in sorted(q for q in base.glob(who + "SEQ*.ASM")
+                           if "'" not in q.name):
+            labels = []
+            for line in path.read_text(errors="replace").splitlines():
+                m = wlanim.SUBR_RE.match(line)
+                if m and m.group(1) not in labels:
+                    labels.append(m.group(1))
+            for label in labels:
+                try:
+                    ops = wlprogram.program_for(path, label)
+                except ValueError as exc:
+                    if str(exc).endswith("no frames"):
+                        helpers += 1
+                    else:
+                        refused += 1
+                    continue
+                assert ops, f"{label} emitted an empty program"
+                emitted += 1
+                got += 1
+        per_wrestler[who] = got
+
+    total = emitted + refused
+    assert total > 1400, f"only found {total} animations -- did the walk break?"
+    assert emitted / total > 0.99, (
+        f"{emitted}/{total} emitted; refusals: {refused}")
+    assert helpers, "no frameless helper SUBRs seen -- classification broke"
+    # No wrestler may be left behind: the point is roster-wide coverage,
+    # which an average could hide.
+    for who, got in per_wrestler.items():
+        assert got > 170, f"{who} only emitted {got} animations"
+
+
+def test_wlprogram_tick_expressions() -> None:
+    """Tick counts are evaluated, including the ones written as products.
+
+    Every wrestler's `*_zip_anim` opens on a one-minute hold spelled either
+    `60*60` or `TSEC*60`; TSEC is DISPLAY.EQU:46. Refusing either dropped
+    eight real animations, one per wrestler.
+    """
+    assert wlanim.eval_ticks("60*60") == 3600
+    assert wlanim.GLOBAL_EQU["TSEC"] == 53
+    assert wlanim.eval_ticks("TSEC*60") == 53 * 60
+    assert wlanim.eval_ticks("0Ah") == 10
+    for bad in ("SOME_UNDEFINED_NAME", "0", "99999"):
+        try:
+            wlanim.eval_ticks(bad)
+        except ValueError:
+            continue
+        raise AssertionError(f"eval_ticks accepted {bad!r}")
+
+
+def test_wlanim_label_def() -> None:
+    """A branch target may be a file-scope label, not only a `#local`.
+
+    SHNSEQ2.ASM:1744 defines `getup_in_4` in column 0 and four routines
+    branch to it; to the assembler that resolves exactly like a local does.
+    Treating only `#names` as labels made those four animations unemittable.
+    """
+    assert wlanim.label_def("#cont") == "#cont"
+    assert wlanim.label_def("getup_in_4") == "getup_in_4"
+    assert wlanim.label_def("\tWL\t5,H4SL4C+FR1") is None
+    assert wlanim.label_def(" SUBR\thrt_2_punch_anim") is None
+    assert wlanim.label_def("#RUN_SPD\tequ\t2") == "#RUN_SPD"
+
+
 def test_wlattack_audit() -> None:
     """tools/wlattack.py --audit's job is to answer "would a flat
     wlanim.py --slice of this routine be faithful to any single real
@@ -763,6 +851,9 @@ def test_source_text_bundle() -> None:
 def main() -> int:
     test_wlanim()
     test_wlprogram()
+    test_wlprogram_roster_wide()
+    test_wlprogram_tick_expressions()
+    test_wlanim_label_def()
     test_wlattack_audit()
     test_wlattack_frame_indices()
     test_manifest()

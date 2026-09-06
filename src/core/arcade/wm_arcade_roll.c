@@ -89,3 +89,14 @@ void wm_arcade_tick_getup_time(wm_arcade_actor_t *a) {
     a->getup_time -= 3;
     if (a->getup_time < 0) a->getup_time = 0;
 }
+
+void wm_arcade_tick_wrestler_timers(wm_arcade_actor_t *a) {
+    if (!a) return;
+    if (a->delay_butns > 0) --a->delay_butns;
+    if (a->safe_time > 0) --a->safe_time;
+    if (a->delay_meter > 0) --a->delay_meter;
+    if (a->immobilize_time > 0) --a->immobilize_time;
+    /* `jrz #skp6 / jrn #skp6` -- zero AND negative both skip, so a
+       negative WALK_FAST is left alone rather than counted further down. */
+    if (a->walk_fast > 0) --a->walk_fast;
+}

@@ -308,6 +308,9 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
          * decide whether the wrestler may start rolling yet, so it has to
          * see this tick's value.
          */
+        /* WRESTLE.ASM:2503's countdown block runs immediately before the
+           getup meter, in the same main-loop pass. */
+        wm_arcade_tick_wrestler_timers(&m->actors[i]);
         wm_arcade_tick_getup_time(&m->actors[i]);
 
         /* WRESTLE.ASM::move_wrestler dispatches every wrestler process

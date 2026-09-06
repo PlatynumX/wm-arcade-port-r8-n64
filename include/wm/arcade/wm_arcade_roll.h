@@ -43,6 +43,27 @@ int wm_arcade_do_roll(wm_arcade_actor_t *a);
  */
 void wm_arcade_tick_getup_time(wm_arcade_actor_t *a);
 
+/*
+ * WRESTLE.ASM:2503-2535 -- the five per-wrestler countdown timers the main
+ * loop runs immediately before the getup meter, each one `jrz` guarded so
+ * it stops at zero rather than going negative:
+ *
+ *   DELAY_BUTNS     "delaying the reading of buttons just after regaining
+ *                    control from being flung"
+ *   SAFE_TIME       "delaying collisions when a player gets up"
+ *   DELAY_METER     "delaying the reappearance of a getup meter"
+ *   IMMOBILIZE_TIME "disallowing movement by wrestler"
+ *   WALK_FAST       the walk-fast powerup -- and uniquely, this one is
+ *                   also guarded on being POSITIVE (`jrn #skp6`), because
+ *                   it is written negative elsewhere as a flag.
+ *
+ * Every one of these was being SET all over this port -- React1-5, the
+ * special moves, the attach opcodes -- and counted down by nothing, so an
+ * immobilize lasted the rest of the match and
+ * wm_arcade_try_attack_hit rejected an immobilized attacker forever.
+ */
+void wm_arcade_tick_wrestler_timers(wm_arcade_actor_t *a);
+
 #ifdef __cplusplus
 }
 #endif

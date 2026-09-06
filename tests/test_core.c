@@ -13,6 +13,7 @@
 #include "wm/anim_program.h"
 #include "wm/arcade/wm_arcade_veladd.h"
 #include "wm/arcade/wm_arcade_roll.h"
+#include "wm/arcade/wm_arcade_combo.h"
 #include "wm/roll_frames.h"
 #include "wm/composite.h"
 #include "wm/demo.h"
@@ -3616,6 +3617,123 @@ static void test_getup_meter(void) {
     wm_arcade_tick_getup_time(NULL);
 }
 
+/*
+ * WRESTLE.ASM:2503's five countdown timers. Every one of them was being
+ * SET all over this port and counted down by nothing, so an immobilize
+ * lasted the rest of the match.
+ */
+static void test_wrestler_timers(void) {
+    wm_arcade_actor_t a;
+    int i;
+
+    memset(&a, 0, sizeof(a));
+    a.delay_butns = 2;
+    a.safe_time = 2;
+    a.delay_meter = 2;
+    a.immobilize_time = 2;
+    a.walk_fast = 2;
+    wm_arcade_tick_wrestler_timers(&a);
+    CHECK(a.delay_butns == 1 && a.safe_time == 1 && a.delay_meter == 1 &&
+          a.immobilize_time == 1 && a.walk_fast == 1);
+
+    /* Each stops at zero rather than running negative. */
+    for (i = 0; i < 5; ++i) wm_arcade_tick_wrestler_timers(&a);
+    CHECK(a.delay_butns == 0 && a.safe_time == 0 && a.delay_meter == 0 &&
+          a.immobilize_time == 0 && a.walk_fast == 0);
+
+    /* WALK_FAST alone is also guarded on being POSITIVE (`jrn #skp6`),
+       because it is written negative elsewhere as a flag. */
+    memset(&a, 0, sizeof(a));
+    a.walk_fast = -5;
+    a.immobilize_time = -5;
+    wm_arcade_tick_wrestler_timers(&a);
+    CHECK(a.walk_fast == -5);
+    CHECK(a.immobilize_time == -5);   /* `jrz` guarded, so also untouched */
+
+    wm_arcade_tick_wrestler_timers(NULL);
+}
+
+/*
+ * The combo meter: ANIM.ASM's three combo opcodes, and the damage rule in
+ * adjust_health that has been correct and unreachable all along because
+ * nothing incremented COMBO_COUNT.
+ */
+static void test_combo_meter(void) {
+    const wm_anim_program *p = wm_anim_program_find("hrt_combo_punch_anim");
+    wm_arcade_actor_t a, v;
+    wm_anim_exec ex;
+    wm_anim_env env;
+    int t, peak = 0, immob_peak = 0;
+
+    /* ADD_TO_COMBO_COUNT on its own. The "already added once" branch only
+       affects COMBO_START -- the amount added is 1 either way, which is
+       what the source's own "Adds first value each time! [why?]" is
+       about. */
+    memset(&a, 0, sizeof(a));
+    wm_arcade_add_to_combo_count(&a, 2);
+    CHECK(a.combo_size == 1);
+    CHECK(a.combo_start == 2);
+    wm_arcade_add_to_combo_count(&a, 2);      /* same move again */
+    CHECK(a.combo_size == 2);
+    CHECK(a.combo_start == 2);
+    wm_arcade_add_to_combo_count(&a, 8);      /* a different one */
+    CHECK(a.combo_size == 3);
+    CHECK(a.combo_start == 10);
+    CHECK(a.combo_flash == 0);
+    while (a.combo_size < WM_COMBO_SUPER_SIZE)
+        wm_arcade_add_to_combo_count(&a, 1);
+    CHECK(a.combo_flash == 1);
+    wm_arcade_add_to_combo_count(NULL, 1);
+
+    if (!p) return;
+
+    /* hrt_combo_punch_anim end to end: a real six-hit combo. */
+    memset(&a, 0, sizeof(a));
+    memset(&v, 0, sizeof(v));
+    memset(&env, 0, sizeof(env));
+    stand_in_ring(&a);
+    stand_in_ring(&v);
+    a.who_i_hit = &v;
+    env.pcnt = 1234u;
+    v.life = WM_ARCADE_LIFE_MAX;
+    wm_anim_exec_start(&ex, p, &a, 0, &env);
+    for (t = 0; t < 400 && !ex.ended; ++t) {
+        if (a.anim_mode & WM_MODE_CHECKHIT)
+            a.anim_mode |= (uint16_t)WM_MODE_STATUS;
+        wm_wrestler_veladd(&a, &ex, 0);
+        wm_anim_exec_tick(&ex, &a, 0);
+        if (a.combo_count > peak) peak = a.combo_count;
+        if (v.immobilize_time > immob_peak) immob_peak = v.immobilize_time;
+    }
+    CHECK(peak == 6);
+    /* ANI_CLEAR_COMBO's #start_combo: the victim's 80-tick window, which
+       the source labels "Time opponent has to execute combo breaker",
+       plus its PCNT stamp. */
+    CHECK(immob_peak == 80);
+    CHECK(v.anti_combo_time == 1234u);
+    /* ...and its other end, once COMBO_COUNT was set: the count is
+       cleared and the victim's getup meter is held off for ten seconds. */
+    CHECK(a.combo_count == 0);
+    CHECK(v.delay_meter == 10 * 60);
+
+    /*
+     * And the payoff: a hit landed during a combo does FIXED damage,
+     * -max(10-COMBO_COUNT, 4), instead of the normal scaled amount. This
+     * path existed and was correct; nothing could reach it.
+     */
+    {
+        int32_t dam_mult = 0;
+        int16_t before;
+        memset(&v, 0, sizeof(v));
+        v.life = WM_ARCADE_LIFE_MAX;
+        before = v.life;
+        a.combo_count = 3;
+        wm_arcade_adjust_health(&v, -20, &a, false, 0, &dam_mult, NULL);
+        CHECK(v.life < before);
+        CHECK(before - v.life < 20);   /* the combo rule replaced the -20 */
+    }
+}
+
 static void test_anim_program_interpreter(void) {
     int hit_ticks = 0, miss_ticks = 0;
 
@@ -6083,6 +6201,8 @@ int main(void) {
     test_waitroll_and_do_roll();
     test_do_roll();
     test_getup_meter();
+    test_wrestler_timers();
+    test_combo_meter();
     test_gravity_reset_and_setlong();
     test_attract_dcs_logo_does_not_fall_through();
     test_bret_hurt_box_for_frame_real_geometry();

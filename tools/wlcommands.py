@@ -63,6 +63,13 @@ COMMANDS = {
     # ANIM.ASM:_ani_getup -- how long the wrestler is stuck on the
     # ground, refused while PLYR_DIZZY is set.
     "ANI_GETUP":      ("GETUP", 1, False),
+    # The combo meter (LIFEBAR.ASM). ANI_ADD_MOVE carries the move's
+    # identity bits (GAME.EQU:496 MOVE_C_1..) plus two more operands
+    # that ADD_TO_COMBO_COUNT overwrites before reading, so only the
+    # first is live -- all three are carried anyway.
+    "ANI_ADD_MOVE":   ("ADD_MOVE", 3, False),
+    "ANI_INC_COMBO":  ("INC_COMBO", 0, False),
+    "ANI_CLEAR_COMBO": ("CLEAR_COMBO", 0, False),
     "ANI_BOUNCE":     ("BOUNCE", 1, False),
     "ANI_CLR_STATUS":  ("CLR_STATUS", 0, False),
 }

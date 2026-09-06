@@ -1,6 +1,7 @@
 #include "wm/anim_program.h"
 #include "wm/arcade/wm_arcade_veladd.h"
 #include "wm/arcade/wm_arcade_roll.h"
+#include "wm/arcade/wm_arcade_combo.h"
 #include "wm/arcade/wm_arcade_combat_defs.h"
 #include "wm/arcade/wm_arcade_anim_combat.h"
 #include "wm/arcade/wm_arcade_butcount.h"
@@ -128,6 +129,62 @@ static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
                keeps whatever getup time he already had. */
             if (!actor->plyr_dizzy) actor->getup_time = o->a;
             break;
+        /*
+         * ANIM.ASM:4247 _ani_add_move -- it touches no velocity at all,
+         * despite the name: it reads three operands and grows the combo
+         * meter, unless the man he hit is already dead.
+         */
+        case WM_AOP_ADD_MOVE:
+            if (actor->who_i_hit &&
+                actor->who_i_hit->player_mode != WM_PMODE_DEAD)
+                wm_arcade_add_to_combo_count(actor, o->a);
+            break;
+        /*
+         * ANIM.ASM:114 _ani_inc_combo_count. Two things beyond the count:
+         * at exactly 8 the announcer is asked for HES_JUST_GONE_BERSERK
+         * (the speech queue, which this port does not have -- so the
+         * threshold is reached and nothing is said, rather than a sound
+         * being invented), and the man he hit is immobilised for 30 ticks,
+         * which is the combo lock.
+         */
+        case WM_AOP_INC_COMBO:
+            ++actor->combo_count;
+            if (actor->who_i_hit) actor->who_i_hit->immobilize_time = 30;
+            break;
+        /*
+         * ANIM.ASM:115 _ani_clear_combo_count is BOTH ends of a combo.
+         *
+         * With COMBO_COUNT already set it is the end: zero it, and free
+         * the victim -- immobilize and getup cleared, but DELAY_METER set
+         * to 10*60 so his getup meter stays away for ten seconds.
+         *
+         * With COMBO_COUNT zero it is the start (`#start_combo`): the
+         * victim gets an 80-tick IMMOBILIZE_TIME, which the source labels
+         * "Time opponent has to execute combo breaker", plus a PCNT stamp.
+         * COMBO_COUNT is written 0 either way -- the source's own comment
+         * argues about whether it should be 1 and settles on 0.
+         *
+         * The target is ATTACH_PROC if there is one, else WHOIHIT; the
+         * source LOCKUPs when there is neither, which is an assert, so
+         * here it simply does nothing to nobody.
+         */
+        case WM_AOP_CLEAR_COMBO: {
+            int ending = actor->combo_count != 0;
+            wm_arcade_actor_t *victim = actor->attach_proc
+                ? actor->attach_proc : actor->who_i_hit;
+            actor->combo_count = 0;
+            if (!victim) break;
+            if (ending) {
+                victim->immobilize_time = 0;
+                victim->getup_time = 0;
+                victim->delay_meter = 10 * 60;
+            } else {
+                victim->immobilize_time = 80;
+                victim->anti_combo_time = env ? env->pcnt : 0u;
+                victim->getup_time = 0;
+            }
+            break;
+        }
         case WM_AOP_SETLONG:
             if (o->a == 0) actor->gravity = o->b;
             else actor->debris_x = o->b;

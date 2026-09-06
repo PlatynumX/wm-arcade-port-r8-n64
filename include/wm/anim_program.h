@@ -113,6 +113,17 @@ typedef enum {
     /* ANIM.ASM:_ani_getup (52): GETUP_TIME = operand, unless PLYR_DIZZY.
        ANI_WAITROLL is what waits it out. */
     WM_AOP_GETUP,
+    /*
+     * The combo meter (wm/arcade/wm_arcade_combo.h). ANI_ADD_MOVE (:4247,
+     * 273 uses) grows the meter bar through ADD_TO_COMBO_COUNT;
+     * ANI_INC_COMBO (:114, 183) bumps the COMBO_COUNT that adjust_health's
+     * damage rule reads and locks the victim for 30 ticks; ANI_CLEAR_COMBO
+     * (:115, 208) is both the start AND the end of a combo, depending on
+     * whether COMBO_COUNT was already set.
+     */
+    WM_AOP_ADD_MOVE,
+    WM_AOP_INC_COMBO,
+    WM_AOP_CLEAR_COMBO,
     WM_AOP_CLR_STATUS,
 
     /* ANIM.ASM:1277 _ani_code -- `move *a4+,a0,L / call a0`: an ordinary

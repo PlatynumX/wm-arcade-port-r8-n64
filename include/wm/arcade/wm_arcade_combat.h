@@ -52,6 +52,27 @@ struct wm_arcade_actor {
     uint16_t stick_val_cur;
     int32_t immobilize_time;
     int32_t combo_count;
+    /*
+     * PLYR.EQU COMBO_START -- the bitmask of move identities already
+     * counted into this combo. LIFEBAR.ASM:750 ADD_TO_COMBO_COUNT ORs
+     * ANI_ADD_MOVE's operand in and skips its own "add once" branch if the
+     * bit was already there. See wm/arcade/wm_arcade_combo.h for why that
+     * branch changes nothing about the amount added.
+     */
+    int32_t combo_start;
+    /*
+     * life_data's PLT_COMBO_SIZE -- the meter bar's own length, which is
+     * NOT combo_count. combo_count drives the damage rule in
+     * adjust_health; this drives the meter and the >= 16 "super" flash.
+     */
+    int32_t combo_size;
+    /* PLYR.EQU ANTI_COMBO_TIME: the PCNT stamp ANI_CLEAR_COMBO writes on
+       the victim when a combo starts, beside his 80-tick breaker window. */
+    uint32_t anti_combo_time;
+    /* LIFEBAR.ASM SET_FLASHING_COMBO_GOING's COMBO_FLASH_FLAG, per side:
+       the meter has reached the super threshold. The flashing itself is a
+       process and a palette, which this port has no renderer for. */
+    int32_t combo_flash;
     /* Stage 4: REACT2 combo-uppercut reads WHOHITME->RPT_COUNT. */
     int32_t rpt_count;
     /*

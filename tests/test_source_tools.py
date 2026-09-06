@@ -23,10 +23,13 @@ def load(name: str, path: pathlib.Path):
 wlanim = load("wlanim", ROOT / "tools" / "wlanim.py")
 wlattack = load("wlattack", ROOT / "tools" / "wlattack.py")
 wlcommands = load("wlcommands", ROOT / "tools" / "wlcommands.py")
+wlpuppet = load("wlpuppet", ROOT / "tools" / "wlpuppet.py")
 wlprogram = load("wlprogram", ROOT / "tools" / "wlprogram.py")
 manifest = load("bret_manifest", ROOT / "tools" / "bret_manifest.py")
 wimp = load("wimpimg", ROOT / "tools" / "wimpimg.py")
 bundle = load("bret_bundle", ROOT / "tools" / "bret_bundle.py")
+geometry_bundle = load("bret_geometry_bundle",
+                       ROOT / "tools" / "bret_geometry_bundle.py")
 frontend_bundle = load("frontend_bundle", ROOT / "tools" / "frontend_bundle.py")
 sparkle_bundle = load("sparkle_bundle", ROOT / "tools" / "sparkle_bundle.py")
 dcs_bundle = load("dcs_bundle", ROOT / "tools" / "dcs_bundle.py")
@@ -235,19 +238,22 @@ def test_body_stop_ends_a_frameless_routine() -> None:
 
     The discriminator is whether the routine terminates before the next
     SUBR: an alias does not, a finished routine does.
+
+    Once the span is right, a frameless routine is emitted rather than
+    refused -- it is a real op stream that happens to draw nothing, and
+    FINISEQ.ASM:259-268 is exactly the seven commands below. What the
+    runaway looked like was ten FRAMEs belonging to routines further down
+    the file, so that is what this checks for.
     """
     base = ROOT / "original" / "wwf-wrestlemania"
     if not (base / "FINISEQ.ASM").exists():
         return
 
+    expect = ["SETMODE", "ZEROVELS", "SETSPEED", "SETFACING",
+              "SET_WRESTLER_XFLIP", "SETMODE", "END"]
     for label in ("rzr_finish1_move", "rzr_finish2_move"):
-        try:
-            ops = wlprogram.program_for(base / "FINISEQ.ASM", label)
-        except ValueError as exc:
-            assert "no frames" in str(exc), (label, exc)
-            continue
-        raise AssertionError(
-            f"{label} emitted {len(ops)} ops; the source has no frames for it")
+        ops = wlprogram.program_for(base / "FINISEQ.ASM", label)
+        assert [o[0] for o in ops] == expect, (label, [o[0] for o in ops])
 
     # ...while the alias case still runs on into the routine it names.
     if (base / "HRTSEQ2.ASM").exists():
@@ -980,12 +986,129 @@ def test_source_text_bundle() -> None:
             raise AssertionError("zero-byte source bundle must be rejected")
 
 
+def test_linked_files_is_the_game() -> None:
+    """The drop holds .ASM files the game does not link, and they collide.
+
+    WRESTLE.CMD is the linker command file. ADMSEQ1-3.ASM (Adam Bomb, cut
+    from the roster), REFSEQ1.ASM and the superseded HRTSEQ.ASM/YOKSEQ.ASM
+    sit in the same directory but are not in it -- and ADMSEQ3.ASM:199
+    defines `dnk_3_head_held_anim`, the same global DNKSEQ3.ASM:1624
+    defines. Searching the directory alphabetically finds Adam's.
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    if not (base / "WRESTLE.CMD").exists():
+        return
+
+    names = {q.name for q in wlanim.linked_files()}
+    for dead in ("ADMSEQ1.ASM", "ADMSEQ2.ASM", "ADMSEQ3.ASM", "REFSEQ1.ASM",
+                 "HRTSEQ.ASM", "YOKSEQ.ASM"):
+        assert dead not in names, f"{dead} is not in WRESTLE.CMD"
+    for live in ("HRTSEQ3.ASM", "DNKSEQ3.ASM", "ANIM.ASM", "WRESTLE2.ASM",
+                 "FINISEQ.ASM"):
+        assert live in names, f"{live} IS in WRESTLE.CMD"
+
+    where = dict((lab, path) for path, lab in wlpuppet.slave_targets())
+    if "dnk_3_head_held_anim" in where:
+        assert where["dnk_3_head_held_anim"].name == "DNKSEQ3.ASM", \
+            where["dnk_3_head_held_anim"]
+
+
+def test_bare_label_routines() -> None:
+    """An animation is not always behind a SUBR.
+
+    UNDSEQ3.ASM:876-1046 is eight choking animations named by plain
+    column-0 labels, one after another, none ending in ANI_END -- each
+    ends in an ANI_CHANGEANIM, so the only boundary is the next label.
+    The slave tables name them exactly as they name SUBRs, so they have to
+    resolve, and each has to stop at its own end rather than running on
+    into the seven that follow.
+    """
+    src = ROOT / "original" / "wwf-wrestlemania" / "UNDSEQ3.ASM"
+    if not src.exists():
+        return
+
+    # Frame counts read off the source, routine by routine.
+    expect = {"hrt_choking_anim": 10, "rzr_choking_anim": 10,
+              "und_choking_anim": 12, "yok_choking_anim": 9,
+              "shn_choking_anim": 9, "bam_choking_anim": 6,
+              "dnk_choking_anim": 12, "lex_choking_anim": 8}
+    for label, frames in expect.items():
+        ops = wlprogram.program_for(src, label)
+        got = sum(1 for o in ops if o[0] == "FRAME")
+        assert got == frames, (label, got, frames)
+        assert ops[-1][0] == "CHANGEANIM", (label, ops[-1])
+
+
+def test_slave_targets_all_emit() -> None:
+    """Every animation ANI_SLAVEANIM can hand a victim has to be playable.
+
+    The op names a whole animation for the OTHER wrestler to run, chosen
+    out of a nine-slot table by his own WRESTLERNUM. An entry naming an
+    animation the port cannot emit is a hole the runtime would fall into,
+    so the set is read out of the tables and every one of them is emitted.
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    if not (base / "ANIM.ASM").exists():
+        return
+
+    targets = wlpuppet.slave_targets()
+    assert len(targets) > 150, len(targets)
+    for path, label in targets:
+        ops = wlprogram.program_for(path, label)
+        assert ops, label
+
+    generated = (ROOT / "src" / "generated" / "anim_programs.c")
+    if generated.exists():
+        text = generated.read_text()
+        for _path, label in targets:
+            assert f'"{label}"' in text, f"{label} is named by a slave table "
+    # ...and where a table's slot is `.long 0` it stays empty rather than
+    # being filled with a guess. Slot 7 is Adam Bomb's, the wrestler who
+    # was cut: most tables write 0 there, some write the Undertaker's
+    # animation, and neither is invented here.
+    rows = [r for p in wlpuppet.canonical_files()
+            for r in wlpuppet.slave_tables_in(p).values()]
+    assert rows, "no slave tables at all"
+    assert any(r[7] == "" for r in rows), "no `.long 0` slot survived"
+    assert all(len(r) == wlpuppet.ROSTER_SLOTS for r in rows), "short table"
+
+
+def test_truncated_frame_names() -> None:
+    """A WIMP name field is eight characters; .LOD names can be longer.
+
+    BAM.LOD lists BURNBODY01..BURNBODY05, and bam_jms.img stores five
+    images all called `BURNBODY`. The .LOD's packing order is the
+    container's order, so the nth full name is the nth image -- but only
+    when the counts agree.
+    """
+    img_dir = ROOT / "original" / "wwf-wrestlemania" / "IMG"
+    if not (img_dir / "BAM_JMS.IMG").exists():
+        return
+
+    _data, _hdr, images, _pal = wimp.parse_file(img_dir / "BAM_JMS.IMG")
+    by_name = {im.name.upper(): im for im in images}
+    lod = ["BURNBODY0%d" % n for n in range(1, 6)]
+    picked = [geometry_bundle._by_truncated_name(f, lod, images, by_name)
+              for f in lod]
+    assert all(p is not None for p in picked), picked
+    assert len({id(p) for p in picked}) == 5, "five names, five images"
+
+    # A stem the container does not hold resolves to nothing rather than
+    # to whatever happens to be near it.
+    assert geometry_bundle._by_truncated_name(
+        "NOTHERE01", ["NOTHERE01"], images, by_name) is None
+
+
 def main() -> int:
     test_wlanim()
     test_wlprogram()
     test_wlprogram_roster_wide()
     test_wlprogram_is_deterministic()
     test_body_stop_ends_a_frameless_routine()
+    test_linked_files_is_the_game()
+    test_bare_label_routines()
+    test_slave_targets_all_emit()
+    test_truncated_frame_names()
     test_roster_dispatcher_labels_all_emit()
     test_wlprogram_tick_expressions()
     test_wlanim_label_def()

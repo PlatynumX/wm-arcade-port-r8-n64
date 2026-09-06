@@ -25,7 +25,9 @@ END_RE = re.compile(r"^\s*\.word\s+ANI_END\s*$", re.I)
 GOTO_RE = re.compile(r"^\s*WL\s+ANI_GOTO\s*,\s*#?[A-Za-z_][A-Za-z0-9_]*\s*$", re.I)
 PREFIX_WORD_RE = re.compile(
     r"^\s*\.word\s+(ANI_SETMODE|ANI_SETSPEED|ANI_SETFACING|ANI_XFLIP)\b", re.I)
-HEX_SUFFIX_RE = re.compile(r"\b([0-9A-Fa-f]+)h\b")
+# The assembler accepts either case for its trailing-h hex, and the
+# sequence files use both -- `090000h` two lines from `0000H`.
+HEX_SUFFIX_RE = re.compile(r"\b([0-9A-Fa-f]+)[hH]\b")
 
 # ANI_SUPERSLAVE2 IS a frame -- it sets OANICNT and stops, showing the
 # attacker's frame and choosing the victim's at the same time. It carries no
@@ -69,16 +71,69 @@ def load_equ(path: pathlib.Path, prefix: str) -> dict[str, int]:
         line = raw.split(";", 1)[0]
         # Values are written either decimal or with the assembler's own
         # trailing-h hex (MODE_UNINT is 04h, MODE_STATUS 200h).
-        m = re.match(rf"^({prefix}[A-Z0-9_]*)\s+\.?equ\s+"
-                     rf"([0-9A-Fa-f]+h|[0-9]+)\s*$", line.strip(), re.I)
-        if m:
-            val = m.group(2)
-            out[m.group(1).upper()] = (int(val[:-1], 16) if val[-1] in "hH"
-                                       else int(val))
+        m = re.match(rf"^({prefix}[A-Z0-9_]*)\s+\.?equ\s+(.+?)\s*$",
+                     line.strip(), re.I)
+        if not m:
+            continue
+        name, val = m.group(1).upper(), m.group(2).strip()
+        if re.fullmatch(r"[0-9A-Fa-f]+h", val, re.I):
+            out[name] = int(val[:-1], 16)
+            continue
+        if re.fullmatch(r"-?[0-9]+", val):
+            out[name] = int(val)
+            continue
+        # Plenty are small expressions over the constants already read --
+        # DAMAGE.EQU:135 writes `D_HIPTOSS .equ 20*135/100` and the line
+        # after it `RD_HIPTOSS .equ D_HIPTOSS*2/3`. The assembler's `/` is
+        # integer division, so this is too.
+        expr = val
+        for known in sorted(out, key=len, reverse=True):
+            if known in expr.upper():
+                expr = re.sub(r"\b" + re.escape(known) + r"\b", str(out[known]),
+                              expr, flags=re.I)
+        expr = HEX_SUFFIX_RE.sub(lambda mm: "0x" + mm.group(1), expr)
+        expr = re.sub(r"\b([01]+)b\b", lambda mm: str(int(mm.group(1), 2)), expr)
+        if not re.fullmatch(r"[-+*/<>()0-9xXa-fA-F ]+", expr):
+            continue
+        try:
+            value = eval(expr.replace("/", "//"), {"__builtins__": {}}, {})
+        except Exception:
+            continue
+        if isinstance(value, int):
+            out[name] = value
     return out
 
 
 ORIG = pathlib.Path(__file__).resolve().parents[1] / "original" / "wwf-wrestlemania"
+
+OBJ_RE = re.compile(r"^([A-Za-z0-9_]+)\.obj\b", re.I)
+
+
+def linked_files() -> list[pathlib.Path]:
+    """The .ASM files the arcade game actually links, in a fixed order.
+
+    WRESTLE.CMD is the linker command file, and its object list is the
+    game. Several .ASM files in the drop are NOT in it -- ADMSEQ1-3.ASM
+    (Adam Bomb, the wrestler who was cut), REFSEQ1.ASM, and the older
+    HRTSEQ.ASM/YOKSEQ.ASM alongside their numbered replacements. Those
+    files define symbols that collide with live ones: ADMSEQ3.ASM:199
+    defines `dnk_3_head_held_anim`, and so does DNKSEQ3.ASM:1624. Only one
+    of the two is in the game, and searching the drop alphabetically finds
+    the wrong one.
+    """
+    cmd = ORIG / "WRESTLE.CMD"
+    names = []
+    for line in cmd.read_text(errors="replace").splitlines():
+        m = OBJ_RE.match(line.strip())
+        if m:
+            names.append(m.group(1).upper() + ".ASM")
+    seen, out = set(), []
+    for n in names:
+        q = ORIG / n
+        if n not in seen and q.exists():
+            seen.add(n)
+            out.append(q)
+    return out
 
 # Plain global constants an operand or a tick count can be written in terms
 # of -- TSEC (DISPLAY.EQU:46, ticks per second) shows up as `TSEC*60`, the
@@ -225,12 +280,39 @@ def _body_stop(lines: list[str], start: int) -> int:
     return len(lines)
 
 
+def _label_body_stop(lines: list[str], start: int) -> int:
+    """End of a routine that was entered through a bare column-0 label.
+
+    These are written as a run of routines separated only by the label that
+    names each one -- UNDSEQ3.ASM:876-1046 is eight choking animations in a
+    row, `hrt_choking_anim` through `lex_choking_anim`, then the `inc_loop`
+    code routine. None of them ends in ANI_END; each ends in an
+    ANI_CHANGEANIM, so the only boundary the source gives is the next
+    label. Inside such a routine the branch targets are all `#local`
+    (`#loop`), never column-0 -- which is what makes the next column-0
+    label a boundary rather than a branch target.
+    """
+    for j in range(start, len(lines)):
+        if SUBR_RE.match(lines[j]) or GLOBAL_LABEL_RE.match(lines[j]):
+            return j
+        if END_RE.match(lines[j]) or REPEAT_RE.match(lines[j]):
+            return j + 1
+    return len(lines)
+
+
 def _routine_span(lines: list[str], label: str) -> tuple[int, int] | None:
     wanted = label.upper()
     for i, line in enumerate(lines):
         sub = SUBR_RE.match(line)
         if sub and sub.group(1).upper() == wanted:
             return (i + 1, _body_stop(lines, i + 1))
+    # Not every animation is behind a SUBR. A routine may equally be named
+    # by a plain label in column 0 (UNDSEQ3.ASM's eight `*_choking_anim`),
+    # and the slave tables name those exactly as they name the SUBRs.
+    for i, line in enumerate(lines):
+        m = GLOBAL_LABEL_RE.match(line)
+        if m and m.group(1).upper() == wanted:
+            return (i + 1, _label_body_stop(lines, i + 1))
     return None
 
 

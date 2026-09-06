@@ -3,6 +3,7 @@
 #include "wm/arcade/wm_arcade_anim_combat.h"
 #include "wm/arcade/wm_arcade_butcount.h"
 #include "wm/frame_geometry.h"
+#include "wm/arcade/wm_arcade_lifebar.h"
 
 #include <string.h>
 
@@ -171,6 +172,69 @@ static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
         /* ANIM.ASM:3933 _ani_immobilize -- hold the victim still. Skipped
            when this wrestler is dizzy, and the source's own comment for
            the other guard: "don't immobilize blockers!" */
+        /*
+         * ANIM.ASM:3997 _ani_setoppvels -- the throw itself: the launch
+         * velocity handed to the wrestler being thrown. It works on the
+         * held wrestler if the link is mutual and on WHOIHIT otherwise, and
+         * the x and z signs come from the ATTACKER's facing, not the
+         * victim's, so a throw always goes the way the thrower is facing.
+         */
+        case WM_AOP_SETOPPVELS: {
+            wm_arcade_actor_t *v = actor->attach_proc;
+            if (!v || v->attach_proc != actor) v = actor->who_i_hit;
+            if (!v) break;
+            v->y_vel = o->b;
+            v->x_vel = (actor->facing_dir & WM_MOVE_RIGHT) ? o->a : -o->a;
+            v->z_vel = (actor->facing_dir & WM_MOVE_DOWN) ? o->c : -o->c;
+            break;
+        }
+        /*
+         * ANIM.ASM:2175 _ani_damageopp, "works on attached proc, or WHOIHIT
+         * if there isn't one". Full damage normally; the REDUCED figure
+         * when this victim was already hurt within the last 30 ticks, which
+         * is what stops a combo doing full damage on every blow; and the
+         * attacker's own NEXT_DAMAGE instead when he has one set and its
+         * SPECIAL_DAMAGE_TIME has not passed.
+         *
+         * The source then does the awards, the first-unblocked-hit message
+         * and the taunt-style RISK multiplier before calling adjust_health.
+         * Those need the award and message systems; the damage itself is
+         * applied through the same real LIFEBAR.ASM adjust_health every
+         * other caller in this port shares.
+         */
+        case WM_AOP_DAMAGEOPP: {
+            wm_arcade_actor_t *v = actor->attach_proc;
+            int32_t dmg = o->a;
+            if (!v) v = actor->who_i_hit;
+            if (!v) break;
+            if (v->last_damage &&
+                (int32_t)((env ? env->pcnt : 0u) - v->last_damage) <= 30)
+                dmg = o->b;
+            if (actor->next_damage &&
+                (env ? env->pcnt : 0u) <= actor->special_damage_time)
+                dmg = actor->next_damage;
+            wm_arcade_adjust_health(v, (int16_t)-dmg, actor, false,
+                                    env ? env->pcnt : 0u, 0, 0);
+            break;
+        }
+        /*
+         * ANIM.ASM:2130 _ani_slaveanim -- the victim runs a whole animation
+         * of his OWN. The source swaps a13 to the victim and calls
+         * change_anim1a outright, which is how a slam makes him play his
+         * landing rather than being posed frame by frame. The table is
+         * indexed by the victim's WRESTLERNUM, so each one lands in his own
+         * way. Behind the same mutual-link check as everything else here.
+         */
+        case WM_AOP_SLAVEANIM: {
+            wm_arcade_actor_t *v = actor->attach_proc;
+            const char *label;
+            if (!v || v->attach_proc != actor) break;
+            label = wm_anim_slave_label((size_t)o->a, v->wrestler_num);
+            if (!label || !env || !env->change_opp_anim) break;
+            v->puppet_frame = 0;      /* he drives himself again now */
+            env->change_opp_anim(v, label, env->slave_user);
+            break;
+        }
         case WM_AOP_IMMOBILIZE:
             if (!actor->dizzy && actor->who_i_hit &&
                 actor->who_i_hit->player_mode != WM_PMODE_BLOCK)

@@ -84,7 +84,9 @@ def _button_mask(expr: str) -> int:
 CMD_RE = re.compile(
     r"^\s*(?:\.word|W+L+W*)\s+(" + "|".join(COMMANDS) + r")\b\s*,?\s*(.*)$", re.I)
 EQU_RE = re.compile(r"^\s*(#[A-Za-z_][A-Za-z0-9_]*)\s+equ\s+(.+)$", re.I)
-HEX_RE = re.compile(r"\b([0-9A-Fa-f]+)h\b")
+# The assembler accepts either case for its trailing-h hex, and the
+# sequence files use both -- `090000h` two lines from `0000H`.
+HEX_RE = re.compile(r"\b([0-9A-Fa-f]+)[hH]\b")
 
 
 # The `.EQU` reader and the table of plain global constants live in

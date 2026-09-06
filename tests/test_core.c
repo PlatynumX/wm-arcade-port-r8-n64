@@ -1591,6 +1591,93 @@ static void test_superslave2_puppets_the_victim(void) {
     }
 }
 
+/* ANI_SLAVEANIM / ANI_DAMAGEOPP: the victim's own landing, and the hurt. */
+static const char *g_slaved_label;
+static void slaved_anim_sink(wm_arcade_actor_t *opp, const char *label,
+                             void *user) {
+    (void)opp; (void)user;
+    g_slaved_label = label;
+}
+
+static void test_slaveanim_and_damageopp(void) {
+    static const struct { int32_t num; const char *expect; } cases[] = {
+        { WM_ROSTER_RAZOR, "rzr_slamnobounce_anim" },
+        { WM_ROSTER_YOKO,  "yok_slamnobounce_anim" },
+        { WM_ROSTER_DOINK, "dnk_slamnobounce_anim" }
+    };
+    const wm_anim_program *p = wm_anim_program_find("hrt_hiptoss_anim");
+    size_t i;
+
+    if (!p) return;
+
+    for (i = 0; i < 3; ++i) {
+        wm_arcade_actor_t a, opp;
+        wm_anim_exec ex;
+        wm_anim_env env;
+        int t;
+
+        memset(&a, 0, sizeof(a));
+        memset(&opp, 0, sizeof(opp));
+        memset(&env, 0, sizeof(env));
+        g_slaved_label = NULL;
+        a.wrestler_num = WM_ROSTER_BRET;
+        opp.wrestler_num = cases[i].num;
+        a.facing_dir = WM_MOVE_UP_RIGHT;
+        a.new_facing_dir = WM_MOVE_UP_RIGHT;
+        a.attach_proc = &opp;
+        opp.attach_proc = &a;
+        a.who_i_hit = &opp;
+        opp.life = 163;
+        env.opponent = &opp;
+        env.pcnt = 100u;
+        env.change_opp_anim = slaved_anim_sink;
+
+        wm_anim_exec_start(&ex, p, &a, 0, &env);
+        for (t = 0; t < 300 && !ex.ended; ++t) {
+            if (a.anim_mode & WM_MODE_CHECKHIT)
+                a.anim_mode |= (uint16_t)WM_MODE_STATUS;
+            wm_anim_exec_tick(&ex, &a, 0);
+        }
+
+        /* ANI_SLAVEANIM: the victim is handed a whole animation of his OWN
+           to run -- a slam makes him play his landing rather than being
+           posed. The table is indexed by HIS wrestler number, so each one
+           lands in his own way. */
+        CHECK(g_slaved_label != NULL);
+        CHECK(strcmp(g_slaved_label, cases[i].expect) == 0);
+        /* and it is a real animation this port can actually play */
+        CHECK(wm_anim_program_find(g_slaved_label) != NULL);
+
+        /* ANI_DAMAGEOPP: the throw actually hurt him. */
+        CHECK(opp.life < 163);
+    }
+
+    /* With no seam to reach the victim's backend, nothing is invented --
+       the op simply does not fire. */
+    {
+        wm_arcade_actor_t a, opp;
+        wm_anim_exec ex;
+        wm_anim_env env;
+        int t;
+        memset(&a, 0, sizeof(a));
+        memset(&opp, 0, sizeof(opp));
+        memset(&env, 0, sizeof(env));
+        g_slaved_label = NULL;
+        a.wrestler_num = WM_ROSTER_BRET;
+        opp.wrestler_num = WM_ROSTER_RAZOR;
+        a.attach_proc = &opp;
+        opp.attach_proc = &a;
+        env.opponent = &opp;
+        wm_anim_exec_start(&ex, p, &a, 0, &env);
+        for (t = 0; t < 300 && !ex.ended; ++t) {
+            if (a.anim_mode & WM_MODE_CHECKHIT)
+                a.anim_mode |= (uint16_t)WM_MODE_STATUS;
+            wm_anim_exec_tick(&ex, &a, 0);
+        }
+        CHECK(g_slaved_label == NULL);
+    }
+}
+
 /*
  * Razor, the eighth. He is the one wrestler whose dispatcher selects
  * animations by a typed id rather than by the source's routine name, so
@@ -5481,6 +5568,7 @@ int main(void) {
     test_roster_backend_animates();
     test_razor_backend_animates();
     test_superslave2_puppets_the_victim();
+    test_slaveanim_and_damageopp();
     test_anim_code_sound_routines();
     test_anim_code_state_routines();
     test_anim_code_runs_from_program();

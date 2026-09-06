@@ -110,6 +110,11 @@ SIMPLE_RE = re.compile(
 ATTACH_RE = re.compile(
     r"^\s*(?:\.word|W+L+W*)\s+(ANI_ATTACHZ)\s*,\s*([^,]+),\s*([^,]+),\s*"
     r"([^,]+)\s*$", re.I)
+SETOPPVELS_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_SETOPPVELS\s*,\s*([^,]+),\s*([^,]+),\s*"
+    r"([^,]+)\s*$", re.I)
+DAMAGEOPP_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_DAMAGEOPP\s*,\s*([^,]+),\s*([^,]+)\s*$", re.I)
 OPPMODE_RE = re.compile(
     r"^\s*(?:\.word|W+L+W*)\s+(ANI_SETOPPMODE|ANI_CLROPPMODE"
     r"|ANI_IMMOBILIZE)\s*,\s*(.+)$", re.I)
@@ -322,6 +327,27 @@ def program_for(path: pathlib.Path, label: str):
             ops.append((BRANCHES[bm.group(1).upper()], -1))
             continue
 
+        vm = SETOPPVELS_RE.match(line)
+        if vm:
+            ops.append(("SETOPPVELS", 0,
+                        wlcommands._value(vm.group(1), equates),
+                        wlcommands._value(vm.group(2), equates),
+                        wlcommands._value(vm.group(3), equates)))
+            continue
+
+        dm = DAMAGEOPP_RE.match(line)
+        if dm:
+            ops.append(("DAMAGEOPP",
+                        wlcommands._value(dm.group(1), equates),
+                        wlcommands._value(dm.group(2), equates)))
+            continue
+
+        sm = wlpuppet.SLAVEANIM_RE.match(line)
+        if sm:
+            ops.append(("SLAVEANIM",
+                        wlpuppet.slave_table_id_for(path, i, sm.group(1))))
+            continue
+
         am = ATTACH_RE.match(line)
         if am:
             ops.append(("ATTACHZ", 0,
@@ -445,7 +471,16 @@ def program_for(path: pathlib.Path, label: str):
         ops[at] = (op[0], label_at[target]) + op[2:]
 
     if not any(o[0] in ("FRAME", "SUPERSLAVE2") for o in ops):
-        raise ValueError(f"{label}: no frames")
+        # A frameless body is usually a sign the span is wrong -- the
+        # extractor ran off the end of a routine and collected commands
+        # belonging to nobody. But a few real animations genuinely draw
+        # nothing: ANIM.ASM's `wres_slave_anim` is four commands that park
+        # the wrestler while his attacker's animation poses him, and
+        # WRESTLE2.ASM's `start_run_flung` is an offset and a getup timer.
+        # What separates those from a runaway span is that they reach their
+        # own ANI_END; a runaway one never does.
+        if not wlanim._routine_terminates(lines, (start, stop)):
+            raise ValueError(f"{label}: no frames")
     return ops
 
 
@@ -483,8 +518,12 @@ def _c_op(op) -> str:
         text = f'"{op[2]}"'
     elif kind in ("SET_RPTCOUNT", "SETOPPMODE", "CLROPPMODE", "IMMOBILIZE"):
         args[0] = op[1]
-    elif kind == "ATTACHZ":
+    elif kind in ("ATTACHZ", "SETOPPVELS"):
         args[0], args[1], args[2] = op[2], op[3], op[4]
+    elif kind == "DAMAGEOPP":
+        args[0], args[1] = op[1], op[2]
+    elif kind == "SLAVEANIM":
+        args[0] = op[1]
     elif kind in ("SETMODE", "SETPLYRMODE"):
         args[0] = op[1]
     elif kind in ("ATTACK_ON", "ATTACK_ON_Z"):
@@ -539,13 +578,25 @@ def main(argv=None) -> int:
     # span HRTSEQ2/3/4 -- the same shape tools/wlcommands.py takes.
     ap.add_argument("--animation", nargs=2, action="append", default=[],
                     metavar=("SOURCE", "LABEL"))
+    # Every animation an ANI_SLAVEANIM table can hand a victim. Read out of
+    # the tables (tools/wlpuppet.py) rather than listed here, so the two
+    # cannot disagree about what the op is allowed to name.
+    ap.add_argument("--slave-targets", action="store_true")
     ap.add_argument("--out")
     ns = ap.parse_args(argv)
     entries = [(src, lab) for src, lab in ns.animation]
     if ns.source:
         entries += [(ns.source, l) for l in ns.label]
+    if ns.slave_targets:
+        entries += [(str(p), lab) for p, lab in wlpuppet.slave_targets()]
     if not entries:
         ap.error("nothing to emit: pass --animation, or --source with --label")
+    seen, unique = set(), []
+    for src, lab in entries:
+        if lab not in seen:
+            seen.add(lab)
+            unique.append((src, lab))
+    entries = unique
     if ns.out:
         pathlib.Path(ns.out).write_text(render_c(entries))
         print(f"wrote {len(entries)} animation programs -> {ns.out}")

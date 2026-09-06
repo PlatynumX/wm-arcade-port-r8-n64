@@ -6945,6 +6945,1206 @@ static const wm_anim_puppet_slot pup_yokseq3_3363[] = {
     { pup_yokseq3_3363_w8, 5 },
 };
 
+static const char *const slv_0[] = {
+    "xxx_burn_anim",
+    "xxx_burn_anim",
+    "xxx_burn_anim",
+    "xxx_burn_anim",
+    "xxx_burn_anim",
+    "xxx_burn_anim",
+    "xxx_burn_anim",
+    "xxx_burn_anim",
+    "xxx_burn_anim",
+};
+
+static const char *const slv_1[] = {
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+};
+
+static const char *const slv_2[] = {
+    "hrt_flyout_anim",
+    "rzr_flyout_anim",
+    "und_flyout_anim",
+    "yok_flyout_anim",
+    "shn_flyout_anim",
+    "bam_flyout_anim",
+    "dnk_flyout_anim",
+    0,
+    "lex_flyout_anim",
+};
+
+static const char *const slv_3[] = {
+    "hrt_tossed2_anim",
+    "rzr_tossed2_anim",
+    "und_tossed2_anim",
+    "yok_tossed2_anim",
+    "shn_tossed2_anim",
+    "bam_tossed2_anim",
+    "dnk_tossed2_anim",
+    0,
+    "lex_tossed2_anim",
+};
+
+static const char *const slv_4[] = {
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+};
+
+static const char *const slv_5[] = {
+    "hrt_break_neck3_anim",
+    "rzr_break_neck3_anim",
+    "und_break_neck3_anim",
+    "yok_break_neck3_anim",
+    "shn_break_neck4_anim",
+    "bam_break_neck3_anim",
+    "dnk_break_neck3_anim",
+    0,
+    "lex_break_neck3_anim",
+};
+
+static const char *const slv_6[] = {
+    "hrt_3_head_held_anim",
+    "rzr_3_head_held_anim",
+    "und_3_head_held_anim",
+    "yok_3_head_held_anim",
+    "shn_3_head_held_anim",
+    "bam_3_head_held_anim",
+    "dnk_3_head_held_anim",
+    0,
+    "lex_3_head_held_anim",
+};
+
+static const char *const slv_7[] = {
+    "hrt_break_neck2_anim",
+    "rzr_break_neck2_anim",
+    "und_break_neck2_anim",
+    "yok_break_neck2_anim",
+    "shn_break_neck2_anim",
+    "bam_break_neck2_anim",
+    "dnk_break_neck2_anim",
+    0,
+    "lex_break_neck2_anim",
+};
+
+static const char *const slv_8[] = {
+    "hrt_3_head_held_anim",
+    "rzr_3_head_held_anim",
+    "und_3_head_held_anim",
+    "yok_3_head_held_anim",
+    "shn_3_head_held_anim",
+    "bam_3_head_held_anim",
+    "dnk_3_head_held_anim",
+    0,
+    "lex_3_head_held_anim",
+};
+
+static const char *const slv_9[] = {
+    "hrt_slambounce2_anim",
+    "rzr_slambounce2_anim",
+    "und_slambounce2_anim",
+    "yok_slambounce2_anim",
+    "shn_slambounce2_anim",
+    "bam_slambounce2_anim",
+    "dnk_slambounce2_anim",
+    "und_slambounce2_anim",
+    "lex_slambounce2_anim",
+};
+
+static const char *const slv_10[] = {
+    "hrt_heldoh_anim",
+    "rzr_heldoh_anim",
+    "und_heldoh_anim",
+    "yok_heldoh_anim",
+    "shn_heldoh_anim",
+    "bam_heldoh_anim",
+    "dnk_heldoh_anim",
+    0,
+    "lex_heldoh_anim",
+};
+
+static const char *const slv_11[] = {
+    "hrt_break_face_anim",
+    "rzr_break_face_anim",
+    "und_break_face_anim",
+    "yok_break_face_anim",
+    "shn_break_face_anim",
+    "bam_break_face_anim",
+    "dnk_break_face_anim",
+    0,
+    "lex_break_face_anim",
+};
+
+static const char *const slv_12[] = {
+    "hrt_backbroken_anim",
+    "rzr_backbroken_anim",
+    "und_backbroken_anim",
+    "yok_backbroken_anim",
+    "shn_backbroken_anim",
+    "bam_backbroken_anim",
+    "dnk_backbroken_anim",
+    0,
+    "lex_backbroken_anim",
+};
+
+static const char *const slv_13[] = {
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+};
+
+static const char *const slv_14[] = {
+    "hrt_flyout_anim",
+    "rzr_flyout_anim",
+    "und_flyout_anim",
+    "yok_flyout_anim",
+    "shn_flyout_anim",
+    "bam_flyout_anim",
+    "dnk_flyout_anim",
+    0,
+    "lex_flyout_anim",
+};
+
+static const char *const slv_15[] = {
+    "hrt_tossed_anim",
+    "rzr_tossed_anim",
+    "und_tossed_anim",
+    "yok_tossed_anim",
+    "shn_tossed_anim",
+    "bam_tossed_anim",
+    "dnk_tossed_anim",
+    0,
+    "lex_tossed_anim",
+};
+
+static const char *const slv_16[] = {
+    "hrt_break_face2_anim",
+    "rzr_break_face2_anim",
+    "und_break_face2_anim",
+    "yok_break_face2_anim",
+    "shn_break_face2_anim",
+    "bam_break_face2_anim",
+    "dnk_break_face2_anim",
+    0,
+    "lex_break_face2_anim",
+};
+
+static const char *const slv_17[] = {
+    "hrt_break_face_anim",
+    "rzr_break_face_anim",
+    "und_break_face_anim",
+    "yok_break_face_anim",
+    "shn_break_face_anim",
+    "bam_break_face_anim",
+    "dnk_break_face_anim",
+    0,
+    "lex_break_face_anim",
+};
+
+static const char *const slv_18[] = {
+    "hrt_3_head_held_anim",
+    "rzr_3_head_held_anim",
+    "und_3_head_held_anim",
+    "yok_3_head_held_anim",
+    "shn_3_head_held_anim",
+    "bam_3_head_held_anim",
+    "dnk_3_head_held_anim",
+    0,
+    "lex_3_head_held_anim",
+};
+
+static const char *const slv_19[] = {
+    "hrt_3_head_held_anim",
+    "rzr_3_head_held_anim",
+    "und_3_head_held_anim",
+    "yok_3_head_held_anim",
+    "shn_3_head_held_anim",
+    "bam_3_head_held_anim",
+    "dnk_3_head_held_anim",
+    0,
+    "lex_3_head_held_anim",
+};
+
+static const char *const slv_20[] = {
+    "hrt_break_neck2_anim",
+    "rzr_break_neck2_anim",
+    "und_break_neck2_anim",
+    "yok_break_neck2_anim",
+    "shn_break_neck2_anim",
+    "bam_break_neck2_anim",
+    "dnk_break_neck2_anim",
+    0,
+    "lex_break_neck2_anim",
+};
+
+static const char *const slv_21[] = {
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+};
+
+static const char *const slv_22[] = {
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+};
+
+static const char *const slv_23[] = {
+    "hrt_fall_back_anim",
+    "rzr_fall_back_anim",
+    "und_fall_back_anim",
+    "yok_fall_back_anim",
+    "shn_fall_back_anim",
+    "bam_fall_back_anim",
+    "dnk_fall_back_anim",
+    0,
+    "lex_fall_back_anim",
+};
+
+static const char *const slv_24[] = {
+    "hrt_3_head_held_anim",
+    "rzr_3_head_held_anim",
+    "und_3_head_held_anim",
+    "yok_3_head_held_anim",
+    "shn_3_head_held_anim",
+    "bam_3_head_held_anim",
+    "dnk_3_head_held_anim",
+    0,
+    "lex_3_head_held_anim",
+};
+
+static const char *const slv_25[] = {
+    "hrt_break_face_anim",
+    "rzr_break_face_anim",
+    "und_break_face_anim",
+    "yok_break_face_anim",
+    "shn_break_face_anim",
+    "bam_break_face_anim",
+    "dnk_break_face_anim",
+    0,
+    "lex_break_face_anim",
+};
+
+static const char *const slv_26[] = {
+    "hrt_tossed_anim",
+    "rzr_tossed_anim",
+    "und_tossed_anim",
+    "yok_tossed_anim",
+    "shn_tossed_anim",
+    "bam_tossed_anim",
+    "dnk_tossed_anim",
+    0,
+    "lex_tossed_anim",
+};
+
+static const char *const slv_27[] = {
+    "hrt_break_neck2_anim",
+    "rzr_break_neck2_anim",
+    "und_break_neck2_anim",
+    "yok_break_neck2_anim",
+    "shn_break_neck2_anim",
+    "bam_break_neck2_anim",
+    "dnk_break_neck2_anim",
+    0,
+    "lex_break_neck2_anim",
+};
+
+static const char *const slv_28[] = {
+    "hrt_break_face3_anim",
+    "rzr_break_face3_anim",
+    "und_break_face3_anim",
+    "yok_break_face3_anim",
+    "shn_break_face3_anim",
+    "bam_break_face3_anim",
+    "dnk_break_face3_anim",
+    0,
+    "lex_break_face3_anim",
+};
+
+static const char *const slv_29[] = {
+    "xxx_get_face_rake_anim",
+    "xxx_get_face_rake_anim",
+    "xxx_get_face_rake_anim",
+    "xxx_get_face_rake_anim",
+    "xxx_get_face_rake_anim",
+    "xxx_get_face_rake_anim",
+    "xxx_get_face_rake_anim",
+    0,
+    "xxx_get_face_rake_anim",
+};
+
+static const char *const slv_30[] = {
+    "xxx_get_face_rake2_anim",
+    "xxx_get_face_rake2_anim",
+    "xxx_get_face_rake2_anim",
+    "xxx_get_face_rake2_anim",
+    "xxx_get_face_rake2_anim",
+    "xxx_get_face_rake2_anim",
+    "xxx_get_face_rake2_anim",
+    0,
+    "xxx_get_face_rake2_anim",
+};
+
+static const char *const slv_31[] = {
+    "hrt_slamnobounce_anim",
+    "rzr_slamnobounce_anim",
+    "und_slamnobounce_anim",
+    "yok_slamnobounce_anim",
+    "shn_slamnobounce_anim",
+    "bam_slamnobounce_anim",
+    "dnk_slamnobounce_anim",
+    "und_slamnobounce_anim",
+    "lex_slamnobounce_anim",
+};
+
+static const char *const slv_32[] = {
+    "hrt_tossed_anim",
+    "rzr_tossed_anim",
+    "und_tossed_anim",
+    "yok_tossed_anim",
+    "shn_tossed_anim",
+    "bam_tossed_anim",
+    "dnk_tossed_anim",
+    0,
+    "lex_tossed_anim",
+};
+
+static const char *const slv_33[] = {
+    "hrt_flyout_anim",
+    "rzr_flyout_anim",
+    "und_flyout_anim",
+    "yok_flyout_anim",
+    "shn_flyout_anim",
+    "bam_flyout_anim",
+    "dnk_flyout_anim",
+    0,
+    "lex_flyout_anim",
+};
+
+static const char *const slv_34[] = {
+    "hrt_3_head_held_anim",
+    "rzr_3_head_held_anim",
+    "und_3_head_held_anim",
+    "yok_3_head_held_anim",
+    "shn_3_head_held_anim",
+    "bam_3_head_held_anim",
+    "dnk_3_head_held_anim",
+    0,
+    "lex_3_head_held_anim",
+};
+
+static const char *const slv_35[] = {
+    "hrt_hitonground_anim",
+    "rzr_hitonground_anim",
+    "und_hitonground_anim",
+    "yok_hitonground_anim",
+    "shn_hitonground_anim",
+    "bam_hitonground_anim",
+    "dnk_hitonground_anim",
+    0,
+    "lex_hitonground_anim",
+};
+
+static const char *const slv_36[] = {
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+};
+
+static const char *const slv_37[] = {
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+};
+
+static const char *const slv_38[] = {
+    "hrt_3_head_held_anim",
+    "rzr_3_head_held_anim",
+    "und_3_head_held_anim",
+    "yok_3_head_held_anim",
+    "shn_3_head_held_anim",
+    "bam_3_head_held_anim",
+    "dnk_3_head_held_anim",
+    0,
+    "lex_3_head_held_anim",
+};
+
+static const char *const slv_39[] = {
+    "hrt_flyout_anim",
+    "rzr_flyout_anim",
+    "und_flyout2_anim",
+    "yok_flyout2_anim",
+    "shn_flyout_anim",
+    "bam_flyout2_anim",
+    "dnk_flyout2_anim",
+    0,
+    "lex_flyout2_anim",
+};
+
+static const char *const slv_40[] = {
+    "hrt_slambounce_anim",
+    "rzr_slambounce_anim",
+    "und_slambounce_anim",
+    "yok_slambounce_anim",
+    "shn_slambounce_anim",
+    "bam_slambounce_anim",
+    "dnk_slambounce_anim",
+    "und_slambounce_anim",
+    "lex_slambounce_anim",
+};
+
+static const char *const slv_41[] = {
+    "hrt_heldoh_anim",
+    "rzr_heldoh_anim",
+    "und_heldoh_anim",
+    "yok_heldoh_anim",
+    "shn_heldoh_anim",
+    "bam_heldoh_anim",
+    "dnk_heldoh_anim",
+    0,
+    "lex_heldoh_anim",
+};
+
+static const char *const slv_42[] = {
+    "hrt_break_neck2_anim",
+    "rzr_break_neck2_anim",
+    "und_break_neck2_anim",
+    "yok_break_neck2_anim",
+    "shn_break_neck2_anim",
+    "bam_break_neck2_anim",
+    "dnk_break_neck2_anim",
+    0,
+    "lex_break_neck2_anim",
+};
+
+static const char *const slv_43[] = {
+    "hrt_slambounce_anim",
+    "rzr_slambounce_anim",
+    "und_slambounce_anim",
+    "yok_slambounce_anim",
+    "shn_slambounce_anim",
+    "bam_slambounce_anim",
+    "dnk_slambounce_anim",
+    "und_slambounce_anim",
+    "lex_slambounce_anim",
+};
+
+static const char *const slv_44[] = {
+    "hrt_slambounce_anim",
+    "rzr_slambounce_anim",
+    "und_slambounce_anim",
+    "yok_slambounce_anim",
+    "shn_slambounce_anim",
+    "bam_slambounce_anim",
+    "dnk_slambounce_anim",
+    "und_slambounce_anim",
+    "lex_slambounce_anim",
+};
+
+static const char *const slv_45[] = {
+    "hrt_breakneck2_anim",
+    "rzr_breakneck2_anim",
+    "und_breakneck2_anim",
+    "yok_breakneck2_anim",
+    "shn_breakneck2_anim",
+    "bam_breakneck2_anim",
+    "dnk_breakneck2_anim",
+    "lex_breakneck2_anim",
+    "lex_breakneck2_anim",
+};
+
+static const char *const slv_46[] = {
+    "hrt_slamnobounce_anim",
+    "rzr_slamnobounce_anim",
+    "und_slamnobounce_anim",
+    "yok_slamnobounce_anim",
+    "shn_slamnobounce_anim",
+    "bam_slamnobounce_anim",
+    "dnk_slamnobounce_anim",
+    "und_slamnobounce_anim",
+    "lex_slamnobounce_anim",
+};
+
+static const char *const slv_47[] = {
+    "hrt_flyout_anim",
+    "rzr_flyout_anim",
+    "und_flyout_anim",
+    "yok_flyout_anim",
+    "shn_flyout_anim",
+    "bam_flyout_anim",
+    "dnk_flyout_anim",
+    0,
+    "lex_flyout_anim",
+};
+
+static const char *const slv_48[] = {
+    "hrt_tossed_anim",
+    "rzr_tossed_anim",
+    "und_tossed_anim",
+    "yok_tossed_anim",
+    "shn_tossed_anim",
+    "bam_tossed_anim",
+    "dnk_tossed_anim",
+    0,
+    "lex_tossed_anim",
+};
+
+static const char *const slv_49[] = {
+    "hrt_3_head_held_anim",
+    "rzr_3_head_held_anim",
+    "und_3_head_held_anim",
+    "yok_3_head_held_anim",
+    "shn_3_head_held_anim",
+    "bam_3_head_held_anim",
+    "dnk_3_head_held_anim",
+    0,
+    "lex_3_head_held_anim",
+};
+
+static const char *const slv_50[] = {
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+};
+
+static const char *const slv_51[] = {
+    "hrt_slamnobounce_anim",
+    "rzr_slamnobounce_anim",
+    "und_slamnobounce_anim",
+    "yok_slamnobounce_anim",
+    "shn_slamnobounce_anim",
+    "bam_slamnobounce_anim",
+    "dnk_slamnobounce_anim",
+    "und_slamnobounce_anim",
+    "lex_slamnobounce_anim",
+};
+
+static const char *const slv_52[] = {
+    "hrt_hitonground_anim",
+    "rzr_hitonground_anim",
+    "und_hitonground_anim",
+    "yok_hitonground_anim",
+    "shn_hitonground_anim",
+    "bam_hitonground_xflip_anim",
+    "dnk_hitonground_anim",
+    0,
+    "lex_hitonground_anim",
+};
+
+static const char *const slv_53[] = {
+    "hrt_flyout_anim",
+    "rzr_flyout_anim",
+    "und_flyout_anim",
+    "yok_flyout_anim",
+    "shn_flyout_anim",
+    "bam_flyout_anim",
+    "dnk_flyout_anim",
+    0,
+    "lex_flyout_anim",
+};
+
+static const char *const slv_54[] = {
+    "hrt_flyout_anim",
+    "rzr_flyout_anim",
+    "und_flyout_anim",
+    "yok_flyout_anim",
+    "shn_flyout_anim",
+    "bam_flyout_anim",
+    "dnk_flyout_anim",
+    0,
+    "lex_flyout_anim",
+};
+
+static const char *const slv_55[] = {
+    "hrt_3_head_held_anim",
+    "rzr_3_head_held_anim",
+    "und_3_head_held_anim",
+    "yok_3_head_held_anim",
+    "shn_3_head_held_anim",
+    "bam_3_head_held_anim",
+    "dnk_3_head_held_anim",
+    0,
+    "lex_3_head_held_anim",
+};
+
+static const char *const slv_56[] = {
+    "hrt_3_head_held_anim",
+    "rzr_3_head_held_anim",
+    "und_3_head_held_anim",
+    "yok_3_head_held_anim",
+    "shn_3_head_held_anim",
+    "bam_3_head_held_anim",
+    "dnk_3_head_held_anim",
+    0,
+    "lex_3_head_held_anim",
+};
+
+static const char *const slv_57[] = {
+    "hrt_break_neck2_anim",
+    "rzr_break_neck2_anim",
+    "und_break_neck2_anim",
+    "yok_break_neck2_anim",
+    "shn_break_neck2_anim",
+    "bam_break_neck2_anim",
+    "dnk_break_neck2_anim",
+    0,
+    "lex_break_neck2_anim",
+};
+
+static const char *const slv_58[] = {
+    "hrt_break_neck2_anim",
+    "rzr_break_neck2_anim",
+    "und_break_neck2_anim",
+    "yok_break_neck2_anim",
+    "shn_break_neck2_anim",
+    "bam_break_neck2_anim",
+    "dnk_break_neck2_anim",
+    0,
+    "lex_break_neck2_anim",
+};
+
+static const char *const slv_59[] = {
+    "hrt_hitonground_anim",
+    "rzr_hitonground_anim",
+    "und_hitonground_anim",
+    "yok_hitonground_anim",
+    "shn_hitonground_anim",
+    "bam_hitonground_anim",
+    "dnk_hitonground_anim",
+    0,
+    "lex_hitonground_anim",
+};
+
+static const char *const slv_60[] = {
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+};
+
+static const char *const slv_61[] = {
+    "hrt_fall_back_anim",
+    "rzr_fall_back_anim",
+    "und_fall_back_anim",
+    "yok_fall_back_anim",
+    "shn_fall_back_anim",
+    "bam_fall_back_anim",
+    "dnk_fall_back_anim",
+    0,
+    "lex_fall_back_anim",
+};
+
+static const char *const slv_62[] = {
+    "hrt_hitonground_anim",
+    "rzr_hitonground_anim",
+    "und_hitonground_anim",
+    "yok_hitonground_xflip_anim",
+    "shn_hitonground_anim",
+    "bam_hitonground_xflip_anim",
+    "dnk_hitonground_anim",
+    0,
+    "lex_hitonground_anim",
+};
+
+static const char *const slv_63[] = {
+    "hrt_flyout_anim",
+    "rzr_flyout_anim",
+    "und_flyout_anim",
+    "yok_flyout_anim",
+    "shn_flyout_anim",
+    "bam_flyout_anim",
+    "dnk_flyout_anim",
+    0,
+    "lex_flyout_anim",
+};
+
+static const char *const slv_64[] = {
+    "hrt_hitonground_anim",
+    "rzr_hitonground_anim",
+    "und_hitonground_anim",
+    "yok_hitonground_xflip_anim",
+    "shn_hitonground_anim",
+    "bam_hitonground_xflip_anim",
+    "dnk_hitonground_xflip_anim",
+    0,
+    "lex_hitonground_anim",
+};
+
+static const char *const slv_65[] = {
+    "hrt_flyout_anim",
+    "rzr_flyout_anim",
+    "und_flyout_anim",
+    "yok_flyout_anim",
+    "shn_flyout_anim",
+    "bam_flyout_anim",
+    "dnk_flyout_anim",
+    0,
+    "lex_flyout_anim",
+};
+
+static const char *const slv_66[] = {
+    "hrt_3_head_held_anim",
+    "rzr_3_head_held_anim",
+    "und_3_head_held_anim",
+    "yok_3_head_held_anim",
+    "shn_3_head_held_anim",
+    "bam_3_head_held_anim",
+    "dnk_3_head_held_anim",
+    0,
+    "lex_3_head_held_anim",
+};
+
+static const char *const slv_67[] = {
+    "hrt_up_anim",
+    "rzr_up_anim",
+    "und_up_anim",
+    "yok_up_anim",
+    "shn_up_anim",
+    "bam_up_anim",
+    "dnk_up_anim",
+    0,
+    "lex_up_anim",
+};
+
+static const char *const slv_68[] = {
+    "hrt_hitonground_anim",
+    "rzr_hitonground_anim",
+    "und_hitonground_xflip_anim",
+    "yok_hitonground_anim",
+    "shn_hitonground_xflip_anim",
+    "bam_hitonground_anim",
+    "dnk_hitonground_anim",
+    0,
+    "lex_hitonground_anim",
+};
+
+static const char *const slv_69[] = {
+    "hrt_arm_broken_anim",
+    "rzr_arm_broken_anim",
+    "und_arm_broken_anim",
+    "yok_arm_broken_anim",
+    "shn_arm_broken_anim",
+    "bam_arm_broken_anim",
+    "dnk_arm_broken_anim",
+    0,
+    "lex_arm_broken_anim",
+};
+
+static const char *const slv_70[] = {
+    "hrt_3_head_held_anim",
+    "rzr_3_head_held_anim",
+    "und_3_head_held_anim",
+    "yok_3_head_held_anim",
+    "shn_3_head_held_anim",
+    "bam_3_head_held_anim",
+    "dnk_3_head_held_anim",
+    0,
+    "lex_3_head_held_anim",
+};
+
+static const char *const slv_71[] = {
+    "hrt_break_neck_anim",
+    "rzr_break_neck4_anim",
+    "und_break_neck_anim",
+    "yok_break_neck_anim",
+    "shn_fall_back3_anim",
+    "bam_break_neck4_anim",
+    "dnk_break_neck_anim",
+    0,
+    "lex_break_neck4_anim",
+};
+
+static const char *const slv_72[] = {
+    "hrt_4_head_hit2_anim",
+    "rzr_4_head_hit2_anim",
+    "und_head_hit2_anim",
+    "yok_4_head_hit2_anim",
+    "shn_4_head_hit2_anim",
+    "bam_head_hit2_anim",
+    "dnk_head_hit2_anim",
+    0,
+    "lex_4_head_hit2_anim",
+};
+
+static const char *const slv_73[] = {
+    "hrt_break_neck_anim",
+    "rzr_break_neck_anim",
+    "und_break_neck_anim",
+    "yok_break_neck_anim",
+    "shn_break_neck_anim",
+    "bam_break_neck_anim",
+    "dnk_break_neck_anim",
+    0,
+    "lex_break_neck_anim",
+};
+
+static const char *const slv_74[] = {
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+};
+
+static const char *const slv_75[] = {
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+};
+
+static const char *const slv_76[] = {
+    "hrt_slambounce_anim",
+    "rzr_slambounce_anim",
+    "und_slambounce_anim",
+    "yok_slambounce_anim",
+    "shn_slambounce_anim",
+    "bam_slambounce_anim",
+    "dnk_slambounce_anim",
+    "und_slambounce_anim",
+    "lex_slambounce_anim",
+};
+
+static const char *const slv_77[] = {
+    "hrt_break_face2_anim",
+    "rzr_break_face2_anim",
+    "und_break_face2_anim",
+    "yok_break_face2_anim",
+    "shn_break_face2_anim",
+    "bam_break_face2_anim",
+    "dnk_break_face2_anim",
+    0,
+    "lex_break_face2_anim",
+};
+
+static const char *const slv_78[] = {
+    "hrt_break_face_anim",
+    "rzr_break_face_anim",
+    "und_break_face_anim",
+    "yok_break_face_anim",
+    "shn_break_face_anim",
+    "bam_break_face_anim",
+    "dnk_break_face_anim",
+    0,
+    "lex_break_face_anim",
+};
+
+static const char *const slv_79[] = {
+    "hrt_break_neck2_anim",
+    "rzr_break_neck2_anim",
+    "und_break_neck2_anim",
+    "yok_break_neck2_anim",
+    "shn_break_neck2_anim",
+    "bam_break_neck2_anim",
+    "dnk_break_neck2_anim",
+    "lex_break_neck2_anim",
+    "lex_break_neck2_anim",
+};
+
+static const char *const slv_80[] = {
+    "hrt_slambounce2_anim",
+    "rzr_slambounce2_anim",
+    "und_slambounce2_anim",
+    "yok_slambounce2_anim",
+    "shn_slambounce2_anim",
+    "bam_slambounce2_anim",
+    "dnk_slambounce2_anim",
+    "und_slambounce2_anim",
+    "lex_slambounce2_anim",
+};
+
+static const char *const slv_81[] = {
+    "hrt_flyout_anim",
+    "rzr_flyout_anim",
+    "und_flyout_anim",
+    "yok_flyout_anim",
+    "shn_flyout_anim",
+    "bam_flyout_anim",
+    "dnk_flyout_anim",
+    0,
+    "lex_flyout_anim",
+};
+
+static const char *const slv_82[] = {
+    "hrt_slambounce_anim",
+    "rzr_slambounce_anim",
+    "und_slambounce_anim",
+    "yok_slambounce_anim",
+    "shn_slambounce_anim",
+    "bam_slambounce_anim",
+    "dnk_slambounce_anim",
+    "und_slambounce_anim",
+    "lex_slambounce_anim",
+};
+
+static const char *const slv_83[] = {
+    "hrt_3_head_held_anim",
+    "rzr_3_head_held_anim",
+    "und_3_head_held_anim",
+    "yok_3_head_held_anim",
+    "shn_3_head_held_anim",
+    "bam_3_head_held_anim",
+    "dnk_3_head_held_anim",
+    0,
+    "lex_3_head_held_anim",
+};
+
+static const char *const slv_84[] = {
+    "hrt_3_head_held_anim",
+    "rzr_3_head_held_anim",
+    "und_3_head_held_anim",
+    "yok_3_head_held_anim",
+    "shn_3_head_held_anim",
+    "bam_3_head_held_anim",
+    "dnk_3_head_held_anim",
+    0,
+    "lex_3_head_held_anim",
+};
+
+static const char *const slv_85[] = {
+    "hrt_slamnobounce_anim",
+    "rzr_slamnobounce_anim",
+    "und_slamnobounce_anim",
+    "yok_slamnobounce_anim",
+    "shn_slamnobounce_anim",
+    "bam_slamnobounce_anim",
+    "dnk_slamnobounce_anim",
+    "und_slamnobounce_anim",
+    "lex_slamnobounce_anim",
+};
+
+static const char *const slv_86[] = {
+    "hrt_choking_anim",
+    "rzr_choking_anim",
+    "und_choking_anim",
+    "yok_choking_anim",
+    "shn_choking_anim",
+    "bam_choking_anim",
+    "dnk_choking_anim",
+    "und_choking_anim",
+    "lex_choking_anim",
+};
+
+static const char *const slv_87[] = {
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+    "start_run_flung",
+};
+
+static const char *const slv_88[] = {
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+    "wres_slave_anim",
+};
+
+static const char *const slv_89[] = {
+    "hrt_3_head_held_anim",
+    "rzr_3_head_held_anim",
+    "und_3_head_held_anim",
+    "yok_3_head_held_anim",
+    "shn_3_head_held_anim",
+    "bam_3_head_held_anim",
+    "dnk_3_head_held_anim",
+    0,
+    "lex_3_head_held_anim",
+};
+
+static const char *const slv_90[] = {
+    "hrt_break_neck2_anim",
+    "rzr_break_neck2_anim",
+    "und_break_neck2_anim",
+    "yok_break_neck2_anim",
+    "shn_break_neck2_anim",
+    "bam_break_neck2_anim",
+    "dnk_break_neck2_anim",
+    0,
+    "lex_break_neck2_anim",
+};
+
+static const char *const slv_91[] = {
+    "hrt_slamnobounce_anim",
+    "rzr_slamnobounce_anim",
+    "und_slamnobounce_anim",
+    "yok_slamnobounce_anim",
+    "shn_slamnobounce_anim",
+    "bam_slamnobounce_anim",
+    "dnk_slamnobounce_anim",
+    "und_slamnobounce_anim",
+    "lex_slamnobounce_anim",
+};
+
+static const char *const slv_92[] = {
+    "hrt_slambounce_anim",
+    "rzr_slambounce_anim",
+    "und_slambounce_anim",
+    "yok_slambounce_anim",
+    "shn_slambounce_anim",
+    "bam_slambounce_anim",
+    "dnk_slambounce_anim",
+    "und_slambounce_anim",
+    "lex_slambounce_anim",
+};
+
+static const char *const slv_93[] = {
+    "hrt_flyout_anim",
+    "rzr_flyout_anim",
+    "und_flyout_anim",
+    "yok_flyout_anim",
+    "shn_flyout_anim",
+    "bam_flyout_anim",
+    "dnk_flyout_anim",
+    0,
+    "lex_flyout_anim",
+};
+
+static const char *const slv_94[] = {
+    "hrt_fall_back_anim",
+    "rzr_fall_back_anim",
+    "und_fall_back_anim",
+    "yok_fall_back_anim",
+    "shn_fall_back_anim",
+    "bam_fall_back_anim",
+    "dnk_fall_back_anim",
+    0,
+    "lex_fall_back_anim",
+};
+
+static const char *const slv_95[] = {
+    "hrt_flyout_anim",
+    "rzr_flyout_anim",
+    "und_flyout_anim",
+    "yok_flyout_anim",
+    "shn_flyout_anim",
+    "bam_flyout_anim",
+    "dnk_flyout_anim",
+    0,
+    "lex_flyout_anim",
+};
+
+static const char *const slv_96[] = {
+    "hrt_slambounce_anim",
+    "rzr_slambounce_anim",
+    "und_slambounce_anim",
+    "yok_slambounce_anim",
+    "shn_slambounce_anim",
+    "bam_slambounce_anim",
+    "dnk_slambounce_anim",
+    "und_slambounce_anim",
+    "lex_slambounce_anim",
+};
+
+static const char *const slv_97[] = {
+    "hrt_heldoh_anim",
+    "rzr_heldoh_anim",
+    "und_heldoh_anim",
+    "yok_heldoh_anim",
+    "shn_heldoh_anim",
+    "bam_heldoh_anim",
+    "dnk_heldoh_anim",
+    0,
+    "lex_heldoh_anim",
+};
+
+static const char *const slv_98[] = {
+    "hrt_hitonground_anim",
+    "rzr_hitonground_anim",
+    "und_hitonground_anim",
+    "yok_hitonground_anim",
+    "shn_hitonground_anim",
+    "bam_hitonground_anim",
+    "dnk_hitonground_anim",
+    0,
+    "lex_hitonground_anim",
+};
+
+static const char *const slv_99[] = {
+    "hrt_3_head_held_anim",
+    "rzr_3_head_held_anim",
+    "und_3_head_held_anim",
+    "yok_3_head_held_anim",
+    "shn_3_head_held_anim",
+    "bam_3_head_held_anim",
+    "dnk_3_head_held_anim",
+    0,
+    "lex_3_head_held_anim",
+};
+
 static const wm_anim_puppet_table tables[] = {
     { "BAMSEQ2.ASM:2672", pup_bamseq2_2672 },
     { "BAMSEQ2.ASM:4866", pup_bamseq2_4866 },
@@ -7028,4 +8228,118 @@ const wm_anim_puppet_table *wm_anim_puppet_table_at(size_t id) {
 
 size_t wm_anim_puppet_table_count(void) {
     return sizeof(tables)/sizeof(tables[0]);
+}
+
+static const char *const *const slave_tables[] = {
+    slv_0,
+    slv_1,
+    slv_2,
+    slv_3,
+    slv_4,
+    slv_5,
+    slv_6,
+    slv_7,
+    slv_8,
+    slv_9,
+    slv_10,
+    slv_11,
+    slv_12,
+    slv_13,
+    slv_14,
+    slv_15,
+    slv_16,
+    slv_17,
+    slv_18,
+    slv_19,
+    slv_20,
+    slv_21,
+    slv_22,
+    slv_23,
+    slv_24,
+    slv_25,
+    slv_26,
+    slv_27,
+    slv_28,
+    slv_29,
+    slv_30,
+    slv_31,
+    slv_32,
+    slv_33,
+    slv_34,
+    slv_35,
+    slv_36,
+    slv_37,
+    slv_38,
+    slv_39,
+    slv_40,
+    slv_41,
+    slv_42,
+    slv_43,
+    slv_44,
+    slv_45,
+    slv_46,
+    slv_47,
+    slv_48,
+    slv_49,
+    slv_50,
+    slv_51,
+    slv_52,
+    slv_53,
+    slv_54,
+    slv_55,
+    slv_56,
+    slv_57,
+    slv_58,
+    slv_59,
+    slv_60,
+    slv_61,
+    slv_62,
+    slv_63,
+    slv_64,
+    slv_65,
+    slv_66,
+    slv_67,
+    slv_68,
+    slv_69,
+    slv_70,
+    slv_71,
+    slv_72,
+    slv_73,
+    slv_74,
+    slv_75,
+    slv_76,
+    slv_77,
+    slv_78,
+    slv_79,
+    slv_80,
+    slv_81,
+    slv_82,
+    slv_83,
+    slv_84,
+    slv_85,
+    slv_86,
+    slv_87,
+    slv_88,
+    slv_89,
+    slv_90,
+    slv_91,
+    slv_92,
+    slv_93,
+    slv_94,
+    slv_95,
+    slv_96,
+    slv_97,
+    slv_98,
+    slv_99,
+};
+
+const char *wm_anim_slave_label(size_t id, int32_t wrestler_num) {
+    if (id >= sizeof(slave_tables)/sizeof(slave_tables[0]))
+        return 0;
+    if (wrestler_num < 0 || wrestler_num >= 9) return 0;
+    return slave_tables[id][wrestler_num];
+}
+
+size_t wm_anim_slave_table_count(void) {
+    return sizeof(slave_tables)/sizeof(slave_tables[0]);
 }

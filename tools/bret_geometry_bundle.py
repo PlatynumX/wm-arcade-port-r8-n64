@@ -20,6 +20,32 @@ import bret_manifest  # noqa: E402
 import wimpimg  # noqa: E402
 
 
+# A WIMP image carries an eight-character name, so a longer one is stored
+# truncated: BAM.LOD's BURNBODY01..BURNBODY05 are five images in
+# bam_jms.img all called `BURNBODY`.
+NAME_FIELD = 8
+
+
+def _by_truncated_name(frame: str, lod_order: list[str], images: list,
+                       by_name: dict):
+    """The image a container holds under a name too long to spell.
+
+    The .LOD lists a container's frames in packing order and the container
+    stores them in that same order, so the nth full name that truncates to
+    a stem is the nth image carrying that stem. That only holds if the two
+    counts agree, so this resolves nothing unless they do.
+    """
+    stem = frame[:NAME_FIELD]
+    if stem == frame:
+        return None
+    wanted = [n for n in lod_order
+              if n[:NAME_FIELD] == stem and n not in by_name]
+    have = [im for im in images if im.name.upper() == stem]
+    if len(wanted) != len(have) or frame not in wanted:
+        return None
+    return have[wanted.index(frame)]
+
+
 def emit(out_path: pathlib.Path, lods: list[pathlib.Path], img_dir: pathlib.Path,
          visual_sources: list[pathlib.Path]) -> int:
     frames = bret_bundle.collect_frames(visual_sources)
@@ -28,6 +54,7 @@ def emit(out_path: pathlib.Path, lods: list[pathlib.Path], img_dir: pathlib.Path
     # in two LODs would silently take whichever came first, so that is
     # refused rather than resolved by luck.
     mapping: dict[str, str] = {}
+    order: dict[str, list[str]] = {}
     for lod in lods:
         for name, container in bret_manifest.parse_lod(lod).items():
             if name in mapping and mapping[name] != container:
@@ -35,6 +62,7 @@ def emit(out_path: pathlib.Path, lods: list[pathlib.Path], img_dir: pathlib.Path
                     f"{name} is mapped to {mapping[name]} and to {container}: "
                     f"two .LOD files disagree about the same frame")
             mapping[name] = container
+            order.setdefault(container, []).append(name)
     missing = [f for f in frames if f not in mapping]
     if missing:
         raise ValueError("no .LOD container mapping for: " + ", ".join(missing))
@@ -50,6 +78,8 @@ def emit(out_path: pathlib.Path, lods: list[pathlib.Path], img_dir: pathlib.Path
         _data, images = containers[container]
         by_name = {im.name.upper(): im for im in images}
         im = by_name.get(frame)
+        if im is None:
+            im = _by_truncated_name(frame, order[container], images, by_name)
         if im is None:
             raise ValueError(f"{frame}: listed in a .LOD but missing from {container}")
         resolved.append((frame, im))

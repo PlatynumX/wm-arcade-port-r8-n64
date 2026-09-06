@@ -102,6 +102,9 @@ typedef enum {
     WM_AOP_CLROPPMODE,     /* ANIM.ASM:2912 :81   a = ANIMODE bits to clear */
     WM_AOP_IMMOBILIZE,     /* ANIM.ASM:3933 :108  a = ticks */
     WM_AOP_IFOPPMODE,      /* ANIM.ASM:2417 :70   a = PLYRMODE, or ~mode */
+    WM_AOP_SETOPPVELS,     /* ANIM.ASM:3997 :110  a,b,c = x,y,z, the throw */
+    WM_AOP_DAMAGEOPP,      /* ANIM.ASM:2175 :66   a,b = full, reduced */
+    WM_AOP_SLAVEANIM,      /* ANIM.ASM:2130 :64   a = slave table id */
 
     /* Present in the source but needing a system this port does not have
        (a renderer, paired actors, a callback bridge). Carried so the
@@ -151,6 +154,16 @@ typedef struct wm_anim_env {
        not to this bridge. */
     void *sound_user;
     void (*sound)(void *user, uint16_t call);
+    /*
+     * ANIM.ASM:2130 ANI_SLAVEANIM makes the VICTIM start a whole animation
+     * of his own -- the source literally swaps a13 to the victim and calls
+     * change_anim1a. A slam does not pose him, it makes him run his own
+     * landing. That needs a way to reach his backend, which only the
+     * caller has.
+     */
+    void *slave_user;
+    void (*change_opp_anim)(wm_arcade_actor_t *opp, const char *label,
+                            void *user);
 } wm_anim_env;
 
 typedef struct {

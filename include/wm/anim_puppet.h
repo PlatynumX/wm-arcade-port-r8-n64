@@ -44,4 +44,14 @@ const wm_anim_puppet_row *wm_anim_puppet_row_at(size_t id,
                                                 int32_t wrestler_num,
                                                 size_t index);
 
+/*
+ * ANIM.ASM:2130 ANI_SLAVEANIM's tables: nine per-wrestler ANIMATION labels
+ * rather than frames. A slam does not pose the victim, it makes him run his
+ * own landing animation -- so the entry is the name of a routine, which is
+ * exactly what the program registry is keyed on. NULL where the source has
+ * a real zero (the spare roster slot, mostly).
+ */
+const char *wm_anim_slave_label(size_t id, int32_t wrestler_num);
+size_t wm_anim_slave_table_count(void);
+
 #endif

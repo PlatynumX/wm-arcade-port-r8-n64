@@ -254,38 +254,6 @@ const wm_visual_sequence *wm_bret_anim_sequence(wm_arcade_bret_anim_id_t id) {
     }
 }
 
-/*
- * hrt_4_block_anim's own ANI_WAITRELEASE,PLAYER_BLOCK_BIT sits between its
- * second and third frames (HRTSEQ4.ASM:104):
- *
- *     ANI_SETPLYRMODE,MODE_BLOCK
- *     WL 3,H4BK3A+FR1                       <- frame 0
- *   #4block:
- *     WL 3,H4BK3A+FR2                       <- frame 1
- *     ANI_SETMODE,...|MODE_FRICTION
- *     ANI_WAITRELEASE,PLAYER_BLOCK_BIT      <- parks here
- *     ANI_SETMODE,MODE_NOAUTOFLIP
- *     ANI_SETFACING
- *     WL 3,H4BK3A+FR1                       <- frame 2
- *     ANI_SETPLYRMODE,MODE_NORMAL
- *     ANI_END
- *
- * So the animation holds on frame 1 for exactly as long as the block button
- * is held, then plays its last frame and hands the wrestler back to
- * MODE_NORMAL. That hold is what actually keeps a blocking wrestler in
- * WM_PMODE_BLOCK, which is in turn what makes wm_arcade_try_attack_hit's own
- * hit_blocker check and mode_block's 160-tick push counter reachable at all.
- */
-#define WM_BRET_BLOCK_WAITRELEASE_FRAME ((size_t)1)
-
-static bool block_holding_waitrelease(const wm_bret_backend_actor *bva,
-                                      const wm_arcade_actor_t *actor) {
-    if (!bva || !actor) return false;
-    if (bva->visual.sequence != &wm_bret_block4_anim) return false;
-    if (bva->visual.ended) return false;
-    if (bva->visual.frame_index != WM_BRET_BLOCK_WAITRELEASE_FRAME) return false;
-    return (actor->but_val_cur & WM_BTN_BLOCK) != 0;
-}
 
 /* Returns true iff this call actually (re)started the sequence -- callers
    use that to gate one-shot "instant command processed when a new
@@ -799,15 +767,14 @@ void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
        frame 1 while the block button is still held, so the animation (and
        with it WM_PMODE_BLOCK) lasts exactly as long as the player holds
        block, instead of running straight through in nine ticks. */
-    if (block_holding_waitrelease(bva, actor)) {
-        /* Both tracks are held: the flat one because callers still read
-           its frame index, the program one because it is what actually
-           runs the animation. hrt_4_block_anim's program is unbranching
-           and shares the flat list's three frames, so they stay in step
-           and the same frame-1 test answers for both. */
-        bva->visual.ticks_left = 2;
-        if (bva->prog.program) bva->prog.ticks_left = 2;
-    }
+    /*
+     * hrt_4_block_anim's ANI_WAITRELEASE used to be special-cased here,
+     * holding both tracks by hand while the block button stayed down. It
+     * is a real opcode now (WM_AOP_WAITRELEASE), so the program parks
+     * itself and the flat track follows it like every other wait. The
+     * hand-rolled version is deleted rather than left to drift beside the
+     * op that replaced it.
+     */
     /*
      * The flat leg track no longer runs on its own timing while a program
      * is driving. It never could keep up once ANI_WAITHITGND existed -- a

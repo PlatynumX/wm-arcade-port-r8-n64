@@ -87,6 +87,11 @@ CODE_RE = re.compile(
     r"^\s*(?:\.word|W+L+W*)\s+ANI_CODE\s*,\s*"
     r"(#?[A-Za-z_][A-Za-z0-9_]*)\s*$", re.I)
 
+# ANIM.ASM:119 -- branch when RPT_COUNT is at least the operand.
+RPTGE_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_IF_RPTCOUNT_GE\s*,\s*([^,]+)\s*,\s*"
+    r"(#?[A-Za-z_][A-Za-z0-9_]*)\s*$", re.I)
+
 BUTCOUNT_RE = re.compile(
     r"^\s*(?:\.word|W+L+W*)\s+(ANI_IF_BUTCOUNT_GE|ANI_IF_BUTCOUNT_LT)\s*,\s*"
     r"([A-Za-z_][A-Za-z0-9_]*)\s*,\s*([^,]+)\s*,\s*"
@@ -167,6 +172,15 @@ SETLONG_FIELDS = {"OBJ_GRAVITY": 0, "DEBRIS_X": 1}
 # ANIM.ASM:3512 _ani_setword, the WORD counterpart. Across the eight
 # playable wrestlers it names exactly three fields.
 SETWORD_FIELDS = {"USR_VAR1": 0, "USR_VAR2": 1, "DELAY_METER": 2}
+# ANIM.ASM:49 _ani_checkword reads the same fields ANI_SETWORD writes
+# and sets or clears MODE_STATUS from whether the word is non-zero.
+CHECKWORD_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_CHECKWORD\s*,\s*(\w+)\s*$", re.I)
+# ANIM.ASM:86 _ani_ifopp takes a VARIABLE-length list of wrestler
+# numbers terminated by -1: "sets STATUS if opponent is one of the
+# wrestlers in the list, else clears".
+IFOPP_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_IFOPP\s*,\s*(.+)$", re.I)
 SETWORD_RE = re.compile(
     r"^\s*(?:\.word|W+L+W*)\s+ANI_SETWORD\s*,\s*(\w+)\s*,\s*([^,]+)\s*$", re.I)
 SETLONG_RE = re.compile(
@@ -419,6 +433,13 @@ def program_for(path: pathlib.Path, label: str):
             ops.append(("CODE", cd.group(1)))
             continue
 
+        rg = RPTGE_RE.match(line)
+        if rg:
+            fixups.append((len(ops), rg.group(2)))
+            ops.append(("IF_RPTCOUNT_GE", -1,
+                        wlcommands._value(rg.group(1), equates)))
+            continue
+
         bc = BUTCOUNT_RE.match(line)
         if bc:
             field = bc.group(2).upper()
@@ -477,6 +498,32 @@ def program_for(path: pathlib.Path, label: str):
                 ops.append(("SETMODE", _mode_value(mm.group(2), MODE_BITS)))
             else:
                 ops.append(("SETPLYRMODE", _mode_value(mm.group(2), PLYR_MODES)))
+            continue
+
+        cw = CHECKWORD_RE.match(line)
+        if cw:
+            field = cw.group(1).upper()
+            if field not in SETWORD_FIELDS:
+                raise ValueError(
+                    f"{label}: ANI_CHECKWORD reads {cw.group(1)!r}, a process "
+                    f"field this port does not model")
+            ops.append(("CHECKWORD", SETWORD_FIELDS[field]))
+            continue
+
+        io = IFOPP_RE.match(line)
+        if io:
+            nums = []
+            for tok in io.group(1).split(","):
+                tok = tok.strip()
+                if not tok:
+                    continue
+                v = wlcommands._value(tok, equates)
+                if v < 0:
+                    break            # the list's own -1 terminator
+                nums.append(v)
+            if not nums:
+                raise ValueError(f"{label}: ANI_IFOPP names no wrestlers")
+            ops.append(("IFOPP", nums))
             continue
 
         sw = SETWORD_RE.match(line)
@@ -540,7 +587,8 @@ def program_for(path: pathlib.Path, label: str):
 
 BRANCH_OPS = {"GOTO", "IFSTATUS", "IFNOTSTATUS", "IFBLOCKED", "IF_RPTCOUNT",
               "IFNOT_RPTCOUNT",
-              "SLIDE_BACK", "IF_BUTCOUNT_GE", "IF_BUTCOUNT_LT", "IFOPPMODE"}
+              "SLIDE_BACK", "IF_BUTCOUNT_GE", "IF_BUTCOUNT_LT", "IFOPPMODE",
+              "IF_RPTCOUNT_GE"}
 # Ops carrying (mode, a, b, c, d, e) from wlcommands' 5-tuple shape.
 # Every op that comes out of wlcommands' command table carries the same
 # (kind, mode, a, b, c) shape, so this is DERIVED from that table rather
@@ -564,6 +612,8 @@ def _c_op(op) -> str:
         target = op[1]
         if kind in ("SLIDE_BACK", "IF_BUTCOUNT_GE", "IF_BUTCOUNT_LT"):
             args[0], args[1] = op[2], op[3]
+        elif kind == "IF_RPTCOUNT_GE":
+            args[0] = op[2]
         elif kind == "IFOPPMODE":
             args[0] = op[2]
     elif kind == "SUPERSLAVE2":
@@ -584,6 +634,15 @@ def _c_op(op) -> str:
         args[0] = op[1]
     elif kind in ("SETLONG", "SETWORD"):
         args[0], args[1] = op[1], op[2]
+    elif kind == "CHECKWORD":
+        args[0] = op[1]
+    elif kind == "IFOPP":
+        # A bit per wrestler number, so the variable-length source list
+        # becomes one operand: every use names two or fewer.
+        mask = 0
+        for n in op[1]:
+            mask |= 1 << n
+        args[0] = mask
     elif kind in ("SETMODE", "SETPLYRMODE"):
         args[0] = op[1]
     elif kind in ("ATTACK_ON", "ATTACK_ON_Z"):

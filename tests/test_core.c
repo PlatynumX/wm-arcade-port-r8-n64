@@ -3815,8 +3815,6 @@ static void test_anim_program_interpreter(void) {
                           true, NULL) == 0);
     CHECK(program_vs_flat("hrt_4_punch_anim", &wm_bret_light_punch4_anim,
                           true, NULL) == 0);
-    CHECK(program_vs_flat("hrt_2_kick_anim", &wm_bret_light_kick2_anim,
-                          true, NULL) == 0);
     CHECK(program_vs_flat("hrt_2_butt_anim", &wm_bret_butt2_anim,
                           true, NULL) == 0);
     CHECK(program_vs_flat("hrt_4_uppercut_anim", &wm_bret_uppercut4_anim,
@@ -3830,6 +3828,20 @@ static void test_anim_program_interpreter(void) {
     CHECK(program_vs_flat_buttons("hrt_knees_to_head_anim",
                                   &wm_bret_knees_to_head_anim,
                                   true, WM_BTN_KICK, NULL) == 0);
+
+    /*
+     * hrt_2_kick_anim stopped matching when ANI_HMBWAIT became real, and
+     * is right not to. Its `ANI_HMBWAIT,7,0,0` holds the connected kick's
+     * last frame for SEVEN more ticks and does nothing on a miss -- a
+     * three-way hold the flat extractor had no way to represent, so it
+     * dropped the line and the recovery ran short on every landed kick.
+     */
+    CHECK(program_vs_flat("hrt_2_kick_anim", &wm_bret_light_kick2_anim,
+                          true, &hit_ticks) != 0);
+    (void)program_vs_flat("hrt_2_kick_anim", &wm_bret_light_kick2_anim,
+                          false, &miss_ticks);
+    /* ...and on a miss it holds nothing, so the miss is the SHORTER one. */
+    CHECK(miss_ticks < hit_ticks);
 
     /* hrt_4_push_anim is the one that does NOT match even on the hit path,
        and it is right not to: its ANI_IFSTATUS skips a 5-tick frame when

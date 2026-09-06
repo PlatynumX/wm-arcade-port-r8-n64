@@ -190,6 +190,38 @@ typedef enum {
     /* ANIM.ASM:28 _ani_pause -- "hold current frame for a few ticks": it
        stuffs OANICNT and returns without a frame of its own. */
     WM_AOP_PAUSE,
+    /* ANIM.ASM:129 _ani_setflag: STATUS_FLAGS |= operand, a LONG. */
+    WM_AOP_SETFLAG,
+    /* ANIM.ASM:49 _ani_checkword: MODE_STATUS from whether the named
+       field is non-zero -- ANI_SETWORD's field ids, ANI_SETWORD's mirror. */
+    WM_AOP_CHECKWORD,
+    /*
+     * ANIM.ASM:86 _ani_ifopp -- "sets STATUS if opponent is one of the
+     * wrestlers in the list, else clears". The source list is variable
+     * length and -1 terminated; `a` is those wrestler numbers as a bit
+     * mask, because no use names more than two.
+     */
+    WM_AOP_IFOPP,
+    /* ANIM.ASM:129 _ani_opp_face: the held wrestler's FACING_DIR, mirrored
+       across left/right when HIS sprite is flipped -- ANI_FACE for him. */
+    WM_AOP_FACE_OPP,
+    /*
+     * ANIM.ASM:103 _ani_hmbwait -- a three-way frame hold: `a` ticks if
+     * the attack HIT, `b` if it MISSED, `c` if it was BLOCKED. A zero for
+     * the chosen case falls straight through to the next command instead
+     * of holding, which is the source's `jrz _next_command`.
+     */
+    WM_AOP_HMBWAIT,
+    /*
+     * ANIM.ASM:20 _ani_waitrelease -- park on this frame while the named
+     * button is still held. It also keeps FACING_DIR and the sprite mirror
+     * following NEW_FACING_DIR each tick, "since we do the flip here".
+     * hrt_4_block_anim is the reason a block lasts as long as the player
+     * holds block; the Bret backend had been special-casing exactly this.
+     */
+    WM_AOP_WAITRELEASE,
+    /* ANIM.ASM:119 -- branch when RPT_COUNT is at least the operand. */
+    WM_AOP_IF_RPTCOUNT_GE,
     WM_AOP_CLR_STATUS,
 
     /* ANIM.ASM:1277 _ani_code -- `move *a4+,a0,L / call a0`: an ordinary

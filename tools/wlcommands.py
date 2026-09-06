@@ -93,6 +93,10 @@ COMMANDS = {
     # ANIM.ASM:28 -- "hold current frame for a few ticks", a frame
     # hold with no frame of its own.
     "ANI_PAUSE":       ("PAUSE", 1, False),
+    "ANI_SETFLAG":     ("SETFLAG", 1, False),
+    "ANI_FACE_OPP":    ("FACE_OPP", 1, False),
+    "ANI_HMBWAIT":     ("HMBWAIT", 3, False),
+    "ANI_WAITRELEASE": ("WAITRELEASE", 1, False),
     "ANI_BOUNCE":     ("BOUNCE", 1, False),
     "ANI_CLR_STATUS":  ("CLR_STATUS", 0, False),
 }

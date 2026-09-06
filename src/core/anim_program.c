@@ -256,6 +256,36 @@ static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
                 env->rope_set_z(env->rope_user, bank, o->a, o->b);
             break;
         }
+        case WM_AOP_SETFLAG:
+            actor->status_flags |= (uint32_t)o->a;
+            break;
+        case WM_AOP_CHECKWORD: {
+            int32_t v = (o->a == 0) ? actor->usr_var1
+                      : (o->a == 1) ? actor->usr_var2 : actor->delay_meter;
+            if (v) actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
+            else actor->anim_mode &= (uint16_t)~WM_MODE_STATUS;
+            break;
+        }
+        case WM_AOP_IFOPP: {
+            /* The source walks CLOSEST_NUM's process, not ATTACH_PROC --
+               this asks who he is FIGHTING, not who he is holding. */
+            const wm_arcade_actor_t *opp = env ? env->opponent : 0;
+            int hit = opp && opp->wrestler_num >= 0 &&
+                      opp->wrestler_num < 32 &&
+                      (o->a & (1 << opp->wrestler_num));
+            if (hit) actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
+            else actor->anim_mode &= (uint16_t)~WM_MODE_STATUS;
+            break;
+        }
+        case WM_AOP_FACE_OPP: {
+            wm_arcade_actor_t *opp = actor->attach_proc;
+            int32_t dir = o->a;
+            if (!opp || opp->attach_proc != actor) break;
+            if (opp->obj_control & WM_OBJ_FLIPH)
+                dir ^= (int32_t)(WM_MOVE_LEFT | WM_MOVE_RIGHT);
+            opp->facing_dir = dir;
+            break;
+        }
         case WM_AOP_XFLIP_OPP: {
             wm_arcade_actor_t *opp = actor->attach_proc;
             if (!opp || opp->attach_proc != actor) break;
@@ -570,6 +600,37 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
                 exec->ticks_left = (uint16_t)(o->a > 0 ? o->a : 1);
                 exec->waiting = false;
                 return;
+            case WM_AOP_HMBWAIT: {
+                /* Blocked wins over hit, and hit over missed -- the order
+                   the source checks them in. */
+                int32_t ticks = actor
+                    ? (actor->hitblocker ? o->c
+                       : (actor->anim_mode & WM_MODE_STATUS) ? o->a : o->b)
+                    : o->b;
+                if (ticks <= 0) { pc = pc + 1; continue; }
+                exec->next_pc = pc + 1;
+                exec->ticks_left = (uint16_t)ticks;
+                return;
+            }
+            case WM_AOP_WAITRELEASE: {
+                int held = actor &&
+                    (actor->but_val_cur & (uint16_t)(1u << o->a));
+                if (!held) { pc = pc + 1; continue; }
+                /* "since we do the flip here, we have to update FACING_DIR
+                   too" -- both follow NEW_FACING_DIR while parked. */
+                actor->facing_dir = actor->new_facing_dir;
+                if (actor->new_facing_dir & WM_MOVE_RIGHT)
+                    actor->obj_control &= (uint16_t)~WM_OBJ_FLIPH;
+                else
+                    actor->obj_control |= (uint16_t)WM_OBJ_FLIPH;
+                exec->next_pc = pc;
+                exec->ticks_left = 1;
+                return;
+            }
+            case WM_AOP_IF_RPTCOUNT_GE:
+                pc = ((int32_t)exec->rpt_count >= o->a)
+                    ? (size_t)o->target : pc + 1;
+                continue;
             case WM_AOP_PAUSE:
                 /* ANIM.ASM:28 -- OANICNT without touching the frame, so
                    whatever is showing stays up for the operand's ticks. */

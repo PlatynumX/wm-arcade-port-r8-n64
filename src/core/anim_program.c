@@ -115,6 +115,67 @@ static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
         case WM_AOP_CLR_STATUS:
             actor->anim_mode &= (uint16_t)~WM_MODE_STATUS;
             break;
+        /* ANIM.ASM:4156 _ani_set_attach -- the link that STARTS a grapple:
+           this wrestler and the one he just hit each point at the other. */
+        case WM_AOP_SET_ATTACH:
+            if (actor->who_i_hit) {
+                actor->attach_proc = actor->who_i_hit;
+                actor->who_i_hit->attach_proc = actor;
+            }
+            break;
+        /*
+         * ANIM.ASM:851 _ani_detach -- the link that ENDS it. The source
+         * clears its own side first, then only clears the victim's if the
+         * victim really was pointing back (an unmatched pair is left
+         * alone), and finally rescues a victim still in a held mode by
+         * putting him ONGROUND rather than leaving him puppeted with
+         * nobody driving.
+         *
+         * MODE_HEADHELD is deliberately NOT in that list. The source had
+         * it and commented it out, with the reason: "This was fucking up
+         * the shawn franknsteiner move from headhold! Forcing him to dive
+         * down too low!"
+         */
+        case WM_AOP_DETACH: {
+            wm_arcade_actor_t *victim = actor->attach_proc;
+            if (!victim) break;
+            actor->attach_proc = 0;
+            if (victim->attach_proc != actor) break;
+            victim->attach_proc = 0;
+            if (victim->player_mode == WM_PMODE_PUPPET ||
+                victim->player_mode == WM_PMODE_PUPPET2 ||
+                victim->player_mode == WM_PMODE_ATTACHED)
+                victim->player_mode = WM_PMODE_ONGROUND;
+            victim->puppet_frame = 0;
+            break;
+        }
+        /* ANIM.ASM:1039 _ani_attachz -- where the held wrestler hangs.
+           The source reads x and y as one long and z as a word, which
+           lands on PLYR.EQU:74-76's three adjacent words. */
+        case WM_AOP_ATTACHZ:
+            actor->attach_xoff = o->a;
+            actor->attach_yoff = o->b;
+            actor->attach_zoff = o->c;
+            break;
+        /* ANIM.ASM:2888/:2912 -- set or clear bits in the HELD wrestler's
+           ANIMODE, both behind the same mutual-link check: an animation
+           cannot reach into someone who is not actually held. */
+        case WM_AOP_SETOPPMODE:
+            if (actor->attach_proc && actor->attach_proc->attach_proc)
+                actor->attach_proc->anim_mode |= (uint16_t)o->a;
+            break;
+        case WM_AOP_CLROPPMODE:
+            if (actor->attach_proc && actor->attach_proc->attach_proc)
+                actor->attach_proc->anim_mode &= (uint16_t)~o->a;
+            break;
+        /* ANIM.ASM:3933 _ani_immobilize -- hold the victim still. Skipped
+           when this wrestler is dizzy, and the source's own comment for
+           the other guard: "don't immobilize blockers!" */
+        case WM_AOP_IMMOBILIZE:
+            if (!actor->dizzy && actor->who_i_hit &&
+                actor->who_i_hit->player_mode != WM_PMODE_BLOCK)
+                actor->who_i_hit->immobilize_time = o->a;
+            break;
         case WM_AOP_ATTACK_ON: {
             wm_arcade_attack_on_args_t args;
             args.attack_mode = o->mode;
@@ -281,6 +342,23 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
                       wm_arcade_button_count(actor, (int)o->a) >= o->b)
                     ? (size_t)o->target : pc + 1;
                 continue;
+            /*
+             * ANIM.ASM:2417 _ani_ifoppmode, with the source's own summary:
+             * "If opponent PLYRMODE is #MODE, jump to #BRANCH. If the high
+             * bit of #MODE is set, jump on PLYRMODE != ~#MODE." So one
+             * operand encodes both the equality and the inequality test,
+             * and the negative form is the ones' complement.
+             */
+            case WM_AOP_IFOPPMODE: {
+                const wm_arcade_actor_t *opp = (exec->env) ? exec->env->opponent : 0;
+                bool take = false;
+                if (opp) {
+                    if (o->a < 0) take = opp->player_mode != (uint16_t)(~o->a);
+                    else          take = opp->player_mode == (uint16_t)o->a;
+                }
+                pc = take ? (size_t)o->target : pc + 1;
+                continue;
+            }
             case WM_AOP_IF_BUTCOUNT_LT:
                 pc = (actor &&
                       wm_arcade_button_count(actor, (int)o->a) < o->b)

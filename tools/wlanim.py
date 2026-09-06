@@ -27,6 +27,15 @@ PREFIX_WORD_RE = re.compile(
     r"^\s*\.word\s+(ANI_SETMODE|ANI_SETSPEED|ANI_SETFACING|ANI_XFLIP)\b", re.I)
 HEX_SUFFIX_RE = re.compile(r"\b([0-9A-Fa-f]+)h\b")
 
+# ANI_SUPERSLAVE2 IS a frame -- it sets OANICNT and stops, showing the
+# attacker's frame and choosing the victim's at the same time. It carries no
+# single `FRAME+FRn` operand, so the flat extractor cannot represent it and
+# _frame_from_line does not return one; but a routine built entirely out of
+# them (a grapple, most of them) is not frameless, and treating it as such
+# made _body_stop cut it off at its own first ANI_END.
+SUPERSLAVE2_LINE_RE = re.compile(
+    r"^\s*\S+\s+ANI_SUPERSLAVE2\b", re.I)
+
 @dataclass(frozen=True)
 class Frame:
     name: str
@@ -200,7 +209,7 @@ def _body_stop(lines: list[str], start: int) -> int:
     for j in range(start, len(lines)):
         if SUBR_RE.match(lines[j]):
             break
-        if _frame_from_line(lines[j]):
+        if _frame_from_line(lines[j]) or SUPERSLAVE2_LINE_RE.match(lines[j]):
             break
         if END_RE.match(lines[j]) or REPEAT_RE.match(lines[j]):
             return j + 1

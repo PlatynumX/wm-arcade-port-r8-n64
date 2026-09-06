@@ -1511,7 +1511,7 @@ static void test_superslave2_puppets_the_victim(void) {
         { WM_ROSTER_DOINK, "Doink" }
     };
     const wm_anim_program *p = wm_anim_program_find("hrt_hiptoss_anim");
-    const char *seen[3];
+    const char *seen[3] = { NULL, NULL, NULL };
     size_t i;
 
     if (!p) return;
@@ -1541,14 +1541,23 @@ static void test_superslave2_puppets_the_victim(void) {
             if (a.anim_mode & WM_MODE_CHECKHIT)
                 a.anim_mode |= (uint16_t)WM_MODE_STATUS;
             wm_anim_exec_tick(&ex, &a, 0);
-            if (opp.puppet_frame) ++puppeted;
+            if (opp.puppet_frame) {
+                ++puppeted;
+                seen[i] = opp.puppet_frame;
+                /* The victim is hung at a real offset, built from BOTH
+                   frames' own animation origins -- not left at 0. */
+                CHECK(opp.attach_xoff != 0);
+            }
         }
         CHECK(puppeted > 10);
-        CHECK(opp.puppet_frame != NULL);
-        /* The victim is hung at a real offset, built from BOTH frames' own
-           animation origins -- not left at the origin. */
-        CHECK(opp.attach_xoff != 0);
-        seen[i] = opp.puppet_frame;
+        CHECK(seen[i] != NULL);
+        /* ...and the throw LETS GO at the end. ANI_DETACH clears the link
+           both ways and stops driving him, which is what turns a grapple
+           into a move with a beginning and an end rather than a hold that
+           never releases. */
+        CHECK(opp.puppet_frame == NULL);
+        CHECK(a.attach_proc == NULL);
+        CHECK(opp.attach_proc == NULL);
     }
 
     /* Each victim was shown his OWN artwork, not a shared pose. */

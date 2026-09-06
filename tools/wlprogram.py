@@ -100,12 +100,35 @@ PLYR_MODES = wlcommands._load_equ(wlcommands._ORIG / "PLYR.EQU", "MODE_")
 ATTACK_RE = re.compile(
     r"^\s*(?:\.word|W+L+W*)\s+(ANI_ATTACK_ON_Z|ANI_ATTACK_ON)\s*,\s*(.*)$", re.I)
 SIMPLE_RE = re.compile(
-    r"^\s*(?:\.word|W+L+W*)\s+(ANI_ATTACK_OFF|ANI_SETFACING|ANI_XFLIP)\s*$", re.I)
+    r"^\s*(?:\.word|W+L+W*)\s+(ANI_ATTACK_OFF|ANI_SETFACING|ANI_XFLIP"
+    r"|ANI_SET_ATTACH|ANI_DETACH)\s*$", re.I)
+
+# The attach machinery's operand-carrying ops. ANI_ATTACHZ is written
+# `.word ANI_ATTACHZ,x,y,z`; the source reads x and y as one long and z as a
+# word, which lands on PLYR.EQU's three adjacent ATTACH_XOFF/YOFF/ZOFF words
+# and means exactly what it reads like.
+ATTACH_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+(ANI_ATTACHZ)\s*,\s*([^,]+),\s*([^,]+),\s*"
+    r"([^,]+)\s*$", re.I)
+OPPMODE_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+(ANI_SETOPPMODE|ANI_CLROPPMODE"
+    r"|ANI_IMMOBILIZE)\s*,\s*(.+)$", re.I)
+# ANI_IFOPPMODE mode,#branch -- the high bit of the mode inverts the test.
+IFOPPMODE_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_IFOPPMODE\s*,\s*([^,]+),\s*"
+    r"(#?[A-Za-z_][A-Za-z0-9_]*)\s*$", re.I)
 SETMODE_RE = re.compile(
     r"^\s*(?:\.word|W+L+W*)\s+(ANI_SETMODE|ANI_SETPLYRMODE)\s*,\s*(.+)$", re.I)
 
 
 def _mode_value(expr: str, table: dict) -> int:
+    # ANI_IFOPPMODE's own negative form: the source writes `~MODE_ONGROUND`
+    # and reads it back as "jump on PLYRMODE != ~#MODE", so the operand is
+    # the ones' complement of the mode it means.
+    stripped = expr.strip()
+    if stripped.startswith("~"):
+        return ~_mode_value(stripped[1:], table)
+
     # Written with either separator: MODE_UNINT|MODE_NOAUTOFLIP in most
     # files, MODE_UNINT+MODE_NOAUTOFLIP throughout ADMSEQ.
     total = 0
@@ -299,6 +322,28 @@ def program_for(path: pathlib.Path, label: str):
             ops.append((BRANCHES[bm.group(1).upper()], -1))
             continue
 
+        am = ATTACH_RE.match(line)
+        if am:
+            ops.append(("ATTACHZ", 0,
+                        wlcommands._value(am.group(2), equates),
+                        wlcommands._value(am.group(3), equates),
+                        wlcommands._value(am.group(4), equates)))
+            continue
+
+        om = OPPMODE_RE.match(line)
+        if om:
+            kind = om.group(1).upper()[4:]
+            table = MODE_BITS if kind in ("SETOPPMODE", "CLROPPMODE") else None
+            ops.append((kind, _mode_value(om.group(2), table) if table
+                        else wlcommands._value(om.group(2), equates)))
+            continue
+
+        io = IFOPPMODE_RE.match(line)
+        if io:
+            fixups.append((len(ops), io.group(2)))
+            ops.append(("IFOPPMODE", -1, _mode_value(io.group(1), PLYR_MODES)))
+            continue
+
         ss = wlpuppet.SUPERSLAVE2_RE.match(line)
         if ss:
             # The table is named by a local label the files reuse, so it is
@@ -399,13 +444,13 @@ def program_for(path: pathlib.Path, label: str):
         op = ops[at]
         ops[at] = (op[0], label_at[target]) + op[2:]
 
-    if not any(o[0] == "FRAME" for o in ops):
+    if not any(o[0] in ("FRAME", "SUPERSLAVE2") for o in ops):
         raise ValueError(f"{label}: no frames")
     return ops
 
 
 BRANCH_OPS = {"GOTO", "IFSTATUS", "IFNOTSTATUS", "IFBLOCKED", "IF_RPTCOUNT",
-              "SLIDE_BACK", "IF_BUTCOUNT_GE", "IF_BUTCOUNT_LT"}
+              "SLIDE_BACK", "IF_BUTCOUNT_GE", "IF_BUTCOUNT_LT", "IFOPPMODE"}
 # Ops carrying (mode, a, b, c, d, e) from wlcommands' 5-tuple shape.
 MOTION_OPS = {"ZEROVELS", "ZERO_XZVELS", "SET_XVEL", "SET_YVEL", "SET_ZVEL",
               "MIN_YVEL", "FRICTION", "OFFSET", "SETSPEED", "STARTATTACK",
@@ -426,6 +471,8 @@ def _c_op(op) -> str:
         target = op[1]
         if kind in ("SLIDE_BACK", "IF_BUTCOUNT_GE", "IF_BUTCOUNT_LT"):
             args[0], args[1] = op[2], op[3]
+        elif kind == "IFOPPMODE":
+            args[0] = op[2]
     elif kind == "SUPERSLAVE2":
         text = f'"{op[2]}"'
         args[0], args[1], args[2] = op[1], op[3], op[4]
@@ -434,8 +481,10 @@ def _c_op(op) -> str:
     elif kind == "IFBUTTONS":
         args[0] = op[1]
         text = f'"{op[2]}"'
-    elif kind in ("SET_RPTCOUNT",):
+    elif kind in ("SET_RPTCOUNT", "SETOPPMODE", "CLROPPMODE", "IMMOBILIZE"):
         args[0] = op[1]
+    elif kind == "ATTACHZ":
+        args[0], args[1], args[2] = op[2], op[3], op[4]
     elif kind in ("SETMODE", "SETPLYRMODE"):
         args[0] = op[1]
     elif kind in ("ATTACK_ON", "ATTACK_ON_Z"):

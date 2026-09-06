@@ -93,6 +93,16 @@ typedef enum {
        across the eight playable wrestlers. */
     WM_AOP_SUPERSLAVE2,
 
+    /* The rest of the attach machinery -- what makes a grapple START and
+       END rather than merely animate. */
+    WM_AOP_SET_ATTACH,     /* ANIM.ASM:4156 :113  link to WHOIHIT, both ways */
+    WM_AOP_DETACH,         /* ANIM.ASM:851  :10   break the link, both ways */
+    WM_AOP_ATTACHZ,        /* ANIM.ASM:1039 :18   a,b,c = x,y,z attach offsets */
+    WM_AOP_SETOPPMODE,     /* ANIM.ASM:2888 :80   a = ANIMODE bits to set */
+    WM_AOP_CLROPPMODE,     /* ANIM.ASM:2912 :81   a = ANIMODE bits to clear */
+    WM_AOP_IMMOBILIZE,     /* ANIM.ASM:3933 :108  a = ticks */
+    WM_AOP_IFOPPMODE,      /* ANIM.ASM:2417 :70   a = PLYRMODE, or ~mode */
+
     /* Present in the source but needing a system this port does not have
        (a renderer, paired actors, a callback bridge). Carried so the
        program stays a faithful record, executed as no-ops. */

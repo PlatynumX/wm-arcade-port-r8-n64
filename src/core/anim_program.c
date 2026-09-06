@@ -2,6 +2,7 @@
 #include "wm/arcade/wm_arcade_veladd.h"
 #include "wm/arcade/wm_arcade_roll.h"
 #include "wm/arcade/wm_arcade_combo.h"
+#include "wm/arcade/wm_arcade_announcer.h"
 #include "wm/arcade/wmania_ring_geometry.h"
 #include "wm/arcade/wmania_rope_command.h"
 #include "wm/arcade/wm_arcade_combat_defs.h"
@@ -144,13 +145,17 @@ static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
         /*
          * ANIM.ASM:114 _ani_inc_combo_count. Two things beyond the count:
          * at exactly 8 the announcer is asked for HES_JUST_GONE_BERSERK
-         * (the speech queue, which this port does not have -- so the
-         * threshold is reached and nothing is said, rather than a sound
-         * being invented), and the man he hit is immobilised for 30 ticks,
-         * which is the combo lock.
+         * through DCSSOUND.ASM's IF_SILENT_ADD_VOICE (wm/arcade/
+         * wm_arcade_announcer.h) rather than a direct sound, and the man
+         * he hit is immobilised for 30 ticks, which is the combo lock.
          */
         case WM_AOP_INC_COMBO:
             ++actor->combo_count;
+            /* `CMPI 8,A0 / JRNE NO_BESERKER` -- at exactly eight, and
+               through IF_SILENT_ADD_VOICE rather than a direct sound. */
+            if (actor->combo_count == 8 && env && env->announce_if_silent)
+                env->announce_if_silent(env->announcer_user,
+                                        WM_VOICE_HES_JUST_GONE_BERSERK);
             if (actor->who_i_hit) actor->who_i_hit->immobilize_time = 30;
             break;
         /*

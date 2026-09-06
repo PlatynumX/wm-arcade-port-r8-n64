@@ -13,6 +13,7 @@
 #include "wm/anim_program.h"
 #include "wm/arcade/wm_arcade_veladd.h"
 #include "wm/arcade/wm_arcade_roll.h"
+#include "wm/arcade/wm_arcade_announcer.h"
 #include "wm/arcade/wm_arcade_combo.h"
 #include "wm/arcade/wmania_rope_command.h"
 #include "wm/arcade/wmania_rope_runtime.h"
@@ -3729,6 +3730,179 @@ static void test_combo_meter(void) {
     }
 }
 
+/*
+ * DCSSOUND.ASM's announcer voice queue: ADD_VOICE / IF_SILENT_ADD_VOICE /
+ * ANNOUNCE_VOICE, and the one call site in the VM that needs them.
+ */
+struct ann_log { uint16_t call[64]; int n; };
+
+static void ann_sound(void *user, uint16_t call) {
+    struct ann_log *l = (struct ann_log *)user;
+    if (l->n < (int)(sizeof(l->call) / sizeof(l->call[0])))
+        l->call[l->n] = call;
+    ++l->n;
+}
+
+static void ann_if_silent(void *user, uint16_t call) {
+    (void)wm_announcer_add_if_silent((wm_announcer_state *)user, call);
+}
+
+static void test_announcer_queue(void) {
+    wm_announcer_state a;
+    struct ann_log log;
+    bool voice;
+    int i;
+
+    /* RESET_VOICE_QUEUE: cursors equal, so silent. */
+    memset(&a, 0xAB, sizeof(a));
+    wm_announcer_init(&a);
+    CHECK(a.next == 0 && a.current == 0);
+    CHECK(wm_announcer_is_silent(&a));
+
+    /* IF_SILENT_ADD_VOICE takes the first line and refuses the second:
+       once something is queued the announcer is no longer silent. */
+    CHECK(wm_announcer_add_if_silent(&a, WM_VOICE_HES_JUST_GONE_BERSERK));
+    CHECK(!wm_announcer_is_silent(&a));
+    CHECK(!wm_announcer_add_if_silent(&a, 0x100u));
+    /* ADD_VOICE has no such gate. */
+    CHECK(wm_announcer_add(&a, 0x100u));
+    /* OUT_OF_RANGE_SOUND is reported, not queued. */
+    CHECK(!wm_announcer_add(&a, 0xFFFFu));
+
+    /* ANNOUNCE_VOICE drains one line per tick, in order, and reports
+       which side of DCSSOUND.ASM:2880's 0E0h split each one fell on. */
+    memset(&log, 0, sizeof(log));
+    voice = false;
+    CHECK(wm_announcer_tick(&a, &log, ann_sound, &voice));
+    CHECK(log.n == 1 && log.call[0] == WM_VOICE_HES_JUST_GONE_BERSERK);
+    CHECK(voice);                                  /* >= 0E0h: speech */
+    voice = true;
+    CHECK(wm_announcer_tick(&a, &log, ann_sound, &voice));
+    CHECK(log.n == 2 && log.call[1] == 0x100u);
+    CHECK(voice);
+    /* Empty again: NOTHING_TO_DO_NOW, and silent once more. */
+    CHECK(!wm_announcer_tick(&a, &log, ann_sound, &voice));
+    CHECK(log.n == 2);
+    CHECK(wm_announcer_is_silent(&a));
+
+    /* Below 0E0h is an ordinary sound, not a spoken line. */
+    wm_announcer_init(&a);
+    CHECK(wm_announcer_add(&a, WM_ANNOUNCE_VOICE_FIRST - 1u));
+    voice = true;
+    CHECK(wm_announcer_tick(&a, &log, ann_sound, &voice));
+    CHECK(!voice);
+
+    /* busy_ticks holds the queue between lines, and holds `silent` off
+       with it -- the stand-in for the source's play-to-completion sleep. */
+    wm_announcer_init(&a);
+    a.busy_ticks = 3;
+    CHECK(wm_announcer_add(&a, 0xE1u));
+    CHECK(wm_announcer_add(&a, 0xE2u));
+    memset(&log, 0, sizeof(log));
+    CHECK(wm_announcer_tick(&a, &log, ann_sound, NULL));
+    for (i = 0; i < 3; ++i) {
+        CHECK(!wm_announcer_tick(&a, &log, ann_sound, NULL));
+        CHECK(log.n == 1);
+        CHECK(!wm_announcer_is_silent(&a));
+    }
+    CHECK(wm_announcer_tick(&a, &log, ann_sound, NULL));
+    CHECK(log.n == 2 && log.call[1] == 0xE2u);
+
+    /*
+     * The ring wraps at the end of the queue, and one slot short of a
+     * full lap is as much as two bare cursors can distinguish: those
+     * drain in order.
+     */
+    wm_announcer_init(&a);
+    for (i = 0; i < WM_ANNOUNCE_QUEUE_SLOTS - 1; ++i)
+        CHECK(wm_announcer_add(&a, (uint16_t)(0xE0u + i)));
+    CHECK(a.next == WM_ANNOUNCE_QUEUE_SLOTS - 1);
+    memset(&log, 0, sizeof(log));
+    for (i = 0; i < WM_ANNOUNCE_QUEUE_SLOTS - 1; ++i) {
+        CHECK(wm_announcer_tick(&a, &log, ann_sound, NULL));
+        CHECK(log.n == i + 1);
+        CHECK(log.call[i] == (uint16_t)(0xE0u + i));
+    }
+    CHECK(log.n == WM_ANNOUNCE_QUEUE_SLOTS - 1);
+    CHECK(wm_announcer_is_silent(&a));
+    /*
+     * The lap itself: the source has no overflow check and no count, so
+     * the write cursor landing back on the read cursor reads as empty --
+     * the queue silently loses the lap rather than growing. Asserted
+     * because it is the source's behaviour, not because it is good.
+     */
+    wm_announcer_init(&a);
+    for (i = 0; i < WM_ANNOUNCE_QUEUE_SLOTS; ++i)
+        CHECK(wm_announcer_add(&a, (uint16_t)(0xE0u + i)));
+    CHECK(a.next == a.current);
+    CHECK(wm_announcer_is_silent(&a));
+
+    /* NULL is safe everywhere. */
+    wm_announcer_init(NULL);
+    CHECK(!wm_announcer_is_silent(NULL));
+    CHECK(!wm_announcer_add(NULL, 1));
+    CHECK(!wm_announcer_add_if_silent(NULL, 1));
+    CHECK(!wm_announcer_tick(NULL, &log, ann_sound, NULL));
+}
+
+/*
+ * ANIM.ASM:114 _ani_inc_combo_count's `CMPI 8,A0 / JRNE NO_BESERKER`:
+ * the berserk line is asked for at exactly the eighth hit, once, and
+ * through IF_SILENT_ADD_VOICE rather than as a direct sound.
+ */
+static void test_inc_combo_asks_the_announcer(void) {
+    static const wm_anim_op ops[] = {
+        { WM_AOP_INC_COMBO, 0, -1, 0, 0, 0, 0, 0, 0, NULL },
+        { WM_AOP_END,       0, -1, 0, 0, 0, 0, 0, 0, NULL }
+    };
+    static const wm_anim_program prog = {
+        "test_inc_combo", "ANIM.ASM", ops, 2
+    };
+    wm_arcade_actor_t a, v;
+    wm_announcer_state ann;
+    wm_anim_env env;
+    wm_anim_exec ex;
+    struct ann_log log;
+    int hit;
+
+    wm_announcer_init(&ann);
+    memset(&env, 0, sizeof(env));
+    env.announcer_user = &ann;
+    env.announce_if_silent = ann_if_silent;
+
+    memset(&a, 0, sizeof(a));
+    memset(&v, 0, sizeof(v));
+    a.who_i_hit = &v;
+
+    memset(&log, 0, sizeof(log));
+    for (hit = 1; hit <= 12; ++hit) {
+        wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(a.combo_count == hit);
+        /* Every hit locks the victim for 30 ticks. */
+        CHECK(v.immobilize_time == 30);
+        v.immobilize_time = 0;
+        /* Drain so the queue is silent again before the next hit; only
+           the eighth should ever have put anything in it. */
+        while (wm_announcer_tick(&ann, &log, ann_sound, NULL))
+            ;
+        CHECK(log.n == (hit >= 8 ? 1 : 0));
+        if (hit == 8)
+            CHECK(log.call[0] == WM_VOICE_HES_JUST_GONE_BERSERK);
+    }
+    CHECK(log.n == 1);
+
+    /* With no announcer wired the threshold is still reached; nothing is
+       said, and nothing is invented. */
+    memset(&a, 0, sizeof(a));
+    memset(&env, 0, sizeof(env));
+    for (hit = 1; hit <= 8; ++hit) {
+        wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+    }
+    CHECK(a.combo_count == 8);
+}
+
 /* The self-contained state commands: no subsystem behind any of them. */
 static void test_self_contained_ops(void) {
     wm_arcade_actor_t a, v;
@@ -6538,6 +6712,8 @@ int main(void) {
     test_getup_meter();
     test_wrestler_timers();
     test_combo_meter();
+    test_announcer_queue();
+    test_inc_combo_asks_the_announcer();
     test_self_contained_ops();
     test_anim_code_tail();
     test_rope_commands_from_animation();

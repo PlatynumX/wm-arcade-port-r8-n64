@@ -57,6 +57,7 @@ FIX38_ARCADE_C := \
     src/core/arcade/wm_arcade_veladd.c \
     src/core/arcade/wm_arcade_roll.c \
     src/core/arcade/wm_arcade_combo.c \
+    src/core/arcade/wm_arcade_announcer.c \
     src/core/arcade/wm_arcade_drone_data.c \
     src/core/anim_code.c \
     src/core/anim_puppet.c \

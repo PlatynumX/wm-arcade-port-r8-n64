@@ -33,6 +33,12 @@
  * bank and what to do to it; the rope processes belong to the match, so
  * the VM calls out through wm_anim_env and this is what it lands on.
  */
+/* IF_SILENT_ADD_VOICE, reached from the animation VM. */
+static void match_announce_if_silent(void *user, uint16_t call) {
+    wm_match_state *m = (wm_match_state *)user;
+    if (m) (void)wm_announcer_add_if_silent(&m->announcer, call);
+}
+
 static void match_rope_command(void *user, int bank, int action,
                                int selector, int32_t wrestler_z_fp16) {
     wm_match_state *m = (wm_match_state *)user;
@@ -164,6 +170,7 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
         for (b = 0; b < WM_MATCH_ROPE_BANKS; ++b)
             wm_rope_runtime_init_bank(&m->ropes[b], (WmRopeBank)b, false);
     }
+    wm_announcer_init(&m->announcer);       /* RESET_VOICE_QUEUE */
     wm_arcade_round_state_init(&m->round_state);
     wm_arcade_match_score_init(&m->score);
 }
@@ -222,6 +229,7 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
         for (b = 0; b < WM_MATCH_ROPE_BANKS; ++b)
             wm_rope_runtime_init_bank(&m->ropes[b], (WmRopeBank)b, false);
     }
+    wm_announcer_init(&m->announcer);       /* RESET_VOICE_QUEUE */
     wm_arcade_round_state_init(&m->round_state);
     wm_arcade_match_score_init(&m->score);
 }
@@ -414,6 +422,12 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             m->bret_visual[i].anim_env.rope_user = m;
             m->bret_visual[i].anim_env.rope_command = match_rope_command;
             m->bret_visual[i].anim_env.rope_set_z = match_rope_set_z;
+            m->wrestler_visual[i].anim_env.announcer_user = m;
+            m->wrestler_visual[i].anim_env.announce_if_silent =
+                match_announce_if_silent;
+            m->bret_visual[i].anim_env.announcer_user = m;
+            m->bret_visual[i].anim_env.announce_if_silent =
+                match_announce_if_silent;
 
             bret_cb = wm_bret_backend_callbacks(&m->bret_visual[i]);
             razor_cb = wm_wrestler_razor_callbacks(&m->wrestler_visual[i]);
@@ -474,6 +488,11 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
         for (b = 0; b < WM_MATCH_ROPE_BANKS; ++b)
             wm_rope_runtime_tick(&m->ropes[b], NULL);
     }
+
+    /* ANNOUNCE_VOICE, one line a tick, out through the same audio seam
+       every other sound in this port uses. */
+    (void)wm_announcer_tick(&m->announcer, m->anim_sound_user, m->anim_sound,
+                            NULL);
 
     {
         wm_arcade_react_callbacks_t react_cb;

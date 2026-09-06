@@ -12,6 +12,7 @@
 #include "wm/arcade/wm_arcade_round.h"
 #include "wm/arcade/wmania_rng.h"
 #include "wm/arcade/wmania_rope_runtime.h"
+#include "wm/arcade/wm_arcade_announcer.h"
 #include "wm/arcade/wm_arcade_wrestler_port.h"
 #include "wm/bret_backend.h"
 #include "wm/human_input.h"
@@ -118,6 +119,9 @@ typedef struct {
      * original, so they drive it here.
      */
     WmRopeRuntimeBank ropes[WM_MATCH_ROPE_BANKS];
+    /* DCSSOUND.ASM's announcer voice queue, drained one line a tick the
+       way ANNOUNCE_VOICE drains it. */
+    wm_announcer_state announcer;
     /* set_rope_z's second-half Z per bank (ANIM.ASM:41's RZ_HIGH/RZ_NORM). */
     uint16_t rope_second_half_z[WM_MATCH_ROPE_BANKS];
 

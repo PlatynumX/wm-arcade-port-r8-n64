@@ -331,6 +331,16 @@ typedef struct wm_anim_env {
      * a WmRopeAction, `selector` the source's own a2. For ANI_ROPE_Z the
      * action is WM_ROPE_Z_HIGH/NORM and `selector` is the strand.
      */
+    /*
+     * DCSSOUND.ASM's announcer queue (wm/arcade/wm_arcade_announcer.h).
+     * ANI_INC_COMBO asks for HES_JUST_GONE_BERSERK at exactly eight hits,
+     * and it asks through IF_SILENT_ADD_VOICE -- "say this only if the
+     * announcer has nothing else to say" -- which is why it needed the
+     * queue rather than a direct sound.
+     */
+    void *announcer_user;
+    void (*announce_if_silent)(void *user, uint16_t call);
+
     void *rope_user;
     void (*rope_command)(void *user, int bank, int action, int selector,
                          int32_t wrestler_z_fp16);

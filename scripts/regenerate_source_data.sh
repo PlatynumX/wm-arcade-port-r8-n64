@@ -99,6 +99,48 @@ python3 "$ROOT/tools/wlanim.py" \
 if [ ! -f "$ORIG/IMG/BRET.LOD" ]; then
     sh "$ROOT/scripts/fetch_original.sh"
 fi
+python3 "$ROOT/tools/wlcommands.py" \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_2_punch_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_4_punch_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_4_super_punch_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_2_super_punch2_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_4_super_punch2_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_2_kick_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_4_kick_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_2_super_kick_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_2_butt_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_4_butt_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_2_knee_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_4_knee_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_4_uppercut_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_2_stomp_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_4_stomp_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_2_ground_punch_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_4_ground_punch_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_4_push_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_4_jump_kick_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_4_knee_fall_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_kick_TB_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_4_knee_to_head_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_knees_to_head_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_2_pin_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_4_pin_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_2_butts_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_4_butts_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_flying_kick_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_tbukl_leap_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_running_ground_punch_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_combo_punch_anim \
+    --animation "$ORIG/HRTSEQ2.ASM" hrt_combo_kick_anim \
+    --animation "$ORIG/HRTSEQ3.ASM" hrt_3_head_held_stand_anim \
+    --animation "$ORIG/HRTSEQ3.ASM" hrt_3_fake_hold_anim \
+    --animation "$ORIG/HRTSEQ4.ASM" hrt_4_block_anim \
+    --animation "$ORIG/HRTSEQ4.ASM" hrt_fall_back_anim \
+    --animation "$ORIG/HRTSEQ4.ASM" hrt_facedown_getup_anim \
+    --animation "$ORIG/HRTSEQ4.ASM" hrt_faceup_getup_anim \
+    --animation "$ORIG/HRTSEQ4.ASM" hrt_4_faceup_getup2_anim \
+    --animation "$ORIG/HRTSEQ4.ASM" hrt_hitonground_facedown_anim \
+    --out "$ROOT/src/generated/bret_frame_commands.c"
 python3 "$ROOT/tools/bret_geometry_bundle.py" \
     --lod "$ORIG/IMG/BRET.LOD" \
     --img-dir "$ORIG/IMG" \

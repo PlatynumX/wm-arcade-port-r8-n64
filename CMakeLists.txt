@@ -21,6 +21,7 @@ add_library(wmcore STATIC
     src/core/match.c
     src/core/movement.c
     src/core/bret_backend.c
+    src/core/anim_frame_commands.c
     src/core/wrestler_backend.c
     src/core/human_input.c
     src/core/visual.c
@@ -37,6 +38,7 @@ add_library(wmcore STATIC
     src/generated/bret_attacks.c
     src/generated/bret_defense.c
     src/generated/bret_grapple.c
+    src/generated/bret_frame_commands.c
     src/generated/bret_frame_geometry.c
     src/generated/progress_wrestlers.c
 )

@@ -1546,7 +1546,19 @@ static void test_bret_attack_windows_batch3(void) {
         CHECK(bva.visual.sequence == cases[i].seq);
         CHECK(a.anim_mode & WM_MODE_UNINT);
         CHECK(a.anim_mode & WM_MODE_NOAUTOFLIP);
-        CHECK(a.x_vel == 0);   /* every one leads with ANI_ZEROVELS */
+        /* Every one leads with ANI_ZEROVELS -- but hrt_kick_TB_anim then
+           sets a real leap velocity in the same header
+           (ANI_SET_XVEL,-20000h,AM_FACE_REL and ANI_SET_YVEL,48000h), which
+           the blanket "zero x and z on every attack" approximation this
+           replaced could not represent. Its z stays zeroed; its x and y do
+           not. */
+        if (cases[i].id == WM_BRET_ANIM_KICK_TB) {
+            CHECK(a.x_vel != 0);
+            CHECK(a.y_vel == 0x70000);
+        } else {
+            CHECK(a.x_vel == 0);
+            CHECK(a.y_vel == 0);
+        }
         CHECK(a.z_vel == 0);
         if (cases[i].sets_facing)
             CHECK(a.facing_dir == WM_MOVE_UP_RIGHT);
@@ -1878,6 +1890,71 @@ static void test_bret_anim_transition_chain(void) {
         wm_bret_backend_tick(&bva, &a, 0);
     CHECK(bva.visual.ended);
     CHECK(bva.current_id == WM_BRET_ANIM_BUTTS2);
+}
+
+/* ANIM.ASM's inline motion commands, generated per animation by
+   tools/wlcommands.py. A wired attack has always played its real frames and
+   set its real attack box, but never moved -- these are what move it. The
+   port previously approximated the headers by zeroing x and z velocity on
+   every attack, which is wrong for any attack that leaps. */
+static void test_bret_frame_motion_commands(void) {
+    wm_arcade_actor_t a;
+    wm_bret_backend_actor bva;
+    int guard;
+
+    /* hrt_kick_TB_anim's header: ANI_ZEROVELS, then ANI_SET_YVEL,70000h and
+       ANI_SET_XVEL,-20000h,AM_FACE_REL, then ANI_OFFSET,5,0,0. The x value
+       is negated when the facing-right bit is clear (ANIM.ASM:1626), and
+       the offset moves him instantly. */
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_UP_RIGHT;   /* right bit set -> x used as written */
+    a.x_int = 100;
+    wm_bret_backend_init(&bva);
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_KICK_TB, &bva);
+    CHECK(a.y_vel == 0x70000);
+    CHECK(a.x_vel == -0x20000);
+    CHECK(a.x_int == 105);
+    CHECK(a.x_fixed == (105 << 16));
+    CHECK(a.z_vel == 0);
+
+    /* Facing left, the same command negates. */
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_UP_LEFT;
+    a.x_int = 100;
+    wm_bret_backend_init(&bva);
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_KICK_TB, &bva);
+    CHECK(a.x_vel == 0x20000);
+    CHECK(a.x_int == 95);   /* the offset flips too */
+
+    /* hrt_2_punch_anim: ANI_ZEROVELS in the header and a real
+       ANI_SET_YVEL,30000h partway through, on the connected-hit path. The
+       mid-animation one must fire when the animation reaches that frame,
+       not on selection. */
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_UP_RIGHT;
+    wm_bret_backend_init(&bva);
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_PUNCH2, &bva);
+    CHECK(a.y_vel == 0);
+    for (guard = 0; guard < 60 && bva.visual.frame_index != 6; ++guard)
+        wm_bret_backend_tick(&bva, &a, 0);
+    CHECK(bva.visual.frame_index == 6);
+    CHECK(a.y_vel == 0x30000);
+
+    /* hrt_4_knee_fall_anim carries an ANI_OFFSET,23,0,0 at frame 1 and both
+       a y and a z velocity at frame 3 -- three different command kinds in
+       one animation, all fired off the generated table. */
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_UP_RIGHT;
+    a.x_int = 0;
+    wm_bret_backend_init(&bva);
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_KNEE_FALL4, &bva);
+    for (guard = 0; guard < 60 && bva.visual.frame_index != 1; ++guard)
+        wm_bret_backend_tick(&bva, &a, 0);
+    CHECK(a.x_int == 23);
+    for (guard = 0; guard < 60 && bva.visual.frame_index != 3; ++guard)
+        wm_bret_backend_tick(&bva, &a, 0);
+    CHECK(a.y_vel == 0x50000);
+    CHECK(a.z_vel != 0);
 }
 
 /* ATTRACT.ASM:669 TURN_SOUNDS_OFF_IF_NEED gates the DCS_LOGO music on
@@ -4182,6 +4259,7 @@ int main(void) {
     test_bret_rptcount_loop();
     test_bret_attack_windows_batch6();
     test_bret_anim_transition_chain();
+    test_bret_frame_motion_commands();
     test_attract_dcs_logo_does_not_fall_through();
     test_bret_hurt_box_for_frame_real_geometry();
     test_bret_backend_tick_sets_real_hurt_box();

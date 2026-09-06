@@ -109,6 +109,9 @@ struct wm_arcade_actor {
     int32_t y_vel;
     int32_t z_vel;
     int32_t ground_y;
+    /* PLYR.EQU OBJ_FRICTION, set by ANIM.ASM's ANI_FRICTION (:22) together
+       with MODE_FRICTION. */
+    int32_t friction;
     int32_t roll_pos;
     int32_t usr_var1;
     int32_t usr_var2;              /* PLYR.EQU USR_VAR2; Yoko salt failure flag. */

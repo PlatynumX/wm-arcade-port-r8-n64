@@ -189,6 +189,72 @@ static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
             if (o->a == 0) actor->gravity = o->b;
             else actor->debris_x = o->b;
             break;
+        case WM_AOP_SETWORD:
+            if (o->a == 0) actor->usr_var1 = o->b;
+            else if (o->a == 1) actor->usr_var2 = o->b;
+            else actor->delay_meter = o->b;
+            break;
+        /* ANIM.ASM:50 _ani_face: the operand is a facing, XOR'd across
+           left/right when the sprite is mirrored so it means the same
+           direction on screen either way. */
+        case WM_AOP_FACE: {
+            int32_t dir = o->a;
+            if (actor->obj_control & WM_OBJ_FLIPH)
+                dir ^= (int32_t)(WM_MOVE_LEFT | WM_MOVE_RIGHT);
+            actor->facing_dir = dir;
+            break;
+        }
+        case WM_AOP_GRAVITY_OFF:
+            actor->anim_mode |= (uint16_t)WM_MODE_NOGRAVITY;
+            break;
+        /* ANIM.ASM:56 _ani_damage: `neg a0` first -- the source's comment
+           is "positive a0 = health increase", so the operand is the damage
+           and adjust_health takes it as a negative delta. */
+        case WM_AOP_DAMAGE:
+            wm_arcade_adjust_health(actor, (int16_t)-o->a, NULL, false,
+                                    env ? env->pcnt : 0u, NULL, NULL);
+            break;
+        /* ANIM.ASM:105 -- the held wrestler's PLYRMODE, behind the same
+           mutual-link check as the rest of the group, and refused on a
+           wrestler who is already dead. */
+        case WM_AOP_SETOPP_PLYRMODE: {
+            wm_arcade_actor_t *opp = actor->attach_proc;
+            if (!opp || opp->attach_proc != actor) break;
+            if (opp->player_mode == WM_PMODE_DEAD) break;
+            opp->player_mode = (uint16_t)o->a;
+            break;
+        }
+        /*
+         * ANIM.ASM:76 _ani_opp_getup. Target is ATTACH_PROC if there is
+         * one, else WHOIHIT -- note it does NOT check the link is mutual,
+         * unlike its neighbours. A NEGATIVE operand means "clear his
+         * DELAY_METER as well", and the time used is its absolute value;
+         * a dizzy victim keeps whatever getup time he had.
+         */
+        case WM_AOP_OPP_GETUP: {
+            wm_arcade_actor_t *opp = actor->attach_proc
+                ? actor->attach_proc : actor->who_i_hit;
+            int32_t time = o->a;
+            if (!opp) break;
+            if (time < 0) {
+                opp->delay_meter = 0;
+                time = -time;
+            }
+            if (opp->plyr_dizzy) break;
+            opp->getup_time = time;
+            break;
+        }
+        /* ANIM.ASM:24 _ani_attachvel: the held wrestler's three
+           velocities. Y and Z are absolute; X is always relative to the
+           ATTACKER's facing, negated when he faces left. */
+        case WM_AOP_ATTACHVEL: {
+            wm_arcade_actor_t *opp = actor->attach_proc;
+            if (!opp || !opp->attach_proc) break;
+            opp->y_vel = o->b;
+            opp->z_vel = o->c;
+            opp->x_vel = (actor->facing_dir & WM_MOVE_RIGHT) ? o->a : -o->a;
+            break;
+        }
         case WM_AOP_CLR_STATUS:
             actor->anim_mode &= (uint16_t)~WM_MODE_STATUS;
             break;
@@ -579,6 +645,10 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
                 continue;
             case WM_AOP_IF_RPTCOUNT:
                 pc = exec->rpt_count ? (size_t)o->target : pc + 1;
+                continue;
+            case WM_AOP_IFNOT_RPTCOUNT:
+                /* ANIM.ASM:91 `jrnz #fail2` -- the same test inverted. */
+                pc = !exec->rpt_count ? (size_t)o->target : pc + 1;
                 continue;
             /* ANIM.ASM:3214 `cmp a0,a14 / jrlt #fail`: the branch is taken
                when the count is at least the operand -- and :3239's

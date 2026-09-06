@@ -46,6 +46,9 @@ BRANCHES = {
     "ANI_IFNOTSTATUS": "IFNOTSTATUS",
     "ANI_IFBLOCKED":   "IFBLOCKED",
     "ANI_IF_RPTCOUNT": "IF_RPTCOUNT",
+    # ANIM.ASM:91 -- the same branch inverted: taken when RPT_COUNT
+    # has run out rather than while it is still going.
+    "ANI_IFNOT_RPTCOUNT": "IFNOT_RPTCOUNT",
     "ANI_GOTO":        "GOTO",
 }
 BRANCH_RE = re.compile(
@@ -161,6 +164,11 @@ def _mode_value(expr: str, table: dict) -> int:
 # port's actor, so both are emitted; a THIRD field would be a silent hole,
 # so anything else refuses.
 SETLONG_FIELDS = {"OBJ_GRAVITY": 0, "DEBRIS_X": 1}
+# ANIM.ASM:3512 _ani_setword, the WORD counterpart. Across the eight
+# playable wrestlers it names exactly three fields.
+SETWORD_FIELDS = {"USR_VAR1": 0, "USR_VAR2": 1, "DELAY_METER": 2}
+SETWORD_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_SETWORD\s*,\s*(\w+)\s*,\s*([^,]+)\s*$", re.I)
 SETLONG_RE = re.compile(
     r"^\s*(?:\.word|W+L+W*)\s+ANI_SETLONG\s*,\s*(\w+)\s*,\s*([^,]+)\s*$", re.I)
 
@@ -471,6 +479,17 @@ def program_for(path: pathlib.Path, label: str):
                 ops.append(("SETPLYRMODE", _mode_value(mm.group(2), PLYR_MODES)))
             continue
 
+        sw = SETWORD_RE.match(line)
+        if sw:
+            field = sw.group(1).upper()
+            if field not in SETWORD_FIELDS:
+                raise ValueError(
+                    f"{label}: ANI_SETWORD writes {sw.group(1)!r}, a process "
+                    f"field this port does not model")
+            ops.append(("SETWORD", SETWORD_FIELDS[field],
+                        wlcommands._value(sw.group(2), equates)))
+            continue
+
         sl = SETLONG_RE.match(line)
         if sl:
             field = sl.group(1).upper()
@@ -520,6 +539,7 @@ def program_for(path: pathlib.Path, label: str):
 
 
 BRANCH_OPS = {"GOTO", "IFSTATUS", "IFNOTSTATUS", "IFBLOCKED", "IF_RPTCOUNT",
+              "IFNOT_RPTCOUNT",
               "SLIDE_BACK", "IF_BUTCOUNT_GE", "IF_BUTCOUNT_LT", "IFOPPMODE"}
 # Ops carrying (mode, a, b, c, d, e) from wlcommands' 5-tuple shape.
 # Every op that comes out of wlcommands' command table carries the same
@@ -562,7 +582,7 @@ def _c_op(op) -> str:
         args[0], args[1] = op[1], op[2]
     elif kind == "SLAVEANIM":
         args[0] = op[1]
-    elif kind == "SETLONG":
+    elif kind in ("SETLONG", "SETWORD"):
         args[0], args[1] = op[1], op[2]
     elif kind in ("SETMODE", "SETPLYRMODE"):
         args[0] = op[1]

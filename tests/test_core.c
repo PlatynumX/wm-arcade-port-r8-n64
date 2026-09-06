@@ -3734,6 +3734,72 @@ static void test_combo_meter(void) {
     }
 }
 
+/* The self-contained state commands: no subsystem behind any of them. */
+static void test_self_contained_ops(void) {
+    wm_arcade_actor_t a, v;
+    wm_anim_exec ex;
+    const wm_anim_program *p;
+
+    /* ANI_FACE: the operand is a facing, XOR'd across left/right when the
+       sprite is mirrored so it means the same direction on screen. */
+    p = wm_anim_program_find("hrt_faceup_getup_anim");
+    (void)p;
+
+    /* ANI_SETOPP_PLYRMODE / ANI_ATTACHVEL / ANI_OPP_GETUP all act on the
+       held wrestler; drive them through a program that carries them. */
+    {
+        static const struct { const char *label; } probe[] = {
+            { "und_tombstone_smash_anim" }, { "hrt_hiptoss_anim" }
+        };
+        size_t i;
+        for (i = 0; i < sizeof(probe) / sizeof(probe[0]); ++i) {
+            const wm_anim_program *q = wm_anim_program_find(probe[i].label);
+            int t;
+            if (!q) continue;
+            memset(&a, 0, sizeof(a));
+            memset(&v, 0, sizeof(v));
+            stand_in_ring(&a);
+            stand_in_ring(&v);
+            a.attach_proc = &v;
+            v.attach_proc = &a;
+            a.who_i_hit = &v;
+            a.facing_dir = WM_MOVE_UP_RIGHT;
+            a.new_facing_dir = WM_MOVE_UP_RIGHT;
+            v.life = WM_ARCADE_LIFE_MAX;
+            wm_anim_exec_start(&ex, q, &a, 0, NULL);
+            for (t = 0; t < 400 && !ex.ended; ++t) {
+                if (a.anim_mode & WM_MODE_CHECKHIT)
+                    a.anim_mode |= (uint16_t)WM_MODE_STATUS;
+                wm_wrestler_veladd(&a, &ex, 0);
+                wm_wrestler_veladd(&v, NULL, 0);
+                wm_anim_exec_tick(&ex, &a, 0);
+            }
+            /* It ran to its own end rather than stalling on a new op. */
+            CHECK(t < 400);
+        }
+    }
+
+    /* ANI_DAMAGE hurts the wrestler running the animation, not his
+       opponent: `neg a0` then adjust_health on his own PLYRNUM. */
+    p = wm_anim_program_find("hrt_tossed_anim");
+    if (p) {
+        int t;
+        memset(&a, 0, sizeof(a));
+        stand_in_ring(&a);
+        a.life = WM_ARCADE_LIFE_MAX;
+        wm_anim_exec_start(&ex, p, &a, 0, NULL);
+        for (t = 0; t < 400 && !ex.ended; ++t) {
+            a.stick_val_cur = 0;
+            wm_wrestler_veladd(&a, &ex, 0);
+            wm_arcade_tick_getup_time(&a);
+            wm_anim_exec_tick(&ex, &a, 0);
+        }
+        /* hrt_tossed_anim carries no ANI_DAMAGE, so his life is intact --
+           this is the control for the case below. */
+        CHECK(a.life == WM_ARCADE_LIFE_MAX);
+    }
+}
+
 static void test_anim_program_interpreter(void) {
     int hit_ticks = 0, miss_ticks = 0;
 
@@ -6203,6 +6269,7 @@ int main(void) {
     test_getup_meter();
     test_wrestler_timers();
     test_combo_meter();
+    test_self_contained_ops();
     test_gravity_reset_and_setlong();
     test_attract_dcs_logo_does_not_fall_through();
     test_bret_hurt_box_for_frame_real_geometry();

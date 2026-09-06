@@ -1221,6 +1221,39 @@ def test_roll_tables() -> None:
     assert hrt["top"] == 11 and len(hrt["frames"]) == 13, hrt
 
 
+def test_self_contained_command_ops() -> None:
+    """The batch of state commands with no subsystem behind them.
+
+    ANI_FACE's operand is a direction written as a bit set
+    (`MOVE_LEFT|MOVE_UP`), which is why operand parsing had to learn `|`;
+    ANI_SETWORD names exactly three fields across the roster, and a fourth
+    would be a silent write to whatever sits at that offset.
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    if not (base / "HRTSEQ3.ASM").exists():
+        return
+
+    assert wlcommands._value("MOVE_LEFT|MOVE_UP", {}) == (
+        wlanim.GLOBAL_EQU["MOVE_LEFT"] | wlanim.GLOBAL_EQU["MOVE_UP"])
+
+    assert set(wlprogram.SETWORD_FIELDS) == {"USR_VAR1", "USR_VAR2",
+                                             "DELAY_METER"}
+
+    # Every one of these has to survive into the generated C with its
+    # operands, the way ANI_BOUNCE and ANI_GETUP did not.
+    generated = ROOT / "src" / "generated" / "anim_programs.c"
+    if not generated.exists():
+        return
+    text = generated.read_text()
+    for op in ("FACE", "GRAVITY_OFF", "DAMAGE", "SETOPP_PLYRMODE",
+               "OPP_GETUP", "ATTACHVEL", "SETWORD", "IFNOT_RPTCOUNT"):
+        assert f"WM_AOP_{op}," in text, op
+    # ...and the ones carrying an operand are not all zeroes.
+    for op in ("FACE", "DAMAGE", "SETWORD"):
+        rows = [l for l in text.splitlines() if f"WM_AOP_{op}," in l]
+        assert any(re.search(r"-1, (?!0,)", l) for l in rows), op
+
+
 def main() -> int:
     test_wlanim()
     test_wlprogram()
@@ -1234,6 +1267,7 @@ def main() -> int:
     test_gravity_opcodes()
     test_command_table_ops_keep_their_operands()
     test_roll_tables()
+    test_self_contained_command_ops()
     test_waithitopp_is_a_mode_and_a_frame()
     test_roster_dispatcher_labels_all_emit()
     test_wlprogram_tick_expressions()

@@ -70,6 +70,13 @@ COMMANDS = {
     "ANI_ADD_MOVE":   ("ADD_MOVE", 3, False),
     "ANI_INC_COMBO":  ("INC_COMBO", 0, False),
     "ANI_CLEAR_COMBO": ("CLEAR_COMBO", 0, False),
+    # Self-contained state commands with no subsystem behind them.
+    "ANI_FACE":        ("FACE", 1, False),
+    "ANI_GRAVITY_OFF": ("GRAVITY_OFF", 0, False),
+    "ANI_DAMAGE":      ("DAMAGE", 1, False),
+    "ANI_SETOPP_PLYRMODE": ("SETOPP_PLYRMODE", 1, False),
+    "ANI_OPP_GETUP":   ("OPP_GETUP", 1, False),
+    "ANI_ATTACHVEL":   ("ATTACHVEL", 3, False),
     "ANI_BOUNCE":     ("BOUNCE", 1, False),
     "ANI_CLR_STATUS":  ("CLR_STATUS", 0, False),
 }
@@ -139,7 +146,9 @@ def _value(tok: str, equates: dict[str, int]) -> int:
     expr = HEX_RE.sub(lambda m: "0x" + m.group(1), expr)
     # Operands are written as small arithmetic expressions: `5-10`,
     # `-1+15`, `60*60`, `TSEC*60`. Multiplication is as real as the rest.
-    if not re.fullmatch(r"[-+*0-9xXa-fA-F() \t]+", expr):
+    # A few are bit sets rather than arithmetic -- ANI_FACE's operand is a
+    # direction written as `MOVE_LEFT|MOVE_UP` -- so `|` counts too.
+    if not re.fullmatch(r"[-+*|0-9xXa-fA-F() \t]+", expr):
         raise ValueError(f"unresolved operand {tok!r}")
     return int(eval(expr, {"__builtins__": {}}, {}))
 

@@ -124,6 +124,30 @@ typedef enum {
     WM_AOP_ADD_MOVE,
     WM_AOP_INC_COMBO,
     WM_AOP_CLEAR_COMBO,
+    /*
+     * The rest of the self-contained state commands -- no subsystem behind
+     * any of them, the same class as ANI_SETSPEED and friends.
+     *
+     * ANI_FACE (ANIM.ASM:50, 81 uses) writes FACING_DIR, XOR-ing the
+     * left/right bits when the sprite is mirrored. ANI_GRAVITY_OFF (:16,
+     * 24) is ANI_GRAVITY_ON's other half. ANI_DAMAGE (:56, 25) calls
+     * adjust_health with the operand NEGATED -- "positive a0 = health
+     * increase", the source's own note. ANI_SETOPP_PLYRMODE (:105, 26)
+     * and ANI_OPP_GETUP (:76, 22) and ANI_ATTACHVEL (:24, 17) all act on
+     * the wrestler being held. ANI_SETWORD (:51, 40) is ANI_SETLONG's WORD
+     * counterpart; `a` is the field (0 = USR_VAR1, 1 = USR_VAR2,
+     * 2 = DELAY_METER), `b` the value.
+     */
+    WM_AOP_FACE,
+    WM_AOP_GRAVITY_OFF,
+    WM_AOP_DAMAGE,
+    WM_AOP_SETOPP_PLYRMODE,
+    WM_AOP_OPP_GETUP,
+    WM_AOP_ATTACHVEL,
+    WM_AOP_SETWORD,
+    /* ANIM.ASM:91 _ani_ifnot_rptcount -- branch when RPT_COUNT has run
+       out, the inverse of ANI_IF_RPTCOUNT. */
+    WM_AOP_IFNOT_RPTCOUNT,
     WM_AOP_CLR_STATUS,
 
     /* ANIM.ASM:1277 _ani_code -- `move *a4+,a0,L / call a0`: an ordinary

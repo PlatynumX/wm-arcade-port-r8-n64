@@ -3871,6 +3871,135 @@ static void test_rope_commands_from_animation(void) {
     CHECK(zsets >= 4);
 }
 
+/*
+ * The ANI_CODE tail: small, self-contained actor routines, and the
+ * file-scoping trap that comes with them. A `#`-prefixed label is scoped
+ * to its own sequence file, and the same name is written in several files
+ * with DIFFERENT bodies -- #set_zvel2 has three.
+ */
+static void test_anim_code_tail(void) {
+    wm_arcade_actor_t a, v;
+    wm_anim_env env;
+
+    memset(&env, 0, sizeof(env));
+
+    /* #set_zvel2: -5.0 for most, -6.75 for Doink, -5.75 for the Taker.
+       Resolving by bare name would give six wrestlers the wrong one. */
+    memset(&a, 0, sizeof(a));
+    CHECK(wm_anim_code_run(&a, &env, "set_zvel2", "HRTSEQ2.ASM"));
+    CHECK(a.z_vel == -0x50000);
+    CHECK(wm_anim_code_run(&a, &env, "set_zvel2", "DNKSEQ2.ASM"));
+    CHECK(a.z_vel == -0x6c000);
+    CHECK(wm_anim_code_run(&a, &env, "set_zvel2", "UNDSEQ2.ASM"));
+    CHECK(a.z_vel == -0x5c000);
+    CHECK(wm_anim_code_run(&a, &env, "set_zvel3", "DNKSEQ2.ASM"));
+    CHECK(a.z_vel == -0x7c000);
+
+    /* #half_vels: halve X, and a fixed 2.0 up. */
+    memset(&a, 0, sizeof(a));
+    a.x_vel = 0x40000;
+    CHECK(wm_anim_code_run(&a, &env, "half_vels", "HRTSEQ3.ASM"));
+    CHECK(a.x_vel == 0x20000);
+    CHECK(a.y_vel == 0x20000);
+
+    /* #reverse_xvel: turn him round at a quarter of the speed. */
+    memset(&a, 0, sizeof(a));
+    a.x_vel = 0x40000;
+    CHECK(wm_anim_code_run(&a, &env, "reverse_xvel", "SHNSEQ3.ASM"));
+    CHECK(a.x_vel == -0x10000);
+
+    /* #zero_x: "Don't float if dropping straight down" -- only when the
+       opponent is underneath rather than off to the side. */
+    memset(&a, 0, sizeof(a));
+    a.x_vel = 0x30000;
+    a.closest_xdist = 0x100;
+    CHECK(wm_anim_code_run(&a, &env, "zero_x", "DNKSEQ2.ASM"));
+    CHECK(a.x_vel == 0x30000);
+    a.closest_xdist = 0x20;
+    CHECK(wm_anim_code_run(&a, &env, "zero_x", "DNKSEQ2.ASM"));
+    CHECK(a.x_vel == 0);
+
+    /* #store_opp_xvel / #merge_xvels: remember his, then average -- a
+       QUARTER, not a half, as the source's `sra 2` writes it. */
+    memset(&a, 0, sizeof(a));
+    memset(&v, 0, sizeof(v));
+    v.x_vel = 0x60000;
+    env.opponent = &v;
+    CHECK(wm_anim_code_run(&a, &env, "store_opp_xvel", "SHNSEQ3.ASM"));
+    a.x_vel = 0x20000;
+    CHECK(wm_anim_code_run(&a, &env, "merge_xvels", "SHNSEQ3.ASM"));
+    CHECK(a.x_vel == 0x20000);
+    env.opponent = NULL;
+
+    /* #set_zvel1 and #ckspin share a body: MODE_STATUS says which way up
+       he is, set when FACING_DIR's MOVE_UP bit is CLEAR. */
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_UP_RIGHT;
+    CHECK(wm_anim_code_run(&a, &env, "set_zvel1", "HRTSEQ2.ASM"));
+    CHECK(!(a.anim_mode & WM_MODE_STATUS));
+    a.facing_dir = WM_MOVE_DOWN_RIGHT;
+    CHECK(wm_anim_code_run(&a, &env, "ckspin", "HRTSEQ2.ASM"));
+    CHECK(a.anim_mode & WM_MODE_STATUS);
+
+    /* #holdup: "Max time to hold up in air (*2 ticks)" is 25, and letting
+       go of super kick ends it early. */
+    memset(&a, 0, sizeof(a));
+    a.but_val_cur = (uint16_t)WM_BTN_SKICK;
+    CHECK(wm_anim_code_run(&a, &env, "holdup", "DNKSEQ2.ASM"));
+    CHECK(a.anim_mode & WM_MODE_STATUS);
+    a.but_val_cur = 0;
+    CHECK(wm_anim_code_run(&a, &env, "holdup", "DNKSEQ2.ASM"));
+    CHECK(!(a.anim_mode & WM_MODE_STATUS));
+    a.but_val_cur = (uint16_t)WM_BTN_SKICK;
+    a.but_count = 25;
+    CHECK(wm_anim_code_run(&a, &env, "holdup", "DNKSEQ2.ASM"));
+    CHECK(!(a.anim_mode & WM_MODE_STATUS));   /* 26 is past the limit */
+
+    /* NOT_IN_RING is global, and one of the places PLYR.EQU's inverted
+       INRING polarity bites: the source writes 1 for OUTSIDE. */
+    memset(&a, 0, sizeof(a));
+    a.in_ring = 1;
+    CHECK(wm_anim_code_run(&a, &env, "NOT_IN_RING", NULL));
+    CHECK(a.in_ring == 0);
+
+    /* The throw routines push the man he hit AWAY from his own facing. */
+    memset(&a, 0, sizeof(a));
+    memset(&v, 0, sizeof(v));
+    a.who_i_hit = &v;
+    v.new_facing_dir = WM_MOVE_UP_RIGHT;
+    CHECK(wm_anim_code_run(&a, &env, "set_opp_y", "BAMSEQ3.ASM"));
+    CHECK(v.y_vel == 0x50000);
+    CHECK(v.z_vel == 0x20000);
+    CHECK(v.x_vel == -0x30000);      /* facing right -> pushed left */
+    v.new_facing_dir = WM_MOVE_UP_LEFT;
+    CHECK(wm_anim_code_run(&a, &env, "set_opp_y", "BAMSEQ3.ASM"));
+    CHECK(v.x_vel == 0x30000);
+    /* Doink's own copy only lifts. */
+    memset(&v, 0, sizeof(v));
+    CHECK(wm_anim_code_run(&a, &env, "set_opp_y", "DNKSEQ3.ASM"));
+    CHECK(v.y_vel == 0x40000);
+    CHECK(v.x_vel == 0 && v.z_vel == 0);
+
+    /* hiptoss_delay/fling_delay: under three seconds since the last one
+       sets MODE_STATUS, which is what refuses the grab. */
+    memset(&a, 0, sizeof(a));
+    env.pcnt = 1000u;
+    CHECK(wm_anim_code_run(&a, &env, "hiptoss_delay", NULL));
+    CHECK(!(a.anim_mode & WM_MODE_STATUS));   /* first one, long gap */
+    env.pcnt = 1000u + 100u;
+    CHECK(wm_anim_code_run(&a, &env, "hiptoss_delay", NULL));
+    CHECK(a.anim_mode & WM_MODE_STATUS);      /* 100 < 3*60 */
+    env.pcnt = 1100u + 200u;
+    CHECK(wm_anim_code_run(&a, &env, "hiptoss_delay", NULL));
+    CHECK(!(a.anim_mode & WM_MODE_STATUS));   /* 200 >= 3*60 */
+    /* ...and fling_delay keeps its OWN stamp. */
+    env.pcnt = 1300u + 10u;
+    CHECK(wm_anim_code_run(&a, &env, "fling_delay", NULL));
+    CHECK(!(a.anim_mode & WM_MODE_STATUS));
+
+    wm_anim_code_reset();
+}
+
 static void test_anim_program_interpreter(void) {
     int hit_ticks = 0, miss_ticks = 0;
 
@@ -6352,6 +6481,7 @@ int main(void) {
     test_wrestler_timers();
     test_combo_meter();
     test_self_contained_ops();
+    test_anim_code_tail();
     test_rope_commands_from_animation();
     test_gravity_reset_and_setlong();
     test_attract_dcs_logo_does_not_fall_through();

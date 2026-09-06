@@ -244,6 +244,13 @@ struct wm_arcade_actor {
      * within the last 12 ticks, give it a miss."
      */
     uint16_t foot_pcnt;
+    /* PLYR.EQU BUT_COUNT -- the generic per-animation button counter
+       DNKSEQ2's #holdup uses to cap how long a leap may be held. */
+    int32_t but_count;
+    /* PLYR.EQU LAST_HIPTOSS / LAST_FLING: 32-bit PCNT stamps the
+       grab-rate limiters compare against. */
+    uint32_t last_hiptoss;
+    uint32_t last_fling;
     int32_t usr_var1;
     int32_t usr_var2;              /* PLYR.EQU USR_VAR2; Yoko salt failure flag. */
     int32_t player_side;           /* PLYR.EQU PLYR_SIDE: 0, 1, or -1. */

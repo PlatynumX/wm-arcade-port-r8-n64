@@ -711,6 +711,173 @@ static void halve_bk_xvel(wm_arcade_actor_t *actor, const wm_anim_env *env,
     if (v < 0) actor->x_vel >>= 1;      /* the source's own `sra 1` */
 }
 
+
+/*
+ * ANI_CODE:  #set_zvel2 -- one constant Z velocity, written once per
+ * sequence file with a DIFFERENT value. Six wrestlers get -5.0, Doink
+ * -6.75 and the Undertaker -5.75, which is exactly why the registry is
+ * keyed on (name, file) and the value rides in `param`.
+ */
+static void set_zvel2(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                      int32_t param) {
+    (void)env;
+    if (actor) actor->z_vel = param;
+}
+
+/* HRTSEQ3.ASM #half_vels: halve the X velocity (the source's own `sra 1`)
+   and set a fixed 2.0 upward. */
+static void half_vels(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                      int32_t param) {
+    (void)env; (void)param;
+    if (!actor) return;
+    actor->x_vel >>= 1;
+    actor->y_vel = 0x20000;
+}
+
+/* SHNSEQ3.ASM #reverse_xvel: turn him round at a quarter of the speed. */
+static void reverse_xvel(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                         int32_t param) {
+    (void)env; (void)param;
+    if (actor) actor->x_vel = (-actor->x_vel) >> 2;
+}
+
+/* DNKSEQ2.ASM #zero_x -- the source's own comment: "Don't float if
+   dropping straight down". Only kills the drift when the opponent is
+   underneath rather than off to the side. */
+static void zero_x(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                   int32_t param) {
+    (void)env; (void)param;
+    if (actor && actor->closest_xdist <= 0x40) actor->x_vel = 0;
+}
+
+/*
+ * SHNSEQ3.ASM / YOKSEQ3.ASM #store_opp_xvel and #merge_xvels, a pair
+ * sharing the file's own `#opp_xvel` word: remember what the opponent was
+ * doing, then average it into your own -- (mine + his) >> 2, which is a
+ * quarter rather than a half, as written.
+ */
+static int32_t stored_opp_xvel;
+
+static void store_opp_xvel(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                           int32_t param) {
+    (void)param;
+    stored_opp_xvel = (env && env->opponent) ? env->opponent->x_vel : 0;
+    (void)actor;
+}
+
+static void merge_xvels(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                        int32_t param) {
+    (void)env; (void)param;
+    if (actor) actor->x_vel = (stored_opp_xvel + actor->x_vel) >> 2;
+}
+
+/*
+ * The "throw the man you just hit" routines. All of them read WHOIHIT and
+ * push him AWAY from the way he is facing: `movi -[n,0]` then negate when
+ * NEW_FACING_DIR is left, so facing right sends him left.
+ *
+ * `param` packs the three velocities the file's own copy uses, because
+ * each file writes different ones: y in the low byte, z in the next, x in
+ * the next, all in whole units.
+ */
+static void throw_opp(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                      int32_t param) {
+    wm_arcade_actor_t *v;
+    int32_t x;
+    (void)env;
+    if (!actor || !actor->who_i_hit) return;
+    v = actor->who_i_hit;
+    v->y_vel = ((param >> 0) & 0xff) << 16;
+    if ((param >> 8) & 0xff) v->z_vel = (int32_t)((param >> 8) & 0xff) << 16;
+    x = (int32_t)((param >> 16) & 0xff) << 16;
+    v->x_vel = (v->new_facing_dir & WM_MOVE_RIGHT) ? -x : x;
+}
+
+/* DNKSEQ3.ASM's own #set_opp_y is just the lift, with no push at all. */
+static void lift_opp(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                     int32_t param) {
+    (void)env;
+    if (actor && actor->who_i_hit)
+        actor->who_i_hit->y_vel = param;
+}
+
+
+/*
+ * #set_zvel1 and #ckspin, written separately in every sequence file with
+ * the same body: MODE_STATUS says which way up he is. Bit 0 of FACING_DIR
+ * is MOVE_UP, and the status is set when it is CLEAR -- facing down.
+ * Whatever reads it afterwards branches on that.
+ */
+static void status_from_facing(wm_arcade_actor_t *actor,
+                               const wm_anim_env *env, int32_t param) {
+    (void)env; (void)param;
+    if (!actor) return;
+    if (actor->facing_dir & WM_MOVE_UP)
+        actor->anim_mode &= (uint16_t)~WM_MODE_STATUS;
+    else
+        actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
+}
+
+/*
+ * DNKSEQ2.ASM/LEXSEQ2/RZRSEQ2/UNDSEQ2 #holdup: how long a leap may be
+ * held up. BUT_COUNT counts the ticks; past the source's own limit of 25
+ * ("Max time to hold up in air (*2 ticks)"), or the moment super kick is
+ * released, MODE_STATUS clears and the animation moves on.
+ */
+static void holdup(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                   int32_t param) {
+    int holding;
+    (void)env; (void)param;
+    if (!actor) return;
+    ++actor->but_count;
+    holding = actor->but_count <= 25 &&
+              (actor->but_val_cur & (uint16_t)WM_BTN_SKICK);
+    if (holding) actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
+    else actor->anim_mode &= (uint16_t)~WM_MODE_STATUS;
+}
+
+/* HRTSEQ2.ASM NOT_IN_RING -- a global, and one of the places PLYR.EQU's
+   INRING polarity bites: the source writes 1 for OUTSIDE, this port's
+   field is the ordinary boolean. */
+static void not_in_ring(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                        int32_t param) {
+    (void)env; (void)param;
+    if (actor) actor->in_ring = 0;
+}
+
+/* DNKSEQ3/YOKSEQ2 #set_zvel: give the man he hit a little Z drift, but
+   only if he has none of his own. */
+static void set_zvel_if_still(wm_arcade_actor_t *actor,
+                              const wm_anim_env *env, int32_t param) {
+    (void)env;
+    if (actor && actor->who_i_hit && actor->who_i_hit->z_vel == 0)
+        actor->who_i_hit->z_vel = param;
+}
+
+
+/*
+ * hiptoss_delay and fling_delay -- the same routine over two different
+ * PCNT stamps. Each records when it last ran and sets MODE_STATUS if the
+ * gap is under three seconds, which the source's own comment explains:
+ * "This blocked fling attempt is too close (in terms of time) to most
+ * recent grab". Whatever follows branches on the status to refuse.
+ *
+ * `param` picks the stamp: 0 = LAST_HIPTOSS, 1 = LAST_FLING.
+ */
+static void grab_rate_limit(wm_arcade_actor_t *actor,
+                            const wm_anim_env *env, int32_t param) {
+    uint32_t *stamp, now, since;
+    if (!actor) return;
+    stamp = param ? &actor->last_fling : &actor->last_hiptoss;
+    now = env ? env->pcnt : 0u;
+    since = now - *stamp;
+    *stamp = now;
+    if ((int32_t)since >= 3 * 60)
+        actor->anim_mode &= (uint16_t)~WM_MODE_STATUS;
+    else
+        actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
+}
+
 /*
  * The registry. `file` NULL means a global label, which resolves the same
  * from anywhere; a non-NULL file scopes the row to that sequence file,
@@ -722,6 +889,65 @@ static const struct {
     wm_anim_code_fn fn;
     int32_t param;
 } code_table[] = {
+    /*
+     * #set_zvel2, one row per file because the constant differs:
+     * BAM/HRT/LEX/RZR/SHN/YOK -5.0, DNK -6.75, UND -5.75.
+     */
+    { "set_zvel2", "BAMSEQ2.ASM", set_zvel2, -0x50000 },
+    { "set_zvel2", "HRTSEQ2.ASM", set_zvel2, -0x50000 },
+    { "set_zvel2", "LEXSEQ2.ASM", set_zvel2, -0x50000 },
+    { "set_zvel2", "RZRSEQ2.ASM", set_zvel2, -0x50000 },
+    { "set_zvel2", "SHNSEQ2.ASM", set_zvel2, -0x50000 },
+    { "set_zvel2", "YOKSEQ2.ASM", set_zvel2, -0x50000 },
+    { "set_zvel2", "DNKSEQ2.ASM", set_zvel2, -0x6c000 },
+    { "set_zvel2", "UNDSEQ2.ASM", set_zvel2, -0x5c000 },
+
+    { "half_vels", "HRTSEQ3.ASM", half_vels, 0 },
+    { "reverse_xvel", "SHNSEQ3.ASM", reverse_xvel, 0 },
+    { "zero_x", "DNKSEQ2.ASM", zero_x, 0 },
+    { "store_opp_xvel", "SHNSEQ3.ASM", store_opp_xvel, 0 },
+    { "store_opp_xvel", "YOKSEQ3.ASM", store_opp_xvel, 0 },
+    { "merge_xvels", "SHNSEQ3.ASM", merge_xvels, 0 },
+    { "merge_xvels", "YOKSEQ3.ASM", merge_xvels, 0 },
+
+    /* x/z/y in whole units, per the file's own copy. BAMSEQ3/LEXSEQ3's
+       #set_opp_y is 5 up, 2 along Z and 3 away; BAMSEQ2's #set_opp_xy is
+       2 up and 2 away with no Z; DNKSEQ3's #set_opp_y only lifts. */
+    { "set_opp_y", "BAMSEQ3.ASM", throw_opp, (3 << 16) | (2 << 8) | 5 },
+    { "set_opp_y", "LEXSEQ3.ASM", throw_opp, (3 << 16) | (2 << 8) | 5 },
+    { "set_opp_xy", "BAMSEQ2.ASM", throw_opp, (2 << 16) | (0 << 8) | 2 },
+    { "set_opp_y", "DNKSEQ3.ASM", lift_opp, 0x40000 },
+
+    /* #set_zvel1 and #ckspin: same body, written once per file. */
+    { "set_zvel1", "BAMSEQ2.ASM", status_from_facing, 0 },
+    { "ckspin", "BAMSEQ2.ASM", status_from_facing, 0 },
+    { "set_zvel1", "DNKSEQ2.ASM", status_from_facing, 0 },
+    { "ckspin", "DNKSEQ2.ASM", status_from_facing, 0 },
+    { "set_zvel1", "HRTSEQ2.ASM", status_from_facing, 0 },
+    { "ckspin", "HRTSEQ2.ASM", status_from_facing, 0 },
+    { "set_zvel1", "LEXSEQ2.ASM", status_from_facing, 0 },
+    { "ckspin", "LEXSEQ2.ASM", status_from_facing, 0 },
+    { "set_zvel1", "RZRSEQ2.ASM", status_from_facing, 0 },
+    { "ckspin", "RZRSEQ2.ASM", status_from_facing, 0 },
+    { "set_zvel1", "SHNSEQ2.ASM", status_from_facing, 0 },
+    { "ckspin", "SHNSEQ2.ASM", status_from_facing, 0 },
+    { "set_zvel1", "UNDSEQ2.ASM", status_from_facing, 0 },
+    { "ckspin", "UNDSEQ2.ASM", status_from_facing, 0 },
+    { "set_zvel1", "YOKSEQ2.ASM", status_from_facing, 0 },
+    { "ckspin", "YOKSEQ2.ASM", status_from_facing, 0 },
+
+    { "set_zvel3", "DNKSEQ2.ASM", set_zvel2, -0x7c000 },
+    { "set_zvel", "DNKSEQ3.ASM", set_zvel_if_still, 0x10000 },
+    { "set_zvel", "YOKSEQ2.ASM", set_zvel_if_still, 0x10000 },
+    { "NOT_IN_RING", NULL, not_in_ring, 0 },
+    { "holdup", "DNKSEQ2.ASM", holdup, 0 },
+    { "holdup", "LEXSEQ2.ASM", holdup, 0 },
+    { "holdup", "RZRSEQ2.ASM", holdup, 0 },
+    { "holdup", "UNDSEQ2.ASM", holdup, 0 },
+
+    /* Both are SUBRs, so global: the same limiter over two stamps. */
+    { "hiptoss_delay", NULL, grab_rate_limit, 0 },
+    { "fling_delay", NULL, grab_rate_limit, 1 },
     { "ckzpos", NULL, ckzpos, 0 },
     { "SET_DIR_FACE", NULL, set_dir_face, 0 },
     { "set_tbukl_airmode", NULL, set_tbukl_airmode, 0 },

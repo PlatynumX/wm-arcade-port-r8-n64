@@ -47,8 +47,10 @@ def _by_truncated_name(frame: str, lod_order: list[str], images: list,
 
 
 def emit(out_path: pathlib.Path, lods: list[pathlib.Path], img_dir: pathlib.Path,
-         visual_sources: list[pathlib.Path]) -> int:
+         visual_sources: list[pathlib.Path],
+         allow_missing: set | None = None) -> int:
     frames = bret_bundle.collect_frames(visual_sources)
+    allow_missing = allow_missing or set()
     # One mapping across every wrestler's .LOD. Frame names carry the
     # wrestler's own letter, so they do not collide -- but a name defined
     # in two LODs would silently take whichever came first, so that is
@@ -64,8 +66,20 @@ def emit(out_path: pathlib.Path, lods: list[pathlib.Path], img_dir: pathlib.Path
             mapping[name] = container
             order.setdefault(container, []).append(name)
     missing = [f for f in frames if f not in mapping]
+    unknown = [f for f in missing if f not in allow_missing]
+    if unknown:
+        raise ValueError("no .LOD container mapping for: " + ", ".join(unknown))
     if missing:
-        raise ValueError("no .LOD container mapping for: " + ", ".join(missing))
+        # Named one at a time on the command line rather than skipped
+        # silently, so a NEW dangling frame still fails the build until
+        # someone looks at it. The ones listed are dangling in the ORIGINAL:
+        # HRTSEQ3.ASM names H4HU4B+FR10 and YOKSEQ1.ASM names Y2ST2Z+FR1,
+        # and neither symbol is in any shipped .LOD -- BRET.LOD has
+        # H4HU4B01-04 and 07, YOKO.LOD has Y2ST2Z02-06. The arcade could
+        # not draw them either.
+        print("geometry: %d frame(s) with no artwork in any .LOD: %s"
+              % (len(missing), ", ".join(sorted(missing))))
+    frames = [f for f in frames if f in mapping]
 
     containers: dict[str, tuple[bytes, list]] = {}
     resolved = []
@@ -120,8 +134,12 @@ def main() -> int:
     ap.add_argument("--img-dir", required=True, type=pathlib.Path)
     ap.add_argument("--visual-source", action="append", required=True, type=pathlib.Path)
     ap.add_argument("--out", required=True, type=pathlib.Path)
+    # A frame the ORIGINAL has no artwork for. Named explicitly so a
+    # new one still fails the build.
+    ap.add_argument("--allow-missing", action="append", default=[])
     ns = ap.parse_args()
-    count = emit(ns.out, ns.lod, ns.img_dir, ns.visual_source)
+    count = emit(ns.out, ns.lod, ns.img_dir, ns.visual_source,
+                 set(n.upper() for n in ns.allow_missing))
     print(f"generated {ns.out}: {count} unique frame geometries "
           f"from {len(ns.lod)} .LOD files")
     return 0

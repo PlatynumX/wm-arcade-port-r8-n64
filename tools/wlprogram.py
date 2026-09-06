@@ -716,11 +716,35 @@ def main(argv=None) -> int:
     # the tables (tools/wlpuppet.py) rather than listed here, so the two
     # cannot disagree about what the op is allowed to name.
     ap.add_argument("--slave-targets", action="store_true")
+    # Every animation the eight playable wrestlers own, rather than a
+    # hand-picked list. The list had been growing one label at a time
+    # as each new op or table turned out to name an animation nothing
+    # had emitted; emitting the roster removes that whole class of
+    # gap, because wm_anim_program_find can no longer miss.
+    ap.add_argument("--roster", action="store_true")
     ap.add_argument("--out")
     ns = ap.parse_args(argv)
     entries = [(src, lab) for src, lab in ns.animation]
     if ns.source:
         entries += [(ns.source, l) for l in ns.label]
+    if ns.roster:
+        for src in wlanim.linked_files():
+            if "SEQ" not in src.name:
+                continue
+            if src.name.startswith("FINI"):
+                continue
+            lines = src.read_text(errors="replace").splitlines()
+            seen_here = []
+            for line in lines:
+                m = wlanim.SUBR_RE.match(line)
+                if m and m.group(1) not in seen_here:
+                    seen_here.append(m.group(1))
+            for lab in seen_here:
+                try:
+                    program_for(src, lab)
+                except (OSError, ValueError):
+                    continue    # not an animation, or refused
+                entries.append((str(src), lab))
     if ns.slave_targets:
         entries += [(str(p), lab) for p, lab in wlpuppet.slave_targets()]
         # ANI_CHANGEANIM_TBL names whole animations too.

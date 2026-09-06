@@ -11,10 +11,14 @@
 #include "wm/arcade/wm_arcade_roster.h"
 #include "wm/arcade/wm_arcade_round.h"
 #include "wm/arcade/wmania_rng.h"
+#include "wm/arcade/wmania_rope_runtime.h"
 #include "wm/arcade/wm_arcade_wrestler_port.h"
 #include "wm/bret_backend.h"
 #include "wm/human_input.h"
 #include "wm/wrestler_backend.h"
+
+/* ROPES.ASM keeps one process per bank: front, back, left, right. */
+#define WM_MATCH_ROPE_BANKS 4
 
 #ifdef __cplusplus
 extern "C" {
@@ -105,6 +109,17 @@ typedef struct {
        5-second pin-idiot-check countdown) -- see wm/arcade/wm_arcade_round.h
        for exactly what this does and does not decide. */
     wm_arcade_round_state_t round_state;
+    /*
+     * ROPES.ASM's four rope banks. The whole subsystem -- rope_command's
+     * table routing, the runtime's new_command_wake, and the complete
+     * static script corpus -- has been translated for a long time and
+     * nothing outside those files ever called it. The animation VM's
+     * ANI_BOUNCEROPE, ANI_BENDROPE and ANI_ROPE_Z are what drive it in the
+     * original, so they drive it here.
+     */
+    WmRopeRuntimeBank ropes[WM_MATCH_ROPE_BANKS];
+    /* set_rope_z's second-half Z per bank (ANIM.ASM:41's RZ_HIGH/RZ_NORM). */
+    uint16_t rope_second_half_z[WM_MATCH_ROPE_BANKS];
 
     /* LIFEBAR.ASM::set_winner's real best-of-3 round/match tracking,
        awarded once on round_state.decided's false-to-true edge -- see

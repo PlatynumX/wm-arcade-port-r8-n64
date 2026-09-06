@@ -399,6 +399,16 @@ void wm_bret_backend_change_anim(wm_arcade_actor_t *actor,
     {
         const wm_anim_program *prog =
             seq ? wm_anim_program_find(seq->source_label) : NULL;
+        /*
+         * start_run_anim's own ANI_CODE #setup_run (WRESTLE2.ASM:3452)
+         * belongs to SELECTING the run, not to the frames that follow it:
+         * the source's start_run_anim is state setup with no WL frames of
+         * its own that ends by choosing the wrestler's run animation. It
+         * has to run whether or not that target has a program -- and once
+         * the whole roster is emitted it always does, which is what used
+         * to make this fall through to the copy further down.
+         */
+        if (id == WM_BRET_ANIM_START_RUN) wm_arcade_start_run(actor);
         if (prog) {
             /* An animation the program is taking over from another still
                owns whatever attack box the previous one left on; the new
@@ -432,8 +442,6 @@ void wm_bret_backend_change_anim(wm_arcade_actor_t *actor,
        run direction, clear the getup/run timers, face that way and enter
        MODE RUNNING. Its header's ANI_SETMODE,MODE_UNINT|MODE_NOAUTOFLIP is
        covered by anim_header_sets_uninit below. */
-    if (id == WM_BRET_ANIM_START_RUN)
-        wm_arcade_start_run(actor);
 
     /*
      * What is left here is only the ids the program path cannot take:

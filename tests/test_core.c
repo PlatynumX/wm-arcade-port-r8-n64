@@ -14,6 +14,9 @@
 #include "wm/arcade/wm_arcade_veladd.h"
 #include "wm/arcade/wm_arcade_roll.h"
 #include "wm/arcade/wm_arcade_combo.h"
+#include "wm/arcade/wmania_rope_command.h"
+#include "wm/arcade/wmania_rope_runtime.h"
+#include "wm/arcade/wmania_rope_source_data.h"
 #include "wm/roll_frames.h"
 #include "wm/composite.h"
 #include "wm/demo.h"
@@ -238,14 +241,6 @@ static void test_source_anim_typed_stream(void) {
     CHECK(legacy.ended && legacy.unsupported);
 }
 
-static void test_ropes(void) {
-    wm_rope_system r;
-    wm_ropes_init(&r);
-    CHECK(wm_rope_command(&r, WM_ROPE_LEFT, WM_ROPE_CMD_2, 3, wm_fix_from_int(42)));
-    CHECK(r.group[WM_ROPE_LEFT].generation == 1);
-    CHECK(r.group[WM_ROPE_LEFT].position_or_magnitude == 3);
-    CHECK(wm_fix_to_int(r.group[WM_ROPE_LEFT].wrestler_z) == 42);
-}
 
 static void test_secondary_composite_offsets(void) {
     int xoff = 0, yoff = 0;
@@ -3800,6 +3795,82 @@ static void test_self_contained_ops(void) {
     }
 }
 
+/* Probe for test_rope_commands_from_animation, below. */
+struct rope_probe { WmRopeRuntimeBank *bank; int *applied, *bends,
+                    *zsets, *releases; };
+
+static void rope_probe_command(void *user, int bank, int action,
+                               int selector, int32_t z) {
+    struct rope_probe *pr = (struct rope_probe *)user;
+    WmRopeCommand cmd;
+    if (bank != WM_ROPE_LEFT) return;
+    if (action == WM_ROPE_DOWN_SPRING) ++*pr->bends;
+    if (action == WM_ROPE_DOWN_SPRING_RELEASE ||
+        action == WM_ROPE_SIDE_SPRING_RELEASE) ++*pr->releases;
+    if (!wm_rope_resolve_command((WmRopeBank)bank, (WmRopeAction)action,
+                                 (uint8_t)selector, z, &cmd))
+        return;
+    if (wm_rope_runtime_apply_resolved_command(
+            pr->bank, &cmd, wm_rope_source_program_resolver, NULL))
+        ++*pr->applied;
+}
+
+static void rope_probe_set_z(void *user, int bank, int strand, int action) {
+    struct rope_probe *pr = (struct rope_probe *)user;
+    (void)bank; (void)strand; (void)action;
+    ++*pr->zsets;
+}
+
+/*
+ * ROPES.ASM reached from the animation VM. The rope subsystem -- command
+ * routing, the runtime's new_command_wake, the whole static script corpus
+ * -- had been translated for a long time and nothing outside those files
+ * ever called it.
+ */
+static void test_rope_commands_from_animation(void) {
+    const wm_anim_program *p =
+        wm_anim_program_find("bam_climbthru_side_anim");
+    wm_arcade_actor_t a;
+    wm_anim_exec ex;
+    wm_anim_env env;
+    WmRopeRuntimeBank bank;
+    int t, applied = 0, bends = 0, zsets = 0, releases = 0;
+
+    if (!p) return;
+
+    wm_rope_runtime_init_bank(&bank, WM_ROPE_LEFT, false);
+    memset(&a, 0, sizeof(a));
+    memset(&env, 0, sizeof(env));
+    stand_in_ring(&a);
+    /* Left of centre, so ANI_BENDROPE picks the LEFT bank. */
+    a.x_int = 900;
+    a.x_fixed = 900 << 16;
+
+    {
+        struct probe { WmRopeRuntimeBank *bank; int *applied, *bends,
+                       *zsets, *releases; } pr;
+        pr.bank = &bank; pr.applied = &applied; pr.bends = &bends;
+        pr.zsets = &zsets; pr.releases = &releases;
+        env.rope_user = &pr;
+        env.rope_command = rope_probe_command;
+        env.rope_set_z = rope_probe_set_z;
+
+        wm_anim_exec_start(&ex, p, &a, 0, &env);
+        for (t = 0; t < 400 && !ex.ended; ++t) {
+            wm_wrestler_veladd(&a, &ex, 0);
+            wm_anim_exec_tick(&ex, &a, 0);
+        }
+    }
+
+    CHECK(ex.ended);
+    /* It really bent the rope, several times, and released it. */
+    CHECK(bends >= 4);
+    CHECK(releases >= 1);
+    CHECK(applied >= 4);
+    /* ...and set the rope Z high and back to normal. */
+    CHECK(zsets >= 4);
+}
+
 static void test_anim_program_interpreter(void) {
     int hit_ticks = 0, miss_ticks = 0;
 
@@ -6230,7 +6301,6 @@ int main(void) {
     test_source_sequence();
     test_anim();
     test_source_anim_typed_stream();
-    test_ropes();
     test_roster();
     test_secondary_composite_offsets();
     test_visual_sequences();
@@ -6282,6 +6352,7 @@ int main(void) {
     test_wrestler_timers();
     test_combo_meter();
     test_self_contained_ops();
+    test_rope_commands_from_animation();
     test_gravity_reset_and_setlong();
     test_attract_dcs_logo_does_not_fall_through();
     test_bret_hurt_box_for_frame_real_geometry();

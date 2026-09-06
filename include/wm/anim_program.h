@@ -336,17 +336,15 @@ typedef struct wm_anim_env {
                          int32_t wrestler_z_fp16);
     void (*rope_set_z)(void *user, int bank, int strand, int action);
     /*
-     * These are NOT wired in wm_match_tick yet, and the reason is a real
-     * pre-existing conflict rather than missing work: this port carries
-     * TWO independent rope translations -- wm/ropes.h's wm_rope_group and
-     * wm/arcade/wmania_rope_command.h's WmRopeBank -- and both define
-     * WM_ROPE_FRONT. They have never collided because nothing included
-     * both. The arcade one has the whole ROPES.ASM script corpus and a
-     * runtime behind it (wm_rope_runtime_apply_resolved_command) and is
-     * the one these commands belong to, but joining it to the match means
-     * reconciling the two headers first. Until then the opcodes are
-     * extracted, carry their real operands, and reach a seam that is
-     * defined -- a named, countable gap rather than a dropped line.
+     * Wired in wm_match_tick to the real ROPES.ASM subsystem
+     * (wm/arcade/wmania_rope_runtime.h). Getting there meant removing a
+     * duplicate: this port used to carry TWO rope translations, and both
+     * defined WM_ROPE_FRONT. The older wm/ropes.h was a 43-line stub whose
+     * own comment said "TODO later: port command_table/sspring/dspring
+     * script selection exactly after the original table labels are
+     * converted into portable data IDs" -- which is exactly what the
+     * arcade one then did, table corpus and runtime included. The stub is
+     * deleted rather than reconciled.
      */
 } wm_anim_env;
 

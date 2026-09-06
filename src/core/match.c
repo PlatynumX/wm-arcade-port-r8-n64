@@ -3,6 +3,7 @@
 #include "wm/arcade/wm_arcade_butcount.h"
 #include "wm/arcade/wm_arcade_veladd.h"
 #include "wm/arcade/wm_arcade_roll.h"
+#include "wm/arcade/wmania_rope_source_data.h"
 #include <string.h>
 
 /* PLYR.EQU: PSIDE_PLYR1 equ 0, PSIDE_PLYR2 equ 1. */
@@ -25,6 +26,41 @@
 #define WM_MATCH_P2_START_X (WM_MATCH_RING_X_CENTER + 85)
 #define WM_MATCH_P2_START_Z (1103 + 93)
 #define WM_MATCH_P2_START_FACING WM_MOVE_DOWN_LEFT
+
+
+/*
+ * ANIM.ASM's rope opcodes reaching ROPES.ASM. The animation says which
+ * bank and what to do to it; the rope processes belong to the match, so
+ * the VM calls out through wm_anim_env and this is what it lands on.
+ */
+static void match_rope_command(void *user, int bank, int action,
+                               int selector, int32_t wrestler_z_fp16) {
+    wm_match_state *m = (wm_match_state *)user;
+    WmRopeCommand cmd;
+    if (!m || bank < 0 || bank >= WM_MATCH_ROPE_BANKS) return;
+    if (!wm_rope_resolve_command((WmRopeBank)bank, (WmRopeAction)action,
+                                 (uint8_t)selector, wrestler_z_fp16, &cmd))
+        return;   /* the same table-invalid cases rope_command rejects */
+    (void)wm_rope_runtime_apply_resolved_command(
+        &m->ropes[bank], &cmd, wm_rope_source_program_resolver, NULL);
+}
+
+/*
+ * ANIM.ASM:41 _ani_rope_z / set_rope_z. Only the second half's Z is
+ * decided by the action -- RZ_HIGH is a fixed value, RZ_NORM copies the
+ * first half -- and that is what wm_rope_second_half_z returns. The strand
+ * selects which of the bank's three ropes; this port's runtime keeps its
+ * channels rather than per-strand Z, so the value is computed and applied
+ * to the bank's shared state rather than to one rope's object.
+ */
+static void match_rope_set_z(void *user, int bank, int strand, int action) {
+    wm_match_state *m = (wm_match_state *)user;
+    if (!m || bank < 0 || bank >= WM_MATCH_ROPE_BANKS) return;
+    (void)strand;
+    m->rope_second_half_z[bank] =
+        wm_rope_second_half_z(m->rope_second_half_z[bank],
+                              (WmRopeZAction)action);
+}
 
 static void place_wrestler(wm_arcade_actor_t *a, int32_t x, int32_t z, int32_t facing) {
     a->x_int = x;
@@ -120,6 +156,14 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
     m->active = true;
     m->tick_count = 0;
     wm_arcade_combat_runtime_init(&m->combat_runtime);
+    {
+        /* ROPES.ASM creates one process per bank. reduce_bog kills only the
+           front/back pair after object creation, which is the source's own
+           argument to this call. */
+        unsigned b;
+        for (b = 0; b < WM_MATCH_ROPE_BANKS; ++b)
+            wm_rope_runtime_init_bank(&m->ropes[b], (WmRopeBank)b, false);
+    }
     wm_arcade_round_state_init(&m->round_state);
     wm_arcade_match_score_init(&m->score);
 }
@@ -170,6 +214,14 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
     m->active = true;
     m->tick_count = 0;
     wm_arcade_combat_runtime_init(&m->combat_runtime);
+    {
+        /* ROPES.ASM creates one process per bank. reduce_bog kills only the
+           front/back pair after object creation, which is the source's own
+           argument to this call. */
+        unsigned b;
+        for (b = 0; b < WM_MATCH_ROPE_BANKS; ++b)
+            wm_rope_runtime_init_bank(&m->ropes[b], (WmRopeBank)b, false);
+    }
     wm_arcade_round_state_init(&m->round_state);
     wm_arcade_match_score_init(&m->score);
 }
@@ -355,6 +407,14 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             m->bret_visual[i].anim_env.sound_user = m->anim_sound_user;
             m->bret_visual[i].anim_env.sound = m->anim_sound;
 
+            /* Both backends reach the same rope banks. */
+            m->wrestler_visual[i].anim_env.rope_user = m;
+            m->wrestler_visual[i].anim_env.rope_command = match_rope_command;
+            m->wrestler_visual[i].anim_env.rope_set_z = match_rope_set_z;
+            m->bret_visual[i].anim_env.rope_user = m;
+            m->bret_visual[i].anim_env.rope_command = match_rope_command;
+            m->bret_visual[i].anim_env.rope_set_z = match_rope_set_z;
+
             bret_cb = wm_bret_backend_callbacks(&m->bret_visual[i]);
             razor_cb = wm_wrestler_razor_callbacks(&m->wrestler_visual[i]);
             roster_cb = wm_wrestler_roster_callbacks(&m->wrestler_visual[i]);
@@ -403,6 +463,16 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
              * every wrestler twice per tick.
              */
         }
+    }
+
+    {
+        /* One call per bank = one source rope-process tick. There is no
+           image adapter here: this port has no renderer to hand the
+           per-channel image symbols to, so the scripts advance and the
+           drawing half is simply absent. */
+        unsigned b;
+        for (b = 0; b < WM_MATCH_ROPE_BANKS; ++b)
+            wm_rope_runtime_tick(&m->ropes[b], NULL);
     }
 
     {

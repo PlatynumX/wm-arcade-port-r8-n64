@@ -16,7 +16,6 @@ add_library(wmcore STATIC
     src/core/pregame.c
     src/core/anim.c
     src/core/game.c
-    src/core/ropes.c
     src/core/demo.c
     src/core/match.c
     src/core/movement.c

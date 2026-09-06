@@ -28,6 +28,9 @@
  * which is its own system.
  */
 #include "wm/anim_program.h"
+#include "wm/arcade/wm_arcade_combat_defs.h"
+#include "wm/arcade/wm_arcade_roster.h"
+#include "wm/arcade/wmania_ring_geometry.h"
 
 #include <string.h>
 
@@ -241,8 +244,330 @@ void wm_anim_code_reset(void) {
 
 uint16_t wm_anim_code_endless_sound(void) { return endless_sound; }
 
+/*
+ * DCSSOUND.ASM:4295 DO_BLOCKED -- a 5% chance (RNDPER's argument is per
+ * mille) of the blocker saying something, from a per-wrestler table whose
+ * spare slot is a real zero.
+ */
+static const uint16_t WHICH_BLOCK_SPEECH[9] = {
+    0x236u, 0x280u, 0x23Du, 0x23Eu, 0x284u, 0x06Au, 0x212u, 0u, 0x287u
+};
+
+static void do_blocked(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+    if (!rndper(env, 50u)) return;
+    play(env, by_wrestler(actor, WHICH_BLOCK_SPEECH, 9u));
+}
+
+/*
+ * DCSSOUND.ASM:4319 MAKE_HIM_SCREAM / :4324 DO_SCREAM. Four screams per
+ * wrestler, one picked at random. The two entry points differ only in
+ * whose voice it is: MAKE_HIM_SCREAM screams as the wrestler he just hit
+ * (WHOIHIT), DO_SCREAM as himself.
+ *
+ * The table's own comments mark which rows are borrowed -- Undertaker,
+ * Shawn and Bam Bam all use Bret's screams, Lex uses Razor's -- and the
+ * spare slot is four real zeros.
+ */
+static const uint16_t WHICH_SCREAM[9][4] = {
+    { 0x265u, 0x266u, 0x262u, 0x263u },   /* Bret */
+    { 0x268u, 0x269u, 0x26Fu, 0x26Cu },   /* Razor */
+    { 0x265u, 0x266u, 0x262u, 0x263u },   /* Undertaker -- Bret's */
+    { 0x268u, 0x269u, 0x26Fu, 0x26Cu },   /* Yokozuna -- Razor's */
+    { 0x265u, 0x266u, 0x262u, 0x263u },   /* Shawn -- Bret's */
+    { 0x265u, 0x266u, 0x262u, 0x263u },   /* Bam Bam -- Bret's */
+    { 0x071u, 0x072u, 0x20Au, 0x20Cu },   /* Doink */
+    { 0u,     0u,     0u,     0u     },   /* spare slot */
+    { 0x268u, 0x269u, 0x26Fu, 0x26Cu }    /* Lex -- Razor's */
+};
+
+static void scream_as(const wm_arcade_actor_t *who, const wm_anim_env *env) {
+    size_t i = who ? (size_t)who->wrestler_num : 0u;
+    if (i >= 9u) return;
+    play(env, WHICH_SCREAM[i][rnd0(env, 3u)]);
+}
+
+static void make_him_scream(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+    scream_as(actor ? actor->who_i_hit : NULL, env);
+}
+
+static void do_scream(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+    scream_as(actor, env);
+}
+
+/* DCSSOUND.ASM:4350 GOUGE_SOUND -- one fixed call, nothing else. */
+static void gouge_sound(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+    (void)actor;
+    play(env, 0x0A9u);
+}
+
+/*
+ * DCSSOUND.ASM:4280 DO_RAZOR_RUG_SPEECH -- Razor's four lines as the rug
+ * shake goes on, stepped by RPT_COUNT and silent once it has run past
+ * them. RPT_COUNT 0 would index before the table in the ROM, so that case
+ * plays nothing here rather than inventing what sat there.
+ */
+static const uint16_t RAZOR_RUG_TABLE[4] = { 0x27Du, 0x27Cu, 0x27Bu, 0x27Au };
+
+static void do_razor_rug_speech(wm_arcade_actor_t *actor,
+                                const wm_anim_env *env) {
+    int32_t i = (actor ? actor->rpt_count : 0) - 1;
+    if (i < 0 || i >= 4) return;
+    play(env, RAZOR_RUG_TABLE[i]);
+}
+
+/*
+ * DCSSOUND.ASM:4377 CALL_BONE_BREAK -- one of three crunches. The source
+ * then tests triple_sound's own carry (did the call actually get a
+ * channel?) and, only if it did, spawns a process that sleeps 50 ticks and
+ * has the announcer say "did you hear that". That follow-up needs both the
+ * channel arbitration this port does not model and the speech queue, so
+ * what is translated here is the crunch itself.
+ */
+static const uint16_t BONE_BREAK_SOUNDS[3] = { 0x01Du, 0x09Bu, 0x098u };
+
+static void call_bone_break(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+    (void)actor;
+    play(env, BONE_BREAK_SOUNDS[rnd0(env, 2u)]);
+}
+
+/* ================================================================== *
+ * The self-contained actor-state routines.
+ *
+ * These live in whichever wrestler's sequence file happened to define them
+ * first -- ckzpos in DNKSEQ2, no_bk_xvel and tbukl_flip in SHNSEQ2/3, the
+ * palette pair in DNKSEQ3 -- but they are plain global labels, so every
+ * wrestler's animations call them. Each reads and writes only the actor it
+ * is given, which is why they translate one-for-one.
+ * ================================================================== */
+
+/*
+ * DNKSEQ2.ASM:1886 ckzpos, with the source's own comment: "If falling near
+ * the front or rear ropes, slide toward middle of the ring to allow
+ * opponent to walk around him." Above 510h he slides up the screen, below
+ * 442h he slides down, and in between he is already clear.
+ */
+static void ckzpos(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+    (void)env;
+    if (!actor) return;
+    if (actor->z_int > 0x510) { actor->z_vel = -0x24000; return; }
+    if (actor->z_int > 0x442) return;
+    actor->z_vel = 0x24000;
+}
+
+/*
+ * SHNSEQ3.ASM:3260 no_bk_xvel: kill any x velocity that is carrying him
+ * BACKWARD. The source negates the velocity when FACING_DIR's right bit is
+ * clear -- turning it into a forward-relative figure -- and zeroes it if
+ * that comes out negative.
+ */
+static void no_bk_xvel(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+    int32_t v;
+    (void)env;
+    if (!actor) return;
+    v = actor->x_vel;
+    if (!(actor->facing_dir & WM_MOVE_RIGHT)) v = -v;
+    if (v < 0) actor->x_vel = 0;
+}
+
+/*
+ * HRTSEQ4.ASM:1081 choose_2or4: report which facing bank the animation
+ * should continue in, through MODE_STATUS -- clear for the 2-bank when
+ * NEW_FACING_DIR points up, set for the 4-bank otherwise. The animation
+ * then forks on it with an ordinary ANI_IFSTATUS.
+ */
+static void choose_2or4(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+    (void)env;
+    if (!actor) return;
+    if (actor->new_facing_dir & WM_MOVE_UP)
+        actor->anim_mode &= (uint16_t)~WM_MODE_STATUS;
+    else
+        actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
+}
+
+/*
+ * DNKSEQ3.ASM:428 am_I_dead: report through MODE_STATUS whether this
+ * wrestler is finished. On zero health it also puts him in MODE_DEAD
+ * itself. The live path is subtler than "clear the bit": it clears
+ * MODE_STATUS but sets it straight back if he is ALREADY in MODE_DEAD, so
+ * a wrestler who died earlier keeps answering yes even once the lifebar
+ * has been reset.
+ */
+static void am_i_dead(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+    (void)env;
+    if (!actor) return;
+    if (actor->life == 0) {
+        actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
+        actor->player_mode = WM_PMODE_DEAD;
+        return;
+    }
+    actor->anim_mode &= (uint16_t)~WM_MODE_STATUS;
+    if (actor->player_mode == WM_PMODE_DEAD)
+        actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
+}
+
+/*
+ * DNKSEQ3.ASM's palette and constant-colour routines -- Doink's buzzer
+ * flash. make_white and make_black differ only in the OBJ_CONST value they
+ * load; both turn on DISPLAY.EQU:104's M_CONNON, "replace non-zero data
+ * with constant". make_norm puts the ordinary SYS.EQU DMAWNZ write-mode
+ * back. All three clear the low four control bits first.
+ */
+#define WM_DMA_MODE_MASK  0x000Fu
+#define WM_M_CONNON       0x0008u   /* DISPLAY.EQU:104 */
+#define WM_DMAWNZ         0x8002u   /* SYS.EQU:215 */
+#define WM_M_TEMP_PAL     0x0004u   /* PLYR.EQU:399/422, 1<<B_TEMP_PAL */
+
+static void set_dma_mode(wm_arcade_actor_t *actor, uint16_t mode) {
+    actor->obj_control =
+        (uint16_t)((actor->obj_control & (uint16_t)~WM_DMA_MODE_MASK) | mode);
+}
+
+static void make_white(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+    (void)env;
+    if (!actor) return;
+    actor->obj_const = 0x0101u;
+    set_dma_mode(actor, WM_M_CONNON);
+}
+
+static void make_black(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+    (void)env;
+    if (!actor) return;
+    actor->obj_const = 0x0B0Bu;
+    set_dma_mode(actor, WM_M_CONNON);
+}
+
+static void make_norm(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+    (void)env;
+    if (!actor) return;
+    /* `andni 01111b / ori DMAWNZ` -- DMAWNZ is 8002h, so this ORs a whole
+       write-mode word back in, not just a low bit. */
+    set_dma_mode(actor, WM_DMAWNZ);
+}
+
+static void set_skeleton_pal(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+    (void)env;
+    if (!actor) return;
+    actor->obj_pal = actor->skeleton_pal;
+    actor->status_flags |= WM_M_TEMP_PAL;
+}
+
+static void set_my_pal(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+    (void)env;
+    if (!actor) return;
+    actor->obj_pal = actor->my_pal;
+    actor->status_flags &= ~(uint32_t)WM_M_TEMP_PAL;
+}
+
+/*
+ * SHNSEQ2.ASM:1556 tbukl_flip and its sibling entry point face_inside.
+ *
+ * On a turnbuckle, which way he faces depends on which corner he is in and
+ * whether the opponent is in the ring at all. tbukl_flip reads the
+ * opponent's INRING (0 in, 1 out); face_inside is the same code entered
+ * with that answer forced to "in", i.e. always turn to face the ring.
+ *
+ * When the opponent IS outside, neither corner decides it -- the source
+ * falls through to #out and goes by NEW_FACING_DIR's left bit instead.
+ *
+ * The last twist is the source's own: "doink is the opposite... so is
+ * yoko." Both of those two have their artwork drawn facing the other way,
+ * so the final flip is inverted for them.
+ */
+static void turnbuckle_face(wm_arcade_actor_t *actor, bool opponent_outside) {
+    /* The source's #yes (mirror) against #no (don't). Both corners send an
+       outside opponent to the same #out test, so which corner he is in
+       only decides it while the opponent is still in the ring -- and there
+       the right corner mirrors and the left does not. */
+    bool mirror = opponent_outside
+        ? (actor->new_facing_dir & WM_MOVE_LEFT) != 0
+        : (actor->x_int >= WM_RING_X_CENTER);
+
+    /* "doink is the opposite... so is yoko" -- the source's own comment.
+       Their artwork is drawn facing the other way. */
+    if (actor->wrestler_num == WM_ROSTER_DOINK ||
+        actor->wrestler_num == WM_ROSTER_YOKO)
+        mirror = !mirror;
+
+    if (mirror) actor->obj_control |= (uint16_t)WM_OBJ_FLIPH;
+    else        actor->obj_control &= (uint16_t)~WM_OBJ_FLIPH;
+}
+
+static void tbukl_flip(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+    bool outside = false;
+    if (!actor) return;
+    /* `calla get_opp_process / move *a0(INRING),a0`. With no opponent
+       reachable the source would read a null process; treating that as
+       "in the ring" keeps him facing inward rather than guessing. */
+    if (env && env->opponent) outside = (env->opponent->in_ring != 0);
+    turnbuckle_face(actor, outside);
+}
+
+static void face_inside(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+    (void)env;
+    if (!actor) return;
+    turnbuckle_face(actor, false);
+}
+
+/*
+ * WRESTLE2.ASM:4967 free_toss_check -- report through MODE_STATUS whether
+ * a free hiptoss is on. Two ways to earn it: the two wrestlers are within
+ * 15 units of each other in z, or he is holding block. The block test is an
+ * equality against PLAYER_BLOCK_VAL, not a bit test, so block AND anything
+ * else does not count.
+ *
+ * The source's own commented-out lines show an earlier version that
+ * required the stick pulled away instead; it was replaced by the block
+ * test, and the dead lines are left in place there.
+ */
+static void free_toss_check(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+    int32_t dz;
+    if (!actor) return;
+    actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
+    if (env && env->opponent) {
+        dz = env->opponent->z_fixed - actor->z_fixed;
+        if (dz < 0) dz = -dz;
+        if ((dz >> 16) < 15) return;
+    }
+    if (actor->but_val_cur == (uint16_t)WM_BTN_BLOCK) return;
+    actor->anim_mode &= (uint16_t)~WM_MODE_STATUS;
+}
+
+/*
+ * WRESTLE2.ASM:5004 setup_freetoss, with the source's own summary: "We're
+ * gonna do a free hiptoss. Do all the neccesary setup here. Set our
+ * PLYRMODE to normal, IMMOBILIZE the bad guy, clear velocities, etc."
+ *
+ * The SMRTTGT smart-target call at the end is a display service (it points
+ * the camera's target at the victim) and is not modelled here.
+ */
+static void setup_freetoss(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+    (void)env;
+    if (!actor) return;
+    actor->player_mode = WM_PMODE_NORMAL;
+    if (actor->who_i_hit) actor->who_i_hit->immobilize_time = 20;
+}
+
 static const struct { const char *name; wm_anim_code_fn fn; } code_table[] = {
+    { "ckzpos",                ckzpos },
+    { "free_toss_check",       free_toss_check },
+    { "setup_freetoss",        setup_freetoss },
+    { "no_bk_xvel",            no_bk_xvel },
+    { "choose_2or4",           choose_2or4 },
+    { "am_I_dead",             am_i_dead },
+    { "make_white",            make_white },
+    { "#make_black",           make_black },
+    { "make_norm",             make_norm },
+    { "set_skeleton_pal",      set_skeleton_pal },
+    { "set_my_pal",            set_my_pal },
+    { "tbukl_flip",            tbukl_flip },
+    { "face_inside",           face_inside },
     { "HIT_THE_MAT",           hit_the_mat },
+    { "DO_BLOCKED",            do_blocked },
+    { "MAKE_HIM_SCREAM",       make_him_scream },
+    { "DO_SCREAM",             do_scream },
+    { "GOUGE_SOUND",           gouge_sound },
+    { "DO_RAZOR_RUG_SPEECH",   do_razor_rug_speech },
+    { "CALL_BONE_BREAK",       call_bone_break },
     { "SMALL_BOUNCE",          small_bounce },
     { "SMALL_RUN",             small_run },
     { "DO_FLAME_SND",          do_flame_snd },

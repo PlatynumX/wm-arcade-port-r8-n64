@@ -1524,6 +1524,57 @@ static void test_anim_code_sound_routines(void) {
     fn(&a, &env);
     CHECK(log.count == 0);
 
+    /* DCSSOUND.ASM:4319 MAKE_HIM_SCREAM screams as the wrestler he just
+       HIT; DO_SCREAM screams as himself. The two are otherwise the same
+       code, so a Doink victim and a Bret attacker tell them apart. */
+    memset(&a, 0, sizeof(a));
+    memset(&opp, 0, sizeof(opp));
+    a.wrestler_num = 0;            /* Bret swinging */
+    opp.wrestler_num = 6;          /* Doink taking it */
+    a.who_i_hit = &opp;
+    memset(&log, 0, sizeof(log));
+    wm_anim_code_find("MAKE_HIM_SCREAM")(&a, &env);
+    CHECK(log.count == 1);
+    CHECK(log.calls[0] == 0x071u || log.calls[0] == 0x072u ||
+          log.calls[0] == 0x20Au || log.calls[0] == 0x20Cu);   /* Doink's */
+    memset(&log, 0, sizeof(log));
+    wm_anim_code_find("DO_SCREAM")(&a, &env);
+    CHECK(log.count == 1);
+    CHECK(log.calls[0] == 0x265u || log.calls[0] == 0x266u ||
+          log.calls[0] == 0x262u || log.calls[0] == 0x263u);   /* Bret's */
+
+    /* The spare roster slot is four real zeros, i.e. silence. */
+    memset(&log, 0, sizeof(log));
+    a.wrestler_num = 7;
+    wm_anim_code_find("DO_SCREAM")(&a, &env);
+    CHECK(log.count == 0);
+
+    /* DCSSOUND.ASM:4280 DO_RAZOR_RUG_SPEECH steps Razor's four lines by
+       RPT_COUNT and goes silent once it has run past them. RPT_COUNT 0
+       would index BEFORE the table in the ROM, so it plays nothing. */
+    memset(&a, 0, sizeof(a));
+    memset(&log, 0, sizeof(log));
+    a.rpt_count = 0;
+    wm_anim_code_find("DO_RAZOR_RUG_SPEECH")(&a, &env);
+    CHECK(log.count == 0);
+    memset(&log, 0, sizeof(log));
+    a.rpt_count = 1;
+    wm_anim_code_find("DO_RAZOR_RUG_SPEECH")(&a, &env);
+    CHECK(log.count == 1 && log.calls[0] == 0x27Du);
+    memset(&log, 0, sizeof(log));
+    a.rpt_count = 4;
+    wm_anim_code_find("DO_RAZOR_RUG_SPEECH")(&a, &env);
+    CHECK(log.count == 1 && log.calls[0] == 0x27Au);
+    memset(&log, 0, sizeof(log));
+    a.rpt_count = 5;
+    wm_anim_code_find("DO_RAZOR_RUG_SPEECH")(&a, &env);
+    CHECK(log.count == 0);
+
+    /* GOUGE_SOUND is one fixed call and nothing else. */
+    memset(&log, 0, sizeof(log));
+    wm_anim_code_find("GOUGE_SOUND")(&a, &env);
+    CHECK(log.count == 1 && log.calls[0] == 0x0A9u);
+
     /* With no environment at all a routine does nothing rather than
        reaching through a NULL service. */
     wm_anim_code_find("HIT_THE_MAT")(&a, NULL);
@@ -1544,6 +1595,192 @@ static void test_anim_code_sound_routines(void) {
     CHECK(log.count == 1);
     CHECK(log.calls[0] == 0x285u);
     wm_anim_code_reset();
+}
+
+/*
+ * The self-contained actor-state ANI_CODE routines. Each lives in whichever
+ * wrestler's sequence file defined it first but is a plain global label, so
+ * every wrestler's animations call it.
+ */
+static void test_anim_code_state_routines(void) {
+    wm_arcade_actor_t a, opp;
+    wm_anim_env env;
+    wm_anim_code_fn fn;
+
+    memset(&env, 0, sizeof(env));
+
+    /* DNKSEQ2.ASM:1886 ckzpos -- slide toward the middle of the ring when
+       falling near the front or rear ropes, and do nothing in between. */
+    fn = wm_anim_code_find("ckzpos");
+    CHECK(fn != NULL);
+    memset(&a, 0, sizeof(a));
+    a.z_int = 0x600;  fn(&a, &env);  CHECK(a.z_vel == -0x24000);
+    memset(&a, 0, sizeof(a));
+    a.z_int = 0x400;  fn(&a, &env);  CHECK(a.z_vel == 0x24000);
+    memset(&a, 0, sizeof(a));
+    a.z_int = 0x480;  fn(&a, &env);  CHECK(a.z_vel == 0);   /* already clear */
+    /* Both tests are the source's own `jrgt`, i.e. strictly greater, so
+       each boundary value itself belongs to the range BELOW it: 510h is
+       still "already clear", and 442h is low enough to slide down. */
+    memset(&a, 0, sizeof(a));
+    a.z_int = 0x510;  fn(&a, &env);  CHECK(a.z_vel == 0);
+    memset(&a, 0, sizeof(a));
+    a.z_int = 0x442;  fn(&a, &env);  CHECK(a.z_vel == 0x24000);
+    memset(&a, 0, sizeof(a));
+    a.z_int = 0x511;  fn(&a, &env);  CHECK(a.z_vel == -0x24000);
+    memset(&a, 0, sizeof(a));
+    a.z_int = 0x443;  fn(&a, &env);  CHECK(a.z_vel == 0);
+
+    /* SHNSEQ3.ASM:3260 no_bk_xvel -- kill x velocity that is carrying him
+       backward, keep it when it carries him forward. Which is which
+       depends on FACING_DIR, so the same velocity survives one way and is
+       zeroed the other. */
+    fn = wm_anim_code_find("no_bk_xvel");
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_UP_RIGHT;   a.x_vel = 0x10000;
+    fn(&a, &env);  CHECK(a.x_vel == 0x10000);          /* forward, kept */
+    a.x_vel = -0x10000;
+    fn(&a, &env);  CHECK(a.x_vel == 0);                /* backward, killed */
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_UP_LEFT;    a.x_vel = -0x10000;
+    fn(&a, &env);  CHECK(a.x_vel == -0x10000);         /* forward, kept */
+    a.x_vel = 0x10000;
+    fn(&a, &env);  CHECK(a.x_vel == 0);
+
+    /* HRTSEQ4.ASM:1081 choose_2or4 reports the facing bank through
+       MODE_STATUS: clear for the 2-bank when NEW_FACING_DIR points up. */
+    fn = wm_anim_code_find("choose_2or4");
+    memset(&a, 0, sizeof(a));
+    a.new_facing_dir = WM_MOVE_UP_RIGHT;
+    a.anim_mode = (uint16_t)WM_MODE_STATUS;
+    fn(&a, &env);  CHECK(!(a.anim_mode & WM_MODE_STATUS));
+    a.new_facing_dir = WM_MOVE_DOWN_RIGHT;
+    fn(&a, &env);  CHECK(a.anim_mode & WM_MODE_STATUS);
+
+    /* DNKSEQ3.ASM:428 am_I_dead. The live path is subtler than clearing
+       the bit: a wrestler already in MODE_DEAD keeps answering yes. */
+    fn = wm_anim_code_find("am_I_dead");
+    memset(&a, 0, sizeof(a));
+    a.life = 0;
+    fn(&a, &env);
+    CHECK(a.anim_mode & WM_MODE_STATUS);
+    CHECK(a.player_mode == WM_PMODE_DEAD);
+    memset(&a, 0, sizeof(a));
+    a.life = 50;
+    a.anim_mode = (uint16_t)WM_MODE_STATUS;
+    fn(&a, &env);
+    CHECK(!(a.anim_mode & WM_MODE_STATUS));
+    a.player_mode = WM_PMODE_DEAD;
+    fn(&a, &env);
+    CHECK(a.anim_mode & WM_MODE_STATUS);
+
+    /* DNKSEQ3.ASM's buzzer flash: make_white/#make_black load different
+       OBJ_CONST values behind the same M_CONNON ("replace non-zero data
+       with constant") mode, and make_norm puts DMAWNZ back. All three
+       clear the low four control bits first and leave the rest alone. */
+    memset(&a, 0, sizeof(a));
+    a.obj_control = (uint16_t)(0x0100u | 0x000Fu);
+    wm_anim_code_find("make_white")(&a, &env);
+    CHECK(a.obj_const == 0x0101u);
+    CHECK((a.obj_control & 0x000Fu) == 0x0008u);
+    CHECK(a.obj_control & 0x0100u);            /* untouched bits survive */
+    wm_anim_code_find("#make_black")(&a, &env);
+    CHECK(a.obj_const == 0x0B0Bu);
+    CHECK((a.obj_control & 0x000Fu) == 0x0008u);
+    wm_anim_code_find("make_norm")(&a, &env);
+    CHECK((a.obj_control & 0x800Fu) == 0x8002u);   /* DMAWNZ */
+
+    /* The palette pair swaps OBJ_PAL and tracks PLYR.EQU's own TEMP_PAL
+       flag, which is what says the palette showing is not his real one. */
+    memset(&a, 0, sizeof(a));
+    a.my_pal = 11;
+    a.skeleton_pal = 77;
+    a.obj_pal = 11;
+    wm_anim_code_find("set_skeleton_pal")(&a, &env);
+    CHECK(a.obj_pal == 77);
+    CHECK(a.status_flags & 0x4u);
+    wm_anim_code_find("set_my_pal")(&a, &env);
+    CHECK(a.obj_pal == 11);
+    CHECK(!(a.status_flags & 0x4u));
+
+    /* WRESTLE2.ASM:4967 free_toss_check -- a free hiptoss is on when the
+       two are within 15 units in z, OR he is holding block. The block test
+       is an EQUALITY against PLAYER_BLOCK_VAL in the source, not a bit
+       test, so block plus anything else does not count. */
+    memset(&a, 0, sizeof(a));
+    memset(&opp, 0, sizeof(opp));
+    env.opponent = &opp;
+    a.z_fixed = 100 << 16;
+    opp.z_fixed = 110 << 16;                 /* 10 apart */
+    wm_anim_code_find("free_toss_check")(&a, &env);
+    CHECK(a.anim_mode & WM_MODE_STATUS);
+    opp.z_fixed = 200 << 16;                 /* 100 apart, no block held */
+    wm_anim_code_find("free_toss_check")(&a, &env);
+    CHECK(!(a.anim_mode & WM_MODE_STATUS));
+    a.but_val_cur = (uint16_t)WM_BTN_BLOCK;  /* block alone earns it */
+    wm_anim_code_find("free_toss_check")(&a, &env);
+    CHECK(a.anim_mode & WM_MODE_STATUS);
+    a.but_val_cur = (uint16_t)(WM_BTN_BLOCK | WM_BTN_PUNCH);
+    wm_anim_code_find("free_toss_check")(&a, &env);
+    CHECK(!(a.anim_mode & WM_MODE_STATUS));
+
+    /* WRESTLE2.ASM:5004 setup_freetoss: mode normal, and the victim is
+       immobilised for 20 ticks. */
+    memset(&a, 0, sizeof(a));
+    memset(&opp, 0, sizeof(opp));
+    a.player_mode = WM_PMODE_RUNNING;
+    a.who_i_hit = &opp;
+    wm_anim_code_find("setup_freetoss")(&a, &env);
+    CHECK(a.player_mode == WM_PMODE_NORMAL);
+    CHECK(opp.immobilize_time == 20);
+
+    /* SHNSEQ2.ASM:1556 tbukl_flip / face_inside. With the opponent in the
+       ring the corner decides it -- right mirrors, left does not -- and
+       face_inside is the same code with that answer forced. */
+    memset(&a, 0, sizeof(a));
+    memset(&opp, 0, sizeof(opp));
+    env.opponent = &opp;
+    opp.in_ring = 0;
+    a.x_int = WM_RING_X_CENTER + 100;
+    wm_anim_code_find("tbukl_flip")(&a, &env);
+    CHECK(a.obj_control & WM_OBJ_FLIPH);
+    a.x_int = WM_RING_X_CENTER - 100;
+    wm_anim_code_find("tbukl_flip")(&a, &env);
+    CHECK(!(a.obj_control & WM_OBJ_FLIPH));
+
+    /* Opponent outside the ring: neither corner decides it any more, the
+       source goes by NEW_FACING_DIR's left bit instead. */
+    opp.in_ring = 1;
+    a.x_int = WM_RING_X_CENTER - 100;
+    a.new_facing_dir = WM_MOVE_UP_LEFT;
+    wm_anim_code_find("tbukl_flip")(&a, &env);
+    CHECK(a.obj_control & WM_OBJ_FLIPH);
+    a.new_facing_dir = WM_MOVE_UP_RIGHT;
+    wm_anim_code_find("tbukl_flip")(&a, &env);
+    CHECK(!(a.obj_control & WM_OBJ_FLIPH));
+
+    /* "doink is the opposite... so is yoko" -- the source's own comment,
+       because their artwork is drawn facing the other way. Same state,
+       inverted answer. */
+    opp.in_ring = 0;
+    a.x_int = WM_RING_X_CENTER + 100;
+    a.wrestler_num = WM_ROSTER_DOINK;
+    wm_anim_code_find("tbukl_flip")(&a, &env);
+    CHECK(!(a.obj_control & WM_OBJ_FLIPH));
+    a.wrestler_num = WM_ROSTER_YOKO;
+    wm_anim_code_find("tbukl_flip")(&a, &env);
+    CHECK(!(a.obj_control & WM_OBJ_FLIPH));
+    a.wrestler_num = WM_ROSTER_BRET;
+    wm_anim_code_find("tbukl_flip")(&a, &env);
+    CHECK(a.obj_control & WM_OBJ_FLIPH);
+
+    /* face_inside ignores where the opponent is: it always answers as if
+       the opponent were in the ring. */
+    opp.in_ring = 1;
+    a.new_facing_dir = WM_MOVE_UP_LEFT;
+    a.x_int = WM_RING_X_CENTER - 100;
+    wm_anim_code_find("face_inside")(&a, &env);
+    CHECK(!(a.obj_control & WM_OBJ_FLIPH));
 }
 
 /* And the op really runs from inside a playing animation, not just when
@@ -4865,6 +5102,7 @@ int main(void) {
     test_bret_attack_windows_remaining();
     test_bret_attack_windows_batch1();
     test_anim_code_sound_routines();
+    test_anim_code_state_routines();
     test_anim_code_runs_from_program();
     test_bret_attack_windows_multi_pulse();
     test_bret_attack_windows_batch3();

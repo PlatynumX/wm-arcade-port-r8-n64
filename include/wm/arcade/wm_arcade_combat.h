@@ -103,6 +103,13 @@ struct wm_arcade_actor {
     void *attimg_cur_frame;
     int32_t my_pal;
     int32_t obj_pal;
+    /* PLYR.EQU SKELETON_PAL: the palette Doink's buzzer swaps in, put back
+       from MY_PAL when it ends (DNKSEQ3.ASM set_skeleton_pal/set_my_pal). */
+    int32_t skeleton_pal;
+    /* PLYR.EQU OBJ_CONST: the constant colour the DMA writes in place of
+       non-zero pixels when M_CONNON is on -- DNKSEQ3.ASM's make_white and
+       make_black are exactly this field plus that control bit. */
+    uint16_t obj_const;
 
     /* Stage 3: concrete REACT1.ASM reaction state. Velocities are source 16.16. */
     int32_t x_vel;

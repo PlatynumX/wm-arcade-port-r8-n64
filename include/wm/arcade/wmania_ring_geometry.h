@@ -99,6 +99,32 @@ const WmRingBoundarySeed *wm_ring_boundary_seed(WmRingBoundaryId id);
 /* Sanity check for the literal translated source descriptors only. */
 bool wm_ring_boundary_seed_consistent(const WmRingBoundarySeed *seed);
 
+/*
+ * WRESTLE.ASM:5814 SUBR calc_line_x -- given a boundary line's seed and a
+ * player's OBJ_ZPOSINT, returns the line's real X value at that Z (0 if z
+ * is outside [top_z, bottom_z], exactly matching the source's own
+ * out-of-range return).
+ *
+ * The real routine doesn't compute this directly: WRESTLE.ASM:5834 SUBR
+ * set_up_line_tables precomputes, once at startup, a per-Z lookup table via
+ * setup_each_left_table/setup_each_right_table (WRESTLE.ASM:5859-5897) --
+ * for a "left" boundary (top_x > bottom_x, verified true for all 4 of this
+ * port's real left boundaries) each step SUBTRACTS a fixed 16.16 delta
+ * from a running accumulator that starts at top_x; for a "right" boundary
+ * (top_x < bottom_x, verified true for all 4 real right boundaries) each
+ * step ADDS it. Table index i (0-based, i = zpos - top_z) reads the value
+ * after (i+1) accumulation steps -- note this is NOT top_x at i=0, it's
+ * already one step past it; that's a genuine source quirk this function
+ * reproduces exactly (verified by hand-deriving the closed form of the
+ * accumulator: top_x -/+ (i+1)*delta, delta = (width<<16)/(depth+1)
+ * truncating, matching DIVS's signed truncating divide -- all values
+ * involved are non-negative so truncation direction is unambiguous),
+ * computed directly here rather than cached in a table, which is
+ * mathematically identical and avoids needing an init step this port has
+ * no equivalent boot phase for.
+ */
+int32_t wm_ring_calc_line_x(const WmRingBoundarySeed *seed, int32_t zpos);
+
 #ifdef __cplusplus
 }
 #endif

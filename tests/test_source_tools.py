@@ -4,6 +4,8 @@ import importlib.util
 import pathlib
 import struct
 import subprocess
+import os
+import re
 import sys
 import tempfile
 
@@ -19,9 +21,17 @@ def load(name: str, path: pathlib.Path):
     return module
 
 wlanim = load("wlanim", ROOT / "tools" / "wlanim.py")
+wlattack = load("wlattack", ROOT / "tools" / "wlattack.py")
+wlcommands = load("wlcommands", ROOT / "tools" / "wlcommands.py")
+wlpuppet = load("wlpuppet", ROOT / "tools" / "wlpuppet.py")
+wlroll = load("wlroll", ROOT / "tools" / "wlroll.py")
+wlvoice = load("wlvoice", ROOT / "tools" / "wlvoice.py")
+wlprogram = load("wlprogram", ROOT / "tools" / "wlprogram.py")
 manifest = load("bret_manifest", ROOT / "tools" / "bret_manifest.py")
 wimp = load("wimpimg", ROOT / "tools" / "wimpimg.py")
 bundle = load("bret_bundle", ROOT / "tools" / "bret_bundle.py")
+geometry_bundle = load("bret_geometry_bundle",
+                       ROOT / "tools" / "bret_geometry_bundle.py")
 frontend_bundle = load("frontend_bundle", ROOT / "tools" / "frontend_bundle.py")
 sparkle_bundle = load("sparkle_bundle", ROOT / "tools" / "sparkle_bundle.py")
 dcs_bundle = load("dcs_bundle", ROOT / "tools" / "dcs_bundle.py")
@@ -35,6 +45,443 @@ bmod_source = load("bmod_source", ROOT / "tools" / "bmod_source.py")
 source_ir = load("source_ir", ROOT / "tools" / "source_ir.py")
 animation_ir = load("animation_ir", ROOT / "tools" / "animation_ir.py")
 select_source = load("select_source", ROOT / "tools" / "select_source.py")
+
+
+def test_wlprogram() -> None:
+    """tools/wlprogram.py emits an animation as the program it really is.
+
+    The flat model cannot represent a branch: a routine that plays
+    different frames on a hit than on a miss gets linearised into one list
+    no playthrough ever plays. hrt_2_punch_anim is the smallest real
+    example -- its ANI_SLIDE_BACK skips a frame when the punch missed --
+    and this checks the branch is present and resolved, not flattened away.
+    """
+    p = ROOT / "original" / "wwf-wrestlemania" / "HRTSEQ2.ASM"
+    if not p.exists():
+        return
+
+    ops = wlprogram.program_for(p, "hrt_2_punch_anim")
+    kinds = [o[0] for o in ops]
+
+    # The header, the attack box with its real operands, and the fork.
+    assert kinds[0] == "SETMODE"
+    assert ("ATTACK_ON_Z", 0, 30, 91, -45, 50, 15, 45) in ops, ops
+    assert "SLIDE_BACK" in kinds
+    assert kinds[-1] == "END"
+
+    # The branch target is an op index inside the program, and it really
+    # skips forward over the connected-hit frames.
+    slide = next(o for o in ops if o[0] == "SLIDE_BACK")
+    target = slide[1]
+    assert 0 <= target < len(ops), slide
+    assert target > kinds.index("SLIDE_BACK"), "slide-back must jump forward"
+    skipped = kinds[kinds.index("SLIDE_BACK") + 1:target]
+    assert "FRAME" in skipped, skipped
+
+    # Every wired animation emits, branches and all. Three of them branch
+    # into shared tail code that sits past their own ANI_END (#common_4,
+    # the #missed blocks), which is why the body grows to cover targets.
+    for src, label in (("HRTSEQ2", "hrt_4_knee_to_head_anim"),
+                       ("HRTSEQ3", "hrt_3_fake_hold_anim"),
+                       ("HRTSEQ4", "hrt_faceup_getup_anim")):
+        f = ROOT / "original" / "wwf-wrestlemania" / f"{src}.ASM"
+        prog = wlprogram.program_for(f, label)
+        assert any(o[0] == "FRAME" for o in prog), label
+        for o in prog:
+            if o[0] in ("IFSTATUS", "IFNOTSTATUS", "IFBLOCKED", "GOTO",
+                        "IF_RPTCOUNT", "SLIDE_BACK"):
+                assert 0 <= o[1] < len(prog), (label, o)
+
+
+def test_wlprogram_roster_wide() -> None:
+    """The emitter reads the whole roster, not just the wrestler it was
+    written against.
+
+    Every animation in the port comes out of one of these nine sequence
+    files, so a parser gap is not a one-animation problem -- it multiplies
+    by eight. This walks every SUBR in all of them and asserts the playable
+    roster still emits essentially completely, which is what makes bringing
+    the other seven wrestlers up a data job rather than a translation job.
+
+    A SUBR holding no frames is a helper the animations CALL (HRTSEQ3's
+    `set_zvel`, `rope_check`), not an animation, so it is counted apart
+    rather than scored as a failure.
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    if not (base / "HRTSEQ2.ASM").exists():
+        return
+
+    playable = ["HRT", "RZR", "UND", "YOK", "SHN", "BAM", "DNK", "LEX"]
+    emitted = refused = helpers = 0
+    per_wrestler = {}
+    for who in playable:
+        got = 0
+        for path in sorted(q for q in base.glob(who + "SEQ*.ASM")
+                           if "'" not in q.name):
+            labels = []
+            for line in path.read_text(errors="replace").splitlines():
+                m = wlanim.SUBR_RE.match(line)
+                if m and m.group(1) not in labels:
+                    labels.append(m.group(1))
+            for label in labels:
+                try:
+                    ops = wlprogram.program_for(path, label)
+                except ValueError as exc:
+                    if str(exc).endswith("no frames"):
+                        helpers += 1
+                    else:
+                        refused += 1
+                    continue
+                assert ops, f"{label} emitted an empty program"
+                emitted += 1
+                got += 1
+        per_wrestler[who] = got
+
+    total = emitted + refused
+    assert total > 1400, f"only found {total} animations -- did the walk break?"
+    assert emitted / total > 0.99, (
+        f"{emitted}/{total} emitted; refusals: {refused}")
+    assert helpers, "no frameless helper SUBRs seen -- classification broke"
+    # No wrestler may be left behind: the point is roster-wide coverage,
+    # which an average could hide.
+    for who, got in per_wrestler.items():
+        assert got > 170, f"{who} only emitted {got} animations"
+
+
+def test_wlprogram_tick_expressions() -> None:
+    """Tick counts are evaluated, including the ones written as products.
+
+    Every wrestler's `*_zip_anim` opens on a one-minute hold spelled either
+    `60*60` or `TSEC*60`; TSEC is DISPLAY.EQU:46. Refusing either dropped
+    eight real animations, one per wrestler.
+    """
+    assert wlanim.eval_ticks("60*60") == 3600
+    assert wlanim.GLOBAL_EQU["TSEC"] == 53
+    assert wlanim.eval_ticks("TSEC*60") == 53 * 60
+    assert wlanim.eval_ticks("0Ah") == 10
+    for bad in ("SOME_UNDEFINED_NAME", "0", "99999"):
+        try:
+            wlanim.eval_ticks(bad)
+        except ValueError:
+            continue
+        raise AssertionError(f"eval_ticks accepted {bad!r}")
+
+
+def test_wlanim_label_def() -> None:
+    """A branch target may be a file-scope label, not only a `#local`.
+
+    SHNSEQ2.ASM:1744 defines `getup_in_4` in column 0 and four routines
+    branch to it; to the assembler that resolves exactly like a local does.
+    Treating only `#names` as labels made those four animations unemittable.
+    """
+    assert wlanim.label_def("#cont") == "#cont"
+    assert wlanim.label_def("getup_in_4") == "getup_in_4"
+    assert wlanim.label_def("\tWL\t5,H4SL4C+FR1") is None
+    assert wlanim.label_def(" SUBR\thrt_2_punch_anim") is None
+    assert wlanim.label_def("#RUN_SPD\tequ\t2") == "#RUN_SPD"
+
+
+def test_wlprogram_is_deterministic() -> None:
+    """The same source must emit the same program, run after run.
+
+    It did not. The body-growth loop iterated a SET of missing branch
+    targets, and growing the body for one target can satisfy or move
+    others -- so which came first decided where the body ended up, and set
+    iteration order depends on PYTHONHASHSEED. yok_heldheadbutt_rpt_anim
+    emitted 94 ops under one seed and 203 under another, which made the
+    generated file change from run to run for no reason visible in the
+    source. It cost two wrong diagnoses ("the checked-in file is stale")
+    before the real cause turned up.
+
+    This runs the emitter in subprocesses under different hash seeds, since
+    the seed is fixed for the life of a process and cannot be changed from
+    inside one.
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    if not (base / "YOKSEQ3.ASM").exists():
+        return
+
+    script = (
+        "import pathlib, sys\n"
+        f"sys.path.insert(0, {str(ROOT / 'tools')!r})\n"
+        "import wlprogram\n"
+        "out = []\n"
+        "for f, l in ("
+        "    ('YOKSEQ3.ASM', 'yok_heldheadbutt_rpt_anim'),"
+        "    ('HRTSEQ2.ASM', 'hrt_2_punch_anim'),"
+        "    ('HRTSEQ2.ASM', 'hrt_knees_to_head_anim'),"
+        "    ('RZRSEQ2.ASM', 'rzr_4_uprcut_anim')):\n"
+        f"    p = pathlib.Path({str(base)!r}) / f\n"
+        "    out.append('%s=%d' % (l, len(wlprogram.program_for(p, l))))\n"
+        "print(' '.join(out))\n"
+    )
+    results = set()
+    for seed in ("0", "1", "2", "7"):
+        env = dict(os.environ, PYTHONHASHSEED=seed)
+        proc = subprocess.run([sys.executable, "-c", script],
+                              capture_output=True, text=True, env=env)
+        assert proc.returncode == 0, proc.stderr
+        results.add(proc.stdout.strip())
+    assert len(results) == 1, (
+        "emission depends on PYTHONHASHSEED: " + " | ".join(sorted(results)))
+
+
+def test_body_stop_ends_a_frameless_routine() -> None:
+    """A routine with no frames anywhere must not swallow the file.
+
+    _body_stop treats a SUBR reached before any frame as an ALIAS for the
+    routine after it, which is real (HRTSEQ2.ASM:1334-1335
+    hrt_2/4_super_kick_anim). But a routine with no frames AT ALL makes
+    every following SUBR look like an alias, so the body runs on forever.
+    FINISEQ.ASM's finish moves are exactly that -- eight lines of commands
+    ending in ANI_END, behind a `.if NUM_xxx_FINISHES` guard, with no
+    artwork behind them -- and rzr_finish1_move came out reporting ten
+    frames belonging to routines further down the file.
+
+    The discriminator is whether the routine terminates before the next
+    SUBR: an alias does not, a finished routine does.
+
+    Once the span is right, a frameless routine is emitted rather than
+    refused -- it is a real op stream that happens to draw nothing, and
+    FINISEQ.ASM:259-268 is exactly the seven commands below. What the
+    runaway looked like was ten FRAMEs belonging to routines further down
+    the file, so that is what this checks for.
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    if not (base / "FINISEQ.ASM").exists():
+        return
+
+    expect = ["SETMODE", "ZEROVELS", "SETSPEED", "SETFACING",
+              "SET_WRESTLER_XFLIP", "SETMODE", "END"]
+    for label in ("rzr_finish1_move", "rzr_finish2_move"):
+        ops = wlprogram.program_for(base / "FINISEQ.ASM", label)
+        assert [o[0] for o in ops] == expect, (label, [o[0] for o in ops])
+
+    # ...while the alias case still runs on into the routine it names.
+    if (base / "HRTSEQ2.ASM").exists():
+        ops = wlprogram.program_for(base / "HRTSEQ2.ASM", "hrt_4_super_kick_anim")
+        assert any(o[0] == "FRAME" for o in ops), "the SUBR alias rule broke"
+
+
+def test_roster_dispatcher_labels_all_emit() -> None:
+    """Every animation the six label-based dispatchers can select emits.
+
+    Undertaker, Yokozuna, Shawn, Bam Bam, Doink and Lex select animations by
+    the source's OWN routine name -- their modules carry tables of
+    "und_2_punch_anim" and the like -- and the generated programs are keyed
+    on exactly that name. So this is the join that makes those six animate,
+    and a label that stops emitting silently un-animates whatever selects
+    it. Walking the module sources rather than a copied list means a label
+    added to a dispatcher is covered the moment it appears.
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    if not (base / "UNDSEQ2.ASM").exists():
+        return
+
+    modules = {
+        "und": "wm_arcade_taker.c",
+        "yok": "wm_arcade_yoko.c",
+        "shn": "wm_arcade_shawn.c",
+        "bam": "wm_arcade_bam.c",
+        "dnk": "wm_arcade_doink.c",
+        "lex": "wm_arcade_lex.c",
+    }
+    prefix_dir = {"und": "UND", "yok": "YOK", "shn": "SHN",
+                  "bam": "BAM", "dnk": "DNK", "lex": "LEX"}
+    label_re = re.compile(r'"([a-z]{3}_[A-Za-z0-9_]*anim)"')
+
+    total = 0
+    for prefix, filename in modules.items():
+        src = ROOT / "src" / "core" / "arcade" / filename
+        assert src.exists(), f"{filename} is gone -- did a wrestler get renamed?"
+        labels = sorted(set(label_re.findall(src.read_text())))
+        labels = [l for l in labels if l.startswith(prefix + "_")]
+        assert len(labels) > 25, f"{prefix}: only found {len(labels)} labels"
+        seq_files = sorted(q for q in base.glob(prefix_dir[prefix] + "SEQ*.ASM")
+                           if "'" not in q.name)
+        for label in labels:
+            path = next(
+                (q for q in seq_files
+                 if wlanim._routine_span(
+                     [wlanim.strip_comment(r)
+                      for r in q.read_text(errors="replace").splitlines()],
+                     label)),
+                None)
+            assert path is not None, f"{label}: no routine in any {prefix_dir[prefix]}SEQ file"
+            ops = wlprogram.program_for(path, label)
+            assert ops, f"{label} emitted an empty program"
+            total += 1
+    assert total > 200, f"only {total} roster labels checked"
+
+
+def test_wlattack_audit() -> None:
+    """tools/wlattack.py --audit's job is to answer "would a flat
+    wlanim.py --slice of this routine be faithful to any single real
+    playthrough?" -- the question that decides whether an animation can
+    honestly be wired at all. Checked against real HRTSEQ2.ASM routines
+    whose control flow is known by reading them:
+
+      hrt_2_punch_anim   straight line plus forward skips -> sliceable
+      hrt_2_butts_anim   ANI_SET_RPTCOUNT repeat loop and a terminal
+                         ANI_CHANGEANIM -> not sliceable
+      hrt_2_raise_arm_anim  no ANI_END; ANI_GOTO,#cont into the middle of
+                         hrt_4_raise_arm_anim -> not sliceable
+
+    The first of those is load-bearing in the other direction too: every
+    already-wired attack has to keep passing, or the audit is calling
+    shipped work broken.
+    """
+    p = ROOT / "original" / "wwf-wrestlemania" / "HRTSEQ2.ASM"
+    if not p.exists():
+        return  # original source not fetched in this checkout
+
+    def verdict(label):
+        findings, _term = wlattack.audit(p, label)
+        return [why for sev, why in findings if sev == "blocking"]
+
+    assert verdict("hrt_2_punch_anim") == []
+
+    # hrt_2_butts_anim is fully representable now: its ANI_SET_RPTCOUNT,3
+    # span is carried as loop fields, and its ANI_CHANGEANIM is recognised
+    # as the terminator ANIM.ASM:1301 actually makes it rather than a
+    # mid-stream command.
+    butts = verdict("hrt_2_butts_anim")
+    assert butts == [], butts
+
+    bseq = wlanim.extract_visual_slice(p, "hrt_2_butts_anim", False)
+    assert (bseq.loop_first, bseq.loop_last, bseq.loop_count) == (0, 7, 3)
+    # Its ANI_CHANGEANIM is reached when the repeat loop runs out, but the
+    # routine ALSO has a real ANI_END on its button-mash #ex path, so the
+    # transition is one exit among several rather than the terminator --
+    # the flat list keeps walking to that ANI_END, the same "longest real
+    # path" rule every forward branch already gets. Treating it as
+    # terminal truncated this to 8 frames and claimed a transition it does
+    # not unconditionally take.
+    assert bseq.next_label is None, bseq.next_label
+    assert len(bseq.frames) == 9, len(bseq.frames)
+
+    # hrt_facedown_getup_anim is the mirror image: its ANI_CHANGEANIM sits
+    # inside an ANI_IFNOTSTATUS free-toss branch with the ordinary ending
+    # below it, so it is not the terminator either.
+    getup = wlanim.extract_visual_slice(
+        ROOT / "original" / "wwf-wrestlemania" / "HRTSEQ4.ASM",
+        "hrt_facedown_getup_anim", False)
+    assert getup.next_label is None, getup.next_label
+
+    # _ani_changeanim (ANIM.ASM:1301) overwrites OANIPC *and* OANIBASE and
+    # never returns, and the source confirms it by commenting out the
+    # `.word ANI_END` that follows it in 16 places. Treating it as an
+    # ordinary command made routines read far longer and messier than they
+    # are -- hrt_fall_back_anim as 55 frames with four transitions when it
+    # is 12 frames with one, hrt_flying_kick_anim as 38 rather than 9.
+    fb = wlanim.extract_visual_slice(
+        ROOT / "original" / "wwf-wrestlemania" / "HRTSEQ4.ASM",
+        "hrt_fall_back_anim", False)
+    assert len(fb.frames) == 12, len(fb.frames)
+    assert fb.next_label == "hrt_faceup_getup_anim", fb.next_label
+    fk = wlanim.extract_visual_slice(p, "hrt_flying_kick_anim", False)
+    assert len(fk.frames) == 9, len(fk.frames)
+    assert fk.next_label == "hrt_facedown_getup_anim", fk.next_label
+
+    # hrt_2_raise_arm_anim has no ANI_END of its own: it ends in
+    # `ANI_GOTO,#cont`, a label inside hrt_4_raise_arm_anim. The extractor
+    # follows that, so the GOTO is not the blocker -- what it lands in is.
+    # hrt_4_raise_arm_anim's ANI_SET_RPTCOUNT is NEGATIVE (-4), i.e.
+    # RNDRNG0(4) drawn at runtime (ANIM.ASM:3538), so its iteration count is
+    # not fixed and no static table can carry it. Refusing that is the point:
+    # baking in a number the source rolls for would be inventing data.
+    raise_arm = verdict("hrt_2_raise_arm_anim")
+    assert any("negative" in w or "RNDRNG0" in w for w in raise_arm), raise_arm
+    assert not any("#cont" in w for w in raise_arm)
+
+    # An ANI_IF_RPTCOUNT that branches FORWARD is a first pass plus a
+    # separate repeated block sharing one RPT_COUNT, which a single loop
+    # span cannot represent -- also refused rather than emitted inverted.
+    ups = verdict("hrt_uppercuts_to_head_anim")
+    assert any("FORWARD" in w for w in ups), ups
+
+    # The three that the loop fields genuinely do make representable.
+    for lab, span in (("hrt_2_pin_anim", (18, 27, 3)),
+                      ("hrt_4_pin_anim", (16, 25, 3)),
+                      ("hrt_knees_to_head_anim", (1, 5, 3))):
+        assert verdict(lab) == [], (lab, verdict(lab))
+        q = wlanim.extract_visual_slice(p, lab, False)
+        assert (q.loop_first, q.loop_last, q.loop_count) == span, (lab, q)
+
+    # Chaining, on a routine whose continuation is representable end to end:
+    # hrt_4_knee_to_head_anim ends in ANI_GOTO,#cont with no ANI_END of its
+    # own, so under its own label it is a single frame; followed, it is the
+    # real 8-frame stream, and its ANI_ATTACK_ON lands at index 2 -- past the
+    # end of the unchained fragment entirely.
+    seq = wlanim.extract_visual_slice(p, "hrt_4_knee_to_head_anim", False)
+    assert len(seq.frames) == 8, len(seq.frames)
+    frames, events = wlattack.trace(p, "hrt_4_knee_to_head_anim")
+    assert len(frames) == 8
+    assert [(i, o) for i, c, o in events if c == "ANI_ATTACK_ON"] == [
+        (2, "AMODE_KNEE,11,44,51,49")]
+
+    # Local labels are reused across routines (#cont, #hit, #missed appear in
+    # many), so a chain target must resolve forward from the routine itself.
+    # Resolving from the top of the file picked up an unrelated earlier
+    # #cont, which for hrt_2_raise_arm_anim produced frames from a different
+    # animation entirely (H4NM3A*) instead of its own shared tail (H4SL4C*).
+    lines = [wlanim.strip_comment(r)
+             for r in p.read_text(errors="replace").splitlines()]
+    order = wlanim.slice_line_order(lines, "hrt_2_raise_arm_anim")
+    chained = [wlanim._frame_from_line(lines[i]) for i in order]
+    names = [f.name for f in chained if f]
+    assert names[:2] == ["H1TL5A03", "H1TL5A04"], names[:2]
+    # The frame sharing a line with the #cont label must not be dropped.
+    assert names[2] == "H4SL4C01", names[2]
+    assert not any(n.startswith("H4NM3A") for n in names), names
+
+    # Every attack animation actually wired into the Bret backend must be
+    # sliceable, or the extraction backing it is not a real playthrough.
+    for label in ("hrt_2_punch_anim", "hrt_4_punch_anim",
+                  "hrt_4_super_punch_anim", "hrt_2_kick_anim",
+                  "hrt_4_kick_anim", "hrt_2_super_kick_anim",
+                  "hrt_2_butt_anim", "hrt_4_butt_anim",
+                  "hrt_2_knee_anim", "hrt_4_knee_anim",
+                  "hrt_4_uppercut_anim", "hrt_2_stomp_anim",
+                  "hrt_4_stomp_anim", "hrt_2_ground_punch_anim",
+                  "hrt_4_ground_punch_anim", "hrt_4_push_anim",
+                  "hrt_4_jump_kick_anim", "hrt_4_knee_fall_anim",
+                  "hrt_kick_TB_anim"):
+        assert verdict(label) == [], (label, verdict(label))
+
+    # A SUBR alias (HRTSEQ2.ASM:1334-1335 hrt_2/4_super_kick_anim) must not
+    # be mistaken for an empty routine: its own local labels live in the
+    # body that follows, and missing them made #missed read as an
+    # out-of-routine jump.
+    assert "#missed" in wlattack._routine_local_labels(p, "hrt_2_super_kick_anim")
+
+
+def test_wlattack_frame_indices() -> None:
+    """The frame index each inline command falls at -- the number an
+    attack window table needs. Checked against windows that were hand
+    traced from the .ASM long before this tool existed, which is the whole
+    basis for trusting it on animations nobody has traced."""
+    p = ROOT / "original" / "wwf-wrestlemania" / "HRTSEQ2.ASM"
+    if not p.exists():
+        return
+
+    def attack_ons(label):
+        _frames, events = wlattack.trace(p, label)
+        return [(idx, ops) for idx, cmd, ops in events
+                if cmd in ("ANI_ATTACK_ON", "ANI_ATTACK_ON_Z")]
+
+    assert attack_ons("hrt_2_punch_anim") == [
+        (5, "AMODE_PUNCH,30,91,-45,50,15,45")]
+    assert attack_ons("hrt_2_super_kick_anim") == [
+        (4, "AMODE_SUPER_KICK,5,54,70,34")]
+    # Multi-pulse: two and three real ANI_ATTACK_ON commands respectively.
+    assert attack_ons("hrt_2_stomp_anim") == [
+        (4, "AMODE_HITCHECK,7,-10,-40,28,31,50"),
+        (7, "AMODE_STOMP2,7,-10,-40,28,31,50")]
+    assert attack_ons("hrt_2_ground_punch_anim") == [
+        (2, "AMODE_HITCHECK,5-10,-8,-40,32,32,50"),
+        (5, "AMODE_LBOWDROP2,5,-8,-40,32,32,50"),
+        (8, "AMODE_LBOWDROP2,5,-8,-40,32,32,50")]
 
 
 def test_wlanim() -> None:
@@ -486,7 +933,7 @@ def test_source_inventory() -> None:
 
 def test_port_manifest() -> None:
     data = port_manifest.load(ROOT / "port" / "translation_manifest.json")
-    assert data["attract"]["show_gameplay"]["status"] == "harness-only"
+    assert data["attract"]["show_gameplay"]["status"] == "partial-source"
     assert data["attract"]["show_sports_logo"]["status"] == "partial-source"
     assert data["attract"]["show_title"]["status"] == "partial-source"
     with tempfile.TemporaryDirectory() as td_s:
@@ -496,7 +943,7 @@ def test_port_manifest() -> None:
         port_manifest.emit_c(data, out_c)
         port_manifest.emit_md(data, out_md)
         text = out_c.read_text()
-        assert "WM_ATTRACT_SHOW_GAMEPLAY: return WM_PORT_HARNESS_ONLY" in text
+        assert "WM_ATTRACT_SHOW_GAMEPLAY: return WM_PORT_PARTIAL_SOURCE" in text
         assert "WM_ATTRACT_SHOW_SPORTS_LOGO: return WM_PORT_PARTIAL_SOURCE" in text
         assert "WM_ATTRACT_SHOW_TITLE: return WM_PORT_PARTIAL_SOURCE" in text
         assert "harness-only" in out_md.read_text()
@@ -541,8 +988,489 @@ def test_source_text_bundle() -> None:
             raise AssertionError("zero-byte source bundle must be rejected")
 
 
+def test_linked_files_is_the_game() -> None:
+    """The drop holds .ASM files the game does not link, and they collide.
+
+    WRESTLE.CMD is the linker command file. ADMSEQ1-3.ASM (Adam Bomb, cut
+    from the roster), REFSEQ1.ASM and the superseded HRTSEQ.ASM/YOKSEQ.ASM
+    sit in the same directory but are not in it -- and ADMSEQ3.ASM:199
+    defines `dnk_3_head_held_anim`, the same global DNKSEQ3.ASM:1624
+    defines. Searching the directory alphabetically finds Adam's.
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    if not (base / "WRESTLE.CMD").exists():
+        return
+
+    names = {q.name for q in wlanim.linked_files()}
+    for dead in ("ADMSEQ1.ASM", "ADMSEQ2.ASM", "ADMSEQ3.ASM", "REFSEQ1.ASM",
+                 "HRTSEQ.ASM", "YOKSEQ.ASM"):
+        assert dead not in names, f"{dead} is not in WRESTLE.CMD"
+    for live in ("HRTSEQ3.ASM", "DNKSEQ3.ASM", "ANIM.ASM", "WRESTLE2.ASM",
+                 "FINISEQ.ASM"):
+        assert live in names, f"{live} IS in WRESTLE.CMD"
+
+    where = dict((lab, path) for path, lab in wlpuppet.slave_targets())
+    if "dnk_3_head_held_anim" in where:
+        assert where["dnk_3_head_held_anim"].name == "DNKSEQ3.ASM", \
+            where["dnk_3_head_held_anim"]
+
+
+def test_bare_label_routines() -> None:
+    """An animation is not always behind a SUBR.
+
+    UNDSEQ3.ASM:876-1046 is eight choking animations named by plain
+    column-0 labels, one after another, none ending in ANI_END -- each
+    ends in an ANI_CHANGEANIM, so the only boundary is the next label.
+    The slave tables name them exactly as they name SUBRs, so they have to
+    resolve, and each has to stop at its own end rather than running on
+    into the seven that follow.
+    """
+    src = ROOT / "original" / "wwf-wrestlemania" / "UNDSEQ3.ASM"
+    if not src.exists():
+        return
+
+    # Frame counts read off the source, routine by routine.
+    expect = {"hrt_choking_anim": 10, "rzr_choking_anim": 10,
+              "und_choking_anim": 12, "yok_choking_anim": 9,
+              "shn_choking_anim": 9, "bam_choking_anim": 6,
+              "dnk_choking_anim": 12, "lex_choking_anim": 8}
+    for label, frames in expect.items():
+        ops = wlprogram.program_for(src, label)
+        got = sum(1 for o in ops if o[0] == "FRAME")
+        assert got == frames, (label, got, frames)
+        assert ops[-1][0] == "CHANGEANIM", (label, ops[-1])
+
+
+def test_slave_targets_all_emit() -> None:
+    """Every animation ANI_SLAVEANIM can hand a victim has to be playable.
+
+    The op names a whole animation for the OTHER wrestler to run, chosen
+    out of a nine-slot table by his own WRESTLERNUM. An entry naming an
+    animation the port cannot emit is a hole the runtime would fall into,
+    so the set is read out of the tables and every one of them is emitted.
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    if not (base / "ANIM.ASM").exists():
+        return
+
+    targets = wlpuppet.slave_targets()
+    assert len(targets) > 150, len(targets)
+    for path, label in targets:
+        ops = wlprogram.program_for(path, label)
+        assert ops, label
+
+    generated = (ROOT / "src" / "generated" / "anim_programs.c")
+    if generated.exists():
+        text = generated.read_text()
+        for _path, label in targets:
+            assert f'"{label}"' in text, f"{label} is named by a slave table "
+    # ...and where a table's slot is `.long 0` it stays empty rather than
+    # being filled with a guess. Slot 7 is Adam Bomb's, the wrestler who
+    # was cut: most tables write 0 there, some write the Undertaker's
+    # animation, and neither is invented here.
+    rows = [r for p in wlpuppet.canonical_files()
+            for r in wlpuppet.slave_tables_in(p).values()]
+    assert rows, "no slave tables at all"
+    assert any(r[7] == "" for r in rows), "no `.long 0` slot survived"
+    assert all(len(r) == wlpuppet.ROSTER_SLOTS for r in rows), "short table"
+
+
+def test_truncated_frame_names() -> None:
+    """A WIMP name field is eight characters; .LOD names can be longer.
+
+    BAM.LOD lists BURNBODY01..BURNBODY05, and bam_jms.img stores five
+    images all called `BURNBODY`. The .LOD's packing order is the
+    container's order, so the nth full name is the nth image -- but only
+    when the counts agree.
+    """
+    img_dir = ROOT / "original" / "wwf-wrestlemania" / "IMG"
+    if not (img_dir / "BAM_JMS.IMG").exists():
+        return
+
+    _data, _hdr, images, _pal = wimp.parse_file(img_dir / "BAM_JMS.IMG")
+    by_name = {im.name.upper(): im for im in images}
+    lod = ["BURNBODY0%d" % n for n in range(1, 6)]
+    picked = [geometry_bundle._by_truncated_name(f, lod, images, by_name)
+              for f in lod]
+    assert all(p is not None for p in picked), picked
+    assert len({id(p) for p in picked}) == 5, "five names, five images"
+
+    # A stem the container does not hold resolves to nothing rather than
+    # to whatever happens to be near it.
+    assert geometry_bundle._by_truncated_name(
+        "NOTHERE01", ["NOTHERE01"], images, by_name) is None
+
+
+def test_gravity_opcodes() -> None:
+    """The gravity/ground group, read off the source rather than assumed.
+
+    ANI_WAITHITGND takes no operands at all; ANI_BOUNCE takes one that the
+    handler shifts left 16 into OBJ_YVEL; ANI_SETLONG names a process field
+    and a LONG, and across the eight playable wrestlers it names exactly
+    two -- OBJ_GRAVITY and DEBRIS_X -- so a third would be a silent hole
+    and refuses instead.
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    if not (base / "HRTSEQ4.ASM").exists():
+        return
+
+    ops = wlprogram.program_for(base / "HRTSEQ4.ASM", "hrt_fall_back_anim")
+    kinds = [o[0] for o in ops]
+    assert kinds.count("WAITHITGND") == 2, kinds
+    assert "BOUNCE" in kinds, kinds
+    # ANI_BOUNCE,5 -- the operand is carried through unshifted; the shift
+    # is the runtime's, exactly as ANIM.ASM:950 does it.
+    assert [o for o in ops if o[0] == "BOUNCE"][0][2] == 5, ops
+
+    # hrt_flyout_anim gives itself a heavier fall and puts the default back.
+    ops = wlprogram.program_for(base / "HRTSEQ4.ASM", "hrt_flyout_anim")
+    setlongs = [o for o in ops if o[0] == "SETLONG"]
+    assert len(setlongs) == 2, setlongs
+    assert all(o[1] == 0 for o in setlongs), setlongs   # field 0 = OBJ_GRAVITY
+    assert setlongs[0][2] == 0xE000 and setlongs[1][2] == 0x8000, setlongs
+
+    # Only the two known fields; anything else is refused rather than
+    # written to whatever happens to be at that offset.
+    assert set(wlprogram.SETLONG_FIELDS) == {"OBJ_GRAVITY", "DEBRIS_X"}
+
+
+def test_waithitopp_is_a_mode_and_a_frame() -> None:
+    """ANIM.ASM:2300's own note: "just like an ordinary WL ticks,frame type
+    command except that the ANICNT is zeroed if we hit the opponent." The
+    handler only sets MODE_WAITHITOPP and hands the operands back to the
+    dispatcher, so one source line is two ops. The frame was always being
+    read (wlanim's WAIT_FRAME_RE); the mode was what got dropped.
+    """
+    src = ROOT / "original" / "wwf-wrestlemania" / "HRTSEQ3.ASM"
+    if not src.exists():
+        return
+
+    ops = wlprogram.program_for(src, "hrt_3_pile_driver_anim")
+    kinds = [o[0] for o in ops]
+    for i, k in enumerate(kinds):
+        if k == "WAITHITOPP":
+            assert kinds[i + 1] == "FRAME", (i, kinds[i:i + 3])
+    # HRTSEQ3.ASM:317 is `WWL ANI_WAITHITOPP,4,H3HT3X+FR3`.
+    text = src.read_text(errors="replace")
+    assert "ANI_WAITHITOPP,4,H3HT3X+FR3" in text.replace("\r", "")
+
+
+def test_command_table_ops_keep_their_operands() -> None:
+    """Every op from wlcommands' table must reach the C with its operands.
+
+    tools/wlprogram.py's MOTION_OPS decides which ops get their (mode, a,
+    b, c) written out. It used to be a hand-kept set, so an op added to the
+    command table but not to that set fell through to the no-operand
+    default and was emitted with its operands silently zeroed -- which is
+    what happened to ANI_BOUNCE (its upward kick became 0) and ANI_GETUP
+    (its GETUP_TIME became 0). The set is derived from the table now, and
+    this checks it stays that way.
+    """
+    kinds = {k for k, _n, _m in wlcommands.COMMANDS.values()}
+    assert kinds <= wlprogram.MOTION_OPS, kinds - wlprogram.MOTION_OPS
+
+    base = ROOT / "original" / "wwf-wrestlemania"
+    generated = ROOT / "src" / "generated" / "anim_programs.c"
+    if not (base / "HRTSEQ4.ASM").exists() or not generated.exists():
+        return
+
+    # hrt_fall_back_anim's ANI_BOUNCE,5 and hrt_tossed_anim's
+    # ANI_GETUP,STAY_TIME (270), both read straight out of the source.
+    ops = wlprogram.program_for(base / "HRTSEQ4.ASM", "hrt_fall_back_anim")
+    assert [o for o in ops if o[0] == "BOUNCE"][0][2] == 5
+    ops = wlprogram.program_for(base / "HRTSEQ2.ASM", "hrt_tossed_anim")
+    assert [o for o in ops if o[0] == "GETUP"][0][2] == 270
+
+    text = generated.read_text()
+    assert "{ WM_AOP_BOUNCE, 0, -1, 5," in text, "ANI_BOUNCE lost its operand"
+    assert "{ WM_AOP_GETUP, 0, -1, 270," in text, "ANI_GETUP lost its operand"
+
+
+def test_roll_tables() -> None:
+    """WRESTLE2.ASM:1290 do_roll's per-wrestler roll tables.
+
+    Every playable wrestler has one, they all share the same speed and z
+    velocity, and -- the check that matters -- the largest index the
+    multiplier can produce from a 0..255 ROLL_POS is inside the frame list,
+    so do_roll can never read past the end of one.
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    if not (base / "WRESTLE2.ASM").exists():
+        return
+
+    rows = wlroll.tables()
+    assert len(rows) == 9, len(rows)
+    assert rows[7] is None, "slot 7 is Adam Bomb's `.long 0`"
+    for r in rows:
+        if not r:
+            continue
+        assert r["speed"] == 7, r
+        assert r["zvel"] == 0x50000, r
+        assert (255 * r["multiplier"]) >> 16 < len(r["frames"]), r
+
+    # Bret's list is not in ascending frame order: it runs FR1, then FR13
+    # down to FR2, because that is the direction his artwork rolls.
+    hrt = rows[0]
+    assert hrt["frames"][0] == "H3RL1A01", hrt["frames"][:3]
+    assert hrt["frames"][1] == "H3RL1A13", hrt["frames"][:3]
+    assert hrt["frames"][2] == "H3RL1A12", hrt["frames"][:3]
+
+    # The multiplier is written `10000h*12/255` and the assembler's divide
+    # truncates, so 255 reaches index 11 and the thirteenth frame is
+    # unreachable. That is the shipped data, not an extraction error.
+    assert hrt["multiplier"] == 3084, hrt["multiplier"]
+    assert hrt["top"] == 11 and len(hrt["frames"]) == 13, hrt
+
+
+def test_self_contained_command_ops() -> None:
+    """The batch of state commands with no subsystem behind them.
+
+    ANI_FACE's operand is a direction written as a bit set
+    (`MOVE_LEFT|MOVE_UP`), which is why operand parsing had to learn `|`;
+    ANI_SETWORD names exactly three fields across the roster, and a fourth
+    would be a silent write to whatever sits at that offset.
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    if not (base / "HRTSEQ3.ASM").exists():
+        return
+
+    assert wlcommands._value("MOVE_LEFT|MOVE_UP", {}) == (
+        wlanim.GLOBAL_EQU["MOVE_LEFT"] | wlanim.GLOBAL_EQU["MOVE_UP"])
+
+    assert set(wlprogram.SETWORD_FIELDS) == {"USR_VAR1", "USR_VAR2",
+                                             "DELAY_METER"}
+
+    # Every one of these has to survive into the generated C with its
+    # operands, the way ANI_BOUNCE and ANI_GETUP did not.
+    generated = ROOT / "src" / "generated" / "anim_programs.c"
+    if not generated.exists():
+        return
+    text = generated.read_text()
+    for op in ("FACE", "GRAVITY_OFF", "DAMAGE", "SETOPP_PLYRMODE",
+               "OPP_GETUP", "ATTACHVEL", "SETWORD", "IFNOT_RPTCOUNT"):
+        assert f"WM_AOP_{op}," in text, op
+    # ...and the ones carrying an operand are not all zeroes.
+    for op in ("FACE", "DAMAGE", "SETWORD"):
+        rows = [l for l in text.splitlines() if f"WM_AOP_{op}," in l]
+        assert any(re.search(r"-1, (?!0,)", l) for l in rows), op
+
+
+def test_per_wrestler_aux_tables() -> None:
+    """ANI_CHANGEANIM_TBL, ANI_XFLIP_TBL and ANI_OPPOFFSET's tables.
+
+    Same family as the puppet and slave tables, and the same trap: the
+    labels are `#local` and reused across files, so they resolve per use
+    site rather than by name.
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    if not (base / "ANIM.ASM").exists():
+        return
+
+    ca = wlpuppet.aux_table_ids("changeanim")
+    xf = wlpuppet.aux_table_ids("xflip")
+    oo = wlpuppet.aux_table_ids("oppoffset")
+    assert len(ca) == 4, len(ca)
+    assert len(xf) >= 15, len(xf)
+    assert len(oo) >= 15, len(oo)
+
+    # Every row list is exactly the nine roster slots.
+    for kind in ("changeanim", "xflip", "oppoffset"):
+        for path in wlpuppet.canonical_files():
+            for rows in wlpuppet._aux_tables_in(path, kind).values():
+                assert len(rows) == wlpuppet.ROSTER_SLOTS, (kind, rows)
+
+    # `#xflip_tbl` is defined in more than one file with different
+    # contents, which is exactly why resolution is per use site.
+    seen = {}
+    for path in wlpuppet.canonical_files():
+        for key, rows in wlpuppet._aux_tables_in(path, "xflip").items():
+            seen[key] = rows
+    assert len({tuple(v[0] for v in r) for r in seen.values()}) > 1, \
+        "every xflip table came out identical -- resolution collapsed"
+
+    # ANI_CHANGEANIM_TBL names whole animations, so like the slave targets
+    # every one of them has to be emitted.
+    generated = ROOT / "src" / "generated" / "anim_programs.c"
+    if generated.exists():
+        text = generated.read_text()
+        for _path, label in wlpuppet.changeanim_targets():
+            assert f'"{label}"' in text, label
+
+
+def test_anim_code_registry_reaches_its_call_sites() -> None:
+    """Every ANI_CODE registry row must match a real call site, exactly.
+
+    A `#`-prefixed label is file-scoped and the emitter carries the `#`
+    into the generated op, so a row spelled without it never matches and
+    the routine is simply never called. That is not hypothetical: thirteen
+    rows shipped that way, and their unit tests passed because they called
+    wm_anim_code_run with the un-prefixed name directly -- testing the row
+    rather than the wiring. This checks the spelling against the source.
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    src = ROOT / "src" / "core" / "anim_code.c"
+    if not (base / "ANIM.ASM").exists() or not src.exists():
+        return
+
+    use = re.compile(r"^\s*(?:\.word|W+L+W*)\s+ANI_CODE\s*,\s*(#?\w+)", re.I)
+    sites = {}
+    for who in ("HRT", "RZR", "UND", "YOK", "SHN", "BAM", "DNK", "LEX"):
+        for p in sorted(q for q in base.glob(who + "SEQ*.ASM")
+                        if "'" not in q.name):
+            for raw in p.read_text(errors="replace").splitlines():
+                m = use.match(wlanim.strip_comment(raw))
+                if m:
+                    sites.setdefault(m.group(1), set()).add(p.name)
+
+    rows = re.findall(r'\{\s*"(#?[A-Za-z_0-9]+)"\s*,\s*(NULL|"[^"]+")',
+                      src.read_text())
+    assert rows, "no registry rows found -- the pattern stopped matching"
+
+    unreachable = []
+    for name, where in rows:
+        if name not in sites:
+            unreachable.append((name, where, "no call site spells it this way"))
+            continue
+        if where != "NULL":
+            f = where.strip('"')
+            if f not in sites[name]:
+                unreachable.append((name, where, "not called from that file"))
+    assert not unreachable, unreachable
+
+
+
+def test_announce_tables() -> None:
+    """DCSSOUND.ASM's announcer tables, against their own headers.
+
+    Every table writes its shape in three values immediately BEFORE its
+    label, which ADD_TO_QUEUE reads at negative offsets: a reset-repeat
+    flag at -050H, a crowd table at -040H, and the last row index and the
+    row stride at -020H/-010H. The stride is a TMS34010 BIT count, so
+    010H is one word. If the extractor ever reads those in the wrong
+    order it will silently produce a table that draws the wrong rows, so
+    each one is checked against the data that follows it.
+    """
+    if not (wlanim.ORIG / "DCSSOUND.ASM").exists():
+        return
+    tables = wlvoice.announce_tables()
+    calls = wlvoice.callers()
+    assert len(tables) >= 20, len(tables)
+
+    for name, t in tables.items():
+        assert t["stride"] in (1, 2), (name, t["stride"])
+        rows = t["rows"]
+        assert all(len(r) == t["stride"] for r in rows), name
+        # RNDRNG0's maximum has to be inside the data.
+        assert t["last_index"] < len(rows), (name, t["last_index"], len(rows))
+
+    # ARE_WE_REPEATING's walk-forward runs off the end of the drawn range,
+    # so every table a rejected draw can reach the end of carries rows
+    # past it. Mostly those repeat lines from the table's own opening, but
+    # not always: FACE_HIT, MID_HIT, MISSES and MISS_YOKO each put a line
+    # there that appears nowhere in the drawn range, so the ONLY way the
+    # game ever says it is through the anti-repeat walk. They are part of
+    # the table for that reason, and are extracted with it. (The one-line
+    # *_FINISHES tables have no such rows: there is nowhere to walk to.)
+    for name in wlvoice.wanted_tables(calls):
+        t = tables[name]
+        assert t["rows"][t["last_index"] + 1:], name
+
+    # Every CALL_x names a table that exists, with a real percentage.
+    for name, c in calls.items():
+        assert c["table"] in tables, (name, c["table"])
+        assert 0 < c["percent"] <= 1000, (name, c["percent"])
+        assert 0 <= c["sleep"] <= 60, (name, c["sleep"])
+
+    # DCSSOUND.ASM:3282 PROC_MISSES, read straight off the source.
+    assert calls["CALL_MISSES"]["table"] == "MISSES"
+    assert calls["CALL_MISSES"]["sleep"] == 5
+    assert calls["CALL_MISSES"]["percent"] == 350
+    # It never copies WRESTLERNUM into A5, and CALL_SPECIAL_MOVE does.
+    assert calls["CALL_MISSES"]["personal"] is False
+    assert calls["CALL_SPECIAL_MOVE"]["personal"] is True
+
+    # The five per-wrestler tables all have the cut wrestler's zero slot.
+    personal = wlvoice.personal_tables()
+    for want, rows in personal.items():
+        assert len(rows) == 9, want
+        assert rows[7] == 0, want
+        assert all(v > 0 for i, v in enumerate(rows) if i != 7), want
+
+    # ASCENDING_TABLE climbs as REPEAT_STATE counts down 3, 2, 1, 0.
+    for i, row in enumerate(wlvoice.ascending_table()):
+        if i == 7:
+            assert row == [0, 0, 0, 0]
+            continue
+        assert row == sorted(row, reverse=True), (i, row)
+
+
+def test_announce_tables_generate_the_shipped_file() -> None:
+    """The checked-in generated file is what the tool produces today."""
+    out = ROOT / "src" / "generated" / "announce_tables.c"
+    if not (wlanim.ORIG / "DCSSOUND.ASM").exists() or not out.exists():
+        return
+    assert wlvoice.render_c() == out.read_text()
+
+
+def test_announce_calls_are_spelled_as_the_call_sites_spell_them() -> None:
+    """The same guard the ANI_CODE registry has, for the announcer group.
+
+    These routines resolve by name out of wm_announce_calls[] rather than
+    from a hand-kept row, so the spelling comes from DCSSOUND.ASM itself.
+    That only helps if the sequence files spell them the same way, which
+    is what this checks -- and it is how the group's real reach is known.
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    if not (base / "ANIM.ASM").exists():
+        return
+    use = re.compile(r"^\s*(?:\.word|W+L+W*)\s+ANI_CODE\s*,\s*(#?\w+)", re.I)
+    sites: dict[str, int] = {}
+    for who in ("HRT", "RZR", "UND", "YOK", "SHN", "BAM", "DNK", "LEX"):
+        for p in sorted(q for q in base.glob(who + "SEQ*.ASM")
+                        if "'" not in q.name):
+            for raw in p.read_text(errors="replace").splitlines():
+                m = use.match(wlanim.strip_comment(raw))
+                if m:
+                    sites[m.group(1)] = sites.get(m.group(1), 0) + 1
+
+    calls = wlvoice.callers()
+    reached = {n: sites[n] for n in calls if n in sites}
+    # CALL_MISSES alone is the biggest single ANI_CODE routine in the game.
+    assert reached.get("CALL_MISSES", 0) >= 150, reached.get("CALL_MISSES")
+    assert sum(reached.values()) >= 300, sum(reached.values())
+    # The callers that are NOT reached from an animation are reached from
+    # the wrestler control layer instead (CALL_DROP_KICK, CALL_FACE_HIT,
+    # CALL_MID_HIT, CALL_AVERAGE_MOVE, DO_REVERSAL) -- they are extracted
+    # because they share the tables, not because a sequence file calls
+    # them, so this only requires that the ones that ARE reached match.
+    assert reached, "no announcer routine is reached from any animation"
+
+
 def main() -> int:
     test_wlanim()
+    test_wlprogram()
+    test_wlprogram_roster_wide()
+    test_wlprogram_is_deterministic()
+    test_body_stop_ends_a_frameless_routine()
+    test_linked_files_is_the_game()
+    test_bare_label_routines()
+    test_slave_targets_all_emit()
+    test_truncated_frame_names()
+    test_gravity_opcodes()
+    test_command_table_ops_keep_their_operands()
+    test_roll_tables()
+    test_self_contained_command_ops()
+    test_per_wrestler_aux_tables()
+    test_anim_code_registry_reaches_its_call_sites()
+    test_announce_tables()
+    test_announce_tables_generate_the_shipped_file()
+    test_announce_calls_are_spelled_as_the_call_sites_spell_them()
+    test_waithitopp_is_a_mode_and_a_frame()
+    test_roster_dispatcher_labels_all_emit()
+    test_wlprogram_tick_expressions()
+    test_wlanim_label_def()
+    test_wlattack_audit()
+    test_wlattack_frame_indices()
     test_manifest()
     test_wimp_probe()
     test_wimp_emit_c()

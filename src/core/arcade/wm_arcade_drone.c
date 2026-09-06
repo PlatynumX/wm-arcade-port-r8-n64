@@ -9,6 +9,42 @@ static const uint8_t s_getup_pct[30] = {
     40,42,44,46,48, 50,52,54,56,58, 60,70,80,90,100
 };
 
+/* DRONE.ASM #blkbase_t (base % to block): SKLM 10,2/20,2/30,1/35,1/40,1/47,7. */
+static const uint8_t s_blkbase_pct[30] = {
+    10,12,14,16,18, 20,22,24,26,28, 30,31,32,33,34,
+    35,36,37,38,39, 40,41,42,43,44, 47,54,61,68,75
+};
+
+/* DRONE.ASM #blkatk_t (% to block per attack, literal, not SKLM-built),
+   indexed 0..9 by the per-attack-type missed-block count (clamped to 9). */
+static const uint8_t s_blkatk_pct[10] = {0,10,20,30,40, 50,50,50,50,50};
+
+/* DRONE.ASM sklhhdly_t (max delay on headhold): SKLM 150,-6/120,-6/90,-6/
+   60,-6/28,-3/13,-2. */
+static const uint8_t s_sklhhdly[30] = {
+    150,144,138,132,126, 120,114,108,102,96, 90,84,78,72,66,
+    60,54,48,42,36, 28,25,22,19,16, 13,11,9,7,5
+};
+
+/* DRONE.ASM sklhrdly_t (max delay on headhold reversal): identical values to
+   sklhhdly_t in this build's active (non-commented) table. */
+static const uint8_t s_sklhrdly[30] = {
+    150,144,138,132,126, 120,114,108,102,96, 90,84,78,72,66,
+    60,54,48,42,36, 28,25,22,19,16, 13,11,9,7,5
+};
+
+/* DRONE.ASM sklrep_t (% to repeat): SKLM 20,4/45,2/55,4/75,2/85,2/90,3. */
+static const uint8_t s_sklrep_pct[30] = {
+    20,24,28,32,36, 45,47,49,51,53, 55,59,63,67,71,
+    75,77,79,81,83, 85,87,89,91,93, 90,93,96,99,102
+};
+
+static int clamp_skill(int skill) {
+    if (skill < 0) return 0;
+    if (skill > 29) return 29;
+    return skill;
+}
+
 static uint32_t rnd_plain(const wm_arcade_drone_callbacks_t *cb, uint32_t maxv) {
     if (!cb) return 0;
     if (cb->rnd_upto) return cb->rnd_upto(maxv, cb->user);
@@ -30,9 +66,29 @@ void wm_arcade_drone_init(wm_arcade_drone_state_t *d, int skill) {
 }
 
 int wm_arcade_drone_getup_pct(int skill) {
-    if (skill < 0) skill = 0;
-    if (skill > 29) skill = 29;
-    return s_getup_pct[skill];
+    return s_getup_pct[clamp_skill(skill)];
+}
+
+int wm_arcade_drone_block_base_pct(int skill) {
+    return s_blkbase_pct[clamp_skill(skill)];
+}
+
+int wm_arcade_drone_block_attack_pct(int missed) {
+    if (missed < 0) missed = 0;
+    if (missed > 9) missed = 9;
+    return s_blkatk_pct[missed];
+}
+
+int wm_arcade_drone_headhold_delay_max(int skill) {
+    return s_sklhhdly[clamp_skill(skill)];
+}
+
+int wm_arcade_drone_headheld_delay_max(int skill) {
+    return s_sklhrdly[clamp_skill(skill)];
+}
+
+int wm_arcade_drone_repeat_pct(int skill) {
+    return s_sklrep_pct[clamp_skill(skill)];
 }
 
 void wm_arcade_drone_commit_inputs(wm_arcade_actor_t *a,
@@ -148,11 +204,20 @@ wm_arcade_drone_step_result_t wm_arcade_drone_script_step(
         const wm_arcade_drone_script_op_t *op = &script->ops[d->script_pc];
         switch (op->opcode) {
             case WM_DRONE_SC_DONE:
-                abort_script(d);
-                return WM_DRONE_STEP_ABORT_SCRIPT;
+                /* DS_SLP1 (0xC000+0): source `sll 32-14,a0 / jrc #dsdone`
+                   reaches #dsdone *without* the `clr a9` that #dsabt does --
+                   a9 is already past this word from the `move *a9+,a0`
+                   fetch, so the script is NOT cleared, just yielded for one
+                   tick; the next word (typically a fresh DS_CODE) resumes
+                   next tick. Only #dsabt-reached commands (SKILL_ABORT/
+                   ABORT_IF_BLOCKING/mode-mismatch, all handled elsewhere in
+                   this switch) actually clear the script. */
+                ++d->script_pc;
+                return WM_DRONE_STEP_SCRIPT;
 
             case WM_DRONE_SC_SEEK:
-                if (cb && cb->script_seek && cb->script_seek(self, d, cb->user) == 0) {
+                if (cb && cb->script_seek &&
+                    cb->script_seek(self, opp, d, op->source_label, cb->user) == 0) {
                     ++d->script_pc;
                     continue;
                 }
@@ -190,17 +255,70 @@ wm_arcade_drone_step_result_t wm_arcade_drone_script_step(
                 continue;
 
             case WM_DRONE_SC_CALL_CODE:
-            case WM_DRONE_SC_CALL_FUNCTION:
-                if (cb && cb->script_call) cb->script_call(self, op->source_label, cb->user);
-                ++d->script_pc;
+            case WM_DRONE_SC_CALL_FUNCTION: {
+                int r = (cb && cb->script_call)
+                    ? cb->script_call(self, opp, d, op->source_label, cb->user)
+                    : WM_DRONE_CALL_CONTINUE;
+                if (r == WM_DRONE_CALL_ABORT) {
+                    abort_script(d);
+                    return WM_DRONE_STEP_ABORT_SCRIPT;
+                }
+                if (r == WM_DRONE_CALL_REDIRECTED) {
+                    /* Source: `move a9,a1 / move *a0,a9,L / jump a1` -- the
+                       callback already reassigned d->script/script_pc
+                       itself; `jump a1` lands back at the interpreter's own
+                       `jruc #scplp`, so the *new* script's bytecode is read
+                       immediately, same tick, not deferred a tick. */
+                    const wm_arcade_drone_script_t *next;
+                    if (!d->script) {
+                        abort_script(d);
+                        return WM_DRONE_STEP_ABORT_SCRIPT;
+                    }
+                    if (!cb || !cb->resolve_script) return WM_DRONE_STEP_SCRIPT;
+                    next = cb->resolve_script(d->script, cb->user);
+                    if (!next || !next->ops) {
+                        abort_script(d);
+                        return WM_DRONE_STEP_ABORT_SCRIPT;
+                    }
+                    script = next;
+                    guard = 0;
+                    continue;
+                }
+                d->script_pc += (r == WM_DRONE_CALL_SKIP_NEXT) ? 2u : 1u;
                 continue;
+            }
 
             case WM_DRONE_SC_RANDOM_JUMP:
-                if ((int)rnd_range(cb, 99) < op->percent) d->script_pc = op->target_pc;
-                else ++d->script_pc;
+                if ((int)rnd_range(cb, 99) < op->percent) {
+                    if (op->target_script) {
+                        const wm_arcade_drone_script_t *next = (cb && cb->resolve_script)
+                            ? cb->resolve_script(op->target_script, cb->user) : NULL;
+                        if (!next || !next->ops) {
+                            abort_script(d);
+                            return WM_DRONE_STEP_ABORT_SCRIPT;
+                        }
+                        d->script = op->target_script;
+                        script = next;
+                        guard = 0;
+                    }
+                    d->script_pc = op->target_pc;
+                } else {
+                    ++d->script_pc;
+                }
                 continue;
 
             case WM_DRONE_SC_JUMP:
+                if (op->target_script) {
+                    const wm_arcade_drone_script_t *next = (cb && cb->resolve_script)
+                        ? cb->resolve_script(op->target_script, cb->user) : NULL;
+                    if (!next || !next->ops) {
+                        abort_script(d);
+                        return WM_DRONE_STEP_ABORT_SCRIPT;
+                    }
+                    d->script = op->target_script;
+                    script = next;
+                    guard = 0;
+                }
                 d->script_pc = op->target_pc;
                 continue;
 
@@ -314,7 +432,7 @@ wm_arcade_drone_step_result_t wm_arcade_drone_main(
     }
 
     if (d->mode < 0 && mymode == WM_PMODE_NORMAL && !d->script && cb && cb->seek_dir_dist)
-        cb->seek_dir_dist(self, d, cb->user);
+        cb->seek_dir_dist(self, opp, d, cb->user);
 
     /* Source decrements whenever charged, including 0 -> -1. */
     if (d->but_charge) --d->but_charge_delay;
@@ -481,8 +599,19 @@ wm_arcade_drone_step_result_t wm_arcade_drone_main(
 
     if (self->closest_dist <= 200 && opmode == WM_PMODE_BLOCK) {
         if (self->closest_zdist <= 40 && self->closest_xdist <= 60) {
+            /* Source reads *a8(STICK_REL_CUR) (PLYR.EQU: "facing reletive"),
+               not the raw STICK_VAL_CUR -- WRESTLE2.ASM's own
+               wres_get_stick_rel_cur is exactly this: the raw stick value
+               unchanged if the opponent faces right, or run through the
+               same xflip_table flip_lr_dir already implements if they face
+               left. Comparing raw stick_val_cur here would answer "is the
+               opponent physically pushing down-left" instead of the
+               source's own "is the opponent pushing down-and-toward-self",
+               silently swapped whenever the opponent faces left. */
+            uint16_t opp_rel = (opp->facing_dir & WM_MOVE_RIGHT) == 0
+                ? flip_lr_dir(opp->stick_val_cur) : opp->stick_val_cur;
             select_script(self, d,
-                opp->stick_val_cur == WM_MOVE_DOWN_LEFT ? "M_shrtblkrdl" : "M_shrtblkr", cb);
+                opp_rel == WM_MOVE_DOWN_LEFT ? "M_shrtblkrdl" : "M_shrtblkr", cb);
         } else {
             select_script(self, d, "drn_seekclose", cb);
         }

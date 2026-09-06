@@ -72,8 +72,14 @@ typedef struct wm_arcade_drone_script_op {
     uint16_t input_word;       /* low 5 buttons, high bits MOVE_* exactly like source */
     int32_t delay;             /* input delay */
     int32_t percent;           /* RANDOM_JUMP */
-    size_t target_pc;          /* RANDOM_JUMP/JUMP */
+    size_t target_pc;          /* RANDOM_JUMP/JUMP: op index within the target script */
     const char *source_label;  /* skill table or code/function label */
+    /* RANDOM_JUMP/JUMP only: NULL means "jump within this same script" (the
+       original, still-supported behavior). Non-NULL names a *different*
+       script to resolve_script() and switch to -- DRONE.ASM's `DS_JMP
+       drn_enterring`/`DS_JMP drn_seek` style cross-script jumps, which a
+       same-array target_pc cannot express. */
+    const char *target_script;
 } wm_arcade_drone_script_op_t;
 
 typedef struct wm_arcade_drone_script {
@@ -97,7 +103,10 @@ typedef struct wm_arcade_drone_callbacks {
     int32_t (*headheld_delay_max)(int skill, void *user);      /* sklhrdly_t */
 
     int (*check_combo_go)(wm_arcade_actor_t *actor, void *user);
-    void (*seek_dir_dist)(wm_arcade_actor_t *actor, wm_arcade_drone_state_t *drone, void *user);
+    /* drone_seekdirdist: needs the opponent (a8) to compute the sine-table
+       XZ offset from self's own seek_dir/seek_dist. */
+    void (*seek_dir_dist)(wm_arcade_actor_t *actor, wm_arcade_actor_t *opp,
+                          wm_arcade_drone_state_t *drone, void *user);
 
     /* Direct table resolver for wnshort_t / wnmed_t / wnlong_t mode lists. */
     const wm_arcade_drone_script_list_t *(*range_script_list)(
@@ -107,8 +116,21 @@ typedef struct wm_arcade_drone_callbacks {
     /* Decoded script VM seams for the source pointers/calls. */
     const wm_arcade_drone_script_t *(*resolve_script)(const char *source_label, void *user);
     int32_t (*script_skill_pct)(const char *source_table_label, int skill, void *user);
-    int (*script_seek)(wm_arcade_actor_t *self, wm_arcade_drone_state_t *drone, void *user);
-    void (*script_call)(wm_arcade_actor_t *self, const char *source_label, void *user);
+    /* Several distinct source SEEK-shaped loops (drone_seek's plain
+       toward-opponent seek, drn_retreat's drone_seekdirdist-based circling
+       with its own 1/32 stop roll, ...) all decode to the same
+       WM_DRONE_SC_SEEK opcode -- source_label (the op's own, same as
+       CALL_CODE/CALL_FUNCTION's) tells the callback which one to run.
+       Returns 0 once arrived/done, matching the source's own "jrz #x" /
+       "jrnz #lp" branch on the computed joy word. */
+    int (*script_seek)(wm_arcade_actor_t *self, wm_arcade_actor_t *opp,
+                       wm_arcade_drone_state_t *drone, const char *source_label,
+                       void *user);
+    /* See wm_arcade_drone_call_result_t for the four real source outcomes
+       a DS_CODE inline block can report back to the interpreter. */
+    int (*script_call)(wm_arcade_actor_t *self, wm_arcade_actor_t *opp,
+                       wm_arcade_drone_state_t *drone, const char *source_label,
+                       void *user);
 
     void (*script_selected)(wm_arcade_actor_t *self, const char *source_label, void *user);
     void *user;
@@ -122,8 +144,45 @@ typedef enum wm_arcade_drone_step_result {
     WM_DRONE_STEP_ABORT_SCRIPT = 4
 } wm_arcade_drone_step_result_t;
 
+/*
+ * DRONE.ASM's inline "DS_CODE" blocks are literal TMS34010 code spliced into
+ * the script bytecode stream (entered/left via the source's own `exgpc a9`
+ * coroutine swap -- see wm_arcade_drone.c's WM_DRONE_SC_CALL_CODE/
+ * WM_DRONE_SC_CALL_FUNCTION handling). A callback standing in for one of
+ * these blocks needs to report back one of four real source outcomes:
+ *   - CONTINUE:   falls through to the next op (the common case).
+ *   - SKIP_NEXT:  `addk 32,a9` (drone_chkrun's own "#bad" skip) -- the next
+ *                 op (one full value/mask or input pair) is bypassed.
+ *   - ABORT:      the block reached its own `#dsabt`/`clr a9` exit; the
+ *                 script ends now, matching WM_DRONE_SC_INPUT's existing
+ *                 zero/negative-delay abort path.
+ *   - REDIRECTED: the block did what drn_combo's own code does (`move a9,a1
+ *                 ... move *a0,a9,L ... jump a1`): it already reassigned
+ *                 drone->script itself and wants the interpreter to resume
+ *                 reading that *new* script's bytecode immediately, in this
+ *                 same tick (the real `jruc #scplp` after the `jump a1`).
+ */
+typedef enum wm_arcade_drone_call_result {
+    WM_DRONE_CALL_CONTINUE = 0,
+    WM_DRONE_CALL_SKIP_NEXT = 1,
+    WM_DRONE_CALL_ABORT = 2,
+    WM_DRONE_CALL_REDIRECTED = 3
+} wm_arcade_drone_call_result_t;
+
 void wm_arcade_drone_init(wm_arcade_drone_state_t *drone, int skill);
 int wm_arcade_drone_getup_pct(int skill);
+
+/*
+ * DRONE.ASM's other SKLM-built (6 bands x 5-entry linear ramp = 30 skill
+ * levels, matching wm_arcade_drone_getup_pct's own #getup_t pattern) global
+ * tables, plus the one literal (non-SKLM) table. These are wrestler-
+ * agnostic engine constants, not per-wrestler script data.
+ */
+int wm_arcade_drone_block_base_pct(int skill);      /* #blkbase_t */
+int wm_arcade_drone_block_attack_pct(int missed);   /* #blkatk_t, 0..9 */
+int wm_arcade_drone_headhold_delay_max(int skill);  /* sklhhdly_t */
+int wm_arcade_drone_headheld_delay_max(int skill);  /* sklhrdly_t */
+int wm_arcade_drone_repeat_pct(int skill);          /* sklrep_t */
 
 /* Direct decoded-port of DRONE.ASM's script command interpreter. */
 wm_arcade_drone_step_result_t wm_arcade_drone_script_step(

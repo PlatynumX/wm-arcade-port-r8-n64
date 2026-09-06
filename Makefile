@@ -24,8 +24,14 @@ CORE_C := \
     src/core/pregame.c \
     src/core/anim.c \
     src/core/game.c \
-    src/core/ropes.c \
     src/core/demo.c \
+    src/core/match.c \
+    src/core/movement.c \
+    src/core/bret_backend.c \
+    src/core/anim_program.c \
+    src/core/arcade/wm_arcade_start_run.c \
+    src/core/wrestler_backend.c \
+    src/core/human_input.c \
     src/core/visual.c \
     src/core/roster.c \
     src/core/attract.c \
@@ -37,18 +43,41 @@ CORE_C := \
     src/generated/port_status.c \
     src/generated/finish_sequences.c \
     src/generated/bret_visuals.c \
-    src/generated/bret_attacks.c
+    src/generated/bret_attacks.c \
+    src/generated/bret_defense.c \
+    src/generated/bret_grapple.c \
+    src/generated/anim_programs.c \
+    src/generated/frame_geometry.c \
+    src/generated/roll_frames.c \
+    src/generated/announce_tables.c \
+    src/generated/anim_aux_tables.c
 # BEGIN FIX38 CUMULATIVE ARCADE SOURCE PORTS
 FIX38_ARCADE_C := \
     src/core/arcade/wm_arcade_anim_combat.c \
+    src/core/arcade/wm_arcade_confine.c \
+    src/core/arcade/wm_arcade_veladd.c \
+    src/core/arcade/wm_arcade_roll.c \
+    src/core/arcade/wm_arcade_combo.c \
+    src/core/arcade/wm_arcade_announcer.c \
+    src/core/arcade/wm_arcade_announce_call.c \
+    src/core/arcade/wm_arcade_drone_data.c \
+    src/core/anim_code.c \
+    src/core/anim_puppet.c \
+    src/generated/puppet_tables.c \
+    src/core/arcade/wm_arcade_butcount.c \
+    src/core/arcade/wm_arcade_razor_anim_labels.c \
+    src/core/arcade/wm_arcade_joystat.c \
+    src/core/arcade/wm_arcade_mode_dead.c \
     src/core/arcade/wm_arcade_attach_anim.c \
     src/core/arcade/wm_arcade_bam.c \
     src/core/arcade/wm_arcade_bret.c \
     src/core/arcade/wm_arcade_bret_tables.c \
+    src/core/arcade/wm_arcade_closest.c \
     src/core/arcade/wm_arcade_combat.c \
     src/core/arcade/wm_arcade_doink.c \
     src/core/arcade/wm_arcade_drone.c \
     src/core/arcade/wm_arcade_lex.c \
+    src/core/arcade/wm_arcade_lifebar.c \
     src/core/arcade/wm_arcade_move_dispatch.c \
     src/core/arcade/wm_arcade_razor.c \
     src/core/arcade/wm_arcade_razor_tables.c \
@@ -63,6 +92,7 @@ FIX38_ARCADE_C := \
     src/core/arcade/wm_arcade_react8_core.c \
     src/core/arcade/wm_arcade_react9_core.c \
     src/core/arcade/wm_arcade_roster.c \
+    src/core/arcade/wm_arcade_round.c \
     src/core/arcade/wm_arcade_shawn.c \
     src/core/arcade/wm_arcade_special.c \
     src/core/arcade/wm_arcade_taker.c \

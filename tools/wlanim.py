@@ -22,9 +22,27 @@ WL_RE = re.compile(r"^\s*WL\s+([^,]+),\s*([A-Za-z_][A-Za-z0-9_]*)\s*\+\s*FR([0-9
 WAIT_FRAME_RE = re.compile(r"^\s*WWL\s+ANI_WAITHITOPP\s*,\s*([^,]+),\s*([A-Za-z_][A-Za-z0-9_]*)\s*\+\s*FR([0-9]+)\s*$", re.I)
 REPEAT_RE = re.compile(r"^\s*\.word\s+ANI_REPEAT\s*$", re.I)
 END_RE = re.compile(r"^\s*\.word\s+ANI_END\s*$", re.I)
+# ANIM.ASM:4441 _ani_rot -- "just sit and do nothing": it stuffs a 1 in
+# OANICNT and returns WITHOUT advancing OANIPC, so the animation parks on
+# its current frame forever. That makes it a terminator for span purposes
+# even though it is not an ANI_END: nothing after it in the source is ever
+# reached. WRESTLE2.ASM:3992 xxx_dead_anim is four commands ending in one.
+ROT_RE = re.compile(r"^\s*\.word\s+ANI_ROT\s*$", re.I)
 GOTO_RE = re.compile(r"^\s*WL\s+ANI_GOTO\s*,\s*#?[A-Za-z_][A-Za-z0-9_]*\s*$", re.I)
-PREFIX_WORD_RE = re.compile(r"^\s*\.word\s+(ANI_SETMODE|ANI_SETSPEED)\b", re.I)
-HEX_SUFFIX_RE = re.compile(r"\b([0-9A-Fa-f]+)h\b")
+PREFIX_WORD_RE = re.compile(
+    r"^\s*\.word\s+(ANI_SETMODE|ANI_SETSPEED|ANI_SETFACING|ANI_XFLIP)\b", re.I)
+# The assembler accepts either case for its trailing-h hex, and the
+# sequence files use both -- `090000h` two lines from `0000H`.
+HEX_SUFFIX_RE = re.compile(r"\b([0-9A-Fa-f]+)[hH]\b")
+
+# ANI_SUPERSLAVE2 IS a frame -- it sets OANICNT and stops, showing the
+# attacker's frame and choosing the victim's at the same time. It carries no
+# single `FRAME+FRn` operand, so the flat extractor cannot represent it and
+# _frame_from_line does not return one; but a routine built entirely out of
+# them (a grapple, most of them) is not frameless, and treating it as such
+# made _body_stop cut it off at its own first ANI_END.
+SUPERSLAVE2_LINE_RE = re.compile(
+    r"^\s*\S+\s+ANI_SUPERSLAVE2\b", re.I)
 
 @dataclass(frozen=True)
 class Frame:
@@ -36,15 +54,116 @@ class Sequence:
     label: str
     frames: tuple[Frame, ...]
     repeat: bool
+    # ANI_CHANGEANIM target, when the routine ends by becoming another
+    # animation rather than by ANI_END.
+    next_label: str | None = None
+    # ANIM.ASM RPT_COUNT loop, as frame indices into `frames`; loop_count 0
+    # means the routine has no such loop.
+    loop_first: int = 0
+    loop_last: int = 0
+    loop_count: int = 0
 
 
 def strip_comment(s: str) -> str:
     return s.split(";", 1)[0].strip()
 
 
+def load_equ(path: pathlib.Path, prefix: str) -> dict[str, int]:
+    """`NAME .equ VALUE` constants from one of the original .EQU files."""
+    out: dict[str, int] = {}
+    if not path.exists():
+        return out
+    for raw in path.read_text(errors="replace").splitlines():
+        line = raw.split(";", 1)[0]
+        # Values are written either decimal or with the assembler's own
+        # trailing-h hex (MODE_UNINT is 04h, MODE_STATUS 200h).
+        m = re.match(rf"^({prefix}[A-Z0-9_]*)\s+\.?equ\s+(.+?)\s*$",
+                     line.strip(), re.I)
+        if not m:
+            continue
+        name, val = m.group(1).upper(), m.group(2).strip()
+        if re.fullmatch(r"[0-9A-Fa-f]+h", val, re.I):
+            out[name] = int(val[:-1], 16)
+            continue
+        if re.fullmatch(r"-?[0-9]+", val):
+            out[name] = int(val)
+            continue
+        # Plenty are small expressions over the constants already read --
+        # DAMAGE.EQU:135 writes `D_HIPTOSS .equ 20*135/100` and the line
+        # after it `RD_HIPTOSS .equ D_HIPTOSS*2/3`. The assembler's `/` is
+        # integer division, so this is too.
+        expr = val
+        for known in sorted(out, key=len, reverse=True):
+            if known in expr.upper():
+                expr = re.sub(r"\b" + re.escape(known) + r"\b", str(out[known]),
+                              expr, flags=re.I)
+        expr = HEX_SUFFIX_RE.sub(lambda mm: "0x" + mm.group(1), expr)
+        expr = re.sub(r"\b([01]+)b\b", lambda mm: str(int(mm.group(1), 2)), expr)
+        if not re.fullmatch(r"[-+*/<>()0-9xXa-fA-F ]+", expr):
+            continue
+        try:
+            value = eval(expr.replace("/", "//"), {"__builtins__": {}}, {})
+        except Exception:
+            continue
+        if isinstance(value, int):
+            out[name] = value
+    return out
+
+
+ORIG = pathlib.Path(__file__).resolve().parents[1] / "original" / "wwf-wrestlemania"
+
+OBJ_RE = re.compile(r"^([A-Za-z0-9_]+)\.obj\b", re.I)
+
+
+def linked_files() -> list[pathlib.Path]:
+    """The .ASM files the arcade game actually links, in a fixed order.
+
+    WRESTLE.CMD is the linker command file, and its object list is the
+    game. Several .ASM files in the drop are NOT in it -- ADMSEQ1-3.ASM
+    (Adam Bomb, the wrestler who was cut), REFSEQ1.ASM, and the older
+    HRTSEQ.ASM/YOKSEQ.ASM alongside their numbered replacements. Those
+    files define symbols that collide with live ones: ADMSEQ3.ASM:199
+    defines `dnk_3_head_held_anim`, and so does DNKSEQ3.ASM:1624. Only one
+    of the two is in the game, and searching the drop alphabetically finds
+    the wrong one.
+    """
+    cmd = ORIG / "WRESTLE.CMD"
+    names = []
+    for line in cmd.read_text(errors="replace").splitlines():
+        m = OBJ_RE.match(line.strip())
+        if m:
+            names.append(m.group(1).upper() + ".ASM")
+    seen, out = set(), []
+    for n in names:
+        q = ORIG / n
+        if n not in seen and q.exists():
+            seen.add(n)
+            out.append(q)
+    return out
+
+# Plain global constants an operand or a tick count can be written in terms
+# of -- TSEC (DISPLAY.EQU:46, ticks per second) shows up as `TSEC*60`, the
+# one-minute hold at the head of every wrestler's `*_zip_anim`.
+GLOBAL_EQU: dict[str, int] = {}
+# SOUND.H is not a .EQU but is the same shape, and ANI_SOUND names its
+# constants directly (`ANI_SOUND,run_snd`, `ANI_SOUND,bounce_l1`).
+for _f in ("DISPLAY.EQU", "GAME.EQU", "PLYR.EQU", "ANIM.EQU", "DAMAGE.EQU",
+           "SOUND.H"):
+    GLOBAL_EQU.update(load_equ(ORIG / _f, ""))
+
+
 def eval_ticks(expr: str) -> int:
-    expr = HEX_SUFFIX_RE.sub(lambda m: "0x" + m.group(1), expr.strip())
-    if not re.fullmatch(r"[0-9xXa-fA-F+() \t-]+", expr):
+    expr = expr.strip()
+    # A tick count is usually a literal, but the long attract-mode holds are
+    # written as products -- `60*60` and `TSEC*60` are both a minute.
+    if re.search(r"[A-Za-z_]", expr):
+        for name in set(re.findall(r"\b[A-Za-z_][A-Za-z0-9_]*\b", expr)):
+            if name.upper() in GLOBAL_EQU and not re.fullmatch(
+                    r"[0-9A-Fa-f]+h", name, re.I):
+                expr = re.sub(r"\b" + re.escape(name) + r"\b",
+                              str(GLOBAL_EQU[name.upper()]), expr)
+    expr = HEX_SUFFIX_RE.sub(lambda m: "0x" + m.group(1), expr)
+    if not re.fullmatch(r"[0-9xXa-fA-F+*() \t-]+", expr):
         raise ValueError(f"unsupported WL tick expression: {expr!r}")
     value = eval(expr, {"__builtins__": {}}, {})
     if not isinstance(value, int) or not 1 <= value <= 65535:
@@ -52,8 +171,17 @@ def eval_ticks(expr: str) -> int:
     return value
 
 
+# A local label can sit on the same line as the frame it names
+# (`#cont\tWL\t5,H4SL4C+FR1`). The label is an address, not part of the
+# instruction, so it is stripped before matching -- otherwise that frame is
+# silently dropped, which matters as soon as a chained continuation lands
+# on one.
+LEADING_LOCAL_LABEL_RE = re.compile(r"^\s*#[A-Za-z_][A-Za-z0-9_]*\s+(?=\S)")
+
+
 def _frame_from_line(line: str) -> Frame | None:
-    m = WL_RE.match(line) or WAIT_FRAME_RE.match(line)
+    body = LEADING_LOCAL_LABEL_RE.sub("", line)
+    m = WL_RE.match(body) or WAIT_FRAME_RE.match(body)
     if not m:
         return None
     return Frame(f"{m.group(2).upper()}{int(m.group(3)):02d}", eval_ticks(m.group(1)))
@@ -103,39 +231,324 @@ def extract(path: pathlib.Path, label: str) -> Sequence:
     return Sequence(label=label, frames=tuple(frames), repeat=repeat)
 
 
+GOTO_TARGET_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_GOTO\s*,\s*(#?[A-Za-z_][A-Za-z0-9_]*)\s*$", re.I)
+LOCAL_LABEL_RE = re.compile(r"^\s*(#[A-Za-z_][A-Za-z0-9_]*)\b")
+
+# A branch target is not always a `#local`. The sequence files also place
+# plain file-scope labels in column 0 on a line of their own -- SHNSEQ2's
+# `getup_in_4`, RZRSEQ3's `missed_rug`, SHNSEQ3's `last_hitx`,
+# BAMSEQ3's `START_OF_BREAKER` -- and branch to them from routines that do
+# not otherwise contain them. To the assembler these resolve exactly like a
+# local does; the only difference is the sigil.
+GLOBAL_LABEL_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)[ \t]*$")
+
+
+def label_def(line: str) -> str | None:
+    """The label this line defines, `#local` or file-scope, else None."""
+    m = LOCAL_LABEL_RE.match(line)
+    if m:
+        return m.group(1)
+    m = GLOBAL_LABEL_RE.match(line)
+    return m.group(1) if m else None
+
+
+def _body_stop(lines: list[str], start: int) -> int:
+    """End of the body beginning at `start`: the next SUBR that follows at
+    least one frame. A SUBR reached before any frame is an alias for the
+    routine after it (HRTSEQ2.ASM:1334-1335 hrt_2/4_super_kick_anim), so the
+    body runs on through it."""
+    # The alias rule below runs away on a routine that has no frames AT ALL,
+    # because then every following SUBR looks like an alias for it.
+    # FINISEQ.ASM's finish moves are exactly that -- eight lines of commands
+    # ending in ANI_END, behind a `.if NUM_xxx_FINISHES` guard, with no
+    # artwork behind them -- and rzr_finish1_move swallowed the rest of the
+    # file and reported ten frames that are not its own.
+    #
+    # The discriminator is whether the routine TERMINATES before the next
+    # SUBR. A real alias (HRTSEQ2.ASM:1334-1335 hrt_2/4_super_kick_anim) is
+    # one SUBR directly followed by another with no ANI_END between them, so
+    # running on into it is right. A routine that reaches its own ANI_END
+    # first is finished, frames or no frames.
+    for j in range(start, len(lines)):
+        if SUBR_RE.match(lines[j]):
+            break
+        if _frame_from_line(lines[j]) or SUPERSLAVE2_LINE_RE.match(lines[j]):
+            break
+        if (END_RE.match(lines[j]) or REPEAT_RE.match(lines[j]) or
+                ROT_RE.match(lines[j])):
+            return j + 1
+
+    saw_frame = False
+    for j in range(start, len(lines)):
+        if SUBR_RE.match(lines[j]):
+            if saw_frame:
+                return j
+            continue
+        if _frame_from_line(lines[j]):
+            saw_frame = True
+    return len(lines)
+
+
+def _label_body_stop(lines: list[str], start: int) -> int:
+    """End of a routine that was entered through a bare column-0 label.
+
+    These are written as a run of routines separated only by the label that
+    names each one -- UNDSEQ3.ASM:876-1046 is eight choking animations in a
+    row, `hrt_choking_anim` through `lex_choking_anim`, then the `inc_loop`
+    code routine. None of them ends in ANI_END; each ends in an
+    ANI_CHANGEANIM, so the only boundary the source gives is the next
+    label. Inside such a routine the branch targets are all `#local`
+    (`#loop`), never column-0 -- which is what makes the next column-0
+    label a boundary rather than a branch target.
+    """
+    for j in range(start, len(lines)):
+        if SUBR_RE.match(lines[j]) or GLOBAL_LABEL_RE.match(lines[j]):
+            return j
+        if (END_RE.match(lines[j]) or REPEAT_RE.match(lines[j]) or
+                ROT_RE.match(lines[j])):
+            return j + 1
+    return len(lines)
+
+
+def _routine_span(lines: list[str], label: str) -> tuple[int, int] | None:
+    wanted = label.upper()
+    for i, line in enumerate(lines):
+        sub = SUBR_RE.match(line)
+        if sub and sub.group(1).upper() == wanted:
+            return (i + 1, _body_stop(lines, i + 1))
+    # Not every animation is behind a SUBR. A routine may equally be named
+    # by a plain label in column 0 (UNDSEQ3.ASM's eight `*_choking_anim`),
+    # and the slave tables name those exactly as they name the SUBRs.
+    for i, line in enumerate(lines):
+        m = GLOBAL_LABEL_RE.match(line)
+        if m and m.group(1).upper() == wanted:
+            return (i + 1, _label_body_stop(lines, i + 1))
+    return None
+
+
+def _routine_terminates(lines: list[str], span: tuple[int, int]) -> bool:
+    """Does this body actually end, rather than run on? ANI_END/ANI_REPEAT
+    is a real terminator; a body with neither does not stop where its text
+    stops, because execution simply continues into the words that follow."""
+    body = lines[span[0]:span[1]]
+    if any(END_RE.match(l) or REPEAT_RE.match(l) or ROT_RE.match(l)
+           for l in body):
+        return True
+    # An ANI_CHANGEANIM terminates only when it genuinely REPLACES the
+    # terminator -- i.e. nothing in the body ends it any other way. That is
+    # the shape the source writes with the `.word ANI_END` after it
+    # commented out (16 places across HRTSEQ2-4). When the body also has a
+    # real ANI_END, the CHANGEANIM is one exit among several and the
+    # routine's own frame list runs on to that ANI_END; see
+    # extract_visual_slice.
+    return any(CHANGEANIM_RE.match(l) for l in body)
+
+
+def _chain_target(lines: list[str], span: tuple[int, int]) -> int | None:
+    """Where a non-terminating body's execution actually continues: at its
+    own trailing unconditional ANI_GOTO's label (nothing after that GOTO is
+    reachable any other way, e.g. hrt_2_raise_arm_anim's `WL ANI_GOTO,#cont`
+    into the middle of hrt_4_raise_arm_anim), else by falling off the end
+    into the next SUBR (hrt_2_hair_pickup_anim into hrt_4_hair_pickup_anim,
+    HRTSEQ3.ASM:855/866)."""
+    last_goto = None
+    for i in range(span[0], span[1]):
+        m = GOTO_TARGET_RE.match(lines[i])
+        if m:
+            last_goto = m.group(1)
+    if last_goto is None:
+        return span[1]
+    # Local labels are scoped, and the same name (#cont, #hit, #missed) is
+    # reused all over these files. Resolve forward from this routine's own
+    # start so the match is either later in this body or in the routine it
+    # runs on into -- never some unrelated earlier routine's label.
+    for i in range(span[0], len(lines)):
+        m = LOCAL_LABEL_RE.match(lines[i])
+        if m and m.group(1) == last_goto:
+            return i
+    return None
+
+
+CHANGEANIM_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_CHANGEANIM\s*,\s*([A-Za-z_][A-Za-z0-9_]*)", re.I)
+
+
+SET_RPT_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_SET_RPTCOUNT\s*,\s*(-?\d+)\s*$", re.I)
+IF_RPT_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_IF_RPTCOUNT\s*,\s*(#?[A-Za-z_][A-Za-z0-9_]*)\s*$",
+    re.I)
+
+
+def _find_rpt_loop(lines, order, frame_at):
+    """Locate an ANI_SET_RPTCOUNT / ANI_IF_RPTCOUNT span in the walked stream.
+
+    Returns (loop_first, loop_last, count) as frame indices plus the literal
+    iteration count, or None when there is no loop. Raises when the loop is
+    real but cannot be represented statically, rather than guessing:
+
+      - a negative ANI_SET_RPTCOUNT means RNDRNG0(-n) (ANIM.ASM:3538), a
+        count drawn fresh at runtime
+      - a count large enough to be an "until something else stops it" loop
+        (hrt_4_raise_arm_anim's own 1000) is not a fixed-length animation
+    """
+    count = None
+    for idx in order:
+        m = SET_RPT_RE.match(lines[idx])
+        if m:
+            if count is not None:
+                raise ValueError(
+                    "more than one ANI_SET_RPTCOUNT in the walked stream; "
+                    "nested or re-seeded repeat loops are not represented")
+            count = int(m.group(1))
+            continue
+        m = IF_RPT_RE.match(lines[idx])
+        if m:
+            if count is None:
+                raise ValueError("ANI_IF_RPTCOUNT with no ANI_SET_RPTCOUNT")
+            if count < 0:
+                raise ValueError(
+                    "ANI_SET_RPTCOUNT,%d is negative, i.e. RNDRNG0(%d) drawn "
+                    "at runtime (ANIM.ASM:3538) -- the iteration count is not "
+                    "fixed and cannot be tabled" % (count, -count))
+            if count > 64:
+                raise ValueError(
+                    "ANI_SET_RPTCOUNT,%d is an effectively endless loop, not "
+                    "a fixed-length animation" % count)
+            target = m.group(1)
+            first_line = None
+            for j in order:
+                lm = LOCAL_LABEL_RE.match(lines[j])
+                if lm and lm.group(1) == target:
+                    first_line = j
+                    break
+            if first_line is None:
+                raise ValueError(
+                    "ANI_IF_RPTCOUNT,%s: label not in the walked stream" % target)
+            firsts = [frame_at[j] for j in order
+                      if j >= first_line and j in frame_at]
+            lasts = [frame_at[j] for j in order if j <= idx and j in frame_at]
+            if not firsts or not lasts:
+                raise ValueError("repeat loop span contains no frames")
+            if firsts[0] > lasts[-1]:
+                # A FORWARD ANI_IF_RPTCOUNT: the label sits after the branch,
+                # so this is not one span played N times but a first pass
+                # followed by a different repeated block, sharing one
+                # RPT_COUNT (hrt_uppercuts_to_head_anim, HRTSEQ2.ASM:2310).
+                # wm_visual_sequence carries a single span, so refuse rather
+                # than emit an inverted or invented one.
+                raise ValueError(
+                    "ANI_IF_RPTCOUNT,%s branches FORWARD: a first pass plus a "
+                    "separate repeated block sharing one RPT_COUNT, which a "
+                    "single loop span cannot represent" % target)
+            branches = sum(1 for j in order if IF_RPT_RE.match(lines[j]))
+            if branches != 1:
+                raise ValueError(
+                    "%d ANI_IF_RPTCOUNT branches share one ANI_SET_RPTCOUNT; "
+                    "only a single repeated span is represented" % branches)
+            return (firsts[0], lasts[-1], count)
+    return None
+
+
+def slice_line_order(lines: list[str], label: str) -> list[int]:
+    """The real line order a visual slice of `label` walks.
+
+    Shared with tools/wlattack.py so the audit judges exactly the stream
+    that would be extracted, chained continuations included, instead of
+    only the text under the routine's own label.
+    """
+    span = _routine_span(lines, label)
+    if span is None:
+        raise ValueError(f"no visual WL frames found for {label}")
+
+    order: list[int] = []
+    walked: set[int] = set()
+    cur = span
+    while True:
+        order.extend(range(cur[0], cur[1]))
+        walked.update(range(cur[0], cur[1]))
+        if _routine_terminates(lines, cur):
+            break
+        nxt = _chain_target(lines, cur)
+        if nxt is None:
+            raise ValueError(
+                f"{label}: ends in an ANI_GOTO to a label that is not "
+                f"defined in this file; the animation continues where this "
+                f"extractor cannot follow")
+        if nxt >= len(lines):
+            break
+        if nxt in walked:
+            # A backward jump into ground already covered is a repeat loop,
+            # not a continuation into new artwork -- hrt_run_anim's own
+            # endless `ANI_GOTO #lp1`. Stop here and let the frame walk
+            # below apply its existing repeat handling.
+            break
+        cur = (nxt, _body_stop(lines, nxt))
+    return order
+
+
 def extract_visual_slice(path: pathlib.Path, label: str, repeat: bool | None = None) -> Sequence:
     """Extract only visible WL frame rows from a gameplay-heavy routine.
 
     This deliberately ignores non-image opcodes. It is a visual bring-up aid, not a
     claim that the gameplay routine itself has been translated.
+
+    A routine whose body carries no ANI_END/ANI_REPEAT does not end where
+    its text ends: execution runs on into the next SUBR, or to the label of
+    its own trailing unconditional ANI_GOTO. Those continuations are
+    followed, so what comes out is the stream the machine really plays
+    rather than the fragment that happens to sit under one label. Routines
+    that do terminate are walked exactly as before.
     """
-    active = False
+    lines = [strip_comment(raw)
+             for raw in path.read_text(errors="replace").splitlines()]
+
+    order = slice_line_order(lines, label)
+
     frames: list[Frame] = []
     inferred_repeat = False
-    wanted = label.upper()
+    next_label = None
+    frame_at: dict[int, int] = {}
+    walked: list[int] = []
 
-    for raw in path.read_text(errors="replace").splitlines():
-        line = strip_comment(raw)
-        if not line:
-            continue
-        sub = SUBR_RE.match(line)
-        if sub:
-            if active and frames:
-                break
-            if active:
-                continue
-            active = sub.group(1).upper() == wanted
-            continue
-        if not active:
+    for idx in order:
+        walked.append(idx)
+        line = lines[idx]
+        if not line or SUBR_RE.match(line):
             continue
         frame = _frame_from_line(line)
         if frame:
+            frame_at[idx] = len(frames)
             frames.append(frame)
             continue
         if REPEAT_RE.match(line):
             inferred_repeat = True
             break
         if END_RE.match(line):
+            break
+        # ANIM.ASM:1301 _ani_changeanim overwrites OANIPC *and* OANIBASE
+        # with the target animation and never comes back, so this routine
+        # genuinely ends here and the target begins. The source says so
+        # itself: the `.word ANI_END` after an ANI_CHANGEANIM is commented
+        # out in 16 places across HRTSEQ2-4. Everything after it in the text
+        # belongs to some other path that branched past it.
+        cm = CHANGEANIM_RE.match(line)
+        if cm:
+            # Terminal only when nothing after it ends the routine any
+            # other way. hrt_fall_back_anim / hrt_flying_kick_anim end
+            # exactly here, their `.word ANI_END` commented out right
+            # below. But hrt_2_butts_anim reaches its ANI_CHANGEANIM when
+            # its repeat loop runs out and still has a real ANI_END on the
+            # button-mash #ex path, and hrt_facedown_getup_anim's sits
+            # inside an ANI_IFNOTSTATUS free-toss branch with the ordinary
+            # ending below it -- in both, the CHANGEANIM is one exit among
+            # several, so the flat list keeps walking to the ANI_END, the
+            # same "longest real path" rule every forward branch already
+            # gets.
+            if any(END_RE.match(lines[j]) for j in order[order.index(idx) + 1:]):
+                continue
+            next_label = cm.group(1)
             break
         # The run routine is an endless local loop ending in ANI_GOTO #lp1.
         if frames and GOTO_RE.match(line):
@@ -152,8 +565,14 @@ def extract_visual_slice(path: pathlib.Path, label: str, repeat: bool | None = N
 
     if not frames:
         raise ValueError(f"no visual WL frames found for {label}")
+
+    loop = _find_rpt_loop(lines, walked, frame_at)
+    loop_first, loop_last, loop_count = loop if loop else (0, 0, 0)
+
     return Sequence(label=label, frames=tuple(frames),
-                    repeat=inferred_repeat if repeat is None else repeat)
+                    repeat=inferred_repeat if repeat is None else repeat,
+                    loop_first=loop_first, loop_last=loop_last,
+                    loop_count=loop_count, next_label=next_label)
 
 
 def render(entries: list[tuple[str, str, str, Sequence]]) -> str:
@@ -175,6 +594,17 @@ def render(entries: list[tuple[str, str, str, Sequence]]) -> str:
             f"    .frames = {array_symbol},",
             f"    .frame_count = sizeof({array_symbol}) / sizeof({array_symbol}[0]),",
             f"    .repeat = {'true' if seq.repeat else 'false'},",
+        ]
+        if seq.loop_count:
+            out += [
+                f"    /* ANI_SET_RPTCOUNT,{seq.loop_count}: frames "
+                f"[{seq.loop_first}..{seq.loop_last}] play {seq.loop_count} "
+                f"times before the stream continues. */",
+                f"    .loop_first = {seq.loop_first},",
+                f"    .loop_last = {seq.loop_last},",
+                f"    .loop_count = {seq.loop_count},",
+            ]
+        out += [
             "};",
             "",
         ]

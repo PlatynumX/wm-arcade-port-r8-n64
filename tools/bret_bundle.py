@@ -16,6 +16,16 @@ import bret_manifest
 import wimpimg
 
 FRAME_RE = re.compile(r'\{"([A-Z][A-Z0-9_]*[0-9]{2})"\s*,\s*[0-9]+\}')
+# The same frames also appear in the generated animation PROGRAMS, in the
+# op form rather than the flat-table form. A program-driven wrestler has no
+# wm_visual_sequence to collect from, so this is where its frames come from.
+PROGRAM_FRAME_RE = re.compile(
+    r'WM_AOP_FRAME[^"\n]*"([A-Z][A-Z0-9_]*[0-9]{2})"')
+# ANI_SUPERSLAVE2's puppet tables name the DEFENDER's frames, and those need
+# geometry too -- the attach offset is built from both frames' own animation
+# origins, so a missing victim frame leaves the victim hanging at (0,0).
+PUPPET_FRAME_RE = re.compile(
+    r'\{"([A-Z][A-Z0-9_]*[0-9]{2})"\s*,\s*-?[0-9]+\s*,\s*-?[0-9]+\s*,\s*-?[0-9]+\}')
 
 
 def c_ident(s: str) -> str:
@@ -26,13 +36,16 @@ def collect_frames(paths: list[pathlib.Path]) -> list[str]:
     out: list[str] = []
     seen: set[str] = set()
     for path in paths:
-        for match in FRAME_RE.finditer(path.read_text(errors="replace")):
+        text = path.read_text(errors="replace")
+        for match in (list(FRAME_RE.finditer(text)) +
+                      list(PROGRAM_FRAME_RE.finditer(text)) +
+                      list(PUPPET_FRAME_RE.finditer(text))):
             name = match.group(1).upper()
             if name not in seen:
                 seen.add(name)
                 out.append(name)
     if not out:
-        raise ValueError("no source frame references found in generated visual tables")
+        raise ValueError("no source frame references found in the generated tables")
     return out
 
 

@@ -42,12 +42,30 @@ typedef enum wm_arcade_bret_anim_id {
     WM_BRET_ANIM_CLIMB_DOWN,
     WM_BRET_ANIM_TBUKL_LEAP,
     WM_BRET_ANIM_PUSH4,
+    /* HRTSEQ3.ASM hrt_3_pile_driver_anim: reached only through
+       hrt_knees_to_head_anim's own `ANI_IF_BUTCOUNT_GE,SKICKB_COUNT,1,
+       #do_pile`, so nothing could select it until that opcode was
+       translated -- which is why it sat here without a sequence. */
     WM_BRET_ANIM_PILE_DRIVER3,
     WM_BRET_ANIM_HH_DDT2,
     WM_BRET_ANIM_HEAD_HELD_STAND3,
     WM_BRET_ANIM_UPPERCUTS_TO_HEAD,
     WM_BRET_ANIM_KNEES_TO_HEAD,
     WM_BRET_ANIM_KNEE_TO_HEAD4,
+    /* hrt_4_super_punch_anim, BRET.ASM #scrt_cut's own supercut target
+       ("movi hrt_4_super_punch_anim,a0", BRET.ASM:213). This id was
+       removed in an earlier cycle on the claim that it was the same real
+       label WM_BRET_ANIM_SUPER_PUNCH2_4 already named. That was wrong, and
+       is restored here: HRTSEQ2.ASM has BOTH hrt_4_super_punch_anim
+       (:223) and hrt_4_super_punch2_anim (:677), and they are different
+       animations with different attack boxes --
+       AMODE_UPRCUT,-6,40,64,90 at frame 5 versus
+       AMODE_URN,19,75,35,24 at frame 3. The SUPER_PUNCH2_* pair is named
+       after super_punch2_anim and is what BRET.ASM #spunch_slap's own
+       `FACE24 hrt,super_punch2_anim` selects (MACROS.H:51 expands FACE24
+       to the _2_/_4_ pair on the MOVE_UP facing bit), which is the pair
+       do_super_punch reaches in ordinary play. Conflating the two made an
+       ordinary super punch fire the supercut's box. */
     WM_BRET_ANIM_SUPER_PUNCH4,
     WM_BRET_ANIM_JUMP_KICK4,
     WM_BRET_ANIM_FAKE_HOLD3,
@@ -62,7 +80,16 @@ typedef enum wm_arcade_bret_anim_id {
     WM_BRET_ANIM_FACE_DRIVER2_3,
     WM_BRET_ANIM_ROLL_UPPERCUT,
     WM_BRET_ANIM_FINISH1,
-    WM_BRET_ANIM_FINISH2
+    WM_BRET_ANIM_FINISH2,
+    /* The animations Bret's knockdown/leap routines really become through
+       ANI_CHANGEANIM (ANIM.ASM:1301) once they end. They are not selected
+       by mode_normal or any dispatcher branch -- nothing "chooses" a
+       getup; it is what the animation before it turns into -- so they have
+       no place in mode_table and exist only as transition targets. */
+    WM_BRET_ANIM_FACEDOWN_GETUP,
+    WM_BRET_ANIM_FACEUP_GETUP,
+    WM_BRET_ANIM_FACEUP_GETUP2_4,
+    WM_BRET_ANIM_HITONGROUND_FACEDOWN
 } wm_arcade_bret_anim_id_t;
 
 typedef enum wm_arcade_bret_sound_id {

@@ -7,12 +7,14 @@
 #include "wm/audio.h"
 #include "wm/award.h"
 #include "wm/demo.h"
+#include "wm/match.h"
 #include "wm/process.h"
 #include "wm/roster.h"
 #include "wm/source_clock.h"
 #include "wm/pregame.h"
 #include "wm/select_screen.h"
 #include "wm/select_continue.h"
+#include "wm/arcade/wmania_rng.h"
 
 /* DISPLAY.EQU: TSEC equ 53. Source sleeps expressed in TSEC use this rate.
    Literal source sleeps such as SLEEP 60 stay literal 60 source ticks. */
@@ -42,6 +44,13 @@
     (WM_TITLE_BUTTON_ENABLE_TICKS + 10u * WM_SOURCE_TICKS_PER_SEC)
 #define WM_TITLE_LAVA_PERIOD_TICKS 5u
 #define WM_TITLE_LAVA_STEPS 32u
+
+/* ATTRACT.ASM::show_gameplay (WRESTLE.ASM::start_match, PSTATUS==0 path):
+   SLEEP 3*60 (literal, not TSEC-scaled), then wait_on_butn 10*TSEC. */
+#define WM_GAMEPLAY_RUN_TICKS (3u * 60u)
+#define WM_GAMEPLAY_BUTTON_ENABLE_TICKS WM_GAMEPLAY_RUN_TICKS
+#define WM_GAMEPLAY_TOTAL_TICKS \
+    (WM_GAMEPLAY_BUTTON_ENABLE_TICKS + 10u * WM_SOURCE_TICKS_PER_SEC)
 
 /* Recovered from the rev 1.30 arcade program ROM.
    ATTRACT.ASM passes A8=[102,7], A10=WHERE_WRESTLMANIA_SPARKLES, A9=4.
@@ -119,7 +128,10 @@ typedef enum {
     WM_APP_MODE_ATTRACT = 0,
     WM_APP_MODE_SELECT,
     WM_APP_MODE_PREGAME,
-    WM_APP_MODE_MATCH_INIT
+    WM_APP_MODE_MATCH_INIT,
+    /* WRESTLE.ASM::start_match's #1plyr path -- see wm/match.h for exactly
+       what wm_match_start_selected/wm_match_tick do and don't translate. */
+    WM_APP_MODE_MATCH
 } wm_app_mode;
 
 typedef struct {
@@ -135,6 +147,18 @@ typedef struct {
     wm_wrestler_id p1_choice;
     wm_wrestler_id p2_choice;
     bool show_debug;
+
+    /* WRESTLE.ASM::start_match's PSTATUS==0 path, driven from
+       WM_ATTRACT_SHOW_GAMEPLAY. See wm/match.h for exactly what is and is
+       not translated. */
+    wm_match_state match;
+
+    /* Shared @RAND state. All RNDRNG0 draws (show_gameplay's wrestler pick
+       included) come from this single stream, matching the source's one
+       global RAND. HCOUNT/SP hardware entropy is not wired up yet -- see
+       wmania_rng.h -- so this is seeded plainly rather than from real
+       cabinet jitter. */
+    WmRng rng;
 
     /* Source execution infrastructure. The display backend calls
        wm_app_video_frame at 60 Hz; this advances wm_app_tick at exactly 53 Hz. */

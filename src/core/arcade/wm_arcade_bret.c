@@ -372,6 +372,19 @@ static wm_arcade_bret_step_result_t mode_headheld(wm_arcade_actor_t*a,const wm_a
 wm_arcade_bret_step_result_t wm_arcade_move_bret(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_bret_env_t*e,const wm_arcade_bret_callbacks_t*cb)
 {
     if(!a)return WM_BRET_STEP_IDLE;
+    if(a->special_move_addr){
+        /* WRESTLE.ASM:3843-3849 move_wrestler: "check to see if a special
+           move watchdog proc has queued up an anim. If one has, do that
+           instead of calling move_xxx." A real, separate persistent
+           process (e.g. hrt_charge_flying_kick/hrt_charge_face_rake,
+           BRET.ASM:543/614, or wm_arcade_bret_fire_monitor's own headhold
+           moves) sets SPECIAL_MOVE_ADDR asynchronously; the wrestler's own
+           process picks it up here, once, in place of its usual dispatch. */
+        wm_arcade_bret_anim_id_t id=(wm_arcade_bret_anim_id_t)a->special_move_addr;
+        a->special_move_addr=0;
+        anim(a,id,cb);
+        return WM_BRET_STEP_ACTION;
+    }
     if(cb&&cb->check_secret_moves)cb->check_secret_moves(a,wm_arcade_bret_secret_patterns,8,cb->user);
     switch(a->player_mode){
     case WM_PMODE_NORMAL: case 18: case 22: case 23:return mode_normal(a,o,e,cb);
@@ -405,6 +418,14 @@ int wm_arcade_bret_fire_secret(wm_arcade_actor_t*a,wm_arcade_actor_t*o,wm_arcade
     if(!a)return 0;
     switch(id){
     case WM_BRET_SECRET_SUPERCUT:
+        /* BRET.ASM:213 #scrt_cut: "movi hrt_4_super_punch_anim,a0" --
+           WM_BRET_ANIM_SUPER_PUNCH4, which is that label and nothing else.
+           An earlier cycle merged this into WM_BRET_ANIM_SUPER_PUNCH2_4 on
+           the belief that they named the same routine; HRTSEQ2.ASM has
+           both hrt_4_super_punch_anim (:223) and hrt_4_super_punch2_anim
+           (:677), with different frames and different attack boxes, so
+           that merge made every ordinary super punch fire the supercut's
+           box. Separated again -- see wm/arcade/wm_arcade_bret.h. */
         if((a->anim_mode&WM_MODE_UNINT)||!o||o->player_mode==WM_PMODE_ONGROUND||o->player_mode==WM_PMODE_DEAD||o->player_mode==WM_PMODE_HEADHELD||o->player_mode==WM_PMODE_ATTACHED)return 0;
         anim(a,WM_BRET_ANIM_SUPER_PUNCH4,cb);snd(a,WM_BRET_SND_PUNCH,cb);return 1;
     case WM_BRET_SECRET_JUMP_KICK:

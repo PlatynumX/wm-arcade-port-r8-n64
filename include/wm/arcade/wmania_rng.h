@@ -27,6 +27,17 @@ extern "C" {
  *   Therefore "rl a1,a1" rotates RAND by RAND&31; it is NOT a one-bit ROL.
  * - MPYU A1,A0 with even destination A0 produces a 64-bit product in A0:A1.
  *   A0 receives the high 32 bits, which is the returned scaled random value.
+ *
+ * CRITICAL for integrators: `add sp,a1` is the *only* value-changing step in
+ * that mix -- everything before it merely rotates RAND's bits, which cannot
+ * change its popcount. So a caller that leaves both entropy inputs at zero
+ * does not get a weak sequence, it gets a degenerate one: RAND can only
+ * rotate, and a RAND of 0 (wm_rng_init's own natural BSS-matching seed)
+ * rotates to 0 forever, making every rndrng0 return 0. Even a non-zero seed
+ * collapses to a small fixed point within a few calls. Supply real HCOUNT
+ * and SP values -- via the callbacks or wm_rng_set_latched_inputs -- or the
+ * whole family silently stops being random. A constant non-zero SP is
+ * already enough to restore a uniform distribution.
  */
 
 typedef uint32_t (*WmRngReadValueFn)(void *user);

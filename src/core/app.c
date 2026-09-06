@@ -1,4 +1,6 @@
 #include "wm/app.h"
+#include "wm/anim_program.h"
+#include "wm/arcade/wm_arcade_drone_data.h"
 #include <string.h>
 
 static const wm_input_state no_input = {0};
@@ -215,12 +217,21 @@ static void begin_call(wm_app *app, wm_attract_call call) {
     switch (call) {
         case WM_ATTRACT_DCS_LOGO:
             a->dcs_phase = WM_DCS_STATIC;
-            /* Source-owned DCS command: start at DCS_LOGO entry, tick 0. */
-            (void)wm_audio_send_command(&app->audio, 1005);
-            /* ATTR.ASM::DCS_LOGO SNDSND 1005 after display_unblank.
-               Source suppresses it once AMODE_LOOPS >= 2. ADJMUSIC is
-               not exposed yet; this frontend's default is enabled. */
+            /* ATTR.ASM::DCS_LOGO SNDSND 1005 after display_unblank, gated
+               by TURN_SOUNDS_OFF_IF_NEED (ATTRACT.ASM:669): once
+               AMODE_LOOPS >= 2 the source sets SOUNDSUP and the attract
+               loop plays silent. ADJMUSIC is not exposed yet; this
+               frontend's default is enabled, so only the loop count gates
+               it here.
+
+               This guard used to sit below the send with no body of its
+               own, so it captured the following `break` instead: the
+               command was sent unconditionally, and on the third attract
+               loop onward WM_ATTRACT_DCS_LOGO fell through into
+               WM_ATTRACT_SHOW_SPORTS_LOGO and reset that call's own
+               world/scroll state while the call was still DCS_LOGO. */
             if (a->amode_loops < 2u)
+                (void)wm_audio_send_command(&app->audio, 1005);
             break;
         case WM_ATTRACT_SHOW_SPORTS_LOGO:
             a->sports_world_x = 0;
@@ -376,6 +387,106 @@ static bool tick_title(wm_app *app, const wm_input_state *input) {
     return a->call_ticks >= WM_TITLE_TOTAL_TICKS;
 }
 
+/*
+ * The shared @RAND stream's two hardware entropy inputs.
+ *
+ * WRESTLE.ASM's randomize step is `rl RAND,RAND / rl HCOUNT,RAND / add sp`
+ * -- and `add sp` is the only part that can change RAND's value at all (see
+ * wm/arcade/wmania_rng.h). Left at zero, as this port did until now, RAND
+ * could only rotate: seeded from 0 it stayed 0, so every RNDRNG0 in the game
+ * returned 0 forever. That silently pinned every drone decision to the first
+ * entry of whatever table it rolled against -- the AI only ever chose
+ * `#run`.
+ *
+ * Neither input has a true N64 equivalent: HCOUNT is the arcade's video-beam
+ * line counter and SP is the TMS34010 stack pointer at the moment of the
+ * call. Both are derived here from the real source clock instead, the same
+ * surrogate approach (and the same `tick * 8 & 0x1ff` beam derivation) this
+ * file's own title-sparkle RNG already uses. Deterministic, unlike the
+ * hardware, which is what the host tests want.
+ */
+static uint32_t app_rng_hcount(void *user) {
+    const wm_app *app = (const wm_app *)user;
+    return app ? ((app->scheduler.tick * 8u) & 0x1ffu) : 0u;
+}
+
+static uint32_t app_rng_sp(void *user) {
+    const wm_app *app = (const wm_app *)user;
+    /* A TMS34010 stack pointer counts *down* from the top of its region as
+       calls nest; this mirrors that shape rather than reusing the HCOUNT
+       ramp, so the two inputs never move in lockstep. */
+    return app ? (0x00010000u - (app->scheduler.tick * 64u)) : 0u;
+}
+
+/*
+ * DCSSOUND.ASM triple_sound's seam for the animation VM's ANI_CODE sound
+ * routines (wm/anim_program.h): the sound's own index goes into the port's
+ * audio command queue unchanged. triple_sound's four-channel priority
+ * arbitration is not modelled here -- that belongs to a DCSSOUND port.
+ */
+static void wm_app_anim_sound(void *user, uint16_t call) {
+    (void)wm_audio_send_command((wm_audio_state *)user, call);
+}
+
+/* Hand the match the services its ANI_CODE routines reach for. Both live
+   on the app, so this is done wherever a match is started. */
+/* AWARD.ASM round_award, behind JJXM.H's RND_AWARD macro. The award
+   arrays are per credit, so they live on the app; the wrestler's own
+   PLYRNUM picks the row, exactly as `move :REG:,a0 / calla round_award`
+   does with a13. */
+static void wm_app_round_award(void *user, int player_num,
+                               unsigned award_index) {
+    wm_app *app = (wm_app *)user;
+    if (!app || player_num < 0 ||
+        (unsigned)player_num >= WM_AWARD_PLAYER_COUNT)
+        return;
+    wm_award_round_award(&app->awards, (unsigned)player_num, award_index);
+}
+
+static void wm_app_bind_anim_env(wm_app *app) {
+    app->match.anim_rng = &app->rng;
+    app->match.anim_sound_user = &app->audio;
+    app->match.anim_sound = wm_app_anim_sound;
+    app->match.anim_award_user = app;
+    app->match.anim_round_award = wm_app_round_award;
+    wm_anim_code_reset();
+}
+
+static bool tick_gameplay(wm_app *app, const wm_input_state *input) {
+    wm_attract_state *a = &app->attract;
+
+    /*
+     * These two belong together: the bind hands the freshly started match
+     * its RNG, audio and award seams. Without the braces the bind ran
+     * every tick, and wm_anim_code_reset() inside it wiped the source's
+     * timed sound state on each one -- so a CALL_x announcer process,
+     * which sleeps 5-15 ticks before it says anything, was cleared before
+     * it could ever fire.
+     */
+    if (a->call_ticks == 0) {
+        wm_match_start_attract(&app->match, &app->rng);
+        wm_app_bind_anim_env(app);
+    }
+
+    {
+        wm_arcade_drone_callbacks_t cb = wm_arcade_drone_data_callbacks(&app->rng);
+        wm_match_tick(&app->match, &cb, NULL);
+    }
+
+    ++a->call_ticks;
+
+    if ((a->call_ticks > WM_GAMEPLAY_BUTTON_ENABLE_TICKS &&
+         wm_app_any_attract_button(input)) ||
+        a->call_ticks >= WM_GAMEPLAY_TOTAL_TICKS) {
+        /* ATTRACT.ASM::show_gameplay ends by freezing wrestler processes
+           (@HALT), fading, and display_blank -- the next occurrence starts
+           a fresh start_match, not a continuation of this one. */
+        app->match.active = false;
+        return true;
+    }
+    return false;
+}
+
 void wm_app_init(wm_app *app) {
     memset(app, 0, sizeof(*app));
     app->mode = WM_APP_MODE_ATTRACT;
@@ -383,6 +494,8 @@ void wm_app_init(wm_app *app) {
     wm_select_continue_init(&app->continue_select);
     wm_award_init(&app->awards);
     wm_demo_init(&app->demo);
+    wm_match_init(&app->match);
+    wm_rng_init(&app->rng, 0, app_rng_hcount, app_rng_sp, app);
     wm_source_clock_init(&app->source_clock);
     wm_scheduler_init(&app->scheduler);
     app->p1_choice = WM_WRESTLER_BRET;
@@ -458,7 +571,15 @@ void wm_app_tick_dual(wm_app *app,
         return;
     }
     if (app->mode == WM_APP_MODE_MATCH_INIT) {
-        /* Explicit boundary: start_match is the next source subsystem. */
+        wm_app_bind_anim_env(app);
+        wm_match_start_selected(&app->match, &app->rng,
+                                app->pregame.player_source_wrestler);
+        app->mode = WM_APP_MODE_MATCH;
+        return;
+    }
+    if (app->mode == WM_APP_MODE_MATCH) {
+        wm_arcade_drone_callbacks_t cb = wm_arcade_drone_data_callbacks(&app->rng);
+        wm_match_tick(&app->match, &cb, input);
         return;
     }
     if (!input) input = &no_input;
@@ -503,6 +624,7 @@ void wm_app_tick_dual(wm_app *app,
         case WM_ATTRACT_DCS_LOGO: done = tick_dcs_logo(app, input); break;
         case WM_ATTRACT_SHOW_SPORTS_LOGO: done = tick_sports_logo(app, input); break;
         case WM_ATTRACT_SHOW_TITLE: done = tick_title(app, input); break;
+        case WM_ATTRACT_SHOW_GAMEPLAY: done = tick_gameplay(app, input); break;
         default: break;
     }
 

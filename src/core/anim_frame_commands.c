@@ -20,13 +20,14 @@ static int32_t directional(const wm_arcade_actor_t *actor, int32_t value,
     return (dir & bit) ? value : -value;
 }
 
-void wm_anim_apply_frame_commands(wm_arcade_actor_t *actor,
-                                  const char *source_label,
-                                  size_t frame_index) {
+const char *wm_anim_apply_frame_commands(wm_arcade_actor_t *actor,
+                                         const char *source_label,
+                                         size_t frame_index) {
     const wm_anim_frame_command *cmds;
     size_t count, i;
+    const char *become = NULL;
 
-    if (!actor || !source_label) return;
+    if (!actor || !source_label) return NULL;
     cmds = wm_anim_frame_commands(&count);
 
     for (i = 0; i < count; ++i) {
@@ -76,8 +77,17 @@ void wm_anim_apply_frame_commands(wm_arcade_actor_t *actor,
                 actor->z_fixed = actor->z_int << 16;
                 break;
             }
+            case WM_ANICMD_IFBUTTONS:
+                /* "and a1,a0 / cmp a1,a0 / jrne #fail": every named button
+                   must be held, not just any of them. */
+                if (c->target &&
+                    ((uint32_t)actor->but_val_cur & (uint32_t)c->a) ==
+                        (uint32_t)c->a)
+                    become = c->target;
+                break;
             default:
                 break;
         }
     }
+    return become;
 }

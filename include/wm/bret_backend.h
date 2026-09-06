@@ -103,6 +103,8 @@ typedef struct {
        comment for why this gets cleared there, same tick, rather than
        left set indefinitely. */
     bool pending_uninit_clear;
+    /* Source label an ANI_IFBUTTONS asked this animation to become. */
+    const char *pending_become;
     /* Set once by the caller at match creation (wm/match.h's
        init_bret_backends: !has_human) and read by the adjust_health
        callback -- LIFEBAR.ASM adjust_health's "attract mode never dies"

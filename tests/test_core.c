@@ -1957,6 +1957,60 @@ static void test_bret_frame_motion_commands(void) {
     CHECK(a.z_vel != 0);
 }
 
+/* ANIM.ASM:71 _ani_ifbuttons -- "and a1,a0 / cmp a1,a0 / jrne #fail": EVERY
+   named button must be held, not just any of them. Across HRTSEQ2-4 the only
+   case is PLAYER_PUNCH_VAL|PLAYER_KICK_VAL -> start_run_anim, the run cancel
+   out of an attack's opening frames. Getting the mask into the wrong operand
+   slot made the test `(but_val_cur & 0) == 0`, which is true on every frame,
+   so every attack cancelled itself into a run on tick 0 -- this checks the
+   condition, not just that a cancel is possible. */
+static void test_bret_ifbuttons_run_cancel(void) {
+    wm_arcade_actor_t a;
+    wm_bret_backend_actor bva;
+    int guard;
+
+    /* Punch alone: no cancel. The headbutt plays as itself. */
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_UP_RIGHT;
+    a.but_val_cur = WM_BTN_PUNCH;
+    wm_bret_backend_init(&bva);
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_BUTT4, &bva);
+    CHECK(bva.current_id == WM_BRET_ANIM_BUTT4);
+    for (guard = 0; guard < 10; ++guard)
+        wm_bret_backend_tick(&bva, &a, 0);
+    CHECK(bva.current_id == WM_BRET_ANIM_BUTT4);
+    CHECK(a.player_mode != WM_PMODE_RUNNING);
+
+    /* Punch AND kick: the animation becomes start_run_anim, which is
+       WRESTLE2.ASM:3443's state setup plus Bret's own run animation. */
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_UP_RIGHT;
+    a.new_facing_dir = WM_MOVE_UP_RIGHT;
+    a.but_val_cur = (uint16_t)(WM_BTN_PUNCH | WM_BTN_KICK);
+    a.getup_time = 5;
+    a.run_time = 9;
+    wm_bret_backend_init(&bva);
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_BUTT4, &bva);
+    wm_bret_backend_tick(&bva, &a, 0);
+    CHECK(bva.current_id == WM_BRET_ANIM_START_RUN);
+    CHECK(bva.visual.sequence == &wm_bret_run_anim);
+    /* #dorun's own state: timers cleared, MODE RUNNING, DELAY_BUTNS set. */
+    CHECK(a.player_mode == WM_PMODE_RUNNING);
+    CHECK(a.getup_time == 0);
+    CHECK(a.run_time == 0);
+    CHECK(a.delay_butns == 1);
+
+    /* Kick alone is not enough either -- the mask needs both bits. */
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_UP_RIGHT;
+    a.but_val_cur = WM_BTN_KICK;
+    wm_bret_backend_init(&bva);
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_BUTT4, &bva);
+    for (guard = 0; guard < 10; ++guard)
+        wm_bret_backend_tick(&bva, &a, 0);
+    CHECK(bva.current_id == WM_BRET_ANIM_BUTT4);
+}
+
 /* ATTRACT.ASM:669 TURN_SOUNDS_OFF_IF_NEED gates the DCS_LOGO music on
    AMODE_LOOPS < 2 -- it suppresses sound, and never skips or re-enters an
    attract call. app.c's guard for that had no body of its own and captured
@@ -4260,6 +4314,7 @@ int main(void) {
     test_bret_attack_windows_batch6();
     test_bret_anim_transition_chain();
     test_bret_frame_motion_commands();
+    test_bret_ifbuttons_run_cancel();
     test_attract_dcs_logo_does_not_fall_through();
     test_bret_hurt_box_for_frame_real_geometry();
     test_bret_backend_tick_sets_real_hurt_box();

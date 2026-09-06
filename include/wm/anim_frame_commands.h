@@ -37,7 +37,12 @@ typedef enum {
     WM_ANICMD_SET_ZVEL,
     WM_ANICMD_MIN_YVEL,
     WM_ANICMD_FRICTION,
-    WM_ANICMD_OFFSET
+    WM_ANICMD_OFFSET,
+    /* ANIM.ASM:71 _ani_ifbuttons: if EVERY button in `a` is currently held,
+       this animation becomes `target`. Across HRTSEQ2-4 it is always
+       punch+kick -> start_run_anim, i.e. the run cancel out of an attack's
+       opening frames. */
+    WM_ANICMD_IFBUTTONS
 } wm_anim_frame_command_kind;
 
 typedef struct {
@@ -46,14 +51,23 @@ typedef struct {
     uint8_t kind;
     uint8_t mode;      /* ANIM.EQU AM_ABS/AM_FACE_REL/AM_HIT_REL/AM_NEWFACE_REL */
     int32_t a, b, c;
+    /* IFBUTTONS only: the source label of the animation to become. */
+    const char *target;
 } wm_anim_frame_command;
 
 const wm_anim_frame_command *wm_anim_frame_commands(size_t *count);
 
-/* Apply every command this animation has at `frame_index`. Safe to call for
-   an animation with none. */
-void wm_anim_apply_frame_commands(wm_arcade_actor_t *actor,
-                                  const char *source_label,
-                                  size_t frame_index);
+/*
+ * Apply every command this animation has at `frame_index`. Safe to call for
+ * an animation with none.
+ *
+ * Returns the source label of an animation to switch to when a conditional
+ * command fires (an ANI_IFBUTTONS whose buttons are all held), else NULL.
+ * The switch itself is the caller's, since mapping a source label back to a
+ * wrestler's own animation id is per-backend.
+ */
+const char *wm_anim_apply_frame_commands(wm_arcade_actor_t *actor,
+                                         const char *source_label,
+                                         size_t frame_index);
 
 #endif

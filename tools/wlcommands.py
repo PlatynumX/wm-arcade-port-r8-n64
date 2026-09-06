@@ -47,6 +47,30 @@ COMMANDS = {
     "ANI_OFFSET":      ("OFFSET", 3, False),
 }
 
+# ANIM.ASM:71 _ani_ifbuttons -- "if EVERY named button is currently held,
+# this animation becomes the target one". Every occurrence across HRTSEQ2-4
+# is the same case, PLAYER_PUNCH_VAL|PLAYER_KICK_VAL -> start_run_anim: the
+# run cancel out of an attack's opening frames. Its operands are a button
+# mask and an animation label rather than numbers, so it gets its own row
+# kind rather than being squeezed into the motion table.
+IFBUTTONS_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_IFBUTTONS\s*,\s*([^,]+)\s*,\s*"
+    r"([A-Za-z_][A-Za-z0-9_]*)\s*$", re.I)
+
+# GAME.EQU:407/411/416
+PLAYER_BUTTON_BITS = {"PLAYER_PUNCH_VAL": 1 << 0, "PLAYER_BLOCK_VAL": 1 << 1,
+                      "PLAYER_KICK_VAL": 1 << 3}
+
+
+def _button_mask(expr: str) -> int:
+    mask = 0
+    for tok in expr.split("|"):
+        tok = tok.strip().upper()
+        if tok not in PLAYER_BUTTON_BITS:
+            raise ValueError(f"unknown button value {tok!r}")
+        mask |= PLAYER_BUTTON_BITS[tok]
+    return mask
+
 CMD_RE = re.compile(
     r"^\s*(?:\.word|W+L+W*)\s+(" + "|".join(COMMANDS) + r")\b\s*,?\s*(.*)$", re.I)
 EQU_RE = re.compile(r"^\s*(#[A-Za-z_][A-Za-z0-9_]*)\s+equ\s+(.+)$", re.I)
@@ -105,6 +129,14 @@ def commands_for(path: pathlib.Path, label: str):
                        for j in order[order.index(idx) + 1:]):
                 break
             continue
+        b = IFBUTTONS_RE.match(line)
+        if b:
+            # (frame, kind, mode, a, b, c, target): the button mask is an
+            # operand, not a mode -- putting it in `mode` left `a` at 0 and
+            # made `(but_val_cur & 0) == 0` fire on every frame.
+            out.append((nframes, "IFBUTTONS", 0,
+                        _button_mask(b.group(1)), 0, 0, b.group(2)))
+            continue
         c = CMD_RE.match(line)
         if not c:
             continue
@@ -115,7 +147,7 @@ def commands_for(path: pathlib.Path, label: str):
         if has_mode and len(vals) > nargs:
             mode = vals[nargs]
         vals = (vals + [0, 0, 0])[:3]
-        out.append((nframes, kind, mode, vals[0], vals[1], vals[2]))
+        out.append((nframes, kind, mode, vals[0], vals[1], vals[2], None))
     return out
 
 
@@ -132,9 +164,10 @@ def render(entries: list[tuple[str, str, str]]) -> str:
         if not rows:
             continue
         out.append(f'    /* {label} ({pathlib.Path(source_name).name}) */')
-        for frame, kind, mode, a, b, c in rows:
+        for frame, kind, mode, a, b, c, target in rows:
+            tgt = f'"{target}"' if target else "0"
             out.append(f'    {{ "{label}", {frame}, WM_ANICMD_{kind}, {mode}, '
-                       f'{a}, {b}, {c} }},')
+                       f'{a}, {b}, {c}, {tgt} }},')
             total += 1
     out += ["};", "",
             "const wm_anim_frame_command *wm_anim_frame_commands(size_t *count) {",

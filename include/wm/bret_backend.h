@@ -1,6 +1,7 @@
 #ifndef WM_BRET_BACKEND_H
 #define WM_BRET_BACKEND_H
 
+#include "wm/anim_program.h"
 #include "wm/arcade/wm_arcade_bret.h"
 #include "wm/arcade/wm_arcade_joystat.h"
 #include "wm/bret_frame_geometry.h"
@@ -103,8 +104,6 @@ typedef struct {
        comment for why this gets cleared there, same tick, rather than
        left set indefinitely. */
     bool pending_uninit_clear;
-    /* Source label an ANI_IFBUTTONS asked this animation to become. */
-    const char *pending_become;
     /* Last round_tickcount wm_bret_backend_tick was given. ANIM.ASM's
        ANI_STARTATTACK (:117) computes ATTACK_TIME from it, and a header
        command runs at change_anim time, which has no tick of its own. */
@@ -122,6 +121,20 @@ typedef struct {
        -- see wm/arcade/wm_arcade_joystat.h. Updated by the
        check_secret_moves callback itself each tick, before matching. */
     wm_arcade_joystat_t joystat;
+    /*
+     * The animation the leg track is playing, executed as the ANIM.ASM
+     * program it really is (wm/anim_program.h) rather than as a flat frame
+     * list with side tables hung off frame indices.
+     *
+     * Non-NULL `program` means this animation is program-driven: the frame
+     * showing, the attack boxes, the mode and player-mode writes, the
+     * velocity commands and the end all come from the ops, so none of the
+     * side tables below apply to it. NULL means there is no generated
+     * program for the current sequence -- the walk, turn and stand cycles,
+     * which are unbranching frame loops with no commands in them -- and the
+     * flat `visual` track drives as it always has.
+     */
+    wm_anim_exec prog;
 } wm_bret_backend_actor;
 
 void wm_bret_backend_init(wm_bret_backend_actor *bva);

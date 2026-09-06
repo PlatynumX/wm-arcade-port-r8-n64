@@ -1396,60 +1396,87 @@ static void test_bret_attack_windows_batch1(void) {
     }
 }
 
-/* Batch 2: the first wired animations carrying more than one real
+/* Batch 2: the wired animations carrying more than one real
    ANI_ATTACK_ON pulse each, so this checks the whole ON/OFF/ON shape in
-   order rather than one window in isolation. Traced with
-   tools/wlattack.py out of HRTSEQ2.ASM:
+   order rather than one window in isolation. Traced with tools/wlattack.py
+   out of HRTSEQ2.ASM, and now driven through the animation program rather
+   than a flat frame list -- which changes what "in order" means for two of
+   the four.
 
-     hrt_2_stomp_anim         [4] AMODE_HITCHECK,7,-10,-40,28,31,50
-                              [7] AMODE_STOMP2,7,-10,-40,28,31,50
-     hrt_4_stomp_anim         [4] AMODE_HITCHECK,7,-12,-10,29,35,50
-                              [7] AMODE_STOMP2,7,-12,-10,29,35,50
-     hrt_2_ground_punch_anim  [2] AMODE_HITCHECK,5-10,-8,-40,32,32,50
-                              [5] AMODE_LBOWDROP2,5,-8,-40,32,32,50
-                              [8] AMODE_LBOWDROP2,5,-8,-40,32,32,50
-     hrt_4_ground_punch_anim  [2] AMODE_HITCHECK,5,-6,-10,36,30,50
-                              [5] AMODE_LBOWDROP2,5,-6,-10,36,30,50
-                              [8] AMODE_LBOWDROP2,5,-6,-10,36,30,50
+   Both stomps are straight-line: two pulses, always, in every playthrough.
+
+     hrt_2_stomp_anim   AMODE_HITCHECK,7,-10,-40,28,31,50
+                        AMODE_STOMP2,  7,-10,-40,28,31,50
+     hrt_4_stomp_anim   AMODE_HITCHECK,7,-12,-10,29,35,50
+                        AMODE_STOMP2,  7,-12,-10,29,35,50
+
+   The two ground punches are not. Each writes its follow-up TWICE -- once
+   for the connected hit and once for the miss, with different frame timing
+   and a different ANI_STARTATTACK window (6 ticks against 14) -- and an
+   ANI_IFNOTSTATUS picks between them (hrt_4_ground_punch_anim's own op 9,
+   jumping past the hit variant to the miss one). So the animation carries
+   three ANI_ATTACK_ON commands but any single playthrough fires exactly
+   TWO of them: the opening HITCHECK, then whichever LBOWDROP2 belongs to
+   the branch taken.
+
+     hrt_2_ground_punch_anim  AMODE_HITCHECK,  5-10,-8,-40,32,32,50
+                              AMODE_LBOWDROP2, 5,   -8,-40,32,32,50
+     hrt_4_ground_punch_anim  AMODE_HITCHECK,  5,-6,-10,36,30,50
+                              AMODE_LBOWDROP2, 5,-6,-10,36,30,50
+
+   The flat list this port used to play was both branches spliced end to
+   end, so it fired all three boxes in a single playthrough and ran 13
+   frames where the source runs 8. That third box was an artefact of the
+   linearisation, not a hit the arcade ever landed.
 
    All four are ANI_ATTACK_ON_Z throughout, and all four lead with
    ANI_SETMODE,MODE_UNINT|MODE_NOAUTOFLIP|MODE_OVERLAP (the only wired
    attacks that carry the third bit) plus ANI_ZEROVELS, and no
    ANI_SETFACING. */
 static void test_bret_attack_windows_multi_pulse(void) {
-    typedef struct { size_t frame; uint16_t mode; int16_t x, y, z, w, h, d; } pulse_t;
+    typedef struct { uint16_t mode; int16_t x, y, z, w, h, d; } pulse_t;
     static const struct {
         wm_arcade_bret_anim_id_t id;
         const wm_visual_sequence *seq;
         bool sets_plyrmode_normal;
+        /* Set MODE_STATUS the moment the first box goes on, the way a
+           connected hit does, so the animation takes its hit branch. */
+        bool connect;
         size_t count;
-        pulse_t pulses[3];
+        pulse_t pulses[2];
     } cases[] = {
-        { WM_BRET_ANIM_STOMP2, &wm_bret_stomp2_anim, true, 2, {
-            { 4, WM_AMODE_HITCHECK, 7, -10, -40, 28, 31, 50 },
-            { 7, WM_AMODE_STOMP2,   7, -10, -40, 28, 31, 50 },
-            { 0, 0, 0, 0, 0, 0, 0, 0 } } },
-        { WM_BRET_ANIM_STOMP4, &wm_bret_stomp4_anim, true, 2, {
-            { 4, WM_AMODE_HITCHECK, 7, -12, -10, 29, 35, 50 },
-            { 7, WM_AMODE_STOMP2,   7, -12, -10, 29, 35, 50 },
-            { 0, 0, 0, 0, 0, 0, 0, 0 } } },
-        { WM_BRET_ANIM_GROUND_PUNCH2, &wm_bret_ground_punch2_anim, false, 3, {
-            { 2, WM_AMODE_HITCHECK,   5 - 10, -8, -40, 32, 32, 50 },
-            { 5, WM_AMODE_LBOWDROP2,  5,      -8, -40, 32, 32, 50 },
-            { 8, WM_AMODE_LBOWDROP2,  5,      -8, -40, 32, 32, 50 } } },
-        { WM_BRET_ANIM_GROUND_PUNCH4, &wm_bret_ground_punch4_anim, false, 3, {
-            { 2, WM_AMODE_HITCHECK,   5, -6, -10, 36, 30, 50 },
-            { 5, WM_AMODE_LBOWDROP2,  5, -6, -10, 36, 30, 50 },
-            { 8, WM_AMODE_LBOWDROP2,  5, -6, -10, 36, 30, 50 } } },
+        { WM_BRET_ANIM_STOMP2, &wm_bret_stomp2_anim, true, false, 2, {
+            { WM_AMODE_HITCHECK, 7, -10, -40, 28, 31, 50 },
+            { WM_AMODE_STOMP2,   7, -10, -40, 28, 31, 50 } } },
+        { WM_BRET_ANIM_STOMP2, &wm_bret_stomp2_anim, true, true, 2, {
+            { WM_AMODE_HITCHECK, 7, -10, -40, 28, 31, 50 },
+            { WM_AMODE_STOMP2,   7, -10, -40, 28, 31, 50 } } },
+        { WM_BRET_ANIM_STOMP4, &wm_bret_stomp4_anim, true, false, 2, {
+            { WM_AMODE_HITCHECK, 7, -12, -10, 29, 35, 50 },
+            { WM_AMODE_STOMP2,   7, -12, -10, 29, 35, 50 } } },
+        { WM_BRET_ANIM_GROUND_PUNCH2, &wm_bret_ground_punch2_anim, false, false, 2, {
+            { WM_AMODE_HITCHECK,   5 - 10, -8, -40, 32, 32, 50 },
+            { WM_AMODE_LBOWDROP2,  5,      -8, -40, 32, 32, 50 } } },
+        { WM_BRET_ANIM_GROUND_PUNCH2, &wm_bret_ground_punch2_anim, false, true, 2, {
+            { WM_AMODE_HITCHECK,   5 - 10, -8, -40, 32, 32, 50 },
+            { WM_AMODE_LBOWDROP2,  5,      -8, -40, 32, 32, 50 } } },
+        { WM_BRET_ANIM_GROUND_PUNCH4, &wm_bret_ground_punch4_anim, false, false, 2, {
+            { WM_AMODE_HITCHECK,   5, -6, -10, 36, 30, 50 },
+            { WM_AMODE_LBOWDROP2,  5, -6, -10, 36, 30, 50 } } },
+        { WM_BRET_ANIM_GROUND_PUNCH4, &wm_bret_ground_punch4_anim, false, true, 2, {
+            { WM_AMODE_HITCHECK,   5, -6, -10, 36, 30, 50 },
+            { WM_AMODE_LBOWDROP2,  5, -6, -10, 36, 30, 50 } } },
     };
     size_t i, k;
     for (i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
         wm_arcade_actor_t a;
         wm_bret_backend_actor bva;
-        int guard;
-        int seen_off_between = 0;
+        pulse_t seen[8];
+        size_t seen_count = 0;
+        int was_on = 0, saw_off_between = 0, guard;
 
         memset(&a, 0, sizeof(a));
+        memset(seen, 0, sizeof(seen));
         a.player_mode = WM_PMODE_RUNNING;
         a.new_facing_dir = WM_MOVE_UP_RIGHT;
         a.facing_dir = WM_MOVE_DOWN_LEFT;
@@ -1458,6 +1485,10 @@ static void test_bret_attack_windows_multi_pulse(void) {
         wm_bret_backend_init(&bva);
         wm_bret_backend_change_anim(&a, cases[i].id, &bva);
         CHECK(bva.visual.sequence == cases[i].seq);
+        /* the animation really is running as its program, not as frames */
+        CHECK(bva.prog.program != NULL);
+        CHECK(strcmp(bva.prog.program->source_label,
+                     cases[i].seq->source_label) == 0);
 
         /* the header's own instant commands */
         CHECK(a.anim_mode & WM_MODE_UNINT);
@@ -1472,29 +1503,42 @@ static void test_bret_attack_windows_multi_pulse(void) {
         else
             CHECK(a.player_mode == WM_PMODE_RUNNING);
 
-        for (k = 0; k < cases[i].count; ++k) {
-            for (guard = 0; guard < 60 && bva.visual.frame_index != cases[i].pulses[k].frame;
-                 ++guard) {
-                wm_bret_backend_tick(&bva, &a, 5);
-                if (!(a.anim_mode & WM_MODE_CHECKHIT)) seen_off_between = 1;
+        /* Record every box as it goes on, rather than polling at an
+           expected frame index: which frame a pulse lands on now depends
+           on the branch taken, and that is the whole point. */
+        for (guard = 0; guard < 120 && (a.anim_mode & WM_MODE_UNINT); ++guard) {
+            int on = (a.anim_mode & WM_MODE_CHECKHIT) ? 1 : 0;
+            if (on && !was_on && seen_count < 8) {
+                seen[seen_count].mode = a.attack_mode;
+                seen[seen_count].x = a.attack_xoff;
+                seen[seen_count].y = a.attack_yoff;
+                seen[seen_count].z = a.attack_zoff;
+                seen[seen_count].w = a.attack_width;
+                seen[seen_count].h = a.attack_height;
+                seen[seen_count].d = a.attack_depth;
+                ++seen_count;
+                if (cases[i].connect) a.anim_mode |= (uint16_t)WM_MODE_STATUS;
             }
-            CHECK(bva.visual.frame_index == cases[i].pulses[k].frame);
-            CHECK(a.anim_mode & WM_MODE_CHECKHIT);
-            CHECK(a.attack_mode == cases[i].pulses[k].mode);
-            CHECK(a.attack_xoff == cases[i].pulses[k].x);
-            CHECK(a.attack_yoff == cases[i].pulses[k].y);
-            CHECK(a.attack_zoff == cases[i].pulses[k].z);
-            CHECK(a.attack_width == cases[i].pulses[k].w);
-            CHECK(a.attack_height == cases[i].pulses[k].h);
-            CHECK(a.attack_depth == cases[i].pulses[k].d);
+            if (!on && was_on) saw_off_between = 1;
+            was_on = on;
+            wm_bret_backend_tick(&bva, &a, 5);
+        }
+
+        CHECK(seen_count == cases[i].count);
+        for (k = 0; k < seen_count && k < cases[i].count; ++k) {
+            CHECK(seen[k].mode == cases[i].pulses[k].mode);
+            CHECK(seen[k].x == cases[i].pulses[k].x);
+            CHECK(seen[k].y == cases[i].pulses[k].y);
+            CHECK(seen[k].z == cases[i].pulses[k].z);
+            CHECK(seen[k].w == cases[i].pulses[k].w);
+            CHECK(seen[k].h == cases[i].pulses[k].h);
+            CHECK(seen[k].d == cases[i].pulses[k].d);
         }
         /* the ANI_ATTACK_OFF between two pulses genuinely ran -- without it
            the second ANI_ATTACK_ON would never be reached */
-        CHECK(seen_off_between == 1);
+        CHECK(saw_off_between == 1);
 
         /* the closing ANI_SETMODE,MODE_NORMAL clears all three bits */
-        for (guard = 0; guard < 80 && (a.anim_mode & WM_MODE_UNINT); ++guard)
-            wm_bret_backend_tick(&bva, &a, 11);
         CHECK(!(a.anim_mode & WM_MODE_UNINT));
         CHECK(!(a.anim_mode & WM_MODE_NOAUTOFLIP));
         CHECK(!(a.anim_mode & WM_MODE_OVERLAP));
@@ -1707,28 +1751,54 @@ static void test_bret_rptcount_loop(void) {
     CHECK(bva.visual.sequence == &wm_bret_knees_to_head_anim);
     CHECK(bva.visual.rpt_count == 3);
 
-    prev_index = bva.visual.frame_index;
-    for (guard = 0; guard < 400 && !bva.visual.ended; ++guard) {
+    /* The loop is gated on the knee CONNECTING: HRTSEQ2.ASM writes
+       `WL ANI_IFNOTSTATUS,#missed` between the ANI_ATTACK_OFF and the
+       ANI_DEC_RPTCOUNT, so a whiffed knee leaves the span at once and the
+       repeat never happens. Connect each pulse the way
+       wm_arcade_try_attack_hit does, and the span runs its full three. */
+    prev_index = bva.prog.pc;
+    for (guard = 0; guard < 400 && !bva.prog.ended; ++guard) {
         bool on;
+        if (a.anim_mode & WM_MODE_CHECKHIT)
+            a.anim_mode |= (uint16_t)WM_MODE_STATUS;
         wm_bret_backend_tick(&bva, &a, 4);
-        if (bva.visual.frame_index != prev_index &&
-            bva.visual.frame_index == wm_bret_knees_to_head_anim.loop_first)
+        /* op 8 is the first frame inside the ANI_IF_RPTCOUNT span */
+        if (bva.prog.pc != prev_index && bva.prog.pc == 8)
             ++visits_to_loop_start;
-        prev_index = bva.visual.frame_index;
+        prev_index = bva.prog.pc;
         on = (a.anim_mode & WM_MODE_CHECKHIT) != 0;
         if (on && !was_on) ++attack_on_edges;
         was_on = on;
     }
-    CHECK(bva.visual.ended);
+    CHECK(bva.prog.ended);
 
     /* Entered the span once by falling into it, then branched back twice
        (count 3 -> 2 -> 1, the third decrement reaching 0 and falling
        through), so the loop's first frame is reached three times. */
     CHECK(visits_to_loop_start == 3);
 
-    /* Three passes each firing the in-loop window at frame 3, plus the one
-       after the loop at frame 8. */
+    /* Three passes each firing the in-loop window, plus the one after the
+       loop. */
     CHECK(attack_on_edges == 4);
+
+    /* Missed instead: the same animation leaves the span on the first
+       ANI_IFNOTSTATUS, so it fires its box exactly once and never repeats.
+       The flat frame list looped unconditionally, which is a knee to the
+       head landing three times on a whiff. */
+    memset(&a, 0, sizeof(a));
+    wm_bret_backend_init(&bva);
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_KNEES_TO_HEAD, &bva);
+    attack_on_edges = 0;
+    was_on = false;
+    for (guard = 0; guard < 400 && !bva.prog.ended; ++guard) {
+        bool on;
+        wm_bret_backend_tick(&bva, &a, 4);
+        on = (a.anim_mode & WM_MODE_CHECKHIT) != 0;
+        if (on && !was_on) ++attack_on_edges;
+        was_on = on;
+    }
+    CHECK(bva.prog.ended);
+    CHECK(attack_on_edges == 1);
 
     /* Without the loop the stream would be its 13 frames once; the pins
        carry the same shape and no attack window at all. */
@@ -1740,11 +1810,11 @@ static void test_bret_rptcount_loop(void) {
     CHECK(a.anim_mode & WM_MODE_OVERLAP);
     /* The pin is genuinely long -- 35 frames with real holds, plus its
        own 10-frame span three times, ~1300 ticks end to end. */
-    for (guard = 0; guard < 3000 && !bva.visual.ended; ++guard) {
+    for (guard = 0; guard < 3000 && !bva.prog.ended; ++guard) {
         wm_bret_backend_tick(&bva, &a, 0);
         CHECK(!(a.anim_mode & WM_MODE_CHECKHIT));
     }
-    CHECK(bva.visual.ended);
+    CHECK(bva.prog.ended);
 }
 
 /* Batch 6's attack windows and header commands, all traced with
@@ -1807,14 +1877,30 @@ static void test_bret_attack_windows_batch6(void) {
         CHECK(a.anim_mode & WM_MODE_OVERLAP);
         CHECK(a.anim_mode & WM_MODE_NOCONFINE);
         CHECK(a.anim_mode & WM_MODE_NOGRAVITY);
-        for (guard = 0; guard < 60 && bva.visual.frame_index != 4; ++guard)
+        for (guard = 0; guard < 60 && !(a.anim_mode & WM_MODE_CHECKHIT); ++guard)
             wm_bret_backend_tick(&bva, &a, 0);
         CHECK(a.attack_mode == WM_AMODE_BSTOMP);
         CHECK(a.attack_zoff == -10);
         CHECK(a.attack_depth == 70);
-        /* lands on the ground partway through */
-        for (guard = 0; guard < 60 && bva.visual.frame_index != 6; ++guard)
+        /* Lands on the ground partway through -- ANI_SETPLYRMODE,
+           MODE_ONGROUND, immediately after the long airborne frame's own
+           ANI_ZEROVELS and ANI_ATTACK_OFF. */
+        for (guard = 0; guard < 90 && a.player_mode != WM_PMODE_ONGROUND;
+             ++guard)
             wm_bret_backend_tick(&bva, &a, 0);
+        CHECK(a.player_mode == WM_PMODE_ONGROUND);
+        /* The very next op is an ANI_IFNOTSTATUS, and with nothing hit it
+           takes the branch straight into an ANI_CHANGEANIM: a missed leap
+           genuinely becomes hrt_hitonground_facedown_anim rather than
+           playing the connected-hit recovery the flat list spliced in
+           after it. */
+        for (guard = 0; guard < 90 && bva.prog.program &&
+                        strcmp(bva.prog.program->source_label,
+                               "hrt_tbukl_leap_anim") == 0; ++guard)
+            wm_bret_backend_tick(&bva, &a, 0);
+        CHECK(bva.prog.program != NULL);
+        CHECK(strcmp(bva.prog.program->source_label,
+                     "hrt_hitonground_facedown_anim") == 0);
         CHECK(a.player_mode == WM_PMODE_ONGROUND);
     }
 
@@ -1903,12 +1989,21 @@ static void test_bret_frame_motion_commands(void) {
     wm_bret_backend_actor bva;
     int guard;
 
-    /* hrt_kick_TB_anim's header: ANI_ZEROVELS, then ANI_SET_YVEL,70000h and
-       ANI_SET_XVEL,-20000h,AM_FACE_REL, then ANI_OFFSET,5,0,0. The x value
-       is negated when the facing-right bit is clear (ANIM.ASM:1626), and
-       the offset moves him instantly. */
+    /* hrt_kick_TB_anim's header, in the order HRTSEQ2.ASM writes it:
+       ANI_ZEROVELS, ANI_STARTATTACK, ANI_SETFACING, ANI_SET_WRESTLER_XFLIP,
+       ANI_SETPLYRMODE, then ANI_SET_YVEL,70000h,
+       ANI_SET_XVEL,-20000h,AM_FACE_REL and ANI_OFFSET,5,0,0. The x value is
+       negated when the facing-right bit is clear (ANIM.ASM:1626), and the
+       offset moves him instantly.
+
+       The ANI_SETFACING comes FIRST, so the facing that decides the sign is
+       NEW_FACING_DIR, not the stale FACING_DIR -- running the header as the
+       program it is puts those in the source's order, where applying a
+       side table of motion commands and a separate "attacks set facing on
+       start" rule could only apply them in the port's. */
     memset(&a, 0, sizeof(a));
     a.facing_dir = WM_MOVE_UP_RIGHT;   /* right bit set -> x used as written */
+    a.new_facing_dir = WM_MOVE_UP_RIGHT;
     a.x_int = 100;
     wm_bret_backend_init(&bva);
     wm_bret_backend_change_anim(&a, WM_BRET_ANIM_KICK_TB, &bva);
@@ -1921,39 +2016,72 @@ static void test_bret_frame_motion_commands(void) {
     /* Facing left, the same command negates. */
     memset(&a, 0, sizeof(a));
     a.facing_dir = WM_MOVE_UP_LEFT;
+    a.new_facing_dir = WM_MOVE_UP_LEFT;
     a.x_int = 100;
     wm_bret_backend_init(&bva);
     wm_bret_backend_change_anim(&a, WM_BRET_ANIM_KICK_TB, &bva);
     CHECK(a.x_vel == 0x20000);
     CHECK(a.x_int == 95);   /* the offset flips too */
 
+    /* And the ordering itself: turning to face right mid-stride, the leap
+       goes the way he is turning to, not the way he was facing. */
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_UP_LEFT;
+    a.new_facing_dir = WM_MOVE_UP_RIGHT;
+    wm_bret_backend_init(&bva);
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_KICK_TB, &bva);
+    CHECK(a.facing_dir == WM_MOVE_UP_RIGHT);
+    CHECK(a.x_vel == -0x20000);
+
     /* hrt_2_punch_anim: ANI_ZEROVELS in the header and a real
-       ANI_SET_YVEL,30000h partway through, on the connected-hit path. The
-       mid-animation one must fire when the animation reaches that frame,
-       not on selection. */
+       ANI_SET_YVEL,30000h partway through -- sitting AFTER the
+       ANI_SLIDE_BACK, so it is on the connected-hit path only. Landing the
+       punch runs it; missing branches past it, which is exactly the fork a
+       flat frame list cannot represent. */
     memset(&a, 0, sizeof(a));
     a.facing_dir = WM_MOVE_UP_RIGHT;
+    a.new_facing_dir = WM_MOVE_UP_RIGHT;
     wm_bret_backend_init(&bva);
     wm_bret_backend_change_anim(&a, WM_BRET_ANIM_PUNCH2, &bva);
     CHECK(a.y_vel == 0);
-    for (guard = 0; guard < 60 && bva.visual.frame_index != 6; ++guard)
+    for (guard = 0; guard < 60 && !bva.prog.ended; ++guard) {
+        /* connect, the way wm_arcade_try_attack_hit does */
+        if (a.anim_mode & WM_MODE_CHECKHIT)
+            a.anim_mode |= (uint16_t)WM_MODE_STATUS;
         wm_bret_backend_tick(&bva, &a, 0);
-    CHECK(bva.visual.frame_index == 6);
+    }
     CHECK(a.y_vel == 0x30000);
 
-    /* hrt_4_knee_fall_anim carries an ANI_OFFSET,23,0,0 at frame 1 and both
-       a y and a z velocity at frame 3 -- three different command kinds in
-       one animation, all fired off the generated table. */
+    /* The same punch, missed: the ANI_SLIDE_BACK branch skips it. */
     memset(&a, 0, sizeof(a));
     a.facing_dir = WM_MOVE_UP_RIGHT;
+    a.new_facing_dir = WM_MOVE_UP_RIGHT;
+    wm_bret_backend_init(&bva);
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_PUNCH2, &bva);
+    for (guard = 0; guard < 60 && !bva.prog.ended; ++guard)
+        wm_bret_backend_tick(&bva, &a, 0);
+    CHECK(a.y_vel == 0);
+
+    /* hrt_4_knee_fall_anim carries an unconditional ANI_OFFSET,23,0,0 after
+       its first frame, and both a y and a z velocity after the
+       ANI_SLIDE_BACK -- three different command kinds in one animation, all
+       run straight out of the program. */
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_UP_RIGHT;
+    a.new_facing_dir = WM_MOVE_UP_RIGHT;
     a.x_int = 0;
     wm_bret_backend_init(&bva);
     wm_bret_backend_change_anim(&a, WM_BRET_ANIM_KNEE_FALL4, &bva);
-    for (guard = 0; guard < 60 && bva.visual.frame_index != 1; ++guard)
+    CHECK(a.x_int == 0);        /* the offset is not a header command */
+    for (guard = 0; guard < 60 && a.x_int == 0; ++guard)
         wm_bret_backend_tick(&bva, &a, 0);
     CHECK(a.x_int == 23);
-    for (guard = 0; guard < 60 && bva.visual.frame_index != 3; ++guard)
+    for (guard = 0; guard < 60 && !bva.prog.ended; ++guard) {
+        if (a.anim_mode & WM_MODE_CHECKHIT)
+            a.anim_mode |= (uint16_t)WM_MODE_STATUS;
+        if (a.y_vel == 0x50000) break;
         wm_bret_backend_tick(&bva, &a, 0);
+    }
     CHECK(a.y_vel == 0x50000);
     CHECK(a.z_vel != 0);
 }
@@ -1973,6 +2101,7 @@ static void test_bret_ifbuttons_run_cancel(void) {
     /* Punch alone: no cancel. The headbutt plays as itself. */
     memset(&a, 0, sizeof(a));
     a.facing_dir = WM_MOVE_UP_RIGHT;
+    a.new_facing_dir = WM_MOVE_UP_RIGHT;
     a.but_val_cur = WM_BTN_PUNCH;
     wm_bret_backend_init(&bva);
     wm_bret_backend_change_anim(&a, WM_BRET_ANIM_BUTT4, &bva);
@@ -2004,6 +2133,7 @@ static void test_bret_ifbuttons_run_cancel(void) {
     /* Kick alone is not enough either -- the mask needs both bits. */
     memset(&a, 0, sizeof(a));
     a.facing_dir = WM_MOVE_UP_RIGHT;
+    a.new_facing_dir = WM_MOVE_UP_RIGHT;
     a.but_val_cur = WM_BTN_KICK;
     wm_bret_backend_init(&bva);
     wm_bret_backend_change_anim(&a, WM_BRET_ANIM_BUTT4, &bva);
@@ -2025,6 +2155,7 @@ static void test_bret_instant_state_commands(void) {
        ANI_SET_WRESTLER_XFLIP, then ANI_STARTATTACK,AT_PUNCH,5 at frame 3. */
     memset(&a, 0, sizeof(a));
     a.facing_dir = WM_MOVE_UP_RIGHT;
+    a.new_facing_dir = WM_MOVE_UP_RIGHT;
     a.obj_control = WM_OBJ_FLIPH;    /* stale flip, facing right */
     a.punchb_count = 7;
     a.spunchb_count = 7;
@@ -2047,6 +2178,7 @@ static void test_bret_instant_state_commands(void) {
     /* Facing left, the same header command sets the mirror instead. */
     memset(&a, 0, sizeof(a));
     a.facing_dir = WM_MOVE_UP_LEFT;
+    a.new_facing_dir = WM_MOVE_UP_LEFT;
     wm_bret_backend_init(&bva);
     wm_bret_backend_change_anim(&a, WM_BRET_ANIM_PUNCH2, &bva);
     CHECK(a.obj_control & WM_OBJ_FLIPH);
@@ -2056,6 +2188,7 @@ static void test_bret_instant_state_commands(void) {
        ANI_CLR_BUTCOUNT inside its repeat span. */
     memset(&a, 0, sizeof(a));
     a.facing_dir = WM_MOVE_UP_RIGHT;
+    a.new_facing_dir = WM_MOVE_UP_RIGHT;
     a.punchb_count = 4;
     a.spunchb_count = 4;
     a.skickb_count = 4;
@@ -2067,6 +2200,7 @@ static void test_bret_instant_state_commands(void) {
 
     memset(&a, 0, sizeof(a));
     a.facing_dir = WM_MOVE_UP_RIGHT;
+    a.new_facing_dir = WM_MOVE_UP_RIGHT;
     wm_bret_backend_init(&bva);
     wm_bret_backend_change_anim(&a, WM_BRET_ANIM_FACEDOWN_GETUP, &bva);
     for (guard = 0; guard < 80 && a.safe_time == 0; ++guard)
@@ -2095,6 +2229,7 @@ static int program_vs_flat(const char *label, const wm_visual_sequence *seq,
     if (!p) return -1;
     memset(&a, 0, sizeof(a));
     a.facing_dir = WM_MOVE_UP_RIGHT;
+    a.new_facing_dir = WM_MOVE_UP_RIGHT;
     wm_anim_exec_start(&ex, p, &a, 0);
     wm_visual_start(&vs, seq);
 

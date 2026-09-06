@@ -1,5 +1,4 @@
 #include "wm/anim_program.h"
-#include "wm/anim_frame_commands.h"
 #include "wm/arcade/wm_arcade_combat_defs.h"
 #include "wm/arcade/wm_arcade_anim_combat.h"
 

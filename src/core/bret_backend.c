@@ -1,5 +1,4 @@
 #include "wm/bret_backend.h"
-#include "wm/anim_frame_commands.h"
 #include "wm/arcade/wm_arcade_start_run.h"
 #include "wm/arcade/wm_arcade_anim_combat.h"
 #include "wm/arcade/wm_arcade_lifebar.h"
@@ -299,413 +298,48 @@ static bool start_if_new(wm_visual_state *state, const wm_visual_sequence *seq) 
 }
 
 /*
- * Real ANIM.ASM ATTACK_ON(_Z) args for the attack ids wm_bret_anim_sequence
- * maps: each attack's ANI_ATTACK_ON(_Z) command falls right before the WL
- * frame line at active_frame_index (0-based) in that id's
- * wm_visual_sequence. The first six were hand-traced against HRTSEQ2.ASM
- * (see wm_bret_backend_tick's comment); everything after them was traced
- * with tools/wlattack.py, which reproduces all six of those by hand-traced
- * index and operand exactly.
+ * The animation id whose sequence carries `label`, or -1.
  *
- * One row is one ANI_ATTACK_ON(_Z)/ANI_ATTACK_OFF pulse, NOT one animation:
- * an animation with several real pulses gets several rows, matched on
- * (id, frame). hrt_2/4_stomp_anim fire two apiece and
- * hrt_2/4_ground_punch_anim three, each a genuinely separate attack box in
- * the source, so collapsing them to one window per id would silently drop
- * real hits.
+ * An ANI_CHANGEANIM or an ANI_IFBUTTONS names its target by source label,
+ * which is what the program carries; the rest of the backend is keyed on
+ * this port's own ids. Resolved by asking the id->sequence map itself
+ * rather than from a second hand-written table, so a label can never drift
+ * away from the sequence it names.
  */
-typedef struct {
-    wm_arcade_bret_anim_id_t id;
-    size_t active_frame_index;
-    bool use_z;
-    wm_arcade_attack_on_args_t args;
-    wm_arcade_attack_on_z_args_t z_args;
-} wm_bret_attack_window_t;
-
-static const wm_bret_attack_window_t attack_windows[] = {
-    /* HRTSEQ2.ASM:204 ANI_ATTACK_ON_Z, AMODE_PUNCH,30,91,-45,50,15,45 */
-    { WM_BRET_ANIM_PUNCH2, 5, true, {0,0,0,0,0},
-      { WM_AMODE_PUNCH, 30, 91, -45, 50, 15, 45 } },
-    /* HRTSEQ2.ASM:322 ANI_ATTACK_ON_Z, AMODE_PUNCH,30,91,0,50,15,45 */
-    { WM_BRET_ANIM_PUNCH4, 5, true, {0,0,0,0,0},
-      { WM_AMODE_PUNCH, 30, 91, 0, 50, 15, 45 } },
-    /* HRTSEQ2.ASM:247 hrt_4_super_punch_anim,
-       ANI_ATTACK_ON,AMODE_UPRCUT,-6,40,64,90 -- #scrt_cut's supercut. */
-    { WM_BRET_ANIM_SUPER_PUNCH4, 5, false,
-      { WM_AMODE_UPRCUT, -6, 40, 64, 90 }, {0,0,0,0,0,0,0} },
-    /* HRTSEQ2.ASM:618/677 hrt_2/4_super_punch2_anim,
-       ANI_ATTACK_ON,AMODE_URN,19,75,35,24 -- the ordinary super punch.
-       Same box numbers as the headbutt, a different AMODE, and a
-       different frame index from the supercut above. */
-    { WM_BRET_ANIM_SUPER_PUNCH2_2, 3, false,
-      { WM_AMODE_URN, 19, 75, 35, 24 }, {0,0,0,0,0,0,0} },
-    { WM_BRET_ANIM_SUPER_PUNCH2_4, 3, false,
-      { WM_AMODE_URN, 19, 75, 35, 24 }, {0,0,0,0,0,0,0} },
-    /* HRTSEQ2.ASM:1074 ANI_ATTACK_ON,AMODE_KICK,23,73,50,17 */
-    { WM_BRET_ANIM_KICK2, 5, false,
-      { WM_AMODE_KICK, 23, 73, 50, 17 }, {0,0,0,0,0,0,0} },
-    /* HRTSEQ2.ASM:1240 ANI_ATTACK_ON,AMODE_KICK,23,73,50,17 */
-    { WM_BRET_ANIM_KICK4, 5, false,
-      { WM_AMODE_KICK, 23, 73, 50, 17 }, {0,0,0,0,0,0,0} },
-    /* HRTSEQ2.ASM:1357 ANI_ATTACK_ON,AMODE_SUPER_KICK,5,54,70,34 -- shared
-       body (HRTSEQ2.ASM:1334-1335 SUBR alias), so SUPER_KICK4 gets the
-       identical hand-traced window, not a separate guess. */
-    { WM_BRET_ANIM_SUPER_KICK2, 4, false,
-      { WM_AMODE_SUPER_KICK, 5, 54, 70, 34 }, {0,0,0,0,0,0,0} },
-    { WM_BRET_ANIM_SUPER_KICK4, 4, false,
-      { WM_AMODE_SUPER_KICK, 5, 54, 70, 34 }, {0,0,0,0,0,0,0} },
-    /* HRTSEQ2.ASM hrt_2/4_butt_anim: ANI_ATTACK_ON,AMODE_HDBUTT,19,75,35,24
-       -- the close-range headbutt do_punch selects (identical window in
-       both facing banks). */
-    { WM_BRET_ANIM_BUTT2, 5, false,
-      { WM_AMODE_HDBUTT, 19, 75, 35, 24 }, {0,0,0,0,0,0,0} },
-    { WM_BRET_ANIM_BUTT4, 5, false,
-      { WM_AMODE_HDBUTT, 19, 75, 35, 24 }, {0,0,0,0,0,0,0} },
-    /* HRTSEQ2.ASM hrt_2/4_knee_anim: ANI_ATTACK_ON,AMODE_KNEE,11,44,51,49
-       -- the close-range knee do_kick selects. */
-    { WM_BRET_ANIM_KNEE2, 4, false,
-      { WM_AMODE_KNEE, 11, 44, 51, 49 }, {0,0,0,0,0,0,0} },
-    { WM_BRET_ANIM_KNEE4, 4, false,
-      { WM_AMODE_KNEE, 11, 44, 51, 49 }, {0,0,0,0,0,0,0} },
-    /* HRTSEQ2.ASM hrt_4_uppercut_anim: ANI_ATTACK_ON,AMODE_UPRCUT,-6,22,64,100.
-       Distinct from SUPER_PUNCH4's own -6,40,64,90 window. */
-    { WM_BRET_ANIM_UPPERCUT4, 5, false,
-      { WM_AMODE_UPRCUT, -6, 22, 64, 100 }, {0,0,0,0,0,0,0} },
-    /* hrt_2_stomp_anim: two real pulses, the first an AMODE_HITCHECK probe
-       and the second the AMODE_STOMP2 hit itself, with an ANI_ATTACK_OFF
-       and an ANI_STARTATTACK,AT_STOMP,5 between them. Both are
-       ANI_ATTACK_ON_Z, so both carry real z offset/depth. */
-    { WM_BRET_ANIM_STOMP2, 4, true, {0,0,0,0,0},
-      { WM_AMODE_HITCHECK, 7, -10, -40, 28, 31, 50 } },
-    { WM_BRET_ANIM_STOMP2, 7, true, {0,0,0,0,0},
-      { WM_AMODE_STOMP2, 7, -10, -40, 28, 31, 50 } },
-    /* hrt_4_stomp_anim: same two-pulse shape, its own real 4-facing box. */
-    { WM_BRET_ANIM_STOMP4, 4, true, {0,0,0,0,0},
-      { WM_AMODE_HITCHECK, 7, -12, -10, 29, 35, 50 } },
-    { WM_BRET_ANIM_STOMP4, 7, true, {0,0,0,0,0},
-      { WM_AMODE_STOMP2, 7, -12, -10, 29, 35, 50 } },
-    /* hrt_2_ground_punch_anim: three real pulses -- an AMODE_HITCHECK probe
-       and then two separate AMODE_LBOWDROP2 elbow drops (the second after
-       its own ANI_STARTATTACK,AT_LBDROP,14). The first row's x offset is
-       written `5-10` in the source, an assembler expression, i.e. -5, and
-       is deliberately not "simplified" to the 5 the other two use. */
-    { WM_BRET_ANIM_GROUND_PUNCH2, 2, true, {0,0,0,0,0},
-      { WM_AMODE_HITCHECK, 5 - 10, -8, -40, 32, 32, 50 } },
-    { WM_BRET_ANIM_GROUND_PUNCH2, 5, true, {0,0,0,0,0},
-      { WM_AMODE_LBOWDROP2, 5, -8, -40, 32, 32, 50 } },
-    { WM_BRET_ANIM_GROUND_PUNCH2, 8, true, {0,0,0,0,0},
-      { WM_AMODE_LBOWDROP2, 5, -8, -40, 32, 32, 50 } },
-    /* hrt_4_ground_punch_anim: same three-pulse shape, its own real box,
-       and here the probe's x offset really is a plain 5. */
-    { WM_BRET_ANIM_GROUND_PUNCH4, 2, true, {0,0,0,0,0},
-      { WM_AMODE_HITCHECK, 5, -6, -10, 36, 30, 50 } },
-    { WM_BRET_ANIM_GROUND_PUNCH4, 5, true, {0,0,0,0,0},
-      { WM_AMODE_LBOWDROP2, 5, -6, -10, 36, 30, 50 } },
-    { WM_BRET_ANIM_GROUND_PUNCH4, 8, true, {0,0,0,0,0},
-      { WM_AMODE_LBOWDROP2, 5, -6, -10, 36, 30, 50 } },
-    /* hrt_4_push_anim: ANI_ATTACK_ON,AMODE_PUSH,11,83,70,20 -- the shove
-       mode_block uses to break a blocking opponent off, and the same one
-       its own down-input branch selects. */
-    { WM_BRET_ANIM_PUSH4, 3, false,
-      { WM_AMODE_PUSH, 11, 83, 70, 20 }, {0,0,0,0,0,0,0} },
-    /* hrt_4_jump_kick_anim: ANI_ATTACK_ON,AMODE_FLYKICK,15,69,64,38 --
-       wm_arcade_bret_fire_secret's own jump-kick target, which until now
-       had no frame data and so only got the one-tick MODE_UNINT stopgap. */
-    { WM_BRET_ANIM_JUMP_KICK4, 4, false,
-      { WM_AMODE_FLYKICK, 15, 69, 64, 38 }, {0,0,0,0,0,0,0} },
-    /* hrt_4_knee_fall_anim: ANI_ATTACK_ON,AMODE_BIGKNEE,11,44,51,49 --
-       same box as the ordinary knee, a different AMODE. */
-    { WM_BRET_ANIM_KNEE_FALL4, 2, false,
-      { WM_AMODE_BIGKNEE, 11, 44, 51, 49 }, {0,0,0,0,0,0,0} },
-    /* hrt_kick_TB_anim: ANI_ATTACK_ON,AMODE_SPINKICK,5,54,70,34, and the
-       one wired attack whose ANI_ATTACK_OFF is two frames later rather
-       than one (frames 2 and 3 are both inside the window). */
-    { WM_BRET_ANIM_KICK_TB, 2, false,
-      { WM_AMODE_SPINKICK, 5, 54, 70, 34 }, {0,0,0,0,0,0,0} },
-    { WM_BRET_ANIM_KICK_TB, 3, false,
-      { WM_AMODE_SPINKICK, 5, 54, 70, 34 }, {0,0,0,0,0,0,0} },
-    /* hrt_4_knee_to_head_anim: ANI_ATTACK_ON,AMODE_KNEE,11,44,51,49 at
-       frame 2 of the chained 8-frame stream (1 frame before chaining, and
-       the window sat past its end). */
-    { WM_BRET_ANIM_KNEE_TO_HEAD4, 2, false,
-      { WM_AMODE_KNEE, 11, 44, 51, 49 }, {0,0,0,0,0,0,0} },
-    /* hrt_knees_to_head_anim: two real pulses with different boxes. The
-       first sits INSIDE the routine's ANI_SET_RPTCOUNT,3 span (frames
-       1..5), so the visual runtime's loop genuinely re-fires it once per
-       pass, exactly as the source's own ANI_ATTACK_ON does inside its
-       loop body; the second is after the loop. */
-    { WM_BRET_ANIM_KNEES_TO_HEAD, 3, false,
-      { WM_AMODE_HEADKNEES, 4, 34, 70, 54 }, {0,0,0,0,0,0,0} },
-    { WM_BRET_ANIM_KNEES_TO_HEAD, 8, false,
-      { WM_AMODE_HEADKNEES, 4, 54, 70, 34 }, {0,0,0,0,0,0,0} },
-    /* hrt_2/4_butts_anim: AMODE_HDBUTT_STAY, and the window sits inside
-       the routine's ANI_SET_RPTCOUNT,3 span, so three headbutts land per
-       playthrough from this one row. */
-    { WM_BRET_ANIM_BUTTS2, 3, false,
-      { WM_AMODE_HDBUTT_STAY, 19, 75, 35, 24 }, {0,0,0,0,0,0,0} },
-    { WM_BRET_ANIM_BUTTS4, 3, false,
-      { WM_AMODE_HDBUTT_STAY, 19, 75, 35, 24 }, {0,0,0,0,0,0,0} },
-    /* hrt_flying_kick_anim -- a different box from JUMP_KICK4's own
-       AMODE_FLYKICK,15,69,64,38. */
-    { WM_BRET_ANIM_FLYING_KICK, 4, false,
-      { WM_AMODE_FLYKICK, -3, 26, 61, 21 }, {0,0,0,0,0,0,0} },
-    /* hrt_tbukl_leap_anim writes TWO ANI_ATTACK_ON_Z back to back here,
-       its own comment saying "attack box dimensions depends on opp mode":
-       the second is reached by an ANI_IFOPPMODE,MODE_ONGROUND branch this
-       port does not evaluate. The fall-through default (y offset -1+5) is
-       wired; the grounded-opponent variant (-1+15) deliberately is not,
-       rather than guessed at. */
-    { WM_BRET_ANIM_TBUKL_LEAP, 4, true, {0,0,0,0,0},
-      { WM_AMODE_BSTOMP, 0, -1 + 5, -10, 36, 52, 70 } },
-    { WM_BRET_ANIM_RUNNING_GROUND_PUNCH, 5, false,
-      { WM_AMODE_BUTTSTOMP, -50, -6, 36, 23 }, {0,0,0,0,0,0,0} },
-    /* hrt_combo_punch_anim / hrt_combo_kick_anim: three real pulses each,
-       one per combo hit. */
-    { WM_BRET_ANIM_COMBO_PUNCH, 3, true, {0,0,0,0,0},
-      { WM_AMODE_PUNCH, 30, 51, 0, 80, 45, 45 } },
-    { WM_BRET_ANIM_COMBO_PUNCH, 12, true, {0,0,0,0,0},
-      { WM_AMODE_PUNCH, 30, 51, 0, 80, 45, 45 } },
-    { WM_BRET_ANIM_COMBO_PUNCH, 21, true, {0,0,0,0,0},
-      { WM_AMODE_PUNCH, 30, 51, 0, 80, 45, 45 } },
-    { WM_BRET_ANIM_COMBO_KICK, 3, false,
-      { WM_AMODE_KICK, 23, 53, 50, 27 }, {0,0,0,0,0,0,0} },
-    { WM_BRET_ANIM_COMBO_KICK, 12, false,
-      { WM_AMODE_KICK, 23, 53, 50, 27 }, {0,0,0,0,0,0,0} },
-    { WM_BRET_ANIM_COMBO_KICK, 21, false,
-      { WM_AMODE_KICK, 23, 53, 50, 27 }, {0,0,0,0,0,0,0} },
-};
-#define WM_BRET_ATTACK_WINDOW_COUNT \
-    (sizeof(attack_windows) / sizeof(attack_windows[0]))
-
-/*
- * ANIM.ASM's ANI_CHANGEANIM (:1301) where it genuinely terminates a
- * routine: _ani_changeanim overwrites OANIPC AND OANIBASE with the target
- * and never returns, so the animation does not end -- it becomes another
- * one. The source writes exactly that shape with the `.word ANI_END` after
- * it commented out.
- *
- * Only unconditional transitions are here. tools/wlanim.py reports a
- * next_label only when nothing after the ANI_CHANGEANIM ends the routine
- * any other way; where a real ANI_END follows (hrt_2_butts_anim's
- * button-mash #ex path, hrt_facedown_getup_anim's free-toss branch) the
- * transition is one exit among several and is deliberately NOT taken here,
- * because taking it would need the condition this port does not evaluate.
- */
-typedef struct {
-    wm_arcade_bret_anim_id_t from;
-    wm_arcade_bret_anim_id_t to;
-} wm_bret_anim_transition_t;
-
-static const wm_bret_anim_transition_t anim_transitions[] = {
-    { WM_BRET_ANIM_FALL_BACK,            WM_BRET_ANIM_FACEUP_GETUP },
-    { WM_BRET_ANIM_FLYING_KICK,          WM_BRET_ANIM_FACEDOWN_GETUP },
-    { WM_BRET_ANIM_TBUKL_LEAP,           WM_BRET_ANIM_HITONGROUND_FACEDOWN },
-    { WM_BRET_ANIM_RUNNING_GROUND_PUNCH, WM_BRET_ANIM_FACEUP_GETUP2_4 },
-    /* hrt_hitonground_facedown_anim is itself a transition target that
-       transitions again, so the chain really is leap -> hit the ground ->
-       get up. */
-    { WM_BRET_ANIM_HITONGROUND_FACEDOWN, WM_BRET_ANIM_FACEUP_GETUP },
-};
-#define WM_BRET_ANIM_TRANSITION_COUNT \
-    (sizeof(anim_transitions) / sizeof(anim_transitions[0]))
-
-static bool find_anim_transition(wm_arcade_bret_anim_id_t from,
-                                 wm_arcade_bret_anim_id_t *to) {
-    size_t i;
-    for (i = 0; i < WM_BRET_ANIM_TRANSITION_COUNT; ++i)
-        if (anim_transitions[i].from == from) {
-            *to = anim_transitions[i].to;
-            return true;
-        }
-    return false;
-}
-
-/*
- * ANIM.ASM's ANI_SETPLYRMODE, when it falls partway through an animation
- * rather than in its header. Keyed on (id, frame) exactly like the attack
- * windows, and applied by wm_bret_backend_tick when the animation reaches
- * that frame. A row at frame 0 is applied by wm_bret_backend_change_anim
- * instead, since the header commands are instant on selection.
- */
-typedef struct {
-    wm_arcade_bret_anim_id_t id;
-    size_t frame_index;
-    uint16_t player_mode;
-} wm_bret_plyrmode_change_t;
-
-static const wm_bret_plyrmode_change_t plyrmode_changes[] = {
-    /* hrt_kick_TB_anim: ANI_SETPLYRMODE,MODE_INAIR2 then MODE_NORMAL. */
-    { WM_BRET_ANIM_KICK_TB, 0, WM_PMODE_INAIR2 },
-    { WM_BRET_ANIM_KICK_TB, 4, WM_PMODE_NORMAL },
-    /* hrt_4_push_anim, hrt_3_head_held_stand_anim and hrt_3_fake_hold_anim
-       all lead with ANI_SETPLYRMODE,MODE_NORMAL before their own frame 0 --
-       for the head-held stand that is the whole point of the animation,
-       since it is what actually releases mode_headhold. */
-    { WM_BRET_ANIM_PUSH4, 0, WM_PMODE_NORMAL },
-    { WM_BRET_ANIM_HEAD_HELD_STAND3, 0, WM_PMODE_NORMAL },
-    { WM_BRET_ANIM_FAKE_HOLD3, 0, WM_PMODE_NORMAL },
-    /* hrt_2/4_stomp_anim's own header. */
-    { WM_BRET_ANIM_STOMP2, 0, WM_PMODE_NORMAL },
-    { WM_BRET_ANIM_STOMP4, 0, WM_PMODE_NORMAL },
-    /* hrt_flying_kick_anim: NORMAL on entry, ONGROUND once he lands. */
-    { WM_BRET_ANIM_FLYING_KICK, 0, WM_PMODE_NORMAL },
-    { WM_BRET_ANIM_FLYING_KICK, 7, WM_PMODE_ONGROUND },
-    /* hrt_tbukl_leap_anim ends up on the ground too. */
-    { WM_BRET_ANIM_TBUKL_LEAP, 6, WM_PMODE_ONGROUND },
-    /* hrt_running_ground_punch_anim: NORMAL, then airborne for the drop. */
-    { WM_BRET_ANIM_RUNNING_GROUND_PUNCH, 0, WM_PMODE_NORMAL },
-    { WM_BRET_ANIM_RUNNING_GROUND_PUNCH, 2, WM_PMODE_INAIR },
-    { WM_BRET_ANIM_RUNNING_GROUND_PUNCH, 7, WM_PMODE_ONGROUND },
-    /* hrt_fall_back_anim's own landing. */
-    { WM_BRET_ANIM_FALL_BACK, 11, WM_PMODE_ONGROUND },
-    /* The getups' own headers put him back on his feet. */
-    { WM_BRET_ANIM_FACEDOWN_GETUP, 0, WM_PMODE_NORMAL },
-    { WM_BRET_ANIM_FACEUP_GETUP, 0, WM_PMODE_NORMAL },
-    { WM_BRET_ANIM_FACEUP_GETUP2_4, 0, WM_PMODE_NORMAL },
-};
-#define WM_BRET_PLYRMODE_CHANGE_COUNT \
-    (sizeof(plyrmode_changes) / sizeof(plyrmode_changes[0]))
-
-static const wm_bret_plyrmode_change_t *find_plyrmode_change(
-        wm_arcade_bret_anim_id_t id, size_t frame_index) {
-    size_t i;
-    for (i = 0; i < WM_BRET_PLYRMODE_CHANGE_COUNT; ++i)
-        if (plyrmode_changes[i].id == id &&
-            plyrmode_changes[i].frame_index == frame_index)
-            return &plyrmode_changes[i];
-    return NULL;
-}
-
-/*
- * Extra ANI_SETMODE bits a wired animation's own HRTSEQ header carries on
- * top of MODE_UNINT|MODE_NOAUTOFLIP, read with tools/wlattack.py rather
- * than assumed. Most attacks carry only those two; these carry more, and
- * every bit here is genuinely consumed somewhere in the port
- * (WM_MODE_OVERLAP by wm_arcade_combat.c's wrestler-overlap test,
- * WM_MODE_NOCONFINE by wm_arcade_confine_wrestler's own early-out,
- * WM_MODE_NOGRAVITY and WM_MODE_NOCOLLIS by the react/collision paths).
- */
-static uint16_t anim_header_mode_bits(wm_arcade_bret_anim_id_t id) {
-    switch (id) {
-        case WM_BRET_ANIM_STOMP2:
-        case WM_BRET_ANIM_STOMP4:
-        case WM_BRET_ANIM_GROUND_PUNCH2:
-        case WM_BRET_ANIM_GROUND_PUNCH4:
-        case WM_BRET_ANIM_FAKE_HOLD3:
-        case WM_BRET_ANIM_PIN2:
-        case WM_BRET_ANIM_PIN4:
-        case WM_BRET_ANIM_RUNNING_GROUND_PUNCH:
-            return (uint16_t)WM_MODE_OVERLAP;
-        /* hrt_facedown_getup_anim / hrt_faceup_getup_anim /
-           hrt_4_faceup_getup2_anim: ...|MODE_NOCOLLIS */
-        case WM_BRET_ANIM_FACEDOWN_GETUP:
-        case WM_BRET_ANIM_FACEUP_GETUP:
-        case WM_BRET_ANIM_FACEUP_GETUP2_4:
-            return (uint16_t)WM_MODE_NOCOLLIS;
-        /* hrt_fall_back_anim: ...|MODE_OVERLAP|MODE_NOCOLLIS */
-        case WM_BRET_ANIM_FALL_BACK:
-            return (uint16_t)(WM_MODE_OVERLAP | WM_MODE_NOCOLLIS);
-        /* hrt_tbukl_leap_anim:
-           ...|MODE_OVERLAP|MODE_NOCONFINE|MODE_NOGRAVITY */
-        case WM_BRET_ANIM_TBUKL_LEAP:
-            return (uint16_t)(WM_MODE_OVERLAP | WM_MODE_NOCONFINE |
-                              WM_MODE_NOGRAVITY);
-        default:
-            return 0;
+static int anim_id_for_label(const char *label) {
+    int id;
+    if (!label) return -1;
+    /* WRESTLE2.ASM:3443 start_run_anim is a state-setup routine with no WL
+       frames of its own, so it has no sequence to find it by. */
+    if (strcmp(label, "start_run_anim") == 0)
+        return (int)WM_BRET_ANIM_START_RUN;
+    for (id = 0; id <= (int)WM_BRET_ANIM_HITONGROUND_FACEDOWN; ++id) {
+        const wm_visual_sequence *s =
+            wm_bret_anim_sequence((wm_arcade_bret_anim_id_t)id);
+        if (s && s->source_label && strcmp(s->source_label, label) == 0)
+            return id;
     }
+    return -1;
 }
 
-/* Any pulse at all for this id -- i.e. "this animation is one of the wired
-   attacks", which is what the MODE_UNINT header treatment keys off. */
-static bool anim_has_attack_window(wm_arcade_bret_anim_id_t id) {
-    size_t i;
-    for (i = 0; i < WM_BRET_ATTACK_WINDOW_COUNT; ++i)
-        if (attack_windows[i].id == id) return true;
-    return false;
-}
-
-/* The one pulse (if any) whose ANI_ATTACK_ON falls at this exact frame. */
-static const wm_bret_attack_window_t *find_attack_window_at(wm_arcade_bret_anim_id_t id,
-                                                            size_t frame_index) {
-    size_t i;
-    for (i = 0; i < WM_BRET_ATTACK_WINDOW_COUNT; ++i)
-        if (attack_windows[i].id == id &&
-            attack_windows[i].active_frame_index == frame_index)
-            return &attack_windows[i];
-    return NULL;
-}
-
-/* Wired animations whose own HRTSEQ header leads with
-   ANI_SETMODE,MODE_UNINT|MODE_NOAUTOFLIP. That is every animation with an
-   attack window, plus the ones that carry the header without ever
-   attacking -- hrt_3_head_held_stand_anim is the first of those. (Block is
-   deliberately not here: hrt_4_block_anim's own header does more, and has
-   its own block below.) */
-static bool anim_header_sets_uninit(wm_arcade_bret_anim_id_t id) {
-    if (anim_has_attack_window(id)) return true;
-    return id == WM_BRET_ANIM_HEAD_HELD_STAND3 ||
-           id == WM_BRET_ANIM_FAKE_HOLD3 ||
-           id == WM_BRET_ANIM_PIN2 || id == WM_BRET_ANIM_PIN4 ||
-           id == WM_BRET_ANIM_FALL_BACK ||
-           id == WM_BRET_ANIM_FACEDOWN_GETUP ||
-           id == WM_BRET_ANIM_FACEUP_GETUP ||
-           id == WM_BRET_ANIM_FACEUP_GETUP2_4 ||
-           id == WM_BRET_ANIM_HITONGROUND_FACEDOWN ||
-           id == WM_BRET_ANIM_START_RUN;
-}
 
 /*
- * HRTSEQ2.ASM: 5 of the 6 wired attacks lead with a real, instant
- * ANI_SETFACING (right after ANI_ZEROVELS, before any WL frame -- same
- * "processed synchronously when the animation starts" reasoning as
- * MODE_UNINT above): hrt_2_punch_anim:187, hrt_4_punch_anim:307,
- * hrt_4_super_punch_anim, hrt_2_kick_anim:1059, and
- * hrt_2_super_kick_anim/hrt_4_super_kick_anim:1342 (after ANI_STARTATTACK
- * there, but still before any WL frame -- same "instant, on start"
- * timing; SUPER_KICK2 and SUPER_KICK4 share this one body). hrt_4_kick_anim
- * is the one real exception: no ANI_SETFACING at all, verified by reading
- * its header directly, not assumed from the other 5.
+ * The attack windows, the animation transitions, the mid-animation
+ * ANI_SETPLYRMODE rows, the per-id header mode bits and the "this attack
+ * sets facing on start" list all used to live here, each of them a table
+ * keyed on (animation id, flat frame index).
  *
- * hrt_4_jump_kick_anim (HRTSEQ2.ASM:1265), hrt_hiptoss_anim (HRTSEQ3.ASM:
- * 445) and hrt_2/4_grabfling_anim (HRTSEQ2.ASM:2421/2433) -- three more of
- * wm_arcade_bret_fire_secret's own real secret-move targets -- carry the
- * identical instant ANI_SETFACING too, read directly from their own
- * headers the same way. */
-static bool attack_sets_facing_on_start(wm_arcade_bret_anim_id_t id) {
-    switch (id) {
-        case WM_BRET_ANIM_PUNCH2:
-        case WM_BRET_ANIM_PUNCH4:
-        /* hrt_4_super_punch_anim and both hrt_2/4_super_punch2_anim carry
-           the same instant ANI_SETFACING in their own headers. */
-        case WM_BRET_ANIM_SUPER_PUNCH4:
-        case WM_BRET_ANIM_SUPER_PUNCH2_2:
-        case WM_BRET_ANIM_SUPER_PUNCH2_4:
-        case WM_BRET_ANIM_KICK2:
-        case WM_BRET_ANIM_SUPER_KICK2:
-        case WM_BRET_ANIM_SUPER_KICK4:
-        case WM_BRET_ANIM_JUMP_KICK4:
-        case WM_BRET_ANIM_HIPTOSS:
-        case WM_BRET_ANIM_GRABFLING_FACE24:
-        case WM_BRET_ANIM_BUTT2:
-        case WM_BRET_ANIM_BUTT4:
-        case WM_BRET_ANIM_KNEE2:
-        case WM_BRET_ANIM_KNEE4:
-        case WM_BRET_ANIM_UPPERCUT4:
-        /* push4, jump_kick4 and kick_TB carry the same instant
-           ANI_SETFACING in their own headers; knee_fall4 and
-           head_held_stand3 genuinely do not. */
-        case WM_BRET_ANIM_PUSH4:
-        case WM_BRET_ANIM_KICK_TB:
-        case WM_BRET_ANIM_BUTTS2:
-        case WM_BRET_ANIM_BUTTS4:
-        case WM_BRET_ANIM_FLYING_KICK:
-        case WM_BRET_ANIM_TBUKL_LEAP:
-        case WM_BRET_ANIM_COMBO_KICK:
-            return true;
-        default:
-            return false;
-    }
-}
+ * They are gone because the program subsumes every one of them. An attack
+ * box is an ANI_ATTACK_ON op sitting at the point in the op stream where
+ * the source writes it; a mode word is an ANI_SETMODE op; a hand-off is an
+ * ANI_CHANGEANIM. Running the ops applies each of them exactly where and
+ * when ANIM.ASM does, on whichever branch the animation actually took --
+ * which is what a frame-index key could not do, since the flat list it
+ * indexed into was every branch spliced end to end. hrt_4_ground_punch_anim
+ * is the clearest case: it writes its follow-up twice, once for the hit and
+ * once for the miss, so the flat list carried three attack boxes where any
+ * real playthrough fires two.
+ */
 
 /*
  * wm_arcade_bret_fire_secret's remaining secret-move targets that have no
@@ -783,6 +417,31 @@ void wm_bret_backend_change_anim(wm_arcade_actor_t *actor,
     bva->current_id = id;
     if (!actor || !is_new_selection) return;
 
+    /*
+     * If this animation has a generated ANIM.ASM program, it drives: the
+     * program's own header ops are the mode bits, the player mode, the
+     * facing set, the velocities and the attack boxes below, so running
+     * both would apply every one of them twice. wm_bret_backend_tick takes
+     * the same fork.
+     */
+    {
+        const wm_anim_program *prog =
+            seq ? wm_anim_program_find(seq->source_label) : NULL;
+        if (prog) {
+            /* An animation the program is taking over from another still
+               owns whatever attack box the previous one left on; the new
+               program's own ATTACK_ON/OFF ops take it from here. */
+            if (bva->attack_active) {
+                wm_arcade_ani_attack_off(actor, bva->round_tickcount);
+                bva->attack_active = false;
+            }
+            wm_anim_exec_start(&bva->prog, prog, actor, bva->round_tickcount);
+            return;
+        }
+        bva->prog.program = NULL;
+        bva->prog.ended = true;
+    }
+
     /* HRTSEQ2.ASM's own attack headers (hrt_2_punch_anim etc., HRTSEQ2.ASM:
        184/303/...) all lead with `ANI_SETMODE,MODE_UNINT|MODE_NOAUTOFLIP`.
        ANI_SETMODE is a zero-tick "instant" command the interpreter
@@ -802,64 +461,34 @@ void wm_bret_backend_change_anim(wm_arcade_actor_t *actor,
     if (id == WM_BRET_ANIM_START_RUN)
         wm_arcade_start_run(actor);
 
-    if (anim_header_sets_uninit(id)) {
+    /*
+     * What is left here is only the ids the program path cannot take:
+     * WM_BRET_ANIM_START_RUN, whose source routine is state setup with no
+     * WL frames of its own, and the secret-move targets that have no
+     * extracted animation at all. Every id that does have one is
+     * program-driven above, where its own header ops carry these same
+     * writes.
+     */
+    if (id == WM_BRET_ANIM_START_RUN) {
+        /* WRESTLE2.ASM:3443 start_run_anim's own ANI_CODE #setup_run
+           (:3452): pick a run direction, clear the getup/run timers, face
+           that way and enter MODE RUNNING, behind the header's own
+           ANI_SETMODE,MODE_UNINT|MODE_NOAUTOFLIP. */
+        wm_arcade_start_run(actor);
         actor->anim_mode |= (uint16_t)(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
-        /* hrt_2/4_stomp_anim and hrt_2/4_ground_punch_anim are the only
-           wired attacks whose own ANI_SETMODE adds MODE_OVERLAP -- real,
-           and genuinely consumed here by wm_arcade_combat.c's
-           wrestler-overlap test, which is why they get it and the others
-           deliberately do not. */
-        actor->anim_mode |= anim_header_mode_bits(id);
-        /* ANIM.ASM's inline motion commands for this animation's own frame
-           0 -- its header. These used to be approximated by zeroing x and z
-           velocity for every attack; the real per-animation list is
-           generated by tools/wlcommands.py and includes the y velocity,
-           offsets and friction the approximation missed. */
-        if (seq) {
-            const char *become =
-                wm_anim_apply_frame_commands(actor, seq->source_label, 0,
-                                             bva->round_tickcount);
-            if (become) bva->pending_become = become;
-        }
-
-        /* An ANI_SETPLYRMODE in this animation's own header (frame 0) is
-           instant on selection, same as the mode bits above -- see
-           plyrmode_changes. */
-        {
-            const wm_bret_plyrmode_change_t *pm = find_plyrmode_change(id, 0);
-            if (pm && actor->player_mode != WM_PMODE_DEAD)
-                actor->player_mode = pm->player_mode;
-        }
     } else if (secret_move_sets_mode_uninit(id)) {
         /* secret_move_sets_mode_uninit's own comment: no frame data means
            no real way to time this back off, so it's cleared this same
            tick instead (wm_bret_backend_tick) rather than left set. */
         actor->anim_mode |= (uint16_t)(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
         bva->pending_uninit_clear = true;
-    }
-
-    /* attack_sets_facing_on_start's own comment: 5 of the 6 wired attacks
-       (plus 3 more secret-move targets) also carry a real, instant
-       ANI_SETFACING right at their own start (before hrt_4_kick_anim's
-       real exception). Gated on `is_new_selection`, not every call, since
-       the source command fires exactly once, the instant the animation is
-       selected -- not continuously for as long as it plays. */
-    if (attack_sets_facing_on_start(id))
-        actor->facing_dir = actor->new_facing_dir;
-
-    /* hrt_4_block_anim's own instant header commands, all before its first
-       WL frame: ANI_SETMODE,MODE_UNINT|MODE_NOAUTOFLIP, ANI_ZEROVELS,
-       ANI_SETFACING, and -- the one that matters for gameplay --
-       ANI_SETPLYRMODE,MODE_BLOCK. MODE_BLOCK is never set by BRET.ASM
-       itself (his do_block only selects this animation); it is the
-       animation that puts him in the mode, which is why he could never
-       actually block until this was wired. */
-    if (id == WM_BRET_ANIM_BLOCK4) {
-        actor->anim_mode |= (uint16_t)(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
-        actor->x_vel = 0;
-        actor->z_vel = 0;
-        actor->facing_dir = actor->new_facing_dir;
-        actor->player_mode = WM_PMODE_BLOCK;
+        /* Three of those secret-move targets carry a real, instant
+           ANI_SETFACING at their own start. Gated on `is_new_selection`,
+           not every call, since the source command fires exactly once, the
+           instant the animation is selected. */
+        if (id == WM_BRET_ANIM_HIPTOSS ||
+            id == WM_BRET_ANIM_GRABFLING_FACE24)
+            actor->facing_dir = actor->new_facing_dir;
     }
 }
 
@@ -1071,6 +700,63 @@ static void wm_bret_backend_check_secret_moves(wm_arcade_actor_t *actor,
     }
 }
 
+/*
+ * One tick of a program-driven animation.
+ *
+ * Everything the side tables used to supply is an op here: ANI_ATTACK_ON /
+ * ANI_ATTACK_ON_Z / ANI_ATTACK_OFF turn the attack box on and off at the
+ * point in the sequence the source turns it on and off, ANI_SETMODE and
+ * ANI_SETPLYRMODE write the modes, and the velocity/offset/friction
+ * commands move the wrestler -- all of them run by the interpreter as it
+ * reaches them, on whichever branch the animation actually took.
+ */
+static void wm_bret_backend_tick_program(wm_bret_backend_actor *bva,
+                                         wm_arcade_actor_t *actor,
+                                         uint16_t round_tickcount) {
+    const char *frame;
+
+    wm_anim_exec_tick(&bva->prog, actor, round_tickcount);
+
+    frame = wm_anim_exec_frame(&bva->prog);
+    if (frame) {
+        wm_arcade_frame_box_t box = wm_bret_hurt_box_for_frame(frame);
+        wm_arcade_set_hurt_box(actor, &box);
+    }
+
+    if (!bva->prog.ended) return;
+
+    /*
+     * ANI_CHANGEANIM's hand-off, and ANI_IFBUTTONS' cancel: an animation
+     * that ends by BECOMING another does not stop -- the target starts with
+     * its own header, exactly as if it had been selected. The MODE_UNINT
+     * the finished animation set is cleared first so the target's own
+     * header sets its own rather than inheriting it; a target with no
+     * program of its own falls back to the flat path, which needs that
+     * clear for the same reason.
+     */
+    if (bva->prog.become) {
+        int next = anim_id_for_label(bva->prog.become);
+        bva->prog.become = NULL;
+        bva->prog.program = NULL;
+        actor->anim_mode &= (uint16_t)~(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
+        if (next >= 0) {
+            wm_bret_backend_change_anim(actor,
+                                        (wm_arcade_bret_anim_id_t)next, bva);
+            return;
+        }
+        /* A label this port has no animation for: the wrestler is left
+           interruptible rather than stuck in a program that has ended. */
+        return;
+    }
+
+    /* The animation ran to its own ANI_END. Its trailing ANI_SETMODE has
+       already written whatever ANIMODE it leaves behind (HRTSEQ2's attack
+       headers end on MODE_NORMAL, which is an absolute write of 0), so
+       there is nothing here to clear by hand. */
+    bva->prog.program = NULL;
+}
+
+
 wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva) {
     wm_arcade_bret_callbacks_t cb;
     memset(&cb, 0, sizeof(cb));
@@ -1086,8 +772,6 @@ wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva)
 
 void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
                           uint16_t round_tickcount) {
-    const wm_bret_attack_window_t *w;
-    bool at_current_anim;
     size_t leg_old_frame_index, torso_old_frame_index;
 
     if (!bva) return;
@@ -1096,7 +780,15 @@ void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
        frame 1 while the block button is still held, so the animation (and
        with it WM_PMODE_BLOCK) lasts exactly as long as the player holds
        block, instead of running straight through in nine ticks. */
-    if (block_holding_waitrelease(bva, actor)) bva->visual.ticks_left = 2;
+    if (block_holding_waitrelease(bva, actor)) {
+        /* Both tracks are held: the flat one because callers still read
+           its frame index, the program one because it is what actually
+           runs the animation. hrt_4_block_anim's program is unbranching
+           and shares the flat list's three frames, so they stay in step
+           and the same frame-1 test answers for both. */
+        bva->visual.ticks_left = 2;
+        if (bva->prog.program) bva->prog.ticks_left = 2;
+    }
     leg_old_frame_index = bva->visual.frame_index;
     wm_visual_tick(&bva->visual);
     torso_old_frame_index = bva->torso_visual.frame_index;
@@ -1120,6 +812,21 @@ void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
 
     if (!actor) return;
 
+    /*
+     * A program-driven animation runs from its ops and nothing below
+     * applies to it: the attack boxes, the mode and player-mode writes,
+     * the motion commands and the end are all in the op stream, so the
+     * side tables would only apply each of them a second time -- and on
+     * the wrong frame whenever a branch has taken the animation down a
+     * path the flat list cannot express. The flat track keeps ticking
+     * alongside purely so callers reading `visual` still see which
+     * sequence is playing.
+     */
+    if (bva->prog.program) {
+        wm_bret_backend_tick_program(bva, actor, round_tickcount);
+        return;
+    }
+
     {
         const wm_visual_frame *cur = wm_visual_current(&bva->visual);
         wm_arcade_frame_box_t box =
@@ -1127,70 +834,11 @@ void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
         wm_arcade_set_hurt_box(actor, &box);
     }
 
-    /* Matched on (id, frame) rather than id alone, so an animation with
-       several real ANI_ATTACK_ON pulses fires each one at its own frame and
-       the ANI_ATTACK_OFF between them still runs on the frames in
-       between -- exactly the ON/OFF/ON shape the source writes out. */
-    at_current_anim = bva->visual.sequence == wm_bret_anim_sequence(bva->current_id);
-    w = at_current_anim ? find_attack_window_at(bva->current_id, bva->visual.frame_index)
-                        : NULL;
-
-    /* ANIM.ASM's inline motion commands at this frame: the velocity sets,
-       zeroes, offsets and friction that make a wired attack actually move
-       instead of playing its frames on the spot. Frame 0 is applied on
-       selection by wm_bret_backend_change_anim, so it is skipped here
-       rather than re-applied every tick the animation sits on frame 0. */
-    if (at_current_anim && bva->visual.frame_index != 0 &&
-        bva->visual.sequence &&
-        bva->visual.frame_index != leg_old_frame_index) {
-        const char *become = wm_anim_apply_frame_commands(
-            actor, bva->visual.sequence->source_label,
-            bva->visual.frame_index, round_tickcount);
-        if (become) bva->pending_become = become;
-    }
-
-    /* An ANI_IFBUTTONS whose buttons were all held: the animation becomes
-       the named one. The only case in Bret's own set is start_run_anim, the
-       run cancel out of an attack's opening frames -- pressing punch+kick
-       mid-punch really does turn it into a run in the source. */
-    if (actor && bva->pending_become) {
-        const char *become = bva->pending_become;
-        bva->pending_become = NULL;
-        if (strcmp(become, "start_run_anim") == 0) {
-            actor->anim_mode &= (uint16_t)~(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
-            wm_bret_backend_change_anim(actor, WM_BRET_ANIM_START_RUN, bva);
-        }
-    }
-
-    /* A mid-animation ANI_SETPLYRMODE (plyrmode_changes): applied the tick
-       the animation reaches that frame. Frame 0 rows are the header's own,
-       already applied by wm_bret_backend_change_anim on selection, so they
-       are skipped here rather than re-applied every time the animation
-       happens to sit on frame 0. */
-    if (at_current_anim && bva->visual.frame_index != 0 &&
-        actor->player_mode != WM_PMODE_DEAD) {
-        const wm_bret_plyrmode_change_t *pm =
-            find_plyrmode_change(bva->current_id, bva->visual.frame_index);
-        if (pm) actor->player_mode = pm->player_mode;
-    }
-
-    if (w) {
-        if (!bva->attack_active) {
-            if (w->use_z) wm_arcade_ani_attack_on_z(actor, &w->z_args);
-            else wm_arcade_ani_attack_on(actor, &w->args);
-            bva->attack_active = true;
-        }
-    } else if (bva->attack_active) {
-        wm_arcade_ani_attack_off(actor, round_tickcount);
-        bva->attack_active = false;
-    }
-
-    /* The other half of wm_bret_backend_change_anim's MODE_UNINT: clears
-       back to MODE_NORMAL once the attack animation naturally ends, same
-       as its own HRTSEQ2.ASM header's trailing `ANI_SETMODE,MODE_NORMAL`. */
-    if (at_current_anim && anim_header_sets_uninit(bva->current_id) && bva->visual.ended)
-        actor->anim_mode &= (uint16_t)~(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP |
-                                        anim_header_mode_bits(bva->current_id));
+    /* What reaches here is a walk, turn or stand cycle -- an unbranching
+       frame loop with no commands in it -- or one of the secret-move ids
+       that has no extracted animation at all. There is no attack box, no
+       mode write and no hand-off among them; everything that had one is
+       program-driven above. */
 
     /* secret_move_sets_mode_uninit's own ids have no frame data to time a
        real end from, so the WM_MODE_UNINT wm_bret_backend_change_anim set
@@ -1203,33 +851,6 @@ void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
     if (bva->pending_uninit_clear) {
         actor->anim_mode &= (uint16_t)~(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
         bva->pending_uninit_clear = false;
-    }
-
-    /* ANI_CHANGEANIM's own hand-off: an animation that ends by BECOMING
-       another does not stop -- the target starts, with its own header
-       commands, attack windows and mode bits, exactly as if it had been
-       selected. Driven through wm_bret_backend_change_anim so none of that
-       is special-cased, and applied on the tick the source animation
-       genuinely ends. */
-    if (actor && at_current_anim && bva->visual.ended) {
-        wm_arcade_bret_anim_id_t next_id;
-        if (find_anim_transition(bva->current_id, &next_id)) {
-            /* Clear the finished animation's own protection first, so the
-               target's header sets its own rather than inheriting. */
-            actor->anim_mode &= (uint16_t)~(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP |
-                                            anim_header_mode_bits(bva->current_id));
-            wm_bret_backend_change_anim(actor, next_id, bva);
-        }
-    }
-
-    /* hrt_4_block_anim's own tail, once the WAITRELEASE hold above has let
-       it run off its last frame: ANI_SETPLYRMODE,MODE_NORMAL followed by
-       ANI_END, plus the matching clear of the MODE_UNINT|MODE_NOAUTOFLIP
-       its header set. */
-    if (actor && bva->visual.sequence == &wm_bret_block4_anim && bva->visual.ended) {
-        if (actor->player_mode == WM_PMODE_BLOCK)
-            actor->player_mode = WM_PMODE_NORMAL;
-        actor->anim_mode &= (uint16_t)~(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
     }
 }
 

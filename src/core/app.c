@@ -1,4 +1,5 @@
 #include "wm/app.h"
+#include "wm/anim_program.h"
 #include "wm/arcade/wm_arcade_drone_data.h"
 #include <string.h>
 
@@ -417,11 +418,31 @@ static uint32_t app_rng_sp(void *user) {
     return app ? (0x00010000u - (app->scheduler.tick * 64u)) : 0u;
 }
 
+/*
+ * DCSSOUND.ASM triple_sound's seam for the animation VM's ANI_CODE sound
+ * routines (wm/anim_program.h): the sound's own index goes into the port's
+ * audio command queue unchanged. triple_sound's four-channel priority
+ * arbitration is not modelled here -- that belongs to a DCSSOUND port.
+ */
+static void wm_app_anim_sound(void *user, uint16_t call) {
+    (void)wm_audio_send_command((wm_audio_state *)user, call);
+}
+
+/* Hand the match the services its ANI_CODE routines reach for. Both live
+   on the app, so this is done wherever a match is started. */
+static void wm_app_bind_anim_env(wm_app *app) {
+    app->match.anim_rng = &app->rng;
+    app->match.anim_sound_user = &app->audio;
+    app->match.anim_sound = wm_app_anim_sound;
+    wm_anim_code_reset();
+}
+
 static bool tick_gameplay(wm_app *app, const wm_input_state *input) {
     wm_attract_state *a = &app->attract;
 
     if (a->call_ticks == 0)
         wm_match_start_attract(&app->match, &app->rng);
+        wm_app_bind_anim_env(app);
 
     {
         wm_arcade_drone_callbacks_t cb = wm_arcade_drone_data_callbacks(&app->rng);
@@ -526,6 +547,7 @@ void wm_app_tick_dual(wm_app *app,
         return;
     }
     if (app->mode == WM_APP_MODE_MATCH_INIT) {
+        wm_app_bind_anim_env(app);
         wm_match_start_selected(&app->match, &app->rng,
                                 app->pregame.player_source_wrestler);
         app->mode = WM_APP_MODE_MATCH;

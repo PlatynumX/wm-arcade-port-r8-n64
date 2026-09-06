@@ -1,4 +1,5 @@
 #include "wm/match.h"
+#include "wm/anim_program.h"
 #include "wm/arcade/wm_arcade_butcount.h"
 #include <string.h>
 
@@ -223,6 +224,10 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
     world.round_tickcount = (uint16_t)m->tick_count;
     world.first_ladder = 1;
 
+    /* DCSSOUND.ASM's own DUMMY_WAIT lockout, which gates the shove taunts,
+       counts down in real time rather than per wrestler. */
+    wm_anim_code_tick();
+
     for (i = 0; i < m->actor_count; ++i) {
         /* WRESTLE.ASM:2418 `callr update_newfacing`, called unconditionally
            for every wrestler process before the human/zombie/drone_main
@@ -294,6 +299,10 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
 
             m->bret_visual[i].opponent = opp;
             m->bret_visual[i].pcnt = m->tick_count;
+            m->bret_visual[i].anim_env.opponent = opp;
+            m->bret_visual[i].anim_env.rng = m->anim_rng;
+            m->bret_visual[i].anim_env.sound_user = m->anim_sound_user;
+            m->bret_visual[i].anim_env.sound = m->anim_sound;
 
             bret_cb = wm_bret_backend_callbacks(&m->bret_visual[i]);
             razor_cb = wm_wrestler_razor_callbacks(&m->wrestler_visual[i]);

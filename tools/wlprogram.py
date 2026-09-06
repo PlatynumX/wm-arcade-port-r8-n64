@@ -75,6 +75,14 @@ BUTCOUNT_FIELDS = {
     "KICKB_COUNT": 3,
     "SKICKB_COUNT": 4,
 }
+# ANIM.ASM:1277 ANI_CODE,<routine> -- an ordinary subroutine call. Carried
+# by name: src/core/anim_code.c translates the ones this port has, and the
+# rest stay in the program as named, countable gaps rather than lines the
+# extractor drops on the floor.
+CODE_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_CODE\s*,\s*"
+    r"(#?[A-Za-z_][A-Za-z0-9_]*)\s*$", re.I)
+
 BUTCOUNT_RE = re.compile(
     r"^\s*(?:\.word|W+L+W*)\s+(ANI_IF_BUTCOUNT_GE|ANI_IF_BUTCOUNT_LT)\s*,\s*"
     r"([A-Za-z_][A-Za-z0-9_]*)\s*,\s*([^,]+)\s*,\s*"
@@ -277,6 +285,11 @@ def program_for(path: pathlib.Path, label: str):
             ops.append((BRANCHES[bm.group(1).upper()], -1))
             continue
 
+        cd = CODE_RE.match(line)
+        if cd:
+            ops.append(("CODE", cd.group(1)))
+            continue
+
         bc = BUTCOUNT_RE.match(line)
         if bc:
             field = bc.group(2).upper()
@@ -387,7 +400,7 @@ def _c_op(op) -> str:
         target = op[1]
         if kind in ("SLIDE_BACK", "IF_BUTCOUNT_GE", "IF_BUTCOUNT_LT"):
             args[0], args[1] = op[2], op[3]
-    elif kind in ("CHANGEANIM",):
+    elif kind in ("CHANGEANIM", "CODE"):
         text = f'"{op[1]}"'
     elif kind == "IFBUTTONS":
         args[0] = op[1]

@@ -20,7 +20,7 @@ static int32_t directional(const wm_arcade_actor_t *actor, int32_t value,
 }
 
 static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
-                        uint16_t round_tickcount) {
+                        uint16_t round_tickcount, const wm_anim_env *env) {
     switch (o->op) {
         case WM_AOP_SETMODE:
             /* ANI_SETMODE is absolute -- it replaces ANIMODE rather than
@@ -133,6 +133,16 @@ static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
         case WM_AOP_ATTACK_OFF:
             wm_arcade_ani_attack_off(actor, round_tickcount);
             break;
+        case WM_AOP_CODE: {
+            /* ANIM.ASM:1277: an ordinary call, then straight on to the
+               next command. A routine this port has not translated leaves
+               the op a no-op -- the same thing the flat extractor did by
+               dropping the line, except that the name is now in the
+               program, where it can be counted. */
+            wm_anim_code_fn fn = wm_anim_code_find(o->text);
+            if (fn) fn(actor, env);
+            break;
+        }
         default:
             /* WM_AOP_UNTRANSLATED and anything needing a subsystem this
                port does not have: carried in the program so it stays a
@@ -226,7 +236,8 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
                 pc += 1;
                 continue;
             default:
-                if (actor) run_command(o, actor, round_tickcount);
+                if (actor) run_command(o, actor, round_tickcount,
+                                       exec->env);
                 pc += 1;
                 continue;
         }
@@ -235,10 +246,12 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
 }
 
 void wm_anim_exec_start(wm_anim_exec *exec, const wm_anim_program *program,
-                        wm_arcade_actor_t *actor, uint16_t round_tickcount) {
+                        wm_arcade_actor_t *actor, uint16_t round_tickcount,
+                        const wm_anim_env *env) {
     if (!exec) return;
     memset(exec, 0, sizeof(*exec));
     exec->program = program;
+    exec->env = env;
     if (!program || program->op_count == 0) {
         exec->ended = true;
         return;

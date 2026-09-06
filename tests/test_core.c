@@ -1397,6 +1397,189 @@ static void test_bret_attack_windows_batch1(void) {
     }
 }
 
+/*
+ * ANIM.ASM:1277 ANI_CODE's targets (src/core/anim_code.c).
+ *
+ * `_ani_code` is the plainest opcode in the machine and the biggest hole
+ * in this port's animation VM: 2303 uses across the eight playable
+ * wrestlers, collapsing to 145 distinct routines. The DCSSOUND.ASM leaf
+ * sound routines are translated first -- the ones that pick a real index
+ * out of a real table and hand it to triple_sound -- which is 590 of those
+ * call sites.
+ */
+typedef struct { uint16_t calls[8]; size_t count; } code_sound_log;
+
+static void code_sound_sink(void *user, uint16_t call) {
+    code_sound_log *log = (code_sound_log *)user;
+    if (log->count < 8) log->calls[log->count] = call;
+    ++log->count;
+}
+
+static void test_anim_code_sound_routines(void) {
+    WmRng rng;
+    code_sound_log log;
+    wm_anim_env env;
+    wm_arcade_actor_t a, opp;
+    wm_anim_code_fn fn;
+    size_t i;
+
+    memset(&env, 0, sizeof(env));
+    wm_rng_init(&rng, 0x1234u, NULL, NULL, NULL);
+    env.rng = &rng;
+    env.sound_user = &log;
+    env.sound = code_sound_sink;
+
+    /* The registry answers by the source's own name, and says so plainly
+       when a routine is not translated rather than pretending. */
+    CHECK(wm_anim_code_find("HIT_THE_MAT") != NULL);
+    CHECK(wm_anim_code_find("SMALL_BOUNCE") != NULL);
+    CHECK(wm_anim_code_find("CALL_MISSES") == NULL);   /* announcer speech */
+    CHECK(wm_anim_code_find("no_such_routine") == NULL);
+    CHECK(wm_anim_code_find(NULL) == NULL);
+    CHECK(wm_anim_code_count() >= 16u);
+
+    /* DCSSOUND.ASM:3999 HIT_THE_MAT: a fixed 0C1h, then one of the three
+       low-priority mat hits {76h,77h,78h}. Two calls, in that order. */
+    memset(&a, 0, sizeof(a));
+    memset(&log, 0, sizeof(log));
+    wm_anim_code_find("HIT_THE_MAT")(&a, &env);
+    CHECK(log.count == 2);
+    CHECK(log.calls[0] == 0x0C1u);
+    CHECK(log.calls[1] >= 0x76u && log.calls[1] <= 0x78u);
+
+    /* Every draw stays inside its own real table, over enough draws to
+       exercise all three entries. */
+    memset(&log, 0, sizeof(log));
+    for (i = 0; i < 40; ++i) {
+        code_sound_log one;
+        memset(&one, 0, sizeof(one));
+        env.sound_user = &one;
+        wm_anim_code_find("SMALL_BOUNCE")(&a, &env);
+        CHECK(one.count == 1);
+        CHECK(one.calls[0] == 0x0C0u || one.calls[0] == 0x0C2u ||
+              one.calls[0] == 0x00Du);
+    }
+    env.sound_user = &log;
+
+    /* DCSSOUND.ASM:4134 DO_WAIL is indexed by WRESTLERNUM, and index 7 --
+       the spare roster slot -- is a real zero in the table, meaning no
+       sound at all rather than sound zero. */
+    fn = wm_anim_code_find("DO_WAIL");
+    memset(&log, 0, sizeof(log));
+    a.wrestler_num = 0;            /* Bret */
+    fn(&a, &env);
+    CHECK(log.count == 1 && log.calls[0] == 0x25Fu);
+    memset(&log, 0, sizeof(log));
+    a.wrestler_num = 1;            /* Razor */
+    fn(&a, &env);
+    CHECK(log.count == 1 && log.calls[0] == 0x270u);
+    memset(&log, 0, sizeof(log));
+    a.wrestler_num = 7;            /* the spare slot */
+    fn(&a, &env);
+    CHECK(log.count == 0);
+
+    /* DO_NONO reads the number of the wrestler ATTACHED to this one (the
+       one being held); DO_OTHERNONO reads its own. Doink's line differs
+       from everyone else's, which is what makes the two distinguishable. */
+    memset(&a, 0, sizeof(a));
+    memset(&opp, 0, sizeof(opp));
+    a.wrestler_num = 0;            /* Bret holding */
+    opp.wrestler_num = 6;          /* Doink held */
+    a.attach_proc = &opp;
+    memset(&log, 0, sizeof(log));
+    wm_anim_code_find("DO_NONO")(&a, &env);
+    CHECK(log.count == 1 && log.calls[0] == 0x219u);      /* Doink's */
+    memset(&log, 0, sizeof(log));
+    wm_anim_code_find("DO_OTHERNONO")(&a, &env);
+    CHECK(log.count == 1 && log.calls[0] == 0x23Cu);      /* Bret's */
+    /* DO_CHOKE and the NONOs are the endless sounds: the last one started
+       is the one FIND_AND_KILL_ENDLESS would stop. */
+    CHECK(wm_anim_code_endless_sound() == 0x23Cu);
+    wm_anim_code_find("FIND_AND_KILL_ENDLESS")(&a, &env);
+    CHECK(wm_anim_code_endless_sound() == 0u);
+
+    /* DCSSOUND.ASM:4153 DO_DOINK_SLAM picks by RPT_COUNT: 0 and 1 are the
+       plain slam, 2 and 3 step through his taunts, and RPT_COUNT-1 >= 4 is
+       silent. (RPT_COUNT 4 reads one past the three-entry table in the
+       ROM; this port plays nothing there rather than inventing the value
+       that assembled after it.) */
+    memset(&a, 0, sizeof(a));
+    fn = wm_anim_code_find("DO_DOINK_SLAM");
+    for (i = 0; i < 2; ++i) {
+        memset(&log, 0, sizeof(log));
+        a.rpt_count = (int32_t)i;
+        fn(&a, &env);
+        CHECK(log.count == 1 && log.calls[0] == 0x218u);
+    }
+    memset(&log, 0, sizeof(log));
+    a.rpt_count = 2;
+    fn(&a, &env);
+    CHECK(log.count == 1 && log.calls[0] == 0x216u);
+    memset(&log, 0, sizeof(log));
+    a.rpt_count = 3;
+    fn(&a, &env);
+    CHECK(log.count == 1 && log.calls[0] == 0x217u);
+    memset(&log, 0, sizeof(log));
+    a.rpt_count = 9;
+    fn(&a, &env);
+    CHECK(log.count == 0);
+
+    /* With no environment at all a routine does nothing rather than
+       reaching through a NULL service. */
+    wm_anim_code_find("HIT_THE_MAT")(&a, NULL);
+
+    /* DCSSOUND.ASM's shove taunts are behind a 50% RNDPER and a 60-tick
+       lockout (its DUMMY_WAIT process): once one has fired, no other can
+       until the lockout has counted back down. */
+    wm_anim_code_reset();
+    memset(&log, 0, sizeof(log));
+    for (i = 0; i < 200; ++i)
+        wm_anim_code_find("DO_RAZOR_PUSH")(&a, &env);
+    CHECK(log.count == 1);
+    CHECK(log.calls[0] >= 0x27Eu && log.calls[0] <= 0x280u);
+    for (i = 0; i < 60; ++i) wm_anim_code_tick();
+    memset(&log, 0, sizeof(log));
+    for (i = 0; i < 200; ++i)
+        wm_anim_code_find("DO_BRET_PUSH")(&a, &env);
+    CHECK(log.count == 1);
+    CHECK(log.calls[0] == 0x285u);
+    wm_anim_code_reset();
+}
+
+/* And the op really runs from inside a playing animation, not just when
+   called by hand: hrt_fall_back_anim carries HIT_THE_MAT and SMALL_BOUNCE
+   as real ANI_CODE commands partway through its stream. */
+static void test_anim_code_runs_from_program(void) {
+    WmRng rng;
+    code_sound_log log;
+    wm_anim_env env;
+    wm_arcade_actor_t a;
+    wm_bret_backend_actor bva;
+    int guard;
+    size_t i;
+    bool saw_mat = false;
+
+    memset(&env, 0, sizeof(env));
+    memset(&log, 0, sizeof(log));
+    wm_rng_init(&rng, 0x77u, NULL, NULL, NULL);
+    env.rng = &rng;
+    env.sound_user = &log;
+    env.sound = code_sound_sink;
+
+    memset(&a, 0, sizeof(a));
+    wm_bret_backend_init(&bva);
+    bva.anim_env = env;
+    wm_bret_backend_change_anim(&a, WM_BRET_ANIM_FALL_BACK, &bva);
+    CHECK(bva.prog.program != NULL);
+    for (guard = 0; guard < 200 && !bva.prog.ended; ++guard)
+        wm_bret_backend_tick(&bva, &a, 0);
+    CHECK(log.count > 0);
+    for (i = 0; i < log.count && i < 8; ++i)
+        if (log.calls[i] == 0x0C1u) saw_mat = true;
+    CHECK(saw_mat);
+    wm_anim_code_reset();
+}
+
 /* Batch 2: the wired animations carrying more than one real
    ANI_ATTACK_ON pulse each, so this checks the whole ON/OFF/ON shape in
    order rather than one window in isolation. Traced with tools/wlattack.py
@@ -2286,7 +2469,7 @@ static int program_vs_flat_buttons(const char *label,
     memset(&a, 0, sizeof(a));
     a.facing_dir = WM_MOVE_UP_RIGHT;
     a.new_facing_dir = WM_MOVE_UP_RIGHT;
-    wm_anim_exec_start(&ex, p, &a, 0);
+    wm_anim_exec_start(&ex, p, &a, 0, NULL);
     wm_visual_start(&vs, seq);
 
     for (t = 0; t < 3000; ++t) {
@@ -4681,6 +4864,8 @@ int main(void) {
     test_bret_attack_window_punch2();
     test_bret_attack_windows_remaining();
     test_bret_attack_windows_batch1();
+    test_anim_code_sound_routines();
+    test_anim_code_runs_from_program();
     test_bret_attack_windows_multi_pulse();
     test_bret_attack_windows_batch3();
     test_bret_midanim_setplyrmode();

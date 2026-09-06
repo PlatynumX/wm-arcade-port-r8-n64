@@ -110,6 +110,17 @@ typedef struct {
        awarded once on round_state.decided's false-to-true edge -- see
        wm_arcade_match_score_award_round's own comment. */
     wm_arcade_match_score_t score;
+    /*
+     * Services this match's ANI_CODE routines reach for
+     * (wm/anim_program.h's wm_anim_env). Set by the caller -- the app owns
+     * both the RNG and the audio queue -- and copied into each wrestler's
+     * own env every tick. Left NULL, the routines that need them simply do
+     * nothing, which is what the host tests run with.
+     */
+    WmRng *anim_rng;
+    void *anim_sound_user;
+    void (*anim_sound)(void *user, uint16_t call);
+
 } wm_match_state;
 
 void wm_match_init(wm_match_state *m);

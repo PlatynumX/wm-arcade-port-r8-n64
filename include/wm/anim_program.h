@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "wm/arcade/wm_arcade_combat.h"
+#include "wm/arcade/wmania_rng.h"
 
 /*
  * An animation as the program it is in ANIM.ASM, rather than as a flat list
@@ -75,6 +76,14 @@ typedef enum {
     WM_AOP_GRAVITY_ON,
     WM_AOP_CLR_STATUS,
 
+    /* ANIM.ASM:1277 _ani_code -- `move *a4+,a0,L / call a0`: an ordinary
+       subroutine call, zero ticks, with a13 still the wrestler. `text` is
+       the routine's own name; src/core/anim_code.c holds the ones this
+       port has translated and wm_anim_code_find reports the rest as the
+       named gaps they are. 2303 uses across the eight playable wrestlers,
+       but only 145 distinct targets. */
+    WM_AOP_CODE,
+
     /* Present in the source but needing a system this port does not have
        (a renderer, paired actors, a callback bridge). Carried so the
        program stays a faithful record, executed as no-ops. */
@@ -97,6 +106,30 @@ typedef struct {
 } wm_anim_program;
 
 /* Execution state. One per actor track. */
+/*
+ * What an ANI_CODE routine can reach beyond the actor itself.
+ *
+ * The source's own routines run with a13 = this wrestler and the whole
+ * machine addressable around them; this is the subset the translated ones
+ * genuinely use. Every field may be NULL -- a routine whose service is
+ * missing does nothing rather than inventing a result, which is why the
+ * host tests can run programs with no environment at all.
+ */
+typedef struct wm_anim_env {
+    /* The wrestler this one is fighting, for the routines that read
+       *a13(ATTACH_PROC) or the opponent's own fields. */
+    wm_arcade_actor_t *opponent;
+    /* UTIL.ASM RNDRNG0/RNDPER, which the sound pickers use to choose
+       between the entries of their real tables. */
+    WmRng *rng;
+    /* DCSSOUND.ASM triple_sound: `call` is the sound's own index into
+       triple_sndtab, passed through unchanged. Channel arbitration and
+       priority are triple_sound's own job and belong to a DCSSOUND port,
+       not to this bridge. */
+    void *sound_user;
+    void (*sound)(void *user, uint16_t call);
+} wm_anim_env;
+
 typedef struct {
     const wm_anim_program *program;
     size_t pc;             /* op index of the frame currently showing */
@@ -106,13 +139,38 @@ typedef struct {
     bool ended;
     bool just_started;
     const char *become;    /* set when the program asks to become another */
+    const wm_anim_env *env;   /* services ANI_CODE routines may reach for */
 } wm_anim_exec;
 
 const wm_anim_program *wm_anim_program_find(const char *source_label);
 
-/* Start `program`: runs its header commands and stops on the first frame. */
+/*
+ * An ANI_CODE routine, by the name the source calls it by. NULL for one
+ * this port has not translated -- the op still runs, as the no-op it has
+ * always effectively been, but now it is a named and countable gap rather
+ * than a line the extractor silently dropped.
+ */
+typedef void (*wm_anim_code_fn)(wm_arcade_actor_t *actor,
+                                const wm_anim_env *env);
+wm_anim_code_fn wm_anim_code_find(const char *name);
+
+/* How many ANI_CODE routines are translated, for coverage reporting. */
+size_t wm_anim_code_count(void);
+
+/* DCSSOUND.ASM's DUMMY_WAIT lockout, one tick. Call once per game tick. */
+void wm_anim_code_tick(void);
+/* Clear the ANI_CODE routines' own global state (ENDLESS_SOUND and that
+   lockout) -- the source clears them between rounds. */
+void wm_anim_code_reset(void);
+/* DCSSOUND.ASM's ENDLESS_SOUND: the one looping sound the machine allows. */
+uint16_t wm_anim_code_endless_sound(void);
+
+/* Start `program`: runs its header commands and stops on the first frame.
+   `env` is kept for the life of the animation, so it must outlive it; NULL
+   means the ANI_CODE routines that need a service simply do nothing. */
 void wm_anim_exec_start(wm_anim_exec *exec, const wm_anim_program *program,
-                        wm_arcade_actor_t *actor, uint16_t round_tickcount);
+                        wm_arcade_actor_t *actor, uint16_t round_tickcount,
+                        const wm_anim_env *env);
 
 /* Advance one tick. Runs commands and takes branches as the frame expires. */
 void wm_anim_exec_tick(wm_anim_exec *exec, wm_arcade_actor_t *actor,

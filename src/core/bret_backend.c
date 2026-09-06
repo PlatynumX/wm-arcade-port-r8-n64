@@ -439,7 +439,9 @@ void wm_bret_backend_change_anim(wm_arcade_actor_t *actor,
                 wm_arcade_ani_attack_off(actor, bva->round_tickcount);
                 bva->attack_active = false;
             }
-            wm_anim_exec_start(&bva->prog, prog, actor, bva->round_tickcount);
+            bva->anim_env.opponent = bva->opponent;
+            wm_anim_exec_start(&bva->prog, prog, actor,
+                               bva->round_tickcount, &bva->anim_env);
             return;
         }
         bva->prog.program = NULL;

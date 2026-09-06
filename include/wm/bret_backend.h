@@ -135,6 +135,13 @@ typedef struct {
      * flat `visual` track drives as it always has.
      */
     wm_anim_exec prog;
+    /*
+     * What this wrestler's ANI_CODE routines can reach (wm/anim_program.h).
+     * Its `opponent`, `rng` and `sound` seams are filled in by the caller
+     * -- see wm/match.h -- and any of them left NULL simply means the
+     * routines that need that service do nothing.
+     */
+    wm_anim_env anim_env;
 } wm_bret_backend_actor;
 
 void wm_bret_backend_init(wm_bret_backend_actor *bva);

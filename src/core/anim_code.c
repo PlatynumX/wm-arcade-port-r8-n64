@@ -878,6 +878,90 @@ static void grab_rate_limit(wm_arcade_actor_t *actor,
         actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
 }
 
+
+/* #set_opp_xflip: mirror the held wrestler's sprite. The source does not
+   null-check ATTACH_PROC before reading through it -- benign on the
+   original hardware, not here, so this guards. */
+static void set_opp_xflip(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                          int32_t param) {
+    (void)env; (void)param;
+    if (actor && actor->attach_proc)
+        actor->attach_proc->obj_control =
+            (uint16_t)(actor->attach_proc->obj_control ^ WM_OBJ_FLIPH);
+}
+
+/* fix_bnc_flip: "Check to see if I'm against ropes" -- the mirror follows
+   which side of the ring he is on, mirrored when left of centre. */
+static void fix_bnc_flip(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                         int32_t param) {
+    (void)env; (void)param;
+    if (!actor) return;
+    if (actor->x_int < WM_RING_X_CENTER)
+        actor->obj_control |= (uint16_t)WM_OBJ_FLIPH;
+    else
+        actor->obj_control &= (uint16_t)~WM_OBJ_FLIPH;
+}
+
+/* DNKSEQ2.ASM #ckongrnd: MODE_STATUS says whether the man he is fighting
+   is already down. */
+static void ckongrnd(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                     int32_t param) {
+    (void)param;
+    if (!actor) return;
+    if (env && env->opponent &&
+        env->opponent->player_mode == WM_PMODE_ONGROUND)
+        actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
+    else
+        actor->anim_mode &= (uint16_t)~WM_MODE_STATUS;
+}
+
+/*
+ * #inc_loop: count a held sequence up and clear MODE_STATUS while it is
+ * still under the cap, setting it at `#breakout`. The cap is written per
+ * file and Doink's is 2 where everyone else's is 3, so it rides in
+ * `param`.
+ */
+static void inc_loop(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                     int32_t param) {
+    (void)env;
+    if (!actor) return;
+    ++actor->usr_var1;
+    if (actor->usr_var1 > param)
+        actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
+    else
+        actor->anim_mode &= (uint16_t)~WM_MODE_STATUS;
+}
+
+/*
+ * set_position -- and the name is a lie worth recording. EVERY position
+ * write in it is commented out in the source; what is left live is the
+ * palette pair, so it moves nobody. Only the MY_PAL half is translated
+ * here: SKELETON_PAL comes from `pal_getf` on a per-file palette symbol
+ * (DNKBLU_P and friends), and this port has no palette system to resolve
+ * one.
+ */
+static void set_position(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                         int32_t param) {
+    (void)env; (void)param;
+    if (actor) actor->my_pal = actor->obj_pal;
+}
+
+
+/*
+ * #zero_butn -- the source's own comment: "Force player to start holding
+ * his button down starting at the end of the current buzz sequence."
+ * It zeroes one of WRESTLE.ASM's per-player button-hold timers, and WHICH
+ * one differs by file: Bam Bam's copy clears powerp_dtime1, the other
+ * three clear punch_dtime1. `param` picks it.
+ */
+static void zero_butn(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                      int32_t param) {
+    (void)env;
+    if (!actor) return;
+    if (param) actor->powerp_dtime = 0;
+    else actor->punch_dtime = 0;
+}
+
 /*
  * The registry. `file` NULL means a global label, which resolves the same
  * from anywhere; a non-NULL file scopes the row to that sequence file,
@@ -948,6 +1032,29 @@ static const struct {
     /* Both are SUBRs, so global: the same limiter over two stamps. */
     { "hiptoss_delay", NULL, grab_rate_limit, 0 },
     { "fling_delay", NULL, grab_rate_limit, 1 },
+    { "#set_opp_xflip", "BAMSEQ3.ASM", set_opp_xflip, 0 },
+    { "#set_opp_xflip", "DNKSEQ3.ASM", set_opp_xflip, 0 },
+    { "#set_opp_xflip", "HRTSEQ3.ASM", set_opp_xflip, 0 },
+    { "#set_opp_xflip", "RZRSEQ3.ASM", set_opp_xflip, 0 },
+    { "fix_bnc_flip", NULL, fix_bnc_flip, 0 },
+    { "#ckongrnd", "DNKSEQ2.ASM", ckongrnd, 0 },
+    { "set_position", NULL, set_position, 0 },
+    /* #inc_loop: cap 3 everywhere except Doink's own copy, which is 2. */
+    { "#inc_loop", "BAMSEQ3.ASM", inc_loop, 3 },
+    { "#inc_loop", "DNKSEQ2.ASM", inc_loop, 3 },
+    { "#inc_loop", "HRTSEQ3.ASM", inc_loop, 3 },
+    { "#inc_loop", "LEXSEQ3.ASM", inc_loop, 3 },
+    { "#inc_loop", "RZRSEQ2.ASM", inc_loop, 3 },
+    { "#inc_loop", "RZRSEQ3.ASM", inc_loop, 3 },
+    { "#inc_loop", "SHNSEQ4.ASM", inc_loop, 3 },
+    { "#inc_loop", "UNDSEQ3.ASM", inc_loop, 3 },
+    { "#inc_loop", "YOKSEQ3.ASM", inc_loop, 3 },
+    { "#inc_loop", "DNKSEQ3.ASM", inc_loop, 2 },
+
+    { "#zero_butn", "BAMSEQ3.ASM", zero_butn, 1 },
+    { "#zero_butn", "DNKSEQ3.ASM", zero_butn, 0 },
+    { "#zero_butn", "SHNSEQ3.ASM", zero_butn, 0 },
+    { "#zero_butn", "UNDSEQ3.ASM", zero_butn, 0 },
     { "ckzpos", NULL, ckzpos, 0 },
     { "SET_DIR_FACE", NULL, set_dir_face, 0 },
     { "set_tbukl_airmode", NULL, set_tbukl_airmode, 0 },

@@ -3998,6 +3998,64 @@ static void test_anim_code_tail(void) {
     CHECK(!(a.anim_mode & WM_MODE_STATUS));
 
     wm_anim_code_reset();
+
+    /* #inc_loop: the cap is 3 everywhere except Doink's own copy. */
+    memset(&a, 0, sizeof(a));
+    CHECK(wm_anim_code_run(&a, &env, "#inc_loop", "HRTSEQ3.ASM"));
+    CHECK(a.usr_var1 == 1 && !(a.anim_mode & WM_MODE_STATUS));
+    a.usr_var1 = 3;
+    CHECK(wm_anim_code_run(&a, &env, "#inc_loop", "HRTSEQ3.ASM"));
+    CHECK(a.anim_mode & WM_MODE_STATUS);       /* 4 > 3 */
+    memset(&a, 0, sizeof(a));
+    a.usr_var1 = 2;
+    CHECK(wm_anim_code_run(&a, &env, "#inc_loop", "DNKSEQ3.ASM"));
+    CHECK(a.anim_mode & WM_MODE_STATUS);       /* 3 > 2, Doink breaks earlier */
+
+    /* fix_bnc_flip: "Check to see if I'm against ropes". */
+    memset(&a, 0, sizeof(a));
+    a.x_int = WM_RING_X_CENTER - 100;
+    CHECK(wm_anim_code_run(&a, &env, "fix_bnc_flip", NULL));
+    CHECK(a.obj_control & WM_OBJ_FLIPH);
+    a.x_int = WM_RING_X_CENTER + 100;
+    CHECK(wm_anim_code_run(&a, &env, "fix_bnc_flip", NULL));
+    CHECK(!(a.obj_control & WM_OBJ_FLIPH));
+
+    /* #ckongrnd: is the man he is fighting already down? */
+    memset(&a, 0, sizeof(a));
+    memset(&v, 0, sizeof(v));
+    env.opponent = &v;
+    v.player_mode = WM_PMODE_ONGROUND;
+    CHECK(wm_anim_code_run(&a, &env, "#ckongrnd", "DNKSEQ2.ASM"));
+    CHECK(a.anim_mode & WM_MODE_STATUS);
+    v.player_mode = WM_PMODE_NORMAL;
+    CHECK(wm_anim_code_run(&a, &env, "#ckongrnd", "DNKSEQ2.ASM"));
+    CHECK(!(a.anim_mode & WM_MODE_STATUS));
+    env.opponent = NULL;
+
+    /* #set_opp_xflip mirrors the held wrestler. */
+    memset(&a, 0, sizeof(a));
+    memset(&v, 0, sizeof(v));
+    a.attach_proc = &v;
+    CHECK(wm_anim_code_run(&a, &env, "#set_opp_xflip", "HRTSEQ3.ASM"));
+    CHECK(v.obj_control & WM_OBJ_FLIPH);
+
+    /* #zero_butn clears a different timer in Bam Bam's copy. */
+    memset(&a, 0, sizeof(a));
+    a.punch_dtime = 9; a.powerp_dtime = 9;
+    CHECK(wm_anim_code_run(&a, &env, "#zero_butn", "DNKSEQ3.ASM"));
+    CHECK(a.punch_dtime == 0 && a.powerp_dtime == 9);
+    a.punch_dtime = 9;
+    CHECK(wm_anim_code_run(&a, &env, "#zero_butn", "BAMSEQ3.ASM"));
+    CHECK(a.powerp_dtime == 0 && a.punch_dtime == 9);
+
+    /* set_position moves nobody: every position write in it is commented
+       out in the source. What is left live is the palette copy. */
+    memset(&a, 0, sizeof(a));
+    a.obj_pal = 7;
+    a.x_int = 123;
+    CHECK(wm_anim_code_run(&a, &env, "set_position", NULL));
+    CHECK(a.my_pal == 7);
+    CHECK(a.x_int == 123);
 }
 
 static void test_anim_program_interpreter(void) {

@@ -14,6 +14,7 @@
 #include "wm/arcade/wm_arcade_veladd.h"
 #include "wm/arcade/wm_arcade_roll.h"
 #include "wm/announce_tables.h"
+#include "wm/award.h"
 #include "wm/arcade/wm_arcade_announcer.h"
 #include "wm/arcade/wm_arcade_combo.h"
 #include "wm/arcade/wmania_rope_command.h"
@@ -4184,6 +4185,183 @@ static void test_announce_call_from_the_vm(void) {
     wm_anim_code_reset();
 }
 
+/*
+ * LIFEBAR.ASM:3687 DO_COMBO_MESS -- the most-called ANI_CODE routine in
+ * the game, and what actually ends a combo.
+ */
+struct combo_award_log { int n; int player[4]; unsigned index[4]; };
+
+static void combo_award_sink(void *user, int player_num, unsigned index) {
+    struct combo_award_log *l = (struct combo_award_log *)user;
+    if (l->n < 4) { l->player[l->n] = player_num; l->index[l->n] = index; }
+    ++l->n;
+}
+
+static void test_do_combo_mess(void) {
+    wm_arcade_actor_t a;
+    wm_announcer_state ann;
+    wm_combo_mess_ctx ctx;
+    struct ann_log sounds;
+    struct combo_award_log awards;
+    wm_combo_mess_result r;
+    int n;
+
+    memset(&ctx, 0, sizeof(ctx));
+    ctx.sound_user = &sounds;
+    ctx.sound = ann_sound;
+    ctx.announcer = &ann;
+    ctx.award_user = &awards;
+    ctx.round_award = combo_award_sink;
+
+    /*
+     * `btst B_COMBO_BROKEN,a14 / jrnz #rets` -- the source's own comment:
+     * "we audit it, but we don't adjust the bar or display any kind of
+     * message". It returns without even clearing COMBO_START.
+     */
+    memset(&a, 0, sizeof(a));
+    memset(&sounds, 0, sizeof(sounds));
+    memset(&awards, 0, sizeof(awards));
+    wm_announcer_init(&ann);
+    a.status_flags = WM_STATUS_COMBO_BROKEN;
+    a.combo_count = 9;
+    a.combo_start = 0x55;
+    r = wm_arcade_do_combo_mess(&a, &ctx);
+    CHECK(r.combo_broken);
+    CHECK(!r.awarded && !r.sound && !r.voice && !r.message);
+    CHECK(a.combo_start == 0x55);        /* not cleared on this path */
+    CHECK(sounds.n == 0 && awards.n == 0);
+
+    /*
+     * Everything is decided on COMBO_COUNT MINUS ONE, and below 2 the
+     * routine gives no award and makes no sound at all -- which is what
+     * the source's "How can you have a combo of 1 ?????" is about.
+     */
+    for (n = 0; n <= 2; ++n) {
+        memset(&a, 0, sizeof(a));
+        memset(&sounds, 0, sizeof(sounds));
+        memset(&awards, 0, sizeof(awards));
+        wm_announcer_init(&ann);
+        a.combo_count = n;
+        a.combo_start = 0x55;
+        r = wm_arcade_do_combo_mess(&a, &ctx);
+        CHECK(!r.combo_broken);
+        CHECK(r.count == n - 1);
+        CHECK(!r.awarded && !r.sound && !r.voice && !r.message);
+        CHECK(sounds.n == 0 && awards.n == 0);
+        /* COMBO_START clears on this path, COMBO_COUNT does not -- that
+           is ANI_CLEAR_COMBO's job. */
+        CHECK(a.combo_start == 0);
+        CHECK(a.combo_count == n);
+    }
+
+    /* Three hits (count 2) is the first one that says anything. */
+    memset(&a, 0, sizeof(a));
+    memset(&sounds, 0, sizeof(sounds));
+    memset(&awards, 0, sizeof(awards));
+    wm_announcer_init(&ann);
+    a.combo_count = 3;
+    a.player_num = 1;
+    r = wm_arcade_do_combo_mess(&a, &ctx);
+    CHECK(r.count == 2);
+    CHECK(r.awarded && r.award_index == WM_AWARD_COMBOS);
+    CHECK(awards.n == 1 && awards.player[0] == 1);
+    CHECK(awards.index[0] == (unsigned)WM_AWARD_COMBOS);
+    /* `MOVI 0BAH,A0 / CALLA triple_sound` -- "0BAH humbug!" */
+    CHECK(r.sound && sounds.n == 1 && sounds.call[0] == WM_COMBO_MESS_SOUND);
+    /* ...and ADD_VOICE, not ADD_IF_SILENT. */
+    CHECK(r.voice);
+    CHECK(ann.slot[0] == (uint16_t)WM_VOICE_INCREDIBLE_COMBINATION);
+    /* No display fudge at or below five. */
+    CHECK(r.message && r.message_count == 2);
+
+    /* `CMPI 5,A10 / JRLE ... / addk 2,a10` -- above five, two are added
+       "for a better appearance". The boundary falls on the JRLE side. */
+    {
+        const struct { int32_t hits; int32_t count; int32_t shown; }
+            fudge[] = {
+                { 5, 4, 4 },    /* count 4: below the boundary */
+                { 6, 5, 5 },    /* count 5: JRLE, so still no fudge */
+                { 7, 6, 8 },    /* count 6: the first fudged one */
+                { 12, 11, 13 }
+            };
+        size_t i;
+        for (i = 0; i < sizeof(fudge) / sizeof(fudge[0]); ++i) {
+            memset(&a, 0, sizeof(a));
+            wm_announcer_init(&ann);
+            a.combo_count = fudge[i].hits;
+            r = wm_arcade_do_combo_mess(&a, &ctx);
+            CHECK(r.count == fudge[i].count);
+            CHECK(r.message_count == fudge[i].shown);
+        }
+    }
+
+    /* `cmpi 10,a10 / jrlt #award_reg_combo` -- ten and up is the ultra
+       combo award, and the boundary is on the count, not the hits. */
+    memset(&a, 0, sizeof(a));
+    memset(&awards, 0, sizeof(awards));
+    wm_announcer_init(&ann);
+    a.combo_count = 10;                  /* count 9: still a regular one */
+    r = wm_arcade_do_combo_mess(&a, &ctx);
+    CHECK(r.award_index == WM_AWARD_COMBOS);
+    memset(&awards, 0, sizeof(awards));
+    memset(&a, 0, sizeof(a));
+    wm_announcer_init(&ann);
+    a.combo_count = 11;                  /* count 10: ultra */
+    r = wm_arcade_do_combo_mess(&a, &ctx);
+    CHECK(r.award_index == WM_AWARD_ULTRA_COMBOS);
+    CHECK(awards.n == 1 && awards.index[0] == (unsigned)WM_AWARD_ULTRA_COMBOS);
+
+    /* With no services wired it still runs the logic and clears
+       COMBO_START -- it just cannot say or score anything. */
+    memset(&a, 0, sizeof(a));
+    a.combo_count = 8;
+    a.combo_start = 0x33;
+    r = wm_arcade_do_combo_mess(&a, NULL);
+    CHECK(r.awarded && !r.sound && !r.voice);
+    CHECK(a.combo_start == 0);
+    r = wm_arcade_do_combo_mess(NULL, &ctx);
+    CHECK(!r.awarded);
+}
+
+/* ...and the whole path from an animation, through the registry. */
+static void test_do_combo_mess_from_the_vm(void) {
+    static const wm_anim_op ops[] = {
+        { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_COMBO_MESS" },
+        { WM_AOP_END,  0, -1, 0, 0, 0, 0, 0, 0, NULL }
+    };
+    static const wm_anim_program prog = { "test_mess", "HRTSEQ2.ASM", ops, 2 };
+    wm_arcade_actor_t a;
+    wm_announcer_state ann;
+    struct combo_award_log awards;
+    struct ann_log sounds;
+    wm_anim_env env;
+    wm_anim_exec ex;
+
+    memset(&awards, 0, sizeof(awards));
+    memset(&sounds, 0, sizeof(sounds));
+    wm_announcer_init(&ann);
+    memset(&env, 0, sizeof(env));
+    env.announcer = &ann;
+    env.sound_user = &sounds;
+    env.sound = ann_sound;
+    env.award_user = &awards;
+    env.round_award = combo_award_sink;
+
+    memset(&a, 0, sizeof(a));
+    a.combo_count = 7;
+    a.player_num = 0;
+    a.combo_start = 0x77;
+    wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+    wm_anim_exec_tick(&ex, &a, 0);
+
+    CHECK(a.combo_start == 0);
+    CHECK(sounds.n == 1 && sounds.call[0] == WM_COMBO_MESS_SOUND);
+    CHECK(ann.slot[0] == (uint16_t)WM_VOICE_INCREDIBLE_COMBINATION);
+    CHECK(awards.n == 1 && awards.index[0] == (unsigned)WM_AWARD_COMBOS);
+    /* The registry answers by the source's own name. */
+    CHECK(wm_anim_code_run(&a, &env, "DO_COMBO_MESS", NULL));
+}
+
 /* The self-contained state commands: no subsystem behind any of them. */
 static void test_self_contained_ops(void) {
     wm_arcade_actor_t a, v;
@@ -6998,6 +7176,8 @@ int main(void) {
     test_announce_from_table();
     test_announce_tables_are_real();
     test_announce_call_from_the_vm();
+    test_do_combo_mess();
+    test_do_combo_mess_from_the_vm();
     test_self_contained_ops();
     test_anim_code_tail();
     test_rope_commands_from_animation();

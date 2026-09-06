@@ -1,5 +1,6 @@
 #include "wm/match.h"
 #include "wm/announce_tables.h"
+#include "wm/award.h"
 #include "wm/anim_program.h"
 #include "wm/arcade/wm_arcade_butcount.h"
 #include "wm/arcade/wm_arcade_veladd.h"
@@ -38,6 +39,15 @@
  * DO_END_STUFF's health sweep: `MOVI NUM_WRES,A1 / get_health / CMPI 40`.
  * The match knows both actors, so this is the whole sweep here.
  */
+/* AWARD.ASM round_award for the hit path, whose callback carries the
+   attacker rather than a player number. */
+static void wm_match_first_hit_award(wm_arcade_actor_t *attacker, void *user) {
+    wm_match_state *m = (wm_match_state *)user;
+    if (!m || !attacker || !m->anim_round_award) return;
+    m->anim_round_award(m->anim_award_user, (int)attacker->player_num,
+                        WM_AWARD_FIRST_HIT);
+}
+
 static bool match_anyone_near_death(void *user) {
     wm_match_state *m = (wm_match_state *)user;
     unsigned i;
@@ -432,6 +442,10 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             m->bret_visual[i].anim_env.rope_user = m;
             m->bret_visual[i].anim_env.rope_command = match_rope_command;
             m->bret_visual[i].anim_env.rope_set_z = match_rope_set_z;
+            m->wrestler_visual[i].anim_env.award_user = m->anim_award_user;
+            m->wrestler_visual[i].anim_env.round_award = m->anim_round_award;
+            m->bret_visual[i].anim_env.award_user = m->anim_award_user;
+            m->bret_visual[i].anim_env.round_award = m->anim_round_award;
             m->wrestler_visual[i].anim_env.announcer = &m->announcer;
             m->wrestler_visual[i].anim_env.anyone_near_death =
                 match_anyone_near_death;
@@ -514,6 +528,11 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
 
         memset(&react_cb, 0, sizeof(react_cb));
         react_cb.adjust_health = wm_match_adjust_health;
+        /* ANIM.ASM:2253 `RND_AWARD a13,FIRST_HIT_AWD`. This seam has been
+           declared in wm/arcade/wm_arcade_react.h and pointed at nothing
+           since it was written, so the first hit of a round scored no
+           award at all. */
+        react_cb.round_first_hit_award = wm_match_first_hit_award;
         react_cb.user = m;
 
         m->combat_runtime.pcnt = m->tick_count;

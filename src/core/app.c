@@ -430,19 +430,43 @@ static void wm_app_anim_sound(void *user, uint16_t call) {
 
 /* Hand the match the services its ANI_CODE routines reach for. Both live
    on the app, so this is done wherever a match is started. */
+/* AWARD.ASM round_award, behind JJXM.H's RND_AWARD macro. The award
+   arrays are per credit, so they live on the app; the wrestler's own
+   PLYRNUM picks the row, exactly as `move :REG:,a0 / calla round_award`
+   does with a13. */
+static void wm_app_round_award(void *user, int player_num,
+                               unsigned award_index) {
+    wm_app *app = (wm_app *)user;
+    if (!app || player_num < 0 ||
+        (unsigned)player_num >= WM_AWARD_PLAYER_COUNT)
+        return;
+    wm_award_round_award(&app->awards, (unsigned)player_num, award_index);
+}
+
 static void wm_app_bind_anim_env(wm_app *app) {
     app->match.anim_rng = &app->rng;
     app->match.anim_sound_user = &app->audio;
     app->match.anim_sound = wm_app_anim_sound;
+    app->match.anim_award_user = app;
+    app->match.anim_round_award = wm_app_round_award;
     wm_anim_code_reset();
 }
 
 static bool tick_gameplay(wm_app *app, const wm_input_state *input) {
     wm_attract_state *a = &app->attract;
 
-    if (a->call_ticks == 0)
+    /*
+     * These two belong together: the bind hands the freshly started match
+     * its RNG, audio and award seams. Without the braces the bind ran
+     * every tick, and wm_anim_code_reset() inside it wiped the source's
+     * timed sound state on each one -- so a CALL_x announcer process,
+     * which sleeps 5-15 ticks before it says anything, was cleared before
+     * it could ever fire.
+     */
+    if (a->call_ticks == 0) {
         wm_match_start_attract(&app->match, &app->rng);
         wm_app_bind_anim_env(app);
+    }
 
     {
         wm_arcade_drone_callbacks_t cb = wm_arcade_drone_data_callbacks(&app->rng);

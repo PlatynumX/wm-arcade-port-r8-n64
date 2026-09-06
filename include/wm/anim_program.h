@@ -347,6 +347,16 @@ typedef struct wm_anim_env {
     bool (*anyone_near_death)(void *user);
     void *announcer_user;
 
+    /*
+     * AWARD.ASM round_award, reached through JJXM.H's RND_AWARD macro.
+     * DO_COMBO_MESS gives one; so does ANIM.ASM:2253's first hit, whose
+     * own seam (wm_arcade_react.h) has been declared and unwired all
+     * along because the award state lives in the app rather than the
+     * match. `award_index` is a GAME.EQU *_AWD index.
+     */
+    void *award_user;
+    void (*round_award)(void *user, int player_num, unsigned award_index);
+
     void *rope_user;
     void (*rope_command)(void *user, int bank, int action, int selector,
                          int32_t wrestler_z_fp16);

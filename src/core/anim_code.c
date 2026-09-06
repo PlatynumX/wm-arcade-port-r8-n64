@@ -33,6 +33,7 @@
 #include "wm/arcade/wmania_ring_geometry.h"
 #include "wm/arcade/wm_arcade_butcount.h"
 #include "wm/announce_tables.h"
+#include "wm/arcade/wm_arcade_combo.h"
 
 #include <string.h>
 
@@ -305,6 +306,26 @@ static void announce_fire(size_t i) {
     (void)wm_announce_from_table(ann_pending[i].announcer,
                                  ann_pending[i].table,
                                  ann_pending[i].percent, true, &ctx);
+}
+
+/*
+ * LIFEBAR.ASM:3687 DO_COMBO_MESS, the most-called ANI_CODE routine in the
+ * game at 193 sites. The logic is wm_arcade_do_combo_mess; this is the
+ * bridge that hands it the services the env carries.
+ */
+static void do_combo_mess(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                          int32_t param) {
+    wm_combo_mess_ctx ctx;
+    (void)param;
+    memset(&ctx, 0, sizeof(ctx));
+    if (env) {
+        ctx.sound_user = env->sound_user;
+        ctx.sound = env->sound;
+        ctx.announcer = env->announcer;
+        ctx.award_user = env->award_user;
+        ctx.round_award = env->round_award;
+    }
+    (void)wm_arcade_do_combo_mess(actor, &ctx);
 }
 
 /* The CALL_x routines themselves: schedule the process and return. */
@@ -1187,6 +1208,7 @@ static const struct {
     { "DO_SHAWN_PUSH", NULL, do_shawn_push, 0 },
     { "DO_BRET_PUSH", NULL, do_bret_push, 0 },
     { "DO_LEX_PUSH", NULL, do_lex_push, 0 },
+    { "DO_COMBO_MESS", NULL, do_combo_mess, 0 },
     /* #make_black, once per file, each with its own palette black. */
     { "#make_black", "HRTSEQ4.ASM", make_black, 0x2F2F },
     { "#make_black", "RZRSEQ3.ASM", make_black, 0x0D0D },

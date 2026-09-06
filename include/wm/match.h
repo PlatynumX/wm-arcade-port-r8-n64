@@ -139,6 +139,15 @@ typedef struct {
     WmRng *anim_rng;
     void *anim_sound_user;
     void (*anim_sound)(void *user, uint16_t call);
+    /*
+     * AWARD.ASM round_award, through JJXM.H's RND_AWARD macro. The award
+     * arrays are per credit rather than per match, so the app owns them;
+     * the match hands the seam to the animation VM (DO_COMBO_MESS) and to
+     * the hit path (ANIM.ASM:2253's first hit of the round), both of
+     * which are where the source itself calls RND_AWARD.
+     */
+    void *anim_award_user;
+    void (*anim_round_award)(void *user, int player_num, unsigned award_index);
 
 } wm_match_state;
 

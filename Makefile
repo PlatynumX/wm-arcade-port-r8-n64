@@ -47,8 +47,8 @@ CORE_C := \
     src/generated/bret_attacks.c \
     src/generated/bret_defense.c \
     src/generated/bret_grapple.c \
-    src/generated/bret_anim_programs.c \
-    src/generated/bret_frame_geometry.c
+    src/generated/anim_programs.c \
+    src/generated/frame_geometry.c
 # BEGIN FIX38 CUMULATIVE ARCADE SOURCE PORTS
 FIX38_ARCADE_C := \
     src/core/arcade/wm_arcade_anim_combat.c \

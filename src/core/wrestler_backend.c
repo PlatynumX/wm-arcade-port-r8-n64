@@ -2,6 +2,8 @@
 
 #include "wm/arcade/wm_arcade_lifebar.h"
 #include "wm/arcade/wm_arcade_mode_dead.h"
+#include "wm/arcade/wm_arcade_anim_combat.h"
+#include "wm/bret_backend.h"
 
 #include <string.h>
 
@@ -74,10 +76,75 @@ static int backend_check_combo_go(wm_arcade_actor_t *actor, void *user) {
     return -1;
 }
 
+/*
+ * wm_arcade_roster_callbacks_t.change_anim_label.
+ *
+ * The six label-based dispatchers have always passed the source's own
+ * routine name here, and the program registry is keyed on exactly that, so
+ * this is the whole join: look the label up, and run it.
+ */
+static void backend_change_anim_label(wm_arcade_actor_t *actor,
+                                      const char *source_label, void *user) {
+    wm_wrestler_backend_actor *st = (wm_wrestler_backend_actor *)user;
+    const wm_anim_program *prog;
+    if (!actor || !st || !source_label) return;
+
+    /* Selecting the animation already playing does not restart it -- the
+       dispatchers call change_anim every tick they stay in the same mode. */
+    if (st->current_label && st->prog.program && !st->prog.ended &&
+        strcmp(st->current_label, source_label) == 0)
+        return;
+
+    prog = wm_anim_program_find(source_label);
+    st->current_label = source_label;
+    if (!prog) {
+        /* A label with no generated program: the wrestler keeps whatever
+           it was doing rather than freezing on a stale one. Which labels
+           these are is a measured, reported number, not a guess -- see
+           wm_wrestler_backend_program_coverage. */
+        st->prog.program = NULL;
+        st->prog.ended = true;
+        return;
+    }
+    st->anim_env.opponent = st->opponent;
+    st->anim_env.pcnt = st->pcnt;
+    wm_anim_exec_start(&st->prog, prog, actor, (uint16_t)st->pcnt,
+                       &st->anim_env);
+}
+
 void wm_wrestler_backend_tick(wm_wrestler_backend_actor *state,
                               wm_arcade_actor_t *actor) {
-    (void)state;
     if (!actor) return;
+
+    if (state && state->prog.program) {
+        const char *frame;
+        state->anim_env.opponent = state->opponent;
+        state->anim_env.pcnt = state->pcnt;
+        wm_anim_exec_tick(&state->prog, actor, (uint16_t)state->pcnt);
+        frame = wm_anim_exec_frame(&state->prog);
+        if (frame) {
+            wm_arcade_frame_box_t box = wm_hurt_box_for_frame(frame);
+            wm_arcade_set_hurt_box(actor, &box);
+        }
+        /* ANI_CHANGEANIM / ANI_IFBUTTONS: an animation that ends by
+           BECOMING another does not stop. Driven straight back through
+           change_anim_label so the target gets its own header, exactly as
+           if the dispatcher had selected it. */
+        if (state->prog.ended && state->prog.become) {
+            const char *next = state->prog.become;
+            state->prog.become = NULL;
+            state->prog.program = NULL;
+            state->current_label = NULL;
+            actor->anim_mode &=
+                (uint16_t)~(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
+            backend_change_anim_label(actor, next, state);
+        }
+        /* With a real animation running, MODE_BLOCK now leaves through the
+           block animation's own ANI_SETPLYRMODE,MODE_NORMAL -- the stopgap
+           below is only for a wrestler with no program for its block. */
+        return;
+    }
+
     /* The block animation's own ANI_WAITRELEASE,PLAYER_BLOCK_BIT followed by
        ANI_SETPLYRMODE,MODE_NORMAL -- see wm/wrestler_backend.h. */
     if (actor->player_mode == WM_PMODE_BLOCK &&
@@ -94,6 +161,7 @@ wm_arcade_roster_callbacks_t wm_wrestler_roster_callbacks(
     cb.adjust_health = backend_adjust_health;
     cb.mode_dead = backend_mode_dead;
     cb.check_combo_go = backend_check_combo_go;
+    cb.change_anim_label = backend_change_anim_label;
     cb.user = state;
     return cb;
 }

@@ -6,6 +6,7 @@
 
 #include "wm/arcade/wm_arcade_roster.h"
 #include "wm/arcade/wm_arcade_razor.h"
+#include "wm/anim_program.h"
 #include "wm/movement.h"
 
 #ifdef __cplusplus
@@ -49,6 +50,25 @@ typedef struct wm_wrestler_backend_actor {
     uint32_t pcnt;
     bool attract_mode;
     int32_t wrestler_num;
+    /*
+     * The animation this wrestler is playing, as the ANIM.ASM program it
+     * really is (wm/anim_program.h).
+     *
+     * This is what closed the gap the comment above describes. These six
+     * dispatchers were always calling change_anim_label with the source's
+     * own label -- "und_2_punch_anim", "dnk_4_kick_anim" -- and the program
+     * registry is keyed on exactly that, so nothing had to be invented to
+     * join them: the seam was already the right shape and had nothing
+     * behind it. Now a label resolves to that routine's real op stream, and
+     * the wrestler plays its real frames, fires its real attack boxes and
+     * takes its real branches, the same way Bret does.
+     */
+    wm_anim_exec prog;
+    wm_anim_env anim_env;
+    /* The label most recently selected, so a repeated call with the same
+       one continues rather than restarting -- the source's own
+       "already playing this" behaviour. */
+    const char *current_label;
 } wm_wrestler_backend_actor;
 
 /*

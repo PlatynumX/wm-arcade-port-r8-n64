@@ -4,7 +4,7 @@
 #include "wm/anim_program.h"
 #include "wm/arcade/wm_arcade_bret.h"
 #include "wm/arcade/wm_arcade_joystat.h"
-#include "wm/bret_frame_geometry.h"
+#include "wm/frame_geometry.h"
 #include "wm/movement.h"
 #include "wm/visual.h"
 
@@ -221,7 +221,7 @@ void wm_bret_backend_execute_walk(wm_arcade_actor_t *actor, void *user);
  * (WM_MODE_CHECKHIT) exactly as the source opcodes do.
  *
  * Also calls wm_arcade_set_hurt_box() every tick using
- * wm_bret_hurt_box_for_frame() below -- see that function's comment for
+ * wm_hurt_box_for_frame() below -- see that function's comment for
  * exactly what data backs it and what it does not claim to be.
  */
 void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
@@ -235,7 +235,7 @@ void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
  * image entries carry xani/yani/width/height, never an authored hit-box
  * rectangle). This substitutes the frame's own real WIMP image geometry as
  * the hurt box, using the exact xani/yani/width/height
- * wm_bret_frame_geometry_find() resolves (wm/bret_frame_geometry.h -- the
+ * wm_frame_geometry_find() resolves (wm/frame_geometry.h -- the
  * same real numbers wm/bret_sprites.h's wm_source_sprite carries for
  * rendering, without that struct's pixel/palette payload):
  *   iani3x = -xani, iani3z = width   (wm_arcade_set_hurt_box's x1=x_int+
@@ -249,7 +249,7 @@ void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
  * the actor's own point, effectively unhittable) if source_frame doesn't
  * resolve to a known sprite.
  */
-wm_arcade_frame_box_t wm_bret_hurt_box_for_frame(const char *source_frame);
+wm_arcade_frame_box_t wm_hurt_box_for_frame(const char *source_frame);
 
 /* Not a source routine (see wm/movement.h's wm_integrate_position): applies
    actor->x_vel/z_vel to its position for one tick. */

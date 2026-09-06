@@ -383,16 +383,16 @@ static bool secret_move_sets_mode_uninit(wm_arcade_bret_anim_id_t id) {
     }
 }
 
-wm_arcade_frame_box_t wm_bret_hurt_box_for_frame(const char *source_frame) {
+wm_arcade_frame_box_t wm_hurt_box_for_frame(const char *source_frame) {
     wm_arcade_frame_box_t box;
-    const wm_bret_frame_geometry_t *geo;
+    const wm_frame_geometry_t *geo;
 
     box.iani3x = 0;
     box.iani3y = 0;
     box.iani3z = 0;
     box.iani3id = 0;
 
-    geo = source_frame ? wm_bret_frame_geometry_find(source_frame) : NULL;
+    geo = source_frame ? wm_frame_geometry_find(source_frame) : NULL;
     if (!geo) return box;
 
     box.iani3x = -(int32_t)geo->xani;
@@ -725,7 +725,7 @@ static void wm_bret_backend_tick_program(wm_bret_backend_actor *bva,
 
     frame = wm_anim_exec_frame(&bva->prog);
     if (frame) {
-        wm_arcade_frame_box_t box = wm_bret_hurt_box_for_frame(frame);
+        wm_arcade_frame_box_t box = wm_hurt_box_for_frame(frame);
         wm_arcade_set_hurt_box(actor, &box);
     }
 
@@ -836,7 +836,7 @@ void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
     {
         const wm_visual_frame *cur = wm_visual_current(&bva->visual);
         wm_arcade_frame_box_t box =
-            wm_bret_hurt_box_for_frame(cur ? cur->source_frame : NULL);
+            wm_hurt_box_for_frame(cur ? cur->source_frame : NULL);
         wm_arcade_set_hurt_box(actor, &box);
     }
 

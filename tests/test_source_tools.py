@@ -4,6 +4,7 @@ import importlib.util
 import pathlib
 import struct
 import subprocess
+import re
 import sys
 import tempfile
 
@@ -172,6 +173,57 @@ def test_wlanim_label_def() -> None:
     assert wlanim.label_def("\tWL\t5,H4SL4C+FR1") is None
     assert wlanim.label_def(" SUBR\thrt_2_punch_anim") is None
     assert wlanim.label_def("#RUN_SPD\tequ\t2") == "#RUN_SPD"
+
+
+def test_roster_dispatcher_labels_all_emit() -> None:
+    """Every animation the six label-based dispatchers can select emits.
+
+    Undertaker, Yokozuna, Shawn, Bam Bam, Doink and Lex select animations by
+    the source's OWN routine name -- their modules carry tables of
+    "und_2_punch_anim" and the like -- and the generated programs are keyed
+    on exactly that name. So this is the join that makes those six animate,
+    and a label that stops emitting silently un-animates whatever selects
+    it. Walking the module sources rather than a copied list means a label
+    added to a dispatcher is covered the moment it appears.
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    if not (base / "UNDSEQ2.ASM").exists():
+        return
+
+    modules = {
+        "und": "wm_arcade_taker.c",
+        "yok": "wm_arcade_yoko.c",
+        "shn": "wm_arcade_shawn.c",
+        "bam": "wm_arcade_bam.c",
+        "dnk": "wm_arcade_doink.c",
+        "lex": "wm_arcade_lex.c",
+    }
+    prefix_dir = {"und": "UND", "yok": "YOK", "shn": "SHN",
+                  "bam": "BAM", "dnk": "DNK", "lex": "LEX"}
+    label_re = re.compile(r'"([a-z]{3}_[A-Za-z0-9_]*anim)"')
+
+    total = 0
+    for prefix, filename in modules.items():
+        src = ROOT / "src" / "core" / "arcade" / filename
+        assert src.exists(), f"{filename} is gone -- did a wrestler get renamed?"
+        labels = sorted(set(label_re.findall(src.read_text())))
+        labels = [l for l in labels if l.startswith(prefix + "_")]
+        assert len(labels) > 25, f"{prefix}: only found {len(labels)} labels"
+        seq_files = sorted(q for q in base.glob(prefix_dir[prefix] + "SEQ*.ASM")
+                           if "'" not in q.name)
+        for label in labels:
+            path = next(
+                (q for q in seq_files
+                 if wlanim._routine_span(
+                     [wlanim.strip_comment(r)
+                      for r in q.read_text(errors="replace").splitlines()],
+                     label)),
+                None)
+            assert path is not None, f"{label}: no routine in any {prefix_dir[prefix]}SEQ file"
+            ops = wlprogram.program_for(path, label)
+            assert ops, f"{label} emitted an empty program"
+            total += 1
+    assert total > 200, f"only {total} roster labels checked"
 
 
 def test_wlattack_audit() -> None:
@@ -852,6 +904,7 @@ def main() -> int:
     test_wlanim()
     test_wlprogram()
     test_wlprogram_roster_wide()
+    test_roster_dispatcher_labels_all_emit()
     test_wlprogram_tick_expressions()
     test_wlanim_label_def()
     test_wlattack_audit()

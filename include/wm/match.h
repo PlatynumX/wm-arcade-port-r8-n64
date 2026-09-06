@@ -154,7 +154,7 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
  * actor steps its drone decision core as usual. Then -- for whichever
  * actor(s) drew WM_ROSTER_BRET -- wm_arcade_move_bret() and its visual
  * backend, which now also sets a real per-frame hurt_box every tick (see
- * wm_bret_hurt_box_for_frame). See the file comment for what this does and
+ * wm_hurt_box_for_frame). See the file comment for what this does and
  * does not do for every other wrestler. human_input is ignored (may be
  * NULL) unless has_human is set.
  *

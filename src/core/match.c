@@ -296,6 +296,11 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             m->wrestler_visual[i].pcnt = m->tick_count;
             m->wrestler_visual[i].attract_mode = !m->has_human;
             m->wrestler_visual[i].wrestler_num = m->actors[i].wrestler_num;
+            m->wrestler_visual[i].anim_env.opponent = opp;
+            m->wrestler_visual[i].anim_env.rng = m->anim_rng;
+            m->wrestler_visual[i].anim_env.pcnt = m->tick_count;
+            m->wrestler_visual[i].anim_env.sound_user = m->anim_sound_user;
+            m->wrestler_visual[i].anim_env.sound = m->anim_sound;
 
             m->bret_visual[i].opponent = opp;
             m->bret_visual[i].pcnt = m->tick_count;
@@ -328,17 +333,20 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
                                      (uint16_t)m->tick_count);
                 /* WRESTLE.ASM's main loop calls confine_wrestler (via fix1/
                    fix2) right after set_collision_boxes, every tick, for
-                   every wrestler process -- but it reads OBJ_COLLX1/X2, and
-                   only Bret has a real, moving hurt_box in this port
-                   (wm_bret_backend_tick just set it fresh above), so only
-                   Bret is confined here. Confining a wrestler whose
-                   hurt_box is still all-zero would clamp against a box that
-                   isn't where the wrestler is. Runs before position
+                   every wrestler process. It reads OBJ_COLLX1/X2, i.e. the
+                   hurt box, which every wrestler now has for real -- the
+                   other six are confined in the else branch below, for the
+                   same reason and at the same point. Runs before position
                    integration so this tick's confinement uses this tick's
                    own hurt_box. */
                 wm_arcade_confine_wrestler(&m->actors[i]);
             } else {
                 wm_wrestler_backend_tick(&m->wrestler_visual[i], &m->actors[i]);
+                /* These six now have a real, moving hurt_box of their own
+                   (their animations are program-driven), so confine_wrestler
+                   applies to them exactly as it does to Bret -- it reads
+                   OBJ_COLLX1/X2, which is what the hurt box is. */
+                wm_arcade_confine_wrestler(&m->actors[i]);
             }
             /* WRESTLE.ASM integrates every wrestler process's own velocity
                every tick, not just Bret's -- all eight now set real

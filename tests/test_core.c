@@ -14,6 +14,7 @@
 #include "wm/composite.h"
 #include "wm/demo.h"
 #include "wm/bret_backend.h"
+#include "wm/wrestler_backend.h"
 #include "wm/arcade/wm_arcade_butcount.h"
 #include "wm/game.h"
 #include "wm/human_input.h"
@@ -1394,6 +1395,102 @@ static void test_bret_attack_windows_batch1(void) {
         CHECK(!(a.anim_mode & WM_MODE_NOAUTOFLIP));
         CHECK(!(a.anim_mode & WM_MODE_CHECKHIT));
         CHECK(a.attack_time == 7);
+    }
+}
+
+/*
+ * The other six wrestlers, animating.
+ *
+ * Undertaker, Yokozuna, Shawn, Bam Bam, Doink and Lex have run their real
+ * decision logic since the roster dispatchers were wired, but they were
+ * never drawn and had no boxes: wm/wrestler_backend.h's own comment said
+ * so, and gave the reason -- "their frame data has not been extracted and
+ * their attack windows have not been traced".
+ *
+ * Neither is true any more. Those dispatchers were already calling
+ * change_anim_label with the source's own routine name, and the program
+ * registry is keyed on exactly that, so the join needed nothing invented.
+ * Each of the six now plays its own real frames, out of its own artwork,
+ * with a real per-frame hurt box and its real attack boxes.
+ */
+static void test_roster_backend_animates(void) {
+    static const struct {
+        const char *who;
+        int32_t num;
+        const char *punch;
+        const char *block;
+    } cases[] = {
+        { "Undertaker", WM_ROSTER_TAKER, "und_2_punch_anim", "und_4_block_anim" },
+        { "Yokozuna",   WM_ROSTER_YOKO,  "yok_2_punch_anim", "yok_4_block_anim" },
+        { "Shawn",      WM_ROSTER_SHAWN, "shn_2_punch_anim", "shn_4_block_anim" },
+        { "Bam Bam",    WM_ROSTER_BAM,   "bam_2_punch_anim", "bam_4_block_anim" },
+        { "Doink",      WM_ROSTER_DOINK, "dnk_2_punch_anim", "dnk_4_block_anim" },
+        { "Lex",        WM_ROSTER_LEX,   "lex_2_punch_anim", "lex_4_block_anim" }
+    };
+    size_t i;
+    for (i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+        wm_arcade_actor_t a, opp;
+        wm_wrestler_backend_actor st;
+        wm_arcade_roster_callbacks_t cb;
+        int t, frames = 0, boxes = 0, was = 0;
+        const char *first = NULL;
+
+        memset(&a, 0, sizeof(a));
+        memset(&opp, 0, sizeof(opp));
+        memset(&st, 0, sizeof(st));
+        a.wrestler_num = cases[i].num;
+        a.facing_dir = WM_MOVE_UP_RIGHT;
+        a.new_facing_dir = WM_MOVE_UP_RIGHT;
+        st.wrestler_num = cases[i].num;
+        st.opponent = &opp;
+        cb = wm_wrestler_roster_callbacks(&st);
+
+        /* the seam the dispatchers have always been calling */
+        CHECK(cb.change_anim_label != NULL);
+        CHECK(wm_anim_program_find(cases[i].punch) != NULL);
+        CHECK(wm_anim_program_find(cases[i].block) != NULL);
+
+        cb.change_anim_label(&a, cases[i].punch, cb.user);
+        CHECK(st.prog.program != NULL);
+        /* the header ran: a punch is uninterruptable while it plays */
+        CHECK(a.anim_mode & WM_MODE_UNINT);
+
+        for (t = 0; t < 200 && st.prog.program && !st.prog.ended; ++t) {
+            const char *f = wm_anim_exec_frame(&st.prog);
+            int on;
+            if (f) { if (!first) first = f; ++frames; }
+            wm_wrestler_backend_tick(&st, &a);
+            on = (a.anim_mode & WM_MODE_CHECKHIT) ? 1 : 0;
+            if (on && !was) ++boxes;
+            was = on;
+        }
+
+        /* It played real frames out of its own artwork... */
+        CHECK(frames > 4);
+        CHECK(first != NULL);
+        /* ...with a real per-frame hurt box behind them, from that
+           wrestler's own .LOD geometry rather than a zeroed default. */
+        CHECK(a.hurt_box.x2 > a.hurt_box.x1);
+        CHECK(a.hurt_box.y2 > a.hurt_box.y1);
+        /* ...and it threw a real punch. */
+        CHECK(boxes >= 1);
+        /* The closing ANI_SETMODE,MODE_NORMAL let go again. */
+        CHECK(!(a.anim_mode & WM_MODE_UNINT));
+
+        /* Selecting the animation already playing does not restart it --
+           the dispatchers call change_anim every tick they stay in a mode. */
+        memset(&a, 0, sizeof(a));
+        memset(&st, 0, sizeof(st));
+        st.wrestler_num = cases[i].num;
+        st.opponent = &opp;
+        cb = wm_wrestler_roster_callbacks(&st);
+        cb.change_anim_label(&a, cases[i].punch, cb.user);
+        for (t = 0; t < 4; ++t) wm_wrestler_backend_tick(&st, &a);
+        {
+            size_t pc_before = st.prog.pc;
+            cb.change_anim_label(&a, cases[i].punch, cb.user);
+            CHECK(st.prog.pc == pc_before);
+        }
     }
 }
 
@@ -2922,17 +3019,17 @@ static void test_attract_dcs_logo_does_not_fall_through(void) {
     CHECK(entries >= 1);
 }
 
-/* wm_bret_hurt_box_for_frame against real numbers independently confirmed
+/* wm_hurt_box_for_frame against real numbers independently confirmed
    from the original WIMP containers (tools/wimpimg.py against HRT_PNC.IMG
    and HRT_KIK.IMG) -- not just against the generated table that backs it. */
 static void test_bret_hurt_box_for_frame_real_geometry(void) {
-    wm_arcade_frame_box_t box = wm_bret_hurt_box_for_frame("H2PL3B04");
+    wm_arcade_frame_box_t box = wm_hurt_box_for_frame("H2PL3B04");
     CHECK(box.iani3x == -44);
     CHECK(box.iani3y == -107);
     CHECK(box.iani3z == 119);
     CHECK(box.iani3id == 110);
 
-    box = wm_bret_hurt_box_for_frame("H2KM3A05");
+    box = wm_hurt_box_for_frame("H2KM3A05");
     CHECK(box.iani3x == -41);
     CHECK(box.iani3y == -101);
     CHECK(box.iani3z == 104);
@@ -2940,9 +3037,9 @@ static void test_bret_hurt_box_for_frame_real_geometry(void) {
 
     /* Unresolved frame names return an all-zero box (unhittable point)
        rather than guessing or crashing. */
-    box = wm_bret_hurt_box_for_frame("NOT_A_REAL_FRAME");
+    box = wm_hurt_box_for_frame("NOT_A_REAL_FRAME");
     CHECK(box.iani3x == 0 && box.iani3y == 0 && box.iani3z == 0 && box.iani3id == 0);
-    box = wm_bret_hurt_box_for_frame(NULL);
+    box = wm_hurt_box_for_frame(NULL);
     CHECK(box.iani3x == 0 && box.iani3y == 0 && box.iani3z == 0 && box.iani3id == 0);
 }
 
@@ -2965,7 +3062,7 @@ static void test_bret_backend_tick_sets_real_hurt_box(void) {
 
     cur = wm_visual_current(&bva.visual);
     CHECK(cur != NULL);
-    expect = wm_bret_hurt_box_for_frame(cur->source_frame);
+    expect = wm_hurt_box_for_frame(cur->source_frame);
     CHECK(expect.iani3z > 0 && expect.iani3id > 0);
 
     /* WM_PMODE_NORMAL (the memset-zeroed default): wm_arcade_set_hurt_box's
@@ -2988,7 +3085,7 @@ static void test_hurt_box_adjust_health(wm_arcade_actor_t *victim, int16_t delta
 }
 
 /*
- * Capstone: a real per-frame hurt box (wm_bret_hurt_box_for_frame, set every
+ * Capstone: a real per-frame hurt box (wm_hurt_box_for_frame, set every
  * tick by wm_bret_backend_tick) combined with the real, already
  * ctest-verified-since-fix38 wm_arcade_check_wrestler_collisions() /
  * wm_arcade_wrestler_hit() (REACT1.ASM) / wm_arcade_wrestler_hit_
@@ -5197,6 +5294,7 @@ int main(void) {
     test_bret_attack_window_punch2();
     test_bret_attack_windows_remaining();
     test_bret_attack_windows_batch1();
+    test_roster_backend_animates();
     test_anim_code_sound_routines();
     test_anim_code_state_routines();
     test_anim_code_runs_from_program();

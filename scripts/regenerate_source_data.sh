@@ -143,18 +143,257 @@ python3 "$ROOT/tools/wlprogram.py" \
     --animation "$ORIG/HRTSEQ4.ASM" hrt_faceup_getup_anim \
     --animation "$ORIG/HRTSEQ4.ASM" hrt_4_faceup_getup2_anim \
     --animation "$ORIG/HRTSEQ4.ASM" hrt_hitonground_facedown_anim \
-    --out "$ROOT/src/generated/bret_anim_programs.c"
+    --animation "$ORIG/BAMSEQ1.ASM" bam_run2_anim \
+    --animation "$ORIG/BAMSEQ1.ASM" bam_stand2_anim \
+    --animation "$ORIG/BAMSEQ1.ASM" bam_stand4_anim \
+    --animation "$ORIG/BAMSEQ1.ASM" bam_torso2_anim \
+    --animation "$ORIG/BAMSEQ1.ASM" bam_torso4_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_2_butt_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_2_butts_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_2_fpunch_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_2_kick_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_2_knee_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_2_lbowdrop_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_2_pin_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_2_punch_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_2_raise_arm_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_2_slap_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_2_stomp_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_4_block_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_4_butt_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_4_butts_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_4_fpunch_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_4_jumpkick_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_4_kick_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_4_knee_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_4_lbowdrop_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_4_pin_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_4_punch_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_4_push_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_4_raise_arm_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_4_slap_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_4_stomp_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_bellyflop_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_fall_back_anim \
+    --animation "$ORIG/BAMSEQ2.ASM" bam_flying_kick_anim \
+    --animation "$ORIG/BAMSEQ3.ASM" bam_2_napalm_anim \
+    --animation "$ORIG/BAMSEQ3.ASM" bam_3_head_held_stand_anim \
+    --animation "$ORIG/BAMSEQ3.ASM" bam_3_head_hold2_anim \
+    --animation "$ORIG/BAMSEQ3.ASM" bam_3_head_hold_anim \
+    --animation "$ORIG/BAMSEQ3.ASM" bam_4_napalm_anim \
+    --animation "$ORIG/BAMSEQ3.ASM" bam_climb_down_anim \
+    --animation "$ORIG/DNKSEQ1.ASM" dnk_run2_anim \
+    --animation "$ORIG/DNKSEQ1.ASM" dnk_stand2_anim \
+    --animation "$ORIG/DNKSEQ1.ASM" dnk_stand4_anim \
+    --animation "$ORIG/DNKSEQ1.ASM" dnk_torso2_anim \
+    --animation "$ORIG/DNKSEQ1.ASM" dnk_torso4_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_2_box_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_2_butt_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_2_butts_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_2_kick_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_2_knee_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_2_lbowdrop_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_2_pin_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_2_punch_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_2_raise_arm_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_2_stomp_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_4_block_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_4_box_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_4_bstomp_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_4_butt_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_4_butts_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_4_hammer_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_4_kick_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_4_knee_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_4_lbowdrop_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_4_pin_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_4_punch_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_4_push_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_4_raise_arm_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_4_stomp_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_climb_down_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_diveofftb_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_fall_back_anim \
+    --animation "$ORIG/DNKSEQ2.ASM" dnk_flying_kick_anim \
+    --animation "$ORIG/DNKSEQ3.ASM" dnk_2_buzz2_anim \
+    --animation "$ORIG/DNKSEQ3.ASM" dnk_2_buzz_anim \
+    --animation "$ORIG/DNKSEQ3.ASM" dnk_2_earslap_anim \
+    --animation "$ORIG/DNKSEQ3.ASM" dnk_2_slap_anim \
+    --animation "$ORIG/DNKSEQ3.ASM" dnk_3_head_held_stand_anim \
+    --animation "$ORIG/DNKSEQ3.ASM" dnk_3_head_hold2_anim \
+    --animation "$ORIG/DNKSEQ3.ASM" dnk_3_head_hold_anim \
+    --animation "$ORIG/DNKSEQ3.ASM" dnk_4_buzz2_anim \
+    --animation "$ORIG/DNKSEQ3.ASM" dnk_4_buzz_anim \
+    --animation "$ORIG/DNKSEQ3.ASM" dnk_4_earslap_anim \
+    --animation "$ORIG/DNKSEQ3.ASM" dnk_4_slap_anim \
+    --animation "$ORIG/DNKSEQ3.ASM" dnk_combo_uppercut_to_head_anim \
+    --animation "$ORIG/LEXSEQ1.ASM" lex_run2_anim \
+    --animation "$ORIG/LEXSEQ1.ASM" lex_stand2_anim \
+    --animation "$ORIG/LEXSEQ1.ASM" lex_stand4_anim \
+    --animation "$ORIG/LEXSEQ1.ASM" lex_torso2_anim \
+    --animation "$ORIG/LEXSEQ1.ASM" lex_torso4_anim \
+    --animation "$ORIG/LEXSEQ2.ASM" lex_2_butt_anim \
+    --animation "$ORIG/LEXSEQ2.ASM" lex_2_clobber_anim \
+    --animation "$ORIG/LEXSEQ2.ASM" lex_2_grabfling_anim \
+    --animation "$ORIG/LEXSEQ2.ASM" lex_2_ground_punch_anim \
+    --animation "$ORIG/LEXSEQ2.ASM" lex_2_kick_anim \
+    --animation "$ORIG/LEXSEQ2.ASM" lex_2_pin_anim \
+    --animation "$ORIG/LEXSEQ2.ASM" lex_2_punch_anim \
+    --animation "$ORIG/LEXSEQ2.ASM" lex_2_raise_arm_anim \
+    --animation "$ORIG/LEXSEQ2.ASM" lex_2_stomp_anim \
+    --animation "$ORIG/LEXSEQ2.ASM" lex_3_clobber_anim \
+    --animation "$ORIG/LEXSEQ2.ASM" lex_4_butt_anim \
+    --animation "$ORIG/LEXSEQ2.ASM" lex_4_clobber_anim \
+    --animation "$ORIG/LEXSEQ2.ASM" lex_4_grabfling_anim \
+    --animation "$ORIG/LEXSEQ2.ASM" lex_4_ground_punch_anim \
+    --animation "$ORIG/LEXSEQ2.ASM" lex_4_kick_anim \
+    --animation "$ORIG/LEXSEQ2.ASM" lex_4_knee_anim \
+    --animation "$ORIG/LEXSEQ2.ASM" lex_4_pin_anim \
+    --animation "$ORIG/LEXSEQ2.ASM" lex_4_punch_anim \
+    --animation "$ORIG/LEXSEQ2.ASM" lex_4_push_anim \
+    --animation "$ORIG/LEXSEQ2.ASM" lex_4_raise_arm_anim \
+    --animation "$ORIG/LEXSEQ2.ASM" lex_4_stomp_anim \
+    --animation "$ORIG/LEXSEQ2.ASM" lex_buckle_leap_anim \
+    --animation "$ORIG/LEXSEQ2.ASM" lex_flying_kick_anim \
+    --animation "$ORIG/LEXSEQ3.ASM" lex_3_head_held_stand_anim \
+    --animation "$ORIG/LEXSEQ3.ASM" lex_3_head_hold2_anim \
+    --animation "$ORIG/LEXSEQ3.ASM" lex_3_head_hold_anim \
+    --animation "$ORIG/LEXSEQ3.ASM" lex_climb_down_anim \
+    --animation "$ORIG/LEXSEQ3.ASM" lex_sliding_elbow_anim \
+    --animation "$ORIG/LEXSEQ4.ASM" lex_4_block_anim \
+    --animation "$ORIG/LEXSEQ4.ASM" lex_fall_back_anim \
+    --animation "$ORIG/SHNSEQ1.ASM" shn_run2_anim \
+    --animation "$ORIG/SHNSEQ1.ASM" shn_stand2_anim \
+    --animation "$ORIG/SHNSEQ1.ASM" shn_stand4_anim \
+    --animation "$ORIG/SHNSEQ1.ASM" shn_torso2_anim \
+    --animation "$ORIG/SHNSEQ1.ASM" shn_torso4_anim \
+    --animation "$ORIG/SHNSEQ2.ASM" shn_2_butt_anim \
+    --animation "$ORIG/SHNSEQ2.ASM" shn_2_falling_punch_anim \
+    --animation "$ORIG/SHNSEQ2.ASM" shn_2_kick_anim \
+    --animation "$ORIG/SHNSEQ2.ASM" shn_2_knee_anim \
+    --animation "$ORIG/SHNSEQ2.ASM" shn_2_pin_anim \
+    --animation "$ORIG/SHNSEQ2.ASM" shn_2_pummel_anim \
+    --animation "$ORIG/SHNSEQ2.ASM" shn_2_punch_anim \
+    --animation "$ORIG/SHNSEQ2.ASM" shn_2_raise_arm_anim \
+    --animation "$ORIG/SHNSEQ2.ASM" shn_2_stomp_anim \
+    --animation "$ORIG/SHNSEQ2.ASM" shn_4_butt_anim \
+    --animation "$ORIG/SHNSEQ2.ASM" shn_4_falling_punch_anim \
+    --animation "$ORIG/SHNSEQ2.ASM" shn_4_jump_kick_anim \
+    --animation "$ORIG/SHNSEQ2.ASM" shn_4_kick_anim \
+    --animation "$ORIG/SHNSEQ2.ASM" shn_4_knee_anim \
+    --animation "$ORIG/SHNSEQ2.ASM" shn_4_pin_anim \
+    --animation "$ORIG/SHNSEQ2.ASM" shn_4_pummel_anim \
+    --animation "$ORIG/SHNSEQ2.ASM" shn_4_punch_anim \
+    --animation "$ORIG/SHNSEQ2.ASM" shn_4_push_anim \
+    --animation "$ORIG/SHNSEQ2.ASM" shn_4_raise_arm_anim \
+    --animation "$ORIG/SHNSEQ2.ASM" shn_4_stomp_anim \
+    --animation "$ORIG/SHNSEQ2.ASM" shn_belbow_anim \
+    --animation "$ORIG/SHNSEQ2.ASM" shn_bstomp_anim \
+    --animation "$ORIG/SHNSEQ2.ASM" shn_climb_down_anim \
+    --animation "$ORIG/SHNSEQ2.ASM" shn_flying_kick_anim \
+    --animation "$ORIG/SHNSEQ3.ASM" shn_3_head_hold2_anim \
+    --animation "$ORIG/SHNSEQ3.ASM" shn_3_head_hold_anim \
+    --animation "$ORIG/SHNSEQ3.ASM" shn_fstein_anim \
+    --animation "$ORIG/SHNSEQ3.ASM" shn_knee_fstein_anim \
+    --animation "$ORIG/SHNSEQ4.ASM" shn_3_head_held_stand_anim \
+    --animation "$ORIG/SHNSEQ4.ASM" shn_4_block_anim \
+    --animation "$ORIG/SHNSEQ4.ASM" shn_fall_back_anim \
+    --animation "$ORIG/UNDSEQ1.ASM" und_run2_anim \
+    --animation "$ORIG/UNDSEQ1.ASM" und_stand2_anim \
+    --animation "$ORIG/UNDSEQ1.ASM" und_stand4_anim \
+    --animation "$ORIG/UNDSEQ1.ASM" und_torso2_anim \
+    --animation "$ORIG/UNDSEQ1.ASM" und_torso4_anim \
+    --animation "$ORIG/UNDSEQ2.ASM" und_2_butt_anim \
+    --animation "$ORIG/UNDSEQ2.ASM" und_2_butts_anim \
+    --animation "$ORIG/UNDSEQ2.ASM" und_2_kick_anim \
+    --animation "$ORIG/UNDSEQ2.ASM" und_2_knee_anim \
+    --animation "$ORIG/UNDSEQ2.ASM" und_2_lbowdrop_anim \
+    --animation "$ORIG/UNDSEQ2.ASM" und_2_punch_anim \
+    --animation "$ORIG/UNDSEQ2.ASM" und_2_raise_arm_anim \
+    --animation "$ORIG/UNDSEQ2.ASM" und_2_stomp_anim \
+    --animation "$ORIG/UNDSEQ2.ASM" und_4_block_anim \
+    --animation "$ORIG/UNDSEQ2.ASM" und_4_butt_anim \
+    --animation "$ORIG/UNDSEQ2.ASM" und_4_butts_anim \
+    --animation "$ORIG/UNDSEQ2.ASM" und_4_kick_anim \
+    --animation "$ORIG/UNDSEQ2.ASM" und_4_knee_anim \
+    --animation "$ORIG/UNDSEQ2.ASM" und_4_lbowdrop_anim \
+    --animation "$ORIG/UNDSEQ2.ASM" und_4_pin2_anim \
+    --animation "$ORIG/UNDSEQ2.ASM" und_4_punch_anim \
+    --animation "$ORIG/UNDSEQ2.ASM" und_4_push_anim \
+    --animation "$ORIG/UNDSEQ2.ASM" und_4_raise_arm_anim \
+    --animation "$ORIG/UNDSEQ2.ASM" und_4_stomp_anim \
+    --animation "$ORIG/UNDSEQ2.ASM" und_4_uppercut_anim \
+    --animation "$ORIG/UNDSEQ2.ASM" und_fall_back_anim \
+    --animation "$ORIG/UNDSEQ2.ASM" und_flying_kick_anim \
+    --animation "$ORIG/UNDSEQ2.ASM" und_tbukl_butt_drop_anim \
+    --animation "$ORIG/UNDSEQ3.ASM" und_3_head_held_stand_anim \
+    --animation "$ORIG/UNDSEQ3.ASM" und_3_head_hold2_anim \
+    --animation "$ORIG/UNDSEQ3.ASM" und_3_head_hold_anim \
+    --animation "$ORIG/UNDSEQ3.ASM" und_climb_down_anim \
+    --animation "$ORIG/UNDSEQ3.ASM" und_tombstone_smash_anim \
+    --animation "$ORIG/YOKSEQ1.ASM" yok_run2_anim \
+    --animation "$ORIG/YOKSEQ1.ASM" yok_stand2_anim \
+    --animation "$ORIG/YOKSEQ1.ASM" yok_stand4_anim \
+    --animation "$ORIG/YOKSEQ1.ASM" yok_torso2_anim \
+    --animation "$ORIG/YOKSEQ1.ASM" yok_torso4_anim \
+    --animation "$ORIG/YOKSEQ2.ASM" yok_2_gut_push_anim \
+    --animation "$ORIG/YOKSEQ2.ASM" yok_2_jabs_anim \
+    --animation "$ORIG/YOKSEQ2.ASM" yok_2_kick_anim \
+    --animation "$ORIG/YOKSEQ2.ASM" yok_2_knee_anim \
+    --animation "$ORIG/YOKSEQ2.ASM" yok_2_lbowdrop_anim \
+    --animation "$ORIG/YOKSEQ2.ASM" yok_2_pin_anim \
+    --animation "$ORIG/YOKSEQ2.ASM" yok_2_punch_anim \
+    --animation "$ORIG/YOKSEQ2.ASM" yok_2_raise_arm_anim \
+    --animation "$ORIG/YOKSEQ2.ASM" yok_2_run_slap_anim \
+    --animation "$ORIG/YOKSEQ2.ASM" yok_2_slap2_anim \
+    --animation "$ORIG/YOKSEQ2.ASM" yok_2_stomp_anim \
+    --animation "$ORIG/YOKSEQ2.ASM" yok_4_gut_push_anim \
+    --animation "$ORIG/YOKSEQ2.ASM" yok_4_jabs_anim \
+    --animation "$ORIG/YOKSEQ2.ASM" yok_4_kick_anim \
+    --animation "$ORIG/YOKSEQ2.ASM" yok_4_knee_anim \
+    --animation "$ORIG/YOKSEQ2.ASM" yok_4_lbowdrop_anim \
+    --animation "$ORIG/YOKSEQ2.ASM" yok_4_pin_anim \
+    --animation "$ORIG/YOKSEQ2.ASM" yok_4_punch_anim \
+    --animation "$ORIG/YOKSEQ2.ASM" yok_4_push_anim \
+    --animation "$ORIG/YOKSEQ2.ASM" yok_4_raise_arm_anim \
+    --animation "$ORIG/YOKSEQ2.ASM" yok_4_run_slap_anim \
+    --animation "$ORIG/YOKSEQ2.ASM" yok_4_slap2_anim \
+    --animation "$ORIG/YOKSEQ2.ASM" yok_4_stomp_anim \
+    --animation "$ORIG/YOKSEQ2.ASM" yok_4_uppercut_anim \
+    --animation "$ORIG/YOKSEQ2.ASM" yok_climb_down_anim \
+    --animation "$ORIG/YOKSEQ2.ASM" yok_tbukl_buttdrop_anim \
+    --animation "$ORIG/YOKSEQ3.ASM" yok_2_salt_anim \
+    --animation "$ORIG/YOKSEQ3.ASM" yok_3_head_held_stand_anim \
+    --animation "$ORIG/YOKSEQ3.ASM" yok_3_head_hold2_anim \
+    --animation "$ORIG/YOKSEQ3.ASM" yok_3_head_hold_anim \
+    --animation "$ORIG/YOKSEQ3.ASM" yok_4_salt_anim \
+    --animation "$ORIG/YOKSEQ3.ASM" yok_heldheadbutt_rpt_anim \
+    --animation "$ORIG/YOKSEQ3.ASM" yok_scissor_anim \
+    --animation "$ORIG/YOKSEQ4.ASM" yok_4_block_anim \
+    --animation "$ORIG/YOKSEQ4.ASM" yok_fall_back_anim \
+    --out "$ROOT/src/generated/anim_programs.c"
 if [ ! -f "$ORIG/IMG/BRET.LOD" ]; then
     sh "$ROOT/scripts/fetch_original.sh"
 fi
+# Per-frame geometry for the hurt box, across every wrestler now driven by
+# a program. A program-driven wrestler has no wm_visual_sequence to collect
+# frames from, so the generated program file is a source here too.
 python3 "$ROOT/tools/bret_geometry_bundle.py" \
     --lod "$ORIG/IMG/BRET.LOD" \
+    --lod "$ORIG/IMG/RAZOR.LOD" \
+    --lod "$ORIG/IMG/TAKER.LOD" \
+    --lod "$ORIG/IMG/YOKO.LOD" \
+    --lod "$ORIG/IMG/SHAWN.LOD" \
+    --lod "$ORIG/IMG/BAM.LOD" \
+    --lod "$ORIG/IMG/DOINK.LOD" \
+    --lod "$ORIG/IMG/LEX.LOD" \
     --img-dir "$ORIG/IMG" \
     --visual-source "$ROOT/src/generated/bret_visuals.c" \
     --visual-source "$ROOT/src/generated/bret_attacks.c" \
     --visual-source "$ROOT/src/generated/bret_defense.c" \
     --visual-source "$ROOT/src/generated/bret_grapple.c" \
-    --out "$ROOT/src/generated/bret_frame_geometry.c"
+    --visual-source "$ROOT/src/generated/anim_programs.c" \
+    --out "$ROOT/src/generated/frame_geometry.c"
 python3 "$ROOT/tools/select_source.py" \
     --source "$ORIG/SELECT.ASM" \
     --out "$ROOT/src/generated/select_tables.c"

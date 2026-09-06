@@ -4,7 +4,7 @@ Bret source frame referenced by the generated visual tables -- no pixel or
 palette data, unlike tools/bret_bundle.py's wm_source_sprite output.
 
 This is the engine-side counterpart to bret_bundle.py: hit-box derivation
-(wm_bret_hurt_box_for_frame) needs real per-frame image bounds on every
+(wm_hurt_box_for_frame) needs real per-frame image bounds on every
 target, including the portable host build that never links asset pixel
 data, so this emits a small standalone table instead of depending on
 wm_bret_sprite_find.
@@ -20,13 +20,24 @@ import bret_manifest  # noqa: E402
 import wimpimg  # noqa: E402
 
 
-def emit(out_path: pathlib.Path, lod: pathlib.Path, img_dir: pathlib.Path,
+def emit(out_path: pathlib.Path, lods: list[pathlib.Path], img_dir: pathlib.Path,
          visual_sources: list[pathlib.Path]) -> int:
     frames = bret_bundle.collect_frames(visual_sources)
-    mapping = bret_manifest.parse_lod(lod)
+    # One mapping across every wrestler's .LOD. Frame names carry the
+    # wrestler's own letter, so they do not collide -- but a name defined
+    # in two LODs would silently take whichever came first, so that is
+    # refused rather than resolved by luck.
+    mapping: dict[str, str] = {}
+    for lod in lods:
+        for name, container in bret_manifest.parse_lod(lod).items():
+            if name in mapping and mapping[name] != container:
+                raise ValueError(
+                    f"{name} is mapped to {mapping[name]} and to {container}: "
+                    f"two .LOD files disagree about the same frame")
+            mapping[name] = container
     missing = [f for f in frames if f not in mapping]
     if missing:
-        raise ValueError("BRET.LOD has no container mapping for: " + ", ".join(missing))
+        raise ValueError("no .LOD container mapping for: " + ", ".join(missing))
 
     containers: dict[str, tuple[bytes, list]] = {}
     resolved = []
@@ -40,30 +51,30 @@ def emit(out_path: pathlib.Path, lod: pathlib.Path, img_dir: pathlib.Path,
         by_name = {im.name.upper(): im for im in images}
         im = by_name.get(frame)
         if im is None:
-            raise ValueError(f"{frame}: listed in BRET.LOD but missing from {container}")
+            raise ValueError(f"{frame}: listed in a .LOD but missing from {container}")
         resolved.append((frame, im))
 
     lines = [
-        "/* Auto-generated from the original Midway Bret WIMP containers'",
-        "   image directories -- geometry only, no pixel/palette data. */",
-        '#include "wm/bret_frame_geometry.h"',
+        "/* Auto-generated from the original Midway wrestlers' WIMP",
+        "   containers -- geometry only, no pixel/palette data. */",
+        '#include "wm/frame_geometry.h"',
         "#include <string.h>",
         "",
-        "static const wm_bret_frame_geometry_t frames[] = {",
+        "static const wm_frame_geometry_t frames[] = {",
     ]
     for frame, im in resolved:
         lines.append(f'    {{"{frame}", {im.width}, {im.height}, {im.xani}, {im.yani}}},')
     lines += [
         "};",
         "",
-        "const wm_bret_frame_geometry_t *wm_bret_frame_geometry_find(const char *source_frame) {",
+        "const wm_frame_geometry_t *wm_frame_geometry_find(const char *source_frame) {",
         "    if (!source_frame) return 0;",
         "    for (size_t i = 0; i < sizeof(frames)/sizeof(frames[0]); ++i)",
         "        if (strcmp(frames[i].source_frame, source_frame) == 0) return &frames[i];",
         "    return 0;",
         "}",
         "",
-        "size_t wm_bret_frame_geometry_count(void) {",
+        "size_t wm_frame_geometry_count(void) {",
         "    return sizeof(frames)/sizeof(frames[0]);",
         "}",
         "",
@@ -75,13 +86,14 @@ def emit(out_path: pathlib.Path, lod: pathlib.Path, img_dir: pathlib.Path,
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--lod", required=True, type=pathlib.Path)
+    ap.add_argument("--lod", required=True, action="append", type=pathlib.Path)
     ap.add_argument("--img-dir", required=True, type=pathlib.Path)
     ap.add_argument("--visual-source", action="append", required=True, type=pathlib.Path)
     ap.add_argument("--out", required=True, type=pathlib.Path)
     ns = ap.parse_args()
     count = emit(ns.out, ns.lod, ns.img_dir, ns.visual_source)
-    print(f"generated {ns.out}: {count} unique Bret frame geometries")
+    print(f"generated {ns.out}: {count} unique frame geometries "
+          f"from {len(ns.lod)} .LOD files")
     return 0
 
 

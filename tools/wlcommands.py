@@ -92,11 +92,16 @@ def _load_equ(path: pathlib.Path, prefix: str) -> dict[str, int]:
     out: dict[str, int] = {}
     if not path.exists():
         return out
-    for line in path.read_text(errors="replace").splitlines():
-        m = re.match(rf"^({prefix}[A-Z0-9_]*)\s+\.?equ\s+([0-9]+)\s*$",
-                     line.strip(), re.I)
+    for raw in path.read_text(errors="replace").splitlines():
+        line = raw.split(";", 1)[0]
+        # Values are written either decimal or with the assembler's own
+        # trailing-h hex (MODE_UNINT is 04h, MODE_STATUS 200h).
+        m = re.match(rf"^({prefix}[A-Z0-9_]*)\s+\.?equ\s+"
+                     rf"([0-9A-Fa-f]+h|[0-9]+)\s*$", line.strip(), re.I)
         if m:
-            out[m.group(1).upper()] = int(m.group(2))
+            raw = m.group(2)
+            out[m.group(1).upper()] = (int(raw[:-1], 16) if raw[-1] in "hH"
+                                       else int(raw))
     return out
 
 

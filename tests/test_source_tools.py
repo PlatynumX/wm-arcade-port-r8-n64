@@ -20,6 +20,8 @@ def load(name: str, path: pathlib.Path):
 
 wlanim = load("wlanim", ROOT / "tools" / "wlanim.py")
 wlattack = load("wlattack", ROOT / "tools" / "wlattack.py")
+wlcommands = load("wlcommands", ROOT / "tools" / "wlcommands.py")
+wlprogram = load("wlprogram", ROOT / "tools" / "wlprogram.py")
 manifest = load("bret_manifest", ROOT / "tools" / "bret_manifest.py")
 wimp = load("wimpimg", ROOT / "tools" / "wimpimg.py")
 bundle = load("bret_bundle", ROOT / "tools" / "bret_bundle.py")
@@ -36,6 +38,52 @@ bmod_source = load("bmod_source", ROOT / "tools" / "bmod_source.py")
 source_ir = load("source_ir", ROOT / "tools" / "source_ir.py")
 animation_ir = load("animation_ir", ROOT / "tools" / "animation_ir.py")
 select_source = load("select_source", ROOT / "tools" / "select_source.py")
+
+
+def test_wlprogram() -> None:
+    """tools/wlprogram.py emits an animation as the program it really is.
+
+    The flat model cannot represent a branch: a routine that plays
+    different frames on a hit than on a miss gets linearised into one list
+    no playthrough ever plays. hrt_2_punch_anim is the smallest real
+    example -- its ANI_SLIDE_BACK skips a frame when the punch missed --
+    and this checks the branch is present and resolved, not flattened away.
+    """
+    p = ROOT / "original" / "wwf-wrestlemania" / "HRTSEQ2.ASM"
+    if not p.exists():
+        return
+
+    ops = wlprogram.program_for(p, "hrt_2_punch_anim")
+    kinds = [o[0] for o in ops]
+
+    # The header, the attack box with its real operands, and the fork.
+    assert kinds[0] == "SETMODE"
+    assert ("ATTACK_ON_Z", 0, 30, 91, -45, 50, 15, 45) in ops, ops
+    assert "SLIDE_BACK" in kinds
+    assert kinds[-1] == "END"
+
+    # The branch target is an op index inside the program, and it really
+    # skips forward over the connected-hit frames.
+    slide = next(o for o in ops if o[0] == "SLIDE_BACK")
+    target = slide[1]
+    assert 0 <= target < len(ops), slide
+    assert target > kinds.index("SLIDE_BACK"), "slide-back must jump forward"
+    skipped = kinds[kinds.index("SLIDE_BACK") + 1:target]
+    assert "FRAME" in skipped, skipped
+
+    # Every wired animation emits, branches and all. Three of them branch
+    # into shared tail code that sits past their own ANI_END (#common_4,
+    # the #missed blocks), which is why the body grows to cover targets.
+    for src, label in (("HRTSEQ2", "hrt_4_knee_to_head_anim"),
+                       ("HRTSEQ3", "hrt_3_fake_hold_anim"),
+                       ("HRTSEQ4", "hrt_faceup_getup_anim")):
+        f = ROOT / "original" / "wwf-wrestlemania" / f"{src}.ASM"
+        prog = wlprogram.program_for(f, label)
+        assert any(o[0] == "FRAME" for o in prog), label
+        for o in prog:
+            if o[0] in ("IFSTATUS", "IFNOTSTATUS", "IFBLOCKED", "GOTO",
+                        "IF_RPTCOUNT", "SLIDE_BACK"):
+                assert 0 <= o[1] < len(prog), (label, o)
 
 
 def test_wlattack_audit() -> None:
@@ -714,6 +762,7 @@ def test_source_text_bundle() -> None:
 
 def main() -> int:
     test_wlanim()
+    test_wlprogram()
     test_wlattack_audit()
     test_wlattack_frame_indices()
     test_manifest()

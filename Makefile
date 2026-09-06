@@ -30,6 +30,7 @@ CORE_C := \
     src/core/movement.c \
     src/core/bret_backend.c \
     src/core/anim_frame_commands.c \
+    src/core/anim_program.c \
     src/core/arcade/wm_arcade_start_run.c \
     src/core/wrestler_backend.c \
     src/core/human_input.c \
@@ -48,6 +49,7 @@ CORE_C := \
     src/generated/bret_defense.c \
     src/generated/bret_grapple.c \
     src/generated/bret_frame_commands.c \
+    src/generated/bret_anim_programs.c \
     src/generated/bret_frame_geometry.c
 # BEGIN FIX38 CUMULATIVE ARCADE SOURCE PORTS
 FIX38_ARCADE_C := \

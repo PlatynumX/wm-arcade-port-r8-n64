@@ -116,6 +116,12 @@ struct wm_arcade_actor {
        counters ANIM.ASM's ANI_CLR_BUTCOUNT (:97) resets. The source's own
        commented-out lines show BLOCKB_COUNT and KICKB_COUNT were dropped
        from that reset, so they are not tracked here either. */
+    /* PLYR.EQU HITBLOCKER: the wrestler who blocked this attack, which
+       ANIM.ASM:83 ANI_IFBLOCKED branches on. Nothing sets it yet -- the
+       blocked-reaction dispatch that would is still unwired -- so the
+       branch is present and always falls through, which is the same path
+       the flat model always took. */
+    int32_t hitblocker;
     int32_t punchb_count;
     int32_t spunchb_count;
     int32_t skickb_count;

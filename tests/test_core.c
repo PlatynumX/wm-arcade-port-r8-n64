@@ -10,6 +10,7 @@
 #include "wm/bmod.h"
 #include "wm/source_clock.h"
 #include "wm/bret_visuals.h"
+#include "wm/anim_program.h"
 #include "wm/composite.h"
 #include "wm/demo.h"
 #include "wm/bret_backend.h"
@@ -2071,6 +2072,100 @@ static void test_bret_instant_state_commands(void) {
     for (guard = 0; guard < 80 && a.safe_time == 0; ++guard)
         wm_bret_backend_tick(&bva, &a, 0);
     CHECK(a.safe_time == 50);
+}
+
+/* The program interpreter (wm/anim_program.h) against the flat runtime it
+   is meant to replace. Driven side by side, a tick at a time, comparing the
+   frame each shows.
+
+   On the CONNECTED-HIT path they agree, which is the equivalence that
+   matters: the flat extractor always kept the hit path, so reproducing it
+   is what proves the interpreter is not inventing anything. On the MISS
+   path they must NOT agree -- the whole point is that a miss really plays
+   fewer frames, because ANI_SLIDE_BACK and ANI_IFNOTSTATUS branch past the
+   connected-hit ones, and a flat list cannot express that. */
+static int program_vs_flat(const char *label, const wm_visual_sequence *seq,
+                           bool hit, int *ticks_out) {
+    wm_anim_exec ex;
+    wm_visual_state vs;
+    wm_arcade_actor_t a;
+    const wm_anim_program *p = wm_anim_program_find(label);
+    int t, diff = 0, n = 0;
+
+    if (!p) return -1;
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_UP_RIGHT;
+    wm_anim_exec_start(&ex, p, &a, 0);
+    wm_visual_start(&vs, seq);
+
+    for (t = 0; t < 3000; ++t) {
+        const char *pf = wm_anim_exec_frame(&ex);
+        const wm_visual_frame *vf = wm_visual_current(&vs);
+        if (!pf && vs.ended) break;
+        if (!pf || vs.ended) { ++diff; break; }
+        ++n;
+        if (strcmp(pf, vf->source_frame) != 0) ++diff;
+        if (hit) a.anim_mode |= (uint16_t)WM_MODE_STATUS;
+        else a.anim_mode &= (uint16_t)~WM_MODE_STATUS;
+        wm_anim_exec_tick(&ex, &a, 0);
+        wm_visual_tick(&vs);
+    }
+    if (ticks_out) *ticks_out = n;
+    return diff;
+}
+
+static void test_anim_program_interpreter(void) {
+    int hit_ticks = 0, miss_ticks = 0;
+
+    /* Every wired animation has a program. */
+    CHECK(wm_anim_program_find("hrt_2_punch_anim") != NULL);
+    CHECK(wm_anim_program_find("hrt_4_block_anim") != NULL);
+    CHECK(wm_anim_program_find("hrt_fall_back_anim") != NULL);
+    CHECK(wm_anim_program_find("no_such_animation") == NULL);
+
+    /* Hit path: the interpreter reproduces the shipped frame data exactly,
+       including the ANI_SET_RPTCOUNT loop in knees_to_head. */
+    CHECK(program_vs_flat("hrt_2_punch_anim", &wm_bret_light_punch2_anim,
+                          true, NULL) == 0);
+    CHECK(program_vs_flat("hrt_4_punch_anim", &wm_bret_light_punch4_anim,
+                          true, NULL) == 0);
+    CHECK(program_vs_flat("hrt_2_kick_anim", &wm_bret_light_kick2_anim,
+                          true, NULL) == 0);
+    CHECK(program_vs_flat("hrt_2_butt_anim", &wm_bret_butt2_anim,
+                          true, NULL) == 0);
+    CHECK(program_vs_flat("hrt_4_uppercut_anim", &wm_bret_uppercut4_anim,
+                          true, NULL) == 0);
+    CHECK(program_vs_flat("hrt_2_stomp_anim", &wm_bret_stomp2_anim,
+                          true, NULL) == 0);
+    CHECK(program_vs_flat("hrt_4_block_anim", &wm_bret_block4_anim,
+                          true, NULL) == 0);
+    CHECK(program_vs_flat("hrt_knees_to_head_anim", &wm_bret_knees_to_head_anim,
+                          true, NULL) == 0);
+
+    /* hrt_4_push_anim is the one that does NOT match even on the hit path,
+       and it is right not to: its ANI_IFSTATUS skips a 5-tick frame when
+       the shove connected. The flat list keeps that frame unconditionally,
+       so this is the approximation showing, not an interpreter fault. */
+    CHECK(program_vs_flat("hrt_4_push_anim", &wm_bret_push4_anim,
+                          true, &hit_ticks) != 0);
+
+    /* Miss path: genuinely shorter, because the branches skip the
+       connected-hit frames. This is the playthrough the flat model could
+       never represent. */
+    (void)program_vs_flat("hrt_4_push_anim", &wm_bret_push4_anim,
+                          false, &miss_ticks);
+    CHECK(miss_ticks < hit_ticks);
+
+    {
+        int punch_hit = 0, punch_miss = 0;
+        (void)program_vs_flat("hrt_2_punch_anim", &wm_bret_light_punch2_anim,
+                              true, &punch_hit);
+        (void)program_vs_flat("hrt_2_punch_anim", &wm_bret_light_punch2_anim,
+                              false, &punch_miss);
+        /* hrt_2_punch_anim's ANI_SLIDE_BACK skips ANI_SET_YVEL and a
+           3-tick frame when the punch missed. */
+        CHECK(punch_miss < punch_hit);
+    }
 }
 
 /* ATTRACT.ASM:669 TURN_SOUNDS_OFF_IF_NEED gates the DCS_LOGO music on
@@ -4395,6 +4490,7 @@ int main(void) {
     test_bret_frame_motion_commands();
     test_bret_ifbuttons_run_cancel();
     test_bret_instant_state_commands();
+    test_anim_program_interpreter();
     test_attract_dcs_logo_does_not_fall_through();
     test_bret_hurt_box_for_frame_real_geometry();
     test_bret_backend_tick_sets_real_hurt_box();

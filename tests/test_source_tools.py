@@ -4,6 +4,7 @@ import importlib.util
 import pathlib
 import struct
 import subprocess
+import os
 import re
 import sys
 import tempfile
@@ -173,6 +174,85 @@ def test_wlanim_label_def() -> None:
     assert wlanim.label_def("\tWL\t5,H4SL4C+FR1") is None
     assert wlanim.label_def(" SUBR\thrt_2_punch_anim") is None
     assert wlanim.label_def("#RUN_SPD\tequ\t2") == "#RUN_SPD"
+
+
+def test_wlprogram_is_deterministic() -> None:
+    """The same source must emit the same program, run after run.
+
+    It did not. The body-growth loop iterated a SET of missing branch
+    targets, and growing the body for one target can satisfy or move
+    others -- so which came first decided where the body ended up, and set
+    iteration order depends on PYTHONHASHSEED. yok_heldheadbutt_rpt_anim
+    emitted 94 ops under one seed and 203 under another, which made the
+    generated file change from run to run for no reason visible in the
+    source. It cost two wrong diagnoses ("the checked-in file is stale")
+    before the real cause turned up.
+
+    This runs the emitter in subprocesses under different hash seeds, since
+    the seed is fixed for the life of a process and cannot be changed from
+    inside one.
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    if not (base / "YOKSEQ3.ASM").exists():
+        return
+
+    script = (
+        "import pathlib, sys\n"
+        f"sys.path.insert(0, {str(ROOT / 'tools')!r})\n"
+        "import wlprogram\n"
+        "out = []\n"
+        "for f, l in ("
+        "    ('YOKSEQ3.ASM', 'yok_heldheadbutt_rpt_anim'),"
+        "    ('HRTSEQ2.ASM', 'hrt_2_punch_anim'),"
+        "    ('HRTSEQ2.ASM', 'hrt_knees_to_head_anim'),"
+        "    ('RZRSEQ2.ASM', 'rzr_4_uprcut_anim')):\n"
+        f"    p = pathlib.Path({str(base)!r}) / f\n"
+        "    out.append('%s=%d' % (l, len(wlprogram.program_for(p, l))))\n"
+        "print(' '.join(out))\n"
+    )
+    results = set()
+    for seed in ("0", "1", "2", "7"):
+        env = dict(os.environ, PYTHONHASHSEED=seed)
+        proc = subprocess.run([sys.executable, "-c", script],
+                              capture_output=True, text=True, env=env)
+        assert proc.returncode == 0, proc.stderr
+        results.add(proc.stdout.strip())
+    assert len(results) == 1, (
+        "emission depends on PYTHONHASHSEED: " + " | ".join(sorted(results)))
+
+
+def test_body_stop_ends_a_frameless_routine() -> None:
+    """A routine with no frames anywhere must not swallow the file.
+
+    _body_stop treats a SUBR reached before any frame as an ALIAS for the
+    routine after it, which is real (HRTSEQ2.ASM:1334-1335
+    hrt_2/4_super_kick_anim). But a routine with no frames AT ALL makes
+    every following SUBR look like an alias, so the body runs on forever.
+    FINISEQ.ASM's finish moves are exactly that -- eight lines of commands
+    ending in ANI_END, behind a `.if NUM_xxx_FINISHES` guard, with no
+    artwork behind them -- and rzr_finish1_move came out reporting ten
+    frames belonging to routines further down the file.
+
+    The discriminator is whether the routine terminates before the next
+    SUBR: an alias does not, a finished routine does.
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    if not (base / "FINISEQ.ASM").exists():
+        return
+
+    for label in ("rzr_finish1_move", "rzr_finish2_move"):
+        try:
+            ops = wlprogram.program_for(base / "FINISEQ.ASM", label)
+        except ValueError as exc:
+            assert "no frames" in str(exc), (label, exc)
+            continue
+        raise AssertionError(
+            f"{label} emitted {len(ops)} ops; the source has no frames for it")
+
+    # ...while the alias case still runs on into the routine it names.
+    if (base / "HRTSEQ2.ASM").exists():
+        ops = wlprogram.program_for(base / "HRTSEQ2.ASM", "hrt_4_super_kick_anim")
+        assert any(o[0] == "FRAME" for o in ops), "the SUBR alias rule broke"
 
 
 def test_roster_dispatcher_labels_all_emit() -> None:
@@ -904,6 +984,8 @@ def main() -> int:
     test_wlanim()
     test_wlprogram()
     test_wlprogram_roster_wide()
+    test_wlprogram_is_deterministic()
+    test_body_stop_ends_a_frameless_routine()
     test_roster_dispatcher_labels_all_emit()
     test_wlprogram_tick_expressions()
     test_wlanim_label_def()

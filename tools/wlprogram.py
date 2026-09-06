@@ -183,17 +183,30 @@ def program_for(path: pathlib.Path, label: str):
     # target a branch names is inside it, since that is what the assembler
     # resolves against. Iterated because the region pulled in can branch
     # onward itself.
+    #
+    # ORDER MATTERS HERE, and it has to be the source's own. Growing the
+    # body for one missing target can satisfy or move others, so which
+    # target is considered first decides where the body ends up. Iterating
+    # a set made that order depend on PYTHONHASHSEED -- the same routine
+    # emitted 94 ops under one seed and 203 under another, and the
+    # generated file therefore changed from run to run for no reason
+    # visible in the source. Targets are taken in the order the routine
+    # BRANCHES to them, which is stable and is also the order a reader
+    # would resolve them in.
+    #
     while True:
-        wanted = set()
+        wanted = []
         for i in range(start, stop):
             bm = (BRANCH_RE.match(lines[i]) or SLIDE_RE.match(lines[i])
                   or BUTCOUNT_RE.match(lines[i]))
             if bm:
-                wanted.add(bm.group(bm.re.groups))
+                name = bm.group(bm.re.groups)
+                if name not in wanted:
+                    wanted.append(name)
         have = {name for name in
                 (wlanim.label_def(lines[i]) for i in range(start, stop))
                 if name}
-        missing = wanted - have
+        missing = [name for name in wanted if name not in have]
         if not missing:
             break
         # A target can also sit BEFORE this routine -- shared blocks earlier
@@ -203,7 +216,7 @@ def program_for(path: pathlib.Path, label: str):
             for i in range(start - 1, -1, -1):
                 if wlanim.label_def(lines[i]) == name:
                     start = i
-                    missing.discard(name)
+                    missing.remove(name)
                     break
         if not missing:
             continue

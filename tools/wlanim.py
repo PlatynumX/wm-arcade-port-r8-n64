@@ -185,6 +185,26 @@ def _body_stop(lines: list[str], start: int) -> int:
     least one frame. A SUBR reached before any frame is an alias for the
     routine after it (HRTSEQ2.ASM:1334-1335 hrt_2/4_super_kick_anim), so the
     body runs on through it."""
+    # The alias rule below runs away on a routine that has no frames AT ALL,
+    # because then every following SUBR looks like an alias for it.
+    # FINISEQ.ASM's finish moves are exactly that -- eight lines of commands
+    # ending in ANI_END, behind a `.if NUM_xxx_FINISHES` guard, with no
+    # artwork behind them -- and rzr_finish1_move swallowed the rest of the
+    # file and reported ten frames that are not its own.
+    #
+    # The discriminator is whether the routine TERMINATES before the next
+    # SUBR. A real alias (HRTSEQ2.ASM:1334-1335 hrt_2/4_super_kick_anim) is
+    # one SUBR directly followed by another with no ANI_END between them, so
+    # running on into it is right. A routine that reaches its own ANI_END
+    # first is finished, frames or no frames.
+    for j in range(start, len(lines)):
+        if SUBR_RE.match(lines[j]):
+            break
+        if _frame_from_line(lines[j]):
+            break
+        if END_RE.match(lines[j]) or REPEAT_RE.match(lines[j]):
+            return j + 1
+
     saw_frame = False
     for j in range(start, len(lines)):
         if SUBR_RE.match(lines[j]):

@@ -15,6 +15,7 @@
 #include "wm/arcade/wm_arcade_roll.h"
 #include "wm/announce_tables.h"
 #include "wm/award.h"
+#include "wm/wrestler_sound_tables.h"
 #include "wm/arcade/wm_arcade_announcer.h"
 #include "wm/arcade/wm_arcade_combo.h"
 #include "wm/arcade/wmania_rope_command.h"
@@ -4362,6 +4363,182 @@ static void test_do_combo_mess_from_the_vm(void) {
     CHECK(wm_anim_code_run(&a, &env, "DO_COMBO_MESS", NULL));
 }
 
+/*
+ * SOUND.H's WRSNDX and DCSSOUND.ASM's three layers of sound table --
+ * the per-wrestler voices behind `impact_sound` and `DO_GRUNT`.
+ */
+static void test_wrsnd_tables(void) {
+    WmRng rng;
+    size_t i;
+    int m;
+
+    /* The grid is the shape LAST_MOVE+1 and the nine WRESTLERNUM rows
+       say it is, and every random index in it names a real sub-table. */
+    for (i = 0; i < WM_WRSND_WRESTLERS; ++i)
+        for (m = 0; m < WM_WRSND_MOVES; ++m) {
+            uint16_t e = wm_wrsnd_master[i][m];
+            if (e == 0u || (e & 0x8000u) != 0u) continue;
+            if (e & WM_WRSND_RANDOM_BIT)
+                CHECK((size_t)(e ^ WM_WRSND_RANDOM_BIT) <
+                      wm_wrsnd_random_count);
+        }
+    for (m = 0; m < WM_WRSND_MOVES; ++m) {
+        uint16_t e = wm_wrsnd_default[m];
+        if (e & WM_WRSND_RANDOM_BIT)
+            CHECK((size_t)(e ^ WM_WRSND_RANDOM_BIT) < wm_wrsnd_random_count);
+    }
+    /* RNDRNG0's inclusive maximum has to be inside each sub-table. */
+    CHECK(wm_wrsnd_random_count == 67u);
+    for (i = 0; i < wm_wrsnd_random_count; ++i) {
+        const wm_wrsnd_random *t = &wm_wrsnd_random_tables[i];
+        CHECK(t->count > 0u);
+        CHECK((size_t)t->last_index < t->count);
+    }
+
+    /*
+     * The DEFLT fallback, spelled out on Bret's real row. DCSSOUND.ASM
+     * writes his punch row `DEFLT,1022H,DEFLT,1030H`, so the two throw
+     * sounds come from the default table and the two hit sounds are his
+     * own.
+     */
+    CHECK(wm_wrsnd_master[0][0] == WM_WRSND_DEFLT);
+    CHECK(wm_wrsnd_master[0][1] == 0x1022u);
+    CHECK(wm_wrsnd_lookup(0, 0) == wm_wrsnd_default[0]);
+    CHECK(wm_wrsnd_lookup(0, 1) == 0x1022u);
+
+    /*
+     * WRSNDX tests a zero entry (`jrz DONE?`) BEFORE the DEFLT fallback
+     * (`jrp OKAY?`), so a zero in a wrestler's own row would mean silence
+     * rather than the default. As shipped that branch is unreachable:
+     * every one of the 531 cells is either a real index or DEFLT. The
+     * zeros all live in DEFAULT_SOUND_TABLE, where they DO mean silence
+     * -- GRABFLING_T1, the first of DO_GRUNT's two sounds, is one of
+     * them, so the grunt is a single sound for every wrestler whose row
+     * defers there.
+     */
+    for (i = 0; i < WM_WRSND_WRESTLERS; ++i)
+        for (m = 0; m < WM_WRSND_MOVES; ++m)
+            CHECK(wm_wrsnd_master[i][m] != 0u);
+    {
+        int silent = 0;
+        for (m = 0; m < WM_WRSND_MOVES; ++m)
+            if (wm_wrsnd_default[m] == 0u) {
+                ++silent;
+                /* Any wrestler deferring here gets nothing at all. */
+                for (i = 0; i < WM_WRSND_WRESTLERS; ++i)
+                    if (wm_wrsnd_master[i][m] == WM_WRSND_DEFLT)
+                        CHECK(wm_wrsnd_lookup((int)i, m) == 0u);
+            }
+        CHECK(silent == 13);
+        CHECK(wm_wrsnd_default[WM_WRSND_GRABFLING_T1] == 0u);
+    }
+
+    /* Out of range is silent, not a read past the table. */
+    CHECK(wm_wrsnd_lookup(-1, 0) == 0u);
+    CHECK(wm_wrsnd_lookup(WM_WRSND_WRESTLERS, 0) == 0u);
+    CHECK(wm_wrsnd_lookup(0, -1) == 0u);
+    CHECK(wm_wrsnd_lookup(0, WM_WRSND_MOVES) == 0u);
+
+    /*
+     * table_sound: bit 12 clear passes straight through, bit 12 set draws
+     * from the named sub-table, and without an RNG there is no draw so it
+     * says nothing rather than inventing one.
+     */
+    wm_rng_init(&rng, 0x9ABCu, NULL, NULL, NULL);
+    CHECK(wm_wrsnd_table_sound(0x0032u, &rng) == 0x0032u);
+    CHECK(wm_wrsnd_table_sound(0u, &rng) == 0u);
+    CHECK(wm_wrsnd_table_sound(0x1000u, NULL) == 0u);
+    for (i = 0; i < 200; ++i) {
+        /* 0x1001 is #generic_punch_l, `.word 3,1h,2h,19h,1Bh`. */
+        uint16_t got = wm_wrsnd_table_sound(0x1001u, &rng);
+        CHECK(got == 0x0001u || got == 0x0002u || got == 0x0019u ||
+              got == 0x001Bu);
+    }
+    /* An index past the end of the pointer list is refused. */
+    CHECK(wm_wrsnd_table_sound((uint16_t)(0x1000u + wm_wrsnd_random_count),
+                               &rng) == 0u);
+
+    /* WRSNDX plays both moves, and the one-sound form plays one. */
+    {
+        struct ann_log log;
+        memset(&log, 0, sizeof(log));
+        CHECK(wm_wrsndx(0, WM_WRSND_GRABFLING_T1, WM_WRSND_GRABFLING_T2,
+                        &rng, &log, ann_sound) == log.n);
+        CHECK(log.n >= 1);
+        memset(&log, 0, sizeof(log));
+        CHECK(wm_wrsndx(0, WM_WRSND_GRABFLING_T2, -1, &rng, &log,
+                        ann_sound) == log.n);
+        CHECK(log.n == 1);
+    }
+}
+
+/*
+ * ...and the two ANI_CODE routines over them, including the file scoping
+ * that decides WHICH body a call site gets. MACROS.H:246 SUBR emits a
+ * `.def` and SUBRP does not, so YOKSEQ3's impact_sound is global and
+ * HRTSEQ4's and RZRSEQ3's shadow it inside their own files.
+ */
+static void test_wrsnd_anim_code_routines(void) {
+    wm_arcade_actor_t a, v;
+    wm_anim_env env;
+    struct ann_log log;
+    WmRng rng;
+
+    wm_rng_init(&rng, 0x1111u, NULL, NULL, NULL);
+    memset(&env, 0, sizeof(env));
+    env.rng = &rng;
+    env.sound_user = &log;
+    env.sound = ann_sound;
+
+    /* DO_GRUNT is answered, and it makes a real sound. */
+    memset(&a, 0, sizeof(a));
+    memset(&log, 0, sizeof(log));
+    a.wrestler_num = 0;
+    CHECK(wm_anim_code_run(&a, &env, "DO_GRUNT", "HRTSEQ2.ASM"));
+    CHECK(log.n >= 1);
+
+    /*
+     * impact_sound plays on the man being SLAMMED, through ATTACH_PROC --
+     * with nobody attached it says nothing at all (`jrz #x`), which is
+     * the whole body of the file-local versions.
+     */
+    memset(&a, 0, sizeof(a));
+    memset(&log, 0, sizeof(log));
+    a.wrestler_num = 0;
+    CHECK(wm_anim_code_run(&a, &env, "impact_sound", "HRTSEQ4.ASM"));
+    CHECK(log.n == 0);
+
+    /*
+     * The global one does more: an extra WRSNDX HDBUTT_L1,HDBUTT_L2 on
+     * the wrestler HIMSELF before the rug slam. With nobody attached,
+     * that difference is the whole output -- so this is a direct test
+     * that the file scoping picked different bodies.
+     */
+    memset(&log, 0, sizeof(log));
+    CHECK(wm_anim_code_run(&a, &env, "impact_sound", "HRTSEQ2.ASM"));
+    CHECK(log.n >= 1);
+    {
+        int with_global = log.n;
+        memset(&log, 0, sizeof(log));
+        CHECK(wm_anim_code_run(&a, &env, "impact_sound", "RZRSEQ3.ASM"));
+        CHECK(log.n == 0);
+        CHECK(with_global > 0);
+    }
+
+    /* With a victim attached, both bodies reach the rug slam, and it is
+       the VICTIM's own voice that plays. */
+    memset(&v, 0, sizeof(v));
+    v.wrestler_num = 1;
+    a.attach_proc = &v;
+    memset(&log, 0, sizeof(log));
+    CHECK(wm_anim_code_run(&a, &env, "impact_sound", "HRTSEQ4.ASM"));
+    CHECK(log.n >= 1);
+
+    /* Nothing crashes with no env at all. */
+    CHECK(wm_anim_code_run(&a, NULL, "impact_sound", "HRTSEQ4.ASM"));
+    CHECK(wm_anim_code_run(&a, NULL, "DO_GRUNT", "LEXSEQ3.ASM"));
+}
+
 /* The self-contained state commands: no subsystem behind any of them. */
 static void test_self_contained_ops(void) {
     wm_arcade_actor_t a, v;
@@ -7178,6 +7355,8 @@ int main(void) {
     test_announce_call_from_the_vm();
     test_do_combo_mess();
     test_do_combo_mess_from_the_vm();
+    test_wrsnd_tables();
+    test_wrsnd_anim_code_routines();
     test_self_contained_ops();
     test_anim_code_tail();
     test_rope_commands_from_animation();

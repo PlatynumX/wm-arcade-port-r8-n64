@@ -26,6 +26,7 @@ wlcommands = load("wlcommands", ROOT / "tools" / "wlcommands.py")
 wlpuppet = load("wlpuppet", ROOT / "tools" / "wlpuppet.py")
 wlroll = load("wlroll", ROOT / "tools" / "wlroll.py")
 wlvoice = load("wlvoice", ROOT / "tools" / "wlvoice.py")
+wlwrsnd = load("wlwrsnd", ROOT / "tools" / "wlwrsnd.py")
 wlprogram = load("wlprogram", ROOT / "tools" / "wlprogram.py")
 manifest = load("bret_manifest", ROOT / "tools" / "bret_manifest.py")
 wimp = load("wimpimg", ROOT / "tools" / "wimpimg.py")
@@ -1446,6 +1447,99 @@ def test_announce_calls_are_spelled_as_the_call_sites_spell_them() -> None:
     assert reached, "no announcer routine is reached from any animation"
 
 
+
+def test_wrsnd_tables() -> None:
+    """DCSSOUND.ASM's per-wrestler sound grid, against its own shape.
+
+    MASTER_SOUND_TABLE is written as nine blocks of `.word` rows with only
+    a comment (";Bret Hart\t00") separating them, so nothing in the file
+    marks where one wrestler ends and the next begins -- the extractor
+    relies entirely on LAST_MOVE+1. That is checked here by counting the
+    words in each commented block independently and requiring the two
+    readings to agree.
+    """
+    src = wlanim.ORIG / "DCSSOUND.ASM"
+    if not src.exists():
+        return
+
+    master = wlwrsnd.master_table()
+    default = wlwrsnd.default_table()
+    assert len(default) == wlwrsnd.MOVES_PER_WRESTLER
+    assert len(master) == wlwrsnd.WRESTLERS
+    assert all(len(r) == wlwrsnd.MOVES_PER_WRESTLER for r in master)
+
+    # The independent reading: count words between the ";<name> NN"
+    # comments that head each wrestler's block.
+    lines = [r.rstrip() for r in src.read_text(errors="replace").splitlines()]
+    start = next(i for i, l in enumerate(lines)
+                 if l.strip() == "MASTER_SOUND_TABLE")
+    counts, cur, n = [], None, 0
+    for q in range(start + 1, len(lines)):
+        raw = lines[q]
+        head = re.match(r"^\s*;(\w[^\d]*)\s*(\d\d)\s*$", raw)
+        if head:
+            if cur is not None:
+                counts.append((cur, n))
+            cur, n = head.group(1).strip(), 0
+            continue
+        body = wlanim.strip_comment(raw)
+        mw = re.match(r"^\s*\.WORD\s+(.+)$", body, re.I)
+        if mw:
+            n += len([p for p in mw.group(1).split(",") if p.strip()])
+        elif body.strip():
+            break
+    if cur is not None:
+        counts.append((cur, n))
+    assert len(counts) == wlwrsnd.WRESTLERS, counts
+    for name, got in counts:
+        assert got == wlwrsnd.MOVES_PER_WRESTLER, (name, got)
+
+    # Every random index in either table names a real sub-table.
+    rnd = wlwrsnd.random_tables()
+    assert len(rnd) == 67, len(rnd)
+    for t in rnd:
+        assert t["last_index"] < len(t["entries"]), t["name"]
+    for row in list(master) + [default]:
+        for v in row:
+            if v == wlwrsnd.DEFLT or v == 0:
+                continue
+            if v & wlwrsnd.RANDOM_BIT:
+                assert (v ^ wlwrsnd.RANDOM_BIT) < len(rnd), hex(v)
+
+    # The move names line up with what the ANI_CODE routines ask for.
+    names = wlwrsnd.move_names()
+    assert names[0] == "PUNCH_T1"
+    assert names[32] == "GRABFLING_T1"
+    assert names[54] == "RUGSLAM_YELL"
+    assert names[55] == "RUGSLAM_IMPACT"
+    assert names[58] == "YELL_THROW"
+    # The four BIGBOOT_* equates are commented out in SOUND.H, so their
+    # rows exist but have no name. That gap is left open, not closed up.
+    assert 44 not in names and 45 not in names
+
+    # Nothing in the shipped grid is a zero, so WRSNDX's `jrz DONE?` on
+    # the wrestler's own entry is unreachable as written; the zeros are
+    # all in DEFAULT_SOUND_TABLE.
+    assert all(v != 0 for row in master for v in row)
+    assert sum(1 for v in default if v == 0) == 13
+
+    # Four wrestlers reuse another's row verbatim -- worth pinning,
+    # because a drifted split would look exactly like this.
+    assert master[2] == master[0]      # Undertaker == Bret
+    assert master[4] == master[0]      # Shawn == Bret
+    assert master[8] == master[0]      # Luger == Bret
+    assert master[7] == master[3]      # Adam Bomb == Yokozuna
+    assert master[1] != master[0] and master[5] != master[0]
+    assert master[6] != master[0]      # Doink has his own
+
+
+def test_wrsnd_tables_generate_the_shipped_file() -> None:
+    out = ROOT / "src" / "generated" / "wrestler_sound_tables.c"
+    if not (wlanim.ORIG / "DCSSOUND.ASM").exists() or not out.exists():
+        return
+    assert wlwrsnd.render_c() == out.read_text()
+
+
 def main() -> int:
     test_wlanim()
     test_wlprogram()
@@ -1465,6 +1559,8 @@ def main() -> int:
     test_announce_tables()
     test_announce_tables_generate_the_shipped_file()
     test_announce_calls_are_spelled_as_the_call_sites_spell_them()
+    test_wrsnd_tables()
+    test_wrsnd_tables_generate_the_shipped_file()
     test_waithitopp_is_a_mode_and_a_frame()
     test_roster_dispatcher_labels_all_emit()
     test_wlprogram_tick_expressions()

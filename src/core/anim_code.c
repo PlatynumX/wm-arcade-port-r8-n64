@@ -34,6 +34,7 @@
 #include "wm/arcade/wm_arcade_butcount.h"
 #include "wm/announce_tables.h"
 #include "wm/arcade/wm_arcade_combo.h"
+#include "wm/wrestler_sound_tables.h"
 
 #include <string.h>
 
@@ -326,6 +327,87 @@ static void do_combo_mess(wm_arcade_actor_t *actor, const wm_anim_env *env,
         ctx.round_award = env->round_award;
     }
     (void)wm_arcade_do_combo_mess(actor, &ctx);
+}
+
+/* ================================================================== *
+ * WRSNDX: the per-wrestler voices.
+ *
+ * `impact_sound` and `DO_GRUNT` are two lines of assembly each -- all the
+ * behaviour is in DCSSOUND.ASM's tables (wm/wrestler_sound_tables.h). But
+ * both are defined MORE THAN ONCE, with different bodies, and the
+ * difference is exactly what SUBR vs SUBRP decides: SUBR emits a `.def`
+ * and is global, SUBRP does not and is file-local (MACROS.H:246-255).
+ *
+ *   impact_sound   YOKSEQ3.ASM  SUBR   -- global; does an EXTRA
+ *                                         `WRSNDX HDBUTT_L1,HDBUTT_L2` on
+ *                                         the wrestler himself first
+ *                  HRTSEQ4.ASM  SUBRP  -- local; the rug slam only
+ *                  RZRSEQ3.ASM  SUBRP  -- local; the rug slam only
+ *
+ *   DO_GRUNT       SHNSEQ2.ASM  SUBR   -- global; WRSNDX on a13
+ *                  LEXSEQ3.ASM  bare label, so also file-local -- and it
+ *                                         uses WRSND with a FIXED W_LUGER
+ *                                         rather than reading WRESTLERNUM
+ *
+ * So eleven of Bret's own animations call the Undertaker-file version of
+ * impact_sound, with the headbutt sounds, and one calls Bret's own
+ * without them. Resolving either by bare name would get one of the two
+ * wrong for everybody.
+ * ================================================================== */
+
+/* The rug-slam half both impact_sound bodies share: it plays on the man
+   being slammed (ATTACH_PROC), not on the one doing the slamming. */
+static void impact_rugslam(wm_arcade_actor_t *actor, const wm_anim_env *env) {
+    const wm_arcade_actor_t *victim = actor ? actor->attach_proc : NULL;
+    if (!victim) return;                          /* `jrz #x` */
+    (void)wm_wrsndx((int)victim->wrestler_num, WM_WRSND_RUGSLAM_YELL,
+                    WM_WRSND_RUGSLAM_IMPACT, env ? env->rng : NULL,
+                    env ? env->sound_user : NULL, env ? env->sound : NULL);
+}
+
+/* HRTSEQ4/RZRSEQ3's local copies: the rug slam and nothing else. */
+static void impact_sound_local(wm_arcade_actor_t *actor,
+                               const wm_anim_env *env, int32_t param) {
+    (void)param;
+    impact_rugslam(actor, env);
+}
+
+/* YOKSEQ3's global one, which everybody else reaches. */
+static void impact_sound_global(wm_arcade_actor_t *actor,
+                                const wm_anim_env *env, int32_t param) {
+    (void)param;
+    if (actor)
+        (void)wm_wrsndx((int)actor->wrestler_num, WM_WRSND_HDBUTT_L1,
+                        WM_WRSND_HDBUTT_L2, env ? env->rng : NULL,
+                        env ? env->sound_user : NULL, env ? env->sound : NULL);
+    impact_rugslam(actor, env);
+}
+
+/* SHNSEQ2's `WRSNDX GRABFLING_T1,GRABFLING_T2` on a13. */
+static void do_grunt(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                     int32_t param) {
+    (void)param;
+    if (!actor) return;
+    (void)wm_wrsndx((int)actor->wrestler_num, WM_WRSND_GRABFLING_T1,
+                    WM_WRSND_GRABFLING_T2, env ? env->rng : NULL,
+                    env ? env->sound_user : NULL, env ? env->sound : NULL);
+}
+
+/*
+ * LEXSEQ3's own copy, which is WRSND rather than WRSNDX: the wrestler is
+ * assembled in as W_LUGER instead of read from WRESTLERNUM. Only Luger's
+ * animations reach it, so it lands on the same row either way -- but it
+ * is a different instruction and is translated as one.
+ */
+#define WM_WRSND_W_LUGER 8
+
+static void do_grunt_luger(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                           int32_t param) {
+    (void)param;
+    (void)actor;
+    (void)wm_wrsndx(WM_WRSND_W_LUGER, WM_WRSND_GRABFLING_T1,
+                    WM_WRSND_GRABFLING_T2, env ? env->rng : NULL,
+                    env ? env->sound_user : NULL, env ? env->sound : NULL);
 }
 
 /* The CALL_x routines themselves: schedule the process and return. */
@@ -1209,6 +1291,14 @@ static const struct {
     { "DO_BRET_PUSH", NULL, do_bret_push, 0 },
     { "DO_LEX_PUSH", NULL, do_lex_push, 0 },
     { "DO_COMBO_MESS", NULL, do_combo_mess, 0 },
+    /* SUBRP, so file-local: the rug slam without the headbutt. */
+    { "impact_sound", "HRTSEQ4.ASM", impact_sound_local, 0 },
+    { "impact_sound", "RZRSEQ3.ASM", impact_sound_local, 0 },
+    /* YOKSEQ3.ASM's SUBR, which every other file reaches. */
+    { "impact_sound", NULL, impact_sound_global, 0 },
+    /* LEXSEQ3.ASM's bare label shadows SHNSEQ2.ASM's SUBR. */
+    { "DO_GRUNT", "LEXSEQ3.ASM", do_grunt_luger, 0 },
+    { "DO_GRUNT", NULL, do_grunt, 0 },
     /* #make_black, once per file, each with its own palette black. */
     { "#make_black", "HRTSEQ4.ASM", make_black, 0x2F2F },
     { "#make_black", "RZRSEQ3.ASM", make_black, 0x0D0D },

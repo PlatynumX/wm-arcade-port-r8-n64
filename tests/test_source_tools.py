@@ -1637,6 +1637,110 @@ def test_programs_record_where_they_start() -> None:
     assert odd == 42, odd
 
 
+
+def test_emitted_programs_hold_together() -> None:
+    """Structural invariants over every emitted program.
+
+    None of this proves parity with the arcade -- there is no reference to
+    compare against -- but each one is a way the emitter could be wrong
+    that would otherwise be silent, and every such check built so far has
+    found something. Specifically:
+
+      - a branch target outside its own program would run off the end
+      - a program with no terminator would simply stop, freezing the
+        wrestler, instead of ending or looping
+      - a frame the wrestler shows with no extracted geometry has no hurt
+        box, so he cannot be hit on that frame
+    """
+    out = ROOT / "src" / "generated" / "anim_programs.c"
+    geo_file = ROOT / "src" / "generated" / "frame_geometry.c"
+    if not out.exists() or not geo_file.exists():
+        return
+    src = out.read_text()
+    geo = set(re.findall(r'"([A-Z][0-9][A-Z0-9]{4,6})"', geo_file.read_text()))
+
+    bad_target, no_terminator, missing_geo = [], [], set()
+    programs = 0
+    for m in re.finditer(r"static const wm_anim_op prog_(\w+)_ops\[\] = \{(.*?)\n\};",
+                         src, re.S):
+        label, body = m.group(1), m.group(2)
+        programs += 1
+        rows = re.findall(r"\{\s*(WM_AOP_\w+),\s*\d+,\s*(-?\d+),", body)
+        n = len(rows)
+        for op, tgt in rows:
+            if int(tgt) >= n:
+                bad_target.append((label, op, tgt, n))
+        ops = [o for o, _ in rows]
+        # A program ends, loops, or hands off. Anything else runs out.
+        if not ({"WM_AOP_END", "WM_AOP_REPEAT", "WM_AOP_GOTO",
+                 "WM_AOP_CHANGEANIM"} & set(ops[-1:])) and \
+                "WM_AOP_END" not in ops:
+            no_terminator.append(label)
+        for f in re.findall(r'WM_AOP_FRAME,[^}]*?"([A-Z0-9]+)"', body):
+            if f not in geo:
+                missing_geo.add(f)
+
+    assert programs > 1500, programs
+    assert not bad_target, bad_target[:5]
+    assert not no_terminator, no_terminator[:5]
+    # The only frames a wrestler shows without geometry are the five
+    # BURNBODY effect frames and the two the original has no artwork for
+    # (HRTSEQ3.ASM names H4HU4B+FR10 and YOKSEQ1.ASM names Y2ST2Z+FR1;
+    # neither symbol is in any shipped .LOD). A NEW one is a real gap.
+    assert missing_geo == {
+        "BURNBODY01", "BURNBODY02", "BURNBODY03", "BURNBODY04",
+        "BURNBODY05", "H4HU4B10", "Y2ST2Z01",
+    }, sorted(missing_geo)
+
+
+def test_the_two_extractors_agree() -> None:
+    """The flat frame extractor and the program emitter, cross-checked.
+
+    src/generated/bret_visuals.c is an older, separate extraction of the
+    same assembly into flat frame lists. Where both cover an animation
+    they must agree on the frames AND their tick counts. They share
+    wlanim.py's line parsing, so this is partial independence rather than
+    two clean-room readings -- but it is the only second opinion this
+    port has, and a divergence in either direction is a real signal.
+    """
+    vis_file = ROOT / "src" / "generated" / "bret_visuals.c"
+    out = ROOT / "src" / "generated" / "anim_programs.c"
+    if not vis_file.exists() or not out.exists():
+        return
+    vis = vis_file.read_text()
+
+    flat = {}
+    for m in re.finditer(r"static const wm_visual_frame (\w+)_frames\[\] = \{(.*?)\};",
+                         vis, re.S):
+        flat[m.group(1)] = [(f, int(t)) for f, t in
+                            re.findall(r'\{"([A-Z0-9]+)",\s*(\d+)\}', m.group(2))]
+    labels = {}
+    seq_re = (r'const wm_visual_sequence \w+ = \{\s*\.source_file = "[^"]+",'
+              r'\s*\.source_label = "([^"]+)",\s*\.frames = (\w+)_frames')
+    for m in re.finditer(seq_re, vis):
+        labels[m.group(2)] = m.group(1)
+
+    src = out.read_text()
+    progs = {}
+    for m in re.finditer(r"static const wm_anim_op prog_(\w+)_ops\[\] = \{(.*?)\n\};",
+                         src, re.S):
+        progs[m.group(1)] = [
+            (f, int(t)) for t, f in re.findall(
+                r'\{\s*WM_AOP_FRAME,[^}]*?(\d+),\s*0,\s*0,\s*0,\s*0,\s*0,\s*"([A-Z0-9]+)"\s*\}',
+                m.group(2))]
+
+    compared, disagree = 0, []
+    for sym, seq in flat.items():
+        label = labels.get(sym)
+        if not label or label not in progs:
+            continue
+        compared += 1
+        if progs[label] != seq:
+            disagree.append(label)
+    assert compared >= 30, compared
+    assert not disagree, disagree
+
+
 def main() -> int:
     test_wlanim()
     test_wlprogram()
@@ -1660,6 +1764,8 @@ def main() -> int:
     test_wrsnd_tables_generate_the_shipped_file()
     test_digit_leading_local_labels_are_seen()
     test_programs_record_where_they_start()
+    test_emitted_programs_hold_together()
+    test_the_two_extractors_agree()
     test_waithitopp_is_a_mode_and_a_frame()
     test_roster_dispatcher_labels_all_emit()
     test_wlprogram_tick_expressions()

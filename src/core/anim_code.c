@@ -30,6 +30,7 @@
 #include "wm/anim_program.h"
 #include "wm/arcade/wm_arcade_combat_defs.h"
 #include "wm/arcade/wm_arcade_roster.h"
+#include "wm/arcade/wm_arcade_veladd.h"
 #include "wm/arcade/wmania_ring_geometry.h"
 #include "wm/arcade/wm_arcade_butcount.h"
 #include "wm/announce_tables.h"
@@ -328,6 +329,162 @@ static void do_combo_mess(wm_arcade_actor_t *actor, const wm_anim_env *env,
         ctx.round_award = env->round_award;
     }
     (void)wm_arcade_do_combo_mess(actor, &ctx);
+}
+
+/* ================================================================== *
+ * The last of the self-contained tail.
+ * ================================================================== */
+
+/*
+ * UNDSEQ3.ASM:1046 inc_loop -- the Undertaker's chokehold counter. Bump
+ * USR_VAR1 and report through MODE_STATUS whether it has run past two:
+ * set means "break out", clear means "go round again". Distinct from
+ * `#inc_loop`, which is a different routine with its own per-file caps.
+ */
+#define WM_INC_LOOP_CAP 2
+
+static void und_inc_loop(wm_arcade_actor_t *actor,
+                         const wm_anim_env *env, int32_t param) {
+    (void)env;
+    (void)param;
+    if (!actor) return;
+    ++actor->usr_var1;
+    if (actor->usr_var1 > WM_INC_LOOP_CAP)
+        actor->anim_mode |= (uint16_t)WM_MODE_STATUS;      /* #breakout */
+    else
+        actor->anim_mode &= (uint16_t)~WM_MODE_STATUS;
+}
+
+/*
+ * DNKSEQ2.ASM:3335 check_xvel -- a global SUBR that seven other files
+ * call. It stops a toss that would carry the victim out over the ropes:
+ * if he is heading further out from the middle, reverse him to 1.5
+ * inward and report it through MODE_STATUS, with the source's own note
+ * on why -- "Will land on ropes".
+ *
+ * The opponent's INRING gate reads `jrnz #ok`, and INRING is 1 for
+ * OUTSIDE, so the source does nothing when the opponent is out of the
+ * ring -- its comment says exactly that. This port's boolean is
+ * inverted, so the test flips.
+ */
+#define WM_CHECK_XVEL_PUSH 0x18000
+
+static void check_xvel(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                       int32_t param) {
+    const wm_arcade_actor_t *opp = env ? env->opponent : NULL;
+    (void)param;
+    if (!actor) return;
+
+    actor->anim_mode &= (uint16_t)~WM_MODE_STATUS;
+    /* "don't mess with anything if opponent is ouside the ring" */
+    if (!opp || !opp->in_ring) return;
+
+    if (actor->x_int > WM_RING_X_MID) {
+        /* `jrn #ok` -- already heading back in, so leave him alone. */
+        if (actor->x_vel < 0) return;
+        actor->x_vel = -WM_CHECK_XVEL_PUSH;
+    } else {
+        /* `jrnn #ok` -- likewise on the left. */
+        if (actor->x_vel >= 0) return;
+        actor->x_vel = WM_CHECK_XVEL_PUSH;
+    }
+    actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
+}
+
+/*
+ * `#reduce_dmg` -- MACROS.H:714's SPCDMG: stamp SPECIAL_DAMAGE_TIME with
+ * PCNT plus a window and arm NEXT_DAMAGE. Three files, three different
+ * pairs, so the constants are the registry's param rather than three
+ * bodies: Razor RD_PILEDRIVER (22) for 80 ticks, Shawn D_STOMP2 (6) and
+ * the Undertaker D_PUNCH (8), both for 40 -- and both of those carry the
+ * same source comment, "Neck breaker may take awhile".
+ */
+static void reduce_dmg(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                       int32_t packed) {
+    if (!actor) return;
+    actor->special_damage_time = (env ? env->pcnt : 0u) +
+                                 (uint32_t)(packed & 0xFFFF);
+    actor->next_damage = (int16_t)((packed >> 16) & 0xFFFF);
+}
+#define WM_SPCDMG(damage, ticks) (((int32_t)(damage) << 16) | (ticks))
+
+/*
+ * `#reattach` -- put the grapple back together after a hit broke it, in
+ * both directions. Identical in all three files that define it.
+ */
+static void reattach(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                     int32_t param) {
+    (void)env;
+    (void)param;
+    if (!actor || !actor->who_i_hit) return;
+    actor->attach_proc = actor->who_i_hit;
+    actor->who_i_hit->attach_proc = actor;
+}
+
+/*
+ * SET_OPP_GRAV_NORM / SET_OPP_GRAV_LOW -- hand the man being held a
+ * different fall rate for the length of a move. `param` is the gravity.
+ * Both are bare labels, so both are file-local, and both files spell
+ * them identically.
+ */
+static void set_opp_grav(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                         int32_t gravity) {
+    (void)env;
+    if (actor && actor->who_i_hit) actor->who_i_hit->gravity = gravity;
+}
+
+/*
+ * `#go_high` -- "Go higher for last hit!". Pops the closest wrestler
+ * upward, EXCEPT Yokozuna, whom the source declines with a two-word
+ * explanation: "Yoko too fat".
+ *
+ * Doink's and Bret's copies use 5.0 and Razor's uses 4.0, so the amount
+ * is the registry's param. Doink's copy also carries a commented-out
+ * earlier version that read ATTACH_PROC instead, with the note "Got rid
+ * of this because attach_proc is a zero after a hit" -- which is why all
+ * three read the closest wrestler.
+ */
+static void go_high(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                    int32_t yvel) {
+    wm_arcade_actor_t *opp = env ? env->opponent : NULL;
+    (void)actor;
+    if (!opp) return;
+    if (opp->wrestler_num == WM_ROSTER_YOKO) return;    /* "Yoko too fat" */
+    opp->y_vel = yvel;
+}
+
+/*
+ * WRESTLE2.ASM:3669 target_whoihit -- aim the smart-attack system at the
+ * man just hit, rather than at whoever is closest.
+ */
+static void target_whoihit(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                           int32_t param) {
+    (void)env;
+    (void)param;
+    if (!actor) return;
+    actor->status_flags |= WM_STATUS_SMART_ATTACK;
+    actor->smart_target = actor->who_i_hit;
+}
+
+/* SHNSEQ3.ASM:3691 #set_opp_facing -- turn the held man around, by
+   XOR-ing the two horizontal bits of his FACING_DIR. */
+static void set_opp_facing(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                           int32_t param) {
+    (void)env;
+    (void)param;
+    if (!actor || !actor->attach_proc) return;
+    actor->attach_proc->facing_dir ^= (WM_MOVE_LEFT | WM_MOVE_RIGHT);
+}
+
+/* RZRSEQ2.ASM:1528 #blocked_vels -- bounced off a block: 3.0 up, and
+   half the X velocity back the other way. */
+static void blocked_vels(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                         int32_t param) {
+    (void)env;
+    (void)param;
+    if (!actor) return;
+    actor->y_vel = 0x30000;
+    actor->x_vel = -(actor->x_vel >> 1);
 }
 
 /*
@@ -1525,6 +1682,27 @@ static const struct {
     { "DO_COMBO_MESS", NULL, do_combo_mess, 0 },
     /* SUBRP, so file-local -- and only HRTSEQ3.ASM calls it. */
     { "#rope_check", "HRTSEQ3.ASM", rope_check, 0 },
+    { "inc_loop", "UNDSEQ3.ASM", und_inc_loop, 0 },
+    { "check_xvel", NULL, check_xvel, 0 },
+    /* SPCDMG's two constants, packed: damage in the high half, ticks in
+       the low. Three files, three pairs. */
+    { "#reduce_dmg", "RZRSEQ3.ASM", reduce_dmg, WM_SPCDMG(22, 80) },
+    { "#reduce_dmg", "SHNSEQ3.ASM", reduce_dmg, WM_SPCDMG(6, 40) },
+    { "#reduce_dmg", "UNDSEQ2.ASM", reduce_dmg, WM_SPCDMG(8, 40) },
+    { "#reattach", "DNKSEQ3.ASM", reattach, 0 },
+    { "#reattach", "HRTSEQ3.ASM", reattach, 0 },
+    { "#reattach", "UNDSEQ3.ASM", reattach, 0 },
+    { "SET_OPP_GRAV_NORM", "RZRSEQ2.ASM", set_opp_grav, WM_GRAVITY },
+    { "SET_OPP_GRAV_NORM", "UNDSEQ2.ASM", set_opp_grav, WM_GRAVITY },
+    { "SET_OPP_GRAV_LOW", "RZRSEQ2.ASM", set_opp_grav, WM_GRAVITY - 0x1000 },
+    { "SET_OPP_GRAV_LOW", "UNDSEQ2.ASM", set_opp_grav, WM_GRAVITY - 0x1000 },
+    /* Doink and Bret pop him 5.0; Razor only 4.0. */
+    { "#go_high", "DNKSEQ3.ASM", go_high, 0x50000 },
+    { "#go_high", "HRTSEQ2.ASM", go_high, 0x50000 },
+    { "#go_high", "RZRSEQ3.ASM", go_high, 0x40000 },
+    { "target_whoihit", NULL, target_whoihit, 0 },
+    { "#set_opp_facing", "SHNSEQ3.ASM", set_opp_facing, 0 },
+    { "#blocked_vels", "RZRSEQ2.ASM", blocked_vels, 0 },
     { "MAYBE_BOUNCE_ROPE", NULL, maybe_bounce_rope, 0 },
     /*
      * #set_trgt: seven files at 0f8h+60, Doink alone at 0f8h+50. The

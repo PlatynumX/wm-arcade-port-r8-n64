@@ -5295,6 +5295,170 @@ static void test_bounce_rope_trgt_and_clrcnt(void) {
     CHECK(wm_anim_code_run(NULL, &env, "#set_trgt", "HRTSEQ2.ASM"));
 }
 
+/* The last of the self-contained ANI_CODE tail. */
+static void test_selfcontained_tail(void) {
+    wm_arcade_actor_t a, v;
+    wm_anim_env env;
+
+    memset(&env, 0, sizeof(env));
+
+    /*
+     * UNDSEQ3.ASM:1046 inc_loop -- the chokehold counter, reporting
+     * through MODE_STATUS whether it has run past two. Distinct from
+     * `#inc_loop`, which is a different routine.
+     */
+    memset(&a, 0, sizeof(a));
+    CHECK(wm_anim_code_run(&a, &env, "inc_loop", "UNDSEQ3.ASM"));
+    CHECK(a.usr_var1 == 1 && (a.anim_mode & WM_MODE_STATUS) == 0);
+    CHECK(wm_anim_code_run(&a, &env, "inc_loop", "UNDSEQ3.ASM"));
+    CHECK(a.usr_var1 == 2 && (a.anim_mode & WM_MODE_STATUS) == 0);
+    CHECK(wm_anim_code_run(&a, &env, "inc_loop", "UNDSEQ3.ASM"));
+    CHECK(a.usr_var1 == 3 && (a.anim_mode & WM_MODE_STATUS) != 0);
+
+    /*
+     * DNKSEQ2.ASM:3335 check_xvel -- stop a toss that would carry the
+     * victim out over the ropes. "Will land on ropes".
+     */
+    memset(&a, 0, sizeof(a));
+    memset(&v, 0, sizeof(v));
+    env.opponent = &v;
+
+    /* Opponent outside the ring: nothing at all, and MODE_STATUS clear.
+       The source's gate is `jrnz #ok` on INRING, which is 1 for OUTSIDE;
+       this port's boolean is inverted. */
+    v.in_ring = false;
+    a.x_int = WM_RING_X_MID - 100;
+    a.x_vel = -0x40000;
+    a.anim_mode = (uint16_t)WM_MODE_STATUS;
+    CHECK(wm_anim_code_run(&a, &env, "check_xvel", "HRTSEQ2.ASM"));
+    CHECK(a.x_vel == -0x40000);
+    CHECK((a.anim_mode & WM_MODE_STATUS) == 0);
+
+    /* In the left half heading further left: reversed to +1.5, reported. */
+    v.in_ring = true;
+    a.x_int = WM_RING_X_MID - 100;
+    a.x_vel = -0x40000;
+    CHECK(wm_anim_code_run(&a, &env, "check_xvel", "HRTSEQ2.ASM"));
+    CHECK(a.x_vel == 0x18000);
+    CHECK((a.anim_mode & WM_MODE_STATUS) != 0);
+
+    /* Already heading back in: left alone, and NOT reported. */
+    a.x_vel = 0x40000;
+    CHECK(wm_anim_code_run(&a, &env, "check_xvel", "HRTSEQ2.ASM"));
+    CHECK(a.x_vel == 0x40000);
+    CHECK((a.anim_mode & WM_MODE_STATUS) == 0);
+
+    /* ...and the right half mirrors it. */
+    a.x_int = WM_RING_X_MID + 100;
+    a.x_vel = 0x40000;
+    CHECK(wm_anim_code_run(&a, &env, "check_xvel", "HRTSEQ2.ASM"));
+    CHECK(a.x_vel == -0x18000);
+    CHECK((a.anim_mode & WM_MODE_STATUS) != 0);
+
+    /*
+     * `#reduce_dmg` -- MACROS.H:714 SPCDMG. Three files, three different
+     * pairs, which is why the constants are the registry's param.
+     */
+    memset(&env, 0, sizeof(env));
+    env.pcnt = 5000u;
+    memset(&a, 0, sizeof(a));
+    CHECK(wm_anim_code_run(&a, &env, "#reduce_dmg", "RZRSEQ3.ASM"));
+    CHECK(a.next_damage == 22);            /* RD_PILEDRIVER */
+    CHECK(a.special_damage_time == 5000u + 80u);
+    memset(&a, 0, sizeof(a));
+    CHECK(wm_anim_code_run(&a, &env, "#reduce_dmg", "SHNSEQ3.ASM"));
+    CHECK(a.next_damage == 6);             /* D_STOMP2 */
+    CHECK(a.special_damage_time == 5000u + 40u);
+    memset(&a, 0, sizeof(a));
+    CHECK(wm_anim_code_run(&a, &env, "#reduce_dmg", "UNDSEQ2.ASM"));
+    CHECK(a.next_damage == 8);             /* D_PUNCH */
+    CHECK(a.special_damage_time == 5000u + 40u);
+
+    /* `#reattach` -- the grapple back together, both ways. */
+    memset(&a, 0, sizeof(a));
+    memset(&v, 0, sizeof(v));
+    a.who_i_hit = &v;
+    CHECK(wm_anim_code_run(&a, &env, "#reattach", "HRTSEQ3.ASM"));
+    CHECK(a.attach_proc == &v);
+    CHECK(v.attach_proc == &a);
+    /* With nobody hit it does nothing rather than attaching to NULL. */
+    memset(&a, 0, sizeof(a));
+    CHECK(wm_anim_code_run(&a, &env, "#reattach", "DNKSEQ3.ASM"));
+    CHECK(a.attach_proc == NULL);
+
+    /* SET_OPP_GRAV_NORM / _LOW -- the held man's fall rate. */
+    memset(&a, 0, sizeof(a));
+    memset(&v, 0, sizeof(v));
+    a.who_i_hit = &v;
+    CHECK(wm_anim_code_run(&a, &env, "SET_OPP_GRAV_LOW", "RZRSEQ2.ASM"));
+    CHECK(v.gravity == WM_GRAVITY - 0x1000);
+    CHECK(wm_anim_code_run(&a, &env, "SET_OPP_GRAV_NORM", "RZRSEQ2.ASM"));
+    CHECK(v.gravity == WM_GRAVITY);
+    CHECK(wm_anim_code_run(&a, &env, "SET_OPP_GRAV_LOW", "UNDSEQ2.ASM"));
+    CHECK(v.gravity == WM_GRAVITY - 0x1000);
+
+    /*
+     * `#go_high` -- "Go higher for last hit!", except for Yokozuna, whom
+     * the source declines with "Yoko too fat". Doink and Bret pop him
+     * 5.0; Razor only 4.0.
+     */
+    memset(&env, 0, sizeof(env));
+    memset(&a, 0, sizeof(a));
+    memset(&v, 0, sizeof(v));
+    env.opponent = &v;
+    v.wrestler_num = WM_ROSTER_BRET;
+    CHECK(wm_anim_code_run(&a, &env, "#go_high", "HRTSEQ2.ASM"));
+    CHECK(v.y_vel == 0x50000);
+    v.y_vel = 0;
+    CHECK(wm_anim_code_run(&a, &env, "#go_high", "DNKSEQ3.ASM"));
+    CHECK(v.y_vel == 0x50000);
+    v.y_vel = 0;
+    CHECK(wm_anim_code_run(&a, &env, "#go_high", "RZRSEQ3.ASM"));
+    CHECK(v.y_vel == 0x40000);
+    /* Yoko is not lifted at all, by any of the three. */
+    v.wrestler_num = WM_ROSTER_YOKO;
+    v.y_vel = 0;
+    CHECK(wm_anim_code_run(&a, &env, "#go_high", "HRTSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#go_high", "RZRSEQ3.ASM"));
+    CHECK(v.y_vel == 0);
+
+    /* WRESTLE2.ASM:3669 target_whoihit. */
+    memset(&a, 0, sizeof(a));
+    memset(&v, 0, sizeof(v));
+    a.who_i_hit = &v;
+    CHECK(wm_anim_code_run(&a, &env, "target_whoihit", NULL));
+    CHECK((a.status_flags & WM_STATUS_SMART_ATTACK) != 0);
+    CHECK(a.smart_target == &v);
+
+    /* SHNSEQ3.ASM:3691 #set_opp_facing -- turn the held man around. */
+    memset(&a, 0, sizeof(a));
+    memset(&v, 0, sizeof(v));
+    a.attach_proc = &v;
+    v.facing_dir = WM_MOVE_RIGHT | WM_MOVE_UP;
+    CHECK(wm_anim_code_run(&a, &env, "#set_opp_facing", "SHNSEQ3.ASM"));
+    CHECK(v.facing_dir == (WM_MOVE_LEFT | WM_MOVE_UP));
+    /* ...and back again: it is an XOR, so it is its own inverse. */
+    CHECK(wm_anim_code_run(&a, &env, "#set_opp_facing", "SHNSEQ3.ASM"));
+    CHECK(v.facing_dir == (WM_MOVE_RIGHT | WM_MOVE_UP));
+
+    /* RZRSEQ2.ASM:1528 #blocked_vels -- 3.0 up, half the X back. */
+    memset(&a, 0, sizeof(a));
+    a.x_vel = 0x40000;
+    CHECK(wm_anim_code_run(&a, &env, "#blocked_vels", "RZRSEQ2.ASM"));
+    CHECK(a.y_vel == 0x30000);
+    CHECK(a.x_vel == -0x20000);
+
+    /* Every one of them tolerates a NULL actor. */
+    CHECK(wm_anim_code_run(NULL, &env, "inc_loop", "UNDSEQ3.ASM"));
+    CHECK(wm_anim_code_run(NULL, &env, "check_xvel", NULL));
+    CHECK(wm_anim_code_run(NULL, &env, "#reduce_dmg", "RZRSEQ3.ASM"));
+    CHECK(wm_anim_code_run(NULL, &env, "#reattach", "HRTSEQ3.ASM"));
+    CHECK(wm_anim_code_run(NULL, &env, "SET_OPP_GRAV_LOW", "RZRSEQ2.ASM"));
+    CHECK(wm_anim_code_run(NULL, &env, "target_whoihit", NULL));
+    CHECK(wm_anim_code_run(NULL, &env, "#set_opp_facing", "SHNSEQ3.ASM"));
+    CHECK(wm_anim_code_run(NULL, &env, "#blocked_vels", "RZRSEQ2.ASM"));
+}
+
 /* The self-contained state commands: no subsystem behind any of them. */
 static void test_self_contained_ops(void) {
     wm_arcade_actor_t a, v;
@@ -8117,6 +8281,7 @@ int main(void) {
     test_targeting_and_drift();
     test_rope_check_writes_the_program_counter();
     test_bounce_rope_trgt_and_clrcnt();
+    test_selfcontained_tail();
     test_program_entry_points();
     test_digit_leading_local_labels();
     test_self_contained_ops();

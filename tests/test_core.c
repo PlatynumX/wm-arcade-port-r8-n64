@@ -6258,6 +6258,124 @@ static void test_hurt_box_connects_a_real_hit(void) {
     CHECK(victim.life < life_before);
 }
 
+/*
+ * Can the OTHER SEVEN wrestlers actually fight?
+ *
+ * The capstone above proves it for Bret, through his own hand-built
+ * visual backend. Everyone else goes through the generic backend, which
+ * drives the ANIM.ASM program directly -- so this asks the same question
+ * of all eight, with no per-wrestler code behind any of them: does a real
+ * punch animation, played by the real interpreter, set a real attack box
+ * that the real collision pass connects to a real per-frame hurt box?
+ *
+ * If it does, the animation VM has closed the gap the README used to
+ * describe -- seven wrestlers that could "neither land nor receive a hit".
+ */
+static void test_every_wrestler_can_land_a_hit(void) {
+    static const struct { const char *punch; const char *stand; int who; }
+        roster[] = {
+            { "hrt_2_punch_anim", "hrt_stand2_anim", WM_ROSTER_BRET },
+            { "rzr_2_punch_anim", "rzr_stand2_anim", 1 },
+            { "und_2_punch_anim", "und_stand2_anim", 2 },
+            { "yok_2_punch_anim", "yok_stand2_anim", WM_ROSTER_YOKO },
+            { "shn_2_punch_anim", "shn_stand2_anim", 4 },
+            { "bam_2_punch_anim", "bam_stand2_anim", 5 },
+            { "dnk_2_punch_anim", "dnk_stand2_anim", 6 },
+            { "lex_2_punch_anim", "lex_stand2_anim", 8 }
+        };
+    size_t i;
+    int landed = 0;
+
+    for (i = 0; i < sizeof(roster) / sizeof(roster[0]); ++i) {
+        wm_arcade_actor_t attacker, victim;
+        wm_wrestler_backend_actor ba, bv;
+        wm_arcade_actor_t *actors[2];
+        wm_arcade_combat_runtime_t runtime;
+        wm_arcade_react_callbacks_t react_cb;
+        wm_arcade_react_bridge_t bridge;
+        wm_arcade_combat_callbacks_t combat_cb;
+        wm_arcade_roster_callbacks_t rcb;
+        int guard, hit = 0;
+        int32_t life_before;
+
+        /* Both animations must exist before anything is asserted about
+           them -- a missing program would make this vacuous. */
+        CHECK(wm_anim_program_find(roster[i].punch) != NULL);
+        CHECK(wm_anim_program_find(roster[i].stand) != NULL);
+        if (!wm_anim_program_find(roster[i].punch) ||
+            !wm_anim_program_find(roster[i].stand))
+            continue;
+
+        memset(&attacker, 0, sizeof(attacker));
+        memset(&victim, 0, sizeof(victim));
+        attacker.active = victim.active = 1;
+        attacker.in_ring = victim.in_ring = 1;
+        attacker.life = victim.life = 163;
+        attacker.wrestler_num = victim.wrestler_num = roster[i].who;
+        attacker.player_mode = victim.player_mode = WM_PMODE_NORMAL;
+        attacker.smart_target = &victim;
+        victim.smart_target = &attacker;
+        /* Same geometry the Bret capstone uses: the attacker at 0 facing
+           right, the victim at +60 facing back. */
+        attacker.x_int = 0;
+        victim.x_int = 60;
+        attacker.facing_dir = attacker.new_facing_dir = WM_MOVE_UP_RIGHT;
+        victim.facing_dir = victim.new_facing_dir = WM_MOVE_UP_LEFT;
+
+        memset(&ba, 0, sizeof(ba));
+        memset(&bv, 0, sizeof(bv));
+        ba.opponent = &victim;
+        bv.opponent = &attacker;
+        ba.wrestler_num = bv.wrestler_num = roster[i].who;
+
+        rcb = wm_wrestler_roster_callbacks(&ba);
+        CHECK(rcb.change_anim_label != NULL);
+        if (rcb.change_anim_label)
+            rcb.change_anim_label(&attacker, roster[i].punch, &ba);
+        rcb = wm_wrestler_roster_callbacks(&bv);
+        if (rcb.change_anim_label)
+            rcb.change_anim_label(&victim, roster[i].stand, &bv);
+
+        life_before = victim.life;
+        actors[0] = &attacker;
+        actors[1] = &victim;
+
+        wm_arcade_combat_runtime_init(&runtime);
+        memset(&react_cb, 0, sizeof(react_cb));
+        react_cb.adjust_health = test_hurt_box_adjust_health;
+        bridge.runtime = &runtime;
+        bridge.callbacks = &react_cb;
+        memset(&bridge.last_result, 0, sizeof(bridge.last_result));
+        memset(&combat_cb, 0, sizeof(combat_cb));
+        combat_cb.wrestler_hit = wm_arcade_wrestler_hit_collision_callback;
+        combat_cb.user = &bridge;
+
+        for (guard = 0; guard < 30 && !hit; ++guard) {
+            ba.pcnt = bv.pcnt = (uint32_t)guard;
+            wm_wrestler_backend_tick(&ba, &attacker);
+            wm_wrestler_backend_tick(&bv, &victim);
+            runtime.pcnt = (uint32_t)guard;
+            if (wm_arcade_check_wrestler_collisions(actors, 2,
+                                                    (uint32_t)guard,
+                                                    &combat_cb))
+                hit = 1;
+        }
+
+        /* The punch reached ATTACK_ON, the box connected, and the victim
+           actually lost health -- with nothing wrestler-specific behind
+           any of it but the source's own animation. */
+        CHECK(hit);
+        if (hit) {
+            CHECK(victim.life < life_before);
+            ++landed;
+        }
+    }
+
+    /* All eight, not just whichever happened to work. */
+    CHECK(landed == (int)(sizeof(roster) / sizeof(roster[0])));
+}
+
+
 /* wm_arcade_adjust_health (wm/arcade/wm_arcade_lifebar.h), tested directly
    against LIFEBAR.ASM's literal branch structure -- see that header's own
    comment for the exact line numbers each case below translates. */
@@ -8489,6 +8607,7 @@ int main(void) {
     test_bret_hurt_box_for_frame_real_geometry();
     test_bret_backend_tick_sets_real_hurt_box();
     test_hurt_box_connects_a_real_hit();
+    test_every_wrestler_can_land_a_hit();
     test_arcade_adjust_health_normal_damage();
     test_arcade_adjust_health_clamps_to_life_max();
     test_arcade_adjust_health_speed_adjustment_is_identity();

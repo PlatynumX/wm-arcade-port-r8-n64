@@ -279,6 +279,11 @@ typedef struct {
 } wm_anim_op;
 
 typedef struct {
+    const char *name;      /* the source's own label, '#' and all */
+    size_t at;             /* op index it names */
+} wm_anim_label;
+
+typedef struct {
     const char *source_label;
     const char *source_file;
     const wm_anim_op *ops;
@@ -295,7 +300,21 @@ typedef struct {
      * bam_combo_pogo_anim's own body starts 256 ops into its stream.
      */
     size_t entry;
+    /*
+     * The source labels inside this body, and the op each names.
+     *
+     * ANIM.ASM lets an ANI_CODE routine write the program counter
+     * directly -- HRTSEQ3.ASM's `#rope_check` does `movi #stand,a14 /
+     * move a14,*a13(ANIPC),L` -- so a routine can redirect the animation
+     * to a label rather than only branch from an opcode. Resolving that
+     * needs the labels by name at runtime, which is what this is.
+     */
+    const wm_anim_label *labels;
+    size_t label_count;
 } wm_anim_program;
+
+/* The op index a source label names, or -1. */
+int wm_anim_program_label(const wm_anim_program *program, const char *label);
 
 /* Execution state. One per actor track. */
 /*

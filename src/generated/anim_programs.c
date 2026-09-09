@@ -632,6 +632,11 @@ static const wm_anim_op prog_bam_run2_anim_ops[] = {
     { WM_AOP_GOTO, 0, 7, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_run2_anim_labels[] = {
+    { "#lp1", 7 },
+    { "#run2", 13 },
+};
+
 static const wm_anim_op prog_bam_run_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -653,6 +658,11 @@ static const wm_anim_op prog_bam_run_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B3RN3A11" },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "B3RN3A12" },
     { WM_AOP_GOTO, 0, 3, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_run_anim_labels[] = {
+    { "#lp1", 3 },
+    { "#run2", 9 },
 };
 
 static const wm_anim_op prog_bam_bounce_anim_ops[] = {
@@ -758,6 +768,15 @@ static const wm_anim_op prog_bam_2_fpunch_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_2_fpunch_anim_labels[] = {
+    { "#loop", 7 },
+    { "#gotim", 28 },
+    { "#blocked", 29 },
+    { "#gotim2", 54 },
+    { "#blocked2", 55 },
+    { "#fail", 61 },
 };
 
 static const wm_anim_op prog_bam_4_fpunch_anim_ops[] = {
@@ -885,6 +904,24 @@ static const wm_anim_op prog_bam_4_fpunch_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_4_fpunch_anim_labels[] = {
+    { "#loop", 0 },
+    { "#gotim", 21 },
+    { "#blocked", 22 },
+    { "#gotim2", 47 },
+    { "#blocked2", 48 },
+    { "#fail", 54 },
+    { "#loop2", 65 },
+    { "#gotim2a", 86 },
+    { "#blocked2a", 87 },
+    { "#gotima", 111 },
+    { "#blockeda", 112 },
+    { "#fail2", 118 },
+    { "#set_opp_xy", 122 },
+    { "#abs", 122 },
+    { "rets", 122 },
+};
+
 static const wm_anim_op prog_bam_combo_fpunch_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -1000,6 +1037,20 @@ static const wm_anim_op prog_bam_combo_fpunch_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_combo_fpunch_labels[] = {
+    { "#AVOID_VELSB", 26 },
+    { "#AVOID_VELS2B", 39 },
+    { "#loop_c", 44 },
+    { "#AVOID_VELS", 64 },
+    { "#AVOID_VELS2", 77 },
+    { "#CHECK_ANOTHER_2", 87 },
+    { "#CHECK_ANOTHER", 90 },
+    { "#CHECK_ANOTHER_BUT2", 92 },
+    { "#MISSED_4", 94 },
+    { "#MISSED_4B", 96 },
+    { "#MISSED_2", 103 },
+};
+
 static const wm_anim_op prog_bam_2_punch_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -1028,6 +1079,10 @@ static const wm_anim_op prog_bam_2_punch_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_2_punch_anim_labels[] = {
+    { "#no_hit", 19 },
+};
+
 static const wm_anim_op prog_bam_4_punch_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -1054,6 +1109,10 @@ static const wm_anim_op prog_bam_4_punch_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "B4PU3D09" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_4_punch_anim_labels[] = {
+    { "#no_hit", 19 },
 };
 
 static const wm_anim_op prog_bam_combo_punch_anim_ops[] = {
@@ -1141,6 +1200,14 @@ static const wm_anim_op prog_bam_combo_punch_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_combo_punch_anim_labels[] = {
+    { "#p_loop", 29 },
+    { "#CHECK_NEXT2", 59 },
+    { "#CHECK_NEXT1", 62 },
+    { "#no_hit2", 64 },
+    { "#no_hit4", 73 },
+};
+
 static const wm_anim_op prog_bam_4_push_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
@@ -1167,6 +1234,11 @@ static const wm_anim_op prog_bam_4_push_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B4PS3A02" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_4_push_anim_labels[] = {
+    { "#no_hit", 17 },
+    { "#hit", 20 },
 };
 
 static const wm_anim_op prog_bam_2_bncoff_anim_ops[] = {
@@ -1229,6 +1301,10 @@ static const wm_anim_op prog_bam_4_losebal_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_4_losebal_anim_labels[] = {
+    { "#yoff", 18 },
+};
+
 static const wm_anim_op prog_bam_2_lbowdrop_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -1267,6 +1343,13 @@ static const wm_anim_op prog_bam_2_lbowdrop_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "B2PJ3A10" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_2_faceup_getup2_anim" },
+};
+
+static const wm_anim_label prog_bam_2_lbowdrop_anim_labels[] = {
+    { "#no_leapat", 13 },
+    { "#missed", 32 },
+    { "#hit", 33 },
+    { "#yoff", 37 },
 };
 
 static const wm_anim_op prog_bam_combo_lbowdrop_anim_ops[] = {
@@ -1310,6 +1393,12 @@ static const wm_anim_op prog_bam_combo_lbowdrop_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_4_faceup_getup2_anim" },
 };
 
+static const wm_anim_label prog_bam_combo_lbowdrop_anim_labels[] = {
+    { "#no_leapatc", 12 },
+    { "#missedc", 31 },
+    { "#hitc", 32 },
+};
+
 static const wm_anim_op prog_bam_4_lbowdrop_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -1347,6 +1436,13 @@ static const wm_anim_op prog_bam_4_lbowdrop_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B3GU4A04" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_4_faceup_getup2_anim" },
+};
+
+static const wm_anim_label prog_bam_4_lbowdrop_anim_labels[] = {
+    { "#no_leapat", 12 },
+    { "#missed", 31 },
+    { "#hit", 32 },
+    { "#yoff", 36 },
 };
 
 static const wm_anim_op prog_bam_combo_butt_drop_anim_ops[] = {
@@ -1397,6 +1493,10 @@ static const wm_anim_op prog_bam_combo_butt_drop_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_2_faceup_getup2_anim" },
 };
 
+static const wm_anim_label prog_bam_combo_butt_drop_anim_labels[] = {
+    { "#missc", 34 },
+};
+
 static const wm_anim_op prog_bam_3_butt_drop_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -1441,6 +1541,11 @@ static const wm_anim_op prog_bam_3_butt_drop_anim_ops[] = {
     { WM_AOP_FACEUP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_2_faceup_getup2_anim" },
+};
+
+static const wm_anim_label prog_bam_3_butt_drop_anim_labels[] = {
+    { "#hit", 18 },
+    { "#miss", 34 },
 };
 
 static const wm_anim_op prog_bam_bellyflop_anim_ops[] = {
@@ -1509,6 +1614,11 @@ static const wm_anim_op prog_bam_bellyflop_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_bellyflop_anim_labels[] = {
+    { "#opp_onground", 21 },
+    { "#hit", 37 },
+};
+
 static const wm_anim_op prog_attach_victim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
@@ -1561,6 +1671,19 @@ static const wm_anim_op prog_attach_victim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B2BC3A08" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_attach_victim_labels[] = {
+    { "rets", 0 },
+    { "#lp1", 0 },
+    { "#nxt1", 0 },
+    { "#usea0", 0 },
+    { "#init_positions", 0 },
+    { "#loop", 11 },
+    { "#nodead", 22 },
+    { "#liedown_table", 23 },
+    { "#convulse", 23 },
+    { "#no_hit", 47 },
 };
 
 static const wm_anim_op prog_set_new_position_ops[] = {
@@ -1617,6 +1740,19 @@ static const wm_anim_op prog_set_new_position_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_set_new_position_labels[] = {
+    { "#lp1", 0 },
+    { "#nxt1", 0 },
+    { "#usea0", 0 },
+    { "rets", 0 },
+    { "#init_positions", 0 },
+    { "#loop", 11 },
+    { "#nodead", 22 },
+    { "#liedown_table", 23 },
+    { "#convulse", 23 },
+    { "#no_hit", 47 },
+};
+
 static const wm_anim_op prog_burn_tbl_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
@@ -1669,6 +1805,15 @@ static const wm_anim_op prog_burn_tbl_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B2BC3A08" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_burn_tbl_labels[] = {
+    { "#loop", 11 },
+    { "#nodead", 22 },
+    { "rets", 23 },
+    { "#liedown_table", 23 },
+    { "#convulse", 23 },
+    { "#no_hit", 47 },
 };
 
 static const wm_anim_op prog_release_table_ops[] = {
@@ -1725,6 +1870,15 @@ static const wm_anim_op prog_release_table_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_release_table_labels[] = {
+    { "#loop", 11 },
+    { "#nodead", 22 },
+    { "rets", 23 },
+    { "#liedown_table", 23 },
+    { "#convulse", 23 },
+    { "#no_hit", 47 },
+};
+
 static const wm_anim_op prog_xxx_burn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
@@ -1779,6 +1933,15 @@ static const wm_anim_op prog_xxx_burn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_xxx_burn_anim_labels[] = {
+    { "#loop", 11 },
+    { "#nodead", 22 },
+    { "rets", 23 },
+    { "#liedown_table", 23 },
+    { "#convulse", 23 },
+    { "#no_hit", 47 },
+};
+
 static const wm_anim_op prog_hit_ground_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -1808,6 +1971,13 @@ static const wm_anim_op prog_hit_ground_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B2BC3A08" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hit_ground_labels[] = {
+    { "rets", 0 },
+    { "#liedown_table", 0 },
+    { "#convulse", 0 },
+    { "#no_hit", 24 },
 };
 
 static const wm_anim_op prog_set_pal_ops[] = {
@@ -1841,6 +2011,13 @@ static const wm_anim_op prog_set_pal_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_set_pal_labels[] = {
+    { "rets", 0 },
+    { "#liedown_table", 0 },
+    { "#convulse", 0 },
+    { "#no_hit", 24 },
+};
+
 static const wm_anim_op prog_restore_pal_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -1870,6 +2047,13 @@ static const wm_anim_op prog_restore_pal_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B2BC3A08" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_restore_pal_labels[] = {
+    { "rets", 0 },
+    { "#liedown_table", 0 },
+    { "#convulse", 0 },
+    { "#no_hit", 24 },
 };
 
 static const wm_anim_op prog_bam_2_butt_anim_ops[] = {
@@ -1903,6 +2087,10 @@ static const wm_anim_op prog_bam_2_butt_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_2_butt_anim_labels[] = {
+    { "#no_hit", 24 },
+};
+
 static const wm_anim_op prog_bam_4_butt_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -1932,6 +2120,10 @@ static const wm_anim_op prog_bam_4_butt_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B4BC3A07" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_4_butt_anim_labels[] = {
+    { "#no_hit2", 24 },
 };
 
 static const wm_anim_op prog_bam_2_butts_anim_ops[] = {
@@ -1982,6 +2174,14 @@ static const wm_anim_op prog_bam_2_butts_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_2_butts_anim_labels[] = {
+    { "#rpt", 7 },
+    { "#no_hit", 20 },
+    { "#ex", 33 },
+    { "#missedb", 38 },
+    { "#missed", 39 },
+};
+
 static const wm_anim_op prog_bam_4_butts_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -2030,6 +2230,14 @@ static const wm_anim_op prog_bam_4_butts_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_4_butts_anim_labels[] = {
+    { "#rpt", 7 },
+    { "#no_hit2", 27 },
+    { "#ex", 33 },
+    { "#missedb", 40 },
+    { "#missed", 41 },
 };
 
 static const wm_anim_op prog_bam_kick_TB_anim_ops[] = {
@@ -2097,6 +2305,10 @@ static const wm_anim_op prog_bam_2_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_2_kick_anim_labels[] = {
+    { "#no_hit2", 23 },
+};
+
 static const wm_anim_op prog_bam_4_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -2130,6 +2342,10 @@ static const wm_anim_op prog_bam_4_kick_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B4KM3A10" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_4_kick_anim_labels[] = {
+    { "#no_hit2", 23 },
 };
 
 static const wm_anim_op prog_bam_2_superkick_anim_ops[] = {
@@ -2205,6 +2421,14 @@ static const wm_anim_op prog_bam_2_superkick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_2_superkick_anim_labels[] = {
+    { "#no_hit2", 34 },
+    { "#none", 40 },
+    { "#missedb", 50 },
+    { "#missed", 55 },
+    { "#none2", 61 },
+};
+
 static const wm_anim_op prog_bam_4_superkick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -2270,6 +2494,14 @@ static const wm_anim_op prog_bam_4_superkick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_4_superkick_anim_labels[] = {
+    { "#no_hit2", 28 },
+    { "#none", 34 },
+    { "#missedb", 44 },
+    { "#missed", 49 },
+    { "#none2", 55 },
 };
 
 static const wm_anim_op prog_bam_combo_superkick_anim_ops[] = {
@@ -2363,6 +2595,15 @@ static const wm_anim_op prog_bam_combo_superkick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_combo_superkick_anim_labels[] = {
+    { "#k_loop", 28 },
+    { "#CHECK_NEXT2", 58 },
+    { "#CHECK_NEXT1A", 61 },
+    { "#CHECK_NEXT1", 63 },
+    { "#NOT_HIT_AT_ALL", 66 },
+    { "#missedc", 73 },
+};
+
 static const wm_anim_op prog_bam_4_jumpkick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -2410,6 +2651,12 @@ static const wm_anim_op prog_bam_4_jumpkick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_4_jumpkick_anim_labels[] = {
+    { "#no_slide", 20 },
+    { "#missedb", 33 },
+    { "#missed", 36 },
 };
 
 static const wm_anim_op prog_bam_flying_kick_anim_ops[] = {
@@ -2472,6 +2719,12 @@ static const wm_anim_op prog_bam_flying_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_flying_kick_anim_labels[] = {
+    { "#missedb", 19 },
+    { "#hit", 20 },
+    { "#no_freetoss", 53 },
+};
+
 static const wm_anim_op prog_bam_flying_kick_no_xvel_ops[] = {
     { WM_AOP_STARTATTACK, 0, -1, 57, 20, 0, 0, 0, 0, 0 },
     { WM_AOP_SET_XVEL, 1, -1, 131072, 1, 0, 0, 0, 0, 0 },
@@ -2525,6 +2778,10 @@ static const wm_anim_op prog_bam_flying_kick_no_xvel_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_flying_kick_no_xvel_labels[] = {
+    { "#no_freetoss1", 48 },
 };
 
 static const wm_anim_op prog_bam_2_stomp_anim_ops[] = {
@@ -2585,6 +2842,14 @@ static const wm_anim_op prog_bam_2_stomp_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_2_stomp_anim_labels[] = {
+    { "#missed", 26 },
+    { "#hit", 27 },
+    { "#leapat_stomp", 33 },
+    { "#l_missed", 46 },
+    { "#l_hit", 47 },
+};
+
 static const wm_anim_op prog_bam_4_stomp_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -2631,6 +2896,13 @@ static const wm_anim_op prog_bam_4_stomp_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_4_stomp_anim_labels[] = {
+    { "#leapat", 24 },
+    { "#common", 34 },
+    { "#missed", 36 },
+    { "#hit", 37 },
+};
+
 static const wm_anim_op prog_bam_2_knee_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -2671,6 +2943,12 @@ static const wm_anim_op prog_bam_2_knee_anim_ops[] = {
     { WM_AOP_FACEUP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_2_knee_anim_labels[] = {
+    { "#no_hit", 25 },
+    { "#nodrft", 29 },
+    { "#cont", 33 },
 };
 
 static const wm_anim_op prog_bam_4_knee2_anim_ops[] = {
@@ -2720,6 +2998,12 @@ static const wm_anim_op prog_bam_4_knee2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_4_knee2_anim_labels[] = {
+    { "#cont2a", 21 },
+    { "#no_hit2", 34 },
+    { "#cont2", 37 },
+};
+
 static const wm_anim_op prog_bam_4_knee_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -2757,6 +3041,12 @@ static const wm_anim_op prog_bam_4_knee_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_4_knee_anim_labels[] = {
+    { "#cont2a", 13 },
+    { "#no_hit2", 26 },
+    { "#cont2", 29 },
 };
 
 static const wm_anim_op prog_bam_2_grabfling_anim_ops[] = {
@@ -2819,6 +3109,23 @@ static const wm_anim_op prog_bam_2_grabfling_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_2_grabfling_anim_labels[] = {
+    { "#cont", 15 },
+    { "#missedb", 47 },
+    { "#missed", 50 },
+    { "#puppet_tbl", 57 },
+    { "#Bret", 57 },
+    { "#Razor", 57 },
+    { "#Taker", 57 },
+    { "#Yokozuna", 57 },
+    { "#Shawn", 57 },
+    { "#BamBam", 57 },
+    { "#Doink", 57 },
+    { "#Adam", 57 },
+    { "#Lex", 57 },
+    { "#strt_run_tbl", 57 },
+};
+
 static const wm_anim_op prog_bam_4_grabfling_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -2868,6 +3175,23 @@ static const wm_anim_op prog_bam_4_grabfling_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_4_grabfling_anim_labels[] = {
+    { "#cont", 6 },
+    { "#missedb", 38 },
+    { "#missed", 41 },
+    { "#puppet_tbl", 48 },
+    { "#Bret", 48 },
+    { "#Razor", 48 },
+    { "#Taker", 48 },
+    { "#Yokozuna", 48 },
+    { "#Shawn", 48 },
+    { "#BamBam", 48 },
+    { "#Doink", 48 },
+    { "#Adam", 48 },
+    { "#Lex", 48 },
+    { "#strt_run_tbl", 48 },
 };
 
 static const wm_anim_op prog_bam_2_head_hit_anim_ops[] = {
@@ -2990,6 +3314,10 @@ static const wm_anim_op prog_bam_head_hit2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_head_hit2_anim_labels[] = {
+    { "#nodead", 21 },
+};
+
 static const wm_anim_op prog_bam_head_hit2s_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -3096,6 +3424,10 @@ static const wm_anim_op prog_bam_4_body_hit_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_4_body_hit_anim_labels[] = {
+    { "#reg", 30 },
 };
 
 static const wm_anim_op prog_bam_4_body_hit_dizzy_anim_ops[] = {
@@ -3205,6 +3537,10 @@ static const wm_anim_op prog_bam_quick_knee_hit_anim_ops[] = {
     { WM_AOP_IFNOTSTATUS, 0, 14, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_fall_back_anim" },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_3_head_held_anim" },
+};
+
+static const wm_anim_label prog_bam_quick_knee_hit_anim_labels[] = {
+    { "#nodead", 14 },
 };
 
 static const wm_anim_op prog_bam_hitonground_xflip_anim_ops[] = {
@@ -3404,6 +3740,11 @@ static const wm_anim_op prog_bam_2_faceup_getup_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_2_faceup_getup_anim_labels[] = {
+    { "#common2", 8 },
+    { "#no_freetoss2", 31 },
+};
+
 static const wm_anim_op prog_bam_2_faceup_getup2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 268, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -3434,6 +3775,11 @@ static const wm_anim_op prog_bam_2_faceup_getup2_anim_ops[] = {
     { WM_AOP_FACEUP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_2_faceup_getup2_anim_labels[] = {
+    { "#common2", 3 },
+    { "#no_freetoss2", 26 },
 };
 
 static const wm_anim_op prog_bam_4_faceup_getup_anim_ops[] = {
@@ -3473,6 +3819,12 @@ static const wm_anim_op prog_bam_4_faceup_getup_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_4_faceup_getup_anim_labels[] = {
+    { "#common4", 10 },
+    { "#frame7", 13 },
+    { "#no_freetoss3", 31 },
+};
+
 static const wm_anim_op prog_bam_4_faceup_getup2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 268, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -3501,6 +3853,12 @@ static const wm_anim_op prog_bam_4_faceup_getup2_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_4_faceup_getup2_anim_labels[] = {
+    { "#common4", 3 },
+    { "#frame7", 6 },
+    { "#no_freetoss3", 24 },
 };
 
 static const wm_anim_op prog_bam_4_faceup_getup3_anim_ops[] = {
@@ -3548,6 +3906,12 @@ static const wm_anim_op prog_bam_4_faceup_getup3_anim_ops[] = {
     { WM_AOP_GOTO, 0, 29, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_4_faceup_getup3_anim_labels[] = {
+    { "#frame7", 0 },
+    { "#no_freetoss3", 18 },
+    { "#loop", 29 },
+};
+
 static const wm_anim_op prog_bam_dizzy_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 8, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -3566,6 +3930,10 @@ static const wm_anim_op prog_bam_dizzy_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 8, 0, 0, 0, 0, 0, "B4TI4A03" },
     { WM_AOP_FRAME, 0, -1, 8, 0, 0, 0, 0, 0, "B4TI4A02" },
     { WM_AOP_GOTO, 0, 4, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_dizzy_anim_labels[] = {
+    { "#loop", 4 },
 };
 
 static const wm_anim_op prog_bam_roll_frames_ops[] = {
@@ -3588,6 +3956,10 @@ static const wm_anim_op prog_bam_roll_frames_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "B4BK3D02" },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_roll_frames_labels[] = {
+    { "#blk4", 10 },
 };
 
 static const wm_anim_op prog_bam_rxn2_fsteiner_anim_ops[] = {
@@ -3615,6 +3987,10 @@ static const wm_anim_op prog_bam_4_block_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_4_block_anim_labels[] = {
+    { "#blk4", 9 },
+};
+
 static const wm_anim_op prog_bam_4_hitblock_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "B4BK3D04" },
     { WM_AOP_SETMODE, 0, -1, 76, 0, 0, 0, 0, 0, 0 },
@@ -3635,6 +4011,10 @@ static const wm_anim_op prog_bam_4_hitblock_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "B4BK3D07" },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "B4BK3D06" },
     { WM_AOP_GOTO, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_4_hitblock_anim_labels[] = {
+    { "#blk4", 0 },
 };
 
 static const wm_anim_op prog_bam_4_hitblock2_anim_ops[] = {
@@ -3672,6 +4052,10 @@ static const wm_anim_op prog_bam_4_hitblock2_anim_ops[] = {
     { WM_AOP_GOTO, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_4_hitblock2_anim_labels[] = {
+    { "#blk4", 0 },
+};
+
 static const wm_anim_op prog_bam_flyout_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 140, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
@@ -3689,6 +4073,10 @@ static const wm_anim_op prog_bam_flyout_anim_ops[] = {
     { WM_AOP_OFFSET, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B4TD3B09" },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_hitonground_xflip_anim" },
+};
+
+static const wm_anim_label prog_bam_flyout_anim_labels[] = {
+    { "#cont", 8 },
 };
 
 static const wm_anim_op prog_bam_flyout2_anim_ops[] = {
@@ -3730,6 +4118,10 @@ static const wm_anim_op prog_bam_flyout2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B3RL1A01" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_bam_flyout2_anim_labels[] = {
+    { "#cont", 0 },
 };
 
 static const wm_anim_op prog_bam_tossed_anim_ops[] = {
@@ -3817,6 +4209,10 @@ static const wm_anim_op prog_bam_knockdwn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_bam_knockdwn_anim_labels[] = {
+    { "#nodead", 21 },
 };
 
 static const wm_anim_op prog_bam_climbthru_side_anim_ops[] = {
@@ -3940,6 +4336,12 @@ static const wm_anim_op prog_bam_climbin_side_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_climbin_side_anim_labels[] = {
+    { "#set_trgt", 59 },
+    { "#onlft", 59 },
+    { "rets", 59 },
+};
+
 static const wm_anim_op prog_bam_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1420, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -3977,6 +4379,14 @@ static const wm_anim_op prog_bam_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 128, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_climbthru_bot_anim_labels[] = {
+    { "#ckspin", 36 },
+    { "RETS", 36 },
+    { "#faceup", 36 },
+    { "rets", 36 },
+    { "NOT_IN_RING", 36 },
 };
 
 static const wm_anim_op prog_bam_climbin_bot_anim_ops[] = {
@@ -4060,6 +4470,14 @@ static const wm_anim_op prog_bam_climbthru_top_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_climbthru_top_anim_labels[] = {
+    { "#dir4", 7 },
+    { "#set_zvel1", 37 },
+    { "rets", 37 },
+    { "#facedwn", 37 },
+    { "#set_zvel2", 37 },
+};
+
 static const wm_anim_op prog_bam_rollthru_top_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1420, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -4115,6 +4533,11 @@ static const wm_anim_op prog_bam_climbin_top_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 128, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_climbin_top_anim_labels[] = {
+    { "#set_zvel2", 31 },
+    { "rets", 31 },
 };
 
 static const wm_anim_op prog_bam_2_pin_anim_ops[] = {
@@ -4183,6 +4606,10 @@ static const wm_anim_op prog_bam_2_pin_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_2_pin_anim_labels[] = {
+    { "#floop", 58 },
+};
+
 static const wm_anim_op prog_bam_4_pin_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -4242,6 +4669,10 @@ static const wm_anim_op prog_bam_4_pin_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_4_pin_anim_labels[] = {
+    { "#floop", 53 },
 };
 
 static const wm_anim_op prog_bam_2_raise_arm_anim_ops[] = {
@@ -4304,6 +4735,12 @@ static const wm_anim_op prog_bam_2_raise_arm_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_2_raise_arm_anim_labels[] = {
+    { "#cont", 13 },
+    { "#lp", 38 },
+    { "#wakeup", 53 },
+};
+
 static const wm_anim_op prog_bam_4_raise_arm_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -4354,6 +4791,12 @@ static const wm_anim_op prog_bam_4_raise_arm_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_4_raise_arm_anim_labels[] = {
+    { "#cont", 5 },
+    { "#lp", 30 },
+    { "#wakeup", 45 },
 };
 
 static const wm_anim_op prog_bam_buckoff_anim_ops[] = {
@@ -4448,6 +4891,12 @@ static const wm_anim_op prog_bam_combo_hiptoss_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_combo_hiptoss_anim_labels[] = {
+    { "#missedbc", 39 },
+    { "#missedc", 40 },
+    { "#throw_him_out_c", 51 },
 };
 
 static const wm_anim_op prog_bam_3_hiptoss2_anim_ops[] = {
@@ -4545,6 +4994,27 @@ static const wm_anim_op prog_bam_3_hiptoss2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_3_hiptoss2_anim_labels[] = {
+    { "#cont", 35 },
+    { "#got_him", 38 },
+    { "#missedb", 63 },
+    { "#missed", 67 },
+    { "#throw_him_out", 76 },
+    { "#flyout_tbl", 92 },
+    { "release_table", 92 },
+    { "#puppet_tbl", 92 },
+    { "#Bret", 92 },
+    { "#Razor", 92 },
+    { "#Taker", 92 },
+    { "#Yokozuna", 92 },
+    { "#Shawn", 92 },
+    { "#BamBam", 92 },
+    { "#Doink", 92 },
+    { "#Adam", 92 },
+    { "#Lex", 92 },
+    { "#rollout_tbl", 92 },
+};
+
 static const wm_anim_op prog_bam_3_hiptoss_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -4623,6 +5093,27 @@ static const wm_anim_op prog_bam_3_hiptoss_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_3_hiptoss_anim_labels[] = {
+    { "#cont", 18 },
+    { "#got_him", 21 },
+    { "#missedb", 46 },
+    { "#missed", 50 },
+    { "#throw_him_out", 59 },
+    { "#flyout_tbl", 75 },
+    { "release_table", 75 },
+    { "#puppet_tbl", 75 },
+    { "#Bret", 75 },
+    { "#Razor", 75 },
+    { "#Taker", 75 },
+    { "#Yokozuna", 75 },
+    { "#Shawn", 75 },
+    { "#BamBam", 75 },
+    { "#Doink", 75 },
+    { "#Adam", 75 },
+    { "#Lex", 75 },
+    { "#rollout_tbl", 75 },
+};
+
 static const wm_anim_op prog_bam_fly_cline_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -4660,6 +5151,10 @@ static const wm_anim_op prog_bam_fly_cline_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "B3RC3A08" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_bam_fly_cline_anim_labels[] = {
+    { "#gothim", 34 },
 };
 
 static const wm_anim_op prog_bam_2_slap_anim_ops[] = {
@@ -4713,6 +5208,13 @@ static const wm_anim_op prog_bam_2_slap_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_2_slap_anim_labels[] = {
+    { "#no_hit2", 34 },
+    { "#missed", 34 },
+    { "#missedb", 34 },
+    { "#none", 38 },
+};
+
 static const wm_anim_op prog_bam_4_slap_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -4754,6 +5256,13 @@ static const wm_anim_op prog_bam_4_slap_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_4_slap_anim_labels[] = {
+    { "#no_hit2", 26 },
+    { "#missed", 26 },
+    { "#missedb", 26 },
+    { "#none", 30 },
 };
 
 static const wm_anim_op prog_bam_combo_slap_anim_ops[] = {
@@ -4835,6 +5344,13 @@ static const wm_anim_op prog_bam_combo_slap_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_combo_slap_anim_labels[] = {
+    { "#loop_butt", 29 },
+    { "#CHECK_OTHER_BUT", 60 },
+    { "#missed_c", 62 },
+    { "#missed_d", 66 },
+};
+
 static const wm_anim_op prog_bam_combo_slap_anim_no_vel_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -4913,6 +5429,13 @@ static const wm_anim_op prog_bam_combo_slap_anim_no_vel_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_combo_slap_anim_no_vel_labels[] = {
+    { "#loop_butt", 28 },
+    { "#CHECK_OTHER_BUT", 59 },
+    { "#missed_c", 61 },
+    { "#missed_d", 65 },
+};
+
 static const wm_anim_op prog_bam_knees_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -4947,6 +5470,12 @@ static const wm_anim_op prog_bam_knees_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_knees_anim_labels[] = {
+    { "#rpt_loop", 7 },
+    { "#missed2", 25 },
+    { "#missed3", 27 },
 };
 
 static const wm_anim_op prog_bam_combo_knees_anim_ops[] = {
@@ -5010,6 +5539,14 @@ static const wm_anim_op prog_bam_combo_knees_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_combo_knees_anim_labels[] = {
+    { "#kn_loop", 22 },
+    { "#CHECK_NEXT2", 42 },
+    { "#CHECK_NEXT1", 45 },
+    { "#missed3c", 47 },
+    { "#missed3d", 50 },
+};
+
 static const wm_anim_op prog_bam_2_graboh_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -5068,6 +5605,11 @@ static const wm_anim_op prog_bam_2_graboh_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_2_graboh_anim_labels[] = {
+    { "#missedb", 42 },
+    { "#missed", 45 },
+};
+
 static const wm_anim_op prog_bam_4_graboh_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -5116,6 +5658,11 @@ static const wm_anim_op prog_bam_4_graboh_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_4_graboh_anim_labels[] = {
+    { "#missedb", 34 },
+    { "#missed", 37 },
 };
 
 static const wm_anim_op prog_bam_combo_graboh_anim_ops[] = {
@@ -5204,6 +5751,23 @@ static const wm_anim_op prog_bam_combo_graboh_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_combo_graboh_anim_labels[] = {
+    { "START_OF_BREAKER", 23 },
+    { "LET_GO_VICTIM", 56 },
+    { "#missed_c", 70 },
+    { "#puppet_tbl", 83 },
+    { "#Bret", 83 },
+    { "#Razor", 83 },
+    { "#Taker", 83 },
+    { "#Yokozuna", 83 },
+    { "#Shawn", 83 },
+    { "#BamBam", 83 },
+    { "#Doink", 83 },
+    { "#Adam", 83 },
+    { "#Lex", 83 },
+    { "#strt_flail_tbl", 83 },
+};
+
 static const wm_anim_op prog_bam_stndholdoh_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 8, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -5261,6 +5825,23 @@ static const wm_anim_op prog_bam_slamdwn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_slamdwn_anim_labels[] = {
+    { "#set_opp_y", 46 },
+    { "#abs", 46 },
+    { "rets", 46 },
+    { "#puppet_tbl", 46 },
+    { "#Bret", 46 },
+    { "#Razor", 46 },
+    { "#Taker", 46 },
+    { "#Yokozuna", 46 },
+    { "#Shawn", 46 },
+    { "#BamBam", 46 },
+    { "#Doink", 46 },
+    { "#Adam", 46 },
+    { "#Lex", 46 },
+    { "#faced_tbl", 46 },
+};
+
 static const wm_anim_op prog_bam_heldoh_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 3, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 44, 0, 0, 0, 0, 0, 0 },
@@ -5295,6 +5876,13 @@ static const wm_anim_op prog_bam_heldoh_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_heldoh_anim_labels[] = {
+    { "#loop", 5 },
+    { "#inc_loop", 33 },
+    { "rets", 33 },
+    { "#breakout", 33 },
 };
 
 static const wm_anim_op prog_bam_backbreaker_anim_ops[] = {
@@ -5364,6 +5952,23 @@ static const wm_anim_op prog_set_xdrift_ops[] = {
     { WM_AOP_FRAME, 0, -1, 20, 0, 0, 0, 0, 0, "B3RL1A07" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_set_xdrift_labels[] = {
+    { "rets", 0 },
+    { "#onrgt", 0 },
+    { "#ok", 0 },
+    { "puppet_tbl_back", 0 },
+    { "#Bret", 0 },
+    { "#Razor", 0 },
+    { "#Taker", 0 },
+    { "#Yokozuna", 0 },
+    { "#Shawn", 0 },
+    { "#BamBam", 0 },
+    { "#Doink", 0 },
+    { "#Adam", 0 },
+    { "#Lex", 0 },
+    { "bncoff_tbl", 0 },
 };
 
 static const wm_anim_op prog_bam_backbroken_anim_ops[] = {
@@ -5792,6 +6397,40 @@ static const wm_anim_op prog_bam_combo_pogo_anim_ops[] = {
     { WM_AOP_GOTO, 0, 296, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_combo_pogo_anim_labels[] = {
+    { "#missed", 0 },
+    { "START_OF_BREAKER", 33 },
+    { "LET_GO_VICTIM", 66 },
+    { "#missed_c", 80 },
+    { "#puppet_tbl", 93 },
+    { "#Bret", 93 },
+    { "#Razor", 93 },
+    { "#Taker", 93 },
+    { "#Yokozuna", 93 },
+    { "#Shawn", 93 },
+    { "#BamBam", 93 },
+    { "#Doink", 93 },
+    { "#Adam", 93 },
+    { "#Lex", 93 },
+    { "#strt_flail_tbl", 93 },
+    { "#set_opp_y", 144 },
+    { "#abs", 144 },
+    { "rets", 144 },
+    { "#faced_tbl", 144 },
+    { "#loop", 149 },
+    { "#inc_loop", 177 },
+    { "#breakout", 177 },
+    { "#onrgt", 214 },
+    { "#ok", 214 },
+    { "puppet_tbl_back", 214 },
+    { "bncoff_tbl", 214 },
+    { "#letgo_c", 296 },
+    { "#CHECK_NEXT_BUT", 314 },
+    { "#CHECK_NEXT_BUTA", 319 },
+    { "#cont_c", 331 },
+    { "#rpt_loop_c", 353 },
+};
+
 static const wm_anim_op prog_bam_pogo_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -5894,6 +6533,26 @@ static const wm_anim_op prog_bam_pogo_anim_ops[] = {
     { WM_AOP_GOTO, 0, 40, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_pogo_anim_labels[] = {
+    { "#letgo", 40 },
+    { "#missed", 53 },
+    { "#cont", 59 },
+    { "#rpt_loop", 78 },
+    { "#set_opp_xflip", 99 },
+    { "rets", 99 },
+    { "#puppet_tbl", 99 },
+    { "#Bret", 99 },
+    { "#Razor", 99 },
+    { "#Taker", 99 },
+    { "#Yokozuna", 99 },
+    { "#Shawn", 99 },
+    { "#BamBam", 99 },
+    { "#Doink", 99 },
+    { "#Adam", 99 },
+    { "#Lex", 99 },
+    { "#rollout_tbl", 99 },
+};
+
 static const wm_anim_op prog_bam_climb_up_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1164, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -5927,6 +6586,10 @@ static const wm_anim_op prog_bam_climb_up_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 7, 0, 0, 0, 0, 0, "B4SB4A09" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "tbukl_flip" },
     { WM_AOP_GOTO, 0, 19, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_climb_up_anim_labels[] = {
+    { "#repeat", 19 },
 };
 
 static const wm_anim_op prog_bam_climb_down_anim_ops[] = {
@@ -6022,6 +6685,12 @@ static const wm_anim_op prog_bam_get_buzz_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_get_buzz_anim_labels[] = {
+    { "#nodead", 65 },
+    { "#make_black", 67 },
+    { "rets", 67 },
+};
+
 static const wm_anim_op prog_bam_3_head_held_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -6059,6 +6728,13 @@ static const wm_anim_op prog_bam_3_head_held_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_3_head_held_anim_labels[] = {
+    { "#loop", 6 },
+    { "#inc_loop", 34 },
+    { "rets", 34 },
+    { "#breakout", 34 },
+};
+
 static const wm_anim_op prog_bam_3_head_held_brk_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -6077,6 +6753,12 @@ static const wm_anim_op prog_bam_3_head_held_brk_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_3_head_held_brk_anim_labels[] = {
+    { "#inc_loop", 17 },
+    { "rets", 17 },
+    { "#breakout", 17 },
 };
 
 static const wm_anim_op prog_bam_3_head_held_stand_anim_ops[] = {
@@ -6161,6 +6843,10 @@ static const wm_anim_op prog_bam_break_neck4_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_4_faceup_getup_anim" },
 };
 
+static const wm_anim_label prog_bam_break_neck4_anim_labels[] = {
+    { "#fall_back4", 14 },
+};
+
 static const wm_anim_op prog_bam_break_neck_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETFACING, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -6184,6 +6870,10 @@ static const wm_anim_op prog_bam_break_neck_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "B3RL1A01" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_4_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_bam_break_neck_anim_labels[] = {
+    { "#fall_back", 11 },
 };
 
 static const wm_anim_op prog_bam_2_hair_pickup_anim_ops[] = {
@@ -6239,6 +6929,21 @@ static const wm_anim_op prog_bam_2_hair_pickup_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_2_hair_pickup_anim_labels[] = {
+    { "#missed", 41 },
+    { "#headheld_tbl", 50 },
+    { "#puppet_tbl", 50 },
+    { "#Bret", 50 },
+    { "#Razor", 50 },
+    { "#Taker", 50 },
+    { "#Yokozuna", 50 },
+    { "#Shawn", 50 },
+    { "#BamBam", 50 },
+    { "#Doink", 50 },
+    { "#Adam", 50 },
+    { "#Lex", 50 },
+};
+
 static const wm_anim_op prog_bam_4_hair_pickup_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -6283,6 +6988,21 @@ static const wm_anim_op prog_bam_4_hair_pickup_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_4_hair_pickup_anim_labels[] = {
+    { "#missed", 34 },
+    { "#headheld_tbl", 43 },
+    { "#puppet_tbl", 43 },
+    { "#Bret", 43 },
+    { "#Razor", 43 },
+    { "#Taker", 43 },
+    { "#Yokozuna", 43 },
+    { "#Shawn", 43 },
+    { "#BamBam", 43 },
+    { "#Doink", 43 },
+    { "#Adam", 43 },
+    { "#Lex", 43 },
 };
 
 static const wm_anim_op prog_bam_4_taunt_anim_ops[] = {
@@ -6436,6 +7156,13 @@ static const wm_anim_op prog_bam_3_pile_driver_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_3_pile_driver_anim_labels[] = {
+    { "#missed", 47 },
+    { "#cont", 53 },
+    { "#set_opp_xflip", 72 },
+    { "rets", 72 },
+};
+
 static const wm_anim_op prog_bam_combo_pile_driver_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -6514,6 +7241,21 @@ static const wm_anim_op prog_bam_combo_pile_driver_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_combo_pile_driver_anim_labels[] = {
+    { "#missedxc", 49 },
+    { "#puppet_tbl", 77 },
+    { "#Bret", 77 },
+    { "#Razor", 77 },
+    { "#Taker", 77 },
+    { "#Yokozuna", 77 },
+    { "#Shawn", 77 },
+    { "#BamBam", 77 },
+    { "#Doink", 77 },
+    { "#Adam", 77 },
+    { "#Lex", 77 },
+    { "#rollout_tbl", 77 },
 };
 
 static const wm_anim_op prog_bam_3_fake_hold_anim_ops[] = {
@@ -6602,6 +7344,23 @@ static const wm_anim_op prog_bam_3_fake_hold_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_3_fake_hold_anim_labels[] = {
+    { "#gothim", 43 },
+    { "#missed", 61 },
+    { "#missedb", 71 },
+    { "#puppet_tbl", 83 },
+    { "#Bret", 83 },
+    { "#Razor", 83 },
+    { "#Taker", 83 },
+    { "#Yokozuna", 83 },
+    { "#Shawn", 83 },
+    { "#BamBam", 83 },
+    { "#Doink", 83 },
+    { "#Adam", 83 },
+    { "#Lex", 83 },
+    { "#headheld_tbl", 83 },
+};
+
 static const wm_anim_op prog_bam_3_head_hold2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -6677,6 +7436,23 @@ static const wm_anim_op prog_bam_3_head_hold2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_3_head_hold2_anim_labels[] = {
+    { "#gothim", 32 },
+    { "#missed", 50 },
+    { "#missedb", 60 },
+    { "#puppet_tbl", 72 },
+    { "#Bret", 72 },
+    { "#Razor", 72 },
+    { "#Taker", 72 },
+    { "#Yokozuna", 72 },
+    { "#Shawn", 72 },
+    { "#BamBam", 72 },
+    { "#Doink", 72 },
+    { "#Adam", 72 },
+    { "#Lex", 72 },
+    { "#headheld_tbl", 72 },
+};
+
 static const wm_anim_op prog_bam_3_head_hold_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -6732,6 +7508,23 @@ static const wm_anim_op prog_bam_3_head_hold_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_3_head_hold_anim_labels[] = {
+    { "#gothim", 14 },
+    { "#missed", 32 },
+    { "#missedb", 42 },
+    { "#puppet_tbl", 54 },
+    { "#Bret", 54 },
+    { "#Razor", 54 },
+    { "#Taker", 54 },
+    { "#Yokozuna", 54 },
+    { "#Shawn", 54 },
+    { "#BamBam", 54 },
+    { "#Doink", 54 },
+    { "#Adam", 54 },
+    { "#Lex", 54 },
+    { "#headheld_tbl", 54 },
 };
 
 static const wm_anim_op prog_bam_neckbreaker2_anim_ops[] = {
@@ -6822,6 +7615,26 @@ static const wm_anim_op prog_bam_neckbreaker2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_neckbreaker2_anim_labels[] = {
+    { "#gothim", 44 },
+    { "#missedb", 78 },
+    { "#missed", 79 },
+    { "#zero_butn", 85 },
+    { "rets", 85 },
+    { "#xflip_tbl", 85 },
+    { "#slambounce_tbl", 85 },
+    { "#puppet_tbl", 85 },
+    { "#Bret", 85 },
+    { "#Razor", 85 },
+    { "#Taker", 85 },
+    { "#Yokozuna", 85 },
+    { "#Shawn", 85 },
+    { "#BamBam", 85 },
+    { "#Doink", 85 },
+    { "#Adam", 85 },
+    { "#Lex", 85 },
+};
+
 static const wm_anim_op prog_bam_neckbreaker_run_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -6895,6 +7708,26 @@ static const wm_anim_op prog_bam_neckbreaker_run_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_neckbreaker_run_anim_labels[] = {
+    { "#gothim", 29 },
+    { "#missedb", 63 },
+    { "#missed", 64 },
+    { "#zero_butn", 70 },
+    { "rets", 70 },
+    { "#xflip_tbl", 70 },
+    { "#slambounce_tbl", 70 },
+    { "#puppet_tbl", 70 },
+    { "#Bret", 70 },
+    { "#Razor", 70 },
+    { "#Taker", 70 },
+    { "#Yokozuna", 70 },
+    { "#Shawn", 70 },
+    { "#BamBam", 70 },
+    { "#Doink", 70 },
+    { "#Adam", 70 },
+    { "#Lex", 70 },
+};
+
 static const wm_anim_op prog_bam_neckbreaker_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -6950,6 +7783,26 @@ static const wm_anim_op prog_bam_neckbreaker_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_neckbreaker_anim_labels[] = {
+    { "#gothim", 11 },
+    { "#missedb", 45 },
+    { "#missed", 46 },
+    { "#zero_butn", 52 },
+    { "rets", 52 },
+    { "#xflip_tbl", 52 },
+    { "#slambounce_tbl", 52 },
+    { "#puppet_tbl", 52 },
+    { "#Bret", 52 },
+    { "#Razor", 52 },
+    { "#Taker", 52 },
+    { "#Yokozuna", 52 },
+    { "#Shawn", 52 },
+    { "#BamBam", 52 },
+    { "#Doink", 52 },
+    { "#Adam", 52 },
+    { "#Lex", 52 },
+};
+
 static const wm_anim_op prog_bam_2_napalm_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -6979,6 +7832,10 @@ static const wm_anim_op prog_bam_2_napalm_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_2_napalm_anim_labels[] = {
+    { "#cont", 11 },
+};
+
 static const wm_anim_op prog_bam_4_napalm_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -6999,6 +7856,10 @@ static const wm_anim_op prog_bam_4_napalm_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_4_napalm_anim_labels[] = {
+    { "#cont", 4 },
 };
 
 static const wm_anim_op prog_bam_slamnobounce_anim_ops[] = {
@@ -7112,6 +7973,10 @@ static const wm_anim_op prog_bam_arm_broken_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_arm_broken_anim_labels[] = {
+    { "#nodead", 18 },
 };
 
 static const wm_anim_op prog_dnk_zip_anim_ops[] = {
@@ -7758,6 +8623,11 @@ static const wm_anim_op prog_dnk_run2_anim_ops[] = {
     { WM_AOP_GOTO, 0, 7, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_run2_anim_labels[] = {
+    { "#lp1", 7 },
+    { "#run2", 14 },
+};
+
 static const wm_anim_op prog_dnk_run_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -7780,6 +8650,11 @@ static const wm_anim_op prog_dnk_run_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D3RN3B10" },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "D3RN3B11" },
     { WM_AOP_GOTO, 0, 3, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_run_anim_labels[] = {
+    { "#lp1", 3 },
+    { "#run2", 10 },
 };
 
 static const wm_anim_op prog_dnk_bounce_anim_ops[] = {
@@ -7849,6 +8724,10 @@ static const wm_anim_op prog_dnk_2_punch_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_2_punch_anim_labels[] = {
+    { "#no_hit", 23 },
+};
+
 static const wm_anim_op prog_dnk_4_punch_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -7878,6 +8757,10 @@ static const wm_anim_op prog_dnk_4_punch_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "D4PU3C08" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_4_punch_anim_labels[] = {
+    { "#no_hit2", 23 },
 };
 
 static const wm_anim_op prog_dnk_2_box_anim_ops[] = {
@@ -7914,6 +8797,11 @@ static const wm_anim_op prog_dnk_2_box_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_2_box_anim_labels[] = {
+    { "#missedb", 24 },
+    { "#missed", 25 },
+};
+
 static const wm_anim_op prog_dnk_4_box_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -7944,6 +8832,11 @@ static const wm_anim_op prog_dnk_4_box_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D4PU3C07" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_4_box_anim_labels[] = {
+    { "#missedb", 23 },
+    { "#missed", 24 },
 };
 
 static const wm_anim_op prog_dnk_combo_box_anim_ops[] = {
@@ -7980,6 +8873,12 @@ static const wm_anim_op prog_dnk_combo_box_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_combo_box_anim_labels[] = {
+    { "#no_hit3", 18 },
+    { "#missedbc", 23 },
+    { "#missedc", 24 },
+};
+
 static const wm_anim_op prog_dnk_2_butt_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -8009,6 +8908,10 @@ static const wm_anim_op prog_dnk_2_butt_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_2_butt_anim_labels[] = {
+    { "#no_hit", 22 },
+};
+
 static const wm_anim_op prog_dnk_4_butt_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -8036,6 +8939,10 @@ static const wm_anim_op prog_dnk_4_butt_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "D4BC3A06" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_4_butt_anim_labels[] = {
+    { "#no_hit2", 22 },
 };
 
 static const wm_anim_op prog_dnk_2_butts_anim_ops[] = {
@@ -8082,6 +8989,14 @@ static const wm_anim_op prog_dnk_2_butts_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_2_butts_anim_labels[] = {
+    { "#rpt", 7 },
+    { "#no_hit", 18 },
+    { "#ex", 29 },
+    { "#missedb", 34 },
+    { "#missed", 35 },
+};
+
 static const wm_anim_op prog_dnk_4_butts_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -8126,6 +9041,14 @@ static const wm_anim_op prog_dnk_4_butts_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_4_butts_anim_labels[] = {
+    { "#rpt", 7 },
+    { "#no_hit2", 18 },
+    { "#ex", 29 },
+    { "#missedb", 36 },
+    { "#missed", 37 },
 };
 
 static const wm_anim_op prog_dnk_4_combo_butt_anim_ops[] = {
@@ -8203,6 +9126,13 @@ static const wm_anim_op prog_dnk_4_combo_butt_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_4_combo_butt_anim_labels[] = {
+    { "#NEXT_CHECK_3", 59 },
+    { "#NEXT_CHECK_2", 61 },
+    { "#NEXT_CHECK", 63 },
+    { "#miss", 65 },
+};
+
 static const wm_anim_op prog_dnk_2_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -8238,6 +9168,11 @@ static const wm_anim_op prog_dnk_2_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_2_kick_anim_labels[] = {
+    { "#no_hit", 22 },
+    { "#nopause", 24 },
+};
+
 static const wm_anim_op prog_dnk_4_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -8271,6 +9206,11 @@ static const wm_anim_op prog_dnk_4_kick_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D4KM3A10" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_4_kick_anim_labels[] = {
+    { "#no_hit2", 22 },
+    { "#nopause2", 24 },
 };
 
 static const wm_anim_op prog_dnk_4_combo_kick_anim_ops[] = {
@@ -8368,6 +9308,12 @@ static const wm_anim_op prog_dnk_4_combo_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_4_combo_kick_anim_labels[] = {
+    { "#NEXT_CHECK_2", 77 },
+    { "#NEXT_CHECK", 79 },
+    { "#miss", 81 },
+};
+
 static const wm_anim_op prog_dnk_2_spin_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -8400,6 +9346,11 @@ static const wm_anim_op prog_dnk_2_spin_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_2_spin_kick_anim_labels[] = {
+    { "#no_hit", 18 },
+    { "#nopause", 22 },
+};
+
 static const wm_anim_op prog_skick_delay_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -8427,6 +9378,11 @@ static const wm_anim_op prog_skick_delay_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_skick_delay_labels[] = {
+    { "rets", 0 },
+    { "#ok", 0 },
 };
 
 static const wm_anim_op prog_dnk_2_spin_kick_TB_anim_ops[] = {
@@ -8489,6 +9445,11 @@ static const wm_anim_op prog_dnk_4_spin_kick_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "D4KB3A02" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_4_spin_kick_anim_labels[] = {
+    { "#no_hit2", 18 },
+    { "#nopause2", 22 },
 };
 
 static const wm_anim_op prog_dnk_4_spin_kick_TB_anim_ops[] = {
@@ -8631,6 +9592,14 @@ static const wm_anim_op prog_dnk_4_combo_spin_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_4_combo_spin_kick_anim_labels[] = {
+    { "#NEXT_CHECK_3", 84 },
+    { "#NEXT_CHECK_2", 86 },
+    { "#NEXT_CHECK", 88 },
+    { "#miss_combo_spin2", 90 },
+    { "#miss_combo_spin4", 99 },
+};
+
 static const wm_anim_op prog_dnk_2_knee_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -8664,6 +9633,11 @@ static const wm_anim_op prog_dnk_2_knee_anim_ops[] = {
     { WM_AOP_FACEUP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_2_knee_anim_labels[] = {
+    { "#no_hit", 25 },
+    { "#cont", 26 },
 };
 
 static const wm_anim_op prog_dnk_4_knee_fall_anim_ops[] = {
@@ -8746,6 +9720,14 @@ static const wm_anim_op prog_dnk_4_knee_fall_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_4_knee_fall_anim_labels[] = {
+    { "#no_hit3", 19 },
+    { "#no_hit4", 39 },
+    { "#no_hit2", 70 },
+    { "#cont2", 71 },
+    { "#yoff1", 77 },
+};
+
 static const wm_anim_op prog_dnk_combo_knee_fall_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -8805,6 +9787,13 @@ static const wm_anim_op prog_dnk_combo_knee_fall_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_combo_knee_fall_anim_labels[] = {
+    { "#no_hit4", 18 },
+    { "#no_hit2", 49 },
+    { "#cont2", 50 },
+    { "#yoff1", 56 },
+};
+
 static const wm_anim_op prog_dnk_4_knee_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -8838,6 +9827,12 @@ static const wm_anim_op prog_dnk_4_knee_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_4_knee_anim_labels[] = {
+    { "#no_hit2", 25 },
+    { "#cont2", 26 },
+    { "#yoff1", 32 },
 };
 
 static const wm_anim_op prog_dnk_combo_flying_kick_anim_ops[] = {
@@ -8900,6 +9895,11 @@ static const wm_anim_op prog_dnk_combo_flying_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_combo_flying_kick_anim_labels[] = {
+    { "#gotc", 28 },
+    { "#no_freetoss", 55 },
 };
 
 static const wm_anim_op prog_dnk_flying_kick_anim_ops[] = {
@@ -8965,6 +9965,16 @@ static const wm_anim_op prog_dnk_flying_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_flying_kick_anim_labels[] = {
+    { "#norm", 8 },
+    { "#got", 32 },
+    { "#cont2", 33 },
+    { "#no_freetoss1", 56 },
+    { "#ckongrnd", 60 },
+    { "rets", 60 },
+    { "#inplace", 60 },
+};
+
 static const wm_anim_op prog_dnk_4_body_hit_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -8997,6 +10007,10 @@ static const wm_anim_op prog_dnk_4_body_hit_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_4_body_hit_anim_labels[] = {
+    { "#reg", 28 },
 };
 
 static const wm_anim_op prog_dnk_4_body_hit_dizzy_anim_ops[] = {
@@ -9083,6 +10097,10 @@ static const wm_anim_op prog_dnk_quick_knee_hit_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_3_head_held_anim" },
 };
 
+static const wm_anim_label prog_dnk_quick_knee_hit_anim_labels[] = {
+    { "#nodead", 12 },
+};
+
 static const wm_anim_op prog_dnk_fall_back_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1292, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -9156,6 +10174,12 @@ static const wm_anim_op prog_ckzpos_ops[] = {
     { WM_AOP_FRAME, 0, -1, 20, 0, 0, 0, 0, 0, "D3GS3X08" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_ckzpos_labels[] = {
+    { "rets", 0 },
+    { "#slideup", 0 },
+    { "#ok", 0 },
 };
 
 static const wm_anim_op prog_dnk_fall_back2_anim_ops[] = {
@@ -9259,6 +10283,10 @@ static const wm_anim_op prog_dnk_4_faceup_getup_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_4_faceup_getup_anim_labels[] = {
+    { "#no_freetoss2", 24 },
+};
+
 static const wm_anim_op prog_dnk_2_faceup_getup_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 268, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -9289,6 +10317,10 @@ static const wm_anim_op prog_dnk_2_faceup_getup_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_2_faceup_getup_anim_labels[] = {
+    { "#no_freetoss3", 25 },
 };
 
 static const wm_anim_op prog_dnk_4_head_hit_anim_ops[] = {
@@ -9396,6 +10428,10 @@ static const wm_anim_op prog_dnk_head_hit2_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_head_hit2_anim_labels[] = {
+    { "#nodead", 18 },
 };
 
 static const wm_anim_op prog_dnk_head_hit2s_anim_ops[] = {
@@ -9555,6 +10591,11 @@ static const wm_anim_op prog_dnk_fly_cline_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_fly_cline_anim_labels[] = {
+    { "#gothim", 37 },
+    { "#no_freetoss4", 62 },
+};
+
 static const wm_anim_op prog_dnk_belly_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -9623,6 +10664,18 @@ static const wm_anim_op prog_dnk_belly_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_belly_anim_labels[] = {
+    { "#normal", 7 },
+    { "#no_xvel", 9 },
+    { "#miss", 19 },
+    { "#cont", 27 },
+    { "#cont4", 38 },
+    { "#no_freetoss5", 61 },
+    { "#close", 65 },
+    { "rets", 65 },
+    { "#inplace", 65 },
+};
+
 static const wm_anim_op prog_dnk_2_lbowdrop_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
@@ -9671,6 +10724,11 @@ static const wm_anim_op prog_dnk_2_lbowdrop_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_2_lbowdrop_anim_labels[] = {
+    { "#gothim2", 34 },
+    { "#cont", 37 },
 };
 
 static const wm_anim_op prog_dnk_4_lbowdrop_anim_ops[] = {
@@ -9740,6 +10798,13 @@ static const wm_anim_op prog_dnk_4_lbowdrop_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_4_lbowdrop_anim_labels[] = {
+    { "#land", 20 },
+    { "#gothim4", 34 },
+    { "#land2", 37 },
+    { "#no_freetoss6", 60 },
+};
+
 static const wm_anim_op prog_dnk_4_blbowdrop_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1196, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -9806,6 +10871,13 @@ static const wm_anim_op prog_dnk_4_blbowdrop_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_4_blbowdrop_anim_labels[] = {
+    { "#opp_onground", 21 },
+    { "#gothimb", 37 },
+    { "#tag", 41 },
+    { "#no_freetoss7", 62 },
 };
 
 static const wm_anim_op prog_dnk_4_hammer_anim_ops[] = {
@@ -9916,6 +10988,23 @@ static const wm_anim_op prog_dnk_4_hammer_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_4_hammer_anim_labels[] = {
+    { "#missedb", 28 },
+    { "#tagmiss", 28 },
+    { "#dnk_quick_hammer", 35 },
+    { "#failed", 56 },
+    { "dnk_combo_hammer_anim", 63 },
+    { "dnk_repeat_combo_hammer_anim", 77 },
+    { "#missed2", 96 },
+    { "#set_target", 105 },
+    { "rets", 105 },
+    { "#head", 105 },
+    { "#drop", 105 },
+    { "#zero_x", 105 },
+    { "#ok", 105 },
+    { "#get_off", 105 },
+};
+
 static const wm_anim_op prog_dnk_2_stomp_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -9954,6 +11043,10 @@ static const wm_anim_op prog_dnk_2_stomp_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_2_stomp_anim_labels[] = {
+    { "#gothim", 29 },
+};
+
 static const wm_anim_op prog_dnk_4_stomp_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -9988,6 +11081,10 @@ static const wm_anim_op prog_dnk_4_stomp_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_4_stomp_anim_labels[] = {
+    { "#gothim4", 27 },
 };
 
 static const wm_anim_op prog_dnk_4_bstomp_anim_ops[] = {
@@ -10041,6 +11138,15 @@ static const wm_anim_op prog_dnk_4_bstomp_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_4_bstomp_anim_labels[] = {
+    { "#nooff", 13 },
+    { "#opp_onground", 23 },
+    { "rets", 41 },
+    { "#onrgt", 41 },
+    { "#ok", 41 },
+    { "#gothimb4", 41 },
+};
+
 static const wm_anim_op prog_check_xvel_ops[] = {
     { WM_AOP_SET_ZVEL, 0, -1, -327680, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "D4MP4D07" },
@@ -10049,6 +11155,21 @@ static const wm_anim_op prog_check_xvel_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_check_xvel_labels[] = {
+    { "rets", 0 },
+    { "#onrgt", 0 },
+    { "#ok", 0 },
+    { "#gothimb4", 0 },
+    { "#set_target", 7 },
+    { "#lft", 7 },
+    { "#head", 7 },
+    { "#rgt", 7 },
+    { "#chest", 7 },
+    { "#targets", 7 },
+    { "#get_off", 7 },
+    { "#get_off4", 7 },
 };
 
 static const wm_anim_op prog_dnk_knockdwn_anim_ops[] = {
@@ -10074,6 +11195,10 @@ static const wm_anim_op prog_dnk_knockdwn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_dnk_knockdwn_anim_labels[] = {
+    { "#nodead", 20 },
 };
 
 static const wm_anim_op prog_dnk_hitonground_xflip_anim_ops[] = {
@@ -10190,6 +11315,10 @@ static const wm_anim_op prog_dnk_climb_up_anim_ops[] = {
     { WM_AOP_GOTO, 0, 24, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_climb_up_anim_labels[] = {
+    { "#repeat", 24 },
+};
+
 static const wm_anim_op prog_dnk_climb_down_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 172, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -10284,6 +11413,14 @@ static const wm_anim_op prog_dnk_diveofftb_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_diveofftb_anim_labels[] = {
+    { "#opp_onground", 19 },
+    { "#missed", 25 },
+    { "#hit", 28 },
+    { "#cont", 28 },
+    { "#no_freetoss8", 60 },
+};
+
 static const wm_anim_op prog_dnk_2_grabfling_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -10346,6 +11483,12 @@ static const wm_anim_op prog_dnk_2_grabfling_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_2_grabfling_anim_labels[] = {
+    { "#cont", 15 },
+    { "#missedb", 49 },
+    { "#missed", 52 },
+};
+
 static const wm_anim_op prog_dnk_4_grabfling_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -10399,6 +11542,12 @@ static const wm_anim_op prog_dnk_4_grabfling_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_4_grabfling_anim_labels[] = {
+    { "#cont", 6 },
+    { "#missedb", 40 },
+    { "#missed", 43 },
+};
+
 static const wm_anim_op prog_fling_delay_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 3, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 44, 0, 0, 0, 0, 0, 0 },
@@ -10436,6 +11585,25 @@ static const wm_anim_op prog_fling_delay_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_fling_delay_labels[] = {
+    { "rets", 0 },
+    { "#ok", 0 },
+    { "#puppet_tbl", 0 },
+    { "#Bret", 0 },
+    { "#Razor", 0 },
+    { "#Taker", 0 },
+    { "#Yokozuna", 0 },
+    { "#Shawn", 0 },
+    { "#BamBam", 0 },
+    { "#Doink", 0 },
+    { "#Adam", 0 },
+    { "#Lex", 0 },
+    { "#strt_run_tbl", 0 },
+    { "#loop", 5 },
+    { "#inc_loop", 36 },
+    { "#breakout", 36 },
 };
 
 static const wm_anim_op prog_dnk_heldoh_anim_ops[] = {
@@ -10477,6 +11645,13 @@ static const wm_anim_op prog_dnk_heldoh_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_heldoh_anim_labels[] = {
+    { "#loop", 5 },
+    { "#inc_loop", 36 },
+    { "rets", 36 },
+    { "#breakout", 36 },
+};
+
 static const wm_anim_op prog_dnk_4_block_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -10498,6 +11673,10 @@ static const wm_anim_op prog_dnk_4_block_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_4_block_anim_labels[] = {
+    { "#blk4", 9 },
+};
+
 static const wm_anim_op prog_dnk_4_hitblock_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "D4BK3A03" },
     { WM_AOP_SETMODE, 0, -1, 76, 0, 0, 0, 0, 0, 0 },
@@ -10515,6 +11694,10 @@ static const wm_anim_op prog_dnk_4_hitblock_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "D4BK3A07" },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "D4BK3A06" },
     { WM_AOP_GOTO, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_4_hitblock_anim_labels[] = {
+    { "#blk4", 0 },
 };
 
 static const wm_anim_op prog_dnk_4_hitblock2_anim_ops[] = {
@@ -10546,6 +11729,10 @@ static const wm_anim_op prog_dnk_4_hitblock2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D4BK3A06" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D4BK3A07" },
     { WM_AOP_GOTO, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_4_hitblock2_anim_labels[] = {
+    { "#blk4", 0 },
 };
 
 static const wm_anim_op prog_dnk_2_hiptoss2_anim_ops[] = {
@@ -10639,6 +11826,13 @@ static const wm_anim_op prog_dnk_2_hiptoss2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_2_hiptoss2_anim_labels[] = {
+    { "#cont", 44 },
+    { "#got_him", 47 },
+    { "#missedb", 77 },
+    { "#missed", 81 },
+};
+
 static const wm_anim_op prog_dnk_4_hiptoss2_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
@@ -10723,6 +11917,13 @@ static const wm_anim_op prog_dnk_4_hiptoss2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_4_hiptoss2_anim_labels[] = {
+    { "#cont", 37 },
+    { "#got_him", 40 },
+    { "#missedb", 70 },
+    { "#missed", 74 },
+};
+
 static const wm_anim_op prog_dnk_2_hiptoss_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
@@ -10792,6 +11993,13 @@ static const wm_anim_op prog_dnk_2_hiptoss_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_2_hiptoss_anim_labels[] = {
+    { "#cont", 22 },
+    { "#got_him", 25 },
+    { "#missedb", 55 },
+    { "#missed", 59 },
+};
+
 static const wm_anim_op prog_dnk_4_hiptoss_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
@@ -10854,6 +12062,13 @@ static const wm_anim_op prog_dnk_4_hiptoss_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_4_hiptoss_anim_labels[] = {
+    { "#cont", 15 },
+    { "#got_him", 18 },
+    { "#missedb", 48 },
+    { "#missed", 52 },
+};
+
 static const wm_anim_op prog_hiptoss_delay_ops[] = {
     { WM_AOP_ATTACHVEL, 0, -1, -655360, 589824, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_THROWN_OUT" },
@@ -10872,6 +12087,14 @@ static const wm_anim_op prog_hiptoss_delay_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hiptoss_delay_labels[] = {
+    { "rets", 0 },
+    { "#oka", 0 },
+    { "#throw_him_out", 0 },
+    { "release_table", 17 },
+    { "#flyout_tbl", 17 },
 };
 
 static const wm_anim_op prog_dnk_4_combo_hiptoss_anim_ops[] = {
@@ -10967,6 +12190,28 @@ static const wm_anim_op prog_dnk_4_combo_hiptoss_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_4_combo_hiptoss_anim_labels[] = {
+    { "re_enter_combo_hiptoss", 1 },
+    { "CHECK_FOR_NEXT", 46 },
+    { "#NEXT_CHECK2A", 57 },
+    { "#NEXT_CHECK", 60 },
+    { "yes_do_combo_again", 65 },
+    { "#missedbc", 67 },
+    { "#missedc", 68 },
+    { "#throw_him_out_c", 76 },
+    { "#puppet_tbl", 90 },
+    { "#Bret", 90 },
+    { "#Razor", 90 },
+    { "#Taker", 90 },
+    { "#Yokozuna", 90 },
+    { "#Shawn", 90 },
+    { "#BamBam", 90 },
+    { "#Doink", 90 },
+    { "#Adam", 90 },
+    { "#Lex", 90 },
+    { "#rollout_tbl", 90 },
+};
+
 static const wm_anim_op prog_dnk_tossed_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -11023,6 +12268,10 @@ static const wm_anim_op prog_dnk_tossed2_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
 };
 
+static const wm_anim_label prog_dnk_tossed2_anim_labels[] = {
+    { "#done", 28 },
+};
+
 static const wm_anim_op prog_dnk_4_push_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
@@ -11049,6 +12298,11 @@ static const wm_anim_op prog_dnk_4_push_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D4PS3A07" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_4_push_anim_labels[] = {
+    { "#no_hit", 17 },
+    { "#hit", 20 },
 };
 
 static const wm_anim_op prog_dnk_2_bncoff_anim_ops[] = {
@@ -11149,6 +12403,11 @@ static const wm_anim_op prog_dnk_2_bigboot_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_2_bigboot_anim_labels[] = {
+    { "#lp0", 13 },
+    { "#missed1", 20 },
+};
+
 static const wm_anim_op prog_dnk_4_bigboot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -11177,6 +12436,15 @@ static const wm_anim_op prog_dnk_4_bigboot_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_4_bigboot_anim_labels[] = {
+    { "#lp", 13 },
+    { "#missed2", 19 },
+    { "#clrcnt", 25 },
+    { "rets", 25 },
+    { "#holdup", 25 },
+    { "#button_up", 25 },
+};
+
 static const wm_anim_op prog_dnk_dizzy_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 8, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -11193,6 +12461,10 @@ static const wm_anim_op prog_dnk_dizzy_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 6, 0, 0, 0, 0, 0, "D4SW4C03" },
     { WM_AOP_FRAME, 0, -1, 6, 0, 0, 0, 0, 0, "D4SW4C02" },
     { WM_AOP_GOTO, 0, 4, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_dizzy_anim_labels[] = {
+    { "#loop", 4 },
 };
 
 static const wm_anim_op prog_dnk_2_pin_anim_ops[] = {
@@ -11244,6 +12516,10 @@ static const wm_anim_op prog_dnk_2_pin_anim_ops[] = {
     { WM_AOP_GOTO, 0, 41, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_2_pin_anim_labels[] = {
+    { "#loop", 41 },
+};
+
 static const wm_anim_op prog_dnk_4_pin_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -11288,6 +12564,10 @@ static const wm_anim_op prog_dnk_4_pin_anim_ops[] = {
     { WM_AOP_GOTO, 0, 36, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_4_pin_anim_labels[] = {
+    { "#loop", 36 },
+};
+
 static const wm_anim_op prog_dnk_2_raise_arm_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -11326,6 +12606,13 @@ static const wm_anim_op prog_dnk_2_raise_arm_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_2_raise_arm_anim_labels[] = {
+    { "#cont", 13 },
+    { "#loop2", 17 },
+    { "#wakeup", 24 },
+    { "#loop3", 25 },
+};
+
 static const wm_anim_op prog_dnk_4_raise_arm_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -11356,6 +12643,13 @@ static const wm_anim_op prog_dnk_4_raise_arm_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_4_raise_arm_anim_labels[] = {
+    { "#cont", 5 },
+    { "#loop2", 9 },
+    { "#wakeup", 16 },
+    { "#loop3", 17 },
+};
+
 static const wm_anim_op prog_win_announce_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1292, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -11377,6 +12671,12 @@ static const wm_anim_op prog_win_announce_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_win_announce_labels[] = {
+    { "rets", 0 },
+    { "#z", 0 },
+    { "#hit_t", 0 },
+};
+
 static const wm_anim_op prog_grnd_hit_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1292, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -11396,6 +12696,11 @@ static const wm_anim_op prog_grnd_hit_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_grnd_hit_labels[] = {
+    { "#z", 0 },
+    { "#hit_t", 0 },
 };
 
 static const wm_anim_op prog_dnk_buckoff_anim_ops[] = {
@@ -11470,6 +12775,12 @@ static const wm_anim_op prog_set_buckoff_vels_ops[] = {
     { WM_AOP_CLEAR_CLIMB, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 128, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_set_buckoff_vels_labels[] = {
+    { "#xok", 0 },
+    { "#zok", 0 },
+    { "rets", 0 },
 };
 
 static const wm_anim_op prog_dnk_climbthru_side_anim_ops[] = {
@@ -11577,6 +12888,12 @@ static const wm_anim_op prog_dnk_climbin_side_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_climbin_side_anim_labels[] = {
+    { "#set_trgt", 49 },
+    { "#onlft", 49 },
+    { "rets", 49 },
+};
+
 static const wm_anim_op prog_SET_DIR_FACE_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1420, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -11613,6 +12930,17 @@ static const wm_anim_op prog_SET_DIR_FACE_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_SET_DIR_FACE_labels[] = {
+    { "#onlft1", 0 },
+    { "RETS", 0 },
+    { "#method2", 0 },
+    { "#onlft2", 0 },
+    { "#dir4", 7 },
+    { "#ckspin", 33 },
+    { "#faceup", 33 },
+    { "rets", 33 },
+};
+
 static const wm_anim_op prog_dnk_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1420, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -11647,6 +12975,14 @@ static const wm_anim_op prog_dnk_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 128, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_climbthru_bot_anim_labels[] = {
+    { "#dir4", 7 },
+    { "#ckspin", 33 },
+    { "RETS", 33 },
+    { "#faceup", 33 },
+    { "rets", 33 },
 };
 
 static const wm_anim_op prog_dnk_climbin_bot_anim_ops[] = {
@@ -11723,6 +13059,16 @@ static const wm_anim_op prog_dnk_climbthru_top_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_climbthru_top_anim_labels[] = {
+    { "#dir4", 11 },
+    { "#cont", 21 },
+    { "#set_zvel1", 36 },
+    { "rets", 36 },
+    { "#facedwn", 36 },
+    { "#set_zvel2", 36 },
+    { "#set_zvel3", 36 },
+};
+
 static const wm_anim_op prog_dnk_rollthru_top_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 5388, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SET_ZVEL, 0, -1, -442368, 0, 0, 0, 0, 0, 0 },
@@ -11772,6 +13118,11 @@ static const wm_anim_op prog_dnk_climbin_top_anim_ops[] = {
     { WM_AOP_CLEAR_CLIMB, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 128, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_climbin_top_anim_labels[] = {
+    { "#set_zvel2", 27 },
+    { "rets", 27 },
 };
 
 static const wm_anim_op prog_dnk_2_buzz_anim_ops[] = {
@@ -11848,6 +13199,13 @@ static const wm_anim_op prog_dnk_2_buzz_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_2_buzz_anim_labels[] = {
+    { "#cont", 19 },
+    { "#cont4", 28 },
+    { "#gothim", 31 },
+    { "#cont2", 63 },
+};
+
 static const wm_anim_op prog_dnk_4_buzz_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRICTION, 0, -1, 8192, 0, 0, 0, 0, 0, 0 },
@@ -11909,6 +13267,13 @@ static const wm_anim_op prog_dnk_4_buzz_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_4_buzz_anim_labels[] = {
+    { "#cont", 8 },
+    { "#cont4", 17 },
+    { "#gothim", 20 },
+    { "#cont2", 52 },
 };
 
 static const wm_anim_op prog_dnk_2_buzz2_anim_ops[] = {
@@ -11983,6 +13348,15 @@ static const wm_anim_op prog_dnk_2_buzz2_anim_ops[] = {
     { WM_AOP_GOTO, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_2_buzz2_anim_labels[] = {
+    { "#cont4", 0 },
+    { "#gothim", 3 },
+    { "#cont2", 35 },
+    { "#cont3", 55 },
+    { "#normal", 62 },
+    { "#contz", 62 },
+};
+
 static const wm_anim_op prog_dnk_4_buzz2_anim_ops[] = {
     { WM_AOP_IFSTATUS, 0, 3, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 35, 0, 0, 0, 0, 0, "D4BZ3A02" },
@@ -12053,6 +13427,15 @@ static const wm_anim_op prog_dnk_4_buzz2_anim_ops[] = {
     { WM_AOP_ATTACK_OFF, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SET_ZVEL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_GOTO, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_4_buzz2_anim_labels[] = {
+    { "#cont4", 0 },
+    { "#gothim", 3 },
+    { "#cont2", 35 },
+    { "#cont3", 55 },
+    { "#normal", 62 },
+    { "#contz", 62 },
 };
 
 static const wm_anim_op prog_dnk_combo_buzz2_anim_ops[] = {
@@ -12147,6 +13530,31 @@ static const wm_anim_op prog_dnk_combo_buzz2_anim_ops[] = {
     { WM_AOP_GOTO, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_combo_buzz2_anim_labels[] = {
+    { "#cont4", 0 },
+    { "#gothim", 3 },
+    { "#cont2", 35 },
+    { "#cont3", 55 },
+    { "#normal", 62 },
+    { "#contz", 62 },
+    { "#normalc", 80 },
+    { "#contzc", 80 },
+    { "#zero_butn", 89 },
+    { "rets", 89 },
+    { "start_sparks", 89 },
+    { "#rets", 89 },
+    { "#puppet_tbl", 89 },
+    { "#Bret", 89 },
+    { "#Razor", 89 },
+    { "#Taker", 89 },
+    { "#Yokozuna", 89 },
+    { "#Shawn", 89 },
+    { "#BamBam", 89 },
+    { "#Doink", 89 },
+    { "#Adam", 89 },
+    { "#Lex", 89 },
+};
+
 static const wm_anim_op prog_dnk_get_buzz_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -12201,6 +13609,10 @@ static const wm_anim_op prog_dnk_get_buzz_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_fall_back_anim" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_get_buzz_anim_labels[] = {
+    { "#nodead", 51 },
 };
 
 static const wm_anim_op prog_am_I_dizzy_ops[] = {
@@ -12310,6 +13722,21 @@ static const wm_anim_op prog_am_I_dizzy_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_am_I_dizzy_labels[] = {
+    { "#not_dizzy", 0 },
+    { "rets", 0 },
+    { "#notdead", 0 },
+    { "#not_dead", 0 },
+    { "#make_black", 0 },
+    { "#rgt", 0 },
+    { "#lft", 0 },
+    { "#rets", 0 },
+    { "#no_freetoss", 59 },
+    { "#missed", 63 },
+    { "#no_freetoss2", 100 },
+    { "#set_opp_xflip", 104 },
+};
+
 static const wm_anim_op prog_am_I_dead_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -12415,6 +13842,20 @@ static const wm_anim_op prog_am_I_dead_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_am_I_dead_labels[] = {
+    { "rets", 0 },
+    { "#notdead", 0 },
+    { "#not_dead", 0 },
+    { "#make_black", 0 },
+    { "#rgt", 0 },
+    { "#lft", 0 },
+    { "#rets", 0 },
+    { "#no_freetoss", 59 },
+    { "#missed", 63 },
+    { "#no_freetoss2", 100 },
+    { "#set_opp_xflip", 104 },
 };
 
 static const wm_anim_op prog_make_white_ops[] = {
@@ -12524,6 +13965,18 @@ static const wm_anim_op prog_make_white_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_make_white_labels[] = {
+    { "rets", 0 },
+    { "#make_black", 0 },
+    { "#rgt", 0 },
+    { "#lft", 0 },
+    { "#rets", 0 },
+    { "#no_freetoss", 59 },
+    { "#missed", 63 },
+    { "#no_freetoss2", 100 },
+    { "#set_opp_xflip", 104 },
+};
+
 static const wm_anim_op prog_make_norm_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -12629,6 +14082,17 @@ static const wm_anim_op prog_make_norm_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_make_norm_labels[] = {
+    { "rets", 0 },
+    { "#rgt", 0 },
+    { "#lft", 0 },
+    { "#rets", 0 },
+    { "#no_freetoss", 59 },
+    { "#missed", 63 },
+    { "#no_freetoss2", 100 },
+    { "#set_opp_xflip", 104 },
 };
 
 static const wm_anim_op prog_set_position_ops[] = {
@@ -12738,6 +14202,17 @@ static const wm_anim_op prog_set_position_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_set_position_labels[] = {
+    { "#rgt", 0 },
+    { "#lft", 0 },
+    { "rets", 0 },
+    { "#rets", 0 },
+    { "#no_freetoss", 59 },
+    { "#missed", 63 },
+    { "#no_freetoss2", 100 },
+    { "#set_opp_xflip", 104 },
+};
+
 static const wm_anim_op prog_set_skeleton_pal_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -12843,6 +14318,15 @@ static const wm_anim_op prog_set_skeleton_pal_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_set_skeleton_pal_labels[] = {
+    { "rets", 0 },
+    { "#rets", 0 },
+    { "#no_freetoss", 59 },
+    { "#missed", 63 },
+    { "#no_freetoss2", 100 },
+    { "#set_opp_xflip", 104 },
 };
 
 static const wm_anim_op prog_set_my_pal_ops[] = {
@@ -12952,6 +14436,15 @@ static const wm_anim_op prog_set_my_pal_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_set_my_pal_labels[] = {
+    { "rets", 0 },
+    { "#rets", 0 },
+    { "#no_freetoss", 59 },
+    { "#missed", 63 },
+    { "#no_freetoss2", 100 },
+    { "#set_opp_xflip", 104 },
+};
+
 static const wm_anim_op prog_start_smoke_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -13057,6 +14550,15 @@ static const wm_anim_op prog_start_smoke_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_start_smoke_labels[] = {
+    { "#rets", 0 },
+    { "#no_freetoss", 59 },
+    { "#missed", 63 },
+    { "#no_freetoss2", 100 },
+    { "#set_opp_xflip", 104 },
+    { "rets", 104 },
 };
 
 static const wm_anim_op prog_dnk_3_pile_driver_anim_ops[] = {
@@ -13166,6 +14668,14 @@ static const wm_anim_op prog_dnk_3_pile_driver_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_3_pile_driver_anim_labels[] = {
+    { "#no_freetoss", 59 },
+    { "#missed", 63 },
+    { "#no_freetoss2", 100 },
+    { "#set_opp_xflip", 104 },
+    { "rets", 104 },
+};
+
 static const wm_anim_op prog_is_this_yoko_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -13261,6 +14771,28 @@ static const wm_anim_op prog_is_this_yoko_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_is_this_yoko_labels[] = {
+    { "rets", 0 },
+    { "#ok", 0 },
+    { "#break", 0 },
+    { "#puppet_tbl", 0 },
+    { "#Bret", 0 },
+    { "#Razor", 0 },
+    { "#Taker", 0 },
+    { "#Yokozuna", 0 },
+    { "#Shawn", 0 },
+    { "#BamBam", 0 },
+    { "#Doink", 0 },
+    { "#Adam", 0 },
+    { "#Lex", 0 },
+    { "#rollout_tbl", 0 },
+    { "#try_rptc", 32 },
+    { "#slam_againc", 36 },
+    { "#norepeatc", 58 },
+    { "#no_freetoss", 83 },
+    { "#missedc", 87 },
 };
 
 static const wm_anim_op prog_dnk_combo_head_slam_anim_ops[] = {
@@ -13360,6 +14892,14 @@ static const wm_anim_op prog_dnk_combo_head_slam_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_combo_head_slam_anim_labels[] = {
+    { "#try_rptc", 32 },
+    { "#slam_againc", 36 },
+    { "#norepeatc", 58 },
+    { "#no_freetoss", 83 },
+    { "#missedc", 87 },
+};
+
 static const wm_anim_op prog_dnk_3_head_slam_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -13451,6 +14991,28 @@ static const wm_anim_op prog_dnk_3_head_slam_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_3_head_slam_anim_labels[] = {
+    { "#try_rpt", 31 },
+    { "#slam_again", 35 },
+    { "#norepeat", 57 },
+    { "#no_freetoss3", 81 },
+    { "#missed", 85 },
+    { "#reattach", 90 },
+    { "rets", 90 },
+    { "#puppet_tbl", 90 },
+    { "#Bret", 90 },
+    { "#Razor", 90 },
+    { "#Taker", 90 },
+    { "#Yokozuna", 90 },
+    { "#Shawn", 90 },
+    { "#BamBam", 90 },
+    { "#Doink", 90 },
+    { "#Adam", 90 },
+    { "#Lex", 90 },
+    { "#faced2_tbl", 90 },
+    { "#faced_tbl", 90 },
 };
 
 static const wm_anim_op prog_dnk_break_face2_anim_ops[] = {
@@ -13584,6 +15146,12 @@ static const wm_anim_op prog_dnk_3_fake_hold_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_3_fake_hold_anim_labels[] = {
+    { "#gothim", 39 },
+    { "#missedb", 57 },
+    { "#missed", 69 },
+};
+
 static const wm_anim_op prog_dnk_3_head_hold2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -13658,6 +15226,12 @@ static const wm_anim_op prog_dnk_3_head_hold2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_3_head_hold2_anim_labels[] = {
+    { "#gothim", 29 },
+    { "#missedb", 47 },
+    { "#missed", 59 },
+};
+
 static const wm_anim_op prog_dnk_3_head_hold_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -13716,6 +15290,12 @@ static const wm_anim_op prog_dnk_3_head_hold_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_3_head_hold_anim_labels[] = {
+    { "#gothim", 13 },
+    { "#missedb", 31 },
+    { "#missed", 43 },
+};
+
 static const wm_anim_op prog_head_grab_time_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -13750,6 +15330,24 @@ static const wm_anim_op prog_head_grab_time_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_head_grab_time_labels[] = {
+    { "rets", 0 },
+    { "#puppet_tbl", 0 },
+    { "#Bret", 0 },
+    { "#Razor", 0 },
+    { "#Taker", 0 },
+    { "#Yokozuna", 0 },
+    { "#Shawn", 0 },
+    { "#BamBam", 0 },
+    { "#Doink", 0 },
+    { "#Adam", 0 },
+    { "#Lex", 0 },
+    { "#headheld_tbl", 0 },
+    { "#loop", 6 },
+    { "#inc_loop", 33 },
+    { "#breakout", 33 },
 };
 
 static const wm_anim_op prog_clear_opp_counts_ops[] = {
@@ -13788,6 +15386,24 @@ static const wm_anim_op prog_clear_opp_counts_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_clear_opp_counts_labels[] = {
+    { "rets", 0 },
+    { "#puppet_tbl", 0 },
+    { "#Bret", 0 },
+    { "#Razor", 0 },
+    { "#Taker", 0 },
+    { "#Yokozuna", 0 },
+    { "#Shawn", 0 },
+    { "#BamBam", 0 },
+    { "#Doink", 0 },
+    { "#Adam", 0 },
+    { "#Lex", 0 },
+    { "#headheld_tbl", 0 },
+    { "#loop", 6 },
+    { "#inc_loop", 33 },
+    { "#breakout", 33 },
+};
+
 static const wm_anim_op prog_dnk_3_head_held_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -13824,6 +15440,13 @@ static const wm_anim_op prog_dnk_3_head_held_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_3_head_held_anim_labels[] = {
+    { "#loop", 6 },
+    { "#inc_loop", 33 },
+    { "rets", 33 },
+    { "#breakout", 33 },
+};
+
 static const wm_anim_op prog_dnk_3_head_held_brk_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -13842,6 +15465,12 @@ static const wm_anim_op prog_dnk_3_head_held_brk_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_3_head_held_brk_anim_labels[] = {
+    { "#inc_loop", 17 },
+    { "rets", 17 },
+    { "#breakout", 17 },
 };
 
 static const wm_anim_op prog_dnk_3_head_held_stand_anim_ops[] = {
@@ -13931,6 +15560,14 @@ static const wm_anim_op prog_dnk_3_knees_to_head_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_3_pile_driver_anim" },
 };
 
+static const wm_anim_label prog_dnk_3_knees_to_head_anim_labels[] = {
+    { "#rpt", 6 },
+    { "#skp", 8 },
+    { "#exit", 32 },
+    { "#missed", 32 },
+    { "#do_pile", 43 },
+};
+
 static const wm_anim_op prog_dnk_uppercut_to_head_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -13988,6 +15625,14 @@ static const wm_anim_op prog_dnk_4_uppercut_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_4_uppercut_anim_labels[] = {
+    { "#no_hit2", 24 },
+    { "#set_zvel", 30 },
+    { "#skip", 30 },
+    { "#missedb", 30 },
+    { "#missed", 31 },
 };
 
 static const wm_anim_op prog_dnk_combo_uppercut_to_head_anim_ops[] = {
@@ -14072,6 +15717,15 @@ static const wm_anim_op prog_dnk_combo_uppercut_to_head_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_combo_uppercut_to_head_anim_labels[] = {
+    { "#NEXT_CHECK_2", 68 },
+    { "#NEXT_CHECK", 70 },
+    { "#miss", 72 },
+    { "SET_OPTIMAL_POSITION", 79 },
+    { "NO_NEED_TO_NEG_XDIR", 79 },
+    { "RETS", 79 },
+};
+
 static const wm_anim_op prog_dnk_uppercuts_to_head_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -14123,6 +15777,18 @@ static const wm_anim_op prog_dnk_uppercuts_to_head_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_uppercuts_to_head_anim_labels[] = {
+    { "#rpt", 10 },
+    { "#skp", 14 },
+    { "#exit", 41 },
+    { "#missed", 41 },
+    { "#go_high", 48 },
+    { "#x", 48 },
+    { "#chk_count", 48 },
+    { "#fail", 48 },
+    { "rets", 48 },
+};
+
 static const wm_anim_op prog_dnk_2_slap_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -14154,6 +15820,11 @@ static const wm_anim_op prog_dnk_2_slap_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_2_slap_anim_labels[] = {
+    { "#no_hit", 18 },
+    { "#none", 24 },
+};
+
 static const wm_anim_op prog_dnk_4_slap_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -14183,6 +15854,11 @@ static const wm_anim_op prog_dnk_4_slap_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D4BS3A09" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_4_slap_anim_labels[] = {
+    { "#no_hit2", 18 },
+    { "#none", 24 },
 };
 
 static const wm_anim_op prog_spunch_delay_ops[] = {
@@ -14271,6 +15947,22 @@ static const wm_anim_op prog_spunch_delay_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_spunch_delay_labels[] = {
+    { "#cont", 0 },
+    { "rets", 0 },
+    { "#ok", 0 },
+    { "#contz", 23 },
+    { "#gothim", 27 },
+    { "#no_hitz", 31 },
+    { "#fail", 34 },
+    { "#no_hit3", 37 },
+    { "#dnk_quick_earslap", 48 },
+    { "#fail2", 65 },
+    { "#no_hitx", 72 },
+    { "#no_hit2", 73 },
+    { "#set_opp_y", 83 },
+};
+
 static const wm_anim_op prog_dnk_2_earslap_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -14355,6 +16047,21 @@ static const wm_anim_op prog_dnk_2_earslap_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_2_earslap_anim_labels[] = {
+    { "#cont", 21 },
+    { "#contz", 23 },
+    { "#gothim", 27 },
+    { "#no_hitz", 31 },
+    { "#fail", 34 },
+    { "#no_hit3", 37 },
+    { "#dnk_quick_earslap", 48 },
+    { "#fail2", 65 },
+    { "#no_hitx", 72 },
+    { "#no_hit2", 73 },
+    { "#set_opp_y", 83 },
+    { "rets", 83 },
 };
 
 static const wm_anim_op prog_dnk_4_earslap_anim_ops[] = {
@@ -14443,6 +16150,21 @@ static const wm_anim_op prog_dnk_4_earslap_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_4_earslap_anim_labels[] = {
+    { "#cont", 21 },
+    { "#contz", 23 },
+    { "#gothim", 27 },
+    { "#no_hitz", 31 },
+    { "#fail", 34 },
+    { "#no_hit3", 37 },
+    { "#dnk_quick_earslap", 48 },
+    { "#fail2", 65 },
+    { "#no_hitx", 72 },
+    { "#no_hit2", 73 },
+    { "#set_opp_y", 83 },
+    { "rets", 83 },
+};
+
 static const wm_anim_op prog_dnk_4_combo_earslap_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -14519,6 +16241,15 @@ static const wm_anim_op prog_dnk_4_combo_earslap_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_4_combo_earslap_anim_labels[] = {
+    { "#gothimc", 17 },
+    { "#dnk_quick_combo_earslap", 22 },
+    { "#NEXT_CHECK", 43 },
+    { "#NEXT_CHEK2", 49 },
+    { "#missed", 55 },
+    { "#no_hit2c", 61 },
+};
+
 static const wm_anim_op prog_body_smoke_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "ckzpos" },
@@ -14539,6 +16270,25 @@ static const wm_anim_op prog_body_smoke_ops[] = {
     { WM_AOP_FRAME, 0, -1, 20, 0, 0, 0, 0, 0, "D3RC3A09" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_body_smoke_labels[] = {
+    { "#lp", 0 },
+    { "DIE", 0 },
+    { "#no_flip", 0 },
+    { "#x_tbl", 0 },
+    { "#y_tbl", 0 },
+    { "smoke_t", 0 },
+    { "cldbw_l", 0 },
+    { "cldblg_l", 0 },
+    { "cldbgry_l", 0 },
+    { "cldblg2_l", 0 },
+    { "#strt", 0 },
+    { "#noani", 0 },
+    { "#die", 0 },
+    { "spark_l", 0 },
+    { "clobber_sparks", 0 },
+    { "clb_spark", 0 },
 };
 
 static const wm_anim_op prog_smokepuff_ops[] = {
@@ -14563,6 +16313,25 @@ static const wm_anim_op prog_smokepuff_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
 };
 
+static const wm_anim_label prog_smokepuff_labels[] = {
+    { "#no_flip", 0 },
+    { "#x_tbl", 0 },
+    { "#y_tbl", 0 },
+    { "smoke_t", 0 },
+    { "cldbw_l", 0 },
+    { "cldblg_l", 0 },
+    { "cldbgry_l", 0 },
+    { "cldblg2_l", 0 },
+    { "#lp", 0 },
+    { "DIE", 0 },
+    { "#strt", 0 },
+    { "#noani", 0 },
+    { "#die", 0 },
+    { "spark_l", 0 },
+    { "clobber_sparks", 0 },
+    { "clb_spark", 0 },
+};
+
 static const wm_anim_op prog_hand_sparks_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "ckzpos" },
@@ -14585,6 +16354,18 @@ static const wm_anim_op prog_hand_sparks_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
 };
 
+static const wm_anim_label prog_hand_sparks_labels[] = {
+    { "#lp", 0 },
+    { "DIE", 0 },
+    { "#no_flip", 0 },
+    { "#strt", 0 },
+    { "#noani", 0 },
+    { "#die", 0 },
+    { "spark_l", 0 },
+    { "clobber_sparks", 0 },
+    { "clb_spark", 0 },
+};
+
 static const wm_anim_op prog_one_spark_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "ckzpos" },
@@ -14605,6 +16386,18 @@ static const wm_anim_op prog_one_spark_ops[] = {
     { WM_AOP_FRAME, 0, -1, 20, 0, 0, 0, 0, 0, "D3RC3A09" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_one_spark_labels[] = {
+    { "#no_flip", 0 },
+    { "#lp", 0 },
+    { "#strt", 0 },
+    { "#noani", 0 },
+    { "#die", 0 },
+    { "spark_l", 0 },
+    { "clobber_sparks", 0 },
+    { "DIE", 0 },
+    { "clb_spark", 0 },
 };
 
 static const wm_anim_op prog_dnk_break_neck2_anim_ops[] = {
@@ -14690,6 +16483,10 @@ static const wm_anim_op prog_dnk_break_neck_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
 };
 
+static const wm_anim_label prog_dnk_break_neck_anim_labels[] = {
+    { "#fall_back", 19 },
+};
+
 static const wm_anim_op prog_dnk_2_hair_pickup_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -14742,6 +16539,10 @@ static const wm_anim_op prog_dnk_2_hair_pickup_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_2_hair_pickup_anim_labels[] = {
+    { "#missed", 41 },
+};
+
 static const wm_anim_op prog_dnk_4_hair_pickup_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -14788,6 +16589,10 @@ static const wm_anim_op prog_dnk_4_hair_pickup_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_4_hair_pickup_anim_labels[] = {
+    { "#missed", 35 },
+};
+
 static const wm_anim_op prog_ck_getup_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 140, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
@@ -14806,6 +16611,23 @@ static const wm_anim_op prog_ck_getup_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_hitonground_xflip_anim" },
 };
 
+static const wm_anim_label prog_ck_getup_labels[] = {
+    { "#misshim", 0 },
+    { "rets", 0 },
+    { "#headheld_tbl", 0 },
+    { "#puppet_tbl", 0 },
+    { "#Bret", 0 },
+    { "#Razor", 0 },
+    { "#Taker", 0 },
+    { "#Yokozuna", 0 },
+    { "#Shawn", 0 },
+    { "#BamBam", 0 },
+    { "#Doink", 0 },
+    { "#Adam", 0 },
+    { "#Lex", 0 },
+    { "#cont", 7 },
+};
+
 static const wm_anim_op prog_dnk_flyout_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 140, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
@@ -14822,6 +16644,10 @@ static const wm_anim_op prog_dnk_flyout_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
     { WM_AOP_DAMAGE, 0, -1, 27, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_hitonground_xflip_anim" },
+};
+
+static const wm_anim_label prog_dnk_flyout_anim_labels[] = {
+    { "#cont", 7 },
 };
 
 static const wm_anim_op prog_dnk_flyout2_anim_ops[] = {
@@ -14866,6 +16692,10 @@ static const wm_anim_op prog_dnk_flyout2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_stand4_anim" },
+};
+
+static const wm_anim_label prog_dnk_flyout2_anim_labels[] = {
+    { "#cont", 0 },
 };
 
 static const wm_anim_op prog_dnk_4_taunt_anim_ops[] = {
@@ -15039,6 +16869,10 @@ static const wm_anim_op prog_dnk_arm_broken_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_arm_broken_anim_labels[] = {
+    { "#nodead", 16 },
 };
 
 static const wm_anim_op prog_hrt_zip_anim_ops[] = {
@@ -15687,6 +17521,11 @@ static const wm_anim_op prog_hrt_run2_anim_ops[] = {
     { WM_AOP_GOTO, 0, 7, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_run2_anim_labels[] = {
+    { "#lp1", 7 },
+    { "#run2", 13 },
+};
+
 static const wm_anim_op prog_hrt_run_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -15708,6 +17547,11 @@ static const wm_anim_op prog_hrt_run_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_RUN" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H3RN3A12" },
     { WM_AOP_GOTO, 0, 3, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_run_anim_labels[] = {
+    { "#lp1", 3 },
+    { "#run2", 9 },
 };
 
 static const wm_anim_op prog_hrt_bounce_anim_ops[] = {
@@ -15824,6 +17668,14 @@ static const wm_anim_op prog_hrt_combo_punch_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_combo_punch_anim_labels[] = {
+    { "#punch_loop", 38 },
+    { "#no_dropkick", 57 },
+    { "#no_knee", 59 },
+    { "#exit_move", 61 },
+    { "#missed", 65 },
+};
+
 static const wm_anim_op prog_hrt_2_punch_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -15852,6 +17704,10 @@ static const wm_anim_op prog_hrt_2_punch_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "H2PL3B08" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_2_punch_anim_labels[] = {
+    { "#no_hit", 21 },
 };
 
 static const wm_anim_op prog_hrt_4_super_punch_anim_ops[] = {
@@ -15905,6 +17761,12 @@ static const wm_anim_op prog_hrt_4_super_punch_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_4_super_punch_anim_labels[] = {
+    { "#blocked", 34 },
+    { "#no_slide", 34 },
+    { "#missed", 41 },
+};
+
 static const wm_anim_op prog_hrt_4_punch_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -15933,6 +17795,10 @@ static const wm_anim_op prog_hrt_4_punch_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "H4PL3X08" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_4_punch_anim_labels[] = {
+    { "#no_hit2", 21 },
 };
 
 static const wm_anim_op prog_hrt_2_uppercut_anim_ops[] = {
@@ -15977,6 +17843,12 @@ static const wm_anim_op prog_hrt_2_uppercut_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_2_uppercut_anim_labels[] = {
+    { "#blocked", 32 },
+    { "#missed", 32 },
+    { "#no_slide", 32 },
+};
+
 static const wm_anim_op prog_hrt_4_uppercut_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -16019,6 +17891,12 @@ static const wm_anim_op prog_hrt_4_uppercut_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_4_uppercut_anim_labels[] = {
+    { "#blocked", 32 },
+    { "#missed", 32 },
+    { "#no_slide", 32 },
+};
+
 static const wm_anim_op prog_hrt_4_push_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
@@ -16046,6 +17924,11 @@ static const wm_anim_op prog_hrt_4_push_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H4PS3A08" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_4_push_anim_labels[] = {
+    { "#no_hit", 17 },
+    { "#hit", 20 },
 };
 
 static const wm_anim_op prog_hrt_2_ground_punch_anim_ops[] = {
@@ -16086,6 +17969,13 @@ static const wm_anim_op prog_hrt_2_ground_punch_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_2_ground_punch_anim_labels[] = {
+    { "#leapat", 16 },
+    { "#common", 25 },
+    { "#missed", 28 },
+    { "#hit", 29 },
+};
+
 static const wm_anim_op prog_hrt_4_ground_punch_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -16124,6 +18014,13 @@ static const wm_anim_op prog_hrt_4_ground_punch_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_4_ground_punch_anim_labels[] = {
+    { "#leapat", 16 },
+    { "#common", 25 },
+    { "#missed", 28 },
+    { "#hit", 29 },
+};
+
 static const wm_anim_op prog_hrt_2_butt_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -16157,6 +18054,12 @@ static const wm_anim_op prog_hrt_2_butt_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "H2BC3A08" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_2_butt_anim_labels[] = {
+    { "#missedb", 23 },
+    { "#missed", 26 },
+    { "#no_hit", 26 },
 };
 
 static const wm_anim_op prog_hrt_2_super_punch2_anim_ops[] = {
@@ -16193,6 +18096,13 @@ static const wm_anim_op prog_hrt_2_super_punch2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_2_super_punch2_anim_labels[] = {
+    { "#missedb", 19 },
+    { "#missed", 22 },
+    { "#no_hit", 22 },
+    { "#none", 25 },
+};
+
 static const wm_anim_op prog_hrt_4_super_punch2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -16225,6 +18135,13 @@ static const wm_anim_op prog_hrt_4_super_punch2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "H4BC3A08" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_4_super_punch2_anim_labels[] = {
+    { "#missedb", 19 },
+    { "#missed", 22 },
+    { "#no_hit2", 22 },
+    { "#none", 25 },
 };
 
 static const wm_anim_op prog_hrt_4_butt_anim_ops[] = {
@@ -16261,6 +18178,12 @@ static const wm_anim_op prog_hrt_4_butt_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "H4BC3A08" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_4_butt_anim_labels[] = {
+    { "#missedb", 24 },
+    { "#missed", 27 },
+    { "#no_hit2", 27 },
 };
 
 static const wm_anim_op prog_hrt_2_butts_anim_ops[] = {
@@ -16307,6 +18230,14 @@ static const wm_anim_op prog_hrt_2_butts_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_2_butts_anim_labels[] = {
+    { "#rpt", 7 },
+    { "#no_hit", 18 },
+    { "#ex", 30 },
+    { "#missedb", 34 },
+    { "#missed", 35 },
 };
 
 static const wm_anim_op prog_hrt_4_butts_anim_ops[] = {
@@ -16356,6 +18287,14 @@ static const wm_anim_op prog_hrt_4_butts_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_4_butts_anim_labels[] = {
+    { "#rpt", 7 },
+    { "#no_hit2", 18 },
+    { "#ex", 31 },
+    { "#missedb", 37 },
+    { "#missed", 38 },
 };
 
 static const wm_anim_op prog_hrt_combo_butt_anim_ops[] = {
@@ -16447,6 +18386,15 @@ static const wm_anim_op prog_hrt_combo_butt_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_combo_butt_anim_labels[] = {
+    { "#butt_loop", 41 },
+    { "#no_dropkick", 65 },
+    { "#no_knee", 67 },
+    { "#last_check", 69 },
+    { "#exit_move", 71 },
+    { "#missed", 76 },
+};
+
 static const wm_anim_op prog_hrt_2_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -16477,6 +18425,10 @@ static const wm_anim_op prog_hrt_2_kick_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H2KM3A11" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_2_kick_anim_labels[] = {
+    { "#no_hit", 21 },
 };
 
 static const wm_anim_op prog_hrt_combo_kick_anim_ops[] = {
@@ -16568,6 +18520,14 @@ static const wm_anim_op prog_hrt_combo_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_combo_kick_anim_labels[] = {
+    { "#kick_loop", 44 },
+    { "#no_knee", 68 },
+    { "#no_dropkick", 70 },
+    { "#exit_move", 72 },
+    { "#missed", 76 },
+};
+
 static const wm_anim_op prog_hrt_4_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -16596,6 +18556,10 @@ static const wm_anim_op prog_hrt_4_kick_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H4KM3B10" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_4_kick_anim_labels[] = {
+    { "#no_hit", 19 },
 };
 
 static const wm_anim_op prog_hrt_4_jump_kick_anim_ops[] = {
@@ -16639,6 +18603,12 @@ static const wm_anim_op prog_hrt_4_jump_kick_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_4_jump_kick_anim_labels[] = {
+    { "#no_slide", 17 },
+    { "#missedb", 29 },
+    { "#missed", 30 },
 };
 
 static const wm_anim_op prog_hrt_2_super_kick_anim_ops[] = {
@@ -16690,6 +18660,13 @@ static const wm_anim_op prog_hrt_2_super_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_2_super_kick_anim_labels[] = {
+    { "#norm", 24 },
+    { "#blocked", 28 },
+    { "#missed", 32 },
+    { "#none", 37 },
+};
+
 static const wm_anim_op prog_hrt_4_super_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -16739,6 +18716,13 @@ static const wm_anim_op prog_hrt_4_super_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_4_super_kick_anim_labels[] = {
+    { "#norm", 24 },
+    { "#blocked", 28 },
+    { "#missed", 32 },
+    { "#none", 37 },
+};
+
 static const wm_anim_op prog_hrt_kick_TB_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -16769,6 +18753,10 @@ static const wm_anim_op prog_hrt_kick_TB_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_kick_TB_anim_labels[] = {
+    { "#yoff", 29 },
 };
 
 static const wm_anim_op prog_hrt_flying_kick_anim_ops[] = {
@@ -16802,6 +18790,10 @@ static const wm_anim_op prog_hrt_flying_kick_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_facedown_getup_anim" },
 };
 
+static const wm_anim_label prog_hrt_flying_kick_anim_labels[] = {
+    { "#yoff", 28 },
+};
+
 static const wm_anim_op prog_hrt_combo_flying_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -16832,6 +18824,10 @@ static const wm_anim_op prog_hrt_combo_flying_kick_anim_ops[] = {
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETFACING, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_facedown_getup_anim" },
+};
+
+static const wm_anim_label prog_hrt_combo_flying_kick_anim_labels[] = {
+    { "#missed", 17 },
 };
 
 static const wm_anim_op prog_hrt_flying_kick2_anim_ops[] = {
@@ -16899,6 +18895,12 @@ static const wm_anim_op prog_hrt_2_stomp_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_2_stomp_anim_labels[] = {
+    { "#no_leapat", 17 },
+    { "#missed", 28 },
+    { "#hit", 29 },
+};
+
 static const wm_anim_op prog_hrt_4_stomp_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -16937,6 +18939,13 @@ static const wm_anim_op prog_hrt_4_stomp_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_4_stomp_anim_labels[] = {
+    { "#no_leapat", 17 },
+    { "#missed", 28 },
+    { "#hit", 29 },
+    { "#yoff", 35 },
+};
+
 static const wm_anim_op prog_hrt_running_ground_punch_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -16970,6 +18979,13 @@ static const wm_anim_op prog_hrt_running_ground_punch_anim_ops[] = {
     { WM_AOP_FACEUP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_4_faceup_getup2_anim" },
+};
+
+static const wm_anim_label prog_hrt_running_ground_punch_anim_labels[] = {
+    { "#hit", 26 },
+    { "#AVOID_HIT_CALL", 27 },
+    { "#xoff", 32 },
+    { "#yoff", 32 },
 };
 
 static const wm_anim_op prog_hrt_tbukl_leap_anim_ops[] = {
@@ -17016,6 +19032,12 @@ static const wm_anim_op prog_hrt_tbukl_leap_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_4_faceup_getup2_anim" },
 };
 
+static const wm_anim_label prog_hrt_tbukl_leap_anim_labels[] = {
+    { "#opp_onground", 19 },
+    { "#missed", 35 },
+    { "#common", 37 },
+};
+
 static const wm_anim_op prog_hrt_2_knee_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -17052,6 +19074,11 @@ static const wm_anim_op prog_hrt_2_knee_anim_ops[] = {
     { WM_AOP_FACEUP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_2_knee_anim_labels[] = {
+    { "#no_hit", 26 },
+    { "#cont", 29 },
 };
 
 static const wm_anim_op prog_hrt_4_knee_to_head_anim_ops[] = {
@@ -17100,6 +19127,12 @@ static const wm_anim_op prog_hrt_4_knee_to_head_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_4_knee_to_head_anim_labels[] = {
+    { "#skip_run_check", 20 },
+    { "#no_hit", 33 },
+    { "#cont", 36 },
+};
+
 static const wm_anim_op prog_hrt_4_knee_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -17140,6 +19173,12 @@ static const wm_anim_op prog_hrt_4_knee_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_4_knee_anim_labels[] = {
+    { "#skip_run_check", 14 },
+    { "#no_hit", 27 },
+    { "#cont", 30 },
+};
+
 static const wm_anim_op prog_hrt_combo_knee_fall_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -17176,6 +19215,12 @@ static const wm_anim_op prog_hrt_combo_knee_fall_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_combo_knee_fall_anim_labels[] = {
+    { "#no_hit", 19 },
+    { "#nodrft", 22 },
+    { "#cont", 25 },
+};
+
 static const wm_anim_op prog_hrt_4_knee_fall_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -17206,6 +19251,12 @@ static const wm_anim_op prog_hrt_4_knee_fall_anim_ops[] = {
     { WM_AOP_FACEUP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_4_knee_fall_anim_labels[] = {
+    { "#no_hit", 17 },
+    { "#nodrft", 20 },
+    { "#cont", 23 },
 };
 
 static const wm_anim_op prog_hrt_knees_to_head_anim_ops[] = {
@@ -17254,6 +19305,13 @@ static const wm_anim_op prog_hrt_knees_to_head_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_3_pile_driver_anim" },
+};
+
+static const wm_anim_label prog_hrt_knees_to_head_anim_labels[] = {
+    { "#rpt", 6 },
+    { "#exit", 28 },
+    { "#missed", 28 },
+    { "#do_pile", 37 },
 };
 
 static const wm_anim_op prog_hrt_uppercuts_to_head_anim_ops[] = {
@@ -17349,6 +19407,17 @@ static const wm_anim_op prog_hrt_uppercuts_to_head_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_flying_kick2_anim" },
 };
 
+static const wm_anim_label prog_hrt_uppercuts_to_head_anim_labels[] = {
+    { "#rpt", 30 },
+    { "#cont", 56 },
+    { "#missed", 72 },
+    { "#exit", 72 },
+    { "#release_offsets", 81 },
+    { "#do_flykick", 81 },
+    { "#go_high", 90 },
+    { "#x", 90 },
+};
+
 static const wm_anim_op prog_hrt_2_grabfling_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -17409,6 +19478,23 @@ static const wm_anim_op prog_hrt_2_grabfling_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_2_grabfling_anim_labels[] = {
+    { "#cont", 15 },
+    { "#missedb", 48 },
+    { "#missed", 51 },
+    { "#puppet_tbl", 57 },
+    { "#Bret", 57 },
+    { "#Razor", 57 },
+    { "#Taker", 57 },
+    { "#Yokozuna", 57 },
+    { "#Shawn", 57 },
+    { "#BamBam", 57 },
+    { "#Doink", 57 },
+    { "#Adam", 57 },
+    { "#Lex", 57 },
+    { "#strt_run_tbl", 57 },
+};
+
 static const wm_anim_op prog_hrt_4_grabfling_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -17458,6 +19544,23 @@ static const wm_anim_op prog_hrt_4_grabfling_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_4_grabfling_anim_labels[] = {
+    { "#cont", 6 },
+    { "#missedb", 39 },
+    { "#missed", 42 },
+    { "#puppet_tbl", 48 },
+    { "#Bret", 48 },
+    { "#Razor", 48 },
+    { "#Taker", 48 },
+    { "#Yokozuna", 48 },
+    { "#Shawn", 48 },
+    { "#BamBam", 48 },
+    { "#Doink", 48 },
+    { "#Adam", 48 },
+    { "#Lex", 48 },
+    { "#strt_run_tbl", 48 },
 };
 
 static const wm_anim_op prog_hrt_roll_frames_ops[] = {
@@ -17566,6 +19669,10 @@ static const wm_anim_op prog_hrt_knockdwn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_hrt_knockdwn_anim_labels[] = {
+    { "#nodead", 21 },
 };
 
 static const wm_anim_op prog_hrt_climbthru_side_anim_ops[] = {
@@ -17686,6 +19793,12 @@ static const wm_anim_op prog_hrt_climbin_side_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_climbin_side_anim_labels[] = {
+    { "#set_trgt", 56 },
+    { "#onlft", 56 },
+    { "rets", 56 },
+};
+
 static const wm_anim_op prog_hrt_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1420, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -17722,6 +19835,14 @@ static const wm_anim_op prog_hrt_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 128, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_climbthru_bot_anim_labels[] = {
+    { "#ckspin", 35 },
+    { "RETS", 35 },
+    { "#faceup", 35 },
+    { "rets", 35 },
+    { "NOT_IN_RING", 35 },
 };
 
 static const wm_anim_op prog_hrt_climbin_bot_anim_ops[] = {
@@ -17800,6 +19921,15 @@ static const wm_anim_op prog_hrt_climbthru_top_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_climbthru_top_anim_labels[] = {
+    { "#dir4", 7 },
+    { "#cont", 18 },
+    { "#set_zvel1", 34 },
+    { "rets", 34 },
+    { "#facedwn", 34 },
+    { "#set_zvel2", 34 },
+};
+
 static const wm_anim_op prog_hrt_rollthru_top_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1420, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -17851,6 +19981,11 @@ static const wm_anim_op prog_hrt_climbin_top_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 128, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_climbin_top_anim_labels[] = {
+    { "#set_zvel2", 28 },
+    { "rets", 28 },
 };
 
 static const wm_anim_op prog_hrt_2_pin_anim_ops[] = {
@@ -17918,6 +20053,10 @@ static const wm_anim_op prog_hrt_2_pin_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_2_pin_anim_labels[] = {
+    { "#lp0", 40 },
+};
+
 static const wm_anim_op prog_hrt_4_pin_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -17978,6 +20117,10 @@ static const wm_anim_op prog_hrt_4_pin_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_4_pin_anim_labels[] = {
+    { "#lp0", 35 },
+};
+
 static const wm_anim_op prog_hrt_2_raise_arm_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -18021,6 +20164,12 @@ static const wm_anim_op prog_hrt_2_raise_arm_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_2_raise_arm_anim_labels[] = {
+    { "#cont", 13 },
+    { "#lp1", 17 },
+    { "#wakeup", 33 },
+};
+
 static const wm_anim_op prog_hrt_4_raise_arm_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -18054,6 +20203,12 @@ static const wm_anim_op prog_hrt_4_raise_arm_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_4_raise_arm_anim_labels[] = {
+    { "#cont", 5 },
+    { "#lp1", 9 },
+    { "#wakeup", 25 },
 };
 
 static const wm_anim_op prog_hrt_buckoff_anim_ops[] = {
@@ -18120,6 +20275,13 @@ static const wm_anim_op prog_hrt_heldoh_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_heldoh_anim_labels[] = {
+    { "#loop", 5 },
+    { "#inc_loop", 36 },
+    { "rets", 36 },
+    { "#breakout", 36 },
+};
+
 static const wm_anim_op prog_hrt_neckbroken_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -18166,6 +20328,11 @@ static const wm_anim_op prog_hrt_neckbroken_anim_ops[] = {
     { WM_AOP_GOTO, 0, 18, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_neckbroken_anim_labels[] = {
+    { "#yoff", 5 },
+    { "#repeat", 18 },
+};
+
 static const wm_anim_op prog_hrt_pogo_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -18210,6 +20377,10 @@ static const wm_anim_op prog_hrt_climb_up_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "H4SB4B02" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "tbukl_flip" },
     { WM_AOP_GOTO, 0, 13, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_climb_up_anim_labels[] = {
+    { "#repeat", 13 },
 };
 
 static const wm_anim_op prog_hrt_climb_down_anim_ops[] = {
@@ -18404,6 +20575,21 @@ static const wm_anim_op prog_hrt_combo_hiptoss_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_combo_hiptoss_anim_labels[] = {
+    { "#hiptoss_loop", 6 },
+    { "#check_exit", 49 },
+    { "#exit_move", 51 },
+    { "#throw_him_outc", 56 },
+    { "#missedbc", 59 },
+    { "#missedc", 60 },
+    { "SLAM_HIM", 69 },
+    { "#cont", 101 },
+    { "#got_him", 103 },
+    { "#throw_him_out", 137 },
+    { "#missedb", 159 },
+    { "#missed", 163 },
+};
+
 static const wm_anim_op prog_hrt_hiptoss2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1164, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -18508,6 +20694,27 @@ static const wm_anim_op prog_hrt_hiptoss2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_hiptoss2_anim_labels[] = {
+    { "#cont", 32 },
+    { "#got_him", 34 },
+    { "#throw_him_out", 68 },
+    { "#missedb", 90 },
+    { "#missed", 94 },
+    { "#rollout_tbl", 101 },
+    { "#puppet_tbl", 101 },
+    { "#Bret", 101 },
+    { "#Razor", 101 },
+    { "#Taker", 101 },
+    { "#Yokozuna", 101 },
+    { "#Shawn", 101 },
+    { "#BamBam", 101 },
+    { "#Doink", 101 },
+    { "#Adam", 101 },
+    { "#Lex", 101 },
+    { "#release_table", 101 },
+    { "#flyout_tbl", 101 },
+};
+
 static const wm_anim_op prog_hrt_hiptoss_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1164, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -18596,6 +20803,27 @@ static const wm_anim_op prog_hrt_hiptoss_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_hiptoss_anim_labels[] = {
+    { "#cont", 16 },
+    { "#got_him", 18 },
+    { "#throw_him_out", 52 },
+    { "#missedb", 74 },
+    { "#missed", 78 },
+    { "#rollout_tbl", 85 },
+    { "#puppet_tbl", 85 },
+    { "#Bret", 85 },
+    { "#Razor", 85 },
+    { "#Taker", 85 },
+    { "#Yokozuna", 85 },
+    { "#Shawn", 85 },
+    { "#BamBam", 85 },
+    { "#Doink", 85 },
+    { "#Adam", 85 },
+    { "#Lex", 85 },
+    { "#release_table", 85 },
+    { "#flyout_tbl", 85 },
+};
+
 static const wm_anim_op prog_hrt_3_head_held_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -18633,6 +20861,13 @@ static const wm_anim_op prog_hrt_3_head_held_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_3_head_held_anim_labels[] = {
+    { "#loop", 6 },
+    { "#inc_loop", 34 },
+    { "rets", 34 },
+    { "#breakout", 34 },
+};
+
 static const wm_anim_op prog_hrt_3_head_held_brk_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -18654,6 +20889,12 @@ static const wm_anim_op prog_hrt_3_head_held_brk_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_3_head_held_brk_anim_labels[] = {
+    { "#inc_loop", 20 },
+    { "rets", 20 },
+    { "#breakout", 20 },
 };
 
 static const wm_anim_op prog_hrt_3_head_held_stand_anim_ops[] = {
@@ -18754,6 +20995,21 @@ static const wm_anim_op prog_hrt_2_hair_pickup_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_2_hair_pickup_anim_labels[] = {
+    { "#missed", 41 },
+    { "#headheld_tbl", 48 },
+    { "#puppet_tbl", 48 },
+    { "#Bret", 48 },
+    { "#Razor", 48 },
+    { "#Taker", 48 },
+    { "#Yokozuna", 48 },
+    { "#Shawn", 48 },
+    { "#BamBam", 48 },
+    { "#Doink", 48 },
+    { "#Adam", 48 },
+    { "#Lex", 48 },
+};
+
 static const wm_anim_op prog_hrt_4_hair_pickup_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -18796,6 +21052,21 @@ static const wm_anim_op prog_hrt_4_hair_pickup_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_4_hair_pickup_anim_labels[] = {
+    { "#missed", 34 },
+    { "#headheld_tbl", 41 },
+    { "#puppet_tbl", 41 },
+    { "#Bret", 41 },
+    { "#Razor", 41 },
+    { "#Taker", 41 },
+    { "#Yokozuna", 41 },
+    { "#Shawn", 41 },
+    { "#BamBam", 41 },
+    { "#Doink", 41 },
+    { "#Adam", 41 },
+    { "#Lex", 41 },
 };
 
 static const wm_anim_op prog_hrt_break_face2_anim_ops[] = {
@@ -18930,6 +21201,23 @@ static const wm_anim_op prog_hrt_3_fake_hold_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_3_fake_hold_anim_labels[] = {
+    { "#gothim", 39 },
+    { "#missedb", 58 },
+    { "#missed", 69 },
+    { "#puppet_tbl", 79 },
+    { "#Bret", 79 },
+    { "#Razor", 79 },
+    { "#Taker", 79 },
+    { "#Yokozuna", 79 },
+    { "#Shawn", 79 },
+    { "#BamBam", 79 },
+    { "#Doink", 79 },
+    { "#Adam", 79 },
+    { "#Lex", 79 },
+    { "#headheld_tbl", 79 },
+};
+
 static const wm_anim_op prog_hrt_3_head_hold2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -19003,6 +21291,23 @@ static const wm_anim_op prog_hrt_3_head_hold2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_3_head_hold2_anim_labels[] = {
+    { "#gothim", 30 },
+    { "#missedb", 49 },
+    { "#missed", 60 },
+    { "#puppet_tbl", 70 },
+    { "#Bret", 70 },
+    { "#Razor", 70 },
+    { "#Taker", 70 },
+    { "#Yokozuna", 70 },
+    { "#Shawn", 70 },
+    { "#BamBam", 70 },
+    { "#Doink", 70 },
+    { "#Adam", 70 },
+    { "#Lex", 70 },
+    { "#headheld_tbl", 70 },
+};
+
 static const wm_anim_op prog_hrt_3_head_hold_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -19058,6 +21363,23 @@ static const wm_anim_op prog_hrt_3_head_hold_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_3_head_hold_anim_labels[] = {
+    { "#gothim", 14 },
+    { "#missedb", 33 },
+    { "#missed", 44 },
+    { "#puppet_tbl", 54 },
+    { "#Bret", 54 },
+    { "#Razor", 54 },
+    { "#Taker", 54 },
+    { "#Yokozuna", 54 },
+    { "#Shawn", 54 },
+    { "#BamBam", 54 },
+    { "#Doink", 54 },
+    { "#Adam", 54 },
+    { "#Lex", 54 },
+    { "#headheld_tbl", 54 },
 };
 
 static const wm_anim_op prog_hrt_hh_2_ddt_anim_ops[] = {
@@ -19132,6 +21454,23 @@ static const wm_anim_op prog_hrt_hh_2_ddt_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_hh_2_ddt_anim_labels[] = {
+    { "#missed", 45 },
+    { "#break_face_tbl", 69 },
+    { "draw_ddt_name", 69 },
+    { "rets", 69 },
+    { "#puppet_tbl", 69 },
+    { "#Bret", 69 },
+    { "#Razor", 69 },
+    { "#Taker", 69 },
+    { "#Yokozuna", 69 },
+    { "#Shawn", 69 },
+    { "#BamBam", 69 },
+    { "#Doink", 69 },
+    { "#Adam", 69 },
+    { "#Lex", 69 },
+};
+
 static const wm_anim_op prog_hrt_combo_running_ddt_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
@@ -19192,6 +21531,11 @@ static const wm_anim_op prog_hrt_combo_running_ddt_anim_ops[] = {
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_hrt_combo_running_ddt_anim_labels[] = {
+    { "#missedbc", 40 },
+    { "#missedc", 42 },
 };
 
 static const wm_anim_op prog_hrt_running_ddt_anim_ops[] = {
@@ -19256,6 +21600,25 @@ static const wm_anim_op prog_hrt_running_ddt_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_faceup_getup_anim" },
 };
 
+static const wm_anim_label prog_hrt_running_ddt_anim_labels[] = {
+    { "#missedb", 40 },
+    { "#missed", 44 },
+    { "#half_vels", 59 },
+    { "rets", 59 },
+    { "#xflip_tbl", 59 },
+    { "#break_face_tbl", 59 },
+    { "#puppet_tbl", 59 },
+    { "#Bret", 59 },
+    { "#Razor", 59 },
+    { "#Taker", 59 },
+    { "#Yokozuna", 59 },
+    { "#Shawn", 59 },
+    { "#BamBam", 59 },
+    { "#Doink", 59 },
+    { "#Adam", 59 },
+    { "#Lex", 59 },
+};
+
 static const wm_anim_op prog_hrt_combo_pile_driver_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -19315,6 +21678,12 @@ static const wm_anim_op prog_hrt_combo_pile_driver_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_combo_pile_driver_anim_labels[] = {
+    { "#pile_loop", 19 },
+    { "#exit_move", 36 },
+    { "#missedc", 50 },
+};
+
 static const wm_anim_op prog_hrt_3_pile_driver_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -19367,6 +21736,23 @@ static const wm_anim_op prog_hrt_3_pile_driver_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_3_pile_driver_anim_labels[] = {
+    { "#missed", 47 },
+    { "#set_opp_xflip", 51 },
+    { "rets", 51 },
+    { "#puppet_tbl", 51 },
+    { "#Bret", 51 },
+    { "#Razor", 51 },
+    { "#Taker", 51 },
+    { "#Yokozuna", 51 },
+    { "#Shawn", 51 },
+    { "#BamBam", 51 },
+    { "#Doink", 51 },
+    { "#Adam", 51 },
+    { "#Lex", 51 },
+    { "#rollout_tbl", 51 },
 };
 
 static const wm_anim_op prog_hrt_3_face_driver2_anim_ops[] = {
@@ -19457,6 +21843,28 @@ static const wm_anim_op prog_hrt_3_face_driver2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_3_face_driver2_anim_labels[] = {
+    { "#try_rpt", 33 },
+    { "#slam_again", 37 },
+    { "#norepeat", 61 },
+    { "#missed", 81 },
+    { "#flsh_wht", 85 },
+    { "rets", 85 },
+    { "#reattach", 85 },
+    { "#release_table", 85 },
+    { "#puppet_tbl", 85 },
+    { "#Bret", 85 },
+    { "#Razor", 85 },
+    { "#Taker", 85 },
+    { "#Yokozuna", 85 },
+    { "#Shawn", 85 },
+    { "#BamBam", 85 },
+    { "#Doink", 85 },
+    { "#Adam", 85 },
+    { "#Lex", 85 },
+    { "#faced2_tbl", 85 },
+};
+
 static const wm_anim_op prog_hrt_combo_rake_face_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -19517,6 +21925,15 @@ static const wm_anim_op prog_hrt_combo_rake_face_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_combo_rake_face_anim_labels[] = {
+    { "#no_dropkick", 35 },
+    { "#no_knee", 37 },
+    { "#last_check", 39 },
+    { "#exit_move", 41 },
+    { "#missedbc", 45 },
+    { "#missedc", 45 },
+};
+
 static const wm_anim_op prog_hrt_rake_face_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -19573,6 +21990,28 @@ static const wm_anim_op prog_hrt_rake_face_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_rake_face_anim_labels[] = {
+    { "#gothim", 15 },
+    { "#dead", 38 },
+    { "#missedb", 44 },
+    { "#missed", 44 },
+    { "#ck_dead_opp", 55 },
+    { "#attach_found", 55 },
+    { "rets", 55 },
+    { "#ok", 55 },
+    { "#puppet_tbl", 55 },
+    { "#Bret", 55 },
+    { "#Razor", 55 },
+    { "#Taker", 55 },
+    { "#Yokozuna", 55 },
+    { "#Shawn", 55 },
+    { "#BamBam", 55 },
+    { "#Doink", 55 },
+    { "#Lex", 55 },
+    { "#react_tbl", 55 },
+    { "#react2_tbl", 55 },
 };
 
 static const wm_anim_op prog_xxx_get_face_rake_anim_ops[] = {
@@ -19670,6 +22109,19 @@ static const wm_anim_op prog_xxx_get_face_rake_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_xxx_get_face_rake_anim_labels[] = {
+    { "#face_hit2_tbl", 2 },
+    { "#loopc", 12 },
+    { "#standc", 37 },
+    { "#do_uppercutc", 45 },
+    { "#upper_loop", 50 },
+    { "#no_slidec", 61 },
+    { "#exit_move", 72 },
+    { "#upper_next_part", 77 },
+    { "#no_hitc", 80 },
+    { "#blockedc", 80 },
+};
+
 static const wm_anim_op prog_xxx_get_face_rake2_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM_TBL, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
@@ -19763,6 +22215,18 @@ static const wm_anim_op prog_xxx_get_face_rake2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_xxx_get_face_rake2_anim_labels[] = {
+    { "#loopc", 10 },
+    { "#standc", 35 },
+    { "#do_uppercutc", 43 },
+    { "#upper_loop", 48 },
+    { "#no_slidec", 59 },
+    { "#exit_move", 70 },
+    { "#upper_next_part", 75 },
+    { "#no_hitc", 78 },
+    { "#blockedc", 78 },
+};
+
 static const wm_anim_op prog_hrt_combo_roll_uppercut_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -19854,6 +22318,18 @@ static const wm_anim_op prog_hrt_combo_roll_uppercut_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_combo_roll_uppercut_anim_labels[] = {
+    { "#loopc", 8 },
+    { "#standc", 33 },
+    { "#do_uppercutc", 41 },
+    { "#upper_loop", 46 },
+    { "#no_slidec", 57 },
+    { "#exit_move", 68 },
+    { "#upper_next_part", 73 },
+    { "#no_hitc", 76 },
+    { "#blockedc", 76 },
+};
+
 static const wm_anim_op prog_hrt_roll_uppercut_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -19933,6 +22409,15 @@ static const wm_anim_op prog_hrt_roll_uppercut_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_roll_uppercut_anim_labels[] = {
+    { "#loop", 9 },
+    { "#stand", 35 },
+    { "#do_uppercut", 41 },
+    { "#no_hit", 68 },
+    { "#blocked", 68 },
+    { "#no_slide", 68 },
+};
+
 static const wm_anim_op prog_hrt_4_block_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -19949,6 +22434,10 @@ static const wm_anim_op prog_hrt_4_block_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H4BK3A01" },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_4_block_anim_labels[] = {
+    { "#4block", 7 },
 };
 
 static const wm_anim_op prog_hrt_4_hitblock_anim_ops[] = {
@@ -19994,6 +22483,10 @@ static const wm_anim_op prog_hrt_4_hitblock_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_4_hitblock_anim_labels[] = {
+    { "#4block", 0 },
+};
+
 static const wm_anim_op prog_hrt_4_hitblock2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H4BK3A02" },
     { WM_AOP_SETMODE, 0, -1, 76, 0, 0, 0, 0, 0, 0 },
@@ -20035,6 +22528,10 @@ static const wm_anim_op prog_hrt_4_hitblock2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H2AH3A06" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_4_hitblock2_anim_labels[] = {
+    { "#4block", 0 },
 };
 
 static const wm_anim_op prog_hrt_2_head_hit_anim_ops[] = {
@@ -20178,6 +22675,10 @@ static const wm_anim_op prog_hrt_4_head_hit2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_4_head_hit2_anim_labels[] = {
+    { "#nodead", 18 },
+};
+
 static const wm_anim_op prog_hrt_4_head_hit2s_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -20318,6 +22819,10 @@ static const wm_anim_op prog_hrt_4_body_hit_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_4_body_hit_anim_labels[] = {
+    { "#reg", 32 },
+};
+
 static const wm_anim_op prog_hrt_4_body_hit_dizzy_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -20418,6 +22923,10 @@ static const wm_anim_op prog_hrt_quick_knee_hit_anim_ops[] = {
     { WM_AOP_IFNOTSTATUS, 0, 11, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_fall_back_anim" },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_3_head_held_anim" },
+};
+
+static const wm_anim_label prog_hrt_quick_knee_hit_anim_labels[] = {
+    { "#nodead", 11 },
 };
 
 static const wm_anim_op prog_hrt_up_anim_ops[] = {
@@ -20634,6 +23143,14 @@ static const wm_anim_op prog_hrt_faceup_getup_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_faceup_getup_anim_labels[] = {
+    { "#getup_in_2", 5 },
+    { "#no_freetoss", 24 },
+    { "#getup_in_4", 28 },
+    { "#common_4", 36 },
+    { "#no_freetoss1", 51 },
+};
+
 static const wm_anim_op prog_hrt_4_faceup_getup2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 268, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -20657,6 +23174,14 @@ static const wm_anim_op prog_hrt_4_faceup_getup2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_4_faceup_getup2_anim_labels[] = {
+    { "#common_4", 3 },
+    { "#no_freetoss1", 18 },
+    { "choose_2or4", 22 },
+    { "#choose_2", 22 },
+    { "rets", 22 },
 };
 
 static const wm_anim_op prog_hrt_facedown_getup_anim_ops[] = {
@@ -20686,6 +23211,12 @@ static const wm_anim_op prog_hrt_facedown_getup_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_facedown_getup_anim_labels[] = {
+    { "#no_freetoss", 20 },
+    { "#set_wrestler_xflip", 24 },
+    { "rets", 24 },
+};
+
 static const wm_anim_op prog_hrt_dizzy_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 8, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -20706,6 +23237,10 @@ static const wm_anim_op prog_hrt_dizzy_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "H4TI4B03" },
     { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "H4TI4B02" },
     { WM_AOP_GOTO, 0, 4, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_dizzy_anim_labels[] = {
+    { "#loop", 4 },
 };
 
 static const wm_anim_op prog_hrt_break_neck_anim_ops[] = {
@@ -20738,6 +23273,10 @@ static const wm_anim_op prog_hrt_break_neck_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_facedown_getup_anim" },
+};
+
+static const wm_anim_label prog_hrt_break_neck_anim_labels[] = {
+    { "#fall_back", 16 },
 };
 
 static const wm_anim_op prog_hrt_break_neck2_anim_ops[] = {
@@ -20903,6 +23442,12 @@ static const wm_anim_op prog_hrt_get_buzz_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_fall_back_anim" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_get_buzz_anim_labels[] = {
+    { "#nodead", 65 },
+    { "#make_black", 67 },
+    { "rets", 67 },
 };
 
 static const wm_anim_op prog_hrt_flyout_anim_ops[] = {
@@ -21098,6 +23643,10 @@ static const wm_anim_op prog_hrt_arm_broken_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_arm_broken_anim_labels[] = {
+    { "#nodead", 17 },
+};
+
 static const wm_anim_op prog_hrt_2_shooter_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -21190,6 +23739,11 @@ static const wm_anim_op prog_hrt_2_shooter_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_2_shooter_anim_labels[] = {
+    { "#fail", 68 },
+    { "#missed", 84 },
+};
+
 static const wm_anim_op prog_hrt_4_shooter_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -21273,6 +23827,11 @@ static const wm_anim_op prog_hrt_4_shooter_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_4_shooter_anim_labels[] = {
+    { "#fail", 61 },
+    { "#missed", 77 },
 };
 
 static const wm_anim_op prog_lex_zip_anim_ops[] = {
@@ -21988,6 +24547,11 @@ static const wm_anim_op prog_lex_run2_anim_ops[] = {
     { WM_AOP_GOTO, 0, 7, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_run2_anim_labels[] = {
+    { "#lp1", 7 },
+    { "#run2", 12 },
+};
+
 static const wm_anim_op prog_lex_run_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -22009,6 +24573,11 @@ static const wm_anim_op prog_lex_run_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_RUN" },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "L3RN3B04" },
     { WM_AOP_GOTO, 0, 3, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_run_anim_labels[] = {
+    { "#lp1", 3 },
+    { "#run2", 8 },
 };
 
 static const wm_anim_op prog_lex_bounce_anim_ops[] = {
@@ -22148,6 +24717,15 @@ static const wm_anim_op prog_lex_combo_punch_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_combo_punch_anim_labels[] = {
+    { "#punch_loop", 38 },
+    { "#no_clobber", 72 },
+    { "#no_knee", 74 },
+    { "#exit", 76 },
+    { "#no_hit4", 80 },
+    { "#no_hit2", 88 },
+};
+
 static const wm_anim_op prog_lex_2_punch_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -22176,6 +24754,10 @@ static const wm_anim_op prog_lex_2_punch_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "L2PU2B09" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_2_punch_anim_labels[] = {
+    { "#no_hit", 21 },
 };
 
 static const wm_anim_op prog_lex_4_punch_anim_ops[] = {
@@ -22208,6 +24790,10 @@ static const wm_anim_op prog_lex_4_punch_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_4_punch_anim_labels[] = {
+    { "#no_hit2", 21 },
+};
+
 static const wm_anim_op prog_lex_4_push_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
@@ -22234,6 +24820,11 @@ static const wm_anim_op prog_lex_4_push_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "L4PS3A01" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_4_push_anim_labels[] = {
+    { "#no_hit", 17 },
+    { "#hit", 20 },
 };
 
 static const wm_anim_op prog_lex_4_losebal_anim_ops[] = {
@@ -22322,6 +24913,14 @@ static const wm_anim_op prog_lex_combo_ground_punch_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_combo_ground_punch_anim_labels[] = {
+    { "#ground_loop", 12 },
+    { "#leapat_stomp", 24 },
+    { "#hit", 38 },
+    { "#exit_ground", 48 },
+    { "#missed", 52 },
+};
+
 static const wm_anim_op prog_lex_2_ground_punch_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -22383,6 +24982,12 @@ static const wm_anim_op prog_lex_2_ground_punch_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_2_ground_punch_anim_labels[] = {
+    { "#leapat_stomp", 31 },
+    { "#hit", 45 },
+    { "#missed", 51 },
+};
+
 static const wm_anim_op prog_lex_4_ground_punch_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -22442,6 +25047,12 @@ static const wm_anim_op prog_lex_4_ground_punch_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_4_ground_punch_anim_labels[] = {
+    { "#leapat_stomp", 30 },
+    { "#hit", 43 },
+    { "#missed", 49 },
+};
+
 static const wm_anim_op prog_lex_3_clobber_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -22495,6 +25106,13 @@ static const wm_anim_op prog_lex_3_clobber_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_3_clobber_anim_labels[] = {
+    { "#none0", 31 },
+    { "#missed", 37 },
+    { "#blocked", 38 },
+    { "#none", 44 },
+};
+
 static const wm_anim_op prog_lex_combo_clobber_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -22543,6 +25161,14 @@ static const wm_anim_op prog_lex_combo_clobber_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_combo_clobber_anim_labels[] = {
+    { "#missedc", 35 },
+    { "#blockedc", 36 },
+    { "#stop_debris", 47 },
+    { "rets", 47 },
+    { "#restore_debris", 47 },
 };
 
 static const wm_anim_op prog_lex_hammer_anim_ops[] = {
@@ -22607,6 +25233,13 @@ static const wm_anim_op prog_lex_hammer_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_hammer_anim_labels[] = {
+    { "#missedb", 29 },
+    { "#tagmiss", 29 },
+    { "#dnk_quick_hammer", 35 },
+    { "#failed", 55 },
 };
 
 static const wm_anim_op prog_lex_combo_hammer_anim_ops[] = {
@@ -22677,6 +25310,13 @@ static const wm_anim_op prog_lex_combo_hammer_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_combo_hammer_anim_labels[] = {
+    { "#missedb", 28 },
+    { "#tagmiss", 28 },
+    { "#dnk_quick_hammer", 36 },
+    { "#failed", 57 },
+};
+
 static const wm_anim_op prog_lex_2_clobber_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -22721,6 +25361,11 @@ static const wm_anim_op prog_lex_2_clobber_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_2_clobber_anim_labels[] = {
+    { "#missed", 33 },
+    { "#blocked", 34 },
+};
+
 static const wm_anim_op prog_lex_4_clobber_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -22763,6 +25408,11 @@ static const wm_anim_op prog_lex_4_clobber_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "L4PT4B11" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_4_clobber_anim_labels[] = {
+    { "#missed", 33 },
+    { "#blocked", 34 },
 };
 
 static const wm_anim_op prog_lex_combo_ground_clobber_anim_ops[] = {
@@ -22822,6 +25472,13 @@ static const wm_anim_op prog_lex_combo_ground_clobber_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_combo_ground_clobber_anim_labels[] = {
+    { "#ground_clobber_loop", 12 },
+    { "#no_freeze", 18 },
+    { "#missed", 44 },
+    { "#blocked", 45 },
+};
+
 static const wm_anim_op prog_lex_2_butt_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -22849,6 +25506,10 @@ static const wm_anim_op prog_lex_2_butt_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "L2BC3E06" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_2_butt_anim_labels[] = {
+    { "#no_hit", 22 },
 };
 
 static const wm_anim_op prog_lex_2_butts_anim_ops[] = {
@@ -22892,6 +25553,14 @@ static const wm_anim_op prog_lex_2_butts_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_2_butts_anim_labels[] = {
+    { "#rpt", 7 },
+    { "#no_hit", 17 },
+    { "#ex", 28 },
+    { "#missedb", 33 },
+    { "#missed", 34 },
 };
 
 static const wm_anim_op prog_lex_combo_butt_anim_ops[] = {
@@ -22952,6 +25621,14 @@ static const wm_anim_op prog_lex_combo_butt_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_combo_butt_anim_labels[] = {
+    { "#butt_loop", 22 },
+    { "#no_clobber", 41 },
+    { "#no_back", 43 },
+    { "#exit", 45 },
+    { "#no_hit", 49 },
+};
+
 static const wm_anim_op prog_lex_4_butt_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -22977,6 +25654,10 @@ static const wm_anim_op prog_lex_4_butt_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "L4BC3D06" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_4_butt_anim_labels[] = {
+    { "#no_hit", 20 },
 };
 
 static const wm_anim_op prog_lex_4_butts_anim_ops[] = {
@@ -23022,6 +25703,14 @@ static const wm_anim_op prog_lex_4_butts_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_4_butts_anim_labels[] = {
+    { "#rpt", 7 },
+    { "#no_hit", 17 },
+    { "#ex", 28 },
+    { "#missedb", 35 },
+    { "#missed", 36 },
 };
 
 static const wm_anim_op prog_lex_combo_kick_anim_ops[] = {
@@ -23130,6 +25819,14 @@ static const wm_anim_op prog_lex_combo_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_combo_kick_anim_labels[] = {
+    { "#kick_loop", 44 },
+    { "#no_clobber", 81 },
+    { "#no_knee", 83 },
+    { "#no_hit4", 85 },
+    { "#no_hit2", 94 },
+};
+
 static const wm_anim_op prog_lex_kick_TB_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -23189,6 +25886,10 @@ static const wm_anim_op prog_lex_2_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_2_kick_anim_labels[] = {
+    { "#no_hit", 22 },
+};
+
 static const wm_anim_op prog_lex_4_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -23219,6 +25920,12 @@ static const wm_anim_op prog_lex_4_kick_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "L4KM3B09" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_4_kick_anim_labels[] = {
+    { "#no_hit2", 22 },
+    { "#xoff", 29 },
+    { "#yoff", 29 },
 };
 
 static const wm_anim_op prog_lex_flying_kick_anim_ops[] = {
@@ -23274,6 +25981,14 @@ static const wm_anim_op prog_lex_flying_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_flying_kick_anim_labels[] = {
+    { "#atk_off", 30 },
+    { "#hit", 34 },
+    { "#no_slide", 39 },
+    { "#blocked", 39 },
+    { "#wait", 42 },
+};
+
 static const wm_anim_op prog_lex_super_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -23309,6 +26024,14 @@ static const wm_anim_op prog_lex_super_kick_anim_ops[] = {
     { WM_AOP_FACEUP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_super_kick_anim_labels[] = {
+    { "#atk_off", 14 },
+    { "#hit", 18 },
+    { "#no_slide", 23 },
+    { "#blocked", 23 },
+    { "#wait", 26 },
 };
 
 static const wm_anim_op prog_lex_2_stomp_anim_ops[] = {
@@ -23358,6 +26081,12 @@ static const wm_anim_op prog_lex_2_stomp_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "L2MP2A10" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_2_stomp_anim_labels[] = {
+    { "#hit", 26 },
+    { "#leapat_stomp", 30 },
+    { "#leapat_hit", 42 },
 };
 
 static const wm_anim_op prog_lex_4_stomp_anim_ops[] = {
@@ -23410,6 +26139,13 @@ static const wm_anim_op prog_lex_4_stomp_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_4_stomp_anim_labels[] = {
+    { "#hit", 26 },
+    { "#leapat_stomp", 30 },
+    { "#leapat_hit", 43 },
+    { "#yoff", 47 },
+};
+
 static const wm_anim_op prog_lex_flying_ground_punch_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
@@ -23445,6 +26181,10 @@ static const wm_anim_op prog_lex_flying_ground_punch_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_flying_ground_punch_anim_labels[] = {
+    { "#yoff", 34 },
 };
 
 static const wm_anim_op prog_lex_buckle_leap_anim_ops[] = {
@@ -23504,6 +26244,14 @@ static const wm_anim_op prog_lex_buckle_leap_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_buckle_leap_anim_labels[] = {
+    { "#opp_onground", 30 },
+    { "#missed", 34 },
+    { "#common", 36 },
+    { "#hit", 42 },
+    { "#avoid_hit_call", 43 },
 };
 
 static const wm_anim_op prog_lex_combo_knee_fall_anim_ops[] = {
@@ -23592,6 +26340,12 @@ static const wm_anim_op prog_lex_3_knee_to_head_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_3_knee_to_head_anim_labels[] = {
+    { "#cont2a", 36 },
+    { "#atk", 39 },
+    { "#no_slide", 46 },
+};
+
 static const wm_anim_op prog_lex_4_knee_fall_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -23644,6 +26398,12 @@ static const wm_anim_op prog_lex_4_knee_fall_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_4_knee_fall_anim_labels[] = {
+    { "#cont2a", 29 },
+    { "#atk", 32 },
+    { "#no_slide", 39 },
+};
+
 static const wm_anim_op prog_lex_4_knee2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -23686,6 +26446,12 @@ static const wm_anim_op prog_lex_4_knee2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_4_knee2_anim_labels[] = {
+    { "#cont2a", 19 },
+    { "#atk", 22 },
+    { "#no_slide", 29 },
+};
+
 static const wm_anim_op prog_lex_4_knee_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -23719,6 +26485,12 @@ static const wm_anim_op prog_lex_4_knee_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_4_knee_anim_labels[] = {
+    { "#cont2a", 12 },
+    { "#atk", 15 },
+    { "#no_slide", 22 },
 };
 
 static const wm_anim_op prog_lex_2_grabfling_anim_ops[] = {
@@ -23781,6 +26553,23 @@ static const wm_anim_op prog_lex_2_grabfling_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_2_grabfling_anim_labels[] = {
+    { "#cont", 15 },
+    { "#missedb", 47 },
+    { "#missed", 50 },
+    { "#puppet_tbl", 57 },
+    { "#Bret", 57 },
+    { "#Razor", 57 },
+    { "#Taker", 57 },
+    { "#Yokozuna", 57 },
+    { "#Shawn", 57 },
+    { "#BamBam", 57 },
+    { "#Doink", 57 },
+    { "#Adam", 57 },
+    { "#Lex", 57 },
+    { "#strt_run_tbl", 57 },
+};
+
 static const wm_anim_op prog_lex_4_grabfling_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -23832,6 +26621,23 @@ static const wm_anim_op prog_lex_4_grabfling_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_4_grabfling_anim_labels[] = {
+    { "#cont", 6 },
+    { "#missedb", 38 },
+    { "#missed", 41 },
+    { "#puppet_tbl", 48 },
+    { "#Bret", 48 },
+    { "#Razor", 48 },
+    { "#Taker", 48 },
+    { "#Yokozuna", 48 },
+    { "#Shawn", 48 },
+    { "#BamBam", 48 },
+    { "#Doink", 48 },
+    { "#Adam", 48 },
+    { "#Lex", 48 },
+    { "#strt_run_tbl", 48 },
+};
+
 static const wm_anim_op prog_lex_4_bigboot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -23860,6 +26666,15 @@ static const wm_anim_op prog_lex_4_bigboot_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "L4KM3B09" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_4_bigboot_anim_labels[] = {
+    { "#lp", 14 },
+    { "#missed", 21 },
+    { "#clrcnt", 27 },
+    { "rets", 27 },
+    { "#holdup", 27 },
+    { "#button_up", 27 },
 };
 
 static const wm_anim_op prog_lex_2_bncoff_anim_ops[] = {
@@ -24010,6 +26825,12 @@ static const wm_anim_op prog_lex_climbin_side_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_climbin_side_anim_labels[] = {
+    { "#set_trgt", 54 },
+    { "#onlft", 54 },
+    { "rets", 54 },
+};
+
 static const wm_anim_op prog_lex_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1420, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -24046,6 +26867,15 @@ static const wm_anim_op prog_lex_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CLEAR_CLIMB, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_climbthru_bot_anim_labels[] = {
+    { "#dir4", 7 },
+    { "#ckspin", 35 },
+    { "#faceup", 35 },
+    { "rets", 35 },
+    { "NOT_IN_RING", 35 },
+    { "RETS", 35 },
 };
 
 static const wm_anim_op prog_lex_climbin_bot_anim_ops[] = {
@@ -24121,6 +26951,15 @@ static const wm_anim_op prog_lex_climbthru_top_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_climbthru_top_anim_labels[] = {
+    { "#dir4", 7 },
+    { "#cont", 19 },
+    { "#set_zvel1", 33 },
+    { "rets", 33 },
+    { "#facedwn", 33 },
+    { "#set_zvel2", 33 },
+};
+
 static const wm_anim_op prog_lex_rollthru_top_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1420, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -24141,6 +26980,10 @@ static const wm_anim_op prog_lex_rollthru_top_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 128, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_rollthru_top_anim_labels[] = {
+    { "#cont", 5 },
 };
 
 static const wm_anim_op prog_lex_climbin_top_anim_ops[] = {
@@ -24173,6 +27016,11 @@ static const wm_anim_op prog_lex_climbin_top_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_climbin_top_anim_labels[] = {
+    { "#set_zvel2", 27 },
+    { "rets", 27 },
+};
+
 static const wm_anim_op prog_lex_knockdwn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -24196,6 +27044,10 @@ static const wm_anim_op prog_lex_knockdwn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_lex_knockdwn_anim_labels[] = {
+    { "#nodead", 20 },
 };
 
 static const wm_anim_op prog_lex_2_pin_anim_ops[] = {
@@ -24270,6 +27122,10 @@ static const wm_anim_op prog_lex_2_pin_anim_ops[] = {
     { WM_AOP_GOTO, 0, 62, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_2_pin_anim_labels[] = {
+    { "#lp", 62 },
+};
+
 static const wm_anim_op prog_lex_4_pin_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -24336,6 +27192,10 @@ static const wm_anim_op prog_lex_4_pin_anim_ops[] = {
     { WM_AOP_GOTO, 0, 56, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_4_pin_anim_labels[] = {
+    { "#lp", 56 },
+};
+
 static const wm_anim_op prog_lex_2_raise_arm_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -24377,6 +27237,13 @@ static const wm_anim_op prog_lex_2_raise_arm_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_2_raise_arm_anim_labels[] = {
+    { "#lp0", 18 },
+    { "#lp1", 30 },
+    { "#floop", 35 },
+    { "#wakeup", 37 },
 };
 
 static const wm_anim_op prog_lex_4_raise_arm_anim_ops[] = {
@@ -24435,6 +27302,11 @@ static const wm_anim_op prog_lex_4_raise_arm_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_4_raise_arm_anim_labels[] = {
+    { "#lp0", 30 },
+    { "#wakeup", 42 },
 };
 
 static const wm_anim_op prog_lex_buckoff_anim_ops[] = {
@@ -24500,6 +27372,13 @@ static const wm_anim_op prog_lex_heldoh_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_heldoh_anim_labels[] = {
+    { "#loop", 5 },
+    { "#inc_loop", 33 },
+    { "rets", 33 },
+    { "#breakout", 33 },
+};
+
 static const wm_anim_op prog_lex_climb_up_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1164, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -24530,6 +27409,10 @@ static const wm_anim_op prog_lex_climb_up_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "L4SB4A07" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "tbukl_flip" },
     { WM_AOP_GOTO, 0, 14, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_climb_up_anim_labels[] = {
+    { "#repeat", 14 },
 };
 
 static const wm_anim_op prog_lex_climb_down_anim_ops[] = {
@@ -24621,6 +27504,12 @@ static const wm_anim_op prog_lex_get_buzz_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_get_buzz_anim_labels[] = {
+    { "#nodead", 65 },
+    { "#make_black", 67 },
+    { "rets", 67 },
+};
+
 static const wm_anim_op prog_lex_3_head_held_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -24658,6 +27547,13 @@ static const wm_anim_op prog_lex_3_head_held_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_3_head_held_anim_labels[] = {
+    { "#loop", 6 },
+    { "#inc_loop", 34 },
+    { "rets", 34 },
+    { "#breakout", 34 },
+};
+
 static const wm_anim_op prog_lex_3_head_held_brk_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -24679,6 +27575,12 @@ static const wm_anim_op prog_lex_3_head_held_brk_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_3_head_held_brk_anim_labels[] = {
+    { "#inc_loop", 20 },
+    { "rets", 20 },
+    { "#breakout", 20 },
 };
 
 static const wm_anim_op prog_lex_3_head_held_stand_anim_ops[] = {
@@ -24721,6 +27623,10 @@ static const wm_anim_op prog_lex_break_neck_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "L3RL1A11" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_lex_break_neck_anim_labels[] = {
+    { "#fall_back", 16 },
 };
 
 static const wm_anim_op prog_lex_break_neck2_anim_ops[] = {
@@ -24838,6 +27744,21 @@ static const wm_anim_op prog_lex_2_hair_pickup_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_2_hair_pickup_anim_labels[] = {
+    { "#missed", 41 },
+    { "#headheld_tbl", 50 },
+    { "#puppet_tbl", 50 },
+    { "#Bret", 50 },
+    { "#Razor", 50 },
+    { "#Taker", 50 },
+    { "#Yokozuna", 50 },
+    { "#Shawn", 50 },
+    { "#BamBam", 50 },
+    { "#Doink", 50 },
+    { "#Adam", 50 },
+    { "#Lex", 50 },
+};
+
 static const wm_anim_op prog_lex_4_hair_pickup_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -24882,6 +27803,21 @@ static const wm_anim_op prog_lex_4_hair_pickup_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_4_hair_pickup_anim_labels[] = {
+    { "#missed", 34 },
+    { "#headheld_tbl", 43 },
+    { "#puppet_tbl", 43 },
+    { "#Bret", 43 },
+    { "#Razor", 43 },
+    { "#Taker", 43 },
+    { "#Yokozuna", 43 },
+    { "#Shawn", 43 },
+    { "#BamBam", 43 },
+    { "#Doink", 43 },
+    { "#Adam", 43 },
+    { "#Lex", 43 },
 };
 
 static const wm_anim_op prog_lex_4_taunt_anim_ops[] = {
@@ -25077,6 +28013,23 @@ static const wm_anim_op prog_lex_3_fake_hold_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_3_fake_hold_anim_labels[] = {
+    { "#gothim", 37 },
+    { "#missed", 55 },
+    { "#missedb", 65 },
+    { "#puppet_tbl", 76 },
+    { "#Bret", 76 },
+    { "#Razor", 76 },
+    { "#Taker", 76 },
+    { "#Yokozuna", 76 },
+    { "#Shawn", 76 },
+    { "#BamBam", 76 },
+    { "#Doink", 76 },
+    { "#Adam", 76 },
+    { "#Lex", 76 },
+    { "#headheld_tbl", 76 },
+};
+
 static const wm_anim_op prog_lex_3_head_hold2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -25147,6 +28100,23 @@ static const wm_anim_op prog_lex_3_head_hold2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_3_head_hold2_anim_labels[] = {
+    { "#gothim", 28 },
+    { "#missed", 46 },
+    { "#missedb", 56 },
+    { "#puppet_tbl", 67 },
+    { "#Bret", 67 },
+    { "#Razor", 67 },
+    { "#Taker", 67 },
+    { "#Yokozuna", 67 },
+    { "#Shawn", 67 },
+    { "#BamBam", 67 },
+    { "#Doink", 67 },
+    { "#Adam", 67 },
+    { "#Lex", 67 },
+    { "#headheld_tbl", 67 },
+};
+
 static const wm_anim_op prog_lex_3_head_hold_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -25201,6 +28171,23 @@ static const wm_anim_op prog_lex_3_head_hold_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_3_head_hold_anim_labels[] = {
+    { "#gothim", 14 },
+    { "#missed", 32 },
+    { "#missedb", 42 },
+    { "#puppet_tbl", 53 },
+    { "#Bret", 53 },
+    { "#Razor", 53 },
+    { "#Taker", 53 },
+    { "#Yokozuna", 53 },
+    { "#Shawn", 53 },
+    { "#BamBam", 53 },
+    { "#Doink", 53 },
+    { "#Adam", 53 },
+    { "#Lex", 53 },
+    { "#headheld_tbl", 53 },
 };
 
 static const wm_anim_op prog_lex_combo_vsuplex_anim_ops[] = {
@@ -25347,6 +28334,13 @@ static const wm_anim_op prog_lex_combo_vsuplex_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_combo_vsuplex_anim_labels[] = {
+    { "#missedc", 52 },
+    { "#throw_him_outc", 57 },
+    { "#missed", 111 },
+    { "#throw_him_out", 115 },
+};
+
 static const wm_anim_op prog_lex_vsuplex_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -25431,6 +28425,26 @@ static const wm_anim_op prog_lex_vsuplex_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_vsuplex_anim_labels[] = {
+    { "#missed", 51 },
+    { "#throw_him_out", 55 },
+    { "#release_table", 81 },
+    { "#flyout_tbl2", 81 },
+    { "#xflip_tbl", 81 },
+    { "#xflip_tbl2", 81 },
+    { "#slambounce_tbl", 81 },
+    { "#puppet_tbl", 81 },
+    { "#Bret", 81 },
+    { "#Razor", 81 },
+    { "#Taker", 81 },
+    { "#Yokozuna", 81 },
+    { "#Shawn", 81 },
+    { "#BamBam", 81 },
+    { "#Doink", 81 },
+    { "#Adam", 81 },
+    { "#Lex", 81 },
+};
+
 static const wm_anim_op prog_lex_4_graboh_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -25482,6 +28496,23 @@ static const wm_anim_op prog_lex_4_graboh_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 8, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_4_graboh_anim_labels[] = {
+    { "#missedb", 35 },
+    { "#missed", 39 },
+    { "heldoh_tbl", 50 },
+    { "lex_grab_tbl", 50 },
+    { "puppet_tbl", 50 },
+    { "#Bret", 50 },
+    { "#Razor", 50 },
+    { "#Taker", 50 },
+    { "#Yokozuna", 50 },
+    { "#Shawn", 50 },
+    { "#BamBam", 50 },
+    { "#Doink", 50 },
+    { "#Adam", 50 },
+    { "#Lex", 50 },
 };
 
 static const wm_anim_op prog_lex_slamdown_anim_ops[] = {
@@ -25538,6 +28569,26 @@ static const wm_anim_op prog_lex_slamdown_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "L4ST4C04" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_slamdown_anim_labels[] = {
+    { "#release_table", 36 },
+    { "#set_opp_y", 36 },
+    { "#abs", 36 },
+    { "rets", 36 },
+    { "#throw_him_out", 36 },
+    { "#xflip_tbl", 53 },
+    { "#breakneck_tbl", 53 },
+    { "#puppet_tbl", 53 },
+    { "#Bret", 53 },
+    { "#Razor", 53 },
+    { "#Taker", 53 },
+    { "#Yokozuna", 53 },
+    { "#Shawn", 53 },
+    { "#BamBam", 53 },
+    { "#Doink", 53 },
+    { "#Adam", 53 },
+    { "#Lex", 53 },
 };
 
 static const wm_anim_op prog_lex_combo_backbreak_anim_ops[] = {
@@ -25628,6 +28679,15 @@ static const wm_anim_op prog_lex_combo_backbreak_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_combo_backbreak_anim_labels[] = {
+    { "#back_loop", 27 },
+    { "#no_more_back", 48 },
+    { "#no_hammer", 59 },
+    { "#exit_move", 61 },
+    { "#special_exit_move", 65 },
+    { "#missedbc", 76 },
+};
+
 static const wm_anim_op prog_lex_backbreaker_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 9228, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -25662,6 +28722,21 @@ static const wm_anim_op prog_lex_backbreaker_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_backbreaker_anim_labels[] = {
+    { "#xflip_tbl", 33 },
+    { "#bounceoff_tbl", 33 },
+    { "#puppet_tbl", 33 },
+    { "#Bret", 33 },
+    { "#Razor", 33 },
+    { "#Taker", 33 },
+    { "#Yokozuna", 33 },
+    { "#Shawn", 33 },
+    { "#BamBam", 33 },
+    { "#Doink", 33 },
+    { "#Adam", 33 },
+    { "#Lex", 33 },
 };
 
 static const wm_anim_op prog_lex_ohslam_anim_ops[] = {
@@ -25705,6 +28780,28 @@ static const wm_anim_op prog_lex_ohslam_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_ohslam_anim_labels[] = {
+    { "#ok", 4 },
+    { "#ck_flip", 40 },
+    { "#no_flip", 40 },
+    { "rets", 40 },
+    { "#check_right_rope", 40 },
+    { "#set_opp_y", 40 },
+    { "#abs", 40 },
+    { "#xflip_tbl", 40 },
+    { "#slambounce_tbl", 40 },
+    { "#puppet_tbl", 40 },
+    { "#Bret", 40 },
+    { "#Razor", 40 },
+    { "#Taker", 40 },
+    { "#Yokozuna", 40 },
+    { "#Shawn", 40 },
+    { "#BamBam", 40 },
+    { "#Doink", 40 },
+    { "#Adam", 40 },
+    { "#Lex", 40 },
 };
 
 static const wm_anim_op prog_lex_combo_grab2elbow_anim_ops[] = {
@@ -25766,6 +28863,11 @@ static const wm_anim_op prog_lex_combo_grab2elbow_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_combo_grab2elbow_anim_labels[] = {
+    { "#gotimc", 18 },
+    { "#exit_move", 52 },
 };
 
 static const wm_anim_op prog_lex_grab2elbow_rev_anim_ops[] = {
@@ -25841,6 +28943,12 @@ static const wm_anim_op prog_lex_grab2elbow_rev_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_grab2elbow_rev_anim_labels[] = {
+    { "#gotimr", 15 },
+    { "#gotim", 36 },
+    { "#inhere", 40 },
+};
+
 static const wm_anim_op prog_lex_grab2elbow_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -25893,6 +29001,11 @@ static const wm_anim_op prog_lex_grab2elbow_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_grab2elbow_anim_labels[] = {
+    { "#gotim", 17 },
+    { "#inhere", 21 },
 };
 
 static const wm_anim_op prog_setopp_deadanim_ops[] = {
@@ -26380,6 +29493,58 @@ static const wm_anim_op prog_setopp_deadanim_ops[] = {
     { WM_AOP_GOTO, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_setopp_deadanim_labels[] = {
+    { "#throw_him_out", 0 },
+    { "#release_table", 26 },
+    { "#flyout_tbl2", 26 },
+    { "#xflip_tbl", 26 },
+    { "#xflip_tbl2", 26 },
+    { "#slambounce_tbl", 26 },
+    { "#puppet_tbl", 26 },
+    { "#Bret", 26 },
+    { "#Razor", 26 },
+    { "#Taker", 26 },
+    { "#Yokozuna", 26 },
+    { "#Shawn", 26 },
+    { "#BamBam", 26 },
+    { "#Doink", 26 },
+    { "#Adam", 26 },
+    { "#Lex", 26 },
+    { "#missedb", 61 },
+    { "#missed", 65 },
+    { "heldoh_tbl", 76 },
+    { "lex_grab_tbl", 76 },
+    { "puppet_tbl", 76 },
+    { "#set_opp_y", 112 },
+    { "#abs", 112 },
+    { "rets", 112 },
+    { "#breakneck_tbl", 129 },
+    { "#back_loop", 156 },
+    { "#no_more_back", 177 },
+    { "#no_hammer", 188 },
+    { "#exit_move", 190 },
+    { "#special_exit_move", 194 },
+    { "#missedbc", 205 },
+    { "#bounceoff_tbl", 247 },
+    { "#ok", 251 },
+    { "#ck_flip", 287 },
+    { "#no_flip", 287 },
+    { "#check_right_rope", 287 },
+    { "#gotimc", 305 },
+    { "#gotimr", 360 },
+    { "#gotim", 381 },
+    { "#inhere", 385 },
+    { "#rets", 415 },
+    { "#flsh_wht", 415 },
+    { "#breakneck2_tbl", 415 },
+    { "#hiptoss_loop", 422 },
+    { "#next_combo_bit", 460 },
+    { "#not_grab", 462 },
+    { "#missedc", 471 },
+    { "#throw_him_outc", 479 },
+    { "SLAM_HIM", 482 },
+};
+
 static const wm_anim_op prog_lex_combo_hiptoss_anim_ops[] = {
     { WM_AOP_SUPERSLAVE2, 0, -1, 3, 30, 0, 0, 0, 0, "L3VS3A01" },
     { WM_AOP_SUPERSLAVE2, 0, -1, 17, 30, 1, 0, 0, 0, "L3VS3A03" },
@@ -26865,6 +30030,58 @@ static const wm_anim_op prog_lex_combo_hiptoss_anim_ops[] = {
     { WM_AOP_GOTO, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_combo_hiptoss_anim_labels[] = {
+    { "#throw_him_out", 0 },
+    { "#release_table", 26 },
+    { "#flyout_tbl2", 26 },
+    { "#xflip_tbl", 26 },
+    { "#xflip_tbl2", 26 },
+    { "#slambounce_tbl", 26 },
+    { "#puppet_tbl", 26 },
+    { "#Bret", 26 },
+    { "#Razor", 26 },
+    { "#Taker", 26 },
+    { "#Yokozuna", 26 },
+    { "#Shawn", 26 },
+    { "#BamBam", 26 },
+    { "#Doink", 26 },
+    { "#Adam", 26 },
+    { "#Lex", 26 },
+    { "#missedb", 61 },
+    { "#missed", 65 },
+    { "heldoh_tbl", 76 },
+    { "lex_grab_tbl", 76 },
+    { "puppet_tbl", 76 },
+    { "#set_opp_y", 112 },
+    { "#abs", 112 },
+    { "rets", 112 },
+    { "#breakneck_tbl", 129 },
+    { "#back_loop", 156 },
+    { "#no_more_back", 177 },
+    { "#no_hammer", 188 },
+    { "#exit_move", 190 },
+    { "#special_exit_move", 194 },
+    { "#missedbc", 205 },
+    { "#bounceoff_tbl", 247 },
+    { "#ok", 251 },
+    { "#ck_flip", 287 },
+    { "#no_flip", 287 },
+    { "#check_right_rope", 287 },
+    { "#gotimc", 305 },
+    { "#gotimr", 360 },
+    { "#gotim", 381 },
+    { "#inhere", 385 },
+    { "#rets", 415 },
+    { "#flsh_wht", 415 },
+    { "#breakneck2_tbl", 415 },
+    { "#hiptoss_loop", 422 },
+    { "#next_combo_bit", 460 },
+    { "#not_grab", 462 },
+    { "#missedc", 471 },
+    { "#throw_him_outc", 479 },
+    { "SLAM_HIM", 482 },
+};
+
 static const wm_anim_op prog_lex_hiptoss_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -26950,6 +30167,30 @@ static const wm_anim_op prog_lex_hiptoss_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_hiptoss_anim_labels[] = {
+    { "#common", 30 },
+    { "#got_him", 32 },
+    { "#missedb", 59 },
+    { "#missed", 63 },
+    { "#throw_him_out", 69 },
+    { "#release_table", 82 },
+    { "DO_GRUNT", 82 },
+    { "RETS", 82 },
+    { "flyout_tbl", 82 },
+    { "#xflip_tbl", 82 },
+    { "#rollout_tbl", 82 },
+    { "#puppet_tbl", 82 },
+    { "#Bret", 82 },
+    { "#Razor", 82 },
+    { "#Taker", 82 },
+    { "#Yokozuna", 82 },
+    { "#Shawn", 82 },
+    { "#BamBam", 82 },
+    { "#Doink", 82 },
+    { "#Adam", 82 },
+    { "#Lex", 82 },
+};
+
 static const wm_anim_op prog_lex_hiptoss2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -27019,6 +30260,30 @@ static const wm_anim_op prog_lex_hiptoss2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_hiptoss2_anim_labels[] = {
+    { "#common", 14 },
+    { "#got_him", 16 },
+    { "#missedb", 43 },
+    { "#missed", 47 },
+    { "#throw_him_out", 53 },
+    { "#release_table", 66 },
+    { "DO_GRUNT", 66 },
+    { "RETS", 66 },
+    { "flyout_tbl", 66 },
+    { "#xflip_tbl", 66 },
+    { "#rollout_tbl", 66 },
+    { "#puppet_tbl", 66 },
+    { "#Bret", 66 },
+    { "#Razor", 66 },
+    { "#Taker", 66 },
+    { "#Yokozuna", 66 },
+    { "#Shawn", 66 },
+    { "#BamBam", 66 },
+    { "#Doink", 66 },
+    { "#Adam", 66 },
+    { "#Lex", 66 },
+};
+
 static const wm_anim_op prog_lex_combo_sliding_elbow_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -27070,6 +30335,14 @@ static const wm_anim_op prog_lex_combo_sliding_elbow_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_combo_sliding_elbow_anim_labels[] = {
+    { "#no_clobber", 28 },
+    { "#no_back", 30 },
+    { "#exit", 32 },
+    { "#missed", 38 },
+    { "#missedb", 38 },
+};
+
 static const wm_anim_op prog_lex_sliding_elbow_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -27117,6 +30390,11 @@ static const wm_anim_op prog_lex_sliding_elbow_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_sliding_elbow_anim_labels[] = {
+    { "#missed", 28 },
+    { "#missedb", 36 },
+};
+
 static const wm_anim_op prog_lex_knees_to_head_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -27147,6 +30425,12 @@ static const wm_anim_op prog_lex_knees_to_head_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_knees_to_head_anim_labels[] = {
+    { "#rpt_loop", 7 },
+    { "#exit", 22 },
+    { "#exit2", 22 },
+};
+
 static const wm_anim_op prog_lex_4_block_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -27165,6 +30449,10 @@ static const wm_anim_op prog_lex_4_block_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_4_block_anim_labels[] = {
+    { "#blk4", 7 },
+};
+
 static const wm_anim_op prog_lex_4_hitblock_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "L4BK3B05" },
     { WM_AOP_SETMODE, 0, -1, 76, 0, 0, 0, 0, 0, 0 },
@@ -27181,6 +30469,10 @@ static const wm_anim_op prog_lex_4_hitblock_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "L4BK3C02" },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "L4BK3C01" },
     { WM_AOP_GOTO, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_4_hitblock_anim_labels[] = {
+    { "#blk4", 0 },
 };
 
 static const wm_anim_op prog_lex_4_hitblock2_anim_ops[] = {
@@ -27211,6 +30503,10 @@ static const wm_anim_op prog_lex_4_hitblock2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "L4BK3C01" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "L4BK3C02" },
     { WM_AOP_GOTO, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_4_hitblock2_anim_labels[] = {
+    { "#blk4", 0 },
 };
 
 static const wm_anim_op prog_lex_slamnobounce_anim_ops[] = {
@@ -27316,6 +30612,10 @@ static const wm_anim_op prog_lex_arm_broken_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_arm_broken_anim_labels[] = {
+    { "#nodead", 16 },
 };
 
 static const wm_anim_op prog_lex_2_head_hit_anim_ops[] = {
@@ -27456,6 +30756,10 @@ static const wm_anim_op prog_lex_4_head_hit2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_4_head_hit2_anim_labels[] = {
+    { "#nodead", 16 },
+};
+
 static const wm_anim_op prog_lex_4_head_hit2s_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -27567,6 +30871,10 @@ static const wm_anim_op prog_lex_4_body_hit_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_4_body_hit_anim_labels[] = {
+    { "#reg", 24 },
+};
+
 static const wm_anim_op prog_lex_4_body_hit_dizzy_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -27623,6 +30931,10 @@ static const wm_anim_op prog_lex_quick_knee_hit_anim_ops[] = {
     { WM_AOP_IFNOTSTATUS, 0, 13, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_fall_back_anim" },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_3_head_held_anim" },
+};
+
+static const wm_anim_label prog_lex_quick_knee_hit_anim_labels[] = {
+    { "#nodead", 13 },
 };
 
 static const wm_anim_op prog_lex_4_knee_hit_dizzy_anim_ops[] = {
@@ -27778,6 +31090,10 @@ static const wm_anim_op prog_lex_flyout_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_faceup_getup_anim" },
 };
 
+static const wm_anim_label prog_lex_flyout_anim_labels[] = {
+    { "#cont", 6 },
+};
+
 static const wm_anim_op prog_lex_flyout2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 8, 0, 0, 0, 0, 0, "L3FH3A05" },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "L3FH3A06" },
@@ -27856,6 +31172,13 @@ static const wm_anim_op prog_lex_flyout2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_flyout2_anim_labels[] = {
+    { "#cont", 0 },
+    { "#no_freetoss", 48 },
+    { "#getup_in_4", 51 },
+    { "#no_freetoss2", 72 },
+};
+
 static const wm_anim_op prog_lex_faceup_getup_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 268, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -27912,6 +31235,12 @@ static const wm_anim_op prog_lex_faceup_getup_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_faceup_getup_anim_labels[] = {
+    { "#no_freetoss", 26 },
+    { "#getup_in_4", 29 },
+    { "#no_freetoss2", 50 },
+};
+
 static const wm_anim_op prog_lex_dizzy_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 8, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -27926,6 +31255,10 @@ static const wm_anim_op prog_lex_dizzy_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 8, 0, 0, 0, 0, 0, "L4TI4B07" },
     { WM_AOP_FRAME, 0, -1, 8, 0, 0, 0, 0, 0, "L4TI4B06" },
     { WM_AOP_GOTO, 0, 4, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_dizzy_anim_labels[] = {
+    { "#loop", 4 },
 };
 
 static const wm_anim_op prog_lex_roll_frames_ops[] = {
@@ -28665,6 +31998,11 @@ static const wm_anim_op prog_rzr_run2_anim_ops[] = {
     { WM_AOP_GOTO, 0, 7, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_run2_anim_labels[] = {
+    { "#lp1", 7 },
+    { "#run2", 13 },
+};
+
 static const wm_anim_op prog_rzr_run_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -28688,6 +32026,11 @@ static const wm_anim_op prog_rzr_run_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "R3RN3D13" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R3RN3D14" },
     { WM_AOP_GOTO, 0, 3, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_run_anim_labels[] = {
+    { "#lp1", 3 },
+    { "#run2", 9 },
 };
 
 static const wm_anim_op prog_rzr_bounce_anim_ops[] = {
@@ -28754,6 +32097,10 @@ static const wm_anim_op prog_rzr_2_punch_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "R2PU3A08" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_2_punch_anim_labels[] = {
+    { "#no_hit", 20 },
 };
 
 static const wm_anim_op prog_rzr_combo_punch_anim_ops[] = {
@@ -28868,6 +32215,15 @@ static const wm_anim_op prog_rzr_combo_punch_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_combo_punch_anim_labels[] = {
+    { "#punch_loop_c", 43 },
+    { "#NEXT_CHECK_2", 82 },
+    { "#NEXT_CHECK_3", 84 },
+    { "#exit_move", 86 },
+    { "#no_hit2c", 91 },
+    { "#no_hit4c", 100 },
+};
+
 static const wm_anim_op prog_rzr_4_punch_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -28898,6 +32254,10 @@ static const wm_anim_op prog_rzr_4_punch_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "R4PU3A08" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_4_punch_anim_labels[] = {
+    { "#no_hit", 20 },
 };
 
 static const wm_anim_op prog_rzr_4_pummel_anim_ops[] = {
@@ -28963,6 +32323,15 @@ static const wm_anim_op prog_rzr_4_pummel_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_4_pummel_anim_labels[] = {
+    { "#rpt", 17 },
+    { "#no_hit2", 39 },
+    { "#ex", 46 },
+    { "#ex2", 48 },
+    { "#missedb", 53 },
+    { "#missed", 54 },
+};
+
 static const wm_anim_op prog_rzr_2_pummel_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -29016,6 +32385,15 @@ static const wm_anim_op prog_rzr_2_pummel_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_2_pummel_anim_labels[] = {
+    { "#rpt", 9 },
+    { "#no_hit2", 31 },
+    { "#ex", 38 },
+    { "#ex2", 40 },
+    { "#missedb", 45 },
+    { "#missed", 46 },
 };
 
 static const wm_anim_op prog_rzr_combo_slash_anim_ops[] = {
@@ -29143,6 +32521,14 @@ static const wm_anim_op prog_rzr_combo_slash_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_combo_slash_anim_labels[] = {
+    { "#slash_loop", 46 },
+    { "#NEXT_CHECK_2", 93 },
+    { "#exit_move", 95 },
+    { "#misseddcx", 101 },
+    { "#misseducx", 110 },
+};
+
 static const wm_anim_op prog_rzr_3_dslash_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -29202,6 +32588,13 @@ static const wm_anim_op prog_rzr_3_dslash_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_3_dslash_anim_labels[] = {
+    { "#nox", 23 },
+    { "#none0", 30 },
+    { "#no", 45 },
+    { "#cont", 52 },
 };
 
 static const wm_anim_op prog_rzr_dslash_to_head_anim_ops[] = {
@@ -29285,6 +32678,12 @@ static const wm_anim_op prog_rzr_3_uslash_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_3_uslash_anim_labels[] = {
+    { "#no_hit", 21 },
+    { "#none", 31 },
+    { "#no_hita", 43 },
+};
+
 static const wm_anim_op prog_rzr_uslash_to_head_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -29343,6 +32742,14 @@ static const wm_anim_op prog_rzr_combo_uppercut_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_combo_uppercut_anim_labels[] = {
+    { "#no_hitc", 16 },
+    { "#AVOID", 19 },
+    { "SET_OPP_GRAV_NORM", 30 },
+    { "RETS", 30 },
+    { "SET_OPP_GRAV_LOW", 30 },
+};
+
 static const wm_anim_op prog_rzr_4_uprcut_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -29378,6 +32785,10 @@ static const wm_anim_op prog_rzr_4_uprcut_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_4_uprcut_anim_labels[] = {
+    { "#no_hit", 23 },
+};
+
 static const wm_anim_op prog_rzr_2_butt_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -29407,6 +32818,10 @@ static const wm_anim_op prog_rzr_2_butt_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R2BC3B08" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_2_butt_anim_labels[] = {
+    { "#no_hit", 21 },
 };
 
 static const wm_anim_op prog_rzr_combo_butt_anim_ops[] = {
@@ -29484,6 +32899,15 @@ static const wm_anim_op prog_rzr_combo_butt_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_combo_butt_anim_labels[] = {
+    { "#butt_loop", 26 },
+    { "#check_3", 51 },
+    { "#NEXT_CHECK_2", 53 },
+    { "#NO_SLASHING", 55 },
+    { "#exit_move", 57 },
+    { "#no_hitc", 62 },
+};
+
 static const wm_anim_op prog_rzr_4_butt_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -29513,6 +32937,10 @@ static const wm_anim_op prog_rzr_4_butt_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R4BC3A08" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_4_butt_anim_labels[] = {
+    { "#no_hit", 21 },
 };
 
 static const wm_anim_op prog_rzr_combo_kick_anim_ops[] = {
@@ -29583,6 +33011,14 @@ static const wm_anim_op prog_rzr_combo_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_combo_kick_anim_labels[] = {
+    { "#kick_loop", 27 },
+    { "#check_3", 50 },
+    { "#NEXT_CHECK_2", 52 },
+    { "#missed", 54 },
+    { "#end_in_4c", 57 },
+};
+
 static const wm_anim_op prog_rzr_4_kick2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -29632,6 +33068,13 @@ static const wm_anim_op prog_rzr_4_kick2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_4_kick2_anim_labels[] = {
+    { "#cont2a", 19 },
+    { "#no_slide", 29 },
+    { "#end_in_2", 37 },
+    { "#end_in_4", 41 },
+};
+
 static const wm_anim_op prog_rzr_2_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -29674,6 +33117,13 @@ static const wm_anim_op prog_rzr_2_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_2_kick_anim_labels[] = {
+    { "#cont2a", 12 },
+    { "#no_slide", 22 },
+    { "#end_in_2", 30 },
+    { "#end_in_4", 34 },
+};
+
 static const wm_anim_op prog_rzr_4_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -29714,6 +33164,13 @@ static const wm_anim_op prog_rzr_4_kick_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_4_kick_anim_labels[] = {
+    { "#cont2a", 12 },
+    { "#no_slide", 22 },
+    { "#end_in_2", 30 },
+    { "#end_in_4", 34 },
 };
 
 static const wm_anim_op prog_rzr_combo_super_kick_anim_ops[] = {
@@ -29809,6 +33266,19 @@ static const wm_anim_op prog_rzr_combo_super_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_combo_super_kick_anim_labels[] = {
+    { "#skick_loop", 29 },
+    { "#NEXT_CHECK_2", 57 },
+    { "#NEXT_CHECK_3", 59 },
+    { "#NEXT_CHECK_4", 61 },
+    { "#missedcx", 64 },
+    { "#missedbcx", 66 },
+    { "#missed_waitcx", 67 },
+    { "#exitc", 73 },
+    { "#end_in_2c", 79 },
+    { "#end_in_4c", 84 },
+};
+
 static const wm_anim_op prog_rzr_2_super_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -29873,6 +33343,18 @@ static const wm_anim_op prog_rzr_2_super_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_2_super_kick_anim_labels[] = {
+    { "#missed", 25 },
+    { "#missedb", 27 },
+    { "#missed_wait", 28 },
+    { "#no_hit", 35 },
+    { "#vels_set", 38 },
+    { "#none", 44 },
+    { "#jump", 49 },
+    { "#end_in_2", 52 },
+    { "#end_in_4", 57 },
 };
 
 static const wm_anim_op prog_rzr_4_super_kick_anim_ops[] = {
@@ -29941,6 +33423,18 @@ static const wm_anim_op prog_rzr_4_super_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_4_super_kick_anim_labels[] = {
+    { "#missed", 25 },
+    { "#missedb", 27 },
+    { "#missed_wait", 28 },
+    { "#no_hit", 35 },
+    { "#vels_set", 38 },
+    { "#none", 44 },
+    { "#jump", 49 },
+    { "#end_in_2", 52 },
+    { "#end_in_4", 57 },
+};
+
 static const wm_anim_op prog_blocked_vels_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -29971,6 +33465,10 @@ static const wm_anim_op prog_blocked_vels_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_blocked_vels_labels[] = {
+    { "rets", 0 },
 };
 
 static const wm_anim_op prog_rzr_kick_TB_anim_ops[] = {
@@ -30039,6 +33537,10 @@ static const wm_anim_op prog_rzr_2_knee_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_2_knee_anim_labels[] = {
+    { "#no_slide", 22 },
+};
+
 static const wm_anim_op prog_rzr_4_knee_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -30073,6 +33575,10 @@ static const wm_anim_op prog_rzr_4_knee_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_4_knee_anim_labels[] = {
+    { "#no_slide", 22 },
+};
+
 static const wm_anim_op prog_rzr_combo_knee_fall_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -30104,6 +33610,11 @@ static const wm_anim_op prog_rzr_combo_knee_fall_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_combo_knee_fall_anim_labels[] = {
+    { "#no_hitc", 15 },
+    { "#finishc", 17 },
+};
+
 static const wm_anim_op prog_rzr_4_knee_fall_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -30129,6 +33640,11 @@ static const wm_anim_op prog_rzr_4_knee_fall_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R4NM3C10" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_4_knee_fall_anim_labels[] = {
+    { "#no_hit", 15 },
+    { "#finish", 16 },
 };
 
 static const wm_anim_op prog_rzr_2_ground_punch_anim_ops[] = {
@@ -30168,6 +33684,12 @@ static const wm_anim_op prog_rzr_2_ground_punch_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R2PF2B10" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_2_ground_punch_anim_labels[] = {
+    { "#no_leapat", 16 },
+    { "#common", 19 },
+    { "#missed", 31 },
 };
 
 static const wm_anim_op prog_rzr_4_ground_punch_anim_ops[] = {
@@ -30211,6 +33733,13 @@ static const wm_anim_op prog_rzr_4_ground_punch_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_4_ground_punch_anim_labels[] = {
+    { "#no_leapat", 16 },
+    { "#common", 19 },
+    { "#missed", 32 },
+    { "#yoff", 38 },
+};
+
 static const wm_anim_op prog_rzr_combo_flying_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -30238,6 +33767,10 @@ static const wm_anim_op prog_rzr_combo_flying_kick_anim_ops[] = {
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R3RL1B06" },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_facedown_getup_anim" },
+};
+
+static const wm_anim_label prog_rzr_combo_flying_kick_anim_labels[] = {
+    { "#no_hitc", 15 },
 };
 
 static const wm_anim_op prog_rzr_flying_kick_anim_ops[] = {
@@ -30321,6 +33854,12 @@ static const wm_anim_op prog_rzr_2_stomp_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_2_stomp_anim_labels[] = {
+    { "#hit", 26 },
+    { "#leapat_stomp", 30 },
+    { "#leapat_hit", 42 },
+};
+
 static const wm_anim_op prog_rzr_4_stomp_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -30371,6 +33910,13 @@ static const wm_anim_op prog_rzr_4_stomp_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_4_stomp_anim_labels[] = {
+    { "#hit", 26 },
+    { "#leapat_stomp", 30 },
+    { "#leapat_hit", 43 },
+    { "#yoff", 47 },
+};
+
 static const wm_anim_op prog_rzr_flying_elbow_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
@@ -30403,6 +33949,12 @@ static const wm_anim_op prog_rzr_flying_elbow_anim_ops[] = {
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "R3GU4A03" },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_faceup_getup2_anim" },
+};
+
+static const wm_anim_label prog_rzr_flying_elbow_anim_labels[] = {
+    { "#hit", 24 },
+    { "#AVOID_HIT_CALL", 25 },
+    { "#yoff", 31 },
 };
 
 static const wm_anim_op prog_rzr_tbukl_elbow_anim_ops[] = {
@@ -30458,6 +34010,11 @@ static const wm_anim_op prog_rzr_tbukl_elbow_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "R3GU4A03" },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_faceup_getup2_anim" },
+};
+
+static const wm_anim_label prog_rzr_tbukl_elbow_anim_labels[] = {
+    { "#opp_onground", 20 },
+    { "#hit", 37 },
 };
 
 static const wm_anim_op prog_rzr_2ndwind_anim_ops[] = {
@@ -30535,6 +34092,23 @@ static const wm_anim_op prog_rzr_2_grabfling_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_2_grabfling_anim_labels[] = {
+    { "#cont", 15 },
+    { "#missedb", 48 },
+    { "#missed", 51 },
+    { "#puppet_tbl", 58 },
+    { "#Bret", 58 },
+    { "#Razor", 58 },
+    { "#Taker", 58 },
+    { "#Yokozuna", 58 },
+    { "#Shawn", 58 },
+    { "#BamBam", 58 },
+    { "#Doink", 58 },
+    { "#Adam", 58 },
+    { "#Lex", 58 },
+    { "#strt_run_tbl", 58 },
+};
+
 static const wm_anim_op prog_rzr_4_grabfling_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -30587,6 +34161,23 @@ static const wm_anim_op prog_rzr_4_grabfling_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_4_grabfling_anim_labels[] = {
+    { "#cont", 6 },
+    { "#missedb", 39 },
+    { "#missed", 42 },
+    { "#puppet_tbl", 49 },
+    { "#Bret", 49 },
+    { "#Razor", 49 },
+    { "#Taker", 49 },
+    { "#Yokozuna", 49 },
+    { "#Shawn", 49 },
+    { "#BamBam", 49 },
+    { "#Doink", 49 },
+    { "#Adam", 49 },
+    { "#Lex", 49 },
+    { "#strt_run_tbl", 49 },
+};
+
 static const wm_anim_op prog_rzr_heldoh_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 3, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 44, 0, 0, 0, 0, 0, 0 },
@@ -30626,6 +34217,13 @@ static const wm_anim_op prog_rzr_heldoh_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_heldoh_anim_labels[] = {
+    { "#loop", 5 },
+    { "#inc_loop", 36 },
+    { "rets", 36 },
+    { "#breakout", 36 },
+};
+
 static const wm_anim_op prog_rzr_4_push_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
@@ -30652,6 +34250,11 @@ static const wm_anim_op prog_rzr_4_push_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_4_push_anim_labels[] = {
+    { "#no_hit", 17 },
+    { "#hit", 20 },
 };
 
 static const wm_anim_op prog_rzr_4_bigboot_anim_ops[] = {
@@ -30689,6 +34292,17 @@ static const wm_anim_op prog_rzr_4_bigboot_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_4_bigboot_anim_labels[] = {
+    { "#lp", 14 },
+    { "#missed", 20 },
+    { "#end_in_2", 25 },
+    { "#end_in_4", 29 },
+    { "#clrcnt", 34 },
+    { "rets", 34 },
+    { "#holdup", 34 },
+    { "#button_up", 34 },
 };
 
 static const wm_anim_op prog_rzr_roll_frames_ops[] = {
@@ -30896,6 +34510,12 @@ static const wm_anim_op prog_rzr_climbin_side_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_climbin_side_anim_labels[] = {
+    { "#set_trgt", 59 },
+    { "#onlft", 59 },
+    { "rets", 59 },
+};
+
 static const wm_anim_op prog_rzr_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1420, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -30932,6 +34552,14 @@ static const wm_anim_op prog_rzr_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 128, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_climbthru_bot_anim_labels[] = {
+    { "#dir4", 7 },
+    { "#ckspin", 35 },
+    { "RETS", 35 },
+    { "#faceup", 35 },
+    { "rets", 35 },
 };
 
 static const wm_anim_op prog_rzr_climbin_bot_anim_ops[] = {
@@ -31004,6 +34632,14 @@ static const wm_anim_op prog_rzr_climbthru_top_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_climbthru_top_anim_labels[] = {
+    { "#dir4", 7 },
+    { "#set_zvel1", 31 },
+    { "rets", 31 },
+    { "#facedwn", 31 },
+    { "#set_zvel2", 31 },
+};
+
 static const wm_anim_op prog_rzr_rollthru_top_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1420, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -31053,6 +34689,11 @@ static const wm_anim_op prog_rzr_climbin_top_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_climbin_top_anim_labels[] = {
+    { "#set_zvel2", 25 },
+    { "rets", 25 },
+};
+
 static const wm_anim_op prog_rzr_knockdwn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -31075,6 +34716,10 @@ static const wm_anim_op prog_rzr_knockdwn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_rzr_knockdwn_anim_labels[] = {
+    { "#nodead", 19 },
 };
 
 static const wm_anim_op prog_rzr_2_pin_anim_ops[] = {
@@ -31139,6 +34784,10 @@ static const wm_anim_op prog_rzr_2_pin_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_2_pin_anim_labels[] = {
+    { "#floop", 54 },
+};
+
 static const wm_anim_op prog_rzr_4_pin_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -31196,6 +34845,10 @@ static const wm_anim_op prog_rzr_4_pin_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_4_pin_anim_labels[] = {
+    { "#floop", 49 },
+};
+
 static const wm_anim_op prog_rzr_2_raise_arm_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -31241,6 +34894,12 @@ static const wm_anim_op prog_rzr_2_raise_arm_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_2_raise_arm_anim_labels[] = {
+    { "#cont", 13 },
+    { "#lp", 23 },
+    { "#wakeup", 38 },
+};
+
 static const wm_anim_op prog_rzr_4_raise_arm_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -31276,6 +34935,12 @@ static const wm_anim_op prog_rzr_4_raise_arm_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_4_raise_arm_anim_labels[] = {
+    { "#cont", 5 },
+    { "#lp", 15 },
+    { "#wakeup", 30 },
 };
 
 static const wm_anim_op prog_rzr_buckoff_anim_ops[] = {
@@ -31361,6 +35026,12 @@ static const wm_anim_op prog_rzr_combo_rugshake_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_combo_rugshake_anim_labels[] = {
+    { "#loopcx", 16 },
+    { "#donecx", 37 },
+    { "#missedcx", 51 },
+};
+
 static const wm_anim_op prog_rzr_rugshake_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -31423,6 +35094,15 @@ static const wm_anim_op prog_rzr_rugshake_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_rugshake_anim_labels[] = {
+    { "pickup", 14 },
+    { "#loop", 17 },
+    { "rpt_slam", 17 },
+    { "#done0", 38 },
+    { "#done", 39 },
+    { "missed_rug", 51 },
 };
 
 static const wm_anim_op prog_impact_sound_ops[] = {
@@ -31552,6 +35232,31 @@ static const wm_anim_op prog_impact_sound_ops[] = {
     { WM_AOP_GOTO, 0, 3, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_impact_sound_labels[] = {
+    { "pickup", 0 },
+    { "#loop", 3 },
+    { "rpt_slam", 3 },
+    { "#done0", 24 },
+    { "#done", 25 },
+    { "missed_rug", 37 },
+    { "#x", 47 },
+    { "#puppet_tbl", 47 },
+    { "#Bret", 47 },
+    { "#Razor", 47 },
+    { "#Taker", 47 },
+    { "#Yokozuna", 47 },
+    { "#Shawn", 47 },
+    { "#BamBam", 47 },
+    { "#Doink", 47 },
+    { "#Adam", 47 },
+    { "#Lex", 47 },
+    { "#release_tbl", 47 },
+    { "#pickup0", 71 },
+    { "missed_rug2", 79 },
+    { "missed_rug1", 80 },
+    { "#go", 105 },
+};
+
 static const wm_anim_op prog_rzr_sliding_rug_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 8204, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ATTACHZ, 0, -1, 0, 0, -4, 0, 0, 0, 0 },
@@ -31677,6 +35382,31 @@ static const wm_anim_op prog_rzr_sliding_rug_anim_ops[] = {
     { WM_AOP_SUPERSLAVE2, 0, -1, 4, 39, 13, 0, 0, 0, "R3RG3B16" },
     { WM_AOP_SET_RPTCOUNT, 0, -1, 3, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_GOTO, 0, 3, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_sliding_rug_anim_labels[] = {
+    { "pickup", 0 },
+    { "#loop", 3 },
+    { "rpt_slam", 3 },
+    { "#done0", 24 },
+    { "#done", 25 },
+    { "missed_rug", 37 },
+    { "#x", 47 },
+    { "#puppet_tbl", 47 },
+    { "#Bret", 47 },
+    { "#Razor", 47 },
+    { "#Taker", 47 },
+    { "#Yokozuna", 47 },
+    { "#Shawn", 47 },
+    { "#BamBam", 47 },
+    { "#Doink", 47 },
+    { "#Adam", 47 },
+    { "#Lex", 47 },
+    { "#release_tbl", 47 },
+    { "#pickup0", 71 },
+    { "missed_rug2", 79 },
+    { "missed_rug1", 80 },
+    { "#go", 105 },
 };
 
 static const wm_anim_op prog_rzr_rugshake2_anim_ops[] = {
@@ -31806,6 +35536,31 @@ static const wm_anim_op prog_rzr_rugshake2_anim_ops[] = {
     { WM_AOP_GOTO, 0, 3, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_rugshake2_anim_labels[] = {
+    { "pickup", 0 },
+    { "#loop", 3 },
+    { "rpt_slam", 3 },
+    { "#done0", 24 },
+    { "#done", 25 },
+    { "missed_rug", 37 },
+    { "#x", 47 },
+    { "#puppet_tbl", 47 },
+    { "#Bret", 47 },
+    { "#Razor", 47 },
+    { "#Taker", 47 },
+    { "#Yokozuna", 47 },
+    { "#Shawn", 47 },
+    { "#BamBam", 47 },
+    { "#Doink", 47 },
+    { "#Adam", 47 },
+    { "#Lex", 47 },
+    { "#release_tbl", 47 },
+    { "#pickup0", 71 },
+    { "missed_rug2", 79 },
+    { "missed_rug1", 80 },
+    { "#go", 105 },
+};
+
 static const wm_anim_op prog_rzr_get_buzz_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -31876,6 +35631,12 @@ static const wm_anim_op prog_rzr_get_buzz_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_get_buzz_anim_labels[] = {
+    { "#nodead", 65 },
+    { "#make_black", 67 },
+    { "rets", 67 },
+};
+
 static const wm_anim_op prog_rzr_3_head_held_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -31913,6 +35674,13 @@ static const wm_anim_op prog_rzr_3_head_held_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_3_head_held_anim_labels[] = {
+    { "#loop", 6 },
+    { "#inc_loop", 34 },
+    { "rets", 34 },
+    { "#breakout", 34 },
+};
+
 static const wm_anim_op prog_rzr_3_head_held_brk_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -31932,6 +35700,12 @@ static const wm_anim_op prog_rzr_3_head_held_brk_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_3_head_held_brk_anim_labels[] = {
+    { "#inc_loop", 18 },
+    { "rets", 18 },
+    { "#breakout", 18 },
 };
 
 static const wm_anim_op prog_rzr_3_head_held_stand_anim_ops[] = {
@@ -32037,6 +35811,17 @@ static const wm_anim_op prog_rzr_combo_hiptoss_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_facedown_getup_anim" },
 };
 
+static const wm_anim_label prog_rzr_combo_hiptoss_anim_labels[] = {
+    { "#hiptoss_loop", 18 },
+    { "#DO_END_MOVE", 52 },
+    { "#NO_EDGE", 54 },
+    { "#EXIT_MOVE", 56 },
+    { "#missedbc", 63 },
+    { "#missedc", 64 },
+    { "#throw_him_outc", 73 },
+    { "SLAM_HIM", 89 },
+};
+
 static const wm_anim_op prog_rzr_2_hiptoss2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -32135,6 +35920,30 @@ static const wm_anim_op prog_rzr_2_hiptoss2_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_facedown_getup_anim" },
 };
 
+static const wm_anim_label prog_rzr_2_hiptoss2_anim_labels[] = {
+    { "#cont", 44 },
+    { "#got_him", 46 },
+    { "#missedb", 71 },
+    { "#missed", 75 },
+    { "#throw_him_out", 81 },
+    { "release_table", 95 },
+    { "#puppet_tbl", 95 },
+    { "#Bret", 95 },
+    { "#Razor", 95 },
+    { "#Taker", 95 },
+    { "#Yokozuna", 95 },
+    { "#Shawn", 95 },
+    { "#BamBam", 95 },
+    { "#Doink", 95 },
+    { "#Adam", 95 },
+    { "#Lex", 95 },
+    { "#release_offsets", 95 },
+    { "#xflip_tbl", 95 },
+    { "#recover_tbl", 95 },
+    { "#flyout_tbl", 95 },
+    { "flyout_tbl", 95 },
+};
+
 static const wm_anim_op prog_rzr_4_hiptoss2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -32226,6 +36035,30 @@ static const wm_anim_op prog_rzr_4_hiptoss2_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_facedown_getup_anim" },
 };
 
+static const wm_anim_label prog_rzr_4_hiptoss2_anim_labels[] = {
+    { "#cont", 37 },
+    { "#got_him", 39 },
+    { "#missedb", 64 },
+    { "#missed", 68 },
+    { "#throw_him_out", 74 },
+    { "release_table", 88 },
+    { "#puppet_tbl", 88 },
+    { "#Bret", 88 },
+    { "#Razor", 88 },
+    { "#Taker", 88 },
+    { "#Yokozuna", 88 },
+    { "#Shawn", 88 },
+    { "#BamBam", 88 },
+    { "#Doink", 88 },
+    { "#Adam", 88 },
+    { "#Lex", 88 },
+    { "#release_offsets", 88 },
+    { "#xflip_tbl", 88 },
+    { "#recover_tbl", 88 },
+    { "#flyout_tbl", 88 },
+    { "flyout_tbl", 88 },
+};
+
 static const wm_anim_op prog_rzr_2_hiptoss_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -32303,6 +36136,30 @@ static const wm_anim_op prog_rzr_2_hiptoss_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_facedown_getup_anim" },
 };
 
+static const wm_anim_label prog_rzr_2_hiptoss_anim_labels[] = {
+    { "#cont", 23 },
+    { "#got_him", 25 },
+    { "#missedb", 50 },
+    { "#missed", 54 },
+    { "#throw_him_out", 60 },
+    { "release_table", 74 },
+    { "#puppet_tbl", 74 },
+    { "#Bret", 74 },
+    { "#Razor", 74 },
+    { "#Taker", 74 },
+    { "#Yokozuna", 74 },
+    { "#Shawn", 74 },
+    { "#BamBam", 74 },
+    { "#Doink", 74 },
+    { "#Adam", 74 },
+    { "#Lex", 74 },
+    { "#release_offsets", 74 },
+    { "#xflip_tbl", 74 },
+    { "#recover_tbl", 74 },
+    { "#flyout_tbl", 74 },
+    { "flyout_tbl", 74 },
+};
+
 static const wm_anim_op prog_rzr_4_hiptoss_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1164, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -32373,6 +36230,30 @@ static const wm_anim_op prog_rzr_4_hiptoss_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_facedown_getup_anim" },
 };
 
+static const wm_anim_label prog_rzr_4_hiptoss_anim_labels[] = {
+    { "#cont", 16 },
+    { "#got_him", 18 },
+    { "#missedb", 43 },
+    { "#missed", 47 },
+    { "#throw_him_out", 53 },
+    { "release_table", 67 },
+    { "#puppet_tbl", 67 },
+    { "#Bret", 67 },
+    { "#Razor", 67 },
+    { "#Taker", 67 },
+    { "#Yokozuna", 67 },
+    { "#Shawn", 67 },
+    { "#BamBam", 67 },
+    { "#Doink", 67 },
+    { "#Adam", 67 },
+    { "#Lex", 67 },
+    { "#release_offsets", 67 },
+    { "#xflip_tbl", 67 },
+    { "#recover_tbl", 67 },
+    { "#flyout_tbl", 67 },
+    { "flyout_tbl", 67 },
+};
+
 static const wm_anim_op prog_rzr_2_hair_pickup_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -32425,6 +36306,21 @@ static const wm_anim_op prog_rzr_2_hair_pickup_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_2_hair_pickup_anim_labels[] = {
+    { "#missed", 40 },
+    { "#headheld_tbl", 49 },
+    { "#puppet_tbl", 49 },
+    { "#Bret", 49 },
+    { "#Razor", 49 },
+    { "#Taker", 49 },
+    { "#Yokozuna", 49 },
+    { "#Shawn", 49 },
+    { "#BamBam", 49 },
+    { "#Doink", 49 },
+    { "#Adam", 49 },
+    { "#Lex", 49 },
+};
+
 static const wm_anim_op prog_rzr_4_hair_pickup_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -32468,6 +36364,21 @@ static const wm_anim_op prog_rzr_4_hair_pickup_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_4_hair_pickup_anim_labels[] = {
+    { "#missed", 33 },
+    { "#headheld_tbl", 42 },
+    { "#puppet_tbl", 42 },
+    { "#Bret", 42 },
+    { "#Razor", 42 },
+    { "#Taker", 42 },
+    { "#Yokozuna", 42 },
+    { "#Shawn", 42 },
+    { "#BamBam", 42 },
+    { "#Doink", 42 },
+    { "#Adam", 42 },
+    { "#Lex", 42 },
 };
 
 static const wm_anim_op prog_rzr_climb_up_anim_ops[] = {
@@ -32531,6 +36442,10 @@ static const wm_anim_op prog_rzr_climb_up_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "R4SB4A10" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "tbukl_flip" },
     { WM_AOP_GOTO, 0, 39, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_climb_up_anim_labels[] = {
+    { "#repeat", 39 },
 };
 
 static const wm_anim_op prog_rzr_climb_down_anim_ops[] = {
@@ -32710,6 +36625,15 @@ static const wm_anim_op prog_rzr_uslashes_to_head_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_flying_kick_anim" },
 };
 
+static const wm_anim_label prog_rzr_uslashes_to_head_anim_labels[] = {
+    { "#rpt", 6 },
+    { "#exit", 31 },
+    { "#missed", 31 },
+    { "#do_flykick", 42 },
+    { "#go_high", 49 },
+    { "#x", 49 },
+};
+
 static const wm_anim_op prog_rzr_dslashes_to_head_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -32758,6 +36682,13 @@ static const wm_anim_op prog_rzr_dslashes_to_head_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_3_pile_driver2_anim" },
+};
+
+static const wm_anim_label prog_rzr_dslashes_to_head_anim_labels[] = {
+    { "#rpt", 6 },
+    { "#exit", 32 },
+    { "#missed", 32 },
+    { "#do_pile", 40 },
 };
 
 static const wm_anim_op prog_rzr_3_fake_hold_anim_ops[] = {
@@ -32840,6 +36771,24 @@ static const wm_anim_op prog_rzr_3_fake_hold_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_3_fake_hold_anim_labels[] = {
+    { "#gothim", 37 },
+    { "#missed", 55 },
+    { "#missedb", 65 },
+    { "#puppet_tbl", 77 },
+    { "#Bret", 77 },
+    { "#Razor", 77 },
+    { "#Taker", 77 },
+    { "#Yokozuna", 77 },
+    { "#Shawn", 77 },
+    { "#BamBam", 77 },
+    { "#Doink", 77 },
+    { "#Adam", 77 },
+    { "#Lex", 77 },
+    { "#headheld_tbl", 77 },
+    { "#yoff", 77 },
+};
+
 static const wm_anim_op prog_rzr_3_head_hold2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -32911,6 +36860,24 @@ static const wm_anim_op prog_rzr_3_head_hold2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_3_head_hold2_anim_labels[] = {
+    { "#gothim", 28 },
+    { "#missed", 46 },
+    { "#missedb", 56 },
+    { "#puppet_tbl", 68 },
+    { "#Bret", 68 },
+    { "#Razor", 68 },
+    { "#Taker", 68 },
+    { "#Yokozuna", 68 },
+    { "#Shawn", 68 },
+    { "#BamBam", 68 },
+    { "#Doink", 68 },
+    { "#Adam", 68 },
+    { "#Lex", 68 },
+    { "#headheld_tbl", 68 },
+    { "#yoff", 68 },
+};
+
 static const wm_anim_op prog_rzr_3_head_hold_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -32965,6 +36932,24 @@ static const wm_anim_op prog_rzr_3_head_hold_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_3_head_hold_anim_labels[] = {
+    { "#gothim", 13 },
+    { "#missed", 31 },
+    { "#missedb", 41 },
+    { "#puppet_tbl", 53 },
+    { "#Bret", 53 },
+    { "#Razor", 53 },
+    { "#Taker", 53 },
+    { "#Yokozuna", 53 },
+    { "#Shawn", 53 },
+    { "#BamBam", 53 },
+    { "#Doink", 53 },
+    { "#Adam", 53 },
+    { "#Lex", 53 },
+    { "#headheld_tbl", 53 },
+    { "#yoff", 53 },
 };
 
 static const wm_anim_op prog_rzr_combo_pile_driver_anim_ops[] = {
@@ -33035,6 +37020,10 @@ static const wm_anim_op prog_rzr_combo_pile_driver_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R3PG3B10" },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_faceup_getup2_anim" },
+};
+
+static const wm_anim_label prog_rzr_combo_pile_driver_anim_labels[] = {
+    { "#missedcx", 46 },
 };
 
 static const wm_anim_op prog_rzr_3_pile_driver2_anim_ops[] = {
@@ -33125,6 +37114,26 @@ static const wm_anim_op prog_rzr_3_pile_driver2_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_faceup_getup2_anim" },
 };
 
+static const wm_anim_label prog_rzr_3_pile_driver2_anim_labels[] = {
+    { "#reduce_dmg", 22 },
+    { "rets", 22 },
+    { "#in", 42 },
+    { "#missed", 67 },
+    { "#set_opp_xflip", 85 },
+    { "#puppet_tbl", 85 },
+    { "#Bret", 85 },
+    { "#Razor", 85 },
+    { "#Taker", 85 },
+    { "#Yokozuna", 85 },
+    { "#Shawn", 85 },
+    { "#BamBam", 85 },
+    { "#Doink", 85 },
+    { "#Adam", 85 },
+    { "#Lex", 85 },
+    { "#rollout_tbl", 85 },
+    { "#yoff", 85 },
+};
+
 static const wm_anim_op prog_rzr_3_pile_driver_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -33189,6 +37198,25 @@ static const wm_anim_op prog_rzr_3_pile_driver_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R3PG3B10" },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_faceup_getup2_anim" },
+};
+
+static const wm_anim_label prog_rzr_3_pile_driver_anim_labels[] = {
+    { "#in", 20 },
+    { "#missed", 45 },
+    { "#set_opp_xflip", 63 },
+    { "rets", 63 },
+    { "#puppet_tbl", 63 },
+    { "#Bret", 63 },
+    { "#Razor", 63 },
+    { "#Taker", 63 },
+    { "#Yokozuna", 63 },
+    { "#Shawn", 63 },
+    { "#BamBam", 63 },
+    { "#Doink", 63 },
+    { "#Adam", 63 },
+    { "#Lex", 63 },
+    { "#rollout_tbl", 63 },
+    { "#yoff", 63 },
 };
 
 static const wm_anim_op prog_rzr_combo_razors_edge_anim_ops[] = {
@@ -33266,6 +37294,10 @@ static const wm_anim_op prog_rzr_combo_razors_edge_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_faceup_getup2_anim" },
 };
 
+static const wm_anim_label prog_rzr_combo_razors_edge_anim_labels[] = {
+    { "#missedcx", 54 },
+};
+
 static const wm_anim_op prog_rzr_razors_edge_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -33336,6 +37368,23 @@ static const wm_anim_op prog_rzr_razors_edge_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R3PG3B10" },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_faceup_getup2_anim" },
+};
+
+static const wm_anim_label prog_rzr_razors_edge_anim_labels[] = {
+    { "#missed", 53 },
+    { "#set_opp_xflip", 69 },
+    { "rets", 69 },
+    { "#puppet_tbl", 69 },
+    { "#Bret", 69 },
+    { "#Razor", 69 },
+    { "#Taker", 69 },
+    { "#Yokozuna", 69 },
+    { "#Shawn", 69 },
+    { "#BamBam", 69 },
+    { "#Doink", 69 },
+    { "#Adam", 69 },
+    { "#Lex", 69 },
+    { "#rollout_tbl", 69 },
 };
 
 static const wm_anim_op prog_rzr_repeat_slash_anim_ops[] = {
@@ -33414,6 +37463,15 @@ static const wm_anim_op prog_rzr_repeat_slash_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_repeat_slash_anim_labels[] = {
+    { "#no_leapat", 18 },
+    { "#loop", 24 },
+    { "#attack_on", 33 },
+    { "#done_d", 59 },
+    { "#done_u", 65 },
+    { "#done_u2", 68 },
+};
+
 static const wm_anim_op prog_rzr_2_block_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -33446,6 +37504,10 @@ static const wm_anim_op prog_rzr_2_block_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_2_block_anim_labels[] = {
+    { "#hold_block", 20 },
+};
+
 static const wm_anim_op prog_rzr_4_block_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -33467,6 +37529,10 @@ static const wm_anim_op prog_rzr_4_block_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_4_block_anim_labels[] = {
+    { "#hold_block", 9 },
+};
+
 static const wm_anim_op prog_rzr_4_hitblock_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "R4BK3D03" },
     { WM_AOP_SETMODE, 0, -1, 76, 0, 0, 0, 0, 0, 0 },
@@ -33485,6 +37551,10 @@ static const wm_anim_op prog_rzr_4_hitblock_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "R4BK3D06" },
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "R4BK3D05" },
     { WM_AOP_GOTO, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_4_hitblock_anim_labels[] = {
+    { "#hold_block", 0 },
 };
 
 static const wm_anim_op prog_rzr_4_hitblock2_anim_ops[] = {
@@ -33517,6 +37587,11 @@ static const wm_anim_op prog_rzr_4_hitblock2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R4BK3D05" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R4BK3D06" },
     { WM_AOP_GOTO, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_4_hitblock2_anim_labels[] = {
+    { "#hold_block", 0 },
+    { "#FRICTION_VAL", 29 },
 };
 
 static const wm_anim_op prog_rzr_4_losebal_anim_ops[] = {
@@ -33714,6 +37789,10 @@ static const wm_anim_op prog_rzr_4_head_hit2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_4_head_hit2_anim_labels[] = {
+    { "#nodead", 22 },
+};
+
 static const wm_anim_op prog_rzr_4_head_hit2s_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -33839,6 +37918,10 @@ static const wm_anim_op prog_rzr_4_body_hit_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_4_body_hit_anim_labels[] = {
+    { "#reg", 25 },
+};
+
 static const wm_anim_op prog_rzr_4_body_hit_dizzy_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -33918,6 +38001,10 @@ static const wm_anim_op prog_rzr_quick_knee_hit_anim_ops[] = {
     { WM_AOP_IFNOTSTATUS, 0, 13, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_fall_back_anim" },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_3_head_held_anim" },
+};
+
+static const wm_anim_label prog_rzr_quick_knee_hit_anim_labels[] = {
+    { "#nodead", 13 },
 };
 
 static const wm_anim_op prog_rzr_fall_back_anim_ops[] = {
@@ -34065,6 +38152,13 @@ static const wm_anim_op prog_rzr_facedown_getup_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_facedown_getup_anim_labels[] = {
+    { "#getup_in_2", 8 },
+    { "#no_freetoss", 20 },
+    { "#getup_in_4", 24 },
+    { "#no_freetoss4", 37 },
+};
+
 static const wm_anim_op prog_rzr_faceup_getup_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 268, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -34115,6 +38209,13 @@ static const wm_anim_op prog_rzr_faceup_getup_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_faceup_getup_anim_labels[] = {
+    { "#getup_in_2", 7 },
+    { "#no_freetoss", 23 },
+    { "#getup_in_4", 27 },
+    { "#no_freetoss2", 43 },
+};
+
 static const wm_anim_op prog_rzr_faceup_getup2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 268, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -34138,6 +38239,14 @@ static const wm_anim_op prog_rzr_faceup_getup2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_faceup_getup2_anim_labels[] = {
+    { "#common", 3 },
+    { "#no_freetoss3", 18 },
+    { "choose_2or4", 22 },
+    { "#choose_2", 22 },
+    { "rets", 22 },
 };
 
 static const wm_anim_op prog_rzr_up_anim_ops[] = {
@@ -34198,6 +38307,10 @@ static const wm_anim_op prog_rzr_dizzy_anim_ops[] = {
     { WM_AOP_GOTO, 0, 4, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_dizzy_anim_labels[] = {
+    { "#loop", 4 },
+};
+
 static const wm_anim_op prog_rzr_flyout_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 140, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
@@ -34242,6 +38355,10 @@ static const wm_anim_op prog_rzr_break_neck_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R3GU2A01" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_facedown_getup_anim" },
+};
+
+static const wm_anim_label prog_rzr_break_neck_anim_labels[] = {
+    { "#fall_back", 16 },
 };
 
 static const wm_anim_op prog_rzr_break_neck2_anim_ops[] = {
@@ -34323,6 +38440,10 @@ static const wm_anim_op prog_rzr_break_neck4_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "R3GU2A01" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_facedown_getup_anim" },
+};
+
+static const wm_anim_label prog_rzr_break_neck4_anim_labels[] = {
+    { "#fall_back4", 20 },
 };
 
 static const wm_anim_op prog_rzr_backbroken_anim_ops[] = {
@@ -34470,6 +38591,10 @@ static const wm_anim_op prog_rzr_arm_broken_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_arm_broken_anim_labels[] = {
+    { "#nodead", 17 },
 };
 
 static const wm_anim_op prog_shn_zip_anim_ops[] = {
@@ -35111,6 +39236,11 @@ static const wm_anim_op prog_shn_run2_anim_ops[] = {
     { WM_AOP_GOTO, 0, 7, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_run2_anim_labels[] = {
+    { "#lp1", 7 },
+    { "#run2", 12 },
+};
+
 static const wm_anim_op prog_shn_run_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -35133,6 +39263,11 @@ static const wm_anim_op prog_shn_run_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S3RN3A13" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_RUN" },
     { WM_AOP_GOTO, 0, 3, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_run_anim_labels[] = {
+    { "#lp1", 3 },
+    { "#run2", 8 },
 };
 
 static const wm_anim_op prog_shn_bounce_anim_ops[] = {
@@ -35203,6 +39338,10 @@ static const wm_anim_op prog_shn_2_punch_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_2_punch_anim_labels[] = {
+    { "#no_hit", 20 },
+};
+
 static const wm_anim_op prog_shn_4_punch_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -35232,6 +39371,10 @@ static const wm_anim_op prog_shn_4_punch_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "S4PU3D08" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_4_punch_anim_labels[] = {
+    { "#no_hit", 20 },
 };
 
 static const wm_anim_op prog_shn_combo_punch_anim_ops[] = {
@@ -35298,6 +39441,15 @@ static const wm_anim_op prog_shn_combo_punch_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_combo_punch_anim_labels[] = {
+    { "#rpt", 11 },
+    { "#NO_FLYING", 37 },
+    { "#NO_SPIN", 39 },
+    { "#EXIT_PUNCH", 41 },
+    { "#missedc", 49 },
+    { "#missedbc", 51 },
+};
+
 static const wm_anim_op prog_shn_4_push_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
@@ -35323,6 +39475,11 @@ static const wm_anim_op prog_shn_4_push_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "S4PS3A01" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_4_push_anim_labels[] = {
+    { "#no_hit", 17 },
+    { "#hit", 20 },
 };
 
 static const wm_anim_op prog_shn_2_butt_anim_ops[] = {
@@ -35354,6 +39511,10 @@ static const wm_anim_op prog_shn_2_butt_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_2_butt_anim_labels[] = {
+    { "#no_hit", 21 },
+};
+
 static const wm_anim_op prog_shn_4_butt_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -35380,6 +39541,10 @@ static const wm_anim_op prog_shn_4_butt_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S4BC3A08" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_4_butt_anim_labels[] = {
+    { "#no_hit", 21 },
 };
 
 static const wm_anim_op prog_shn_combo_butt_anim_ops[] = {
@@ -35426,6 +39591,14 @@ static const wm_anim_op prog_shn_combo_butt_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_combo_butt_anim_labels[] = {
+    { "#butt_loop", 5 },
+    { "#NO_BODYSLAM", 26 },
+    { "#NO_SLIDING", 28 },
+    { "#MISSED_IT", 30 },
+    { "#no_hit_c", 35 },
+};
+
 static const wm_anim_op prog_shn_2_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -35461,6 +39634,10 @@ static const wm_anim_op prog_shn_2_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_2_kick_anim_labels[] = {
+    { "#no_slide", 22 },
+};
+
 static const wm_anim_op prog_shn_4_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -35492,6 +39669,10 @@ static const wm_anim_op prog_shn_4_kick_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S4KM3C09" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_4_kick_anim_labels[] = {
+    { "#no_slide", 21 },
 };
 
 static const wm_anim_op prog_shn_4_jump_kick_anim_ops[] = {
@@ -35529,6 +39710,13 @@ static const wm_anim_op prog_shn_4_jump_kick_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S4KM3C09" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_4_jump_kick_anim_labels[] = {
+    { "#no_slide", 17 },
+    { "#missedb", 26 },
+    { "#missed", 26 },
+    { "#hit", 27 },
 };
 
 static const wm_anim_op prog_shn_combo_kick_anim_ops[] = {
@@ -35600,6 +39788,13 @@ static const wm_anim_op prog_shn_combo_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_combo_kick_anim_labels[] = {
+    { "#kick_loop", 18 },
+    { "#NO_SLAMS", 51 },
+    { "#NO_BUTTS", 53 },
+    { "#missed_c", 55 },
+};
+
 static const wm_anim_op prog_shn_2_stomp_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -35637,6 +39832,11 @@ static const wm_anim_op prog_shn_2_stomp_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_2_stomp_anim_labels[] = {
+    { "#no_leapat", 19 },
+    { "#no_miss", 29 },
+};
+
 static const wm_anim_op prog_shn_4_stomp_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -35671,6 +39871,11 @@ static const wm_anim_op prog_shn_4_stomp_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "S4MP4C08" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_4_stomp_anim_labels[] = {
+    { "#no_leapat", 17 },
+    { "#no_miss", 28 },
 };
 
 static const wm_anim_op prog_shn_bstomp_anim_ops[] = {
@@ -35716,6 +39921,13 @@ static const wm_anim_op prog_shn_bstomp_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_bstomp_anim_labels[] = {
+    { "#opp_onground", 15 },
+    { "#hit", 26 },
+    { "#common", 29 },
+    { "#yoff", 40 },
+};
+
 static const wm_anim_op prog_shn_belbow_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1196, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -35754,6 +39966,12 @@ static const wm_anim_op prog_shn_belbow_anim_ops[] = {
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup2_anim" },
+};
+
+static const wm_anim_label prog_shn_belbow_anim_labels[] = {
+    { "#opp_onground", 17 },
+    { "#hit", 28 },
+    { "#AVOID_HIT_CALL", 29 },
 };
 
 static const wm_anim_op prog_shn_2_falling_punch_anim_ops[] = {
@@ -35799,6 +40017,11 @@ static const wm_anim_op prog_shn_2_falling_punch_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
 
+static const wm_anim_label prog_shn_2_falling_punch_anim_labels[] = {
+    { "#hit2", 28 },
+    { "#cont2", 30 },
+};
+
 static const wm_anim_op prog_shn_4_falling_punch_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -35840,6 +40063,18 @@ static const wm_anim_op prog_shn_4_falling_punch_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
 
+static const wm_anim_label prog_shn_4_falling_punch_anim_labels[] = {
+    { "#hit4", 28 },
+    { "#cont4", 30 },
+    { "#set_target", 38 },
+    { "rets", 38 },
+    { "#head", 38 },
+    { "#drop", 38 },
+    { "zero_x", 38 },
+    { "#zero_x_4", 38 },
+    { "#ok4", 38 },
+};
+
 static const wm_anim_op prog_shn_2_knee_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -35867,6 +40102,10 @@ static const wm_anim_op prog_shn_2_knee_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S2NM3A07" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_2_knee_anim_labels[] = {
+    { "#no_hit", 20 },
 };
 
 static const wm_anim_op prog_shn_4_knee_anim_ops[] = {
@@ -35897,6 +40136,10 @@ static const wm_anim_op prog_shn_4_knee_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_4_knee_anim_labels[] = {
+    { "#no_hit", 19 },
+};
+
 static const wm_anim_op prog_shn_combo_knee_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -35916,6 +40159,10 @@ static const wm_anim_op prog_shn_combo_knee_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S4NM3A07" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_combo_knee_anim_labels[] = {
+    { "#no_hit_c", 10 },
 };
 
 static const wm_anim_op prog_shn_2_grabfling_anim_ops[] = {
@@ -35979,6 +40226,12 @@ static const wm_anim_op prog_shn_2_grabfling_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_2_grabfling_anim_labels[] = {
+    { "#cont", 15 },
+    { "#missedb", 48 },
+    { "#missed", 51 },
+};
+
 static const wm_anim_op prog_shn_4_grabfling_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -36031,6 +40284,12 @@ static const wm_anim_op prog_shn_4_grabfling_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_4_grabfling_anim_labels[] = {
+    { "#cont", 6 },
+    { "#missedb", 39 },
+    { "#missed", 42 },
+};
+
 static const wm_anim_op prog_DO_GRUNT_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 140, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -36069,6 +40328,22 @@ static const wm_anim_op prog_DO_GRUNT_ops[] = {
     { WM_AOP_GOTO, 0, 18, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_DO_GRUNT_labels[] = {
+    { "RETS", 0 },
+    { "#puppet_tbl", 0 },
+    { "#Bret", 0 },
+    { "#Razor", 0 },
+    { "#Taker", 0 },
+    { "#Yokozuna", 0 },
+    { "#Shawn", 0 },
+    { "#BamBam", 0 },
+    { "#Doink", 0 },
+    { "#Adam", 0 },
+    { "#Lex", 0 },
+    { "#strt_run_tbl", 0 },
+    { "#repeat", 18 },
+};
+
 static const wm_anim_op prog_shn_climb_up_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 140, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -36105,6 +40380,10 @@ static const wm_anim_op prog_shn_climb_up_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "S4SB4B08" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "tbukl_flip" },
     { WM_AOP_GOTO, 0, 18, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_climb_up_anim_labels[] = {
+    { "#repeat", 18 },
 };
 
 static const wm_anim_op prog_shn_climb_down_anim_ops[] = {
@@ -36240,6 +40519,23 @@ static const wm_anim_op prog_tbukl_flip_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_tbukl_flip_labels[] = {
+    { "#cont", 0 },
+    { "#onlft", 0 },
+    { "#onrt", 0 },
+    { "#out", 0 },
+    { "#no", 0 },
+    { "#nfx", 0 },
+    { "rets", 0 },
+    { "#yes", 0 },
+    { "#yfx", 0 },
+    { "#no_hdrel2", 31 },
+    { "getup_in_2", 51 },
+    { "#no_freetoss", 74 },
+    { "getup_in_4", 78 },
+    { "#no_freetoss2", 101 },
+};
+
 static const wm_anim_op prog_face_inside_ops[] = {
     { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SET_YVEL, 0, -1, 278528, 0, 0, 0, 0, 0, 0 },
@@ -36346,6 +40642,23 @@ static const wm_anim_op prog_face_inside_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_face_inside_labels[] = {
+    { "#cont", 0 },
+    { "#onlft", 0 },
+    { "#onrt", 0 },
+    { "#out", 0 },
+    { "#no", 0 },
+    { "#nfx", 0 },
+    { "rets", 0 },
+    { "#yes", 0 },
+    { "#yfx", 0 },
+    { "#no_hdrel2", 31 },
+    { "getup_in_2", 51 },
+    { "#no_freetoss", 74 },
+    { "getup_in_4", 78 },
+    { "#no_freetoss2", 101 },
 };
 
 static const wm_anim_op prog_shn_combo_flying_kick_anim_ops[] = {
@@ -36456,6 +40769,14 @@ static const wm_anim_op prog_shn_combo_flying_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_combo_flying_kick_anim_labels[] = {
+    { "#no_hdrel2", 31 },
+    { "getup_in_2", 51 },
+    { "#no_freetoss", 74 },
+    { "getup_in_4", 78 },
+    { "#no_freetoss2", 101 },
+};
+
 static const wm_anim_op prog_shn_flying_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -36538,6 +40859,20 @@ static const wm_anim_op prog_shn_flying_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_flying_kick_anim_labels[] = {
+    { "#no_hdrel2", 7 },
+    { "getup_in_2", 27 },
+    { "#no_freetoss", 50 },
+    { "getup_in_4", 54 },
+    { "#no_freetoss2", 77 },
+    { "#ckongrnd", 81 },
+    { "rets", 81 },
+    { "#inplace", 81 },
+    { "elbow_tgt1", 81 },
+    { "#head", 81 },
+    { "elbow_tgt2", 81 },
 };
 
 static const wm_anim_op prog_shn_roll_frames_ops[] = {
@@ -36644,6 +40979,10 @@ static const wm_anim_op prog_shn_knockdwn_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
 
+static const wm_anim_label prog_shn_knockdwn_anim_labels[] = {
+    { "#nodead", 19 },
+};
+
 static const wm_anim_op prog_shn_climbthru_side_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 428, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -36723,6 +41062,12 @@ static const wm_anim_op prog_shn_climbin_side_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_climbin_side_anim_labels[] = {
+    { "#set_trgt", 38 },
+    { "#onlft", 38 },
+    { "rets", 38 },
+};
+
 static const wm_anim_op prog_shn_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1420, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -36755,6 +41100,14 @@ static const wm_anim_op prog_shn_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 128, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_climbthru_bot_anim_labels[] = {
+    { "#ckspin", 31 },
+    { "RETS", 31 },
+    { "#faceup", 31 },
+    { "rets", 31 },
+    { "NOT_IN_RING", 31 },
 };
 
 static const wm_anim_op prog_shn_climbin_bot_anim_ops[] = {
@@ -36831,6 +41184,14 @@ static const wm_anim_op prog_shn_climbthru_top_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_climbthru_top_anim_labels[] = {
+    { "#dir4", 7 },
+    { "#set_zvel1", 34 },
+    { "rets", 34 },
+    { "#facedwn", 34 },
+    { "#set_zvel2", 34 },
+};
+
 static const wm_anim_op prog_shn_rollthru_top_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 5516, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SET_ZVEL, 0, -1, -327680, 0, 0, 0, 0, 0, 0 },
@@ -36881,6 +41242,11 @@ static const wm_anim_op prog_shn_climbin_top_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 128, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_climbin_top_anim_labels[] = {
+    { "#set_zvel2", 27 },
+    { "rets", 27 },
 };
 
 static const wm_anim_op prog_shn_2_pin_anim_ops[] = {
@@ -36936,6 +41302,11 @@ static const wm_anim_op prog_shn_2_pin_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_2_pin_anim_labels[] = {
+    { "#raise", 36 },
+    { "#floop", 45 },
+};
+
 static const wm_anim_op prog_shn_4_pin_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -36984,6 +41355,11 @@ static const wm_anim_op prog_shn_4_pin_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_4_pin_anim_labels[] = {
+    { "#raise", 31 },
+    { "#floop", 40 },
+};
+
 static const wm_anim_op prog_shn_2_raise_arm_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -37025,6 +41401,12 @@ static const wm_anim_op prog_shn_2_raise_arm_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_2_raise_arm_anim_labels[] = {
+    { "#cont", 13 },
+    { "#lp0", 23 },
+    { "#wakeup", 30 },
+};
+
 static const wm_anim_op prog_shn_4_raise_arm_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -37056,6 +41438,12 @@ static const wm_anim_op prog_shn_4_raise_arm_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_4_raise_arm_anim_labels[] = {
+    { "#cont", 5 },
+    { "#lp0", 15 },
+    { "#wakeup", 22 },
 };
 
 static const wm_anim_op prog_tgt_tbukl_ops[] = {
@@ -37098,6 +41486,12 @@ static const wm_anim_op prog_tgt_tbukl_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_tgt_tbukl_labels[] = {
+    { "#right", 0 },
+    { "rets", 0 },
+    { "#no_hit2", 26 },
+};
+
 static const wm_anim_op prog_shn_2_slap_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -37138,6 +41532,10 @@ static const wm_anim_op prog_shn_2_slap_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_2_slap_anim_labels[] = {
+    { "#no_hit2", 26 },
+};
+
 static const wm_anim_op prog_shn_4_slap_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -37168,6 +41566,10 @@ static const wm_anim_op prog_shn_4_slap_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_4_slap_anim_labels[] = {
+    { "#no_hit2", 18 },
 };
 
 static const wm_anim_op prog_shn_2_pummel_anim_ops[] = {
@@ -37231,6 +41633,14 @@ static const wm_anim_op prog_shn_2_pummel_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_2_pummel_anim_labels[] = {
+    { "#rpt", 17 },
+    { "#no_hit2", 36 },
+    { "#ex", 43 },
+    { "#missedb", 50 },
+    { "#missed", 52 },
+};
+
 static const wm_anim_op prog_shn_4_pummel_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -37282,6 +41692,14 @@ static const wm_anim_op prog_shn_4_pummel_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_4_pummel_anim_labels[] = {
+    { "#rpt", 9 },
+    { "#no_hit2", 28 },
+    { "#ex", 35 },
+    { "#missedb", 42 },
+    { "#missed", 44 },
 };
 
 static const wm_anim_op prog_shn_buckoff_anim_ops[] = {
@@ -37390,6 +41808,17 @@ static const wm_anim_op prog_shn_combo_gsuplex_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "#zero_butn" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_combo_gsuplex_anim_labels[] = {
+    { "#front_grabxc", 8 },
+    { "#back_grabxc", 11 },
+    { "#commonxc", 30 },
+    { "#missedxc", 63 },
+    { "#4xc", 74 },
+    { "#2xc", 76 },
+    { "#zero_butn", 79 },
+    { "rets", 79 },
 };
 
 static const wm_anim_op prog_shn_gsuplex_run_anim_ops[] = {
@@ -37515,6 +41944,38 @@ static const wm_anim_op prog_shn_gsuplex_run_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_gsuplex_run_anim_labels[] = {
+    { "#front_grab0", 10 },
+    { "#normal", 11 },
+    { "#back_grab0", 14 },
+    { "#no_bk_xvel", 38 },
+    { "#abs", 38 },
+    { "#clrvel", 38 },
+    { "#ok", 38 },
+    { "rets", 38 },
+    { "#front_grab", 48 },
+    { "#back_grab", 51 },
+    { "#common", 74 },
+    { "#slam", 82 },
+    { "#missedb", 106 },
+    { "#missed", 107 },
+    { "#4", 116 },
+    { "#2", 118 },
+    { "#pause_opp", 120 },
+    { "#zero_butn", 120 },
+    { "puppet_tbl", 120 },
+    { "#Bret", 120 },
+    { "#Razor", 120 },
+    { "#Taker", 120 },
+    { "#Yokozuna", 120 },
+    { "#Shawn", 120 },
+    { "#BamBam", 120 },
+    { "#Doink", 120 },
+    { "#Adam", 120 },
+    { "#Lex", 120 },
+    { "rollout_tbl1", 120 },
+};
+
 static const wm_anim_op prog_shn_gsuplex_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -37598,6 +42059,31 @@ static const wm_anim_op prog_shn_gsuplex_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_gsuplex_anim_labels[] = {
+    { "#front_grab", 10 },
+    { "#back_grab", 13 },
+    { "#common", 36 },
+    { "#slam", 44 },
+    { "#missedb", 68 },
+    { "#missed", 69 },
+    { "#4", 78 },
+    { "#2", 80 },
+    { "#pause_opp", 82 },
+    { "rets", 82 },
+    { "#zero_butn", 82 },
+    { "puppet_tbl", 82 },
+    { "#Bret", 82 },
+    { "#Razor", 82 },
+    { "#Taker", 82 },
+    { "#Yokozuna", 82 },
+    { "#Shawn", 82 },
+    { "#BamBam", 82 },
+    { "#Doink", 82 },
+    { "#Adam", 82 },
+    { "#Lex", 82 },
+    { "rollout_tbl1", 82 },
 };
 
 static const wm_anim_op prog_shn_fstein2_anim_ops[] = {
@@ -37812,6 +42298,39 @@ static const wm_anim_op prog_shn_fstein2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S3CP3B07" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_shn_fstein2_anim_labels[] = {
+    { "#no_hdrel2", 5 },
+    { "#NO_STOMPING1", 63 },
+    { "#missedb_c", 69 },
+    { "#missed_c", 72 },
+    { "#throw_him_out_c", 75 },
+    { "#hdrel", 83 },
+    { "#no_hdrel", 83 },
+    { "#cont", 91 },
+    { "#throw_him_out", 135 },
+    { "release_table2", 156 },
+    { "#set_attach", 156 },
+    { "rets", 156 },
+    { "#missedb", 156 },
+    { "#missed", 188 },
+    { "#merge_xvels", 211 },
+    { "#rets", 211 },
+    { "#store_opp_xvel", 211 },
+    { "#puppet_tbl", 211 },
+    { "#Bret", 211 },
+    { "#Razor", 211 },
+    { "#Taker", 211 },
+    { "#Yokozuna", 211 },
+    { "#Shawn", 211 },
+    { "#BamBam", 211 },
+    { "#Doink", 211 },
+    { "#Adam", 211 },
+    { "#Lex", 211 },
+    { "recover_tbl", 211 },
+    { "#flyout_tbl", 211 },
+    { "#release_offsets", 211 },
 };
 
 static const wm_anim_op prog_shn_combo_fstein_anim_ops[] = {
@@ -38042,6 +42561,45 @@ static const wm_anim_op prog_shn_combo_fstein_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
 
+static const wm_anim_label prog_shn_combo_fstein_anim_labels[] = {
+    { "#missedb", 0 },
+    { "#missed", 1 },
+    { "#4", 10 },
+    { "#2", 12 },
+    { "#pause_opp", 14 },
+    { "rets", 14 },
+    { "#zero_butn", 14 },
+    { "puppet_tbl", 14 },
+    { "#Bret", 14 },
+    { "#Razor", 14 },
+    { "#Taker", 14 },
+    { "#Yokozuna", 14 },
+    { "#Shawn", 14 },
+    { "#BamBam", 14 },
+    { "#Doink", 14 },
+    { "#Adam", 14 },
+    { "#Lex", 14 },
+    { "rollout_tbl1", 14 },
+    { "#no_hdrel2", 19 },
+    { "#NO_STOMPING1", 77 },
+    { "#missedb_c", 83 },
+    { "#missed_c", 86 },
+    { "#throw_him_out_c", 89 },
+    { "#hdrel", 97 },
+    { "#no_hdrel", 97 },
+    { "#cont", 105 },
+    { "#throw_him_out", 149 },
+    { "release_table2", 170 },
+    { "#set_attach", 170 },
+    { "#merge_xvels", 225 },
+    { "#rets", 225 },
+    { "#store_opp_xvel", 225 },
+    { "#puppet_tbl", 225 },
+    { "recover_tbl", 225 },
+    { "#flyout_tbl", 225 },
+    { "#release_offsets", 225 },
+};
+
 static const wm_anim_op prog_shn_fstein_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
@@ -38178,6 +42736,34 @@ static const wm_anim_op prog_shn_fstein_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
 
+static const wm_anim_label prog_shn_fstein_anim_labels[] = {
+    { "#hdrel", 5 },
+    { "#no_hdrel", 5 },
+    { "#cont", 13 },
+    { "#throw_him_out", 57 },
+    { "release_table2", 78 },
+    { "#set_attach", 78 },
+    { "rets", 78 },
+    { "#missedb", 78 },
+    { "#missed", 110 },
+    { "#merge_xvels", 133 },
+    { "#rets", 133 },
+    { "#store_opp_xvel", 133 },
+    { "#puppet_tbl", 133 },
+    { "#Bret", 133 },
+    { "#Razor", 133 },
+    { "#Taker", 133 },
+    { "#Yokozuna", 133 },
+    { "#Shawn", 133 },
+    { "#BamBam", 133 },
+    { "#Doink", 133 },
+    { "#Adam", 133 },
+    { "#Lex", 133 },
+    { "recover_tbl", 133 },
+    { "#flyout_tbl", 133 },
+    { "#release_offsets", 133 },
+};
+
 static const wm_anim_op prog_shn_combo_spinkick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -38239,6 +42825,16 @@ static const wm_anim_op prog_shn_combo_spinkick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_combo_spinkick_anim_labels[] = {
+    { "#spin_loop", 6 },
+    { "#NO_SLAM", 32 },
+    { "#NO_KNEE", 34 },
+    { "#NO_SUPLEX", 36 },
+    { "#EXIT_MOVE", 38 },
+    { "#missed_c", 45 },
+    { "#cont_c", 49 },
+};
+
 static const wm_anim_op prog_shn_spinkick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -38275,6 +42871,14 @@ static const wm_anim_op prog_shn_spinkick_anim_ops[] = {
     { WM_AOP_FACEUP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_spinkick_anim_labels[] = {
+    { "#no_slide", 20 },
+    { "#missed", 25 },
+    { "#cont", 26 },
+    { "#reverse_xvel", 35 },
+    { "rets", 35 },
 };
 
 static const wm_anim_op prog_shn_spinkick_TB_anim_ops[] = {
@@ -38421,6 +43025,15 @@ static const wm_anim_op prog_shn_super_speedkick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_super_speedkick_anim_labels[] = {
+    { "#loop", 34 },
+    { "#missedb2", 44 },
+    { "#gothim", 58 },
+    { "#gothim2", 87 },
+    { "#fail", 93 },
+    { "#miss", 101 },
 };
 
 static const wm_anim_op prog_set_opp_xy_ops[] = {
@@ -38818,6 +43431,54 @@ static const wm_anim_op prog_set_opp_xy_ops[] = {
     { WM_AOP_GOTO, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_set_opp_xy_labels[] = {
+    { "#throw_him_out", 0 },
+    { "release_table2", 21 },
+    { "#set_attach", 21 },
+    { "rets", 21 },
+    { "#missedb", 21 },
+    { "#missed", 53 },
+    { "#merge_xvels", 76 },
+    { "#rets", 76 },
+    { "#store_opp_xvel", 76 },
+    { "#puppet_tbl", 76 },
+    { "#Bret", 76 },
+    { "#Razor", 76 },
+    { "#Taker", 76 },
+    { "#Yokozuna", 76 },
+    { "#Shawn", 76 },
+    { "#BamBam", 76 },
+    { "#Doink", 76 },
+    { "#Adam", 76 },
+    { "#Lex", 76 },
+    { "recover_tbl", 76 },
+    { "#flyout_tbl", 76 },
+    { "#release_offsets", 76 },
+    { "#spin_loop", 82 },
+    { "#NO_SLAM", 108 },
+    { "#NO_KNEE", 110 },
+    { "#NO_SUPLEX", 112 },
+    { "#EXIT_MOVE", 114 },
+    { "#missed_c", 121 },
+    { "#cont_c", 125 },
+    { "#no_slide", 154 },
+    { "#cont", 160 },
+    { "#reverse_xvel", 169 },
+    { "#loop", 231 },
+    { "#missedb2", 241 },
+    { "#gothim", 255 },
+    { "#gothim2", 284 },
+    { "#fail", 290 },
+    { "#miss", 298 },
+    { "#noz", 309 },
+    { "#ok", 309 },
+    { "#abs", 309 },
+    { "#bslam_loop", 337 },
+    { "#exit", 354 },
+    { "#EXIT_BSLAM", 364 },
+    { "#throw_him_out_c", 388 },
+};
+
 static const wm_anim_op prog_shn_combo_hiptoss_anim_ops[] = {
     { WM_AOP_ATTACHVEL, 0, -1, -655360, 589824, 0, 0, 0, 0, 0 },
     { WM_AOP_SLAVEANIM, 0, -1, 60, 0, 0, 0, 0, 0, 0 },
@@ -39213,6 +43874,54 @@ static const wm_anim_op prog_shn_combo_hiptoss_anim_ops[] = {
     { WM_AOP_GOTO, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_combo_hiptoss_anim_labels[] = {
+    { "#throw_him_out", 0 },
+    { "release_table2", 21 },
+    { "#set_attach", 21 },
+    { "rets", 21 },
+    { "#missedb", 21 },
+    { "#missed", 53 },
+    { "#merge_xvels", 76 },
+    { "#rets", 76 },
+    { "#store_opp_xvel", 76 },
+    { "#puppet_tbl", 76 },
+    { "#Bret", 76 },
+    { "#Razor", 76 },
+    { "#Taker", 76 },
+    { "#Yokozuna", 76 },
+    { "#Shawn", 76 },
+    { "#BamBam", 76 },
+    { "#Doink", 76 },
+    { "#Adam", 76 },
+    { "#Lex", 76 },
+    { "recover_tbl", 76 },
+    { "#flyout_tbl", 76 },
+    { "#release_offsets", 76 },
+    { "#spin_loop", 82 },
+    { "#NO_SLAM", 108 },
+    { "#NO_KNEE", 110 },
+    { "#NO_SUPLEX", 112 },
+    { "#EXIT_MOVE", 114 },
+    { "#missed_c", 121 },
+    { "#cont_c", 125 },
+    { "#no_slide", 154 },
+    { "#cont", 160 },
+    { "#reverse_xvel", 169 },
+    { "#loop", 231 },
+    { "#missedb2", 241 },
+    { "#gothim", 255 },
+    { "#gothim2", 284 },
+    { "#fail", 290 },
+    { "#miss", 298 },
+    { "#noz", 309 },
+    { "#ok", 309 },
+    { "#abs", 309 },
+    { "#bslam_loop", 337 },
+    { "#exit", 354 },
+    { "#EXIT_BSLAM", 364 },
+    { "#throw_him_out_c", 388 },
+};
+
 static const wm_anim_op prog_shn_4combo_bslam_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -39289,6 +43998,12 @@ static const wm_anim_op prog_shn_4combo_bslam_anim_ops[] = {
     { WM_AOP_FACE, 0, -1, 6, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_4combo_bslam_anim_labels[] = {
+    { "#missedbxc", 44 },
+    { "#missedxc", 45 },
+    { "#throw_him_outxc", 56 },
 };
 
 static const wm_anim_op prog_shn_2_hiptoss2_anim_ops[] = {
@@ -39400,6 +44115,28 @@ static const wm_anim_op prog_shn_2_hiptoss2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_2_hiptoss2_anim_labels[] = {
+    { "#cont", 45 },
+    { "#got_him", 47 },
+    { "#missedb", 75 },
+    { "#missed", 79 },
+    { "#throw_him_out", 87 },
+    { "release_table", 106 },
+    { "#puppet_tbl", 106 },
+    { "#Bret", 106 },
+    { "#Razor", 106 },
+    { "#Taker", 106 },
+    { "#Yokozuna", 106 },
+    { "#Shawn", 106 },
+    { "#BamBam", 106 },
+    { "#Doink", 106 },
+    { "#Adam", 106 },
+    { "#Lex", 106 },
+    { "#recover_tbl", 106 },
+    { "#flyout_tbl", 106 },
+    { "#release_offsets", 106 },
+};
+
 static const wm_anim_op prog_shn_4_hiptoss2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -39501,6 +44238,28 @@ static const wm_anim_op prog_shn_4_hiptoss2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_4_hiptoss2_anim_labels[] = {
+    { "#cont", 37 },
+    { "#got_him", 39 },
+    { "#missedb", 67 },
+    { "#missed", 71 },
+    { "#throw_him_out", 79 },
+    { "release_table", 98 },
+    { "#puppet_tbl", 98 },
+    { "#Bret", 98 },
+    { "#Razor", 98 },
+    { "#Taker", 98 },
+    { "#Yokozuna", 98 },
+    { "#Shawn", 98 },
+    { "#BamBam", 98 },
+    { "#Doink", 98 },
+    { "#Adam", 98 },
+    { "#Lex", 98 },
+    { "#recover_tbl", 98 },
+    { "#flyout_tbl", 98 },
+    { "#release_offsets", 98 },
+};
+
 static const wm_anim_op prog_shn_2_hiptoss_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -39587,6 +44346,28 @@ static const wm_anim_op prog_shn_2_hiptoss_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_2_hiptoss_anim_labels[] = {
+    { "#cont", 22 },
+    { "#got_him", 24 },
+    { "#missedb", 52 },
+    { "#missed", 56 },
+    { "#throw_him_out", 64 },
+    { "release_table", 83 },
+    { "#puppet_tbl", 83 },
+    { "#Bret", 83 },
+    { "#Razor", 83 },
+    { "#Taker", 83 },
+    { "#Yokozuna", 83 },
+    { "#Shawn", 83 },
+    { "#BamBam", 83 },
+    { "#Doink", 83 },
+    { "#Adam", 83 },
+    { "#Lex", 83 },
+    { "#recover_tbl", 83 },
+    { "#flyout_tbl", 83 },
+    { "#release_offsets", 83 },
+};
+
 static const wm_anim_op prog_shn_4_hiptoss_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -39666,6 +44447,28 @@ static const wm_anim_op prog_shn_4_hiptoss_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_4_hiptoss_anim_labels[] = {
+    { "#cont", 15 },
+    { "#got_him", 17 },
+    { "#missedb", 45 },
+    { "#missed", 49 },
+    { "#throw_him_out", 57 },
+    { "release_table", 76 },
+    { "#puppet_tbl", 76 },
+    { "#Bret", 76 },
+    { "#Razor", 76 },
+    { "#Taker", 76 },
+    { "#Yokozuna", 76 },
+    { "#Shawn", 76 },
+    { "#BamBam", 76 },
+    { "#Doink", 76 },
+    { "#Adam", 76 },
+    { "#Lex", 76 },
+    { "#recover_tbl", 76 },
+    { "#flyout_tbl", 76 },
+    { "#release_offsets", 76 },
+};
+
 static const wm_anim_op prog_shn_2_hair_pickup_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -39717,6 +44520,21 @@ static const wm_anim_op prog_shn_2_hair_pickup_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_2_hair_pickup_anim_labels[] = {
+    { "#missed", 39 },
+    { "#headheld_tbl", 48 },
+    { "#puppet_tbl", 48 },
+    { "#Bret", 48 },
+    { "#Razor", 48 },
+    { "#Taker", 48 },
+    { "#Yokozuna", 48 },
+    { "#Shawn", 48 },
+    { "#BamBam", 48 },
+    { "#Doink", 48 },
+    { "#Adam", 48 },
+    { "#Lex", 48 },
+};
+
 static const wm_anim_op prog_shn_4_hair_pickup_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -39760,6 +44578,21 @@ static const wm_anim_op prog_shn_4_hair_pickup_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_4_hair_pickup_anim_labels[] = {
+    { "#missed", 33 },
+    { "#headheld_tbl", 42 },
+    { "#puppet_tbl", 42 },
+    { "#Bret", 42 },
+    { "#Razor", 42 },
+    { "#Taker", 42 },
+    { "#Yokozuna", 42 },
+    { "#Shawn", 42 },
+    { "#BamBam", 42 },
+    { "#Doink", 42 },
+    { "#Adam", 42 },
+    { "#Lex", 42 },
 };
 
 static const wm_anim_op prog_shn_speed_spinkick_anim_ops[] = {
@@ -39834,6 +44667,14 @@ static const wm_anim_op prog_shn_speed_spinkick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_speed_spinkick_anim_labels[] = {
+    { "#rpt_loop", 7 },
+    { "#missed", 38 },
+    { "#missed2", 48 },
+    { "#missed3", 50 },
+    { "#exit", 60 },
+};
+
 static const wm_anim_op prog_shn_knee_fstein_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -39874,6 +44715,12 @@ static const wm_anim_op prog_shn_knee_fstein_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_knee_fstein_anim_labels[] = {
+    { "#rpt_loop", 5 },
+    { "#exit", 26 },
+    { "#exit2", 29 },
+};
+
 static const wm_anim_op prog_shn_4_taunt_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -39902,6 +44749,10 @@ static const wm_anim_op prog_shn_4_taunt_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_stand4_anim" },
+};
+
+static const wm_anim_label prog_shn_4_taunt_anim_labels[] = {
+    { "#yoff", 27 },
 };
 
 static const wm_anim_op prog_shn_combo_run_stomp_anim_ops[] = {
@@ -40009,6 +44860,23 @@ static const wm_anim_op prog_shn_combo_run_stomp_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_combo_run_stomp_anim_labels[] = {
+    { "#attack_loop_c", 12 },
+    { "#attack_c", 24 },
+    { "#atk_on_c", 29 },
+    { "#gothim", 33 },
+    { "#done_c", 38 },
+    { "#missed_c", 41 },
+    { "#attack_loop", 57 },
+    { "#attack", 69 },
+    { "#atk_on", 75 },
+    { "#hit", 79 },
+    { "#done", 86 },
+    { "#reduce_dmg", 96 },
+    { "rets", 96 },
+    { "#missed", 96 },
+};
+
 static const wm_anim_op prog_shn_run_stomp_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -40068,6 +44936,17 @@ static const wm_anim_op prog_shn_run_stomp_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_run_stomp_anim_labels[] = {
+    { "#attack_loop", 13 },
+    { "#attack", 25 },
+    { "#atk_on", 31 },
+    { "#hit", 35 },
+    { "#done", 42 },
+    { "#reduce_dmg", 52 },
+    { "rets", 52 },
+    { "#missed", 52 },
 };
 
 static const wm_anim_op prog_shn_break_face2_anim_ops[] = {
@@ -40201,6 +45080,15 @@ static const wm_anim_op prog_shn_combo_sliding_kicktoss_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
 
+static const wm_anim_label prog_shn_combo_sliding_kicktoss_anim_labels[] = {
+    { "#NO_FLIPING", 51 },
+    { "#NO_FRANK", 53 },
+    { "#blocked_c", 59 },
+    { "#missed_c", 63 },
+    { "#release_offsets2", 72 },
+    { "#SPECIAL_RELEASE_TBL", 72 },
+};
+
 static const wm_anim_op prog_shn_sliding_kicktoss_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
@@ -40270,6 +45158,25 @@ static const wm_anim_op prog_shn_sliding_kicktoss_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
 
+static const wm_anim_label prog_shn_sliding_kicktoss_anim_labels[] = {
+    { "#blocked", 55 },
+    { "#missed", 59 },
+    { "#grunt", 66 },
+    { "rets", 66 },
+    { "#puppet_tbl", 66 },
+    { "#Bret", 66 },
+    { "#Razor", 66 },
+    { "#Taker", 66 },
+    { "#Yokozuna", 66 },
+    { "#Shawn", 66 },
+    { "#BamBam", 66 },
+    { "#Doink", 66 },
+    { "#Adam", 66 },
+    { "#Lex", 66 },
+    { "#release_tbl", 66 },
+    { "#release_offsets", 66 },
+};
+
 static const wm_anim_op prog_shn_break_arm_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -40305,6 +45212,21 @@ static const wm_anim_op prog_shn_break_arm_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "S4FG3A01" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_break_arm_anim_labels[] = {
+    { "#missed", 30 },
+    { "#puppet_tbl", 34 },
+    { "#Bret", 34 },
+    { "#Razor", 34 },
+    { "#Taker", 34 },
+    { "#Yokozuna", 34 },
+    { "#Shawn", 34 },
+    { "#BamBam", 34 },
+    { "#Doink", 34 },
+    { "#Adam", 34 },
+    { "#Lex", 34 },
+    { "#react_tbl", 34 },
 };
 
 static const wm_anim_op prog_no_bk_xvel_ops[] = {
@@ -40387,6 +45309,27 @@ static const wm_anim_op prog_no_bk_xvel_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_no_bk_xvel_labels[] = {
+    { "#abs", 0 },
+    { "#clrvel", 0 },
+    { "#ok", 0 },
+    { "rets", 0 },
+    { "#gothim", 37 },
+    { "#missed", 55 },
+    { "#missedb", 66 },
+    { "#puppet_tbl", 77 },
+    { "#Bret", 77 },
+    { "#Razor", 77 },
+    { "#Taker", 77 },
+    { "#Yokozuna", 77 },
+    { "#Shawn", 77 },
+    { "#BamBam", 77 },
+    { "#Doink", 77 },
+    { "#Adam", 77 },
+    { "#Lex", 77 },
+    { "#headheld_tbl", 77 },
+};
+
 static const wm_anim_op prog_shn_3_fake_hold_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -40467,6 +45410,23 @@ static const wm_anim_op prog_shn_3_fake_hold_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_3_fake_hold_anim_labels[] = {
+    { "#gothim", 37 },
+    { "#missed", 55 },
+    { "#missedb", 66 },
+    { "#puppet_tbl", 77 },
+    { "#Bret", 77 },
+    { "#Razor", 77 },
+    { "#Taker", 77 },
+    { "#Yokozuna", 77 },
+    { "#Shawn", 77 },
+    { "#BamBam", 77 },
+    { "#Doink", 77 },
+    { "#Adam", 77 },
+    { "#Lex", 77 },
+    { "#headheld_tbl", 77 },
+};
+
 static const wm_anim_op prog_shn_3_head_hold2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -40537,6 +45497,23 @@ static const wm_anim_op prog_shn_3_head_hold2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_3_head_hold2_anim_labels[] = {
+    { "#gothim", 27 },
+    { "#missed", 45 },
+    { "#missedb", 56 },
+    { "#puppet_tbl", 67 },
+    { "#Bret", 67 },
+    { "#Razor", 67 },
+    { "#Taker", 67 },
+    { "#Yokozuna", 67 },
+    { "#Shawn", 67 },
+    { "#BamBam", 67 },
+    { "#Doink", 67 },
+    { "#Adam", 67 },
+    { "#Lex", 67 },
+    { "#headheld_tbl", 67 },
+};
+
 static const wm_anim_op prog_shn_3_head_hold_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -40590,6 +45567,23 @@ static const wm_anim_op prog_shn_3_head_hold_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_3_head_hold_anim_labels[] = {
+    { "#gothim", 12 },
+    { "#missed", 30 },
+    { "#missedb", 41 },
+    { "#puppet_tbl", 52 },
+    { "#Bret", 52 },
+    { "#Razor", 52 },
+    { "#Taker", 52 },
+    { "#Yokozuna", 52 },
+    { "#Shawn", 52 },
+    { "#BamBam", 52 },
+    { "#Doink", 52 },
+    { "#Adam", 52 },
+    { "#Lex", 52 },
+    { "#headheld_tbl", 52 },
 };
 
 static const wm_anim_op prog_shn_combo_flipslam_anim_ops[] = {
@@ -40661,6 +45655,12 @@ static const wm_anim_op prog_shn_combo_flipslam_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_hitonground_anim" },
 };
 
+static const wm_anim_label prog_shn_combo_flipslam_anim_labels[] = {
+    { "#NO_STOMPING", 47 },
+    { "#missedb_c", 51 },
+    { "#missed_c", 52 },
+};
+
 static const wm_anim_op prog_shn_flipslam_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -40715,6 +45715,12 @@ static const wm_anim_op prog_shn_flipslam_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_hitonground_anim" },
+};
+
+static const wm_anim_label prog_shn_flipslam_anim_labels[] = {
+    { "#no_hdrel", 4 },
+    { "#missedb", 41 },
+    { "#missed", 42 },
 };
 
 static const wm_anim_op prog_reverse_xvel_ops[] = {
@@ -40846,6 +45852,32 @@ static const wm_anim_op prog_reverse_xvel_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_reverse_xvel_labels[] = {
+    { "#missed", 0 },
+    { "rets", 11 },
+    { "#facing_right", 11 },
+    { "#set", 11 },
+    { "#done0", 11 },
+    { "#done1", 11 },
+    { "#puppet_tbl", 11 },
+    { "#Bret", 11 },
+    { "#Razor", 11 },
+    { "#Taker", 11 },
+    { "#Yokozuna", 11 },
+    { "#Shawn", 11 },
+    { "#BamBam", 11 },
+    { "#Doink", 11 },
+    { "#Adam", 11 },
+    { "#Lex", 11 },
+    { "#release_offsets", 11 },
+    { "#release_tbl", 11 },
+    { "#rpt", 70 },
+    { "last_hitx", 102 },
+    { "#last_hit", 102 },
+    { "#cont", 106 },
+    { "#cont2", 107 },
+};
+
 static const wm_anim_op prog_set_opp_facing_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_MISSES" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S4TD3F05" },
@@ -40973,6 +46005,32 @@ static const wm_anim_op prog_set_opp_facing_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_set_opp_facing_labels[] = {
+    { "#missed", 0 },
+    { "rets", 11 },
+    { "#facing_right", 11 },
+    { "#set", 11 },
+    { "#done0", 11 },
+    { "#done1", 11 },
+    { "#puppet_tbl", 11 },
+    { "#Bret", 11 },
+    { "#Razor", 11 },
+    { "#Taker", 11 },
+    { "#Yokozuna", 11 },
+    { "#Shawn", 11 },
+    { "#BamBam", 11 },
+    { "#Doink", 11 },
+    { "#Adam", 11 },
+    { "#Lex", 11 },
+    { "#release_offsets", 11 },
+    { "#release_tbl", 11 },
+    { "#rpt", 70 },
+    { "last_hitx", 102 },
+    { "#last_hit", 102 },
+    { "#cont", 106 },
+    { "#cont2", 107 },
 };
 
 static const wm_anim_op prog_shn_rpt_hdbutts2_anim_ops[] = {
@@ -41104,6 +46162,32 @@ static const wm_anim_op prog_shn_rpt_hdbutts2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_rpt_hdbutts2_anim_labels[] = {
+    { "#missed", 0 },
+    { "rets", 11 },
+    { "#facing_right", 11 },
+    { "#set", 11 },
+    { "#done0", 11 },
+    { "#done1", 11 },
+    { "#puppet_tbl", 11 },
+    { "#Bret", 11 },
+    { "#Razor", 11 },
+    { "#Taker", 11 },
+    { "#Yokozuna", 11 },
+    { "#Shawn", 11 },
+    { "#BamBam", 11 },
+    { "#Doink", 11 },
+    { "#Adam", 11 },
+    { "#Lex", 11 },
+    { "#release_offsets", 11 },
+    { "#release_tbl", 11 },
+    { "#rpt", 70 },
+    { "last_hitx", 102 },
+    { "#last_hit", 102 },
+    { "#cont", 106 },
+    { "#cont2", 107 },
+};
+
 static const wm_anim_op prog_shn_rpt_hdbutts_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -41197,6 +46281,27 @@ static const wm_anim_op prog_shn_rpt_hdbutts_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_rpt_hdbutts_anim_labels[] = {
+    { "#rpt", 31 },
+    { "last_hitx", 63 },
+    { "#last_hit", 63 },
+    { "#cont", 67 },
+    { "#cont2", 68 },
+    { "#missedb", 87 },
+    { "#missed", 87 },
+    { "#puppet_tbl", 92 },
+    { "#Bret", 92 },
+    { "#Razor", 92 },
+    { "#Taker", 92 },
+    { "#Yokozuna", 92 },
+    { "#Shawn", 92 },
+    { "#BamBam", 92 },
+    { "#Doink", 92 },
+    { "#Adam", 92 },
+    { "#Lex", 92 },
+    { "#react_tbl", 92 },
 };
 
 static const wm_anim_op prog_shn_4_losebal_anim_ops[] = {
@@ -41333,6 +46438,10 @@ static const wm_anim_op prog_shn_4_head_hit2_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_4_head_hit2_anim_labels[] = {
+    { "#nodead", 18 },
 };
 
 static const wm_anim_op prog_shn_4_head_hit2s_anim_ops[] = {
@@ -41512,6 +46621,10 @@ static const wm_anim_op prog_shn_4_body_hit_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_4_body_hit_anim_labels[] = {
+    { "#reg", 26 },
+};
+
 static const wm_anim_op prog_shn_4_knee_hit_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -41589,6 +46702,10 @@ static const wm_anim_op prog_shn_quick_knee_hit_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_fall_back_anim" },
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_3_head_held_anim" },
+};
+
+static const wm_anim_label prog_shn_quick_knee_hit_anim_labels[] = {
+    { "#nodead", 12 },
 };
 
 static const wm_anim_op prog_shn_hitonground_xflip_anim_ops[] = {
@@ -41679,6 +46796,10 @@ static const wm_anim_op prog_shn_4_block_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_4_block_anim_labels[] = {
+    { "#hold_block", 8 },
+};
+
 static const wm_anim_op prog_shn_4_hitblock_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S4BK3A02" },
     { WM_AOP_SETMODE, 0, -1, 76, 0, 0, 0, 0, 0, 0 },
@@ -41696,6 +46817,10 @@ static const wm_anim_op prog_shn_4_hitblock_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "S4BK3A04" },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "S4BK3A05" },
     { WM_AOP_GOTO, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_4_hitblock_anim_labels[] = {
+    { "#hold_block", 0 },
 };
 
 static const wm_anim_op prog_shn_4_hitblock2_anim_ops[] = {
@@ -41728,6 +46853,10 @@ static const wm_anim_op prog_shn_4_hitblock2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S4BK3A05" },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "S4BK3A03" },
     { WM_AOP_GOTO, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_4_hitblock2_anim_labels[] = {
+    { "#hold_block", 0 },
 };
 
 static const wm_anim_op prog_shn_fall_back_anim_ops[] = {
@@ -41902,6 +47031,14 @@ static const wm_anim_op prog_shn_faceup_getup_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_faceup_getup_anim_labels[] = {
+    { "#getup_in_2", 6 },
+    { "#no_freetoss", 26 },
+    { "#getup_in_4", 30 },
+    { "#g4_frame_4", 32 },
+    { "#no_freetoss2", 50 },
+};
+
 static const wm_anim_op prog_shn_faceup_getup2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "S3GU4A04" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S3GU4A05" },
@@ -41942,6 +47079,14 @@ static const wm_anim_op prog_shn_faceup_getup2_anim_ops[] = {
     { WM_AOP_GOTO, 0, 30, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_faceup_getup2_anim_labels[] = {
+    { "#g4_frame_4", 0 },
+    { "#no_freetoss2", 18 },
+    { "#choose_2", 26 },
+    { "rets", 26 },
+    { "#loop", 30 },
+};
+
 static const wm_anim_op prog_choose_2or4_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 8, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -41956,6 +47101,12 @@ static const wm_anim_op prog_choose_2or4_ops[] = {
     { WM_AOP_GOTO, 0, 4, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_choose_2or4_labels[] = {
+    { "#choose_2", 0 },
+    { "rets", 0 },
+    { "#loop", 4 },
+};
+
 static const wm_anim_op prog_shn_dizzy_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 8, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -41968,6 +47119,10 @@ static const wm_anim_op prog_shn_dizzy_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 9, 0, 0, 0, 0, 0, "S4TI4B03" },
     { WM_AOP_FRAME, 0, -1, 9, 0, 0, 0, 0, 0, "S4TI4B02" },
     { WM_AOP_GOTO, 0, 4, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_dizzy_anim_labels[] = {
+    { "#loop", 4 },
 };
 
 static const wm_anim_op prog_shn_heldoh_anim_ops[] = {
@@ -42006,6 +47161,13 @@ static const wm_anim_op prog_shn_heldoh_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_heldoh_anim_labels[] = {
+    { "#loop", 5 },
+    { "#inc_loop", 33 },
+    { "rets", 33 },
+    { "#breakout", 33 },
+};
+
 static const wm_anim_op prog_shn_break_neck_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETFACING, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -42041,6 +47203,11 @@ static const wm_anim_op prog_shn_break_neck_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
 
+static const wm_anim_label prog_shn_break_neck_anim_labels[] = {
+    { "#common", 5 },
+    { "#fall_back", 21 },
+};
+
 static const wm_anim_op prog_shn_break_neck3_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -42070,6 +47237,11 @@ static const wm_anim_op prog_shn_break_neck3_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "S3CP3B07" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_shn_break_neck3_anim_labels[] = {
+    { "#common", 1 },
+    { "#fall_back", 17 },
 };
 
 static const wm_anim_op prog_shn_break_neck2_anim_ops[] = {
@@ -42149,6 +47321,10 @@ static const wm_anim_op prog_shn_flyout_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_hitonground_anim" },
 };
 
+static const wm_anim_label prog_shn_flyout_anim_labels[] = {
+    { "#common", 15 },
+};
+
 static const wm_anim_op prog_shn_flyout2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 140, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
@@ -42164,6 +47340,10 @@ static const wm_anim_op prog_shn_flyout2_anim_ops[] = {
     { WM_AOP_DAMAGE, 0, -1, 27, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S3OS3X10" },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_hitonground_anim" },
+};
+
+static const wm_anim_label prog_shn_flyout2_anim_labels[] = {
+    { "#common", 5 },
 };
 
 static const wm_anim_op prog_shn_get_buzz_anim_ops[] = {
@@ -42236,6 +47416,12 @@ static const wm_anim_op prog_shn_get_buzz_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_get_buzz_anim_labels[] = {
+    { "#nodead", 65 },
+    { "#make_black", 67 },
+    { "rets", 67 },
+};
+
 static const wm_anim_op prog_shn_3_head_held_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -42274,6 +47460,13 @@ static const wm_anim_op prog_shn_3_head_held_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_3_head_held_anim_labels[] = {
+    { "#loop", 6 },
+    { "#inc_loop", 35 },
+    { "rets", 35 },
+    { "#breakout", 35 },
+};
+
 static const wm_anim_op prog_shn_3_head_held_brk_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -42295,6 +47488,12 @@ static const wm_anim_op prog_shn_3_head_held_brk_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_3_head_held_brk_anim_labels[] = {
+    { "#inc_loop", 20 },
+    { "rets", 20 },
+    { "#breakout", 20 },
 };
 
 static const wm_anim_op prog_shn_3_head_held_stand_anim_ops[] = {
@@ -42331,6 +47530,10 @@ static const wm_anim_op prog_shn_arm_broken_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_arm_broken_anim_labels[] = {
+    { "#nodead", 19 },
 };
 
 static const wm_anim_op prog_shn_backbroken_anim_ops[] = {
@@ -43030,6 +48233,12 @@ static const wm_anim_op prog_und_run2_anim_ops[] = {
     { WM_AOP_GOTO, 0, 6, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_run2_anim_labels[] = {
+    { "#lp1", 6 },
+    { "#ocrun_start", 7 },
+    { "#run2", 11 },
+};
+
 static const wm_anim_op prog_und_run_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -43047,6 +48256,12 @@ static const wm_anim_op prog_und_run_anim_ops[] = {
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_RUN" },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "U3RN3A08" },
     { WM_AOP_GOTO, 0, 3, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_run_anim_labels[] = {
+    { "#lp1", 3 },
+    { "#ocrun_start", 4 },
+    { "#run2", 8 },
 };
 
 static const wm_anim_op prog_und_bounce_anim_ops[] = {
@@ -43115,6 +48330,10 @@ static const wm_anim_op prog_und_2_punch_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_2_punch_anim_labels[] = {
+    { "#no_hit", 21 },
+};
+
 static const wm_anim_op prog_und_4_punch_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -43142,6 +48361,10 @@ static const wm_anim_op prog_und_4_punch_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "U4PL3A08" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_4_punch_anim_labels[] = {
+    { "#no_hit2", 21 },
 };
 
 static const wm_anim_op prog_und_combo_punch_anim_ops[] = {
@@ -43214,6 +48437,14 @@ static const wm_anim_op prog_und_combo_punch_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_combo_punch_anim_labels[] = {
+    { "#punch_loop", 33 },
+    { "#NEXT_CHECK3", 51 },
+    { "#NEXT_CHECK2", 54 },
+    { "#EXIT_MOVE", 56 },
+    { "#no_hit4c", 60 },
+};
+
 static const wm_anim_op prog_und_2_uppercut_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -43261,6 +48492,12 @@ static const wm_anim_op prog_und_2_uppercut_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_2_uppercut_anim_labels[] = {
+    { "#no_hit2", 27 },
+    { "#missedb", 35 },
+    { "#missed", 36 },
+};
+
 static const wm_anim_op prog_und_4_uppercut_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -43301,6 +48538,12 @@ static const wm_anim_op prog_und_4_uppercut_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "U4UP3C01" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_4_uppercut_anim_labels[] = {
+    { "#no_hit2", 22 },
+    { "#missedb", 30 },
+    { "#missed", 31 },
 };
 
 static const wm_anim_op prog_und_combo_uppercut_anim_ops[] = {
@@ -43358,6 +48601,15 @@ static const wm_anim_op prog_und_combo_uppercut_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "U4UP3C01" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_combo_uppercut_anim_labels[] = {
+    { "#no_hit3", 32 },
+    { "#missedb_c", 42 },
+    { "#missed_c", 43 },
+    { "SET_OPP_GRAV_NORM", 54 },
+    { "RETS", 54 },
+    { "SET_OPP_GRAV_LOW", 54 },
 };
 
 static const wm_anim_op prog_und_combo_slap_anim_ops[] = {
@@ -43462,6 +48714,15 @@ static const wm_anim_op prog_und_combo_slap_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_combo_slap_anim_labels[] = {
+    { "#cslap_loop", 34 },
+    { "#NEXT_CHECK2", 68 },
+    { "#NEXT_CHECKA", 70 },
+    { "#NEXT_CHECK", 73 },
+    { "#NEXT_CHECK3", 75 },
+    { "#missed4_c", 82 },
+};
+
 static const wm_anim_op prog_und_2_run_slap_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -43560,6 +48821,17 @@ static const wm_anim_op prog_und_2_run_slap_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_2_run_slap_anim_labels[] = {
+    { "#tag", 35 },
+    { "#no_hit2", 51 },
+    { "#missed", 51 },
+    { "#none0", 64 },
+    { "#hitx", 68 },
+    { "#missedb", 73 },
+    { "#none1", 86 },
+    { "#GLOVE", 95 },
+};
+
 static const wm_anim_op prog_und_4_run_slap_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -43651,6 +48923,17 @@ static const wm_anim_op prog_und_4_run_slap_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_4_run_slap_anim_labels[] = {
+    { "#tag", 28 },
+    { "#no_hit2", 44 },
+    { "#missed", 44 },
+    { "#none0", 57 },
+    { "#hitx", 61 },
+    { "#missedb", 66 },
+    { "#none1", 79 },
+    { "#GLOVE", 88 },
+};
+
 static const wm_anim_op prog_und_2_slap_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -43731,6 +49014,17 @@ static const wm_anim_op prog_und_2_slap_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_2_slap_anim_labels[] = {
+    { "#tag", 17 },
+    { "#no_hit2", 33 },
+    { "#missed", 33 },
+    { "#none0", 46 },
+    { "#hitx", 50 },
+    { "#missedb", 55 },
+    { "#none1", 68 },
+    { "#GLOVE", 77 },
+};
+
 static const wm_anim_op prog_und_4_slap_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -43804,6 +49098,17 @@ static const wm_anim_op prog_und_4_slap_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_4_slap_anim_labels[] = {
+    { "#tag", 10 },
+    { "#no_hit2", 26 },
+    { "#missed", 26 },
+    { "#none0", 39 },
+    { "#hitx", 43 },
+    { "#missedb", 48 },
+    { "#none1", 61 },
+    { "#GLOVE", 70 },
+};
+
 static const wm_anim_op prog_und_4_push_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
@@ -43830,6 +49135,11 @@ static const wm_anim_op prog_und_4_push_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "U4PS3A08" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_4_push_anim_labels[] = {
+    { "#no_hit", 17 },
+    { "#hit", 20 },
 };
 
 static const wm_anim_op prog_und_2_bncoff_anim_ops[] = {
@@ -43907,6 +49217,10 @@ static const wm_anim_op prog_und_4_losebal_dizzy_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_4_losebal_dizzy_anim_labels[] = {
+    { "#yoff", 16 },
+};
+
 static const wm_anim_op prog_und_2_lbowdrop_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -43955,6 +49269,13 @@ static const wm_anim_op prog_und_2_lbowdrop_anim_ops[] = {
     { WM_AOP_FACEUP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_2_lbowdrop_anim_labels[] = {
+    { "#skip_leapat", 17 },
+    { "#do_leapat", 18 },
+    { "#hit", 33 },
+    { "#yoff", 47 },
 };
 
 static const wm_anim_op prog_und_4_lbowdrop_anim_ops[] = {
@@ -44006,6 +49327,12 @@ static const wm_anim_op prog_und_4_lbowdrop_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_4_lbowdrop_anim_labels[] = {
+    { "#skip_leapat", 17 },
+    { "#do_leapat", 18 },
+    { "#hit", 33 },
+};
+
 static const wm_anim_op prog_und_2_butt_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -44036,6 +49363,10 @@ static const wm_anim_op prog_und_2_butt_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_2_butt_anim_labels[] = {
+    { "#no_hit", 23 },
+};
+
 static const wm_anim_op prog_und_4_butt_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -44064,6 +49395,10 @@ static const wm_anim_op prog_und_4_butt_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "U4BC3A08" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_4_butt_anim_labels[] = {
+    { "#no_hit2", 23 },
 };
 
 static const wm_anim_op prog_und_combo_butt_anim_ops[] = {
@@ -44152,6 +49487,15 @@ static const wm_anim_op prog_und_combo_butt_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_combo_butt_anim_labels[] = {
+    { "#butt_loop", 23 },
+    { "#NEXT_CHECK3", 64 },
+    { "#NEXT_CHECK2", 66 },
+    { "#NEXT_CHECK", 68 },
+    { "#EXIT_MOVE", 71 },
+    { "#missed_bc", 76 },
+};
+
 static const wm_anim_op prog_und_2_butts_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -44196,6 +49540,14 @@ static const wm_anim_op prog_und_2_butts_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_2_butts_anim_labels[] = {
+    { "#rpt", 7 },
+    { "#no_hit", 20 },
+    { "#ex", 31 },
+    { "#missedb", 36 },
+    { "#missed", 37 },
 };
 
 static const wm_anim_op prog_und_4_butts_anim_ops[] = {
@@ -44246,6 +49598,14 @@ static const wm_anim_op prog_und_4_butts_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_4_butts_anim_labels[] = {
+    { "#rpt", 7 },
+    { "#no_hit2", 20 },
+    { "#ex", 33 },
+    { "#missedb", 40 },
+    { "#missed", 41 },
 };
 
 static const wm_anim_op prog_und_kick_TB_anim_ops[] = {
@@ -44311,6 +49671,10 @@ static const wm_anim_op prog_und_2_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_2_kick_anim_labels[] = {
+    { "#no_hit", 23 },
+};
+
 static const wm_anim_op prog_und_4_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -44344,6 +49708,10 @@ static const wm_anim_op prog_und_4_kick_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "U4KM3E09" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_4_kick_anim_labels[] = {
+    { "#no_hit2", 23 },
 };
 
 static const wm_anim_op prog_und_combo_kick_anim_ops[] = {
@@ -44415,6 +49783,14 @@ static const wm_anim_op prog_und_combo_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_combo_kick_anim_labels[] = {
+    { "#kick_loop", 23 },
+    { "#NEXT_CHECK2", 47 },
+    { "#NEXT_CHECK", 49 },
+    { "#NEXT_CHECK3", 51 },
+    { "#missed_4c", 55 },
+};
+
 static const wm_anim_op prog_und_2_super_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -44478,6 +49854,12 @@ static const wm_anim_op prog_und_2_super_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_2_super_kick_anim_labels[] = {
+    { "#no_hit2", 35 },
+    { "#missedb", 49 },
+    { "#missed", 50 },
+};
+
 static const wm_anim_op prog_und_4_super_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -44537,6 +49919,12 @@ static const wm_anim_op prog_und_4_super_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_4_super_kick_anim_labels[] = {
+    { "#no_hit2", 35 },
+    { "#missedb", 48 },
+    { "#missed", 49 },
 };
 
 static const wm_anim_op prog_und_combo_super_kick_anim_ops[] = {
@@ -44633,6 +50021,16 @@ static const wm_anim_op prog_und_combo_super_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_combo_super_kick_anim_labels[] = {
+    { "#skick_loop", 4 },
+    { "#DO_NEXT_CHECK", 57 },
+    { "#DO_NEXT_CHECK2", 59 },
+    { "#missed4_ac", 66 },
+    { "#missed4_bc", 67 },
+    { "#missed2_ac", 78 },
+    { "#missed2_bc", 79 },
+};
+
 static const wm_anim_op prog_und_2_stomp_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -44671,6 +50069,13 @@ static const wm_anim_op prog_und_2_stomp_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_2_stomp_anim_labels[] = {
+    { "#leapat", 17 },
+    { "#common", 18 },
+    { "#missed", 28 },
+    { "#hit", 29 },
+};
+
 static const wm_anim_op prog_und_4_stomp_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -44706,6 +50111,14 @@ static const wm_anim_op prog_und_4_stomp_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "U4MP4A08" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_4_stomp_anim_labels[] = {
+    { "#leapat", 17 },
+    { "#common", 18 },
+    { "#missed", 27 },
+    { "#hit", 28 },
+    { "#yoff", 34 },
 };
 
 static const wm_anim_op prog_und_combo_flying_butt_drop_anim_ops[] = {
@@ -44748,6 +50161,10 @@ static const wm_anim_op prog_und_combo_flying_butt_drop_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_getup2_anim" },
 };
 
+static const wm_anim_label prog_und_combo_flying_butt_drop_anim_labels[] = {
+    { "#misscx", 28 },
+};
+
 static const wm_anim_op prog_und_flying_butt_drop_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
@@ -44784,6 +50201,12 @@ static const wm_anim_op prog_und_flying_butt_drop_anim_ops[] = {
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FACEUP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_getup2_anim" },
+};
+
+static const wm_anim_label prog_und_flying_butt_drop_anim_labels[] = {
+    { "#hit", 18 },
+    { "#miss", 28 },
+    { "#yoff", 35 },
 };
 
 static const wm_anim_op prog_und_tbukl_butt_drop_anim_ops[] = {
@@ -44834,6 +50257,12 @@ static const wm_anim_op prog_und_tbukl_butt_drop_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_hitonground_xflip_anim" },
 };
 
+static const wm_anim_label prog_und_tbukl_butt_drop_anim_labels[] = {
+    { "#opp_onground", 20 },
+    { "#hit", 28 },
+    { "#miss", 42 },
+};
+
 static const wm_anim_op prog_und_4_bigboot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -44859,6 +50288,15 @@ static const wm_anim_op prog_und_4_bigboot_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "U4BG3A07" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_4_bigboot_anim_labels[] = {
+    { "#lp", 12 },
+    { "#missed", 19 },
+    { "#clrcnt", 24 },
+    { "rets", 24 },
+    { "#holdup", 24 },
+    { "#button_up", 24 },
 };
 
 static const wm_anim_op prog_und_2_knee_anim_ops[] = {
@@ -44893,6 +50331,11 @@ static const wm_anim_op prog_und_2_knee_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "U2NM3A08" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_2_knee_anim_labels[] = {
+    { "#no_hit", 25 },
+    { "#cont", 26 },
 };
 
 static const wm_anim_op prog_und_4_knee2_anim_ops[] = {
@@ -44942,6 +50385,14 @@ static const wm_anim_op prog_und_4_knee2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_4_knee2_anim_labels[] = {
+    { "#cont2a", 21 },
+    { "#cont0", 23 },
+    { "#no_hit2", 33 },
+    { "#nodrft2", 35 },
+    { "#cont2", 39 },
+};
+
 static const wm_anim_op prog_und_4_knee_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -44981,6 +50432,14 @@ static const wm_anim_op prog_und_4_knee_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_4_knee_anim_labels[] = {
+    { "#cont2a", 13 },
+    { "#cont0", 15 },
+    { "#no_hit2", 25 },
+    { "#nodrft2", 27 },
+    { "#cont2", 31 },
+};
+
 static const wm_anim_op prog_und_4_knee_fall_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "U4NM3A04" },
     { WM_AOP_ATTACK_OFF, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -45013,6 +50472,13 @@ static const wm_anim_op prog_und_4_knee_fall_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "U4NM3A03" },
     { WM_AOP_ATTACK_ON, 34, -1, 8, 31, 46, 32, 0, 0, 0 },
     { WM_AOP_GOTO, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_4_knee_fall_anim_labels[] = {
+    { "#cont0", 0 },
+    { "#no_hit2", 10 },
+    { "#nodrft2", 12 },
+    { "#cont2", 16 },
 };
 
 static const wm_anim_op prog_und_4_knee_butts_anim_ops[] = {
@@ -45109,6 +50575,18 @@ static const wm_anim_op prog_und_4_knee_butts_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_4_knee_butts_anim_labels[] = {
+    { "#rpt", 23 },
+    { "#next1", 60 },
+    { "#exit0", 66 },
+    { "#missed0", 70 },
+    { "#exit", 76 },
+    { "#missed", 76 },
+    { "#exit2", 85 },
+    { "#reduce_dmg", 91 },
+    { "rets", 91 },
+};
+
 static const wm_anim_op prog_und_2_grabfling_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -45171,6 +50649,23 @@ static const wm_anim_op prog_und_2_grabfling_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_2_grabfling_anim_labels[] = {
+    { "#cont", 15 },
+    { "#missedb", 48 },
+    { "#missed", 51 },
+    { "#puppet_tbl", 59 },
+    { "#Bret", 59 },
+    { "#Razor", 59 },
+    { "#Taker", 59 },
+    { "#Yokozuna", 59 },
+    { "#Shawn", 59 },
+    { "#BamBam", 59 },
+    { "#Doink", 59 },
+    { "#Adam", 59 },
+    { "#Lex", 59 },
+    { "#strt_run_tbl", 59 },
+};
+
 static const wm_anim_op prog_und_4_grabfling_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -45222,6 +50717,23 @@ static const wm_anim_op prog_und_4_grabfling_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_4_grabfling_anim_labels[] = {
+    { "#cont", 6 },
+    { "#missedb", 39 },
+    { "#missed", 42 },
+    { "#puppet_tbl", 50 },
+    { "#Bret", 50 },
+    { "#Razor", 50 },
+    { "#Taker", 50 },
+    { "#Yokozuna", 50 },
+    { "#Shawn", 50 },
+    { "#BamBam", 50 },
+    { "#Doink", 50 },
+    { "#Adam", 50 },
+    { "#Lex", 50 },
+    { "#strt_run_tbl", 50 },
 };
 
 static const wm_anim_op prog_und_2_head_hit_anim_ops[] = {
@@ -45338,6 +50850,10 @@ static const wm_anim_op prog_und_head_hit2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_head_hit2_anim_labels[] = {
+    { "#nodead", 19 },
+};
+
 static const wm_anim_op prog_und_head_hit2s_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -45427,6 +50943,10 @@ static const wm_anim_op prog_und_4_body_hit_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_4_body_hit_anim_labels[] = {
+    { "#reg", 21 },
+};
+
 static const wm_anim_op prog_und_2_knee_hit_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -45502,6 +51022,10 @@ static const wm_anim_op prog_und_quick_knee_hit_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_3_head_held_anim" },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_quick_knee_hit_anim_labels[] = {
+    { "#nodead", 12 },
 };
 
 static const wm_anim_op prog_und_4_body_hit_dizzy_anim_ops[] = {
@@ -45710,6 +51234,12 @@ static const wm_anim_op prog_und_fall_back2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_fall_back2_anim_labels[] = {
+    { "#no_freetoss", 61 },
+    { "#getup_in_4", 65 },
+    { "#no_freetoss2", 81 },
+};
+
 static const wm_anim_op prog_und_fall_back_tbukl_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 140, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -45775,6 +51305,10 @@ static const wm_anim_op prog_und_faceup_getup_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_faceup_getup_anim_labels[] = {
+    { "#getup_in_4", 25 },
 };
 
 static const wm_anim_op prog_und_getup_anim_ops[] = {
@@ -45843,6 +51377,13 @@ static const wm_anim_op prog_und_getup_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_getup_anim_labels[] = {
+    { "#common", 13 },
+    { "#no_freetoss", 35 },
+    { "#getup_in_4", 38 },
+    { "#no_freetoss2", 60 },
+};
+
 static const wm_anim_op prog_und_getup2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 268, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -45899,6 +51440,13 @@ static const wm_anim_op prog_und_getup2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_getup2_anim_labels[] = {
+    { "#common", 3 },
+    { "#no_freetoss", 25 },
+    { "#getup_in_4", 28 },
+    { "#no_freetoss2", 50 },
+};
+
 static const wm_anim_op prog_und_dizzy_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 8, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -45911,6 +51459,10 @@ static const wm_anim_op prog_und_dizzy_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "U4TI4C05" },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "U4TI4C03" },
     { WM_AOP_GOTO, 0, 4, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_dizzy_anim_labels[] = {
+    { "#loop", 4 },
 };
 
 static const wm_anim_op prog_und_4_block_anim_ops[] = {
@@ -45934,6 +51486,10 @@ static const wm_anim_op prog_und_4_block_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_4_block_anim_labels[] = {
+    { "#blk4", 9 },
+};
+
 static const wm_anim_op prog_und_4_hitblock_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "U4BK3C03" },
     { WM_AOP_SETMODE, 0, -1, 76, 0, 0, 0, 0, 0, 0 },
@@ -45951,6 +51507,10 @@ static const wm_anim_op prog_und_4_hitblock_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "U4BK3C05" },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "U4BK3C06" },
     { WM_AOP_GOTO, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_4_hitblock_anim_labels[] = {
+    { "#blk4", 0 },
 };
 
 static const wm_anim_op prog_und_4_hitblock2_anim_ops[] = {
@@ -45984,6 +51544,10 @@ static const wm_anim_op prog_und_4_hitblock2_anim_ops[] = {
     { WM_AOP_GOTO, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_4_hitblock2_anim_labels[] = {
+    { "#blk4", 0 },
+};
+
 static const wm_anim_op prog_und_flyout_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 140, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
@@ -45999,6 +51563,10 @@ static const wm_anim_op prog_und_flyout_anim_ops[] = {
     { WM_AOP_OFFSET, 0, -1, 48, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_DAMAGE, 0, -1, 27, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_hitonground_anim" },
+};
+
+static const wm_anim_label prog_und_flyout_anim_labels[] = {
+    { "#cont", 7 },
 };
 
 static const wm_anim_op prog_und_flyout2_anim_ops[] = {
@@ -46050,6 +51618,12 @@ static const wm_anim_op prog_und_flyout2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_flyout2_anim_labels[] = {
+    { "#cont", 0 },
+    { "#cont2", 35 },
+    { "#floop", 41 },
+};
+
 static const wm_anim_op prog_und_4_pin2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -46084,6 +51658,11 @@ static const wm_anim_op prog_und_4_pin2_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_4_pin2_anim_labels[] = {
+    { "#cont2", 22 },
+    { "#floop", 28 },
 };
 
 static const wm_anim_op prog_und_2_raise_arm_anim_ops[] = {
@@ -46125,6 +51704,13 @@ static const wm_anim_op prog_und_2_raise_arm_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_2_raise_arm_anim_labels[] = {
+    { "#cont", 14 },
+    { "#lp0", 20 },
+    { "#floop1", 25 },
+    { "#wakeup", 27 },
+};
+
 static const wm_anim_op prog_und_4_raise_arm_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -46153,6 +51739,13 @@ static const wm_anim_op prog_und_4_raise_arm_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_4_raise_arm_anim_labels[] = {
+    { "#cont", 5 },
+    { "#lp0", 11 },
+    { "#floop1", 16 },
+    { "#wakeup", 18 },
 };
 
 static const wm_anim_op prog_und_roll_frames_ops[] = {
@@ -46254,6 +51847,15 @@ static const wm_anim_op prog_und_roll_frames_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_roll_frames_labels[] = {
+    { "#cont", 27 },
+    { "#got", 46 },
+    { "#cont2", 47 },
+    { "#no_freetoss", 72 },
+    { "#getup_in_4", 76 },
+    { "#no_freetoss2", 92 },
+};
+
 static const wm_anim_op prog_und_flying_kick2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -46353,6 +51955,15 @@ static const wm_anim_op prog_und_flying_kick2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_flying_kick2_anim_labels[] = {
+    { "#cont", 27 },
+    { "#got", 46 },
+    { "#cont2", 47 },
+    { "#no_freetoss", 72 },
+    { "#getup_in_4", 76 },
+    { "#no_freetoss2", 92 },
+};
+
 static const wm_anim_op prog_und_flying_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -46438,6 +52049,15 @@ static const wm_anim_op prog_und_flying_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_flying_kick_anim_labels[] = {
+    { "#cont", 13 },
+    { "#got", 32 },
+    { "#cont2", 33 },
+    { "#no_freetoss", 58 },
+    { "#getup_in_4", 62 },
+    { "#no_freetoss2", 78 },
+};
+
 static const wm_anim_op prog_und_combo_flying_kick_anim_ops[] = {
     { WM_AOP_SET_XVEL, 1, -1, 32768, 1, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "U3DC3A02" },
@@ -46521,6 +52141,14 @@ static const wm_anim_op prog_und_combo_flying_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_combo_flying_kick_anim_labels[] = {
+    { "#missc", 21 },
+    { "#gotc", 28 },
+    { "#no_freetoss1", 56 },
+    { "#getup_in_4c", 60 },
+    { "#no_freetoss3", 76 },
+};
+
 static const wm_anim_op prog_und_tossed_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -46593,6 +52221,10 @@ static const wm_anim_op prog_und_knockdwn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_getup_anim" },
+};
+
+static const wm_anim_label prog_und_knockdwn_anim_labels[] = {
+    { "#nodead", 18 },
 };
 
 static const wm_anim_op prog_und_climbthru_side_anim_ops[] = {
@@ -46699,6 +52331,12 @@ static const wm_anim_op prog_und_climbin_side_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_climbin_side_anim_labels[] = {
+    { "#set_trgt", 48 },
+    { "#onlft", 48 },
+    { "rets", 48 },
+};
+
 static const wm_anim_op prog_und_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1420, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -46731,6 +52369,13 @@ static const wm_anim_op prog_und_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 128, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_climbthru_bot_anim_labels[] = {
+    { "#ckspin", 31 },
+    { "RETS", 31 },
+    { "#faceup", 31 },
+    { "rets", 31 },
 };
 
 static const wm_anim_op prog_und_climbin_bot_anim_ops[] = {
@@ -46793,6 +52438,14 @@ static const wm_anim_op prog_und_climbthru_top_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_climbthru_top_anim_labels[] = {
+    { "#dir4", 7 },
+    { "#set_zvel1", 30 },
+    { "rets", 30 },
+    { "#facedwn", 30 },
+    { "#set_zvel2", 30 },
+};
+
 static const wm_anim_op prog_und_rollthru_top_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1420, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -46832,6 +52485,11 @@ static const wm_anim_op prog_und_climbin_top_anim_ops[] = {
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CLEAR_CLIMB, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_getup_anim" },
+};
+
+static const wm_anim_label prog_und_climbin_top_anim_labels[] = {
+    { "#set_zvel2", 16 },
+    { "rets", 16 },
 };
 
 static const wm_anim_op prog_und_buckoff_anim_ops[] = {
@@ -46899,6 +52557,13 @@ static const wm_anim_op prog_und_heldoh_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_heldoh_anim_labels[] = {
+    { "#loop", 5 },
+    { "#inc_loop", 36 },
+    { "rets", 36 },
+    { "#breakout", 36 },
 };
 
 static const wm_anim_op prog_und_tombstone_smash_anim_ops[] = {
@@ -46981,6 +52646,15 @@ static const wm_anim_op prog_und_tombstone_smash_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_tombstone_smash_anim_labels[] = {
+    { "#cont", 5 },
+    { "#rpt_loop", 13 },
+    { "#last_hit", 39 },
+    { "#missed_nancy_boy", 54 },
+    { "#gothim", 69 },
+    { "#TOMBSTONE", 77 },
+};
+
 static const wm_anim_op prog_und_combo_tombstone_smash_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -47058,6 +52732,14 @@ static const wm_anim_op prog_und_combo_tombstone_smash_anim_ops[] = {
     { WM_AOP_FACE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_combo_tombstone_smash_anim_labels[] = {
+    { "#rpt_loop_c", 13 },
+    { "#last_hit_c", 39 },
+    { "#NEXT_CHECK", 55 },
+    { "#EXIT_TOO_SOON", 57 },
+    { "#missed_combo", 61 },
 };
 
 static const wm_anim_op prog_und_combo_sliding_choke_anim_ops[] = {
@@ -47156,6 +52838,13 @@ static const wm_anim_op prog_und_combo_sliding_choke_anim_ops[] = {
     { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_combo_sliding_choke_anim_labels[] = {
+    { "#gothimc", 26 },
+    { "#slam_loop", 44 },
+    { "#NO_MORE", 81 },
+    { "SLAM_HIM", 95 },
 };
 
 static const wm_anim_op prog_und_sliding_choke_anim_ops[] = {
@@ -47366,6 +53055,35 @@ static const wm_anim_op prog_und_sliding_choke_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_3_head_held_brk_anim" },
 };
 
+static const wm_anim_label prog_und_sliding_choke_anim_labels[] = {
+    { "#missedb", 32 },
+    { "#gothim", 41 },
+    { "#set", 65 },
+    { "rets", 65 },
+    { "#chokeanim_tbl", 65 },
+    { "#puppet_tbl", 65 },
+    { "#Bret", 65 },
+    { "#Razor", 65 },
+    { "#Taker", 65 },
+    { "#Yokozuna", 65 },
+    { "#Shawn", 65 },
+    { "#BamBam", 65 },
+    { "#Doink", 65 },
+    { "#Adam", 65 },
+    { "#Lex", 65 },
+    { "hrt_choking_anim", 65 },
+    { "#loop", 69 },
+    { "rzr_choking_anim", 83 },
+    { "und_choking_anim", 101 },
+    { "yok_choking_anim", 121 },
+    { "shn_choking_anim", 138 },
+    { "bam_choking_anim", 155 },
+    { "dnk_choking_anim", 169 },
+    { "lex_choking_anim", 189 },
+    { "inc_loop", 205 },
+    { "#breakout", 205 },
+};
+
 static const wm_anim_op prog_und_chokeslam_anim_ops[] = {
     { WM_AOP_SET_YVEL, 0, -1, 753664, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 9228, 0, 0, 0, 0, 0, 0 },
@@ -47401,6 +53119,21 @@ static const wm_anim_op prog_und_chokeslam_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "U2NS3X10" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_chokeslam_anim_labels[] = {
+    { "xflip_tbls", 34 },
+    { "slambounce_tbls", 34 },
+    { "puppet_tbls", 34 },
+    { "#Bret", 34 },
+    { "#Razor", 34 },
+    { "#Taker", 34 },
+    { "#Yokozuna", 34 },
+    { "#Shawn", 34 },
+    { "#BamBam", 34 },
+    { "#Doink", 34 },
+    { "#Adam", 34 },
+    { "#Lex", 34 },
 };
 
 static const wm_anim_op prog_und_choke_face_slam_anim_ops[] = {
@@ -47476,6 +53209,25 @@ static const wm_anim_op prog_und_choke_face_slam_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_choke_face_slam_anim_labels[] = {
+    { "#slam_again", 30 },
+    { "#norepeat", 55 },
+    { "#reattach", 70 },
+    { "rets", 70 },
+    { "#faced2_tbl", 70 },
+    { "#faced_tbl", 70 },
+    { "#puppet_tbl", 70 },
+    { "#Bret", 70 },
+    { "#Razor", 70 },
+    { "#Taker", 70 },
+    { "#Yokozuna", 70 },
+    { "#Shawn", 70 },
+    { "#BamBam", 70 },
+    { "#Doink", 70 },
+    { "#Adam", 70 },
+    { "#Lex", 70 },
+};
+
 static const wm_anim_op prog_und_combo_tombstone_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -47538,6 +53290,10 @@ static const wm_anim_op prog_und_combo_tombstone_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_combo_tombstone_anim_labels[] = {
+    { "#NO_BUTT_DROP", 54 },
+};
+
 static const wm_anim_op prog_und_pile_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -47598,6 +53354,22 @@ static const wm_anim_op prog_und_pile_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_pile_anim_labels[] = {
+    { "#missed", 52 },
+    { "#xflip_tbl", 57 },
+    { "#puppet_tbl", 57 },
+    { "#Bret", 57 },
+    { "#Razor", 57 },
+    { "#Taker", 57 },
+    { "#Yokozuna", 57 },
+    { "#Shawn", 57 },
+    { "#BamBam", 57 },
+    { "#Doink", 57 },
+    { "#Adam", 57 },
+    { "#Lex", 57 },
+    { "#breakneck_tbl", 57 },
+};
+
 static const wm_anim_op prog_und_combo_neckbreaker_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -47653,6 +53425,10 @@ static const wm_anim_op prog_und_combo_neckbreaker_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_combo_neckbreaker_anim_labels[] = {
+    { "#missedcx", 47 },
 };
 
 static const wm_anim_op prog_und_neckbreaker2_anim_ops[] = {
@@ -47744,6 +53520,26 @@ static const wm_anim_op prog_und_neckbreaker2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_neckbreaker2_anim_labels[] = {
+    { "#gothim", 44 },
+    { "#missedb", 79 },
+    { "#missed", 80 },
+    { "#zero_butn", 86 },
+    { "rets", 86 },
+    { "#xflip_tbl", 86 },
+    { "#slambounce_tbl", 86 },
+    { "#puppet_tbl", 86 },
+    { "#Bret", 86 },
+    { "#Razor", 86 },
+    { "#Taker", 86 },
+    { "#Yokozuna", 86 },
+    { "#Shawn", 86 },
+    { "#BamBam", 86 },
+    { "#Doink", 86 },
+    { "#Adam", 86 },
+    { "#Lex", 86 },
+};
+
 static const wm_anim_op prog_und_neckbreaker3_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -47818,6 +53614,26 @@ static const wm_anim_op prog_und_neckbreaker3_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_neckbreaker3_anim_labels[] = {
+    { "#gothim", 29 },
+    { "#missedb", 64 },
+    { "#missed", 65 },
+    { "#zero_butn", 71 },
+    { "rets", 71 },
+    { "#xflip_tbl", 71 },
+    { "#slambounce_tbl", 71 },
+    { "#puppet_tbl", 71 },
+    { "#Bret", 71 },
+    { "#Razor", 71 },
+    { "#Taker", 71 },
+    { "#Yokozuna", 71 },
+    { "#Shawn", 71 },
+    { "#BamBam", 71 },
+    { "#Doink", 71 },
+    { "#Adam", 71 },
+    { "#Lex", 71 },
+};
+
 static const wm_anim_op prog_und_neckbreaker_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -47872,6 +53688,26 @@ static const wm_anim_op prog_und_neckbreaker_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_neckbreaker_anim_labels[] = {
+    { "#gothim", 11 },
+    { "#missedb", 46 },
+    { "#missed", 47 },
+    { "#zero_butn", 53 },
+    { "rets", 53 },
+    { "#xflip_tbl", 53 },
+    { "#slambounce_tbl", 53 },
+    { "#puppet_tbl", 53 },
+    { "#Bret", 53 },
+    { "#Razor", 53 },
+    { "#Taker", 53 },
+    { "#Yokozuna", 53 },
+    { "#Shawn", 53 },
+    { "#BamBam", 53 },
+    { "#Doink", 53 },
+    { "#Adam", 53 },
+    { "#Lex", 53 },
 };
 
 static const wm_anim_op prog_und_2_snapmirror2_anim_ops[] = {
@@ -48077,6 +53913,31 @@ static const wm_anim_op prog_und_2_snapmirror2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_2_snapmirror2_anim_labels[] = {
+    { "#missedbcx", 75 },
+    { "#missedcx", 75 },
+    { "#throw_him_outcx", 88 },
+    { "#cont", 130 },
+    { "#got_him", 132 },
+    { "#missedb", 166 },
+    { "#missed", 170 },
+    { "#throw_him_out", 181 },
+    { "release_table", 200 },
+    { "#flyout_tbl", 200 },
+    { "#xflip_tbl", 200 },
+    { "#slambounce_tbl", 200 },
+    { "#puppet_tbl", 200 },
+    { "#Bret", 200 },
+    { "#Razor", 200 },
+    { "#Taker", 200 },
+    { "#Yokozuna", 200 },
+    { "#Shawn", 200 },
+    { "#BamBam", 200 },
+    { "#Doink", 200 },
+    { "#Adam", 200 },
+    { "#Lex", 200 },
+};
+
 static const wm_anim_op prog_und_4_snapmirror2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -48273,6 +54134,31 @@ static const wm_anim_op prog_und_4_snapmirror2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_4_snapmirror2_anim_labels[] = {
+    { "#missedbcx", 68 },
+    { "#missedcx", 68 },
+    { "#throw_him_outcx", 81 },
+    { "#cont", 123 },
+    { "#got_him", 125 },
+    { "#missedb", 159 },
+    { "#missed", 163 },
+    { "#throw_him_out", 174 },
+    { "release_table", 193 },
+    { "#flyout_tbl", 193 },
+    { "#xflip_tbl", 193 },
+    { "#slambounce_tbl", 193 },
+    { "#puppet_tbl", 193 },
+    { "#Bret", 193 },
+    { "#Razor", 193 },
+    { "#Taker", 193 },
+    { "#Yokozuna", 193 },
+    { "#Shawn", 193 },
+    { "#BamBam", 193 },
+    { "#Doink", 193 },
+    { "#Adam", 193 },
+    { "#Lex", 193 },
+};
+
 static const wm_anim_op prog_und_combo_snapmirror_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -48361,6 +54247,12 @@ static const wm_anim_op prog_und_combo_snapmirror_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_combo_snapmirror_anim_labels[] = {
+    { "#missedbcx", 52 },
+    { "#missedcx", 52 },
+    { "#throw_him_outcx", 65 },
 };
 
 static const wm_anim_op prog_und_2_snapmirror_anim_ops[] = {
@@ -48456,6 +54348,28 @@ static const wm_anim_op prog_und_2_snapmirror_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_2_snapmirror_anim_labels[] = {
+    { "#cont", 20 },
+    { "#got_him", 22 },
+    { "#missedb", 56 },
+    { "#missed", 60 },
+    { "#throw_him_out", 71 },
+    { "release_table", 90 },
+    { "#flyout_tbl", 90 },
+    { "#xflip_tbl", 90 },
+    { "#slambounce_tbl", 90 },
+    { "#puppet_tbl", 90 },
+    { "#Bret", 90 },
+    { "#Razor", 90 },
+    { "#Taker", 90 },
+    { "#Yokozuna", 90 },
+    { "#Shawn", 90 },
+    { "#BamBam", 90 },
+    { "#Doink", 90 },
+    { "#Adam", 90 },
+    { "#Lex", 90 },
+};
+
 static const wm_anim_op prog_und_4_snapmirror_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -48544,6 +54458,28 @@ static const wm_anim_op prog_und_4_snapmirror_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_4_snapmirror_anim_labels[] = {
+    { "#cont", 15 },
+    { "#got_him", 17 },
+    { "#missedb", 51 },
+    { "#missed", 55 },
+    { "#throw_him_out", 66 },
+    { "release_table", 85 },
+    { "#flyout_tbl", 85 },
+    { "#xflip_tbl", 85 },
+    { "#slambounce_tbl", 85 },
+    { "#puppet_tbl", 85 },
+    { "#Bret", 85 },
+    { "#Razor", 85 },
+    { "#Taker", 85 },
+    { "#Yokozuna", 85 },
+    { "#Shawn", 85 },
+    { "#BamBam", 85 },
+    { "#Doink", 85 },
+    { "#Adam", 85 },
+    { "#Lex", 85 },
+};
+
 static const wm_anim_op prog_und_neckbroken_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -48596,6 +54532,10 @@ static const wm_anim_op prog_und_climb_up_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "U4SB4A07" },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "tbukl_flip" },
     { WM_AOP_GOTO, 0, 12, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_climb_up_anim_labels[] = {
+    { "#lp", 12 },
 };
 
 static const wm_anim_op prog_und_climb_down_anim_ops[] = {
@@ -48688,6 +54628,12 @@ static const wm_anim_op prog_und_get_buzz_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_get_buzz_anim_labels[] = {
+    { "#nodead", 66 },
+    { "#make_black", 68 },
+    { "rets", 68 },
+};
+
 static const wm_anim_op prog_und_3_head_held_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -48726,6 +54672,13 @@ static const wm_anim_op prog_und_3_head_held_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_3_head_held_anim_labels[] = {
+    { "#loop", 6 },
+    { "#inc_loop", 35 },
+    { "rets", 35 },
+    { "#breakout", 35 },
+};
+
 static const wm_anim_op prog_und_3_head_held_brk_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -48747,6 +54700,12 @@ static const wm_anim_op prog_und_3_head_held_brk_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_3_head_held_brk_anim_labels[] = {
+    { "#inc_loop", 20 },
+    { "rets", 20 },
+    { "#breakout", 20 },
 };
 
 static const wm_anim_op prog_und_3_head_held_stand_anim_ops[] = {
@@ -48888,6 +54847,21 @@ static const wm_anim_op prog_und_2_hair_pickup_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_2_hair_pickup_anim_labels[] = {
+    { "#missed", 42 },
+    { "#headheld_tbl", 53 },
+    { "#puppet_tbl", 53 },
+    { "#Bret", 53 },
+    { "#Razor", 53 },
+    { "#Taker", 53 },
+    { "#Yokozuna", 53 },
+    { "#Shawn", 53 },
+    { "#BamBam", 53 },
+    { "#Doink", 53 },
+    { "#Adam", 53 },
+    { "#Lex", 53 },
+};
+
 static const wm_anim_op prog_und_4_hair_pickup_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -48936,6 +54910,21 @@ static const wm_anim_op prog_und_4_hair_pickup_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_4_hair_pickup_anim_labels[] = {
+    { "#missed", 36 },
+    { "#headheld_tbl", 47 },
+    { "#puppet_tbl", 47 },
+    { "#Bret", 47 },
+    { "#Razor", 47 },
+    { "#Taker", 47 },
+    { "#Yokozuna", 47 },
+    { "#Shawn", 47 },
+    { "#BamBam", 47 },
+    { "#Doink", 47 },
+    { "#Adam", 47 },
+    { "#Lex", 47 },
 };
 
 static const wm_anim_op prog_und_4_taunt_anim_ops[] = {
@@ -49129,6 +55118,23 @@ static const wm_anim_op prog_und_3_fake_hold_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_3_fake_hold_anim_labels[] = {
+    { "#gothim", 35 },
+    { "#missedb", 54 },
+    { "#missed", 66 },
+    { "#puppet_tbl", 78 },
+    { "#Bret", 78 },
+    { "#Razor", 78 },
+    { "#Taker", 78 },
+    { "#Yokozuna", 78 },
+    { "#Shawn", 78 },
+    { "#BamBam", 78 },
+    { "#Doink", 78 },
+    { "#Adam", 78 },
+    { "#Lex", 78 },
+    { "#headheld_tbl", 78 },
+};
+
 static const wm_anim_op prog_und_3_head_hold2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -49201,6 +55207,23 @@ static const wm_anim_op prog_und_3_head_hold2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_3_head_hold2_anim_labels[] = {
+    { "#gothim", 26 },
+    { "#missedb", 45 },
+    { "#missed", 57 },
+    { "#puppet_tbl", 69 },
+    { "#Bret", 69 },
+    { "#Razor", 69 },
+    { "#Taker", 69 },
+    { "#Yokozuna", 69 },
+    { "#Shawn", 69 },
+    { "#BamBam", 69 },
+    { "#Doink", 69 },
+    { "#Adam", 69 },
+    { "#Lex", 69 },
+    { "#headheld_tbl", 69 },
+};
+
 static const wm_anim_op prog_und_3_head_hold_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -49257,6 +55280,23 @@ static const wm_anim_op prog_und_3_head_hold_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_3_head_hold_anim_labels[] = {
+    { "#gothim", 12 },
+    { "#missedb", 31 },
+    { "#missed", 43 },
+    { "#puppet_tbl", 55 },
+    { "#Bret", 55 },
+    { "#Razor", 55 },
+    { "#Taker", 55 },
+    { "#Yokozuna", 55 },
+    { "#Shawn", 55 },
+    { "#BamBam", 55 },
+    { "#Doink", 55 },
+    { "#Adam", 55 },
+    { "#Lex", 55 },
+    { "#headheld_tbl", 55 },
 };
 
 static const wm_anim_op prog_und_slamnobounce_anim_ops[] = {
@@ -49395,6 +55435,11 @@ static const wm_anim_op prog_und_spirit_pull_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_spirit_pull_anim_labels[] = {
+    { "#fireball", 35 },
+    { "rets", 35 },
+};
+
 static const wm_anim_op prog_und_spirit_push_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -49450,6 +55495,11 @@ static const wm_anim_op prog_und_spirit_push_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_spirit_push_anim_labels[] = {
+    { "#fireball", 52 },
+    { "rets", 52 },
+};
+
 static const wm_anim_op prog_und_arm_broken_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -49472,6 +55522,10 @@ static const wm_anim_op prog_und_arm_broken_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_arm_broken_anim_labels[] = {
+    { "#nodead", 18 },
 };
 
 static const wm_anim_op prog_yok_zip_anim_ops[] = {
@@ -50073,6 +56127,11 @@ static const wm_anim_op prog_yok_run2_anim_ops[] = {
     { WM_AOP_GOTO, 0, 7, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_run2_anim_labels[] = {
+    { "#lp1", 7 },
+    { "#run2", 14 },
+};
+
 static const wm_anim_op prog_yok_run_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -50096,6 +56155,11 @@ static const wm_anim_op prog_yok_run_anim_ops[] = {
     { WM_AOP_SET_YVEL, 0, -1, 81920, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3RN3C12" },
     { WM_AOP_GOTO, 0, 3, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_run_anim_labels[] = {
+    { "#lp1", 3 },
+    { "#run2", 10 },
 };
 
 static const wm_anim_op prog_yok_bounce_anim_ops[] = {
@@ -50175,6 +56239,10 @@ static const wm_anim_op prog_yok_2_punch_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_2_punch_anim_labels[] = {
+    { "#no_hit", 23 },
+};
+
 static const wm_anim_op prog_yok_4_punch_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -50207,6 +56275,10 @@ static const wm_anim_op prog_yok_4_punch_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_4_punch_anim_labels[] = {
+    { "#no_hit2", 23 },
+};
+
 static const wm_anim_op prog_yok_4_push_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
@@ -50233,6 +56305,12 @@ static const wm_anim_op prog_yok_4_push_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4PS3A03" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_4_push_anim_labels[] = {
+    { "#no_hit", 17 },
+    { "#hit", 20 },
+    { "#yoff", 25 },
 };
 
 static const wm_anim_op prog_yok_2_lbowdrop_anim_ops[] = {
@@ -50275,6 +56353,13 @@ static const wm_anim_op prog_yok_2_lbowdrop_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup2_anim" },
 };
 
+static const wm_anim_label prog_yok_2_lbowdrop_anim_labels[] = {
+    { "#skip_leapat", 18 },
+    { "#do_leapat", 18 },
+    { "#hit", 34 },
+    { "#yoff", 37 },
+};
+
 static const wm_anim_op prog_yok_4_lbowdrop_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -50312,6 +56397,12 @@ static const wm_anim_op prog_yok_4_lbowdrop_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 12, 0, 0, 0, 0, 0, "Y3PF3A09" },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_yok_4_lbowdrop_anim_labels[] = {
+    { "#skip_leapat", 18 },
+    { "#do_leapat", 18 },
+    { "#hit", 33 },
 };
 
 static const wm_anim_op prog_yok_combo_kick_anim_ops[] = {
@@ -50405,6 +56496,14 @@ static const wm_anim_op prog_yok_combo_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_combo_kick_anim_labels[] = {
+    { "#kick_loop", 33 },
+    { "#NO_KNEE", 64 },
+    { "#NO_UPPER", 66 },
+    { "#NO_HEADBUTT", 68 },
+    { "#no_hit_2", 73 },
+};
+
 static const wm_anim_op prog_yok_2_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -50445,6 +56544,10 @@ static const wm_anim_op prog_yok_2_kick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_2_kick_anim_labels[] = {
+    { "#no_hit", 25 },
+};
+
 static const wm_anim_op prog_yok_4_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -50483,6 +56586,10 @@ static const wm_anim_op prog_yok_4_kick_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y4KM3A11" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_4_kick_anim_labels[] = {
+    { "#no_hit", 25 },
 };
 
 static const wm_anim_op prog_yok_2_stomp_anim_ops[] = {
@@ -50537,6 +56644,12 @@ static const wm_anim_op prog_yok_2_stomp_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_2_stomp_anim_labels[] = {
+    { "#hit", 27 },
+    { "#leapat_stomp", 32 },
+    { "#leapat_hit", 44 },
+};
+
 static const wm_anim_op prog_yok_4_stomp_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -50589,6 +56702,13 @@ static const wm_anim_op prog_yok_4_stomp_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_4_stomp_anim_labels[] = {
+    { "#hit", 27 },
+    { "#leapat_stomp", 32 },
+    { "#leapat_hit", 44 },
+    { "#yoff", 49 },
+};
+
 static const wm_anim_op prog_yok_combo_butt_drop_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
@@ -50636,6 +56756,10 @@ static const wm_anim_op prog_yok_combo_butt_drop_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y3JK3A08" },
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup2_anim" },
+};
+
+static const wm_anim_label prog_yok_combo_butt_drop_anim_labels[] = {
+    { "#missc", 35 },
 };
 
 static const wm_anim_op prog_yok_3_butt_drop_anim_ops[] = {
@@ -50687,6 +56811,11 @@ static const wm_anim_op prog_yok_3_butt_drop_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup2_anim" },
 };
 
+static const wm_anim_label prog_yok_3_butt_drop_anim_labels[] = {
+    { "#hit", 19 },
+    { "#miss", 35 },
+};
+
 static const wm_anim_op prog_yok_2_knee_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -50730,6 +56859,10 @@ static const wm_anim_op prog_yok_2_knee_anim_ops[] = {
     { WM_AOP_FACEUP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_2_knee_anim_labels[] = {
+    { "#no_hit", 33 },
 };
 
 static const wm_anim_op prog_yok_combo_knee_anim_ops[] = {
@@ -50776,6 +56909,10 @@ static const wm_anim_op prog_yok_combo_knee_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_combo_knee_anim_labels[] = {
+    { "#no_hit3c", 31 },
 };
 
 static const wm_anim_op prog_yok_4_knee2_anim_ops[] = {
@@ -50834,6 +56971,13 @@ static const wm_anim_op prog_yok_4_knee2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_4_knee2_anim_labels[] = {
+    { "#tag", 19 },
+    { "#missedb", 28 },
+    { "#missed", 28 },
+    { "#no_hit3", 43 },
+};
+
 static const wm_anim_op prog_yok_4_knee_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -50881,6 +57025,13 @@ static const wm_anim_op prog_yok_4_knee_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_4_knee_anim_labels[] = {
+    { "#tag", 12 },
+    { "#missedb", 21 },
+    { "#missed", 21 },
+    { "#no_hit3", 36 },
 };
 
 static const wm_anim_op prog_yok_2_superkick_anim_ops[] = {
@@ -50943,6 +57094,14 @@ static const wm_anim_op prog_yok_2_superkick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_2_superkick_anim_labels[] = {
+    { "#no_hit2", 31 },
+    { "#none0", 35 },
+    { "#missed", 43 },
+    { "#missedb", 43 },
+    { "#none", 49 },
+};
+
 static const wm_anim_op prog_yok_4_superkick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -50995,6 +57154,14 @@ static const wm_anim_op prog_yok_4_superkick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_4_superkick_anim_labels[] = {
+    { "#no_hit2", 25 },
+    { "#none0", 29 },
+    { "#missed", 37 },
+    { "#missedb", 37 },
+    { "#none", 43 },
 };
 
 static const wm_anim_op prog_yok_combo_superkick_anim_ops[] = {
@@ -51071,6 +57238,16 @@ static const wm_anim_op prog_yok_combo_superkick_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_combo_superkick_anim_labels[] = {
+    { "#skick_loop", 26 },
+    { "#NO_KNEE", 44 },
+    { "#NO_UPPER", 46 },
+    { "#NO_GUT", 48 },
+    { "#NO_HIPTOSS", 50 },
+    { "#missedc", 57 },
+    { "#missedbc", 57 },
+};
+
 static const wm_anim_op prog_yok_2_gut_push_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -51104,6 +57281,10 @@ static const wm_anim_op prog_yok_2_gut_push_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4PS3B09" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_2_gut_push_anim_labels[] = {
+    { "#missedb", 26 },
 };
 
 static const wm_anim_op prog_yok_4_gut_push_anim_ops[] = {
@@ -51140,6 +57321,10 @@ static const wm_anim_op prog_yok_4_gut_push_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4PS3B10" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_4_gut_push_anim_labels[] = {
+    { "#missedb", 26 },
 };
 
 static const wm_anim_op prog_yok_combo_gut_push_anim_ops[] = {
@@ -51187,6 +57372,11 @@ static const wm_anim_op prog_yok_combo_gut_push_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_combo_gut_push_anim_labels[] = {
+    { "#NO_SALT", 26 },
+    { "#missedbc", 31 },
+};
+
 static const wm_anim_op prog_yok_climb_up_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1196, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -51209,6 +57399,10 @@ static const wm_anim_op prog_yok_climb_up_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1192, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FRAME, 0, -1, 20, 0, 0, 0, 0, 0, "Y2CT2Z08" },
     { WM_AOP_GOTO, 0, 19, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_climb_up_anim_labels[] = {
+    { "#repeat", 19 },
 };
 
 static const wm_anim_op prog_yok_climb_down_anim_ops[] = {
@@ -51284,6 +57478,12 @@ static const wm_anim_op prog_yok_tbukl_buttdrop_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup2_anim" },
 };
 
+static const wm_anim_label prog_yok_tbukl_buttdrop_anim_labels[] = {
+    { "#opp_onground", 17 },
+    { "#hit", 32 },
+    { "#common", 42 },
+};
+
 static const wm_anim_op prog_yok_2_grabfling_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -51343,6 +57543,23 @@ static const wm_anim_op prog_yok_2_grabfling_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_2_grabfling_anim_labels[] = {
+    { "#cont", 15 },
+    { "#missedb", 47 },
+    { "#missed", 50 },
+    { "#puppet_tbl", 56 },
+    { "#Bret", 56 },
+    { "#Razor", 56 },
+    { "#Taker", 56 },
+    { "#Yokozuna", 56 },
+    { "#Shawn", 56 },
+    { "#BamBam", 56 },
+    { "#Doink", 56 },
+    { "#Adam", 56 },
+    { "#Lex", 56 },
+    { "#strt_run_tbl", 56 },
+};
+
 static const wm_anim_op prog_yok_4_grabfling_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -51393,6 +57610,23 @@ static const wm_anim_op prog_yok_4_grabfling_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_4_grabfling_anim_labels[] = {
+    { "#cont", 6 },
+    { "#missedb", 38 },
+    { "#missed", 41 },
+    { "#puppet_tbl", 47 },
+    { "#Bret", 47 },
+    { "#Razor", 47 },
+    { "#Taker", 47 },
+    { "#Yokozuna", 47 },
+    { "#Shawn", 47 },
+    { "#BamBam", 47 },
+    { "#Doink", 47 },
+    { "#Adam", 47 },
+    { "#Lex", 47 },
+    { "#strt_run_tbl", 47 },
+};
+
 static const wm_anim_op prog_yok_knockdwn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -51418,6 +57652,10 @@ static const wm_anim_op prog_yok_knockdwn_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y3RL1A01" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_yok_knockdwn_anim_labels[] = {
+    { "#nodead", 21 },
 };
 
 static const wm_anim_op prog_yok_climbthru_side_anim_ops[] = {
@@ -51529,6 +57767,12 @@ static const wm_anim_op prog_yok_climbin_side_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_climbin_side_anim_labels[] = {
+    { "#set_trgt", 52 },
+    { "#onlft", 52 },
+    { "rets", 52 },
+};
+
 static const wm_anim_op prog_yok_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1420, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -51564,6 +57808,14 @@ static const wm_anim_op prog_yok_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 128, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_climbthru_bot_anim_labels[] = {
+    { "#dir4", 7 },
+    { "#ckspin", 34 },
+    { "RETS", 34 },
+    { "#faceup", 34 },
+    { "rets", 34 },
 };
 
 static const wm_anim_op prog_yok_climbin_bot_anim_ops[] = {
@@ -51638,6 +57890,14 @@ static const wm_anim_op prog_yok_climbthru_top_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_climbthru_top_anim_labels[] = {
+    { "#dir4", 7 },
+    { "#set_zvel1", 33 },
+    { "rets", 33 },
+    { "#facedwn", 33 },
+    { "#set_zvel2", 33 },
+};
+
 static const wm_anim_op prog_yok_rollthru_top_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1420, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -51691,6 +57951,11 @@ static const wm_anim_op prog_yok_climbin_top_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 128, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_climbin_top_anim_labels[] = {
+    { "#set_zvel2", 27 },
+    { "rets", 27 },
 };
 
 static const wm_anim_op prog_yok_2_pin_anim_ops[] = {
@@ -51765,6 +58030,12 @@ static const wm_anim_op prog_yok_2_pin_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_2_pin_anim_labels[] = {
+    { "#hold", 64 },
+    { "#bucket_salt", 69 },
+    { "#x", 69 },
+};
+
 static const wm_anim_op prog_yok_4_pin_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -51832,6 +58103,12 @@ static const wm_anim_op prog_yok_4_pin_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_4_pin_anim_labels[] = {
+    { "#hold", 59 },
+    { "#bucket_salt", 64 },
+    { "#x", 64 },
+};
+
 static const wm_anim_op prog_yok_2_raise_arm_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -51871,6 +58148,13 @@ static const wm_anim_op prog_yok_2_raise_arm_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_2_raise_arm_anim_labels[] = {
+    { "#cont", 13 },
+    { "#lp0", 25 },
+    { "#floop", 30 },
+    { "#wakeup", 32 },
+};
+
 static const wm_anim_op prog_yok_4_raise_arm_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -51900,6 +58184,13 @@ static const wm_anim_op prog_yok_4_raise_arm_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_4_raise_arm_anim_labels[] = {
+    { "#cont", 5 },
+    { "#lp0", 17 },
+    { "#floop", 22 },
+    { "#wakeup", 24 },
 };
 
 static const wm_anim_op prog_yok_combo_uppercut_anim_ops[] = {
@@ -51943,6 +58234,12 @@ static const wm_anim_op prog_yok_combo_uppercut_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_combo_uppercut_anim_labels[] = {
+    { "#no_hit2c", 20 },
+    { "#missedbc", 29 },
+    { "#missedc", 30 },
+};
+
 static const wm_anim_op prog_yok_4_uppercut_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -51983,6 +58280,14 @@ static const wm_anim_op prog_yok_4_uppercut_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4UP3B09" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_4_uppercut_anim_labels[] = {
+    { "#no_hit2", 25 },
+    { "#set_zvel", 32 },
+    { "#skip", 32 },
+    { "#missedb", 32 },
+    { "#missed", 33 },
 };
 
 static const wm_anim_op prog_yok_2_jabs_anim_ops[] = {
@@ -52052,6 +58357,16 @@ static const wm_anim_op prog_yok_2_jabs_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_2_jabs_anim_labels[] = {
+    { "#rpt", 16 },
+    { "#no_hit2", 31 },
+    { "#goto", 43 },
+    { "#ex2", 44 },
+    { "#ex", 51 },
+    { "#missed", 53 },
+    { "#missedb", 54 },
+};
+
 static const wm_anim_op prog_yok_4_jabs_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -52109,6 +58424,16 @@ static const wm_anim_op prog_yok_4_jabs_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_4_jabs_anim_labels[] = {
+    { "#rpt", 8 },
+    { "#no_hit2", 23 },
+    { "#goto", 35 },
+    { "#ex2", 36 },
+    { "#ex", 43 },
+    { "#missed", 45 },
+    { "#missedb", 46 },
 };
 
 static const wm_anim_op prog_yok_combo_jabs_anim_ops[] = {
@@ -52201,6 +58526,16 @@ static const wm_anim_op prog_yok_combo_jabs_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_combo_jabs_anim_labels[] = {
+    { "#rptc", 30 },
+    { "#exc", 54 },
+    { "#NO_KNEE", 57 },
+    { "#NO_UPPER", 59 },
+    { "#NO_KICK", 61 },
+    { "#missedbc", 69 },
+    { "#missedc", 70 },
+};
+
 static const wm_anim_op prog_yok_2_run_slap_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -52263,6 +58598,15 @@ static const wm_anim_op prog_yok_2_run_slap_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_2_run_slap_anim_labels[] = {
+    { "#cont", 19 },
+    { "#no_hit2", 36 },
+    { "#none", 43 },
+    { "#missed", 48 },
+    { "#missedb", 48 },
+    { "#none1", 54 },
+};
+
 static const wm_anim_op prog_yok_2_slap2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -52314,6 +58658,15 @@ static const wm_anim_op prog_yok_2_slap2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_2_slap2_anim_labels[] = {
+    { "#cont", 10 },
+    { "#no_hit2", 27 },
+    { "#none", 34 },
+    { "#missed", 39 },
+    { "#missedb", 39 },
+    { "#none1", 45 },
 };
 
 static const wm_anim_op prog_yok_4_run_slap_anim_ops[] = {
@@ -52376,6 +58729,15 @@ static const wm_anim_op prog_yok_4_run_slap_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_4_run_slap_anim_labels[] = {
+    { "#cont", 17 },
+    { "#no_hit2", 34 },
+    { "#missed", 36 },
+    { "#missedb", 36 },
+    { "#poo", 37 },
+    { "#none2", 48 },
+};
+
 static const wm_anim_op prog_yok_4_slap2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -52425,6 +58787,15 @@ static const wm_anim_op prog_yok_4_slap2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_4_slap2_anim_labels[] = {
+    { "#cont", 8 },
+    { "#no_hit2", 25 },
+    { "#missed", 27 },
+    { "#missedb", 27 },
+    { "#poo", 28 },
+    { "#none2", 39 },
 };
 
 static const wm_anim_op prog_yok_combo_slap_anim_ops[] = {
@@ -52499,6 +58870,12 @@ static const wm_anim_op prog_yok_combo_slap_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_combo_slap_anim_labels[] = {
+    { "#slap_loop", 6 },
+    { "#missedbc", 41 },
+    { "#missedc", 55 },
+};
+
 static const wm_anim_op prog_delay_whoihit_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1292, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -52519,6 +58896,10 @@ static const wm_anim_op prog_delay_whoihit_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_delay_whoihit_labels[] = {
+    { "rets", 0 },
 };
 
 static const wm_anim_op prog_yok_buckoff_anim_ops[] = {
@@ -52613,6 +58994,12 @@ static const wm_anim_op prog_yok_get_buzz_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_get_buzz_anim_labels[] = {
+    { "#nodead", 65 },
+    { "#make_black", 67 },
+    { "rets", 67 },
+};
+
 static const wm_anim_op prog_yok_3_head_held_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -52650,6 +59037,13 @@ static const wm_anim_op prog_yok_3_head_held_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_3_head_held_anim_labels[] = {
+    { "#loop", 5 },
+    { "#inc_loop", 34 },
+    { "rets", 34 },
+    { "#breakout", 34 },
+};
+
 static const wm_anim_op prog_yok_3_head_held_brk_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -52672,6 +59066,12 @@ static const wm_anim_op prog_yok_3_head_held_brk_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_3_head_held_brk_anim_labels[] = {
+    { "#inc_loop", 21 },
+    { "rets", 21 },
+    { "#breakout", 21 },
 };
 
 static const wm_anim_op prog_yok_3_head_held_stand_anim_ops[] = {
@@ -52734,6 +59134,21 @@ static const wm_anim_op prog_yok_2_hair_pickup_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_2_hair_pickup_anim_labels[] = {
+    { "#missed", 37 },
+    { "#headheld_tbl", 46 },
+    { "#puppet_tbl", 46 },
+    { "#Bret", 46 },
+    { "#Razor", 46 },
+    { "#Taker", 46 },
+    { "#Yokozuna", 46 },
+    { "#Shawn", 46 },
+    { "#BamBam", 46 },
+    { "#Doink", 46 },
+    { "#Adam", 46 },
+    { "#Lex", 46 },
+};
+
 static const wm_anim_op prog_yok_4_hair_pickup_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -52776,6 +59191,21 @@ static const wm_anim_op prog_yok_4_hair_pickup_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_4_hair_pickup_anim_labels[] = {
+    { "#missed", 32 },
+    { "#headheld_tbl", 41 },
+    { "#puppet_tbl", 41 },
+    { "#Bret", 41 },
+    { "#Razor", 41 },
+    { "#Taker", 41 },
+    { "#Yokozuna", 41 },
+    { "#Shawn", 41 },
+    { "#BamBam", 41 },
+    { "#Doink", 41 },
+    { "#Adam", 41 },
+    { "#Lex", 41 },
 };
 
 static const wm_anim_op prog_yok_4_taunt_anim_ops[] = {
@@ -52841,6 +59271,13 @@ static const wm_anim_op prog_yok_heldoh_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_heldoh_anim_labels[] = {
+    { "#loop", 5 },
+    { "#inc_loop", 34 },
+    { "rets", 34 },
+    { "#breakout", 34 },
 };
 
 static const wm_anim_op prog_yok_break_neck2_anim_ops[] = {
@@ -52924,6 +59361,10 @@ static const wm_anim_op prog_yok_flyout_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_hitonground_anim" },
 };
 
+static const wm_anim_label prog_yok_flyout_anim_labels[] = {
+    { "#cont", 7 },
+};
+
 static const wm_anim_op prog_yok_flyout2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 6, 0, 0, 0, 0, 0, "Y3FL3W06" },
     { WM_AOP_FRAME, 0, -1, 6, 0, 0, 0, 0, 0, "Y3FL3W07" },
@@ -52966,6 +59407,10 @@ static const wm_anim_op prog_yok_flyout2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3RL1A01" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_yok_flyout2_anim_labels[] = {
+    { "#cont", 0 },
 };
 
 static const wm_anim_op prog_yok_tossed_anim_ops[] = {
@@ -53112,6 +59557,23 @@ static const wm_anim_op prog_yok_3_fake_hold_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_3_fake_hold_anim_labels[] = {
+    { "#gothim", 35 },
+    { "#missedb", 54 },
+    { "#missed", 66 },
+    { "#puppet_tbl", 76 },
+    { "#Bret", 76 },
+    { "#Razor", 76 },
+    { "#Taker", 76 },
+    { "#Yokozuna", 76 },
+    { "#Shawn", 76 },
+    { "#BamBam", 76 },
+    { "#Doink", 76 },
+    { "#Adam", 76 },
+    { "#Lex", 76 },
+    { "#headheld_tbl", 76 },
+};
+
 static const wm_anim_op prog_yok_3_head_hold2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -53182,6 +59644,23 @@ static const wm_anim_op prog_yok_3_head_hold2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_3_head_hold2_anim_labels[] = {
+    { "#gothim", 26 },
+    { "#missedb", 45 },
+    { "#missed", 57 },
+    { "#puppet_tbl", 67 },
+    { "#Bret", 67 },
+    { "#Razor", 67 },
+    { "#Taker", 67 },
+    { "#Yokozuna", 67 },
+    { "#Shawn", 67 },
+    { "#BamBam", 67 },
+    { "#Doink", 67 },
+    { "#Adam", 67 },
+    { "#Lex", 67 },
+    { "#headheld_tbl", 67 },
+};
+
 static const wm_anim_op prog_yok_3_head_hold_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -53238,6 +59717,23 @@ static const wm_anim_op prog_yok_3_head_hold_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_3_head_hold_anim_labels[] = {
+    { "#gothim", 12 },
+    { "#missedb", 31 },
+    { "#missed", 43 },
+    { "#puppet_tbl", 53 },
+    { "#Bret", 53 },
+    { "#Razor", 53 },
+    { "#Taker", 53 },
+    { "#Yokozuna", 53 },
+    { "#Shawn", 53 },
+    { "#BamBam", 53 },
+    { "#Doink", 53 },
+    { "#Adam", 53 },
+    { "#Lex", 53 },
+    { "#headheld_tbl", 53 },
+};
+
 static const wm_anim_op prog_yok_vsuplex_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -53292,6 +59788,23 @@ static const wm_anim_op prog_yok_vsuplex_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_vsuplex_anim_labels[] = {
+    { "#missed", 48 },
+    { "#release_table", 53 },
+    { "#xflip_tbl", 53 },
+    { "#breakneck_tbl", 53 },
+    { "#puppet_tbl", 53 },
+    { "#Bret", 53 },
+    { "#Razor", 53 },
+    { "#Taker", 53 },
+    { "#Yokozuna", 53 },
+    { "#Shawn", 53 },
+    { "#BamBam", 53 },
+    { "#Doink", 53 },
+    { "#Adam", 53 },
+    { "#Lex", 53 },
 };
 
 static const wm_anim_op prog_yok_combo_hiptoss_anim_ops[] = {
@@ -53476,6 +59989,34 @@ static const wm_anim_op prog_yok_combo_hiptoss_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup2_anim" },
 };
 
+static const wm_anim_label prog_yok_combo_hiptoss_anim_labels[] = {
+    { "#slam_loop", 7 },
+    { "#NO_REPEAT", 62 },
+    { "#missedbc", 66 },
+    { "#missedc", 67 },
+    { "#throw_him_outc", 73 },
+    { "SLAM_HIM", 76 },
+    { "#cont", 121 },
+    { "#got_him", 123 },
+    { "#missedb", 151 },
+    { "#missed", 155 },
+    { "#throw_him_out", 159 },
+    { "#xflip_tbl", 179 },
+    { "#slambounce_tbl", 179 },
+    { "#puppet_tbl", 179 },
+    { "#Bret", 179 },
+    { "#Razor", 179 },
+    { "#Taker", 179 },
+    { "#Yokozuna", 179 },
+    { "#Shawn", 179 },
+    { "#BamBam", 179 },
+    { "#Doink", 179 },
+    { "#Adam", 179 },
+    { "#Lex", 179 },
+    { "#release_table", 179 },
+    { "#flyout_tbl", 179 },
+};
+
 static const wm_anim_op prog_yok_4_hiptoss2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -53582,6 +60123,28 @@ static const wm_anim_op prog_yok_4_hiptoss2_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup2_anim" },
 };
 
+static const wm_anim_label prog_yok_4_hiptoss2_anim_labels[] = {
+    { "#cont", 45 },
+    { "#got_him", 47 },
+    { "#missedb", 75 },
+    { "#missed", 79 },
+    { "#throw_him_out", 83 },
+    { "#xflip_tbl", 103 },
+    { "#slambounce_tbl", 103 },
+    { "#puppet_tbl", 103 },
+    { "#Bret", 103 },
+    { "#Razor", 103 },
+    { "#Taker", 103 },
+    { "#Yokozuna", 103 },
+    { "#Shawn", 103 },
+    { "#BamBam", 103 },
+    { "#Doink", 103 },
+    { "#Adam", 103 },
+    { "#Lex", 103 },
+    { "#release_table", 103 },
+    { "#flyout_tbl", 103 },
+};
+
 static const wm_anim_op prog_yok_2_hiptoss2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -53681,6 +60244,28 @@ static const wm_anim_op prog_yok_2_hiptoss2_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup2_anim" },
 };
 
+static const wm_anim_label prog_yok_2_hiptoss2_anim_labels[] = {
+    { "#cont", 38 },
+    { "#got_him", 40 },
+    { "#missedb", 68 },
+    { "#missed", 72 },
+    { "#throw_him_out", 76 },
+    { "#xflip_tbl", 96 },
+    { "#slambounce_tbl", 96 },
+    { "#puppet_tbl", 96 },
+    { "#Bret", 96 },
+    { "#Razor", 96 },
+    { "#Taker", 96 },
+    { "#Yokozuna", 96 },
+    { "#Shawn", 96 },
+    { "#BamBam", 96 },
+    { "#Doink", 96 },
+    { "#Adam", 96 },
+    { "#Lex", 96 },
+    { "#release_table", 96 },
+    { "#flyout_tbl", 96 },
+};
+
 static const wm_anim_op prog_yok_4_hiptoss_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -53765,6 +60350,28 @@ static const wm_anim_op prog_yok_4_hiptoss_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup2_anim" },
 };
 
+static const wm_anim_label prog_yok_4_hiptoss_anim_labels[] = {
+    { "#cont", 23 },
+    { "#got_him", 25 },
+    { "#missedb", 53 },
+    { "#missed", 57 },
+    { "#throw_him_out", 61 },
+    { "#xflip_tbl", 81 },
+    { "#slambounce_tbl", 81 },
+    { "#puppet_tbl", 81 },
+    { "#Bret", 81 },
+    { "#Razor", 81 },
+    { "#Taker", 81 },
+    { "#Yokozuna", 81 },
+    { "#Shawn", 81 },
+    { "#BamBam", 81 },
+    { "#Doink", 81 },
+    { "#Adam", 81 },
+    { "#Lex", 81 },
+    { "#release_table", 81 },
+    { "#flyout_tbl", 81 },
+};
+
 static const wm_anim_op prog_yok_2_hiptoss_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -53842,6 +60449,28 @@ static const wm_anim_op prog_yok_2_hiptoss_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup2_anim" },
 };
 
+static const wm_anim_label prog_yok_2_hiptoss_anim_labels[] = {
+    { "#cont", 16 },
+    { "#got_him", 18 },
+    { "#missedb", 46 },
+    { "#missed", 50 },
+    { "#throw_him_out", 54 },
+    { "#xflip_tbl", 74 },
+    { "#slambounce_tbl", 74 },
+    { "#puppet_tbl", 74 },
+    { "#Bret", 74 },
+    { "#Razor", 74 },
+    { "#Taker", 74 },
+    { "#Yokozuna", 74 },
+    { "#Shawn", 74 },
+    { "#BamBam", 74 },
+    { "#Doink", 74 },
+    { "#Adam", 74 },
+    { "#Lex", 74 },
+    { "#release_table", 74 },
+    { "#flyout_tbl", 74 },
+};
+
 static const wm_anim_op prog_yok_combo_heldheadbutt_rpt_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -53907,6 +60536,17 @@ static const wm_anim_op prog_yok_combo_heldheadbutt_rpt_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4CD3A01" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_combo_heldheadbutt_rpt_anim_labels[] = {
+    { "#loopc", 21 },
+    { "#last_hitc", 35 },
+    { "#NO_KNEE", 41 },
+    { "#NO_UPPER", 43 },
+    { "#NO_HIPTOSS", 45 },
+    { "#NO_GUT", 47 },
+    { "#missedbc", 56 },
+    { "#missedc", 57 },
 };
 
 static const wm_anim_op prog_yok_heldheadbutt_rpt_anim_ops[] = {
@@ -54052,6 +60692,36 @@ static const wm_anim_op prog_yok_heldheadbutt_rpt_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_heldheadbutt_rpt_anim_labels[] = {
+    { "#missedb", 0 },
+    { "#missed", 4 },
+    { "#throw_him_out", 8 },
+    { "#xflip_tbl", 28 },
+    { "#slambounce_tbl", 28 },
+    { "#puppet_tbl", 28 },
+    { "#Bret", 28 },
+    { "#Razor", 28 },
+    { "#Taker", 28 },
+    { "#Yokozuna", 28 },
+    { "#Shawn", 28 },
+    { "#BamBam", 28 },
+    { "#Doink", 28 },
+    { "#Adam", 28 },
+    { "#Lex", 28 },
+    { "#release_table", 28 },
+    { "#flyout_tbl", 28 },
+    { "#loopc", 49 },
+    { "#last_hitc", 63 },
+    { "#NO_KNEE", 69 },
+    { "#NO_UPPER", 71 },
+    { "#NO_HIPTOSS", 73 },
+    { "#NO_GUT", 75 },
+    { "#missedbc", 84 },
+    { "#missedc", 85 },
+    { "#loop", 114 },
+    { "#last_hit", 128 },
+};
+
 static const wm_anim_op prog_yok_combo_spinslam_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 9228, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -54121,6 +60791,17 @@ static const wm_anim_op prog_yok_combo_spinslam_anim_ops[] = {
     { WM_AOP_CLEAR_COMBO, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_combo_spinslam_anim_labels[] = {
+    { "#spin_loop", 14 },
+    { "#NO_SLAP", 57 },
+    { "#NO_BUTT", 59 },
+    { "#NO_BUTTa", 63 },
+    { "#set_immob", 68 },
+    { "rets", 68 },
+    { "#keep_ongrnd", 68 },
+    { "DIE", 68 },
 };
 
 static const wm_anim_op prog_yok_overhd_slam2_anim_ops[] = {
@@ -54200,6 +60881,25 @@ static const wm_anim_op prog_yok_overhd_slam2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_overhd_slam2_anim_labels[] = {
+    { "#inherex", 31 },
+    { "#throw_him_out", 51 },
+    { "release_throw_table", 74 },
+    { "flyout_tbl", 74 },
+    { "#xflip_tbl", 74 },
+    { "#slambounce_tbl", 74 },
+    { "#puppet_tbl", 74 },
+    { "#Bret", 74 },
+    { "#Razor", 74 },
+    { "#Taker", 74 },
+    { "#Yokozuna", 74 },
+    { "#Shawn", 74 },
+    { "#BamBam", 74 },
+    { "#Doink", 74 },
+    { "#Adam", 74 },
+    { "#Lex", 74 },
+};
+
 static const wm_anim_op prog_yok_overhd_slam_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 9228, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -54261,6 +60961,25 @@ static const wm_anim_op prog_yok_overhd_slam_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_overhd_slam_anim_labels[] = {
+    { "#inherex", 15 },
+    { "#throw_him_out", 35 },
+    { "release_throw_table", 58 },
+    { "flyout_tbl", 58 },
+    { "#xflip_tbl", 58 },
+    { "#slambounce_tbl", 58 },
+    { "#puppet_tbl", 58 },
+    { "#Bret", 58 },
+    { "#Razor", 58 },
+    { "#Taker", 58 },
+    { "#Yokozuna", 58 },
+    { "#Shawn", 58 },
+    { "#BamBam", 58 },
+    { "#Doink", 58 },
+    { "#Adam", 58 },
+    { "#Lex", 58 },
+};
+
 static const wm_anim_op prog_yok_graboh_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -54309,6 +61028,23 @@ static const wm_anim_op prog_yok_graboh_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 8, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_graboh_anim_labels[] = {
+    { "#inhere", 28 },
+    { "#missedb", 33 },
+    { "#missed", 37 },
+    { "#strt_flail_tbl", 47 },
+    { "#puppet_tbl", 47 },
+    { "#Bret", 47 },
+    { "#Razor", 47 },
+    { "#Taker", 47 },
+    { "#Yokozuna", 47 },
+    { "#Shawn", 47 },
+    { "#BamBam", 47 },
+    { "#Doink", 47 },
+    { "#Adam", 47 },
+    { "#Lex", 47 },
 };
 
 static const wm_anim_op prog_yok_scissor_anim_ops[] = {
@@ -54401,6 +61137,30 @@ static const wm_anim_op prog_yok_scissor_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup2_anim" },
 };
 
+static const wm_anim_label prog_yok_scissor_anim_labels[] = {
+    { "#no_hdrel2", 11 },
+    { "#miss_bounce", 59 },
+    { "#stop_dmg", 64 },
+    { "rets", 64 },
+    { "#xflip_tbl", 64 },
+    { "#missedb", 64 },
+    { "#missed", 71 },
+    { "#merge_xvels", 87 },
+    { "#rets", 87 },
+    { "#store_opp_xvel", 87 },
+    { "#puppet_tbl", 87 },
+    { "#Bret", 87 },
+    { "#Razor", 87 },
+    { "#Taker", 87 },
+    { "#Yokozuna", 87 },
+    { "#Shawn", 87 },
+    { "#BamBam", 87 },
+    { "#Doink", 87 },
+    { "#Adam", 87 },
+    { "#Lex", 87 },
+    { "#recover_tbl", 87 },
+};
+
 static const wm_anim_op prog_yok_2_salt_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -54437,6 +61197,11 @@ static const wm_anim_op prog_yok_2_salt_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_2_salt_anim_labels[] = {
+    { "#no_hdrel2", 17 },
+    { "#no", 27 },
+};
+
 static const wm_anim_op prog_yok_4_salt_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -54464,6 +61229,11 @@ static const wm_anim_op prog_yok_4_salt_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_4_salt_anim_labels[] = {
+    { "#no_hdrel2", 10 },
+    { "#no", 20 },
 };
 
 static const wm_anim_op prog_yok_combo_salt_anim_ops[] = {
@@ -54498,6 +61268,16 @@ static const wm_anim_op prog_yok_combo_salt_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_combo_salt_anim_labels[] = {
+    { "#no_hdrel2c", 11 },
+    { "#noc", 20 },
+    { "#NO_SCISSORS", 23 },
+    { "#salt_blocked", 29 },
+    { "#not_blocked", 29 },
+    { "rets", 29 },
+    { "#do_salt", 29 },
+};
+
 static const wm_anim_op prog_yok_4_block_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -54517,6 +61297,10 @@ static const wm_anim_op prog_yok_4_block_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_4_block_anim_labels[] = {
+    { "#hold_block", 7 },
+};
+
 static const wm_anim_op prog_yok_4_hitblock_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y4BK3A05" },
     { WM_AOP_SETMODE, 0, -1, 76, 0, 0, 0, 0, 0, 0 },
@@ -54534,6 +61318,10 @@ static const wm_anim_op prog_yok_4_hitblock_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y4BK3A06" },
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y4BK3A05" },
     { WM_AOP_GOTO, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_4_hitblock_anim_labels[] = {
+    { "#hold_block", 0 },
 };
 
 static const wm_anim_op prog_yok_4_hitblock2_anim_ops[] = {
@@ -54565,6 +61353,11 @@ static const wm_anim_op prog_yok_4_hitblock2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4BK3A06" },
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4BK3A05" },
     { WM_AOP_GOTO, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_4_hitblock2_anim_labels[] = {
+    { "#hold_block", 0 },
+    { "#FRICTION_VAL", 28 },
 };
 
 static const wm_anim_op prog_yok_4_losebal_anim_ops[] = {
@@ -54722,6 +61515,10 @@ static const wm_anim_op prog_yok_2_head_hit2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_2_head_hit2_anim_labels[] = {
+    { "#nodead", 19 },
+};
+
 static const wm_anim_op prog_yok_4_head_hit2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -54746,6 +61543,10 @@ static const wm_anim_op prog_yok_4_head_hit2_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_4_head_hit2_anim_labels[] = {
+    { "#nodead", 19 },
 };
 
 static const wm_anim_op prog_yok_4_head_hit2s_anim_ops[] = {
@@ -54910,6 +61711,10 @@ static const wm_anim_op prog_yok_4_body_hit_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_4_body_hit_anim_labels[] = {
+    { "#reg", 30 },
+};
+
 static const wm_anim_op prog_yok_4_body_hit_dizzy_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -55017,6 +61822,10 @@ static const wm_anim_op prog_yok_quick_knee_hit_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_fall_back_anim" },
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_3_head_held_anim" },
+};
+
+static const wm_anim_label prog_yok_quick_knee_hit_anim_labels[] = {
+    { "#nodead", 17 },
 };
 
 static const wm_anim_op prog_yok_fall_back_anim_ops[] = {
@@ -55150,6 +61959,17 @@ static const wm_anim_op prog_yok_faceup_getup_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_faceup_getup_anim_labels[] = {
+    { "#common", 10 },
+    { "#getup_in_2", 19 },
+    { "#no_freetoss", 33 },
+    { "#getup_in_4", 37 },
+    { "#no_freetoss2", 51 },
+    { "#choose_2or4", 55 },
+    { "#choose_2", 55 },
+    { "rets", 55 },
+};
+
 static const wm_anim_op prog_yok_faceup_getup2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 268, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -55201,6 +62021,17 @@ static const wm_anim_op prog_yok_faceup_getup2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_faceup_getup2_anim_labels[] = {
+    { "#common", 3 },
+    { "#getup_in_2", 12 },
+    { "#no_freetoss", 26 },
+    { "#getup_in_4", 30 },
+    { "#no_freetoss2", 44 },
+    { "#choose_2or4", 48 },
+    { "#choose_2", 48 },
+    { "rets", 48 },
+};
+
 static const wm_anim_op prog_yok_dizzy_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 8, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -55215,6 +62046,10 @@ static const wm_anim_op prog_yok_dizzy_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "Y4TI4C06" },
     { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "Y4TI4C05" },
     { WM_AOP_GOTO, 0, 4, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_dizzy_anim_labels[] = {
+    { "#loop", 4 },
 };
 
 static const wm_anim_op prog_yok_hitonground_xflip_anim_ops[] = {
@@ -55374,6 +62209,10 @@ static const wm_anim_op prog_yok_break_neck_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_yok_break_neck_anim_labels[] = {
+    { "#fall_back", 17 },
 };
 
 static const wm_anim_op prog_yok_roll_frames_ops[] = {
@@ -55562,6 +62401,10 @@ static const wm_anim_op prog_yok_arm_broken_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_arm_broken_anim_labels[] = {
+    { "#nodead", 16 },
+};
+
 static const wm_anim_op prog_start_run_flung_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETFACING, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -55600,6 +62443,10 @@ static const wm_anim_op prog_hrt_choking_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_3_head_held_brk_anim" },
 };
 
+static const wm_anim_label prog_hrt_choking_anim_labels[] = {
+    { "#loop", 4 },
+};
+
 static const wm_anim_op prog_rzr_choking_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 44, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 19, 0, 0, 0, 0, 0, 0 },
@@ -55619,6 +62466,10 @@ static const wm_anim_op prog_rzr_choking_anim_ops[] = {
     { WM_AOP_IFNOTSTATUS, 0, 4, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "FIND_AND_KILL_ENDLESS" },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_3_head_held_brk_anim" },
+};
+
+static const wm_anim_label prog_rzr_choking_anim_labels[] = {
+    { "#loop", 4 },
 };
 
 static const wm_anim_op prog_und_choking_anim_ops[] = {
@@ -55644,6 +62495,10 @@ static const wm_anim_op prog_und_choking_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_3_head_held_brk_anim" },
 };
 
+static const wm_anim_label prog_und_choking_anim_labels[] = {
+    { "#loop", 4 },
+};
+
 static const wm_anim_op prog_yok_choking_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 44, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 19, 0, 0, 0, 0, 0, 0 },
@@ -55662,6 +62517,10 @@ static const wm_anim_op prog_yok_choking_anim_ops[] = {
     { WM_AOP_IFNOTSTATUS, 0, 4, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "FIND_AND_KILL_ENDLESS" },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_3_head_held_brk_anim" },
+};
+
+static const wm_anim_label prog_yok_choking_anim_labels[] = {
+    { "#loop", 4 },
 };
 
 static const wm_anim_op prog_shn_choking_anim_ops[] = {
@@ -55684,6 +62543,10 @@ static const wm_anim_op prog_shn_choking_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_3_head_held_brk_anim" },
 };
 
+static const wm_anim_label prog_shn_choking_anim_labels[] = {
+    { "#loop", 4 },
+};
+
 static const wm_anim_op prog_bam_choking_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 44, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 19, 0, 0, 0, 0, 0, 0 },
@@ -55699,6 +62562,10 @@ static const wm_anim_op prog_bam_choking_anim_ops[] = {
     { WM_AOP_IFNOTSTATUS, 0, 4, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "FIND_AND_KILL_ENDLESS" },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_3_head_held_brk_anim" },
+};
+
+static const wm_anim_label prog_bam_choking_anim_labels[] = {
+    { "#loop", 4 },
 };
 
 static const wm_anim_op prog_dnk_choking_anim_ops[] = {
@@ -55724,6 +62591,10 @@ static const wm_anim_op prog_dnk_choking_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_3_head_held_brk_anim" },
 };
 
+static const wm_anim_label prog_dnk_choking_anim_labels[] = {
+    { "#loop", 4 },
+};
+
 static const wm_anim_op prog_lex_choking_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 44, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 19, 0, 0, 0, 0, 0, 0 },
@@ -55743,3055 +62614,3059 @@ static const wm_anim_op prog_lex_choking_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_3_head_held_brk_anim" },
 };
 
+static const wm_anim_label prog_lex_choking_anim_labels[] = {
+    { "#loop", 4 },
+};
+
 static const wm_anim_program programs[] = {
     { "bam_zip_anim", "BAMSEQ1.ASM", prog_bam_zip_anim_ops,
-      sizeof(prog_bam_zip_anim_ops) / sizeof(prog_bam_zip_anim_ops[0]), 0 },
+      sizeof(prog_bam_zip_anim_ops) / sizeof(prog_bam_zip_anim_ops[0]), 0, 0, 0 },
     { "bam_stand2_anim", "BAMSEQ1.ASM", prog_bam_stand2_anim_ops,
-      sizeof(prog_bam_stand2_anim_ops) / sizeof(prog_bam_stand2_anim_ops[0]), 0 },
+      sizeof(prog_bam_stand2_anim_ops) / sizeof(prog_bam_stand2_anim_ops[0]), 0, 0, 0 },
     { "bam_stand8_anim", "BAMSEQ1.ASM", prog_bam_stand8_anim_ops,
-      sizeof(prog_bam_stand8_anim_ops) / sizeof(prog_bam_stand8_anim_ops[0]), 0 },
+      sizeof(prog_bam_stand8_anim_ops) / sizeof(prog_bam_stand8_anim_ops[0]), 0, 0, 0 },
     { "bam_stand4_anim", "BAMSEQ1.ASM", prog_bam_stand4_anim_ops,
-      sizeof(prog_bam_stand4_anim_ops) / sizeof(prog_bam_stand4_anim_ops[0]), 0 },
+      sizeof(prog_bam_stand4_anim_ops) / sizeof(prog_bam_stand4_anim_ops[0]), 0, 0, 0 },
     { "bam_stand6_anim", "BAMSEQ1.ASM", prog_bam_stand6_anim_ops,
-      sizeof(prog_bam_stand6_anim_ops) / sizeof(prog_bam_stand6_anim_ops[0]), 0 },
+      sizeof(prog_bam_stand6_anim_ops) / sizeof(prog_bam_stand6_anim_ops[0]), 0, 0, 0 },
     { "bam_torso2_anim", "BAMSEQ1.ASM", prog_bam_torso2_anim_ops,
-      sizeof(prog_bam_torso2_anim_ops) / sizeof(prog_bam_torso2_anim_ops[0]), 0 },
+      sizeof(prog_bam_torso2_anim_ops) / sizeof(prog_bam_torso2_anim_ops[0]), 0, 0, 0 },
     { "bam_torso8_anim", "BAMSEQ1.ASM", prog_bam_torso8_anim_ops,
-      sizeof(prog_bam_torso8_anim_ops) / sizeof(prog_bam_torso8_anim_ops[0]), 0 },
+      sizeof(prog_bam_torso8_anim_ops) / sizeof(prog_bam_torso8_anim_ops[0]), 0, 0, 0 },
     { "bam_torso4_anim", "BAMSEQ1.ASM", prog_bam_torso4_anim_ops,
-      sizeof(prog_bam_torso4_anim_ops) / sizeof(prog_bam_torso4_anim_ops[0]), 0 },
+      sizeof(prog_bam_torso4_anim_ops) / sizeof(prog_bam_torso4_anim_ops[0]), 0, 0, 0 },
     { "bam_torso6_anim", "BAMSEQ1.ASM", prog_bam_torso6_anim_ops,
-      sizeof(prog_bam_torso6_anim_ops) / sizeof(prog_bam_torso6_anim_ops[0]), 0 },
+      sizeof(prog_bam_torso6_anim_ops) / sizeof(prog_bam_torso6_anim_ops[0]), 0, 0, 0 },
     { "bam_holdoh_anim", "BAMSEQ1.ASM", prog_bam_holdoh_anim_ops,
-      sizeof(prog_bam_holdoh_anim_ops) / sizeof(prog_bam_holdoh_anim_ops[0]), 0 },
+      sizeof(prog_bam_holdoh_anim_ops) / sizeof(prog_bam_holdoh_anim_ops[0]), 0, 0, 0 },
     { "bam_walk1_f2_anim", "BAMSEQ1.ASM", prog_bam_walk1_f2_anim_ops,
-      sizeof(prog_bam_walk1_f2_anim_ops) / sizeof(prog_bam_walk1_f2_anim_ops[0]), 0 },
+      sizeof(prog_bam_walk1_f2_anim_ops) / sizeof(prog_bam_walk1_f2_anim_ops[0]), 0, 0, 0 },
     { "bam_walk2_f2_anim", "BAMSEQ1.ASM", prog_bam_walk2_f2_anim_ops,
-      sizeof(prog_bam_walk2_f2_anim_ops) / sizeof(prog_bam_walk2_f2_anim_ops[0]), 0 },
+      sizeof(prog_bam_walk2_f2_anim_ops) / sizeof(prog_bam_walk2_f2_anim_ops[0]), 0, 0, 0 },
     { "bam_walk4_f2_anim", "BAMSEQ1.ASM", prog_bam_walk4_f2_anim_ops,
-      sizeof(prog_bam_walk4_f2_anim_ops) / sizeof(prog_bam_walk4_f2_anim_ops[0]), 0 },
+      sizeof(prog_bam_walk4_f2_anim_ops) / sizeof(prog_bam_walk4_f2_anim_ops[0]), 0, 0, 0 },
     { "bam_walk5_f2_anim", "BAMSEQ1.ASM", prog_bam_walk5_f2_anim_ops,
-      sizeof(prog_bam_walk5_f2_anim_ops) / sizeof(prog_bam_walk5_f2_anim_ops[0]), 0 },
+      sizeof(prog_bam_walk5_f2_anim_ops) / sizeof(prog_bam_walk5_f2_anim_ops[0]), 0, 0, 0 },
     { "bam_walk6_f2_anim", "BAMSEQ1.ASM", prog_bam_walk6_f2_anim_ops,
-      sizeof(prog_bam_walk6_f2_anim_ops) / sizeof(prog_bam_walk6_f2_anim_ops[0]), 0 },
+      sizeof(prog_bam_walk6_f2_anim_ops) / sizeof(prog_bam_walk6_f2_anim_ops[0]), 0, 0, 0 },
     { "bam_walk8_f2_anim", "BAMSEQ1.ASM", prog_bam_walk8_f2_anim_ops,
-      sizeof(prog_bam_walk8_f2_anim_ops) / sizeof(prog_bam_walk8_f2_anim_ops[0]), 0 },
+      sizeof(prog_bam_walk8_f2_anim_ops) / sizeof(prog_bam_walk8_f2_anim_ops[0]), 0, 0, 0 },
     { "bam_walk1_f4_anim", "BAMSEQ1.ASM", prog_bam_walk1_f4_anim_ops,
-      sizeof(prog_bam_walk1_f4_anim_ops) / sizeof(prog_bam_walk1_f4_anim_ops[0]), 0 },
+      sizeof(prog_bam_walk1_f4_anim_ops) / sizeof(prog_bam_walk1_f4_anim_ops[0]), 0, 0, 0 },
     { "bam_walk2_f4_anim", "BAMSEQ1.ASM", prog_bam_walk2_f4_anim_ops,
-      sizeof(prog_bam_walk2_f4_anim_ops) / sizeof(prog_bam_walk2_f4_anim_ops[0]), 0 },
+      sizeof(prog_bam_walk2_f4_anim_ops) / sizeof(prog_bam_walk2_f4_anim_ops[0]), 0, 0, 0 },
     { "bam_walk4_f4_anim", "BAMSEQ1.ASM", prog_bam_walk4_f4_anim_ops,
-      sizeof(prog_bam_walk4_f4_anim_ops) / sizeof(prog_bam_walk4_f4_anim_ops[0]), 0 },
+      sizeof(prog_bam_walk4_f4_anim_ops) / sizeof(prog_bam_walk4_f4_anim_ops[0]), 0, 0, 0 },
     { "bam_walk5_f4_anim", "BAMSEQ1.ASM", prog_bam_walk5_f4_anim_ops,
-      sizeof(prog_bam_walk5_f4_anim_ops) / sizeof(prog_bam_walk5_f4_anim_ops[0]), 0 },
+      sizeof(prog_bam_walk5_f4_anim_ops) / sizeof(prog_bam_walk5_f4_anim_ops[0]), 0, 0, 0 },
     { "bam_walk6_f4_anim", "BAMSEQ1.ASM", prog_bam_walk6_f4_anim_ops,
-      sizeof(prog_bam_walk6_f4_anim_ops) / sizeof(prog_bam_walk6_f4_anim_ops[0]), 0 },
+      sizeof(prog_bam_walk6_f4_anim_ops) / sizeof(prog_bam_walk6_f4_anim_ops[0]), 0, 0, 0 },
     { "bam_walk8_f4_anim", "BAMSEQ1.ASM", prog_bam_walk8_f4_anim_ops,
-      sizeof(prog_bam_walk8_f4_anim_ops) / sizeof(prog_bam_walk8_f4_anim_ops[0]), 0 },
+      sizeof(prog_bam_walk8_f4_anim_ops) / sizeof(prog_bam_walk8_f4_anim_ops[0]), 0, 0, 0 },
     { "bam_2_to_4_turn_anim", "BAMSEQ1.ASM", prog_bam_2_to_4_turn_anim_ops,
-      sizeof(prog_bam_2_to_4_turn_anim_ops) / sizeof(prog_bam_2_to_4_turn_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_to_4_turn_anim_ops) / sizeof(prog_bam_2_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "bam_8_to_6_turn_anim", "BAMSEQ1.ASM", prog_bam_8_to_6_turn_anim_ops,
-      sizeof(prog_bam_8_to_6_turn_anim_ops) / sizeof(prog_bam_8_to_6_turn_anim_ops[0]), 0 },
+      sizeof(prog_bam_8_to_6_turn_anim_ops) / sizeof(prog_bam_8_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "bam_4_to_2_turn_anim", "BAMSEQ1.ASM", prog_bam_4_to_2_turn_anim_ops,
-      sizeof(prog_bam_4_to_2_turn_anim_ops) / sizeof(prog_bam_4_to_2_turn_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_to_2_turn_anim_ops) / sizeof(prog_bam_4_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "bam_6_to_8_turn_anim", "BAMSEQ1.ASM", prog_bam_6_to_8_turn_anim_ops,
-      sizeof(prog_bam_6_to_8_turn_anim_ops) / sizeof(prog_bam_6_to_8_turn_anim_ops[0]), 0 },
+      sizeof(prog_bam_6_to_8_turn_anim_ops) / sizeof(prog_bam_6_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "bam_4_to_6_turn_anim", "BAMSEQ1.ASM", prog_bam_4_to_6_turn_anim_ops,
-      sizeof(prog_bam_4_to_6_turn_anim_ops) / sizeof(prog_bam_4_to_6_turn_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_to_6_turn_anim_ops) / sizeof(prog_bam_4_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "bam_6_to_4_turn_anim", "BAMSEQ1.ASM", prog_bam_6_to_4_turn_anim_ops,
-      sizeof(prog_bam_6_to_4_turn_anim_ops) / sizeof(prog_bam_6_to_4_turn_anim_ops[0]), 0 },
+      sizeof(prog_bam_6_to_4_turn_anim_ops) / sizeof(prog_bam_6_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "bam_2_to_8_turn_anim", "BAMSEQ1.ASM", prog_bam_2_to_8_turn_anim_ops,
-      sizeof(prog_bam_2_to_8_turn_anim_ops) / sizeof(prog_bam_2_to_8_turn_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_to_8_turn_anim_ops) / sizeof(prog_bam_2_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "bam_8_to_2_turn_anim", "BAMSEQ1.ASM", prog_bam_8_to_2_turn_anim_ops,
-      sizeof(prog_bam_8_to_2_turn_anim_ops) / sizeof(prog_bam_8_to_2_turn_anim_ops[0]), 0 },
+      sizeof(prog_bam_8_to_2_turn_anim_ops) / sizeof(prog_bam_8_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "bam_4_to_8_turn_anim", "BAMSEQ1.ASM", prog_bam_4_to_8_turn_anim_ops,
-      sizeof(prog_bam_4_to_8_turn_anim_ops) / sizeof(prog_bam_4_to_8_turn_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_to_8_turn_anim_ops) / sizeof(prog_bam_4_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "bam_6_to_2_turn_anim", "BAMSEQ1.ASM", prog_bam_6_to_2_turn_anim_ops,
-      sizeof(prog_bam_6_to_2_turn_anim_ops) / sizeof(prog_bam_6_to_2_turn_anim_ops[0]), 0 },
+      sizeof(prog_bam_6_to_2_turn_anim_ops) / sizeof(prog_bam_6_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "bam_2_to_6_turn_anim", "BAMSEQ1.ASM", prog_bam_2_to_6_turn_anim_ops,
-      sizeof(prog_bam_2_to_6_turn_anim_ops) / sizeof(prog_bam_2_to_6_turn_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_to_6_turn_anim_ops) / sizeof(prog_bam_2_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "bam_8_to_4_turn_anim", "BAMSEQ1.ASM", prog_bam_8_to_4_turn_anim_ops,
-      sizeof(prog_bam_8_to_4_turn_anim_ops) / sizeof(prog_bam_8_to_4_turn_anim_ops[0]), 0 },
+      sizeof(prog_bam_8_to_4_turn_anim_ops) / sizeof(prog_bam_8_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "bam_2_to_4_turn2_anim", "BAMSEQ1.ASM", prog_bam_2_to_4_turn2_anim_ops,
-      sizeof(prog_bam_2_to_4_turn2_anim_ops) / sizeof(prog_bam_2_to_4_turn2_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_to_4_turn2_anim_ops) / sizeof(prog_bam_2_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "bam_8_to_6_turn2_anim", "BAMSEQ1.ASM", prog_bam_8_to_6_turn2_anim_ops,
-      sizeof(prog_bam_8_to_6_turn2_anim_ops) / sizeof(prog_bam_8_to_6_turn2_anim_ops[0]), 0 },
+      sizeof(prog_bam_8_to_6_turn2_anim_ops) / sizeof(prog_bam_8_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "bam_4_to_2_turn2_anim", "BAMSEQ1.ASM", prog_bam_4_to_2_turn2_anim_ops,
-      sizeof(prog_bam_4_to_2_turn2_anim_ops) / sizeof(prog_bam_4_to_2_turn2_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_to_2_turn2_anim_ops) / sizeof(prog_bam_4_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "bam_6_to_8_turn2_anim", "BAMSEQ1.ASM", prog_bam_6_to_8_turn2_anim_ops,
-      sizeof(prog_bam_6_to_8_turn2_anim_ops) / sizeof(prog_bam_6_to_8_turn2_anim_ops[0]), 0 },
+      sizeof(prog_bam_6_to_8_turn2_anim_ops) / sizeof(prog_bam_6_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "bam_4_to_6_turn2_anim", "BAMSEQ1.ASM", prog_bam_4_to_6_turn2_anim_ops,
-      sizeof(prog_bam_4_to_6_turn2_anim_ops) / sizeof(prog_bam_4_to_6_turn2_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_to_6_turn2_anim_ops) / sizeof(prog_bam_4_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "bam_6_to_4_turn2_anim", "BAMSEQ1.ASM", prog_bam_6_to_4_turn2_anim_ops,
-      sizeof(prog_bam_6_to_4_turn2_anim_ops) / sizeof(prog_bam_6_to_4_turn2_anim_ops[0]), 0 },
+      sizeof(prog_bam_6_to_4_turn2_anim_ops) / sizeof(prog_bam_6_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "bam_2_to_8_turn2_anim", "BAMSEQ1.ASM", prog_bam_2_to_8_turn2_anim_ops,
-      sizeof(prog_bam_2_to_8_turn2_anim_ops) / sizeof(prog_bam_2_to_8_turn2_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_to_8_turn2_anim_ops) / sizeof(prog_bam_2_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "bam_8_to_2_turn2_anim", "BAMSEQ1.ASM", prog_bam_8_to_2_turn2_anim_ops,
-      sizeof(prog_bam_8_to_2_turn2_anim_ops) / sizeof(prog_bam_8_to_2_turn2_anim_ops[0]), 0 },
+      sizeof(prog_bam_8_to_2_turn2_anim_ops) / sizeof(prog_bam_8_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "bam_4_to_8_turn2_anim", "BAMSEQ1.ASM", prog_bam_4_to_8_turn2_anim_ops,
-      sizeof(prog_bam_4_to_8_turn2_anim_ops) / sizeof(prog_bam_4_to_8_turn2_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_to_8_turn2_anim_ops) / sizeof(prog_bam_4_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "bam_6_to_2_turn2_anim", "BAMSEQ1.ASM", prog_bam_6_to_2_turn2_anim_ops,
-      sizeof(prog_bam_6_to_2_turn2_anim_ops) / sizeof(prog_bam_6_to_2_turn2_anim_ops[0]), 0 },
+      sizeof(prog_bam_6_to_2_turn2_anim_ops) / sizeof(prog_bam_6_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "bam_2_to_6_turn2_anim", "BAMSEQ1.ASM", prog_bam_2_to_6_turn2_anim_ops,
-      sizeof(prog_bam_2_to_6_turn2_anim_ops) / sizeof(prog_bam_2_to_6_turn2_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_to_6_turn2_anim_ops) / sizeof(prog_bam_2_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "bam_8_to_4_turn2_anim", "BAMSEQ1.ASM", prog_bam_8_to_4_turn2_anim_ops,
-      sizeof(prog_bam_8_to_4_turn2_anim_ops) / sizeof(prog_bam_8_to_4_turn2_anim_ops[0]), 0 },
+      sizeof(prog_bam_8_to_4_turn2_anim_ops) / sizeof(prog_bam_8_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "bam_run2_anim", "BAMSEQ1.ASM", prog_bam_run2_anim_ops,
-      sizeof(prog_bam_run2_anim_ops) / sizeof(prog_bam_run2_anim_ops[0]), 0 },
+      sizeof(prog_bam_run2_anim_ops) / sizeof(prog_bam_run2_anim_ops[0]), 0, prog_bam_run2_anim_labels, sizeof(prog_bam_run2_anim_labels) / sizeof(prog_bam_run2_anim_labels[0]) },
     { "bam_run_anim", "BAMSEQ1.ASM", prog_bam_run_anim_ops,
-      sizeof(prog_bam_run_anim_ops) / sizeof(prog_bam_run_anim_ops[0]), 0 },
+      sizeof(prog_bam_run_anim_ops) / sizeof(prog_bam_run_anim_ops[0]), 0, prog_bam_run_anim_labels, sizeof(prog_bam_run_anim_labels) / sizeof(prog_bam_run_anim_labels[0]) },
     { "bam_bounce_anim", "BAMSEQ1.ASM", prog_bam_bounce_anim_ops,
-      sizeof(prog_bam_bounce_anim_ops) / sizeof(prog_bam_bounce_anim_ops[0]), 0 },
+      sizeof(prog_bam_bounce_anim_ops) / sizeof(prog_bam_bounce_anim_ops[0]), 0, 0, 0 },
     { "bam_2_fpunch_anim", "BAMSEQ2.ASM", prog_bam_2_fpunch_anim_ops,
-      sizeof(prog_bam_2_fpunch_anim_ops) / sizeof(prog_bam_2_fpunch_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_fpunch_anim_ops) / sizeof(prog_bam_2_fpunch_anim_ops[0]), 0, prog_bam_2_fpunch_anim_labels, sizeof(prog_bam_2_fpunch_anim_labels) / sizeof(prog_bam_2_fpunch_anim_labels[0]) },
     { "bam_4_fpunch_anim", "BAMSEQ2.ASM", prog_bam_4_fpunch_anim_ops,
-      sizeof(prog_bam_4_fpunch_anim_ops) / sizeof(prog_bam_4_fpunch_anim_ops[0]), 58 },   /* branches back into shared code */
+      sizeof(prog_bam_4_fpunch_anim_ops) / sizeof(prog_bam_4_fpunch_anim_ops[0]), 58, prog_bam_4_fpunch_anim_labels, sizeof(prog_bam_4_fpunch_anim_labels) / sizeof(prog_bam_4_fpunch_anim_labels[0]) },   /* branches back into shared code */
     { "bam_combo_fpunch", "BAMSEQ2.ASM", prog_bam_combo_fpunch_ops,
-      sizeof(prog_bam_combo_fpunch_ops) / sizeof(prog_bam_combo_fpunch_ops[0]), 0 },
+      sizeof(prog_bam_combo_fpunch_ops) / sizeof(prog_bam_combo_fpunch_ops[0]), 0, prog_bam_combo_fpunch_labels, sizeof(prog_bam_combo_fpunch_labels) / sizeof(prog_bam_combo_fpunch_labels[0]) },
     { "bam_2_punch_anim", "BAMSEQ2.ASM", prog_bam_2_punch_anim_ops,
-      sizeof(prog_bam_2_punch_anim_ops) / sizeof(prog_bam_2_punch_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_punch_anim_ops) / sizeof(prog_bam_2_punch_anim_ops[0]), 0, prog_bam_2_punch_anim_labels, sizeof(prog_bam_2_punch_anim_labels) / sizeof(prog_bam_2_punch_anim_labels[0]) },
     { "bam_4_punch_anim", "BAMSEQ2.ASM", prog_bam_4_punch_anim_ops,
-      sizeof(prog_bam_4_punch_anim_ops) / sizeof(prog_bam_4_punch_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_punch_anim_ops) / sizeof(prog_bam_4_punch_anim_ops[0]), 0, prog_bam_4_punch_anim_labels, sizeof(prog_bam_4_punch_anim_labels) / sizeof(prog_bam_4_punch_anim_labels[0]) },
     { "bam_combo_punch_anim", "BAMSEQ2.ASM", prog_bam_combo_punch_anim_ops,
-      sizeof(prog_bam_combo_punch_anim_ops) / sizeof(prog_bam_combo_punch_anim_ops[0]), 0 },
+      sizeof(prog_bam_combo_punch_anim_ops) / sizeof(prog_bam_combo_punch_anim_ops[0]), 0, prog_bam_combo_punch_anim_labels, sizeof(prog_bam_combo_punch_anim_labels) / sizeof(prog_bam_combo_punch_anim_labels[0]) },
     { "bam_4_push_anim", "BAMSEQ2.ASM", prog_bam_4_push_anim_ops,
-      sizeof(prog_bam_4_push_anim_ops) / sizeof(prog_bam_4_push_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_push_anim_ops) / sizeof(prog_bam_4_push_anim_ops[0]), 0, prog_bam_4_push_anim_labels, sizeof(prog_bam_4_push_anim_labels) / sizeof(prog_bam_4_push_anim_labels[0]) },
     { "bam_2_bncoff_anim", "BAMSEQ2.ASM", prog_bam_2_bncoff_anim_ops,
-      sizeof(prog_bam_2_bncoff_anim_ops) / sizeof(prog_bam_2_bncoff_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_bncoff_anim_ops) / sizeof(prog_bam_2_bncoff_anim_ops[0]), 0, 0, 0 },
     { "bam_4_bncoff_anim", "BAMSEQ2.ASM", prog_bam_4_bncoff_anim_ops,
-      sizeof(prog_bam_4_bncoff_anim_ops) / sizeof(prog_bam_4_bncoff_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_bncoff_anim_ops) / sizeof(prog_bam_4_bncoff_anim_ops[0]), 0, 0, 0 },
     { "bam_4_bncoff_dizzy_anim", "BAMSEQ2.ASM", prog_bam_4_bncoff_dizzy_anim_ops,
-      sizeof(prog_bam_4_bncoff_dizzy_anim_ops) / sizeof(prog_bam_4_bncoff_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_bncoff_dizzy_anim_ops) / sizeof(prog_bam_4_bncoff_dizzy_anim_ops[0]), 0, 0, 0 },
     { "bam_4_losebal_anim", "BAMSEQ2.ASM", prog_bam_4_losebal_anim_ops,
-      sizeof(prog_bam_4_losebal_anim_ops) / sizeof(prog_bam_4_losebal_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_losebal_anim_ops) / sizeof(prog_bam_4_losebal_anim_ops[0]), 0, prog_bam_4_losebal_anim_labels, sizeof(prog_bam_4_losebal_anim_labels) / sizeof(prog_bam_4_losebal_anim_labels[0]) },
     { "bam_2_lbowdrop_anim", "BAMSEQ2.ASM", prog_bam_2_lbowdrop_anim_ops,
-      sizeof(prog_bam_2_lbowdrop_anim_ops) / sizeof(prog_bam_2_lbowdrop_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_lbowdrop_anim_ops) / sizeof(prog_bam_2_lbowdrop_anim_ops[0]), 0, prog_bam_2_lbowdrop_anim_labels, sizeof(prog_bam_2_lbowdrop_anim_labels) / sizeof(prog_bam_2_lbowdrop_anim_labels[0]) },
     { "bam_combo_lbowdrop_anim", "BAMSEQ2.ASM", prog_bam_combo_lbowdrop_anim_ops,
-      sizeof(prog_bam_combo_lbowdrop_anim_ops) / sizeof(prog_bam_combo_lbowdrop_anim_ops[0]), 0 },
+      sizeof(prog_bam_combo_lbowdrop_anim_ops) / sizeof(prog_bam_combo_lbowdrop_anim_ops[0]), 0, prog_bam_combo_lbowdrop_anim_labels, sizeof(prog_bam_combo_lbowdrop_anim_labels) / sizeof(prog_bam_combo_lbowdrop_anim_labels[0]) },
     { "bam_4_lbowdrop_anim", "BAMSEQ2.ASM", prog_bam_4_lbowdrop_anim_ops,
-      sizeof(prog_bam_4_lbowdrop_anim_ops) / sizeof(prog_bam_4_lbowdrop_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_lbowdrop_anim_ops) / sizeof(prog_bam_4_lbowdrop_anim_ops[0]), 0, prog_bam_4_lbowdrop_anim_labels, sizeof(prog_bam_4_lbowdrop_anim_labels) / sizeof(prog_bam_4_lbowdrop_anim_labels[0]) },
     { "bam_combo_butt_drop_anim", "BAMSEQ2.ASM", prog_bam_combo_butt_drop_anim_ops,
-      sizeof(prog_bam_combo_butt_drop_anim_ops) / sizeof(prog_bam_combo_butt_drop_anim_ops[0]), 0 },
+      sizeof(prog_bam_combo_butt_drop_anim_ops) / sizeof(prog_bam_combo_butt_drop_anim_ops[0]), 0, prog_bam_combo_butt_drop_anim_labels, sizeof(prog_bam_combo_butt_drop_anim_labels) / sizeof(prog_bam_combo_butt_drop_anim_labels[0]) },
     { "bam_3_butt_drop_anim", "BAMSEQ2.ASM", prog_bam_3_butt_drop_anim_ops,
-      sizeof(prog_bam_3_butt_drop_anim_ops) / sizeof(prog_bam_3_butt_drop_anim_ops[0]), 0 },
+      sizeof(prog_bam_3_butt_drop_anim_ops) / sizeof(prog_bam_3_butt_drop_anim_ops[0]), 0, prog_bam_3_butt_drop_anim_labels, sizeof(prog_bam_3_butt_drop_anim_labels) / sizeof(prog_bam_3_butt_drop_anim_labels[0]) },
     { "bam_bellyflop_anim", "BAMSEQ2.ASM", prog_bam_bellyflop_anim_ops,
-      sizeof(prog_bam_bellyflop_anim_ops) / sizeof(prog_bam_bellyflop_anim_ops[0]), 0 },
+      sizeof(prog_bam_bellyflop_anim_ops) / sizeof(prog_bam_bellyflop_anim_ops[0]), 0, prog_bam_bellyflop_anim_labels, sizeof(prog_bam_bellyflop_anim_labels) / sizeof(prog_bam_bellyflop_anim_labels[0]) },
     { "attach_victim", "BAMSEQ2.ASM", prog_attach_victim_ops,
-      sizeof(prog_attach_victim_ops) / sizeof(prog_attach_victim_ops[0]), 0 },
+      sizeof(prog_attach_victim_ops) / sizeof(prog_attach_victim_ops[0]), 0, prog_attach_victim_labels, sizeof(prog_attach_victim_labels) / sizeof(prog_attach_victim_labels[0]) },
     { "set_new_position", "BAMSEQ2.ASM", prog_set_new_position_ops,
-      sizeof(prog_set_new_position_ops) / sizeof(prog_set_new_position_ops[0]), 0 },
+      sizeof(prog_set_new_position_ops) / sizeof(prog_set_new_position_ops[0]), 0, prog_set_new_position_labels, sizeof(prog_set_new_position_labels) / sizeof(prog_set_new_position_labels[0]) },
     { "burn_tbl", "BAMSEQ2.ASM", prog_burn_tbl_ops,
-      sizeof(prog_burn_tbl_ops) / sizeof(prog_burn_tbl_ops[0]), 0 },
+      sizeof(prog_burn_tbl_ops) / sizeof(prog_burn_tbl_ops[0]), 0, prog_burn_tbl_labels, sizeof(prog_burn_tbl_labels) / sizeof(prog_burn_tbl_labels[0]) },
     { "release_table", "BAMSEQ2.ASM", prog_release_table_ops,
-      sizeof(prog_release_table_ops) / sizeof(prog_release_table_ops[0]), 0 },
+      sizeof(prog_release_table_ops) / sizeof(prog_release_table_ops[0]), 0, prog_release_table_labels, sizeof(prog_release_table_labels) / sizeof(prog_release_table_labels[0]) },
     { "xxx_burn_anim", "BAMSEQ2.ASM", prog_xxx_burn_anim_ops,
-      sizeof(prog_xxx_burn_anim_ops) / sizeof(prog_xxx_burn_anim_ops[0]), 0 },
+      sizeof(prog_xxx_burn_anim_ops) / sizeof(prog_xxx_burn_anim_ops[0]), 0, prog_xxx_burn_anim_labels, sizeof(prog_xxx_burn_anim_labels) / sizeof(prog_xxx_burn_anim_labels[0]) },
     { "hit_ground", "BAMSEQ2.ASM", prog_hit_ground_ops,
-      sizeof(prog_hit_ground_ops) / sizeof(prog_hit_ground_ops[0]), 0 },
+      sizeof(prog_hit_ground_ops) / sizeof(prog_hit_ground_ops[0]), 0, prog_hit_ground_labels, sizeof(prog_hit_ground_labels) / sizeof(prog_hit_ground_labels[0]) },
     { "set_pal", "BAMSEQ2.ASM", prog_set_pal_ops,
-      sizeof(prog_set_pal_ops) / sizeof(prog_set_pal_ops[0]), 0 },
+      sizeof(prog_set_pal_ops) / sizeof(prog_set_pal_ops[0]), 0, prog_set_pal_labels, sizeof(prog_set_pal_labels) / sizeof(prog_set_pal_labels[0]) },
     { "restore_pal", "BAMSEQ2.ASM", prog_restore_pal_ops,
-      sizeof(prog_restore_pal_ops) / sizeof(prog_restore_pal_ops[0]), 0 },
+      sizeof(prog_restore_pal_ops) / sizeof(prog_restore_pal_ops[0]), 0, prog_restore_pal_labels, sizeof(prog_restore_pal_labels) / sizeof(prog_restore_pal_labels[0]) },
     { "bam_2_butt_anim", "BAMSEQ2.ASM", prog_bam_2_butt_anim_ops,
-      sizeof(prog_bam_2_butt_anim_ops) / sizeof(prog_bam_2_butt_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_butt_anim_ops) / sizeof(prog_bam_2_butt_anim_ops[0]), 0, prog_bam_2_butt_anim_labels, sizeof(prog_bam_2_butt_anim_labels) / sizeof(prog_bam_2_butt_anim_labels[0]) },
     { "bam_4_butt_anim", "BAMSEQ2.ASM", prog_bam_4_butt_anim_ops,
-      sizeof(prog_bam_4_butt_anim_ops) / sizeof(prog_bam_4_butt_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_butt_anim_ops) / sizeof(prog_bam_4_butt_anim_ops[0]), 0, prog_bam_4_butt_anim_labels, sizeof(prog_bam_4_butt_anim_labels) / sizeof(prog_bam_4_butt_anim_labels[0]) },
     { "bam_2_butts_anim", "BAMSEQ2.ASM", prog_bam_2_butts_anim_ops,
-      sizeof(prog_bam_2_butts_anim_ops) / sizeof(prog_bam_2_butts_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_butts_anim_ops) / sizeof(prog_bam_2_butts_anim_ops[0]), 0, prog_bam_2_butts_anim_labels, sizeof(prog_bam_2_butts_anim_labels) / sizeof(prog_bam_2_butts_anim_labels[0]) },
     { "bam_4_butts_anim", "BAMSEQ2.ASM", prog_bam_4_butts_anim_ops,
-      sizeof(prog_bam_4_butts_anim_ops) / sizeof(prog_bam_4_butts_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_butts_anim_ops) / sizeof(prog_bam_4_butts_anim_ops[0]), 0, prog_bam_4_butts_anim_labels, sizeof(prog_bam_4_butts_anim_labels) / sizeof(prog_bam_4_butts_anim_labels[0]) },
     { "bam_kick_TB_anim", "BAMSEQ2.ASM", prog_bam_kick_TB_anim_ops,
-      sizeof(prog_bam_kick_TB_anim_ops) / sizeof(prog_bam_kick_TB_anim_ops[0]), 0 },
+      sizeof(prog_bam_kick_TB_anim_ops) / sizeof(prog_bam_kick_TB_anim_ops[0]), 0, 0, 0 },
     { "bam_2_kick_anim", "BAMSEQ2.ASM", prog_bam_2_kick_anim_ops,
-      sizeof(prog_bam_2_kick_anim_ops) / sizeof(prog_bam_2_kick_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_kick_anim_ops) / sizeof(prog_bam_2_kick_anim_ops[0]), 0, prog_bam_2_kick_anim_labels, sizeof(prog_bam_2_kick_anim_labels) / sizeof(prog_bam_2_kick_anim_labels[0]) },
     { "bam_4_kick_anim", "BAMSEQ2.ASM", prog_bam_4_kick_anim_ops,
-      sizeof(prog_bam_4_kick_anim_ops) / sizeof(prog_bam_4_kick_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_kick_anim_ops) / sizeof(prog_bam_4_kick_anim_ops[0]), 0, prog_bam_4_kick_anim_labels, sizeof(prog_bam_4_kick_anim_labels) / sizeof(prog_bam_4_kick_anim_labels[0]) },
     { "bam_2_superkick_anim", "BAMSEQ2.ASM", prog_bam_2_superkick_anim_ops,
-      sizeof(prog_bam_2_superkick_anim_ops) / sizeof(prog_bam_2_superkick_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_superkick_anim_ops) / sizeof(prog_bam_2_superkick_anim_ops[0]), 0, prog_bam_2_superkick_anim_labels, sizeof(prog_bam_2_superkick_anim_labels) / sizeof(prog_bam_2_superkick_anim_labels[0]) },
     { "bam_4_superkick_anim", "BAMSEQ2.ASM", prog_bam_4_superkick_anim_ops,
-      sizeof(prog_bam_4_superkick_anim_ops) / sizeof(prog_bam_4_superkick_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_superkick_anim_ops) / sizeof(prog_bam_4_superkick_anim_ops[0]), 0, prog_bam_4_superkick_anim_labels, sizeof(prog_bam_4_superkick_anim_labels) / sizeof(prog_bam_4_superkick_anim_labels[0]) },
     { "bam_combo_superkick_anim", "BAMSEQ2.ASM", prog_bam_combo_superkick_anim_ops,
-      sizeof(prog_bam_combo_superkick_anim_ops) / sizeof(prog_bam_combo_superkick_anim_ops[0]), 0 },
+      sizeof(prog_bam_combo_superkick_anim_ops) / sizeof(prog_bam_combo_superkick_anim_ops[0]), 0, prog_bam_combo_superkick_anim_labels, sizeof(prog_bam_combo_superkick_anim_labels) / sizeof(prog_bam_combo_superkick_anim_labels[0]) },
     { "bam_4_jumpkick_anim", "BAMSEQ2.ASM", prog_bam_4_jumpkick_anim_ops,
-      sizeof(prog_bam_4_jumpkick_anim_ops) / sizeof(prog_bam_4_jumpkick_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_jumpkick_anim_ops) / sizeof(prog_bam_4_jumpkick_anim_ops[0]), 0, prog_bam_4_jumpkick_anim_labels, sizeof(prog_bam_4_jumpkick_anim_labels) / sizeof(prog_bam_4_jumpkick_anim_labels[0]) },
     { "bam_flying_kick_anim", "BAMSEQ2.ASM", prog_bam_flying_kick_anim_ops,
-      sizeof(prog_bam_flying_kick_anim_ops) / sizeof(prog_bam_flying_kick_anim_ops[0]), 0 },
+      sizeof(prog_bam_flying_kick_anim_ops) / sizeof(prog_bam_flying_kick_anim_ops[0]), 0, prog_bam_flying_kick_anim_labels, sizeof(prog_bam_flying_kick_anim_labels) / sizeof(prog_bam_flying_kick_anim_labels[0]) },
     { "bam_flying_kick_no_xvel", "BAMSEQ2.ASM", prog_bam_flying_kick_no_xvel_ops,
-      sizeof(prog_bam_flying_kick_no_xvel_ops) / sizeof(prog_bam_flying_kick_no_xvel_ops[0]), 0 },
+      sizeof(prog_bam_flying_kick_no_xvel_ops) / sizeof(prog_bam_flying_kick_no_xvel_ops[0]), 0, prog_bam_flying_kick_no_xvel_labels, sizeof(prog_bam_flying_kick_no_xvel_labels) / sizeof(prog_bam_flying_kick_no_xvel_labels[0]) },
     { "bam_2_stomp_anim", "BAMSEQ2.ASM", prog_bam_2_stomp_anim_ops,
-      sizeof(prog_bam_2_stomp_anim_ops) / sizeof(prog_bam_2_stomp_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_stomp_anim_ops) / sizeof(prog_bam_2_stomp_anim_ops[0]), 0, prog_bam_2_stomp_anim_labels, sizeof(prog_bam_2_stomp_anim_labels) / sizeof(prog_bam_2_stomp_anim_labels[0]) },
     { "bam_4_stomp_anim", "BAMSEQ2.ASM", prog_bam_4_stomp_anim_ops,
-      sizeof(prog_bam_4_stomp_anim_ops) / sizeof(prog_bam_4_stomp_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_stomp_anim_ops) / sizeof(prog_bam_4_stomp_anim_ops[0]), 0, prog_bam_4_stomp_anim_labels, sizeof(prog_bam_4_stomp_anim_labels) / sizeof(prog_bam_4_stomp_anim_labels[0]) },
     { "bam_2_knee_anim", "BAMSEQ2.ASM", prog_bam_2_knee_anim_ops,
-      sizeof(prog_bam_2_knee_anim_ops) / sizeof(prog_bam_2_knee_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_knee_anim_ops) / sizeof(prog_bam_2_knee_anim_ops[0]), 0, prog_bam_2_knee_anim_labels, sizeof(prog_bam_2_knee_anim_labels) / sizeof(prog_bam_2_knee_anim_labels[0]) },
     { "bam_4_knee2_anim", "BAMSEQ2.ASM", prog_bam_4_knee2_anim_ops,
-      sizeof(prog_bam_4_knee2_anim_ops) / sizeof(prog_bam_4_knee2_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_knee2_anim_ops) / sizeof(prog_bam_4_knee2_anim_ops[0]), 0, prog_bam_4_knee2_anim_labels, sizeof(prog_bam_4_knee2_anim_labels) / sizeof(prog_bam_4_knee2_anim_labels[0]) },
     { "bam_4_knee_anim", "BAMSEQ2.ASM", prog_bam_4_knee_anim_ops,
-      sizeof(prog_bam_4_knee_anim_ops) / sizeof(prog_bam_4_knee_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_knee_anim_ops) / sizeof(prog_bam_4_knee_anim_ops[0]), 0, prog_bam_4_knee_anim_labels, sizeof(prog_bam_4_knee_anim_labels) / sizeof(prog_bam_4_knee_anim_labels[0]) },
     { "bam_2_grabfling_anim", "BAMSEQ2.ASM", prog_bam_2_grabfling_anim_ops,
-      sizeof(prog_bam_2_grabfling_anim_ops) / sizeof(prog_bam_2_grabfling_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_grabfling_anim_ops) / sizeof(prog_bam_2_grabfling_anim_ops[0]), 0, prog_bam_2_grabfling_anim_labels, sizeof(prog_bam_2_grabfling_anim_labels) / sizeof(prog_bam_2_grabfling_anim_labels[0]) },
     { "bam_4_grabfling_anim", "BAMSEQ2.ASM", prog_bam_4_grabfling_anim_ops,
-      sizeof(prog_bam_4_grabfling_anim_ops) / sizeof(prog_bam_4_grabfling_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_grabfling_anim_ops) / sizeof(prog_bam_4_grabfling_anim_ops[0]), 0, prog_bam_4_grabfling_anim_labels, sizeof(prog_bam_4_grabfling_anim_labels) / sizeof(prog_bam_4_grabfling_anim_labels[0]) },
     { "bam_2_head_hit_anim", "BAMSEQ2.ASM", prog_bam_2_head_hit_anim_ops,
-      sizeof(prog_bam_2_head_hit_anim_ops) / sizeof(prog_bam_2_head_hit_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_head_hit_anim_ops) / sizeof(prog_bam_2_head_hit_anim_ops[0]), 0, 0, 0 },
     { "bam_4_head_hit_anim", "BAMSEQ2.ASM", prog_bam_4_head_hit_anim_ops,
-      sizeof(prog_bam_4_head_hit_anim_ops) / sizeof(prog_bam_4_head_hit_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_head_hit_anim_ops) / sizeof(prog_bam_4_head_hit_anim_ops[0]), 0, 0, 0 },
     { "bam_2_head_hit2_anim", "BAMSEQ2.ASM", prog_bam_2_head_hit2_anim_ops,
-      sizeof(prog_bam_2_head_hit2_anim_ops) / sizeof(prog_bam_2_head_hit2_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_head_hit2_anim_ops) / sizeof(prog_bam_2_head_hit2_anim_ops[0]), 0, 0, 0 },
     { "bam_4_head_hit2_anim", "BAMSEQ2.ASM", prog_bam_4_head_hit2_anim_ops,
-      sizeof(prog_bam_4_head_hit2_anim_ops) / sizeof(prog_bam_4_head_hit2_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_head_hit2_anim_ops) / sizeof(prog_bam_4_head_hit2_anim_ops[0]), 0, 0, 0 },
     { "bam_4_head_hit4_anim", "BAMSEQ2.ASM", prog_bam_4_head_hit4_anim_ops,
-      sizeof(prog_bam_4_head_hit4_anim_ops) / sizeof(prog_bam_4_head_hit4_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_head_hit4_anim_ops) / sizeof(prog_bam_4_head_hit4_anim_ops[0]), 0, 0, 0 },
     { "bam_head_hit2_anim", "BAMSEQ2.ASM", prog_bam_head_hit2_anim_ops,
-      sizeof(prog_bam_head_hit2_anim_ops) / sizeof(prog_bam_head_hit2_anim_ops[0]), 0 },
+      sizeof(prog_bam_head_hit2_anim_ops) / sizeof(prog_bam_head_hit2_anim_ops[0]), 0, prog_bam_head_hit2_anim_labels, sizeof(prog_bam_head_hit2_anim_labels) / sizeof(prog_bam_head_hit2_anim_labels[0]) },
     { "bam_head_hit2s_anim", "BAMSEQ2.ASM", prog_bam_head_hit2s_anim_ops,
-      sizeof(prog_bam_head_hit2s_anim_ops) / sizeof(prog_bam_head_hit2s_anim_ops[0]), 0 },
+      sizeof(prog_bam_head_hit2s_anim_ops) / sizeof(prog_bam_head_hit2s_anim_ops[0]), 0, 0, 0 },
     { "bam_head_hit_dizzy_anim", "BAMSEQ2.ASM", prog_bam_head_hit_dizzy_anim_ops,
-      sizeof(prog_bam_head_hit_dizzy_anim_ops) / sizeof(prog_bam_head_hit_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_bam_head_hit_dizzy_anim_ops) / sizeof(prog_bam_head_hit_dizzy_anim_ops[0]), 0, 0, 0 },
     { "bam_2_body_hit_anim", "BAMSEQ2.ASM", prog_bam_2_body_hit_anim_ops,
-      sizeof(prog_bam_2_body_hit_anim_ops) / sizeof(prog_bam_2_body_hit_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_body_hit_anim_ops) / sizeof(prog_bam_2_body_hit_anim_ops[0]), 0, 0, 0 },
     { "bam_4_body_hit_anim", "BAMSEQ2.ASM", prog_bam_4_body_hit_anim_ops,
-      sizeof(prog_bam_4_body_hit_anim_ops) / sizeof(prog_bam_4_body_hit_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_body_hit_anim_ops) / sizeof(prog_bam_4_body_hit_anim_ops[0]), 0, prog_bam_4_body_hit_anim_labels, sizeof(prog_bam_4_body_hit_anim_labels) / sizeof(prog_bam_4_body_hit_anim_labels[0]) },
     { "bam_4_body_hit_dizzy_anim", "BAMSEQ2.ASM", prog_bam_4_body_hit_dizzy_anim_ops,
-      sizeof(prog_bam_4_body_hit_dizzy_anim_ops) / sizeof(prog_bam_4_body_hit_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_body_hit_dizzy_anim_ops) / sizeof(prog_bam_4_body_hit_dizzy_anim_ops[0]), 0, 0, 0 },
     { "bam_2_knee_hit_anim", "BAMSEQ2.ASM", prog_bam_2_knee_hit_anim_ops,
-      sizeof(prog_bam_2_knee_hit_anim_ops) / sizeof(prog_bam_2_knee_hit_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_knee_hit_anim_ops) / sizeof(prog_bam_2_knee_hit_anim_ops[0]), 0, 0, 0 },
     { "bam_4_knee_hit_dizzy_anim", "BAMSEQ2.ASM", prog_bam_4_knee_hit_dizzy_anim_ops,
-      sizeof(prog_bam_4_knee_hit_dizzy_anim_ops) / sizeof(prog_bam_4_knee_hit_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_knee_hit_dizzy_anim_ops) / sizeof(prog_bam_4_knee_hit_dizzy_anim_ops[0]), 0, 0, 0 },
     { "bam_4_knee_hit_anim", "BAMSEQ2.ASM", prog_bam_4_knee_hit_anim_ops,
-      sizeof(prog_bam_4_knee_hit_anim_ops) / sizeof(prog_bam_4_knee_hit_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_knee_hit_anim_ops) / sizeof(prog_bam_4_knee_hit_anim_ops[0]), 0, 0, 0 },
     { "bam_quick_knee_hit_anim", "BAMSEQ2.ASM", prog_bam_quick_knee_hit_anim_ops,
-      sizeof(prog_bam_quick_knee_hit_anim_ops) / sizeof(prog_bam_quick_knee_hit_anim_ops[0]), 0 },
+      sizeof(prog_bam_quick_knee_hit_anim_ops) / sizeof(prog_bam_quick_knee_hit_anim_ops[0]), 0, prog_bam_quick_knee_hit_anim_labels, sizeof(prog_bam_quick_knee_hit_anim_labels) / sizeof(prog_bam_quick_knee_hit_anim_labels[0]) },
     { "bam_hitonground_xflip_anim", "BAMSEQ2.ASM", prog_bam_hitonground_xflip_anim_ops,
-      sizeof(prog_bam_hitonground_xflip_anim_ops) / sizeof(prog_bam_hitonground_xflip_anim_ops[0]), 0 },
+      sizeof(prog_bam_hitonground_xflip_anim_ops) / sizeof(prog_bam_hitonground_xflip_anim_ops[0]), 0, 0, 0 },
     { "bam_hitonground_anim", "BAMSEQ2.ASM", prog_bam_hitonground_anim_ops,
-      sizeof(prog_bam_hitonground_anim_ops) / sizeof(prog_bam_hitonground_anim_ops[0]), 0 },
+      sizeof(prog_bam_hitonground_anim_ops) / sizeof(prog_bam_hitonground_anim_ops[0]), 0, 0, 0 },
     { "bam_liedown_anim", "BAMSEQ2.ASM", prog_bam_liedown_anim_ops,
-      sizeof(prog_bam_liedown_anim_ops) / sizeof(prog_bam_liedown_anim_ops[0]), 0 },
+      sizeof(prog_bam_liedown_anim_ops) / sizeof(prog_bam_liedown_anim_ops[0]), 0, 0, 0 },
     { "bam_up_anim", "BAMSEQ2.ASM", prog_bam_up_anim_ops,
-      sizeof(prog_bam_up_anim_ops) / sizeof(prog_bam_up_anim_ops[0]), 0 },
+      sizeof(prog_bam_up_anim_ops) / sizeof(prog_bam_up_anim_ops[0]), 0, 0, 0 },
     { "bam_fall_back_anim", "BAMSEQ2.ASM", prog_bam_fall_back_anim_ops,
-      sizeof(prog_bam_fall_back_anim_ops) / sizeof(prog_bam_fall_back_anim_ops[0]), 0 },
+      sizeof(prog_bam_fall_back_anim_ops) / sizeof(prog_bam_fall_back_anim_ops[0]), 0, 0, 0 },
     { "bam_fall_back2_anim", "BAMSEQ2.ASM", prog_bam_fall_back2_anim_ops,
-      sizeof(prog_bam_fall_back2_anim_ops) / sizeof(prog_bam_fall_back2_anim_ops[0]), 0 },
+      sizeof(prog_bam_fall_back2_anim_ops) / sizeof(prog_bam_fall_back2_anim_ops[0]), 0, 0, 0 },
     { "bam_fall_back_tbukl_anim", "BAMSEQ2.ASM", prog_bam_fall_back_tbukl_anim_ops,
-      sizeof(prog_bam_fall_back_tbukl_anim_ops) / sizeof(prog_bam_fall_back_tbukl_anim_ops[0]), 0 },
+      sizeof(prog_bam_fall_back_tbukl_anim_ops) / sizeof(prog_bam_fall_back_tbukl_anim_ops[0]), 0, 0, 0 },
     { "bam_2_faceup_getup_anim", "BAMSEQ2.ASM", prog_bam_2_faceup_getup_anim_ops,
-      sizeof(prog_bam_2_faceup_getup_anim_ops) / sizeof(prog_bam_2_faceup_getup_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_faceup_getup_anim_ops) / sizeof(prog_bam_2_faceup_getup_anim_ops[0]), 0, prog_bam_2_faceup_getup_anim_labels, sizeof(prog_bam_2_faceup_getup_anim_labels) / sizeof(prog_bam_2_faceup_getup_anim_labels[0]) },
     { "bam_2_faceup_getup2_anim", "BAMSEQ2.ASM", prog_bam_2_faceup_getup2_anim_ops,
-      sizeof(prog_bam_2_faceup_getup2_anim_ops) / sizeof(prog_bam_2_faceup_getup2_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_faceup_getup2_anim_ops) / sizeof(prog_bam_2_faceup_getup2_anim_ops[0]), 0, prog_bam_2_faceup_getup2_anim_labels, sizeof(prog_bam_2_faceup_getup2_anim_labels) / sizeof(prog_bam_2_faceup_getup2_anim_labels[0]) },
     { "bam_4_faceup_getup_anim", "BAMSEQ2.ASM", prog_bam_4_faceup_getup_anim_ops,
-      sizeof(prog_bam_4_faceup_getup_anim_ops) / sizeof(prog_bam_4_faceup_getup_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_faceup_getup_anim_ops) / sizeof(prog_bam_4_faceup_getup_anim_ops[0]), 0, prog_bam_4_faceup_getup_anim_labels, sizeof(prog_bam_4_faceup_getup_anim_labels) / sizeof(prog_bam_4_faceup_getup_anim_labels[0]) },
     { "bam_4_faceup_getup2_anim", "BAMSEQ2.ASM", prog_bam_4_faceup_getup2_anim_ops,
-      sizeof(prog_bam_4_faceup_getup2_anim_ops) / sizeof(prog_bam_4_faceup_getup2_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_faceup_getup2_anim_ops) / sizeof(prog_bam_4_faceup_getup2_anim_ops[0]), 0, prog_bam_4_faceup_getup2_anim_labels, sizeof(prog_bam_4_faceup_getup2_anim_labels) / sizeof(prog_bam_4_faceup_getup2_anim_labels[0]) },
     { "bam_4_faceup_getup3_anim", "BAMSEQ2.ASM", prog_bam_4_faceup_getup3_anim_ops,
-      sizeof(prog_bam_4_faceup_getup3_anim_ops) / sizeof(prog_bam_4_faceup_getup3_anim_ops[0]), 21 },   /* branches back into shared code */
+      sizeof(prog_bam_4_faceup_getup3_anim_ops) / sizeof(prog_bam_4_faceup_getup3_anim_ops[0]), 21, prog_bam_4_faceup_getup3_anim_labels, sizeof(prog_bam_4_faceup_getup3_anim_labels) / sizeof(prog_bam_4_faceup_getup3_anim_labels[0]) },   /* branches back into shared code */
     { "bam_dizzy_anim", "BAMSEQ2.ASM", prog_bam_dizzy_anim_ops,
-      sizeof(prog_bam_dizzy_anim_ops) / sizeof(prog_bam_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_bam_dizzy_anim_ops) / sizeof(prog_bam_dizzy_anim_ops[0]), 0, prog_bam_dizzy_anim_labels, sizeof(prog_bam_dizzy_anim_labels) / sizeof(prog_bam_dizzy_anim_labels[0]) },
     { "bam_roll_frames", "BAMSEQ2.ASM", prog_bam_roll_frames_ops,
-      sizeof(prog_bam_roll_frames_ops) / sizeof(prog_bam_roll_frames_ops[0]), 0 },
+      sizeof(prog_bam_roll_frames_ops) / sizeof(prog_bam_roll_frames_ops[0]), 0, prog_bam_roll_frames_labels, sizeof(prog_bam_roll_frames_labels) / sizeof(prog_bam_roll_frames_labels[0]) },
     { "bam_rxn2_fsteiner_anim", "BAMSEQ2.ASM", prog_bam_rxn2_fsteiner_anim_ops,
-      sizeof(prog_bam_rxn2_fsteiner_anim_ops) / sizeof(prog_bam_rxn2_fsteiner_anim_ops[0]), 0 },
+      sizeof(prog_bam_rxn2_fsteiner_anim_ops) / sizeof(prog_bam_rxn2_fsteiner_anim_ops[0]), 0, 0, 0 },
     { "bam_4_block_anim", "BAMSEQ2.ASM", prog_bam_4_block_anim_ops,
-      sizeof(prog_bam_4_block_anim_ops) / sizeof(prog_bam_4_block_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_block_anim_ops) / sizeof(prog_bam_4_block_anim_ops[0]), 0, prog_bam_4_block_anim_labels, sizeof(prog_bam_4_block_anim_labels) / sizeof(prog_bam_4_block_anim_labels[0]) },
     { "bam_4_hitblock_anim", "BAMSEQ2.ASM", prog_bam_4_hitblock_anim_ops,
-      sizeof(prog_bam_4_hitblock_anim_ops) / sizeof(prog_bam_4_hitblock_anim_ops[0]), 9 },   /* branches back into shared code */
+      sizeof(prog_bam_4_hitblock_anim_ops) / sizeof(prog_bam_4_hitblock_anim_ops[0]), 9, prog_bam_4_hitblock_anim_labels, sizeof(prog_bam_4_hitblock_anim_labels) / sizeof(prog_bam_4_hitblock_anim_labels[0]) },   /* branches back into shared code */
     { "bam_4_hitblock2_anim", "BAMSEQ2.ASM", prog_bam_4_hitblock2_anim_ops,
-      sizeof(prog_bam_4_hitblock2_anim_ops) / sizeof(prog_bam_4_hitblock2_anim_ops[0]), 19 },   /* branches back into shared code */
+      sizeof(prog_bam_4_hitblock2_anim_ops) / sizeof(prog_bam_4_hitblock2_anim_ops[0]), 19, prog_bam_4_hitblock2_anim_labels, sizeof(prog_bam_4_hitblock2_anim_labels) / sizeof(prog_bam_4_hitblock2_anim_labels[0]) },   /* branches back into shared code */
     { "bam_flyout_anim", "BAMSEQ2.ASM", prog_bam_flyout_anim_ops,
-      sizeof(prog_bam_flyout_anim_ops) / sizeof(prog_bam_flyout_anim_ops[0]), 0 },
+      sizeof(prog_bam_flyout_anim_ops) / sizeof(prog_bam_flyout_anim_ops[0]), 0, prog_bam_flyout_anim_labels, sizeof(prog_bam_flyout_anim_labels) / sizeof(prog_bam_flyout_anim_labels[0]) },
     { "bam_flyout2_anim", "BAMSEQ2.ASM", prog_bam_flyout2_anim_ops,
-      sizeof(prog_bam_flyout2_anim_ops) / sizeof(prog_bam_flyout2_anim_ops[0]), 8 },   /* branches back into shared code */
+      sizeof(prog_bam_flyout2_anim_ops) / sizeof(prog_bam_flyout2_anim_ops[0]), 8, prog_bam_flyout2_anim_labels, sizeof(prog_bam_flyout2_anim_labels) / sizeof(prog_bam_flyout2_anim_labels[0]) },   /* branches back into shared code */
     { "bam_tossed_anim", "BAMSEQ2.ASM", prog_bam_tossed_anim_ops,
-      sizeof(prog_bam_tossed_anim_ops) / sizeof(prog_bam_tossed_anim_ops[0]), 0 },
+      sizeof(prog_bam_tossed_anim_ops) / sizeof(prog_bam_tossed_anim_ops[0]), 0, 0, 0 },
     { "bam_tossed2_anim", "BAMSEQ2.ASM", prog_bam_tossed2_anim_ops,
-      sizeof(prog_bam_tossed2_anim_ops) / sizeof(prog_bam_tossed2_anim_ops[0]), 0 },
+      sizeof(prog_bam_tossed2_anim_ops) / sizeof(prog_bam_tossed2_anim_ops[0]), 0, 0, 0 },
     { "bam_knockdwn_anim", "BAMSEQ2.ASM", prog_bam_knockdwn_anim_ops,
-      sizeof(prog_bam_knockdwn_anim_ops) / sizeof(prog_bam_knockdwn_anim_ops[0]), 0 },
+      sizeof(prog_bam_knockdwn_anim_ops) / sizeof(prog_bam_knockdwn_anim_ops[0]), 0, prog_bam_knockdwn_anim_labels, sizeof(prog_bam_knockdwn_anim_labels) / sizeof(prog_bam_knockdwn_anim_labels[0]) },
     { "bam_climbthru_side_anim", "BAMSEQ2.ASM", prog_bam_climbthru_side_anim_ops,
-      sizeof(prog_bam_climbthru_side_anim_ops) / sizeof(prog_bam_climbthru_side_anim_ops[0]), 0 },
+      sizeof(prog_bam_climbthru_side_anim_ops) / sizeof(prog_bam_climbthru_side_anim_ops[0]), 0, 0, 0 },
     { "bam_climbin_side_anim", "BAMSEQ2.ASM", prog_bam_climbin_side_anim_ops,
-      sizeof(prog_bam_climbin_side_anim_ops) / sizeof(prog_bam_climbin_side_anim_ops[0]), 0 },
+      sizeof(prog_bam_climbin_side_anim_ops) / sizeof(prog_bam_climbin_side_anim_ops[0]), 0, prog_bam_climbin_side_anim_labels, sizeof(prog_bam_climbin_side_anim_labels) / sizeof(prog_bam_climbin_side_anim_labels[0]) },
     { "bam_climbthru_bot_anim", "BAMSEQ2.ASM", prog_bam_climbthru_bot_anim_ops,
-      sizeof(prog_bam_climbthru_bot_anim_ops) / sizeof(prog_bam_climbthru_bot_anim_ops[0]), 0 },
+      sizeof(prog_bam_climbthru_bot_anim_ops) / sizeof(prog_bam_climbthru_bot_anim_ops[0]), 0, prog_bam_climbthru_bot_anim_labels, sizeof(prog_bam_climbthru_bot_anim_labels) / sizeof(prog_bam_climbthru_bot_anim_labels[0]) },
     { "bam_climbin_bot_anim", "BAMSEQ2.ASM", prog_bam_climbin_bot_anim_ops,
-      sizeof(prog_bam_climbin_bot_anim_ops) / sizeof(prog_bam_climbin_bot_anim_ops[0]), 0 },
+      sizeof(prog_bam_climbin_bot_anim_ops) / sizeof(prog_bam_climbin_bot_anim_ops[0]), 0, 0, 0 },
     { "bam_climbthru_top_anim", "BAMSEQ2.ASM", prog_bam_climbthru_top_anim_ops,
-      sizeof(prog_bam_climbthru_top_anim_ops) / sizeof(prog_bam_climbthru_top_anim_ops[0]), 0 },
+      sizeof(prog_bam_climbthru_top_anim_ops) / sizeof(prog_bam_climbthru_top_anim_ops[0]), 0, prog_bam_climbthru_top_anim_labels, sizeof(prog_bam_climbthru_top_anim_labels) / sizeof(prog_bam_climbthru_top_anim_labels[0]) },
     { "bam_rollthru_top_anim", "BAMSEQ2.ASM", prog_bam_rollthru_top_anim_ops,
-      sizeof(prog_bam_rollthru_top_anim_ops) / sizeof(prog_bam_rollthru_top_anim_ops[0]), 0 },
+      sizeof(prog_bam_rollthru_top_anim_ops) / sizeof(prog_bam_rollthru_top_anim_ops[0]), 0, 0, 0 },
     { "bam_climbin_top_anim", "BAMSEQ2.ASM", prog_bam_climbin_top_anim_ops,
-      sizeof(prog_bam_climbin_top_anim_ops) / sizeof(prog_bam_climbin_top_anim_ops[0]), 0 },
+      sizeof(prog_bam_climbin_top_anim_ops) / sizeof(prog_bam_climbin_top_anim_ops[0]), 0, prog_bam_climbin_top_anim_labels, sizeof(prog_bam_climbin_top_anim_labels) / sizeof(prog_bam_climbin_top_anim_labels[0]) },
     { "bam_2_pin_anim", "BAMSEQ2.ASM", prog_bam_2_pin_anim_ops,
-      sizeof(prog_bam_2_pin_anim_ops) / sizeof(prog_bam_2_pin_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_pin_anim_ops) / sizeof(prog_bam_2_pin_anim_ops[0]), 0, prog_bam_2_pin_anim_labels, sizeof(prog_bam_2_pin_anim_labels) / sizeof(prog_bam_2_pin_anim_labels[0]) },
     { "bam_4_pin_anim", "BAMSEQ2.ASM", prog_bam_4_pin_anim_ops,
-      sizeof(prog_bam_4_pin_anim_ops) / sizeof(prog_bam_4_pin_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_pin_anim_ops) / sizeof(prog_bam_4_pin_anim_ops[0]), 0, prog_bam_4_pin_anim_labels, sizeof(prog_bam_4_pin_anim_labels) / sizeof(prog_bam_4_pin_anim_labels[0]) },
     { "bam_2_raise_arm_anim", "BAMSEQ2.ASM", prog_bam_2_raise_arm_anim_ops,
-      sizeof(prog_bam_2_raise_arm_anim_ops) / sizeof(prog_bam_2_raise_arm_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_raise_arm_anim_ops) / sizeof(prog_bam_2_raise_arm_anim_ops[0]), 0, prog_bam_2_raise_arm_anim_labels, sizeof(prog_bam_2_raise_arm_anim_labels) / sizeof(prog_bam_2_raise_arm_anim_labels[0]) },
     { "bam_4_raise_arm_anim", "BAMSEQ2.ASM", prog_bam_4_raise_arm_anim_ops,
-      sizeof(prog_bam_4_raise_arm_anim_ops) / sizeof(prog_bam_4_raise_arm_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_raise_arm_anim_ops) / sizeof(prog_bam_4_raise_arm_anim_ops[0]), 0, prog_bam_4_raise_arm_anim_labels, sizeof(prog_bam_4_raise_arm_anim_labels) / sizeof(prog_bam_4_raise_arm_anim_labels[0]) },
     { "bam_buckoff_anim", "BAMSEQ2.ASM", prog_bam_buckoff_anim_ops,
-      sizeof(prog_bam_buckoff_anim_ops) / sizeof(prog_bam_buckoff_anim_ops[0]), 0 },
+      sizeof(prog_bam_buckoff_anim_ops) / sizeof(prog_bam_buckoff_anim_ops[0]), 0, 0, 0 },
     { "bam_combo_hiptoss_anim", "BAMSEQ2.ASM", prog_bam_combo_hiptoss_anim_ops,
-      sizeof(prog_bam_combo_hiptoss_anim_ops) / sizeof(prog_bam_combo_hiptoss_anim_ops[0]), 0 },
+      sizeof(prog_bam_combo_hiptoss_anim_ops) / sizeof(prog_bam_combo_hiptoss_anim_ops[0]), 0, prog_bam_combo_hiptoss_anim_labels, sizeof(prog_bam_combo_hiptoss_anim_labels) / sizeof(prog_bam_combo_hiptoss_anim_labels[0]) },
     { "bam_3_hiptoss2_anim", "BAMSEQ2.ASM", prog_bam_3_hiptoss2_anim_ops,
-      sizeof(prog_bam_3_hiptoss2_anim_ops) / sizeof(prog_bam_3_hiptoss2_anim_ops[0]), 0 },
+      sizeof(prog_bam_3_hiptoss2_anim_ops) / sizeof(prog_bam_3_hiptoss2_anim_ops[0]), 0, prog_bam_3_hiptoss2_anim_labels, sizeof(prog_bam_3_hiptoss2_anim_labels) / sizeof(prog_bam_3_hiptoss2_anim_labels[0]) },
     { "bam_3_hiptoss_anim", "BAMSEQ2.ASM", prog_bam_3_hiptoss_anim_ops,
-      sizeof(prog_bam_3_hiptoss_anim_ops) / sizeof(prog_bam_3_hiptoss_anim_ops[0]), 0 },
+      sizeof(prog_bam_3_hiptoss_anim_ops) / sizeof(prog_bam_3_hiptoss_anim_ops[0]), 0, prog_bam_3_hiptoss_anim_labels, sizeof(prog_bam_3_hiptoss_anim_labels) / sizeof(prog_bam_3_hiptoss_anim_labels[0]) },
     { "bam_fly_cline_anim", "BAMSEQ2.ASM", prog_bam_fly_cline_anim_ops,
-      sizeof(prog_bam_fly_cline_anim_ops) / sizeof(prog_bam_fly_cline_anim_ops[0]), 0 },
+      sizeof(prog_bam_fly_cline_anim_ops) / sizeof(prog_bam_fly_cline_anim_ops[0]), 0, prog_bam_fly_cline_anim_labels, sizeof(prog_bam_fly_cline_anim_labels) / sizeof(prog_bam_fly_cline_anim_labels[0]) },
     { "bam_2_slap_anim", "BAMSEQ2.ASM", prog_bam_2_slap_anim_ops,
-      sizeof(prog_bam_2_slap_anim_ops) / sizeof(prog_bam_2_slap_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_slap_anim_ops) / sizeof(prog_bam_2_slap_anim_ops[0]), 0, prog_bam_2_slap_anim_labels, sizeof(prog_bam_2_slap_anim_labels) / sizeof(prog_bam_2_slap_anim_labels[0]) },
     { "bam_4_slap_anim", "BAMSEQ2.ASM", prog_bam_4_slap_anim_ops,
-      sizeof(prog_bam_4_slap_anim_ops) / sizeof(prog_bam_4_slap_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_slap_anim_ops) / sizeof(prog_bam_4_slap_anim_ops[0]), 0, prog_bam_4_slap_anim_labels, sizeof(prog_bam_4_slap_anim_labels) / sizeof(prog_bam_4_slap_anim_labels[0]) },
     { "bam_combo_slap_anim", "BAMSEQ2.ASM", prog_bam_combo_slap_anim_ops,
-      sizeof(prog_bam_combo_slap_anim_ops) / sizeof(prog_bam_combo_slap_anim_ops[0]), 0 },
+      sizeof(prog_bam_combo_slap_anim_ops) / sizeof(prog_bam_combo_slap_anim_ops[0]), 0, prog_bam_combo_slap_anim_labels, sizeof(prog_bam_combo_slap_anim_labels) / sizeof(prog_bam_combo_slap_anim_labels[0]) },
     { "bam_combo_slap_anim_no_vel", "BAMSEQ2.ASM", prog_bam_combo_slap_anim_no_vel_ops,
-      sizeof(prog_bam_combo_slap_anim_no_vel_ops) / sizeof(prog_bam_combo_slap_anim_no_vel_ops[0]), 0 },
+      sizeof(prog_bam_combo_slap_anim_no_vel_ops) / sizeof(prog_bam_combo_slap_anim_no_vel_ops[0]), 0, prog_bam_combo_slap_anim_no_vel_labels, sizeof(prog_bam_combo_slap_anim_no_vel_labels) / sizeof(prog_bam_combo_slap_anim_no_vel_labels[0]) },
     { "bam_knees_anim", "BAMSEQ2.ASM", prog_bam_knees_anim_ops,
-      sizeof(prog_bam_knees_anim_ops) / sizeof(prog_bam_knees_anim_ops[0]), 0 },
+      sizeof(prog_bam_knees_anim_ops) / sizeof(prog_bam_knees_anim_ops[0]), 0, prog_bam_knees_anim_labels, sizeof(prog_bam_knees_anim_labels) / sizeof(prog_bam_knees_anim_labels[0]) },
     { "bam_combo_knees_anim", "BAMSEQ2.ASM", prog_bam_combo_knees_anim_ops,
-      sizeof(prog_bam_combo_knees_anim_ops) / sizeof(prog_bam_combo_knees_anim_ops[0]), 0 },
+      sizeof(prog_bam_combo_knees_anim_ops) / sizeof(prog_bam_combo_knees_anim_ops[0]), 0, prog_bam_combo_knees_anim_labels, sizeof(prog_bam_combo_knees_anim_labels) / sizeof(prog_bam_combo_knees_anim_labels[0]) },
     { "bam_2_graboh_anim", "BAMSEQ3.ASM", prog_bam_2_graboh_anim_ops,
-      sizeof(prog_bam_2_graboh_anim_ops) / sizeof(prog_bam_2_graboh_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_graboh_anim_ops) / sizeof(prog_bam_2_graboh_anim_ops[0]), 0, prog_bam_2_graboh_anim_labels, sizeof(prog_bam_2_graboh_anim_labels) / sizeof(prog_bam_2_graboh_anim_labels[0]) },
     { "bam_4_graboh_anim", "BAMSEQ3.ASM", prog_bam_4_graboh_anim_ops,
-      sizeof(prog_bam_4_graboh_anim_ops) / sizeof(prog_bam_4_graboh_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_graboh_anim_ops) / sizeof(prog_bam_4_graboh_anim_ops[0]), 0, prog_bam_4_graboh_anim_labels, sizeof(prog_bam_4_graboh_anim_labels) / sizeof(prog_bam_4_graboh_anim_labels[0]) },
     { "bam_combo_graboh_anim", "BAMSEQ3.ASM", prog_bam_combo_graboh_anim_ops,
-      sizeof(prog_bam_combo_graboh_anim_ops) / sizeof(prog_bam_combo_graboh_anim_ops[0]), 0 },
+      sizeof(prog_bam_combo_graboh_anim_ops) / sizeof(prog_bam_combo_graboh_anim_ops[0]), 0, prog_bam_combo_graboh_anim_labels, sizeof(prog_bam_combo_graboh_anim_labels) / sizeof(prog_bam_combo_graboh_anim_labels[0]) },
     { "bam_stndholdoh_anim", "BAMSEQ3.ASM", prog_bam_stndholdoh_anim_ops,
-      sizeof(prog_bam_stndholdoh_anim_ops) / sizeof(prog_bam_stndholdoh_anim_ops[0]), 0 },
+      sizeof(prog_bam_stndholdoh_anim_ops) / sizeof(prog_bam_stndholdoh_anim_ops[0]), 0, 0, 0 },
     { "bam_slamdwn_anim", "BAMSEQ3.ASM", prog_bam_slamdwn_anim_ops,
-      sizeof(prog_bam_slamdwn_anim_ops) / sizeof(prog_bam_slamdwn_anim_ops[0]), 0 },
+      sizeof(prog_bam_slamdwn_anim_ops) / sizeof(prog_bam_slamdwn_anim_ops[0]), 0, prog_bam_slamdwn_anim_labels, sizeof(prog_bam_slamdwn_anim_labels) / sizeof(prog_bam_slamdwn_anim_labels[0]) },
     { "bam_heldoh_anim", "BAMSEQ3.ASM", prog_bam_heldoh_anim_ops,
-      sizeof(prog_bam_heldoh_anim_ops) / sizeof(prog_bam_heldoh_anim_ops[0]), 0 },
+      sizeof(prog_bam_heldoh_anim_ops) / sizeof(prog_bam_heldoh_anim_ops[0]), 0, prog_bam_heldoh_anim_labels, sizeof(prog_bam_heldoh_anim_labels) / sizeof(prog_bam_heldoh_anim_labels[0]) },
     { "bam_backbreaker_anim", "BAMSEQ3.ASM", prog_bam_backbreaker_anim_ops,
-      sizeof(prog_bam_backbreaker_anim_ops) / sizeof(prog_bam_backbreaker_anim_ops[0]), 0 },
+      sizeof(prog_bam_backbreaker_anim_ops) / sizeof(prog_bam_backbreaker_anim_ops[0]), 0, 0, 0 },
     { "set_xdrift", "BAMSEQ3.ASM", prog_set_xdrift_ops,
-      sizeof(prog_set_xdrift_ops) / sizeof(prog_set_xdrift_ops[0]), 0 },
+      sizeof(prog_set_xdrift_ops) / sizeof(prog_set_xdrift_ops[0]), 0, prog_set_xdrift_labels, sizeof(prog_set_xdrift_labels) / sizeof(prog_set_xdrift_labels[0]) },
     { "bam_backbroken_anim", "BAMSEQ3.ASM", prog_bam_backbroken_anim_ops,
-      sizeof(prog_bam_backbroken_anim_ops) / sizeof(prog_bam_backbroken_anim_ops[0]), 0 },
+      sizeof(prog_bam_backbroken_anim_ops) / sizeof(prog_bam_backbroken_anim_ops[0]), 0, 0, 0 },
     { "bam_neckbroken_anim", "BAMSEQ3.ASM", prog_bam_neckbroken_anim_ops,
-      sizeof(prog_bam_neckbroken_anim_ops) / sizeof(prog_bam_neckbroken_anim_ops[0]), 0 },
+      sizeof(prog_bam_neckbroken_anim_ops) / sizeof(prog_bam_neckbroken_anim_ops[0]), 0, 0, 0 },
     { "bam_combo_pogo_anim", "BAMSEQ3.ASM", prog_bam_combo_pogo_anim_ops,
-      sizeof(prog_bam_combo_pogo_anim_ops) / sizeof(prog_bam_combo_pogo_anim_ops[0]), 256 },   /* branches back into shared code */
+      sizeof(prog_bam_combo_pogo_anim_ops) / sizeof(prog_bam_combo_pogo_anim_ops[0]), 256, prog_bam_combo_pogo_anim_labels, sizeof(prog_bam_combo_pogo_anim_labels) / sizeof(prog_bam_combo_pogo_anim_labels[0]) },   /* branches back into shared code */
     { "bam_pogo_anim", "BAMSEQ3.ASM", prog_bam_pogo_anim_ops,
-      sizeof(prog_bam_pogo_anim_ops) / sizeof(prog_bam_pogo_anim_ops[0]), 0 },
+      sizeof(prog_bam_pogo_anim_ops) / sizeof(prog_bam_pogo_anim_ops[0]), 0, prog_bam_pogo_anim_labels, sizeof(prog_bam_pogo_anim_labels) / sizeof(prog_bam_pogo_anim_labels[0]) },
     { "bam_climb_up_anim", "BAMSEQ3.ASM", prog_bam_climb_up_anim_ops,
-      sizeof(prog_bam_climb_up_anim_ops) / sizeof(prog_bam_climb_up_anim_ops[0]), 0 },
+      sizeof(prog_bam_climb_up_anim_ops) / sizeof(prog_bam_climb_up_anim_ops[0]), 0, prog_bam_climb_up_anim_labels, sizeof(prog_bam_climb_up_anim_labels) / sizeof(prog_bam_climb_up_anim_labels[0]) },
     { "bam_climb_down_anim", "BAMSEQ3.ASM", prog_bam_climb_down_anim_ops,
-      sizeof(prog_bam_climb_down_anim_ops) / sizeof(prog_bam_climb_down_anim_ops[0]), 0 },
+      sizeof(prog_bam_climb_down_anim_ops) / sizeof(prog_bam_climb_down_anim_ops[0]), 0, 0, 0 },
     { "bam_get_buzz_anim", "BAMSEQ3.ASM", prog_bam_get_buzz_anim_ops,
-      sizeof(prog_bam_get_buzz_anim_ops) / sizeof(prog_bam_get_buzz_anim_ops[0]), 0 },
+      sizeof(prog_bam_get_buzz_anim_ops) / sizeof(prog_bam_get_buzz_anim_ops[0]), 0, prog_bam_get_buzz_anim_labels, sizeof(prog_bam_get_buzz_anim_labels) / sizeof(prog_bam_get_buzz_anim_labels[0]) },
     { "bam_3_head_held_anim", "BAMSEQ3.ASM", prog_bam_3_head_held_anim_ops,
-      sizeof(prog_bam_3_head_held_anim_ops) / sizeof(prog_bam_3_head_held_anim_ops[0]), 0 },
+      sizeof(prog_bam_3_head_held_anim_ops) / sizeof(prog_bam_3_head_held_anim_ops[0]), 0, prog_bam_3_head_held_anim_labels, sizeof(prog_bam_3_head_held_anim_labels) / sizeof(prog_bam_3_head_held_anim_labels[0]) },
     { "bam_3_head_held_brk_anim", "BAMSEQ3.ASM", prog_bam_3_head_held_brk_anim_ops,
-      sizeof(prog_bam_3_head_held_brk_anim_ops) / sizeof(prog_bam_3_head_held_brk_anim_ops[0]), 0 },
+      sizeof(prog_bam_3_head_held_brk_anim_ops) / sizeof(prog_bam_3_head_held_brk_anim_ops[0]), 0, prog_bam_3_head_held_brk_anim_labels, sizeof(prog_bam_3_head_held_brk_anim_labels) / sizeof(prog_bam_3_head_held_brk_anim_labels[0]) },
     { "bam_3_head_held_stand_anim", "BAMSEQ3.ASM", prog_bam_3_head_held_stand_anim_ops,
-      sizeof(prog_bam_3_head_held_stand_anim_ops) / sizeof(prog_bam_3_head_held_stand_anim_ops[0]), 0 },
+      sizeof(prog_bam_3_head_held_stand_anim_ops) / sizeof(prog_bam_3_head_held_stand_anim_ops[0]), 0, 0, 0 },
     { "bam_break_neck2_anim", "BAMSEQ3.ASM", prog_bam_break_neck2_anim_ops,
-      sizeof(prog_bam_break_neck2_anim_ops) / sizeof(prog_bam_break_neck2_anim_ops[0]), 0 },
+      sizeof(prog_bam_break_neck2_anim_ops) / sizeof(prog_bam_break_neck2_anim_ops[0]), 0, 0, 0 },
     { "bam_break_neck3_anim", "BAMSEQ3.ASM", prog_bam_break_neck3_anim_ops,
-      sizeof(prog_bam_break_neck3_anim_ops) / sizeof(prog_bam_break_neck3_anim_ops[0]), 0 },
+      sizeof(prog_bam_break_neck3_anim_ops) / sizeof(prog_bam_break_neck3_anim_ops[0]), 0, 0, 0 },
     { "bam_break_neck4_anim", "BAMSEQ3.ASM", prog_bam_break_neck4_anim_ops,
-      sizeof(prog_bam_break_neck4_anim_ops) / sizeof(prog_bam_break_neck4_anim_ops[0]), 0 },
+      sizeof(prog_bam_break_neck4_anim_ops) / sizeof(prog_bam_break_neck4_anim_ops[0]), 0, prog_bam_break_neck4_anim_labels, sizeof(prog_bam_break_neck4_anim_labels) / sizeof(prog_bam_break_neck4_anim_labels[0]) },
     { "bam_break_neck_anim", "BAMSEQ3.ASM", prog_bam_break_neck_anim_ops,
-      sizeof(prog_bam_break_neck_anim_ops) / sizeof(prog_bam_break_neck_anim_ops[0]), 0 },
+      sizeof(prog_bam_break_neck_anim_ops) / sizeof(prog_bam_break_neck_anim_ops[0]), 0, prog_bam_break_neck_anim_labels, sizeof(prog_bam_break_neck_anim_labels) / sizeof(prog_bam_break_neck_anim_labels[0]) },
     { "bam_2_hair_pickup_anim", "BAMSEQ3.ASM", prog_bam_2_hair_pickup_anim_ops,
-      sizeof(prog_bam_2_hair_pickup_anim_ops) / sizeof(prog_bam_2_hair_pickup_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_hair_pickup_anim_ops) / sizeof(prog_bam_2_hair_pickup_anim_ops[0]), 0, prog_bam_2_hair_pickup_anim_labels, sizeof(prog_bam_2_hair_pickup_anim_labels) / sizeof(prog_bam_2_hair_pickup_anim_labels[0]) },
     { "bam_4_hair_pickup_anim", "BAMSEQ3.ASM", prog_bam_4_hair_pickup_anim_ops,
-      sizeof(prog_bam_4_hair_pickup_anim_ops) / sizeof(prog_bam_4_hair_pickup_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_hair_pickup_anim_ops) / sizeof(prog_bam_4_hair_pickup_anim_ops[0]), 0, prog_bam_4_hair_pickup_anim_labels, sizeof(prog_bam_4_hair_pickup_anim_labels) / sizeof(prog_bam_4_hair_pickup_anim_labels[0]) },
     { "bam_4_taunt_anim", "BAMSEQ3.ASM", prog_bam_4_taunt_anim_ops,
-      sizeof(prog_bam_4_taunt_anim_ops) / sizeof(prog_bam_4_taunt_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_taunt_anim_ops) / sizeof(prog_bam_4_taunt_anim_ops[0]), 0, 0, 0 },
     { "bam_break_face2_anim", "BAMSEQ3.ASM", prog_bam_break_face2_anim_ops,
-      sizeof(prog_bam_break_face2_anim_ops) / sizeof(prog_bam_break_face2_anim_ops[0]), 0 },
+      sizeof(prog_bam_break_face2_anim_ops) / sizeof(prog_bam_break_face2_anim_ops[0]), 0, 0, 0 },
     { "bam_break_face3_anim", "BAMSEQ3.ASM", prog_bam_break_face3_anim_ops,
-      sizeof(prog_bam_break_face3_anim_ops) / sizeof(prog_bam_break_face3_anim_ops[0]), 0 },
+      sizeof(prog_bam_break_face3_anim_ops) / sizeof(prog_bam_break_face3_anim_ops[0]), 0, 0, 0 },
     { "bam_break_face_anim", "BAMSEQ3.ASM", prog_bam_break_face_anim_ops,
-      sizeof(prog_bam_break_face_anim_ops) / sizeof(prog_bam_break_face_anim_ops[0]), 0 },
+      sizeof(prog_bam_break_face_anim_ops) / sizeof(prog_bam_break_face_anim_ops[0]), 0, 0, 0 },
     { "bam_3_pile_driver_anim", "BAMSEQ3.ASM", prog_bam_3_pile_driver_anim_ops,
-      sizeof(prog_bam_3_pile_driver_anim_ops) / sizeof(prog_bam_3_pile_driver_anim_ops[0]), 0 },
+      sizeof(prog_bam_3_pile_driver_anim_ops) / sizeof(prog_bam_3_pile_driver_anim_ops[0]), 0, prog_bam_3_pile_driver_anim_labels, sizeof(prog_bam_3_pile_driver_anim_labels) / sizeof(prog_bam_3_pile_driver_anim_labels[0]) },
     { "bam_combo_pile_driver_anim", "BAMSEQ3.ASM", prog_bam_combo_pile_driver_anim_ops,
-      sizeof(prog_bam_combo_pile_driver_anim_ops) / sizeof(prog_bam_combo_pile_driver_anim_ops[0]), 0 },
+      sizeof(prog_bam_combo_pile_driver_anim_ops) / sizeof(prog_bam_combo_pile_driver_anim_ops[0]), 0, prog_bam_combo_pile_driver_anim_labels, sizeof(prog_bam_combo_pile_driver_anim_labels) / sizeof(prog_bam_combo_pile_driver_anim_labels[0]) },
     { "bam_3_fake_hold_anim", "BAMSEQ3.ASM", prog_bam_3_fake_hold_anim_ops,
-      sizeof(prog_bam_3_fake_hold_anim_ops) / sizeof(prog_bam_3_fake_hold_anim_ops[0]), 0 },
+      sizeof(prog_bam_3_fake_hold_anim_ops) / sizeof(prog_bam_3_fake_hold_anim_ops[0]), 0, prog_bam_3_fake_hold_anim_labels, sizeof(prog_bam_3_fake_hold_anim_labels) / sizeof(prog_bam_3_fake_hold_anim_labels[0]) },
     { "bam_3_head_hold2_anim", "BAMSEQ3.ASM", prog_bam_3_head_hold2_anim_ops,
-      sizeof(prog_bam_3_head_hold2_anim_ops) / sizeof(prog_bam_3_head_hold2_anim_ops[0]), 0 },
+      sizeof(prog_bam_3_head_hold2_anim_ops) / sizeof(prog_bam_3_head_hold2_anim_ops[0]), 0, prog_bam_3_head_hold2_anim_labels, sizeof(prog_bam_3_head_hold2_anim_labels) / sizeof(prog_bam_3_head_hold2_anim_labels[0]) },
     { "bam_3_head_hold_anim", "BAMSEQ3.ASM", prog_bam_3_head_hold_anim_ops,
-      sizeof(prog_bam_3_head_hold_anim_ops) / sizeof(prog_bam_3_head_hold_anim_ops[0]), 0 },
+      sizeof(prog_bam_3_head_hold_anim_ops) / sizeof(prog_bam_3_head_hold_anim_ops[0]), 0, prog_bam_3_head_hold_anim_labels, sizeof(prog_bam_3_head_hold_anim_labels) / sizeof(prog_bam_3_head_hold_anim_labels[0]) },
     { "bam_neckbreaker2_anim", "BAMSEQ3.ASM", prog_bam_neckbreaker2_anim_ops,
-      sizeof(prog_bam_neckbreaker2_anim_ops) / sizeof(prog_bam_neckbreaker2_anim_ops[0]), 0 },
+      sizeof(prog_bam_neckbreaker2_anim_ops) / sizeof(prog_bam_neckbreaker2_anim_ops[0]), 0, prog_bam_neckbreaker2_anim_labels, sizeof(prog_bam_neckbreaker2_anim_labels) / sizeof(prog_bam_neckbreaker2_anim_labels[0]) },
     { "bam_neckbreaker_run_anim", "BAMSEQ3.ASM", prog_bam_neckbreaker_run_anim_ops,
-      sizeof(prog_bam_neckbreaker_run_anim_ops) / sizeof(prog_bam_neckbreaker_run_anim_ops[0]), 0 },
+      sizeof(prog_bam_neckbreaker_run_anim_ops) / sizeof(prog_bam_neckbreaker_run_anim_ops[0]), 0, prog_bam_neckbreaker_run_anim_labels, sizeof(prog_bam_neckbreaker_run_anim_labels) / sizeof(prog_bam_neckbreaker_run_anim_labels[0]) },
     { "bam_neckbreaker_anim", "BAMSEQ3.ASM", prog_bam_neckbreaker_anim_ops,
-      sizeof(prog_bam_neckbreaker_anim_ops) / sizeof(prog_bam_neckbreaker_anim_ops[0]), 0 },
+      sizeof(prog_bam_neckbreaker_anim_ops) / sizeof(prog_bam_neckbreaker_anim_ops[0]), 0, prog_bam_neckbreaker_anim_labels, sizeof(prog_bam_neckbreaker_anim_labels) / sizeof(prog_bam_neckbreaker_anim_labels[0]) },
     { "bam_2_napalm_anim", "BAMSEQ3.ASM", prog_bam_2_napalm_anim_ops,
-      sizeof(prog_bam_2_napalm_anim_ops) / sizeof(prog_bam_2_napalm_anim_ops[0]), 0 },
+      sizeof(prog_bam_2_napalm_anim_ops) / sizeof(prog_bam_2_napalm_anim_ops[0]), 0, prog_bam_2_napalm_anim_labels, sizeof(prog_bam_2_napalm_anim_labels) / sizeof(prog_bam_2_napalm_anim_labels[0]) },
     { "bam_4_napalm_anim", "BAMSEQ3.ASM", prog_bam_4_napalm_anim_ops,
-      sizeof(prog_bam_4_napalm_anim_ops) / sizeof(prog_bam_4_napalm_anim_ops[0]), 0 },
+      sizeof(prog_bam_4_napalm_anim_ops) / sizeof(prog_bam_4_napalm_anim_ops[0]), 0, prog_bam_4_napalm_anim_labels, sizeof(prog_bam_4_napalm_anim_labels) / sizeof(prog_bam_4_napalm_anim_labels[0]) },
     { "bam_slamnobounce_anim", "BAMSEQ4.ASM", prog_bam_slamnobounce_anim_ops,
-      sizeof(prog_bam_slamnobounce_anim_ops) / sizeof(prog_bam_slamnobounce_anim_ops[0]), 0 },
+      sizeof(prog_bam_slamnobounce_anim_ops) / sizeof(prog_bam_slamnobounce_anim_ops[0]), 0, 0, 0 },
     { "bam_slambounce_anim", "BAMSEQ4.ASM", prog_bam_slambounce_anim_ops,
-      sizeof(prog_bam_slambounce_anim_ops) / sizeof(prog_bam_slambounce_anim_ops[0]), 0 },
+      sizeof(prog_bam_slambounce_anim_ops) / sizeof(prog_bam_slambounce_anim_ops[0]), 0, 0, 0 },
     { "bam_slambounce2_anim", "BAMSEQ4.ASM", prog_bam_slambounce2_anim_ops,
-      sizeof(prog_bam_slambounce2_anim_ops) / sizeof(prog_bam_slambounce2_anim_ops[0]), 0 },
+      sizeof(prog_bam_slambounce2_anim_ops) / sizeof(prog_bam_slambounce2_anim_ops[0]), 0, 0, 0 },
     { "bam_breakneck2_anim", "BAMSEQ4.ASM", prog_bam_breakneck2_anim_ops,
-      sizeof(prog_bam_breakneck2_anim_ops) / sizeof(prog_bam_breakneck2_anim_ops[0]), 0 },
+      sizeof(prog_bam_breakneck2_anim_ops) / sizeof(prog_bam_breakneck2_anim_ops[0]), 0, 0, 0 },
     { "bam_arm_broken_anim", "BAMSEQ4.ASM", prog_bam_arm_broken_anim_ops,
-      sizeof(prog_bam_arm_broken_anim_ops) / sizeof(prog_bam_arm_broken_anim_ops[0]), 0 },
+      sizeof(prog_bam_arm_broken_anim_ops) / sizeof(prog_bam_arm_broken_anim_ops[0]), 0, prog_bam_arm_broken_anim_labels, sizeof(prog_bam_arm_broken_anim_labels) / sizeof(prog_bam_arm_broken_anim_labels[0]) },
     { "dnk_zip_anim", "DNKSEQ1.ASM", prog_dnk_zip_anim_ops,
-      sizeof(prog_dnk_zip_anim_ops) / sizeof(prog_dnk_zip_anim_ops[0]), 0 },
+      sizeof(prog_dnk_zip_anim_ops) / sizeof(prog_dnk_zip_anim_ops[0]), 0, 0, 0 },
     { "dnk_stand2_anim", "DNKSEQ1.ASM", prog_dnk_stand2_anim_ops,
-      sizeof(prog_dnk_stand2_anim_ops) / sizeof(prog_dnk_stand2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_stand2_anim_ops) / sizeof(prog_dnk_stand2_anim_ops[0]), 0, 0, 0 },
     { "dnk_stand8_anim", "DNKSEQ1.ASM", prog_dnk_stand8_anim_ops,
-      sizeof(prog_dnk_stand8_anim_ops) / sizeof(prog_dnk_stand8_anim_ops[0]), 0 },
+      sizeof(prog_dnk_stand8_anim_ops) / sizeof(prog_dnk_stand8_anim_ops[0]), 0, 0, 0 },
     { "dnk_stand4_anim", "DNKSEQ1.ASM", prog_dnk_stand4_anim_ops,
-      sizeof(prog_dnk_stand4_anim_ops) / sizeof(prog_dnk_stand4_anim_ops[0]), 0 },
+      sizeof(prog_dnk_stand4_anim_ops) / sizeof(prog_dnk_stand4_anim_ops[0]), 0, 0, 0 },
     { "dnk_stand6_anim", "DNKSEQ1.ASM", prog_dnk_stand6_anim_ops,
-      sizeof(prog_dnk_stand6_anim_ops) / sizeof(prog_dnk_stand6_anim_ops[0]), 0 },
+      sizeof(prog_dnk_stand6_anim_ops) / sizeof(prog_dnk_stand6_anim_ops[0]), 0, 0, 0 },
     { "dnk_torso2_anim", "DNKSEQ1.ASM", prog_dnk_torso2_anim_ops,
-      sizeof(prog_dnk_torso2_anim_ops) / sizeof(prog_dnk_torso2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_torso2_anim_ops) / sizeof(prog_dnk_torso2_anim_ops[0]), 0, 0, 0 },
     { "dnk_torso8_anim", "DNKSEQ1.ASM", prog_dnk_torso8_anim_ops,
-      sizeof(prog_dnk_torso8_anim_ops) / sizeof(prog_dnk_torso8_anim_ops[0]), 0 },
+      sizeof(prog_dnk_torso8_anim_ops) / sizeof(prog_dnk_torso8_anim_ops[0]), 0, 0, 0 },
     { "dnk_torso4_anim", "DNKSEQ1.ASM", prog_dnk_torso4_anim_ops,
-      sizeof(prog_dnk_torso4_anim_ops) / sizeof(prog_dnk_torso4_anim_ops[0]), 0 },
+      sizeof(prog_dnk_torso4_anim_ops) / sizeof(prog_dnk_torso4_anim_ops[0]), 0, 0, 0 },
     { "dnk_torso6_anim", "DNKSEQ1.ASM", prog_dnk_torso6_anim_ops,
-      sizeof(prog_dnk_torso6_anim_ops) / sizeof(prog_dnk_torso6_anim_ops[0]), 0 },
+      sizeof(prog_dnk_torso6_anim_ops) / sizeof(prog_dnk_torso6_anim_ops[0]), 0, 0, 0 },
     { "dnk_holdoh_anim", "DNKSEQ1.ASM", prog_dnk_holdoh_anim_ops,
-      sizeof(prog_dnk_holdoh_anim_ops) / sizeof(prog_dnk_holdoh_anim_ops[0]), 0 },
+      sizeof(prog_dnk_holdoh_anim_ops) / sizeof(prog_dnk_holdoh_anim_ops[0]), 0, 0, 0 },
     { "dnk_walk1_f2_anim", "DNKSEQ1.ASM", prog_dnk_walk1_f2_anim_ops,
-      sizeof(prog_dnk_walk1_f2_anim_ops) / sizeof(prog_dnk_walk1_f2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_walk1_f2_anim_ops) / sizeof(prog_dnk_walk1_f2_anim_ops[0]), 0, 0, 0 },
     { "dnk_walk2_f2_anim", "DNKSEQ1.ASM", prog_dnk_walk2_f2_anim_ops,
-      sizeof(prog_dnk_walk2_f2_anim_ops) / sizeof(prog_dnk_walk2_f2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_walk2_f2_anim_ops) / sizeof(prog_dnk_walk2_f2_anim_ops[0]), 0, 0, 0 },
     { "dnk_walk4_f2_anim", "DNKSEQ1.ASM", prog_dnk_walk4_f2_anim_ops,
-      sizeof(prog_dnk_walk4_f2_anim_ops) / sizeof(prog_dnk_walk4_f2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_walk4_f2_anim_ops) / sizeof(prog_dnk_walk4_f2_anim_ops[0]), 0, 0, 0 },
     { "dnk_walk5_f2_anim", "DNKSEQ1.ASM", prog_dnk_walk5_f2_anim_ops,
-      sizeof(prog_dnk_walk5_f2_anim_ops) / sizeof(prog_dnk_walk5_f2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_walk5_f2_anim_ops) / sizeof(prog_dnk_walk5_f2_anim_ops[0]), 0, 0, 0 },
     { "dnk_walk6_f2_anim", "DNKSEQ1.ASM", prog_dnk_walk6_f2_anim_ops,
-      sizeof(prog_dnk_walk6_f2_anim_ops) / sizeof(prog_dnk_walk6_f2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_walk6_f2_anim_ops) / sizeof(prog_dnk_walk6_f2_anim_ops[0]), 0, 0, 0 },
     { "dnk_walk8_f2_anim", "DNKSEQ1.ASM", prog_dnk_walk8_f2_anim_ops,
-      sizeof(prog_dnk_walk8_f2_anim_ops) / sizeof(prog_dnk_walk8_f2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_walk8_f2_anim_ops) / sizeof(prog_dnk_walk8_f2_anim_ops[0]), 0, 0, 0 },
     { "dnk_walk1_f4_anim", "DNKSEQ1.ASM", prog_dnk_walk1_f4_anim_ops,
-      sizeof(prog_dnk_walk1_f4_anim_ops) / sizeof(prog_dnk_walk1_f4_anim_ops[0]), 0 },
+      sizeof(prog_dnk_walk1_f4_anim_ops) / sizeof(prog_dnk_walk1_f4_anim_ops[0]), 0, 0, 0 },
     { "dnk_walk2_f4_anim", "DNKSEQ1.ASM", prog_dnk_walk2_f4_anim_ops,
-      sizeof(prog_dnk_walk2_f4_anim_ops) / sizeof(prog_dnk_walk2_f4_anim_ops[0]), 0 },
+      sizeof(prog_dnk_walk2_f4_anim_ops) / sizeof(prog_dnk_walk2_f4_anim_ops[0]), 0, 0, 0 },
     { "dnk_walk4_f4_anim", "DNKSEQ1.ASM", prog_dnk_walk4_f4_anim_ops,
-      sizeof(prog_dnk_walk4_f4_anim_ops) / sizeof(prog_dnk_walk4_f4_anim_ops[0]), 0 },
+      sizeof(prog_dnk_walk4_f4_anim_ops) / sizeof(prog_dnk_walk4_f4_anim_ops[0]), 0, 0, 0 },
     { "dnk_walk5_f4_anim", "DNKSEQ1.ASM", prog_dnk_walk5_f4_anim_ops,
-      sizeof(prog_dnk_walk5_f4_anim_ops) / sizeof(prog_dnk_walk5_f4_anim_ops[0]), 0 },
+      sizeof(prog_dnk_walk5_f4_anim_ops) / sizeof(prog_dnk_walk5_f4_anim_ops[0]), 0, 0, 0 },
     { "dnk_walk6_f4_anim", "DNKSEQ1.ASM", prog_dnk_walk6_f4_anim_ops,
-      sizeof(prog_dnk_walk6_f4_anim_ops) / sizeof(prog_dnk_walk6_f4_anim_ops[0]), 0 },
+      sizeof(prog_dnk_walk6_f4_anim_ops) / sizeof(prog_dnk_walk6_f4_anim_ops[0]), 0, 0, 0 },
     { "dnk_walk8_f4_anim", "DNKSEQ1.ASM", prog_dnk_walk8_f4_anim_ops,
-      sizeof(prog_dnk_walk8_f4_anim_ops) / sizeof(prog_dnk_walk8_f4_anim_ops[0]), 0 },
+      sizeof(prog_dnk_walk8_f4_anim_ops) / sizeof(prog_dnk_walk8_f4_anim_ops[0]), 0, 0, 0 },
     { "dnk_2_to_4_turn_anim", "DNKSEQ1.ASM", prog_dnk_2_to_4_turn_anim_ops,
-      sizeof(prog_dnk_2_to_4_turn_anim_ops) / sizeof(prog_dnk_2_to_4_turn_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_to_4_turn_anim_ops) / sizeof(prog_dnk_2_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "dnk_8_to_6_turn_anim", "DNKSEQ1.ASM", prog_dnk_8_to_6_turn_anim_ops,
-      sizeof(prog_dnk_8_to_6_turn_anim_ops) / sizeof(prog_dnk_8_to_6_turn_anim_ops[0]), 0 },
+      sizeof(prog_dnk_8_to_6_turn_anim_ops) / sizeof(prog_dnk_8_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "dnk_4_to_2_turn_anim", "DNKSEQ1.ASM", prog_dnk_4_to_2_turn_anim_ops,
-      sizeof(prog_dnk_4_to_2_turn_anim_ops) / sizeof(prog_dnk_4_to_2_turn_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_to_2_turn_anim_ops) / sizeof(prog_dnk_4_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "dnk_6_to_8_turn_anim", "DNKSEQ1.ASM", prog_dnk_6_to_8_turn_anim_ops,
-      sizeof(prog_dnk_6_to_8_turn_anim_ops) / sizeof(prog_dnk_6_to_8_turn_anim_ops[0]), 0 },
+      sizeof(prog_dnk_6_to_8_turn_anim_ops) / sizeof(prog_dnk_6_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "dnk_4_to_6_turn_anim", "DNKSEQ1.ASM", prog_dnk_4_to_6_turn_anim_ops,
-      sizeof(prog_dnk_4_to_6_turn_anim_ops) / sizeof(prog_dnk_4_to_6_turn_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_to_6_turn_anim_ops) / sizeof(prog_dnk_4_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "dnk_6_to_4_turn_anim", "DNKSEQ1.ASM", prog_dnk_6_to_4_turn_anim_ops,
-      sizeof(prog_dnk_6_to_4_turn_anim_ops) / sizeof(prog_dnk_6_to_4_turn_anim_ops[0]), 0 },
+      sizeof(prog_dnk_6_to_4_turn_anim_ops) / sizeof(prog_dnk_6_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "dnk_2_to_8_turn_anim", "DNKSEQ1.ASM", prog_dnk_2_to_8_turn_anim_ops,
-      sizeof(prog_dnk_2_to_8_turn_anim_ops) / sizeof(prog_dnk_2_to_8_turn_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_to_8_turn_anim_ops) / sizeof(prog_dnk_2_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "dnk_8_to_2_turn_anim", "DNKSEQ1.ASM", prog_dnk_8_to_2_turn_anim_ops,
-      sizeof(prog_dnk_8_to_2_turn_anim_ops) / sizeof(prog_dnk_8_to_2_turn_anim_ops[0]), 0 },
+      sizeof(prog_dnk_8_to_2_turn_anim_ops) / sizeof(prog_dnk_8_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "dnk_4_to_8_turn_anim", "DNKSEQ1.ASM", prog_dnk_4_to_8_turn_anim_ops,
-      sizeof(prog_dnk_4_to_8_turn_anim_ops) / sizeof(prog_dnk_4_to_8_turn_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_to_8_turn_anim_ops) / sizeof(prog_dnk_4_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "dnk_6_to_2_turn_anim", "DNKSEQ1.ASM", prog_dnk_6_to_2_turn_anim_ops,
-      sizeof(prog_dnk_6_to_2_turn_anim_ops) / sizeof(prog_dnk_6_to_2_turn_anim_ops[0]), 0 },
+      sizeof(prog_dnk_6_to_2_turn_anim_ops) / sizeof(prog_dnk_6_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "dnk_2_to_6_turn_anim", "DNKSEQ1.ASM", prog_dnk_2_to_6_turn_anim_ops,
-      sizeof(prog_dnk_2_to_6_turn_anim_ops) / sizeof(prog_dnk_2_to_6_turn_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_to_6_turn_anim_ops) / sizeof(prog_dnk_2_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "dnk_8_to_4_turn_anim", "DNKSEQ1.ASM", prog_dnk_8_to_4_turn_anim_ops,
-      sizeof(prog_dnk_8_to_4_turn_anim_ops) / sizeof(prog_dnk_8_to_4_turn_anim_ops[0]), 0 },
+      sizeof(prog_dnk_8_to_4_turn_anim_ops) / sizeof(prog_dnk_8_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "dnk_2_to_4_turn2_anim", "DNKSEQ1.ASM", prog_dnk_2_to_4_turn2_anim_ops,
-      sizeof(prog_dnk_2_to_4_turn2_anim_ops) / sizeof(prog_dnk_2_to_4_turn2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_to_4_turn2_anim_ops) / sizeof(prog_dnk_2_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "dnk_8_to_6_turn2_anim", "DNKSEQ1.ASM", prog_dnk_8_to_6_turn2_anim_ops,
-      sizeof(prog_dnk_8_to_6_turn2_anim_ops) / sizeof(prog_dnk_8_to_6_turn2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_8_to_6_turn2_anim_ops) / sizeof(prog_dnk_8_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "dnk_4_to_2_turn2_anim", "DNKSEQ1.ASM", prog_dnk_4_to_2_turn2_anim_ops,
-      sizeof(prog_dnk_4_to_2_turn2_anim_ops) / sizeof(prog_dnk_4_to_2_turn2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_to_2_turn2_anim_ops) / sizeof(prog_dnk_4_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "dnk_6_to_8_turn2_anim", "DNKSEQ1.ASM", prog_dnk_6_to_8_turn2_anim_ops,
-      sizeof(prog_dnk_6_to_8_turn2_anim_ops) / sizeof(prog_dnk_6_to_8_turn2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_6_to_8_turn2_anim_ops) / sizeof(prog_dnk_6_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "dnk_4_to_6_turn2_anim", "DNKSEQ1.ASM", prog_dnk_4_to_6_turn2_anim_ops,
-      sizeof(prog_dnk_4_to_6_turn2_anim_ops) / sizeof(prog_dnk_4_to_6_turn2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_to_6_turn2_anim_ops) / sizeof(prog_dnk_4_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "dnk_6_to_4_turn2_anim", "DNKSEQ1.ASM", prog_dnk_6_to_4_turn2_anim_ops,
-      sizeof(prog_dnk_6_to_4_turn2_anim_ops) / sizeof(prog_dnk_6_to_4_turn2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_6_to_4_turn2_anim_ops) / sizeof(prog_dnk_6_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "dnk_2_to_8_turn2_anim", "DNKSEQ1.ASM", prog_dnk_2_to_8_turn2_anim_ops,
-      sizeof(prog_dnk_2_to_8_turn2_anim_ops) / sizeof(prog_dnk_2_to_8_turn2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_to_8_turn2_anim_ops) / sizeof(prog_dnk_2_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "dnk_8_to_2_turn2_anim", "DNKSEQ1.ASM", prog_dnk_8_to_2_turn2_anim_ops,
-      sizeof(prog_dnk_8_to_2_turn2_anim_ops) / sizeof(prog_dnk_8_to_2_turn2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_8_to_2_turn2_anim_ops) / sizeof(prog_dnk_8_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "dnk_4_to_8_turn2_anim", "DNKSEQ1.ASM", prog_dnk_4_to_8_turn2_anim_ops,
-      sizeof(prog_dnk_4_to_8_turn2_anim_ops) / sizeof(prog_dnk_4_to_8_turn2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_to_8_turn2_anim_ops) / sizeof(prog_dnk_4_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "dnk_6_to_2_turn2_anim", "DNKSEQ1.ASM", prog_dnk_6_to_2_turn2_anim_ops,
-      sizeof(prog_dnk_6_to_2_turn2_anim_ops) / sizeof(prog_dnk_6_to_2_turn2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_6_to_2_turn2_anim_ops) / sizeof(prog_dnk_6_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "dnk_2_to_6_turn2_anim", "DNKSEQ1.ASM", prog_dnk_2_to_6_turn2_anim_ops,
-      sizeof(prog_dnk_2_to_6_turn2_anim_ops) / sizeof(prog_dnk_2_to_6_turn2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_to_6_turn2_anim_ops) / sizeof(prog_dnk_2_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "dnk_8_to_4_turn2_anim", "DNKSEQ1.ASM", prog_dnk_8_to_4_turn2_anim_ops,
-      sizeof(prog_dnk_8_to_4_turn2_anim_ops) / sizeof(prog_dnk_8_to_4_turn2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_8_to_4_turn2_anim_ops) / sizeof(prog_dnk_8_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "dnk_run2_anim", "DNKSEQ1.ASM", prog_dnk_run2_anim_ops,
-      sizeof(prog_dnk_run2_anim_ops) / sizeof(prog_dnk_run2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_run2_anim_ops) / sizeof(prog_dnk_run2_anim_ops[0]), 0, prog_dnk_run2_anim_labels, sizeof(prog_dnk_run2_anim_labels) / sizeof(prog_dnk_run2_anim_labels[0]) },
     { "dnk_run_anim", "DNKSEQ1.ASM", prog_dnk_run_anim_ops,
-      sizeof(prog_dnk_run_anim_ops) / sizeof(prog_dnk_run_anim_ops[0]), 0 },
+      sizeof(prog_dnk_run_anim_ops) / sizeof(prog_dnk_run_anim_ops[0]), 0, prog_dnk_run_anim_labels, sizeof(prog_dnk_run_anim_labels) / sizeof(prog_dnk_run_anim_labels[0]) },
     { "dnk_bounce_anim", "DNKSEQ1.ASM", prog_dnk_bounce_anim_ops,
-      sizeof(prog_dnk_bounce_anim_ops) / sizeof(prog_dnk_bounce_anim_ops[0]), 0 },
+      sizeof(prog_dnk_bounce_anim_ops) / sizeof(prog_dnk_bounce_anim_ops[0]), 0, 0, 0 },
     { "dnk_2_punch_anim", "DNKSEQ2.ASM", prog_dnk_2_punch_anim_ops,
-      sizeof(prog_dnk_2_punch_anim_ops) / sizeof(prog_dnk_2_punch_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_punch_anim_ops) / sizeof(prog_dnk_2_punch_anim_ops[0]), 0, prog_dnk_2_punch_anim_labels, sizeof(prog_dnk_2_punch_anim_labels) / sizeof(prog_dnk_2_punch_anim_labels[0]) },
     { "dnk_4_punch_anim", "DNKSEQ2.ASM", prog_dnk_4_punch_anim_ops,
-      sizeof(prog_dnk_4_punch_anim_ops) / sizeof(prog_dnk_4_punch_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_punch_anim_ops) / sizeof(prog_dnk_4_punch_anim_ops[0]), 0, prog_dnk_4_punch_anim_labels, sizeof(prog_dnk_4_punch_anim_labels) / sizeof(prog_dnk_4_punch_anim_labels[0]) },
     { "dnk_2_box_anim", "DNKSEQ2.ASM", prog_dnk_2_box_anim_ops,
-      sizeof(prog_dnk_2_box_anim_ops) / sizeof(prog_dnk_2_box_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_box_anim_ops) / sizeof(prog_dnk_2_box_anim_ops[0]), 0, prog_dnk_2_box_anim_labels, sizeof(prog_dnk_2_box_anim_labels) / sizeof(prog_dnk_2_box_anim_labels[0]) },
     { "dnk_4_box_anim", "DNKSEQ2.ASM", prog_dnk_4_box_anim_ops,
-      sizeof(prog_dnk_4_box_anim_ops) / sizeof(prog_dnk_4_box_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_box_anim_ops) / sizeof(prog_dnk_4_box_anim_ops[0]), 0, prog_dnk_4_box_anim_labels, sizeof(prog_dnk_4_box_anim_labels) / sizeof(prog_dnk_4_box_anim_labels[0]) },
     { "dnk_combo_box_anim", "DNKSEQ2.ASM", prog_dnk_combo_box_anim_ops,
-      sizeof(prog_dnk_combo_box_anim_ops) / sizeof(prog_dnk_combo_box_anim_ops[0]), 0 },
+      sizeof(prog_dnk_combo_box_anim_ops) / sizeof(prog_dnk_combo_box_anim_ops[0]), 0, prog_dnk_combo_box_anim_labels, sizeof(prog_dnk_combo_box_anim_labels) / sizeof(prog_dnk_combo_box_anim_labels[0]) },
     { "dnk_2_butt_anim", "DNKSEQ2.ASM", prog_dnk_2_butt_anim_ops,
-      sizeof(prog_dnk_2_butt_anim_ops) / sizeof(prog_dnk_2_butt_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_butt_anim_ops) / sizeof(prog_dnk_2_butt_anim_ops[0]), 0, prog_dnk_2_butt_anim_labels, sizeof(prog_dnk_2_butt_anim_labels) / sizeof(prog_dnk_2_butt_anim_labels[0]) },
     { "dnk_4_butt_anim", "DNKSEQ2.ASM", prog_dnk_4_butt_anim_ops,
-      sizeof(prog_dnk_4_butt_anim_ops) / sizeof(prog_dnk_4_butt_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_butt_anim_ops) / sizeof(prog_dnk_4_butt_anim_ops[0]), 0, prog_dnk_4_butt_anim_labels, sizeof(prog_dnk_4_butt_anim_labels) / sizeof(prog_dnk_4_butt_anim_labels[0]) },
     { "dnk_2_butts_anim", "DNKSEQ2.ASM", prog_dnk_2_butts_anim_ops,
-      sizeof(prog_dnk_2_butts_anim_ops) / sizeof(prog_dnk_2_butts_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_butts_anim_ops) / sizeof(prog_dnk_2_butts_anim_ops[0]), 0, prog_dnk_2_butts_anim_labels, sizeof(prog_dnk_2_butts_anim_labels) / sizeof(prog_dnk_2_butts_anim_labels[0]) },
     { "dnk_4_butts_anim", "DNKSEQ2.ASM", prog_dnk_4_butts_anim_ops,
-      sizeof(prog_dnk_4_butts_anim_ops) / sizeof(prog_dnk_4_butts_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_butts_anim_ops) / sizeof(prog_dnk_4_butts_anim_ops[0]), 0, prog_dnk_4_butts_anim_labels, sizeof(prog_dnk_4_butts_anim_labels) / sizeof(prog_dnk_4_butts_anim_labels[0]) },
     { "dnk_4_combo_butt_anim", "DNKSEQ2.ASM", prog_dnk_4_combo_butt_anim_ops,
-      sizeof(prog_dnk_4_combo_butt_anim_ops) / sizeof(prog_dnk_4_combo_butt_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_combo_butt_anim_ops) / sizeof(prog_dnk_4_combo_butt_anim_ops[0]), 0, prog_dnk_4_combo_butt_anim_labels, sizeof(prog_dnk_4_combo_butt_anim_labels) / sizeof(prog_dnk_4_combo_butt_anim_labels[0]) },
     { "dnk_2_kick_anim", "DNKSEQ2.ASM", prog_dnk_2_kick_anim_ops,
-      sizeof(prog_dnk_2_kick_anim_ops) / sizeof(prog_dnk_2_kick_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_kick_anim_ops) / sizeof(prog_dnk_2_kick_anim_ops[0]), 0, prog_dnk_2_kick_anim_labels, sizeof(prog_dnk_2_kick_anim_labels) / sizeof(prog_dnk_2_kick_anim_labels[0]) },
     { "dnk_4_kick_anim", "DNKSEQ2.ASM", prog_dnk_4_kick_anim_ops,
-      sizeof(prog_dnk_4_kick_anim_ops) / sizeof(prog_dnk_4_kick_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_kick_anim_ops) / sizeof(prog_dnk_4_kick_anim_ops[0]), 0, prog_dnk_4_kick_anim_labels, sizeof(prog_dnk_4_kick_anim_labels) / sizeof(prog_dnk_4_kick_anim_labels[0]) },
     { "dnk_4_combo_kick_anim", "DNKSEQ2.ASM", prog_dnk_4_combo_kick_anim_ops,
-      sizeof(prog_dnk_4_combo_kick_anim_ops) / sizeof(prog_dnk_4_combo_kick_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_combo_kick_anim_ops) / sizeof(prog_dnk_4_combo_kick_anim_ops[0]), 0, prog_dnk_4_combo_kick_anim_labels, sizeof(prog_dnk_4_combo_kick_anim_labels) / sizeof(prog_dnk_4_combo_kick_anim_labels[0]) },
     { "dnk_2_spin_kick_anim", "DNKSEQ2.ASM", prog_dnk_2_spin_kick_anim_ops,
-      sizeof(prog_dnk_2_spin_kick_anim_ops) / sizeof(prog_dnk_2_spin_kick_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_spin_kick_anim_ops) / sizeof(prog_dnk_2_spin_kick_anim_ops[0]), 0, prog_dnk_2_spin_kick_anim_labels, sizeof(prog_dnk_2_spin_kick_anim_labels) / sizeof(prog_dnk_2_spin_kick_anim_labels[0]) },
     { "skick_delay", "DNKSEQ2.ASM", prog_skick_delay_ops,
-      sizeof(prog_skick_delay_ops) / sizeof(prog_skick_delay_ops[0]), 0 },
+      sizeof(prog_skick_delay_ops) / sizeof(prog_skick_delay_ops[0]), 0, prog_skick_delay_labels, sizeof(prog_skick_delay_labels) / sizeof(prog_skick_delay_labels[0]) },
     { "dnk_2_spin_kick_TB_anim", "DNKSEQ2.ASM", prog_dnk_2_spin_kick_TB_anim_ops,
-      sizeof(prog_dnk_2_spin_kick_TB_anim_ops) / sizeof(prog_dnk_2_spin_kick_TB_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_spin_kick_TB_anim_ops) / sizeof(prog_dnk_2_spin_kick_TB_anim_ops[0]), 0, 0, 0 },
     { "dnk_4_spin_kick_anim", "DNKSEQ2.ASM", prog_dnk_4_spin_kick_anim_ops,
-      sizeof(prog_dnk_4_spin_kick_anim_ops) / sizeof(prog_dnk_4_spin_kick_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_spin_kick_anim_ops) / sizeof(prog_dnk_4_spin_kick_anim_ops[0]), 0, prog_dnk_4_spin_kick_anim_labels, sizeof(prog_dnk_4_spin_kick_anim_labels) / sizeof(prog_dnk_4_spin_kick_anim_labels[0]) },
     { "dnk_4_spin_kick_TB_anim", "DNKSEQ2.ASM", prog_dnk_4_spin_kick_TB_anim_ops,
-      sizeof(prog_dnk_4_spin_kick_TB_anim_ops) / sizeof(prog_dnk_4_spin_kick_TB_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_spin_kick_TB_anim_ops) / sizeof(prog_dnk_4_spin_kick_TB_anim_ops[0]), 0, 0, 0 },
     { "dnk_4_combo_spin_kick_anim", "DNKSEQ2.ASM", prog_dnk_4_combo_spin_kick_anim_ops,
-      sizeof(prog_dnk_4_combo_spin_kick_anim_ops) / sizeof(prog_dnk_4_combo_spin_kick_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_combo_spin_kick_anim_ops) / sizeof(prog_dnk_4_combo_spin_kick_anim_ops[0]), 0, prog_dnk_4_combo_spin_kick_anim_labels, sizeof(prog_dnk_4_combo_spin_kick_anim_labels) / sizeof(prog_dnk_4_combo_spin_kick_anim_labels[0]) },
     { "dnk_2_knee_anim", "DNKSEQ2.ASM", prog_dnk_2_knee_anim_ops,
-      sizeof(prog_dnk_2_knee_anim_ops) / sizeof(prog_dnk_2_knee_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_knee_anim_ops) / sizeof(prog_dnk_2_knee_anim_ops[0]), 0, prog_dnk_2_knee_anim_labels, sizeof(prog_dnk_2_knee_anim_labels) / sizeof(prog_dnk_2_knee_anim_labels[0]) },
     { "dnk_4_knee_fall_anim", "DNKSEQ2.ASM", prog_dnk_4_knee_fall_anim_ops,
-      sizeof(prog_dnk_4_knee_fall_anim_ops) / sizeof(prog_dnk_4_knee_fall_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_knee_fall_anim_ops) / sizeof(prog_dnk_4_knee_fall_anim_ops[0]), 0, prog_dnk_4_knee_fall_anim_labels, sizeof(prog_dnk_4_knee_fall_anim_labels) / sizeof(prog_dnk_4_knee_fall_anim_labels[0]) },
     { "dnk_combo_knee_fall_anim", "DNKSEQ2.ASM", prog_dnk_combo_knee_fall_anim_ops,
-      sizeof(prog_dnk_combo_knee_fall_anim_ops) / sizeof(prog_dnk_combo_knee_fall_anim_ops[0]), 0 },
+      sizeof(prog_dnk_combo_knee_fall_anim_ops) / sizeof(prog_dnk_combo_knee_fall_anim_ops[0]), 0, prog_dnk_combo_knee_fall_anim_labels, sizeof(prog_dnk_combo_knee_fall_anim_labels) / sizeof(prog_dnk_combo_knee_fall_anim_labels[0]) },
     { "dnk_4_knee_anim", "DNKSEQ2.ASM", prog_dnk_4_knee_anim_ops,
-      sizeof(prog_dnk_4_knee_anim_ops) / sizeof(prog_dnk_4_knee_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_knee_anim_ops) / sizeof(prog_dnk_4_knee_anim_ops[0]), 0, prog_dnk_4_knee_anim_labels, sizeof(prog_dnk_4_knee_anim_labels) / sizeof(prog_dnk_4_knee_anim_labels[0]) },
     { "dnk_combo_flying_kick_anim", "DNKSEQ2.ASM", prog_dnk_combo_flying_kick_anim_ops,
-      sizeof(prog_dnk_combo_flying_kick_anim_ops) / sizeof(prog_dnk_combo_flying_kick_anim_ops[0]), 0 },
+      sizeof(prog_dnk_combo_flying_kick_anim_ops) / sizeof(prog_dnk_combo_flying_kick_anim_ops[0]), 0, prog_dnk_combo_flying_kick_anim_labels, sizeof(prog_dnk_combo_flying_kick_anim_labels) / sizeof(prog_dnk_combo_flying_kick_anim_labels[0]) },
     { "dnk_flying_kick_anim", "DNKSEQ2.ASM", prog_dnk_flying_kick_anim_ops,
-      sizeof(prog_dnk_flying_kick_anim_ops) / sizeof(prog_dnk_flying_kick_anim_ops[0]), 0 },
+      sizeof(prog_dnk_flying_kick_anim_ops) / sizeof(prog_dnk_flying_kick_anim_ops[0]), 0, prog_dnk_flying_kick_anim_labels, sizeof(prog_dnk_flying_kick_anim_labels) / sizeof(prog_dnk_flying_kick_anim_labels[0]) },
     { "dnk_4_body_hit_anim", "DNKSEQ2.ASM", prog_dnk_4_body_hit_anim_ops,
-      sizeof(prog_dnk_4_body_hit_anim_ops) / sizeof(prog_dnk_4_body_hit_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_body_hit_anim_ops) / sizeof(prog_dnk_4_body_hit_anim_ops[0]), 0, prog_dnk_4_body_hit_anim_labels, sizeof(prog_dnk_4_body_hit_anim_labels) / sizeof(prog_dnk_4_body_hit_anim_labels[0]) },
     { "dnk_4_body_hit_dizzy_anim", "DNKSEQ2.ASM", prog_dnk_4_body_hit_dizzy_anim_ops,
-      sizeof(prog_dnk_4_body_hit_dizzy_anim_ops) / sizeof(prog_dnk_4_body_hit_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_body_hit_dizzy_anim_ops) / sizeof(prog_dnk_4_body_hit_dizzy_anim_ops[0]), 0, 0, 0 },
     { "dnk_2_knee_hit_anim", "DNKSEQ2.ASM", prog_dnk_2_knee_hit_anim_ops,
-      sizeof(prog_dnk_2_knee_hit_anim_ops) / sizeof(prog_dnk_2_knee_hit_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_knee_hit_anim_ops) / sizeof(prog_dnk_2_knee_hit_anim_ops[0]), 0, 0, 0 },
     { "dnk_4_knee_hit_dizzy_anim", "DNKSEQ2.ASM", prog_dnk_4_knee_hit_dizzy_anim_ops,
-      sizeof(prog_dnk_4_knee_hit_dizzy_anim_ops) / sizeof(prog_dnk_4_knee_hit_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_knee_hit_dizzy_anim_ops) / sizeof(prog_dnk_4_knee_hit_dizzy_anim_ops[0]), 0, 0, 0 },
     { "dnk_quick_knee_hit_anim", "DNKSEQ2.ASM", prog_dnk_quick_knee_hit_anim_ops,
-      sizeof(prog_dnk_quick_knee_hit_anim_ops) / sizeof(prog_dnk_quick_knee_hit_anim_ops[0]), 0 },
+      sizeof(prog_dnk_quick_knee_hit_anim_ops) / sizeof(prog_dnk_quick_knee_hit_anim_ops[0]), 0, prog_dnk_quick_knee_hit_anim_labels, sizeof(prog_dnk_quick_knee_hit_anim_labels) / sizeof(prog_dnk_quick_knee_hit_anim_labels[0]) },
     { "dnk_fall_back_anim", "DNKSEQ2.ASM", prog_dnk_fall_back_anim_ops,
-      sizeof(prog_dnk_fall_back_anim_ops) / sizeof(prog_dnk_fall_back_anim_ops[0]), 0 },
+      sizeof(prog_dnk_fall_back_anim_ops) / sizeof(prog_dnk_fall_back_anim_ops[0]), 0, 0, 0 },
     { "ckzpos", "DNKSEQ2.ASM", prog_ckzpos_ops,
-      sizeof(prog_ckzpos_ops) / sizeof(prog_ckzpos_ops[0]), 0 },
+      sizeof(prog_ckzpos_ops) / sizeof(prog_ckzpos_ops[0]), 0, prog_ckzpos_labels, sizeof(prog_ckzpos_labels) / sizeof(prog_ckzpos_labels[0]) },
     { "dnk_fall_back2_anim", "DNKSEQ2.ASM", prog_dnk_fall_back2_anim_ops,
-      sizeof(prog_dnk_fall_back2_anim_ops) / sizeof(prog_dnk_fall_back2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_fall_back2_anim_ops) / sizeof(prog_dnk_fall_back2_anim_ops[0]), 0, 0, 0 },
     { "dnk_fall_back_tbukl_anim", "DNKSEQ2.ASM", prog_dnk_fall_back_tbukl_anim_ops,
-      sizeof(prog_dnk_fall_back_tbukl_anim_ops) / sizeof(prog_dnk_fall_back_tbukl_anim_ops[0]), 0 },
+      sizeof(prog_dnk_fall_back_tbukl_anim_ops) / sizeof(prog_dnk_fall_back_tbukl_anim_ops[0]), 0, 0, 0 },
     { "dnk_4_faceup_getup_anim", "DNKSEQ2.ASM", prog_dnk_4_faceup_getup_anim_ops,
-      sizeof(prog_dnk_4_faceup_getup_anim_ops) / sizeof(prog_dnk_4_faceup_getup_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_faceup_getup_anim_ops) / sizeof(prog_dnk_4_faceup_getup_anim_ops[0]), 0, prog_dnk_4_faceup_getup_anim_labels, sizeof(prog_dnk_4_faceup_getup_anim_labels) / sizeof(prog_dnk_4_faceup_getup_anim_labels[0]) },
     { "dnk_2_faceup_getup_anim", "DNKSEQ2.ASM", prog_dnk_2_faceup_getup_anim_ops,
-      sizeof(prog_dnk_2_faceup_getup_anim_ops) / sizeof(prog_dnk_2_faceup_getup_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_faceup_getup_anim_ops) / sizeof(prog_dnk_2_faceup_getup_anim_ops[0]), 0, prog_dnk_2_faceup_getup_anim_labels, sizeof(prog_dnk_2_faceup_getup_anim_labels) / sizeof(prog_dnk_2_faceup_getup_anim_labels[0]) },
     { "dnk_4_head_hit_anim", "DNKSEQ2.ASM", prog_dnk_4_head_hit_anim_ops,
-      sizeof(prog_dnk_4_head_hit_anim_ops) / sizeof(prog_dnk_4_head_hit_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_head_hit_anim_ops) / sizeof(prog_dnk_4_head_hit_anim_ops[0]), 0, 0, 0 },
     { "dnk_2_head_hit_anim", "DNKSEQ2.ASM", prog_dnk_2_head_hit_anim_ops,
-      sizeof(prog_dnk_2_head_hit_anim_ops) / sizeof(prog_dnk_2_head_hit_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_head_hit_anim_ops) / sizeof(prog_dnk_2_head_hit_anim_ops[0]), 0, 0, 0 },
     { "dnk_4_head_hit2_anim", "DNKSEQ2.ASM", prog_dnk_4_head_hit2_anim_ops,
-      sizeof(prog_dnk_4_head_hit2_anim_ops) / sizeof(prog_dnk_4_head_hit2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_head_hit2_anim_ops) / sizeof(prog_dnk_4_head_hit2_anim_ops[0]), 0, 0, 0 },
     { "dnk_4_head_hit4_anim", "DNKSEQ2.ASM", prog_dnk_4_head_hit4_anim_ops,
-      sizeof(prog_dnk_4_head_hit4_anim_ops) / sizeof(prog_dnk_4_head_hit4_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_head_hit4_anim_ops) / sizeof(prog_dnk_4_head_hit4_anim_ops[0]), 0, 0, 0 },
     { "dnk_2_head_hit2_anim", "DNKSEQ2.ASM", prog_dnk_2_head_hit2_anim_ops,
-      sizeof(prog_dnk_2_head_hit2_anim_ops) / sizeof(prog_dnk_2_head_hit2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_head_hit2_anim_ops) / sizeof(prog_dnk_2_head_hit2_anim_ops[0]), 0, 0, 0 },
     { "dnk_head_hit2_anim", "DNKSEQ2.ASM", prog_dnk_head_hit2_anim_ops,
-      sizeof(prog_dnk_head_hit2_anim_ops) / sizeof(prog_dnk_head_hit2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_head_hit2_anim_ops) / sizeof(prog_dnk_head_hit2_anim_ops[0]), 0, prog_dnk_head_hit2_anim_labels, sizeof(prog_dnk_head_hit2_anim_labels) / sizeof(prog_dnk_head_hit2_anim_labels[0]) },
     { "dnk_head_hit2s_anim", "DNKSEQ2.ASM", prog_dnk_head_hit2s_anim_ops,
-      sizeof(prog_dnk_head_hit2s_anim_ops) / sizeof(prog_dnk_head_hit2s_anim_ops[0]), 0 },
+      sizeof(prog_dnk_head_hit2s_anim_ops) / sizeof(prog_dnk_head_hit2s_anim_ops[0]), 0, 0, 0 },
     { "dnk_head_hit3_anim", "DNKSEQ2.ASM", prog_dnk_head_hit3_anim_ops,
-      sizeof(prog_dnk_head_hit3_anim_ops) / sizeof(prog_dnk_head_hit3_anim_ops[0]), 0 },
+      sizeof(prog_dnk_head_hit3_anim_ops) / sizeof(prog_dnk_head_hit3_anim_ops[0]), 0, 0, 0 },
     { "dnk_head_dead_dizzy_anim", "DNKSEQ2.ASM", prog_dnk_head_dead_dizzy_anim_ops,
-      sizeof(prog_dnk_head_dead_dizzy_anim_ops) / sizeof(prog_dnk_head_dead_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_dnk_head_dead_dizzy_anim_ops) / sizeof(prog_dnk_head_dead_dizzy_anim_ops[0]), 0, 0, 0 },
     { "dnk_head_hit_dizzy_anim", "DNKSEQ2.ASM", prog_dnk_head_hit_dizzy_anim_ops,
-      sizeof(prog_dnk_head_hit_dizzy_anim_ops) / sizeof(prog_dnk_head_hit_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_dnk_head_hit_dizzy_anim_ops) / sizeof(prog_dnk_head_hit_dizzy_anim_ops[0]), 0, 0, 0 },
     { "dnk_fly_cline_anim", "DNKSEQ2.ASM", prog_dnk_fly_cline_anim_ops,
-      sizeof(prog_dnk_fly_cline_anim_ops) / sizeof(prog_dnk_fly_cline_anim_ops[0]), 0 },
+      sizeof(prog_dnk_fly_cline_anim_ops) / sizeof(prog_dnk_fly_cline_anim_ops[0]), 0, prog_dnk_fly_cline_anim_labels, sizeof(prog_dnk_fly_cline_anim_labels) / sizeof(prog_dnk_fly_cline_anim_labels[0]) },
     { "dnk_belly_anim", "DNKSEQ2.ASM", prog_dnk_belly_anim_ops,
-      sizeof(prog_dnk_belly_anim_ops) / sizeof(prog_dnk_belly_anim_ops[0]), 0 },
+      sizeof(prog_dnk_belly_anim_ops) / sizeof(prog_dnk_belly_anim_ops[0]), 0, prog_dnk_belly_anim_labels, sizeof(prog_dnk_belly_anim_labels) / sizeof(prog_dnk_belly_anim_labels[0]) },
     { "dnk_2_lbowdrop_anim", "DNKSEQ2.ASM", prog_dnk_2_lbowdrop_anim_ops,
-      sizeof(prog_dnk_2_lbowdrop_anim_ops) / sizeof(prog_dnk_2_lbowdrop_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_lbowdrop_anim_ops) / sizeof(prog_dnk_2_lbowdrop_anim_ops[0]), 0, prog_dnk_2_lbowdrop_anim_labels, sizeof(prog_dnk_2_lbowdrop_anim_labels) / sizeof(prog_dnk_2_lbowdrop_anim_labels[0]) },
     { "dnk_4_lbowdrop_anim", "DNKSEQ2.ASM", prog_dnk_4_lbowdrop_anim_ops,
-      sizeof(prog_dnk_4_lbowdrop_anim_ops) / sizeof(prog_dnk_4_lbowdrop_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_lbowdrop_anim_ops) / sizeof(prog_dnk_4_lbowdrop_anim_ops[0]), 0, prog_dnk_4_lbowdrop_anim_labels, sizeof(prog_dnk_4_lbowdrop_anim_labels) / sizeof(prog_dnk_4_lbowdrop_anim_labels[0]) },
     { "dnk_4_blbowdrop_anim", "DNKSEQ2.ASM", prog_dnk_4_blbowdrop_anim_ops,
-      sizeof(prog_dnk_4_blbowdrop_anim_ops) / sizeof(prog_dnk_4_blbowdrop_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_blbowdrop_anim_ops) / sizeof(prog_dnk_4_blbowdrop_anim_ops[0]), 0, prog_dnk_4_blbowdrop_anim_labels, sizeof(prog_dnk_4_blbowdrop_anim_labels) / sizeof(prog_dnk_4_blbowdrop_anim_labels[0]) },
     { "dnk_4_hammer_anim", "DNKSEQ2.ASM", prog_dnk_4_hammer_anim_ops,
-      sizeof(prog_dnk_4_hammer_anim_ops) / sizeof(prog_dnk_4_hammer_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_hammer_anim_ops) / sizeof(prog_dnk_4_hammer_anim_ops[0]), 0, prog_dnk_4_hammer_anim_labels, sizeof(prog_dnk_4_hammer_anim_labels) / sizeof(prog_dnk_4_hammer_anim_labels[0]) },
     { "dnk_2_stomp_anim", "DNKSEQ2.ASM", prog_dnk_2_stomp_anim_ops,
-      sizeof(prog_dnk_2_stomp_anim_ops) / sizeof(prog_dnk_2_stomp_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_stomp_anim_ops) / sizeof(prog_dnk_2_stomp_anim_ops[0]), 0, prog_dnk_2_stomp_anim_labels, sizeof(prog_dnk_2_stomp_anim_labels) / sizeof(prog_dnk_2_stomp_anim_labels[0]) },
     { "dnk_4_stomp_anim", "DNKSEQ2.ASM", prog_dnk_4_stomp_anim_ops,
-      sizeof(prog_dnk_4_stomp_anim_ops) / sizeof(prog_dnk_4_stomp_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_stomp_anim_ops) / sizeof(prog_dnk_4_stomp_anim_ops[0]), 0, prog_dnk_4_stomp_anim_labels, sizeof(prog_dnk_4_stomp_anim_labels) / sizeof(prog_dnk_4_stomp_anim_labels[0]) },
     { "dnk_4_bstomp_anim", "DNKSEQ2.ASM", prog_dnk_4_bstomp_anim_ops,
-      sizeof(prog_dnk_4_bstomp_anim_ops) / sizeof(prog_dnk_4_bstomp_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_bstomp_anim_ops) / sizeof(prog_dnk_4_bstomp_anim_ops[0]), 0, prog_dnk_4_bstomp_anim_labels, sizeof(prog_dnk_4_bstomp_anim_labels) / sizeof(prog_dnk_4_bstomp_anim_labels[0]) },
     { "check_xvel", "DNKSEQ2.ASM", prog_check_xvel_ops,
-      sizeof(prog_check_xvel_ops) / sizeof(prog_check_xvel_ops[0]), 0 },
+      sizeof(prog_check_xvel_ops) / sizeof(prog_check_xvel_ops[0]), 0, prog_check_xvel_labels, sizeof(prog_check_xvel_labels) / sizeof(prog_check_xvel_labels[0]) },
     { "dnk_knockdwn_anim", "DNKSEQ2.ASM", prog_dnk_knockdwn_anim_ops,
-      sizeof(prog_dnk_knockdwn_anim_ops) / sizeof(prog_dnk_knockdwn_anim_ops[0]), 0 },
+      sizeof(prog_dnk_knockdwn_anim_ops) / sizeof(prog_dnk_knockdwn_anim_ops[0]), 0, prog_dnk_knockdwn_anim_labels, sizeof(prog_dnk_knockdwn_anim_labels) / sizeof(prog_dnk_knockdwn_anim_labels[0]) },
     { "dnk_hitonground_xflip_anim", "DNKSEQ2.ASM", prog_dnk_hitonground_xflip_anim_ops,
-      sizeof(prog_dnk_hitonground_xflip_anim_ops) / sizeof(prog_dnk_hitonground_xflip_anim_ops[0]), 0 },
+      sizeof(prog_dnk_hitonground_xflip_anim_ops) / sizeof(prog_dnk_hitonground_xflip_anim_ops[0]), 0, 0, 0 },
     { "dnk_hitonground_anim", "DNKSEQ2.ASM", prog_dnk_hitonground_anim_ops,
-      sizeof(prog_dnk_hitonground_anim_ops) / sizeof(prog_dnk_hitonground_anim_ops[0]), 0 },
+      sizeof(prog_dnk_hitonground_anim_ops) / sizeof(prog_dnk_hitonground_anim_ops[0]), 0, 0, 0 },
     { "dnk_liedown_anim", "DNKSEQ2.ASM", prog_dnk_liedown_anim_ops,
-      sizeof(prog_dnk_liedown_anim_ops) / sizeof(prog_dnk_liedown_anim_ops[0]), 0 },
+      sizeof(prog_dnk_liedown_anim_ops) / sizeof(prog_dnk_liedown_anim_ops[0]), 0, 0, 0 },
     { "dnk_up_anim", "DNKSEQ2.ASM", prog_dnk_up_anim_ops,
-      sizeof(prog_dnk_up_anim_ops) / sizeof(prog_dnk_up_anim_ops[0]), 0 },
+      sizeof(prog_dnk_up_anim_ops) / sizeof(prog_dnk_up_anim_ops[0]), 0, 0, 0 },
     { "dnk_climb_up_anim", "DNKSEQ2.ASM", prog_dnk_climb_up_anim_ops,
-      sizeof(prog_dnk_climb_up_anim_ops) / sizeof(prog_dnk_climb_up_anim_ops[0]), 0 },
+      sizeof(prog_dnk_climb_up_anim_ops) / sizeof(prog_dnk_climb_up_anim_ops[0]), 0, prog_dnk_climb_up_anim_labels, sizeof(prog_dnk_climb_up_anim_labels) / sizeof(prog_dnk_climb_up_anim_labels[0]) },
     { "dnk_climb_down_anim", "DNKSEQ2.ASM", prog_dnk_climb_down_anim_ops,
-      sizeof(prog_dnk_climb_down_anim_ops) / sizeof(prog_dnk_climb_down_anim_ops[0]), 0 },
+      sizeof(prog_dnk_climb_down_anim_ops) / sizeof(prog_dnk_climb_down_anim_ops[0]), 0, 0, 0 },
     { "dnk_diveofftb_anim", "DNKSEQ2.ASM", prog_dnk_diveofftb_anim_ops,
-      sizeof(prog_dnk_diveofftb_anim_ops) / sizeof(prog_dnk_diveofftb_anim_ops[0]), 0 },
+      sizeof(prog_dnk_diveofftb_anim_ops) / sizeof(prog_dnk_diveofftb_anim_ops[0]), 0, prog_dnk_diveofftb_anim_labels, sizeof(prog_dnk_diveofftb_anim_labels) / sizeof(prog_dnk_diveofftb_anim_labels[0]) },
     { "dnk_2_grabfling_anim", "DNKSEQ2.ASM", prog_dnk_2_grabfling_anim_ops,
-      sizeof(prog_dnk_2_grabfling_anim_ops) / sizeof(prog_dnk_2_grabfling_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_grabfling_anim_ops) / sizeof(prog_dnk_2_grabfling_anim_ops[0]), 0, prog_dnk_2_grabfling_anim_labels, sizeof(prog_dnk_2_grabfling_anim_labels) / sizeof(prog_dnk_2_grabfling_anim_labels[0]) },
     { "dnk_4_grabfling_anim", "DNKSEQ2.ASM", prog_dnk_4_grabfling_anim_ops,
-      sizeof(prog_dnk_4_grabfling_anim_ops) / sizeof(prog_dnk_4_grabfling_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_grabfling_anim_ops) / sizeof(prog_dnk_4_grabfling_anim_ops[0]), 0, prog_dnk_4_grabfling_anim_labels, sizeof(prog_dnk_4_grabfling_anim_labels) / sizeof(prog_dnk_4_grabfling_anim_labels[0]) },
     { "fling_delay", "DNKSEQ2.ASM", prog_fling_delay_ops,
-      sizeof(prog_fling_delay_ops) / sizeof(prog_fling_delay_ops[0]), 0 },
+      sizeof(prog_fling_delay_ops) / sizeof(prog_fling_delay_ops[0]), 0, prog_fling_delay_labels, sizeof(prog_fling_delay_labels) / sizeof(prog_fling_delay_labels[0]) },
     { "dnk_heldoh_anim", "DNKSEQ2.ASM", prog_dnk_heldoh_anim_ops,
-      sizeof(prog_dnk_heldoh_anim_ops) / sizeof(prog_dnk_heldoh_anim_ops[0]), 0 },
+      sizeof(prog_dnk_heldoh_anim_ops) / sizeof(prog_dnk_heldoh_anim_ops[0]), 0, prog_dnk_heldoh_anim_labels, sizeof(prog_dnk_heldoh_anim_labels) / sizeof(prog_dnk_heldoh_anim_labels[0]) },
     { "dnk_4_block_anim", "DNKSEQ2.ASM", prog_dnk_4_block_anim_ops,
-      sizeof(prog_dnk_4_block_anim_ops) / sizeof(prog_dnk_4_block_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_block_anim_ops) / sizeof(prog_dnk_4_block_anim_ops[0]), 0, prog_dnk_4_block_anim_labels, sizeof(prog_dnk_4_block_anim_labels) / sizeof(prog_dnk_4_block_anim_labels[0]) },
     { "dnk_4_hitblock_anim", "DNKSEQ2.ASM", prog_dnk_4_hitblock_anim_ops,
-      sizeof(prog_dnk_4_hitblock_anim_ops) / sizeof(prog_dnk_4_hitblock_anim_ops[0]), 9 },   /* branches back into shared code */
+      sizeof(prog_dnk_4_hitblock_anim_ops) / sizeof(prog_dnk_4_hitblock_anim_ops[0]), 9, prog_dnk_4_hitblock_anim_labels, sizeof(prog_dnk_4_hitblock_anim_labels) / sizeof(prog_dnk_4_hitblock_anim_labels[0]) },   /* branches back into shared code */
     { "dnk_4_hitblock2_anim", "DNKSEQ2.ASM", prog_dnk_4_hitblock2_anim_ops,
-      sizeof(prog_dnk_4_hitblock2_anim_ops) / sizeof(prog_dnk_4_hitblock2_anim_ops[0]), 16 },   /* branches back into shared code */
+      sizeof(prog_dnk_4_hitblock2_anim_ops) / sizeof(prog_dnk_4_hitblock2_anim_ops[0]), 16, prog_dnk_4_hitblock2_anim_labels, sizeof(prog_dnk_4_hitblock2_anim_labels) / sizeof(prog_dnk_4_hitblock2_anim_labels[0]) },   /* branches back into shared code */
     { "dnk_2_hiptoss2_anim", "DNKSEQ2.ASM", prog_dnk_2_hiptoss2_anim_ops,
-      sizeof(prog_dnk_2_hiptoss2_anim_ops) / sizeof(prog_dnk_2_hiptoss2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_hiptoss2_anim_ops) / sizeof(prog_dnk_2_hiptoss2_anim_ops[0]), 0, prog_dnk_2_hiptoss2_anim_labels, sizeof(prog_dnk_2_hiptoss2_anim_labels) / sizeof(prog_dnk_2_hiptoss2_anim_labels[0]) },
     { "dnk_4_hiptoss2_anim", "DNKSEQ2.ASM", prog_dnk_4_hiptoss2_anim_ops,
-      sizeof(prog_dnk_4_hiptoss2_anim_ops) / sizeof(prog_dnk_4_hiptoss2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_hiptoss2_anim_ops) / sizeof(prog_dnk_4_hiptoss2_anim_ops[0]), 0, prog_dnk_4_hiptoss2_anim_labels, sizeof(prog_dnk_4_hiptoss2_anim_labels) / sizeof(prog_dnk_4_hiptoss2_anim_labels[0]) },
     { "dnk_2_hiptoss_anim", "DNKSEQ2.ASM", prog_dnk_2_hiptoss_anim_ops,
-      sizeof(prog_dnk_2_hiptoss_anim_ops) / sizeof(prog_dnk_2_hiptoss_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_hiptoss_anim_ops) / sizeof(prog_dnk_2_hiptoss_anim_ops[0]), 0, prog_dnk_2_hiptoss_anim_labels, sizeof(prog_dnk_2_hiptoss_anim_labels) / sizeof(prog_dnk_2_hiptoss_anim_labels[0]) },
     { "dnk_4_hiptoss_anim", "DNKSEQ2.ASM", prog_dnk_4_hiptoss_anim_ops,
-      sizeof(prog_dnk_4_hiptoss_anim_ops) / sizeof(prog_dnk_4_hiptoss_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_hiptoss_anim_ops) / sizeof(prog_dnk_4_hiptoss_anim_ops[0]), 0, prog_dnk_4_hiptoss_anim_labels, sizeof(prog_dnk_4_hiptoss_anim_labels) / sizeof(prog_dnk_4_hiptoss_anim_labels[0]) },
     { "hiptoss_delay", "DNKSEQ2.ASM", prog_hiptoss_delay_ops,
-      sizeof(prog_hiptoss_delay_ops) / sizeof(prog_hiptoss_delay_ops[0]), 0 },
+      sizeof(prog_hiptoss_delay_ops) / sizeof(prog_hiptoss_delay_ops[0]), 0, prog_hiptoss_delay_labels, sizeof(prog_hiptoss_delay_labels) / sizeof(prog_hiptoss_delay_labels[0]) },
     { "dnk_4_combo_hiptoss_anim", "DNKSEQ2.ASM", prog_dnk_4_combo_hiptoss_anim_ops,
-      sizeof(prog_dnk_4_combo_hiptoss_anim_ops) / sizeof(prog_dnk_4_combo_hiptoss_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_combo_hiptoss_anim_ops) / sizeof(prog_dnk_4_combo_hiptoss_anim_ops[0]), 0, prog_dnk_4_combo_hiptoss_anim_labels, sizeof(prog_dnk_4_combo_hiptoss_anim_labels) / sizeof(prog_dnk_4_combo_hiptoss_anim_labels[0]) },
     { "dnk_tossed_anim", "DNKSEQ2.ASM", prog_dnk_tossed_anim_ops,
-      sizeof(prog_dnk_tossed_anim_ops) / sizeof(prog_dnk_tossed_anim_ops[0]), 0 },
+      sizeof(prog_dnk_tossed_anim_ops) / sizeof(prog_dnk_tossed_anim_ops[0]), 0, 0, 0 },
     { "dnk_tossed2_anim", "DNKSEQ2.ASM", prog_dnk_tossed2_anim_ops,
-      sizeof(prog_dnk_tossed2_anim_ops) / sizeof(prog_dnk_tossed2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_tossed2_anim_ops) / sizeof(prog_dnk_tossed2_anim_ops[0]), 0, prog_dnk_tossed2_anim_labels, sizeof(prog_dnk_tossed2_anim_labels) / sizeof(prog_dnk_tossed2_anim_labels[0]) },
     { "dnk_4_push_anim", "DNKSEQ2.ASM", prog_dnk_4_push_anim_ops,
-      sizeof(prog_dnk_4_push_anim_ops) / sizeof(prog_dnk_4_push_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_push_anim_ops) / sizeof(prog_dnk_4_push_anim_ops[0]), 0, prog_dnk_4_push_anim_labels, sizeof(prog_dnk_4_push_anim_labels) / sizeof(prog_dnk_4_push_anim_labels[0]) },
     { "dnk_2_bncoff_anim", "DNKSEQ2.ASM", prog_dnk_2_bncoff_anim_ops,
-      sizeof(prog_dnk_2_bncoff_anim_ops) / sizeof(prog_dnk_2_bncoff_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_bncoff_anim_ops) / sizeof(prog_dnk_2_bncoff_anim_ops[0]), 0, 0, 0 },
     { "dnk_4_bncoff_anim", "DNKSEQ2.ASM", prog_dnk_4_bncoff_anim_ops,
-      sizeof(prog_dnk_4_bncoff_anim_ops) / sizeof(prog_dnk_4_bncoff_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_bncoff_anim_ops) / sizeof(prog_dnk_4_bncoff_anim_ops[0]), 0, 0, 0 },
     { "dnk_4_bncoff_dizzy_anim", "DNKSEQ2.ASM", prog_dnk_4_bncoff_dizzy_anim_ops,
-      sizeof(prog_dnk_4_bncoff_dizzy_anim_ops) / sizeof(prog_dnk_4_bncoff_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_bncoff_dizzy_anim_ops) / sizeof(prog_dnk_4_bncoff_dizzy_anim_ops[0]), 0, 0, 0 },
     { "dnk_4_losebal_anim", "DNKSEQ2.ASM", prog_dnk_4_losebal_anim_ops,
-      sizeof(prog_dnk_4_losebal_anim_ops) / sizeof(prog_dnk_4_losebal_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_losebal_anim_ops) / sizeof(prog_dnk_4_losebal_anim_ops[0]), 0, 0, 0 },
     { "dnk_4_losebal_dizzy_anim", "DNKSEQ2.ASM", prog_dnk_4_losebal_dizzy_anim_ops,
-      sizeof(prog_dnk_4_losebal_dizzy_anim_ops) / sizeof(prog_dnk_4_losebal_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_losebal_dizzy_anim_ops) / sizeof(prog_dnk_4_losebal_dizzy_anim_ops[0]), 0, 0, 0 },
     { "dnk_2_bigboot_anim", "DNKSEQ2.ASM", prog_dnk_2_bigboot_anim_ops,
-      sizeof(prog_dnk_2_bigboot_anim_ops) / sizeof(prog_dnk_2_bigboot_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_bigboot_anim_ops) / sizeof(prog_dnk_2_bigboot_anim_ops[0]), 0, prog_dnk_2_bigboot_anim_labels, sizeof(prog_dnk_2_bigboot_anim_labels) / sizeof(prog_dnk_2_bigboot_anim_labels[0]) },
     { "dnk_4_bigboot_anim", "DNKSEQ2.ASM", prog_dnk_4_bigboot_anim_ops,
-      sizeof(prog_dnk_4_bigboot_anim_ops) / sizeof(prog_dnk_4_bigboot_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_bigboot_anim_ops) / sizeof(prog_dnk_4_bigboot_anim_ops[0]), 0, prog_dnk_4_bigboot_anim_labels, sizeof(prog_dnk_4_bigboot_anim_labels) / sizeof(prog_dnk_4_bigboot_anim_labels[0]) },
     { "dnk_dizzy_anim", "DNKSEQ2.ASM", prog_dnk_dizzy_anim_ops,
-      sizeof(prog_dnk_dizzy_anim_ops) / sizeof(prog_dnk_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_dnk_dizzy_anim_ops) / sizeof(prog_dnk_dizzy_anim_ops[0]), 0, prog_dnk_dizzy_anim_labels, sizeof(prog_dnk_dizzy_anim_labels) / sizeof(prog_dnk_dizzy_anim_labels[0]) },
     { "dnk_2_pin_anim", "DNKSEQ2.ASM", prog_dnk_2_pin_anim_ops,
-      sizeof(prog_dnk_2_pin_anim_ops) / sizeof(prog_dnk_2_pin_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_pin_anim_ops) / sizeof(prog_dnk_2_pin_anim_ops[0]), 0, prog_dnk_2_pin_anim_labels, sizeof(prog_dnk_2_pin_anim_labels) / sizeof(prog_dnk_2_pin_anim_labels[0]) },
     { "dnk_4_pin_anim", "DNKSEQ2.ASM", prog_dnk_4_pin_anim_ops,
-      sizeof(prog_dnk_4_pin_anim_ops) / sizeof(prog_dnk_4_pin_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_pin_anim_ops) / sizeof(prog_dnk_4_pin_anim_ops[0]), 0, prog_dnk_4_pin_anim_labels, sizeof(prog_dnk_4_pin_anim_labels) / sizeof(prog_dnk_4_pin_anim_labels[0]) },
     { "dnk_2_raise_arm_anim", "DNKSEQ2.ASM", prog_dnk_2_raise_arm_anim_ops,
-      sizeof(prog_dnk_2_raise_arm_anim_ops) / sizeof(prog_dnk_2_raise_arm_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_raise_arm_anim_ops) / sizeof(prog_dnk_2_raise_arm_anim_ops[0]), 0, prog_dnk_2_raise_arm_anim_labels, sizeof(prog_dnk_2_raise_arm_anim_labels) / sizeof(prog_dnk_2_raise_arm_anim_labels[0]) },
     { "dnk_4_raise_arm_anim", "DNKSEQ2.ASM", prog_dnk_4_raise_arm_anim_ops,
-      sizeof(prog_dnk_4_raise_arm_anim_ops) / sizeof(prog_dnk_4_raise_arm_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_raise_arm_anim_ops) / sizeof(prog_dnk_4_raise_arm_anim_ops[0]), 0, prog_dnk_4_raise_arm_anim_labels, sizeof(prog_dnk_4_raise_arm_anim_labels) / sizeof(prog_dnk_4_raise_arm_anim_labels[0]) },
     { "win_announce", "DNKSEQ2.ASM", prog_win_announce_ops,
-      sizeof(prog_win_announce_ops) / sizeof(prog_win_announce_ops[0]), 0 },
+      sizeof(prog_win_announce_ops) / sizeof(prog_win_announce_ops[0]), 0, prog_win_announce_labels, sizeof(prog_win_announce_labels) / sizeof(prog_win_announce_labels[0]) },
     { "grnd_hit", "DNKSEQ2.ASM", prog_grnd_hit_ops,
-      sizeof(prog_grnd_hit_ops) / sizeof(prog_grnd_hit_ops[0]), 0 },
+      sizeof(prog_grnd_hit_ops) / sizeof(prog_grnd_hit_ops[0]), 0, prog_grnd_hit_labels, sizeof(prog_grnd_hit_labels) / sizeof(prog_grnd_hit_labels[0]) },
     { "dnk_buckoff_anim", "DNKSEQ2.ASM", prog_dnk_buckoff_anim_ops,
-      sizeof(prog_dnk_buckoff_anim_ops) / sizeof(prog_dnk_buckoff_anim_ops[0]), 0 },
+      sizeof(prog_dnk_buckoff_anim_ops) / sizeof(prog_dnk_buckoff_anim_ops[0]), 0, 0, 0 },
     { "set_buckoff_vels", "DNKSEQ2.ASM", prog_set_buckoff_vels_ops,
-      sizeof(prog_set_buckoff_vels_ops) / sizeof(prog_set_buckoff_vels_ops[0]), 0 },
+      sizeof(prog_set_buckoff_vels_ops) / sizeof(prog_set_buckoff_vels_ops[0]), 0, prog_set_buckoff_vels_labels, sizeof(prog_set_buckoff_vels_labels) / sizeof(prog_set_buckoff_vels_labels[0]) },
     { "dnk_climbthru_side_anim", "DNKSEQ2.ASM", prog_dnk_climbthru_side_anim_ops,
-      sizeof(prog_dnk_climbthru_side_anim_ops) / sizeof(prog_dnk_climbthru_side_anim_ops[0]), 0 },
+      sizeof(prog_dnk_climbthru_side_anim_ops) / sizeof(prog_dnk_climbthru_side_anim_ops[0]), 0, 0, 0 },
     { "dnk_climbin_side_anim", "DNKSEQ2.ASM", prog_dnk_climbin_side_anim_ops,
-      sizeof(prog_dnk_climbin_side_anim_ops) / sizeof(prog_dnk_climbin_side_anim_ops[0]), 0 },
+      sizeof(prog_dnk_climbin_side_anim_ops) / sizeof(prog_dnk_climbin_side_anim_ops[0]), 0, prog_dnk_climbin_side_anim_labels, sizeof(prog_dnk_climbin_side_anim_labels) / sizeof(prog_dnk_climbin_side_anim_labels[0]) },
     { "SET_DIR_FACE", "DNKSEQ2.ASM", prog_SET_DIR_FACE_ops,
-      sizeof(prog_SET_DIR_FACE_ops) / sizeof(prog_SET_DIR_FACE_ops[0]), 0 },
+      sizeof(prog_SET_DIR_FACE_ops) / sizeof(prog_SET_DIR_FACE_ops[0]), 0, prog_SET_DIR_FACE_labels, sizeof(prog_SET_DIR_FACE_labels) / sizeof(prog_SET_DIR_FACE_labels[0]) },
     { "dnk_climbthru_bot_anim", "DNKSEQ2.ASM", prog_dnk_climbthru_bot_anim_ops,
-      sizeof(prog_dnk_climbthru_bot_anim_ops) / sizeof(prog_dnk_climbthru_bot_anim_ops[0]), 0 },
+      sizeof(prog_dnk_climbthru_bot_anim_ops) / sizeof(prog_dnk_climbthru_bot_anim_ops[0]), 0, prog_dnk_climbthru_bot_anim_labels, sizeof(prog_dnk_climbthru_bot_anim_labels) / sizeof(prog_dnk_climbthru_bot_anim_labels[0]) },
     { "dnk_climbin_bot_anim", "DNKSEQ2.ASM", prog_dnk_climbin_bot_anim_ops,
-      sizeof(prog_dnk_climbin_bot_anim_ops) / sizeof(prog_dnk_climbin_bot_anim_ops[0]), 0 },
+      sizeof(prog_dnk_climbin_bot_anim_ops) / sizeof(prog_dnk_climbin_bot_anim_ops[0]), 0, 0, 0 },
     { "dnk_climbthru_top_anim", "DNKSEQ2.ASM", prog_dnk_climbthru_top_anim_ops,
-      sizeof(prog_dnk_climbthru_top_anim_ops) / sizeof(prog_dnk_climbthru_top_anim_ops[0]), 0 },
+      sizeof(prog_dnk_climbthru_top_anim_ops) / sizeof(prog_dnk_climbthru_top_anim_ops[0]), 0, prog_dnk_climbthru_top_anim_labels, sizeof(prog_dnk_climbthru_top_anim_labels) / sizeof(prog_dnk_climbthru_top_anim_labels[0]) },
     { "dnk_rollthru_top_anim", "DNKSEQ2.ASM", prog_dnk_rollthru_top_anim_ops,
-      sizeof(prog_dnk_rollthru_top_anim_ops) / sizeof(prog_dnk_rollthru_top_anim_ops[0]), 0 },
+      sizeof(prog_dnk_rollthru_top_anim_ops) / sizeof(prog_dnk_rollthru_top_anim_ops[0]), 0, 0, 0 },
     { "dnk_climbin_top_anim", "DNKSEQ2.ASM", prog_dnk_climbin_top_anim_ops,
-      sizeof(prog_dnk_climbin_top_anim_ops) / sizeof(prog_dnk_climbin_top_anim_ops[0]), 0 },
+      sizeof(prog_dnk_climbin_top_anim_ops) / sizeof(prog_dnk_climbin_top_anim_ops[0]), 0, prog_dnk_climbin_top_anim_labels, sizeof(prog_dnk_climbin_top_anim_labels) / sizeof(prog_dnk_climbin_top_anim_labels[0]) },
     { "dnk_2_buzz_anim", "DNKSEQ3.ASM", prog_dnk_2_buzz_anim_ops,
-      sizeof(prog_dnk_2_buzz_anim_ops) / sizeof(prog_dnk_2_buzz_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_buzz_anim_ops) / sizeof(prog_dnk_2_buzz_anim_ops[0]), 0, prog_dnk_2_buzz_anim_labels, sizeof(prog_dnk_2_buzz_anim_labels) / sizeof(prog_dnk_2_buzz_anim_labels[0]) },
     { "dnk_4_buzz_anim", "DNKSEQ3.ASM", prog_dnk_4_buzz_anim_ops,
-      sizeof(prog_dnk_4_buzz_anim_ops) / sizeof(prog_dnk_4_buzz_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_buzz_anim_ops) / sizeof(prog_dnk_4_buzz_anim_ops[0]), 0, prog_dnk_4_buzz_anim_labels, sizeof(prog_dnk_4_buzz_anim_labels) / sizeof(prog_dnk_4_buzz_anim_labels[0]) },
     { "dnk_2_buzz2_anim", "DNKSEQ3.ASM", prog_dnk_2_buzz2_anim_ops,
-      sizeof(prog_dnk_2_buzz2_anim_ops) / sizeof(prog_dnk_2_buzz2_anim_ops[0]), 43 },   /* branches back into shared code */
+      sizeof(prog_dnk_2_buzz2_anim_ops) / sizeof(prog_dnk_2_buzz2_anim_ops[0]), 43, prog_dnk_2_buzz2_anim_labels, sizeof(prog_dnk_2_buzz2_anim_labels) / sizeof(prog_dnk_2_buzz2_anim_labels[0]) },   /* branches back into shared code */
     { "dnk_4_buzz2_anim", "DNKSEQ3.ASM", prog_dnk_4_buzz2_anim_ops,
-      sizeof(prog_dnk_4_buzz2_anim_ops) / sizeof(prog_dnk_4_buzz2_anim_ops[0]), 51 },   /* branches back into shared code */
+      sizeof(prog_dnk_4_buzz2_anim_ops) / sizeof(prog_dnk_4_buzz2_anim_ops[0]), 51, prog_dnk_4_buzz2_anim_labels, sizeof(prog_dnk_4_buzz2_anim_labels) / sizeof(prog_dnk_4_buzz2_anim_labels[0]) },   /* branches back into shared code */
     { "dnk_combo_buzz2_anim", "DNKSEQ3.ASM", prog_dnk_combo_buzz2_anim_ops,
-      sizeof(prog_dnk_combo_buzz2_anim_ops) / sizeof(prog_dnk_combo_buzz2_anim_ops[0]), 69 },   /* branches back into shared code */
+      sizeof(prog_dnk_combo_buzz2_anim_ops) / sizeof(prog_dnk_combo_buzz2_anim_ops[0]), 69, prog_dnk_combo_buzz2_anim_labels, sizeof(prog_dnk_combo_buzz2_anim_labels) / sizeof(prog_dnk_combo_buzz2_anim_labels[0]) },   /* branches back into shared code */
     { "dnk_get_buzz_anim", "DNKSEQ3.ASM", prog_dnk_get_buzz_anim_ops,
-      sizeof(prog_dnk_get_buzz_anim_ops) / sizeof(prog_dnk_get_buzz_anim_ops[0]), 0 },
+      sizeof(prog_dnk_get_buzz_anim_ops) / sizeof(prog_dnk_get_buzz_anim_ops[0]), 0, prog_dnk_get_buzz_anim_labels, sizeof(prog_dnk_get_buzz_anim_labels) / sizeof(prog_dnk_get_buzz_anim_labels[0]) },
     { "am_I_dizzy", "DNKSEQ3.ASM", prog_am_I_dizzy_ops,
-      sizeof(prog_am_I_dizzy_ops) / sizeof(prog_am_I_dizzy_ops[0]), 0 },
+      sizeof(prog_am_I_dizzy_ops) / sizeof(prog_am_I_dizzy_ops[0]), 0, prog_am_I_dizzy_labels, sizeof(prog_am_I_dizzy_labels) / sizeof(prog_am_I_dizzy_labels[0]) },
     { "am_I_dead", "DNKSEQ3.ASM", prog_am_I_dead_ops,
-      sizeof(prog_am_I_dead_ops) / sizeof(prog_am_I_dead_ops[0]), 0 },
+      sizeof(prog_am_I_dead_ops) / sizeof(prog_am_I_dead_ops[0]), 0, prog_am_I_dead_labels, sizeof(prog_am_I_dead_labels) / sizeof(prog_am_I_dead_labels[0]) },
     { "make_white", "DNKSEQ3.ASM", prog_make_white_ops,
-      sizeof(prog_make_white_ops) / sizeof(prog_make_white_ops[0]), 0 },
+      sizeof(prog_make_white_ops) / sizeof(prog_make_white_ops[0]), 0, prog_make_white_labels, sizeof(prog_make_white_labels) / sizeof(prog_make_white_labels[0]) },
     { "make_norm", "DNKSEQ3.ASM", prog_make_norm_ops,
-      sizeof(prog_make_norm_ops) / sizeof(prog_make_norm_ops[0]), 0 },
+      sizeof(prog_make_norm_ops) / sizeof(prog_make_norm_ops[0]), 0, prog_make_norm_labels, sizeof(prog_make_norm_labels) / sizeof(prog_make_norm_labels[0]) },
     { "set_position", "DNKSEQ3.ASM", prog_set_position_ops,
-      sizeof(prog_set_position_ops) / sizeof(prog_set_position_ops[0]), 0 },
+      sizeof(prog_set_position_ops) / sizeof(prog_set_position_ops[0]), 0, prog_set_position_labels, sizeof(prog_set_position_labels) / sizeof(prog_set_position_labels[0]) },
     { "set_skeleton_pal", "DNKSEQ3.ASM", prog_set_skeleton_pal_ops,
-      sizeof(prog_set_skeleton_pal_ops) / sizeof(prog_set_skeleton_pal_ops[0]), 0 },
+      sizeof(prog_set_skeleton_pal_ops) / sizeof(prog_set_skeleton_pal_ops[0]), 0, prog_set_skeleton_pal_labels, sizeof(prog_set_skeleton_pal_labels) / sizeof(prog_set_skeleton_pal_labels[0]) },
     { "set_my_pal", "DNKSEQ3.ASM", prog_set_my_pal_ops,
-      sizeof(prog_set_my_pal_ops) / sizeof(prog_set_my_pal_ops[0]), 0 },
+      sizeof(prog_set_my_pal_ops) / sizeof(prog_set_my_pal_ops[0]), 0, prog_set_my_pal_labels, sizeof(prog_set_my_pal_labels) / sizeof(prog_set_my_pal_labels[0]) },
     { "start_smoke", "DNKSEQ3.ASM", prog_start_smoke_ops,
-      sizeof(prog_start_smoke_ops) / sizeof(prog_start_smoke_ops[0]), 0 },
+      sizeof(prog_start_smoke_ops) / sizeof(prog_start_smoke_ops[0]), 0, prog_start_smoke_labels, sizeof(prog_start_smoke_labels) / sizeof(prog_start_smoke_labels[0]) },
     { "dnk_3_pile_driver_anim", "DNKSEQ3.ASM", prog_dnk_3_pile_driver_anim_ops,
-      sizeof(prog_dnk_3_pile_driver_anim_ops) / sizeof(prog_dnk_3_pile_driver_anim_ops[0]), 0 },
+      sizeof(prog_dnk_3_pile_driver_anim_ops) / sizeof(prog_dnk_3_pile_driver_anim_ops[0]), 0, prog_dnk_3_pile_driver_anim_labels, sizeof(prog_dnk_3_pile_driver_anim_labels) / sizeof(prog_dnk_3_pile_driver_anim_labels[0]) },
     { "is_this_yoko", "DNKSEQ3.ASM", prog_is_this_yoko_ops,
-      sizeof(prog_is_this_yoko_ops) / sizeof(prog_is_this_yoko_ops[0]), 0 },
+      sizeof(prog_is_this_yoko_ops) / sizeof(prog_is_this_yoko_ops[0]), 0, prog_is_this_yoko_labels, sizeof(prog_is_this_yoko_labels) / sizeof(prog_is_this_yoko_labels[0]) },
     { "dnk_combo_head_slam_anim", "DNKSEQ3.ASM", prog_dnk_combo_head_slam_anim_ops,
-      sizeof(prog_dnk_combo_head_slam_anim_ops) / sizeof(prog_dnk_combo_head_slam_anim_ops[0]), 0 },
+      sizeof(prog_dnk_combo_head_slam_anim_ops) / sizeof(prog_dnk_combo_head_slam_anim_ops[0]), 0, prog_dnk_combo_head_slam_anim_labels, sizeof(prog_dnk_combo_head_slam_anim_labels) / sizeof(prog_dnk_combo_head_slam_anim_labels[0]) },
     { "dnk_3_head_slam_anim", "DNKSEQ3.ASM", prog_dnk_3_head_slam_anim_ops,
-      sizeof(prog_dnk_3_head_slam_anim_ops) / sizeof(prog_dnk_3_head_slam_anim_ops[0]), 0 },
+      sizeof(prog_dnk_3_head_slam_anim_ops) / sizeof(prog_dnk_3_head_slam_anim_ops[0]), 0, prog_dnk_3_head_slam_anim_labels, sizeof(prog_dnk_3_head_slam_anim_labels) / sizeof(prog_dnk_3_head_slam_anim_labels[0]) },
     { "dnk_break_face2_anim", "DNKSEQ3.ASM", prog_dnk_break_face2_anim_ops,
-      sizeof(prog_dnk_break_face2_anim_ops) / sizeof(prog_dnk_break_face2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_break_face2_anim_ops) / sizeof(prog_dnk_break_face2_anim_ops[0]), 0, 0, 0 },
     { "dnk_break_face3_anim", "DNKSEQ3.ASM", prog_dnk_break_face3_anim_ops,
-      sizeof(prog_dnk_break_face3_anim_ops) / sizeof(prog_dnk_break_face3_anim_ops[0]), 0 },
+      sizeof(prog_dnk_break_face3_anim_ops) / sizeof(prog_dnk_break_face3_anim_ops[0]), 0, 0, 0 },
     { "dnk_break_face_anim", "DNKSEQ3.ASM", prog_dnk_break_face_anim_ops,
-      sizeof(prog_dnk_break_face_anim_ops) / sizeof(prog_dnk_break_face_anim_ops[0]), 0 },
+      sizeof(prog_dnk_break_face_anim_ops) / sizeof(prog_dnk_break_face_anim_ops[0]), 0, 0, 0 },
     { "dnk_3_fake_hold_anim", "DNKSEQ3.ASM", prog_dnk_3_fake_hold_anim_ops,
-      sizeof(prog_dnk_3_fake_hold_anim_ops) / sizeof(prog_dnk_3_fake_hold_anim_ops[0]), 0 },
+      sizeof(prog_dnk_3_fake_hold_anim_ops) / sizeof(prog_dnk_3_fake_hold_anim_ops[0]), 0, prog_dnk_3_fake_hold_anim_labels, sizeof(prog_dnk_3_fake_hold_anim_labels) / sizeof(prog_dnk_3_fake_hold_anim_labels[0]) },
     { "dnk_3_head_hold2_anim", "DNKSEQ3.ASM", prog_dnk_3_head_hold2_anim_ops,
-      sizeof(prog_dnk_3_head_hold2_anim_ops) / sizeof(prog_dnk_3_head_hold2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_3_head_hold2_anim_ops) / sizeof(prog_dnk_3_head_hold2_anim_ops[0]), 0, prog_dnk_3_head_hold2_anim_labels, sizeof(prog_dnk_3_head_hold2_anim_labels) / sizeof(prog_dnk_3_head_hold2_anim_labels[0]) },
     { "dnk_3_head_hold_anim", "DNKSEQ3.ASM", prog_dnk_3_head_hold_anim_ops,
-      sizeof(prog_dnk_3_head_hold_anim_ops) / sizeof(prog_dnk_3_head_hold_anim_ops[0]), 0 },
+      sizeof(prog_dnk_3_head_hold_anim_ops) / sizeof(prog_dnk_3_head_hold_anim_ops[0]), 0, prog_dnk_3_head_hold_anim_labels, sizeof(prog_dnk_3_head_hold_anim_labels) / sizeof(prog_dnk_3_head_hold_anim_labels[0]) },
     { "head_grab_time", "DNKSEQ3.ASM", prog_head_grab_time_ops,
-      sizeof(prog_head_grab_time_ops) / sizeof(prog_head_grab_time_ops[0]), 0 },
+      sizeof(prog_head_grab_time_ops) / sizeof(prog_head_grab_time_ops[0]), 0, prog_head_grab_time_labels, sizeof(prog_head_grab_time_labels) / sizeof(prog_head_grab_time_labels[0]) },
     { "clear_opp_counts", "DNKSEQ3.ASM", prog_clear_opp_counts_ops,
-      sizeof(prog_clear_opp_counts_ops) / sizeof(prog_clear_opp_counts_ops[0]), 0 },
+      sizeof(prog_clear_opp_counts_ops) / sizeof(prog_clear_opp_counts_ops[0]), 0, prog_clear_opp_counts_labels, sizeof(prog_clear_opp_counts_labels) / sizeof(prog_clear_opp_counts_labels[0]) },
     { "dnk_3_head_held_anim", "DNKSEQ3.ASM", prog_dnk_3_head_held_anim_ops,
-      sizeof(prog_dnk_3_head_held_anim_ops) / sizeof(prog_dnk_3_head_held_anim_ops[0]), 0 },
+      sizeof(prog_dnk_3_head_held_anim_ops) / sizeof(prog_dnk_3_head_held_anim_ops[0]), 0, prog_dnk_3_head_held_anim_labels, sizeof(prog_dnk_3_head_held_anim_labels) / sizeof(prog_dnk_3_head_held_anim_labels[0]) },
     { "dnk_3_head_held_brk_anim", "DNKSEQ3.ASM", prog_dnk_3_head_held_brk_anim_ops,
-      sizeof(prog_dnk_3_head_held_brk_anim_ops) / sizeof(prog_dnk_3_head_held_brk_anim_ops[0]), 0 },
+      sizeof(prog_dnk_3_head_held_brk_anim_ops) / sizeof(prog_dnk_3_head_held_brk_anim_ops[0]), 0, prog_dnk_3_head_held_brk_anim_labels, sizeof(prog_dnk_3_head_held_brk_anim_labels) / sizeof(prog_dnk_3_head_held_brk_anim_labels[0]) },
     { "dnk_3_head_held_stand_anim", "DNKSEQ3.ASM", prog_dnk_3_head_held_stand_anim_ops,
-      sizeof(prog_dnk_3_head_held_stand_anim_ops) / sizeof(prog_dnk_3_head_held_stand_anim_ops[0]), 0 },
+      sizeof(prog_dnk_3_head_held_stand_anim_ops) / sizeof(prog_dnk_3_head_held_stand_anim_ops[0]), 0, 0, 0 },
     { "dnk_3_knee_to_head_anim", "DNKSEQ3.ASM", prog_dnk_3_knee_to_head_anim_ops,
-      sizeof(prog_dnk_3_knee_to_head_anim_ops) / sizeof(prog_dnk_3_knee_to_head_anim_ops[0]), 0 },
+      sizeof(prog_dnk_3_knee_to_head_anim_ops) / sizeof(prog_dnk_3_knee_to_head_anim_ops[0]), 0, 0, 0 },
     { "dnk_3_knees_to_head_anim", "DNKSEQ3.ASM", prog_dnk_3_knees_to_head_anim_ops,
-      sizeof(prog_dnk_3_knees_to_head_anim_ops) / sizeof(prog_dnk_3_knees_to_head_anim_ops[0]), 0 },
+      sizeof(prog_dnk_3_knees_to_head_anim_ops) / sizeof(prog_dnk_3_knees_to_head_anim_ops[0]), 0, prog_dnk_3_knees_to_head_anim_labels, sizeof(prog_dnk_3_knees_to_head_anim_labels) / sizeof(prog_dnk_3_knees_to_head_anim_labels[0]) },
     { "dnk_uppercut_to_head_anim", "DNKSEQ3.ASM", prog_dnk_uppercut_to_head_anim_ops,
-      sizeof(prog_dnk_uppercut_to_head_anim_ops) / sizeof(prog_dnk_uppercut_to_head_anim_ops[0]), 0 },
+      sizeof(prog_dnk_uppercut_to_head_anim_ops) / sizeof(prog_dnk_uppercut_to_head_anim_ops[0]), 0, 0, 0 },
     { "dnk_4_uppercut_anim", "DNKSEQ3.ASM", prog_dnk_4_uppercut_anim_ops,
-      sizeof(prog_dnk_4_uppercut_anim_ops) / sizeof(prog_dnk_4_uppercut_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_uppercut_anim_ops) / sizeof(prog_dnk_4_uppercut_anim_ops[0]), 0, prog_dnk_4_uppercut_anim_labels, sizeof(prog_dnk_4_uppercut_anim_labels) / sizeof(prog_dnk_4_uppercut_anim_labels[0]) },
     { "dnk_combo_uppercut_to_head_anim", "DNKSEQ3.ASM", prog_dnk_combo_uppercut_to_head_anim_ops,
-      sizeof(prog_dnk_combo_uppercut_to_head_anim_ops) / sizeof(prog_dnk_combo_uppercut_to_head_anim_ops[0]), 0 },
+      sizeof(prog_dnk_combo_uppercut_to_head_anim_ops) / sizeof(prog_dnk_combo_uppercut_to_head_anim_ops[0]), 0, prog_dnk_combo_uppercut_to_head_anim_labels, sizeof(prog_dnk_combo_uppercut_to_head_anim_labels) / sizeof(prog_dnk_combo_uppercut_to_head_anim_labels[0]) },
     { "dnk_uppercuts_to_head_anim", "DNKSEQ3.ASM", prog_dnk_uppercuts_to_head_anim_ops,
-      sizeof(prog_dnk_uppercuts_to_head_anim_ops) / sizeof(prog_dnk_uppercuts_to_head_anim_ops[0]), 0 },
+      sizeof(prog_dnk_uppercuts_to_head_anim_ops) / sizeof(prog_dnk_uppercuts_to_head_anim_ops[0]), 0, prog_dnk_uppercuts_to_head_anim_labels, sizeof(prog_dnk_uppercuts_to_head_anim_labels) / sizeof(prog_dnk_uppercuts_to_head_anim_labels[0]) },
     { "dnk_2_slap_anim", "DNKSEQ3.ASM", prog_dnk_2_slap_anim_ops,
-      sizeof(prog_dnk_2_slap_anim_ops) / sizeof(prog_dnk_2_slap_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_slap_anim_ops) / sizeof(prog_dnk_2_slap_anim_ops[0]), 0, prog_dnk_2_slap_anim_labels, sizeof(prog_dnk_2_slap_anim_labels) / sizeof(prog_dnk_2_slap_anim_labels[0]) },
     { "dnk_4_slap_anim", "DNKSEQ3.ASM", prog_dnk_4_slap_anim_ops,
-      sizeof(prog_dnk_4_slap_anim_ops) / sizeof(prog_dnk_4_slap_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_slap_anim_ops) / sizeof(prog_dnk_4_slap_anim_ops[0]), 0, prog_dnk_4_slap_anim_labels, sizeof(prog_dnk_4_slap_anim_labels) / sizeof(prog_dnk_4_slap_anim_labels[0]) },
     { "spunch_delay", "DNKSEQ3.ASM", prog_spunch_delay_ops,
-      sizeof(prog_spunch_delay_ops) / sizeof(prog_spunch_delay_ops[0]), 0 },
+      sizeof(prog_spunch_delay_ops) / sizeof(prog_spunch_delay_ops[0]), 0, prog_spunch_delay_labels, sizeof(prog_spunch_delay_labels) / sizeof(prog_spunch_delay_labels[0]) },
     { "dnk_2_earslap_anim", "DNKSEQ3.ASM", prog_dnk_2_earslap_anim_ops,
-      sizeof(prog_dnk_2_earslap_anim_ops) / sizeof(prog_dnk_2_earslap_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_earslap_anim_ops) / sizeof(prog_dnk_2_earslap_anim_ops[0]), 0, prog_dnk_2_earslap_anim_labels, sizeof(prog_dnk_2_earslap_anim_labels) / sizeof(prog_dnk_2_earslap_anim_labels[0]) },
     { "dnk_4_earslap_anim", "DNKSEQ3.ASM", prog_dnk_4_earslap_anim_ops,
-      sizeof(prog_dnk_4_earslap_anim_ops) / sizeof(prog_dnk_4_earslap_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_earslap_anim_ops) / sizeof(prog_dnk_4_earslap_anim_ops[0]), 0, prog_dnk_4_earslap_anim_labels, sizeof(prog_dnk_4_earslap_anim_labels) / sizeof(prog_dnk_4_earslap_anim_labels[0]) },
     { "dnk_4_combo_earslap_anim", "DNKSEQ3.ASM", prog_dnk_4_combo_earslap_anim_ops,
-      sizeof(prog_dnk_4_combo_earslap_anim_ops) / sizeof(prog_dnk_4_combo_earslap_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_combo_earslap_anim_ops) / sizeof(prog_dnk_4_combo_earslap_anim_ops[0]), 0, prog_dnk_4_combo_earslap_anim_labels, sizeof(prog_dnk_4_combo_earslap_anim_labels) / sizeof(prog_dnk_4_combo_earslap_anim_labels[0]) },
     { "body_smoke", "DNKSEQ3.ASM", prog_body_smoke_ops,
-      sizeof(prog_body_smoke_ops) / sizeof(prog_body_smoke_ops[0]), 0 },
+      sizeof(prog_body_smoke_ops) / sizeof(prog_body_smoke_ops[0]), 0, prog_body_smoke_labels, sizeof(prog_body_smoke_labels) / sizeof(prog_body_smoke_labels[0]) },
     { "smokepuff", "DNKSEQ3.ASM", prog_smokepuff_ops,
-      sizeof(prog_smokepuff_ops) / sizeof(prog_smokepuff_ops[0]), 0 },
+      sizeof(prog_smokepuff_ops) / sizeof(prog_smokepuff_ops[0]), 0, prog_smokepuff_labels, sizeof(prog_smokepuff_labels) / sizeof(prog_smokepuff_labels[0]) },
     { "hand_sparks", "DNKSEQ3.ASM", prog_hand_sparks_ops,
-      sizeof(prog_hand_sparks_ops) / sizeof(prog_hand_sparks_ops[0]), 0 },
+      sizeof(prog_hand_sparks_ops) / sizeof(prog_hand_sparks_ops[0]), 0, prog_hand_sparks_labels, sizeof(prog_hand_sparks_labels) / sizeof(prog_hand_sparks_labels[0]) },
     { "one_spark", "DNKSEQ3.ASM", prog_one_spark_ops,
-      sizeof(prog_one_spark_ops) / sizeof(prog_one_spark_ops[0]), 0 },
+      sizeof(prog_one_spark_ops) / sizeof(prog_one_spark_ops[0]), 0, prog_one_spark_labels, sizeof(prog_one_spark_labels) / sizeof(prog_one_spark_labels[0]) },
     { "dnk_break_neck2_anim", "DNKSEQ3.ASM", prog_dnk_break_neck2_anim_ops,
-      sizeof(prog_dnk_break_neck2_anim_ops) / sizeof(prog_dnk_break_neck2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_break_neck2_anim_ops) / sizeof(prog_dnk_break_neck2_anim_ops[0]), 0, 0, 0 },
     { "dnk_break_neck3_anim", "DNKSEQ3.ASM", prog_dnk_break_neck3_anim_ops,
-      sizeof(prog_dnk_break_neck3_anim_ops) / sizeof(prog_dnk_break_neck3_anim_ops[0]), 0 },
+      sizeof(prog_dnk_break_neck3_anim_ops) / sizeof(prog_dnk_break_neck3_anim_ops[0]), 0, 0, 0 },
     { "dnk_break_neck_anim", "DNKSEQ3.ASM", prog_dnk_break_neck_anim_ops,
-      sizeof(prog_dnk_break_neck_anim_ops) / sizeof(prog_dnk_break_neck_anim_ops[0]), 0 },
+      sizeof(prog_dnk_break_neck_anim_ops) / sizeof(prog_dnk_break_neck_anim_ops[0]), 0, prog_dnk_break_neck_anim_labels, sizeof(prog_dnk_break_neck_anim_labels) / sizeof(prog_dnk_break_neck_anim_labels[0]) },
     { "dnk_2_hair_pickup_anim", "DNKSEQ3.ASM", prog_dnk_2_hair_pickup_anim_ops,
-      sizeof(prog_dnk_2_hair_pickup_anim_ops) / sizeof(prog_dnk_2_hair_pickup_anim_ops[0]), 0 },
+      sizeof(prog_dnk_2_hair_pickup_anim_ops) / sizeof(prog_dnk_2_hair_pickup_anim_ops[0]), 0, prog_dnk_2_hair_pickup_anim_labels, sizeof(prog_dnk_2_hair_pickup_anim_labels) / sizeof(prog_dnk_2_hair_pickup_anim_labels[0]) },
     { "dnk_4_hair_pickup_anim", "DNKSEQ3.ASM", prog_dnk_4_hair_pickup_anim_ops,
-      sizeof(prog_dnk_4_hair_pickup_anim_ops) / sizeof(prog_dnk_4_hair_pickup_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_hair_pickup_anim_ops) / sizeof(prog_dnk_4_hair_pickup_anim_ops[0]), 0, prog_dnk_4_hair_pickup_anim_labels, sizeof(prog_dnk_4_hair_pickup_anim_labels) / sizeof(prog_dnk_4_hair_pickup_anim_labels[0]) },
     { "ck_getup", "DNKSEQ3.ASM", prog_ck_getup_ops,
-      sizeof(prog_ck_getup_ops) / sizeof(prog_ck_getup_ops[0]), 0 },
+      sizeof(prog_ck_getup_ops) / sizeof(prog_ck_getup_ops[0]), 0, prog_ck_getup_labels, sizeof(prog_ck_getup_labels) / sizeof(prog_ck_getup_labels[0]) },
     { "dnk_flyout_anim", "DNKSEQ3.ASM", prog_dnk_flyout_anim_ops,
-      sizeof(prog_dnk_flyout_anim_ops) / sizeof(prog_dnk_flyout_anim_ops[0]), 0 },
+      sizeof(prog_dnk_flyout_anim_ops) / sizeof(prog_dnk_flyout_anim_ops[0]), 0, prog_dnk_flyout_anim_labels, sizeof(prog_dnk_flyout_anim_labels) / sizeof(prog_dnk_flyout_anim_labels[0]) },
     { "dnk_flyout2_anim", "DNKSEQ3.ASM", prog_dnk_flyout2_anim_ops,
-      sizeof(prog_dnk_flyout2_anim_ops) / sizeof(prog_dnk_flyout2_anim_ops[0]), 8 },   /* branches back into shared code */
+      sizeof(prog_dnk_flyout2_anim_ops) / sizeof(prog_dnk_flyout2_anim_ops[0]), 8, prog_dnk_flyout2_anim_labels, sizeof(prog_dnk_flyout2_anim_labels) / sizeof(prog_dnk_flyout2_anim_labels[0]) },   /* branches back into shared code */
     { "dnk_4_taunt_anim", "DNKSEQ3.ASM", prog_dnk_4_taunt_anim_ops,
-      sizeof(prog_dnk_4_taunt_anim_ops) / sizeof(prog_dnk_4_taunt_anim_ops[0]), 0 },
+      sizeof(prog_dnk_4_taunt_anim_ops) / sizeof(prog_dnk_4_taunt_anim_ops[0]), 0, 0, 0 },
     { "dnk_backbroken_anim", "DNKSEQ3.ASM", prog_dnk_backbroken_anim_ops,
-      sizeof(prog_dnk_backbroken_anim_ops) / sizeof(prog_dnk_backbroken_anim_ops[0]), 0 },
+      sizeof(prog_dnk_backbroken_anim_ops) / sizeof(prog_dnk_backbroken_anim_ops[0]), 0, 0, 0 },
     { "dnk_slamnobounce_anim", "DNKSEQ4.ASM", prog_dnk_slamnobounce_anim_ops,
-      sizeof(prog_dnk_slamnobounce_anim_ops) / sizeof(prog_dnk_slamnobounce_anim_ops[0]), 0 },
+      sizeof(prog_dnk_slamnobounce_anim_ops) / sizeof(prog_dnk_slamnobounce_anim_ops[0]), 0, 0, 0 },
     { "dnk_slambounce_anim", "DNKSEQ4.ASM", prog_dnk_slambounce_anim_ops,
-      sizeof(prog_dnk_slambounce_anim_ops) / sizeof(prog_dnk_slambounce_anim_ops[0]), 0 },
+      sizeof(prog_dnk_slambounce_anim_ops) / sizeof(prog_dnk_slambounce_anim_ops[0]), 0, 0, 0 },
     { "dnk_slambounce2_anim", "DNKSEQ4.ASM", prog_dnk_slambounce2_anim_ops,
-      sizeof(prog_dnk_slambounce2_anim_ops) / sizeof(prog_dnk_slambounce2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_slambounce2_anim_ops) / sizeof(prog_dnk_slambounce2_anim_ops[0]), 0, 0, 0 },
     { "dnk_breakneck2_anim", "DNKSEQ4.ASM", prog_dnk_breakneck2_anim_ops,
-      sizeof(prog_dnk_breakneck2_anim_ops) / sizeof(prog_dnk_breakneck2_anim_ops[0]), 0 },
+      sizeof(prog_dnk_breakneck2_anim_ops) / sizeof(prog_dnk_breakneck2_anim_ops[0]), 0, 0, 0 },
     { "dnk_arm_broken_anim", "DNKSEQ4.ASM", prog_dnk_arm_broken_anim_ops,
-      sizeof(prog_dnk_arm_broken_anim_ops) / sizeof(prog_dnk_arm_broken_anim_ops[0]), 0 },
+      sizeof(prog_dnk_arm_broken_anim_ops) / sizeof(prog_dnk_arm_broken_anim_ops[0]), 0, prog_dnk_arm_broken_anim_labels, sizeof(prog_dnk_arm_broken_anim_labels) / sizeof(prog_dnk_arm_broken_anim_labels[0]) },
     { "hrt_zip_anim", "HRTSEQ1.ASM", prog_hrt_zip_anim_ops,
-      sizeof(prog_hrt_zip_anim_ops) / sizeof(prog_hrt_zip_anim_ops[0]), 0 },
+      sizeof(prog_hrt_zip_anim_ops) / sizeof(prog_hrt_zip_anim_ops[0]), 0, 0, 0 },
     { "hrt_stand2_anim", "HRTSEQ1.ASM", prog_hrt_stand2_anim_ops,
-      sizeof(prog_hrt_stand2_anim_ops) / sizeof(prog_hrt_stand2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_stand2_anim_ops) / sizeof(prog_hrt_stand2_anim_ops[0]), 0, 0, 0 },
     { "hrt_stand8_anim", "HRTSEQ1.ASM", prog_hrt_stand8_anim_ops,
-      sizeof(prog_hrt_stand8_anim_ops) / sizeof(prog_hrt_stand8_anim_ops[0]), 0 },
+      sizeof(prog_hrt_stand8_anim_ops) / sizeof(prog_hrt_stand8_anim_ops[0]), 0, 0, 0 },
     { "hrt_stand4_anim", "HRTSEQ1.ASM", prog_hrt_stand4_anim_ops,
-      sizeof(prog_hrt_stand4_anim_ops) / sizeof(prog_hrt_stand4_anim_ops[0]), 0 },
+      sizeof(prog_hrt_stand4_anim_ops) / sizeof(prog_hrt_stand4_anim_ops[0]), 0, 0, 0 },
     { "hrt_stand6_anim", "HRTSEQ1.ASM", prog_hrt_stand6_anim_ops,
-      sizeof(prog_hrt_stand6_anim_ops) / sizeof(prog_hrt_stand6_anim_ops[0]), 0 },
+      sizeof(prog_hrt_stand6_anim_ops) / sizeof(prog_hrt_stand6_anim_ops[0]), 0, 0, 0 },
     { "hrt_torso2_anim", "HRTSEQ1.ASM", prog_hrt_torso2_anim_ops,
-      sizeof(prog_hrt_torso2_anim_ops) / sizeof(prog_hrt_torso2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_torso2_anim_ops) / sizeof(prog_hrt_torso2_anim_ops[0]), 0, 0, 0 },
     { "hrt_torso8_anim", "HRTSEQ1.ASM", prog_hrt_torso8_anim_ops,
-      sizeof(prog_hrt_torso8_anim_ops) / sizeof(prog_hrt_torso8_anim_ops[0]), 0 },
+      sizeof(prog_hrt_torso8_anim_ops) / sizeof(prog_hrt_torso8_anim_ops[0]), 0, 0, 0 },
     { "hrt_torso4_anim", "HRTSEQ1.ASM", prog_hrt_torso4_anim_ops,
-      sizeof(prog_hrt_torso4_anim_ops) / sizeof(prog_hrt_torso4_anim_ops[0]), 0 },
+      sizeof(prog_hrt_torso4_anim_ops) / sizeof(prog_hrt_torso4_anim_ops[0]), 0, 0, 0 },
     { "hrt_torso6_anim", "HRTSEQ1.ASM", prog_hrt_torso6_anim_ops,
-      sizeof(prog_hrt_torso6_anim_ops) / sizeof(prog_hrt_torso6_anim_ops[0]), 0 },
+      sizeof(prog_hrt_torso6_anim_ops) / sizeof(prog_hrt_torso6_anim_ops[0]), 0, 0, 0 },
     { "hrt_walk1_f2_anim", "HRTSEQ1.ASM", prog_hrt_walk1_f2_anim_ops,
-      sizeof(prog_hrt_walk1_f2_anim_ops) / sizeof(prog_hrt_walk1_f2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_walk1_f2_anim_ops) / sizeof(prog_hrt_walk1_f2_anim_ops[0]), 0, 0, 0 },
     { "hrt_walk2_f2_anim", "HRTSEQ1.ASM", prog_hrt_walk2_f2_anim_ops,
-      sizeof(prog_hrt_walk2_f2_anim_ops) / sizeof(prog_hrt_walk2_f2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_walk2_f2_anim_ops) / sizeof(prog_hrt_walk2_f2_anim_ops[0]), 0, 0, 0 },
     { "hrt_walk4_f2_anim", "HRTSEQ1.ASM", prog_hrt_walk4_f2_anim_ops,
-      sizeof(prog_hrt_walk4_f2_anim_ops) / sizeof(prog_hrt_walk4_f2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_walk4_f2_anim_ops) / sizeof(prog_hrt_walk4_f2_anim_ops[0]), 0, 0, 0 },
     { "hrt_walk5_f2_anim", "HRTSEQ1.ASM", prog_hrt_walk5_f2_anim_ops,
-      sizeof(prog_hrt_walk5_f2_anim_ops) / sizeof(prog_hrt_walk5_f2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_walk5_f2_anim_ops) / sizeof(prog_hrt_walk5_f2_anim_ops[0]), 0, 0, 0 },
     { "hrt_walk6_f2_anim", "HRTSEQ1.ASM", prog_hrt_walk6_f2_anim_ops,
-      sizeof(prog_hrt_walk6_f2_anim_ops) / sizeof(prog_hrt_walk6_f2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_walk6_f2_anim_ops) / sizeof(prog_hrt_walk6_f2_anim_ops[0]), 0, 0, 0 },
     { "hrt_walk8_f2_anim", "HRTSEQ1.ASM", prog_hrt_walk8_f2_anim_ops,
-      sizeof(prog_hrt_walk8_f2_anim_ops) / sizeof(prog_hrt_walk8_f2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_walk8_f2_anim_ops) / sizeof(prog_hrt_walk8_f2_anim_ops[0]), 0, 0, 0 },
     { "hrt_walk1_f4_anim", "HRTSEQ1.ASM", prog_hrt_walk1_f4_anim_ops,
-      sizeof(prog_hrt_walk1_f4_anim_ops) / sizeof(prog_hrt_walk1_f4_anim_ops[0]), 0 },
+      sizeof(prog_hrt_walk1_f4_anim_ops) / sizeof(prog_hrt_walk1_f4_anim_ops[0]), 0, 0, 0 },
     { "hrt_walk2_f4_anim", "HRTSEQ1.ASM", prog_hrt_walk2_f4_anim_ops,
-      sizeof(prog_hrt_walk2_f4_anim_ops) / sizeof(prog_hrt_walk2_f4_anim_ops[0]), 0 },
+      sizeof(prog_hrt_walk2_f4_anim_ops) / sizeof(prog_hrt_walk2_f4_anim_ops[0]), 0, 0, 0 },
     { "hrt_walk4_f4_anim", "HRTSEQ1.ASM", prog_hrt_walk4_f4_anim_ops,
-      sizeof(prog_hrt_walk4_f4_anim_ops) / sizeof(prog_hrt_walk4_f4_anim_ops[0]), 0 },
+      sizeof(prog_hrt_walk4_f4_anim_ops) / sizeof(prog_hrt_walk4_f4_anim_ops[0]), 0, 0, 0 },
     { "hrt_walk5_f4_anim", "HRTSEQ1.ASM", prog_hrt_walk5_f4_anim_ops,
-      sizeof(prog_hrt_walk5_f4_anim_ops) / sizeof(prog_hrt_walk5_f4_anim_ops[0]), 0 },
+      sizeof(prog_hrt_walk5_f4_anim_ops) / sizeof(prog_hrt_walk5_f4_anim_ops[0]), 0, 0, 0 },
     { "hrt_walk6_f4_anim", "HRTSEQ1.ASM", prog_hrt_walk6_f4_anim_ops,
-      sizeof(prog_hrt_walk6_f4_anim_ops) / sizeof(prog_hrt_walk6_f4_anim_ops[0]), 0 },
+      sizeof(prog_hrt_walk6_f4_anim_ops) / sizeof(prog_hrt_walk6_f4_anim_ops[0]), 0, 0, 0 },
     { "hrt_walk8_f4_anim", "HRTSEQ1.ASM", prog_hrt_walk8_f4_anim_ops,
-      sizeof(prog_hrt_walk8_f4_anim_ops) / sizeof(prog_hrt_walk8_f4_anim_ops[0]), 0 },
+      sizeof(prog_hrt_walk8_f4_anim_ops) / sizeof(prog_hrt_walk8_f4_anim_ops[0]), 0, 0, 0 },
     { "hrt_2_to_4_turn_anim", "HRTSEQ1.ASM", prog_hrt_2_to_4_turn_anim_ops,
-      sizeof(prog_hrt_2_to_4_turn_anim_ops) / sizeof(prog_hrt_2_to_4_turn_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_to_4_turn_anim_ops) / sizeof(prog_hrt_2_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "hrt_8_to_6_turn_anim", "HRTSEQ1.ASM", prog_hrt_8_to_6_turn_anim_ops,
-      sizeof(prog_hrt_8_to_6_turn_anim_ops) / sizeof(prog_hrt_8_to_6_turn_anim_ops[0]), 0 },
+      sizeof(prog_hrt_8_to_6_turn_anim_ops) / sizeof(prog_hrt_8_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "hrt_4_to_2_turn_anim", "HRTSEQ1.ASM", prog_hrt_4_to_2_turn_anim_ops,
-      sizeof(prog_hrt_4_to_2_turn_anim_ops) / sizeof(prog_hrt_4_to_2_turn_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_to_2_turn_anim_ops) / sizeof(prog_hrt_4_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "hrt_6_to_8_turn_anim", "HRTSEQ1.ASM", prog_hrt_6_to_8_turn_anim_ops,
-      sizeof(prog_hrt_6_to_8_turn_anim_ops) / sizeof(prog_hrt_6_to_8_turn_anim_ops[0]), 0 },
+      sizeof(prog_hrt_6_to_8_turn_anim_ops) / sizeof(prog_hrt_6_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "hrt_4_to_6_turn_anim", "HRTSEQ1.ASM", prog_hrt_4_to_6_turn_anim_ops,
-      sizeof(prog_hrt_4_to_6_turn_anim_ops) / sizeof(prog_hrt_4_to_6_turn_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_to_6_turn_anim_ops) / sizeof(prog_hrt_4_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "hrt_6_to_4_turn_anim", "HRTSEQ1.ASM", prog_hrt_6_to_4_turn_anim_ops,
-      sizeof(prog_hrt_6_to_4_turn_anim_ops) / sizeof(prog_hrt_6_to_4_turn_anim_ops[0]), 0 },
+      sizeof(prog_hrt_6_to_4_turn_anim_ops) / sizeof(prog_hrt_6_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "hrt_2_to_8_turn_anim", "HRTSEQ1.ASM", prog_hrt_2_to_8_turn_anim_ops,
-      sizeof(prog_hrt_2_to_8_turn_anim_ops) / sizeof(prog_hrt_2_to_8_turn_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_to_8_turn_anim_ops) / sizeof(prog_hrt_2_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "hrt_8_to_2_turn_anim", "HRTSEQ1.ASM", prog_hrt_8_to_2_turn_anim_ops,
-      sizeof(prog_hrt_8_to_2_turn_anim_ops) / sizeof(prog_hrt_8_to_2_turn_anim_ops[0]), 0 },
+      sizeof(prog_hrt_8_to_2_turn_anim_ops) / sizeof(prog_hrt_8_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "hrt_4_to_8_turn_anim", "HRTSEQ1.ASM", prog_hrt_4_to_8_turn_anim_ops,
-      sizeof(prog_hrt_4_to_8_turn_anim_ops) / sizeof(prog_hrt_4_to_8_turn_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_to_8_turn_anim_ops) / sizeof(prog_hrt_4_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "hrt_6_to_2_turn_anim", "HRTSEQ1.ASM", prog_hrt_6_to_2_turn_anim_ops,
-      sizeof(prog_hrt_6_to_2_turn_anim_ops) / sizeof(prog_hrt_6_to_2_turn_anim_ops[0]), 0 },
+      sizeof(prog_hrt_6_to_2_turn_anim_ops) / sizeof(prog_hrt_6_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "hrt_2_to_6_turn_anim", "HRTSEQ1.ASM", prog_hrt_2_to_6_turn_anim_ops,
-      sizeof(prog_hrt_2_to_6_turn_anim_ops) / sizeof(prog_hrt_2_to_6_turn_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_to_6_turn_anim_ops) / sizeof(prog_hrt_2_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "hrt_8_to_4_turn_anim", "HRTSEQ1.ASM", prog_hrt_8_to_4_turn_anim_ops,
-      sizeof(prog_hrt_8_to_4_turn_anim_ops) / sizeof(prog_hrt_8_to_4_turn_anim_ops[0]), 0 },
+      sizeof(prog_hrt_8_to_4_turn_anim_ops) / sizeof(prog_hrt_8_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "hrt_2_to_4_turn2_anim", "HRTSEQ1.ASM", prog_hrt_2_to_4_turn2_anim_ops,
-      sizeof(prog_hrt_2_to_4_turn2_anim_ops) / sizeof(prog_hrt_2_to_4_turn2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_to_4_turn2_anim_ops) / sizeof(prog_hrt_2_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "hrt_8_to_6_turn2_anim", "HRTSEQ1.ASM", prog_hrt_8_to_6_turn2_anim_ops,
-      sizeof(prog_hrt_8_to_6_turn2_anim_ops) / sizeof(prog_hrt_8_to_6_turn2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_8_to_6_turn2_anim_ops) / sizeof(prog_hrt_8_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "hrt_4_to_2_turn2_anim", "HRTSEQ1.ASM", prog_hrt_4_to_2_turn2_anim_ops,
-      sizeof(prog_hrt_4_to_2_turn2_anim_ops) / sizeof(prog_hrt_4_to_2_turn2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_to_2_turn2_anim_ops) / sizeof(prog_hrt_4_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "hrt_6_to_8_turn2_anim", "HRTSEQ1.ASM", prog_hrt_6_to_8_turn2_anim_ops,
-      sizeof(prog_hrt_6_to_8_turn2_anim_ops) / sizeof(prog_hrt_6_to_8_turn2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_6_to_8_turn2_anim_ops) / sizeof(prog_hrt_6_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "hrt_4_to_6_turn2_anim", "HRTSEQ1.ASM", prog_hrt_4_to_6_turn2_anim_ops,
-      sizeof(prog_hrt_4_to_6_turn2_anim_ops) / sizeof(prog_hrt_4_to_6_turn2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_to_6_turn2_anim_ops) / sizeof(prog_hrt_4_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "hrt_6_to_4_turn2_anim", "HRTSEQ1.ASM", prog_hrt_6_to_4_turn2_anim_ops,
-      sizeof(prog_hrt_6_to_4_turn2_anim_ops) / sizeof(prog_hrt_6_to_4_turn2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_6_to_4_turn2_anim_ops) / sizeof(prog_hrt_6_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "hrt_2_to_8_turn2_anim", "HRTSEQ1.ASM", prog_hrt_2_to_8_turn2_anim_ops,
-      sizeof(prog_hrt_2_to_8_turn2_anim_ops) / sizeof(prog_hrt_2_to_8_turn2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_to_8_turn2_anim_ops) / sizeof(prog_hrt_2_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "hrt_8_to_2_turn2_anim", "HRTSEQ1.ASM", prog_hrt_8_to_2_turn2_anim_ops,
-      sizeof(prog_hrt_8_to_2_turn2_anim_ops) / sizeof(prog_hrt_8_to_2_turn2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_8_to_2_turn2_anim_ops) / sizeof(prog_hrt_8_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "hrt_4_to_8_turn2_anim", "HRTSEQ1.ASM", prog_hrt_4_to_8_turn2_anim_ops,
-      sizeof(prog_hrt_4_to_8_turn2_anim_ops) / sizeof(prog_hrt_4_to_8_turn2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_to_8_turn2_anim_ops) / sizeof(prog_hrt_4_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "hrt_6_to_2_turn2_anim", "HRTSEQ1.ASM", prog_hrt_6_to_2_turn2_anim_ops,
-      sizeof(prog_hrt_6_to_2_turn2_anim_ops) / sizeof(prog_hrt_6_to_2_turn2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_6_to_2_turn2_anim_ops) / sizeof(prog_hrt_6_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "hrt_2_to_6_turn2_anim", "HRTSEQ1.ASM", prog_hrt_2_to_6_turn2_anim_ops,
-      sizeof(prog_hrt_2_to_6_turn2_anim_ops) / sizeof(prog_hrt_2_to_6_turn2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_to_6_turn2_anim_ops) / sizeof(prog_hrt_2_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "hrt_8_to_4_turn2_anim", "HRTSEQ1.ASM", prog_hrt_8_to_4_turn2_anim_ops,
-      sizeof(prog_hrt_8_to_4_turn2_anim_ops) / sizeof(prog_hrt_8_to_4_turn2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_8_to_4_turn2_anim_ops) / sizeof(prog_hrt_8_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "hrt_run2_anim", "HRTSEQ1.ASM", prog_hrt_run2_anim_ops,
-      sizeof(prog_hrt_run2_anim_ops) / sizeof(prog_hrt_run2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_run2_anim_ops) / sizeof(prog_hrt_run2_anim_ops[0]), 0, prog_hrt_run2_anim_labels, sizeof(prog_hrt_run2_anim_labels) / sizeof(prog_hrt_run2_anim_labels[0]) },
     { "hrt_run_anim", "HRTSEQ1.ASM", prog_hrt_run_anim_ops,
-      sizeof(prog_hrt_run_anim_ops) / sizeof(prog_hrt_run_anim_ops[0]), 0 },
+      sizeof(prog_hrt_run_anim_ops) / sizeof(prog_hrt_run_anim_ops[0]), 0, prog_hrt_run_anim_labels, sizeof(prog_hrt_run_anim_labels) / sizeof(prog_hrt_run_anim_labels[0]) },
     { "hrt_bounce_anim", "HRTSEQ1.ASM", prog_hrt_bounce_anim_ops,
-      sizeof(prog_hrt_bounce_anim_ops) / sizeof(prog_hrt_bounce_anim_ops[0]), 0 },
+      sizeof(prog_hrt_bounce_anim_ops) / sizeof(prog_hrt_bounce_anim_ops[0]), 0, 0, 0 },
     { "hrt_combo_punch_anim", "HRTSEQ2.ASM", prog_hrt_combo_punch_anim_ops,
-      sizeof(prog_hrt_combo_punch_anim_ops) / sizeof(prog_hrt_combo_punch_anim_ops[0]), 0 },
+      sizeof(prog_hrt_combo_punch_anim_ops) / sizeof(prog_hrt_combo_punch_anim_ops[0]), 0, prog_hrt_combo_punch_anim_labels, sizeof(prog_hrt_combo_punch_anim_labels) / sizeof(prog_hrt_combo_punch_anim_labels[0]) },
     { "hrt_2_punch_anim", "HRTSEQ2.ASM", prog_hrt_2_punch_anim_ops,
-      sizeof(prog_hrt_2_punch_anim_ops) / sizeof(prog_hrt_2_punch_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_punch_anim_ops) / sizeof(prog_hrt_2_punch_anim_ops[0]), 0, prog_hrt_2_punch_anim_labels, sizeof(prog_hrt_2_punch_anim_labels) / sizeof(prog_hrt_2_punch_anim_labels[0]) },
     { "hrt_4_super_punch_anim", "HRTSEQ2.ASM", prog_hrt_4_super_punch_anim_ops,
-      sizeof(prog_hrt_4_super_punch_anim_ops) / sizeof(prog_hrt_4_super_punch_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_super_punch_anim_ops) / sizeof(prog_hrt_4_super_punch_anim_ops[0]), 0, prog_hrt_4_super_punch_anim_labels, sizeof(prog_hrt_4_super_punch_anim_labels) / sizeof(prog_hrt_4_super_punch_anim_labels[0]) },
     { "hrt_4_punch_anim", "HRTSEQ2.ASM", prog_hrt_4_punch_anim_ops,
-      sizeof(prog_hrt_4_punch_anim_ops) / sizeof(prog_hrt_4_punch_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_punch_anim_ops) / sizeof(prog_hrt_4_punch_anim_ops[0]), 0, prog_hrt_4_punch_anim_labels, sizeof(prog_hrt_4_punch_anim_labels) / sizeof(prog_hrt_4_punch_anim_labels[0]) },
     { "hrt_2_uppercut_anim", "HRTSEQ2.ASM", prog_hrt_2_uppercut_anim_ops,
-      sizeof(prog_hrt_2_uppercut_anim_ops) / sizeof(prog_hrt_2_uppercut_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_uppercut_anim_ops) / sizeof(prog_hrt_2_uppercut_anim_ops[0]), 0, prog_hrt_2_uppercut_anim_labels, sizeof(prog_hrt_2_uppercut_anim_labels) / sizeof(prog_hrt_2_uppercut_anim_labels[0]) },
     { "hrt_4_uppercut_anim", "HRTSEQ2.ASM", prog_hrt_4_uppercut_anim_ops,
-      sizeof(prog_hrt_4_uppercut_anim_ops) / sizeof(prog_hrt_4_uppercut_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_uppercut_anim_ops) / sizeof(prog_hrt_4_uppercut_anim_ops[0]), 0, prog_hrt_4_uppercut_anim_labels, sizeof(prog_hrt_4_uppercut_anim_labels) / sizeof(prog_hrt_4_uppercut_anim_labels[0]) },
     { "hrt_4_push_anim", "HRTSEQ2.ASM", prog_hrt_4_push_anim_ops,
-      sizeof(prog_hrt_4_push_anim_ops) / sizeof(prog_hrt_4_push_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_push_anim_ops) / sizeof(prog_hrt_4_push_anim_ops[0]), 0, prog_hrt_4_push_anim_labels, sizeof(prog_hrt_4_push_anim_labels) / sizeof(prog_hrt_4_push_anim_labels[0]) },
     { "hrt_2_ground_punch_anim", "HRTSEQ2.ASM", prog_hrt_2_ground_punch_anim_ops,
-      sizeof(prog_hrt_2_ground_punch_anim_ops) / sizeof(prog_hrt_2_ground_punch_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_ground_punch_anim_ops) / sizeof(prog_hrt_2_ground_punch_anim_ops[0]), 0, prog_hrt_2_ground_punch_anim_labels, sizeof(prog_hrt_2_ground_punch_anim_labels) / sizeof(prog_hrt_2_ground_punch_anim_labels[0]) },
     { "hrt_4_ground_punch_anim", "HRTSEQ2.ASM", prog_hrt_4_ground_punch_anim_ops,
-      sizeof(prog_hrt_4_ground_punch_anim_ops) / sizeof(prog_hrt_4_ground_punch_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_ground_punch_anim_ops) / sizeof(prog_hrt_4_ground_punch_anim_ops[0]), 0, prog_hrt_4_ground_punch_anim_labels, sizeof(prog_hrt_4_ground_punch_anim_labels) / sizeof(prog_hrt_4_ground_punch_anim_labels[0]) },
     { "hrt_2_butt_anim", "HRTSEQ2.ASM", prog_hrt_2_butt_anim_ops,
-      sizeof(prog_hrt_2_butt_anim_ops) / sizeof(prog_hrt_2_butt_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_butt_anim_ops) / sizeof(prog_hrt_2_butt_anim_ops[0]), 0, prog_hrt_2_butt_anim_labels, sizeof(prog_hrt_2_butt_anim_labels) / sizeof(prog_hrt_2_butt_anim_labels[0]) },
     { "hrt_2_super_punch2_anim", "HRTSEQ2.ASM", prog_hrt_2_super_punch2_anim_ops,
-      sizeof(prog_hrt_2_super_punch2_anim_ops) / sizeof(prog_hrt_2_super_punch2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_super_punch2_anim_ops) / sizeof(prog_hrt_2_super_punch2_anim_ops[0]), 0, prog_hrt_2_super_punch2_anim_labels, sizeof(prog_hrt_2_super_punch2_anim_labels) / sizeof(prog_hrt_2_super_punch2_anim_labels[0]) },
     { "hrt_4_super_punch2_anim", "HRTSEQ2.ASM", prog_hrt_4_super_punch2_anim_ops,
-      sizeof(prog_hrt_4_super_punch2_anim_ops) / sizeof(prog_hrt_4_super_punch2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_super_punch2_anim_ops) / sizeof(prog_hrt_4_super_punch2_anim_ops[0]), 0, prog_hrt_4_super_punch2_anim_labels, sizeof(prog_hrt_4_super_punch2_anim_labels) / sizeof(prog_hrt_4_super_punch2_anim_labels[0]) },
     { "hrt_4_butt_anim", "HRTSEQ2.ASM", prog_hrt_4_butt_anim_ops,
-      sizeof(prog_hrt_4_butt_anim_ops) / sizeof(prog_hrt_4_butt_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_butt_anim_ops) / sizeof(prog_hrt_4_butt_anim_ops[0]), 0, prog_hrt_4_butt_anim_labels, sizeof(prog_hrt_4_butt_anim_labels) / sizeof(prog_hrt_4_butt_anim_labels[0]) },
     { "hrt_2_butts_anim", "HRTSEQ2.ASM", prog_hrt_2_butts_anim_ops,
-      sizeof(prog_hrt_2_butts_anim_ops) / sizeof(prog_hrt_2_butts_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_butts_anim_ops) / sizeof(prog_hrt_2_butts_anim_ops[0]), 0, prog_hrt_2_butts_anim_labels, sizeof(prog_hrt_2_butts_anim_labels) / sizeof(prog_hrt_2_butts_anim_labels[0]) },
     { "hrt_4_butts_anim", "HRTSEQ2.ASM", prog_hrt_4_butts_anim_ops,
-      sizeof(prog_hrt_4_butts_anim_ops) / sizeof(prog_hrt_4_butts_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_butts_anim_ops) / sizeof(prog_hrt_4_butts_anim_ops[0]), 0, prog_hrt_4_butts_anim_labels, sizeof(prog_hrt_4_butts_anim_labels) / sizeof(prog_hrt_4_butts_anim_labels[0]) },
     { "hrt_combo_butt_anim", "HRTSEQ2.ASM", prog_hrt_combo_butt_anim_ops,
-      sizeof(prog_hrt_combo_butt_anim_ops) / sizeof(prog_hrt_combo_butt_anim_ops[0]), 0 },
+      sizeof(prog_hrt_combo_butt_anim_ops) / sizeof(prog_hrt_combo_butt_anim_ops[0]), 0, prog_hrt_combo_butt_anim_labels, sizeof(prog_hrt_combo_butt_anim_labels) / sizeof(prog_hrt_combo_butt_anim_labels[0]) },
     { "hrt_2_kick_anim", "HRTSEQ2.ASM", prog_hrt_2_kick_anim_ops,
-      sizeof(prog_hrt_2_kick_anim_ops) / sizeof(prog_hrt_2_kick_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_kick_anim_ops) / sizeof(prog_hrt_2_kick_anim_ops[0]), 0, prog_hrt_2_kick_anim_labels, sizeof(prog_hrt_2_kick_anim_labels) / sizeof(prog_hrt_2_kick_anim_labels[0]) },
     { "hrt_combo_kick_anim", "HRTSEQ2.ASM", prog_hrt_combo_kick_anim_ops,
-      sizeof(prog_hrt_combo_kick_anim_ops) / sizeof(prog_hrt_combo_kick_anim_ops[0]), 0 },
+      sizeof(prog_hrt_combo_kick_anim_ops) / sizeof(prog_hrt_combo_kick_anim_ops[0]), 0, prog_hrt_combo_kick_anim_labels, sizeof(prog_hrt_combo_kick_anim_labels) / sizeof(prog_hrt_combo_kick_anim_labels[0]) },
     { "hrt_4_kick_anim", "HRTSEQ2.ASM", prog_hrt_4_kick_anim_ops,
-      sizeof(prog_hrt_4_kick_anim_ops) / sizeof(prog_hrt_4_kick_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_kick_anim_ops) / sizeof(prog_hrt_4_kick_anim_ops[0]), 0, prog_hrt_4_kick_anim_labels, sizeof(prog_hrt_4_kick_anim_labels) / sizeof(prog_hrt_4_kick_anim_labels[0]) },
     { "hrt_4_jump_kick_anim", "HRTSEQ2.ASM", prog_hrt_4_jump_kick_anim_ops,
-      sizeof(prog_hrt_4_jump_kick_anim_ops) / sizeof(prog_hrt_4_jump_kick_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_jump_kick_anim_ops) / sizeof(prog_hrt_4_jump_kick_anim_ops[0]), 0, prog_hrt_4_jump_kick_anim_labels, sizeof(prog_hrt_4_jump_kick_anim_labels) / sizeof(prog_hrt_4_jump_kick_anim_labels[0]) },
     { "hrt_2_super_kick_anim", "HRTSEQ2.ASM", prog_hrt_2_super_kick_anim_ops,
-      sizeof(prog_hrt_2_super_kick_anim_ops) / sizeof(prog_hrt_2_super_kick_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_super_kick_anim_ops) / sizeof(prog_hrt_2_super_kick_anim_ops[0]), 0, prog_hrt_2_super_kick_anim_labels, sizeof(prog_hrt_2_super_kick_anim_labels) / sizeof(prog_hrt_2_super_kick_anim_labels[0]) },
     { "hrt_4_super_kick_anim", "HRTSEQ2.ASM", prog_hrt_4_super_kick_anim_ops,
-      sizeof(prog_hrt_4_super_kick_anim_ops) / sizeof(prog_hrt_4_super_kick_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_super_kick_anim_ops) / sizeof(prog_hrt_4_super_kick_anim_ops[0]), 0, prog_hrt_4_super_kick_anim_labels, sizeof(prog_hrt_4_super_kick_anim_labels) / sizeof(prog_hrt_4_super_kick_anim_labels[0]) },
     { "hrt_kick_TB_anim", "HRTSEQ2.ASM", prog_hrt_kick_TB_anim_ops,
-      sizeof(prog_hrt_kick_TB_anim_ops) / sizeof(prog_hrt_kick_TB_anim_ops[0]), 0 },
+      sizeof(prog_hrt_kick_TB_anim_ops) / sizeof(prog_hrt_kick_TB_anim_ops[0]), 0, prog_hrt_kick_TB_anim_labels, sizeof(prog_hrt_kick_TB_anim_labels) / sizeof(prog_hrt_kick_TB_anim_labels[0]) },
     { "hrt_flying_kick_anim", "HRTSEQ2.ASM", prog_hrt_flying_kick_anim_ops,
-      sizeof(prog_hrt_flying_kick_anim_ops) / sizeof(prog_hrt_flying_kick_anim_ops[0]), 0 },
+      sizeof(prog_hrt_flying_kick_anim_ops) / sizeof(prog_hrt_flying_kick_anim_ops[0]), 0, prog_hrt_flying_kick_anim_labels, sizeof(prog_hrt_flying_kick_anim_labels) / sizeof(prog_hrt_flying_kick_anim_labels[0]) },
     { "hrt_combo_flying_kick_anim", "HRTSEQ2.ASM", prog_hrt_combo_flying_kick_anim_ops,
-      sizeof(prog_hrt_combo_flying_kick_anim_ops) / sizeof(prog_hrt_combo_flying_kick_anim_ops[0]), 0 },
+      sizeof(prog_hrt_combo_flying_kick_anim_ops) / sizeof(prog_hrt_combo_flying_kick_anim_ops[0]), 0, prog_hrt_combo_flying_kick_anim_labels, sizeof(prog_hrt_combo_flying_kick_anim_labels) / sizeof(prog_hrt_combo_flying_kick_anim_labels[0]) },
     { "hrt_flying_kick2_anim", "HRTSEQ2.ASM", prog_hrt_flying_kick2_anim_ops,
-      sizeof(prog_hrt_flying_kick2_anim_ops) / sizeof(prog_hrt_flying_kick2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_flying_kick2_anim_ops) / sizeof(prog_hrt_flying_kick2_anim_ops[0]), 0, 0, 0 },
     { "hrt_2_stomp_anim", "HRTSEQ2.ASM", prog_hrt_2_stomp_anim_ops,
-      sizeof(prog_hrt_2_stomp_anim_ops) / sizeof(prog_hrt_2_stomp_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_stomp_anim_ops) / sizeof(prog_hrt_2_stomp_anim_ops[0]), 0, prog_hrt_2_stomp_anim_labels, sizeof(prog_hrt_2_stomp_anim_labels) / sizeof(prog_hrt_2_stomp_anim_labels[0]) },
     { "hrt_4_stomp_anim", "HRTSEQ2.ASM", prog_hrt_4_stomp_anim_ops,
-      sizeof(prog_hrt_4_stomp_anim_ops) / sizeof(prog_hrt_4_stomp_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_stomp_anim_ops) / sizeof(prog_hrt_4_stomp_anim_ops[0]), 0, prog_hrt_4_stomp_anim_labels, sizeof(prog_hrt_4_stomp_anim_labels) / sizeof(prog_hrt_4_stomp_anim_labels[0]) },
     { "hrt_running_ground_punch_anim", "HRTSEQ2.ASM", prog_hrt_running_ground_punch_anim_ops,
-      sizeof(prog_hrt_running_ground_punch_anim_ops) / sizeof(prog_hrt_running_ground_punch_anim_ops[0]), 0 },
+      sizeof(prog_hrt_running_ground_punch_anim_ops) / sizeof(prog_hrt_running_ground_punch_anim_ops[0]), 0, prog_hrt_running_ground_punch_anim_labels, sizeof(prog_hrt_running_ground_punch_anim_labels) / sizeof(prog_hrt_running_ground_punch_anim_labels[0]) },
     { "hrt_tbukl_leap_anim", "HRTSEQ2.ASM", prog_hrt_tbukl_leap_anim_ops,
-      sizeof(prog_hrt_tbukl_leap_anim_ops) / sizeof(prog_hrt_tbukl_leap_anim_ops[0]), 0 },
+      sizeof(prog_hrt_tbukl_leap_anim_ops) / sizeof(prog_hrt_tbukl_leap_anim_ops[0]), 0, prog_hrt_tbukl_leap_anim_labels, sizeof(prog_hrt_tbukl_leap_anim_labels) / sizeof(prog_hrt_tbukl_leap_anim_labels[0]) },
     { "hrt_2_knee_anim", "HRTSEQ2.ASM", prog_hrt_2_knee_anim_ops,
-      sizeof(prog_hrt_2_knee_anim_ops) / sizeof(prog_hrt_2_knee_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_knee_anim_ops) / sizeof(prog_hrt_2_knee_anim_ops[0]), 0, prog_hrt_2_knee_anim_labels, sizeof(prog_hrt_2_knee_anim_labels) / sizeof(prog_hrt_2_knee_anim_labels[0]) },
     { "hrt_4_knee_to_head_anim", "HRTSEQ2.ASM", prog_hrt_4_knee_to_head_anim_ops,
-      sizeof(prog_hrt_4_knee_to_head_anim_ops) / sizeof(prog_hrt_4_knee_to_head_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_knee_to_head_anim_ops) / sizeof(prog_hrt_4_knee_to_head_anim_ops[0]), 0, prog_hrt_4_knee_to_head_anim_labels, sizeof(prog_hrt_4_knee_to_head_anim_labels) / sizeof(prog_hrt_4_knee_to_head_anim_labels[0]) },
     { "hrt_4_knee_anim", "HRTSEQ2.ASM", prog_hrt_4_knee_anim_ops,
-      sizeof(prog_hrt_4_knee_anim_ops) / sizeof(prog_hrt_4_knee_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_knee_anim_ops) / sizeof(prog_hrt_4_knee_anim_ops[0]), 0, prog_hrt_4_knee_anim_labels, sizeof(prog_hrt_4_knee_anim_labels) / sizeof(prog_hrt_4_knee_anim_labels[0]) },
     { "hrt_combo_knee_fall_anim", "HRTSEQ2.ASM", prog_hrt_combo_knee_fall_anim_ops,
-      sizeof(prog_hrt_combo_knee_fall_anim_ops) / sizeof(prog_hrt_combo_knee_fall_anim_ops[0]), 0 },
+      sizeof(prog_hrt_combo_knee_fall_anim_ops) / sizeof(prog_hrt_combo_knee_fall_anim_ops[0]), 0, prog_hrt_combo_knee_fall_anim_labels, sizeof(prog_hrt_combo_knee_fall_anim_labels) / sizeof(prog_hrt_combo_knee_fall_anim_labels[0]) },
     { "hrt_4_knee_fall_anim", "HRTSEQ2.ASM", prog_hrt_4_knee_fall_anim_ops,
-      sizeof(prog_hrt_4_knee_fall_anim_ops) / sizeof(prog_hrt_4_knee_fall_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_knee_fall_anim_ops) / sizeof(prog_hrt_4_knee_fall_anim_ops[0]), 0, prog_hrt_4_knee_fall_anim_labels, sizeof(prog_hrt_4_knee_fall_anim_labels) / sizeof(prog_hrt_4_knee_fall_anim_labels[0]) },
     { "hrt_knees_to_head_anim", "HRTSEQ2.ASM", prog_hrt_knees_to_head_anim_ops,
-      sizeof(prog_hrt_knees_to_head_anim_ops) / sizeof(prog_hrt_knees_to_head_anim_ops[0]), 0 },
+      sizeof(prog_hrt_knees_to_head_anim_ops) / sizeof(prog_hrt_knees_to_head_anim_ops[0]), 0, prog_hrt_knees_to_head_anim_labels, sizeof(prog_hrt_knees_to_head_anim_labels) / sizeof(prog_hrt_knees_to_head_anim_labels[0]) },
     { "hrt_uppercuts_to_head_anim", "HRTSEQ2.ASM", prog_hrt_uppercuts_to_head_anim_ops,
-      sizeof(prog_hrt_uppercuts_to_head_anim_ops) / sizeof(prog_hrt_uppercuts_to_head_anim_ops[0]), 0 },
+      sizeof(prog_hrt_uppercuts_to_head_anim_ops) / sizeof(prog_hrt_uppercuts_to_head_anim_ops[0]), 0, prog_hrt_uppercuts_to_head_anim_labels, sizeof(prog_hrt_uppercuts_to_head_anim_labels) / sizeof(prog_hrt_uppercuts_to_head_anim_labels[0]) },
     { "hrt_2_grabfling_anim", "HRTSEQ2.ASM", prog_hrt_2_grabfling_anim_ops,
-      sizeof(prog_hrt_2_grabfling_anim_ops) / sizeof(prog_hrt_2_grabfling_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_grabfling_anim_ops) / sizeof(prog_hrt_2_grabfling_anim_ops[0]), 0, prog_hrt_2_grabfling_anim_labels, sizeof(prog_hrt_2_grabfling_anim_labels) / sizeof(prog_hrt_2_grabfling_anim_labels[0]) },
     { "hrt_4_grabfling_anim", "HRTSEQ2.ASM", prog_hrt_4_grabfling_anim_ops,
-      sizeof(prog_hrt_4_grabfling_anim_ops) / sizeof(prog_hrt_4_grabfling_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_grabfling_anim_ops) / sizeof(prog_hrt_4_grabfling_anim_ops[0]), 0, prog_hrt_4_grabfling_anim_labels, sizeof(prog_hrt_4_grabfling_anim_labels) / sizeof(prog_hrt_4_grabfling_anim_labels[0]) },
     { "hrt_roll_frames", "HRTSEQ2.ASM", prog_hrt_roll_frames_ops,
-      sizeof(prog_hrt_roll_frames_ops) / sizeof(prog_hrt_roll_frames_ops[0]), 0 },
+      sizeof(prog_hrt_roll_frames_ops) / sizeof(prog_hrt_roll_frames_ops[0]), 0, 0, 0 },
     { "hrt_tossed_anim", "HRTSEQ2.ASM", prog_hrt_tossed_anim_ops,
-      sizeof(prog_hrt_tossed_anim_ops) / sizeof(prog_hrt_tossed_anim_ops[0]), 0 },
+      sizeof(prog_hrt_tossed_anim_ops) / sizeof(prog_hrt_tossed_anim_ops[0]), 0, 0, 0 },
     { "hrt_tossed2_anim", "HRTSEQ2.ASM", prog_hrt_tossed2_anim_ops,
-      sizeof(prog_hrt_tossed2_anim_ops) / sizeof(prog_hrt_tossed2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_tossed2_anim_ops) / sizeof(prog_hrt_tossed2_anim_ops[0]), 0, 0, 0 },
     { "hrt_knockdwn_anim", "HRTSEQ2.ASM", prog_hrt_knockdwn_anim_ops,
-      sizeof(prog_hrt_knockdwn_anim_ops) / sizeof(prog_hrt_knockdwn_anim_ops[0]), 0 },
+      sizeof(prog_hrt_knockdwn_anim_ops) / sizeof(prog_hrt_knockdwn_anim_ops[0]), 0, prog_hrt_knockdwn_anim_labels, sizeof(prog_hrt_knockdwn_anim_labels) / sizeof(prog_hrt_knockdwn_anim_labels[0]) },
     { "hrt_climbthru_side_anim", "HRTSEQ2.ASM", prog_hrt_climbthru_side_anim_ops,
-      sizeof(prog_hrt_climbthru_side_anim_ops) / sizeof(prog_hrt_climbthru_side_anim_ops[0]), 0 },
+      sizeof(prog_hrt_climbthru_side_anim_ops) / sizeof(prog_hrt_climbthru_side_anim_ops[0]), 0, 0, 0 },
     { "hrt_climbin_side_anim", "HRTSEQ2.ASM", prog_hrt_climbin_side_anim_ops,
-      sizeof(prog_hrt_climbin_side_anim_ops) / sizeof(prog_hrt_climbin_side_anim_ops[0]), 0 },
+      sizeof(prog_hrt_climbin_side_anim_ops) / sizeof(prog_hrt_climbin_side_anim_ops[0]), 0, prog_hrt_climbin_side_anim_labels, sizeof(prog_hrt_climbin_side_anim_labels) / sizeof(prog_hrt_climbin_side_anim_labels[0]) },
     { "hrt_climbthru_bot_anim", "HRTSEQ2.ASM", prog_hrt_climbthru_bot_anim_ops,
-      sizeof(prog_hrt_climbthru_bot_anim_ops) / sizeof(prog_hrt_climbthru_bot_anim_ops[0]), 0 },
+      sizeof(prog_hrt_climbthru_bot_anim_ops) / sizeof(prog_hrt_climbthru_bot_anim_ops[0]), 0, prog_hrt_climbthru_bot_anim_labels, sizeof(prog_hrt_climbthru_bot_anim_labels) / sizeof(prog_hrt_climbthru_bot_anim_labels[0]) },
     { "hrt_climbin_bot_anim", "HRTSEQ2.ASM", prog_hrt_climbin_bot_anim_ops,
-      sizeof(prog_hrt_climbin_bot_anim_ops) / sizeof(prog_hrt_climbin_bot_anim_ops[0]), 0 },
+      sizeof(prog_hrt_climbin_bot_anim_ops) / sizeof(prog_hrt_climbin_bot_anim_ops[0]), 0, 0, 0 },
     { "hrt_climbthru_top_anim", "HRTSEQ2.ASM", prog_hrt_climbthru_top_anim_ops,
-      sizeof(prog_hrt_climbthru_top_anim_ops) / sizeof(prog_hrt_climbthru_top_anim_ops[0]), 0 },
+      sizeof(prog_hrt_climbthru_top_anim_ops) / sizeof(prog_hrt_climbthru_top_anim_ops[0]), 0, prog_hrt_climbthru_top_anim_labels, sizeof(prog_hrt_climbthru_top_anim_labels) / sizeof(prog_hrt_climbthru_top_anim_labels[0]) },
     { "hrt_rollthru_top_anim", "HRTSEQ2.ASM", prog_hrt_rollthru_top_anim_ops,
-      sizeof(prog_hrt_rollthru_top_anim_ops) / sizeof(prog_hrt_rollthru_top_anim_ops[0]), 0 },
+      sizeof(prog_hrt_rollthru_top_anim_ops) / sizeof(prog_hrt_rollthru_top_anim_ops[0]), 0, 0, 0 },
     { "hrt_climbin_top_anim", "HRTSEQ2.ASM", prog_hrt_climbin_top_anim_ops,
-      sizeof(prog_hrt_climbin_top_anim_ops) / sizeof(prog_hrt_climbin_top_anim_ops[0]), 0 },
+      sizeof(prog_hrt_climbin_top_anim_ops) / sizeof(prog_hrt_climbin_top_anim_ops[0]), 0, prog_hrt_climbin_top_anim_labels, sizeof(prog_hrt_climbin_top_anim_labels) / sizeof(prog_hrt_climbin_top_anim_labels[0]) },
     { "hrt_2_pin_anim", "HRTSEQ2.ASM", prog_hrt_2_pin_anim_ops,
-      sizeof(prog_hrt_2_pin_anim_ops) / sizeof(prog_hrt_2_pin_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_pin_anim_ops) / sizeof(prog_hrt_2_pin_anim_ops[0]), 0, prog_hrt_2_pin_anim_labels, sizeof(prog_hrt_2_pin_anim_labels) / sizeof(prog_hrt_2_pin_anim_labels[0]) },
     { "hrt_4_pin_anim", "HRTSEQ2.ASM", prog_hrt_4_pin_anim_ops,
-      sizeof(prog_hrt_4_pin_anim_ops) / sizeof(prog_hrt_4_pin_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_pin_anim_ops) / sizeof(prog_hrt_4_pin_anim_ops[0]), 0, prog_hrt_4_pin_anim_labels, sizeof(prog_hrt_4_pin_anim_labels) / sizeof(prog_hrt_4_pin_anim_labels[0]) },
     { "hrt_2_raise_arm_anim", "HRTSEQ2.ASM", prog_hrt_2_raise_arm_anim_ops,
-      sizeof(prog_hrt_2_raise_arm_anim_ops) / sizeof(prog_hrt_2_raise_arm_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_raise_arm_anim_ops) / sizeof(prog_hrt_2_raise_arm_anim_ops[0]), 0, prog_hrt_2_raise_arm_anim_labels, sizeof(prog_hrt_2_raise_arm_anim_labels) / sizeof(prog_hrt_2_raise_arm_anim_labels[0]) },
     { "hrt_4_raise_arm_anim", "HRTSEQ2.ASM", prog_hrt_4_raise_arm_anim_ops,
-      sizeof(prog_hrt_4_raise_arm_anim_ops) / sizeof(prog_hrt_4_raise_arm_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_raise_arm_anim_ops) / sizeof(prog_hrt_4_raise_arm_anim_ops[0]), 0, prog_hrt_4_raise_arm_anim_labels, sizeof(prog_hrt_4_raise_arm_anim_labels) / sizeof(prog_hrt_4_raise_arm_anim_labels[0]) },
     { "hrt_buckoff_anim", "HRTSEQ2.ASM", prog_hrt_buckoff_anim_ops,
-      sizeof(prog_hrt_buckoff_anim_ops) / sizeof(prog_hrt_buckoff_anim_ops[0]), 0 },
+      sizeof(prog_hrt_buckoff_anim_ops) / sizeof(prog_hrt_buckoff_anim_ops[0]), 0, 0, 0 },
     { "hrt_heldoh_anim", "HRTSEQ3.ASM", prog_hrt_heldoh_anim_ops,
-      sizeof(prog_hrt_heldoh_anim_ops) / sizeof(prog_hrt_heldoh_anim_ops[0]), 0 },
+      sizeof(prog_hrt_heldoh_anim_ops) / sizeof(prog_hrt_heldoh_anim_ops[0]), 0, prog_hrt_heldoh_anim_labels, sizeof(prog_hrt_heldoh_anim_labels) / sizeof(prog_hrt_heldoh_anim_labels[0]) },
     { "hrt_neckbroken_anim", "HRTSEQ3.ASM", prog_hrt_neckbroken_anim_ops,
-      sizeof(prog_hrt_neckbroken_anim_ops) / sizeof(prog_hrt_neckbroken_anim_ops[0]), 0 },
+      sizeof(prog_hrt_neckbroken_anim_ops) / sizeof(prog_hrt_neckbroken_anim_ops[0]), 0, prog_hrt_neckbroken_anim_labels, sizeof(prog_hrt_neckbroken_anim_labels) / sizeof(prog_hrt_neckbroken_anim_labels[0]) },
     { "hrt_pogo_anim", "HRTSEQ3.ASM", prog_hrt_pogo_anim_ops,
-      sizeof(prog_hrt_pogo_anim_ops) / sizeof(prog_hrt_pogo_anim_ops[0]), 0 },
+      sizeof(prog_hrt_pogo_anim_ops) / sizeof(prog_hrt_pogo_anim_ops[0]), 0, 0, 0 },
     { "hrt_climb_up_anim", "HRTSEQ3.ASM", prog_hrt_climb_up_anim_ops,
-      sizeof(prog_hrt_climb_up_anim_ops) / sizeof(prog_hrt_climb_up_anim_ops[0]), 0 },
+      sizeof(prog_hrt_climb_up_anim_ops) / sizeof(prog_hrt_climb_up_anim_ops[0]), 0, prog_hrt_climb_up_anim_labels, sizeof(prog_hrt_climb_up_anim_labels) / sizeof(prog_hrt_climb_up_anim_labels[0]) },
     { "hrt_climb_down_anim", "HRTSEQ3.ASM", prog_hrt_climb_down_anim_ops,
-      sizeof(prog_hrt_climb_down_anim_ops) / sizeof(prog_hrt_climb_down_anim_ops[0]), 0 },
+      sizeof(prog_hrt_climb_down_anim_ops) / sizeof(prog_hrt_climb_down_anim_ops[0]), 0, 0, 0 },
     { "hrt_combo_hiptoss_anim", "HRTSEQ3.ASM", prog_hrt_combo_hiptoss_anim_ops,
-      sizeof(prog_hrt_combo_hiptoss_anim_ops) / sizeof(prog_hrt_combo_hiptoss_anim_ops[0]), 0 },
+      sizeof(prog_hrt_combo_hiptoss_anim_ops) / sizeof(prog_hrt_combo_hiptoss_anim_ops[0]), 0, prog_hrt_combo_hiptoss_anim_labels, sizeof(prog_hrt_combo_hiptoss_anim_labels) / sizeof(prog_hrt_combo_hiptoss_anim_labels[0]) },
     { "hrt_hiptoss2_anim", "HRTSEQ3.ASM", prog_hrt_hiptoss2_anim_ops,
-      sizeof(prog_hrt_hiptoss2_anim_ops) / sizeof(prog_hrt_hiptoss2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_hiptoss2_anim_ops) / sizeof(prog_hrt_hiptoss2_anim_ops[0]), 0, prog_hrt_hiptoss2_anim_labels, sizeof(prog_hrt_hiptoss2_anim_labels) / sizeof(prog_hrt_hiptoss2_anim_labels[0]) },
     { "hrt_hiptoss_anim", "HRTSEQ3.ASM", prog_hrt_hiptoss_anim_ops,
-      sizeof(prog_hrt_hiptoss_anim_ops) / sizeof(prog_hrt_hiptoss_anim_ops[0]), 0 },
+      sizeof(prog_hrt_hiptoss_anim_ops) / sizeof(prog_hrt_hiptoss_anim_ops[0]), 0, prog_hrt_hiptoss_anim_labels, sizeof(prog_hrt_hiptoss_anim_labels) / sizeof(prog_hrt_hiptoss_anim_labels[0]) },
     { "hrt_3_head_held_anim", "HRTSEQ3.ASM", prog_hrt_3_head_held_anim_ops,
-      sizeof(prog_hrt_3_head_held_anim_ops) / sizeof(prog_hrt_3_head_held_anim_ops[0]), 0 },
+      sizeof(prog_hrt_3_head_held_anim_ops) / sizeof(prog_hrt_3_head_held_anim_ops[0]), 0, prog_hrt_3_head_held_anim_labels, sizeof(prog_hrt_3_head_held_anim_labels) / sizeof(prog_hrt_3_head_held_anim_labels[0]) },
     { "hrt_3_head_held_brk_anim", "HRTSEQ3.ASM", prog_hrt_3_head_held_brk_anim_ops,
-      sizeof(prog_hrt_3_head_held_brk_anim_ops) / sizeof(prog_hrt_3_head_held_brk_anim_ops[0]), 0 },
+      sizeof(prog_hrt_3_head_held_brk_anim_ops) / sizeof(prog_hrt_3_head_held_brk_anim_ops[0]), 0, prog_hrt_3_head_held_brk_anim_labels, sizeof(prog_hrt_3_head_held_brk_anim_labels) / sizeof(prog_hrt_3_head_held_brk_anim_labels[0]) },
     { "hrt_3_head_held_stand_anim", "HRTSEQ3.ASM", prog_hrt_3_head_held_stand_anim_ops,
-      sizeof(prog_hrt_3_head_held_stand_anim_ops) / sizeof(prog_hrt_3_head_held_stand_anim_ops[0]), 0 },
+      sizeof(prog_hrt_3_head_held_stand_anim_ops) / sizeof(prog_hrt_3_head_held_stand_anim_ops[0]), 0, 0, 0 },
     { "hrt_4_taunt_anim", "HRTSEQ3.ASM", prog_hrt_4_taunt_anim_ops,
-      sizeof(prog_hrt_4_taunt_anim_ops) / sizeof(prog_hrt_4_taunt_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_taunt_anim_ops) / sizeof(prog_hrt_4_taunt_anim_ops[0]), 0, 0, 0 },
     { "hrt_2_hair_pickup_anim", "HRTSEQ3.ASM", prog_hrt_2_hair_pickup_anim_ops,
-      sizeof(prog_hrt_2_hair_pickup_anim_ops) / sizeof(prog_hrt_2_hair_pickup_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_hair_pickup_anim_ops) / sizeof(prog_hrt_2_hair_pickup_anim_ops[0]), 0, prog_hrt_2_hair_pickup_anim_labels, sizeof(prog_hrt_2_hair_pickup_anim_labels) / sizeof(prog_hrt_2_hair_pickup_anim_labels[0]) },
     { "hrt_4_hair_pickup_anim", "HRTSEQ3.ASM", prog_hrt_4_hair_pickup_anim_ops,
-      sizeof(prog_hrt_4_hair_pickup_anim_ops) / sizeof(prog_hrt_4_hair_pickup_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_hair_pickup_anim_ops) / sizeof(prog_hrt_4_hair_pickup_anim_ops[0]), 0, prog_hrt_4_hair_pickup_anim_labels, sizeof(prog_hrt_4_hair_pickup_anim_labels) / sizeof(prog_hrt_4_hair_pickup_anim_labels[0]) },
     { "hrt_break_face2_anim", "HRTSEQ3.ASM", prog_hrt_break_face2_anim_ops,
-      sizeof(prog_hrt_break_face2_anim_ops) / sizeof(prog_hrt_break_face2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_break_face2_anim_ops) / sizeof(prog_hrt_break_face2_anim_ops[0]), 0, 0, 0 },
     { "hrt_break_face3_anim", "HRTSEQ3.ASM", prog_hrt_break_face3_anim_ops,
-      sizeof(prog_hrt_break_face3_anim_ops) / sizeof(prog_hrt_break_face3_anim_ops[0]), 0 },
+      sizeof(prog_hrt_break_face3_anim_ops) / sizeof(prog_hrt_break_face3_anim_ops[0]), 0, 0, 0 },
     { "hrt_break_face_anim", "HRTSEQ3.ASM", prog_hrt_break_face_anim_ops,
-      sizeof(prog_hrt_break_face_anim_ops) / sizeof(prog_hrt_break_face_anim_ops[0]), 0 },
+      sizeof(prog_hrt_break_face_anim_ops) / sizeof(prog_hrt_break_face_anim_ops[0]), 0, 0, 0 },
     { "hrt_3_fake_hold_anim", "HRTSEQ3.ASM", prog_hrt_3_fake_hold_anim_ops,
-      sizeof(prog_hrt_3_fake_hold_anim_ops) / sizeof(prog_hrt_3_fake_hold_anim_ops[0]), 0 },
+      sizeof(prog_hrt_3_fake_hold_anim_ops) / sizeof(prog_hrt_3_fake_hold_anim_ops[0]), 0, prog_hrt_3_fake_hold_anim_labels, sizeof(prog_hrt_3_fake_hold_anim_labels) / sizeof(prog_hrt_3_fake_hold_anim_labels[0]) },
     { "hrt_3_head_hold2_anim", "HRTSEQ3.ASM", prog_hrt_3_head_hold2_anim_ops,
-      sizeof(prog_hrt_3_head_hold2_anim_ops) / sizeof(prog_hrt_3_head_hold2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_3_head_hold2_anim_ops) / sizeof(prog_hrt_3_head_hold2_anim_ops[0]), 0, prog_hrt_3_head_hold2_anim_labels, sizeof(prog_hrt_3_head_hold2_anim_labels) / sizeof(prog_hrt_3_head_hold2_anim_labels[0]) },
     { "hrt_3_head_hold_anim", "HRTSEQ3.ASM", prog_hrt_3_head_hold_anim_ops,
-      sizeof(prog_hrt_3_head_hold_anim_ops) / sizeof(prog_hrt_3_head_hold_anim_ops[0]), 0 },
+      sizeof(prog_hrt_3_head_hold_anim_ops) / sizeof(prog_hrt_3_head_hold_anim_ops[0]), 0, prog_hrt_3_head_hold_anim_labels, sizeof(prog_hrt_3_head_hold_anim_labels) / sizeof(prog_hrt_3_head_hold_anim_labels[0]) },
     { "hrt_hh_2_ddt_anim", "HRTSEQ3.ASM", prog_hrt_hh_2_ddt_anim_ops,
-      sizeof(prog_hrt_hh_2_ddt_anim_ops) / sizeof(prog_hrt_hh_2_ddt_anim_ops[0]), 0 },
+      sizeof(prog_hrt_hh_2_ddt_anim_ops) / sizeof(prog_hrt_hh_2_ddt_anim_ops[0]), 0, prog_hrt_hh_2_ddt_anim_labels, sizeof(prog_hrt_hh_2_ddt_anim_labels) / sizeof(prog_hrt_hh_2_ddt_anim_labels[0]) },
     { "hrt_combo_running_ddt_anim", "HRTSEQ3.ASM", prog_hrt_combo_running_ddt_anim_ops,
-      sizeof(prog_hrt_combo_running_ddt_anim_ops) / sizeof(prog_hrt_combo_running_ddt_anim_ops[0]), 0 },
+      sizeof(prog_hrt_combo_running_ddt_anim_ops) / sizeof(prog_hrt_combo_running_ddt_anim_ops[0]), 0, prog_hrt_combo_running_ddt_anim_labels, sizeof(prog_hrt_combo_running_ddt_anim_labels) / sizeof(prog_hrt_combo_running_ddt_anim_labels[0]) },
     { "hrt_running_ddt_anim", "HRTSEQ3.ASM", prog_hrt_running_ddt_anim_ops,
-      sizeof(prog_hrt_running_ddt_anim_ops) / sizeof(prog_hrt_running_ddt_anim_ops[0]), 0 },
+      sizeof(prog_hrt_running_ddt_anim_ops) / sizeof(prog_hrt_running_ddt_anim_ops[0]), 0, prog_hrt_running_ddt_anim_labels, sizeof(prog_hrt_running_ddt_anim_labels) / sizeof(prog_hrt_running_ddt_anim_labels[0]) },
     { "hrt_combo_pile_driver_anim", "HRTSEQ3.ASM", prog_hrt_combo_pile_driver_anim_ops,
-      sizeof(prog_hrt_combo_pile_driver_anim_ops) / sizeof(prog_hrt_combo_pile_driver_anim_ops[0]), 0 },
+      sizeof(prog_hrt_combo_pile_driver_anim_ops) / sizeof(prog_hrt_combo_pile_driver_anim_ops[0]), 0, prog_hrt_combo_pile_driver_anim_labels, sizeof(prog_hrt_combo_pile_driver_anim_labels) / sizeof(prog_hrt_combo_pile_driver_anim_labels[0]) },
     { "hrt_3_pile_driver_anim", "HRTSEQ3.ASM", prog_hrt_3_pile_driver_anim_ops,
-      sizeof(prog_hrt_3_pile_driver_anim_ops) / sizeof(prog_hrt_3_pile_driver_anim_ops[0]), 0 },
+      sizeof(prog_hrt_3_pile_driver_anim_ops) / sizeof(prog_hrt_3_pile_driver_anim_ops[0]), 0, prog_hrt_3_pile_driver_anim_labels, sizeof(prog_hrt_3_pile_driver_anim_labels) / sizeof(prog_hrt_3_pile_driver_anim_labels[0]) },
     { "hrt_3_face_driver2_anim", "HRTSEQ3.ASM", prog_hrt_3_face_driver2_anim_ops,
-      sizeof(prog_hrt_3_face_driver2_anim_ops) / sizeof(prog_hrt_3_face_driver2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_3_face_driver2_anim_ops) / sizeof(prog_hrt_3_face_driver2_anim_ops[0]), 0, prog_hrt_3_face_driver2_anim_labels, sizeof(prog_hrt_3_face_driver2_anim_labels) / sizeof(prog_hrt_3_face_driver2_anim_labels[0]) },
     { "hrt_combo_rake_face_anim", "HRTSEQ3.ASM", prog_hrt_combo_rake_face_anim_ops,
-      sizeof(prog_hrt_combo_rake_face_anim_ops) / sizeof(prog_hrt_combo_rake_face_anim_ops[0]), 0 },
+      sizeof(prog_hrt_combo_rake_face_anim_ops) / sizeof(prog_hrt_combo_rake_face_anim_ops[0]), 0, prog_hrt_combo_rake_face_anim_labels, sizeof(prog_hrt_combo_rake_face_anim_labels) / sizeof(prog_hrt_combo_rake_face_anim_labels[0]) },
     { "hrt_rake_face_anim", "HRTSEQ3.ASM", prog_hrt_rake_face_anim_ops,
-      sizeof(prog_hrt_rake_face_anim_ops) / sizeof(prog_hrt_rake_face_anim_ops[0]), 0 },
+      sizeof(prog_hrt_rake_face_anim_ops) / sizeof(prog_hrt_rake_face_anim_ops[0]), 0, prog_hrt_rake_face_anim_labels, sizeof(prog_hrt_rake_face_anim_labels) / sizeof(prog_hrt_rake_face_anim_labels[0]) },
     { "xxx_get_face_rake_anim", "HRTSEQ3.ASM", prog_xxx_get_face_rake_anim_ops,
-      sizeof(prog_xxx_get_face_rake_anim_ops) / sizeof(prog_xxx_get_face_rake_anim_ops[0]), 0 },
+      sizeof(prog_xxx_get_face_rake_anim_ops) / sizeof(prog_xxx_get_face_rake_anim_ops[0]), 0, prog_xxx_get_face_rake_anim_labels, sizeof(prog_xxx_get_face_rake_anim_labels) / sizeof(prog_xxx_get_face_rake_anim_labels[0]) },
     { "xxx_get_face_rake2_anim", "HRTSEQ3.ASM", prog_xxx_get_face_rake2_anim_ops,
-      sizeof(prog_xxx_get_face_rake2_anim_ops) / sizeof(prog_xxx_get_face_rake2_anim_ops[0]), 0 },
+      sizeof(prog_xxx_get_face_rake2_anim_ops) / sizeof(prog_xxx_get_face_rake2_anim_ops[0]), 0, prog_xxx_get_face_rake2_anim_labels, sizeof(prog_xxx_get_face_rake2_anim_labels) / sizeof(prog_xxx_get_face_rake2_anim_labels[0]) },
     { "hrt_combo_roll_uppercut_anim", "HRTSEQ3.ASM", prog_hrt_combo_roll_uppercut_anim_ops,
-      sizeof(prog_hrt_combo_roll_uppercut_anim_ops) / sizeof(prog_hrt_combo_roll_uppercut_anim_ops[0]), 0 },
+      sizeof(prog_hrt_combo_roll_uppercut_anim_ops) / sizeof(prog_hrt_combo_roll_uppercut_anim_ops[0]), 0, prog_hrt_combo_roll_uppercut_anim_labels, sizeof(prog_hrt_combo_roll_uppercut_anim_labels) / sizeof(prog_hrt_combo_roll_uppercut_anim_labels[0]) },
     { "hrt_roll_uppercut_anim", "HRTSEQ3.ASM", prog_hrt_roll_uppercut_anim_ops,
-      sizeof(prog_hrt_roll_uppercut_anim_ops) / sizeof(prog_hrt_roll_uppercut_anim_ops[0]), 0 },
+      sizeof(prog_hrt_roll_uppercut_anim_ops) / sizeof(prog_hrt_roll_uppercut_anim_ops[0]), 0, prog_hrt_roll_uppercut_anim_labels, sizeof(prog_hrt_roll_uppercut_anim_labels) / sizeof(prog_hrt_roll_uppercut_anim_labels[0]) },
     { "hrt_4_block_anim", "HRTSEQ4.ASM", prog_hrt_4_block_anim_ops,
-      sizeof(prog_hrt_4_block_anim_ops) / sizeof(prog_hrt_4_block_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_block_anim_ops) / sizeof(prog_hrt_4_block_anim_ops[0]), 0, prog_hrt_4_block_anim_labels, sizeof(prog_hrt_4_block_anim_labels) / sizeof(prog_hrt_4_block_anim_labels[0]) },
     { "hrt_4_hitblock_anim", "HRTSEQ4.ASM", prog_hrt_4_hitblock_anim_ops,
-      sizeof(prog_hrt_4_hitblock_anim_ops) / sizeof(prog_hrt_4_hitblock_anim_ops[0]), 8 },   /* branches back into shared code */
+      sizeof(prog_hrt_4_hitblock_anim_ops) / sizeof(prog_hrt_4_hitblock_anim_ops[0]), 8, prog_hrt_4_hitblock_anim_labels, sizeof(prog_hrt_4_hitblock_anim_labels) / sizeof(prog_hrt_4_hitblock_anim_labels[0]) },   /* branches back into shared code */
     { "hrt_4_hitblock2_anim", "HRTSEQ4.ASM", prog_hrt_4_hitblock2_anim_ops,
-      sizeof(prog_hrt_4_hitblock2_anim_ops) / sizeof(prog_hrt_4_hitblock2_anim_ops[0]), 15 },   /* branches back into shared code */
+      sizeof(prog_hrt_4_hitblock2_anim_ops) / sizeof(prog_hrt_4_hitblock2_anim_ops[0]), 15, prog_hrt_4_hitblock2_anim_labels, sizeof(prog_hrt_4_hitblock2_anim_labels) / sizeof(prog_hrt_4_hitblock2_anim_labels[0]) },   /* branches back into shared code */
     { "hrt_2_head_hit_anim", "HRTSEQ4.ASM", prog_hrt_2_head_hit_anim_ops,
-      sizeof(prog_hrt_2_head_hit_anim_ops) / sizeof(prog_hrt_2_head_hit_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_head_hit_anim_ops) / sizeof(prog_hrt_2_head_hit_anim_ops[0]), 0, 0, 0 },
     { "hrt_2_head_hit3_anim", "HRTSEQ4.ASM", prog_hrt_2_head_hit3_anim_ops,
-      sizeof(prog_hrt_2_head_hit3_anim_ops) / sizeof(prog_hrt_2_head_hit3_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_head_hit3_anim_ops) / sizeof(prog_hrt_2_head_hit3_anim_ops[0]), 0, 0, 0 },
     { "hrt_4_head_hit_anim", "HRTSEQ4.ASM", prog_hrt_4_head_hit_anim_ops,
-      sizeof(prog_hrt_4_head_hit_anim_ops) / sizeof(prog_hrt_4_head_hit_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_head_hit_anim_ops) / sizeof(prog_hrt_4_head_hit_anim_ops[0]), 0, 0, 0 },
     { "hrt_4_head_hit3_anim", "HRTSEQ4.ASM", prog_hrt_4_head_hit3_anim_ops,
-      sizeof(prog_hrt_4_head_hit3_anim_ops) / sizeof(prog_hrt_4_head_hit3_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_head_hit3_anim_ops) / sizeof(prog_hrt_4_head_hit3_anim_ops[0]), 0, 0, 0 },
     { "hrt_4_head_hit4_anim", "HRTSEQ4.ASM", prog_hrt_4_head_hit4_anim_ops,
-      sizeof(prog_hrt_4_head_hit4_anim_ops) / sizeof(prog_hrt_4_head_hit4_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_head_hit4_anim_ops) / sizeof(prog_hrt_4_head_hit4_anim_ops[0]), 0, 0, 0 },
     { "hrt_2_head_hit2_anim", "HRTSEQ4.ASM", prog_hrt_2_head_hit2_anim_ops,
-      sizeof(prog_hrt_2_head_hit2_anim_ops) / sizeof(prog_hrt_2_head_hit2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_head_hit2_anim_ops) / sizeof(prog_hrt_2_head_hit2_anim_ops[0]), 0, 0, 0 },
     { "hrt_4_head_hit2_anim", "HRTSEQ4.ASM", prog_hrt_4_head_hit2_anim_ops,
-      sizeof(prog_hrt_4_head_hit2_anim_ops) / sizeof(prog_hrt_4_head_hit2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_head_hit2_anim_ops) / sizeof(prog_hrt_4_head_hit2_anim_ops[0]), 0, prog_hrt_4_head_hit2_anim_labels, sizeof(prog_hrt_4_head_hit2_anim_labels) / sizeof(prog_hrt_4_head_hit2_anim_labels[0]) },
     { "hrt_4_head_hit2s_anim", "HRTSEQ4.ASM", prog_hrt_4_head_hit2s_anim_ops,
-      sizeof(prog_hrt_4_head_hit2s_anim_ops) / sizeof(prog_hrt_4_head_hit2s_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_head_hit2s_anim_ops) / sizeof(prog_hrt_4_head_hit2s_anim_ops[0]), 0, 0, 0 },
     { "hrt_4_head_hit_dizzy_anim", "HRTSEQ4.ASM", prog_hrt_4_head_hit_dizzy_anim_ops,
-      sizeof(prog_hrt_4_head_hit_dizzy_anim_ops) / sizeof(prog_hrt_4_head_hit_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_head_hit_dizzy_anim_ops) / sizeof(prog_hrt_4_head_hit_dizzy_anim_ops[0]), 0, 0, 0 },
     { "hrt_2_bncoff_anim", "HRTSEQ4.ASM", prog_hrt_2_bncoff_anim_ops,
-      sizeof(prog_hrt_2_bncoff_anim_ops) / sizeof(prog_hrt_2_bncoff_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_bncoff_anim_ops) / sizeof(prog_hrt_2_bncoff_anim_ops[0]), 0, 0, 0 },
     { "hrt_4_bncoff_anim", "HRTSEQ4.ASM", prog_hrt_4_bncoff_anim_ops,
-      sizeof(prog_hrt_4_bncoff_anim_ops) / sizeof(prog_hrt_4_bncoff_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_bncoff_anim_ops) / sizeof(prog_hrt_4_bncoff_anim_ops[0]), 0, 0, 0 },
     { "hrt_4_bncoff_dizzy_anim", "HRTSEQ4.ASM", prog_hrt_4_bncoff_dizzy_anim_ops,
-      sizeof(prog_hrt_4_bncoff_dizzy_anim_ops) / sizeof(prog_hrt_4_bncoff_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_bncoff_dizzy_anim_ops) / sizeof(prog_hrt_4_bncoff_dizzy_anim_ops[0]), 0, 0, 0 },
     { "hrt_2_body_hit_anim", "HRTSEQ4.ASM", prog_hrt_2_body_hit_anim_ops,
-      sizeof(prog_hrt_2_body_hit_anim_ops) / sizeof(prog_hrt_2_body_hit_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_body_hit_anim_ops) / sizeof(prog_hrt_2_body_hit_anim_ops[0]), 0, 0, 0 },
     { "hrt_4_body_hit_anim", "HRTSEQ4.ASM", prog_hrt_4_body_hit_anim_ops,
-      sizeof(prog_hrt_4_body_hit_anim_ops) / sizeof(prog_hrt_4_body_hit_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_body_hit_anim_ops) / sizeof(prog_hrt_4_body_hit_anim_ops[0]), 0, prog_hrt_4_body_hit_anim_labels, sizeof(prog_hrt_4_body_hit_anim_labels) / sizeof(prog_hrt_4_body_hit_anim_labels[0]) },
     { "hrt_4_body_hit_dizzy_anim", "HRTSEQ4.ASM", prog_hrt_4_body_hit_dizzy_anim_ops,
-      sizeof(prog_hrt_4_body_hit_dizzy_anim_ops) / sizeof(prog_hrt_4_body_hit_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_body_hit_dizzy_anim_ops) / sizeof(prog_hrt_4_body_hit_dizzy_anim_ops[0]), 0, 0, 0 },
     { "hrt_2_knee_hit_anim", "HRTSEQ4.ASM", prog_hrt_2_knee_hit_anim_ops,
-      sizeof(prog_hrt_2_knee_hit_anim_ops) / sizeof(prog_hrt_2_knee_hit_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_knee_hit_anim_ops) / sizeof(prog_hrt_2_knee_hit_anim_ops[0]), 0, 0, 0 },
     { "hrt_4_knee_hit_anim", "HRTSEQ4.ASM", prog_hrt_4_knee_hit_anim_ops,
-      sizeof(prog_hrt_4_knee_hit_anim_ops) / sizeof(prog_hrt_4_knee_hit_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_knee_hit_anim_ops) / sizeof(prog_hrt_4_knee_hit_anim_ops[0]), 0, 0, 0 },
     { "hrt_4_knee_hit_dizzy_anim", "HRTSEQ4.ASM", prog_hrt_4_knee_hit_dizzy_anim_ops,
-      sizeof(prog_hrt_4_knee_hit_dizzy_anim_ops) / sizeof(prog_hrt_4_knee_hit_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_knee_hit_dizzy_anim_ops) / sizeof(prog_hrt_4_knee_hit_dizzy_anim_ops[0]), 0, 0, 0 },
     { "hrt_quick_knee_hit_anim", "HRTSEQ4.ASM", prog_hrt_quick_knee_hit_anim_ops,
-      sizeof(prog_hrt_quick_knee_hit_anim_ops) / sizeof(prog_hrt_quick_knee_hit_anim_ops[0]), 0 },
+      sizeof(prog_hrt_quick_knee_hit_anim_ops) / sizeof(prog_hrt_quick_knee_hit_anim_ops[0]), 0, prog_hrt_quick_knee_hit_anim_labels, sizeof(prog_hrt_quick_knee_hit_anim_labels) / sizeof(prog_hrt_quick_knee_hit_anim_labels[0]) },
     { "hrt_up_anim", "HRTSEQ4.ASM", prog_hrt_up_anim_ops,
-      sizeof(prog_hrt_up_anim_ops) / sizeof(prog_hrt_up_anim_ops[0]), 0 },
+      sizeof(prog_hrt_up_anim_ops) / sizeof(prog_hrt_up_anim_ops[0]), 0, 0, 0 },
     { "hrt_hitonground_anim", "HRTSEQ4.ASM", prog_hrt_hitonground_anim_ops,
-      sizeof(prog_hrt_hitonground_anim_ops) / sizeof(prog_hrt_hitonground_anim_ops[0]), 0 },
+      sizeof(prog_hrt_hitonground_anim_ops) / sizeof(prog_hrt_hitonground_anim_ops[0]), 0, 0, 0 },
     { "hrt_liedown_anim", "HRTSEQ4.ASM", prog_hrt_liedown_anim_ops,
-      sizeof(prog_hrt_liedown_anim_ops) / sizeof(prog_hrt_liedown_anim_ops[0]), 0 },
+      sizeof(prog_hrt_liedown_anim_ops) / sizeof(prog_hrt_liedown_anim_ops[0]), 0, 0, 0 },
     { "hrt_hitonground_facedown_anim", "HRTSEQ4.ASM", prog_hrt_hitonground_facedown_anim_ops,
-      sizeof(prog_hrt_hitonground_facedown_anim_ops) / sizeof(prog_hrt_hitonground_facedown_anim_ops[0]), 0 },
+      sizeof(prog_hrt_hitonground_facedown_anim_ops) / sizeof(prog_hrt_hitonground_facedown_anim_ops[0]), 0, 0, 0 },
     { "hrt_fall_back_anim", "HRTSEQ4.ASM", prog_hrt_fall_back_anim_ops,
-      sizeof(prog_hrt_fall_back_anim_ops) / sizeof(prog_hrt_fall_back_anim_ops[0]), 0 },
+      sizeof(prog_hrt_fall_back_anim_ops) / sizeof(prog_hrt_fall_back_anim_ops[0]), 0, 0, 0 },
     { "hrt_fall_back2_anim", "HRTSEQ4.ASM", prog_hrt_fall_back2_anim_ops,
-      sizeof(prog_hrt_fall_back2_anim_ops) / sizeof(prog_hrt_fall_back2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_fall_back2_anim_ops) / sizeof(prog_hrt_fall_back2_anim_ops[0]), 0, 0, 0 },
     { "hrt_fall_back_tbukl_anim", "HRTSEQ4.ASM", prog_hrt_fall_back_tbukl_anim_ops,
-      sizeof(prog_hrt_fall_back_tbukl_anim_ops) / sizeof(prog_hrt_fall_back_tbukl_anim_ops[0]), 0 },
+      sizeof(prog_hrt_fall_back_tbukl_anim_ops) / sizeof(prog_hrt_fall_back_tbukl_anim_ops[0]), 0, 0, 0 },
     { "hrt_faceup_getup_anim", "HRTSEQ4.ASM", prog_hrt_faceup_getup_anim_ops,
-      sizeof(prog_hrt_faceup_getup_anim_ops) / sizeof(prog_hrt_faceup_getup_anim_ops[0]), 0 },
+      sizeof(prog_hrt_faceup_getup_anim_ops) / sizeof(prog_hrt_faceup_getup_anim_ops[0]), 0, prog_hrt_faceup_getup_anim_labels, sizeof(prog_hrt_faceup_getup_anim_labels) / sizeof(prog_hrt_faceup_getup_anim_labels[0]) },
     { "hrt_4_faceup_getup2_anim", "HRTSEQ4.ASM", prog_hrt_4_faceup_getup2_anim_ops,
-      sizeof(prog_hrt_4_faceup_getup2_anim_ops) / sizeof(prog_hrt_4_faceup_getup2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_faceup_getup2_anim_ops) / sizeof(prog_hrt_4_faceup_getup2_anim_ops[0]), 0, prog_hrt_4_faceup_getup2_anim_labels, sizeof(prog_hrt_4_faceup_getup2_anim_labels) / sizeof(prog_hrt_4_faceup_getup2_anim_labels[0]) },
     { "hrt_facedown_getup_anim", "HRTSEQ4.ASM", prog_hrt_facedown_getup_anim_ops,
-      sizeof(prog_hrt_facedown_getup_anim_ops) / sizeof(prog_hrt_facedown_getup_anim_ops[0]), 0 },
+      sizeof(prog_hrt_facedown_getup_anim_ops) / sizeof(prog_hrt_facedown_getup_anim_ops[0]), 0, prog_hrt_facedown_getup_anim_labels, sizeof(prog_hrt_facedown_getup_anim_labels) / sizeof(prog_hrt_facedown_getup_anim_labels[0]) },
     { "hrt_dizzy_anim", "HRTSEQ4.ASM", prog_hrt_dizzy_anim_ops,
-      sizeof(prog_hrt_dizzy_anim_ops) / sizeof(prog_hrt_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_hrt_dizzy_anim_ops) / sizeof(prog_hrt_dizzy_anim_ops[0]), 0, prog_hrt_dizzy_anim_labels, sizeof(prog_hrt_dizzy_anim_labels) / sizeof(prog_hrt_dizzy_anim_labels[0]) },
     { "hrt_break_neck_anim", "HRTSEQ4.ASM", prog_hrt_break_neck_anim_ops,
-      sizeof(prog_hrt_break_neck_anim_ops) / sizeof(prog_hrt_break_neck_anim_ops[0]), 0 },
+      sizeof(prog_hrt_break_neck_anim_ops) / sizeof(prog_hrt_break_neck_anim_ops[0]), 0, prog_hrt_break_neck_anim_labels, sizeof(prog_hrt_break_neck_anim_labels) / sizeof(prog_hrt_break_neck_anim_labels[0]) },
     { "hrt_break_neck2_anim", "HRTSEQ4.ASM", prog_hrt_break_neck2_anim_ops,
-      sizeof(prog_hrt_break_neck2_anim_ops) / sizeof(prog_hrt_break_neck2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_break_neck2_anim_ops) / sizeof(prog_hrt_break_neck2_anim_ops[0]), 0, 0, 0 },
     { "hrt_break_neck3_anim", "HRTSEQ4.ASM", prog_hrt_break_neck3_anim_ops,
-      sizeof(prog_hrt_break_neck3_anim_ops) / sizeof(prog_hrt_break_neck3_anim_ops[0]), 0 },
+      sizeof(prog_hrt_break_neck3_anim_ops) / sizeof(prog_hrt_break_neck3_anim_ops[0]), 0, 0, 0 },
     { "hrt_4_losebal_anim", "HRTSEQ4.ASM", prog_hrt_4_losebal_anim_ops,
-      sizeof(prog_hrt_4_losebal_anim_ops) / sizeof(prog_hrt_4_losebal_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_losebal_anim_ops) / sizeof(prog_hrt_4_losebal_anim_ops[0]), 0, 0, 0 },
     { "hrt_4_losebal_dizzy_anim", "HRTSEQ4.ASM", prog_hrt_4_losebal_dizzy_anim_ops,
-      sizeof(prog_hrt_4_losebal_dizzy_anim_ops) / sizeof(prog_hrt_4_losebal_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_losebal_dizzy_anim_ops) / sizeof(prog_hrt_4_losebal_dizzy_anim_ops[0]), 0, 0, 0 },
     { "hrt_get_buzz_anim", "HRTSEQ4.ASM", prog_hrt_get_buzz_anim_ops,
-      sizeof(prog_hrt_get_buzz_anim_ops) / sizeof(prog_hrt_get_buzz_anim_ops[0]), 0 },
+      sizeof(prog_hrt_get_buzz_anim_ops) / sizeof(prog_hrt_get_buzz_anim_ops[0]), 0, prog_hrt_get_buzz_anim_labels, sizeof(prog_hrt_get_buzz_anim_labels) / sizeof(prog_hrt_get_buzz_anim_labels[0]) },
     { "hrt_flyout_anim", "HRTSEQ4.ASM", prog_hrt_flyout_anim_ops,
-      sizeof(prog_hrt_flyout_anim_ops) / sizeof(prog_hrt_flyout_anim_ops[0]), 0 },
+      sizeof(prog_hrt_flyout_anim_ops) / sizeof(prog_hrt_flyout_anim_ops[0]), 0, 0, 0 },
     { "hrt_flyout2_anim", "HRTSEQ4.ASM", prog_hrt_flyout2_anim_ops,
-      sizeof(prog_hrt_flyout2_anim_ops) / sizeof(prog_hrt_flyout2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_flyout2_anim_ops) / sizeof(prog_hrt_flyout2_anim_ops[0]), 0, 0, 0 },
     { "hrt_backbroken_anim", "HRTSEQ4.ASM", prog_hrt_backbroken_anim_ops,
-      sizeof(prog_hrt_backbroken_anim_ops) / sizeof(prog_hrt_backbroken_anim_ops[0]), 0 },
+      sizeof(prog_hrt_backbroken_anim_ops) / sizeof(prog_hrt_backbroken_anim_ops[0]), 0, 0, 0 },
     { "hrt_slamnobounce_anim", "HRTSEQ4.ASM", prog_hrt_slamnobounce_anim_ops,
-      sizeof(prog_hrt_slamnobounce_anim_ops) / sizeof(prog_hrt_slamnobounce_anim_ops[0]), 0 },
+      sizeof(prog_hrt_slamnobounce_anim_ops) / sizeof(prog_hrt_slamnobounce_anim_ops[0]), 0, 0, 0 },
     { "hrt_slambounce_anim", "HRTSEQ4.ASM", prog_hrt_slambounce_anim_ops,
-      sizeof(prog_hrt_slambounce_anim_ops) / sizeof(prog_hrt_slambounce_anim_ops[0]), 0 },
+      sizeof(prog_hrt_slambounce_anim_ops) / sizeof(prog_hrt_slambounce_anim_ops[0]), 0, 0, 0 },
     { "hrt_slambounce2_anim", "HRTSEQ4.ASM", prog_hrt_slambounce2_anim_ops,
-      sizeof(prog_hrt_slambounce2_anim_ops) / sizeof(prog_hrt_slambounce2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_slambounce2_anim_ops) / sizeof(prog_hrt_slambounce2_anim_ops[0]), 0, 0, 0 },
     { "hrt_breakneck2_anim", "HRTSEQ4.ASM", prog_hrt_breakneck2_anim_ops,
-      sizeof(prog_hrt_breakneck2_anim_ops) / sizeof(prog_hrt_breakneck2_anim_ops[0]), 0 },
+      sizeof(prog_hrt_breakneck2_anim_ops) / sizeof(prog_hrt_breakneck2_anim_ops[0]), 0, 0, 0 },
     { "hrt_arm_broken_anim", "HRTSEQ4.ASM", prog_hrt_arm_broken_anim_ops,
-      sizeof(prog_hrt_arm_broken_anim_ops) / sizeof(prog_hrt_arm_broken_anim_ops[0]), 0 },
+      sizeof(prog_hrt_arm_broken_anim_ops) / sizeof(prog_hrt_arm_broken_anim_ops[0]), 0, prog_hrt_arm_broken_anim_labels, sizeof(prog_hrt_arm_broken_anim_labels) / sizeof(prog_hrt_arm_broken_anim_labels[0]) },
     { "hrt_2_shooter_anim", "HRTSEQ4.ASM", prog_hrt_2_shooter_anim_ops,
-      sizeof(prog_hrt_2_shooter_anim_ops) / sizeof(prog_hrt_2_shooter_anim_ops[0]), 0 },
+      sizeof(prog_hrt_2_shooter_anim_ops) / sizeof(prog_hrt_2_shooter_anim_ops[0]), 0, prog_hrt_2_shooter_anim_labels, sizeof(prog_hrt_2_shooter_anim_labels) / sizeof(prog_hrt_2_shooter_anim_labels[0]) },
     { "hrt_4_shooter_anim", "HRTSEQ4.ASM", prog_hrt_4_shooter_anim_ops,
-      sizeof(prog_hrt_4_shooter_anim_ops) / sizeof(prog_hrt_4_shooter_anim_ops[0]), 0 },
+      sizeof(prog_hrt_4_shooter_anim_ops) / sizeof(prog_hrt_4_shooter_anim_ops[0]), 0, prog_hrt_4_shooter_anim_labels, sizeof(prog_hrt_4_shooter_anim_labels) / sizeof(prog_hrt_4_shooter_anim_labels[0]) },
     { "lex_zip_anim", "LEXSEQ1.ASM", prog_lex_zip_anim_ops,
-      sizeof(prog_lex_zip_anim_ops) / sizeof(prog_lex_zip_anim_ops[0]), 0 },
+      sizeof(prog_lex_zip_anim_ops) / sizeof(prog_lex_zip_anim_ops[0]), 0, 0, 0 },
     { "lex_stand2_anim", "LEXSEQ1.ASM", prog_lex_stand2_anim_ops,
-      sizeof(prog_lex_stand2_anim_ops) / sizeof(prog_lex_stand2_anim_ops[0]), 0 },
+      sizeof(prog_lex_stand2_anim_ops) / sizeof(prog_lex_stand2_anim_ops[0]), 0, 0, 0 },
     { "lex_stand8_anim", "LEXSEQ1.ASM", prog_lex_stand8_anim_ops,
-      sizeof(prog_lex_stand8_anim_ops) / sizeof(prog_lex_stand8_anim_ops[0]), 0 },
+      sizeof(prog_lex_stand8_anim_ops) / sizeof(prog_lex_stand8_anim_ops[0]), 0, 0, 0 },
     { "lex_stand4_anim", "LEXSEQ1.ASM", prog_lex_stand4_anim_ops,
-      sizeof(prog_lex_stand4_anim_ops) / sizeof(prog_lex_stand4_anim_ops[0]), 0 },
+      sizeof(prog_lex_stand4_anim_ops) / sizeof(prog_lex_stand4_anim_ops[0]), 0, 0, 0 },
     { "lex_stand6_anim", "LEXSEQ1.ASM", prog_lex_stand6_anim_ops,
-      sizeof(prog_lex_stand6_anim_ops) / sizeof(prog_lex_stand6_anim_ops[0]), 0 },
+      sizeof(prog_lex_stand6_anim_ops) / sizeof(prog_lex_stand6_anim_ops[0]), 0, 0, 0 },
     { "lex_holdoh_anim", "LEXSEQ1.ASM", prog_lex_holdoh_anim_ops,
-      sizeof(prog_lex_holdoh_anim_ops) / sizeof(prog_lex_holdoh_anim_ops[0]), 0 },
+      sizeof(prog_lex_holdoh_anim_ops) / sizeof(prog_lex_holdoh_anim_ops[0]), 0, 0, 0 },
     { "lex_stndholdoh_anim", "LEXSEQ1.ASM", prog_lex_stndholdoh_anim_ops,
-      sizeof(prog_lex_stndholdoh_anim_ops) / sizeof(prog_lex_stndholdoh_anim_ops[0]), 0 },
+      sizeof(prog_lex_stndholdoh_anim_ops) / sizeof(prog_lex_stndholdoh_anim_ops[0]), 0, 0, 0 },
     { "lex_torso2_anim", "LEXSEQ1.ASM", prog_lex_torso2_anim_ops,
-      sizeof(prog_lex_torso2_anim_ops) / sizeof(prog_lex_torso2_anim_ops[0]), 0 },
+      sizeof(prog_lex_torso2_anim_ops) / sizeof(prog_lex_torso2_anim_ops[0]), 0, 0, 0 },
     { "lex_torso8_anim", "LEXSEQ1.ASM", prog_lex_torso8_anim_ops,
-      sizeof(prog_lex_torso8_anim_ops) / sizeof(prog_lex_torso8_anim_ops[0]), 0 },
+      sizeof(prog_lex_torso8_anim_ops) / sizeof(prog_lex_torso8_anim_ops[0]), 0, 0, 0 },
     { "lex_torso4_anim", "LEXSEQ1.ASM", prog_lex_torso4_anim_ops,
-      sizeof(prog_lex_torso4_anim_ops) / sizeof(prog_lex_torso4_anim_ops[0]), 0 },
+      sizeof(prog_lex_torso4_anim_ops) / sizeof(prog_lex_torso4_anim_ops[0]), 0, 0, 0 },
     { "lex_torso6_anim", "LEXSEQ1.ASM", prog_lex_torso6_anim_ops,
-      sizeof(prog_lex_torso6_anim_ops) / sizeof(prog_lex_torso6_anim_ops[0]), 0 },
+      sizeof(prog_lex_torso6_anim_ops) / sizeof(prog_lex_torso6_anim_ops[0]), 0, 0, 0 },
     { "lex_walk1_f2_anim", "LEXSEQ1.ASM", prog_lex_walk1_f2_anim_ops,
-      sizeof(prog_lex_walk1_f2_anim_ops) / sizeof(prog_lex_walk1_f2_anim_ops[0]), 0 },
+      sizeof(prog_lex_walk1_f2_anim_ops) / sizeof(prog_lex_walk1_f2_anim_ops[0]), 0, 0, 0 },
     { "lex_walk2_f2_anim", "LEXSEQ1.ASM", prog_lex_walk2_f2_anim_ops,
-      sizeof(prog_lex_walk2_f2_anim_ops) / sizeof(prog_lex_walk2_f2_anim_ops[0]), 0 },
+      sizeof(prog_lex_walk2_f2_anim_ops) / sizeof(prog_lex_walk2_f2_anim_ops[0]), 0, 0, 0 },
     { "lex_walk4_f2_anim", "LEXSEQ1.ASM", prog_lex_walk4_f2_anim_ops,
-      sizeof(prog_lex_walk4_f2_anim_ops) / sizeof(prog_lex_walk4_f2_anim_ops[0]), 0 },
+      sizeof(prog_lex_walk4_f2_anim_ops) / sizeof(prog_lex_walk4_f2_anim_ops[0]), 0, 0, 0 },
     { "lex_walk5_f2_anim", "LEXSEQ1.ASM", prog_lex_walk5_f2_anim_ops,
-      sizeof(prog_lex_walk5_f2_anim_ops) / sizeof(prog_lex_walk5_f2_anim_ops[0]), 0 },
+      sizeof(prog_lex_walk5_f2_anim_ops) / sizeof(prog_lex_walk5_f2_anim_ops[0]), 0, 0, 0 },
     { "lex_walk6_f2_anim", "LEXSEQ1.ASM", prog_lex_walk6_f2_anim_ops,
-      sizeof(prog_lex_walk6_f2_anim_ops) / sizeof(prog_lex_walk6_f2_anim_ops[0]), 0 },
+      sizeof(prog_lex_walk6_f2_anim_ops) / sizeof(prog_lex_walk6_f2_anim_ops[0]), 0, 0, 0 },
     { "lex_walk8_f2_anim", "LEXSEQ1.ASM", prog_lex_walk8_f2_anim_ops,
-      sizeof(prog_lex_walk8_f2_anim_ops) / sizeof(prog_lex_walk8_f2_anim_ops[0]), 0 },
+      sizeof(prog_lex_walk8_f2_anim_ops) / sizeof(prog_lex_walk8_f2_anim_ops[0]), 0, 0, 0 },
     { "lex_walk1_f4_anim", "LEXSEQ1.ASM", prog_lex_walk1_f4_anim_ops,
-      sizeof(prog_lex_walk1_f4_anim_ops) / sizeof(prog_lex_walk1_f4_anim_ops[0]), 0 },
+      sizeof(prog_lex_walk1_f4_anim_ops) / sizeof(prog_lex_walk1_f4_anim_ops[0]), 0, 0, 0 },
     { "lex_walk2_f4_anim", "LEXSEQ1.ASM", prog_lex_walk2_f4_anim_ops,
-      sizeof(prog_lex_walk2_f4_anim_ops) / sizeof(prog_lex_walk2_f4_anim_ops[0]), 0 },
+      sizeof(prog_lex_walk2_f4_anim_ops) / sizeof(prog_lex_walk2_f4_anim_ops[0]), 0, 0, 0 },
     { "lex_walk4_f4_anim", "LEXSEQ1.ASM", prog_lex_walk4_f4_anim_ops,
-      sizeof(prog_lex_walk4_f4_anim_ops) / sizeof(prog_lex_walk4_f4_anim_ops[0]), 0 },
+      sizeof(prog_lex_walk4_f4_anim_ops) / sizeof(prog_lex_walk4_f4_anim_ops[0]), 0, 0, 0 },
     { "lex_walk5_f4_anim", "LEXSEQ1.ASM", prog_lex_walk5_f4_anim_ops,
-      sizeof(prog_lex_walk5_f4_anim_ops) / sizeof(prog_lex_walk5_f4_anim_ops[0]), 0 },
+      sizeof(prog_lex_walk5_f4_anim_ops) / sizeof(prog_lex_walk5_f4_anim_ops[0]), 0, 0, 0 },
     { "lex_walk6_f4_anim", "LEXSEQ1.ASM", prog_lex_walk6_f4_anim_ops,
-      sizeof(prog_lex_walk6_f4_anim_ops) / sizeof(prog_lex_walk6_f4_anim_ops[0]), 0 },
+      sizeof(prog_lex_walk6_f4_anim_ops) / sizeof(prog_lex_walk6_f4_anim_ops[0]), 0, 0, 0 },
     { "lex_walk8_f4_anim", "LEXSEQ1.ASM", prog_lex_walk8_f4_anim_ops,
-      sizeof(prog_lex_walk8_f4_anim_ops) / sizeof(prog_lex_walk8_f4_anim_ops[0]), 0 },
+      sizeof(prog_lex_walk8_f4_anim_ops) / sizeof(prog_lex_walk8_f4_anim_ops[0]), 0, 0, 0 },
     { "lex_2_to_4_turn_anim", "LEXSEQ1.ASM", prog_lex_2_to_4_turn_anim_ops,
-      sizeof(prog_lex_2_to_4_turn_anim_ops) / sizeof(prog_lex_2_to_4_turn_anim_ops[0]), 0 },
+      sizeof(prog_lex_2_to_4_turn_anim_ops) / sizeof(prog_lex_2_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "lex_8_to_6_turn_anim", "LEXSEQ1.ASM", prog_lex_8_to_6_turn_anim_ops,
-      sizeof(prog_lex_8_to_6_turn_anim_ops) / sizeof(prog_lex_8_to_6_turn_anim_ops[0]), 0 },
+      sizeof(prog_lex_8_to_6_turn_anim_ops) / sizeof(prog_lex_8_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "lex_4_to_2_turn_anim", "LEXSEQ1.ASM", prog_lex_4_to_2_turn_anim_ops,
-      sizeof(prog_lex_4_to_2_turn_anim_ops) / sizeof(prog_lex_4_to_2_turn_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_to_2_turn_anim_ops) / sizeof(prog_lex_4_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "lex_6_to_8_turn_anim", "LEXSEQ1.ASM", prog_lex_6_to_8_turn_anim_ops,
-      sizeof(prog_lex_6_to_8_turn_anim_ops) / sizeof(prog_lex_6_to_8_turn_anim_ops[0]), 0 },
+      sizeof(prog_lex_6_to_8_turn_anim_ops) / sizeof(prog_lex_6_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "lex_4_to_6_turn_anim", "LEXSEQ1.ASM", prog_lex_4_to_6_turn_anim_ops,
-      sizeof(prog_lex_4_to_6_turn_anim_ops) / sizeof(prog_lex_4_to_6_turn_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_to_6_turn_anim_ops) / sizeof(prog_lex_4_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "lex_6_to_4_turn_anim", "LEXSEQ1.ASM", prog_lex_6_to_4_turn_anim_ops,
-      sizeof(prog_lex_6_to_4_turn_anim_ops) / sizeof(prog_lex_6_to_4_turn_anim_ops[0]), 0 },
+      sizeof(prog_lex_6_to_4_turn_anim_ops) / sizeof(prog_lex_6_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "lex_2_to_8_turn_anim", "LEXSEQ1.ASM", prog_lex_2_to_8_turn_anim_ops,
-      sizeof(prog_lex_2_to_8_turn_anim_ops) / sizeof(prog_lex_2_to_8_turn_anim_ops[0]), 0 },
+      sizeof(prog_lex_2_to_8_turn_anim_ops) / sizeof(prog_lex_2_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "lex_8_to_2_turn_anim", "LEXSEQ1.ASM", prog_lex_8_to_2_turn_anim_ops,
-      sizeof(prog_lex_8_to_2_turn_anim_ops) / sizeof(prog_lex_8_to_2_turn_anim_ops[0]), 0 },
+      sizeof(prog_lex_8_to_2_turn_anim_ops) / sizeof(prog_lex_8_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "lex_4_to_8_turn_anim", "LEXSEQ1.ASM", prog_lex_4_to_8_turn_anim_ops,
-      sizeof(prog_lex_4_to_8_turn_anim_ops) / sizeof(prog_lex_4_to_8_turn_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_to_8_turn_anim_ops) / sizeof(prog_lex_4_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "lex_6_to_2_turn_anim", "LEXSEQ1.ASM", prog_lex_6_to_2_turn_anim_ops,
-      sizeof(prog_lex_6_to_2_turn_anim_ops) / sizeof(prog_lex_6_to_2_turn_anim_ops[0]), 0 },
+      sizeof(prog_lex_6_to_2_turn_anim_ops) / sizeof(prog_lex_6_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "lex_2_to_6_turn_anim", "LEXSEQ1.ASM", prog_lex_2_to_6_turn_anim_ops,
-      sizeof(prog_lex_2_to_6_turn_anim_ops) / sizeof(prog_lex_2_to_6_turn_anim_ops[0]), 0 },
+      sizeof(prog_lex_2_to_6_turn_anim_ops) / sizeof(prog_lex_2_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "lex_8_to_4_turn_anim", "LEXSEQ1.ASM", prog_lex_8_to_4_turn_anim_ops,
-      sizeof(prog_lex_8_to_4_turn_anim_ops) / sizeof(prog_lex_8_to_4_turn_anim_ops[0]), 0 },
+      sizeof(prog_lex_8_to_4_turn_anim_ops) / sizeof(prog_lex_8_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "lex_2_to_4_turn2_anim", "LEXSEQ1.ASM", prog_lex_2_to_4_turn2_anim_ops,
-      sizeof(prog_lex_2_to_4_turn2_anim_ops) / sizeof(prog_lex_2_to_4_turn2_anim_ops[0]), 0 },
+      sizeof(prog_lex_2_to_4_turn2_anim_ops) / sizeof(prog_lex_2_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "lex_8_to_6_turn2_anim", "LEXSEQ1.ASM", prog_lex_8_to_6_turn2_anim_ops,
-      sizeof(prog_lex_8_to_6_turn2_anim_ops) / sizeof(prog_lex_8_to_6_turn2_anim_ops[0]), 0 },
+      sizeof(prog_lex_8_to_6_turn2_anim_ops) / sizeof(prog_lex_8_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "lex_4_to_2_turn2_anim", "LEXSEQ1.ASM", prog_lex_4_to_2_turn2_anim_ops,
-      sizeof(prog_lex_4_to_2_turn2_anim_ops) / sizeof(prog_lex_4_to_2_turn2_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_to_2_turn2_anim_ops) / sizeof(prog_lex_4_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "lex_6_to_8_turn2_anim", "LEXSEQ1.ASM", prog_lex_6_to_8_turn2_anim_ops,
-      sizeof(prog_lex_6_to_8_turn2_anim_ops) / sizeof(prog_lex_6_to_8_turn2_anim_ops[0]), 0 },
+      sizeof(prog_lex_6_to_8_turn2_anim_ops) / sizeof(prog_lex_6_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "lex_4_to_6_turn2_anim", "LEXSEQ1.ASM", prog_lex_4_to_6_turn2_anim_ops,
-      sizeof(prog_lex_4_to_6_turn2_anim_ops) / sizeof(prog_lex_4_to_6_turn2_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_to_6_turn2_anim_ops) / sizeof(prog_lex_4_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "lex_6_to_4_turn2_anim", "LEXSEQ1.ASM", prog_lex_6_to_4_turn2_anim_ops,
-      sizeof(prog_lex_6_to_4_turn2_anim_ops) / sizeof(prog_lex_6_to_4_turn2_anim_ops[0]), 0 },
+      sizeof(prog_lex_6_to_4_turn2_anim_ops) / sizeof(prog_lex_6_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "lex_2_to_8_turn2_anim", "LEXSEQ1.ASM", prog_lex_2_to_8_turn2_anim_ops,
-      sizeof(prog_lex_2_to_8_turn2_anim_ops) / sizeof(prog_lex_2_to_8_turn2_anim_ops[0]), 0 },
+      sizeof(prog_lex_2_to_8_turn2_anim_ops) / sizeof(prog_lex_2_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "lex_8_to_2_turn2_anim", "LEXSEQ1.ASM", prog_lex_8_to_2_turn2_anim_ops,
-      sizeof(prog_lex_8_to_2_turn2_anim_ops) / sizeof(prog_lex_8_to_2_turn2_anim_ops[0]), 0 },
+      sizeof(prog_lex_8_to_2_turn2_anim_ops) / sizeof(prog_lex_8_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "lex_4_to_8_turn2_anim", "LEXSEQ1.ASM", prog_lex_4_to_8_turn2_anim_ops,
-      sizeof(prog_lex_4_to_8_turn2_anim_ops) / sizeof(prog_lex_4_to_8_turn2_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_to_8_turn2_anim_ops) / sizeof(prog_lex_4_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "lex_6_to_2_turn2_anim", "LEXSEQ1.ASM", prog_lex_6_to_2_turn2_anim_ops,
-      sizeof(prog_lex_6_to_2_turn2_anim_ops) / sizeof(prog_lex_6_to_2_turn2_anim_ops[0]), 0 },
+      sizeof(prog_lex_6_to_2_turn2_anim_ops) / sizeof(prog_lex_6_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "lex_2_to_6_turn2_anim", "LEXSEQ1.ASM", prog_lex_2_to_6_turn2_anim_ops,
-      sizeof(prog_lex_2_to_6_turn2_anim_ops) / sizeof(prog_lex_2_to_6_turn2_anim_ops[0]), 0 },
+      sizeof(prog_lex_2_to_6_turn2_anim_ops) / sizeof(prog_lex_2_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "lex_8_to_4_turn2_anim", "LEXSEQ1.ASM", prog_lex_8_to_4_turn2_anim_ops,
-      sizeof(prog_lex_8_to_4_turn2_anim_ops) / sizeof(prog_lex_8_to_4_turn2_anim_ops[0]), 0 },
+      sizeof(prog_lex_8_to_4_turn2_anim_ops) / sizeof(prog_lex_8_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "lex_run2_anim", "LEXSEQ1.ASM", prog_lex_run2_anim_ops,
-      sizeof(prog_lex_run2_anim_ops) / sizeof(prog_lex_run2_anim_ops[0]), 0 },
+      sizeof(prog_lex_run2_anim_ops) / sizeof(prog_lex_run2_anim_ops[0]), 0, prog_lex_run2_anim_labels, sizeof(prog_lex_run2_anim_labels) / sizeof(prog_lex_run2_anim_labels[0]) },
     { "lex_run_anim", "LEXSEQ1.ASM", prog_lex_run_anim_ops,
-      sizeof(prog_lex_run_anim_ops) / sizeof(prog_lex_run_anim_ops[0]), 0 },
+      sizeof(prog_lex_run_anim_ops) / sizeof(prog_lex_run_anim_ops[0]), 0, prog_lex_run_anim_labels, sizeof(prog_lex_run_anim_labels) / sizeof(prog_lex_run_anim_labels[0]) },
     { "lex_bounce_anim", "LEXSEQ1.ASM", prog_lex_bounce_anim_ops,
-      sizeof(prog_lex_bounce_anim_ops) / sizeof(prog_lex_bounce_anim_ops[0]), 0 },
+      sizeof(prog_lex_bounce_anim_ops) / sizeof(prog_lex_bounce_anim_ops[0]), 0, 0, 0 },
     { "lex_combo_punch_anim", "LEXSEQ2.ASM", prog_lex_combo_punch_anim_ops,
-      sizeof(prog_lex_combo_punch_anim_ops) / sizeof(prog_lex_combo_punch_anim_ops[0]), 0 },
+      sizeof(prog_lex_combo_punch_anim_ops) / sizeof(prog_lex_combo_punch_anim_ops[0]), 0, prog_lex_combo_punch_anim_labels, sizeof(prog_lex_combo_punch_anim_labels) / sizeof(prog_lex_combo_punch_anim_labels[0]) },
     { "lex_2_punch_anim", "LEXSEQ2.ASM", prog_lex_2_punch_anim_ops,
-      sizeof(prog_lex_2_punch_anim_ops) / sizeof(prog_lex_2_punch_anim_ops[0]), 0 },
+      sizeof(prog_lex_2_punch_anim_ops) / sizeof(prog_lex_2_punch_anim_ops[0]), 0, prog_lex_2_punch_anim_labels, sizeof(prog_lex_2_punch_anim_labels) / sizeof(prog_lex_2_punch_anim_labels[0]) },
     { "lex_4_punch_anim", "LEXSEQ2.ASM", prog_lex_4_punch_anim_ops,
-      sizeof(prog_lex_4_punch_anim_ops) / sizeof(prog_lex_4_punch_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_punch_anim_ops) / sizeof(prog_lex_4_punch_anim_ops[0]), 0, prog_lex_4_punch_anim_labels, sizeof(prog_lex_4_punch_anim_labels) / sizeof(prog_lex_4_punch_anim_labels[0]) },
     { "lex_4_push_anim", "LEXSEQ2.ASM", prog_lex_4_push_anim_ops,
-      sizeof(prog_lex_4_push_anim_ops) / sizeof(prog_lex_4_push_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_push_anim_ops) / sizeof(prog_lex_4_push_anim_ops[0]), 0, prog_lex_4_push_anim_labels, sizeof(prog_lex_4_push_anim_labels) / sizeof(prog_lex_4_push_anim_labels[0]) },
     { "lex_4_losebal_anim", "LEXSEQ2.ASM", prog_lex_4_losebal_anim_ops,
-      sizeof(prog_lex_4_losebal_anim_ops) / sizeof(prog_lex_4_losebal_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_losebal_anim_ops) / sizeof(prog_lex_4_losebal_anim_ops[0]), 0, 0, 0 },
     { "lex_combo_ground_punch_anim", "LEXSEQ2.ASM", prog_lex_combo_ground_punch_anim_ops,
-      sizeof(prog_lex_combo_ground_punch_anim_ops) / sizeof(prog_lex_combo_ground_punch_anim_ops[0]), 0 },
+      sizeof(prog_lex_combo_ground_punch_anim_ops) / sizeof(prog_lex_combo_ground_punch_anim_ops[0]), 0, prog_lex_combo_ground_punch_anim_labels, sizeof(prog_lex_combo_ground_punch_anim_labels) / sizeof(prog_lex_combo_ground_punch_anim_labels[0]) },
     { "lex_2_ground_punch_anim", "LEXSEQ2.ASM", prog_lex_2_ground_punch_anim_ops,
-      sizeof(prog_lex_2_ground_punch_anim_ops) / sizeof(prog_lex_2_ground_punch_anim_ops[0]), 0 },
+      sizeof(prog_lex_2_ground_punch_anim_ops) / sizeof(prog_lex_2_ground_punch_anim_ops[0]), 0, prog_lex_2_ground_punch_anim_labels, sizeof(prog_lex_2_ground_punch_anim_labels) / sizeof(prog_lex_2_ground_punch_anim_labels[0]) },
     { "lex_4_ground_punch_anim", "LEXSEQ2.ASM", prog_lex_4_ground_punch_anim_ops,
-      sizeof(prog_lex_4_ground_punch_anim_ops) / sizeof(prog_lex_4_ground_punch_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_ground_punch_anim_ops) / sizeof(prog_lex_4_ground_punch_anim_ops[0]), 0, prog_lex_4_ground_punch_anim_labels, sizeof(prog_lex_4_ground_punch_anim_labels) / sizeof(prog_lex_4_ground_punch_anim_labels[0]) },
     { "lex_3_clobber_anim", "LEXSEQ2.ASM", prog_lex_3_clobber_anim_ops,
-      sizeof(prog_lex_3_clobber_anim_ops) / sizeof(prog_lex_3_clobber_anim_ops[0]), 0 },
+      sizeof(prog_lex_3_clobber_anim_ops) / sizeof(prog_lex_3_clobber_anim_ops[0]), 0, prog_lex_3_clobber_anim_labels, sizeof(prog_lex_3_clobber_anim_labels) / sizeof(prog_lex_3_clobber_anim_labels[0]) },
     { "lex_combo_clobber_anim", "LEXSEQ2.ASM", prog_lex_combo_clobber_anim_ops,
-      sizeof(prog_lex_combo_clobber_anim_ops) / sizeof(prog_lex_combo_clobber_anim_ops[0]), 0 },
+      sizeof(prog_lex_combo_clobber_anim_ops) / sizeof(prog_lex_combo_clobber_anim_ops[0]), 0, prog_lex_combo_clobber_anim_labels, sizeof(prog_lex_combo_clobber_anim_labels) / sizeof(prog_lex_combo_clobber_anim_labels[0]) },
     { "lex_hammer_anim", "LEXSEQ2.ASM", prog_lex_hammer_anim_ops,
-      sizeof(prog_lex_hammer_anim_ops) / sizeof(prog_lex_hammer_anim_ops[0]), 0 },
+      sizeof(prog_lex_hammer_anim_ops) / sizeof(prog_lex_hammer_anim_ops[0]), 0, prog_lex_hammer_anim_labels, sizeof(prog_lex_hammer_anim_labels) / sizeof(prog_lex_hammer_anim_labels[0]) },
     { "lex_combo_hammer_anim", "LEXSEQ2.ASM", prog_lex_combo_hammer_anim_ops,
-      sizeof(prog_lex_combo_hammer_anim_ops) / sizeof(prog_lex_combo_hammer_anim_ops[0]), 0 },
+      sizeof(prog_lex_combo_hammer_anim_ops) / sizeof(prog_lex_combo_hammer_anim_ops[0]), 0, prog_lex_combo_hammer_anim_labels, sizeof(prog_lex_combo_hammer_anim_labels) / sizeof(prog_lex_combo_hammer_anim_labels[0]) },
     { "lex_2_clobber_anim", "LEXSEQ2.ASM", prog_lex_2_clobber_anim_ops,
-      sizeof(prog_lex_2_clobber_anim_ops) / sizeof(prog_lex_2_clobber_anim_ops[0]), 0 },
+      sizeof(prog_lex_2_clobber_anim_ops) / sizeof(prog_lex_2_clobber_anim_ops[0]), 0, prog_lex_2_clobber_anim_labels, sizeof(prog_lex_2_clobber_anim_labels) / sizeof(prog_lex_2_clobber_anim_labels[0]) },
     { "lex_4_clobber_anim", "LEXSEQ2.ASM", prog_lex_4_clobber_anim_ops,
-      sizeof(prog_lex_4_clobber_anim_ops) / sizeof(prog_lex_4_clobber_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_clobber_anim_ops) / sizeof(prog_lex_4_clobber_anim_ops[0]), 0, prog_lex_4_clobber_anim_labels, sizeof(prog_lex_4_clobber_anim_labels) / sizeof(prog_lex_4_clobber_anim_labels[0]) },
     { "lex_combo_ground_clobber_anim", "LEXSEQ2.ASM", prog_lex_combo_ground_clobber_anim_ops,
-      sizeof(prog_lex_combo_ground_clobber_anim_ops) / sizeof(prog_lex_combo_ground_clobber_anim_ops[0]), 0 },
+      sizeof(prog_lex_combo_ground_clobber_anim_ops) / sizeof(prog_lex_combo_ground_clobber_anim_ops[0]), 0, prog_lex_combo_ground_clobber_anim_labels, sizeof(prog_lex_combo_ground_clobber_anim_labels) / sizeof(prog_lex_combo_ground_clobber_anim_labels[0]) },
     { "lex_2_butt_anim", "LEXSEQ2.ASM", prog_lex_2_butt_anim_ops,
-      sizeof(prog_lex_2_butt_anim_ops) / sizeof(prog_lex_2_butt_anim_ops[0]), 0 },
+      sizeof(prog_lex_2_butt_anim_ops) / sizeof(prog_lex_2_butt_anim_ops[0]), 0, prog_lex_2_butt_anim_labels, sizeof(prog_lex_2_butt_anim_labels) / sizeof(prog_lex_2_butt_anim_labels[0]) },
     { "lex_2_butts_anim", "LEXSEQ2.ASM", prog_lex_2_butts_anim_ops,
-      sizeof(prog_lex_2_butts_anim_ops) / sizeof(prog_lex_2_butts_anim_ops[0]), 0 },
+      sizeof(prog_lex_2_butts_anim_ops) / sizeof(prog_lex_2_butts_anim_ops[0]), 0, prog_lex_2_butts_anim_labels, sizeof(prog_lex_2_butts_anim_labels) / sizeof(prog_lex_2_butts_anim_labels[0]) },
     { "lex_combo_butt_anim", "LEXSEQ2.ASM", prog_lex_combo_butt_anim_ops,
-      sizeof(prog_lex_combo_butt_anim_ops) / sizeof(prog_lex_combo_butt_anim_ops[0]), 0 },
+      sizeof(prog_lex_combo_butt_anim_ops) / sizeof(prog_lex_combo_butt_anim_ops[0]), 0, prog_lex_combo_butt_anim_labels, sizeof(prog_lex_combo_butt_anim_labels) / sizeof(prog_lex_combo_butt_anim_labels[0]) },
     { "lex_4_butt_anim", "LEXSEQ2.ASM", prog_lex_4_butt_anim_ops,
-      sizeof(prog_lex_4_butt_anim_ops) / sizeof(prog_lex_4_butt_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_butt_anim_ops) / sizeof(prog_lex_4_butt_anim_ops[0]), 0, prog_lex_4_butt_anim_labels, sizeof(prog_lex_4_butt_anim_labels) / sizeof(prog_lex_4_butt_anim_labels[0]) },
     { "lex_4_butts_anim", "LEXSEQ2.ASM", prog_lex_4_butts_anim_ops,
-      sizeof(prog_lex_4_butts_anim_ops) / sizeof(prog_lex_4_butts_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_butts_anim_ops) / sizeof(prog_lex_4_butts_anim_ops[0]), 0, prog_lex_4_butts_anim_labels, sizeof(prog_lex_4_butts_anim_labels) / sizeof(prog_lex_4_butts_anim_labels[0]) },
     { "lex_combo_kick_anim", "LEXSEQ2.ASM", prog_lex_combo_kick_anim_ops,
-      sizeof(prog_lex_combo_kick_anim_ops) / sizeof(prog_lex_combo_kick_anim_ops[0]), 0 },
+      sizeof(prog_lex_combo_kick_anim_ops) / sizeof(prog_lex_combo_kick_anim_ops[0]), 0, prog_lex_combo_kick_anim_labels, sizeof(prog_lex_combo_kick_anim_labels) / sizeof(prog_lex_combo_kick_anim_labels[0]) },
     { "lex_kick_TB_anim", "LEXSEQ2.ASM", prog_lex_kick_TB_anim_ops,
-      sizeof(prog_lex_kick_TB_anim_ops) / sizeof(prog_lex_kick_TB_anim_ops[0]), 0 },
+      sizeof(prog_lex_kick_TB_anim_ops) / sizeof(prog_lex_kick_TB_anim_ops[0]), 0, 0, 0 },
     { "lex_2_kick_anim", "LEXSEQ2.ASM", prog_lex_2_kick_anim_ops,
-      sizeof(prog_lex_2_kick_anim_ops) / sizeof(prog_lex_2_kick_anim_ops[0]), 0 },
+      sizeof(prog_lex_2_kick_anim_ops) / sizeof(prog_lex_2_kick_anim_ops[0]), 0, prog_lex_2_kick_anim_labels, sizeof(prog_lex_2_kick_anim_labels) / sizeof(prog_lex_2_kick_anim_labels[0]) },
     { "lex_4_kick_anim", "LEXSEQ2.ASM", prog_lex_4_kick_anim_ops,
-      sizeof(prog_lex_4_kick_anim_ops) / sizeof(prog_lex_4_kick_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_kick_anim_ops) / sizeof(prog_lex_4_kick_anim_ops[0]), 0, prog_lex_4_kick_anim_labels, sizeof(prog_lex_4_kick_anim_labels) / sizeof(prog_lex_4_kick_anim_labels[0]) },
     { "lex_flying_kick_anim", "LEXSEQ2.ASM", prog_lex_flying_kick_anim_ops,
-      sizeof(prog_lex_flying_kick_anim_ops) / sizeof(prog_lex_flying_kick_anim_ops[0]), 0 },
+      sizeof(prog_lex_flying_kick_anim_ops) / sizeof(prog_lex_flying_kick_anim_ops[0]), 0, prog_lex_flying_kick_anim_labels, sizeof(prog_lex_flying_kick_anim_labels) / sizeof(prog_lex_flying_kick_anim_labels[0]) },
     { "lex_super_kick_anim", "LEXSEQ2.ASM", prog_lex_super_kick_anim_ops,
-      sizeof(prog_lex_super_kick_anim_ops) / sizeof(prog_lex_super_kick_anim_ops[0]), 0 },
+      sizeof(prog_lex_super_kick_anim_ops) / sizeof(prog_lex_super_kick_anim_ops[0]), 0, prog_lex_super_kick_anim_labels, sizeof(prog_lex_super_kick_anim_labels) / sizeof(prog_lex_super_kick_anim_labels[0]) },
     { "lex_2_stomp_anim", "LEXSEQ2.ASM", prog_lex_2_stomp_anim_ops,
-      sizeof(prog_lex_2_stomp_anim_ops) / sizeof(prog_lex_2_stomp_anim_ops[0]), 0 },
+      sizeof(prog_lex_2_stomp_anim_ops) / sizeof(prog_lex_2_stomp_anim_ops[0]), 0, prog_lex_2_stomp_anim_labels, sizeof(prog_lex_2_stomp_anim_labels) / sizeof(prog_lex_2_stomp_anim_labels[0]) },
     { "lex_4_stomp_anim", "LEXSEQ2.ASM", prog_lex_4_stomp_anim_ops,
-      sizeof(prog_lex_4_stomp_anim_ops) / sizeof(prog_lex_4_stomp_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_stomp_anim_ops) / sizeof(prog_lex_4_stomp_anim_ops[0]), 0, prog_lex_4_stomp_anim_labels, sizeof(prog_lex_4_stomp_anim_labels) / sizeof(prog_lex_4_stomp_anim_labels[0]) },
     { "lex_flying_ground_punch_anim", "LEXSEQ2.ASM", prog_lex_flying_ground_punch_anim_ops,
-      sizeof(prog_lex_flying_ground_punch_anim_ops) / sizeof(prog_lex_flying_ground_punch_anim_ops[0]), 0 },
+      sizeof(prog_lex_flying_ground_punch_anim_ops) / sizeof(prog_lex_flying_ground_punch_anim_ops[0]), 0, prog_lex_flying_ground_punch_anim_labels, sizeof(prog_lex_flying_ground_punch_anim_labels) / sizeof(prog_lex_flying_ground_punch_anim_labels[0]) },
     { "lex_buckle_leap_anim", "LEXSEQ2.ASM", prog_lex_buckle_leap_anim_ops,
-      sizeof(prog_lex_buckle_leap_anim_ops) / sizeof(prog_lex_buckle_leap_anim_ops[0]), 0 },
+      sizeof(prog_lex_buckle_leap_anim_ops) / sizeof(prog_lex_buckle_leap_anim_ops[0]), 0, prog_lex_buckle_leap_anim_labels, sizeof(prog_lex_buckle_leap_anim_labels) / sizeof(prog_lex_buckle_leap_anim_labels[0]) },
     { "lex_combo_knee_fall_anim", "LEXSEQ2.ASM", prog_lex_combo_knee_fall_anim_ops,
-      sizeof(prog_lex_combo_knee_fall_anim_ops) / sizeof(prog_lex_combo_knee_fall_anim_ops[0]), 0 },
+      sizeof(prog_lex_combo_knee_fall_anim_ops) / sizeof(prog_lex_combo_knee_fall_anim_ops[0]), 0, 0, 0 },
     { "lex_3_knee_to_head_anim", "LEXSEQ2.ASM", prog_lex_3_knee_to_head_anim_ops,
-      sizeof(prog_lex_3_knee_to_head_anim_ops) / sizeof(prog_lex_3_knee_to_head_anim_ops[0]), 0 },
+      sizeof(prog_lex_3_knee_to_head_anim_ops) / sizeof(prog_lex_3_knee_to_head_anim_ops[0]), 0, prog_lex_3_knee_to_head_anim_labels, sizeof(prog_lex_3_knee_to_head_anim_labels) / sizeof(prog_lex_3_knee_to_head_anim_labels[0]) },
     { "lex_4_knee_fall_anim", "LEXSEQ2.ASM", prog_lex_4_knee_fall_anim_ops,
-      sizeof(prog_lex_4_knee_fall_anim_ops) / sizeof(prog_lex_4_knee_fall_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_knee_fall_anim_ops) / sizeof(prog_lex_4_knee_fall_anim_ops[0]), 0, prog_lex_4_knee_fall_anim_labels, sizeof(prog_lex_4_knee_fall_anim_labels) / sizeof(prog_lex_4_knee_fall_anim_labels[0]) },
     { "lex_4_knee2_anim", "LEXSEQ2.ASM", prog_lex_4_knee2_anim_ops,
-      sizeof(prog_lex_4_knee2_anim_ops) / sizeof(prog_lex_4_knee2_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_knee2_anim_ops) / sizeof(prog_lex_4_knee2_anim_ops[0]), 0, prog_lex_4_knee2_anim_labels, sizeof(prog_lex_4_knee2_anim_labels) / sizeof(prog_lex_4_knee2_anim_labels[0]) },
     { "lex_4_knee_anim", "LEXSEQ2.ASM", prog_lex_4_knee_anim_ops,
-      sizeof(prog_lex_4_knee_anim_ops) / sizeof(prog_lex_4_knee_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_knee_anim_ops) / sizeof(prog_lex_4_knee_anim_ops[0]), 0, prog_lex_4_knee_anim_labels, sizeof(prog_lex_4_knee_anim_labels) / sizeof(prog_lex_4_knee_anim_labels[0]) },
     { "lex_2_grabfling_anim", "LEXSEQ2.ASM", prog_lex_2_grabfling_anim_ops,
-      sizeof(prog_lex_2_grabfling_anim_ops) / sizeof(prog_lex_2_grabfling_anim_ops[0]), 0 },
+      sizeof(prog_lex_2_grabfling_anim_ops) / sizeof(prog_lex_2_grabfling_anim_ops[0]), 0, prog_lex_2_grabfling_anim_labels, sizeof(prog_lex_2_grabfling_anim_labels) / sizeof(prog_lex_2_grabfling_anim_labels[0]) },
     { "lex_4_grabfling_anim", "LEXSEQ2.ASM", prog_lex_4_grabfling_anim_ops,
-      sizeof(prog_lex_4_grabfling_anim_ops) / sizeof(prog_lex_4_grabfling_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_grabfling_anim_ops) / sizeof(prog_lex_4_grabfling_anim_ops[0]), 0, prog_lex_4_grabfling_anim_labels, sizeof(prog_lex_4_grabfling_anim_labels) / sizeof(prog_lex_4_grabfling_anim_labels[0]) },
     { "lex_4_bigboot_anim", "LEXSEQ2.ASM", prog_lex_4_bigboot_anim_ops,
-      sizeof(prog_lex_4_bigboot_anim_ops) / sizeof(prog_lex_4_bigboot_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_bigboot_anim_ops) / sizeof(prog_lex_4_bigboot_anim_ops[0]), 0, prog_lex_4_bigboot_anim_labels, sizeof(prog_lex_4_bigboot_anim_labels) / sizeof(prog_lex_4_bigboot_anim_labels[0]) },
     { "lex_2_bncoff_anim", "LEXSEQ2.ASM", prog_lex_2_bncoff_anim_ops,
-      sizeof(prog_lex_2_bncoff_anim_ops) / sizeof(prog_lex_2_bncoff_anim_ops[0]), 0 },
+      sizeof(prog_lex_2_bncoff_anim_ops) / sizeof(prog_lex_2_bncoff_anim_ops[0]), 0, 0, 0 },
     { "lex_4_bncoff_anim", "LEXSEQ2.ASM", prog_lex_4_bncoff_anim_ops,
-      sizeof(prog_lex_4_bncoff_anim_ops) / sizeof(prog_lex_4_bncoff_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_bncoff_anim_ops) / sizeof(prog_lex_4_bncoff_anim_ops[0]), 0, 0, 0 },
     { "lex_4_bncoff_dizzy_anim", "LEXSEQ2.ASM", prog_lex_4_bncoff_dizzy_anim_ops,
-      sizeof(prog_lex_4_bncoff_dizzy_anim_ops) / sizeof(prog_lex_4_bncoff_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_bncoff_dizzy_anim_ops) / sizeof(prog_lex_4_bncoff_dizzy_anim_ops[0]), 0, 0, 0 },
     { "lex_climbthru_side_anim", "LEXSEQ2.ASM", prog_lex_climbthru_side_anim_ops,
-      sizeof(prog_lex_climbthru_side_anim_ops) / sizeof(prog_lex_climbthru_side_anim_ops[0]), 0 },
+      sizeof(prog_lex_climbthru_side_anim_ops) / sizeof(prog_lex_climbthru_side_anim_ops[0]), 0, 0, 0 },
     { "lex_climbin_side_anim", "LEXSEQ2.ASM", prog_lex_climbin_side_anim_ops,
-      sizeof(prog_lex_climbin_side_anim_ops) / sizeof(prog_lex_climbin_side_anim_ops[0]), 0 },
+      sizeof(prog_lex_climbin_side_anim_ops) / sizeof(prog_lex_climbin_side_anim_ops[0]), 0, prog_lex_climbin_side_anim_labels, sizeof(prog_lex_climbin_side_anim_labels) / sizeof(prog_lex_climbin_side_anim_labels[0]) },
     { "lex_climbthru_bot_anim", "LEXSEQ2.ASM", prog_lex_climbthru_bot_anim_ops,
-      sizeof(prog_lex_climbthru_bot_anim_ops) / sizeof(prog_lex_climbthru_bot_anim_ops[0]), 0 },
+      sizeof(prog_lex_climbthru_bot_anim_ops) / sizeof(prog_lex_climbthru_bot_anim_ops[0]), 0, prog_lex_climbthru_bot_anim_labels, sizeof(prog_lex_climbthru_bot_anim_labels) / sizeof(prog_lex_climbthru_bot_anim_labels[0]) },
     { "lex_climbin_bot_anim", "LEXSEQ2.ASM", prog_lex_climbin_bot_anim_ops,
-      sizeof(prog_lex_climbin_bot_anim_ops) / sizeof(prog_lex_climbin_bot_anim_ops[0]), 0 },
+      sizeof(prog_lex_climbin_bot_anim_ops) / sizeof(prog_lex_climbin_bot_anim_ops[0]), 0, 0, 0 },
     { "lex_climbthru_top_anim", "LEXSEQ2.ASM", prog_lex_climbthru_top_anim_ops,
-      sizeof(prog_lex_climbthru_top_anim_ops) / sizeof(prog_lex_climbthru_top_anim_ops[0]), 0 },
+      sizeof(prog_lex_climbthru_top_anim_ops) / sizeof(prog_lex_climbthru_top_anim_ops[0]), 0, prog_lex_climbthru_top_anim_labels, sizeof(prog_lex_climbthru_top_anim_labels) / sizeof(prog_lex_climbthru_top_anim_labels[0]) },
     { "lex_rollthru_top_anim", "LEXSEQ2.ASM", prog_lex_rollthru_top_anim_ops,
-      sizeof(prog_lex_rollthru_top_anim_ops) / sizeof(prog_lex_rollthru_top_anim_ops[0]), 0 },
+      sizeof(prog_lex_rollthru_top_anim_ops) / sizeof(prog_lex_rollthru_top_anim_ops[0]), 0, prog_lex_rollthru_top_anim_labels, sizeof(prog_lex_rollthru_top_anim_labels) / sizeof(prog_lex_rollthru_top_anim_labels[0]) },
     { "lex_climbin_top_anim", "LEXSEQ2.ASM", prog_lex_climbin_top_anim_ops,
-      sizeof(prog_lex_climbin_top_anim_ops) / sizeof(prog_lex_climbin_top_anim_ops[0]), 0 },
+      sizeof(prog_lex_climbin_top_anim_ops) / sizeof(prog_lex_climbin_top_anim_ops[0]), 0, prog_lex_climbin_top_anim_labels, sizeof(prog_lex_climbin_top_anim_labels) / sizeof(prog_lex_climbin_top_anim_labels[0]) },
     { "lex_knockdwn_anim", "LEXSEQ2.ASM", prog_lex_knockdwn_anim_ops,
-      sizeof(prog_lex_knockdwn_anim_ops) / sizeof(prog_lex_knockdwn_anim_ops[0]), 0 },
+      sizeof(prog_lex_knockdwn_anim_ops) / sizeof(prog_lex_knockdwn_anim_ops[0]), 0, prog_lex_knockdwn_anim_labels, sizeof(prog_lex_knockdwn_anim_labels) / sizeof(prog_lex_knockdwn_anim_labels[0]) },
     { "lex_2_pin_anim", "LEXSEQ2.ASM", prog_lex_2_pin_anim_ops,
-      sizeof(prog_lex_2_pin_anim_ops) / sizeof(prog_lex_2_pin_anim_ops[0]), 0 },
+      sizeof(prog_lex_2_pin_anim_ops) / sizeof(prog_lex_2_pin_anim_ops[0]), 0, prog_lex_2_pin_anim_labels, sizeof(prog_lex_2_pin_anim_labels) / sizeof(prog_lex_2_pin_anim_labels[0]) },
     { "lex_4_pin_anim", "LEXSEQ2.ASM", prog_lex_4_pin_anim_ops,
-      sizeof(prog_lex_4_pin_anim_ops) / sizeof(prog_lex_4_pin_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_pin_anim_ops) / sizeof(prog_lex_4_pin_anim_ops[0]), 0, prog_lex_4_pin_anim_labels, sizeof(prog_lex_4_pin_anim_labels) / sizeof(prog_lex_4_pin_anim_labels[0]) },
     { "lex_2_raise_arm_anim", "LEXSEQ2.ASM", prog_lex_2_raise_arm_anim_ops,
-      sizeof(prog_lex_2_raise_arm_anim_ops) / sizeof(prog_lex_2_raise_arm_anim_ops[0]), 0 },
+      sizeof(prog_lex_2_raise_arm_anim_ops) / sizeof(prog_lex_2_raise_arm_anim_ops[0]), 0, prog_lex_2_raise_arm_anim_labels, sizeof(prog_lex_2_raise_arm_anim_labels) / sizeof(prog_lex_2_raise_arm_anim_labels[0]) },
     { "lex_4_raise_arm_anim", "LEXSEQ2.ASM", prog_lex_4_raise_arm_anim_ops,
-      sizeof(prog_lex_4_raise_arm_anim_ops) / sizeof(prog_lex_4_raise_arm_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_raise_arm_anim_ops) / sizeof(prog_lex_4_raise_arm_anim_ops[0]), 0, prog_lex_4_raise_arm_anim_labels, sizeof(prog_lex_4_raise_arm_anim_labels) / sizeof(prog_lex_4_raise_arm_anim_labels[0]) },
     { "lex_buckoff_anim", "LEXSEQ2.ASM", prog_lex_buckoff_anim_ops,
-      sizeof(prog_lex_buckoff_anim_ops) / sizeof(prog_lex_buckoff_anim_ops[0]), 0 },
+      sizeof(prog_lex_buckoff_anim_ops) / sizeof(prog_lex_buckoff_anim_ops[0]), 0, 0, 0 },
     { "lex_heldoh_anim", "LEXSEQ3.ASM", prog_lex_heldoh_anim_ops,
-      sizeof(prog_lex_heldoh_anim_ops) / sizeof(prog_lex_heldoh_anim_ops[0]), 0 },
+      sizeof(prog_lex_heldoh_anim_ops) / sizeof(prog_lex_heldoh_anim_ops[0]), 0, prog_lex_heldoh_anim_labels, sizeof(prog_lex_heldoh_anim_labels) / sizeof(prog_lex_heldoh_anim_labels[0]) },
     { "lex_climb_up_anim", "LEXSEQ3.ASM", prog_lex_climb_up_anim_ops,
-      sizeof(prog_lex_climb_up_anim_ops) / sizeof(prog_lex_climb_up_anim_ops[0]), 0 },
+      sizeof(prog_lex_climb_up_anim_ops) / sizeof(prog_lex_climb_up_anim_ops[0]), 0, prog_lex_climb_up_anim_labels, sizeof(prog_lex_climb_up_anim_labels) / sizeof(prog_lex_climb_up_anim_labels[0]) },
     { "lex_climb_down_anim", "LEXSEQ3.ASM", prog_lex_climb_down_anim_ops,
-      sizeof(prog_lex_climb_down_anim_ops) / sizeof(prog_lex_climb_down_anim_ops[0]), 0 },
+      sizeof(prog_lex_climb_down_anim_ops) / sizeof(prog_lex_climb_down_anim_ops[0]), 0, 0, 0 },
     { "lex_get_buzz_anim", "LEXSEQ3.ASM", prog_lex_get_buzz_anim_ops,
-      sizeof(prog_lex_get_buzz_anim_ops) / sizeof(prog_lex_get_buzz_anim_ops[0]), 0 },
+      sizeof(prog_lex_get_buzz_anim_ops) / sizeof(prog_lex_get_buzz_anim_ops[0]), 0, prog_lex_get_buzz_anim_labels, sizeof(prog_lex_get_buzz_anim_labels) / sizeof(prog_lex_get_buzz_anim_labels[0]) },
     { "lex_3_head_held_anim", "LEXSEQ3.ASM", prog_lex_3_head_held_anim_ops,
-      sizeof(prog_lex_3_head_held_anim_ops) / sizeof(prog_lex_3_head_held_anim_ops[0]), 0 },
+      sizeof(prog_lex_3_head_held_anim_ops) / sizeof(prog_lex_3_head_held_anim_ops[0]), 0, prog_lex_3_head_held_anim_labels, sizeof(prog_lex_3_head_held_anim_labels) / sizeof(prog_lex_3_head_held_anim_labels[0]) },
     { "lex_3_head_held_brk_anim", "LEXSEQ3.ASM", prog_lex_3_head_held_brk_anim_ops,
-      sizeof(prog_lex_3_head_held_brk_anim_ops) / sizeof(prog_lex_3_head_held_brk_anim_ops[0]), 0 },
+      sizeof(prog_lex_3_head_held_brk_anim_ops) / sizeof(prog_lex_3_head_held_brk_anim_ops[0]), 0, prog_lex_3_head_held_brk_anim_labels, sizeof(prog_lex_3_head_held_brk_anim_labels) / sizeof(prog_lex_3_head_held_brk_anim_labels[0]) },
     { "lex_3_head_held_stand_anim", "LEXSEQ3.ASM", prog_lex_3_head_held_stand_anim_ops,
-      sizeof(prog_lex_3_head_held_stand_anim_ops) / sizeof(prog_lex_3_head_held_stand_anim_ops[0]), 0 },
+      sizeof(prog_lex_3_head_held_stand_anim_ops) / sizeof(prog_lex_3_head_held_stand_anim_ops[0]), 0, 0, 0 },
     { "lex_break_neck_anim", "LEXSEQ3.ASM", prog_lex_break_neck_anim_ops,
-      sizeof(prog_lex_break_neck_anim_ops) / sizeof(prog_lex_break_neck_anim_ops[0]), 0 },
+      sizeof(prog_lex_break_neck_anim_ops) / sizeof(prog_lex_break_neck_anim_ops[0]), 0, prog_lex_break_neck_anim_labels, sizeof(prog_lex_break_neck_anim_labels) / sizeof(prog_lex_break_neck_anim_labels[0]) },
     { "lex_break_neck2_anim", "LEXSEQ3.ASM", prog_lex_break_neck2_anim_ops,
-      sizeof(prog_lex_break_neck2_anim_ops) / sizeof(prog_lex_break_neck2_anim_ops[0]), 0 },
+      sizeof(prog_lex_break_neck2_anim_ops) / sizeof(prog_lex_break_neck2_anim_ops[0]), 0, 0, 0 },
     { "lex_break_neck3_anim", "LEXSEQ3.ASM", prog_lex_break_neck3_anim_ops,
-      sizeof(prog_lex_break_neck3_anim_ops) / sizeof(prog_lex_break_neck3_anim_ops[0]), 0 },
+      sizeof(prog_lex_break_neck3_anim_ops) / sizeof(prog_lex_break_neck3_anim_ops[0]), 0, 0, 0 },
     { "lex_break_neck4_anim", "LEXSEQ3.ASM", prog_lex_break_neck4_anim_ops,
-      sizeof(prog_lex_break_neck4_anim_ops) / sizeof(prog_lex_break_neck4_anim_ops[0]), 0 },
+      sizeof(prog_lex_break_neck4_anim_ops) / sizeof(prog_lex_break_neck4_anim_ops[0]), 0, 0, 0 },
     { "lex_2_hair_pickup_anim", "LEXSEQ3.ASM", prog_lex_2_hair_pickup_anim_ops,
-      sizeof(prog_lex_2_hair_pickup_anim_ops) / sizeof(prog_lex_2_hair_pickup_anim_ops[0]), 0 },
+      sizeof(prog_lex_2_hair_pickup_anim_ops) / sizeof(prog_lex_2_hair_pickup_anim_ops[0]), 0, prog_lex_2_hair_pickup_anim_labels, sizeof(prog_lex_2_hair_pickup_anim_labels) / sizeof(prog_lex_2_hair_pickup_anim_labels[0]) },
     { "lex_4_hair_pickup_anim", "LEXSEQ3.ASM", prog_lex_4_hair_pickup_anim_ops,
-      sizeof(prog_lex_4_hair_pickup_anim_ops) / sizeof(prog_lex_4_hair_pickup_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_hair_pickup_anim_ops) / sizeof(prog_lex_4_hair_pickup_anim_ops[0]), 0, prog_lex_4_hair_pickup_anim_labels, sizeof(prog_lex_4_hair_pickup_anim_labels) / sizeof(prog_lex_4_hair_pickup_anim_labels[0]) },
     { "lex_4_taunt_anim", "LEXSEQ3.ASM", prog_lex_4_taunt_anim_ops,
-      sizeof(prog_lex_4_taunt_anim_ops) / sizeof(prog_lex_4_taunt_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_taunt_anim_ops) / sizeof(prog_lex_4_taunt_anim_ops[0]), 0, 0, 0 },
     { "lex_break_face2_anim", "LEXSEQ3.ASM", prog_lex_break_face2_anim_ops,
-      sizeof(prog_lex_break_face2_anim_ops) / sizeof(prog_lex_break_face2_anim_ops[0]), 0 },
+      sizeof(prog_lex_break_face2_anim_ops) / sizeof(prog_lex_break_face2_anim_ops[0]), 0, 0, 0 },
     { "lex_break_face3_anim", "LEXSEQ3.ASM", prog_lex_break_face3_anim_ops,
-      sizeof(prog_lex_break_face3_anim_ops) / sizeof(prog_lex_break_face3_anim_ops[0]), 0 },
+      sizeof(prog_lex_break_face3_anim_ops) / sizeof(prog_lex_break_face3_anim_ops[0]), 0, 0, 0 },
     { "lex_break_face_anim", "LEXSEQ3.ASM", prog_lex_break_face_anim_ops,
-      sizeof(prog_lex_break_face_anim_ops) / sizeof(prog_lex_break_face_anim_ops[0]), 0 },
+      sizeof(prog_lex_break_face_anim_ops) / sizeof(prog_lex_break_face_anim_ops[0]), 0, 0, 0 },
     { "lex_backbroken_anim", "LEXSEQ3.ASM", prog_lex_backbroken_anim_ops,
-      sizeof(prog_lex_backbroken_anim_ops) / sizeof(prog_lex_backbroken_anim_ops[0]), 0 },
+      sizeof(prog_lex_backbroken_anim_ops) / sizeof(prog_lex_backbroken_anim_ops[0]), 0, 0, 0 },
     { "lex_3_fake_hold_anim", "LEXSEQ3.ASM", prog_lex_3_fake_hold_anim_ops,
-      sizeof(prog_lex_3_fake_hold_anim_ops) / sizeof(prog_lex_3_fake_hold_anim_ops[0]), 0 },
+      sizeof(prog_lex_3_fake_hold_anim_ops) / sizeof(prog_lex_3_fake_hold_anim_ops[0]), 0, prog_lex_3_fake_hold_anim_labels, sizeof(prog_lex_3_fake_hold_anim_labels) / sizeof(prog_lex_3_fake_hold_anim_labels[0]) },
     { "lex_3_head_hold2_anim", "LEXSEQ3.ASM", prog_lex_3_head_hold2_anim_ops,
-      sizeof(prog_lex_3_head_hold2_anim_ops) / sizeof(prog_lex_3_head_hold2_anim_ops[0]), 0 },
+      sizeof(prog_lex_3_head_hold2_anim_ops) / sizeof(prog_lex_3_head_hold2_anim_ops[0]), 0, prog_lex_3_head_hold2_anim_labels, sizeof(prog_lex_3_head_hold2_anim_labels) / sizeof(prog_lex_3_head_hold2_anim_labels[0]) },
     { "lex_3_head_hold_anim", "LEXSEQ3.ASM", prog_lex_3_head_hold_anim_ops,
-      sizeof(prog_lex_3_head_hold_anim_ops) / sizeof(prog_lex_3_head_hold_anim_ops[0]), 0 },
+      sizeof(prog_lex_3_head_hold_anim_ops) / sizeof(prog_lex_3_head_hold_anim_ops[0]), 0, prog_lex_3_head_hold_anim_labels, sizeof(prog_lex_3_head_hold_anim_labels) / sizeof(prog_lex_3_head_hold_anim_labels[0]) },
     { "lex_combo_vsuplex_anim", "LEXSEQ3.ASM", prog_lex_combo_vsuplex_anim_ops,
-      sizeof(prog_lex_combo_vsuplex_anim_ops) / sizeof(prog_lex_combo_vsuplex_anim_ops[0]), 0 },
+      sizeof(prog_lex_combo_vsuplex_anim_ops) / sizeof(prog_lex_combo_vsuplex_anim_ops[0]), 0, prog_lex_combo_vsuplex_anim_labels, sizeof(prog_lex_combo_vsuplex_anim_labels) / sizeof(prog_lex_combo_vsuplex_anim_labels[0]) },
     { "lex_vsuplex_anim", "LEXSEQ3.ASM", prog_lex_vsuplex_anim_ops,
-      sizeof(prog_lex_vsuplex_anim_ops) / sizeof(prog_lex_vsuplex_anim_ops[0]), 0 },
+      sizeof(prog_lex_vsuplex_anim_ops) / sizeof(prog_lex_vsuplex_anim_ops[0]), 0, prog_lex_vsuplex_anim_labels, sizeof(prog_lex_vsuplex_anim_labels) / sizeof(prog_lex_vsuplex_anim_labels[0]) },
     { "lex_4_graboh_anim", "LEXSEQ3.ASM", prog_lex_4_graboh_anim_ops,
-      sizeof(prog_lex_4_graboh_anim_ops) / sizeof(prog_lex_4_graboh_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_graboh_anim_ops) / sizeof(prog_lex_4_graboh_anim_ops[0]), 0, prog_lex_4_graboh_anim_labels, sizeof(prog_lex_4_graboh_anim_labels) / sizeof(prog_lex_4_graboh_anim_labels[0]) },
     { "lex_slamdown_anim", "LEXSEQ3.ASM", prog_lex_slamdown_anim_ops,
-      sizeof(prog_lex_slamdown_anim_ops) / sizeof(prog_lex_slamdown_anim_ops[0]), 0 },
+      sizeof(prog_lex_slamdown_anim_ops) / sizeof(prog_lex_slamdown_anim_ops[0]), 0, prog_lex_slamdown_anim_labels, sizeof(prog_lex_slamdown_anim_labels) / sizeof(prog_lex_slamdown_anim_labels[0]) },
     { "lex_combo_backbreak_anim", "LEXSEQ3.ASM", prog_lex_combo_backbreak_anim_ops,
-      sizeof(prog_lex_combo_backbreak_anim_ops) / sizeof(prog_lex_combo_backbreak_anim_ops[0]), 0 },
+      sizeof(prog_lex_combo_backbreak_anim_ops) / sizeof(prog_lex_combo_backbreak_anim_ops[0]), 0, prog_lex_combo_backbreak_anim_labels, sizeof(prog_lex_combo_backbreak_anim_labels) / sizeof(prog_lex_combo_backbreak_anim_labels[0]) },
     { "lex_backbreaker_anim", "LEXSEQ3.ASM", prog_lex_backbreaker_anim_ops,
-      sizeof(prog_lex_backbreaker_anim_ops) / sizeof(prog_lex_backbreaker_anim_ops[0]), 0 },
+      sizeof(prog_lex_backbreaker_anim_ops) / sizeof(prog_lex_backbreaker_anim_ops[0]), 0, prog_lex_backbreaker_anim_labels, sizeof(prog_lex_backbreaker_anim_labels) / sizeof(prog_lex_backbreaker_anim_labels[0]) },
     { "lex_ohslam_anim", "LEXSEQ3.ASM", prog_lex_ohslam_anim_ops,
-      sizeof(prog_lex_ohslam_anim_ops) / sizeof(prog_lex_ohslam_anim_ops[0]), 0 },
+      sizeof(prog_lex_ohslam_anim_ops) / sizeof(prog_lex_ohslam_anim_ops[0]), 0, prog_lex_ohslam_anim_labels, sizeof(prog_lex_ohslam_anim_labels) / sizeof(prog_lex_ohslam_anim_labels[0]) },
     { "lex_combo_grab2elbow_anim", "LEXSEQ3.ASM", prog_lex_combo_grab2elbow_anim_ops,
-      sizeof(prog_lex_combo_grab2elbow_anim_ops) / sizeof(prog_lex_combo_grab2elbow_anim_ops[0]), 0 },
+      sizeof(prog_lex_combo_grab2elbow_anim_ops) / sizeof(prog_lex_combo_grab2elbow_anim_ops[0]), 0, prog_lex_combo_grab2elbow_anim_labels, sizeof(prog_lex_combo_grab2elbow_anim_labels) / sizeof(prog_lex_combo_grab2elbow_anim_labels[0]) },
     { "lex_grab2elbow_rev_anim", "LEXSEQ3.ASM", prog_lex_grab2elbow_rev_anim_ops,
-      sizeof(prog_lex_grab2elbow_rev_anim_ops) / sizeof(prog_lex_grab2elbow_rev_anim_ops[0]), 0 },
+      sizeof(prog_lex_grab2elbow_rev_anim_ops) / sizeof(prog_lex_grab2elbow_rev_anim_ops[0]), 0, prog_lex_grab2elbow_rev_anim_labels, sizeof(prog_lex_grab2elbow_rev_anim_labels) / sizeof(prog_lex_grab2elbow_rev_anim_labels[0]) },
     { "lex_grab2elbow_anim", "LEXSEQ3.ASM", prog_lex_grab2elbow_anim_ops,
-      sizeof(prog_lex_grab2elbow_anim_ops) / sizeof(prog_lex_grab2elbow_anim_ops[0]), 0 },
+      sizeof(prog_lex_grab2elbow_anim_ops) / sizeof(prog_lex_grab2elbow_anim_ops[0]), 0, prog_lex_grab2elbow_anim_labels, sizeof(prog_lex_grab2elbow_anim_labels) / sizeof(prog_lex_grab2elbow_anim_labels[0]) },
     { "setopp_deadanim", "LEXSEQ3.ASM", prog_setopp_deadanim_ops,
-      sizeof(prog_setopp_deadanim_ops) / sizeof(prog_setopp_deadanim_ops[0]), 415 },   /* branches back into shared code */
+      sizeof(prog_setopp_deadanim_ops) / sizeof(prog_setopp_deadanim_ops[0]), 415, prog_setopp_deadanim_labels, sizeof(prog_setopp_deadanim_labels) / sizeof(prog_setopp_deadanim_labels[0]) },   /* branches back into shared code */
     { "lex_combo_hiptoss_anim", "LEXSEQ3.ASM", prog_lex_combo_hiptoss_anim_ops,
-      sizeof(prog_lex_combo_hiptoss_anim_ops) / sizeof(prog_lex_combo_hiptoss_anim_ops[0]), 415 },   /* branches back into shared code */
+      sizeof(prog_lex_combo_hiptoss_anim_ops) / sizeof(prog_lex_combo_hiptoss_anim_ops[0]), 415, prog_lex_combo_hiptoss_anim_labels, sizeof(prog_lex_combo_hiptoss_anim_labels) / sizeof(prog_lex_combo_hiptoss_anim_labels[0]) },   /* branches back into shared code */
     { "lex_hiptoss_anim", "LEXSEQ3.ASM", prog_lex_hiptoss_anim_ops,
-      sizeof(prog_lex_hiptoss_anim_ops) / sizeof(prog_lex_hiptoss_anim_ops[0]), 0 },
+      sizeof(prog_lex_hiptoss_anim_ops) / sizeof(prog_lex_hiptoss_anim_ops[0]), 0, prog_lex_hiptoss_anim_labels, sizeof(prog_lex_hiptoss_anim_labels) / sizeof(prog_lex_hiptoss_anim_labels[0]) },
     { "lex_hiptoss2_anim", "LEXSEQ3.ASM", prog_lex_hiptoss2_anim_ops,
-      sizeof(prog_lex_hiptoss2_anim_ops) / sizeof(prog_lex_hiptoss2_anim_ops[0]), 0 },
+      sizeof(prog_lex_hiptoss2_anim_ops) / sizeof(prog_lex_hiptoss2_anim_ops[0]), 0, prog_lex_hiptoss2_anim_labels, sizeof(prog_lex_hiptoss2_anim_labels) / sizeof(prog_lex_hiptoss2_anim_labels[0]) },
     { "lex_combo_sliding_elbow_anim", "LEXSEQ3.ASM", prog_lex_combo_sliding_elbow_anim_ops,
-      sizeof(prog_lex_combo_sliding_elbow_anim_ops) / sizeof(prog_lex_combo_sliding_elbow_anim_ops[0]), 0 },
+      sizeof(prog_lex_combo_sliding_elbow_anim_ops) / sizeof(prog_lex_combo_sliding_elbow_anim_ops[0]), 0, prog_lex_combo_sliding_elbow_anim_labels, sizeof(prog_lex_combo_sliding_elbow_anim_labels) / sizeof(prog_lex_combo_sliding_elbow_anim_labels[0]) },
     { "lex_sliding_elbow_anim", "LEXSEQ3.ASM", prog_lex_sliding_elbow_anim_ops,
-      sizeof(prog_lex_sliding_elbow_anim_ops) / sizeof(prog_lex_sliding_elbow_anim_ops[0]), 0 },
+      sizeof(prog_lex_sliding_elbow_anim_ops) / sizeof(prog_lex_sliding_elbow_anim_ops[0]), 0, prog_lex_sliding_elbow_anim_labels, sizeof(prog_lex_sliding_elbow_anim_labels) / sizeof(prog_lex_sliding_elbow_anim_labels[0]) },
     { "lex_knees_to_head_anim", "LEXSEQ3.ASM", prog_lex_knees_to_head_anim_ops,
-      sizeof(prog_lex_knees_to_head_anim_ops) / sizeof(prog_lex_knees_to_head_anim_ops[0]), 0 },
+      sizeof(prog_lex_knees_to_head_anim_ops) / sizeof(prog_lex_knees_to_head_anim_ops[0]), 0, prog_lex_knees_to_head_anim_labels, sizeof(prog_lex_knees_to_head_anim_labels) / sizeof(prog_lex_knees_to_head_anim_labels[0]) },
     { "lex_4_block_anim", "LEXSEQ4.ASM", prog_lex_4_block_anim_ops,
-      sizeof(prog_lex_4_block_anim_ops) / sizeof(prog_lex_4_block_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_block_anim_ops) / sizeof(prog_lex_4_block_anim_ops[0]), 0, prog_lex_4_block_anim_labels, sizeof(prog_lex_4_block_anim_labels) / sizeof(prog_lex_4_block_anim_labels[0]) },
     { "lex_4_hitblock_anim", "LEXSEQ4.ASM", prog_lex_4_hitblock_anim_ops,
-      sizeof(prog_lex_4_hitblock_anim_ops) / sizeof(prog_lex_4_hitblock_anim_ops[0]), 8 },   /* branches back into shared code */
+      sizeof(prog_lex_4_hitblock_anim_ops) / sizeof(prog_lex_4_hitblock_anim_ops[0]), 8, prog_lex_4_hitblock_anim_labels, sizeof(prog_lex_4_hitblock_anim_labels) / sizeof(prog_lex_4_hitblock_anim_labels[0]) },   /* branches back into shared code */
     { "lex_4_hitblock2_anim", "LEXSEQ4.ASM", prog_lex_4_hitblock2_anim_ops,
-      sizeof(prog_lex_4_hitblock2_anim_ops) / sizeof(prog_lex_4_hitblock2_anim_ops[0]), 15 },   /* branches back into shared code */
+      sizeof(prog_lex_4_hitblock2_anim_ops) / sizeof(prog_lex_4_hitblock2_anim_ops[0]), 15, prog_lex_4_hitblock2_anim_labels, sizeof(prog_lex_4_hitblock2_anim_labels) / sizeof(prog_lex_4_hitblock2_anim_labels[0]) },   /* branches back into shared code */
     { "lex_slamnobounce_anim", "LEXSEQ4.ASM", prog_lex_slamnobounce_anim_ops,
-      sizeof(prog_lex_slamnobounce_anim_ops) / sizeof(prog_lex_slamnobounce_anim_ops[0]), 0 },
+      sizeof(prog_lex_slamnobounce_anim_ops) / sizeof(prog_lex_slamnobounce_anim_ops[0]), 0, 0, 0 },
     { "lex_slambounce_anim", "LEXSEQ4.ASM", prog_lex_slambounce_anim_ops,
-      sizeof(prog_lex_slambounce_anim_ops) / sizeof(prog_lex_slambounce_anim_ops[0]), 0 },
+      sizeof(prog_lex_slambounce_anim_ops) / sizeof(prog_lex_slambounce_anim_ops[0]), 0, 0, 0 },
     { "lex_slambounce2_anim", "LEXSEQ4.ASM", prog_lex_slambounce2_anim_ops,
-      sizeof(prog_lex_slambounce2_anim_ops) / sizeof(prog_lex_slambounce2_anim_ops[0]), 0 },
+      sizeof(prog_lex_slambounce2_anim_ops) / sizeof(prog_lex_slambounce2_anim_ops[0]), 0, 0, 0 },
     { "lex_breakneck2_anim", "LEXSEQ4.ASM", prog_lex_breakneck2_anim_ops,
-      sizeof(prog_lex_breakneck2_anim_ops) / sizeof(prog_lex_breakneck2_anim_ops[0]), 0 },
+      sizeof(prog_lex_breakneck2_anim_ops) / sizeof(prog_lex_breakneck2_anim_ops[0]), 0, 0, 0 },
     { "lex_arm_broken_anim", "LEXSEQ4.ASM", prog_lex_arm_broken_anim_ops,
-      sizeof(prog_lex_arm_broken_anim_ops) / sizeof(prog_lex_arm_broken_anim_ops[0]), 0 },
+      sizeof(prog_lex_arm_broken_anim_ops) / sizeof(prog_lex_arm_broken_anim_ops[0]), 0, prog_lex_arm_broken_anim_labels, sizeof(prog_lex_arm_broken_anim_labels) / sizeof(prog_lex_arm_broken_anim_labels[0]) },
     { "lex_2_head_hit_anim", "LEXSEQ4.ASM", prog_lex_2_head_hit_anim_ops,
-      sizeof(prog_lex_2_head_hit_anim_ops) / sizeof(prog_lex_2_head_hit_anim_ops[0]), 0 },
+      sizeof(prog_lex_2_head_hit_anim_ops) / sizeof(prog_lex_2_head_hit_anim_ops[0]), 0, 0, 0 },
     { "lex_2_head_hit3_anim", "LEXSEQ4.ASM", prog_lex_2_head_hit3_anim_ops,
-      sizeof(prog_lex_2_head_hit3_anim_ops) / sizeof(prog_lex_2_head_hit3_anim_ops[0]), 0 },
+      sizeof(prog_lex_2_head_hit3_anim_ops) / sizeof(prog_lex_2_head_hit3_anim_ops[0]), 0, 0, 0 },
     { "lex_4_head_hit_anim", "LEXSEQ4.ASM", prog_lex_4_head_hit_anim_ops,
-      sizeof(prog_lex_4_head_hit_anim_ops) / sizeof(prog_lex_4_head_hit_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_head_hit_anim_ops) / sizeof(prog_lex_4_head_hit_anim_ops[0]), 0, 0, 0 },
     { "lex_4_head_hit3_anim", "LEXSEQ4.ASM", prog_lex_4_head_hit3_anim_ops,
-      sizeof(prog_lex_4_head_hit3_anim_ops) / sizeof(prog_lex_4_head_hit3_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_head_hit3_anim_ops) / sizeof(prog_lex_4_head_hit3_anim_ops[0]), 0, 0, 0 },
     { "lex_4_head_hit4_anim", "LEXSEQ4.ASM", prog_lex_4_head_hit4_anim_ops,
-      sizeof(prog_lex_4_head_hit4_anim_ops) / sizeof(prog_lex_4_head_hit4_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_head_hit4_anim_ops) / sizeof(prog_lex_4_head_hit4_anim_ops[0]), 0, 0, 0 },
     { "lex_2_head_hit2_anim", "LEXSEQ4.ASM", prog_lex_2_head_hit2_anim_ops,
-      sizeof(prog_lex_2_head_hit2_anim_ops) / sizeof(prog_lex_2_head_hit2_anim_ops[0]), 0 },
+      sizeof(prog_lex_2_head_hit2_anim_ops) / sizeof(prog_lex_2_head_hit2_anim_ops[0]), 0, 0, 0 },
     { "lex_4_head_hit2_anim", "LEXSEQ4.ASM", prog_lex_4_head_hit2_anim_ops,
-      sizeof(prog_lex_4_head_hit2_anim_ops) / sizeof(prog_lex_4_head_hit2_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_head_hit2_anim_ops) / sizeof(prog_lex_4_head_hit2_anim_ops[0]), 0, prog_lex_4_head_hit2_anim_labels, sizeof(prog_lex_4_head_hit2_anim_labels) / sizeof(prog_lex_4_head_hit2_anim_labels[0]) },
     { "lex_4_head_hit2s_anim", "LEXSEQ4.ASM", prog_lex_4_head_hit2s_anim_ops,
-      sizeof(prog_lex_4_head_hit2s_anim_ops) / sizeof(prog_lex_4_head_hit2s_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_head_hit2s_anim_ops) / sizeof(prog_lex_4_head_hit2s_anim_ops[0]), 0, 0, 0 },
     { "lex_head_hit_dizzy_anim", "LEXSEQ4.ASM", prog_lex_head_hit_dizzy_anim_ops,
-      sizeof(prog_lex_head_hit_dizzy_anim_ops) / sizeof(prog_lex_head_hit_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_lex_head_hit_dizzy_anim_ops) / sizeof(prog_lex_head_hit_dizzy_anim_ops[0]), 0, 0, 0 },
     { "lex_2_body_hit_anim", "LEXSEQ4.ASM", prog_lex_2_body_hit_anim_ops,
-      sizeof(prog_lex_2_body_hit_anim_ops) / sizeof(prog_lex_2_body_hit_anim_ops[0]), 0 },
+      sizeof(prog_lex_2_body_hit_anim_ops) / sizeof(prog_lex_2_body_hit_anim_ops[0]), 0, 0, 0 },
     { "lex_2_knee_hit_anim", "LEXSEQ4.ASM", prog_lex_2_knee_hit_anim_ops,
-      sizeof(prog_lex_2_knee_hit_anim_ops) / sizeof(prog_lex_2_knee_hit_anim_ops[0]), 0 },
+      sizeof(prog_lex_2_knee_hit_anim_ops) / sizeof(prog_lex_2_knee_hit_anim_ops[0]), 0, 0, 0 },
     { "lex_4_body_hit_anim", "LEXSEQ4.ASM", prog_lex_4_body_hit_anim_ops,
-      sizeof(prog_lex_4_body_hit_anim_ops) / sizeof(prog_lex_4_body_hit_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_body_hit_anim_ops) / sizeof(prog_lex_4_body_hit_anim_ops[0]), 0, prog_lex_4_body_hit_anim_labels, sizeof(prog_lex_4_body_hit_anim_labels) / sizeof(prog_lex_4_body_hit_anim_labels[0]) },
     { "lex_4_body_hit_dizzy_anim", "LEXSEQ4.ASM", prog_lex_4_body_hit_dizzy_anim_ops,
-      sizeof(prog_lex_4_body_hit_dizzy_anim_ops) / sizeof(prog_lex_4_body_hit_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_body_hit_dizzy_anim_ops) / sizeof(prog_lex_4_body_hit_dizzy_anim_ops[0]), 0, 0, 0 },
     { "lex_4_knee_hit_anim", "LEXSEQ4.ASM", prog_lex_4_knee_hit_anim_ops,
-      sizeof(prog_lex_4_knee_hit_anim_ops) / sizeof(prog_lex_4_knee_hit_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_knee_hit_anim_ops) / sizeof(prog_lex_4_knee_hit_anim_ops[0]), 0, 0, 0 },
     { "lex_quick_knee_hit_anim", "LEXSEQ4.ASM", prog_lex_quick_knee_hit_anim_ops,
-      sizeof(prog_lex_quick_knee_hit_anim_ops) / sizeof(prog_lex_quick_knee_hit_anim_ops[0]), 0 },
+      sizeof(prog_lex_quick_knee_hit_anim_ops) / sizeof(prog_lex_quick_knee_hit_anim_ops[0]), 0, prog_lex_quick_knee_hit_anim_labels, sizeof(prog_lex_quick_knee_hit_anim_labels) / sizeof(prog_lex_quick_knee_hit_anim_labels[0]) },
     { "lex_4_knee_hit_dizzy_anim", "LEXSEQ4.ASM", prog_lex_4_knee_hit_dizzy_anim_ops,
-      sizeof(prog_lex_4_knee_hit_dizzy_anim_ops) / sizeof(prog_lex_4_knee_hit_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_lex_4_knee_hit_dizzy_anim_ops) / sizeof(prog_lex_4_knee_hit_dizzy_anim_ops[0]), 0, 0, 0 },
     { "lex_hitonground_anim", "LEXSEQ4.ASM", prog_lex_hitonground_anim_ops,
-      sizeof(prog_lex_hitonground_anim_ops) / sizeof(prog_lex_hitonground_anim_ops[0]), 0 },
+      sizeof(prog_lex_hitonground_anim_ops) / sizeof(prog_lex_hitonground_anim_ops[0]), 0, 0, 0 },
     { "lex_liedown_anim", "LEXSEQ4.ASM", prog_lex_liedown_anim_ops,
-      sizeof(prog_lex_liedown_anim_ops) / sizeof(prog_lex_liedown_anim_ops[0]), 0 },
+      sizeof(prog_lex_liedown_anim_ops) / sizeof(prog_lex_liedown_anim_ops[0]), 0, 0, 0 },
     { "lex_up_anim", "LEXSEQ4.ASM", prog_lex_up_anim_ops,
-      sizeof(prog_lex_up_anim_ops) / sizeof(prog_lex_up_anim_ops[0]), 0 },
+      sizeof(prog_lex_up_anim_ops) / sizeof(prog_lex_up_anim_ops[0]), 0, 0, 0 },
     { "lex_fall_back_anim", "LEXSEQ4.ASM", prog_lex_fall_back_anim_ops,
-      sizeof(prog_lex_fall_back_anim_ops) / sizeof(prog_lex_fall_back_anim_ops[0]), 0 },
+      sizeof(prog_lex_fall_back_anim_ops) / sizeof(prog_lex_fall_back_anim_ops[0]), 0, 0, 0 },
     { "lex_fall_back2_anim", "LEXSEQ4.ASM", prog_lex_fall_back2_anim_ops,
-      sizeof(prog_lex_fall_back2_anim_ops) / sizeof(prog_lex_fall_back2_anim_ops[0]), 0 },
+      sizeof(prog_lex_fall_back2_anim_ops) / sizeof(prog_lex_fall_back2_anim_ops[0]), 0, 0, 0 },
     { "lex_fall_back_tbukl_anim", "LEXSEQ4.ASM", prog_lex_fall_back_tbukl_anim_ops,
-      sizeof(prog_lex_fall_back_tbukl_anim_ops) / sizeof(prog_lex_fall_back_tbukl_anim_ops[0]), 0 },
+      sizeof(prog_lex_fall_back_tbukl_anim_ops) / sizeof(prog_lex_fall_back_tbukl_anim_ops[0]), 0, 0, 0 },
     { "lex_flyout_anim", "LEXSEQ4.ASM", prog_lex_flyout_anim_ops,
-      sizeof(prog_lex_flyout_anim_ops) / sizeof(prog_lex_flyout_anim_ops[0]), 0 },
+      sizeof(prog_lex_flyout_anim_ops) / sizeof(prog_lex_flyout_anim_ops[0]), 0, prog_lex_flyout_anim_labels, sizeof(prog_lex_flyout_anim_labels) / sizeof(prog_lex_flyout_anim_labels[0]) },
     { "lex_flyout2_anim", "LEXSEQ4.ASM", prog_lex_flyout2_anim_ops,
-      sizeof(prog_lex_flyout2_anim_ops) / sizeof(prog_lex_flyout2_anim_ops[0]), 16 },   /* branches back into shared code */
+      sizeof(prog_lex_flyout2_anim_ops) / sizeof(prog_lex_flyout2_anim_ops[0]), 16, prog_lex_flyout2_anim_labels, sizeof(prog_lex_flyout2_anim_labels) / sizeof(prog_lex_flyout2_anim_labels[0]) },   /* branches back into shared code */
     { "lex_faceup_getup_anim", "LEXSEQ4.ASM", prog_lex_faceup_getup_anim_ops,
-      sizeof(prog_lex_faceup_getup_anim_ops) / sizeof(prog_lex_faceup_getup_anim_ops[0]), 0 },
+      sizeof(prog_lex_faceup_getup_anim_ops) / sizeof(prog_lex_faceup_getup_anim_ops[0]), 0, prog_lex_faceup_getup_anim_labels, sizeof(prog_lex_faceup_getup_anim_labels) / sizeof(prog_lex_faceup_getup_anim_labels[0]) },
     { "lex_dizzy_anim", "LEXSEQ4.ASM", prog_lex_dizzy_anim_ops,
-      sizeof(prog_lex_dizzy_anim_ops) / sizeof(prog_lex_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_lex_dizzy_anim_ops) / sizeof(prog_lex_dizzy_anim_ops[0]), 0, prog_lex_dizzy_anim_labels, sizeof(prog_lex_dizzy_anim_labels) / sizeof(prog_lex_dizzy_anim_labels[0]) },
     { "lex_roll_frames", "LEXSEQ4.ASM", prog_lex_roll_frames_ops,
-      sizeof(prog_lex_roll_frames_ops) / sizeof(prog_lex_roll_frames_ops[0]), 0 },
+      sizeof(prog_lex_roll_frames_ops) / sizeof(prog_lex_roll_frames_ops[0]), 0, 0, 0 },
     { "lex_tossed_anim", "LEXSEQ4.ASM", prog_lex_tossed_anim_ops,
-      sizeof(prog_lex_tossed_anim_ops) / sizeof(prog_lex_tossed_anim_ops[0]), 0 },
+      sizeof(prog_lex_tossed_anim_ops) / sizeof(prog_lex_tossed_anim_ops[0]), 0, 0, 0 },
     { "lex_tossed2_anim", "LEXSEQ4.ASM", prog_lex_tossed2_anim_ops,
-      sizeof(prog_lex_tossed2_anim_ops) / sizeof(prog_lex_tossed2_anim_ops[0]), 0 },
+      sizeof(prog_lex_tossed2_anim_ops) / sizeof(prog_lex_tossed2_anim_ops[0]), 0, 0, 0 },
     { "rzr_zip_anim", "RZRSEQ1.ASM", prog_rzr_zip_anim_ops,
-      sizeof(prog_rzr_zip_anim_ops) / sizeof(prog_rzr_zip_anim_ops[0]), 0 },
+      sizeof(prog_rzr_zip_anim_ops) / sizeof(prog_rzr_zip_anim_ops[0]), 0, 0, 0 },
     { "rzr_stand2_anim", "RZRSEQ1.ASM", prog_rzr_stand2_anim_ops,
-      sizeof(prog_rzr_stand2_anim_ops) / sizeof(prog_rzr_stand2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_stand2_anim_ops) / sizeof(prog_rzr_stand2_anim_ops[0]), 0, 0, 0 },
     { "rzr_stand8_anim", "RZRSEQ1.ASM", prog_rzr_stand8_anim_ops,
-      sizeof(prog_rzr_stand8_anim_ops) / sizeof(prog_rzr_stand8_anim_ops[0]), 0 },
+      sizeof(prog_rzr_stand8_anim_ops) / sizeof(prog_rzr_stand8_anim_ops[0]), 0, 0, 0 },
     { "rzr_stand4_anim", "RZRSEQ1.ASM", prog_rzr_stand4_anim_ops,
-      sizeof(prog_rzr_stand4_anim_ops) / sizeof(prog_rzr_stand4_anim_ops[0]), 0 },
+      sizeof(prog_rzr_stand4_anim_ops) / sizeof(prog_rzr_stand4_anim_ops[0]), 0, 0, 0 },
     { "rzr_stand6_anim", "RZRSEQ1.ASM", prog_rzr_stand6_anim_ops,
-      sizeof(prog_rzr_stand6_anim_ops) / sizeof(prog_rzr_stand6_anim_ops[0]), 0 },
+      sizeof(prog_rzr_stand6_anim_ops) / sizeof(prog_rzr_stand6_anim_ops[0]), 0, 0, 0 },
     { "rzr_torso2_anim", "RZRSEQ1.ASM", prog_rzr_torso2_anim_ops,
-      sizeof(prog_rzr_torso2_anim_ops) / sizeof(prog_rzr_torso2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_torso2_anim_ops) / sizeof(prog_rzr_torso2_anim_ops[0]), 0, 0, 0 },
     { "rzr_torso8_anim", "RZRSEQ1.ASM", prog_rzr_torso8_anim_ops,
-      sizeof(prog_rzr_torso8_anim_ops) / sizeof(prog_rzr_torso8_anim_ops[0]), 0 },
+      sizeof(prog_rzr_torso8_anim_ops) / sizeof(prog_rzr_torso8_anim_ops[0]), 0, 0, 0 },
     { "rzr_torso4_anim", "RZRSEQ1.ASM", prog_rzr_torso4_anim_ops,
-      sizeof(prog_rzr_torso4_anim_ops) / sizeof(prog_rzr_torso4_anim_ops[0]), 0 },
+      sizeof(prog_rzr_torso4_anim_ops) / sizeof(prog_rzr_torso4_anim_ops[0]), 0, 0, 0 },
     { "rzr_torso6_anim", "RZRSEQ1.ASM", prog_rzr_torso6_anim_ops,
-      sizeof(prog_rzr_torso6_anim_ops) / sizeof(prog_rzr_torso6_anim_ops[0]), 0 },
+      sizeof(prog_rzr_torso6_anim_ops) / sizeof(prog_rzr_torso6_anim_ops[0]), 0, 0, 0 },
     { "rzr_walk1_f2_anim", "RZRSEQ1.ASM", prog_rzr_walk1_f2_anim_ops,
-      sizeof(prog_rzr_walk1_f2_anim_ops) / sizeof(prog_rzr_walk1_f2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_walk1_f2_anim_ops) / sizeof(prog_rzr_walk1_f2_anim_ops[0]), 0, 0, 0 },
     { "rzr_walk2_f2_anim", "RZRSEQ1.ASM", prog_rzr_walk2_f2_anim_ops,
-      sizeof(prog_rzr_walk2_f2_anim_ops) / sizeof(prog_rzr_walk2_f2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_walk2_f2_anim_ops) / sizeof(prog_rzr_walk2_f2_anim_ops[0]), 0, 0, 0 },
     { "rzr_walk4_f2_anim", "RZRSEQ1.ASM", prog_rzr_walk4_f2_anim_ops,
-      sizeof(prog_rzr_walk4_f2_anim_ops) / sizeof(prog_rzr_walk4_f2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_walk4_f2_anim_ops) / sizeof(prog_rzr_walk4_f2_anim_ops[0]), 0, 0, 0 },
     { "rzr_walk5_f2_anim", "RZRSEQ1.ASM", prog_rzr_walk5_f2_anim_ops,
-      sizeof(prog_rzr_walk5_f2_anim_ops) / sizeof(prog_rzr_walk5_f2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_walk5_f2_anim_ops) / sizeof(prog_rzr_walk5_f2_anim_ops[0]), 0, 0, 0 },
     { "rzr_walk6_f2_anim", "RZRSEQ1.ASM", prog_rzr_walk6_f2_anim_ops,
-      sizeof(prog_rzr_walk6_f2_anim_ops) / sizeof(prog_rzr_walk6_f2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_walk6_f2_anim_ops) / sizeof(prog_rzr_walk6_f2_anim_ops[0]), 0, 0, 0 },
     { "rzr_walk8_f2_anim", "RZRSEQ1.ASM", prog_rzr_walk8_f2_anim_ops,
-      sizeof(prog_rzr_walk8_f2_anim_ops) / sizeof(prog_rzr_walk8_f2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_walk8_f2_anim_ops) / sizeof(prog_rzr_walk8_f2_anim_ops[0]), 0, 0, 0 },
     { "rzr_walk1_f4_anim", "RZRSEQ1.ASM", prog_rzr_walk1_f4_anim_ops,
-      sizeof(prog_rzr_walk1_f4_anim_ops) / sizeof(prog_rzr_walk1_f4_anim_ops[0]), 0 },
+      sizeof(prog_rzr_walk1_f4_anim_ops) / sizeof(prog_rzr_walk1_f4_anim_ops[0]), 0, 0, 0 },
     { "rzr_walk2_f4_anim", "RZRSEQ1.ASM", prog_rzr_walk2_f4_anim_ops,
-      sizeof(prog_rzr_walk2_f4_anim_ops) / sizeof(prog_rzr_walk2_f4_anim_ops[0]), 0 },
+      sizeof(prog_rzr_walk2_f4_anim_ops) / sizeof(prog_rzr_walk2_f4_anim_ops[0]), 0, 0, 0 },
     { "rzr_walk4_f4_anim", "RZRSEQ1.ASM", prog_rzr_walk4_f4_anim_ops,
-      sizeof(prog_rzr_walk4_f4_anim_ops) / sizeof(prog_rzr_walk4_f4_anim_ops[0]), 0 },
+      sizeof(prog_rzr_walk4_f4_anim_ops) / sizeof(prog_rzr_walk4_f4_anim_ops[0]), 0, 0, 0 },
     { "rzr_walk5_f4_anim", "RZRSEQ1.ASM", prog_rzr_walk5_f4_anim_ops,
-      sizeof(prog_rzr_walk5_f4_anim_ops) / sizeof(prog_rzr_walk5_f4_anim_ops[0]), 0 },
+      sizeof(prog_rzr_walk5_f4_anim_ops) / sizeof(prog_rzr_walk5_f4_anim_ops[0]), 0, 0, 0 },
     { "rzr_walk6_f4_anim", "RZRSEQ1.ASM", prog_rzr_walk6_f4_anim_ops,
-      sizeof(prog_rzr_walk6_f4_anim_ops) / sizeof(prog_rzr_walk6_f4_anim_ops[0]), 0 },
+      sizeof(prog_rzr_walk6_f4_anim_ops) / sizeof(prog_rzr_walk6_f4_anim_ops[0]), 0, 0, 0 },
     { "rzr_walk8_f4_anim", "RZRSEQ1.ASM", prog_rzr_walk8_f4_anim_ops,
-      sizeof(prog_rzr_walk8_f4_anim_ops) / sizeof(prog_rzr_walk8_f4_anim_ops[0]), 0 },
+      sizeof(prog_rzr_walk8_f4_anim_ops) / sizeof(prog_rzr_walk8_f4_anim_ops[0]), 0, 0, 0 },
     { "rzr_2_to_4_turn_anim", "RZRSEQ1.ASM", prog_rzr_2_to_4_turn_anim_ops,
-      sizeof(prog_rzr_2_to_4_turn_anim_ops) / sizeof(prog_rzr_2_to_4_turn_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_to_4_turn_anim_ops) / sizeof(prog_rzr_2_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "rzr_8_to_6_turn_anim", "RZRSEQ1.ASM", prog_rzr_8_to_6_turn_anim_ops,
-      sizeof(prog_rzr_8_to_6_turn_anim_ops) / sizeof(prog_rzr_8_to_6_turn_anim_ops[0]), 0 },
+      sizeof(prog_rzr_8_to_6_turn_anim_ops) / sizeof(prog_rzr_8_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "rzr_4_to_2_turn_anim", "RZRSEQ1.ASM", prog_rzr_4_to_2_turn_anim_ops,
-      sizeof(prog_rzr_4_to_2_turn_anim_ops) / sizeof(prog_rzr_4_to_2_turn_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_to_2_turn_anim_ops) / sizeof(prog_rzr_4_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "rzr_6_to_8_turn_anim", "RZRSEQ1.ASM", prog_rzr_6_to_8_turn_anim_ops,
-      sizeof(prog_rzr_6_to_8_turn_anim_ops) / sizeof(prog_rzr_6_to_8_turn_anim_ops[0]), 0 },
+      sizeof(prog_rzr_6_to_8_turn_anim_ops) / sizeof(prog_rzr_6_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "rzr_4_to_6_turn_anim", "RZRSEQ1.ASM", prog_rzr_4_to_6_turn_anim_ops,
-      sizeof(prog_rzr_4_to_6_turn_anim_ops) / sizeof(prog_rzr_4_to_6_turn_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_to_6_turn_anim_ops) / sizeof(prog_rzr_4_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "rzr_6_to_4_turn_anim", "RZRSEQ1.ASM", prog_rzr_6_to_4_turn_anim_ops,
-      sizeof(prog_rzr_6_to_4_turn_anim_ops) / sizeof(prog_rzr_6_to_4_turn_anim_ops[0]), 0 },
+      sizeof(prog_rzr_6_to_4_turn_anim_ops) / sizeof(prog_rzr_6_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "rzr_2_to_8_turn_anim", "RZRSEQ1.ASM", prog_rzr_2_to_8_turn_anim_ops,
-      sizeof(prog_rzr_2_to_8_turn_anim_ops) / sizeof(prog_rzr_2_to_8_turn_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_to_8_turn_anim_ops) / sizeof(prog_rzr_2_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "rzr_8_to_2_turn_anim", "RZRSEQ1.ASM", prog_rzr_8_to_2_turn_anim_ops,
-      sizeof(prog_rzr_8_to_2_turn_anim_ops) / sizeof(prog_rzr_8_to_2_turn_anim_ops[0]), 0 },
+      sizeof(prog_rzr_8_to_2_turn_anim_ops) / sizeof(prog_rzr_8_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "rzr_4_to_8_turn_anim", "RZRSEQ1.ASM", prog_rzr_4_to_8_turn_anim_ops,
-      sizeof(prog_rzr_4_to_8_turn_anim_ops) / sizeof(prog_rzr_4_to_8_turn_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_to_8_turn_anim_ops) / sizeof(prog_rzr_4_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "rzr_6_to_2_turn_anim", "RZRSEQ1.ASM", prog_rzr_6_to_2_turn_anim_ops,
-      sizeof(prog_rzr_6_to_2_turn_anim_ops) / sizeof(prog_rzr_6_to_2_turn_anim_ops[0]), 0 },
+      sizeof(prog_rzr_6_to_2_turn_anim_ops) / sizeof(prog_rzr_6_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "rzr_2_to_6_turn_anim", "RZRSEQ1.ASM", prog_rzr_2_to_6_turn_anim_ops,
-      sizeof(prog_rzr_2_to_6_turn_anim_ops) / sizeof(prog_rzr_2_to_6_turn_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_to_6_turn_anim_ops) / sizeof(prog_rzr_2_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "rzr_8_to_4_turn_anim", "RZRSEQ1.ASM", prog_rzr_8_to_4_turn_anim_ops,
-      sizeof(prog_rzr_8_to_4_turn_anim_ops) / sizeof(prog_rzr_8_to_4_turn_anim_ops[0]), 0 },
+      sizeof(prog_rzr_8_to_4_turn_anim_ops) / sizeof(prog_rzr_8_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "rzr_2_to_4_turn2_anim", "RZRSEQ1.ASM", prog_rzr_2_to_4_turn2_anim_ops,
-      sizeof(prog_rzr_2_to_4_turn2_anim_ops) / sizeof(prog_rzr_2_to_4_turn2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_to_4_turn2_anim_ops) / sizeof(prog_rzr_2_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "rzr_8_to_6_turn2_anim", "RZRSEQ1.ASM", prog_rzr_8_to_6_turn2_anim_ops,
-      sizeof(prog_rzr_8_to_6_turn2_anim_ops) / sizeof(prog_rzr_8_to_6_turn2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_8_to_6_turn2_anim_ops) / sizeof(prog_rzr_8_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "rzr_4_to_2_turn2_anim", "RZRSEQ1.ASM", prog_rzr_4_to_2_turn2_anim_ops,
-      sizeof(prog_rzr_4_to_2_turn2_anim_ops) / sizeof(prog_rzr_4_to_2_turn2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_to_2_turn2_anim_ops) / sizeof(prog_rzr_4_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "rzr_6_to_8_turn2_anim", "RZRSEQ1.ASM", prog_rzr_6_to_8_turn2_anim_ops,
-      sizeof(prog_rzr_6_to_8_turn2_anim_ops) / sizeof(prog_rzr_6_to_8_turn2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_6_to_8_turn2_anim_ops) / sizeof(prog_rzr_6_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "rzr_4_to_6_turn2_anim", "RZRSEQ1.ASM", prog_rzr_4_to_6_turn2_anim_ops,
-      sizeof(prog_rzr_4_to_6_turn2_anim_ops) / sizeof(prog_rzr_4_to_6_turn2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_to_6_turn2_anim_ops) / sizeof(prog_rzr_4_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "rzr_6_to_4_turn2_anim", "RZRSEQ1.ASM", prog_rzr_6_to_4_turn2_anim_ops,
-      sizeof(prog_rzr_6_to_4_turn2_anim_ops) / sizeof(prog_rzr_6_to_4_turn2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_6_to_4_turn2_anim_ops) / sizeof(prog_rzr_6_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "rzr_2_to_8_turn2_anim", "RZRSEQ1.ASM", prog_rzr_2_to_8_turn2_anim_ops,
-      sizeof(prog_rzr_2_to_8_turn2_anim_ops) / sizeof(prog_rzr_2_to_8_turn2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_to_8_turn2_anim_ops) / sizeof(prog_rzr_2_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "rzr_8_to_2_turn2_anim", "RZRSEQ1.ASM", prog_rzr_8_to_2_turn2_anim_ops,
-      sizeof(prog_rzr_8_to_2_turn2_anim_ops) / sizeof(prog_rzr_8_to_2_turn2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_8_to_2_turn2_anim_ops) / sizeof(prog_rzr_8_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "rzr_4_to_8_turn2_anim", "RZRSEQ1.ASM", prog_rzr_4_to_8_turn2_anim_ops,
-      sizeof(prog_rzr_4_to_8_turn2_anim_ops) / sizeof(prog_rzr_4_to_8_turn2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_to_8_turn2_anim_ops) / sizeof(prog_rzr_4_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "rzr_6_to_2_turn2_anim", "RZRSEQ1.ASM", prog_rzr_6_to_2_turn2_anim_ops,
-      sizeof(prog_rzr_6_to_2_turn2_anim_ops) / sizeof(prog_rzr_6_to_2_turn2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_6_to_2_turn2_anim_ops) / sizeof(prog_rzr_6_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "rzr_2_to_6_turn2_anim", "RZRSEQ1.ASM", prog_rzr_2_to_6_turn2_anim_ops,
-      sizeof(prog_rzr_2_to_6_turn2_anim_ops) / sizeof(prog_rzr_2_to_6_turn2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_to_6_turn2_anim_ops) / sizeof(prog_rzr_2_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "rzr_8_to_4_turn2_anim", "RZRSEQ1.ASM", prog_rzr_8_to_4_turn2_anim_ops,
-      sizeof(prog_rzr_8_to_4_turn2_anim_ops) / sizeof(prog_rzr_8_to_4_turn2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_8_to_4_turn2_anim_ops) / sizeof(prog_rzr_8_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "rzr_run2_anim", "RZRSEQ1.ASM", prog_rzr_run2_anim_ops,
-      sizeof(prog_rzr_run2_anim_ops) / sizeof(prog_rzr_run2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_run2_anim_ops) / sizeof(prog_rzr_run2_anim_ops[0]), 0, prog_rzr_run2_anim_labels, sizeof(prog_rzr_run2_anim_labels) / sizeof(prog_rzr_run2_anim_labels[0]) },
     { "rzr_run_anim", "RZRSEQ1.ASM", prog_rzr_run_anim_ops,
-      sizeof(prog_rzr_run_anim_ops) / sizeof(prog_rzr_run_anim_ops[0]), 0 },
+      sizeof(prog_rzr_run_anim_ops) / sizeof(prog_rzr_run_anim_ops[0]), 0, prog_rzr_run_anim_labels, sizeof(prog_rzr_run_anim_labels) / sizeof(prog_rzr_run_anim_labels[0]) },
     { "rzr_bounce_anim", "RZRSEQ1.ASM", prog_rzr_bounce_anim_ops,
-      sizeof(prog_rzr_bounce_anim_ops) / sizeof(prog_rzr_bounce_anim_ops[0]), 0 },
+      sizeof(prog_rzr_bounce_anim_ops) / sizeof(prog_rzr_bounce_anim_ops[0]), 0, 0, 0 },
     { "rzr_2_punch_anim", "RZRSEQ2.ASM", prog_rzr_2_punch_anim_ops,
-      sizeof(prog_rzr_2_punch_anim_ops) / sizeof(prog_rzr_2_punch_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_punch_anim_ops) / sizeof(prog_rzr_2_punch_anim_ops[0]), 0, prog_rzr_2_punch_anim_labels, sizeof(prog_rzr_2_punch_anim_labels) / sizeof(prog_rzr_2_punch_anim_labels[0]) },
     { "rzr_combo_punch_anim", "RZRSEQ2.ASM", prog_rzr_combo_punch_anim_ops,
-      sizeof(prog_rzr_combo_punch_anim_ops) / sizeof(prog_rzr_combo_punch_anim_ops[0]), 0 },
+      sizeof(prog_rzr_combo_punch_anim_ops) / sizeof(prog_rzr_combo_punch_anim_ops[0]), 0, prog_rzr_combo_punch_anim_labels, sizeof(prog_rzr_combo_punch_anim_labels) / sizeof(prog_rzr_combo_punch_anim_labels[0]) },
     { "rzr_4_punch_anim", "RZRSEQ2.ASM", prog_rzr_4_punch_anim_ops,
-      sizeof(prog_rzr_4_punch_anim_ops) / sizeof(prog_rzr_4_punch_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_punch_anim_ops) / sizeof(prog_rzr_4_punch_anim_ops[0]), 0, prog_rzr_4_punch_anim_labels, sizeof(prog_rzr_4_punch_anim_labels) / sizeof(prog_rzr_4_punch_anim_labels[0]) },
     { "rzr_4_pummel_anim", "RZRSEQ2.ASM", prog_rzr_4_pummel_anim_ops,
-      sizeof(prog_rzr_4_pummel_anim_ops) / sizeof(prog_rzr_4_pummel_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_pummel_anim_ops) / sizeof(prog_rzr_4_pummel_anim_ops[0]), 0, prog_rzr_4_pummel_anim_labels, sizeof(prog_rzr_4_pummel_anim_labels) / sizeof(prog_rzr_4_pummel_anim_labels[0]) },
     { "rzr_2_pummel_anim", "RZRSEQ2.ASM", prog_rzr_2_pummel_anim_ops,
-      sizeof(prog_rzr_2_pummel_anim_ops) / sizeof(prog_rzr_2_pummel_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_pummel_anim_ops) / sizeof(prog_rzr_2_pummel_anim_ops[0]), 0, prog_rzr_2_pummel_anim_labels, sizeof(prog_rzr_2_pummel_anim_labels) / sizeof(prog_rzr_2_pummel_anim_labels[0]) },
     { "rzr_combo_slash_anim", "RZRSEQ2.ASM", prog_rzr_combo_slash_anim_ops,
-      sizeof(prog_rzr_combo_slash_anim_ops) / sizeof(prog_rzr_combo_slash_anim_ops[0]), 0 },
+      sizeof(prog_rzr_combo_slash_anim_ops) / sizeof(prog_rzr_combo_slash_anim_ops[0]), 0, prog_rzr_combo_slash_anim_labels, sizeof(prog_rzr_combo_slash_anim_labels) / sizeof(prog_rzr_combo_slash_anim_labels[0]) },
     { "rzr_3_dslash_anim", "RZRSEQ2.ASM", prog_rzr_3_dslash_anim_ops,
-      sizeof(prog_rzr_3_dslash_anim_ops) / sizeof(prog_rzr_3_dslash_anim_ops[0]), 0 },
+      sizeof(prog_rzr_3_dslash_anim_ops) / sizeof(prog_rzr_3_dslash_anim_ops[0]), 0, prog_rzr_3_dslash_anim_labels, sizeof(prog_rzr_3_dslash_anim_labels) / sizeof(prog_rzr_3_dslash_anim_labels[0]) },
     { "rzr_dslash_to_head_anim", "RZRSEQ2.ASM", prog_rzr_dslash_to_head_anim_ops,
-      sizeof(prog_rzr_dslash_to_head_anim_ops) / sizeof(prog_rzr_dslash_to_head_anim_ops[0]), 0 },
+      sizeof(prog_rzr_dslash_to_head_anim_ops) / sizeof(prog_rzr_dslash_to_head_anim_ops[0]), 0, 0, 0 },
     { "rzr_3_uslash_anim", "RZRSEQ2.ASM", prog_rzr_3_uslash_anim_ops,
-      sizeof(prog_rzr_3_uslash_anim_ops) / sizeof(prog_rzr_3_uslash_anim_ops[0]), 0 },
+      sizeof(prog_rzr_3_uslash_anim_ops) / sizeof(prog_rzr_3_uslash_anim_ops[0]), 0, prog_rzr_3_uslash_anim_labels, sizeof(prog_rzr_3_uslash_anim_labels) / sizeof(prog_rzr_3_uslash_anim_labels[0]) },
     { "rzr_uslash_to_head_anim", "RZRSEQ2.ASM", prog_rzr_uslash_to_head_anim_ops,
-      sizeof(prog_rzr_uslash_to_head_anim_ops) / sizeof(prog_rzr_uslash_to_head_anim_ops[0]), 0 },
+      sizeof(prog_rzr_uslash_to_head_anim_ops) / sizeof(prog_rzr_uslash_to_head_anim_ops[0]), 0, 0, 0 },
     { "rzr_combo_uppercut_anim", "RZRSEQ2.ASM", prog_rzr_combo_uppercut_anim_ops,
-      sizeof(prog_rzr_combo_uppercut_anim_ops) / sizeof(prog_rzr_combo_uppercut_anim_ops[0]), 0 },
+      sizeof(prog_rzr_combo_uppercut_anim_ops) / sizeof(prog_rzr_combo_uppercut_anim_ops[0]), 0, prog_rzr_combo_uppercut_anim_labels, sizeof(prog_rzr_combo_uppercut_anim_labels) / sizeof(prog_rzr_combo_uppercut_anim_labels[0]) },
     { "rzr_4_uprcut_anim", "RZRSEQ2.ASM", prog_rzr_4_uprcut_anim_ops,
-      sizeof(prog_rzr_4_uprcut_anim_ops) / sizeof(prog_rzr_4_uprcut_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_uprcut_anim_ops) / sizeof(prog_rzr_4_uprcut_anim_ops[0]), 0, prog_rzr_4_uprcut_anim_labels, sizeof(prog_rzr_4_uprcut_anim_labels) / sizeof(prog_rzr_4_uprcut_anim_labels[0]) },
     { "rzr_2_butt_anim", "RZRSEQ2.ASM", prog_rzr_2_butt_anim_ops,
-      sizeof(prog_rzr_2_butt_anim_ops) / sizeof(prog_rzr_2_butt_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_butt_anim_ops) / sizeof(prog_rzr_2_butt_anim_ops[0]), 0, prog_rzr_2_butt_anim_labels, sizeof(prog_rzr_2_butt_anim_labels) / sizeof(prog_rzr_2_butt_anim_labels[0]) },
     { "rzr_combo_butt_anim", "RZRSEQ2.ASM", prog_rzr_combo_butt_anim_ops,
-      sizeof(prog_rzr_combo_butt_anim_ops) / sizeof(prog_rzr_combo_butt_anim_ops[0]), 0 },
+      sizeof(prog_rzr_combo_butt_anim_ops) / sizeof(prog_rzr_combo_butt_anim_ops[0]), 0, prog_rzr_combo_butt_anim_labels, sizeof(prog_rzr_combo_butt_anim_labels) / sizeof(prog_rzr_combo_butt_anim_labels[0]) },
     { "rzr_4_butt_anim", "RZRSEQ2.ASM", prog_rzr_4_butt_anim_ops,
-      sizeof(prog_rzr_4_butt_anim_ops) / sizeof(prog_rzr_4_butt_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_butt_anim_ops) / sizeof(prog_rzr_4_butt_anim_ops[0]), 0, prog_rzr_4_butt_anim_labels, sizeof(prog_rzr_4_butt_anim_labels) / sizeof(prog_rzr_4_butt_anim_labels[0]) },
     { "rzr_combo_kick_anim", "RZRSEQ2.ASM", prog_rzr_combo_kick_anim_ops,
-      sizeof(prog_rzr_combo_kick_anim_ops) / sizeof(prog_rzr_combo_kick_anim_ops[0]), 0 },
+      sizeof(prog_rzr_combo_kick_anim_ops) / sizeof(prog_rzr_combo_kick_anim_ops[0]), 0, prog_rzr_combo_kick_anim_labels, sizeof(prog_rzr_combo_kick_anim_labels) / sizeof(prog_rzr_combo_kick_anim_labels[0]) },
     { "rzr_4_kick2_anim", "RZRSEQ2.ASM", prog_rzr_4_kick2_anim_ops,
-      sizeof(prog_rzr_4_kick2_anim_ops) / sizeof(prog_rzr_4_kick2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_kick2_anim_ops) / sizeof(prog_rzr_4_kick2_anim_ops[0]), 0, prog_rzr_4_kick2_anim_labels, sizeof(prog_rzr_4_kick2_anim_labels) / sizeof(prog_rzr_4_kick2_anim_labels[0]) },
     { "rzr_2_kick_anim", "RZRSEQ2.ASM", prog_rzr_2_kick_anim_ops,
-      sizeof(prog_rzr_2_kick_anim_ops) / sizeof(prog_rzr_2_kick_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_kick_anim_ops) / sizeof(prog_rzr_2_kick_anim_ops[0]), 0, prog_rzr_2_kick_anim_labels, sizeof(prog_rzr_2_kick_anim_labels) / sizeof(prog_rzr_2_kick_anim_labels[0]) },
     { "rzr_4_kick_anim", "RZRSEQ2.ASM", prog_rzr_4_kick_anim_ops,
-      sizeof(prog_rzr_4_kick_anim_ops) / sizeof(prog_rzr_4_kick_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_kick_anim_ops) / sizeof(prog_rzr_4_kick_anim_ops[0]), 0, prog_rzr_4_kick_anim_labels, sizeof(prog_rzr_4_kick_anim_labels) / sizeof(prog_rzr_4_kick_anim_labels[0]) },
     { "rzr_combo_super_kick_anim", "RZRSEQ2.ASM", prog_rzr_combo_super_kick_anim_ops,
-      sizeof(prog_rzr_combo_super_kick_anim_ops) / sizeof(prog_rzr_combo_super_kick_anim_ops[0]), 0 },
+      sizeof(prog_rzr_combo_super_kick_anim_ops) / sizeof(prog_rzr_combo_super_kick_anim_ops[0]), 0, prog_rzr_combo_super_kick_anim_labels, sizeof(prog_rzr_combo_super_kick_anim_labels) / sizeof(prog_rzr_combo_super_kick_anim_labels[0]) },
     { "rzr_2_super_kick_anim", "RZRSEQ2.ASM", prog_rzr_2_super_kick_anim_ops,
-      sizeof(prog_rzr_2_super_kick_anim_ops) / sizeof(prog_rzr_2_super_kick_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_super_kick_anim_ops) / sizeof(prog_rzr_2_super_kick_anim_ops[0]), 0, prog_rzr_2_super_kick_anim_labels, sizeof(prog_rzr_2_super_kick_anim_labels) / sizeof(prog_rzr_2_super_kick_anim_labels[0]) },
     { "rzr_4_super_kick_anim", "RZRSEQ2.ASM", prog_rzr_4_super_kick_anim_ops,
-      sizeof(prog_rzr_4_super_kick_anim_ops) / sizeof(prog_rzr_4_super_kick_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_super_kick_anim_ops) / sizeof(prog_rzr_4_super_kick_anim_ops[0]), 0, prog_rzr_4_super_kick_anim_labels, sizeof(prog_rzr_4_super_kick_anim_labels) / sizeof(prog_rzr_4_super_kick_anim_labels[0]) },
     { "blocked_vels", "RZRSEQ2.ASM", prog_blocked_vels_ops,
-      sizeof(prog_blocked_vels_ops) / sizeof(prog_blocked_vels_ops[0]), 0 },
+      sizeof(prog_blocked_vels_ops) / sizeof(prog_blocked_vels_ops[0]), 0, prog_blocked_vels_labels, sizeof(prog_blocked_vels_labels) / sizeof(prog_blocked_vels_labels[0]) },
     { "rzr_kick_TB_anim", "RZRSEQ2.ASM", prog_rzr_kick_TB_anim_ops,
-      sizeof(prog_rzr_kick_TB_anim_ops) / sizeof(prog_rzr_kick_TB_anim_ops[0]), 0 },
+      sizeof(prog_rzr_kick_TB_anim_ops) / sizeof(prog_rzr_kick_TB_anim_ops[0]), 0, 0, 0 },
     { "rzr_2_knee_anim", "RZRSEQ2.ASM", prog_rzr_2_knee_anim_ops,
-      sizeof(prog_rzr_2_knee_anim_ops) / sizeof(prog_rzr_2_knee_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_knee_anim_ops) / sizeof(prog_rzr_2_knee_anim_ops[0]), 0, prog_rzr_2_knee_anim_labels, sizeof(prog_rzr_2_knee_anim_labels) / sizeof(prog_rzr_2_knee_anim_labels[0]) },
     { "rzr_4_knee_anim", "RZRSEQ2.ASM", prog_rzr_4_knee_anim_ops,
-      sizeof(prog_rzr_4_knee_anim_ops) / sizeof(prog_rzr_4_knee_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_knee_anim_ops) / sizeof(prog_rzr_4_knee_anim_ops[0]), 0, prog_rzr_4_knee_anim_labels, sizeof(prog_rzr_4_knee_anim_labels) / sizeof(prog_rzr_4_knee_anim_labels[0]) },
     { "rzr_combo_knee_fall_anim", "RZRSEQ2.ASM", prog_rzr_combo_knee_fall_anim_ops,
-      sizeof(prog_rzr_combo_knee_fall_anim_ops) / sizeof(prog_rzr_combo_knee_fall_anim_ops[0]), 0 },
+      sizeof(prog_rzr_combo_knee_fall_anim_ops) / sizeof(prog_rzr_combo_knee_fall_anim_ops[0]), 0, prog_rzr_combo_knee_fall_anim_labels, sizeof(prog_rzr_combo_knee_fall_anim_labels) / sizeof(prog_rzr_combo_knee_fall_anim_labels[0]) },
     { "rzr_4_knee_fall_anim", "RZRSEQ2.ASM", prog_rzr_4_knee_fall_anim_ops,
-      sizeof(prog_rzr_4_knee_fall_anim_ops) / sizeof(prog_rzr_4_knee_fall_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_knee_fall_anim_ops) / sizeof(prog_rzr_4_knee_fall_anim_ops[0]), 0, prog_rzr_4_knee_fall_anim_labels, sizeof(prog_rzr_4_knee_fall_anim_labels) / sizeof(prog_rzr_4_knee_fall_anim_labels[0]) },
     { "rzr_2_ground_punch_anim", "RZRSEQ2.ASM", prog_rzr_2_ground_punch_anim_ops,
-      sizeof(prog_rzr_2_ground_punch_anim_ops) / sizeof(prog_rzr_2_ground_punch_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_ground_punch_anim_ops) / sizeof(prog_rzr_2_ground_punch_anim_ops[0]), 0, prog_rzr_2_ground_punch_anim_labels, sizeof(prog_rzr_2_ground_punch_anim_labels) / sizeof(prog_rzr_2_ground_punch_anim_labels[0]) },
     { "rzr_4_ground_punch_anim", "RZRSEQ2.ASM", prog_rzr_4_ground_punch_anim_ops,
-      sizeof(prog_rzr_4_ground_punch_anim_ops) / sizeof(prog_rzr_4_ground_punch_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_ground_punch_anim_ops) / sizeof(prog_rzr_4_ground_punch_anim_ops[0]), 0, prog_rzr_4_ground_punch_anim_labels, sizeof(prog_rzr_4_ground_punch_anim_labels) / sizeof(prog_rzr_4_ground_punch_anim_labels[0]) },
     { "rzr_combo_flying_kick_anim", "RZRSEQ2.ASM", prog_rzr_combo_flying_kick_anim_ops,
-      sizeof(prog_rzr_combo_flying_kick_anim_ops) / sizeof(prog_rzr_combo_flying_kick_anim_ops[0]), 0 },
+      sizeof(prog_rzr_combo_flying_kick_anim_ops) / sizeof(prog_rzr_combo_flying_kick_anim_ops[0]), 0, prog_rzr_combo_flying_kick_anim_labels, sizeof(prog_rzr_combo_flying_kick_anim_labels) / sizeof(prog_rzr_combo_flying_kick_anim_labels[0]) },
     { "rzr_flying_kick_anim", "RZRSEQ2.ASM", prog_rzr_flying_kick_anim_ops,
-      sizeof(prog_rzr_flying_kick_anim_ops) / sizeof(prog_rzr_flying_kick_anim_ops[0]), 0 },
+      sizeof(prog_rzr_flying_kick_anim_ops) / sizeof(prog_rzr_flying_kick_anim_ops[0]), 0, 0, 0 },
     { "rzr_grab_throw_anim", "RZRSEQ2.ASM", prog_rzr_grab_throw_anim_ops,
-      sizeof(prog_rzr_grab_throw_anim_ops) / sizeof(prog_rzr_grab_throw_anim_ops[0]), 0 },
+      sizeof(prog_rzr_grab_throw_anim_ops) / sizeof(prog_rzr_grab_throw_anim_ops[0]), 0, 0, 0 },
     { "rzr_2_stomp_anim", "RZRSEQ2.ASM", prog_rzr_2_stomp_anim_ops,
-      sizeof(prog_rzr_2_stomp_anim_ops) / sizeof(prog_rzr_2_stomp_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_stomp_anim_ops) / sizeof(prog_rzr_2_stomp_anim_ops[0]), 0, prog_rzr_2_stomp_anim_labels, sizeof(prog_rzr_2_stomp_anim_labels) / sizeof(prog_rzr_2_stomp_anim_labels[0]) },
     { "rzr_4_stomp_anim", "RZRSEQ2.ASM", prog_rzr_4_stomp_anim_ops,
-      sizeof(prog_rzr_4_stomp_anim_ops) / sizeof(prog_rzr_4_stomp_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_stomp_anim_ops) / sizeof(prog_rzr_4_stomp_anim_ops[0]), 0, prog_rzr_4_stomp_anim_labels, sizeof(prog_rzr_4_stomp_anim_labels) / sizeof(prog_rzr_4_stomp_anim_labels[0]) },
     { "rzr_flying_elbow_anim", "RZRSEQ2.ASM", prog_rzr_flying_elbow_anim_ops,
-      sizeof(prog_rzr_flying_elbow_anim_ops) / sizeof(prog_rzr_flying_elbow_anim_ops[0]), 0 },
+      sizeof(prog_rzr_flying_elbow_anim_ops) / sizeof(prog_rzr_flying_elbow_anim_ops[0]), 0, prog_rzr_flying_elbow_anim_labels, sizeof(prog_rzr_flying_elbow_anim_labels) / sizeof(prog_rzr_flying_elbow_anim_labels[0]) },
     { "rzr_tbukl_elbow_anim", "RZRSEQ2.ASM", prog_rzr_tbukl_elbow_anim_ops,
-      sizeof(prog_rzr_tbukl_elbow_anim_ops) / sizeof(prog_rzr_tbukl_elbow_anim_ops[0]), 0 },
+      sizeof(prog_rzr_tbukl_elbow_anim_ops) / sizeof(prog_rzr_tbukl_elbow_anim_ops[0]), 0, prog_rzr_tbukl_elbow_anim_labels, sizeof(prog_rzr_tbukl_elbow_anim_labels) / sizeof(prog_rzr_tbukl_elbow_anim_labels[0]) },
     { "rzr_2ndwind_anim", "RZRSEQ2.ASM", prog_rzr_2ndwind_anim_ops,
-      sizeof(prog_rzr_2ndwind_anim_ops) / sizeof(prog_rzr_2ndwind_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2ndwind_anim_ops) / sizeof(prog_rzr_2ndwind_anim_ops[0]), 0, 0, 0 },
     { "rzr_2_grabfling_anim", "RZRSEQ2.ASM", prog_rzr_2_grabfling_anim_ops,
-      sizeof(prog_rzr_2_grabfling_anim_ops) / sizeof(prog_rzr_2_grabfling_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_grabfling_anim_ops) / sizeof(prog_rzr_2_grabfling_anim_ops[0]), 0, prog_rzr_2_grabfling_anim_labels, sizeof(prog_rzr_2_grabfling_anim_labels) / sizeof(prog_rzr_2_grabfling_anim_labels[0]) },
     { "rzr_4_grabfling_anim", "RZRSEQ2.ASM", prog_rzr_4_grabfling_anim_ops,
-      sizeof(prog_rzr_4_grabfling_anim_ops) / sizeof(prog_rzr_4_grabfling_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_grabfling_anim_ops) / sizeof(prog_rzr_4_grabfling_anim_ops[0]), 0, prog_rzr_4_grabfling_anim_labels, sizeof(prog_rzr_4_grabfling_anim_labels) / sizeof(prog_rzr_4_grabfling_anim_labels[0]) },
     { "rzr_heldoh_anim", "RZRSEQ2.ASM", prog_rzr_heldoh_anim_ops,
-      sizeof(prog_rzr_heldoh_anim_ops) / sizeof(prog_rzr_heldoh_anim_ops[0]), 0 },
+      sizeof(prog_rzr_heldoh_anim_ops) / sizeof(prog_rzr_heldoh_anim_ops[0]), 0, prog_rzr_heldoh_anim_labels, sizeof(prog_rzr_heldoh_anim_labels) / sizeof(prog_rzr_heldoh_anim_labels[0]) },
     { "rzr_4_push_anim", "RZRSEQ2.ASM", prog_rzr_4_push_anim_ops,
-      sizeof(prog_rzr_4_push_anim_ops) / sizeof(prog_rzr_4_push_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_push_anim_ops) / sizeof(prog_rzr_4_push_anim_ops[0]), 0, prog_rzr_4_push_anim_labels, sizeof(prog_rzr_4_push_anim_labels) / sizeof(prog_rzr_4_push_anim_labels[0]) },
     { "rzr_4_bigboot_anim", "RZRSEQ2.ASM", prog_rzr_4_bigboot_anim_ops,
-      sizeof(prog_rzr_4_bigboot_anim_ops) / sizeof(prog_rzr_4_bigboot_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_bigboot_anim_ops) / sizeof(prog_rzr_4_bigboot_anim_ops[0]), 0, prog_rzr_4_bigboot_anim_labels, sizeof(prog_rzr_4_bigboot_anim_labels) / sizeof(prog_rzr_4_bigboot_anim_labels[0]) },
     { "rzr_roll_frames", "RZRSEQ2.ASM", prog_rzr_roll_frames_ops,
-      sizeof(prog_rzr_roll_frames_ops) / sizeof(prog_rzr_roll_frames_ops[0]), 0 },
+      sizeof(prog_rzr_roll_frames_ops) / sizeof(prog_rzr_roll_frames_ops[0]), 0, 0, 0 },
     { "rzr_tossed_anim", "RZRSEQ2.ASM", prog_rzr_tossed_anim_ops,
-      sizeof(prog_rzr_tossed_anim_ops) / sizeof(prog_rzr_tossed_anim_ops[0]), 0 },
+      sizeof(prog_rzr_tossed_anim_ops) / sizeof(prog_rzr_tossed_anim_ops[0]), 0, 0, 0 },
     { "rzr_tossed2_anim", "RZRSEQ2.ASM", prog_rzr_tossed2_anim_ops,
-      sizeof(prog_rzr_tossed2_anim_ops) / sizeof(prog_rzr_tossed2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_tossed2_anim_ops) / sizeof(prog_rzr_tossed2_anim_ops[0]), 0, 0, 0 },
     { "rzr_climbthru_side_anim", "RZRSEQ2.ASM", prog_rzr_climbthru_side_anim_ops,
-      sizeof(prog_rzr_climbthru_side_anim_ops) / sizeof(prog_rzr_climbthru_side_anim_ops[0]), 0 },
+      sizeof(prog_rzr_climbthru_side_anim_ops) / sizeof(prog_rzr_climbthru_side_anim_ops[0]), 0, 0, 0 },
     { "rzr_climbin_side_anim", "RZRSEQ2.ASM", prog_rzr_climbin_side_anim_ops,
-      sizeof(prog_rzr_climbin_side_anim_ops) / sizeof(prog_rzr_climbin_side_anim_ops[0]), 0 },
+      sizeof(prog_rzr_climbin_side_anim_ops) / sizeof(prog_rzr_climbin_side_anim_ops[0]), 0, prog_rzr_climbin_side_anim_labels, sizeof(prog_rzr_climbin_side_anim_labels) / sizeof(prog_rzr_climbin_side_anim_labels[0]) },
     { "rzr_climbthru_bot_anim", "RZRSEQ2.ASM", prog_rzr_climbthru_bot_anim_ops,
-      sizeof(prog_rzr_climbthru_bot_anim_ops) / sizeof(prog_rzr_climbthru_bot_anim_ops[0]), 0 },
+      sizeof(prog_rzr_climbthru_bot_anim_ops) / sizeof(prog_rzr_climbthru_bot_anim_ops[0]), 0, prog_rzr_climbthru_bot_anim_labels, sizeof(prog_rzr_climbthru_bot_anim_labels) / sizeof(prog_rzr_climbthru_bot_anim_labels[0]) },
     { "rzr_climbin_bot_anim", "RZRSEQ2.ASM", prog_rzr_climbin_bot_anim_ops,
-      sizeof(prog_rzr_climbin_bot_anim_ops) / sizeof(prog_rzr_climbin_bot_anim_ops[0]), 0 },
+      sizeof(prog_rzr_climbin_bot_anim_ops) / sizeof(prog_rzr_climbin_bot_anim_ops[0]), 0, 0, 0 },
     { "rzr_climbthru_top_anim", "RZRSEQ2.ASM", prog_rzr_climbthru_top_anim_ops,
-      sizeof(prog_rzr_climbthru_top_anim_ops) / sizeof(prog_rzr_climbthru_top_anim_ops[0]), 0 },
+      sizeof(prog_rzr_climbthru_top_anim_ops) / sizeof(prog_rzr_climbthru_top_anim_ops[0]), 0, prog_rzr_climbthru_top_anim_labels, sizeof(prog_rzr_climbthru_top_anim_labels) / sizeof(prog_rzr_climbthru_top_anim_labels[0]) },
     { "rzr_rollthru_top_anim", "RZRSEQ2.ASM", prog_rzr_rollthru_top_anim_ops,
-      sizeof(prog_rzr_rollthru_top_anim_ops) / sizeof(prog_rzr_rollthru_top_anim_ops[0]), 0 },
+      sizeof(prog_rzr_rollthru_top_anim_ops) / sizeof(prog_rzr_rollthru_top_anim_ops[0]), 0, 0, 0 },
     { "rzr_climbin_top_anim", "RZRSEQ2.ASM", prog_rzr_climbin_top_anim_ops,
-      sizeof(prog_rzr_climbin_top_anim_ops) / sizeof(prog_rzr_climbin_top_anim_ops[0]), 0 },
+      sizeof(prog_rzr_climbin_top_anim_ops) / sizeof(prog_rzr_climbin_top_anim_ops[0]), 0, prog_rzr_climbin_top_anim_labels, sizeof(prog_rzr_climbin_top_anim_labels) / sizeof(prog_rzr_climbin_top_anim_labels[0]) },
     { "rzr_knockdwn_anim", "RZRSEQ2.ASM", prog_rzr_knockdwn_anim_ops,
-      sizeof(prog_rzr_knockdwn_anim_ops) / sizeof(prog_rzr_knockdwn_anim_ops[0]), 0 },
+      sizeof(prog_rzr_knockdwn_anim_ops) / sizeof(prog_rzr_knockdwn_anim_ops[0]), 0, prog_rzr_knockdwn_anim_labels, sizeof(prog_rzr_knockdwn_anim_labels) / sizeof(prog_rzr_knockdwn_anim_labels[0]) },
     { "rzr_2_pin_anim", "RZRSEQ2.ASM", prog_rzr_2_pin_anim_ops,
-      sizeof(prog_rzr_2_pin_anim_ops) / sizeof(prog_rzr_2_pin_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_pin_anim_ops) / sizeof(prog_rzr_2_pin_anim_ops[0]), 0, prog_rzr_2_pin_anim_labels, sizeof(prog_rzr_2_pin_anim_labels) / sizeof(prog_rzr_2_pin_anim_labels[0]) },
     { "rzr_4_pin_anim", "RZRSEQ2.ASM", prog_rzr_4_pin_anim_ops,
-      sizeof(prog_rzr_4_pin_anim_ops) / sizeof(prog_rzr_4_pin_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_pin_anim_ops) / sizeof(prog_rzr_4_pin_anim_ops[0]), 0, prog_rzr_4_pin_anim_labels, sizeof(prog_rzr_4_pin_anim_labels) / sizeof(prog_rzr_4_pin_anim_labels[0]) },
     { "rzr_2_raise_arm_anim", "RZRSEQ2.ASM", prog_rzr_2_raise_arm_anim_ops,
-      sizeof(prog_rzr_2_raise_arm_anim_ops) / sizeof(prog_rzr_2_raise_arm_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_raise_arm_anim_ops) / sizeof(prog_rzr_2_raise_arm_anim_ops[0]), 0, prog_rzr_2_raise_arm_anim_labels, sizeof(prog_rzr_2_raise_arm_anim_labels) / sizeof(prog_rzr_2_raise_arm_anim_labels[0]) },
     { "rzr_4_raise_arm_anim", "RZRSEQ2.ASM", prog_rzr_4_raise_arm_anim_ops,
-      sizeof(prog_rzr_4_raise_arm_anim_ops) / sizeof(prog_rzr_4_raise_arm_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_raise_arm_anim_ops) / sizeof(prog_rzr_4_raise_arm_anim_ops[0]), 0, prog_rzr_4_raise_arm_anim_labels, sizeof(prog_rzr_4_raise_arm_anim_labels) / sizeof(prog_rzr_4_raise_arm_anim_labels[0]) },
     { "rzr_buckoff_anim", "RZRSEQ2.ASM", prog_rzr_buckoff_anim_ops,
-      sizeof(prog_rzr_buckoff_anim_ops) / sizeof(prog_rzr_buckoff_anim_ops[0]), 0 },
+      sizeof(prog_rzr_buckoff_anim_ops) / sizeof(prog_rzr_buckoff_anim_ops[0]), 0, 0, 0 },
     { "rzr_combo_rugshake_anim", "RZRSEQ3.ASM", prog_rzr_combo_rugshake_anim_ops,
-      sizeof(prog_rzr_combo_rugshake_anim_ops) / sizeof(prog_rzr_combo_rugshake_anim_ops[0]), 0 },
+      sizeof(prog_rzr_combo_rugshake_anim_ops) / sizeof(prog_rzr_combo_rugshake_anim_ops[0]), 0, prog_rzr_combo_rugshake_anim_labels, sizeof(prog_rzr_combo_rugshake_anim_labels) / sizeof(prog_rzr_combo_rugshake_anim_labels[0]) },
     { "rzr_rugshake_anim", "RZRSEQ3.ASM", prog_rzr_rugshake_anim_ops,
-      sizeof(prog_rzr_rugshake_anim_ops) / sizeof(prog_rzr_rugshake_anim_ops[0]), 0 },
+      sizeof(prog_rzr_rugshake_anim_ops) / sizeof(prog_rzr_rugshake_anim_ops[0]), 0, prog_rzr_rugshake_anim_labels, sizeof(prog_rzr_rugshake_anim_labels) / sizeof(prog_rzr_rugshake_anim_labels[0]) },
     { "impact_sound", "RZRSEQ3.ASM", prog_impact_sound_ops,
-      sizeof(prog_impact_sound_ops) / sizeof(prog_impact_sound_ops[0]), 47 },   /* branches back into shared code */
+      sizeof(prog_impact_sound_ops) / sizeof(prog_impact_sound_ops[0]), 47, prog_impact_sound_labels, sizeof(prog_impact_sound_labels) / sizeof(prog_impact_sound_labels[0]) },   /* branches back into shared code */
     { "rzr_sliding_rug_anim", "RZRSEQ3.ASM", prog_rzr_sliding_rug_anim_ops,
-      sizeof(prog_rzr_sliding_rug_anim_ops) / sizeof(prog_rzr_sliding_rug_anim_ops[0]), 47 },   /* branches back into shared code */
+      sizeof(prog_rzr_sliding_rug_anim_ops) / sizeof(prog_rzr_sliding_rug_anim_ops[0]), 47, prog_rzr_sliding_rug_anim_labels, sizeof(prog_rzr_sliding_rug_anim_labels) / sizeof(prog_rzr_sliding_rug_anim_labels[0]) },   /* branches back into shared code */
     { "rzr_rugshake2_anim", "RZRSEQ3.ASM", prog_rzr_rugshake2_anim_ops,
-      sizeof(prog_rzr_rugshake2_anim_ops) / sizeof(prog_rzr_rugshake2_anim_ops[0]), 89 },   /* branches back into shared code */
+      sizeof(prog_rzr_rugshake2_anim_ops) / sizeof(prog_rzr_rugshake2_anim_ops[0]), 89, prog_rzr_rugshake2_anim_labels, sizeof(prog_rzr_rugshake2_anim_labels) / sizeof(prog_rzr_rugshake2_anim_labels[0]) },   /* branches back into shared code */
     { "rzr_get_buzz_anim", "RZRSEQ3.ASM", prog_rzr_get_buzz_anim_ops,
-      sizeof(prog_rzr_get_buzz_anim_ops) / sizeof(prog_rzr_get_buzz_anim_ops[0]), 0 },
+      sizeof(prog_rzr_get_buzz_anim_ops) / sizeof(prog_rzr_get_buzz_anim_ops[0]), 0, prog_rzr_get_buzz_anim_labels, sizeof(prog_rzr_get_buzz_anim_labels) / sizeof(prog_rzr_get_buzz_anim_labels[0]) },
     { "rzr_3_head_held_anim", "RZRSEQ3.ASM", prog_rzr_3_head_held_anim_ops,
-      sizeof(prog_rzr_3_head_held_anim_ops) / sizeof(prog_rzr_3_head_held_anim_ops[0]), 0 },
+      sizeof(prog_rzr_3_head_held_anim_ops) / sizeof(prog_rzr_3_head_held_anim_ops[0]), 0, prog_rzr_3_head_held_anim_labels, sizeof(prog_rzr_3_head_held_anim_labels) / sizeof(prog_rzr_3_head_held_anim_labels[0]) },
     { "rzr_3_head_held_brk_anim", "RZRSEQ3.ASM", prog_rzr_3_head_held_brk_anim_ops,
-      sizeof(prog_rzr_3_head_held_brk_anim_ops) / sizeof(prog_rzr_3_head_held_brk_anim_ops[0]), 0 },
+      sizeof(prog_rzr_3_head_held_brk_anim_ops) / sizeof(prog_rzr_3_head_held_brk_anim_ops[0]), 0, prog_rzr_3_head_held_brk_anim_labels, sizeof(prog_rzr_3_head_held_brk_anim_labels) / sizeof(prog_rzr_3_head_held_brk_anim_labels[0]) },
     { "rzr_3_head_held_stand_anim", "RZRSEQ3.ASM", prog_rzr_3_head_held_stand_anim_ops,
-      sizeof(prog_rzr_3_head_held_stand_anim_ops) / sizeof(prog_rzr_3_head_held_stand_anim_ops[0]), 0 },
+      sizeof(prog_rzr_3_head_held_stand_anim_ops) / sizeof(prog_rzr_3_head_held_stand_anim_ops[0]), 0, 0, 0 },
     { "rzr_combo_hiptoss_anim", "RZRSEQ3.ASM", prog_rzr_combo_hiptoss_anim_ops,
-      sizeof(prog_rzr_combo_hiptoss_anim_ops) / sizeof(prog_rzr_combo_hiptoss_anim_ops[0]), 0 },
+      sizeof(prog_rzr_combo_hiptoss_anim_ops) / sizeof(prog_rzr_combo_hiptoss_anim_ops[0]), 0, prog_rzr_combo_hiptoss_anim_labels, sizeof(prog_rzr_combo_hiptoss_anim_labels) / sizeof(prog_rzr_combo_hiptoss_anim_labels[0]) },
     { "rzr_2_hiptoss2_anim", "RZRSEQ3.ASM", prog_rzr_2_hiptoss2_anim_ops,
-      sizeof(prog_rzr_2_hiptoss2_anim_ops) / sizeof(prog_rzr_2_hiptoss2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_hiptoss2_anim_ops) / sizeof(prog_rzr_2_hiptoss2_anim_ops[0]), 0, prog_rzr_2_hiptoss2_anim_labels, sizeof(prog_rzr_2_hiptoss2_anim_labels) / sizeof(prog_rzr_2_hiptoss2_anim_labels[0]) },
     { "rzr_4_hiptoss2_anim", "RZRSEQ3.ASM", prog_rzr_4_hiptoss2_anim_ops,
-      sizeof(prog_rzr_4_hiptoss2_anim_ops) / sizeof(prog_rzr_4_hiptoss2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_hiptoss2_anim_ops) / sizeof(prog_rzr_4_hiptoss2_anim_ops[0]), 0, prog_rzr_4_hiptoss2_anim_labels, sizeof(prog_rzr_4_hiptoss2_anim_labels) / sizeof(prog_rzr_4_hiptoss2_anim_labels[0]) },
     { "rzr_2_hiptoss_anim", "RZRSEQ3.ASM", prog_rzr_2_hiptoss_anim_ops,
-      sizeof(prog_rzr_2_hiptoss_anim_ops) / sizeof(prog_rzr_2_hiptoss_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_hiptoss_anim_ops) / sizeof(prog_rzr_2_hiptoss_anim_ops[0]), 0, prog_rzr_2_hiptoss_anim_labels, sizeof(prog_rzr_2_hiptoss_anim_labels) / sizeof(prog_rzr_2_hiptoss_anim_labels[0]) },
     { "rzr_4_hiptoss_anim", "RZRSEQ3.ASM", prog_rzr_4_hiptoss_anim_ops,
-      sizeof(prog_rzr_4_hiptoss_anim_ops) / sizeof(prog_rzr_4_hiptoss_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_hiptoss_anim_ops) / sizeof(prog_rzr_4_hiptoss_anim_ops[0]), 0, prog_rzr_4_hiptoss_anim_labels, sizeof(prog_rzr_4_hiptoss_anim_labels) / sizeof(prog_rzr_4_hiptoss_anim_labels[0]) },
     { "rzr_2_hair_pickup_anim", "RZRSEQ3.ASM", prog_rzr_2_hair_pickup_anim_ops,
-      sizeof(prog_rzr_2_hair_pickup_anim_ops) / sizeof(prog_rzr_2_hair_pickup_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_hair_pickup_anim_ops) / sizeof(prog_rzr_2_hair_pickup_anim_ops[0]), 0, prog_rzr_2_hair_pickup_anim_labels, sizeof(prog_rzr_2_hair_pickup_anim_labels) / sizeof(prog_rzr_2_hair_pickup_anim_labels[0]) },
     { "rzr_4_hair_pickup_anim", "RZRSEQ3.ASM", prog_rzr_4_hair_pickup_anim_ops,
-      sizeof(prog_rzr_4_hair_pickup_anim_ops) / sizeof(prog_rzr_4_hair_pickup_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_hair_pickup_anim_ops) / sizeof(prog_rzr_4_hair_pickup_anim_ops[0]), 0, prog_rzr_4_hair_pickup_anim_labels, sizeof(prog_rzr_4_hair_pickup_anim_labels) / sizeof(prog_rzr_4_hair_pickup_anim_labels[0]) },
     { "rzr_climb_up_anim", "RZRSEQ3.ASM", prog_rzr_climb_up_anim_ops,
-      sizeof(prog_rzr_climb_up_anim_ops) / sizeof(prog_rzr_climb_up_anim_ops[0]), 0 },
+      sizeof(prog_rzr_climb_up_anim_ops) / sizeof(prog_rzr_climb_up_anim_ops[0]), 0, prog_rzr_climb_up_anim_labels, sizeof(prog_rzr_climb_up_anim_labels) / sizeof(prog_rzr_climb_up_anim_labels[0]) },
     { "rzr_climb_down_anim", "RZRSEQ3.ASM", prog_rzr_climb_down_anim_ops,
-      sizeof(prog_rzr_climb_down_anim_ops) / sizeof(prog_rzr_climb_down_anim_ops[0]), 0 },
+      sizeof(prog_rzr_climb_down_anim_ops) / sizeof(prog_rzr_climb_down_anim_ops[0]), 0, 0, 0 },
     { "rzr_4_taunt_anim", "RZRSEQ3.ASM", prog_rzr_4_taunt_anim_ops,
-      sizeof(prog_rzr_4_taunt_anim_ops) / sizeof(prog_rzr_4_taunt_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_taunt_anim_ops) / sizeof(prog_rzr_4_taunt_anim_ops[0]), 0, 0, 0 },
     { "rzr_break_face2_anim", "RZRSEQ3.ASM", prog_rzr_break_face2_anim_ops,
-      sizeof(prog_rzr_break_face2_anim_ops) / sizeof(prog_rzr_break_face2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_break_face2_anim_ops) / sizeof(prog_rzr_break_face2_anim_ops[0]), 0, 0, 0 },
     { "rzr_break_face3_anim", "RZRSEQ3.ASM", prog_rzr_break_face3_anim_ops,
-      sizeof(prog_rzr_break_face3_anim_ops) / sizeof(prog_rzr_break_face3_anim_ops[0]), 0 },
+      sizeof(prog_rzr_break_face3_anim_ops) / sizeof(prog_rzr_break_face3_anim_ops[0]), 0, 0, 0 },
     { "rzr_break_face_anim", "RZRSEQ3.ASM", prog_rzr_break_face_anim_ops,
-      sizeof(prog_rzr_break_face_anim_ops) / sizeof(prog_rzr_break_face_anim_ops[0]), 0 },
+      sizeof(prog_rzr_break_face_anim_ops) / sizeof(prog_rzr_break_face_anim_ops[0]), 0, 0, 0 },
     { "rzr_uslashes_to_head_anim", "RZRSEQ3.ASM", prog_rzr_uslashes_to_head_anim_ops,
-      sizeof(prog_rzr_uslashes_to_head_anim_ops) / sizeof(prog_rzr_uslashes_to_head_anim_ops[0]), 0 },
+      sizeof(prog_rzr_uslashes_to_head_anim_ops) / sizeof(prog_rzr_uslashes_to_head_anim_ops[0]), 0, prog_rzr_uslashes_to_head_anim_labels, sizeof(prog_rzr_uslashes_to_head_anim_labels) / sizeof(prog_rzr_uslashes_to_head_anim_labels[0]) },
     { "rzr_dslashes_to_head_anim", "RZRSEQ3.ASM", prog_rzr_dslashes_to_head_anim_ops,
-      sizeof(prog_rzr_dslashes_to_head_anim_ops) / sizeof(prog_rzr_dslashes_to_head_anim_ops[0]), 0 },
+      sizeof(prog_rzr_dslashes_to_head_anim_ops) / sizeof(prog_rzr_dslashes_to_head_anim_ops[0]), 0, prog_rzr_dslashes_to_head_anim_labels, sizeof(prog_rzr_dslashes_to_head_anim_labels) / sizeof(prog_rzr_dslashes_to_head_anim_labels[0]) },
     { "rzr_3_fake_hold_anim", "RZRSEQ3.ASM", prog_rzr_3_fake_hold_anim_ops,
-      sizeof(prog_rzr_3_fake_hold_anim_ops) / sizeof(prog_rzr_3_fake_hold_anim_ops[0]), 0 },
+      sizeof(prog_rzr_3_fake_hold_anim_ops) / sizeof(prog_rzr_3_fake_hold_anim_ops[0]), 0, prog_rzr_3_fake_hold_anim_labels, sizeof(prog_rzr_3_fake_hold_anim_labels) / sizeof(prog_rzr_3_fake_hold_anim_labels[0]) },
     { "rzr_3_head_hold2_anim", "RZRSEQ3.ASM", prog_rzr_3_head_hold2_anim_ops,
-      sizeof(prog_rzr_3_head_hold2_anim_ops) / sizeof(prog_rzr_3_head_hold2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_3_head_hold2_anim_ops) / sizeof(prog_rzr_3_head_hold2_anim_ops[0]), 0, prog_rzr_3_head_hold2_anim_labels, sizeof(prog_rzr_3_head_hold2_anim_labels) / sizeof(prog_rzr_3_head_hold2_anim_labels[0]) },
     { "rzr_3_head_hold_anim", "RZRSEQ3.ASM", prog_rzr_3_head_hold_anim_ops,
-      sizeof(prog_rzr_3_head_hold_anim_ops) / sizeof(prog_rzr_3_head_hold_anim_ops[0]), 0 },
+      sizeof(prog_rzr_3_head_hold_anim_ops) / sizeof(prog_rzr_3_head_hold_anim_ops[0]), 0, prog_rzr_3_head_hold_anim_labels, sizeof(prog_rzr_3_head_hold_anim_labels) / sizeof(prog_rzr_3_head_hold_anim_labels[0]) },
     { "rzr_combo_pile_driver_anim", "RZRSEQ3.ASM", prog_rzr_combo_pile_driver_anim_ops,
-      sizeof(prog_rzr_combo_pile_driver_anim_ops) / sizeof(prog_rzr_combo_pile_driver_anim_ops[0]), 0 },
+      sizeof(prog_rzr_combo_pile_driver_anim_ops) / sizeof(prog_rzr_combo_pile_driver_anim_ops[0]), 0, prog_rzr_combo_pile_driver_anim_labels, sizeof(prog_rzr_combo_pile_driver_anim_labels) / sizeof(prog_rzr_combo_pile_driver_anim_labels[0]) },
     { "rzr_3_pile_driver2_anim", "RZRSEQ3.ASM", prog_rzr_3_pile_driver2_anim_ops,
-      sizeof(prog_rzr_3_pile_driver2_anim_ops) / sizeof(prog_rzr_3_pile_driver2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_3_pile_driver2_anim_ops) / sizeof(prog_rzr_3_pile_driver2_anim_ops[0]), 0, prog_rzr_3_pile_driver2_anim_labels, sizeof(prog_rzr_3_pile_driver2_anim_labels) / sizeof(prog_rzr_3_pile_driver2_anim_labels[0]) },
     { "rzr_3_pile_driver_anim", "RZRSEQ3.ASM", prog_rzr_3_pile_driver_anim_ops,
-      sizeof(prog_rzr_3_pile_driver_anim_ops) / sizeof(prog_rzr_3_pile_driver_anim_ops[0]), 0 },
+      sizeof(prog_rzr_3_pile_driver_anim_ops) / sizeof(prog_rzr_3_pile_driver_anim_ops[0]), 0, prog_rzr_3_pile_driver_anim_labels, sizeof(prog_rzr_3_pile_driver_anim_labels) / sizeof(prog_rzr_3_pile_driver_anim_labels[0]) },
     { "rzr_combo_razors_edge_anim", "RZRSEQ3.ASM", prog_rzr_combo_razors_edge_anim_ops,
-      sizeof(prog_rzr_combo_razors_edge_anim_ops) / sizeof(prog_rzr_combo_razors_edge_anim_ops[0]), 0 },
+      sizeof(prog_rzr_combo_razors_edge_anim_ops) / sizeof(prog_rzr_combo_razors_edge_anim_ops[0]), 0, prog_rzr_combo_razors_edge_anim_labels, sizeof(prog_rzr_combo_razors_edge_anim_labels) / sizeof(prog_rzr_combo_razors_edge_anim_labels[0]) },
     { "rzr_razors_edge_anim", "RZRSEQ3.ASM", prog_rzr_razors_edge_anim_ops,
-      sizeof(prog_rzr_razors_edge_anim_ops) / sizeof(prog_rzr_razors_edge_anim_ops[0]), 0 },
+      sizeof(prog_rzr_razors_edge_anim_ops) / sizeof(prog_rzr_razors_edge_anim_ops[0]), 0, prog_rzr_razors_edge_anim_labels, sizeof(prog_rzr_razors_edge_anim_labels) / sizeof(prog_rzr_razors_edge_anim_labels[0]) },
     { "rzr_repeat_slash_anim", "RZRSEQ3.ASM", prog_rzr_repeat_slash_anim_ops,
-      sizeof(prog_rzr_repeat_slash_anim_ops) / sizeof(prog_rzr_repeat_slash_anim_ops[0]), 0 },
+      sizeof(prog_rzr_repeat_slash_anim_ops) / sizeof(prog_rzr_repeat_slash_anim_ops[0]), 0, prog_rzr_repeat_slash_anim_labels, sizeof(prog_rzr_repeat_slash_anim_labels) / sizeof(prog_rzr_repeat_slash_anim_labels[0]) },
     { "rzr_2_block_anim", "RZRSEQ4.ASM", prog_rzr_2_block_anim_ops,
-      sizeof(prog_rzr_2_block_anim_ops) / sizeof(prog_rzr_2_block_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_block_anim_ops) / sizeof(prog_rzr_2_block_anim_ops[0]), 0, prog_rzr_2_block_anim_labels, sizeof(prog_rzr_2_block_anim_labels) / sizeof(prog_rzr_2_block_anim_labels[0]) },
     { "rzr_4_block_anim", "RZRSEQ4.ASM", prog_rzr_4_block_anim_ops,
-      sizeof(prog_rzr_4_block_anim_ops) / sizeof(prog_rzr_4_block_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_block_anim_ops) / sizeof(prog_rzr_4_block_anim_ops[0]), 0, prog_rzr_4_block_anim_labels, sizeof(prog_rzr_4_block_anim_labels) / sizeof(prog_rzr_4_block_anim_labels[0]) },
     { "rzr_4_hitblock_anim", "RZRSEQ4.ASM", prog_rzr_4_hitblock_anim_ops,
-      sizeof(prog_rzr_4_hitblock_anim_ops) / sizeof(prog_rzr_4_hitblock_anim_ops[0]), 9 },   /* branches back into shared code */
+      sizeof(prog_rzr_4_hitblock_anim_ops) / sizeof(prog_rzr_4_hitblock_anim_ops[0]), 9, prog_rzr_4_hitblock_anim_labels, sizeof(prog_rzr_4_hitblock_anim_labels) / sizeof(prog_rzr_4_hitblock_anim_labels[0]) },   /* branches back into shared code */
     { "rzr_4_hitblock2_anim", "RZRSEQ4.ASM", prog_rzr_4_hitblock2_anim_ops,
-      sizeof(prog_rzr_4_hitblock2_anim_ops) / sizeof(prog_rzr_4_hitblock2_anim_ops[0]), 17 },   /* branches back into shared code */
+      sizeof(prog_rzr_4_hitblock2_anim_ops) / sizeof(prog_rzr_4_hitblock2_anim_ops[0]), 17, prog_rzr_4_hitblock2_anim_labels, sizeof(prog_rzr_4_hitblock2_anim_labels) / sizeof(prog_rzr_4_hitblock2_anim_labels[0]) },   /* branches back into shared code */
     { "rzr_4_losebal_anim", "RZRSEQ4.ASM", prog_rzr_4_losebal_anim_ops,
-      sizeof(prog_rzr_4_losebal_anim_ops) / sizeof(prog_rzr_4_losebal_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_losebal_anim_ops) / sizeof(prog_rzr_4_losebal_anim_ops[0]), 0, 0, 0 },
     { "rzr_2_head_hit_anim", "RZRSEQ4.ASM", prog_rzr_2_head_hit_anim_ops,
-      sizeof(prog_rzr_2_head_hit_anim_ops) / sizeof(prog_rzr_2_head_hit_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_head_hit_anim_ops) / sizeof(prog_rzr_2_head_hit_anim_ops[0]), 0, 0, 0 },
     { "rzr_4_head_hit_anim", "RZRSEQ4.ASM", prog_rzr_4_head_hit_anim_ops,
-      sizeof(prog_rzr_4_head_hit_anim_ops) / sizeof(prog_rzr_4_head_hit_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_head_hit_anim_ops) / sizeof(prog_rzr_4_head_hit_anim_ops[0]), 0, 0, 0 },
     { "rzr_2_head_hit3_anim", "RZRSEQ4.ASM", prog_rzr_2_head_hit3_anim_ops,
-      sizeof(prog_rzr_2_head_hit3_anim_ops) / sizeof(prog_rzr_2_head_hit3_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_head_hit3_anim_ops) / sizeof(prog_rzr_2_head_hit3_anim_ops[0]), 0, 0, 0 },
     { "rzr_4_head_hit3_anim", "RZRSEQ4.ASM", prog_rzr_4_head_hit3_anim_ops,
-      sizeof(prog_rzr_4_head_hit3_anim_ops) / sizeof(prog_rzr_4_head_hit3_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_head_hit3_anim_ops) / sizeof(prog_rzr_4_head_hit3_anim_ops[0]), 0, 0, 0 },
     { "rzr_4_head_hit4_anim", "RZRSEQ4.ASM", prog_rzr_4_head_hit4_anim_ops,
-      sizeof(prog_rzr_4_head_hit4_anim_ops) / sizeof(prog_rzr_4_head_hit4_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_head_hit4_anim_ops) / sizeof(prog_rzr_4_head_hit4_anim_ops[0]), 0, 0, 0 },
     { "rzr_2_bncoff_anim", "RZRSEQ4.ASM", prog_rzr_2_bncoff_anim_ops,
-      sizeof(prog_rzr_2_bncoff_anim_ops) / sizeof(prog_rzr_2_bncoff_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_bncoff_anim_ops) / sizeof(prog_rzr_2_bncoff_anim_ops[0]), 0, 0, 0 },
     { "rzr_4_bncoff_anim", "RZRSEQ4.ASM", prog_rzr_4_bncoff_anim_ops,
-      sizeof(prog_rzr_4_bncoff_anim_ops) / sizeof(prog_rzr_4_bncoff_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_bncoff_anim_ops) / sizeof(prog_rzr_4_bncoff_anim_ops[0]), 0, 0, 0 },
     { "rzr_4_bncoff_dizzy_anim", "RZRSEQ4.ASM", prog_rzr_4_bncoff_dizzy_anim_ops,
-      sizeof(prog_rzr_4_bncoff_dizzy_anim_ops) / sizeof(prog_rzr_4_bncoff_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_bncoff_dizzy_anim_ops) / sizeof(prog_rzr_4_bncoff_dizzy_anim_ops[0]), 0, 0, 0 },
     { "rzr_2_head_hit2_anim", "RZRSEQ4.ASM", prog_rzr_2_head_hit2_anim_ops,
-      sizeof(prog_rzr_2_head_hit2_anim_ops) / sizeof(prog_rzr_2_head_hit2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_head_hit2_anim_ops) / sizeof(prog_rzr_2_head_hit2_anim_ops[0]), 0, 0, 0 },
     { "rzr_4_head_hit2_anim", "RZRSEQ4.ASM", prog_rzr_4_head_hit2_anim_ops,
-      sizeof(prog_rzr_4_head_hit2_anim_ops) / sizeof(prog_rzr_4_head_hit2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_head_hit2_anim_ops) / sizeof(prog_rzr_4_head_hit2_anim_ops[0]), 0, prog_rzr_4_head_hit2_anim_labels, sizeof(prog_rzr_4_head_hit2_anim_labels) / sizeof(prog_rzr_4_head_hit2_anim_labels[0]) },
     { "rzr_4_head_hit2s_anim", "RZRSEQ4.ASM", prog_rzr_4_head_hit2s_anim_ops,
-      sizeof(prog_rzr_4_head_hit2s_anim_ops) / sizeof(prog_rzr_4_head_hit2s_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_head_hit2s_anim_ops) / sizeof(prog_rzr_4_head_hit2s_anim_ops[0]), 0, 0, 0 },
     { "rzr_4_head_hit_dizzy_anim", "RZRSEQ4.ASM", prog_rzr_4_head_hit_dizzy_anim_ops,
-      sizeof(prog_rzr_4_head_hit_dizzy_anim_ops) / sizeof(prog_rzr_4_head_hit_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_head_hit_dizzy_anim_ops) / sizeof(prog_rzr_4_head_hit_dizzy_anim_ops[0]), 0, 0, 0 },
     { "rzr_2_body_hit_anim", "RZRSEQ4.ASM", prog_rzr_2_body_hit_anim_ops,
-      sizeof(prog_rzr_2_body_hit_anim_ops) / sizeof(prog_rzr_2_body_hit_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_body_hit_anim_ops) / sizeof(prog_rzr_2_body_hit_anim_ops[0]), 0, 0, 0 },
     { "rzr_2_knee_hit_anim", "RZRSEQ4.ASM", prog_rzr_2_knee_hit_anim_ops,
-      sizeof(prog_rzr_2_knee_hit_anim_ops) / sizeof(prog_rzr_2_knee_hit_anim_ops[0]), 0 },
+      sizeof(prog_rzr_2_knee_hit_anim_ops) / sizeof(prog_rzr_2_knee_hit_anim_ops[0]), 0, 0, 0 },
     { "rzr_4_body_hit_anim", "RZRSEQ4.ASM", prog_rzr_4_body_hit_anim_ops,
-      sizeof(prog_rzr_4_body_hit_anim_ops) / sizeof(prog_rzr_4_body_hit_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_body_hit_anim_ops) / sizeof(prog_rzr_4_body_hit_anim_ops[0]), 0, prog_rzr_4_body_hit_anim_labels, sizeof(prog_rzr_4_body_hit_anim_labels) / sizeof(prog_rzr_4_body_hit_anim_labels[0]) },
     { "rzr_4_body_hit_dizzy_anim", "RZRSEQ4.ASM", prog_rzr_4_body_hit_dizzy_anim_ops,
-      sizeof(prog_rzr_4_body_hit_dizzy_anim_ops) / sizeof(prog_rzr_4_body_hit_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_body_hit_dizzy_anim_ops) / sizeof(prog_rzr_4_body_hit_dizzy_anim_ops[0]), 0, 0, 0 },
     { "rzr_4_knee_hit_anim", "RZRSEQ4.ASM", prog_rzr_4_knee_hit_anim_ops,
-      sizeof(prog_rzr_4_knee_hit_anim_ops) / sizeof(prog_rzr_4_knee_hit_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_knee_hit_anim_ops) / sizeof(prog_rzr_4_knee_hit_anim_ops[0]), 0, 0, 0 },
     { "rzr_4_knee_hit_dizzy_anim", "RZRSEQ4.ASM", prog_rzr_4_knee_hit_dizzy_anim_ops,
-      sizeof(prog_rzr_4_knee_hit_dizzy_anim_ops) / sizeof(prog_rzr_4_knee_hit_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_rzr_4_knee_hit_dizzy_anim_ops) / sizeof(prog_rzr_4_knee_hit_dizzy_anim_ops[0]), 0, 0, 0 },
     { "rzr_quick_knee_hit_anim", "RZRSEQ4.ASM", prog_rzr_quick_knee_hit_anim_ops,
-      sizeof(prog_rzr_quick_knee_hit_anim_ops) / sizeof(prog_rzr_quick_knee_hit_anim_ops[0]), 0 },
+      sizeof(prog_rzr_quick_knee_hit_anim_ops) / sizeof(prog_rzr_quick_knee_hit_anim_ops[0]), 0, prog_rzr_quick_knee_hit_anim_labels, sizeof(prog_rzr_quick_knee_hit_anim_labels) / sizeof(prog_rzr_quick_knee_hit_anim_labels[0]) },
     { "rzr_fall_back_anim", "RZRSEQ4.ASM", prog_rzr_fall_back_anim_ops,
-      sizeof(prog_rzr_fall_back_anim_ops) / sizeof(prog_rzr_fall_back_anim_ops[0]), 0 },
+      sizeof(prog_rzr_fall_back_anim_ops) / sizeof(prog_rzr_fall_back_anim_ops[0]), 0, 0, 0 },
     { "rzr_fall_back2_anim", "RZRSEQ4.ASM", prog_rzr_fall_back2_anim_ops,
-      sizeof(prog_rzr_fall_back2_anim_ops) / sizeof(prog_rzr_fall_back2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_fall_back2_anim_ops) / sizeof(prog_rzr_fall_back2_anim_ops[0]), 0, 0, 0 },
     { "rzr_fall_back_tbukl_anim", "RZRSEQ4.ASM", prog_rzr_fall_back_tbukl_anim_ops,
-      sizeof(prog_rzr_fall_back_tbukl_anim_ops) / sizeof(prog_rzr_fall_back_tbukl_anim_ops[0]), 0 },
+      sizeof(prog_rzr_fall_back_tbukl_anim_ops) / sizeof(prog_rzr_fall_back_tbukl_anim_ops[0]), 0, 0, 0 },
     { "rzr_facedown_getup_anim", "RZRSEQ4.ASM", prog_rzr_facedown_getup_anim_ops,
-      sizeof(prog_rzr_facedown_getup_anim_ops) / sizeof(prog_rzr_facedown_getup_anim_ops[0]), 0 },
+      sizeof(prog_rzr_facedown_getup_anim_ops) / sizeof(prog_rzr_facedown_getup_anim_ops[0]), 0, prog_rzr_facedown_getup_anim_labels, sizeof(prog_rzr_facedown_getup_anim_labels) / sizeof(prog_rzr_facedown_getup_anim_labels[0]) },
     { "rzr_faceup_getup_anim", "RZRSEQ4.ASM", prog_rzr_faceup_getup_anim_ops,
-      sizeof(prog_rzr_faceup_getup_anim_ops) / sizeof(prog_rzr_faceup_getup_anim_ops[0]), 0 },
+      sizeof(prog_rzr_faceup_getup_anim_ops) / sizeof(prog_rzr_faceup_getup_anim_ops[0]), 0, prog_rzr_faceup_getup_anim_labels, sizeof(prog_rzr_faceup_getup_anim_labels) / sizeof(prog_rzr_faceup_getup_anim_labels[0]) },
     { "rzr_faceup_getup2_anim", "RZRSEQ4.ASM", prog_rzr_faceup_getup2_anim_ops,
-      sizeof(prog_rzr_faceup_getup2_anim_ops) / sizeof(prog_rzr_faceup_getup2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_faceup_getup2_anim_ops) / sizeof(prog_rzr_faceup_getup2_anim_ops[0]), 0, prog_rzr_faceup_getup2_anim_labels, sizeof(prog_rzr_faceup_getup2_anim_labels) / sizeof(prog_rzr_faceup_getup2_anim_labels[0]) },
     { "rzr_up_anim", "RZRSEQ4.ASM", prog_rzr_up_anim_ops,
-      sizeof(prog_rzr_up_anim_ops) / sizeof(prog_rzr_up_anim_ops[0]), 0 },
+      sizeof(prog_rzr_up_anim_ops) / sizeof(prog_rzr_up_anim_ops[0]), 0, 0, 0 },
     { "rzr_hitonground_anim", "RZRSEQ4.ASM", prog_rzr_hitonground_anim_ops,
-      sizeof(prog_rzr_hitonground_anim_ops) / sizeof(prog_rzr_hitonground_anim_ops[0]), 0 },
+      sizeof(prog_rzr_hitonground_anim_ops) / sizeof(prog_rzr_hitonground_anim_ops[0]), 0, 0, 0 },
     { "rzr_liedown_anim", "RZRSEQ4.ASM", prog_rzr_liedown_anim_ops,
-      sizeof(prog_rzr_liedown_anim_ops) / sizeof(prog_rzr_liedown_anim_ops[0]), 0 },
+      sizeof(prog_rzr_liedown_anim_ops) / sizeof(prog_rzr_liedown_anim_ops[0]), 0, 0, 0 },
     { "rzr_dizzy_anim", "RZRSEQ4.ASM", prog_rzr_dizzy_anim_ops,
-      sizeof(prog_rzr_dizzy_anim_ops) / sizeof(prog_rzr_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_rzr_dizzy_anim_ops) / sizeof(prog_rzr_dizzy_anim_ops[0]), 0, prog_rzr_dizzy_anim_labels, sizeof(prog_rzr_dizzy_anim_labels) / sizeof(prog_rzr_dizzy_anim_labels[0]) },
     { "rzr_flyout_anim", "RZRSEQ4.ASM", prog_rzr_flyout_anim_ops,
-      sizeof(prog_rzr_flyout_anim_ops) / sizeof(prog_rzr_flyout_anim_ops[0]), 0 },
+      sizeof(prog_rzr_flyout_anim_ops) / sizeof(prog_rzr_flyout_anim_ops[0]), 0, 0, 0 },
     { "rzr_break_neck_anim", "RZRSEQ4.ASM", prog_rzr_break_neck_anim_ops,
-      sizeof(prog_rzr_break_neck_anim_ops) / sizeof(prog_rzr_break_neck_anim_ops[0]), 0 },
+      sizeof(prog_rzr_break_neck_anim_ops) / sizeof(prog_rzr_break_neck_anim_ops[0]), 0, prog_rzr_break_neck_anim_labels, sizeof(prog_rzr_break_neck_anim_labels) / sizeof(prog_rzr_break_neck_anim_labels[0]) },
     { "rzr_break_neck2_anim", "RZRSEQ4.ASM", prog_rzr_break_neck2_anim_ops,
-      sizeof(prog_rzr_break_neck2_anim_ops) / sizeof(prog_rzr_break_neck2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_break_neck2_anim_ops) / sizeof(prog_rzr_break_neck2_anim_ops[0]), 0, 0, 0 },
     { "rzr_break_neck3_anim", "RZRSEQ4.ASM", prog_rzr_break_neck3_anim_ops,
-      sizeof(prog_rzr_break_neck3_anim_ops) / sizeof(prog_rzr_break_neck3_anim_ops[0]), 0 },
+      sizeof(prog_rzr_break_neck3_anim_ops) / sizeof(prog_rzr_break_neck3_anim_ops[0]), 0, 0, 0 },
     { "rzr_break_neck4_anim", "RZRSEQ4.ASM", prog_rzr_break_neck4_anim_ops,
-      sizeof(prog_rzr_break_neck4_anim_ops) / sizeof(prog_rzr_break_neck4_anim_ops[0]), 0 },
+      sizeof(prog_rzr_break_neck4_anim_ops) / sizeof(prog_rzr_break_neck4_anim_ops[0]), 0, prog_rzr_break_neck4_anim_labels, sizeof(prog_rzr_break_neck4_anim_labels) / sizeof(prog_rzr_break_neck4_anim_labels[0]) },
     { "rzr_backbroken_anim", "RZRSEQ4.ASM", prog_rzr_backbroken_anim_ops,
-      sizeof(prog_rzr_backbroken_anim_ops) / sizeof(prog_rzr_backbroken_anim_ops[0]), 0 },
+      sizeof(prog_rzr_backbroken_anim_ops) / sizeof(prog_rzr_backbroken_anim_ops[0]), 0, 0, 0 },
     { "rzr_slamnobounce_anim", "RZRSEQ4.ASM", prog_rzr_slamnobounce_anim_ops,
-      sizeof(prog_rzr_slamnobounce_anim_ops) / sizeof(prog_rzr_slamnobounce_anim_ops[0]), 0 },
+      sizeof(prog_rzr_slamnobounce_anim_ops) / sizeof(prog_rzr_slamnobounce_anim_ops[0]), 0, 0, 0 },
     { "rzr_slambounce_anim", "RZRSEQ4.ASM", prog_rzr_slambounce_anim_ops,
-      sizeof(prog_rzr_slambounce_anim_ops) / sizeof(prog_rzr_slambounce_anim_ops[0]), 0 },
+      sizeof(prog_rzr_slambounce_anim_ops) / sizeof(prog_rzr_slambounce_anim_ops[0]), 0, 0, 0 },
     { "rzr_slambounce2_anim", "RZRSEQ4.ASM", prog_rzr_slambounce2_anim_ops,
-      sizeof(prog_rzr_slambounce2_anim_ops) / sizeof(prog_rzr_slambounce2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_slambounce2_anim_ops) / sizeof(prog_rzr_slambounce2_anim_ops[0]), 0, 0, 0 },
     { "rzr_breakneck2_anim", "RZRSEQ4.ASM", prog_rzr_breakneck2_anim_ops,
-      sizeof(prog_rzr_breakneck2_anim_ops) / sizeof(prog_rzr_breakneck2_anim_ops[0]), 0 },
+      sizeof(prog_rzr_breakneck2_anim_ops) / sizeof(prog_rzr_breakneck2_anim_ops[0]), 0, 0, 0 },
     { "rzr_arm_broken_anim", "RZRSEQ4.ASM", prog_rzr_arm_broken_anim_ops,
-      sizeof(prog_rzr_arm_broken_anim_ops) / sizeof(prog_rzr_arm_broken_anim_ops[0]), 0 },
+      sizeof(prog_rzr_arm_broken_anim_ops) / sizeof(prog_rzr_arm_broken_anim_ops[0]), 0, prog_rzr_arm_broken_anim_labels, sizeof(prog_rzr_arm_broken_anim_labels) / sizeof(prog_rzr_arm_broken_anim_labels[0]) },
     { "shn_zip_anim", "SHNSEQ1.ASM", prog_shn_zip_anim_ops,
-      sizeof(prog_shn_zip_anim_ops) / sizeof(prog_shn_zip_anim_ops[0]), 0 },
+      sizeof(prog_shn_zip_anim_ops) / sizeof(prog_shn_zip_anim_ops[0]), 0, 0, 0 },
     { "shn_stand2_anim", "SHNSEQ1.ASM", prog_shn_stand2_anim_ops,
-      sizeof(prog_shn_stand2_anim_ops) / sizeof(prog_shn_stand2_anim_ops[0]), 0 },
+      sizeof(prog_shn_stand2_anim_ops) / sizeof(prog_shn_stand2_anim_ops[0]), 0, 0, 0 },
     { "shn_stand8_anim", "SHNSEQ1.ASM", prog_shn_stand8_anim_ops,
-      sizeof(prog_shn_stand8_anim_ops) / sizeof(prog_shn_stand8_anim_ops[0]), 0 },
+      sizeof(prog_shn_stand8_anim_ops) / sizeof(prog_shn_stand8_anim_ops[0]), 0, 0, 0 },
     { "shn_stand4_anim", "SHNSEQ1.ASM", prog_shn_stand4_anim_ops,
-      sizeof(prog_shn_stand4_anim_ops) / sizeof(prog_shn_stand4_anim_ops[0]), 0 },
+      sizeof(prog_shn_stand4_anim_ops) / sizeof(prog_shn_stand4_anim_ops[0]), 0, 0, 0 },
     { "shn_stand6_anim", "SHNSEQ1.ASM", prog_shn_stand6_anim_ops,
-      sizeof(prog_shn_stand6_anim_ops) / sizeof(prog_shn_stand6_anim_ops[0]), 0 },
+      sizeof(prog_shn_stand6_anim_ops) / sizeof(prog_shn_stand6_anim_ops[0]), 0, 0, 0 },
     { "shn_torso2_anim", "SHNSEQ1.ASM", prog_shn_torso2_anim_ops,
-      sizeof(prog_shn_torso2_anim_ops) / sizeof(prog_shn_torso2_anim_ops[0]), 0 },
+      sizeof(prog_shn_torso2_anim_ops) / sizeof(prog_shn_torso2_anim_ops[0]), 0, 0, 0 },
     { "shn_torso8_anim", "SHNSEQ1.ASM", prog_shn_torso8_anim_ops,
-      sizeof(prog_shn_torso8_anim_ops) / sizeof(prog_shn_torso8_anim_ops[0]), 0 },
+      sizeof(prog_shn_torso8_anim_ops) / sizeof(prog_shn_torso8_anim_ops[0]), 0, 0, 0 },
     { "shn_torso4_anim", "SHNSEQ1.ASM", prog_shn_torso4_anim_ops,
-      sizeof(prog_shn_torso4_anim_ops) / sizeof(prog_shn_torso4_anim_ops[0]), 0 },
+      sizeof(prog_shn_torso4_anim_ops) / sizeof(prog_shn_torso4_anim_ops[0]), 0, 0, 0 },
     { "shn_torso6_anim", "SHNSEQ1.ASM", prog_shn_torso6_anim_ops,
-      sizeof(prog_shn_torso6_anim_ops) / sizeof(prog_shn_torso6_anim_ops[0]), 0 },
+      sizeof(prog_shn_torso6_anim_ops) / sizeof(prog_shn_torso6_anim_ops[0]), 0, 0, 0 },
     { "shn_walk1_f2_anim", "SHNSEQ1.ASM", prog_shn_walk1_f2_anim_ops,
-      sizeof(prog_shn_walk1_f2_anim_ops) / sizeof(prog_shn_walk1_f2_anim_ops[0]), 0 },
+      sizeof(prog_shn_walk1_f2_anim_ops) / sizeof(prog_shn_walk1_f2_anim_ops[0]), 0, 0, 0 },
     { "shn_walk2_f2_anim", "SHNSEQ1.ASM", prog_shn_walk2_f2_anim_ops,
-      sizeof(prog_shn_walk2_f2_anim_ops) / sizeof(prog_shn_walk2_f2_anim_ops[0]), 0 },
+      sizeof(prog_shn_walk2_f2_anim_ops) / sizeof(prog_shn_walk2_f2_anim_ops[0]), 0, 0, 0 },
     { "shn_walk4_f2_anim", "SHNSEQ1.ASM", prog_shn_walk4_f2_anim_ops,
-      sizeof(prog_shn_walk4_f2_anim_ops) / sizeof(prog_shn_walk4_f2_anim_ops[0]), 0 },
+      sizeof(prog_shn_walk4_f2_anim_ops) / sizeof(prog_shn_walk4_f2_anim_ops[0]), 0, 0, 0 },
     { "shn_walk5_f2_anim", "SHNSEQ1.ASM", prog_shn_walk5_f2_anim_ops,
-      sizeof(prog_shn_walk5_f2_anim_ops) / sizeof(prog_shn_walk5_f2_anim_ops[0]), 0 },
+      sizeof(prog_shn_walk5_f2_anim_ops) / sizeof(prog_shn_walk5_f2_anim_ops[0]), 0, 0, 0 },
     { "shn_walk6_f2_anim", "SHNSEQ1.ASM", prog_shn_walk6_f2_anim_ops,
-      sizeof(prog_shn_walk6_f2_anim_ops) / sizeof(prog_shn_walk6_f2_anim_ops[0]), 0 },
+      sizeof(prog_shn_walk6_f2_anim_ops) / sizeof(prog_shn_walk6_f2_anim_ops[0]), 0, 0, 0 },
     { "shn_walk8_f2_anim", "SHNSEQ1.ASM", prog_shn_walk8_f2_anim_ops,
-      sizeof(prog_shn_walk8_f2_anim_ops) / sizeof(prog_shn_walk8_f2_anim_ops[0]), 0 },
+      sizeof(prog_shn_walk8_f2_anim_ops) / sizeof(prog_shn_walk8_f2_anim_ops[0]), 0, 0, 0 },
     { "shn_walk1_f4_anim", "SHNSEQ1.ASM", prog_shn_walk1_f4_anim_ops,
-      sizeof(prog_shn_walk1_f4_anim_ops) / sizeof(prog_shn_walk1_f4_anim_ops[0]), 0 },
+      sizeof(prog_shn_walk1_f4_anim_ops) / sizeof(prog_shn_walk1_f4_anim_ops[0]), 0, 0, 0 },
     { "shn_walk2_f4_anim", "SHNSEQ1.ASM", prog_shn_walk2_f4_anim_ops,
-      sizeof(prog_shn_walk2_f4_anim_ops) / sizeof(prog_shn_walk2_f4_anim_ops[0]), 0 },
+      sizeof(prog_shn_walk2_f4_anim_ops) / sizeof(prog_shn_walk2_f4_anim_ops[0]), 0, 0, 0 },
     { "shn_walk4_f4_anim", "SHNSEQ1.ASM", prog_shn_walk4_f4_anim_ops,
-      sizeof(prog_shn_walk4_f4_anim_ops) / sizeof(prog_shn_walk4_f4_anim_ops[0]), 0 },
+      sizeof(prog_shn_walk4_f4_anim_ops) / sizeof(prog_shn_walk4_f4_anim_ops[0]), 0, 0, 0 },
     { "shn_walk5_f4_anim", "SHNSEQ1.ASM", prog_shn_walk5_f4_anim_ops,
-      sizeof(prog_shn_walk5_f4_anim_ops) / sizeof(prog_shn_walk5_f4_anim_ops[0]), 0 },
+      sizeof(prog_shn_walk5_f4_anim_ops) / sizeof(prog_shn_walk5_f4_anim_ops[0]), 0, 0, 0 },
     { "shn_walk6_f4_anim", "SHNSEQ1.ASM", prog_shn_walk6_f4_anim_ops,
-      sizeof(prog_shn_walk6_f4_anim_ops) / sizeof(prog_shn_walk6_f4_anim_ops[0]), 0 },
+      sizeof(prog_shn_walk6_f4_anim_ops) / sizeof(prog_shn_walk6_f4_anim_ops[0]), 0, 0, 0 },
     { "shn_walk8_f4_anim", "SHNSEQ1.ASM", prog_shn_walk8_f4_anim_ops,
-      sizeof(prog_shn_walk8_f4_anim_ops) / sizeof(prog_shn_walk8_f4_anim_ops[0]), 0 },
+      sizeof(prog_shn_walk8_f4_anim_ops) / sizeof(prog_shn_walk8_f4_anim_ops[0]), 0, 0, 0 },
     { "shn_2_to_4_turn_anim", "SHNSEQ1.ASM", prog_shn_2_to_4_turn_anim_ops,
-      sizeof(prog_shn_2_to_4_turn_anim_ops) / sizeof(prog_shn_2_to_4_turn_anim_ops[0]), 0 },
+      sizeof(prog_shn_2_to_4_turn_anim_ops) / sizeof(prog_shn_2_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "shn_8_to_6_turn_anim", "SHNSEQ1.ASM", prog_shn_8_to_6_turn_anim_ops,
-      sizeof(prog_shn_8_to_6_turn_anim_ops) / sizeof(prog_shn_8_to_6_turn_anim_ops[0]), 0 },
+      sizeof(prog_shn_8_to_6_turn_anim_ops) / sizeof(prog_shn_8_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "shn_4_to_2_turn_anim", "SHNSEQ1.ASM", prog_shn_4_to_2_turn_anim_ops,
-      sizeof(prog_shn_4_to_2_turn_anim_ops) / sizeof(prog_shn_4_to_2_turn_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_to_2_turn_anim_ops) / sizeof(prog_shn_4_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "shn_6_to_8_turn_anim", "SHNSEQ1.ASM", prog_shn_6_to_8_turn_anim_ops,
-      sizeof(prog_shn_6_to_8_turn_anim_ops) / sizeof(prog_shn_6_to_8_turn_anim_ops[0]), 0 },
+      sizeof(prog_shn_6_to_8_turn_anim_ops) / sizeof(prog_shn_6_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "shn_4_to_6_turn_anim", "SHNSEQ1.ASM", prog_shn_4_to_6_turn_anim_ops,
-      sizeof(prog_shn_4_to_6_turn_anim_ops) / sizeof(prog_shn_4_to_6_turn_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_to_6_turn_anim_ops) / sizeof(prog_shn_4_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "shn_6_to_4_turn_anim", "SHNSEQ1.ASM", prog_shn_6_to_4_turn_anim_ops,
-      sizeof(prog_shn_6_to_4_turn_anim_ops) / sizeof(prog_shn_6_to_4_turn_anim_ops[0]), 0 },
+      sizeof(prog_shn_6_to_4_turn_anim_ops) / sizeof(prog_shn_6_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "shn_2_to_8_turn_anim", "SHNSEQ1.ASM", prog_shn_2_to_8_turn_anim_ops,
-      sizeof(prog_shn_2_to_8_turn_anim_ops) / sizeof(prog_shn_2_to_8_turn_anim_ops[0]), 0 },
+      sizeof(prog_shn_2_to_8_turn_anim_ops) / sizeof(prog_shn_2_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "shn_8_to_2_turn_anim", "SHNSEQ1.ASM", prog_shn_8_to_2_turn_anim_ops,
-      sizeof(prog_shn_8_to_2_turn_anim_ops) / sizeof(prog_shn_8_to_2_turn_anim_ops[0]), 0 },
+      sizeof(prog_shn_8_to_2_turn_anim_ops) / sizeof(prog_shn_8_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "shn_4_to_8_turn_anim", "SHNSEQ1.ASM", prog_shn_4_to_8_turn_anim_ops,
-      sizeof(prog_shn_4_to_8_turn_anim_ops) / sizeof(prog_shn_4_to_8_turn_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_to_8_turn_anim_ops) / sizeof(prog_shn_4_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "shn_6_to_2_turn_anim", "SHNSEQ1.ASM", prog_shn_6_to_2_turn_anim_ops,
-      sizeof(prog_shn_6_to_2_turn_anim_ops) / sizeof(prog_shn_6_to_2_turn_anim_ops[0]), 0 },
+      sizeof(prog_shn_6_to_2_turn_anim_ops) / sizeof(prog_shn_6_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "shn_2_to_6_turn_anim", "SHNSEQ1.ASM", prog_shn_2_to_6_turn_anim_ops,
-      sizeof(prog_shn_2_to_6_turn_anim_ops) / sizeof(prog_shn_2_to_6_turn_anim_ops[0]), 0 },
+      sizeof(prog_shn_2_to_6_turn_anim_ops) / sizeof(prog_shn_2_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "shn_8_to_4_turn_anim", "SHNSEQ1.ASM", prog_shn_8_to_4_turn_anim_ops,
-      sizeof(prog_shn_8_to_4_turn_anim_ops) / sizeof(prog_shn_8_to_4_turn_anim_ops[0]), 0 },
+      sizeof(prog_shn_8_to_4_turn_anim_ops) / sizeof(prog_shn_8_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "shn_2_to_4_turn2_anim", "SHNSEQ1.ASM", prog_shn_2_to_4_turn2_anim_ops,
-      sizeof(prog_shn_2_to_4_turn2_anim_ops) / sizeof(prog_shn_2_to_4_turn2_anim_ops[0]), 0 },
+      sizeof(prog_shn_2_to_4_turn2_anim_ops) / sizeof(prog_shn_2_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "shn_8_to_6_turn2_anim", "SHNSEQ1.ASM", prog_shn_8_to_6_turn2_anim_ops,
-      sizeof(prog_shn_8_to_6_turn2_anim_ops) / sizeof(prog_shn_8_to_6_turn2_anim_ops[0]), 0 },
+      sizeof(prog_shn_8_to_6_turn2_anim_ops) / sizeof(prog_shn_8_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "shn_4_to_2_turn2_anim", "SHNSEQ1.ASM", prog_shn_4_to_2_turn2_anim_ops,
-      sizeof(prog_shn_4_to_2_turn2_anim_ops) / sizeof(prog_shn_4_to_2_turn2_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_to_2_turn2_anim_ops) / sizeof(prog_shn_4_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "shn_6_to_8_turn2_anim", "SHNSEQ1.ASM", prog_shn_6_to_8_turn2_anim_ops,
-      sizeof(prog_shn_6_to_8_turn2_anim_ops) / sizeof(prog_shn_6_to_8_turn2_anim_ops[0]), 0 },
+      sizeof(prog_shn_6_to_8_turn2_anim_ops) / sizeof(prog_shn_6_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "shn_4_to_6_turn2_anim", "SHNSEQ1.ASM", prog_shn_4_to_6_turn2_anim_ops,
-      sizeof(prog_shn_4_to_6_turn2_anim_ops) / sizeof(prog_shn_4_to_6_turn2_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_to_6_turn2_anim_ops) / sizeof(prog_shn_4_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "shn_6_to_4_turn2_anim", "SHNSEQ1.ASM", prog_shn_6_to_4_turn2_anim_ops,
-      sizeof(prog_shn_6_to_4_turn2_anim_ops) / sizeof(prog_shn_6_to_4_turn2_anim_ops[0]), 0 },
+      sizeof(prog_shn_6_to_4_turn2_anim_ops) / sizeof(prog_shn_6_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "shn_2_to_8_turn2_anim", "SHNSEQ1.ASM", prog_shn_2_to_8_turn2_anim_ops,
-      sizeof(prog_shn_2_to_8_turn2_anim_ops) / sizeof(prog_shn_2_to_8_turn2_anim_ops[0]), 0 },
+      sizeof(prog_shn_2_to_8_turn2_anim_ops) / sizeof(prog_shn_2_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "shn_8_to_2_turn2_anim", "SHNSEQ1.ASM", prog_shn_8_to_2_turn2_anim_ops,
-      sizeof(prog_shn_8_to_2_turn2_anim_ops) / sizeof(prog_shn_8_to_2_turn2_anim_ops[0]), 0 },
+      sizeof(prog_shn_8_to_2_turn2_anim_ops) / sizeof(prog_shn_8_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "shn_4_to_8_turn2_anim", "SHNSEQ1.ASM", prog_shn_4_to_8_turn2_anim_ops,
-      sizeof(prog_shn_4_to_8_turn2_anim_ops) / sizeof(prog_shn_4_to_8_turn2_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_to_8_turn2_anim_ops) / sizeof(prog_shn_4_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "shn_6_to_2_turn2_anim", "SHNSEQ1.ASM", prog_shn_6_to_2_turn2_anim_ops,
-      sizeof(prog_shn_6_to_2_turn2_anim_ops) / sizeof(prog_shn_6_to_2_turn2_anim_ops[0]), 0 },
+      sizeof(prog_shn_6_to_2_turn2_anim_ops) / sizeof(prog_shn_6_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "shn_2_to_6_turn2_anim", "SHNSEQ1.ASM", prog_shn_2_to_6_turn2_anim_ops,
-      sizeof(prog_shn_2_to_6_turn2_anim_ops) / sizeof(prog_shn_2_to_6_turn2_anim_ops[0]), 0 },
+      sizeof(prog_shn_2_to_6_turn2_anim_ops) / sizeof(prog_shn_2_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "shn_8_to_4_turn2_anim", "SHNSEQ1.ASM", prog_shn_8_to_4_turn2_anim_ops,
-      sizeof(prog_shn_8_to_4_turn2_anim_ops) / sizeof(prog_shn_8_to_4_turn2_anim_ops[0]), 0 },
+      sizeof(prog_shn_8_to_4_turn2_anim_ops) / sizeof(prog_shn_8_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "shn_run2_anim", "SHNSEQ1.ASM", prog_shn_run2_anim_ops,
-      sizeof(prog_shn_run2_anim_ops) / sizeof(prog_shn_run2_anim_ops[0]), 0 },
+      sizeof(prog_shn_run2_anim_ops) / sizeof(prog_shn_run2_anim_ops[0]), 0, prog_shn_run2_anim_labels, sizeof(prog_shn_run2_anim_labels) / sizeof(prog_shn_run2_anim_labels[0]) },
     { "shn_run_anim", "SHNSEQ1.ASM", prog_shn_run_anim_ops,
-      sizeof(prog_shn_run_anim_ops) / sizeof(prog_shn_run_anim_ops[0]), 0 },
+      sizeof(prog_shn_run_anim_ops) / sizeof(prog_shn_run_anim_ops[0]), 0, prog_shn_run_anim_labels, sizeof(prog_shn_run_anim_labels) / sizeof(prog_shn_run_anim_labels[0]) },
     { "shn_bounce_anim", "SHNSEQ1.ASM", prog_shn_bounce_anim_ops,
-      sizeof(prog_shn_bounce_anim_ops) / sizeof(prog_shn_bounce_anim_ops[0]), 0 },
+      sizeof(prog_shn_bounce_anim_ops) / sizeof(prog_shn_bounce_anim_ops[0]), 0, 0, 0 },
     { "shn_2_punch_anim", "SHNSEQ2.ASM", prog_shn_2_punch_anim_ops,
-      sizeof(prog_shn_2_punch_anim_ops) / sizeof(prog_shn_2_punch_anim_ops[0]), 0 },
+      sizeof(prog_shn_2_punch_anim_ops) / sizeof(prog_shn_2_punch_anim_ops[0]), 0, prog_shn_2_punch_anim_labels, sizeof(prog_shn_2_punch_anim_labels) / sizeof(prog_shn_2_punch_anim_labels[0]) },
     { "shn_4_punch_anim", "SHNSEQ2.ASM", prog_shn_4_punch_anim_ops,
-      sizeof(prog_shn_4_punch_anim_ops) / sizeof(prog_shn_4_punch_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_punch_anim_ops) / sizeof(prog_shn_4_punch_anim_ops[0]), 0, prog_shn_4_punch_anim_labels, sizeof(prog_shn_4_punch_anim_labels) / sizeof(prog_shn_4_punch_anim_labels[0]) },
     { "shn_combo_punch_anim", "SHNSEQ2.ASM", prog_shn_combo_punch_anim_ops,
-      sizeof(prog_shn_combo_punch_anim_ops) / sizeof(prog_shn_combo_punch_anim_ops[0]), 0 },
+      sizeof(prog_shn_combo_punch_anim_ops) / sizeof(prog_shn_combo_punch_anim_ops[0]), 0, prog_shn_combo_punch_anim_labels, sizeof(prog_shn_combo_punch_anim_labels) / sizeof(prog_shn_combo_punch_anim_labels[0]) },
     { "shn_4_push_anim", "SHNSEQ2.ASM", prog_shn_4_push_anim_ops,
-      sizeof(prog_shn_4_push_anim_ops) / sizeof(prog_shn_4_push_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_push_anim_ops) / sizeof(prog_shn_4_push_anim_ops[0]), 0, prog_shn_4_push_anim_labels, sizeof(prog_shn_4_push_anim_labels) / sizeof(prog_shn_4_push_anim_labels[0]) },
     { "shn_2_butt_anim", "SHNSEQ2.ASM", prog_shn_2_butt_anim_ops,
-      sizeof(prog_shn_2_butt_anim_ops) / sizeof(prog_shn_2_butt_anim_ops[0]), 0 },
+      sizeof(prog_shn_2_butt_anim_ops) / sizeof(prog_shn_2_butt_anim_ops[0]), 0, prog_shn_2_butt_anim_labels, sizeof(prog_shn_2_butt_anim_labels) / sizeof(prog_shn_2_butt_anim_labels[0]) },
     { "shn_4_butt_anim", "SHNSEQ2.ASM", prog_shn_4_butt_anim_ops,
-      sizeof(prog_shn_4_butt_anim_ops) / sizeof(prog_shn_4_butt_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_butt_anim_ops) / sizeof(prog_shn_4_butt_anim_ops[0]), 0, prog_shn_4_butt_anim_labels, sizeof(prog_shn_4_butt_anim_labels) / sizeof(prog_shn_4_butt_anim_labels[0]) },
     { "shn_combo_butt_anim", "SHNSEQ2.ASM", prog_shn_combo_butt_anim_ops,
-      sizeof(prog_shn_combo_butt_anim_ops) / sizeof(prog_shn_combo_butt_anim_ops[0]), 0 },
+      sizeof(prog_shn_combo_butt_anim_ops) / sizeof(prog_shn_combo_butt_anim_ops[0]), 0, prog_shn_combo_butt_anim_labels, sizeof(prog_shn_combo_butt_anim_labels) / sizeof(prog_shn_combo_butt_anim_labels[0]) },
     { "shn_2_kick_anim", "SHNSEQ2.ASM", prog_shn_2_kick_anim_ops,
-      sizeof(prog_shn_2_kick_anim_ops) / sizeof(prog_shn_2_kick_anim_ops[0]), 0 },
+      sizeof(prog_shn_2_kick_anim_ops) / sizeof(prog_shn_2_kick_anim_ops[0]), 0, prog_shn_2_kick_anim_labels, sizeof(prog_shn_2_kick_anim_labels) / sizeof(prog_shn_2_kick_anim_labels[0]) },
     { "shn_4_kick_anim", "SHNSEQ2.ASM", prog_shn_4_kick_anim_ops,
-      sizeof(prog_shn_4_kick_anim_ops) / sizeof(prog_shn_4_kick_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_kick_anim_ops) / sizeof(prog_shn_4_kick_anim_ops[0]), 0, prog_shn_4_kick_anim_labels, sizeof(prog_shn_4_kick_anim_labels) / sizeof(prog_shn_4_kick_anim_labels[0]) },
     { "shn_4_jump_kick_anim", "SHNSEQ2.ASM", prog_shn_4_jump_kick_anim_ops,
-      sizeof(prog_shn_4_jump_kick_anim_ops) / sizeof(prog_shn_4_jump_kick_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_jump_kick_anim_ops) / sizeof(prog_shn_4_jump_kick_anim_ops[0]), 0, prog_shn_4_jump_kick_anim_labels, sizeof(prog_shn_4_jump_kick_anim_labels) / sizeof(prog_shn_4_jump_kick_anim_labels[0]) },
     { "shn_combo_kick_anim", "SHNSEQ2.ASM", prog_shn_combo_kick_anim_ops,
-      sizeof(prog_shn_combo_kick_anim_ops) / sizeof(prog_shn_combo_kick_anim_ops[0]), 0 },
+      sizeof(prog_shn_combo_kick_anim_ops) / sizeof(prog_shn_combo_kick_anim_ops[0]), 0, prog_shn_combo_kick_anim_labels, sizeof(prog_shn_combo_kick_anim_labels) / sizeof(prog_shn_combo_kick_anim_labels[0]) },
     { "shn_2_stomp_anim", "SHNSEQ2.ASM", prog_shn_2_stomp_anim_ops,
-      sizeof(prog_shn_2_stomp_anim_ops) / sizeof(prog_shn_2_stomp_anim_ops[0]), 0 },
+      sizeof(prog_shn_2_stomp_anim_ops) / sizeof(prog_shn_2_stomp_anim_ops[0]), 0, prog_shn_2_stomp_anim_labels, sizeof(prog_shn_2_stomp_anim_labels) / sizeof(prog_shn_2_stomp_anim_labels[0]) },
     { "shn_4_stomp_anim", "SHNSEQ2.ASM", prog_shn_4_stomp_anim_ops,
-      sizeof(prog_shn_4_stomp_anim_ops) / sizeof(prog_shn_4_stomp_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_stomp_anim_ops) / sizeof(prog_shn_4_stomp_anim_ops[0]), 0, prog_shn_4_stomp_anim_labels, sizeof(prog_shn_4_stomp_anim_labels) / sizeof(prog_shn_4_stomp_anim_labels[0]) },
     { "shn_bstomp_anim", "SHNSEQ2.ASM", prog_shn_bstomp_anim_ops,
-      sizeof(prog_shn_bstomp_anim_ops) / sizeof(prog_shn_bstomp_anim_ops[0]), 0 },
+      sizeof(prog_shn_bstomp_anim_ops) / sizeof(prog_shn_bstomp_anim_ops[0]), 0, prog_shn_bstomp_anim_labels, sizeof(prog_shn_bstomp_anim_labels) / sizeof(prog_shn_bstomp_anim_labels[0]) },
     { "shn_belbow_anim", "SHNSEQ2.ASM", prog_shn_belbow_anim_ops,
-      sizeof(prog_shn_belbow_anim_ops) / sizeof(prog_shn_belbow_anim_ops[0]), 0 },
+      sizeof(prog_shn_belbow_anim_ops) / sizeof(prog_shn_belbow_anim_ops[0]), 0, prog_shn_belbow_anim_labels, sizeof(prog_shn_belbow_anim_labels) / sizeof(prog_shn_belbow_anim_labels[0]) },
     { "shn_2_falling_punch_anim", "SHNSEQ2.ASM", prog_shn_2_falling_punch_anim_ops,
-      sizeof(prog_shn_2_falling_punch_anim_ops) / sizeof(prog_shn_2_falling_punch_anim_ops[0]), 0 },
+      sizeof(prog_shn_2_falling_punch_anim_ops) / sizeof(prog_shn_2_falling_punch_anim_ops[0]), 0, prog_shn_2_falling_punch_anim_labels, sizeof(prog_shn_2_falling_punch_anim_labels) / sizeof(prog_shn_2_falling_punch_anim_labels[0]) },
     { "shn_4_falling_punch_anim", "SHNSEQ2.ASM", prog_shn_4_falling_punch_anim_ops,
-      sizeof(prog_shn_4_falling_punch_anim_ops) / sizeof(prog_shn_4_falling_punch_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_falling_punch_anim_ops) / sizeof(prog_shn_4_falling_punch_anim_ops[0]), 0, prog_shn_4_falling_punch_anim_labels, sizeof(prog_shn_4_falling_punch_anim_labels) / sizeof(prog_shn_4_falling_punch_anim_labels[0]) },
     { "shn_2_knee_anim", "SHNSEQ2.ASM", prog_shn_2_knee_anim_ops,
-      sizeof(prog_shn_2_knee_anim_ops) / sizeof(prog_shn_2_knee_anim_ops[0]), 0 },
+      sizeof(prog_shn_2_knee_anim_ops) / sizeof(prog_shn_2_knee_anim_ops[0]), 0, prog_shn_2_knee_anim_labels, sizeof(prog_shn_2_knee_anim_labels) / sizeof(prog_shn_2_knee_anim_labels[0]) },
     { "shn_4_knee_anim", "SHNSEQ2.ASM", prog_shn_4_knee_anim_ops,
-      sizeof(prog_shn_4_knee_anim_ops) / sizeof(prog_shn_4_knee_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_knee_anim_ops) / sizeof(prog_shn_4_knee_anim_ops[0]), 0, prog_shn_4_knee_anim_labels, sizeof(prog_shn_4_knee_anim_labels) / sizeof(prog_shn_4_knee_anim_labels[0]) },
     { "shn_combo_knee_anim", "SHNSEQ2.ASM", prog_shn_combo_knee_anim_ops,
-      sizeof(prog_shn_combo_knee_anim_ops) / sizeof(prog_shn_combo_knee_anim_ops[0]), 0 },
+      sizeof(prog_shn_combo_knee_anim_ops) / sizeof(prog_shn_combo_knee_anim_ops[0]), 0, prog_shn_combo_knee_anim_labels, sizeof(prog_shn_combo_knee_anim_labels) / sizeof(prog_shn_combo_knee_anim_labels[0]) },
     { "shn_2_grabfling_anim", "SHNSEQ2.ASM", prog_shn_2_grabfling_anim_ops,
-      sizeof(prog_shn_2_grabfling_anim_ops) / sizeof(prog_shn_2_grabfling_anim_ops[0]), 0 },
+      sizeof(prog_shn_2_grabfling_anim_ops) / sizeof(prog_shn_2_grabfling_anim_ops[0]), 0, prog_shn_2_grabfling_anim_labels, sizeof(prog_shn_2_grabfling_anim_labels) / sizeof(prog_shn_2_grabfling_anim_labels[0]) },
     { "shn_4_grabfling_anim", "SHNSEQ2.ASM", prog_shn_4_grabfling_anim_ops,
-      sizeof(prog_shn_4_grabfling_anim_ops) / sizeof(prog_shn_4_grabfling_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_grabfling_anim_ops) / sizeof(prog_shn_4_grabfling_anim_ops[0]), 0, prog_shn_4_grabfling_anim_labels, sizeof(prog_shn_4_grabfling_anim_labels) / sizeof(prog_shn_4_grabfling_anim_labels[0]) },
     { "DO_GRUNT", "SHNSEQ2.ASM", prog_DO_GRUNT_ops,
-      sizeof(prog_DO_GRUNT_ops) / sizeof(prog_DO_GRUNT_ops[0]), 0 },
+      sizeof(prog_DO_GRUNT_ops) / sizeof(prog_DO_GRUNT_ops[0]), 0, prog_DO_GRUNT_labels, sizeof(prog_DO_GRUNT_labels) / sizeof(prog_DO_GRUNT_labels[0]) },
     { "shn_climb_up_anim", "SHNSEQ2.ASM", prog_shn_climb_up_anim_ops,
-      sizeof(prog_shn_climb_up_anim_ops) / sizeof(prog_shn_climb_up_anim_ops[0]), 0 },
+      sizeof(prog_shn_climb_up_anim_ops) / sizeof(prog_shn_climb_up_anim_ops[0]), 0, prog_shn_climb_up_anim_labels, sizeof(prog_shn_climb_up_anim_labels) / sizeof(prog_shn_climb_up_anim_labels[0]) },
     { "shn_climb_down_anim", "SHNSEQ2.ASM", prog_shn_climb_down_anim_ops,
-      sizeof(prog_shn_climb_down_anim_ops) / sizeof(prog_shn_climb_down_anim_ops[0]), 0 },
+      sizeof(prog_shn_climb_down_anim_ops) / sizeof(prog_shn_climb_down_anim_ops[0]), 0, 0, 0 },
     { "tbukl_flip", "SHNSEQ2.ASM", prog_tbukl_flip_ops,
-      sizeof(prog_tbukl_flip_ops) / sizeof(prog_tbukl_flip_ops[0]), 0 },
+      sizeof(prog_tbukl_flip_ops) / sizeof(prog_tbukl_flip_ops[0]), 0, prog_tbukl_flip_labels, sizeof(prog_tbukl_flip_labels) / sizeof(prog_tbukl_flip_labels[0]) },
     { "face_inside", "SHNSEQ2.ASM", prog_face_inside_ops,
-      sizeof(prog_face_inside_ops) / sizeof(prog_face_inside_ops[0]), 0 },
+      sizeof(prog_face_inside_ops) / sizeof(prog_face_inside_ops[0]), 0, prog_face_inside_labels, sizeof(prog_face_inside_labels) / sizeof(prog_face_inside_labels[0]) },
     { "shn_combo_flying_kick_anim", "SHNSEQ2.ASM", prog_shn_combo_flying_kick_anim_ops,
-      sizeof(prog_shn_combo_flying_kick_anim_ops) / sizeof(prog_shn_combo_flying_kick_anim_ops[0]), 0 },
+      sizeof(prog_shn_combo_flying_kick_anim_ops) / sizeof(prog_shn_combo_flying_kick_anim_ops[0]), 0, prog_shn_combo_flying_kick_anim_labels, sizeof(prog_shn_combo_flying_kick_anim_labels) / sizeof(prog_shn_combo_flying_kick_anim_labels[0]) },
     { "shn_flying_kick_anim", "SHNSEQ2.ASM", prog_shn_flying_kick_anim_ops,
-      sizeof(prog_shn_flying_kick_anim_ops) / sizeof(prog_shn_flying_kick_anim_ops[0]), 0 },
+      sizeof(prog_shn_flying_kick_anim_ops) / sizeof(prog_shn_flying_kick_anim_ops[0]), 0, prog_shn_flying_kick_anim_labels, sizeof(prog_shn_flying_kick_anim_labels) / sizeof(prog_shn_flying_kick_anim_labels[0]) },
     { "shn_roll_frames", "SHNSEQ2.ASM", prog_shn_roll_frames_ops,
-      sizeof(prog_shn_roll_frames_ops) / sizeof(prog_shn_roll_frames_ops[0]), 0 },
+      sizeof(prog_shn_roll_frames_ops) / sizeof(prog_shn_roll_frames_ops[0]), 0, 0, 0 },
     { "shn_tossed_anim", "SHNSEQ2.ASM", prog_shn_tossed_anim_ops,
-      sizeof(prog_shn_tossed_anim_ops) / sizeof(prog_shn_tossed_anim_ops[0]), 0 },
+      sizeof(prog_shn_tossed_anim_ops) / sizeof(prog_shn_tossed_anim_ops[0]), 0, 0, 0 },
     { "shn_tossed2_anim", "SHNSEQ2.ASM", prog_shn_tossed2_anim_ops,
-      sizeof(prog_shn_tossed2_anim_ops) / sizeof(prog_shn_tossed2_anim_ops[0]), 0 },
+      sizeof(prog_shn_tossed2_anim_ops) / sizeof(prog_shn_tossed2_anim_ops[0]), 0, 0, 0 },
     { "shn_knockdwn_anim", "SHNSEQ2.ASM", prog_shn_knockdwn_anim_ops,
-      sizeof(prog_shn_knockdwn_anim_ops) / sizeof(prog_shn_knockdwn_anim_ops[0]), 0 },
+      sizeof(prog_shn_knockdwn_anim_ops) / sizeof(prog_shn_knockdwn_anim_ops[0]), 0, prog_shn_knockdwn_anim_labels, sizeof(prog_shn_knockdwn_anim_labels) / sizeof(prog_shn_knockdwn_anim_labels[0]) },
     { "shn_climbthru_side_anim", "SHNSEQ2.ASM", prog_shn_climbthru_side_anim_ops,
-      sizeof(prog_shn_climbthru_side_anim_ops) / sizeof(prog_shn_climbthru_side_anim_ops[0]), 0 },
+      sizeof(prog_shn_climbthru_side_anim_ops) / sizeof(prog_shn_climbthru_side_anim_ops[0]), 0, 0, 0 },
     { "shn_climbin_side_anim", "SHNSEQ2.ASM", prog_shn_climbin_side_anim_ops,
-      sizeof(prog_shn_climbin_side_anim_ops) / sizeof(prog_shn_climbin_side_anim_ops[0]), 0 },
+      sizeof(prog_shn_climbin_side_anim_ops) / sizeof(prog_shn_climbin_side_anim_ops[0]), 0, prog_shn_climbin_side_anim_labels, sizeof(prog_shn_climbin_side_anim_labels) / sizeof(prog_shn_climbin_side_anim_labels[0]) },
     { "shn_climbthru_bot_anim", "SHNSEQ2.ASM", prog_shn_climbthru_bot_anim_ops,
-      sizeof(prog_shn_climbthru_bot_anim_ops) / sizeof(prog_shn_climbthru_bot_anim_ops[0]), 0 },
+      sizeof(prog_shn_climbthru_bot_anim_ops) / sizeof(prog_shn_climbthru_bot_anim_ops[0]), 0, prog_shn_climbthru_bot_anim_labels, sizeof(prog_shn_climbthru_bot_anim_labels) / sizeof(prog_shn_climbthru_bot_anim_labels[0]) },
     { "shn_climbin_bot_anim", "SHNSEQ2.ASM", prog_shn_climbin_bot_anim_ops,
-      sizeof(prog_shn_climbin_bot_anim_ops) / sizeof(prog_shn_climbin_bot_anim_ops[0]), 0 },
+      sizeof(prog_shn_climbin_bot_anim_ops) / sizeof(prog_shn_climbin_bot_anim_ops[0]), 0, 0, 0 },
     { "shn_climbthru_top_anim", "SHNSEQ2.ASM", prog_shn_climbthru_top_anim_ops,
-      sizeof(prog_shn_climbthru_top_anim_ops) / sizeof(prog_shn_climbthru_top_anim_ops[0]), 0 },
+      sizeof(prog_shn_climbthru_top_anim_ops) / sizeof(prog_shn_climbthru_top_anim_ops[0]), 0, prog_shn_climbthru_top_anim_labels, sizeof(prog_shn_climbthru_top_anim_labels) / sizeof(prog_shn_climbthru_top_anim_labels[0]) },
     { "shn_rollthru_top_anim", "SHNSEQ2.ASM", prog_shn_rollthru_top_anim_ops,
-      sizeof(prog_shn_rollthru_top_anim_ops) / sizeof(prog_shn_rollthru_top_anim_ops[0]), 0 },
+      sizeof(prog_shn_rollthru_top_anim_ops) / sizeof(prog_shn_rollthru_top_anim_ops[0]), 0, 0, 0 },
     { "shn_climbin_top_anim", "SHNSEQ2.ASM", prog_shn_climbin_top_anim_ops,
-      sizeof(prog_shn_climbin_top_anim_ops) / sizeof(prog_shn_climbin_top_anim_ops[0]), 0 },
+      sizeof(prog_shn_climbin_top_anim_ops) / sizeof(prog_shn_climbin_top_anim_ops[0]), 0, prog_shn_climbin_top_anim_labels, sizeof(prog_shn_climbin_top_anim_labels) / sizeof(prog_shn_climbin_top_anim_labels[0]) },
     { "shn_2_pin_anim", "SHNSEQ2.ASM", prog_shn_2_pin_anim_ops,
-      sizeof(prog_shn_2_pin_anim_ops) / sizeof(prog_shn_2_pin_anim_ops[0]), 0 },
+      sizeof(prog_shn_2_pin_anim_ops) / sizeof(prog_shn_2_pin_anim_ops[0]), 0, prog_shn_2_pin_anim_labels, sizeof(prog_shn_2_pin_anim_labels) / sizeof(prog_shn_2_pin_anim_labels[0]) },
     { "shn_4_pin_anim", "SHNSEQ2.ASM", prog_shn_4_pin_anim_ops,
-      sizeof(prog_shn_4_pin_anim_ops) / sizeof(prog_shn_4_pin_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_pin_anim_ops) / sizeof(prog_shn_4_pin_anim_ops[0]), 0, prog_shn_4_pin_anim_labels, sizeof(prog_shn_4_pin_anim_labels) / sizeof(prog_shn_4_pin_anim_labels[0]) },
     { "shn_2_raise_arm_anim", "SHNSEQ2.ASM", prog_shn_2_raise_arm_anim_ops,
-      sizeof(prog_shn_2_raise_arm_anim_ops) / sizeof(prog_shn_2_raise_arm_anim_ops[0]), 0 },
+      sizeof(prog_shn_2_raise_arm_anim_ops) / sizeof(prog_shn_2_raise_arm_anim_ops[0]), 0, prog_shn_2_raise_arm_anim_labels, sizeof(prog_shn_2_raise_arm_anim_labels) / sizeof(prog_shn_2_raise_arm_anim_labels[0]) },
     { "shn_4_raise_arm_anim", "SHNSEQ2.ASM", prog_shn_4_raise_arm_anim_ops,
-      sizeof(prog_shn_4_raise_arm_anim_ops) / sizeof(prog_shn_4_raise_arm_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_raise_arm_anim_ops) / sizeof(prog_shn_4_raise_arm_anim_ops[0]), 0, prog_shn_4_raise_arm_anim_labels, sizeof(prog_shn_4_raise_arm_anim_labels) / sizeof(prog_shn_4_raise_arm_anim_labels[0]) },
     { "tgt_tbukl", "SHNSEQ2.ASM", prog_tgt_tbukl_ops,
-      sizeof(prog_tgt_tbukl_ops) / sizeof(prog_tgt_tbukl_ops[0]), 0 },
+      sizeof(prog_tgt_tbukl_ops) / sizeof(prog_tgt_tbukl_ops[0]), 0, prog_tgt_tbukl_labels, sizeof(prog_tgt_tbukl_labels) / sizeof(prog_tgt_tbukl_labels[0]) },
     { "shn_2_slap_anim", "SHNSEQ2.ASM", prog_shn_2_slap_anim_ops,
-      sizeof(prog_shn_2_slap_anim_ops) / sizeof(prog_shn_2_slap_anim_ops[0]), 0 },
+      sizeof(prog_shn_2_slap_anim_ops) / sizeof(prog_shn_2_slap_anim_ops[0]), 0, prog_shn_2_slap_anim_labels, sizeof(prog_shn_2_slap_anim_labels) / sizeof(prog_shn_2_slap_anim_labels[0]) },
     { "shn_4_slap_anim", "SHNSEQ2.ASM", prog_shn_4_slap_anim_ops,
-      sizeof(prog_shn_4_slap_anim_ops) / sizeof(prog_shn_4_slap_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_slap_anim_ops) / sizeof(prog_shn_4_slap_anim_ops[0]), 0, prog_shn_4_slap_anim_labels, sizeof(prog_shn_4_slap_anim_labels) / sizeof(prog_shn_4_slap_anim_labels[0]) },
     { "shn_2_pummel_anim", "SHNSEQ2.ASM", prog_shn_2_pummel_anim_ops,
-      sizeof(prog_shn_2_pummel_anim_ops) / sizeof(prog_shn_2_pummel_anim_ops[0]), 0 },
+      sizeof(prog_shn_2_pummel_anim_ops) / sizeof(prog_shn_2_pummel_anim_ops[0]), 0, prog_shn_2_pummel_anim_labels, sizeof(prog_shn_2_pummel_anim_labels) / sizeof(prog_shn_2_pummel_anim_labels[0]) },
     { "shn_4_pummel_anim", "SHNSEQ2.ASM", prog_shn_4_pummel_anim_ops,
-      sizeof(prog_shn_4_pummel_anim_ops) / sizeof(prog_shn_4_pummel_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_pummel_anim_ops) / sizeof(prog_shn_4_pummel_anim_ops[0]), 0, prog_shn_4_pummel_anim_labels, sizeof(prog_shn_4_pummel_anim_labels) / sizeof(prog_shn_4_pummel_anim_labels[0]) },
     { "shn_buckoff_anim", "SHNSEQ2.ASM", prog_shn_buckoff_anim_ops,
-      sizeof(prog_shn_buckoff_anim_ops) / sizeof(prog_shn_buckoff_anim_ops[0]), 0 },
+      sizeof(prog_shn_buckoff_anim_ops) / sizeof(prog_shn_buckoff_anim_ops[0]), 0, 0, 0 },
     { "shn_combo_gsuplex_anim", "SHNSEQ3.ASM", prog_shn_combo_gsuplex_anim_ops,
-      sizeof(prog_shn_combo_gsuplex_anim_ops) / sizeof(prog_shn_combo_gsuplex_anim_ops[0]), 0 },
+      sizeof(prog_shn_combo_gsuplex_anim_ops) / sizeof(prog_shn_combo_gsuplex_anim_ops[0]), 0, prog_shn_combo_gsuplex_anim_labels, sizeof(prog_shn_combo_gsuplex_anim_labels) / sizeof(prog_shn_combo_gsuplex_anim_labels[0]) },
     { "shn_gsuplex_run_anim", "SHNSEQ3.ASM", prog_shn_gsuplex_run_anim_ops,
-      sizeof(prog_shn_gsuplex_run_anim_ops) / sizeof(prog_shn_gsuplex_run_anim_ops[0]), 0 },
+      sizeof(prog_shn_gsuplex_run_anim_ops) / sizeof(prog_shn_gsuplex_run_anim_ops[0]), 0, prog_shn_gsuplex_run_anim_labels, sizeof(prog_shn_gsuplex_run_anim_labels) / sizeof(prog_shn_gsuplex_run_anim_labels[0]) },
     { "shn_gsuplex_anim", "SHNSEQ3.ASM", prog_shn_gsuplex_anim_ops,
-      sizeof(prog_shn_gsuplex_anim_ops) / sizeof(prog_shn_gsuplex_anim_ops[0]), 0 },
+      sizeof(prog_shn_gsuplex_anim_ops) / sizeof(prog_shn_gsuplex_anim_ops[0]), 0, prog_shn_gsuplex_anim_labels, sizeof(prog_shn_gsuplex_anim_labels) / sizeof(prog_shn_gsuplex_anim_labels[0]) },
     { "shn_fstein2_anim", "SHNSEQ3.ASM", prog_shn_fstein2_anim_ops,
-      sizeof(prog_shn_fstein2_anim_ops) / sizeof(prog_shn_fstein2_anim_ops[0]), 0 },
+      sizeof(prog_shn_fstein2_anim_ops) / sizeof(prog_shn_fstein2_anim_ops[0]), 0, prog_shn_fstein2_anim_labels, sizeof(prog_shn_fstein2_anim_labels) / sizeof(prog_shn_fstein2_anim_labels[0]) },
     { "shn_combo_fstein_anim", "SHNSEQ3.ASM", prog_shn_combo_fstein_anim_ops,
-      sizeof(prog_shn_combo_fstein_anim_ops) / sizeof(prog_shn_combo_fstein_anim_ops[0]), 27 },   /* branches back into shared code */
+      sizeof(prog_shn_combo_fstein_anim_ops) / sizeof(prog_shn_combo_fstein_anim_ops[0]), 27, prog_shn_combo_fstein_anim_labels, sizeof(prog_shn_combo_fstein_anim_labels) / sizeof(prog_shn_combo_fstein_anim_labels[0]) },   /* branches back into shared code */
     { "shn_fstein_anim", "SHNSEQ3.ASM", prog_shn_fstein_anim_ops,
-      sizeof(prog_shn_fstein_anim_ops) / sizeof(prog_shn_fstein_anim_ops[0]), 0 },
+      sizeof(prog_shn_fstein_anim_ops) / sizeof(prog_shn_fstein_anim_ops[0]), 0, prog_shn_fstein_anim_labels, sizeof(prog_shn_fstein_anim_labels) / sizeof(prog_shn_fstein_anim_labels[0]) },
     { "shn_combo_spinkick_anim", "SHNSEQ3.ASM", prog_shn_combo_spinkick_anim_ops,
-      sizeof(prog_shn_combo_spinkick_anim_ops) / sizeof(prog_shn_combo_spinkick_anim_ops[0]), 0 },
+      sizeof(prog_shn_combo_spinkick_anim_ops) / sizeof(prog_shn_combo_spinkick_anim_ops[0]), 0, prog_shn_combo_spinkick_anim_labels, sizeof(prog_shn_combo_spinkick_anim_labels) / sizeof(prog_shn_combo_spinkick_anim_labels[0]) },
     { "shn_spinkick_anim", "SHNSEQ3.ASM", prog_shn_spinkick_anim_ops,
-      sizeof(prog_shn_spinkick_anim_ops) / sizeof(prog_shn_spinkick_anim_ops[0]), 0 },
+      sizeof(prog_shn_spinkick_anim_ops) / sizeof(prog_shn_spinkick_anim_ops[0]), 0, prog_shn_spinkick_anim_labels, sizeof(prog_shn_spinkick_anim_labels) / sizeof(prog_shn_spinkick_anim_labels[0]) },
     { "shn_spinkick_TB_anim", "SHNSEQ3.ASM", prog_shn_spinkick_TB_anim_ops,
-      sizeof(prog_shn_spinkick_TB_anim_ops) / sizeof(prog_shn_spinkick_TB_anim_ops[0]), 0 },
+      sizeof(prog_shn_spinkick_TB_anim_ops) / sizeof(prog_shn_spinkick_TB_anim_ops[0]), 0, 0, 0 },
     { "shn_super_speedkick_anim", "SHNSEQ3.ASM", prog_shn_super_speedkick_anim_ops,
-      sizeof(prog_shn_super_speedkick_anim_ops) / sizeof(prog_shn_super_speedkick_anim_ops[0]), 0 },
+      sizeof(prog_shn_super_speedkick_anim_ops) / sizeof(prog_shn_super_speedkick_anim_ops[0]), 0, prog_shn_super_speedkick_anim_labels, sizeof(prog_shn_super_speedkick_anim_labels) / sizeof(prog_shn_super_speedkick_anim_labels[0]) },
     { "set_opp_xy", "SHNSEQ3.ASM", prog_set_opp_xy_ops,
-      sizeof(prog_set_opp_xy_ops) / sizeof(prog_set_opp_xy_ops[0]), 309 },   /* branches back into shared code */
+      sizeof(prog_set_opp_xy_ops) / sizeof(prog_set_opp_xy_ops[0]), 309, prog_set_opp_xy_labels, sizeof(prog_set_opp_xy_labels) / sizeof(prog_set_opp_xy_labels[0]) },   /* branches back into shared code */
     { "shn_combo_hiptoss_anim", "SHNSEQ3.ASM", prog_shn_combo_hiptoss_anim_ops,
-      sizeof(prog_shn_combo_hiptoss_anim_ops) / sizeof(prog_shn_combo_hiptoss_anim_ops[0]), 309 },   /* branches back into shared code */
+      sizeof(prog_shn_combo_hiptoss_anim_ops) / sizeof(prog_shn_combo_hiptoss_anim_ops[0]), 309, prog_shn_combo_hiptoss_anim_labels, sizeof(prog_shn_combo_hiptoss_anim_labels) / sizeof(prog_shn_combo_hiptoss_anim_labels[0]) },   /* branches back into shared code */
     { "shn_4combo_bslam_anim", "SHNSEQ3.ASM", prog_shn_4combo_bslam_anim_ops,
-      sizeof(prog_shn_4combo_bslam_anim_ops) / sizeof(prog_shn_4combo_bslam_anim_ops[0]), 0 },
+      sizeof(prog_shn_4combo_bslam_anim_ops) / sizeof(prog_shn_4combo_bslam_anim_ops[0]), 0, prog_shn_4combo_bslam_anim_labels, sizeof(prog_shn_4combo_bslam_anim_labels) / sizeof(prog_shn_4combo_bslam_anim_labels[0]) },
     { "shn_2_hiptoss2_anim", "SHNSEQ3.ASM", prog_shn_2_hiptoss2_anim_ops,
-      sizeof(prog_shn_2_hiptoss2_anim_ops) / sizeof(prog_shn_2_hiptoss2_anim_ops[0]), 0 },
+      sizeof(prog_shn_2_hiptoss2_anim_ops) / sizeof(prog_shn_2_hiptoss2_anim_ops[0]), 0, prog_shn_2_hiptoss2_anim_labels, sizeof(prog_shn_2_hiptoss2_anim_labels) / sizeof(prog_shn_2_hiptoss2_anim_labels[0]) },
     { "shn_4_hiptoss2_anim", "SHNSEQ3.ASM", prog_shn_4_hiptoss2_anim_ops,
-      sizeof(prog_shn_4_hiptoss2_anim_ops) / sizeof(prog_shn_4_hiptoss2_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_hiptoss2_anim_ops) / sizeof(prog_shn_4_hiptoss2_anim_ops[0]), 0, prog_shn_4_hiptoss2_anim_labels, sizeof(prog_shn_4_hiptoss2_anim_labels) / sizeof(prog_shn_4_hiptoss2_anim_labels[0]) },
     { "shn_2_hiptoss_anim", "SHNSEQ3.ASM", prog_shn_2_hiptoss_anim_ops,
-      sizeof(prog_shn_2_hiptoss_anim_ops) / sizeof(prog_shn_2_hiptoss_anim_ops[0]), 0 },
+      sizeof(prog_shn_2_hiptoss_anim_ops) / sizeof(prog_shn_2_hiptoss_anim_ops[0]), 0, prog_shn_2_hiptoss_anim_labels, sizeof(prog_shn_2_hiptoss_anim_labels) / sizeof(prog_shn_2_hiptoss_anim_labels[0]) },
     { "shn_4_hiptoss_anim", "SHNSEQ3.ASM", prog_shn_4_hiptoss_anim_ops,
-      sizeof(prog_shn_4_hiptoss_anim_ops) / sizeof(prog_shn_4_hiptoss_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_hiptoss_anim_ops) / sizeof(prog_shn_4_hiptoss_anim_ops[0]), 0, prog_shn_4_hiptoss_anim_labels, sizeof(prog_shn_4_hiptoss_anim_labels) / sizeof(prog_shn_4_hiptoss_anim_labels[0]) },
     { "shn_2_hair_pickup_anim", "SHNSEQ3.ASM", prog_shn_2_hair_pickup_anim_ops,
-      sizeof(prog_shn_2_hair_pickup_anim_ops) / sizeof(prog_shn_2_hair_pickup_anim_ops[0]), 0 },
+      sizeof(prog_shn_2_hair_pickup_anim_ops) / sizeof(prog_shn_2_hair_pickup_anim_ops[0]), 0, prog_shn_2_hair_pickup_anim_labels, sizeof(prog_shn_2_hair_pickup_anim_labels) / sizeof(prog_shn_2_hair_pickup_anim_labels[0]) },
     { "shn_4_hair_pickup_anim", "SHNSEQ3.ASM", prog_shn_4_hair_pickup_anim_ops,
-      sizeof(prog_shn_4_hair_pickup_anim_ops) / sizeof(prog_shn_4_hair_pickup_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_hair_pickup_anim_ops) / sizeof(prog_shn_4_hair_pickup_anim_ops[0]), 0, prog_shn_4_hair_pickup_anim_labels, sizeof(prog_shn_4_hair_pickup_anim_labels) / sizeof(prog_shn_4_hair_pickup_anim_labels[0]) },
     { "shn_speed_spinkick_anim", "SHNSEQ3.ASM", prog_shn_speed_spinkick_anim_ops,
-      sizeof(prog_shn_speed_spinkick_anim_ops) / sizeof(prog_shn_speed_spinkick_anim_ops[0]), 0 },
+      sizeof(prog_shn_speed_spinkick_anim_ops) / sizeof(prog_shn_speed_spinkick_anim_ops[0]), 0, prog_shn_speed_spinkick_anim_labels, sizeof(prog_shn_speed_spinkick_anim_labels) / sizeof(prog_shn_speed_spinkick_anim_labels[0]) },
     { "shn_knee_fstein_anim", "SHNSEQ3.ASM", prog_shn_knee_fstein_anim_ops,
-      sizeof(prog_shn_knee_fstein_anim_ops) / sizeof(prog_shn_knee_fstein_anim_ops[0]), 0 },
+      sizeof(prog_shn_knee_fstein_anim_ops) / sizeof(prog_shn_knee_fstein_anim_ops[0]), 0, prog_shn_knee_fstein_anim_labels, sizeof(prog_shn_knee_fstein_anim_labels) / sizeof(prog_shn_knee_fstein_anim_labels[0]) },
     { "shn_4_taunt_anim", "SHNSEQ3.ASM", prog_shn_4_taunt_anim_ops,
-      sizeof(prog_shn_4_taunt_anim_ops) / sizeof(prog_shn_4_taunt_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_taunt_anim_ops) / sizeof(prog_shn_4_taunt_anim_ops[0]), 0, prog_shn_4_taunt_anim_labels, sizeof(prog_shn_4_taunt_anim_labels) / sizeof(prog_shn_4_taunt_anim_labels[0]) },
     { "shn_combo_run_stomp_anim", "SHNSEQ3.ASM", prog_shn_combo_run_stomp_anim_ops,
-      sizeof(prog_shn_combo_run_stomp_anim_ops) / sizeof(prog_shn_combo_run_stomp_anim_ops[0]), 0 },
+      sizeof(prog_shn_combo_run_stomp_anim_ops) / sizeof(prog_shn_combo_run_stomp_anim_ops[0]), 0, prog_shn_combo_run_stomp_anim_labels, sizeof(prog_shn_combo_run_stomp_anim_labels) / sizeof(prog_shn_combo_run_stomp_anim_labels[0]) },
     { "shn_run_stomp_anim", "SHNSEQ3.ASM", prog_shn_run_stomp_anim_ops,
-      sizeof(prog_shn_run_stomp_anim_ops) / sizeof(prog_shn_run_stomp_anim_ops[0]), 0 },
+      sizeof(prog_shn_run_stomp_anim_ops) / sizeof(prog_shn_run_stomp_anim_ops[0]), 0, prog_shn_run_stomp_anim_labels, sizeof(prog_shn_run_stomp_anim_labels) / sizeof(prog_shn_run_stomp_anim_labels[0]) },
     { "shn_break_face2_anim", "SHNSEQ3.ASM", prog_shn_break_face2_anim_ops,
-      sizeof(prog_shn_break_face2_anim_ops) / sizeof(prog_shn_break_face2_anim_ops[0]), 0 },
+      sizeof(prog_shn_break_face2_anim_ops) / sizeof(prog_shn_break_face2_anim_ops[0]), 0, 0, 0 },
     { "shn_break_face3_anim", "SHNSEQ3.ASM", prog_shn_break_face3_anim_ops,
-      sizeof(prog_shn_break_face3_anim_ops) / sizeof(prog_shn_break_face3_anim_ops[0]), 0 },
+      sizeof(prog_shn_break_face3_anim_ops) / sizeof(prog_shn_break_face3_anim_ops[0]), 0, 0, 0 },
     { "shn_break_face_anim", "SHNSEQ3.ASM", prog_shn_break_face_anim_ops,
-      sizeof(prog_shn_break_face_anim_ops) / sizeof(prog_shn_break_face_anim_ops[0]), 0 },
+      sizeof(prog_shn_break_face_anim_ops) / sizeof(prog_shn_break_face_anim_ops[0]), 0, 0, 0 },
     { "shn_combo_sliding_kicktoss_anim", "SHNSEQ3.ASM", prog_shn_combo_sliding_kicktoss_anim_ops,
-      sizeof(prog_shn_combo_sliding_kicktoss_anim_ops) / sizeof(prog_shn_combo_sliding_kicktoss_anim_ops[0]), 0 },
+      sizeof(prog_shn_combo_sliding_kicktoss_anim_ops) / sizeof(prog_shn_combo_sliding_kicktoss_anim_ops[0]), 0, prog_shn_combo_sliding_kicktoss_anim_labels, sizeof(prog_shn_combo_sliding_kicktoss_anim_labels) / sizeof(prog_shn_combo_sliding_kicktoss_anim_labels[0]) },
     { "shn_sliding_kicktoss_anim", "SHNSEQ3.ASM", prog_shn_sliding_kicktoss_anim_ops,
-      sizeof(prog_shn_sliding_kicktoss_anim_ops) / sizeof(prog_shn_sliding_kicktoss_anim_ops[0]), 0 },
+      sizeof(prog_shn_sliding_kicktoss_anim_ops) / sizeof(prog_shn_sliding_kicktoss_anim_ops[0]), 0, prog_shn_sliding_kicktoss_anim_labels, sizeof(prog_shn_sliding_kicktoss_anim_labels) / sizeof(prog_shn_sliding_kicktoss_anim_labels[0]) },
     { "shn_break_arm_anim", "SHNSEQ3.ASM", prog_shn_break_arm_anim_ops,
-      sizeof(prog_shn_break_arm_anim_ops) / sizeof(prog_shn_break_arm_anim_ops[0]), 0 },
+      sizeof(prog_shn_break_arm_anim_ops) / sizeof(prog_shn_break_arm_anim_ops[0]), 0, prog_shn_break_arm_anim_labels, sizeof(prog_shn_break_arm_anim_labels) / sizeof(prog_shn_break_arm_anim_labels[0]) },
     { "no_bk_xvel", "SHNSEQ3.ASM", prog_no_bk_xvel_ops,
-      sizeof(prog_no_bk_xvel_ops) / sizeof(prog_no_bk_xvel_ops[0]), 0 },
+      sizeof(prog_no_bk_xvel_ops) / sizeof(prog_no_bk_xvel_ops[0]), 0, prog_no_bk_xvel_labels, sizeof(prog_no_bk_xvel_labels) / sizeof(prog_no_bk_xvel_labels[0]) },
     { "shn_3_fake_hold_anim", "SHNSEQ3.ASM", prog_shn_3_fake_hold_anim_ops,
-      sizeof(prog_shn_3_fake_hold_anim_ops) / sizeof(prog_shn_3_fake_hold_anim_ops[0]), 0 },
+      sizeof(prog_shn_3_fake_hold_anim_ops) / sizeof(prog_shn_3_fake_hold_anim_ops[0]), 0, prog_shn_3_fake_hold_anim_labels, sizeof(prog_shn_3_fake_hold_anim_labels) / sizeof(prog_shn_3_fake_hold_anim_labels[0]) },
     { "shn_3_head_hold2_anim", "SHNSEQ3.ASM", prog_shn_3_head_hold2_anim_ops,
-      sizeof(prog_shn_3_head_hold2_anim_ops) / sizeof(prog_shn_3_head_hold2_anim_ops[0]), 0 },
+      sizeof(prog_shn_3_head_hold2_anim_ops) / sizeof(prog_shn_3_head_hold2_anim_ops[0]), 0, prog_shn_3_head_hold2_anim_labels, sizeof(prog_shn_3_head_hold2_anim_labels) / sizeof(prog_shn_3_head_hold2_anim_labels[0]) },
     { "shn_3_head_hold_anim", "SHNSEQ3.ASM", prog_shn_3_head_hold_anim_ops,
-      sizeof(prog_shn_3_head_hold_anim_ops) / sizeof(prog_shn_3_head_hold_anim_ops[0]), 0 },
+      sizeof(prog_shn_3_head_hold_anim_ops) / sizeof(prog_shn_3_head_hold_anim_ops[0]), 0, prog_shn_3_head_hold_anim_labels, sizeof(prog_shn_3_head_hold_anim_labels) / sizeof(prog_shn_3_head_hold_anim_labels[0]) },
     { "shn_combo_flipslam_anim", "SHNSEQ3.ASM", prog_shn_combo_flipslam_anim_ops,
-      sizeof(prog_shn_combo_flipslam_anim_ops) / sizeof(prog_shn_combo_flipslam_anim_ops[0]), 0 },
+      sizeof(prog_shn_combo_flipslam_anim_ops) / sizeof(prog_shn_combo_flipslam_anim_ops[0]), 0, prog_shn_combo_flipslam_anim_labels, sizeof(prog_shn_combo_flipslam_anim_labels) / sizeof(prog_shn_combo_flipslam_anim_labels[0]) },
     { "shn_flipslam_anim", "SHNSEQ3.ASM", prog_shn_flipslam_anim_ops,
-      sizeof(prog_shn_flipslam_anim_ops) / sizeof(prog_shn_flipslam_anim_ops[0]), 0 },
+      sizeof(prog_shn_flipslam_anim_ops) / sizeof(prog_shn_flipslam_anim_ops[0]), 0, prog_shn_flipslam_anim_labels, sizeof(prog_shn_flipslam_anim_labels) / sizeof(prog_shn_flipslam_anim_labels[0]) },
     { "reverse_xvel", "SHNSEQ3.ASM", prog_reverse_xvel_ops,
-      sizeof(prog_reverse_xvel_ops) / sizeof(prog_reverse_xvel_ops[0]), 11 },   /* branches back into shared code */
+      sizeof(prog_reverse_xvel_ops) / sizeof(prog_reverse_xvel_ops[0]), 11, prog_reverse_xvel_labels, sizeof(prog_reverse_xvel_labels) / sizeof(prog_reverse_xvel_labels[0]) },   /* branches back into shared code */
     { "set_opp_facing", "SHNSEQ3.ASM", prog_set_opp_facing_ops,
-      sizeof(prog_set_opp_facing_ops) / sizeof(prog_set_opp_facing_ops[0]), 11 },   /* branches back into shared code */
+      sizeof(prog_set_opp_facing_ops) / sizeof(prog_set_opp_facing_ops[0]), 11, prog_set_opp_facing_labels, sizeof(prog_set_opp_facing_labels) / sizeof(prog_set_opp_facing_labels[0]) },   /* branches back into shared code */
     { "shn_rpt_hdbutts2_anim", "SHNSEQ3.ASM", prog_shn_rpt_hdbutts2_anim_ops,
-      sizeof(prog_shn_rpt_hdbutts2_anim_ops) / sizeof(prog_shn_rpt_hdbutts2_anim_ops[0]), 11 },   /* branches back into shared code */
+      sizeof(prog_shn_rpt_hdbutts2_anim_ops) / sizeof(prog_shn_rpt_hdbutts2_anim_ops[0]), 11, prog_shn_rpt_hdbutts2_anim_labels, sizeof(prog_shn_rpt_hdbutts2_anim_labels) / sizeof(prog_shn_rpt_hdbutts2_anim_labels[0]) },   /* branches back into shared code */
     { "shn_rpt_hdbutts_anim", "SHNSEQ3.ASM", prog_shn_rpt_hdbutts_anim_ops,
-      sizeof(prog_shn_rpt_hdbutts_anim_ops) / sizeof(prog_shn_rpt_hdbutts_anim_ops[0]), 0 },
+      sizeof(prog_shn_rpt_hdbutts_anim_ops) / sizeof(prog_shn_rpt_hdbutts_anim_ops[0]), 0, prog_shn_rpt_hdbutts_anim_labels, sizeof(prog_shn_rpt_hdbutts_anim_labels) / sizeof(prog_shn_rpt_hdbutts_anim_labels[0]) },
     { "shn_4_losebal_anim", "SHNSEQ4.ASM", prog_shn_4_losebal_anim_ops,
-      sizeof(prog_shn_4_losebal_anim_ops) / sizeof(prog_shn_4_losebal_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_losebal_anim_ops) / sizeof(prog_shn_4_losebal_anim_ops[0]), 0, 0, 0 },
     { "shn_2_head_hit_anim", "SHNSEQ4.ASM", prog_shn_2_head_hit_anim_ops,
-      sizeof(prog_shn_2_head_hit_anim_ops) / sizeof(prog_shn_2_head_hit_anim_ops[0]), 0 },
+      sizeof(prog_shn_2_head_hit_anim_ops) / sizeof(prog_shn_2_head_hit_anim_ops[0]), 0, 0, 0 },
     { "shn_4_head_hit_anim", "SHNSEQ4.ASM", prog_shn_4_head_hit_anim_ops,
-      sizeof(prog_shn_4_head_hit_anim_ops) / sizeof(prog_shn_4_head_hit_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_head_hit_anim_ops) / sizeof(prog_shn_4_head_hit_anim_ops[0]), 0, 0, 0 },
     { "shn_2_bncoff_anim", "SHNSEQ4.ASM", prog_shn_2_bncoff_anim_ops,
-      sizeof(prog_shn_2_bncoff_anim_ops) / sizeof(prog_shn_2_bncoff_anim_ops[0]), 0 },
+      sizeof(prog_shn_2_bncoff_anim_ops) / sizeof(prog_shn_2_bncoff_anim_ops[0]), 0, 0, 0 },
     { "shn_4_bncoff_anim", "SHNSEQ4.ASM", prog_shn_4_bncoff_anim_ops,
-      sizeof(prog_shn_4_bncoff_anim_ops) / sizeof(prog_shn_4_bncoff_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_bncoff_anim_ops) / sizeof(prog_shn_4_bncoff_anim_ops[0]), 0, 0, 0 },
     { "shn_4_bncoff_dizzy_anim", "SHNSEQ4.ASM", prog_shn_4_bncoff_dizzy_anim_ops,
-      sizeof(prog_shn_4_bncoff_dizzy_anim_ops) / sizeof(prog_shn_4_bncoff_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_bncoff_dizzy_anim_ops) / sizeof(prog_shn_4_bncoff_dizzy_anim_ops[0]), 0, 0, 0 },
     { "shn_2_head_hit2_anim", "SHNSEQ4.ASM", prog_shn_2_head_hit2_anim_ops,
-      sizeof(prog_shn_2_head_hit2_anim_ops) / sizeof(prog_shn_2_head_hit2_anim_ops[0]), 0 },
+      sizeof(prog_shn_2_head_hit2_anim_ops) / sizeof(prog_shn_2_head_hit2_anim_ops[0]), 0, 0, 0 },
     { "shn_4_head_hit2_anim", "SHNSEQ4.ASM", prog_shn_4_head_hit2_anim_ops,
-      sizeof(prog_shn_4_head_hit2_anim_ops) / sizeof(prog_shn_4_head_hit2_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_head_hit2_anim_ops) / sizeof(prog_shn_4_head_hit2_anim_ops[0]), 0, prog_shn_4_head_hit2_anim_labels, sizeof(prog_shn_4_head_hit2_anim_labels) / sizeof(prog_shn_4_head_hit2_anim_labels[0]) },
     { "shn_4_head_hit2s_anim", "SHNSEQ4.ASM", prog_shn_4_head_hit2s_anim_ops,
-      sizeof(prog_shn_4_head_hit2s_anim_ops) / sizeof(prog_shn_4_head_hit2s_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_head_hit2s_anim_ops) / sizeof(prog_shn_4_head_hit2s_anim_ops[0]), 0, 0, 0 },
     { "shn_2_head_hit3_anim", "SHNSEQ4.ASM", prog_shn_2_head_hit3_anim_ops,
-      sizeof(prog_shn_2_head_hit3_anim_ops) / sizeof(prog_shn_2_head_hit3_anim_ops[0]), 0 },
+      sizeof(prog_shn_2_head_hit3_anim_ops) / sizeof(prog_shn_2_head_hit3_anim_ops[0]), 0, 0, 0 },
     { "shn_4_head_hit3_anim", "SHNSEQ4.ASM", prog_shn_4_head_hit3_anim_ops,
-      sizeof(prog_shn_4_head_hit3_anim_ops) / sizeof(prog_shn_4_head_hit3_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_head_hit3_anim_ops) / sizeof(prog_shn_4_head_hit3_anim_ops[0]), 0, 0, 0 },
     { "shn_4_head_hit4_anim", "SHNSEQ4.ASM", prog_shn_4_head_hit4_anim_ops,
-      sizeof(prog_shn_4_head_hit4_anim_ops) / sizeof(prog_shn_4_head_hit4_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_head_hit4_anim_ops) / sizeof(prog_shn_4_head_hit4_anim_ops[0]), 0, 0, 0 },
     { "shn_4_head_hit_dizzy_anim", "SHNSEQ4.ASM", prog_shn_4_head_hit_dizzy_anim_ops,
-      sizeof(prog_shn_4_head_hit_dizzy_anim_ops) / sizeof(prog_shn_4_head_hit_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_head_hit_dizzy_anim_ops) / sizeof(prog_shn_4_head_hit_dizzy_anim_ops[0]), 0, 0, 0 },
     { "shn_2_body_hit_anim", "SHNSEQ4.ASM", prog_shn_2_body_hit_anim_ops,
-      sizeof(prog_shn_2_body_hit_anim_ops) / sizeof(prog_shn_2_body_hit_anim_ops[0]), 0 },
+      sizeof(prog_shn_2_body_hit_anim_ops) / sizeof(prog_shn_2_body_hit_anim_ops[0]), 0, 0, 0 },
     { "shn_2_knee_hit_anim", "SHNSEQ4.ASM", prog_shn_2_knee_hit_anim_ops,
-      sizeof(prog_shn_2_knee_hit_anim_ops) / sizeof(prog_shn_2_knee_hit_anim_ops[0]), 0 },
+      sizeof(prog_shn_2_knee_hit_anim_ops) / sizeof(prog_shn_2_knee_hit_anim_ops[0]), 0, 0, 0 },
     { "shn_4_body_hit_anim", "SHNSEQ4.ASM", prog_shn_4_body_hit_anim_ops,
-      sizeof(prog_shn_4_body_hit_anim_ops) / sizeof(prog_shn_4_body_hit_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_body_hit_anim_ops) / sizeof(prog_shn_4_body_hit_anim_ops[0]), 0, prog_shn_4_body_hit_anim_labels, sizeof(prog_shn_4_body_hit_anim_labels) / sizeof(prog_shn_4_body_hit_anim_labels[0]) },
     { "shn_4_knee_hit_anim", "SHNSEQ4.ASM", prog_shn_4_knee_hit_anim_ops,
-      sizeof(prog_shn_4_knee_hit_anim_ops) / sizeof(prog_shn_4_knee_hit_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_knee_hit_anim_ops) / sizeof(prog_shn_4_knee_hit_anim_ops[0]), 0, 0, 0 },
     { "shn_4_body_hit_dizzy_anim", "SHNSEQ4.ASM", prog_shn_4_body_hit_dizzy_anim_ops,
-      sizeof(prog_shn_4_body_hit_dizzy_anim_ops) / sizeof(prog_shn_4_body_hit_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_body_hit_dizzy_anim_ops) / sizeof(prog_shn_4_body_hit_dizzy_anim_ops[0]), 0, 0, 0 },
     { "shn_4_knee_hit_dizzy_anim", "SHNSEQ4.ASM", prog_shn_4_knee_hit_dizzy_anim_ops,
-      sizeof(prog_shn_4_knee_hit_dizzy_anim_ops) / sizeof(prog_shn_4_knee_hit_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_knee_hit_dizzy_anim_ops) / sizeof(prog_shn_4_knee_hit_dizzy_anim_ops[0]), 0, 0, 0 },
     { "shn_quick_knee_hit_anim", "SHNSEQ4.ASM", prog_shn_quick_knee_hit_anim_ops,
-      sizeof(prog_shn_quick_knee_hit_anim_ops) / sizeof(prog_shn_quick_knee_hit_anim_ops[0]), 0 },
+      sizeof(prog_shn_quick_knee_hit_anim_ops) / sizeof(prog_shn_quick_knee_hit_anim_ops[0]), 0, prog_shn_quick_knee_hit_anim_labels, sizeof(prog_shn_quick_knee_hit_anim_labels) / sizeof(prog_shn_quick_knee_hit_anim_labels[0]) },
     { "shn_hitonground_xflip_anim", "SHNSEQ4.ASM", prog_shn_hitonground_xflip_anim_ops,
-      sizeof(prog_shn_hitonground_xflip_anim_ops) / sizeof(prog_shn_hitonground_xflip_anim_ops[0]), 0 },
+      sizeof(prog_shn_hitonground_xflip_anim_ops) / sizeof(prog_shn_hitonground_xflip_anim_ops[0]), 0, 0, 0 },
     { "shn_hitonground_anim", "SHNSEQ4.ASM", prog_shn_hitonground_anim_ops,
-      sizeof(prog_shn_hitonground_anim_ops) / sizeof(prog_shn_hitonground_anim_ops[0]), 0 },
+      sizeof(prog_shn_hitonground_anim_ops) / sizeof(prog_shn_hitonground_anim_ops[0]), 0, 0, 0 },
     { "shn_liedown_anim", "SHNSEQ4.ASM", prog_shn_liedown_anim_ops,
-      sizeof(prog_shn_liedown_anim_ops) / sizeof(prog_shn_liedown_anim_ops[0]), 0 },
+      sizeof(prog_shn_liedown_anim_ops) / sizeof(prog_shn_liedown_anim_ops[0]), 0, 0, 0 },
     { "shn_up_anim", "SHNSEQ4.ASM", prog_shn_up_anim_ops,
-      sizeof(prog_shn_up_anim_ops) / sizeof(prog_shn_up_anim_ops[0]), 0 },
+      sizeof(prog_shn_up_anim_ops) / sizeof(prog_shn_up_anim_ops[0]), 0, 0, 0 },
     { "shn_4_block_anim", "SHNSEQ4.ASM", prog_shn_4_block_anim_ops,
-      sizeof(prog_shn_4_block_anim_ops) / sizeof(prog_shn_4_block_anim_ops[0]), 0 },
+      sizeof(prog_shn_4_block_anim_ops) / sizeof(prog_shn_4_block_anim_ops[0]), 0, prog_shn_4_block_anim_labels, sizeof(prog_shn_4_block_anim_labels) / sizeof(prog_shn_4_block_anim_labels[0]) },
     { "shn_4_hitblock_anim", "SHNSEQ4.ASM", prog_shn_4_hitblock_anim_ops,
-      sizeof(prog_shn_4_hitblock_anim_ops) / sizeof(prog_shn_4_hitblock_anim_ops[0]), 8 },   /* branches back into shared code */
+      sizeof(prog_shn_4_hitblock_anim_ops) / sizeof(prog_shn_4_hitblock_anim_ops[0]), 8, prog_shn_4_hitblock_anim_labels, sizeof(prog_shn_4_hitblock_anim_labels) / sizeof(prog_shn_4_hitblock_anim_labels[0]) },   /* branches back into shared code */
     { "shn_4_hitblock2_anim", "SHNSEQ4.ASM", prog_shn_4_hitblock2_anim_ops,
-      sizeof(prog_shn_4_hitblock2_anim_ops) / sizeof(prog_shn_4_hitblock2_anim_ops[0]), 16 },   /* branches back into shared code */
+      sizeof(prog_shn_4_hitblock2_anim_ops) / sizeof(prog_shn_4_hitblock2_anim_ops[0]), 16, prog_shn_4_hitblock2_anim_labels, sizeof(prog_shn_4_hitblock2_anim_labels) / sizeof(prog_shn_4_hitblock2_anim_labels[0]) },   /* branches back into shared code */
     { "shn_fall_back_anim", "SHNSEQ4.ASM", prog_shn_fall_back_anim_ops,
-      sizeof(prog_shn_fall_back_anim_ops) / sizeof(prog_shn_fall_back_anim_ops[0]), 0 },
+      sizeof(prog_shn_fall_back_anim_ops) / sizeof(prog_shn_fall_back_anim_ops[0]), 0, 0, 0 },
     { "shn_fall_back2_anim", "SHNSEQ4.ASM", prog_shn_fall_back2_anim_ops,
-      sizeof(prog_shn_fall_back2_anim_ops) / sizeof(prog_shn_fall_back2_anim_ops[0]), 0 },
+      sizeof(prog_shn_fall_back2_anim_ops) / sizeof(prog_shn_fall_back2_anim_ops[0]), 0, 0, 0 },
     { "shn_fall_back3_anim", "SHNSEQ4.ASM", prog_shn_fall_back3_anim_ops,
-      sizeof(prog_shn_fall_back3_anim_ops) / sizeof(prog_shn_fall_back3_anim_ops[0]), 0 },
+      sizeof(prog_shn_fall_back3_anim_ops) / sizeof(prog_shn_fall_back3_anim_ops[0]), 0, 0, 0 },
     { "shn_fall_back_tbukl_anim", "SHNSEQ4.ASM", prog_shn_fall_back_tbukl_anim_ops,
-      sizeof(prog_shn_fall_back_tbukl_anim_ops) / sizeof(prog_shn_fall_back_tbukl_anim_ops[0]), 0 },
+      sizeof(prog_shn_fall_back_tbukl_anim_ops) / sizeof(prog_shn_fall_back_tbukl_anim_ops[0]), 0, 0, 0 },
     { "shn_faceup_getup_anim", "SHNSEQ4.ASM", prog_shn_faceup_getup_anim_ops,
-      sizeof(prog_shn_faceup_getup_anim_ops) / sizeof(prog_shn_faceup_getup_anim_ops[0]), 0 },
+      sizeof(prog_shn_faceup_getup_anim_ops) / sizeof(prog_shn_faceup_getup_anim_ops[0]), 0, prog_shn_faceup_getup_anim_labels, sizeof(prog_shn_faceup_getup_anim_labels) / sizeof(prog_shn_faceup_getup_anim_labels[0]) },
     { "shn_faceup_getup2_anim", "SHNSEQ4.ASM", prog_shn_faceup_getup2_anim_ops,
-      sizeof(prog_shn_faceup_getup2_anim_ops) / sizeof(prog_shn_faceup_getup2_anim_ops[0]), 22 },   /* branches back into shared code */
+      sizeof(prog_shn_faceup_getup2_anim_ops) / sizeof(prog_shn_faceup_getup2_anim_ops[0]), 22, prog_shn_faceup_getup2_anim_labels, sizeof(prog_shn_faceup_getup2_anim_labels) / sizeof(prog_shn_faceup_getup2_anim_labels[0]) },   /* branches back into shared code */
     { "choose_2or4", "SHNSEQ4.ASM", prog_choose_2or4_ops,
-      sizeof(prog_choose_2or4_ops) / sizeof(prog_choose_2or4_ops[0]), 0 },
+      sizeof(prog_choose_2or4_ops) / sizeof(prog_choose_2or4_ops[0]), 0, prog_choose_2or4_labels, sizeof(prog_choose_2or4_labels) / sizeof(prog_choose_2or4_labels[0]) },
     { "shn_dizzy_anim", "SHNSEQ4.ASM", prog_shn_dizzy_anim_ops,
-      sizeof(prog_shn_dizzy_anim_ops) / sizeof(prog_shn_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_shn_dizzy_anim_ops) / sizeof(prog_shn_dizzy_anim_ops[0]), 0, prog_shn_dizzy_anim_labels, sizeof(prog_shn_dizzy_anim_labels) / sizeof(prog_shn_dizzy_anim_labels[0]) },
     { "shn_heldoh_anim", "SHNSEQ4.ASM", prog_shn_heldoh_anim_ops,
-      sizeof(prog_shn_heldoh_anim_ops) / sizeof(prog_shn_heldoh_anim_ops[0]), 0 },
+      sizeof(prog_shn_heldoh_anim_ops) / sizeof(prog_shn_heldoh_anim_ops[0]), 0, prog_shn_heldoh_anim_labels, sizeof(prog_shn_heldoh_anim_labels) / sizeof(prog_shn_heldoh_anim_labels[0]) },
     { "shn_break_neck_anim", "SHNSEQ4.ASM", prog_shn_break_neck_anim_ops,
-      sizeof(prog_shn_break_neck_anim_ops) / sizeof(prog_shn_break_neck_anim_ops[0]), 0 },
+      sizeof(prog_shn_break_neck_anim_ops) / sizeof(prog_shn_break_neck_anim_ops[0]), 0, prog_shn_break_neck_anim_labels, sizeof(prog_shn_break_neck_anim_labels) / sizeof(prog_shn_break_neck_anim_labels[0]) },
     { "shn_break_neck3_anim", "SHNSEQ4.ASM", prog_shn_break_neck3_anim_ops,
-      sizeof(prog_shn_break_neck3_anim_ops) / sizeof(prog_shn_break_neck3_anim_ops[0]), 0 },
+      sizeof(prog_shn_break_neck3_anim_ops) / sizeof(prog_shn_break_neck3_anim_ops[0]), 0, prog_shn_break_neck3_anim_labels, sizeof(prog_shn_break_neck3_anim_labels) / sizeof(prog_shn_break_neck3_anim_labels[0]) },
     { "shn_break_neck2_anim", "SHNSEQ4.ASM", prog_shn_break_neck2_anim_ops,
-      sizeof(prog_shn_break_neck2_anim_ops) / sizeof(prog_shn_break_neck2_anim_ops[0]), 0 },
+      sizeof(prog_shn_break_neck2_anim_ops) / sizeof(prog_shn_break_neck2_anim_ops[0]), 0, 0, 0 },
     { "shn_break_neck4_anim", "SHNSEQ4.ASM", prog_shn_break_neck4_anim_ops,
-      sizeof(prog_shn_break_neck4_anim_ops) / sizeof(prog_shn_break_neck4_anim_ops[0]), 0 },
+      sizeof(prog_shn_break_neck4_anim_ops) / sizeof(prog_shn_break_neck4_anim_ops[0]), 0, 0, 0 },
     { "shn_flyout_anim", "SHNSEQ4.ASM", prog_shn_flyout_anim_ops,
-      sizeof(prog_shn_flyout_anim_ops) / sizeof(prog_shn_flyout_anim_ops[0]), 0 },
+      sizeof(prog_shn_flyout_anim_ops) / sizeof(prog_shn_flyout_anim_ops[0]), 0, prog_shn_flyout_anim_labels, sizeof(prog_shn_flyout_anim_labels) / sizeof(prog_shn_flyout_anim_labels[0]) },
     { "shn_flyout2_anim", "SHNSEQ4.ASM", prog_shn_flyout2_anim_ops,
-      sizeof(prog_shn_flyout2_anim_ops) / sizeof(prog_shn_flyout2_anim_ops[0]), 0 },
+      sizeof(prog_shn_flyout2_anim_ops) / sizeof(prog_shn_flyout2_anim_ops[0]), 0, prog_shn_flyout2_anim_labels, sizeof(prog_shn_flyout2_anim_labels) / sizeof(prog_shn_flyout2_anim_labels[0]) },
     { "shn_get_buzz_anim", "SHNSEQ4.ASM", prog_shn_get_buzz_anim_ops,
-      sizeof(prog_shn_get_buzz_anim_ops) / sizeof(prog_shn_get_buzz_anim_ops[0]), 0 },
+      sizeof(prog_shn_get_buzz_anim_ops) / sizeof(prog_shn_get_buzz_anim_ops[0]), 0, prog_shn_get_buzz_anim_labels, sizeof(prog_shn_get_buzz_anim_labels) / sizeof(prog_shn_get_buzz_anim_labels[0]) },
     { "shn_3_head_held_anim", "SHNSEQ4.ASM", prog_shn_3_head_held_anim_ops,
-      sizeof(prog_shn_3_head_held_anim_ops) / sizeof(prog_shn_3_head_held_anim_ops[0]), 0 },
+      sizeof(prog_shn_3_head_held_anim_ops) / sizeof(prog_shn_3_head_held_anim_ops[0]), 0, prog_shn_3_head_held_anim_labels, sizeof(prog_shn_3_head_held_anim_labels) / sizeof(prog_shn_3_head_held_anim_labels[0]) },
     { "shn_3_head_held_brk_anim", "SHNSEQ4.ASM", prog_shn_3_head_held_brk_anim_ops,
-      sizeof(prog_shn_3_head_held_brk_anim_ops) / sizeof(prog_shn_3_head_held_brk_anim_ops[0]), 0 },
+      sizeof(prog_shn_3_head_held_brk_anim_ops) / sizeof(prog_shn_3_head_held_brk_anim_ops[0]), 0, prog_shn_3_head_held_brk_anim_labels, sizeof(prog_shn_3_head_held_brk_anim_labels) / sizeof(prog_shn_3_head_held_brk_anim_labels[0]) },
     { "shn_3_head_held_stand_anim", "SHNSEQ4.ASM", prog_shn_3_head_held_stand_anim_ops,
-      sizeof(prog_shn_3_head_held_stand_anim_ops) / sizeof(prog_shn_3_head_held_stand_anim_ops[0]), 0 },
+      sizeof(prog_shn_3_head_held_stand_anim_ops) / sizeof(prog_shn_3_head_held_stand_anim_ops[0]), 0, 0, 0 },
     { "shn_arm_broken_anim", "SHNSEQ4.ASM", prog_shn_arm_broken_anim_ops,
-      sizeof(prog_shn_arm_broken_anim_ops) / sizeof(prog_shn_arm_broken_anim_ops[0]), 0 },
+      sizeof(prog_shn_arm_broken_anim_ops) / sizeof(prog_shn_arm_broken_anim_ops[0]), 0, prog_shn_arm_broken_anim_labels, sizeof(prog_shn_arm_broken_anim_labels) / sizeof(prog_shn_arm_broken_anim_labels[0]) },
     { "shn_backbroken_anim", "SHNSEQ4.ASM", prog_shn_backbroken_anim_ops,
-      sizeof(prog_shn_backbroken_anim_ops) / sizeof(prog_shn_backbroken_anim_ops[0]), 0 },
+      sizeof(prog_shn_backbroken_anim_ops) / sizeof(prog_shn_backbroken_anim_ops[0]), 0, 0, 0 },
     { "shn_slamnobounce_anim", "SHNSEQ4.ASM", prog_shn_slamnobounce_anim_ops,
-      sizeof(prog_shn_slamnobounce_anim_ops) / sizeof(prog_shn_slamnobounce_anim_ops[0]), 0 },
+      sizeof(prog_shn_slamnobounce_anim_ops) / sizeof(prog_shn_slamnobounce_anim_ops[0]), 0, 0, 0 },
     { "shn_slambounce_anim", "SHNSEQ4.ASM", prog_shn_slambounce_anim_ops,
-      sizeof(prog_shn_slambounce_anim_ops) / sizeof(prog_shn_slambounce_anim_ops[0]), 0 },
+      sizeof(prog_shn_slambounce_anim_ops) / sizeof(prog_shn_slambounce_anim_ops[0]), 0, 0, 0 },
     { "shn_slambounce2_anim", "SHNSEQ4.ASM", prog_shn_slambounce2_anim_ops,
-      sizeof(prog_shn_slambounce2_anim_ops) / sizeof(prog_shn_slambounce2_anim_ops[0]), 0 },
+      sizeof(prog_shn_slambounce2_anim_ops) / sizeof(prog_shn_slambounce2_anim_ops[0]), 0, 0, 0 },
     { "shn_breakneck2_anim", "SHNSEQ4.ASM", prog_shn_breakneck2_anim_ops,
-      sizeof(prog_shn_breakneck2_anim_ops) / sizeof(prog_shn_breakneck2_anim_ops[0]), 0 },
+      sizeof(prog_shn_breakneck2_anim_ops) / sizeof(prog_shn_breakneck2_anim_ops[0]), 0, 0, 0 },
     { "und_zip_anim", "UNDSEQ1.ASM", prog_und_zip_anim_ops,
-      sizeof(prog_und_zip_anim_ops) / sizeof(prog_und_zip_anim_ops[0]), 0 },
+      sizeof(prog_und_zip_anim_ops) / sizeof(prog_und_zip_anim_ops[0]), 0, 0, 0 },
     { "und_stand2_anim", "UNDSEQ1.ASM", prog_und_stand2_anim_ops,
-      sizeof(prog_und_stand2_anim_ops) / sizeof(prog_und_stand2_anim_ops[0]), 0 },
+      sizeof(prog_und_stand2_anim_ops) / sizeof(prog_und_stand2_anim_ops[0]), 0, 0, 0 },
     { "und_stand8_anim", "UNDSEQ1.ASM", prog_und_stand8_anim_ops,
-      sizeof(prog_und_stand8_anim_ops) / sizeof(prog_und_stand8_anim_ops[0]), 0 },
+      sizeof(prog_und_stand8_anim_ops) / sizeof(prog_und_stand8_anim_ops[0]), 0, 0, 0 },
     { "und_stand4_anim", "UNDSEQ1.ASM", prog_und_stand4_anim_ops,
-      sizeof(prog_und_stand4_anim_ops) / sizeof(prog_und_stand4_anim_ops[0]), 0 },
+      sizeof(prog_und_stand4_anim_ops) / sizeof(prog_und_stand4_anim_ops[0]), 0, 0, 0 },
     { "und_stand6_anim", "UNDSEQ1.ASM", prog_und_stand6_anim_ops,
-      sizeof(prog_und_stand6_anim_ops) / sizeof(prog_und_stand6_anim_ops[0]), 0 },
+      sizeof(prog_und_stand6_anim_ops) / sizeof(prog_und_stand6_anim_ops[0]), 0, 0, 0 },
     { "und_torso2_anim", "UNDSEQ1.ASM", prog_und_torso2_anim_ops,
-      sizeof(prog_und_torso2_anim_ops) / sizeof(prog_und_torso2_anim_ops[0]), 0 },
+      sizeof(prog_und_torso2_anim_ops) / sizeof(prog_und_torso2_anim_ops[0]), 0, 0, 0 },
     { "und_torso8_anim", "UNDSEQ1.ASM", prog_und_torso8_anim_ops,
-      sizeof(prog_und_torso8_anim_ops) / sizeof(prog_und_torso8_anim_ops[0]), 0 },
+      sizeof(prog_und_torso8_anim_ops) / sizeof(prog_und_torso8_anim_ops[0]), 0, 0, 0 },
     { "und_torso4_anim", "UNDSEQ1.ASM", prog_und_torso4_anim_ops,
-      sizeof(prog_und_torso4_anim_ops) / sizeof(prog_und_torso4_anim_ops[0]), 0 },
+      sizeof(prog_und_torso4_anim_ops) / sizeof(prog_und_torso4_anim_ops[0]), 0, 0, 0 },
     { "und_torso6_anim", "UNDSEQ1.ASM", prog_und_torso6_anim_ops,
-      sizeof(prog_und_torso6_anim_ops) / sizeof(prog_und_torso6_anim_ops[0]), 0 },
+      sizeof(prog_und_torso6_anim_ops) / sizeof(prog_und_torso6_anim_ops[0]), 0, 0, 0 },
     { "und_walk1_f2_anim", "UNDSEQ1.ASM", prog_und_walk1_f2_anim_ops,
-      sizeof(prog_und_walk1_f2_anim_ops) / sizeof(prog_und_walk1_f2_anim_ops[0]), 0 },
+      sizeof(prog_und_walk1_f2_anim_ops) / sizeof(prog_und_walk1_f2_anim_ops[0]), 0, 0, 0 },
     { "und_walk2_f2_anim", "UNDSEQ1.ASM", prog_und_walk2_f2_anim_ops,
-      sizeof(prog_und_walk2_f2_anim_ops) / sizeof(prog_und_walk2_f2_anim_ops[0]), 0 },
+      sizeof(prog_und_walk2_f2_anim_ops) / sizeof(prog_und_walk2_f2_anim_ops[0]), 0, 0, 0 },
     { "und_walk4_f2_anim", "UNDSEQ1.ASM", prog_und_walk4_f2_anim_ops,
-      sizeof(prog_und_walk4_f2_anim_ops) / sizeof(prog_und_walk4_f2_anim_ops[0]), 0 },
+      sizeof(prog_und_walk4_f2_anim_ops) / sizeof(prog_und_walk4_f2_anim_ops[0]), 0, 0, 0 },
     { "und_walk5_f2_anim", "UNDSEQ1.ASM", prog_und_walk5_f2_anim_ops,
-      sizeof(prog_und_walk5_f2_anim_ops) / sizeof(prog_und_walk5_f2_anim_ops[0]), 0 },
+      sizeof(prog_und_walk5_f2_anim_ops) / sizeof(prog_und_walk5_f2_anim_ops[0]), 0, 0, 0 },
     { "und_walk6_f2_anim", "UNDSEQ1.ASM", prog_und_walk6_f2_anim_ops,
-      sizeof(prog_und_walk6_f2_anim_ops) / sizeof(prog_und_walk6_f2_anim_ops[0]), 0 },
+      sizeof(prog_und_walk6_f2_anim_ops) / sizeof(prog_und_walk6_f2_anim_ops[0]), 0, 0, 0 },
     { "und_walk8_f2_anim", "UNDSEQ1.ASM", prog_und_walk8_f2_anim_ops,
-      sizeof(prog_und_walk8_f2_anim_ops) / sizeof(prog_und_walk8_f2_anim_ops[0]), 0 },
+      sizeof(prog_und_walk8_f2_anim_ops) / sizeof(prog_und_walk8_f2_anim_ops[0]), 0, 0, 0 },
     { "und_walk1_f4_anim", "UNDSEQ1.ASM", prog_und_walk1_f4_anim_ops,
-      sizeof(prog_und_walk1_f4_anim_ops) / sizeof(prog_und_walk1_f4_anim_ops[0]), 0 },
+      sizeof(prog_und_walk1_f4_anim_ops) / sizeof(prog_und_walk1_f4_anim_ops[0]), 0, 0, 0 },
     { "und_walk2_f4_anim", "UNDSEQ1.ASM", prog_und_walk2_f4_anim_ops,
-      sizeof(prog_und_walk2_f4_anim_ops) / sizeof(prog_und_walk2_f4_anim_ops[0]), 0 },
+      sizeof(prog_und_walk2_f4_anim_ops) / sizeof(prog_und_walk2_f4_anim_ops[0]), 0, 0, 0 },
     { "und_walk4_f4_anim", "UNDSEQ1.ASM", prog_und_walk4_f4_anim_ops,
-      sizeof(prog_und_walk4_f4_anim_ops) / sizeof(prog_und_walk4_f4_anim_ops[0]), 0 },
+      sizeof(prog_und_walk4_f4_anim_ops) / sizeof(prog_und_walk4_f4_anim_ops[0]), 0, 0, 0 },
     { "und_walk5_f4_anim", "UNDSEQ1.ASM", prog_und_walk5_f4_anim_ops,
-      sizeof(prog_und_walk5_f4_anim_ops) / sizeof(prog_und_walk5_f4_anim_ops[0]), 0 },
+      sizeof(prog_und_walk5_f4_anim_ops) / sizeof(prog_und_walk5_f4_anim_ops[0]), 0, 0, 0 },
     { "und_walk6_f4_anim", "UNDSEQ1.ASM", prog_und_walk6_f4_anim_ops,
-      sizeof(prog_und_walk6_f4_anim_ops) / sizeof(prog_und_walk6_f4_anim_ops[0]), 0 },
+      sizeof(prog_und_walk6_f4_anim_ops) / sizeof(prog_und_walk6_f4_anim_ops[0]), 0, 0, 0 },
     { "und_walk8_f4_anim", "UNDSEQ1.ASM", prog_und_walk8_f4_anim_ops,
-      sizeof(prog_und_walk8_f4_anim_ops) / sizeof(prog_und_walk8_f4_anim_ops[0]), 0 },
+      sizeof(prog_und_walk8_f4_anim_ops) / sizeof(prog_und_walk8_f4_anim_ops[0]), 0, 0, 0 },
     { "und_2_to_4_turn_anim", "UNDSEQ1.ASM", prog_und_2_to_4_turn_anim_ops,
-      sizeof(prog_und_2_to_4_turn_anim_ops) / sizeof(prog_und_2_to_4_turn_anim_ops[0]), 0 },
+      sizeof(prog_und_2_to_4_turn_anim_ops) / sizeof(prog_und_2_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "und_8_to_6_turn_anim", "UNDSEQ1.ASM", prog_und_8_to_6_turn_anim_ops,
-      sizeof(prog_und_8_to_6_turn_anim_ops) / sizeof(prog_und_8_to_6_turn_anim_ops[0]), 0 },
+      sizeof(prog_und_8_to_6_turn_anim_ops) / sizeof(prog_und_8_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "und_4_to_2_turn_anim", "UNDSEQ1.ASM", prog_und_4_to_2_turn_anim_ops,
-      sizeof(prog_und_4_to_2_turn_anim_ops) / sizeof(prog_und_4_to_2_turn_anim_ops[0]), 0 },
+      sizeof(prog_und_4_to_2_turn_anim_ops) / sizeof(prog_und_4_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "und_6_to_8_turn_anim", "UNDSEQ1.ASM", prog_und_6_to_8_turn_anim_ops,
-      sizeof(prog_und_6_to_8_turn_anim_ops) / sizeof(prog_und_6_to_8_turn_anim_ops[0]), 0 },
+      sizeof(prog_und_6_to_8_turn_anim_ops) / sizeof(prog_und_6_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "und_4_to_6_turn_anim", "UNDSEQ1.ASM", prog_und_4_to_6_turn_anim_ops,
-      sizeof(prog_und_4_to_6_turn_anim_ops) / sizeof(prog_und_4_to_6_turn_anim_ops[0]), 0 },
+      sizeof(prog_und_4_to_6_turn_anim_ops) / sizeof(prog_und_4_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "und_6_to_4_turn_anim", "UNDSEQ1.ASM", prog_und_6_to_4_turn_anim_ops,
-      sizeof(prog_und_6_to_4_turn_anim_ops) / sizeof(prog_und_6_to_4_turn_anim_ops[0]), 0 },
+      sizeof(prog_und_6_to_4_turn_anim_ops) / sizeof(prog_und_6_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "und_2_to_8_turn_anim", "UNDSEQ1.ASM", prog_und_2_to_8_turn_anim_ops,
-      sizeof(prog_und_2_to_8_turn_anim_ops) / sizeof(prog_und_2_to_8_turn_anim_ops[0]), 0 },
+      sizeof(prog_und_2_to_8_turn_anim_ops) / sizeof(prog_und_2_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "und_8_to_2_turn_anim", "UNDSEQ1.ASM", prog_und_8_to_2_turn_anim_ops,
-      sizeof(prog_und_8_to_2_turn_anim_ops) / sizeof(prog_und_8_to_2_turn_anim_ops[0]), 0 },
+      sizeof(prog_und_8_to_2_turn_anim_ops) / sizeof(prog_und_8_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "und_4_to_8_turn_anim", "UNDSEQ1.ASM", prog_und_4_to_8_turn_anim_ops,
-      sizeof(prog_und_4_to_8_turn_anim_ops) / sizeof(prog_und_4_to_8_turn_anim_ops[0]), 0 },
+      sizeof(prog_und_4_to_8_turn_anim_ops) / sizeof(prog_und_4_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "und_6_to_2_turn_anim", "UNDSEQ1.ASM", prog_und_6_to_2_turn_anim_ops,
-      sizeof(prog_und_6_to_2_turn_anim_ops) / sizeof(prog_und_6_to_2_turn_anim_ops[0]), 0 },
+      sizeof(prog_und_6_to_2_turn_anim_ops) / sizeof(prog_und_6_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "und_2_to_6_turn_anim", "UNDSEQ1.ASM", prog_und_2_to_6_turn_anim_ops,
-      sizeof(prog_und_2_to_6_turn_anim_ops) / sizeof(prog_und_2_to_6_turn_anim_ops[0]), 0 },
+      sizeof(prog_und_2_to_6_turn_anim_ops) / sizeof(prog_und_2_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "und_8_to_4_turn_anim", "UNDSEQ1.ASM", prog_und_8_to_4_turn_anim_ops,
-      sizeof(prog_und_8_to_4_turn_anim_ops) / sizeof(prog_und_8_to_4_turn_anim_ops[0]), 0 },
+      sizeof(prog_und_8_to_4_turn_anim_ops) / sizeof(prog_und_8_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "und_2_to_4_turn2_anim", "UNDSEQ1.ASM", prog_und_2_to_4_turn2_anim_ops,
-      sizeof(prog_und_2_to_4_turn2_anim_ops) / sizeof(prog_und_2_to_4_turn2_anim_ops[0]), 0 },
+      sizeof(prog_und_2_to_4_turn2_anim_ops) / sizeof(prog_und_2_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "und_8_to_6_turn2_anim", "UNDSEQ1.ASM", prog_und_8_to_6_turn2_anim_ops,
-      sizeof(prog_und_8_to_6_turn2_anim_ops) / sizeof(prog_und_8_to_6_turn2_anim_ops[0]), 0 },
+      sizeof(prog_und_8_to_6_turn2_anim_ops) / sizeof(prog_und_8_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "und_4_to_2_turn2_anim", "UNDSEQ1.ASM", prog_und_4_to_2_turn2_anim_ops,
-      sizeof(prog_und_4_to_2_turn2_anim_ops) / sizeof(prog_und_4_to_2_turn2_anim_ops[0]), 0 },
+      sizeof(prog_und_4_to_2_turn2_anim_ops) / sizeof(prog_und_4_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "und_6_to_8_turn2_anim", "UNDSEQ1.ASM", prog_und_6_to_8_turn2_anim_ops,
-      sizeof(prog_und_6_to_8_turn2_anim_ops) / sizeof(prog_und_6_to_8_turn2_anim_ops[0]), 0 },
+      sizeof(prog_und_6_to_8_turn2_anim_ops) / sizeof(prog_und_6_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "und_4_to_6_turn2_anim", "UNDSEQ1.ASM", prog_und_4_to_6_turn2_anim_ops,
-      sizeof(prog_und_4_to_6_turn2_anim_ops) / sizeof(prog_und_4_to_6_turn2_anim_ops[0]), 0 },
+      sizeof(prog_und_4_to_6_turn2_anim_ops) / sizeof(prog_und_4_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "und_6_to_4_turn2_anim", "UNDSEQ1.ASM", prog_und_6_to_4_turn2_anim_ops,
-      sizeof(prog_und_6_to_4_turn2_anim_ops) / sizeof(prog_und_6_to_4_turn2_anim_ops[0]), 0 },
+      sizeof(prog_und_6_to_4_turn2_anim_ops) / sizeof(prog_und_6_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "und_2_to_8_turn2_anim", "UNDSEQ1.ASM", prog_und_2_to_8_turn2_anim_ops,
-      sizeof(prog_und_2_to_8_turn2_anim_ops) / sizeof(prog_und_2_to_8_turn2_anim_ops[0]), 0 },
+      sizeof(prog_und_2_to_8_turn2_anim_ops) / sizeof(prog_und_2_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "und_8_to_2_turn2_anim", "UNDSEQ1.ASM", prog_und_8_to_2_turn2_anim_ops,
-      sizeof(prog_und_8_to_2_turn2_anim_ops) / sizeof(prog_und_8_to_2_turn2_anim_ops[0]), 0 },
+      sizeof(prog_und_8_to_2_turn2_anim_ops) / sizeof(prog_und_8_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "und_4_to_8_turn2_anim", "UNDSEQ1.ASM", prog_und_4_to_8_turn2_anim_ops,
-      sizeof(prog_und_4_to_8_turn2_anim_ops) / sizeof(prog_und_4_to_8_turn2_anim_ops[0]), 0 },
+      sizeof(prog_und_4_to_8_turn2_anim_ops) / sizeof(prog_und_4_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "und_6_to_2_turn2_anim", "UNDSEQ1.ASM", prog_und_6_to_2_turn2_anim_ops,
-      sizeof(prog_und_6_to_2_turn2_anim_ops) / sizeof(prog_und_6_to_2_turn2_anim_ops[0]), 0 },
+      sizeof(prog_und_6_to_2_turn2_anim_ops) / sizeof(prog_und_6_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "und_2_to_6_turn2_anim", "UNDSEQ1.ASM", prog_und_2_to_6_turn2_anim_ops,
-      sizeof(prog_und_2_to_6_turn2_anim_ops) / sizeof(prog_und_2_to_6_turn2_anim_ops[0]), 0 },
+      sizeof(prog_und_2_to_6_turn2_anim_ops) / sizeof(prog_und_2_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "und_8_to_4_turn2_anim", "UNDSEQ1.ASM", prog_und_8_to_4_turn2_anim_ops,
-      sizeof(prog_und_8_to_4_turn2_anim_ops) / sizeof(prog_und_8_to_4_turn2_anim_ops[0]), 0 },
+      sizeof(prog_und_8_to_4_turn2_anim_ops) / sizeof(prog_und_8_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "und_run2_anim", "UNDSEQ1.ASM", prog_und_run2_anim_ops,
-      sizeof(prog_und_run2_anim_ops) / sizeof(prog_und_run2_anim_ops[0]), 0 },
+      sizeof(prog_und_run2_anim_ops) / sizeof(prog_und_run2_anim_ops[0]), 0, prog_und_run2_anim_labels, sizeof(prog_und_run2_anim_labels) / sizeof(prog_und_run2_anim_labels[0]) },
     { "und_run_anim", "UNDSEQ1.ASM", prog_und_run_anim_ops,
-      sizeof(prog_und_run_anim_ops) / sizeof(prog_und_run_anim_ops[0]), 0 },
+      sizeof(prog_und_run_anim_ops) / sizeof(prog_und_run_anim_ops[0]), 0, prog_und_run_anim_labels, sizeof(prog_und_run_anim_labels) / sizeof(prog_und_run_anim_labels[0]) },
     { "und_bounce_anim", "UNDSEQ1.ASM", prog_und_bounce_anim_ops,
-      sizeof(prog_und_bounce_anim_ops) / sizeof(prog_und_bounce_anim_ops[0]), 0 },
+      sizeof(prog_und_bounce_anim_ops) / sizeof(prog_und_bounce_anim_ops[0]), 0, 0, 0 },
     { "und_2_punch_anim", "UNDSEQ2.ASM", prog_und_2_punch_anim_ops,
-      sizeof(prog_und_2_punch_anim_ops) / sizeof(prog_und_2_punch_anim_ops[0]), 0 },
+      sizeof(prog_und_2_punch_anim_ops) / sizeof(prog_und_2_punch_anim_ops[0]), 0, prog_und_2_punch_anim_labels, sizeof(prog_und_2_punch_anim_labels) / sizeof(prog_und_2_punch_anim_labels[0]) },
     { "und_4_punch_anim", "UNDSEQ2.ASM", prog_und_4_punch_anim_ops,
-      sizeof(prog_und_4_punch_anim_ops) / sizeof(prog_und_4_punch_anim_ops[0]), 0 },
+      sizeof(prog_und_4_punch_anim_ops) / sizeof(prog_und_4_punch_anim_ops[0]), 0, prog_und_4_punch_anim_labels, sizeof(prog_und_4_punch_anim_labels) / sizeof(prog_und_4_punch_anim_labels[0]) },
     { "und_combo_punch_anim", "UNDSEQ2.ASM", prog_und_combo_punch_anim_ops,
-      sizeof(prog_und_combo_punch_anim_ops) / sizeof(prog_und_combo_punch_anim_ops[0]), 0 },
+      sizeof(prog_und_combo_punch_anim_ops) / sizeof(prog_und_combo_punch_anim_ops[0]), 0, prog_und_combo_punch_anim_labels, sizeof(prog_und_combo_punch_anim_labels) / sizeof(prog_und_combo_punch_anim_labels[0]) },
     { "und_2_uppercut_anim", "UNDSEQ2.ASM", prog_und_2_uppercut_anim_ops,
-      sizeof(prog_und_2_uppercut_anim_ops) / sizeof(prog_und_2_uppercut_anim_ops[0]), 0 },
+      sizeof(prog_und_2_uppercut_anim_ops) / sizeof(prog_und_2_uppercut_anim_ops[0]), 0, prog_und_2_uppercut_anim_labels, sizeof(prog_und_2_uppercut_anim_labels) / sizeof(prog_und_2_uppercut_anim_labels[0]) },
     { "und_4_uppercut_anim", "UNDSEQ2.ASM", prog_und_4_uppercut_anim_ops,
-      sizeof(prog_und_4_uppercut_anim_ops) / sizeof(prog_und_4_uppercut_anim_ops[0]), 0 },
+      sizeof(prog_und_4_uppercut_anim_ops) / sizeof(prog_und_4_uppercut_anim_ops[0]), 0, prog_und_4_uppercut_anim_labels, sizeof(prog_und_4_uppercut_anim_labels) / sizeof(prog_und_4_uppercut_anim_labels[0]) },
     { "und_combo_uppercut_anim", "UNDSEQ2.ASM", prog_und_combo_uppercut_anim_ops,
-      sizeof(prog_und_combo_uppercut_anim_ops) / sizeof(prog_und_combo_uppercut_anim_ops[0]), 0 },
+      sizeof(prog_und_combo_uppercut_anim_ops) / sizeof(prog_und_combo_uppercut_anim_ops[0]), 0, prog_und_combo_uppercut_anim_labels, sizeof(prog_und_combo_uppercut_anim_labels) / sizeof(prog_und_combo_uppercut_anim_labels[0]) },
     { "und_combo_slap_anim", "UNDSEQ2.ASM", prog_und_combo_slap_anim_ops,
-      sizeof(prog_und_combo_slap_anim_ops) / sizeof(prog_und_combo_slap_anim_ops[0]), 0 },
+      sizeof(prog_und_combo_slap_anim_ops) / sizeof(prog_und_combo_slap_anim_ops[0]), 0, prog_und_combo_slap_anim_labels, sizeof(prog_und_combo_slap_anim_labels) / sizeof(prog_und_combo_slap_anim_labels[0]) },
     { "und_2_run_slap_anim", "UNDSEQ2.ASM", prog_und_2_run_slap_anim_ops,
-      sizeof(prog_und_2_run_slap_anim_ops) / sizeof(prog_und_2_run_slap_anim_ops[0]), 0 },
+      sizeof(prog_und_2_run_slap_anim_ops) / sizeof(prog_und_2_run_slap_anim_ops[0]), 0, prog_und_2_run_slap_anim_labels, sizeof(prog_und_2_run_slap_anim_labels) / sizeof(prog_und_2_run_slap_anim_labels[0]) },
     { "und_4_run_slap_anim", "UNDSEQ2.ASM", prog_und_4_run_slap_anim_ops,
-      sizeof(prog_und_4_run_slap_anim_ops) / sizeof(prog_und_4_run_slap_anim_ops[0]), 0 },
+      sizeof(prog_und_4_run_slap_anim_ops) / sizeof(prog_und_4_run_slap_anim_ops[0]), 0, prog_und_4_run_slap_anim_labels, sizeof(prog_und_4_run_slap_anim_labels) / sizeof(prog_und_4_run_slap_anim_labels[0]) },
     { "und_2_slap_anim", "UNDSEQ2.ASM", prog_und_2_slap_anim_ops,
-      sizeof(prog_und_2_slap_anim_ops) / sizeof(prog_und_2_slap_anim_ops[0]), 0 },
+      sizeof(prog_und_2_slap_anim_ops) / sizeof(prog_und_2_slap_anim_ops[0]), 0, prog_und_2_slap_anim_labels, sizeof(prog_und_2_slap_anim_labels) / sizeof(prog_und_2_slap_anim_labels[0]) },
     { "und_4_slap_anim", "UNDSEQ2.ASM", prog_und_4_slap_anim_ops,
-      sizeof(prog_und_4_slap_anim_ops) / sizeof(prog_und_4_slap_anim_ops[0]), 0 },
+      sizeof(prog_und_4_slap_anim_ops) / sizeof(prog_und_4_slap_anim_ops[0]), 0, prog_und_4_slap_anim_labels, sizeof(prog_und_4_slap_anim_labels) / sizeof(prog_und_4_slap_anim_labels[0]) },
     { "und_4_push_anim", "UNDSEQ2.ASM", prog_und_4_push_anim_ops,
-      sizeof(prog_und_4_push_anim_ops) / sizeof(prog_und_4_push_anim_ops[0]), 0 },
+      sizeof(prog_und_4_push_anim_ops) / sizeof(prog_und_4_push_anim_ops[0]), 0, prog_und_4_push_anim_labels, sizeof(prog_und_4_push_anim_labels) / sizeof(prog_und_4_push_anim_labels[0]) },
     { "und_2_bncoff_anim", "UNDSEQ2.ASM", prog_und_2_bncoff_anim_ops,
-      sizeof(prog_und_2_bncoff_anim_ops) / sizeof(prog_und_2_bncoff_anim_ops[0]), 0 },
+      sizeof(prog_und_2_bncoff_anim_ops) / sizeof(prog_und_2_bncoff_anim_ops[0]), 0, 0, 0 },
     { "und_4_bncoff_anim", "UNDSEQ2.ASM", prog_und_4_bncoff_anim_ops,
-      sizeof(prog_und_4_bncoff_anim_ops) / sizeof(prog_und_4_bncoff_anim_ops[0]), 0 },
+      sizeof(prog_und_4_bncoff_anim_ops) / sizeof(prog_und_4_bncoff_anim_ops[0]), 0, 0, 0 },
     { "und_4_bncoff_dizzy_anim", "UNDSEQ2.ASM", prog_und_4_bncoff_dizzy_anim_ops,
-      sizeof(prog_und_4_bncoff_dizzy_anim_ops) / sizeof(prog_und_4_bncoff_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_und_4_bncoff_dizzy_anim_ops) / sizeof(prog_und_4_bncoff_dizzy_anim_ops[0]), 0, 0, 0 },
     { "und_4_losebal_anim", "UNDSEQ2.ASM", prog_und_4_losebal_anim_ops,
-      sizeof(prog_und_4_losebal_anim_ops) / sizeof(prog_und_4_losebal_anim_ops[0]), 0 },
+      sizeof(prog_und_4_losebal_anim_ops) / sizeof(prog_und_4_losebal_anim_ops[0]), 0, 0, 0 },
     { "und_4_losebal_dizzy_anim", "UNDSEQ2.ASM", prog_und_4_losebal_dizzy_anim_ops,
-      sizeof(prog_und_4_losebal_dizzy_anim_ops) / sizeof(prog_und_4_losebal_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_und_4_losebal_dizzy_anim_ops) / sizeof(prog_und_4_losebal_dizzy_anim_ops[0]), 0, prog_und_4_losebal_dizzy_anim_labels, sizeof(prog_und_4_losebal_dizzy_anim_labels) / sizeof(prog_und_4_losebal_dizzy_anim_labels[0]) },
     { "und_2_lbowdrop_anim", "UNDSEQ2.ASM", prog_und_2_lbowdrop_anim_ops,
-      sizeof(prog_und_2_lbowdrop_anim_ops) / sizeof(prog_und_2_lbowdrop_anim_ops[0]), 0 },
+      sizeof(prog_und_2_lbowdrop_anim_ops) / sizeof(prog_und_2_lbowdrop_anim_ops[0]), 0, prog_und_2_lbowdrop_anim_labels, sizeof(prog_und_2_lbowdrop_anim_labels) / sizeof(prog_und_2_lbowdrop_anim_labels[0]) },
     { "und_4_lbowdrop_anim", "UNDSEQ2.ASM", prog_und_4_lbowdrop_anim_ops,
-      sizeof(prog_und_4_lbowdrop_anim_ops) / sizeof(prog_und_4_lbowdrop_anim_ops[0]), 0 },
+      sizeof(prog_und_4_lbowdrop_anim_ops) / sizeof(prog_und_4_lbowdrop_anim_ops[0]), 0, prog_und_4_lbowdrop_anim_labels, sizeof(prog_und_4_lbowdrop_anim_labels) / sizeof(prog_und_4_lbowdrop_anim_labels[0]) },
     { "und_2_butt_anim", "UNDSEQ2.ASM", prog_und_2_butt_anim_ops,
-      sizeof(prog_und_2_butt_anim_ops) / sizeof(prog_und_2_butt_anim_ops[0]), 0 },
+      sizeof(prog_und_2_butt_anim_ops) / sizeof(prog_und_2_butt_anim_ops[0]), 0, prog_und_2_butt_anim_labels, sizeof(prog_und_2_butt_anim_labels) / sizeof(prog_und_2_butt_anim_labels[0]) },
     { "und_4_butt_anim", "UNDSEQ2.ASM", prog_und_4_butt_anim_ops,
-      sizeof(prog_und_4_butt_anim_ops) / sizeof(prog_und_4_butt_anim_ops[0]), 0 },
+      sizeof(prog_und_4_butt_anim_ops) / sizeof(prog_und_4_butt_anim_ops[0]), 0, prog_und_4_butt_anim_labels, sizeof(prog_und_4_butt_anim_labels) / sizeof(prog_und_4_butt_anim_labels[0]) },
     { "und_combo_butt_anim", "UNDSEQ2.ASM", prog_und_combo_butt_anim_ops,
-      sizeof(prog_und_combo_butt_anim_ops) / sizeof(prog_und_combo_butt_anim_ops[0]), 0 },
+      sizeof(prog_und_combo_butt_anim_ops) / sizeof(prog_und_combo_butt_anim_ops[0]), 0, prog_und_combo_butt_anim_labels, sizeof(prog_und_combo_butt_anim_labels) / sizeof(prog_und_combo_butt_anim_labels[0]) },
     { "und_2_butts_anim", "UNDSEQ2.ASM", prog_und_2_butts_anim_ops,
-      sizeof(prog_und_2_butts_anim_ops) / sizeof(prog_und_2_butts_anim_ops[0]), 0 },
+      sizeof(prog_und_2_butts_anim_ops) / sizeof(prog_und_2_butts_anim_ops[0]), 0, prog_und_2_butts_anim_labels, sizeof(prog_und_2_butts_anim_labels) / sizeof(prog_und_2_butts_anim_labels[0]) },
     { "und_4_butts_anim", "UNDSEQ2.ASM", prog_und_4_butts_anim_ops,
-      sizeof(prog_und_4_butts_anim_ops) / sizeof(prog_und_4_butts_anim_ops[0]), 0 },
+      sizeof(prog_und_4_butts_anim_ops) / sizeof(prog_und_4_butts_anim_ops[0]), 0, prog_und_4_butts_anim_labels, sizeof(prog_und_4_butts_anim_labels) / sizeof(prog_und_4_butts_anim_labels[0]) },
     { "und_kick_TB_anim", "UNDSEQ2.ASM", prog_und_kick_TB_anim_ops,
-      sizeof(prog_und_kick_TB_anim_ops) / sizeof(prog_und_kick_TB_anim_ops[0]), 0 },
+      sizeof(prog_und_kick_TB_anim_ops) / sizeof(prog_und_kick_TB_anim_ops[0]), 0, 0, 0 },
     { "und_2_kick_anim", "UNDSEQ2.ASM", prog_und_2_kick_anim_ops,
-      sizeof(prog_und_2_kick_anim_ops) / sizeof(prog_und_2_kick_anim_ops[0]), 0 },
+      sizeof(prog_und_2_kick_anim_ops) / sizeof(prog_und_2_kick_anim_ops[0]), 0, prog_und_2_kick_anim_labels, sizeof(prog_und_2_kick_anim_labels) / sizeof(prog_und_2_kick_anim_labels[0]) },
     { "und_4_kick_anim", "UNDSEQ2.ASM", prog_und_4_kick_anim_ops,
-      sizeof(prog_und_4_kick_anim_ops) / sizeof(prog_und_4_kick_anim_ops[0]), 0 },
+      sizeof(prog_und_4_kick_anim_ops) / sizeof(prog_und_4_kick_anim_ops[0]), 0, prog_und_4_kick_anim_labels, sizeof(prog_und_4_kick_anim_labels) / sizeof(prog_und_4_kick_anim_labels[0]) },
     { "und_combo_kick_anim", "UNDSEQ2.ASM", prog_und_combo_kick_anim_ops,
-      sizeof(prog_und_combo_kick_anim_ops) / sizeof(prog_und_combo_kick_anim_ops[0]), 0 },
+      sizeof(prog_und_combo_kick_anim_ops) / sizeof(prog_und_combo_kick_anim_ops[0]), 0, prog_und_combo_kick_anim_labels, sizeof(prog_und_combo_kick_anim_labels) / sizeof(prog_und_combo_kick_anim_labels[0]) },
     { "und_2_super_kick_anim", "UNDSEQ2.ASM", prog_und_2_super_kick_anim_ops,
-      sizeof(prog_und_2_super_kick_anim_ops) / sizeof(prog_und_2_super_kick_anim_ops[0]), 0 },
+      sizeof(prog_und_2_super_kick_anim_ops) / sizeof(prog_und_2_super_kick_anim_ops[0]), 0, prog_und_2_super_kick_anim_labels, sizeof(prog_und_2_super_kick_anim_labels) / sizeof(prog_und_2_super_kick_anim_labels[0]) },
     { "und_4_super_kick_anim", "UNDSEQ2.ASM", prog_und_4_super_kick_anim_ops,
-      sizeof(prog_und_4_super_kick_anim_ops) / sizeof(prog_und_4_super_kick_anim_ops[0]), 0 },
+      sizeof(prog_und_4_super_kick_anim_ops) / sizeof(prog_und_4_super_kick_anim_ops[0]), 0, prog_und_4_super_kick_anim_labels, sizeof(prog_und_4_super_kick_anim_labels) / sizeof(prog_und_4_super_kick_anim_labels[0]) },
     { "und_combo_super_kick_anim", "UNDSEQ2.ASM", prog_und_combo_super_kick_anim_ops,
-      sizeof(prog_und_combo_super_kick_anim_ops) / sizeof(prog_und_combo_super_kick_anim_ops[0]), 0 },
+      sizeof(prog_und_combo_super_kick_anim_ops) / sizeof(prog_und_combo_super_kick_anim_ops[0]), 0, prog_und_combo_super_kick_anim_labels, sizeof(prog_und_combo_super_kick_anim_labels) / sizeof(prog_und_combo_super_kick_anim_labels[0]) },
     { "und_2_stomp_anim", "UNDSEQ2.ASM", prog_und_2_stomp_anim_ops,
-      sizeof(prog_und_2_stomp_anim_ops) / sizeof(prog_und_2_stomp_anim_ops[0]), 0 },
+      sizeof(prog_und_2_stomp_anim_ops) / sizeof(prog_und_2_stomp_anim_ops[0]), 0, prog_und_2_stomp_anim_labels, sizeof(prog_und_2_stomp_anim_labels) / sizeof(prog_und_2_stomp_anim_labels[0]) },
     { "und_4_stomp_anim", "UNDSEQ2.ASM", prog_und_4_stomp_anim_ops,
-      sizeof(prog_und_4_stomp_anim_ops) / sizeof(prog_und_4_stomp_anim_ops[0]), 0 },
+      sizeof(prog_und_4_stomp_anim_ops) / sizeof(prog_und_4_stomp_anim_ops[0]), 0, prog_und_4_stomp_anim_labels, sizeof(prog_und_4_stomp_anim_labels) / sizeof(prog_und_4_stomp_anim_labels[0]) },
     { "und_combo_flying_butt_drop_anim", "UNDSEQ2.ASM", prog_und_combo_flying_butt_drop_anim_ops,
-      sizeof(prog_und_combo_flying_butt_drop_anim_ops) / sizeof(prog_und_combo_flying_butt_drop_anim_ops[0]), 0 },
+      sizeof(prog_und_combo_flying_butt_drop_anim_ops) / sizeof(prog_und_combo_flying_butt_drop_anim_ops[0]), 0, prog_und_combo_flying_butt_drop_anim_labels, sizeof(prog_und_combo_flying_butt_drop_anim_labels) / sizeof(prog_und_combo_flying_butt_drop_anim_labels[0]) },
     { "und_flying_butt_drop_anim", "UNDSEQ2.ASM", prog_und_flying_butt_drop_anim_ops,
-      sizeof(prog_und_flying_butt_drop_anim_ops) / sizeof(prog_und_flying_butt_drop_anim_ops[0]), 0 },
+      sizeof(prog_und_flying_butt_drop_anim_ops) / sizeof(prog_und_flying_butt_drop_anim_ops[0]), 0, prog_und_flying_butt_drop_anim_labels, sizeof(prog_und_flying_butt_drop_anim_labels) / sizeof(prog_und_flying_butt_drop_anim_labels[0]) },
     { "und_tbukl_butt_drop_anim", "UNDSEQ2.ASM", prog_und_tbukl_butt_drop_anim_ops,
-      sizeof(prog_und_tbukl_butt_drop_anim_ops) / sizeof(prog_und_tbukl_butt_drop_anim_ops[0]), 0 },
+      sizeof(prog_und_tbukl_butt_drop_anim_ops) / sizeof(prog_und_tbukl_butt_drop_anim_ops[0]), 0, prog_und_tbukl_butt_drop_anim_labels, sizeof(prog_und_tbukl_butt_drop_anim_labels) / sizeof(prog_und_tbukl_butt_drop_anim_labels[0]) },
     { "und_4_bigboot_anim", "UNDSEQ2.ASM", prog_und_4_bigboot_anim_ops,
-      sizeof(prog_und_4_bigboot_anim_ops) / sizeof(prog_und_4_bigboot_anim_ops[0]), 0 },
+      sizeof(prog_und_4_bigboot_anim_ops) / sizeof(prog_und_4_bigboot_anim_ops[0]), 0, prog_und_4_bigboot_anim_labels, sizeof(prog_und_4_bigboot_anim_labels) / sizeof(prog_und_4_bigboot_anim_labels[0]) },
     { "und_2_knee_anim", "UNDSEQ2.ASM", prog_und_2_knee_anim_ops,
-      sizeof(prog_und_2_knee_anim_ops) / sizeof(prog_und_2_knee_anim_ops[0]), 0 },
+      sizeof(prog_und_2_knee_anim_ops) / sizeof(prog_und_2_knee_anim_ops[0]), 0, prog_und_2_knee_anim_labels, sizeof(prog_und_2_knee_anim_labels) / sizeof(prog_und_2_knee_anim_labels[0]) },
     { "und_4_knee2_anim", "UNDSEQ2.ASM", prog_und_4_knee2_anim_ops,
-      sizeof(prog_und_4_knee2_anim_ops) / sizeof(prog_und_4_knee2_anim_ops[0]), 0 },
+      sizeof(prog_und_4_knee2_anim_ops) / sizeof(prog_und_4_knee2_anim_ops[0]), 0, prog_und_4_knee2_anim_labels, sizeof(prog_und_4_knee2_anim_labels) / sizeof(prog_und_4_knee2_anim_labels[0]) },
     { "und_4_knee_anim", "UNDSEQ2.ASM", prog_und_4_knee_anim_ops,
-      sizeof(prog_und_4_knee_anim_ops) / sizeof(prog_und_4_knee_anim_ops[0]), 0 },
+      sizeof(prog_und_4_knee_anim_ops) / sizeof(prog_und_4_knee_anim_ops[0]), 0, prog_und_4_knee_anim_labels, sizeof(prog_und_4_knee_anim_labels) / sizeof(prog_und_4_knee_anim_labels[0]) },
     { "und_4_knee_fall_anim", "UNDSEQ2.ASM", prog_und_4_knee_fall_anim_ops,
-      sizeof(prog_und_4_knee_fall_anim_ops) / sizeof(prog_und_4_knee_fall_anim_ops[0]), 21 },   /* branches back into shared code */
+      sizeof(prog_und_4_knee_fall_anim_ops) / sizeof(prog_und_4_knee_fall_anim_ops[0]), 21, prog_und_4_knee_fall_anim_labels, sizeof(prog_und_4_knee_fall_anim_labels) / sizeof(prog_und_4_knee_fall_anim_labels[0]) },   /* branches back into shared code */
     { "und_4_knee_butts_anim", "UNDSEQ2.ASM", prog_und_4_knee_butts_anim_ops,
-      sizeof(prog_und_4_knee_butts_anim_ops) / sizeof(prog_und_4_knee_butts_anim_ops[0]), 0 },
+      sizeof(prog_und_4_knee_butts_anim_ops) / sizeof(prog_und_4_knee_butts_anim_ops[0]), 0, prog_und_4_knee_butts_anim_labels, sizeof(prog_und_4_knee_butts_anim_labels) / sizeof(prog_und_4_knee_butts_anim_labels[0]) },
     { "und_2_grabfling_anim", "UNDSEQ2.ASM", prog_und_2_grabfling_anim_ops,
-      sizeof(prog_und_2_grabfling_anim_ops) / sizeof(prog_und_2_grabfling_anim_ops[0]), 0 },
+      sizeof(prog_und_2_grabfling_anim_ops) / sizeof(prog_und_2_grabfling_anim_ops[0]), 0, prog_und_2_grabfling_anim_labels, sizeof(prog_und_2_grabfling_anim_labels) / sizeof(prog_und_2_grabfling_anim_labels[0]) },
     { "und_4_grabfling_anim", "UNDSEQ2.ASM", prog_und_4_grabfling_anim_ops,
-      sizeof(prog_und_4_grabfling_anim_ops) / sizeof(prog_und_4_grabfling_anim_ops[0]), 0 },
+      sizeof(prog_und_4_grabfling_anim_ops) / sizeof(prog_und_4_grabfling_anim_ops[0]), 0, prog_und_4_grabfling_anim_labels, sizeof(prog_und_4_grabfling_anim_labels) / sizeof(prog_und_4_grabfling_anim_labels[0]) },
     { "und_2_head_hit_anim", "UNDSEQ2.ASM", prog_und_2_head_hit_anim_ops,
-      sizeof(prog_und_2_head_hit_anim_ops) / sizeof(prog_und_2_head_hit_anim_ops[0]), 0 },
+      sizeof(prog_und_2_head_hit_anim_ops) / sizeof(prog_und_2_head_hit_anim_ops[0]), 0, 0, 0 },
     { "und_4_head_hit_anim", "UNDSEQ2.ASM", prog_und_4_head_hit_anim_ops,
-      sizeof(prog_und_4_head_hit_anim_ops) / sizeof(prog_und_4_head_hit_anim_ops[0]), 0 },
+      sizeof(prog_und_4_head_hit_anim_ops) / sizeof(prog_und_4_head_hit_anim_ops[0]), 0, 0, 0 },
     { "und_2_head_hit2_anim", "UNDSEQ2.ASM", prog_und_2_head_hit2_anim_ops,
-      sizeof(prog_und_2_head_hit2_anim_ops) / sizeof(prog_und_2_head_hit2_anim_ops[0]), 0 },
+      sizeof(prog_und_2_head_hit2_anim_ops) / sizeof(prog_und_2_head_hit2_anim_ops[0]), 0, 0, 0 },
     { "und_4_head_hit2_anim", "UNDSEQ2.ASM", prog_und_4_head_hit2_anim_ops,
-      sizeof(prog_und_4_head_hit2_anim_ops) / sizeof(prog_und_4_head_hit2_anim_ops[0]), 0 },
+      sizeof(prog_und_4_head_hit2_anim_ops) / sizeof(prog_und_4_head_hit2_anim_ops[0]), 0, 0, 0 },
     { "und_4_head_hit4_anim", "UNDSEQ2.ASM", prog_und_4_head_hit4_anim_ops,
-      sizeof(prog_und_4_head_hit4_anim_ops) / sizeof(prog_und_4_head_hit4_anim_ops[0]), 0 },
+      sizeof(prog_und_4_head_hit4_anim_ops) / sizeof(prog_und_4_head_hit4_anim_ops[0]), 0, 0, 0 },
     { "und_head_hit2_anim", "UNDSEQ2.ASM", prog_und_head_hit2_anim_ops,
-      sizeof(prog_und_head_hit2_anim_ops) / sizeof(prog_und_head_hit2_anim_ops[0]), 0 },
+      sizeof(prog_und_head_hit2_anim_ops) / sizeof(prog_und_head_hit2_anim_ops[0]), 0, prog_und_head_hit2_anim_labels, sizeof(prog_und_head_hit2_anim_labels) / sizeof(prog_und_head_hit2_anim_labels[0]) },
     { "und_head_hit2s_anim", "UNDSEQ2.ASM", prog_und_head_hit2s_anim_ops,
-      sizeof(prog_und_head_hit2s_anim_ops) / sizeof(prog_und_head_hit2s_anim_ops[0]), 0 },
+      sizeof(prog_und_head_hit2s_anim_ops) / sizeof(prog_und_head_hit2s_anim_ops[0]), 0, 0, 0 },
     { "und_head_hit_dizzy_anim", "UNDSEQ2.ASM", prog_und_head_hit_dizzy_anim_ops,
-      sizeof(prog_und_head_hit_dizzy_anim_ops) / sizeof(prog_und_head_hit_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_und_head_hit_dizzy_anim_ops) / sizeof(prog_und_head_hit_dizzy_anim_ops[0]), 0, 0, 0 },
     { "und_2_body_hit_anim", "UNDSEQ2.ASM", prog_und_2_body_hit_anim_ops,
-      sizeof(prog_und_2_body_hit_anim_ops) / sizeof(prog_und_2_body_hit_anim_ops[0]), 0 },
+      sizeof(prog_und_2_body_hit_anim_ops) / sizeof(prog_und_2_body_hit_anim_ops[0]), 0, 0, 0 },
     { "und_4_body_hit_anim", "UNDSEQ2.ASM", prog_und_4_body_hit_anim_ops,
-      sizeof(prog_und_4_body_hit_anim_ops) / sizeof(prog_und_4_body_hit_anim_ops[0]), 0 },
+      sizeof(prog_und_4_body_hit_anim_ops) / sizeof(prog_und_4_body_hit_anim_ops[0]), 0, prog_und_4_body_hit_anim_labels, sizeof(prog_und_4_body_hit_anim_labels) / sizeof(prog_und_4_body_hit_anim_labels[0]) },
     { "und_2_knee_hit_anim", "UNDSEQ2.ASM", prog_und_2_knee_hit_anim_ops,
-      sizeof(prog_und_2_knee_hit_anim_ops) / sizeof(prog_und_2_knee_hit_anim_ops[0]), 0 },
+      sizeof(prog_und_2_knee_hit_anim_ops) / sizeof(prog_und_2_knee_hit_anim_ops[0]), 0, 0, 0 },
     { "und_4_knee_hit_anim", "UNDSEQ2.ASM", prog_und_4_knee_hit_anim_ops,
-      sizeof(prog_und_4_knee_hit_anim_ops) / sizeof(prog_und_4_knee_hit_anim_ops[0]), 0 },
+      sizeof(prog_und_4_knee_hit_anim_ops) / sizeof(prog_und_4_knee_hit_anim_ops[0]), 0, 0, 0 },
     { "und_4_knee_hit_dizzy_anim", "UNDSEQ2.ASM", prog_und_4_knee_hit_dizzy_anim_ops,
-      sizeof(prog_und_4_knee_hit_dizzy_anim_ops) / sizeof(prog_und_4_knee_hit_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_und_4_knee_hit_dizzy_anim_ops) / sizeof(prog_und_4_knee_hit_dizzy_anim_ops[0]), 0, 0, 0 },
     { "und_quick_knee_hit_anim", "UNDSEQ2.ASM", prog_und_quick_knee_hit_anim_ops,
-      sizeof(prog_und_quick_knee_hit_anim_ops) / sizeof(prog_und_quick_knee_hit_anim_ops[0]), 0 },
+      sizeof(prog_und_quick_knee_hit_anim_ops) / sizeof(prog_und_quick_knee_hit_anim_ops[0]), 0, prog_und_quick_knee_hit_anim_labels, sizeof(prog_und_quick_knee_hit_anim_labels) / sizeof(prog_und_quick_knee_hit_anim_labels[0]) },
     { "und_4_body_hit_dizzy_anim", "UNDSEQ2.ASM", prog_und_4_body_hit_dizzy_anim_ops,
-      sizeof(prog_und_4_body_hit_dizzy_anim_ops) / sizeof(prog_und_4_body_hit_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_und_4_body_hit_dizzy_anim_ops) / sizeof(prog_und_4_body_hit_dizzy_anim_ops[0]), 0, 0, 0 },
     { "und_hitonground_xflip_anim", "UNDSEQ2.ASM", prog_und_hitonground_xflip_anim_ops,
-      sizeof(prog_und_hitonground_xflip_anim_ops) / sizeof(prog_und_hitonground_xflip_anim_ops[0]), 0 },
+      sizeof(prog_und_hitonground_xflip_anim_ops) / sizeof(prog_und_hitonground_xflip_anim_ops[0]), 0, 0, 0 },
     { "und_hitonground_anim", "UNDSEQ2.ASM", prog_und_hitonground_anim_ops,
-      sizeof(prog_und_hitonground_anim_ops) / sizeof(prog_und_hitonground_anim_ops[0]), 0 },
+      sizeof(prog_und_hitonground_anim_ops) / sizeof(prog_und_hitonground_anim_ops[0]), 0, 0, 0 },
     { "und_liedown_anim", "UNDSEQ2.ASM", prog_und_liedown_anim_ops,
-      sizeof(prog_und_liedown_anim_ops) / sizeof(prog_und_liedown_anim_ops[0]), 0 },
+      sizeof(prog_und_liedown_anim_ops) / sizeof(prog_und_liedown_anim_ops[0]), 0, 0, 0 },
     { "und_up_anim", "UNDSEQ2.ASM", prog_und_up_anim_ops,
-      sizeof(prog_und_up_anim_ops) / sizeof(prog_und_up_anim_ops[0]), 0 },
+      sizeof(prog_und_up_anim_ops) / sizeof(prog_und_up_anim_ops[0]), 0, 0, 0 },
     { "und_fall_back_anim", "UNDSEQ2.ASM", prog_und_fall_back_anim_ops,
-      sizeof(prog_und_fall_back_anim_ops) / sizeof(prog_und_fall_back_anim_ops[0]), 0 },
+      sizeof(prog_und_fall_back_anim_ops) / sizeof(prog_und_fall_back_anim_ops[0]), 0, 0, 0 },
     { "und_fall_back2_anim", "UNDSEQ2.ASM", prog_und_fall_back2_anim_ops,
-      sizeof(prog_und_fall_back2_anim_ops) / sizeof(prog_und_fall_back2_anim_ops[0]), 0 },
+      sizeof(prog_und_fall_back2_anim_ops) / sizeof(prog_und_fall_back2_anim_ops[0]), 0, prog_und_fall_back2_anim_labels, sizeof(prog_und_fall_back2_anim_labels) / sizeof(prog_und_fall_back2_anim_labels[0]) },
     { "und_fall_back_tbukl_anim", "UNDSEQ2.ASM", prog_und_fall_back_tbukl_anim_ops,
-      sizeof(prog_und_fall_back_tbukl_anim_ops) / sizeof(prog_und_fall_back_tbukl_anim_ops[0]), 0 },
+      sizeof(prog_und_fall_back_tbukl_anim_ops) / sizeof(prog_und_fall_back_tbukl_anim_ops[0]), 0, 0, 0 },
     { "und_faceup_getup_anim", "UNDSEQ2.ASM", prog_und_faceup_getup_anim_ops,
-      sizeof(prog_und_faceup_getup_anim_ops) / sizeof(prog_und_faceup_getup_anim_ops[0]), 0 },
+      sizeof(prog_und_faceup_getup_anim_ops) / sizeof(prog_und_faceup_getup_anim_ops[0]), 0, prog_und_faceup_getup_anim_labels, sizeof(prog_und_faceup_getup_anim_labels) / sizeof(prog_und_faceup_getup_anim_labels[0]) },
     { "und_getup_anim", "UNDSEQ2.ASM", prog_und_getup_anim_ops,
-      sizeof(prog_und_getup_anim_ops) / sizeof(prog_und_getup_anim_ops[0]), 0 },
+      sizeof(prog_und_getup_anim_ops) / sizeof(prog_und_getup_anim_ops[0]), 0, prog_und_getup_anim_labels, sizeof(prog_und_getup_anim_labels) / sizeof(prog_und_getup_anim_labels[0]) },
     { "und_getup2_anim", "UNDSEQ2.ASM", prog_und_getup2_anim_ops,
-      sizeof(prog_und_getup2_anim_ops) / sizeof(prog_und_getup2_anim_ops[0]), 0 },
+      sizeof(prog_und_getup2_anim_ops) / sizeof(prog_und_getup2_anim_ops[0]), 0, prog_und_getup2_anim_labels, sizeof(prog_und_getup2_anim_labels) / sizeof(prog_und_getup2_anim_labels[0]) },
     { "und_dizzy_anim", "UNDSEQ2.ASM", prog_und_dizzy_anim_ops,
-      sizeof(prog_und_dizzy_anim_ops) / sizeof(prog_und_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_und_dizzy_anim_ops) / sizeof(prog_und_dizzy_anim_ops[0]), 0, prog_und_dizzy_anim_labels, sizeof(prog_und_dizzy_anim_labels) / sizeof(prog_und_dizzy_anim_labels[0]) },
     { "und_4_block_anim", "UNDSEQ2.ASM", prog_und_4_block_anim_ops,
-      sizeof(prog_und_4_block_anim_ops) / sizeof(prog_und_4_block_anim_ops[0]), 0 },
+      sizeof(prog_und_4_block_anim_ops) / sizeof(prog_und_4_block_anim_ops[0]), 0, prog_und_4_block_anim_labels, sizeof(prog_und_4_block_anim_labels) / sizeof(prog_und_4_block_anim_labels[0]) },
     { "und_4_hitblock_anim", "UNDSEQ2.ASM", prog_und_4_hitblock_anim_ops,
-      sizeof(prog_und_4_hitblock_anim_ops) / sizeof(prog_und_4_hitblock_anim_ops[0]), 9 },   /* branches back into shared code */
+      sizeof(prog_und_4_hitblock_anim_ops) / sizeof(prog_und_4_hitblock_anim_ops[0]), 9, prog_und_4_hitblock_anim_labels, sizeof(prog_und_4_hitblock_anim_labels) / sizeof(prog_und_4_hitblock_anim_labels[0]) },   /* branches back into shared code */
     { "und_4_hitblock2_anim", "UNDSEQ2.ASM", prog_und_4_hitblock2_anim_ops,
-      sizeof(prog_und_4_hitblock2_anim_ops) / sizeof(prog_und_4_hitblock2_anim_ops[0]), 16 },   /* branches back into shared code */
+      sizeof(prog_und_4_hitblock2_anim_ops) / sizeof(prog_und_4_hitblock2_anim_ops[0]), 16, prog_und_4_hitblock2_anim_labels, sizeof(prog_und_4_hitblock2_anim_labels) / sizeof(prog_und_4_hitblock2_anim_labels[0]) },   /* branches back into shared code */
     { "und_flyout_anim", "UNDSEQ2.ASM", prog_und_flyout_anim_ops,
-      sizeof(prog_und_flyout_anim_ops) / sizeof(prog_und_flyout_anim_ops[0]), 0 },
+      sizeof(prog_und_flyout_anim_ops) / sizeof(prog_und_flyout_anim_ops[0]), 0, prog_und_flyout_anim_labels, sizeof(prog_und_flyout_anim_labels) / sizeof(prog_und_flyout_anim_labels[0]) },
     { "und_flyout2_anim", "UNDSEQ2.ASM", prog_und_flyout2_anim_ops,
-      sizeof(prog_und_flyout2_anim_ops) / sizeof(prog_und_flyout2_anim_ops[0]), 7 },   /* branches back into shared code */
+      sizeof(prog_und_flyout2_anim_ops) / sizeof(prog_und_flyout2_anim_ops[0]), 7, prog_und_flyout2_anim_labels, sizeof(prog_und_flyout2_anim_labels) / sizeof(prog_und_flyout2_anim_labels[0]) },   /* branches back into shared code */
     { "und_4_pin2_anim", "UNDSEQ2.ASM", prog_und_4_pin2_anim_ops,
-      sizeof(prog_und_4_pin2_anim_ops) / sizeof(prog_und_4_pin2_anim_ops[0]), 0 },
+      sizeof(prog_und_4_pin2_anim_ops) / sizeof(prog_und_4_pin2_anim_ops[0]), 0, prog_und_4_pin2_anim_labels, sizeof(prog_und_4_pin2_anim_labels) / sizeof(prog_und_4_pin2_anim_labels[0]) },
     { "und_2_raise_arm_anim", "UNDSEQ2.ASM", prog_und_2_raise_arm_anim_ops,
-      sizeof(prog_und_2_raise_arm_anim_ops) / sizeof(prog_und_2_raise_arm_anim_ops[0]), 0 },
+      sizeof(prog_und_2_raise_arm_anim_ops) / sizeof(prog_und_2_raise_arm_anim_ops[0]), 0, prog_und_2_raise_arm_anim_labels, sizeof(prog_und_2_raise_arm_anim_labels) / sizeof(prog_und_2_raise_arm_anim_labels[0]) },
     { "und_4_raise_arm_anim", "UNDSEQ2.ASM", prog_und_4_raise_arm_anim_ops,
-      sizeof(prog_und_4_raise_arm_anim_ops) / sizeof(prog_und_4_raise_arm_anim_ops[0]), 0 },
+      sizeof(prog_und_4_raise_arm_anim_ops) / sizeof(prog_und_4_raise_arm_anim_ops[0]), 0, prog_und_4_raise_arm_anim_labels, sizeof(prog_und_4_raise_arm_anim_labels) / sizeof(prog_und_4_raise_arm_anim_labels[0]) },
     { "und_roll_frames", "UNDSEQ2.ASM", prog_und_roll_frames_ops,
-      sizeof(prog_und_roll_frames_ops) / sizeof(prog_und_roll_frames_ops[0]), 0 },
+      sizeof(prog_und_roll_frames_ops) / sizeof(prog_und_roll_frames_ops[0]), 0, prog_und_roll_frames_labels, sizeof(prog_und_roll_frames_labels) / sizeof(prog_und_roll_frames_labels[0]) },
     { "und_flying_kick2_anim", "UNDSEQ2.ASM", prog_und_flying_kick2_anim_ops,
-      sizeof(prog_und_flying_kick2_anim_ops) / sizeof(prog_und_flying_kick2_anim_ops[0]), 0 },
+      sizeof(prog_und_flying_kick2_anim_ops) / sizeof(prog_und_flying_kick2_anim_ops[0]), 0, prog_und_flying_kick2_anim_labels, sizeof(prog_und_flying_kick2_anim_labels) / sizeof(prog_und_flying_kick2_anim_labels[0]) },
     { "und_flying_kick_anim", "UNDSEQ2.ASM", prog_und_flying_kick_anim_ops,
-      sizeof(prog_und_flying_kick_anim_ops) / sizeof(prog_und_flying_kick_anim_ops[0]), 0 },
+      sizeof(prog_und_flying_kick_anim_ops) / sizeof(prog_und_flying_kick_anim_ops[0]), 0, prog_und_flying_kick_anim_labels, sizeof(prog_und_flying_kick_anim_labels) / sizeof(prog_und_flying_kick_anim_labels[0]) },
     { "und_combo_flying_kick_anim", "UNDSEQ2.ASM", prog_und_combo_flying_kick_anim_ops,
-      sizeof(prog_und_combo_flying_kick_anim_ops) / sizeof(prog_und_combo_flying_kick_anim_ops[0]), 0 },
+      sizeof(prog_und_combo_flying_kick_anim_ops) / sizeof(prog_und_combo_flying_kick_anim_ops[0]), 0, prog_und_combo_flying_kick_anim_labels, sizeof(prog_und_combo_flying_kick_anim_labels) / sizeof(prog_und_combo_flying_kick_anim_labels[0]) },
     { "und_tossed_anim", "UNDSEQ2.ASM", prog_und_tossed_anim_ops,
-      sizeof(prog_und_tossed_anim_ops) / sizeof(prog_und_tossed_anim_ops[0]), 0 },
+      sizeof(prog_und_tossed_anim_ops) / sizeof(prog_und_tossed_anim_ops[0]), 0, 0, 0 },
     { "und_tossed2_anim", "UNDSEQ2.ASM", prog_und_tossed2_anim_ops,
-      sizeof(prog_und_tossed2_anim_ops) / sizeof(prog_und_tossed2_anim_ops[0]), 0 },
+      sizeof(prog_und_tossed2_anim_ops) / sizeof(prog_und_tossed2_anim_ops[0]), 0, 0, 0 },
     { "und_knockdwn_anim", "UNDSEQ2.ASM", prog_und_knockdwn_anim_ops,
-      sizeof(prog_und_knockdwn_anim_ops) / sizeof(prog_und_knockdwn_anim_ops[0]), 0 },
+      sizeof(prog_und_knockdwn_anim_ops) / sizeof(prog_und_knockdwn_anim_ops[0]), 0, prog_und_knockdwn_anim_labels, sizeof(prog_und_knockdwn_anim_labels) / sizeof(prog_und_knockdwn_anim_labels[0]) },
     { "und_climbthru_side_anim", "UNDSEQ2.ASM", prog_und_climbthru_side_anim_ops,
-      sizeof(prog_und_climbthru_side_anim_ops) / sizeof(prog_und_climbthru_side_anim_ops[0]), 0 },
+      sizeof(prog_und_climbthru_side_anim_ops) / sizeof(prog_und_climbthru_side_anim_ops[0]), 0, 0, 0 },
     { "und_climbin_side_anim", "UNDSEQ2.ASM", prog_und_climbin_side_anim_ops,
-      sizeof(prog_und_climbin_side_anim_ops) / sizeof(prog_und_climbin_side_anim_ops[0]), 0 },
+      sizeof(prog_und_climbin_side_anim_ops) / sizeof(prog_und_climbin_side_anim_ops[0]), 0, prog_und_climbin_side_anim_labels, sizeof(prog_und_climbin_side_anim_labels) / sizeof(prog_und_climbin_side_anim_labels[0]) },
     { "und_climbthru_bot_anim", "UNDSEQ2.ASM", prog_und_climbthru_bot_anim_ops,
-      sizeof(prog_und_climbthru_bot_anim_ops) / sizeof(prog_und_climbthru_bot_anim_ops[0]), 0 },
+      sizeof(prog_und_climbthru_bot_anim_ops) / sizeof(prog_und_climbthru_bot_anim_ops[0]), 0, prog_und_climbthru_bot_anim_labels, sizeof(prog_und_climbthru_bot_anim_labels) / sizeof(prog_und_climbthru_bot_anim_labels[0]) },
     { "und_climbin_bot_anim", "UNDSEQ2.ASM", prog_und_climbin_bot_anim_ops,
-      sizeof(prog_und_climbin_bot_anim_ops) / sizeof(prog_und_climbin_bot_anim_ops[0]), 0 },
+      sizeof(prog_und_climbin_bot_anim_ops) / sizeof(prog_und_climbin_bot_anim_ops[0]), 0, 0, 0 },
     { "und_climbthru_top_anim", "UNDSEQ2.ASM", prog_und_climbthru_top_anim_ops,
-      sizeof(prog_und_climbthru_top_anim_ops) / sizeof(prog_und_climbthru_top_anim_ops[0]), 0 },
+      sizeof(prog_und_climbthru_top_anim_ops) / sizeof(prog_und_climbthru_top_anim_ops[0]), 0, prog_und_climbthru_top_anim_labels, sizeof(prog_und_climbthru_top_anim_labels) / sizeof(prog_und_climbthru_top_anim_labels[0]) },
     { "und_rollthru_top_anim", "UNDSEQ2.ASM", prog_und_rollthru_top_anim_ops,
-      sizeof(prog_und_rollthru_top_anim_ops) / sizeof(prog_und_rollthru_top_anim_ops[0]), 0 },
+      sizeof(prog_und_rollthru_top_anim_ops) / sizeof(prog_und_rollthru_top_anim_ops[0]), 0, 0, 0 },
     { "und_climbin_top_anim", "UNDSEQ2.ASM", prog_und_climbin_top_anim_ops,
-      sizeof(prog_und_climbin_top_anim_ops) / sizeof(prog_und_climbin_top_anim_ops[0]), 0 },
+      sizeof(prog_und_climbin_top_anim_ops) / sizeof(prog_und_climbin_top_anim_ops[0]), 0, prog_und_climbin_top_anim_labels, sizeof(prog_und_climbin_top_anim_labels) / sizeof(prog_und_climbin_top_anim_labels[0]) },
     { "und_buckoff_anim", "UNDSEQ2.ASM", prog_und_buckoff_anim_ops,
-      sizeof(prog_und_buckoff_anim_ops) / sizeof(prog_und_buckoff_anim_ops[0]), 0 },
+      sizeof(prog_und_buckoff_anim_ops) / sizeof(prog_und_buckoff_anim_ops[0]), 0, 0, 0 },
     { "und_heldoh_anim", "UNDSEQ3.ASM", prog_und_heldoh_anim_ops,
-      sizeof(prog_und_heldoh_anim_ops) / sizeof(prog_und_heldoh_anim_ops[0]), 0 },
+      sizeof(prog_und_heldoh_anim_ops) / sizeof(prog_und_heldoh_anim_ops[0]), 0, prog_und_heldoh_anim_labels, sizeof(prog_und_heldoh_anim_labels) / sizeof(prog_und_heldoh_anim_labels[0]) },
     { "und_tombstone_smash_anim", "UNDSEQ3.ASM", prog_und_tombstone_smash_anim_ops,
-      sizeof(prog_und_tombstone_smash_anim_ops) / sizeof(prog_und_tombstone_smash_anim_ops[0]), 0 },
+      sizeof(prog_und_tombstone_smash_anim_ops) / sizeof(prog_und_tombstone_smash_anim_ops[0]), 0, prog_und_tombstone_smash_anim_labels, sizeof(prog_und_tombstone_smash_anim_labels) / sizeof(prog_und_tombstone_smash_anim_labels[0]) },
     { "und_combo_tombstone_smash_anim", "UNDSEQ3.ASM", prog_und_combo_tombstone_smash_anim_ops,
-      sizeof(prog_und_combo_tombstone_smash_anim_ops) / sizeof(prog_und_combo_tombstone_smash_anim_ops[0]), 0 },
+      sizeof(prog_und_combo_tombstone_smash_anim_ops) / sizeof(prog_und_combo_tombstone_smash_anim_ops[0]), 0, prog_und_combo_tombstone_smash_anim_labels, sizeof(prog_und_combo_tombstone_smash_anim_labels) / sizeof(prog_und_combo_tombstone_smash_anim_labels[0]) },
     { "und_combo_sliding_choke_anim", "UNDSEQ3.ASM", prog_und_combo_sliding_choke_anim_ops,
-      sizeof(prog_und_combo_sliding_choke_anim_ops) / sizeof(prog_und_combo_sliding_choke_anim_ops[0]), 0 },
+      sizeof(prog_und_combo_sliding_choke_anim_ops) / sizeof(prog_und_combo_sliding_choke_anim_ops[0]), 0, prog_und_combo_sliding_choke_anim_labels, sizeof(prog_und_combo_sliding_choke_anim_labels) / sizeof(prog_und_combo_sliding_choke_anim_labels[0]) },
     { "und_sliding_choke_anim", "UNDSEQ3.ASM", prog_und_sliding_choke_anim_ops,
-      sizeof(prog_und_sliding_choke_anim_ops) / sizeof(prog_und_sliding_choke_anim_ops[0]), 0 },
+      sizeof(prog_und_sliding_choke_anim_ops) / sizeof(prog_und_sliding_choke_anim_ops[0]), 0, prog_und_sliding_choke_anim_labels, sizeof(prog_und_sliding_choke_anim_labels) / sizeof(prog_und_sliding_choke_anim_labels[0]) },
     { "und_chokeslam_anim", "UNDSEQ3.ASM", prog_und_chokeslam_anim_ops,
-      sizeof(prog_und_chokeslam_anim_ops) / sizeof(prog_und_chokeslam_anim_ops[0]), 0 },
+      sizeof(prog_und_chokeslam_anim_ops) / sizeof(prog_und_chokeslam_anim_ops[0]), 0, prog_und_chokeslam_anim_labels, sizeof(prog_und_chokeslam_anim_labels) / sizeof(prog_und_chokeslam_anim_labels[0]) },
     { "und_choke_face_slam_anim", "UNDSEQ3.ASM", prog_und_choke_face_slam_anim_ops,
-      sizeof(prog_und_choke_face_slam_anim_ops) / sizeof(prog_und_choke_face_slam_anim_ops[0]), 0 },
+      sizeof(prog_und_choke_face_slam_anim_ops) / sizeof(prog_und_choke_face_slam_anim_ops[0]), 0, prog_und_choke_face_slam_anim_labels, sizeof(prog_und_choke_face_slam_anim_labels) / sizeof(prog_und_choke_face_slam_anim_labels[0]) },
     { "und_combo_tombstone_anim", "UNDSEQ3.ASM", prog_und_combo_tombstone_anim_ops,
-      sizeof(prog_und_combo_tombstone_anim_ops) / sizeof(prog_und_combo_tombstone_anim_ops[0]), 0 },
+      sizeof(prog_und_combo_tombstone_anim_ops) / sizeof(prog_und_combo_tombstone_anim_ops[0]), 0, prog_und_combo_tombstone_anim_labels, sizeof(prog_und_combo_tombstone_anim_labels) / sizeof(prog_und_combo_tombstone_anim_labels[0]) },
     { "und_pile_anim", "UNDSEQ3.ASM", prog_und_pile_anim_ops,
-      sizeof(prog_und_pile_anim_ops) / sizeof(prog_und_pile_anim_ops[0]), 0 },
+      sizeof(prog_und_pile_anim_ops) / sizeof(prog_und_pile_anim_ops[0]), 0, prog_und_pile_anim_labels, sizeof(prog_und_pile_anim_labels) / sizeof(prog_und_pile_anim_labels[0]) },
     { "und_combo_neckbreaker_anim", "UNDSEQ3.ASM", prog_und_combo_neckbreaker_anim_ops,
-      sizeof(prog_und_combo_neckbreaker_anim_ops) / sizeof(prog_und_combo_neckbreaker_anim_ops[0]), 0 },
+      sizeof(prog_und_combo_neckbreaker_anim_ops) / sizeof(prog_und_combo_neckbreaker_anim_ops[0]), 0, prog_und_combo_neckbreaker_anim_labels, sizeof(prog_und_combo_neckbreaker_anim_labels) / sizeof(prog_und_combo_neckbreaker_anim_labels[0]) },
     { "und_neckbreaker2_anim", "UNDSEQ3.ASM", prog_und_neckbreaker2_anim_ops,
-      sizeof(prog_und_neckbreaker2_anim_ops) / sizeof(prog_und_neckbreaker2_anim_ops[0]), 0 },
+      sizeof(prog_und_neckbreaker2_anim_ops) / sizeof(prog_und_neckbreaker2_anim_ops[0]), 0, prog_und_neckbreaker2_anim_labels, sizeof(prog_und_neckbreaker2_anim_labels) / sizeof(prog_und_neckbreaker2_anim_labels[0]) },
     { "und_neckbreaker3_anim", "UNDSEQ3.ASM", prog_und_neckbreaker3_anim_ops,
-      sizeof(prog_und_neckbreaker3_anim_ops) / sizeof(prog_und_neckbreaker3_anim_ops[0]), 0 },
+      sizeof(prog_und_neckbreaker3_anim_ops) / sizeof(prog_und_neckbreaker3_anim_ops[0]), 0, prog_und_neckbreaker3_anim_labels, sizeof(prog_und_neckbreaker3_anim_labels) / sizeof(prog_und_neckbreaker3_anim_labels[0]) },
     { "und_neckbreaker_anim", "UNDSEQ3.ASM", prog_und_neckbreaker_anim_ops,
-      sizeof(prog_und_neckbreaker_anim_ops) / sizeof(prog_und_neckbreaker_anim_ops[0]), 0 },
+      sizeof(prog_und_neckbreaker_anim_ops) / sizeof(prog_und_neckbreaker_anim_ops[0]), 0, prog_und_neckbreaker_anim_labels, sizeof(prog_und_neckbreaker_anim_labels) / sizeof(prog_und_neckbreaker_anim_labels[0]) },
     { "und_2_snapmirror2_anim", "UNDSEQ3.ASM", prog_und_2_snapmirror2_anim_ops,
-      sizeof(prog_und_2_snapmirror2_anim_ops) / sizeof(prog_und_2_snapmirror2_anim_ops[0]), 0 },
+      sizeof(prog_und_2_snapmirror2_anim_ops) / sizeof(prog_und_2_snapmirror2_anim_ops[0]), 0, prog_und_2_snapmirror2_anim_labels, sizeof(prog_und_2_snapmirror2_anim_labels) / sizeof(prog_und_2_snapmirror2_anim_labels[0]) },
     { "und_4_snapmirror2_anim", "UNDSEQ3.ASM", prog_und_4_snapmirror2_anim_ops,
-      sizeof(prog_und_4_snapmirror2_anim_ops) / sizeof(prog_und_4_snapmirror2_anim_ops[0]), 0 },
+      sizeof(prog_und_4_snapmirror2_anim_ops) / sizeof(prog_und_4_snapmirror2_anim_ops[0]), 0, prog_und_4_snapmirror2_anim_labels, sizeof(prog_und_4_snapmirror2_anim_labels) / sizeof(prog_und_4_snapmirror2_anim_labels[0]) },
     { "und_combo_snapmirror_anim", "UNDSEQ3.ASM", prog_und_combo_snapmirror_anim_ops,
-      sizeof(prog_und_combo_snapmirror_anim_ops) / sizeof(prog_und_combo_snapmirror_anim_ops[0]), 0 },
+      sizeof(prog_und_combo_snapmirror_anim_ops) / sizeof(prog_und_combo_snapmirror_anim_ops[0]), 0, prog_und_combo_snapmirror_anim_labels, sizeof(prog_und_combo_snapmirror_anim_labels) / sizeof(prog_und_combo_snapmirror_anim_labels[0]) },
     { "und_2_snapmirror_anim", "UNDSEQ3.ASM", prog_und_2_snapmirror_anim_ops,
-      sizeof(prog_und_2_snapmirror_anim_ops) / sizeof(prog_und_2_snapmirror_anim_ops[0]), 0 },
+      sizeof(prog_und_2_snapmirror_anim_ops) / sizeof(prog_und_2_snapmirror_anim_ops[0]), 0, prog_und_2_snapmirror_anim_labels, sizeof(prog_und_2_snapmirror_anim_labels) / sizeof(prog_und_2_snapmirror_anim_labels[0]) },
     { "und_4_snapmirror_anim", "UNDSEQ3.ASM", prog_und_4_snapmirror_anim_ops,
-      sizeof(prog_und_4_snapmirror_anim_ops) / sizeof(prog_und_4_snapmirror_anim_ops[0]), 0 },
+      sizeof(prog_und_4_snapmirror_anim_ops) / sizeof(prog_und_4_snapmirror_anim_ops[0]), 0, prog_und_4_snapmirror_anim_labels, sizeof(prog_und_4_snapmirror_anim_labels) / sizeof(prog_und_4_snapmirror_anim_labels[0]) },
     { "und_neckbroken_anim", "UNDSEQ3.ASM", prog_und_neckbroken_anim_ops,
-      sizeof(prog_und_neckbroken_anim_ops) / sizeof(prog_und_neckbroken_anim_ops[0]), 0 },
+      sizeof(prog_und_neckbroken_anim_ops) / sizeof(prog_und_neckbroken_anim_ops[0]), 0, 0, 0 },
     { "und_climb_up_anim", "UNDSEQ3.ASM", prog_und_climb_up_anim_ops,
-      sizeof(prog_und_climb_up_anim_ops) / sizeof(prog_und_climb_up_anim_ops[0]), 0 },
+      sizeof(prog_und_climb_up_anim_ops) / sizeof(prog_und_climb_up_anim_ops[0]), 0, prog_und_climb_up_anim_labels, sizeof(prog_und_climb_up_anim_labels) / sizeof(prog_und_climb_up_anim_labels[0]) },
     { "und_climb_down_anim", "UNDSEQ3.ASM", prog_und_climb_down_anim_ops,
-      sizeof(prog_und_climb_down_anim_ops) / sizeof(prog_und_climb_down_anim_ops[0]), 0 },
+      sizeof(prog_und_climb_down_anim_ops) / sizeof(prog_und_climb_down_anim_ops[0]), 0, 0, 0 },
     { "und_get_buzz_anim", "UNDSEQ3.ASM", prog_und_get_buzz_anim_ops,
-      sizeof(prog_und_get_buzz_anim_ops) / sizeof(prog_und_get_buzz_anim_ops[0]), 0 },
+      sizeof(prog_und_get_buzz_anim_ops) / sizeof(prog_und_get_buzz_anim_ops[0]), 0, prog_und_get_buzz_anim_labels, sizeof(prog_und_get_buzz_anim_labels) / sizeof(prog_und_get_buzz_anim_labels[0]) },
     { "und_3_head_held_anim", "UNDSEQ3.ASM", prog_und_3_head_held_anim_ops,
-      sizeof(prog_und_3_head_held_anim_ops) / sizeof(prog_und_3_head_held_anim_ops[0]), 0 },
+      sizeof(prog_und_3_head_held_anim_ops) / sizeof(prog_und_3_head_held_anim_ops[0]), 0, prog_und_3_head_held_anim_labels, sizeof(prog_und_3_head_held_anim_labels) / sizeof(prog_und_3_head_held_anim_labels[0]) },
     { "und_3_head_held_brk_anim", "UNDSEQ3.ASM", prog_und_3_head_held_brk_anim_ops,
-      sizeof(prog_und_3_head_held_brk_anim_ops) / sizeof(prog_und_3_head_held_brk_anim_ops[0]), 0 },
+      sizeof(prog_und_3_head_held_brk_anim_ops) / sizeof(prog_und_3_head_held_brk_anim_ops[0]), 0, prog_und_3_head_held_brk_anim_labels, sizeof(prog_und_3_head_held_brk_anim_labels) / sizeof(prog_und_3_head_held_brk_anim_labels[0]) },
     { "und_3_head_held_stand_anim", "UNDSEQ3.ASM", prog_und_3_head_held_stand_anim_ops,
-      sizeof(prog_und_3_head_held_stand_anim_ops) / sizeof(prog_und_3_head_held_stand_anim_ops[0]), 0 },
+      sizeof(prog_und_3_head_held_stand_anim_ops) / sizeof(prog_und_3_head_held_stand_anim_ops[0]), 0, 0, 0 },
     { "und_break_neck_anim", "UNDSEQ3.ASM", prog_und_break_neck_anim_ops,
-      sizeof(prog_und_break_neck_anim_ops) / sizeof(prog_und_break_neck_anim_ops[0]), 0 },
+      sizeof(prog_und_break_neck_anim_ops) / sizeof(prog_und_break_neck_anim_ops[0]), 0, 0, 0 },
     { "und_break_neck2_anim", "UNDSEQ3.ASM", prog_und_break_neck2_anim_ops,
-      sizeof(prog_und_break_neck2_anim_ops) / sizeof(prog_und_break_neck2_anim_ops[0]), 0 },
+      sizeof(prog_und_break_neck2_anim_ops) / sizeof(prog_und_break_neck2_anim_ops[0]), 0, 0, 0 },
     { "und_break_neck3_anim", "UNDSEQ3.ASM", prog_und_break_neck3_anim_ops,
-      sizeof(prog_und_break_neck3_anim_ops) / sizeof(prog_und_break_neck3_anim_ops[0]), 0 },
+      sizeof(prog_und_break_neck3_anim_ops) / sizeof(prog_und_break_neck3_anim_ops[0]), 0, 0, 0 },
     { "und_2_hair_pickup_anim", "UNDSEQ3.ASM", prog_und_2_hair_pickup_anim_ops,
-      sizeof(prog_und_2_hair_pickup_anim_ops) / sizeof(prog_und_2_hair_pickup_anim_ops[0]), 0 },
+      sizeof(prog_und_2_hair_pickup_anim_ops) / sizeof(prog_und_2_hair_pickup_anim_ops[0]), 0, prog_und_2_hair_pickup_anim_labels, sizeof(prog_und_2_hair_pickup_anim_labels) / sizeof(prog_und_2_hair_pickup_anim_labels[0]) },
     { "und_4_hair_pickup_anim", "UNDSEQ3.ASM", prog_und_4_hair_pickup_anim_ops,
-      sizeof(prog_und_4_hair_pickup_anim_ops) / sizeof(prog_und_4_hair_pickup_anim_ops[0]), 0 },
+      sizeof(prog_und_4_hair_pickup_anim_ops) / sizeof(prog_und_4_hair_pickup_anim_ops[0]), 0, prog_und_4_hair_pickup_anim_labels, sizeof(prog_und_4_hair_pickup_anim_labels) / sizeof(prog_und_4_hair_pickup_anim_labels[0]) },
     { "und_4_taunt_anim", "UNDSEQ3.ASM", prog_und_4_taunt_anim_ops,
-      sizeof(prog_und_4_taunt_anim_ops) / sizeof(prog_und_4_taunt_anim_ops[0]), 0 },
+      sizeof(prog_und_4_taunt_anim_ops) / sizeof(prog_und_4_taunt_anim_ops[0]), 0, 0, 0 },
     { "und_break_face2_anim", "UNDSEQ3.ASM", prog_und_break_face2_anim_ops,
-      sizeof(prog_und_break_face2_anim_ops) / sizeof(prog_und_break_face2_anim_ops[0]), 0 },
+      sizeof(prog_und_break_face2_anim_ops) / sizeof(prog_und_break_face2_anim_ops[0]), 0, 0, 0 },
     { "und_break_face3_anim", "UNDSEQ3.ASM", prog_und_break_face3_anim_ops,
-      sizeof(prog_und_break_face3_anim_ops) / sizeof(prog_und_break_face3_anim_ops[0]), 0 },
+      sizeof(prog_und_break_face3_anim_ops) / sizeof(prog_und_break_face3_anim_ops[0]), 0, 0, 0 },
     { "und_break_face_anim", "UNDSEQ3.ASM", prog_und_break_face_anim_ops,
-      sizeof(prog_und_break_face_anim_ops) / sizeof(prog_und_break_face_anim_ops[0]), 0 },
+      sizeof(prog_und_break_face_anim_ops) / sizeof(prog_und_break_face_anim_ops[0]), 0, 0, 0 },
     { "und_backbroken_anim", "UNDSEQ3.ASM", prog_und_backbroken_anim_ops,
-      sizeof(prog_und_backbroken_anim_ops) / sizeof(prog_und_backbroken_anim_ops[0]), 0 },
+      sizeof(prog_und_backbroken_anim_ops) / sizeof(prog_und_backbroken_anim_ops[0]), 0, 0, 0 },
     { "und_3_fake_hold_anim", "UNDSEQ3.ASM", prog_und_3_fake_hold_anim_ops,
-      sizeof(prog_und_3_fake_hold_anim_ops) / sizeof(prog_und_3_fake_hold_anim_ops[0]), 0 },
+      sizeof(prog_und_3_fake_hold_anim_ops) / sizeof(prog_und_3_fake_hold_anim_ops[0]), 0, prog_und_3_fake_hold_anim_labels, sizeof(prog_und_3_fake_hold_anim_labels) / sizeof(prog_und_3_fake_hold_anim_labels[0]) },
     { "und_3_head_hold2_anim", "UNDSEQ3.ASM", prog_und_3_head_hold2_anim_ops,
-      sizeof(prog_und_3_head_hold2_anim_ops) / sizeof(prog_und_3_head_hold2_anim_ops[0]), 0 },
+      sizeof(prog_und_3_head_hold2_anim_ops) / sizeof(prog_und_3_head_hold2_anim_ops[0]), 0, prog_und_3_head_hold2_anim_labels, sizeof(prog_und_3_head_hold2_anim_labels) / sizeof(prog_und_3_head_hold2_anim_labels[0]) },
     { "und_3_head_hold_anim", "UNDSEQ3.ASM", prog_und_3_head_hold_anim_ops,
-      sizeof(prog_und_3_head_hold_anim_ops) / sizeof(prog_und_3_head_hold_anim_ops[0]), 0 },
+      sizeof(prog_und_3_head_hold_anim_ops) / sizeof(prog_und_3_head_hold_anim_ops[0]), 0, prog_und_3_head_hold_anim_labels, sizeof(prog_und_3_head_hold_anim_labels) / sizeof(prog_und_3_head_hold_anim_labels[0]) },
     { "und_slamnobounce_anim", "UNDSEQ4.ASM", prog_und_slamnobounce_anim_ops,
-      sizeof(prog_und_slamnobounce_anim_ops) / sizeof(prog_und_slamnobounce_anim_ops[0]), 0 },
+      sizeof(prog_und_slamnobounce_anim_ops) / sizeof(prog_und_slamnobounce_anim_ops[0]), 0, 0, 0 },
     { "und_slambounce_anim", "UNDSEQ4.ASM", prog_und_slambounce_anim_ops,
-      sizeof(prog_und_slambounce_anim_ops) / sizeof(prog_und_slambounce_anim_ops[0]), 0 },
+      sizeof(prog_und_slambounce_anim_ops) / sizeof(prog_und_slambounce_anim_ops[0]), 0, 0, 0 },
     { "und_slambounce2_anim", "UNDSEQ4.ASM", prog_und_slambounce2_anim_ops,
-      sizeof(prog_und_slambounce2_anim_ops) / sizeof(prog_und_slambounce2_anim_ops[0]), 0 },
+      sizeof(prog_und_slambounce2_anim_ops) / sizeof(prog_und_slambounce2_anim_ops[0]), 0, 0, 0 },
     { "und_breakneck2_anim", "UNDSEQ4.ASM", prog_und_breakneck2_anim_ops,
-      sizeof(prog_und_breakneck2_anim_ops) / sizeof(prog_und_breakneck2_anim_ops[0]), 0 },
+      sizeof(prog_und_breakneck2_anim_ops) / sizeof(prog_und_breakneck2_anim_ops[0]), 0, 0, 0 },
     { "und_spirit_pull_anim", "UNDSEQ4.ASM", prog_und_spirit_pull_anim_ops,
-      sizeof(prog_und_spirit_pull_anim_ops) / sizeof(prog_und_spirit_pull_anim_ops[0]), 0 },
+      sizeof(prog_und_spirit_pull_anim_ops) / sizeof(prog_und_spirit_pull_anim_ops[0]), 0, prog_und_spirit_pull_anim_labels, sizeof(prog_und_spirit_pull_anim_labels) / sizeof(prog_und_spirit_pull_anim_labels[0]) },
     { "und_spirit_push_anim", "UNDSEQ4.ASM", prog_und_spirit_push_anim_ops,
-      sizeof(prog_und_spirit_push_anim_ops) / sizeof(prog_und_spirit_push_anim_ops[0]), 0 },
+      sizeof(prog_und_spirit_push_anim_ops) / sizeof(prog_und_spirit_push_anim_ops[0]), 0, prog_und_spirit_push_anim_labels, sizeof(prog_und_spirit_push_anim_labels) / sizeof(prog_und_spirit_push_anim_labels[0]) },
     { "und_arm_broken_anim", "UNDSEQ4.ASM", prog_und_arm_broken_anim_ops,
-      sizeof(prog_und_arm_broken_anim_ops) / sizeof(prog_und_arm_broken_anim_ops[0]), 0 },
+      sizeof(prog_und_arm_broken_anim_ops) / sizeof(prog_und_arm_broken_anim_ops[0]), 0, prog_und_arm_broken_anim_labels, sizeof(prog_und_arm_broken_anim_labels) / sizeof(prog_und_arm_broken_anim_labels[0]) },
     { "yok_zip_anim", "YOKSEQ1.ASM", prog_yok_zip_anim_ops,
-      sizeof(prog_yok_zip_anim_ops) / sizeof(prog_yok_zip_anim_ops[0]), 0 },
+      sizeof(prog_yok_zip_anim_ops) / sizeof(prog_yok_zip_anim_ops[0]), 0, 0, 0 },
     { "yok_stand2_anim", "YOKSEQ1.ASM", prog_yok_stand2_anim_ops,
-      sizeof(prog_yok_stand2_anim_ops) / sizeof(prog_yok_stand2_anim_ops[0]), 0 },
+      sizeof(prog_yok_stand2_anim_ops) / sizeof(prog_yok_stand2_anim_ops[0]), 0, 0, 0 },
     { "yok_stand8_anim", "YOKSEQ1.ASM", prog_yok_stand8_anim_ops,
-      sizeof(prog_yok_stand8_anim_ops) / sizeof(prog_yok_stand8_anim_ops[0]), 0 },
+      sizeof(prog_yok_stand8_anim_ops) / sizeof(prog_yok_stand8_anim_ops[0]), 0, 0, 0 },
     { "yok_stand4_anim", "YOKSEQ1.ASM", prog_yok_stand4_anim_ops,
-      sizeof(prog_yok_stand4_anim_ops) / sizeof(prog_yok_stand4_anim_ops[0]), 0 },
+      sizeof(prog_yok_stand4_anim_ops) / sizeof(prog_yok_stand4_anim_ops[0]), 0, 0, 0 },
     { "yok_stand6_anim", "YOKSEQ1.ASM", prog_yok_stand6_anim_ops,
-      sizeof(prog_yok_stand6_anim_ops) / sizeof(prog_yok_stand6_anim_ops[0]), 0 },
+      sizeof(prog_yok_stand6_anim_ops) / sizeof(prog_yok_stand6_anim_ops[0]), 0, 0, 0 },
     { "yok_torso2_anim", "YOKSEQ1.ASM", prog_yok_torso2_anim_ops,
-      sizeof(prog_yok_torso2_anim_ops) / sizeof(prog_yok_torso2_anim_ops[0]), 0 },
+      sizeof(prog_yok_torso2_anim_ops) / sizeof(prog_yok_torso2_anim_ops[0]), 0, 0, 0 },
     { "yok_torso8_anim", "YOKSEQ1.ASM", prog_yok_torso8_anim_ops,
-      sizeof(prog_yok_torso8_anim_ops) / sizeof(prog_yok_torso8_anim_ops[0]), 0 },
+      sizeof(prog_yok_torso8_anim_ops) / sizeof(prog_yok_torso8_anim_ops[0]), 0, 0, 0 },
     { "yok_torso4_anim", "YOKSEQ1.ASM", prog_yok_torso4_anim_ops,
-      sizeof(prog_yok_torso4_anim_ops) / sizeof(prog_yok_torso4_anim_ops[0]), 0 },
+      sizeof(prog_yok_torso4_anim_ops) / sizeof(prog_yok_torso4_anim_ops[0]), 0, 0, 0 },
     { "yok_torso6_anim", "YOKSEQ1.ASM", prog_yok_torso6_anim_ops,
-      sizeof(prog_yok_torso6_anim_ops) / sizeof(prog_yok_torso6_anim_ops[0]), 0 },
+      sizeof(prog_yok_torso6_anim_ops) / sizeof(prog_yok_torso6_anim_ops[0]), 0, 0, 0 },
     { "yok_holdoh_anim", "YOKSEQ1.ASM", prog_yok_holdoh_anim_ops,
-      sizeof(prog_yok_holdoh_anim_ops) / sizeof(prog_yok_holdoh_anim_ops[0]), 0 },
+      sizeof(prog_yok_holdoh_anim_ops) / sizeof(prog_yok_holdoh_anim_ops[0]), 0, 0, 0 },
     { "yok_stndholdoh_anim", "YOKSEQ1.ASM", prog_yok_stndholdoh_anim_ops,
-      sizeof(prog_yok_stndholdoh_anim_ops) / sizeof(prog_yok_stndholdoh_anim_ops[0]), 0 },
+      sizeof(prog_yok_stndholdoh_anim_ops) / sizeof(prog_yok_stndholdoh_anim_ops[0]), 0, 0, 0 },
     { "yok_walk1_f2_anim", "YOKSEQ1.ASM", prog_yok_walk1_f2_anim_ops,
-      sizeof(prog_yok_walk1_f2_anim_ops) / sizeof(prog_yok_walk1_f2_anim_ops[0]), 0 },
+      sizeof(prog_yok_walk1_f2_anim_ops) / sizeof(prog_yok_walk1_f2_anim_ops[0]), 0, 0, 0 },
     { "yok_walk2_f2_anim", "YOKSEQ1.ASM", prog_yok_walk2_f2_anim_ops,
-      sizeof(prog_yok_walk2_f2_anim_ops) / sizeof(prog_yok_walk2_f2_anim_ops[0]), 0 },
+      sizeof(prog_yok_walk2_f2_anim_ops) / sizeof(prog_yok_walk2_f2_anim_ops[0]), 0, 0, 0 },
     { "yok_walk4_f2_anim", "YOKSEQ1.ASM", prog_yok_walk4_f2_anim_ops,
-      sizeof(prog_yok_walk4_f2_anim_ops) / sizeof(prog_yok_walk4_f2_anim_ops[0]), 0 },
+      sizeof(prog_yok_walk4_f2_anim_ops) / sizeof(prog_yok_walk4_f2_anim_ops[0]), 0, 0, 0 },
     { "yok_walk5_f2_anim", "YOKSEQ1.ASM", prog_yok_walk5_f2_anim_ops,
-      sizeof(prog_yok_walk5_f2_anim_ops) / sizeof(prog_yok_walk5_f2_anim_ops[0]), 0 },
+      sizeof(prog_yok_walk5_f2_anim_ops) / sizeof(prog_yok_walk5_f2_anim_ops[0]), 0, 0, 0 },
     { "yok_walk6_f2_anim", "YOKSEQ1.ASM", prog_yok_walk6_f2_anim_ops,
-      sizeof(prog_yok_walk6_f2_anim_ops) / sizeof(prog_yok_walk6_f2_anim_ops[0]), 0 },
+      sizeof(prog_yok_walk6_f2_anim_ops) / sizeof(prog_yok_walk6_f2_anim_ops[0]), 0, 0, 0 },
     { "yok_walk8_f2_anim", "YOKSEQ1.ASM", prog_yok_walk8_f2_anim_ops,
-      sizeof(prog_yok_walk8_f2_anim_ops) / sizeof(prog_yok_walk8_f2_anim_ops[0]), 0 },
+      sizeof(prog_yok_walk8_f2_anim_ops) / sizeof(prog_yok_walk8_f2_anim_ops[0]), 0, 0, 0 },
     { "yok_walk1_f4_anim", "YOKSEQ1.ASM", prog_yok_walk1_f4_anim_ops,
-      sizeof(prog_yok_walk1_f4_anim_ops) / sizeof(prog_yok_walk1_f4_anim_ops[0]), 0 },
+      sizeof(prog_yok_walk1_f4_anim_ops) / sizeof(prog_yok_walk1_f4_anim_ops[0]), 0, 0, 0 },
     { "yok_walk2_f4_anim", "YOKSEQ1.ASM", prog_yok_walk2_f4_anim_ops,
-      sizeof(prog_yok_walk2_f4_anim_ops) / sizeof(prog_yok_walk2_f4_anim_ops[0]), 0 },
+      sizeof(prog_yok_walk2_f4_anim_ops) / sizeof(prog_yok_walk2_f4_anim_ops[0]), 0, 0, 0 },
     { "yok_walk4_f4_anim", "YOKSEQ1.ASM", prog_yok_walk4_f4_anim_ops,
-      sizeof(prog_yok_walk4_f4_anim_ops) / sizeof(prog_yok_walk4_f4_anim_ops[0]), 0 },
+      sizeof(prog_yok_walk4_f4_anim_ops) / sizeof(prog_yok_walk4_f4_anim_ops[0]), 0, 0, 0 },
     { "yok_walk5_f4_anim", "YOKSEQ1.ASM", prog_yok_walk5_f4_anim_ops,
-      sizeof(prog_yok_walk5_f4_anim_ops) / sizeof(prog_yok_walk5_f4_anim_ops[0]), 0 },
+      sizeof(prog_yok_walk5_f4_anim_ops) / sizeof(prog_yok_walk5_f4_anim_ops[0]), 0, 0, 0 },
     { "yok_walk6_f4_anim", "YOKSEQ1.ASM", prog_yok_walk6_f4_anim_ops,
-      sizeof(prog_yok_walk6_f4_anim_ops) / sizeof(prog_yok_walk6_f4_anim_ops[0]), 0 },
+      sizeof(prog_yok_walk6_f4_anim_ops) / sizeof(prog_yok_walk6_f4_anim_ops[0]), 0, 0, 0 },
     { "yok_walk8_f4_anim", "YOKSEQ1.ASM", prog_yok_walk8_f4_anim_ops,
-      sizeof(prog_yok_walk8_f4_anim_ops) / sizeof(prog_yok_walk8_f4_anim_ops[0]), 0 },
+      sizeof(prog_yok_walk8_f4_anim_ops) / sizeof(prog_yok_walk8_f4_anim_ops[0]), 0, 0, 0 },
     { "yok_2_to_4_turn_anim", "YOKSEQ1.ASM", prog_yok_2_to_4_turn_anim_ops,
-      sizeof(prog_yok_2_to_4_turn_anim_ops) / sizeof(prog_yok_2_to_4_turn_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_to_4_turn_anim_ops) / sizeof(prog_yok_2_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "yok_8_to_6_turn_anim", "YOKSEQ1.ASM", prog_yok_8_to_6_turn_anim_ops,
-      sizeof(prog_yok_8_to_6_turn_anim_ops) / sizeof(prog_yok_8_to_6_turn_anim_ops[0]), 0 },
+      sizeof(prog_yok_8_to_6_turn_anim_ops) / sizeof(prog_yok_8_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "yok_4_to_2_turn_anim", "YOKSEQ1.ASM", prog_yok_4_to_2_turn_anim_ops,
-      sizeof(prog_yok_4_to_2_turn_anim_ops) / sizeof(prog_yok_4_to_2_turn_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_to_2_turn_anim_ops) / sizeof(prog_yok_4_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "yok_6_to_8_turn_anim", "YOKSEQ1.ASM", prog_yok_6_to_8_turn_anim_ops,
-      sizeof(prog_yok_6_to_8_turn_anim_ops) / sizeof(prog_yok_6_to_8_turn_anim_ops[0]), 0 },
+      sizeof(prog_yok_6_to_8_turn_anim_ops) / sizeof(prog_yok_6_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "yok_4_to_6_turn_anim", "YOKSEQ1.ASM", prog_yok_4_to_6_turn_anim_ops,
-      sizeof(prog_yok_4_to_6_turn_anim_ops) / sizeof(prog_yok_4_to_6_turn_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_to_6_turn_anim_ops) / sizeof(prog_yok_4_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "yok_6_to_4_turn_anim", "YOKSEQ1.ASM", prog_yok_6_to_4_turn_anim_ops,
-      sizeof(prog_yok_6_to_4_turn_anim_ops) / sizeof(prog_yok_6_to_4_turn_anim_ops[0]), 0 },
+      sizeof(prog_yok_6_to_4_turn_anim_ops) / sizeof(prog_yok_6_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "yok_2_to_8_turn_anim", "YOKSEQ1.ASM", prog_yok_2_to_8_turn_anim_ops,
-      sizeof(prog_yok_2_to_8_turn_anim_ops) / sizeof(prog_yok_2_to_8_turn_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_to_8_turn_anim_ops) / sizeof(prog_yok_2_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "yok_8_to_2_turn_anim", "YOKSEQ1.ASM", prog_yok_8_to_2_turn_anim_ops,
-      sizeof(prog_yok_8_to_2_turn_anim_ops) / sizeof(prog_yok_8_to_2_turn_anim_ops[0]), 0 },
+      sizeof(prog_yok_8_to_2_turn_anim_ops) / sizeof(prog_yok_8_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "yok_4_to_8_turn_anim", "YOKSEQ1.ASM", prog_yok_4_to_8_turn_anim_ops,
-      sizeof(prog_yok_4_to_8_turn_anim_ops) / sizeof(prog_yok_4_to_8_turn_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_to_8_turn_anim_ops) / sizeof(prog_yok_4_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "yok_6_to_2_turn_anim", "YOKSEQ1.ASM", prog_yok_6_to_2_turn_anim_ops,
-      sizeof(prog_yok_6_to_2_turn_anim_ops) / sizeof(prog_yok_6_to_2_turn_anim_ops[0]), 0 },
+      sizeof(prog_yok_6_to_2_turn_anim_ops) / sizeof(prog_yok_6_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "yok_2_to_6_turn_anim", "YOKSEQ1.ASM", prog_yok_2_to_6_turn_anim_ops,
-      sizeof(prog_yok_2_to_6_turn_anim_ops) / sizeof(prog_yok_2_to_6_turn_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_to_6_turn_anim_ops) / sizeof(prog_yok_2_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "yok_8_to_4_turn_anim", "YOKSEQ1.ASM", prog_yok_8_to_4_turn_anim_ops,
-      sizeof(prog_yok_8_to_4_turn_anim_ops) / sizeof(prog_yok_8_to_4_turn_anim_ops[0]), 0 },
+      sizeof(prog_yok_8_to_4_turn_anim_ops) / sizeof(prog_yok_8_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "yok_2_to_4_turn2_anim", "YOKSEQ1.ASM", prog_yok_2_to_4_turn2_anim_ops,
-      sizeof(prog_yok_2_to_4_turn2_anim_ops) / sizeof(prog_yok_2_to_4_turn2_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_to_4_turn2_anim_ops) / sizeof(prog_yok_2_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "yok_8_to_6_turn2_anim", "YOKSEQ1.ASM", prog_yok_8_to_6_turn2_anim_ops,
-      sizeof(prog_yok_8_to_6_turn2_anim_ops) / sizeof(prog_yok_8_to_6_turn2_anim_ops[0]), 0 },
+      sizeof(prog_yok_8_to_6_turn2_anim_ops) / sizeof(prog_yok_8_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "yok_4_to_2_turn2_anim", "YOKSEQ1.ASM", prog_yok_4_to_2_turn2_anim_ops,
-      sizeof(prog_yok_4_to_2_turn2_anim_ops) / sizeof(prog_yok_4_to_2_turn2_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_to_2_turn2_anim_ops) / sizeof(prog_yok_4_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "yok_6_to_8_turn2_anim", "YOKSEQ1.ASM", prog_yok_6_to_8_turn2_anim_ops,
-      sizeof(prog_yok_6_to_8_turn2_anim_ops) / sizeof(prog_yok_6_to_8_turn2_anim_ops[0]), 0 },
+      sizeof(prog_yok_6_to_8_turn2_anim_ops) / sizeof(prog_yok_6_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "yok_4_to_6_turn2_anim", "YOKSEQ1.ASM", prog_yok_4_to_6_turn2_anim_ops,
-      sizeof(prog_yok_4_to_6_turn2_anim_ops) / sizeof(prog_yok_4_to_6_turn2_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_to_6_turn2_anim_ops) / sizeof(prog_yok_4_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "yok_6_to_4_turn2_anim", "YOKSEQ1.ASM", prog_yok_6_to_4_turn2_anim_ops,
-      sizeof(prog_yok_6_to_4_turn2_anim_ops) / sizeof(prog_yok_6_to_4_turn2_anim_ops[0]), 0 },
+      sizeof(prog_yok_6_to_4_turn2_anim_ops) / sizeof(prog_yok_6_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "yok_2_to_8_turn2_anim", "YOKSEQ1.ASM", prog_yok_2_to_8_turn2_anim_ops,
-      sizeof(prog_yok_2_to_8_turn2_anim_ops) / sizeof(prog_yok_2_to_8_turn2_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_to_8_turn2_anim_ops) / sizeof(prog_yok_2_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "yok_8_to_2_turn2_anim", "YOKSEQ1.ASM", prog_yok_8_to_2_turn2_anim_ops,
-      sizeof(prog_yok_8_to_2_turn2_anim_ops) / sizeof(prog_yok_8_to_2_turn2_anim_ops[0]), 0 },
+      sizeof(prog_yok_8_to_2_turn2_anim_ops) / sizeof(prog_yok_8_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "yok_4_to_8_turn2_anim", "YOKSEQ1.ASM", prog_yok_4_to_8_turn2_anim_ops,
-      sizeof(prog_yok_4_to_8_turn2_anim_ops) / sizeof(prog_yok_4_to_8_turn2_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_to_8_turn2_anim_ops) / sizeof(prog_yok_4_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "yok_6_to_2_turn2_anim", "YOKSEQ1.ASM", prog_yok_6_to_2_turn2_anim_ops,
-      sizeof(prog_yok_6_to_2_turn2_anim_ops) / sizeof(prog_yok_6_to_2_turn2_anim_ops[0]), 0 },
+      sizeof(prog_yok_6_to_2_turn2_anim_ops) / sizeof(prog_yok_6_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "yok_2_to_6_turn2_anim", "YOKSEQ1.ASM", prog_yok_2_to_6_turn2_anim_ops,
-      sizeof(prog_yok_2_to_6_turn2_anim_ops) / sizeof(prog_yok_2_to_6_turn2_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_to_6_turn2_anim_ops) / sizeof(prog_yok_2_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "yok_8_to_4_turn2_anim", "YOKSEQ1.ASM", prog_yok_8_to_4_turn2_anim_ops,
-      sizeof(prog_yok_8_to_4_turn2_anim_ops) / sizeof(prog_yok_8_to_4_turn2_anim_ops[0]), 0 },
+      sizeof(prog_yok_8_to_4_turn2_anim_ops) / sizeof(prog_yok_8_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "yok_run2_anim", "YOKSEQ1.ASM", prog_yok_run2_anim_ops,
-      sizeof(prog_yok_run2_anim_ops) / sizeof(prog_yok_run2_anim_ops[0]), 0 },
+      sizeof(prog_yok_run2_anim_ops) / sizeof(prog_yok_run2_anim_ops[0]), 0, prog_yok_run2_anim_labels, sizeof(prog_yok_run2_anim_labels) / sizeof(prog_yok_run2_anim_labels[0]) },
     { "yok_run_anim", "YOKSEQ1.ASM", prog_yok_run_anim_ops,
-      sizeof(prog_yok_run_anim_ops) / sizeof(prog_yok_run_anim_ops[0]), 0 },
+      sizeof(prog_yok_run_anim_ops) / sizeof(prog_yok_run_anim_ops[0]), 0, prog_yok_run_anim_labels, sizeof(prog_yok_run_anim_labels) / sizeof(prog_yok_run_anim_labels[0]) },
     { "yok_bounce_anim", "YOKSEQ1.ASM", prog_yok_bounce_anim_ops,
-      sizeof(prog_yok_bounce_anim_ops) / sizeof(prog_yok_bounce_anim_ops[0]), 0 },
+      sizeof(prog_yok_bounce_anim_ops) / sizeof(prog_yok_bounce_anim_ops[0]), 0, 0, 0 },
     { "yok_frnk_recover_anim", "YOKSEQ1.ASM", prog_yok_frnk_recover_anim_ops,
-      sizeof(prog_yok_frnk_recover_anim_ops) / sizeof(prog_yok_frnk_recover_anim_ops[0]), 0 },
+      sizeof(prog_yok_frnk_recover_anim_ops) / sizeof(prog_yok_frnk_recover_anim_ops[0]), 0, 0, 0 },
     { "yok_2_punch_anim", "YOKSEQ2.ASM", prog_yok_2_punch_anim_ops,
-      sizeof(prog_yok_2_punch_anim_ops) / sizeof(prog_yok_2_punch_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_punch_anim_ops) / sizeof(prog_yok_2_punch_anim_ops[0]), 0, prog_yok_2_punch_anim_labels, sizeof(prog_yok_2_punch_anim_labels) / sizeof(prog_yok_2_punch_anim_labels[0]) },
     { "yok_4_punch_anim", "YOKSEQ2.ASM", prog_yok_4_punch_anim_ops,
-      sizeof(prog_yok_4_punch_anim_ops) / sizeof(prog_yok_4_punch_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_punch_anim_ops) / sizeof(prog_yok_4_punch_anim_ops[0]), 0, prog_yok_4_punch_anim_labels, sizeof(prog_yok_4_punch_anim_labels) / sizeof(prog_yok_4_punch_anim_labels[0]) },
     { "yok_4_push_anim", "YOKSEQ2.ASM", prog_yok_4_push_anim_ops,
-      sizeof(prog_yok_4_push_anim_ops) / sizeof(prog_yok_4_push_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_push_anim_ops) / sizeof(prog_yok_4_push_anim_ops[0]), 0, prog_yok_4_push_anim_labels, sizeof(prog_yok_4_push_anim_labels) / sizeof(prog_yok_4_push_anim_labels[0]) },
     { "yok_2_lbowdrop_anim", "YOKSEQ2.ASM", prog_yok_2_lbowdrop_anim_ops,
-      sizeof(prog_yok_2_lbowdrop_anim_ops) / sizeof(prog_yok_2_lbowdrop_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_lbowdrop_anim_ops) / sizeof(prog_yok_2_lbowdrop_anim_ops[0]), 0, prog_yok_2_lbowdrop_anim_labels, sizeof(prog_yok_2_lbowdrop_anim_labels) / sizeof(prog_yok_2_lbowdrop_anim_labels[0]) },
     { "yok_4_lbowdrop_anim", "YOKSEQ2.ASM", prog_yok_4_lbowdrop_anim_ops,
-      sizeof(prog_yok_4_lbowdrop_anim_ops) / sizeof(prog_yok_4_lbowdrop_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_lbowdrop_anim_ops) / sizeof(prog_yok_4_lbowdrop_anim_ops[0]), 0, prog_yok_4_lbowdrop_anim_labels, sizeof(prog_yok_4_lbowdrop_anim_labels) / sizeof(prog_yok_4_lbowdrop_anim_labels[0]) },
     { "yok_combo_kick_anim", "YOKSEQ2.ASM", prog_yok_combo_kick_anim_ops,
-      sizeof(prog_yok_combo_kick_anim_ops) / sizeof(prog_yok_combo_kick_anim_ops[0]), 0 },
+      sizeof(prog_yok_combo_kick_anim_ops) / sizeof(prog_yok_combo_kick_anim_ops[0]), 0, prog_yok_combo_kick_anim_labels, sizeof(prog_yok_combo_kick_anim_labels) / sizeof(prog_yok_combo_kick_anim_labels[0]) },
     { "yok_2_kick_anim", "YOKSEQ2.ASM", prog_yok_2_kick_anim_ops,
-      sizeof(prog_yok_2_kick_anim_ops) / sizeof(prog_yok_2_kick_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_kick_anim_ops) / sizeof(prog_yok_2_kick_anim_ops[0]), 0, prog_yok_2_kick_anim_labels, sizeof(prog_yok_2_kick_anim_labels) / sizeof(prog_yok_2_kick_anim_labels[0]) },
     { "yok_4_kick_anim", "YOKSEQ2.ASM", prog_yok_4_kick_anim_ops,
-      sizeof(prog_yok_4_kick_anim_ops) / sizeof(prog_yok_4_kick_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_kick_anim_ops) / sizeof(prog_yok_4_kick_anim_ops[0]), 0, prog_yok_4_kick_anim_labels, sizeof(prog_yok_4_kick_anim_labels) / sizeof(prog_yok_4_kick_anim_labels[0]) },
     { "yok_2_stomp_anim", "YOKSEQ2.ASM", prog_yok_2_stomp_anim_ops,
-      sizeof(prog_yok_2_stomp_anim_ops) / sizeof(prog_yok_2_stomp_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_stomp_anim_ops) / sizeof(prog_yok_2_stomp_anim_ops[0]), 0, prog_yok_2_stomp_anim_labels, sizeof(prog_yok_2_stomp_anim_labels) / sizeof(prog_yok_2_stomp_anim_labels[0]) },
     { "yok_4_stomp_anim", "YOKSEQ2.ASM", prog_yok_4_stomp_anim_ops,
-      sizeof(prog_yok_4_stomp_anim_ops) / sizeof(prog_yok_4_stomp_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_stomp_anim_ops) / sizeof(prog_yok_4_stomp_anim_ops[0]), 0, prog_yok_4_stomp_anim_labels, sizeof(prog_yok_4_stomp_anim_labels) / sizeof(prog_yok_4_stomp_anim_labels[0]) },
     { "yok_combo_butt_drop_anim", "YOKSEQ2.ASM", prog_yok_combo_butt_drop_anim_ops,
-      sizeof(prog_yok_combo_butt_drop_anim_ops) / sizeof(prog_yok_combo_butt_drop_anim_ops[0]), 0 },
+      sizeof(prog_yok_combo_butt_drop_anim_ops) / sizeof(prog_yok_combo_butt_drop_anim_ops[0]), 0, prog_yok_combo_butt_drop_anim_labels, sizeof(prog_yok_combo_butt_drop_anim_labels) / sizeof(prog_yok_combo_butt_drop_anim_labels[0]) },
     { "yok_3_butt_drop_anim", "YOKSEQ2.ASM", prog_yok_3_butt_drop_anim_ops,
-      sizeof(prog_yok_3_butt_drop_anim_ops) / sizeof(prog_yok_3_butt_drop_anim_ops[0]), 0 },
+      sizeof(prog_yok_3_butt_drop_anim_ops) / sizeof(prog_yok_3_butt_drop_anim_ops[0]), 0, prog_yok_3_butt_drop_anim_labels, sizeof(prog_yok_3_butt_drop_anim_labels) / sizeof(prog_yok_3_butt_drop_anim_labels[0]) },
     { "yok_2_knee_anim", "YOKSEQ2.ASM", prog_yok_2_knee_anim_ops,
-      sizeof(prog_yok_2_knee_anim_ops) / sizeof(prog_yok_2_knee_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_knee_anim_ops) / sizeof(prog_yok_2_knee_anim_ops[0]), 0, prog_yok_2_knee_anim_labels, sizeof(prog_yok_2_knee_anim_labels) / sizeof(prog_yok_2_knee_anim_labels[0]) },
     { "yok_combo_knee_anim", "YOKSEQ2.ASM", prog_yok_combo_knee_anim_ops,
-      sizeof(prog_yok_combo_knee_anim_ops) / sizeof(prog_yok_combo_knee_anim_ops[0]), 0 },
+      sizeof(prog_yok_combo_knee_anim_ops) / sizeof(prog_yok_combo_knee_anim_ops[0]), 0, prog_yok_combo_knee_anim_labels, sizeof(prog_yok_combo_knee_anim_labels) / sizeof(prog_yok_combo_knee_anim_labels[0]) },
     { "yok_4_knee2_anim", "YOKSEQ2.ASM", prog_yok_4_knee2_anim_ops,
-      sizeof(prog_yok_4_knee2_anim_ops) / sizeof(prog_yok_4_knee2_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_knee2_anim_ops) / sizeof(prog_yok_4_knee2_anim_ops[0]), 0, prog_yok_4_knee2_anim_labels, sizeof(prog_yok_4_knee2_anim_labels) / sizeof(prog_yok_4_knee2_anim_labels[0]) },
     { "yok_4_knee_anim", "YOKSEQ2.ASM", prog_yok_4_knee_anim_ops,
-      sizeof(prog_yok_4_knee_anim_ops) / sizeof(prog_yok_4_knee_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_knee_anim_ops) / sizeof(prog_yok_4_knee_anim_ops[0]), 0, prog_yok_4_knee_anim_labels, sizeof(prog_yok_4_knee_anim_labels) / sizeof(prog_yok_4_knee_anim_labels[0]) },
     { "yok_2_superkick_anim", "YOKSEQ2.ASM", prog_yok_2_superkick_anim_ops,
-      sizeof(prog_yok_2_superkick_anim_ops) / sizeof(prog_yok_2_superkick_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_superkick_anim_ops) / sizeof(prog_yok_2_superkick_anim_ops[0]), 0, prog_yok_2_superkick_anim_labels, sizeof(prog_yok_2_superkick_anim_labels) / sizeof(prog_yok_2_superkick_anim_labels[0]) },
     { "yok_4_superkick_anim", "YOKSEQ2.ASM", prog_yok_4_superkick_anim_ops,
-      sizeof(prog_yok_4_superkick_anim_ops) / sizeof(prog_yok_4_superkick_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_superkick_anim_ops) / sizeof(prog_yok_4_superkick_anim_ops[0]), 0, prog_yok_4_superkick_anim_labels, sizeof(prog_yok_4_superkick_anim_labels) / sizeof(prog_yok_4_superkick_anim_labels[0]) },
     { "yok_combo_superkick_anim", "YOKSEQ2.ASM", prog_yok_combo_superkick_anim_ops,
-      sizeof(prog_yok_combo_superkick_anim_ops) / sizeof(prog_yok_combo_superkick_anim_ops[0]), 0 },
+      sizeof(prog_yok_combo_superkick_anim_ops) / sizeof(prog_yok_combo_superkick_anim_ops[0]), 0, prog_yok_combo_superkick_anim_labels, sizeof(prog_yok_combo_superkick_anim_labels) / sizeof(prog_yok_combo_superkick_anim_labels[0]) },
     { "yok_2_gut_push_anim", "YOKSEQ2.ASM", prog_yok_2_gut_push_anim_ops,
-      sizeof(prog_yok_2_gut_push_anim_ops) / sizeof(prog_yok_2_gut_push_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_gut_push_anim_ops) / sizeof(prog_yok_2_gut_push_anim_ops[0]), 0, prog_yok_2_gut_push_anim_labels, sizeof(prog_yok_2_gut_push_anim_labels) / sizeof(prog_yok_2_gut_push_anim_labels[0]) },
     { "yok_4_gut_push_anim", "YOKSEQ2.ASM", prog_yok_4_gut_push_anim_ops,
-      sizeof(prog_yok_4_gut_push_anim_ops) / sizeof(prog_yok_4_gut_push_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_gut_push_anim_ops) / sizeof(prog_yok_4_gut_push_anim_ops[0]), 0, prog_yok_4_gut_push_anim_labels, sizeof(prog_yok_4_gut_push_anim_labels) / sizeof(prog_yok_4_gut_push_anim_labels[0]) },
     { "yok_combo_gut_push_anim", "YOKSEQ2.ASM", prog_yok_combo_gut_push_anim_ops,
-      sizeof(prog_yok_combo_gut_push_anim_ops) / sizeof(prog_yok_combo_gut_push_anim_ops[0]), 0 },
+      sizeof(prog_yok_combo_gut_push_anim_ops) / sizeof(prog_yok_combo_gut_push_anim_ops[0]), 0, prog_yok_combo_gut_push_anim_labels, sizeof(prog_yok_combo_gut_push_anim_labels) / sizeof(prog_yok_combo_gut_push_anim_labels[0]) },
     { "yok_climb_up_anim", "YOKSEQ2.ASM", prog_yok_climb_up_anim_ops,
-      sizeof(prog_yok_climb_up_anim_ops) / sizeof(prog_yok_climb_up_anim_ops[0]), 0 },
+      sizeof(prog_yok_climb_up_anim_ops) / sizeof(prog_yok_climb_up_anim_ops[0]), 0, prog_yok_climb_up_anim_labels, sizeof(prog_yok_climb_up_anim_labels) / sizeof(prog_yok_climb_up_anim_labels[0]) },
     { "yok_climb_down_anim", "YOKSEQ2.ASM", prog_yok_climb_down_anim_ops,
-      sizeof(prog_yok_climb_down_anim_ops) / sizeof(prog_yok_climb_down_anim_ops[0]), 0 },
+      sizeof(prog_yok_climb_down_anim_ops) / sizeof(prog_yok_climb_down_anim_ops[0]), 0, 0, 0 },
     { "yok_tbukl_buttdrop_anim", "YOKSEQ2.ASM", prog_yok_tbukl_buttdrop_anim_ops,
-      sizeof(prog_yok_tbukl_buttdrop_anim_ops) / sizeof(prog_yok_tbukl_buttdrop_anim_ops[0]), 0 },
+      sizeof(prog_yok_tbukl_buttdrop_anim_ops) / sizeof(prog_yok_tbukl_buttdrop_anim_ops[0]), 0, prog_yok_tbukl_buttdrop_anim_labels, sizeof(prog_yok_tbukl_buttdrop_anim_labels) / sizeof(prog_yok_tbukl_buttdrop_anim_labels[0]) },
     { "yok_2_grabfling_anim", "YOKSEQ2.ASM", prog_yok_2_grabfling_anim_ops,
-      sizeof(prog_yok_2_grabfling_anim_ops) / sizeof(prog_yok_2_grabfling_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_grabfling_anim_ops) / sizeof(prog_yok_2_grabfling_anim_ops[0]), 0, prog_yok_2_grabfling_anim_labels, sizeof(prog_yok_2_grabfling_anim_labels) / sizeof(prog_yok_2_grabfling_anim_labels[0]) },
     { "yok_4_grabfling_anim", "YOKSEQ2.ASM", prog_yok_4_grabfling_anim_ops,
-      sizeof(prog_yok_4_grabfling_anim_ops) / sizeof(prog_yok_4_grabfling_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_grabfling_anim_ops) / sizeof(prog_yok_4_grabfling_anim_ops[0]), 0, prog_yok_4_grabfling_anim_labels, sizeof(prog_yok_4_grabfling_anim_labels) / sizeof(prog_yok_4_grabfling_anim_labels[0]) },
     { "yok_knockdwn_anim", "YOKSEQ2.ASM", prog_yok_knockdwn_anim_ops,
-      sizeof(prog_yok_knockdwn_anim_ops) / sizeof(prog_yok_knockdwn_anim_ops[0]), 0 },
+      sizeof(prog_yok_knockdwn_anim_ops) / sizeof(prog_yok_knockdwn_anim_ops[0]), 0, prog_yok_knockdwn_anim_labels, sizeof(prog_yok_knockdwn_anim_labels) / sizeof(prog_yok_knockdwn_anim_labels[0]) },
     { "yok_climbthru_side_anim", "YOKSEQ2.ASM", prog_yok_climbthru_side_anim_ops,
-      sizeof(prog_yok_climbthru_side_anim_ops) / sizeof(prog_yok_climbthru_side_anim_ops[0]), 0 },
+      sizeof(prog_yok_climbthru_side_anim_ops) / sizeof(prog_yok_climbthru_side_anim_ops[0]), 0, 0, 0 },
     { "yok_climbin_side_anim", "YOKSEQ2.ASM", prog_yok_climbin_side_anim_ops,
-      sizeof(prog_yok_climbin_side_anim_ops) / sizeof(prog_yok_climbin_side_anim_ops[0]), 0 },
+      sizeof(prog_yok_climbin_side_anim_ops) / sizeof(prog_yok_climbin_side_anim_ops[0]), 0, prog_yok_climbin_side_anim_labels, sizeof(prog_yok_climbin_side_anim_labels) / sizeof(prog_yok_climbin_side_anim_labels[0]) },
     { "yok_climbthru_bot_anim", "YOKSEQ2.ASM", prog_yok_climbthru_bot_anim_ops,
-      sizeof(prog_yok_climbthru_bot_anim_ops) / sizeof(prog_yok_climbthru_bot_anim_ops[0]), 0 },
+      sizeof(prog_yok_climbthru_bot_anim_ops) / sizeof(prog_yok_climbthru_bot_anim_ops[0]), 0, prog_yok_climbthru_bot_anim_labels, sizeof(prog_yok_climbthru_bot_anim_labels) / sizeof(prog_yok_climbthru_bot_anim_labels[0]) },
     { "yok_climbin_bot_anim", "YOKSEQ2.ASM", prog_yok_climbin_bot_anim_ops,
-      sizeof(prog_yok_climbin_bot_anim_ops) / sizeof(prog_yok_climbin_bot_anim_ops[0]), 0 },
+      sizeof(prog_yok_climbin_bot_anim_ops) / sizeof(prog_yok_climbin_bot_anim_ops[0]), 0, 0, 0 },
     { "yok_climbthru_top_anim", "YOKSEQ2.ASM", prog_yok_climbthru_top_anim_ops,
-      sizeof(prog_yok_climbthru_top_anim_ops) / sizeof(prog_yok_climbthru_top_anim_ops[0]), 0 },
+      sizeof(prog_yok_climbthru_top_anim_ops) / sizeof(prog_yok_climbthru_top_anim_ops[0]), 0, prog_yok_climbthru_top_anim_labels, sizeof(prog_yok_climbthru_top_anim_labels) / sizeof(prog_yok_climbthru_top_anim_labels[0]) },
     { "yok_rollthru_top_anim", "YOKSEQ2.ASM", prog_yok_rollthru_top_anim_ops,
-      sizeof(prog_yok_rollthru_top_anim_ops) / sizeof(prog_yok_rollthru_top_anim_ops[0]), 0 },
+      sizeof(prog_yok_rollthru_top_anim_ops) / sizeof(prog_yok_rollthru_top_anim_ops[0]), 0, 0, 0 },
     { "yok_climbin_top_anim", "YOKSEQ2.ASM", prog_yok_climbin_top_anim_ops,
-      sizeof(prog_yok_climbin_top_anim_ops) / sizeof(prog_yok_climbin_top_anim_ops[0]), 0 },
+      sizeof(prog_yok_climbin_top_anim_ops) / sizeof(prog_yok_climbin_top_anim_ops[0]), 0, prog_yok_climbin_top_anim_labels, sizeof(prog_yok_climbin_top_anim_labels) / sizeof(prog_yok_climbin_top_anim_labels[0]) },
     { "yok_2_pin_anim", "YOKSEQ2.ASM", prog_yok_2_pin_anim_ops,
-      sizeof(prog_yok_2_pin_anim_ops) / sizeof(prog_yok_2_pin_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_pin_anim_ops) / sizeof(prog_yok_2_pin_anim_ops[0]), 0, prog_yok_2_pin_anim_labels, sizeof(prog_yok_2_pin_anim_labels) / sizeof(prog_yok_2_pin_anim_labels[0]) },
     { "yok_4_pin_anim", "YOKSEQ2.ASM", prog_yok_4_pin_anim_ops,
-      sizeof(prog_yok_4_pin_anim_ops) / sizeof(prog_yok_4_pin_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_pin_anim_ops) / sizeof(prog_yok_4_pin_anim_ops[0]), 0, prog_yok_4_pin_anim_labels, sizeof(prog_yok_4_pin_anim_labels) / sizeof(prog_yok_4_pin_anim_labels[0]) },
     { "yok_2_raise_arm_anim", "YOKSEQ2.ASM", prog_yok_2_raise_arm_anim_ops,
-      sizeof(prog_yok_2_raise_arm_anim_ops) / sizeof(prog_yok_2_raise_arm_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_raise_arm_anim_ops) / sizeof(prog_yok_2_raise_arm_anim_ops[0]), 0, prog_yok_2_raise_arm_anim_labels, sizeof(prog_yok_2_raise_arm_anim_labels) / sizeof(prog_yok_2_raise_arm_anim_labels[0]) },
     { "yok_4_raise_arm_anim", "YOKSEQ2.ASM", prog_yok_4_raise_arm_anim_ops,
-      sizeof(prog_yok_4_raise_arm_anim_ops) / sizeof(prog_yok_4_raise_arm_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_raise_arm_anim_ops) / sizeof(prog_yok_4_raise_arm_anim_ops[0]), 0, prog_yok_4_raise_arm_anim_labels, sizeof(prog_yok_4_raise_arm_anim_labels) / sizeof(prog_yok_4_raise_arm_anim_labels[0]) },
     { "yok_combo_uppercut_anim", "YOKSEQ2.ASM", prog_yok_combo_uppercut_anim_ops,
-      sizeof(prog_yok_combo_uppercut_anim_ops) / sizeof(prog_yok_combo_uppercut_anim_ops[0]), 0 },
+      sizeof(prog_yok_combo_uppercut_anim_ops) / sizeof(prog_yok_combo_uppercut_anim_ops[0]), 0, prog_yok_combo_uppercut_anim_labels, sizeof(prog_yok_combo_uppercut_anim_labels) / sizeof(prog_yok_combo_uppercut_anim_labels[0]) },
     { "yok_4_uppercut_anim", "YOKSEQ2.ASM", prog_yok_4_uppercut_anim_ops,
-      sizeof(prog_yok_4_uppercut_anim_ops) / sizeof(prog_yok_4_uppercut_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_uppercut_anim_ops) / sizeof(prog_yok_4_uppercut_anim_ops[0]), 0, prog_yok_4_uppercut_anim_labels, sizeof(prog_yok_4_uppercut_anim_labels) / sizeof(prog_yok_4_uppercut_anim_labels[0]) },
     { "yok_2_jabs_anim", "YOKSEQ2.ASM", prog_yok_2_jabs_anim_ops,
-      sizeof(prog_yok_2_jabs_anim_ops) / sizeof(prog_yok_2_jabs_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_jabs_anim_ops) / sizeof(prog_yok_2_jabs_anim_ops[0]), 0, prog_yok_2_jabs_anim_labels, sizeof(prog_yok_2_jabs_anim_labels) / sizeof(prog_yok_2_jabs_anim_labels[0]) },
     { "yok_4_jabs_anim", "YOKSEQ2.ASM", prog_yok_4_jabs_anim_ops,
-      sizeof(prog_yok_4_jabs_anim_ops) / sizeof(prog_yok_4_jabs_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_jabs_anim_ops) / sizeof(prog_yok_4_jabs_anim_ops[0]), 0, prog_yok_4_jabs_anim_labels, sizeof(prog_yok_4_jabs_anim_labels) / sizeof(prog_yok_4_jabs_anim_labels[0]) },
     { "yok_combo_jabs_anim", "YOKSEQ2.ASM", prog_yok_combo_jabs_anim_ops,
-      sizeof(prog_yok_combo_jabs_anim_ops) / sizeof(prog_yok_combo_jabs_anim_ops[0]), 0 },
+      sizeof(prog_yok_combo_jabs_anim_ops) / sizeof(prog_yok_combo_jabs_anim_ops[0]), 0, prog_yok_combo_jabs_anim_labels, sizeof(prog_yok_combo_jabs_anim_labels) / sizeof(prog_yok_combo_jabs_anim_labels[0]) },
     { "yok_2_run_slap_anim", "YOKSEQ2.ASM", prog_yok_2_run_slap_anim_ops,
-      sizeof(prog_yok_2_run_slap_anim_ops) / sizeof(prog_yok_2_run_slap_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_run_slap_anim_ops) / sizeof(prog_yok_2_run_slap_anim_ops[0]), 0, prog_yok_2_run_slap_anim_labels, sizeof(prog_yok_2_run_slap_anim_labels) / sizeof(prog_yok_2_run_slap_anim_labels[0]) },
     { "yok_2_slap2_anim", "YOKSEQ2.ASM", prog_yok_2_slap2_anim_ops,
-      sizeof(prog_yok_2_slap2_anim_ops) / sizeof(prog_yok_2_slap2_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_slap2_anim_ops) / sizeof(prog_yok_2_slap2_anim_ops[0]), 0, prog_yok_2_slap2_anim_labels, sizeof(prog_yok_2_slap2_anim_labels) / sizeof(prog_yok_2_slap2_anim_labels[0]) },
     { "yok_4_run_slap_anim", "YOKSEQ2.ASM", prog_yok_4_run_slap_anim_ops,
-      sizeof(prog_yok_4_run_slap_anim_ops) / sizeof(prog_yok_4_run_slap_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_run_slap_anim_ops) / sizeof(prog_yok_4_run_slap_anim_ops[0]), 0, prog_yok_4_run_slap_anim_labels, sizeof(prog_yok_4_run_slap_anim_labels) / sizeof(prog_yok_4_run_slap_anim_labels[0]) },
     { "yok_4_slap2_anim", "YOKSEQ2.ASM", prog_yok_4_slap2_anim_ops,
-      sizeof(prog_yok_4_slap2_anim_ops) / sizeof(prog_yok_4_slap2_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_slap2_anim_ops) / sizeof(prog_yok_4_slap2_anim_ops[0]), 0, prog_yok_4_slap2_anim_labels, sizeof(prog_yok_4_slap2_anim_labels) / sizeof(prog_yok_4_slap2_anim_labels[0]) },
     { "yok_combo_slap_anim", "YOKSEQ2.ASM", prog_yok_combo_slap_anim_ops,
-      sizeof(prog_yok_combo_slap_anim_ops) / sizeof(prog_yok_combo_slap_anim_ops[0]), 0 },
+      sizeof(prog_yok_combo_slap_anim_ops) / sizeof(prog_yok_combo_slap_anim_ops[0]), 0, prog_yok_combo_slap_anim_labels, sizeof(prog_yok_combo_slap_anim_labels) / sizeof(prog_yok_combo_slap_anim_labels[0]) },
     { "delay_whoihit", "YOKSEQ2.ASM", prog_delay_whoihit_ops,
-      sizeof(prog_delay_whoihit_ops) / sizeof(prog_delay_whoihit_ops[0]), 0 },
+      sizeof(prog_delay_whoihit_ops) / sizeof(prog_delay_whoihit_ops[0]), 0, prog_delay_whoihit_labels, sizeof(prog_delay_whoihit_labels) / sizeof(prog_delay_whoihit_labels[0]) },
     { "yok_buckoff_anim", "YOKSEQ2.ASM", prog_yok_buckoff_anim_ops,
-      sizeof(prog_yok_buckoff_anim_ops) / sizeof(prog_yok_buckoff_anim_ops[0]), 0 },
+      sizeof(prog_yok_buckoff_anim_ops) / sizeof(prog_yok_buckoff_anim_ops[0]), 0, 0, 0 },
     { "yok_get_buzz_anim", "YOKSEQ3.ASM", prog_yok_get_buzz_anim_ops,
-      sizeof(prog_yok_get_buzz_anim_ops) / sizeof(prog_yok_get_buzz_anim_ops[0]), 0 },
+      sizeof(prog_yok_get_buzz_anim_ops) / sizeof(prog_yok_get_buzz_anim_ops[0]), 0, prog_yok_get_buzz_anim_labels, sizeof(prog_yok_get_buzz_anim_labels) / sizeof(prog_yok_get_buzz_anim_labels[0]) },
     { "yok_3_head_held_anim", "YOKSEQ3.ASM", prog_yok_3_head_held_anim_ops,
-      sizeof(prog_yok_3_head_held_anim_ops) / sizeof(prog_yok_3_head_held_anim_ops[0]), 0 },
+      sizeof(prog_yok_3_head_held_anim_ops) / sizeof(prog_yok_3_head_held_anim_ops[0]), 0, prog_yok_3_head_held_anim_labels, sizeof(prog_yok_3_head_held_anim_labels) / sizeof(prog_yok_3_head_held_anim_labels[0]) },
     { "yok_3_head_held_brk_anim", "YOKSEQ3.ASM", prog_yok_3_head_held_brk_anim_ops,
-      sizeof(prog_yok_3_head_held_brk_anim_ops) / sizeof(prog_yok_3_head_held_brk_anim_ops[0]), 0 },
+      sizeof(prog_yok_3_head_held_brk_anim_ops) / sizeof(prog_yok_3_head_held_brk_anim_ops[0]), 0, prog_yok_3_head_held_brk_anim_labels, sizeof(prog_yok_3_head_held_brk_anim_labels) / sizeof(prog_yok_3_head_held_brk_anim_labels[0]) },
     { "yok_3_head_held_stand_anim", "YOKSEQ3.ASM", prog_yok_3_head_held_stand_anim_ops,
-      sizeof(prog_yok_3_head_held_stand_anim_ops) / sizeof(prog_yok_3_head_held_stand_anim_ops[0]), 0 },
+      sizeof(prog_yok_3_head_held_stand_anim_ops) / sizeof(prog_yok_3_head_held_stand_anim_ops[0]), 0, 0, 0 },
     { "yok_2_hair_pickup_anim", "YOKSEQ3.ASM", prog_yok_2_hair_pickup_anim_ops,
-      sizeof(prog_yok_2_hair_pickup_anim_ops) / sizeof(prog_yok_2_hair_pickup_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_hair_pickup_anim_ops) / sizeof(prog_yok_2_hair_pickup_anim_ops[0]), 0, prog_yok_2_hair_pickup_anim_labels, sizeof(prog_yok_2_hair_pickup_anim_labels) / sizeof(prog_yok_2_hair_pickup_anim_labels[0]) },
     { "yok_4_hair_pickup_anim", "YOKSEQ3.ASM", prog_yok_4_hair_pickup_anim_ops,
-      sizeof(prog_yok_4_hair_pickup_anim_ops) / sizeof(prog_yok_4_hair_pickup_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_hair_pickup_anim_ops) / sizeof(prog_yok_4_hair_pickup_anim_ops[0]), 0, prog_yok_4_hair_pickup_anim_labels, sizeof(prog_yok_4_hair_pickup_anim_labels) / sizeof(prog_yok_4_hair_pickup_anim_labels[0]) },
     { "yok_4_taunt_anim", "YOKSEQ3.ASM", prog_yok_4_taunt_anim_ops,
-      sizeof(prog_yok_4_taunt_anim_ops) / sizeof(prog_yok_4_taunt_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_taunt_anim_ops) / sizeof(prog_yok_4_taunt_anim_ops[0]), 0, 0, 0 },
     { "yok_heldoh_anim", "YOKSEQ3.ASM", prog_yok_heldoh_anim_ops,
-      sizeof(prog_yok_heldoh_anim_ops) / sizeof(prog_yok_heldoh_anim_ops[0]), 0 },
+      sizeof(prog_yok_heldoh_anim_ops) / sizeof(prog_yok_heldoh_anim_ops[0]), 0, prog_yok_heldoh_anim_labels, sizeof(prog_yok_heldoh_anim_labels) / sizeof(prog_yok_heldoh_anim_labels[0]) },
     { "yok_break_neck2_anim", "YOKSEQ3.ASM", prog_yok_break_neck2_anim_ops,
-      sizeof(prog_yok_break_neck2_anim_ops) / sizeof(prog_yok_break_neck2_anim_ops[0]), 0 },
+      sizeof(prog_yok_break_neck2_anim_ops) / sizeof(prog_yok_break_neck2_anim_ops[0]), 0, 0, 0 },
     { "yok_break_neck3_anim", "YOKSEQ3.ASM", prog_yok_break_neck3_anim_ops,
-      sizeof(prog_yok_break_neck3_anim_ops) / sizeof(prog_yok_break_neck3_anim_ops[0]), 0 },
+      sizeof(prog_yok_break_neck3_anim_ops) / sizeof(prog_yok_break_neck3_anim_ops[0]), 0, 0, 0 },
     { "yok_flyout_anim", "YOKSEQ3.ASM", prog_yok_flyout_anim_ops,
-      sizeof(prog_yok_flyout_anim_ops) / sizeof(prog_yok_flyout_anim_ops[0]), 0 },
+      sizeof(prog_yok_flyout_anim_ops) / sizeof(prog_yok_flyout_anim_ops[0]), 0, prog_yok_flyout_anim_labels, sizeof(prog_yok_flyout_anim_labels) / sizeof(prog_yok_flyout_anim_labels[0]) },
     { "yok_flyout2_anim", "YOKSEQ3.ASM", prog_yok_flyout2_anim_ops,
-      sizeof(prog_yok_flyout2_anim_ops) / sizeof(prog_yok_flyout2_anim_ops[0]), 10 },   /* branches back into shared code */
+      sizeof(prog_yok_flyout2_anim_ops) / sizeof(prog_yok_flyout2_anim_ops[0]), 10, prog_yok_flyout2_anim_labels, sizeof(prog_yok_flyout2_anim_labels) / sizeof(prog_yok_flyout2_anim_labels[0]) },   /* branches back into shared code */
     { "yok_tossed_anim", "YOKSEQ3.ASM", prog_yok_tossed_anim_ops,
-      sizeof(prog_yok_tossed_anim_ops) / sizeof(prog_yok_tossed_anim_ops[0]), 0 },
+      sizeof(prog_yok_tossed_anim_ops) / sizeof(prog_yok_tossed_anim_ops[0]), 0, 0, 0 },
     { "yok_tossed2_anim", "YOKSEQ3.ASM", prog_yok_tossed2_anim_ops,
-      sizeof(prog_yok_tossed2_anim_ops) / sizeof(prog_yok_tossed2_anim_ops[0]), 0 },
+      sizeof(prog_yok_tossed2_anim_ops) / sizeof(prog_yok_tossed2_anim_ops[0]), 0, 0, 0 },
     { "yok_3_fake_hold_anim", "YOKSEQ3.ASM", prog_yok_3_fake_hold_anim_ops,
-      sizeof(prog_yok_3_fake_hold_anim_ops) / sizeof(prog_yok_3_fake_hold_anim_ops[0]), 0 },
+      sizeof(prog_yok_3_fake_hold_anim_ops) / sizeof(prog_yok_3_fake_hold_anim_ops[0]), 0, prog_yok_3_fake_hold_anim_labels, sizeof(prog_yok_3_fake_hold_anim_labels) / sizeof(prog_yok_3_fake_hold_anim_labels[0]) },
     { "yok_3_head_hold2_anim", "YOKSEQ3.ASM", prog_yok_3_head_hold2_anim_ops,
-      sizeof(prog_yok_3_head_hold2_anim_ops) / sizeof(prog_yok_3_head_hold2_anim_ops[0]), 0 },
+      sizeof(prog_yok_3_head_hold2_anim_ops) / sizeof(prog_yok_3_head_hold2_anim_ops[0]), 0, prog_yok_3_head_hold2_anim_labels, sizeof(prog_yok_3_head_hold2_anim_labels) / sizeof(prog_yok_3_head_hold2_anim_labels[0]) },
     { "yok_3_head_hold_anim", "YOKSEQ3.ASM", prog_yok_3_head_hold_anim_ops,
-      sizeof(prog_yok_3_head_hold_anim_ops) / sizeof(prog_yok_3_head_hold_anim_ops[0]), 0 },
+      sizeof(prog_yok_3_head_hold_anim_ops) / sizeof(prog_yok_3_head_hold_anim_ops[0]), 0, prog_yok_3_head_hold_anim_labels, sizeof(prog_yok_3_head_hold_anim_labels) / sizeof(prog_yok_3_head_hold_anim_labels[0]) },
     { "yok_vsuplex_anim", "YOKSEQ3.ASM", prog_yok_vsuplex_anim_ops,
-      sizeof(prog_yok_vsuplex_anim_ops) / sizeof(prog_yok_vsuplex_anim_ops[0]), 0 },
+      sizeof(prog_yok_vsuplex_anim_ops) / sizeof(prog_yok_vsuplex_anim_ops[0]), 0, prog_yok_vsuplex_anim_labels, sizeof(prog_yok_vsuplex_anim_labels) / sizeof(prog_yok_vsuplex_anim_labels[0]) },
     { "yok_combo_hiptoss_anim", "YOKSEQ3.ASM", prog_yok_combo_hiptoss_anim_ops,
-      sizeof(prog_yok_combo_hiptoss_anim_ops) / sizeof(prog_yok_combo_hiptoss_anim_ops[0]), 0 },
+      sizeof(prog_yok_combo_hiptoss_anim_ops) / sizeof(prog_yok_combo_hiptoss_anim_ops[0]), 0, prog_yok_combo_hiptoss_anim_labels, sizeof(prog_yok_combo_hiptoss_anim_labels) / sizeof(prog_yok_combo_hiptoss_anim_labels[0]) },
     { "yok_4_hiptoss2_anim", "YOKSEQ3.ASM", prog_yok_4_hiptoss2_anim_ops,
-      sizeof(prog_yok_4_hiptoss2_anim_ops) / sizeof(prog_yok_4_hiptoss2_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_hiptoss2_anim_ops) / sizeof(prog_yok_4_hiptoss2_anim_ops[0]), 0, prog_yok_4_hiptoss2_anim_labels, sizeof(prog_yok_4_hiptoss2_anim_labels) / sizeof(prog_yok_4_hiptoss2_anim_labels[0]) },
     { "yok_2_hiptoss2_anim", "YOKSEQ3.ASM", prog_yok_2_hiptoss2_anim_ops,
-      sizeof(prog_yok_2_hiptoss2_anim_ops) / sizeof(prog_yok_2_hiptoss2_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_hiptoss2_anim_ops) / sizeof(prog_yok_2_hiptoss2_anim_ops[0]), 0, prog_yok_2_hiptoss2_anim_labels, sizeof(prog_yok_2_hiptoss2_anim_labels) / sizeof(prog_yok_2_hiptoss2_anim_labels[0]) },
     { "yok_4_hiptoss_anim", "YOKSEQ3.ASM", prog_yok_4_hiptoss_anim_ops,
-      sizeof(prog_yok_4_hiptoss_anim_ops) / sizeof(prog_yok_4_hiptoss_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_hiptoss_anim_ops) / sizeof(prog_yok_4_hiptoss_anim_ops[0]), 0, prog_yok_4_hiptoss_anim_labels, sizeof(prog_yok_4_hiptoss_anim_labels) / sizeof(prog_yok_4_hiptoss_anim_labels[0]) },
     { "yok_2_hiptoss_anim", "YOKSEQ3.ASM", prog_yok_2_hiptoss_anim_ops,
-      sizeof(prog_yok_2_hiptoss_anim_ops) / sizeof(prog_yok_2_hiptoss_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_hiptoss_anim_ops) / sizeof(prog_yok_2_hiptoss_anim_ops[0]), 0, prog_yok_2_hiptoss_anim_labels, sizeof(prog_yok_2_hiptoss_anim_labels) / sizeof(prog_yok_2_hiptoss_anim_labels[0]) },
     { "yok_combo_heldheadbutt_rpt_anim", "YOKSEQ3.ASM", prog_yok_combo_heldheadbutt_rpt_anim_ops,
-      sizeof(prog_yok_combo_heldheadbutt_rpt_anim_ops) / sizeof(prog_yok_combo_heldheadbutt_rpt_anim_ops[0]), 0 },
+      sizeof(prog_yok_combo_heldheadbutt_rpt_anim_ops) / sizeof(prog_yok_combo_heldheadbutt_rpt_anim_ops[0]), 0, prog_yok_combo_heldheadbutt_rpt_anim_labels, sizeof(prog_yok_combo_heldheadbutt_rpt_anim_labels) / sizeof(prog_yok_combo_heldheadbutt_rpt_anim_labels[0]) },
     { "yok_heldheadbutt_rpt_anim", "YOKSEQ3.ASM", prog_yok_heldheadbutt_rpt_anim_ops,
-      sizeof(prog_yok_heldheadbutt_rpt_anim_ops) / sizeof(prog_yok_heldheadbutt_rpt_anim_ops[0]), 92 },   /* branches back into shared code */
+      sizeof(prog_yok_heldheadbutt_rpt_anim_ops) / sizeof(prog_yok_heldheadbutt_rpt_anim_ops[0]), 92, prog_yok_heldheadbutt_rpt_anim_labels, sizeof(prog_yok_heldheadbutt_rpt_anim_labels) / sizeof(prog_yok_heldheadbutt_rpt_anim_labels[0]) },   /* branches back into shared code */
     { "yok_combo_spinslam_anim", "YOKSEQ3.ASM", prog_yok_combo_spinslam_anim_ops,
-      sizeof(prog_yok_combo_spinslam_anim_ops) / sizeof(prog_yok_combo_spinslam_anim_ops[0]), 0 },
+      sizeof(prog_yok_combo_spinslam_anim_ops) / sizeof(prog_yok_combo_spinslam_anim_ops[0]), 0, prog_yok_combo_spinslam_anim_labels, sizeof(prog_yok_combo_spinslam_anim_labels) / sizeof(prog_yok_combo_spinslam_anim_labels[0]) },
     { "yok_overhd_slam2_anim", "YOKSEQ3.ASM", prog_yok_overhd_slam2_anim_ops,
-      sizeof(prog_yok_overhd_slam2_anim_ops) / sizeof(prog_yok_overhd_slam2_anim_ops[0]), 0 },
+      sizeof(prog_yok_overhd_slam2_anim_ops) / sizeof(prog_yok_overhd_slam2_anim_ops[0]), 0, prog_yok_overhd_slam2_anim_labels, sizeof(prog_yok_overhd_slam2_anim_labels) / sizeof(prog_yok_overhd_slam2_anim_labels[0]) },
     { "yok_overhd_slam_anim", "YOKSEQ3.ASM", prog_yok_overhd_slam_anim_ops,
-      sizeof(prog_yok_overhd_slam_anim_ops) / sizeof(prog_yok_overhd_slam_anim_ops[0]), 0 },
+      sizeof(prog_yok_overhd_slam_anim_ops) / sizeof(prog_yok_overhd_slam_anim_ops[0]), 0, prog_yok_overhd_slam_anim_labels, sizeof(prog_yok_overhd_slam_anim_labels) / sizeof(prog_yok_overhd_slam_anim_labels[0]) },
     { "yok_graboh_anim", "YOKSEQ3.ASM", prog_yok_graboh_anim_ops,
-      sizeof(prog_yok_graboh_anim_ops) / sizeof(prog_yok_graboh_anim_ops[0]), 0 },
+      sizeof(prog_yok_graboh_anim_ops) / sizeof(prog_yok_graboh_anim_ops[0]), 0, prog_yok_graboh_anim_labels, sizeof(prog_yok_graboh_anim_labels) / sizeof(prog_yok_graboh_anim_labels[0]) },
     { "yok_scissor_anim", "YOKSEQ3.ASM", prog_yok_scissor_anim_ops,
-      sizeof(prog_yok_scissor_anim_ops) / sizeof(prog_yok_scissor_anim_ops[0]), 0 },
+      sizeof(prog_yok_scissor_anim_ops) / sizeof(prog_yok_scissor_anim_ops[0]), 0, prog_yok_scissor_anim_labels, sizeof(prog_yok_scissor_anim_labels) / sizeof(prog_yok_scissor_anim_labels[0]) },
     { "yok_2_salt_anim", "YOKSEQ3.ASM", prog_yok_2_salt_anim_ops,
-      sizeof(prog_yok_2_salt_anim_ops) / sizeof(prog_yok_2_salt_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_salt_anim_ops) / sizeof(prog_yok_2_salt_anim_ops[0]), 0, prog_yok_2_salt_anim_labels, sizeof(prog_yok_2_salt_anim_labels) / sizeof(prog_yok_2_salt_anim_labels[0]) },
     { "yok_4_salt_anim", "YOKSEQ3.ASM", prog_yok_4_salt_anim_ops,
-      sizeof(prog_yok_4_salt_anim_ops) / sizeof(prog_yok_4_salt_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_salt_anim_ops) / sizeof(prog_yok_4_salt_anim_ops[0]), 0, prog_yok_4_salt_anim_labels, sizeof(prog_yok_4_salt_anim_labels) / sizeof(prog_yok_4_salt_anim_labels[0]) },
     { "yok_combo_salt_anim", "YOKSEQ3.ASM", prog_yok_combo_salt_anim_ops,
-      sizeof(prog_yok_combo_salt_anim_ops) / sizeof(prog_yok_combo_salt_anim_ops[0]), 0 },
+      sizeof(prog_yok_combo_salt_anim_ops) / sizeof(prog_yok_combo_salt_anim_ops[0]), 0, prog_yok_combo_salt_anim_labels, sizeof(prog_yok_combo_salt_anim_labels) / sizeof(prog_yok_combo_salt_anim_labels[0]) },
     { "yok_4_block_anim", "YOKSEQ4.ASM", prog_yok_4_block_anim_ops,
-      sizeof(prog_yok_4_block_anim_ops) / sizeof(prog_yok_4_block_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_block_anim_ops) / sizeof(prog_yok_4_block_anim_ops[0]), 0, prog_yok_4_block_anim_labels, sizeof(prog_yok_4_block_anim_labels) / sizeof(prog_yok_4_block_anim_labels[0]) },
     { "yok_4_hitblock_anim", "YOKSEQ4.ASM", prog_yok_4_hitblock_anim_ops,
-      sizeof(prog_yok_4_hitblock_anim_ops) / sizeof(prog_yok_4_hitblock_anim_ops[0]), 9 },   /* branches back into shared code */
+      sizeof(prog_yok_4_hitblock_anim_ops) / sizeof(prog_yok_4_hitblock_anim_ops[0]), 9, prog_yok_4_hitblock_anim_labels, sizeof(prog_yok_4_hitblock_anim_labels) / sizeof(prog_yok_4_hitblock_anim_labels[0]) },   /* branches back into shared code */
     { "yok_4_hitblock2_anim", "YOKSEQ4.ASM", prog_yok_4_hitblock2_anim_ops,
-      sizeof(prog_yok_4_hitblock2_anim_ops) / sizeof(prog_yok_4_hitblock2_anim_ops[0]), 16 },   /* branches back into shared code */
+      sizeof(prog_yok_4_hitblock2_anim_ops) / sizeof(prog_yok_4_hitblock2_anim_ops[0]), 16, prog_yok_4_hitblock2_anim_labels, sizeof(prog_yok_4_hitblock2_anim_labels) / sizeof(prog_yok_4_hitblock2_anim_labels[0]) },   /* branches back into shared code */
     { "yok_4_losebal_anim", "YOKSEQ4.ASM", prog_yok_4_losebal_anim_ops,
-      sizeof(prog_yok_4_losebal_anim_ops) / sizeof(prog_yok_4_losebal_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_losebal_anim_ops) / sizeof(prog_yok_4_losebal_anim_ops[0]), 0, 0, 0 },
     { "yok_2_head_hit_anim", "YOKSEQ4.ASM", prog_yok_2_head_hit_anim_ops,
-      sizeof(prog_yok_2_head_hit_anim_ops) / sizeof(prog_yok_2_head_hit_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_head_hit_anim_ops) / sizeof(prog_yok_2_head_hit_anim_ops[0]), 0, 0, 0 },
     { "yok_4_head_hit_anim", "YOKSEQ4.ASM", prog_yok_4_head_hit_anim_ops,
-      sizeof(prog_yok_4_head_hit_anim_ops) / sizeof(prog_yok_4_head_hit_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_head_hit_anim_ops) / sizeof(prog_yok_4_head_hit_anim_ops[0]), 0, 0, 0 },
     { "yok_2_bncoff_anim", "YOKSEQ4.ASM", prog_yok_2_bncoff_anim_ops,
-      sizeof(prog_yok_2_bncoff_anim_ops) / sizeof(prog_yok_2_bncoff_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_bncoff_anim_ops) / sizeof(prog_yok_2_bncoff_anim_ops[0]), 0, 0, 0 },
     { "yok_4_bncoff_anim", "YOKSEQ4.ASM", prog_yok_4_bncoff_anim_ops,
-      sizeof(prog_yok_4_bncoff_anim_ops) / sizeof(prog_yok_4_bncoff_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_bncoff_anim_ops) / sizeof(prog_yok_4_bncoff_anim_ops[0]), 0, 0, 0 },
     { "yok_2_bncoff_gate_anim", "YOKSEQ4.ASM", prog_yok_2_bncoff_gate_anim_ops,
-      sizeof(prog_yok_2_bncoff_gate_anim_ops) / sizeof(prog_yok_2_bncoff_gate_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_bncoff_gate_anim_ops) / sizeof(prog_yok_2_bncoff_gate_anim_ops[0]), 0, 0, 0 },
     { "yok_4_bncoff_gate_anim", "YOKSEQ4.ASM", prog_yok_4_bncoff_gate_anim_ops,
-      sizeof(prog_yok_4_bncoff_gate_anim_ops) / sizeof(prog_yok_4_bncoff_gate_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_bncoff_gate_anim_ops) / sizeof(prog_yok_4_bncoff_gate_anim_ops[0]), 0, 0, 0 },
     { "yok_4_bncoff_dizzy_anim", "YOKSEQ4.ASM", prog_yok_4_bncoff_dizzy_anim_ops,
-      sizeof(prog_yok_4_bncoff_dizzy_anim_ops) / sizeof(prog_yok_4_bncoff_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_bncoff_dizzy_anim_ops) / sizeof(prog_yok_4_bncoff_dizzy_anim_ops[0]), 0, 0, 0 },
     { "yok_2_head_hit2_anim", "YOKSEQ4.ASM", prog_yok_2_head_hit2_anim_ops,
-      sizeof(prog_yok_2_head_hit2_anim_ops) / sizeof(prog_yok_2_head_hit2_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_head_hit2_anim_ops) / sizeof(prog_yok_2_head_hit2_anim_ops[0]), 0, prog_yok_2_head_hit2_anim_labels, sizeof(prog_yok_2_head_hit2_anim_labels) / sizeof(prog_yok_2_head_hit2_anim_labels[0]) },
     { "yok_4_head_hit2_anim", "YOKSEQ4.ASM", prog_yok_4_head_hit2_anim_ops,
-      sizeof(prog_yok_4_head_hit2_anim_ops) / sizeof(prog_yok_4_head_hit2_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_head_hit2_anim_ops) / sizeof(prog_yok_4_head_hit2_anim_ops[0]), 0, prog_yok_4_head_hit2_anim_labels, sizeof(prog_yok_4_head_hit2_anim_labels) / sizeof(prog_yok_4_head_hit2_anim_labels[0]) },
     { "yok_4_head_hit2s_anim", "YOKSEQ4.ASM", prog_yok_4_head_hit2s_anim_ops,
-      sizeof(prog_yok_4_head_hit2s_anim_ops) / sizeof(prog_yok_4_head_hit2s_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_head_hit2s_anim_ops) / sizeof(prog_yok_4_head_hit2s_anim_ops[0]), 0, 0, 0 },
     { "yok_2_head_hit3_anim", "YOKSEQ4.ASM", prog_yok_2_head_hit3_anim_ops,
-      sizeof(prog_yok_2_head_hit3_anim_ops) / sizeof(prog_yok_2_head_hit3_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_head_hit3_anim_ops) / sizeof(prog_yok_2_head_hit3_anim_ops[0]), 0, 0, 0 },
     { "yok_4_head_hit3_anim", "YOKSEQ4.ASM", prog_yok_4_head_hit3_anim_ops,
-      sizeof(prog_yok_4_head_hit3_anim_ops) / sizeof(prog_yok_4_head_hit3_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_head_hit3_anim_ops) / sizeof(prog_yok_4_head_hit3_anim_ops[0]), 0, 0, 0 },
     { "yok_4_head_hit4_anim", "YOKSEQ4.ASM", prog_yok_4_head_hit4_anim_ops,
-      sizeof(prog_yok_4_head_hit4_anim_ops) / sizeof(prog_yok_4_head_hit4_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_head_hit4_anim_ops) / sizeof(prog_yok_4_head_hit4_anim_ops[0]), 0, 0, 0 },
     { "yok_4_head_hit_dizzy_anim", "YOKSEQ4.ASM", prog_yok_4_head_hit_dizzy_anim_ops,
-      sizeof(prog_yok_4_head_hit_dizzy_anim_ops) / sizeof(prog_yok_4_head_hit_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_head_hit_dizzy_anim_ops) / sizeof(prog_yok_4_head_hit_dizzy_anim_ops[0]), 0, 0, 0 },
     { "yok_2_body_hit_anim", "YOKSEQ4.ASM", prog_yok_2_body_hit_anim_ops,
-      sizeof(prog_yok_2_body_hit_anim_ops) / sizeof(prog_yok_2_body_hit_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_body_hit_anim_ops) / sizeof(prog_yok_2_body_hit_anim_ops[0]), 0, 0, 0 },
     { "yok_4_body_hit_anim", "YOKSEQ4.ASM", prog_yok_4_body_hit_anim_ops,
-      sizeof(prog_yok_4_body_hit_anim_ops) / sizeof(prog_yok_4_body_hit_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_body_hit_anim_ops) / sizeof(prog_yok_4_body_hit_anim_ops[0]), 0, prog_yok_4_body_hit_anim_labels, sizeof(prog_yok_4_body_hit_anim_labels) / sizeof(prog_yok_4_body_hit_anim_labels[0]) },
     { "yok_4_body_hit_dizzy_anim", "YOKSEQ4.ASM", prog_yok_4_body_hit_dizzy_anim_ops,
-      sizeof(prog_yok_4_body_hit_dizzy_anim_ops) / sizeof(prog_yok_4_body_hit_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_body_hit_dizzy_anim_ops) / sizeof(prog_yok_4_body_hit_dizzy_anim_ops[0]), 0, 0, 0 },
     { "yok_4_knee_hit_dizzy_anim", "YOKSEQ4.ASM", prog_yok_4_knee_hit_dizzy_anim_ops,
-      sizeof(prog_yok_4_knee_hit_dizzy_anim_ops) / sizeof(prog_yok_4_knee_hit_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_knee_hit_dizzy_anim_ops) / sizeof(prog_yok_4_knee_hit_dizzy_anim_ops[0]), 0, 0, 0 },
     { "yok_2_knee_hit_anim", "YOKSEQ4.ASM", prog_yok_2_knee_hit_anim_ops,
-      sizeof(prog_yok_2_knee_hit_anim_ops) / sizeof(prog_yok_2_knee_hit_anim_ops[0]), 0 },
+      sizeof(prog_yok_2_knee_hit_anim_ops) / sizeof(prog_yok_2_knee_hit_anim_ops[0]), 0, 0, 0 },
     { "yok_4_knee_hit_anim", "YOKSEQ4.ASM", prog_yok_4_knee_hit_anim_ops,
-      sizeof(prog_yok_4_knee_hit_anim_ops) / sizeof(prog_yok_4_knee_hit_anim_ops[0]), 0 },
+      sizeof(prog_yok_4_knee_hit_anim_ops) / sizeof(prog_yok_4_knee_hit_anim_ops[0]), 0, 0, 0 },
     { "yok_quick_knee_hit_anim", "YOKSEQ4.ASM", prog_yok_quick_knee_hit_anim_ops,
-      sizeof(prog_yok_quick_knee_hit_anim_ops) / sizeof(prog_yok_quick_knee_hit_anim_ops[0]), 0 },
+      sizeof(prog_yok_quick_knee_hit_anim_ops) / sizeof(prog_yok_quick_knee_hit_anim_ops[0]), 0, prog_yok_quick_knee_hit_anim_labels, sizeof(prog_yok_quick_knee_hit_anim_labels) / sizeof(prog_yok_quick_knee_hit_anim_labels[0]) },
     { "yok_fall_back_anim", "YOKSEQ4.ASM", prog_yok_fall_back_anim_ops,
-      sizeof(prog_yok_fall_back_anim_ops) / sizeof(prog_yok_fall_back_anim_ops[0]), 0 },
+      sizeof(prog_yok_fall_back_anim_ops) / sizeof(prog_yok_fall_back_anim_ops[0]), 0, 0, 0 },
     { "yok_fall_back2_anim", "YOKSEQ4.ASM", prog_yok_fall_back2_anim_ops,
-      sizeof(prog_yok_fall_back2_anim_ops) / sizeof(prog_yok_fall_back2_anim_ops[0]), 0 },
+      sizeof(prog_yok_fall_back2_anim_ops) / sizeof(prog_yok_fall_back2_anim_ops[0]), 0, 0, 0 },
     { "yok_faceup_getup_anim", "YOKSEQ4.ASM", prog_yok_faceup_getup_anim_ops,
-      sizeof(prog_yok_faceup_getup_anim_ops) / sizeof(prog_yok_faceup_getup_anim_ops[0]), 0 },
+      sizeof(prog_yok_faceup_getup_anim_ops) / sizeof(prog_yok_faceup_getup_anim_ops[0]), 0, prog_yok_faceup_getup_anim_labels, sizeof(prog_yok_faceup_getup_anim_labels) / sizeof(prog_yok_faceup_getup_anim_labels[0]) },
     { "yok_faceup_getup2_anim", "YOKSEQ4.ASM", prog_yok_faceup_getup2_anim_ops,
-      sizeof(prog_yok_faceup_getup2_anim_ops) / sizeof(prog_yok_faceup_getup2_anim_ops[0]), 0 },
+      sizeof(prog_yok_faceup_getup2_anim_ops) / sizeof(prog_yok_faceup_getup2_anim_ops[0]), 0, prog_yok_faceup_getup2_anim_labels, sizeof(prog_yok_faceup_getup2_anim_labels) / sizeof(prog_yok_faceup_getup2_anim_labels[0]) },
     { "yok_dizzy_anim", "YOKSEQ4.ASM", prog_yok_dizzy_anim_ops,
-      sizeof(prog_yok_dizzy_anim_ops) / sizeof(prog_yok_dizzy_anim_ops[0]), 0 },
+      sizeof(prog_yok_dizzy_anim_ops) / sizeof(prog_yok_dizzy_anim_ops[0]), 0, prog_yok_dizzy_anim_labels, sizeof(prog_yok_dizzy_anim_labels) / sizeof(prog_yok_dizzy_anim_labels[0]) },
     { "yok_hitonground_xflip_anim", "YOKSEQ4.ASM", prog_yok_hitonground_xflip_anim_ops,
-      sizeof(prog_yok_hitonground_xflip_anim_ops) / sizeof(prog_yok_hitonground_xflip_anim_ops[0]), 0 },
+      sizeof(prog_yok_hitonground_xflip_anim_ops) / sizeof(prog_yok_hitonground_xflip_anim_ops[0]), 0, 0, 0 },
     { "yok_hitonground_anim", "YOKSEQ4.ASM", prog_yok_hitonground_anim_ops,
-      sizeof(prog_yok_hitonground_anim_ops) / sizeof(prog_yok_hitonground_anim_ops[0]), 0 },
+      sizeof(prog_yok_hitonground_anim_ops) / sizeof(prog_yok_hitonground_anim_ops[0]), 0, 0, 0 },
     { "yok_liedown_anim", "YOKSEQ4.ASM", prog_yok_liedown_anim_ops,
-      sizeof(prog_yok_liedown_anim_ops) / sizeof(prog_yok_liedown_anim_ops[0]), 0 },
+      sizeof(prog_yok_liedown_anim_ops) / sizeof(prog_yok_liedown_anim_ops[0]), 0, 0, 0 },
     { "yok_up_anim", "YOKSEQ4.ASM", prog_yok_up_anim_ops,
-      sizeof(prog_yok_up_anim_ops) / sizeof(prog_yok_up_anim_ops[0]), 0 },
+      sizeof(prog_yok_up_anim_ops) / sizeof(prog_yok_up_anim_ops[0]), 0, 0, 0 },
     { "yok_break_face2_anim", "YOKSEQ4.ASM", prog_yok_break_face2_anim_ops,
-      sizeof(prog_yok_break_face2_anim_ops) / sizeof(prog_yok_break_face2_anim_ops[0]), 0 },
+      sizeof(prog_yok_break_face2_anim_ops) / sizeof(prog_yok_break_face2_anim_ops[0]), 0, 0, 0 },
     { "yok_break_face3_anim", "YOKSEQ4.ASM", prog_yok_break_face3_anim_ops,
-      sizeof(prog_yok_break_face3_anim_ops) / sizeof(prog_yok_break_face3_anim_ops[0]), 0 },
+      sizeof(prog_yok_break_face3_anim_ops) / sizeof(prog_yok_break_face3_anim_ops[0]), 0, 0, 0 },
     { "yok_break_face_anim", "YOKSEQ4.ASM", prog_yok_break_face_anim_ops,
-      sizeof(prog_yok_break_face_anim_ops) / sizeof(prog_yok_break_face_anim_ops[0]), 0 },
+      sizeof(prog_yok_break_face_anim_ops) / sizeof(prog_yok_break_face_anim_ops[0]), 0, 0, 0 },
     { "yok_break_neck_anim", "YOKSEQ4.ASM", prog_yok_break_neck_anim_ops,
-      sizeof(prog_yok_break_neck_anim_ops) / sizeof(prog_yok_break_neck_anim_ops[0]), 0 },
+      sizeof(prog_yok_break_neck_anim_ops) / sizeof(prog_yok_break_neck_anim_ops[0]), 0, prog_yok_break_neck_anim_labels, sizeof(prog_yok_break_neck_anim_labels) / sizeof(prog_yok_break_neck_anim_labels[0]) },
     { "yok_roll_frames", "YOKSEQ4.ASM", prog_yok_roll_frames_ops,
-      sizeof(prog_yok_roll_frames_ops) / sizeof(prog_yok_roll_frames_ops[0]), 0 },
+      sizeof(prog_yok_roll_frames_ops) / sizeof(prog_yok_roll_frames_ops[0]), 0, 0, 0 },
     { "yok_backbroken_anim", "YOKSEQ4.ASM", prog_yok_backbroken_anim_ops,
-      sizeof(prog_yok_backbroken_anim_ops) / sizeof(prog_yok_backbroken_anim_ops[0]), 0 },
+      sizeof(prog_yok_backbroken_anim_ops) / sizeof(prog_yok_backbroken_anim_ops[0]), 0, 0, 0 },
     { "yok_slamnobounce_anim", "YOKSEQ4.ASM", prog_yok_slamnobounce_anim_ops,
-      sizeof(prog_yok_slamnobounce_anim_ops) / sizeof(prog_yok_slamnobounce_anim_ops[0]), 0 },
+      sizeof(prog_yok_slamnobounce_anim_ops) / sizeof(prog_yok_slamnobounce_anim_ops[0]), 0, 0, 0 },
     { "yok_slambounce_anim", "YOKSEQ4.ASM", prog_yok_slambounce_anim_ops,
-      sizeof(prog_yok_slambounce_anim_ops) / sizeof(prog_yok_slambounce_anim_ops[0]), 0 },
+      sizeof(prog_yok_slambounce_anim_ops) / sizeof(prog_yok_slambounce_anim_ops[0]), 0, 0, 0 },
     { "yok_slambounce2_anim", "YOKSEQ4.ASM", prog_yok_slambounce2_anim_ops,
-      sizeof(prog_yok_slambounce2_anim_ops) / sizeof(prog_yok_slambounce2_anim_ops[0]), 0 },
+      sizeof(prog_yok_slambounce2_anim_ops) / sizeof(prog_yok_slambounce2_anim_ops[0]), 0, 0, 0 },
     { "yok_breakneck2_anim", "YOKSEQ4.ASM", prog_yok_breakneck2_anim_ops,
-      sizeof(prog_yok_breakneck2_anim_ops) / sizeof(prog_yok_breakneck2_anim_ops[0]), 0 },
+      sizeof(prog_yok_breakneck2_anim_ops) / sizeof(prog_yok_breakneck2_anim_ops[0]), 0, 0, 0 },
     { "yok_arm_broken_anim", "YOKSEQ4.ASM", prog_yok_arm_broken_anim_ops,
-      sizeof(prog_yok_arm_broken_anim_ops) / sizeof(prog_yok_arm_broken_anim_ops[0]), 0 },
+      sizeof(prog_yok_arm_broken_anim_ops) / sizeof(prog_yok_arm_broken_anim_ops[0]), 0, prog_yok_arm_broken_anim_labels, sizeof(prog_yok_arm_broken_anim_labels) / sizeof(prog_yok_arm_broken_anim_labels[0]) },
     { "start_run_flung", "WRESTLE2.ASM", prog_start_run_flung_ops,
-      sizeof(prog_start_run_flung_ops) / sizeof(prog_start_run_flung_ops[0]), 0 },
+      sizeof(prog_start_run_flung_ops) / sizeof(prog_start_run_flung_ops[0]), 0, 0, 0 },
     { "wres_slave_anim", "ANIM.ASM", prog_wres_slave_anim_ops,
-      sizeof(prog_wres_slave_anim_ops) / sizeof(prog_wres_slave_anim_ops[0]), 0 },
+      sizeof(prog_wres_slave_anim_ops) / sizeof(prog_wres_slave_anim_ops[0]), 0, 0, 0 },
     { "hrt_choking_anim", "UNDSEQ3.ASM", prog_hrt_choking_anim_ops,
-      sizeof(prog_hrt_choking_anim_ops) / sizeof(prog_hrt_choking_anim_ops[0]), 0 },
+      sizeof(prog_hrt_choking_anim_ops) / sizeof(prog_hrt_choking_anim_ops[0]), 0, prog_hrt_choking_anim_labels, sizeof(prog_hrt_choking_anim_labels) / sizeof(prog_hrt_choking_anim_labels[0]) },
     { "rzr_choking_anim", "UNDSEQ3.ASM", prog_rzr_choking_anim_ops,
-      sizeof(prog_rzr_choking_anim_ops) / sizeof(prog_rzr_choking_anim_ops[0]), 0 },
+      sizeof(prog_rzr_choking_anim_ops) / sizeof(prog_rzr_choking_anim_ops[0]), 0, prog_rzr_choking_anim_labels, sizeof(prog_rzr_choking_anim_labels) / sizeof(prog_rzr_choking_anim_labels[0]) },
     { "und_choking_anim", "UNDSEQ3.ASM", prog_und_choking_anim_ops,
-      sizeof(prog_und_choking_anim_ops) / sizeof(prog_und_choking_anim_ops[0]), 0 },
+      sizeof(prog_und_choking_anim_ops) / sizeof(prog_und_choking_anim_ops[0]), 0, prog_und_choking_anim_labels, sizeof(prog_und_choking_anim_labels) / sizeof(prog_und_choking_anim_labels[0]) },
     { "yok_choking_anim", "UNDSEQ3.ASM", prog_yok_choking_anim_ops,
-      sizeof(prog_yok_choking_anim_ops) / sizeof(prog_yok_choking_anim_ops[0]), 0 },
+      sizeof(prog_yok_choking_anim_ops) / sizeof(prog_yok_choking_anim_ops[0]), 0, prog_yok_choking_anim_labels, sizeof(prog_yok_choking_anim_labels) / sizeof(prog_yok_choking_anim_labels[0]) },
     { "shn_choking_anim", "UNDSEQ3.ASM", prog_shn_choking_anim_ops,
-      sizeof(prog_shn_choking_anim_ops) / sizeof(prog_shn_choking_anim_ops[0]), 0 },
+      sizeof(prog_shn_choking_anim_ops) / sizeof(prog_shn_choking_anim_ops[0]), 0, prog_shn_choking_anim_labels, sizeof(prog_shn_choking_anim_labels) / sizeof(prog_shn_choking_anim_labels[0]) },
     { "bam_choking_anim", "UNDSEQ3.ASM", prog_bam_choking_anim_ops,
-      sizeof(prog_bam_choking_anim_ops) / sizeof(prog_bam_choking_anim_ops[0]), 0 },
+      sizeof(prog_bam_choking_anim_ops) / sizeof(prog_bam_choking_anim_ops[0]), 0, prog_bam_choking_anim_labels, sizeof(prog_bam_choking_anim_labels) / sizeof(prog_bam_choking_anim_labels[0]) },
     { "dnk_choking_anim", "UNDSEQ3.ASM", prog_dnk_choking_anim_ops,
-      sizeof(prog_dnk_choking_anim_ops) / sizeof(prog_dnk_choking_anim_ops[0]), 0 },
+      sizeof(prog_dnk_choking_anim_ops) / sizeof(prog_dnk_choking_anim_ops[0]), 0, prog_dnk_choking_anim_labels, sizeof(prog_dnk_choking_anim_labels) / sizeof(prog_dnk_choking_anim_labels[0]) },
     { "lex_choking_anim", "UNDSEQ3.ASM", prog_lex_choking_anim_ops,
-      sizeof(prog_lex_choking_anim_ops) / sizeof(prog_lex_choking_anim_ops[0]), 0 },
+      sizeof(prog_lex_choking_anim_ops) / sizeof(prog_lex_choking_anim_ops[0]), 0, prog_lex_choking_anim_labels, sizeof(prog_lex_choking_anim_labels) / sizeof(prog_lex_choking_anim_labels[0]) },
 };
 
 const wm_anim_program *wm_anim_program_find(const char *source_label) {

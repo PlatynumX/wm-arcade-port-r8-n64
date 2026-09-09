@@ -5034,6 +5034,147 @@ static void test_targeting_and_drift(void) {
     CHECK(wm_anim_code_run(&a, NULL, "skick_delay", NULL));
 }
 
+/*
+ * HRTSEQ3.ASM:2896 #rope_check -- the only translated routine that
+ * writes ANIPC, the animation's own program counter. ANIPC is a field on
+ * the wrestler, so the routine sets it and the interpreter applies it as
+ * soon as the routine returns.
+ */
+struct rope_check_log { int banks[8]; int actions[8]; int n; };
+
+static void rope_check_sink(void *user, int bank, int action, int selector,
+                            int32_t z) {
+    struct rope_check_log *l = (struct rope_check_log *)user;
+    (void)selector;
+    (void)z;
+    if (l->n < 8) { l->banks[l->n] = bank; l->actions[l->n] = action; }
+    ++l->n;
+}
+
+static void test_rope_check_writes_the_program_counter(void) {
+    const wm_anim_program *plain =
+        wm_anim_program_find("hrt_roll_uppercut_anim");
+    const wm_anim_program *combo =
+        wm_anim_program_find("hrt_combo_roll_uppercut_anim");
+    wm_arcade_actor_t a;
+    wm_anim_env env;
+    struct rope_check_log log;
+    struct ann_log sounds;
+    int stand;
+
+    CHECK(plain != NULL && combo != NULL);
+    if (!plain || !combo) return;
+
+    /* The label table is emitted, and `#stand` is a real op in the plain
+       animation. */
+    stand = wm_anim_program_label(plain, "#stand");
+    CHECK(stand >= 0);
+    CHECK((size_t)stand < plain->op_count);
+    CHECK(wm_anim_program_label(plain, "#not_a_label") < 0);
+    CHECK(wm_anim_program_label(NULL, "#stand") < 0);
+
+    /*
+     * The combo animation has its OWN tail, `#standc`, which does
+     * DO_COMBO_MESS and ANI_CLEAR_COMBO -- and #rope_check jumps to
+     * `#stand` regardless, so `#standc` is branched to from nowhere. It
+     * is dead code in the shipped ROM, and this is that fact: the combo
+     * program does not contain `#stand` at all, so the jump has to leave
+     * it.
+     */
+    CHECK(wm_anim_program_label(combo, "#standc") >= 0);
+    CHECK(wm_anim_program_label(combo, "#stand") < 0);
+
+    memset(&env, 0, sizeof(env));
+    memset(&log, 0, sizeof(log));
+    memset(&sounds, 0, sizeof(sounds));
+    env.rope_user = &log;
+    env.rope_command = rope_check_sink;
+    env.sound_user = &sounds;
+    env.sound = ann_sound;
+
+    /* Not against a rope: nothing at all. */
+    memset(&a, 0, sizeof(a));
+    a.can_move_dir = WM_MOVE_UP | WM_MOVE_DOWN;
+    CHECK(wm_anim_code_run(&a, &env, "#rope_check", "HRTSEQ3.ASM"));
+    CHECK(a.anipc_label == NULL);
+    CHECK(log.n == 0 && sounds.n == 0);
+
+    /* Against the right-hand rope: ANIPC set, that bank wobbles, and the
+       03Ch thump plays. */
+    memset(&a, 0, sizeof(a));
+    a.can_move_dir = WM_MOVE_RIGHT;
+    CHECK(wm_anim_code_run(&a, &env, "#rope_check", "HRTSEQ3.ASM"));
+    CHECK(a.anipc_label != NULL);
+    CHECK(strcmp(a.anipc_label, "#stand") == 0);
+    CHECK(a.anipc_program != NULL);
+    CHECK(strcmp(a.anipc_program, "hrt_roll_uppercut_anim") == 0);
+    CHECK(log.n == 1 && log.banks[0] == WM_ROPE_RIGHT);
+    CHECK(log.actions[0] == WM_ROPE_BOUNCE_IO);
+    CHECK(sounds.n == 1 && sounds.call[0] == 0x03Cu);
+
+    /* ...and the left-hand one picks the other bank. */
+    memset(&a, 0, sizeof(a));
+    memset(&log, 0, sizeof(log));
+    a.can_move_dir = WM_MOVE_LEFT;
+    CHECK(wm_anim_code_run(&a, &env, "#rope_check", "HRTSEQ3.ASM"));
+    CHECK(log.n == 1 && log.banks[0] == WM_ROPE_LEFT);
+
+    /*
+     * Now the jump itself, inside the plain animation: run it with the
+     * ropes reachable and it must reach `#stand`'s tail rather than
+     * looping on through the dive frames.
+     */
+    {
+        wm_anim_exec ex;
+        int t, reached = 0;
+        memset(&a, 0, sizeof(a));
+        stand_in_ring(&a);
+        a.can_move_dir = WM_MOVE_RIGHT;
+        wm_anim_exec_start(&ex, plain, &a, 0, &env);
+        for (t = 0; t < 200 && !ex.ended; ++t) {
+            a.can_move_dir = WM_MOVE_RIGHT;   /* still on the rope */
+            wm_wrestler_veladd(&a, &ex, 0);
+            wm_anim_exec_tick(&ex, &a, 0);
+            if (ex.pc >= (size_t)stand) reached = 1;
+        }
+        CHECK(reached);
+    }
+
+    /*
+     * ...and inside the COMBO animation, where `#stand` is not in the
+     * body. The jump leaves the program: it hands off as a `become` of
+     * hrt_roll_uppercut_anim, with ANIPC still set so the new program is
+     * entered at `#stand` rather than its top.
+     */
+    {
+        wm_anim_exec ex;
+        int t;
+        memset(&a, 0, sizeof(a));
+        stand_in_ring(&a);
+        a.can_move_dir = WM_MOVE_RIGHT;
+        wm_anim_exec_start(&ex, combo, &a, 0, &env);
+        for (t = 0; t < 200 && !ex.ended; ++t) {
+            a.can_move_dir = WM_MOVE_RIGHT;
+            wm_wrestler_veladd(&a, &ex, 0);
+            wm_anim_exec_tick(&ex, &a, 0);
+        }
+        CHECK(ex.ended);
+        CHECK(ex.become != NULL);
+        if (ex.become)
+            CHECK(strcmp(ex.become, "hrt_roll_uppercut_anim") == 0);
+        /* ANIPC survives the hand-off, which is what makes the new
+           program start at the label instead of the top. */
+        CHECK(a.anipc_label != NULL);
+
+        /* Starting that program consumes it and enters at `#stand`. */
+        wm_anim_exec_start(&ex, plain, &a, 0, &env);
+        CHECK(a.anipc_label == NULL);
+        CHECK(ex.pc >= (size_t)stand);
+        /* Which is the whole point: the combo's own `#standc` tail, with
+           its DO_COMBO_MESS and ANI_CLEAR_COMBO, never runs. */
+    }
+}
+
 /* The self-contained state commands: no subsystem behind any of them. */
 static void test_self_contained_ops(void) {
     wm_arcade_actor_t a, v;
@@ -7854,6 +7995,7 @@ int main(void) {
     test_wrsnd_tables();
     test_wrsnd_anim_code_routines();
     test_targeting_and_drift();
+    test_rope_check_writes_the_program_counter();
     test_program_entry_points();
     test_digit_leading_local_labels();
     test_self_contained_ops();

@@ -888,11 +888,57 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
             default:
                 if (actor) run_command(o, actor, round_tickcount, exec->env,
                                        p ? p->source_file : 0);
+                /*
+                 * ANIM.ASM lets an ANI_CODE routine write the program
+                 * counter itself -- HRTSEQ3.ASM's `#rope_check` does
+                 * `movi #stand,a14 / move a14,*a13(ANIPC),L`. ANIPC is a
+                 * field on the wrestler, so the routine sets it and the
+                 * interpreter picks it up the moment it returns.
+                 */
+                if (actor && actor->anipc_label) {
+                    const char *want_prog = actor->anipc_program;
+                    const char *want_label = actor->anipc_label;
+                    int at = -1;
+                    if (!want_prog || (p && p->source_label &&
+                            strcmp(want_prog, p->source_label) == 0))
+                        at = wm_anim_program_label(p, want_label);
+                    if (at >= 0) {
+                        actor->anipc_program = 0;
+                        actor->anipc_label = 0;
+                        pc = (size_t)at;
+                        continue;
+                    }
+                    /*
+                     * The label lives in ANOTHER routine, and that is not
+                     * a mistake: the assembler resolves it to a flat
+                     * address and the machine runs from there, so it is a
+                     * jump into the middle of a different animation. This
+                     * hands it over as a `become` of that program, and
+                     * leaves ANIPC set so wm_anim_exec_start enters at
+                     * the label rather than the top.
+                     */
+                    if (want_prog && wm_anim_program_find(want_prog)) {
+                        exec->become = want_prog;
+                        exec->ended = true;
+                        return;
+                    }
+                    actor->anipc_program = 0;
+                    actor->anipc_label = 0;
+                }
                 pc += 1;
                 continue;
         }
     }
     exec->ended = true;
+}
+
+int wm_anim_program_label(const wm_anim_program *program, const char *label) {
+    size_t i;
+    if (!program || !label || !program->labels) return -1;
+    for (i = 0; i < program->label_count; ++i)
+        if (strcmp(program->labels[i].name, label) == 0)
+            return (int)program->labels[i].at;
+    return -1;
 }
 
 void wm_anim_exec_start(wm_anim_exec *exec, const wm_anim_program *program,
@@ -918,8 +964,26 @@ void wm_anim_exec_start(wm_anim_exec *exec, const wm_anim_program *program,
     /* Not always op 0: a routine that branches back into shared code
        earlier in the file has that code at the head of its stream, and
        its own first command is `entry` ops in. See wm_anim_program. */
-    advance(exec, actor, round_tickcount,
-            program->entry < program->op_count ? program->entry : 0);
+    /*
+     * Not always op 0. Two reasons: a routine that branches back into
+     * shared code carries it at the head of its stream (`entry`), and an
+     * ANIPC write can hand this animation over to be entered at a named
+     * label instead of its start.
+     */
+    {
+        size_t at = program->entry < program->op_count ? program->entry : 0;
+        if (actor && actor->anipc_label) {
+            int want = wm_anim_program_label(program, actor->anipc_label);
+            if (want >= 0 &&
+                (!actor->anipc_program || (program->source_label &&
+                 strcmp(actor->anipc_program, program->source_label) == 0))) {
+                at = (size_t)want;
+                actor->anipc_program = 0;
+                actor->anipc_label = 0;
+            }
+        }
+        advance(exec, actor, round_tickcount, at);
+    }
     /* The loop shows a frame before consuming a tick of it, same as
        wm_visual_start's own just_started. */
     exec->just_started = true;

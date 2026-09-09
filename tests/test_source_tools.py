@@ -1608,7 +1608,7 @@ def test_programs_record_where_they_start() -> None:
     """
     if not (wlanim.ORIG / "HRTSEQ4.ASM").exists():
         return
-    ops, entry = wlprogram.program_for(
+    ops, entry, _labels = wlprogram.program_for(
         wlanim.ORIG / "HRTSEQ4.ASM", "hrt_4_hitblock_anim", with_entry=True)
     assert entry > 0, entry
     assert entry < len(ops)
@@ -1629,7 +1629,7 @@ def test_programs_record_where_they_start() -> None:
                 seen.append(m.group(1))
         for lab in seen:
             try:
-                _o, e = wlprogram.program_for(src, lab, with_entry=True)
+                _o, e, _l = wlprogram.program_for(src, lab, with_entry=True)
             except (OSError, ValueError):
                 continue
             if e:

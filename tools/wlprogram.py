@@ -625,7 +625,7 @@ def program_for(path: pathlib.Path, label: str, with_entry: bool = False):
         if not wlanim._routine_terminates(lines, (start, stop)):
             raise ValueError(f"{label}: no frames")
     if with_entry:
-        return ops, (entry or 0)
+        return ops, (entry or 0), label_at
     return ops
 
 
@@ -720,19 +720,28 @@ def render_c(entries) -> str:
            ""]
     names = []
     for source, label in entries:
-        ops, entry = program_for(pathlib.Path(source), label, with_entry=True)
+        ops, entry, labels = program_for(pathlib.Path(source), label,
+                                         with_entry=True)
         sym = "prog_" + label
         out.append(f"static const wm_anim_op {sym}_ops[] = {{")
         for op in ops:
             out.append(_c_op(op))
         out += ["};", ""]
-        names.append((label, pathlib.Path(source).name, sym, entry))
+        if labels:
+            out.append(f"static const wm_anim_label {sym}_labels[] = {{")
+            for name, at in sorted(labels.items(), key=lambda kv: kv[1]):
+                out.append(f'    {{ "{name}", {at} }},')
+            out += ["};", ""]
+        names.append((label, pathlib.Path(source).name, sym, entry,
+                      bool(labels)))
     out.append("static const wm_anim_program programs[] = {")
-    for label, src, sym, entry in names:
+    for label, src, sym, entry, has_labels in names:
         note = "" if entry == 0 else "   /* branches back into shared code */"
+        lab = (f"{sym}_labels, sizeof({sym}_labels) / sizeof({sym}_labels[0])"
+               if has_labels else "0, 0")
         out.append(f'    {{ "{label}", "{src}", {sym}_ops,')
         out.append(f'      sizeof({sym}_ops) / sizeof({sym}_ops[0]),'
-                   f' {entry} }},{note}')
+                   f' {entry}, {lab} }},{note}')
     out += ["};", "",
             "const wm_anim_program *wm_anim_program_find(const char *source_label) {",
             "    size_t i;",

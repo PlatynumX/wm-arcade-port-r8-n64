@@ -298,6 +298,17 @@ struct wm_arcade_actor {
      * The routines that set them are translated; ANI_LEAPATPOS, which
      * reads them, is not yet.
      */
+    /*
+     * PLYR.EQU ANIPC -- the animation's program counter, which lives on
+     * the wrestler rather than in the interpreter. ANIM.ASM lets an
+     * ANI_CODE routine write it directly to redirect the animation
+     * (HRTSEQ3.ASM's `#rope_check`: `movi #stand,a14 / move
+     * a14,*a13(ANIPC),L`). A routine that wants that sets these two, and
+     * the VM applies and clears them as soon as the routine returns.
+     * `anipc_program` NULL means "a label in whatever is running now".
+     */
+    const char *anipc_program;
+    const char *anipc_label;
     int32_t tgt_xoff;
     int32_t tgt_yoff;
     int32_t tgt_zoff;

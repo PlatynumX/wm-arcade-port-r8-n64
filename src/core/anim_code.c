@@ -35,6 +35,7 @@
 #include "wm/announce_tables.h"
 #include "wm/arcade/wm_arcade_combo.h"
 #include "wm/wrestler_sound_tables.h"
+#include "wm/arcade/wmania_rope_command.h"
 
 #include <string.h>
 
@@ -327,6 +328,52 @@ static void do_combo_mess(wm_arcade_actor_t *actor, const wm_anim_env *env,
         ctx.round_award = env->round_award;
     }
     (void)wm_arcade_do_combo_mess(actor, &ctx);
+}
+
+/*
+ * HRTSEQ3.ASM:2896 #rope_check -- the roll-uppercut hitting the ropes.
+ *
+ * This is the only translated routine that writes ANIPC, the animation's
+ * own program counter: `movi #stand,a14 / move a14,*a13(ANIPC),L`. ANIPC
+ * is a field on the wrestler, so the routine sets it and the interpreter
+ * applies it as soon as the routine returns.
+ *
+ * The target it names is worth spelling out. `#stand` is a label inside
+ * hrt_roll_uppercut_anim, and #rope_check is a single SUBRP shared by
+ * that animation AND by hrt_combo_roll_uppercut_anim, which has its own
+ * `#standc` tail -- the one that does DO_COMBO_MESS and ANI_CLEAR_COMBO.
+ * The routine jumps to `#stand` either way. So a COMBO roll-uppercut
+ * that ends against the ropes runs the plain animation's tail and never
+ * announces the combo or clears the count, and `#standc` is defined once
+ * and branched to from nowhere -- dead code in the shipped ROM.
+ *
+ * Translated as written, because that is what the machine does.
+ */
+#define WM_ROPE_CHECK_SOUND 0x03Cu
+static const char ROPE_CHECK_TARGET_PROGRAM[] = "hrt_roll_uppercut_anim";
+static const char ROPE_CHECK_TARGET_LABEL[] = "#stand";
+
+static void rope_check(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                       int32_t param) {
+    int32_t against;
+    int bank;
+    (void)param;
+    if (!actor) return;
+
+    /* `andi MOVE_LEFT|MOVE_RIGHT,a1 / jrz #rets` -- CAN_MOVE_DIR still
+       allows sideways movement, so he is not up against a rope. */
+    against = actor->can_move_dir & (WM_MOVE_LEFT | WM_MOVE_RIGHT);
+    if (against == 0) return;
+
+    actor->anipc_program = ROPE_CHECK_TARGET_PROGRAM;
+    actor->anipc_label = ROPE_CHECK_TARGET_LABEL;
+
+    /* `btst MOVE_RIGHT_BIT,a1` picks which side wobbles. */
+    bank = (against & WM_MOVE_RIGHT) ? WM_ROPE_RIGHT : WM_ROPE_LEFT;
+    if (env && env->rope_command)
+        env->rope_command(env->rope_user, bank, WM_ROPE_BOUNCE_IO, 0,
+                          actor->z_fixed);
+    play(env, WM_ROPE_CHECK_SOUND);
 }
 
 /* ================================================================== *
@@ -1415,6 +1462,8 @@ static const struct {
     { "DO_BRET_PUSH", NULL, do_bret_push, 0 },
     { "DO_LEX_PUSH", NULL, do_lex_push, 0 },
     { "DO_COMBO_MESS", NULL, do_combo_mess, 0 },
+    /* SUBRP, so file-local -- and only HRTSEQ3.ASM calls it. */
+    { "#rope_check", "HRTSEQ3.ASM", rope_check, 0 },
     { "set_xdrift", NULL, set_xdrift, 0 },
     { "set_buckoff_vels", NULL, set_buckoff_vels, 0 },
     { "skick_delay", NULL, skick_delay, 0 },

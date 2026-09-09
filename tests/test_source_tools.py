@@ -27,6 +27,7 @@ wlpuppet = load("wlpuppet", ROOT / "tools" / "wlpuppet.py")
 wlroll = load("wlroll", ROOT / "tools" / "wlroll.py")
 wlvoice = load("wlvoice", ROOT / "tools" / "wlvoice.py")
 wlwrsnd = load("wlwrsnd", ROOT / "tools" / "wlwrsnd.py")
+wlverify = load("wlverify", ROOT / "tools" / "wlverify.py")
 wlprogram = load("wlprogram", ROOT / "tools" / "wlprogram.py")
 manifest = load("bret_manifest", ROOT / "tools" / "bret_manifest.py")
 wimp = load("wimpimg", ROOT / "tools" / "wimpimg.py")
@@ -1741,6 +1742,72 @@ def test_the_two_extractors_agree() -> None:
     assert not disagree, disagree
 
 
+
+def test_an_independent_reading_agrees() -> None:
+    """The strongest parity evidence this port can produce on its own.
+
+    tools/wlverify.py shares NOTHING with the rest of tools/ -- its own
+    lexer, its own routine spans, its own label scoping, its own branch
+    resolution -- and it RUNS the animation rather than re-extracting it,
+    so what it produces is the frame sequence actually played. Comparing
+    that against the emitted programs checks the emitter and the
+    interpreter's frame/tick model together.
+
+    What this does NOT cover, and the limit is the point: it can only
+    play animations built from frames, ANI_GOTO, ANI_REPEAT, the repeat
+    counter and ANI_PAUSE. Every conditional branch and every wait --
+    ANI_IFSTATUS, ANI_WAITHITGND, ANI_CHANGEANIM and the rest -- makes a
+    body unverifiable here, so the interesting half of the VM is exactly
+    what is excluded. Agreement raises confidence in the frame and tick
+    backbone, not in the branching semantics.
+    """
+    if not (wlverify.ASM / "WRESTLE.CMD").exists():
+        return
+    out = ROOT / "src" / "generated" / "anim_programs.c"
+    if not out.exists():
+        return
+
+    live = wlverify.linked()
+    independent = {}
+    for path in sorted(wlverify.ASM.glob("*SEQ*.ASM")):
+        if "'" in path.name or path.name.upper() not in live:
+            continue
+        for label, body in wlverify.routines(path).items():
+            if not label.endswith("_anim"):
+                continue
+            try:
+                seq, why = wlverify.play(body)
+            except wlverify.Unverifiable:
+                continue
+            if seq and why == "end":
+                independent[label] = seq
+
+    src = out.read_text()
+    emitted = {}
+    for m in re.finditer(r"static const wm_anim_op prog_(\w+)_ops\[\] = \{(.*?)\n\};",
+                         src, re.S):
+        emitted[m.group(1)] = [
+            (f, int(t)) for t, f in re.findall(
+                r'\{\s*WM_AOP_FRAME,[^}]*?(\d+),\s*0,\s*0,\s*0,\s*0,\s*0,\s*"([A-Z0-9]+)"\s*\}',
+                m.group(2))]
+
+    compared, disagree, absent = 0, [], []
+    for label, seq in independent.items():
+        if label not in emitted:
+            absent.append(label)
+            continue
+        compared += 1
+        if emitted[label] != [(f, t) for f, t in seq]:
+            disagree.append(label)
+
+    # Enough of them for the check to mean something.
+    assert compared >= 180, compared
+    assert not disagree, disagree[:5]
+    # Everything the independent reader can play and that the linker
+    # builds must have been emitted. A gap here is a missing program.
+    assert not absent, absent[:5]
+
+
 def main() -> int:
     test_wlanim()
     test_wlprogram()
@@ -1766,6 +1833,7 @@ def main() -> int:
     test_programs_record_where_they_start()
     test_emitted_programs_hold_together()
     test_the_two_extractors_agree()
+    test_an_independent_reading_agrees()
     test_waithitopp_is_a_mode_and_a_frame()
     test_roster_dispatcher_labels_all_emit()
     test_wlprogram_tick_expressions()

@@ -1760,6 +1760,14 @@ def test_an_independent_reading_agrees() -> None:
     body unverifiable here, so the interesting half of the VM is exactly
     what is excluded. Agreement raises confidence in the frame and tick
     backbone, not in the branching semantics.
+
+    Its reach is also bounded by something structural rather than by
+    effort: a routine whose body BRANCHES INTO ANOTHER one (BAMSEQ1.ASM's
+    bam_run2_anim is a bare `ANI_GOTO,#run2` into bam_run_anim) has no
+    self-contained body to play. The emitter handles those by growing the
+    program across routine boundaries; this reader deliberately does not,
+    because copying that logic is exactly what would stop it being an
+    independent check.
     """
     if not (wlverify.ASM / "WRESTLE.CMD").exists():
         return
@@ -1801,7 +1809,7 @@ def test_an_independent_reading_agrees() -> None:
             disagree.append(label)
 
     # Enough of them for the check to mean something.
-    assert compared >= 180, compared
+    assert compared >= 285, compared
     assert not disagree, disagree[:5]
     # Everything the independent reader can play and that the linker
     # builds must have been emitted. A gap here is a missing program.

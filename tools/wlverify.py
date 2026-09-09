@@ -49,7 +49,11 @@ def strip(line: str) -> str:
 
 ROUTINE = re.compile(r"^\s+SUBRP?\s+(\S+)\s*$", re.I)
 LOCAL = re.compile(r"^(#\S+)")
-FRAME = re.compile(r"^\s+WL\s+([0-9]+)\s*,\s*([A-Za-z0-9_]+)\s*\+\s*FR([0-9]+)\s*$", re.I)
+# A frame's tick count is usually a literal but is sometimes a small
+# expression -- `WL 2+1,B2WL1A+FR4` -- so the count is captured loosely
+# and evaluated below. A count naming a constant is refused rather than
+# guessed at, which keeps this file free of the shared equate tables.
+FRAME = re.compile(r"^\s+WL\s+([^,]+?)\s*,\s*([A-Za-z0-9_]+)\s*\+\s*FR([0-9]+)\s*$", re.I)
 END = re.compile(r"^\s+\.word\s+ANI_END\s*$", re.I)
 REPEAT = re.compile(r"^\s+\.word\s+ANI_REPEAT\s*$", re.I)
 GOTO = re.compile(r"^\s+WL\s+ANI_GOTO\s*,\s*(\S+)\s*$", re.I)
@@ -118,15 +122,37 @@ def linked() -> set:
     return out
 
 
+def ticks(expr: str) -> int:
+    """A frame's tick count: a literal, or a small arithmetic expression."""
+    e = expr.strip()
+    e = re.sub(r"\b([0-9A-Fa-f]+)[hH]\b", lambda m: str(int(m.group(1), 16)), e)
+    if not re.fullmatch(r"[0-9+\-*/() ]+", e):
+        raise Unverifiable(f"tick expression {expr!r}")
+    value = eval(e, {"__builtins__": {}}, {})   # digits and operators only
+    if not isinstance(value, int) or value < 0:
+        raise Unverifiable(f"tick expression {expr!r}")
+    return value
+
+
 def routines(path: pathlib.Path):
-    """label -> list of stripped body lines, ending at the next routine."""
+    """label -> list of stripped body lines, ending at the next routine.
+
+    SUBR labels ALIAS: `SUBR bam_stand2_anim` is immediately followed by
+    `SUBR bam_stand8_anim` with one body under both, and HRTSEQ1.ASM does
+    the same for torso6/torso8. A run of consecutive SUBRs therefore all
+    name the same code, and giving the first ones an empty body would
+    quietly drop them.
+    """
     lines = [strip(l) for l in path.read_text(errors="replace").splitlines()]
     starts = [(i, m.group(1)) for i, l in enumerate(lines)
               if (m := ROUTINE.match(l))]
     out = {}
     for n, (i, name) in enumerate(starts):
-        stop = starts[n + 1][0] if n + 1 < len(starts) else len(lines)
-        out.setdefault(name, lines[i + 1:stop])
+        j = n
+        while j + 1 < len(starts) and starts[j + 1][0] == starts[j][0] + 1:
+            j += 1                      # an alias, not a body of its own
+        stop = starts[j + 1][0] if j + 1 < len(starts) else len(lines)
+        out.setdefault(name, lines[starts[j][0] + 1:stop])
     return out
 
 
@@ -163,7 +189,7 @@ def play(body, max_frames=400):
 
         if (m := FRAME.match(line)):
             played.append((f"{m.group(2).upper()}{int(m.group(3)):02d}",
-                           int(m.group(1))))
+                           ticks(m.group(1))))
             if len(played) >= max_frames:
                 return played, "capped"
             pc += 1

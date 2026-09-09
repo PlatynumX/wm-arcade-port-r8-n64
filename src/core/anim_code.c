@@ -345,6 +345,424 @@ static void do_combo_mess(wm_arcade_actor_t *actor, const wm_anim_env *env,
 }
 
 /*
+ * DNKSEQ2.ASM:3446 #get_off and :3453 #get_off4 -- climbing off a pinned
+ * opponent, a shove backwards in Z and a small hop. `#get_off4` faces the
+ * other way, so its Z is negative and its hop half the size. The row's
+ * parameter packs them: Z in the high half, Y in the low.
+ */
+#define WM_GET_OFF_VELS(z, y) \
+    ((int32_t)((((uint32_t)(int32_t)(z) & 0xFFFFu) << 16) | \
+               ((uint32_t)(int32_t)(y) & 0xFFFFu)))
+
+static void get_off(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                    int32_t param) {
+    (void)env;
+    if (!actor) return;
+    actor->z_vel = (int32_t)(int16_t)((uint32_t)param >> 16) << 16;
+    actor->y_vel = (int32_t)(int16_t)((uint32_t)param & 0xFFFFu) << 16;
+}
+
+/*
+ * DNKSEQ2.ASM:2611 #close -- "am I still on top of him?" MODE_STATUS goes
+ * ON when the two have drifted more than 30h apart in X, which is the
+ * animation's own cue to stop. Note the sense: clear first, set for FAR,
+ * so STATUS here means "not close" rather than "close".
+ */
+#define WM_CLOSE_X_LIMIT 0x30
+
+static void close_check(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                        int32_t param) {
+    const wm_arcade_actor_t *opp;
+    int32_t dx;
+    (void)param;
+    if (!actor) return;
+    actor->anim_mode &= (uint16_t)~WM_MODE_STATUS;
+    opp = actor->smart_target ? actor->smart_target
+                              : (env ? env->opponent : NULL);
+    if (!opp) return;
+    dx = actor->x_int - opp->x_int;
+    if (dx < 0) dx = -dx;                      /* `abs a14` */
+    if (dx > WM_CLOSE_X_LIMIT)                 /* `jrgt #inplace` */
+        actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
+}
+
+/*
+ * WRESTLE2.ASM:3575 flash_white, reached by LEXSEQ3.ASM:2628 and
+ * HRTSEQ3.ASM:2238's identical two-line `#flsh_wht`. The whole screen,
+ * `[1111h,0000h]` over `[256,400]` at the origin.
+ */
+#define WM_FLASH_WHITE_COLOUR 0x1111u
+#define WM_FLASH_WIDTH 400
+#define WM_FLASH_HEIGHT 256
+
+static void flsh_wht(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                     int32_t param) {
+    (void)actor;
+    (void)param;
+    if (!env || !env->screen_flash) return;
+    env->screen_flash(env->screen_user, WM_FLASH_WHITE_COLOUR,
+                      WM_FLASH_WIDTH, WM_FLASH_HEIGHT);
+}
+
+/*
+ * BAMSEQ2.ASM:1351 #set_pal and :1364 #restore_pal -- Bam Bam turning
+ * blue as he burns. Same shape as set_skeleton_pal/set_my_pal, except the
+ * temporary palette is resolved by name rather than carried on the
+ * wrestler: `movi BAMBLU_P,a0 / calla pal_getf`.
+ *
+ * With no palette system the resolve returns 0 and OBJ_PAL is left where
+ * it is -- the save into MY_PAL and the TEMP_PAL bit still happen, so
+ * #restore_pal puts back exactly what was there either way.
+ */
+#define WM_BAM_BURN_PAL "BAMBLU_P"
+
+static void set_pal(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                    int32_t param) {
+    int32_t pal = 0;
+    (void)param;
+    if (!actor) return;
+    if (env && env->pal_getf) pal = env->pal_getf(env->screen_user,
+                                                  WM_BAM_BURN_PAL);
+    actor->my_pal = actor->obj_pal;
+    if (pal) actor->obj_pal = pal;
+    actor->status_flags |= WM_STATUS_TEMP_PAL;
+}
+
+static void restore_pal(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                        int32_t param) {
+    (void)env;
+    (void)param;
+    if (!actor) return;
+    actor->obj_pal = actor->my_pal;
+    actor->status_flags &= ~(uint32_t)WM_STATUS_TEMP_PAL;
+}
+
+/* ================================================================== *
+ * SPECIAL.ASM's debris and particle effects.
+ *
+ * Every one of them is the same shape: decline when debris is switched
+ * off, pick a target and a count, and CREATE that many DEBRIS_PID
+ * processes running a named effect. What each process then does is
+ * BEGINOBJ sprite work -- positions, velocities, palettes, lifespans --
+ * which needs an object system this port has not got, so that half is a
+ * seam (wm_anim_env::create_debris) and this half is real: the gates, who
+ * it happens to, how many, the offset up his body, and the no_debris
+ * latch two of them set on the way out.
+ * ================================================================== */
+
+/* `move @no_debris,a14 / jrnz #rets / move @reduce_bog,a14 / jrnz #rets` */
+static bool debris_allowed(const wm_anim_env *env) {
+    return env && !env->no_debris && !env->reduce_bog;
+}
+
+static void debris(const wm_anim_env *env, const char *effect,
+                   wm_arcade_actor_t *at, int count, int32_t yoff) {
+    if (env && env->create_debris)
+        env->create_debris(env->debris_user, effect, at, count, yoff);
+}
+
+/*
+ * SPECIAL.ASM:327 create_impact -- "For Bam fire head butt / For Taker
+ * club to head". Two explosion processes on the man he just hit, at a Y
+ * offset taken from `#offset_t` by HIS wrestler number, because the
+ * explosion has to land on a head and the heads are at different heights
+ * (Shawn 80, Razor and the Taker 108).
+ */
+static void create_impact(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                          int32_t param) {
+    wm_arcade_actor_t *victim;
+    int32_t yoff = 0;
+    (void)param;
+    if (!actor || !debris_allowed(env)) return;
+    victim = actor->who_i_hit;
+    if (!victim) return;
+    (void)wm_anim_code_roster_value("create_impact", victim->wrestler_num,
+                                    &yoff);
+    debris(env, "explosions", victim, 1, yoff);
+    debris(env, "explosions2", victim, 1, yoff);
+}
+
+/*
+ * The rest of the family, which differ only in the offset, the effect and
+ * the count -- so one body with the row's own parameter, spelled as
+ * (count << 24) | (offset >> 8) would be unreadable. Each keeps its own
+ * two-line function instead, which is what the source has.
+ */
+#define WM_IMPACT2_YOFF 0x380013     /* `movi [38h,13h],a11` */
+#define WM_IMPACT5_YOFF 0x0a0001     /* `movi [10,1h],a11` */
+#define WM_IMPACT_HEAD_YOFF 0x580000 /* `movi [58h,0],a11` */
+#define WM_IMPACT_SALT_YOFF 0x380000 /* `movi [38h,0],a11` */
+
+/* SPECIAL.ASM:360 -- "For Bam fire super kick / For Taker fire super
+   kick". Same two processes, a fixed offset instead of the table. */
+static void create_impact2(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                           int32_t param) {
+    (void)param;
+    if (!actor || !actor->who_i_hit || !debris_allowed(env)) return;
+    debris(env, "explosions", actor->who_i_hit, 1, WM_IMPACT2_YOFF);
+    debris(env, "explosions2", actor->who_i_hit, 1, WM_IMPACT2_YOFF);
+}
+
+/* SPECIAL.ASM:378 -- "For Taker explosion for pin". THREE processes:
+   one `explosions` and TWO `explosions2`. */
+static void create_impact5(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                           int32_t param) {
+    (void)param;
+    if (!actor || !actor->who_i_hit || !debris_allowed(env)) return;
+    debris(env, "explosions", actor->who_i_hit, 1, WM_IMPACT5_YOFF);
+    debris(env, "explosions2", actor->who_i_hit, 2, WM_IMPACT5_YOFF);
+}
+
+/*
+ * SPECIAL.ASM:425 create_impact4 ("For Taker uppercut") and :445
+ * create_impact_flykick ("For Bam flying kick to face"). One fountain
+ * process each -- and both then SET no_debris, with the source's own
+ * reason: "Don't allow other debris to come out and bog us down!" The
+ * fountain process clears it again when it finishes.
+ */
+static void create_impact_fountain(wm_arcade_actor_t *actor,
+                                   const wm_anim_env *env,
+                                   const char *effect) {
+    if (!actor || !actor->who_i_hit || !debris_allowed(env)) return;
+    debris(env, effect, actor->who_i_hit, 1, WM_IMPACT_HEAD_YOFF);
+    if (env->set_no_debris) env->set_no_debris(env->debris_user, true);
+}
+
+static void create_impact4(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                           int32_t param) {
+    (void)param;
+    create_impact_fountain(actor, env, "head_fountain");
+}
+
+static void create_impact_flykick(wm_arcade_actor_t *actor,
+                                  const wm_anim_env *env, int32_t param) {
+    (void)param;
+    create_impact_fountain(actor, env, "head_fountain_kick");
+}
+
+/*
+ * SPECIAL.ASM:414 create_impact_salt -- "For Yoko salt to face", and the
+ * one in the family with NO gate at all: the source's no_debris/reduce_bog
+ * pair is simply not written here, so the salt flies whatever else is
+ * going on. It is also the one aimed at the wrestler HIMSELF (`move
+ * a13,a10`) rather than at his victim.
+ */
+static void create_impact_salt(wm_arcade_actor_t *actor,
+                               const wm_anim_env *env, int32_t param) {
+    (void)param;
+    if (!actor) return;
+    debris(env, "explosions_salt", actor, 1, WM_IMPACT_SALT_YOFF);
+}
+
+/*
+ * SPECIAL.ASM:573 create_bucket_salt -- "For Yoko salt bucket". Gated,
+ * aimed at himself, one process, and no offset: the two `movi` lines the
+ * others have are commented out here, and so is its own no_debris set.
+ */
+static void create_bucket_salt(wm_arcade_actor_t *actor,
+                               const wm_anim_env *env, int32_t param) {
+    (void)param;
+    if (!actor || !debris_allowed(env)) return;
+    debris(env, "salt_from_bucket", actor, 1, 0);
+}
+
+/* DNKSEQ3.ASM:523 start_smoke -- gated, on himself, one body_smoke. */
+static void start_smoke(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                        int32_t param) {
+    (void)param;
+    if (!actor || !debris_allowed(env)) return;
+    debris(env, "body_smoke", actor, 1, 0);
+}
+
+/*
+ * SPECIAL.ASM:5810 DO_EYES -- eyes popping out, and the count is drawn:
+ * `movk 3,A0 / RNDRNG0 / INC / INC`, so two to five of them. Its own
+ * no_debris gate is commented out in the source, so this one runs even
+ * when debris is off.
+ */
+static void do_eyes(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                    int32_t param) {
+    (void)param;
+    if (!actor || !env) return;
+    debris(env, "CREATE_EYES", actor,
+           (int)rnd0(env, 3u) + 2, 0);
+}
+
+/*
+ * SPECIAL.ASM:4898 BROKEN_ARM_BLOOD -- gated, and on the man he hit:
+ * two DO_BLOOD_1 (one mirrored, one not) plus a drawn two-to-four
+ * GLOB_BLOOD. The mirroring is the process's own A9, which is part of the
+ * sprite half; the counts are here.
+ */
+static void broken_arm_blood(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                             int32_t param) {
+    (void)param;
+    if (!actor || !actor->who_i_hit || !debris_allowed(env)) return;
+    debris(env, "DO_BLOOD_1", actor->who_i_hit, 2, 0);
+    debris(env, "GLOB_BLOOD", actor->who_i_hit,
+           (int)rnd0(env, 2u) + 2, 0);
+}
+
+/*
+ * LEXSEQ2.ASM:754 #stop_debris and :761 #restore_debris -- switch debris
+ * off for the length of a move and put it back exactly as it was, through
+ * the file's own `#kp_debris` save slot. The slot is file-scoped in the
+ * source and is one variable here for the same reason: only one move can
+ * be using it at a time.
+ */
+static bool kept_no_debris;
+
+static void stop_debris(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                        int32_t param) {
+    (void)actor;
+    (void)param;
+    if (!env) return;
+    kept_no_debris = env->no_debris;
+    if (env->set_no_debris) env->set_no_debris(env->debris_user, true);
+}
+
+static void restore_debris(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                           int32_t param) {
+    (void)actor;
+    (void)param;
+    if (!env || !env->set_no_debris) return;
+    env->set_no_debris(env->debris_user, kept_no_debris);
+}
+
+/*
+ * HRTSEQ3.ASM:2874 #set_zvel -- aim the Z drift so he ARRIVES with the
+ * opponent. The flight time is the X gap divided by seven (as a 16.16
+ * reciprocal multiply, `movi 10000h/7 / mpyu / srl 16`), and the Z
+ * velocity is the Z gap divided by that. A zero gap would divide by zero
+ * on the TMS34010 too, so the guard is this port's, not the source's.
+ */
+#define WM_SET_ZVEL_RECIP (0x10000 / 7)
+
+static void set_zvel_lead(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                          int32_t param) {
+    const wm_arcade_actor_t *opp;
+    int32_t dx, ticks, dz;
+    (void)param;
+    if (!actor) return;
+    opp = actor->smart_target ? actor->smart_target
+                              : (env ? env->opponent : NULL);
+    if (!opp) return;
+    dx = actor->x_int - opp->x_int;
+    if (dx < 0) dx = -dx;                          /* `abs a1` */
+    ticks = (int32_t)(((uint32_t)dx * (uint32_t)WM_SET_ZVEL_RECIP) >> 16);
+    if (ticks == 0) return;
+    dz = opp->z_int - actor->z_int;
+    actor->z_vel = (dz / ticks) << 16;
+}
+
+/*
+ * YOKSEQ3.ASM:2266 #set_immob -- a process that sleeps ten ticks and then
+ * pins the victim down: "Yoko will elbow drop this guy". The sleep is
+ * what makes it a process, so it is a counter here, beside the other two.
+ */
+#define WM_SET_IMMOB_SLEEP 10u
+#define WM_SET_IMMOB_TICKS 60
+
+static uint16_t immob_delay;
+static wm_arcade_actor_t *immob_victim;
+
+static void set_immob(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                      int32_t param) {
+    (void)env;
+    (void)param;
+    if (!actor || !actor->who_i_hit) return;
+    immob_delay = WM_SET_IMMOB_SLEEP;
+    immob_victim = actor->who_i_hit;             /* GETPRC carries A9 */
+}
+
+/*
+ * UNDSEQ4.ASM:265 and :348 #fireball -- two routines with the same name
+ * in the same file, one per spirit move: `und_spirit_pull` for the old
+ * spirits, `und_spirit_push` for the reaper. Both are one CREATE0 on
+ * himself, and both are collision objects rather than debris, but they
+ * reach this port the same way: as a named effect the object system
+ * would build.
+ */
+static void fireball(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                     int32_t param) {
+    debris(env, param ? "und_spirit_push" : "und_spirit_pull", actor, 1, 0);
+}
+
+/* UNDSEQ2.ASM's CREATE_URN2 (PROGRESS.ASM:3874) -- the Undertaker's urn,
+   placed 026h to the side and 0C0h up. Same seam, the offsets are real. */
+#define WM_URN2_YOFF 0xC00000
+
+static void create_urn2(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                        int32_t param) {
+    (void)param;
+    debris(env, "CREATE_URN2", actor, 1, WM_URN2_YOFF);
+}
+
+/*
+ * DNKSEQ3.ASM:285 start_sparks -- and read the labels carefully. The
+ * `#rets` the gate jumps to sits ABOVE the second CREATE, so the sparks
+ * are gated and MAYBE_SHOCKING is NOT: the announcer gets his line even
+ * when debris is switched off.
+ *
+ * DCSSOUND.ASM:4429 MAYBE_SHOCKING is `triple_sound 3eh`, then SLEEP 92,
+ * then a one-in-five SHOCKING. The sleep is a counter here, the same way
+ * razor_swear_exists' lockout is.
+ */
+#define WM_SHOCKING_SOUND 0x3eu
+#define WM_SHOCKING_SLEEP 92u
+#define WM_SHOCKING_LINE 0x1ACu     /* SOUND.EQU:137 */
+
+static uint16_t shocking_delay;
+static wm_announcer_state *shocking_announcer;
+static WmRng *shocking_rng;
+
+static void start_sparks(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                         int32_t param) {
+    (void)param;
+    if (!actor || !env) return;
+    if (debris_allowed(env)) debris(env, "hand_sparks", actor, 1, 0);
+    play(env, WM_SHOCKING_SOUND);
+    shocking_delay = WM_SHOCKING_SLEEP;
+    shocking_announcer = env->announcer;
+    shocking_rng = env->rng;
+}
+
+/*
+ * YOKSEQ3.ASM:3553 #salt_blocked -- "If yes, delay some more". The salt
+ * throw waits when USR_VAR2 says the opponent blocked it, reported the
+ * usual way: MODE_STATUS off, then back on for the blocked case.
+ */
+static void salt_blocked(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                         int32_t param) {
+    (void)env;
+    (void)param;
+    if (!actor) return;
+    actor->anim_mode &= (uint16_t)~WM_MODE_STATUS;
+    if (actor->usr_var2) actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
+}
+
+/* YOKSEQ3.ASM:3565 #do_salt -- the spray itself, on himself. */
+static void do_salt(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                    int32_t param) {
+    (void)param;
+    if (!actor) return;
+    debris(env, "yok_salt_spray", actor, 1, 0);
+}
+
+/*
+ * YOKSEQ2.ASM:2304 #bucket_salt -- create_bucket_salt, but only a tenth
+ * of the time: `movi 100,a0 / calla RNDPER`, and RNDPER is per mille.
+ */
+#define WM_BUCKET_SALT_PERCENT 100u
+
+static void bucket_salt(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                        int32_t param) {
+    if (!actor || !env) return;
+    if (!rndper(env, WM_BUCKET_SALT_PERCENT)) return;   /* `jrls #x` */
+    create_bucket_salt(actor, env, param);
+}
+
+/*
  * WRESTLE.ASM:6069 shake_all_ropes -- every bank at once,
  * `ROPE_BOUNCEUD` with the source's own selector of 2. Its NUM_OPPS guard
  * ("no shaking with two or more") is commented out in the source and is
@@ -1311,6 +1729,21 @@ static bool announce_call(const wm_arcade_actor_t *actor,
 void wm_anim_code_tick(void) {
     size_t i;
     if (push_speech_lockout) --push_speech_lockout;
+    /* MAYBE_SHOCKING's own SLEEP 92, then `MOVK 4,A0 / RNDRNG0` and only
+       a zero says it -- one time in five, through IF_SILENT_ADD_VOICE. */
+    /* #keep_ongrnd's SLEEPK 10, then IMMOBILIZE_TIME. */
+    if (immob_delay && --immob_delay == 0u) {
+        if (immob_victim) immob_victim->immobilize_time = WM_SET_IMMOB_TICKS;
+        immob_victim = NULL;
+    }
+    if (shocking_delay && --shocking_delay == 0u) {
+        if (shocking_announcer && shocking_rng &&
+            wm_rng_rndrng0(shocking_rng, 4u) == 0u)
+            (void)wm_announcer_add_if_silent(shocking_announcer,
+                                             WM_SHOCKING_LINE);
+        shocking_announcer = NULL;
+        shocking_rng = NULL;
+    }
     for (i = 0; i < WM_ANN_PENDING_SLOTS; ++i) {
         if (!ann_pending[i].table) continue;
         if (--ann_pending[i].delay) continue;
@@ -1322,6 +1755,11 @@ void wm_anim_code_tick(void) {
 void wm_anim_code_reset(void) {
     endless_sound = 0u;
     push_speech_lockout = 0u;
+    shocking_delay = 0u;
+    shocking_announcer = NULL;
+    shocking_rng = NULL;
+    immob_delay = 0u;
+    immob_victim = NULL;
     memset(ann_pending, 0, sizeof(ann_pending));
 }
 
@@ -2214,6 +2652,37 @@ static const struct {
     { "#choose_2or4", "YOKSEQ4.ASM", choose_2or4, 0, 0 },
     { "spunch_delay", NULL, spunch_delay, 0, 0 },
     { "DO_CROWD_CHEER", NULL, do_crowd_cheer, 0, 0 },
+    /* DNKSEQ2.ASM writes #get_off twice, Z 3.0 at 3137 and 4.0 at 3446 --
+       "Get off from fallen opponent" either way, at different speeds. */
+    { "#set_zvel", "HRTSEQ3.ASM", set_zvel_lead, 0, 2874 },
+    { "#set_immob", "YOKSEQ3.ASM", set_immob, 0, 2266 },
+    { "#fireball", "UNDSEQ4.ASM", fireball, 0, 265 },
+    { "#fireball", "UNDSEQ4.ASM", fireball, 1, 348 },
+    { "CREATE_URN2", NULL, create_urn2, 0, 0 },
+    { "start_sparks", NULL, start_sparks, 0, 0 },
+    { "#salt_blocked", "YOKSEQ3.ASM", salt_blocked, 0, 3553 },
+    { "#do_salt", "YOKSEQ3.ASM", do_salt, 0, 3565 },
+    { "#bucket_salt", "YOKSEQ2.ASM", bucket_salt, 0, 2304 },
+    { "#get_off", "DNKSEQ2.ASM", get_off, WM_GET_OFF_VELS(3, 2), 3137 },
+    { "#get_off", "DNKSEQ2.ASM", get_off, WM_GET_OFF_VELS(4, 2), 3446 },
+    { "#get_off4", "DNKSEQ2.ASM", get_off, WM_GET_OFF_VELS(-2, 1), 3453 },
+    { "#close", "DNKSEQ2.ASM", close_check, 0, 2611 },
+    { "#flsh_wht", "LEXSEQ3.ASM", flsh_wht, 0, 2628 },
+    { "#flsh_wht", "HRTSEQ3.ASM", flsh_wht, 0, 2238 },
+    { "#set_pal", "BAMSEQ2.ASM", set_pal, 0, 1351 },
+    { "#restore_pal", "BAMSEQ2.ASM", restore_pal, 0, 1364 },
+    { "create_impact", NULL, create_impact, 0, 0 },
+    { "create_impact2", NULL, create_impact2, 0, 0 },
+    { "create_impact4", NULL, create_impact4, 0, 0 },
+    { "create_impact5", NULL, create_impact5, 0, 0 },
+    { "create_impact_flykick", NULL, create_impact_flykick, 0, 0 },
+    { "create_impact_salt", NULL, create_impact_salt, 0, 0 },
+    { "create_bucket_salt", NULL, create_bucket_salt, 0, 0 },
+    { "start_smoke", NULL, start_smoke, 0, 0 },
+    { "DO_EYES", NULL, do_eyes, 0, 0 },
+    { "BROKEN_ARM_BLOOD", NULL, broken_arm_blood, 0, 0 },
+    { "#stop_debris", "LEXSEQ2.ASM", stop_debris, 0, 754 },
+    { "#restore_debris", "LEXSEQ2.ASM", restore_debris, 0, 761 },
     { "shake_all_ropes", NULL, shake_all_ropes, 0, 0 },
     { "get_leap", NULL, get_leap, 0, 0 },
     { "hit_nearest", NULL, hit_nearest, 0, 0 },

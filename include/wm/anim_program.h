@@ -422,6 +422,48 @@ typedef struct wm_anim_env {
     void *round_user;
     void (*win_announce)(void *user);
 
+    /*
+     * SPECIAL.ASM's debris and particle effects: create_impact and its
+     * family, start_smoke, DO_EYES, BROKEN_ARM_BLOOD. Each is the same
+     * three lines -- decline if debris is switched off, draw a count, and
+     * CREATE that many DEBRIS_PID processes running a named effect -- and
+     * the process itself is BEGINOBJ sprite work this port has no object
+     * system for. So the decision is translated and the pixels are a seam:
+     * WHAT effect, on WHOM, HOW MANY, and the Y offset up his body.
+     *
+     * `no_debris` and `reduce_bog` are WRESTLE.ASM:255-256, and they are
+     * REAL state rather than part of the seam, because the routines both
+     * read and write them: create_impact4 and create_impact_flykick set
+     * no_debris themselves ("Don't allow other debris to come out and bog
+     * us down!"), and LEXSEQ2.ASM's #stop_debris / #restore_debris save
+     * and restore it around a move.
+     */
+    bool no_debris;
+    bool reduce_bog;
+    void *debris_user;
+    void (*create_debris)(void *user, const char *effect,
+                          wm_arcade_actor_t *at, int count, int32_t yoff);
+    /* #stop_debris / #restore_debris write @no_debris, which lives in the
+       match rather than in this copy of the env. */
+    void (*set_no_debris)(void *user, bool off);
+
+    /*
+     * WRESTLE2.ASM:3575 flash_white -- a QDMAN fill of the whole screen,
+     * `[1111h,0000h]` colour over `[256,400]` at the origin. The numbers
+     * are real; the fill needs a framebuffer.
+     */
+    void *screen_user;
+    void (*screen_flash)(void *user, uint16_t colour, int w, int h);
+    /*
+     * SPECIAL.ASM's pal_getf, for the routines that swap a wrestler's
+     * palette for a named one (BAMSEQ2.ASM's #set_pal asks for BAMBLU_P).
+     * Returns the palette handle, or 0 when this port has no palette
+     * system to resolve one -- and then the routine does its own
+     * bookkeeping and leaves OBJ_PAL alone, so #restore_pal still puts
+     * back exactly what was there.
+     */
+    int32_t (*pal_getf)(void *user, const char *name);
+
     void *crowd_user;
     void (*crowd_cheer)(void *user, int flags, int percent);
     /*

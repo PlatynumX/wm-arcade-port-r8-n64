@@ -618,6 +618,60 @@ CODE_TABLES = (
     ("DNKSEQ2.ASM", "#hit_t", "grnd_hit"),
 )
 
+# The same idea for a per-wrestler table of NUMBERS rather than animation
+# labels. SPECIAL.ASM's `#offset_t` is nine 16.16 Y offsets, one per
+# wrestler, and create_impact reads it with the VICTIM's number to decide
+# how high up his body the explosion goes.
+CODE_VALUE_TABLES = (
+    ("SPECIAL.ASM", "#offset_t", "create_impact"),
+)
+
+
+def code_value_tables() -> dict[str, list[int]]:
+    """{routine name: nine 16.16 values}, for CODE_VALUE_TABLES."""
+    out: dict[str, list[int]] = {}
+    for fname, label, routine in CODE_VALUE_TABLES:
+        path = wlanim.ORIG / fname
+        if not path.exists():
+            continue
+        lines = [wlanim.strip_comment(r)
+                 for r in path.read_text(errors="replace").splitlines()]
+        at = None
+        for i, line in enumerate(lines):
+            if wlanim.label_def(line) == label:
+                at = i
+                break
+        if at is None:
+            raise ValueError(f"{fname}: no {label} to read for {routine}")
+        vals: list[int] = []
+        j = at + 1
+        while len(vals) < ROSTER_SLOTS and j < len(lines):
+            if not lines[j].strip() or REF_RE.match(lines[j]):
+                j += 1
+                continue
+            lm = LONG_LIST_RE.match(lines[j])
+            if not lm:
+                break
+            for part in lm.group(1).split("]"):
+                part = part.strip().lstrip(",").strip()
+                if not part:
+                    continue
+                # `[100,0]` is the assembler's own 16.16 literal: the
+                # integer part, then the fraction, each 16 bits.
+                m = re.match(r"^\[\s*(-?\d+)\s*,\s*(-?\d+)\s*$", part)
+                if not m:
+                    raise ValueError(f"{fname}:{j + 1}: {part!r} is not a "
+                                     f"16.16 literal")
+                vals.append((int(m.group(1)) << 16) | (int(m.group(2))
+                                                       & 0xFFFF))
+            j += 1
+        if len(vals) < ROSTER_SLOTS:
+            raise ValueError(
+                f"{fname}:{at + 1}: {label} has {len(vals)} entries, "
+                f"not {ROSTER_SLOTS}")
+        out[routine] = vals[:ROSTER_SLOTS]
+    return out
+
 
 def code_tables() -> dict[str, list[str]]:
     """{routine name: nine animation labels}, for CODE_TABLES."""
@@ -717,6 +771,37 @@ def render_aux_c() -> str:
             "         ++i)",
             "        if (strcmp(code_names[i], routine) == 0)",
             "            return code_rows[i][num];",
+            "    return 0;",
+            "}",
+            "",
+        ]
+
+    values = code_value_tables()
+    if values:
+        out.append("/* Per-wrestler NUMBERS an ANI_CODE routine indexes"
+                   " directly, 16.16. */")
+        out.append("static const int32_t code_value_rows"
+                   "[][WM_ANIM_ROSTER_SLOTS] = {")
+        for routine in sorted(values):
+            cells = ", ".join(str(v) for v in values[routine])
+            out.append("    { %s },   /* %s */" % (cells, routine))
+        out += ["};", ""]
+        out.append("static const char *const code_value_names[] = {")
+        for routine in sorted(values):
+            out.append('    "%s",' % routine)
+        out += ["};", ""]
+        out += [
+            "int wm_anim_code_roster_value(const char *routine, int32_t num,",
+            "                              int32_t *out) {",
+            "    size_t i;",
+            "    if (!routine) return 0;",
+            "    if (num < 0 || num >= WM_ANIM_ROSTER_SLOTS) return 0;",
+            "    for (i = 0; i < sizeof(code_value_names) /"
+            " sizeof(code_value_names[0]); ++i)",
+            "        if (strcmp(code_value_names[i], routine) == 0) {",
+            "            if (out) *out = code_value_rows[i][num];",
+            "            return 1;",
+            "        }",
             "    return 0;",
             "}",
             "",

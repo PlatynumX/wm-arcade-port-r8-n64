@@ -104,6 +104,30 @@ static bool match_crowd_busy(void *user) {
     return m && m->crowd.sound_ticks != 0u;
 }
 
+/*
+ * SPECIAL.ASM's DEBRIS_PID creations, held for a SPECIAL.ASM port. The
+ * routine has already decided whether it may run, on whom, and how many;
+ * what a debris object then does is sprite work this port cannot do.
+ */
+static void match_create_debris(void *user, const char *effect,
+                                wm_arcade_actor_t *at, int count,
+                                int32_t yoff) {
+    wm_match_state *m = (wm_match_state *)user;
+    (void)at;
+    if (!m || count <= 0) return;
+    m->debris.last_effect = effect;
+    m->debris.last_count = count;
+    m->debris.last_yoff = yoff;
+    m->debris.created += (uint32_t)count;
+}
+
+/* @no_debris, written by create_impact4/flykick and by LEXSEQ2's
+   #stop_debris / #restore_debris pair. */
+static void match_set_no_debris(void *user, bool off) {
+    wm_match_state *m = (wm_match_state *)user;
+    if (m) m->debris.no_debris = off;
+}
+
 /* DNKSEQ2.ASM:5202 win_announce: start LIFEBAR.ASM's round-ending
    process. Ticked below, beside round_state's own KO countdown. */
 static void match_win_announce(void *user) {
@@ -264,6 +288,9 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
     wm_anim_code_reset();
     wm_arcade_round_state_init(&m->round_state);
     wm_arcade_round_announce_init(&m->round_announce);
+    /* WRESTLE.ASM:4552 init_reduce_bog, with this match's two actors. */
+    m->debris.no_debris = false;
+    m->debris.reduce_bog = (int32_t)m->actor_count - 2;
     wm_arcade_match_score_init(&m->score);
 }
 
@@ -325,6 +352,9 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
     wm_anim_code_reset();
     wm_arcade_round_state_init(&m->round_state);
     wm_arcade_round_announce_init(&m->round_announce);
+    /* WRESTLE.ASM:4552 init_reduce_bog, with this match's two actors. */
+    m->debris.no_debris = false;
+    m->debris.reduce_bog = (int32_t)m->actor_count - 2;
     wm_arcade_match_score_init(&m->score);
 }
 
@@ -529,6 +559,19 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             m->wrestler_visual[i].anim_env.win_announce = match_win_announce;
             m->bret_visual[i].anim_env.round_user = m;
             m->bret_visual[i].anim_env.win_announce = match_win_announce;
+            /* WRESTLE.ASM:4552 init_reduce_bog: active wrestlers minus
+               two, so a 1-on-1 match runs with debris on. */
+            m->wrestler_visual[i].anim_env.no_debris = m->debris.no_debris;
+            m->wrestler_visual[i].anim_env.reduce_bog =
+                m->debris.reduce_bog > 0;
+            m->wrestler_visual[i].anim_env.debris_user = m;
+            m->wrestler_visual[i].anim_env.create_debris = match_create_debris;
+            m->wrestler_visual[i].anim_env.set_no_debris = match_set_no_debris;
+            m->bret_visual[i].anim_env.no_debris = m->debris.no_debris;
+            m->bret_visual[i].anim_env.reduce_bog = m->debris.reduce_bog > 0;
+            m->bret_visual[i].anim_env.debris_user = m;
+            m->bret_visual[i].anim_env.create_debris = match_create_debris;
+            m->bret_visual[i].anim_env.set_no_debris = match_set_no_debris;
             /*
              * WRESTLE.ASM's match-configuration globals, as this match
              * actually is: no royal rumble, PSTATUS 0 for the attract

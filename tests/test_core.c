@@ -5075,6 +5075,416 @@ static void test_hit_nearest_and_tbukl_confine(void) {
 }
 
 /*
+ * SPECIAL.ASM's debris family: the decisions in front of the particle
+ * processes, which are what this port has.
+ */
+struct debris_log {
+    int n;
+    const char *effect[8];
+    wm_arcade_actor_t *at[8];
+    int count[8];
+    int32_t yoff[8];
+    int total;
+    int n_set;
+    bool last_set;
+};
+
+static void debris_sink(void *user, const char *effect,
+                        wm_arcade_actor_t *at, int count, int32_t yoff) {
+    struct debris_log *l = (struct debris_log *)user;
+    if (l->n < 8) {
+        l->effect[l->n] = effect;
+        l->at[l->n] = at;
+        l->count[l->n] = count;
+        l->yoff[l->n] = yoff;
+    }
+    ++l->n;
+    l->total += count;
+}
+
+static void debris_set_sink(void *user, bool off) {
+    struct debris_log *l = (struct debris_log *)user;
+    ++l->n_set;
+    l->last_set = off;
+}
+
+static void flash_sink(void *user, uint16_t colour, int w, int h) {
+    struct { int n; uint16_t colour; int w, h; } *l = user;
+    ++l->n;
+    l->colour = colour;
+    l->w = w;
+    l->h = h;
+}
+
+/* The one name BAMSEQ2.ASM's #set_pal asks pal_getf for. */
+static int32_t pal_getf_sink(void *user, const char *name) {
+    (void)user;
+    return strcmp(name, "BAMBLU_P") == 0 ? 0xB1 : 0;
+}
+
+static void test_debris_family(void) {
+    wm_arcade_actor_t a, v;
+    wm_anim_env env;
+    struct debris_log log;
+    WmRng rng;
+    int i;
+
+    /* SPECIAL.ASM:347 #offset_t, transcribed: nine 16.16 Y offsets, and
+       Shawn really is the odd one at 80 while Razor and the Taker are
+       108. Slot 7 is the cut wrestler and is a real value here (105),
+       not a 0 -- the source wrote one. */
+    {
+        static const int want[9] = { 100, 108, 108, 105, 80, 105, 96, 105, 90 };
+        for (i = 0; i < 9; ++i) {
+            int32_t got = -1;
+            CHECK(wm_anim_code_roster_value("create_impact", i, &got));
+            CHECK(got == (int32_t)want[i] << 16);
+        }
+        CHECK(!wm_anim_code_roster_value("create_impact", 9, NULL));
+        CHECK(!wm_anim_code_roster_value("no_such_routine", 0, NULL));
+    }
+
+    wm_rng_init(&rng, 0x4321u, NULL, NULL, NULL);
+    memset(&env, 0, sizeof(env));
+    env.rng = &rng;
+    env.debris_user = &log;
+    env.create_debris = debris_sink;
+    env.set_no_debris = debris_set_sink;
+
+    /* create_impact: two processes on the VICTIM, at the victim's own
+       offset -- Shawn's 80, not the attacker's. */
+    memset(&log, 0, sizeof(log));
+    memset(&a, 0, sizeof(a));
+    memset(&v, 0, sizeof(v));
+    a.wrestler_num = WM_ROSTER_BRET;
+    v.wrestler_num = WM_ROSTER_SHAWN;
+    a.who_i_hit = &v;
+    CHECK(wm_anim_code_run(&a, &env, "create_impact", NULL, 0));
+    CHECK(log.n == 2);
+    CHECK(log.at[0] == &v && log.at[1] == &v);
+    CHECK(strcmp(log.effect[0], "explosions") == 0);
+    CHECK(strcmp(log.effect[1], "explosions2") == 0);
+    CHECK(log.yoff[0] == 80 << 16 && log.yoff[1] == 80 << 16);
+
+    /* `move @no_debris,a14 / jrnz #rets` -- and reduce_bog the same. */
+    memset(&log, 0, sizeof(log));
+    env.no_debris = true;
+    CHECK(wm_anim_code_run(&a, &env, "create_impact", NULL, 0));
+    CHECK(log.n == 0);
+    env.no_debris = false;
+    env.reduce_bog = true;
+    CHECK(wm_anim_code_run(&a, &env, "create_impact", NULL, 0));
+    CHECK(log.n == 0);
+    env.reduce_bog = false;
+
+    /* create_impact5 is the Taker's pin: ONE explosions and TWO
+       explosions2, which is what makes it different from create_impact2. */
+    memset(&log, 0, sizeof(log));
+    CHECK(wm_anim_code_run(&a, &env, "create_impact5", NULL, 0));
+    CHECK(log.n == 2 && log.count[0] == 1 && log.count[1] == 2);
+    CHECK(log.total == 3);
+    memset(&log, 0, sizeof(log));
+    CHECK(wm_anim_code_run(&a, &env, "create_impact2", NULL, 0));
+    CHECK(log.total == 2);
+    CHECK(log.yoff[0] == 0x380013);       /* `movi [38h,13h],a11` */
+
+    /* create_impact4 and the flykick both latch no_debris on the way out:
+       "Don't allow other debris to come out and bog us down!" */
+    memset(&log, 0, sizeof(log));
+    CHECK(wm_anim_code_run(&a, &env, "create_impact4", NULL, 0));
+    CHECK(log.n == 1 && strcmp(log.effect[0], "head_fountain") == 0);
+    CHECK(log.n_set == 1 && log.last_set == true);
+    memset(&log, 0, sizeof(log));
+    CHECK(wm_anim_code_run(&a, &env, "create_impact_flykick", NULL, 0));
+    CHECK(log.n == 1 && strcmp(log.effect[0], "head_fountain_kick") == 0);
+    CHECK(log.n_set == 1 && log.last_set == true);
+
+    /* ...and the gate stops them latching when they decline. */
+    memset(&log, 0, sizeof(log));
+    env.no_debris = true;
+    CHECK(wm_anim_code_run(&a, &env, "create_impact4", NULL, 0));
+    CHECK(log.n == 0 && log.n_set == 0);
+
+    /*
+     * create_impact_salt has NO gate -- the source simply does not write
+     * one there -- and it aims at the wrestler HIMSELF, not his victim.
+     * That is the pair of differences worth pinning: it still fires with
+     * debris switched off.
+     */
+    memset(&log, 0, sizeof(log));
+    CHECK(wm_anim_code_run(&a, &env, "create_impact_salt", NULL, 0));
+    CHECK(log.n == 1);
+    CHECK(log.at[0] == &a);
+    CHECK(strcmp(log.effect[0], "explosions_salt") == 0);
+    CHECK(log.yoff[0] == 0x380000);
+
+    /* create_bucket_salt IS gated, is on himself, and carries no offset:
+       its two `movi` lines are commented out in the source. */
+    memset(&log, 0, sizeof(log));
+    CHECK(wm_anim_code_run(&a, &env, "create_bucket_salt", NULL, 0));
+    CHECK(log.n == 0);                     /* still switched off */
+    env.no_debris = false;
+    CHECK(wm_anim_code_run(&a, &env, "create_bucket_salt", NULL, 0));
+    CHECK(log.n == 1 && log.at[0] == &a && log.yoff[0] == 0);
+
+    /* start_smoke: gated, himself, one body_smoke. */
+    memset(&log, 0, sizeof(log));
+    CHECK(wm_anim_code_run(&a, &env, "start_smoke", NULL, 0));
+    CHECK(log.n == 1 && log.at[0] == &a);
+    CHECK(strcmp(log.effect[0], "body_smoke") == 0);
+
+    /*
+     * DO_EYES draws its count -- `movk 3 / RNDRNG0 / INC / INC`, so two
+     * to five -- and, like the salt, has no gate: its no_debris lines are
+     * commented out. BROKEN_ARM_BLOOD draws two to four globs on top of
+     * its two fixed DO_BLOOD_1, and IS gated.
+     */
+    {
+        int lo = 99, hi = 0, t;
+        env.no_debris = true;
+        for (t = 0; t < 200; ++t) {
+            wm_rng_set_latched_inputs(&rng, (uint16_t)(t * 11u + 5u),
+                                      (uint32_t)(t * 137u + 3u));
+            memset(&log, 0, sizeof(log));
+            CHECK(wm_anim_code_run(&a, &env, "DO_EYES", NULL, 0));
+            CHECK(log.n == 1);
+            if (log.count[0] < lo) lo = log.count[0];
+            if (log.count[0] > hi) hi = log.count[0];
+        }
+        CHECK(lo == 2 && hi == 5);
+    }
+    memset(&log, 0, sizeof(log));
+    CHECK(wm_anim_code_run(&a, &env, "BROKEN_ARM_BLOOD", NULL, 0));
+    CHECK(log.n == 0);                     /* gated, and debris is off */
+    env.no_debris = false;
+    {
+        int lo = 99, hi = 0, t;
+        for (t = 0; t < 200; ++t) {
+            wm_rng_set_latched_inputs(&rng, (uint16_t)(t * 13u + 7u),
+                                      (uint32_t)(t * 149u + 11u));
+            memset(&log, 0, sizeof(log));
+            CHECK(wm_anim_code_run(&a, &env, "BROKEN_ARM_BLOOD", NULL, 0));
+            CHECK(log.n == 2);
+            CHECK(log.at[0] == &v && log.count[0] == 2);
+            CHECK(strcmp(log.effect[0], "DO_BLOOD_1") == 0);
+            CHECK(strcmp(log.effect[1], "GLOB_BLOOD") == 0);
+            if (log.count[1] < lo) lo = log.count[1];
+            if (log.count[1] > hi) hi = log.count[1];
+        }
+        CHECK(lo == 2 && hi == 4);
+    }
+
+    /*
+     * LEXSEQ2.ASM's #stop_debris / #restore_debris put it back exactly as
+     * it was, which is the whole point of the save slot -- restoring to a
+     * hard "on" would switch debris back on mid-fountain.
+     */
+    memset(&log, 0, sizeof(log));
+    env.no_debris = true;                  /* something else already off */
+    CHECK(wm_anim_code_run(&a, &env, "#stop_debris", "LEXSEQ2.ASM", 754));
+    CHECK(log.n_set == 1 && log.last_set == true);
+    CHECK(wm_anim_code_run(&a, &env, "#restore_debris", "LEXSEQ2.ASM", 761));
+    CHECK(log.n_set == 2 && log.last_set == true);   /* back to OFF */
+
+    memset(&log, 0, sizeof(log));
+    env.no_debris = false;
+    CHECK(wm_anim_code_run(&a, &env, "#stop_debris", "LEXSEQ2.ASM", 754));
+    CHECK(log.last_set == true);
+    CHECK(wm_anim_code_run(&a, &env, "#restore_debris", "LEXSEQ2.ASM", 761));
+    CHECK(log.last_set == false);                    /* back to ON */
+
+    /*
+     * WRESTLE2.ASM:3575 flash_white, through LEXSEQ3/HRTSEQ3's identical
+     * two-line #flsh_wht -- and both files' definitions reach it.
+     */
+    {
+        static struct { int n; uint16_t colour; int w, h; } fl;
+        memset(&fl, 0, sizeof(fl));
+        env.screen_user = &fl;
+        env.screen_flash = flash_sink;
+        CHECK(wm_anim_code_run(&a, &env, "#flsh_wht", "LEXSEQ3.ASM", 2628));
+        CHECK(wm_anim_code_run(&a, &env, "#flsh_wht", "HRTSEQ3.ASM", 2238));
+        CHECK(fl.n == 2);
+        CHECK(fl.colour == 0x1111u && fl.w == 400 && fl.h == 256);
+    }
+
+    /*
+     * BAMSEQ2.ASM's #set_pal / #restore_pal. With a palette system the
+     * swap is real; without one OBJ_PAL is left alone -- and either way
+     * #restore_pal puts back exactly what was there, which is the point
+     * of the MY_PAL save.
+     */
+    memset(&a, 0, sizeof(a));
+    a.obj_pal = 0x77;
+    env.pal_getf = NULL;
+    CHECK(wm_anim_code_run(&a, &env, "#set_pal", "BAMSEQ2.ASM", 1351));
+    CHECK(a.my_pal == 0x77);
+    CHECK(a.obj_pal == 0x77);                  /* nothing to swap to */
+    CHECK((a.status_flags & WM_STATUS_TEMP_PAL) != 0);
+    CHECK(wm_anim_code_run(&a, &env, "#restore_pal", "BAMSEQ2.ASM", 1364));
+    CHECK(a.obj_pal == 0x77);
+    CHECK((a.status_flags & WM_STATUS_TEMP_PAL) == 0);
+
+    memset(&a, 0, sizeof(a));
+    a.obj_pal = 0x77;
+    env.pal_getf = pal_getf_sink;
+    CHECK(wm_anim_code_run(&a, &env, "#set_pal", "BAMSEQ2.ASM", 1351));
+    CHECK(a.obj_pal == 0xB1u);                 /* BAMBLU_P, per the sink */
+    CHECK(a.my_pal == 0x77);
+    CHECK(wm_anim_code_run(&a, &env, "#restore_pal", "BAMSEQ2.ASM", 1364));
+    CHECK(a.obj_pal == 0x77);
+    env.pal_getf = NULL;
+    env.screen_flash = NULL;
+
+    /*
+     * DNKSEQ2.ASM's #get_off / #get_off4 -- climbing off a pinned man,
+     * one facing each way, and the 4-facing one hops half as high.
+     */
+    memset(&a, 0, sizeof(a));
+    CHECK(wm_anim_code_run(&a, &env, "#get_off", "DNKSEQ2.ASM", 3446));
+    CHECK(a.z_vel == 0x40000 && a.y_vel == 0x20000);
+    /* ...and the file's OTHER #get_off, at 3.0 instead of 4.0. */
+    CHECK(wm_anim_code_run(&a, &env, "#get_off", "DNKSEQ2.ASM", 3137));
+    CHECK(a.z_vel == 0x30000 && a.y_vel == 0x20000);
+    CHECK(wm_anim_code_run(&a, &env, "#get_off4", "DNKSEQ2.ASM", 3453));
+    CHECK(a.z_vel == -0x20000 && a.y_vel == 0x10000);
+
+    /*
+     * #close: MODE_STATUS means "we have drifted apart", so it is CLEARED
+     * while they are still together and SET past 30h of X.
+     */
+    memset(&a, 0, sizeof(a));
+    memset(&v, 0, sizeof(v));
+    a.smart_target = &v;
+    a.x_int = 100;
+    v.x_int = 100 + 0x30;                       /* exactly on the limit */
+    a.anim_mode = (uint16_t)WM_MODE_STATUS;
+    CHECK(wm_anim_code_run(&a, &env, "#close", "DNKSEQ2.ASM", 2611));
+    CHECK((a.anim_mode & WM_MODE_STATUS) == 0);      /* `jrgt`, not jrge */
+    v.x_int = 100 + 0x31;
+    CHECK(wm_anim_code_run(&a, &env, "#close", "DNKSEQ2.ASM", 2611));
+    CHECK((a.anim_mode & WM_MODE_STATUS) != 0);
+    /* ...and `abs a14`, so it is the distance, not the direction. */
+    v.x_int = 100 - 0x31;
+    CHECK(wm_anim_code_run(&a, &env, "#close", "DNKSEQ2.ASM", 2611));
+    CHECK((a.anim_mode & WM_MODE_STATUS) != 0);
+    v.x_int = 100 - 0x10;
+    CHECK(wm_anim_code_run(&a, &env, "#close", "DNKSEQ2.ASM", 2611));
+    CHECK((a.anim_mode & WM_MODE_STATUS) == 0);
+
+    /*
+     * UNDSEQ4.ASM's two #fireball -- same name, same file, and each one
+     * is a DIFFERENT spirit. This is the local-label pair that had no
+     * translation at all before the resolver existed.
+     */
+    memset(&log, 0, sizeof(log));
+    env.create_debris = debris_sink;
+    env.debris_user = &log;
+    CHECK(wm_anim_code_run(&a, &env, "#fireball", "UNDSEQ4.ASM", 265));
+    CHECK(wm_anim_code_run(&a, &env, "#fireball", "UNDSEQ4.ASM", 348));
+    CHECK(log.n == 2);
+    CHECK(strcmp(log.effect[0], "und_spirit_pull") == 0);
+    CHECK(strcmp(log.effect[1], "und_spirit_push") == 0);
+
+    /*
+     * DNKSEQ3.ASM:285 start_sparks, and the label placement that matters:
+     * the gate jumps to a `#rets` ABOVE the second CREATE, so the sparks
+     * are gated and MAYBE_SHOCKING is not.
+     */
+    {
+        struct ann_log sounds;
+        wm_announcer_state ann;
+        int t, spoke = 0;
+        memset(&log, 0, sizeof(log));
+        memset(&sounds, 0, sizeof(sounds));
+        wm_announcer_init(&ann);
+        env.sound_user = &sounds;
+        env.sound = ann_sound;
+        env.announcer = &ann;
+        env.no_debris = true;
+        wm_anim_code_reset();
+        CHECK(wm_anim_code_run(&a, &env, "start_sparks", NULL, 0));
+        CHECK(log.n == 0);                     /* sparks refused... */
+        CHECK(sounds.n == 1 && sounds.call[0] == 0x3eu);   /* ...sound not */
+        env.no_debris = false;
+        memset(&log, 0, sizeof(log));
+        CHECK(wm_anim_code_run(&a, &env, "start_sparks", NULL, 0));
+        CHECK(log.n == 1 && strcmp(log.effect[0], "hand_sparks") == 0);
+
+        /* MAYBE_SHOCKING's SLEEP 92, then a one-in-five line. Nothing is
+           said before the sleep is out. */
+        for (t = 0; t < 91; ++t) {
+            wm_anim_code_tick();
+            CHECK(wm_announcer_is_silent(&ann));
+        }
+        for (t = 0; t < 40 && !spoke; ++t) {
+            wm_rng_set_latched_inputs(&rng, (uint16_t)(t * 17u + 1u),
+                                      (uint32_t)(t * 151u + 5u));
+            wm_announcer_init(&ann);
+            wm_anim_code_reset();
+            CHECK(wm_anim_code_run(&a, &env, "start_sparks", NULL, 0));
+            {
+                int u;
+                for (u = 0; u < 92; ++u) wm_anim_code_tick();
+            }
+            if (!wm_announcer_is_silent(&ann)) {
+                CHECK(ann.slot[0] == 0x1ACu);      /* SHOCKING */
+                spoke = 1;
+            }
+        }
+        CHECK(spoke);      /* a 20% gate: 40 tries without one is dead */
+        wm_anim_code_reset();
+        env.sound = NULL;
+        env.announcer = NULL;
+    }
+
+    /*
+     * HRTSEQ3.ASM:2874 #set_zvel -- arrive together. Flight time is the X
+     * gap over seven; the Z velocity is the Z gap over that.
+     */
+    memset(&a, 0, sizeof(a));
+    memset(&v, 0, sizeof(v));
+    a.smart_target = &v;
+    a.x_int = 0;   v.x_int = 70;        /* 70/7 = 10 ticks */
+    a.z_int = 0;   v.z_int = 40;        /* 40/10 = 4.0 a tick */
+    CHECK(wm_anim_code_run(&a, &env, "#set_zvel", "HRTSEQ3.ASM", 2874));
+    CHECK(a.z_vel == 0x40000);
+    /* `abs a1`, so standing to the left is the same flight. */
+    a.x_int = 140; v.x_int = 70;
+    a.z_int = 0;   v.z_int = -40;
+    CHECK(wm_anim_code_run(&a, &env, "#set_zvel", "HRTSEQ3.ASM", 2874));
+    CHECK(a.z_vel == -0x40000);
+    /* Nose to nose: no flight time, and nothing is written rather than a
+       divide by zero. */
+    a.x_int = 70;  v.x_int = 70;
+    a.z_vel = 0x1234;
+    CHECK(wm_anim_code_run(&a, &env, "#set_zvel", "HRTSEQ3.ASM", 2874));
+    CHECK(a.z_vel == 0x1234);
+
+    /* YOKSEQ3.ASM:2266 #set_immob -- ten ticks later, sixty of stillness. */
+    memset(&a, 0, sizeof(a));
+    memset(&v, 0, sizeof(v));
+    a.who_i_hit = &v;
+    wm_anim_code_reset();
+    CHECK(wm_anim_code_run(&a, &env, "#set_immob", "YOKSEQ3.ASM", 2266));
+    CHECK(v.immobilize_time == 0);
+    for (i = 0; i < 9; ++i) {
+        wm_anim_code_tick();
+        CHECK(v.immobilize_time == 0);
+    }
+    wm_anim_code_tick();
+    CHECK(v.immobilize_time == 60);
+    wm_anim_code_reset();
+
+    /* No debris seam wired at all: every one of them still resolves. */
+    memset(&env, 0, sizeof(env));
+    env.rng = &rng;
+    CHECK(wm_anim_code_run(&a, &env, "create_impact", NULL, 0));
+    CHECK(wm_anim_code_run(&a, &env, "DO_EYES", NULL, 0));
+    CHECK(wm_anim_code_run(&a, &env, "start_smoke", NULL, 0));
+}
+
+/*
  * LIFEBAR.ASM:3687 DO_COMBO_MESS -- the most-called ANI_CODE routine in
  * the game, and what actually ends a combo.
  */
@@ -9565,6 +9975,7 @@ int main(void) {
     test_win_announce();
     test_win_announce_from_the_vm();
     test_hit_nearest_and_tbukl_confine();
+    test_debris_family();
     test_do_combo_mess();
     test_do_combo_mess_from_the_vm();
     test_wrsnd_tables();

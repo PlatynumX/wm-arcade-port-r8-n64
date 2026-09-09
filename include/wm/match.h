@@ -143,6 +143,24 @@ typedef struct {
      * while it lives DO_CROWD_ANYWAY skips the SNDSND. Counted down by
      * wm_match_tick.
      */
+    /*
+     * WRESTLE.ASM:255-256 no_debris / reduce_bog, and what the debris
+     * routines were told. The particle processes themselves belong to a
+     * SPECIAL.ASM port; these are the decisions in front of them, which
+     * are real: `no_debris` is set and cleared by the routines that
+     * suppress each other, and reduce_bog is init_reduce_bog's own
+     * "active wrestlers minus two" (WRESTLE.ASM:4552), so a 1-on-1 match
+     * has it at 0 and debris on.
+     */
+    struct {
+        bool no_debris;
+        int32_t reduce_bog;
+        const char *last_effect;
+        int last_count;
+        int32_t last_yoff;
+        uint32_t created;      /* how many DEBRIS_PID processes were asked */
+    } debris;
+
     struct {
         int flags;            /* WM_CROWD_* */
         int percent;          /* per mille, 0 unless WM_CROWD_RANDOM */

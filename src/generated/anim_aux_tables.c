@@ -74,6 +74,28 @@ const char *wm_anim_code_roster_label(const char *routine,
     return 0;
 }
 
+/* Per-wrestler NUMBERS an ANI_CODE routine indexes directly, 16.16. */
+static const int32_t code_value_rows[][WM_ANIM_ROSTER_SLOTS] = {
+    { 6553600, 7077888, 7077888, 6881280, 5242880, 6881280, 6291456, 6881280, 5898240 },   /* create_impact */
+};
+
+static const char *const code_value_names[] = {
+    "create_impact",
+};
+
+int wm_anim_code_roster_value(const char *routine, int32_t num,
+                              int32_t *out) {
+    size_t i;
+    if (!routine) return 0;
+    if (num < 0 || num >= WM_ANIM_ROSTER_SLOTS) return 0;
+    for (i = 0; i < sizeof(code_value_names) / sizeof(code_value_names[0]); ++i)
+        if (strcmp(code_value_names[i], routine) == 0) {
+            if (out) *out = code_value_rows[i][num];
+            return 1;
+        }
+    return 0;
+}
+
 const char *wm_anim_changeanim_label(size_t id, int32_t num) {
     if (id >= sizeof(changeanim_rows) / sizeof(changeanim_rows[0]))
         return 0;

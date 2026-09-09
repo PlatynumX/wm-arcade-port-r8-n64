@@ -63,6 +63,15 @@ const char *wm_anim_slave_label(size_t id, int32_t wrestler_num);
  * cut Adam Bomb slot, which is a literal 0 in the source.
  */
 const char *wm_anim_code_roster_label(const char *routine, int32_t wrestler_num);
+
+/*
+ * The same, for a per-wrestler table of NUMBERS: SPECIAL.ASM:347's
+ * `#offset_t`, nine 16.16 Y offsets that create_impact reads with the
+ * VICTIM's number to place the explosion up his body. Returns 0 for an
+ * unknown routine or an out-of-range wrestler, leaving `*out` alone.
+ */
+int wm_anim_code_roster_value(const char *routine, int32_t wrestler_num,
+                              int32_t *out);
 size_t wm_anim_slave_table_count(void);
 
 /* GAME.EQU's nine WRESTLERNUM slots, Adam Bomb's cut seventh included. */

@@ -36,6 +36,22 @@ extern "C" {
 #define WM_RING_BOT_RIGHT  (1343 + 5)
 #define WM_RING_RIGHT_WIDTH (WM_RING_BOT_RIGHT - WM_RING_TOP_RIGHT)
 #define WM_RING_TOP 1023
+
+/* DISPLAY.EQU:56 RING_X_MID. Note this is NOT WM_RING_X_CENTER (0x400+50
+   = 1074): set_xdrift measures from the screen midpoint, and the two are
+   50 units apart. */
+#define WM_RING_X_MID 1024
+
+/*
+ * RING.ASM:23/72 vln_right_rope and vln_left_rope, first two words -- the
+ * top corner of each side's rope line, which tgt_tbukl aims a turnbuckle
+ * climb at. These are RING.ASM's own numbers and differ from
+ * WRESTLE.ASM's vln_*_rope_r pair by five units on the right, so they are
+ * kept separately rather than folded into WM_RING_TOP_RIGHT.
+ */
+#define WM_ROPE_LINE_LEFT_X 856
+#define WM_ROPE_LINE_RIGHT_X (1192 + 100)
+#define WM_ROPE_LINE_TOP_Z 1023
 #define WM_RING_BOT 1345
 #define WM_RING_DEPTH (WM_RING_BOT - WM_RING_TOP)
 

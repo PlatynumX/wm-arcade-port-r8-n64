@@ -4877,6 +4877,163 @@ static void test_announce_match_over(void) {
     }
 }
 
+/*
+ * Five more self-contained ANI_CODE routines: targeting and drift. Each
+ * reads and writes only the actor it is given, plus ring geometry.
+ */
+static void test_targeting_and_drift(void) {
+    wm_arcade_actor_t a;
+    wm_anim_env env;
+
+    memset(&env, 0, sizeof(env));
+
+    /*
+     * BAMSEQ3.ASM:764 set_xdrift -- "Leap at the center of ring!". Only
+     * in the ring, only outside a 60h deadband, then a flat 3.0 toward
+     * the middle. Note the midline is RING_X_MID (1024), NOT
+     * RING_X_CENTER (1074): the two are 50 apart and this uses the former.
+     */
+    CHECK(WM_RING_X_MID != WM_RING_X_CENTER);
+
+    /* Out of the ring: nothing. The source's test is `jrnz #ok` on
+       INRING, which is 1 for OUTSIDE -- this port's boolean is inverted. */
+    memset(&a, 0, sizeof(a));
+    a.in_ring = false;
+    a.x_int = WM_RING_X_MID - 0x200;
+    CHECK(wm_anim_code_run(&a, &env, "set_xdrift", NULL));
+    CHECK(a.x_vel == 0);
+
+    /* Inside the deadband: nothing. */
+    memset(&a, 0, sizeof(a));
+    a.in_ring = true;
+    a.x_int = WM_RING_X_MID + 0x5F;
+    CHECK(wm_anim_code_run(&a, &env, "set_xdrift", NULL));
+    CHECK(a.x_vel == 0);
+
+    /* Left of the midline by more than the deadband: drift right. */
+    memset(&a, 0, sizeof(a));
+    a.in_ring = true;
+    a.x_int = WM_RING_X_MID - 0x60;
+    CHECK(wm_anim_code_run(&a, &env, "set_xdrift", NULL));
+    CHECK(a.x_vel == 0x30000);
+
+    /* Right of it: drift left. */
+    memset(&a, 0, sizeof(a));
+    a.in_ring = true;
+    a.x_int = WM_RING_X_MID + 0x60;
+    CHECK(wm_anim_code_run(&a, &env, "set_xdrift", NULL));
+    CHECK(a.x_vel == -0x30000);
+
+    /* Exactly on the midline is inside the deadband, so nothing at all --
+       the `jrgt` tie-break never comes up from this direction. */
+    memset(&a, 0, sizeof(a));
+    a.in_ring = true;
+    a.x_int = WM_RING_X_MID;
+    CHECK(wm_anim_code_run(&a, &env, "set_xdrift", NULL));
+    CHECK(a.x_vel == 0);
+
+    /*
+     * DNKSEQ2.ASM:5303 set_buckoff_vels -- thrown off the turnbuckle:
+     * pushed toward the middle in X and Z, and popped 5.0 upward.
+     */
+    memset(&a, 0, sizeof(a));
+    a.x_int = WM_RING_X_CENTER - 100;
+    a.z_int = WM_RING_Z_CENTER - 100;
+    CHECK(wm_anim_code_run(&a, &env, "set_buckoff_vels", NULL));
+    CHECK(a.x_vel == 0x20000);
+    CHECK(a.z_vel == 0x40000);
+    CHECK(a.y_vel == 0x50000);
+
+    memset(&a, 0, sizeof(a));
+    a.x_int = WM_RING_X_CENTER + 100;
+    a.z_int = WM_RING_Z_CENTER + 100;
+    CHECK(wm_anim_code_run(&a, &env, "set_buckoff_vels", NULL));
+    CHECK(a.x_vel == -0x20000);
+    CHECK(a.z_vel == -0x40000);
+    CHECK(a.y_vel == 0x50000);
+
+    /* Both tests are `jrle`, so exactly on centre takes the positive
+       branch rather than the negative one. */
+    memset(&a, 0, sizeof(a));
+    a.x_int = WM_RING_X_CENTER;
+    a.z_int = WM_RING_Z_CENTER;
+    CHECK(wm_anim_code_run(&a, &env, "set_buckoff_vels", NULL));
+    CHECK(a.x_vel == 0x20000);
+    CHECK(a.z_vel == 0x40000);
+
+    /*
+     * DNKSEQ2.ASM:938 skick_delay -- a two-second lockout between super
+     * kicks, reported through MODE_STATUS.
+     */
+    memset(&a, 0, sizeof(a));
+    env.pcnt = 1000u;
+    CHECK(wm_anim_code_run(&a, &env, "skick_delay", NULL));
+    /* First one: LAST_SKICK was 0, so the gap is huge and it passes. */
+    CHECK((a.anim_mode & WM_MODE_STATUS) == 0);
+    CHECK(a.last_skick == 1000u);
+
+    /* Another within two seconds: refused. */
+    env.pcnt = 1000u + (2 * 60) - 1;
+    CHECK(wm_anim_code_run(&a, &env, "skick_delay", NULL));
+    CHECK((a.anim_mode & WM_MODE_STATUS) != 0);
+    /* ...and the stamp moved anyway: the source writes it BEFORE the
+       comparison, so a refused attempt still restarts the window. */
+    CHECK(a.last_skick == env.pcnt);
+
+    /* Exactly two seconds later is allowed -- the test is `jrge`. */
+    memset(&a, 0, sizeof(a));
+    a.last_skick = 500u;
+    env.pcnt = 500u + (2 * 60);
+    CHECK(wm_anim_code_run(&a, &env, "skick_delay", NULL));
+    CHECK((a.anim_mode & WM_MODE_STATUS) == 0);
+
+    /*
+     * WRESTLE2.ASM:1612 tgt_ground -- "Zero yer TGT_YOFF. Do this
+     * anytime you target an opponent who's on the ground."
+     */
+    memset(&a, 0, sizeof(a));
+    a.tgt_yoff = 999;
+    a.tgt_xoff = 111;
+    a.tgt_zoff = 222;
+    CHECK(wm_anim_code_run(&a, &env, "tgt_ground", NULL));
+    CHECK(a.tgt_yoff == 0);
+    CHECK(a.tgt_xoff == 111 && a.tgt_zoff == 222);   /* only Y */
+
+    /*
+     * SHNSEQ2.ASM:2566 tgt_tbukl -- aim at the near turnbuckle, from
+     * RING.ASM's own rope lines.
+     */
+    memset(&a, 0, sizeof(a));
+    a.x_int = WM_RING_X_CENTER - 200;
+    CHECK(wm_anim_code_run(&a, &env, "tgt_tbukl", NULL));
+    CHECK(a.tgt_xoff == WM_ROPE_LINE_LEFT_X);
+    CHECK(a.tgt_zoff == WM_ROPE_LINE_TOP_Z - 16);
+    CHECK(a.tgt_yoff == WM_MAT_Y + 80);
+
+    memset(&a, 0, sizeof(a));
+    a.x_int = WM_RING_X_CENTER + 200;
+    CHECK(wm_anim_code_run(&a, &env, "tgt_tbukl", NULL));
+    CHECK(a.tgt_xoff == WM_ROPE_LINE_RIGHT_X);
+
+    /* `jrgt` again: exactly on centre climbs the LEFT one. */
+    memset(&a, 0, sizeof(a));
+    a.x_int = WM_RING_X_CENTER;
+    CHECK(wm_anim_code_run(&a, &env, "tgt_tbukl", NULL));
+    CHECK(a.tgt_xoff == WM_ROPE_LINE_LEFT_X);
+
+    /* RING.ASM's right rope line is not WRESTLE.ASM's -- five units
+       apart, which is why they are kept as separate constants. */
+    CHECK(WM_ROPE_LINE_RIGHT_X != WM_RING_TOP_RIGHT);
+
+    /* All five are answered by name, and none of them crashes on NULL. */
+    CHECK(wm_anim_code_run(NULL, &env, "set_xdrift", NULL));
+    CHECK(wm_anim_code_run(NULL, &env, "set_buckoff_vels", NULL));
+    CHECK(wm_anim_code_run(NULL, &env, "skick_delay", NULL));
+    CHECK(wm_anim_code_run(NULL, &env, "tgt_ground", NULL));
+    CHECK(wm_anim_code_run(NULL, &env, "tgt_tbukl", NULL));
+    CHECK(wm_anim_code_run(&a, NULL, "skick_delay", NULL));
+}
+
 /* The self-contained state commands: no subsystem behind any of them. */
 static void test_self_contained_ops(void) {
     wm_arcade_actor_t a, v;
@@ -7696,6 +7853,7 @@ int main(void) {
     test_do_combo_mess_from_the_vm();
     test_wrsnd_tables();
     test_wrsnd_anim_code_routines();
+    test_targeting_and_drift();
     test_program_entry_points();
     test_digit_leading_local_labels();
     test_self_contained_ops();

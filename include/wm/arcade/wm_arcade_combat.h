@@ -288,6 +288,19 @@ struct wm_arcade_actor {
     int32_t i_will_die;
     uint32_t block_time;
     uint32_t last_headhold;
+    /* PLYR.EQU:256 LAST_SKICK -- "PCNT last time I performed a super
+       kick", the stamp skick_delay measures its two-second window from. */
+    uint32_t last_skick;
+    /*
+     * PLYR.EQU:56-58 TGT_XOFF/TGT_YOFF/TGT_ZOFF -- where a leap is aimed.
+     * ANIM.ASM:1428 is explicit that they are the caller's job: "NB - user
+     * must set TGT_XOFF,YOFF & ZOFF <-- these are the actual target".
+     * The routines that set them are translated; ANI_LEAPATPOS, which
+     * reads them, is not yet.
+     */
+    int32_t tgt_xoff;
+    int32_t tgt_yoff;
+    int32_t tgt_zoff;
     uintptr_t code_addr;         /* source CODE_ADDR pointer/token; resolver owns meaning */
     int32_t delay_butns;
     int32_t attack_type;

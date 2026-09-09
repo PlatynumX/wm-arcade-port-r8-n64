@@ -330,6 +330,130 @@ static void do_combo_mess(wm_arcade_actor_t *actor, const wm_anim_env *env,
 }
 
 /* ================================================================== *
+ * Targeting and drift: five more self-contained routines.
+ *
+ * Each reads and writes only the actor it is given, plus ring geometry,
+ * which is why they translate one-for-one.
+ * ================================================================== */
+
+/*
+ * BAMSEQ3.ASM:764 set_xdrift, with the source's own note: "Float / This
+ * could become a leap at position command / Leap at the center of ring!"
+ *
+ * Only in the ring, and only if he is already more than 60h from the
+ * screen midline -- inside that he is close enough. Then a flat 3.0 of X
+ * velocity toward the middle.
+ *
+ * The INRING test is `jrnz #ok`, and PLYR.EQU:103 says INRING is 0 for IN
+ * the ring and 1 for outside, so the source skips when he is OUT. This
+ * port stores the ordinary boolean, so the test flips.
+ */
+#define WM_XDRIFT_DEADBAND 0x60
+#define WM_XDRIFT_VEL 0x30000
+
+static void set_xdrift(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                       int32_t param) {
+    int32_t dx;
+    (void)env;
+    (void)param;
+    if (!actor) return;
+    if (!actor->in_ring) return;              /* `jrnz #ok`, inverted */
+
+    dx = actor->x_int - WM_RING_X_MID;
+    if (dx < 0) dx = -dx;                     /* `abs a0` */
+    if (dx < WM_XDRIFT_DEADBAND) return;
+
+    /* `cmpi RING_X_MID,a0 / jrgt #onrgt` -- exactly on the midline takes
+       the left branch and drifts right. */
+    actor->x_vel = (actor->x_int > WM_RING_X_MID) ? -WM_XDRIFT_VEL
+                                                  : WM_XDRIFT_VEL;
+}
+
+/*
+ * DNKSEQ2.ASM:5303 set_buckoff_vels -- thrown off the turnbuckle. X and Z
+ * are pushed toward the middle of the ring and he pops 5.0 upward. Both
+ * tests are `jrle`, so a wrestler exactly on centre takes the positive
+ * branch.
+ */
+#define WM_BUCKOFF_XVEL 0x20000
+#define WM_BUCKOFF_ZVEL 0x40000
+#define WM_BUCKOFF_YVEL 0x50000
+
+static void set_buckoff_vels(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                             int32_t param) {
+    (void)env;
+    (void)param;
+    if (!actor) return;
+    actor->x_vel = (actor->x_int > WM_RING_X_CENTER) ? -WM_BUCKOFF_XVEL
+                                                     : WM_BUCKOFF_XVEL;
+    actor->z_vel = (actor->z_int > WM_RING_Z_CENTER) ? -WM_BUCKOFF_ZVEL
+                                                     : WM_BUCKOFF_ZVEL;
+    actor->y_vel = WM_BUCKOFF_YVEL;
+}
+
+/*
+ * DNKSEQ2.ASM:938 skick_delay. Stamp LAST_SKICK with PCNT, and if the
+ * previous super kick was less than two seconds ago set MODE_STATUS --
+ * the source's own comment: "This blocked fling attempt is too close (in
+ * terms of time) to most recent grab".
+ *
+ * The royal-rumble early-out (`move @royal_rumble,a0 / jrnz #ok`) skips
+ * the check entirely in that mode. This port has no royal rumble, so the
+ * flag is 0 and the check always applies -- which is the shipped
+ * behaviour of every match this port can actually run.
+ *
+ * Note the stamp is written BEFORE the comparison, so it records this
+ * attempt whether or not the attempt is allowed.
+ */
+#define WM_SKICK_WINDOW (2 * 60)
+
+static void skick_delay(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                        int32_t param) {
+    uint32_t previous, now;
+    (void)param;
+    if (!actor) return;
+    now = env ? env->pcnt : 0u;
+    previous = actor->last_skick;
+    actor->last_skick = now;                  /* stamped either way */
+    if ((uint32_t)(now - previous) >= (uint32_t)WM_SKICK_WINDOW) return;
+    actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
+}
+
+/*
+ * WRESTLE2.ASM:1612 tgt_ground, whose whole body is one clear -- and
+ * whose comment says when to use it: "Zero yer TGT_YOFF. Do this anytime
+ * you target an opponent who's on the ground."
+ */
+static void tgt_ground(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                       int32_t param) {
+    (void)env;
+    (void)param;
+    if (actor) actor->tgt_yoff = 0;
+}
+
+/*
+ * SHNSEQ2.ASM:2566 tgt_tbukl -- aim a climb at the near turnbuckle. The
+ * side is picked by which half of the ring he is in, the X and Z come
+ * from that side's rope line (RING.ASM's own vln_*_rope, not
+ * WRESTLE.ASM's vln_*_rope_r), Z is pulled 16 in, and Y is MAT_Y+80.
+ */
+#define WM_TBUKL_Z_INSET 16
+#define WM_TBUKL_Y (WM_MAT_Y + 80)
+
+static void tgt_tbukl(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                      int32_t param) {
+    (void)env;
+    (void)param;
+    if (!actor) return;
+    /* `cmpi RING_X_CENTER,a14 / jrgt #right` -- exactly on centre climbs
+       the left one. */
+    actor->tgt_xoff = (actor->x_int > WM_RING_X_CENTER)
+                          ? WM_ROPE_LINE_RIGHT_X : WM_ROPE_LINE_LEFT_X;
+    actor->tgt_zoff = WM_ROPE_LINE_TOP_Z - WM_TBUKL_Z_INSET;
+    actor->tgt_yoff = WM_TBUKL_Y;
+}
+
+/* ================================================================== *
  * WRSNDX: the per-wrestler voices.
  *
  * `impact_sound` and `DO_GRUNT` are two lines of assembly each -- all the
@@ -1291,6 +1415,11 @@ static const struct {
     { "DO_BRET_PUSH", NULL, do_bret_push, 0 },
     { "DO_LEX_PUSH", NULL, do_lex_push, 0 },
     { "DO_COMBO_MESS", NULL, do_combo_mess, 0 },
+    { "set_xdrift", NULL, set_xdrift, 0 },
+    { "set_buckoff_vels", NULL, set_buckoff_vels, 0 },
+    { "skick_delay", NULL, skick_delay, 0 },
+    { "tgt_ground", NULL, tgt_ground, 0 },
+    { "tgt_tbukl", NULL, tgt_tbukl, 0 },
     /* SUBRP, so file-local: the rug slam without the headbutt. */
     { "impact_sound", "HRTSEQ4.ASM", impact_sound_local, 0 },
     { "impact_sound", "RZRSEQ3.ASM", impact_sound_local, 0 },

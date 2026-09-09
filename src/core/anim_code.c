@@ -294,6 +294,12 @@ static struct {
     WmRng *rng;
     bool (*near_death)(void *user);
     void *user;
+    /* GETPRC carries the crowd seam into the created process the same way
+       it carries everything else the call needs. */
+    void *crowd_user;
+    void (*crowd_cheer)(void *user, int flags, int percent);
+    void (*crowd_sound)(void *user, int sound, int ticks);
+    bool (*crowd_busy)(void *user);
     uint16_t delay;
     uint16_t percent;
     int wrestler;              /* A5, or -1 when this caller never sets it */
@@ -301,10 +307,16 @@ static struct {
 
 static void announce_fire(size_t i) {
     wm_announce_ctx ctx;
+    memset(&ctx, 0, sizeof(ctx));
     ctx.rng = ann_pending[i].rng;
     ctx.wrestler_num = ann_pending[i].wrestler;
     ctx.anyone_near_death = ann_pending[i].near_death;
     ctx.user = ann_pending[i].user;
+    ctx.crowd_user = ann_pending[i].crowd_user;
+    ctx.crowd_cheer = ann_pending[i].crowd_cheer;
+    ctx.crowd_sound = ann_pending[i].crowd_sound;
+    ctx.crowd_busy = ann_pending[i].crowd_busy &&
+        ann_pending[i].crowd_busy(ann_pending[i].crowd_user);
     /* Every one of these callers uses ADD_IF_SILENT, not ADD_TO_QUEUE. */
     (void)wm_announce_from_table(ann_pending[i].announcer,
                                  ann_pending[i].table,
@@ -329,6 +341,70 @@ static void do_combo_mess(wm_arcade_actor_t *actor, const wm_anim_env *env,
         ctx.round_award = env->round_award;
     }
     (void)wm_arcade_do_combo_mess(actor, &ctx);
+}
+
+/*
+ * CROWD.ASM:1119 DO_CROWD_CHEER, the whole of it:
+ *
+ *     MOVK  C_OVERIDE|C_LONG,A3
+ *     CLR   A4
+ *     (falls into crowd_cheer)
+ *
+ * So the routine is its two arguments -- interrupt whatever the crowd is
+ * doing, run the long animation, and no randomness, which makes A4 dead
+ * (crowd_cheer only reads it when B_RANDOM is set). crowd_cheer itself
+ * walks NUMCROWD members of CROWDDATA setting each one's SCPTR to its
+ * CHEER1 or CHEER2 script; that is a sprite subsystem this port has not
+ * got, so it is reached through wm_anim_env like triple_sound and the
+ * rope commands are.
+ */
+static void do_crowd_cheer(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                           int32_t param) {
+    (void)actor;
+    (void)param;
+    if (!env || !env->crowd_cheer) return;
+    env->crowd_cheer(env->crowd_user, WM_CROWD_OVERRIDE | WM_CROWD_LONG, 0);
+}
+
+/*
+ * DNKSEQ3.ASM:2256 spunch_delay -- skick_delay's twin, with a gate in
+ * front of it. The delay check runs only when this is NOT a royal rumble
+ * AND either both players are human (PSTATUS==3) or there is exactly one
+ * opponent:
+ *
+ *     move @royal_rumble,a0 / jrnz #ok
+ *     move @PSTATUS,a0 / subk 3,a0 / jrz #cont
+ *     move @NUM_OPPS,a0 / subk 1,a0 / jrnz #ok
+ *
+ * skick_delay has the same shape with only the royal-rumble half, and its
+ * commented-out lines in the source are this gate -- so the two were
+ * written together and one had it disabled.
+ *
+ * This port starts either the PSTATUS==0 attract match or the
+ * single-human #1plyr one and always creates exactly one opponent, so the
+ * gate resolves to "check" for every match it can currently run. It is
+ * evaluated from wm_anim_env rather than assumed, so that stays true by
+ * reading the values rather than by a comment.
+ */
+#define WM_SPUNCH_WINDOW (2 * 60)
+#define WM_PSTATUS_BOTH_HUMAN 3
+
+static void spunch_delay(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                         int32_t param) {
+    uint32_t previous, now;
+    (void)param;
+    if (!actor) return;
+
+    if (env && env->royal_rumble) return;                  /* `jrnz #ok` */
+    if (!env ||
+        !(env->pstatus == WM_PSTATUS_BOTH_HUMAN || env->num_opps == 1))
+        return;                                            /* `jrnz #ok` */
+
+    now = env->pcnt;
+    previous = actor->last_spunch;
+    actor->last_spunch = now;              /* stamped before the compare */
+    if ((uint32_t)(now - previous) >= (uint32_t)WM_SPUNCH_WINDOW) return;
+    actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
 }
 
 /*
@@ -976,6 +1052,10 @@ static bool announce_call(const wm_arcade_actor_t *actor,
     ann_pending[i].rng = env->rng;
     ann_pending[i].near_death = env->anyone_near_death;
     ann_pending[i].user = env->announcer_user;
+    ann_pending[i].crowd_user = env->crowd_user;
+    ann_pending[i].crowd_cheer = env->crowd_cheer;
+    ann_pending[i].crowd_sound = env->crowd_sound;
+    ann_pending[i].crowd_busy = env->crowd_busy;
     ann_pending[i].percent = c->percent;
     ann_pending[i].wrestler =
         (c->personal && actor) ? (int)actor->wrestler_num : -1;
@@ -1851,6 +1931,8 @@ static const struct {
     /* YOKSEQ4's local #choose_2or4 is byte-identical to SHNSEQ4's global
        one, so it shares the body rather than getting a second copy. */
     { "#choose_2or4", "YOKSEQ4.ASM", choose_2or4, 0 },
+    { "spunch_delay", NULL, spunch_delay, 0 },
+    { "DO_CROWD_CHEER", NULL, do_crowd_cheer, 0 },
     { "#zero_x_4", "SHNSEQ2.ASM", zero_x_4, 0 },
     /* The local copy kills Z as well; the global no_bk_xvel does not. */
     { "#no_bk_xvel", "SHNSEQ3.ASM", no_bk_xvel_local, 0 },

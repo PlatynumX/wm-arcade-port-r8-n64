@@ -1422,6 +1422,51 @@ def test_announce_tables() -> None:
         assert row == sorted(row, reverse=True), (i, row)
 
 
+def test_crowd_tables_come_out_of_the_source() -> None:
+    """DCSSOUND.ASM:4443's CROWD TABLES, read the way DO_CROWD_ANYWAY does.
+
+    A one-value header (`.WORD n`) before the label and four words a row:
+    sound, duration, crowd_cheer flags, RNDPER percentage. The routine
+    picks a row with `SLL 6,A0`, which is four 16-bit words, so a row that
+    came out any other width would put the draw off the end of the table.
+    """
+    if not (wlanim.ORIG / "DCSSOUND.ASM").exists():
+        return
+    crowd = wlvoice.crowd_tables()
+    # The eight the source writes under its own "*CROWD TABLES" banner.
+    assert set(crowd) == {
+        "SETUP_TABLE", "CRESCENDO_TABLE", "ROPES_CHEER", "CROWD_FAIL",
+        "CROWD_SPECIAL", "CROWD_CHEER", "CROWD_THROWN", "CROWD_ORDINARY",
+    }, sorted(crowd)
+
+    c_long, c_override, c_random = 1, 2, 4
+    for name, t in crowd.items():
+        assert t["last_index"] < len(t["rows"]), (name, t)
+        for row in t["rows"]:
+            assert len(row) == 4, (name, row)
+            sound, ticks, flags, percent = row
+            # SOUND.EQU's crowd block; the durations are D_CROWD_* ticks.
+            assert 2048 <= sound <= 2100, (name, sound)
+            assert 0 < ticks < 512, (name, ticks)
+            assert flags & ~(c_long | c_override | c_random) == 0, (name, flags)
+            # crowd_cheer reads A4 only when B_RANDOM is set, and the
+            # source leaves the column 0 on every row that does not.
+            if flags & c_random:
+                assert 0 < percent <= 1000, (name, percent)
+            else:
+                assert percent == 0, (name, percent)
+
+    # Every crowd `.LONG` an announcer table carries names one of them.
+    named = {t["crowd"] for t in wlvoice.announce_tables().values()
+             if t["crowd"]}
+    assert named and named <= set(crowd), sorted(named - set(crowd))
+
+    # ...and the one table with a single row is the one the source wrote
+    # with a `.WORD 0` header, so a draw can only ever land on row 0.
+    assert crowd["CRESCENDO_TABLE"]["last_index"] == 0
+    assert len(crowd["CRESCENDO_TABLE"]["rows"]) == 1
+
+
 def test_announce_tables_generate_the_shipped_file() -> None:
     """The checked-in generated file is what the tool produces today."""
     out = ROOT / "src" / "generated" / "announce_tables.c"

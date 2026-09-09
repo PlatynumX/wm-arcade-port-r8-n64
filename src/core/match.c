@@ -77,6 +77,33 @@ static void match_rope_command(void *user, int bank, int action,
  * channels rather than per-strand Z, so the value is computed and applied
  * to the bank's shared state rather than to one rope's object.
  */
+/*
+ * CROWD.ASM:1130 crowd_cheer and DCSSOUND.ASM:3046's SNDSND, held for a
+ * CROWD.ASM port to read. Nothing here decides anything: it records what
+ * the source's arguments were, and runs CROWD_DUMMY's clock.
+ */
+static void match_crowd_cheer(void *user, int flags, int percent) {
+    wm_match_state *m = (wm_match_state *)user;
+    if (!m) return;
+    m->crowd.flags = flags;
+    m->crowd.percent = percent;
+    ++m->crowd.cheers;
+}
+
+static void match_crowd_sound(void *user, int sound, int ticks) {
+    wm_match_state *m = (wm_match_state *)user;
+    if (!m) return;
+    m->crowd.sound = sound;
+    m->crowd.sound_ticks = (uint16_t)(ticks < 0 ? 0 : ticks);
+    ++m->crowd.sounds;
+}
+
+/* `move @crowd_dummy_exists,a0 / JRNZ NO_CROWD_ALREADY_GOING` */
+static bool match_crowd_busy(void *user) {
+    const wm_match_state *m = (const wm_match_state *)user;
+    return m && m->crowd.sound_ticks != 0u;
+}
+
 static void match_rope_set_z(void *user, int bank, int strand, int action) {
     wm_match_state *m = (wm_match_state *)user;
     if (!m || bank < 0 || bank >= WM_MATCH_ROPE_BANKS) return;
@@ -442,6 +469,28 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             m->bret_visual[i].anim_env.rope_user = m;
             m->bret_visual[i].anim_env.rope_command = match_rope_command;
             m->bret_visual[i].anim_env.rope_set_z = match_rope_set_z;
+            /* ...and the same crowd. */
+            m->wrestler_visual[i].anim_env.crowd_user = m;
+            m->wrestler_visual[i].anim_env.crowd_cheer = match_crowd_cheer;
+            m->wrestler_visual[i].anim_env.crowd_sound = match_crowd_sound;
+            m->wrestler_visual[i].anim_env.crowd_busy = match_crowd_busy;
+            m->bret_visual[i].anim_env.crowd_user = m;
+            m->bret_visual[i].anim_env.crowd_cheer = match_crowd_cheer;
+            m->bret_visual[i].anim_env.crowd_sound = match_crowd_sound;
+            m->bret_visual[i].anim_env.crowd_busy = match_crowd_busy;
+            /*
+             * WRESTLE.ASM's match-configuration globals, as this match
+             * actually is: no royal rumble, PSTATUS 0 for the attract
+             * match and 1 for the single human, and exactly one opponent
+             * because the ladder team draw is not translated. The
+             * routines that gate on these read them rather than assuming.
+             */
+            m->wrestler_visual[i].anim_env.royal_rumble = false;
+            m->wrestler_visual[i].anim_env.pstatus = m->has_human ? 1 : 0;
+            m->wrestler_visual[i].anim_env.num_opps = 1;
+            m->bret_visual[i].anim_env.royal_rumble = false;
+            m->bret_visual[i].anim_env.pstatus = m->has_human ? 1 : 0;
+            m->bret_visual[i].anim_env.num_opps = 1;
             m->wrestler_visual[i].anim_env.award_user = m->anim_award_user;
             m->wrestler_visual[i].anim_env.round_award = m->anim_round_award;
             m->bret_visual[i].anim_env.award_user = m->anim_award_user;
@@ -518,6 +567,7 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
     /* ANNOUNCE_VOICE, one line a tick, out through the same audio seam
        every other sound in this port uses. */
     wm_announce_tick_repeat(&m->announcer);   /* REPEAT_DUMMY */
+    if (m->crowd.sound_ticks) --m->crowd.sound_ticks;   /* CROWD_DUMMY */
     (void)wm_announcer_tick(&m->announcer, m->anim_sound_user, m->anim_sound,
                             NULL);
 

@@ -17,10 +17,9 @@
  *   - what survives goes to ADD_VOICE or IF_SILENT_ADD_VOICE, and a
  *     multi-word row queues its remaining words too, stopping at a zero.
  *
- * Two things the source does that this does not, both stated rather than
- * approximated: DO_CROWD_ANYWAY (the crowd's own sound and cheer
- * animation, which needs a crowd this port does not have) and the process
- * creation around REPEAT_DUMMY, whose 80-tick life is a counter here.
+ * One thing the source does that this does not, stated rather than
+ * approximated: the process creation around REPEAT_DUMMY, whose 80-tick
+ * life is a counter here.
  */
 #include "wm/announce_tables.h"
 
@@ -32,6 +31,15 @@ const wm_announce_table *wm_announce_table_find(const char *name) {
     for (i = 0; i < wm_announce_table_count; ++i)
         if (strcmp(wm_announce_tables[i].name, name) == 0)
             return &wm_announce_tables[i];
+    return NULL;
+}
+
+const wm_crowd_table *wm_crowd_table_find(const char *name) {
+    size_t i;
+    if (!name) return NULL;
+    for (i = 0; i < wm_crowd_table_count; ++i)
+        if (strcmp(wm_crowd_tables[i].name, name) == 0)
+            return &wm_crowd_tables[i];
     return NULL;
 }
 
@@ -197,6 +205,29 @@ static int do_end_stuff(wm_announcer_state *a, bool if_silent,
     return do_the_speech(a, last, word, call, if_silent, last->stride);
 }
 
+/*
+ * DCSSOUND.ASM:3046 DO_CROWD_ANYWAY.
+ *
+ * Draws a row with `MOVE *A3(-010H),A0 / CALLA RNDRNG0 / SLL 6,A0` --
+ * the inclusive maximum out of the table's own header, and six bits of
+ * shift because a row is four words. The sound is skipped when one is
+ * already running (the source's crowd_dummy_exists, which the CROWD_DUMMY
+ * process holds for the sound's duration), and the cheer itself always
+ * runs. `MOVE *A0(030H),A4` is read only when B_RANDOM is set, so a row
+ * without that flag never has its percentage looked at.
+ */
+static void do_crowd_anyway(const wm_crowd_table *c,
+                            const wm_announce_ctx *ctx) {
+    const wm_crowd_row *row;
+    if (!c || !ctx || c->row_count == 0) return;
+    row = &c->rows[rnd0(ctx, c->last_index) % c->row_count];
+    if (!ctx->crowd_busy && ctx->crowd_sound)
+        ctx->crowd_sound(ctx->crowd_user, row->sound, row->ticks);
+    if (ctx->crowd_cheer)
+        ctx->crowd_cheer(ctx->crowd_user, row->flags,
+                         (row->flags & WM_CROWD_RANDOM) ? row->percent : 0);
+}
+
 int wm_announce_from_table(wm_announcer_state *a, const wm_announce_table *t,
                            uint16_t percent, bool if_silent,
                            const wm_announce_ctx *ctx) {
@@ -210,9 +241,8 @@ int wm_announce_from_table(wm_announcer_state *a, const wm_announce_table *t,
         a->repeat_state = 0;
         a->repeat_ticks = 0;
     }
-    /* `MOVE *A2(-040H),A3,L / JRZ NO_CROWD / CALLA DO_CROWD_ANYWAY` is
-       deliberately not translated: it drives the crowd's own sound and
-       cheer animation, and this port has no crowd. */
+    /* `MOVE *A2(-040H),A3,L / JRZ NO_CROWD / CALLA DO_CROWD_ANYWAY` */
+    if (t->crowd) do_crowd_anyway(wm_crowd_table_find(t->crowd), ctx);
 
     if (a->repeat_state != 0) {
         /* The queue is already counting repeats: no draw, no percentage. */

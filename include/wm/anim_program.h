@@ -388,6 +388,43 @@ typedef struct wm_anim_env {
     void *award_user;
     void (*round_award)(void *user, int player_num, unsigned award_index);
 
+    /*
+     * WRESTLE.ASM's match-configuration globals, carried so the routines
+     * that GATE on them can evaluate the real test instead of having the
+     * answer assumed for them.
+     *
+     * `pstatus` is PSTATUS, one bit per human player, so 3 is two humans;
+     * `num_opps` is NUM_OPPS, the size of the opposing team. This port
+     * starts either the PSTATUS==0 attract match or the single-human
+     * #1plyr one, and never draws a full team from the ladder table, so
+     * in practice these are 0 or 1 and num_opps is 1 -- but the routines
+     * read them rather than being written around them, so a match type
+     * added later gets the source's own behaviour for free.
+     */
+    bool royal_rumble;
+    int32_t pstatus;
+    int32_t num_opps;
+
+    /*
+     * CROWD.ASM:1130 crowd_cheer. The crowd is NUMCROWD sprite members
+     * with their own scripts, which this port does not have; what the
+     * animations reach is this call and its flags (GAME.EQU's C_LONG /
+     * C_OVERIDE / C_RANDOM, spelled WM_CROWD_* in wm/announce_tables.h),
+     * so the routine that names them stays a real translation and the
+     * crowd itself belongs to a CROWD.ASM port.
+     */
+    void *crowd_user;
+    void (*crowd_cheer)(void *user, int flags, int percent);
+    /*
+     * The other half of the crowd, reached by DCSSOUND.ASM:3046
+     * DO_CROWD_ANYWAY when an announcer table carries a crowd `.LONG`:
+     * the SNDSND of the drawn row, guarded by the source's
+     * crowd_dummy_exists -- a process that holds the flag for exactly the
+     * sound's own duration, which is why the row carries one.
+     */
+    void (*crowd_sound)(void *user, int sound, int ticks);
+    bool (*crowd_busy)(void *user);
+
     void *rope_user;
     void (*rope_command)(void *user, int bank, int action, int selector,
                          int32_t wrestler_z_fp16);

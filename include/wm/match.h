@@ -125,6 +125,28 @@ typedef struct {
     /* set_rope_z's second-half Z per bank (ANIM.ASM:41's RZ_HIGH/RZ_NORM). */
     uint16_t rope_second_half_z[WM_MATCH_ROPE_BANKS];
 
+    /*
+     * What CROWD.ASM's crowd_cheer is told, for as long as there is no
+     * CROWD.ASM port to tell. The flags and percentages are the real
+     * extracted ones -- DO_CROWD_CHEER's C_OVERIDE|C_LONG, and whatever
+     * row DO_CROWD_ANYWAY drew out of the announcer table's crowd
+     * `.LONG` -- so the subsystem that eventually reads them gets the
+     * source's own arguments rather than a reconstruction.
+     *
+     * `sound_ticks` doubles as the source's crowd_dummy_exists: CROWD_DUMMY
+     * is a process that sleeps for exactly the drawn row's duration, and
+     * while it lives DO_CROWD_ANYWAY skips the SNDSND. Counted down by
+     * wm_match_tick.
+     */
+    struct {
+        int flags;            /* WM_CROWD_* */
+        int percent;          /* per mille, 0 unless WM_CROWD_RANDOM */
+        int sound;            /* SOUND.EQU CROWD_* id, 0 if none yet */
+        uint16_t sound_ticks; /* CROWD_DUMMY's remaining life */
+        uint32_t cheers;      /* how many times crowd_cheer was reached */
+        uint32_t sounds;      /* how many times SNDSND was */
+    } crowd;
+
     /* LIFEBAR.ASM::set_winner's real best-of-3 round/match tracking,
        awarded once on round_state.decided's false-to-true edge -- see
        wm_arcade_match_score_award_round's own comment. */

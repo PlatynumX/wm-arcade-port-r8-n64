@@ -368,32 +368,104 @@ static const int16_t yoko_finishes_rows[] = {
 };
 
 const wm_announce_table wm_announce_tables[] = {
-    { "AVERAGE_MOVE", average_move_rows, sizeof(average_move_rows) / sizeof(average_move_rows[0]), 17, 1, false },
-    { "BAM_FINISHES", bam_finishes_rows, sizeof(bam_finishes_rows) / sizeof(bam_finishes_rows[0]), 2, 1, true },
-    { "DOINK_FINISHES", doink_finishes_rows, sizeof(doink_finishes_rows) / sizeof(doink_finishes_rows[0]), 0, 1, true },
-    { "DROP_KICK", drop_kick_rows, sizeof(drop_kick_rows) / sizeof(drop_kick_rows[0]), 14, 1, false },
-    { "FACE_HIT", face_hit_rows, sizeof(face_hit_rows) / sizeof(face_hit_rows[0]), 7, 1, false },
-    { "HART_FINISHES", hart_finishes_rows, sizeof(hart_finishes_rows) / sizeof(hart_finishes_rows[0]), 0, 1, true },
-    { "LUGER_FINISHES", luger_finishes_rows, sizeof(luger_finishes_rows) / sizeof(luger_finishes_rows[0]), 0, 1, true },
-    { "MATCH_OVER", match_over_rows, sizeof(match_over_rows) / sizeof(match_over_rows[0]), 6, 1, true },
-    { "MATCH_OVER_DL", match_over_dl_rows, sizeof(match_over_dl_rows) / sizeof(match_over_dl_rows[0]), 3, 1, true },
-    { "MID_HIT", mid_hit_rows, sizeof(mid_hit_rows) / sizeof(mid_hit_rows[0]), 7, 1, false },
-    { "MISSES", misses_rows, sizeof(misses_rows) / sizeof(misses_rows[0]), 17, 1, true },
-    { "MISS_YOKO", miss_yoko_rows, sizeof(miss_yoko_rows) / sizeof(miss_yoko_rows[0]), 6, 1, true },
-    { "NASTY_MOVE", nasty_move_rows, sizeof(nasty_move_rows) / sizeof(nasty_move_rows[0]), 17, 2, true },
-    { "OTHER_AVERAGE", other_average_rows, sizeof(other_average_rows) / sizeof(other_average_rows[0]), 12, 1, true },
-    { "RAZOR_FINISHES", razor_finishes_rows, sizeof(razor_finishes_rows) / sizeof(razor_finishes_rows[0]), 0, 1, true },
-    { "REVERSAL", reversal_rows, sizeof(reversal_rows) / sizeof(reversal_rows[0]), 14, 1, false },
-    { "SETUP_MOVE", setup_move_rows, sizeof(setup_move_rows) / sizeof(setup_move_rows[0]), 15, 1, false },
-    { "SHAWN_FINISHES", shawn_finishes_rows, sizeof(shawn_finishes_rows) / sizeof(shawn_finishes_rows[0]), 1, 1, false },
-    { "SPECIAL_LAST_STUFF", special_last_stuff_rows, sizeof(special_last_stuff_rows) / sizeof(special_last_stuff_rows[0]), 6, 1, false },
-    { "SPECIAL_MOVE", special_move_rows, sizeof(special_move_rows) / sizeof(special_move_rows[0]), 31, 2, false },
-    { "THROWN_OUT", thrown_out_rows, sizeof(thrown_out_rows) / sizeof(thrown_out_rows[0]), 12, 1, true },
-    { "UNDERTAKER_FINISHES", undertaker_finishes_rows, sizeof(undertaker_finishes_rows) / sizeof(undertaker_finishes_rows[0]), 0, 1, true },
-    { "YOKO_FINISHES", yoko_finishes_rows, sizeof(yoko_finishes_rows) / sizeof(yoko_finishes_rows[0]), 0, 1, false },
+    { "AVERAGE_MOVE", average_move_rows, sizeof(average_move_rows) / sizeof(average_move_rows[0]), 17, 1, false, "CROWD_CHEER" },
+    { "BAM_FINISHES", bam_finishes_rows, sizeof(bam_finishes_rows) / sizeof(bam_finishes_rows[0]), 2, 1, true, 0 },
+    { "DOINK_FINISHES", doink_finishes_rows, sizeof(doink_finishes_rows) / sizeof(doink_finishes_rows[0]), 0, 1, true, 0 },
+    { "DROP_KICK", drop_kick_rows, sizeof(drop_kick_rows) / sizeof(drop_kick_rows[0]), 14, 1, false, "CROWD_CHEER" },
+    { "FACE_HIT", face_hit_rows, sizeof(face_hit_rows) / sizeof(face_hit_rows[0]), 7, 1, false, "CROWD_ORDINARY" },
+    { "HART_FINISHES", hart_finishes_rows, sizeof(hart_finishes_rows) / sizeof(hart_finishes_rows[0]), 0, 1, true, 0 },
+    { "LUGER_FINISHES", luger_finishes_rows, sizeof(luger_finishes_rows) / sizeof(luger_finishes_rows[0]), 0, 1, true, 0 },
+    { "MATCH_OVER", match_over_rows, sizeof(match_over_rows) / sizeof(match_over_rows[0]), 6, 1, true, 0 },
+    { "MATCH_OVER_DL", match_over_dl_rows, sizeof(match_over_dl_rows) / sizeof(match_over_dl_rows[0]), 3, 1, true, 0 },
+    { "MID_HIT", mid_hit_rows, sizeof(mid_hit_rows) / sizeof(mid_hit_rows[0]), 7, 1, false, "CROWD_ORDINARY" },
+    { "MISSES", misses_rows, sizeof(misses_rows) / sizeof(misses_rows[0]), 17, 1, true, "CROWD_FAIL" },
+    { "MISS_YOKO", miss_yoko_rows, sizeof(miss_yoko_rows) / sizeof(miss_yoko_rows[0]), 6, 1, true, 0 },
+    { "NASTY_MOVE", nasty_move_rows, sizeof(nasty_move_rows) / sizeof(nasty_move_rows[0]), 17, 2, true, "CROWD_FAIL" },
+    { "OTHER_AVERAGE", other_average_rows, sizeof(other_average_rows) / sizeof(other_average_rows[0]), 12, 1, true, "CROWD_THROWN" },
+    { "RAZOR_FINISHES", razor_finishes_rows, sizeof(razor_finishes_rows) / sizeof(razor_finishes_rows[0]), 0, 1, true, 0 },
+    { "REVERSAL", reversal_rows, sizeof(reversal_rows) / sizeof(reversal_rows[0]), 14, 1, false, "CROWD_CHEER" },
+    { "SETUP_MOVE", setup_move_rows, sizeof(setup_move_rows) / sizeof(setup_move_rows[0]), 15, 1, false, "SETUP_TABLE" },
+    { "SHAWN_FINISHES", shawn_finishes_rows, sizeof(shawn_finishes_rows) / sizeof(shawn_finishes_rows[0]), 1, 1, false, 0 },
+    { "SPECIAL_LAST_STUFF", special_last_stuff_rows, sizeof(special_last_stuff_rows) / sizeof(special_last_stuff_rows[0]), 6, 1, false, 0 },
+    { "SPECIAL_MOVE", special_move_rows, sizeof(special_move_rows) / sizeof(special_move_rows[0]), 31, 2, false, "CROWD_SPECIAL" },
+    { "THROWN_OUT", thrown_out_rows, sizeof(thrown_out_rows) / sizeof(thrown_out_rows[0]), 12, 1, true, "CROWD_THROWN" },
+    { "UNDERTAKER_FINISHES", undertaker_finishes_rows, sizeof(undertaker_finishes_rows) / sizeof(undertaker_finishes_rows[0]), 0, 1, true, 0 },
+    { "YOKO_FINISHES", yoko_finishes_rows, sizeof(yoko_finishes_rows) / sizeof(yoko_finishes_rows[0]), 0, 1, false, 0 },
 };
 const size_t wm_announce_table_count =
     sizeof(wm_announce_tables) / sizeof(wm_announce_tables[0]);
+
+/* DCSSOUND.ASM:4443 CROWD TABLES, drawn from by
+   DO_CROWD_ANYWAY. Four words a row: the sound, how long
+   it runs, the crowd_cheer flags, and the RNDPER value
+   C_RANDOM makes it use. */
+/* DCSSOUND.ASM:4451 CRESCENDO_TABLE -- rows 0..0 of 1. */
+static const wm_crowd_row crescendo_table_crowd_rows[] = {
+    { 2062, 56, 5, 700 },
+};
+
+/* DCSSOUND.ASM:4473 CROWD_CHEER -- rows 0..4 of 5. */
+static const wm_crowd_row crowd_cheer_crowd_rows[] = {
+    { 2057, 116, 5, 600 },
+    { 2053, 100, 5, 600 },
+    { 2054, 142, 5, 600 },
+    { 2055, 101, 5, 600 },
+    { 2061, 79, 5, 600 },
+};
+
+/* DCSSOUND.ASM:4461 CROWD_FAIL -- rows 0..2 of 3. */
+static const wm_crowd_row crowd_fail_crowd_rows[] = {
+    { 2063, 64, 5, 600 },
+    { 2049, 55, 5, 600 },
+    { 2048, 98, 5, 600 },
+};
+
+/* DCSSOUND.ASM:4486 CROWD_ORDINARY -- rows 0..1 of 2. */
+static const wm_crowd_row crowd_ordinary_crowd_rows[] = {
+    { 2064, 146, 6, 250 },
+    { 2053, 100, 6, 250 },
+};
+
+/* DCSSOUND.ASM:4467 CROWD_SPECIAL -- rows 0..2 of 3. */
+static const wm_crowd_row crowd_special_crowd_rows[] = {
+    { 2064, 146, 3, 0 },
+    { 2051, 58, 3, 0 },
+    { 2058, 200, 3, 0 },
+};
+
+/* DCSSOUND.ASM:4481 CROWD_THROWN -- rows 0..1 of 2. */
+static const wm_crowd_row crowd_thrown_crowd_rows[] = {
+    { 2064, 146, 2, 0 },
+    { 2053, 100, 2, 0 },
+};
+
+/* DCSSOUND.ASM:4455 ROPES_CHEER -- rows 0..2 of 3. */
+static const wm_crowd_row ropes_cheer_crowd_rows[] = {
+    { 2053, 100, 5, 600 },
+    { 2060, 68, 5, 600 },
+    { 2050, 43, 5, 600 },
+};
+
+/* DCSSOUND.ASM:4444 SETUP_TABLE -- rows 0..3 of 4. */
+static const wm_crowd_row setup_table_crowd_rows[] = {
+    { 2062, 56, 3, 0 },
+    { 2050, 43, 3, 0 },
+    { 2056, 150, 3, 0 },
+    { 2057, 116, 3, 0 },
+};
+
+const wm_crowd_table wm_crowd_tables[] = {
+    { "CRESCENDO_TABLE", crescendo_table_crowd_rows, sizeof(crescendo_table_crowd_rows) / sizeof(crescendo_table_crowd_rows[0]), 0 },
+    { "CROWD_CHEER", crowd_cheer_crowd_rows, sizeof(crowd_cheer_crowd_rows) / sizeof(crowd_cheer_crowd_rows[0]), 4 },
+    { "CROWD_FAIL", crowd_fail_crowd_rows, sizeof(crowd_fail_crowd_rows) / sizeof(crowd_fail_crowd_rows[0]), 2 },
+    { "CROWD_ORDINARY", crowd_ordinary_crowd_rows, sizeof(crowd_ordinary_crowd_rows) / sizeof(crowd_ordinary_crowd_rows[0]), 1 },
+    { "CROWD_SPECIAL", crowd_special_crowd_rows, sizeof(crowd_special_crowd_rows) / sizeof(crowd_special_crowd_rows[0]), 2 },
+    { "CROWD_THROWN", crowd_thrown_crowd_rows, sizeof(crowd_thrown_crowd_rows) / sizeof(crowd_thrown_crowd_rows[0]), 1 },
+    { "ROPES_CHEER", ropes_cheer_crowd_rows, sizeof(ropes_cheer_crowd_rows) / sizeof(ropes_cheer_crowd_rows[0]), 2 },
+    { "SETUP_TABLE", setup_table_crowd_rows, sizeof(setup_table_crowd_rows) / sizeof(setup_table_crowd_rows[0]), 3 },
+};
+const size_t wm_crowd_table_count =
+    sizeof(wm_crowd_tables) / sizeof(wm_crowd_tables[0]);
 
 /* DCSSOUND.ASM:3083 SET_UP_PERSONAL_CALL's five per-wrestler
    tables, in WRESTLERNUM order. Slot 7 is Adam Bomb, the cut

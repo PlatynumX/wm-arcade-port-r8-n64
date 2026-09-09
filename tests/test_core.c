@@ -3857,7 +3857,7 @@ static void test_inc_combo_asks_the_announcer(void) {
         { WM_AOP_END,       0, -1, 0, 0, 0, 0, 0, 0, NULL }
     };
     static const wm_anim_program prog = {
-        "test_inc_combo", "ANIM.ASM", ops, 2, 0
+        "test_inc_combo", "ANIM.ASM", ops, 2, 0, NULL, 0
     };
     wm_arcade_actor_t a, v;
     wm_announcer_state ann;
@@ -3926,24 +3926,24 @@ static void test_announce_from_table(void) {
        which is exactly how every real table is padded. */
     static const int16_t probe_rows[] = { 0x310, 0x311, 0x312, 0x313 };
     static const wm_announce_table probe = {
-        "PROBE", probe_rows, 4, 1, 1, false
+        "PROBE", probe_rows, 4, 1, 1, false, NULL
     };
     static const int16_t special_rows[] = { WM_ANN_VERY_IMPRESSIVE, 0x311 };
     static const wm_announce_table special = {
-        "PROBE_SPECIAL", special_rows, 2, 0, 1, false
+        "PROBE_SPECIAL", special_rows, 2, 0, 1, false, NULL
     };
     static const int16_t repeat_rows[] = { WM_ANN_REPEAT_MODE, 0x311 };
     static const wm_announce_table repeat = {
-        "PROBE_REPEAT", repeat_rows, 2, 0, 1, false
+        "PROBE_REPEAT", repeat_rows, 2, 0, 1, false, NULL
     };
     static const int16_t endgame_rows[] = { WM_ANN_END_GAME_STUFF, 0x311 };
     static const wm_announce_table endgame = {
-        "PROBE_END", endgame_rows, 2, 0, 1, false
+        "PROBE_END", endgame_rows, 2, 0, 1, false, NULL
     };
     /* Two lines in one row: NASTY_MOVE and SPECIAL_MOVE are shaped so. */
     static const int16_t pair_rows[] = { 0x320, 0x321, 0x322, 0 };
     static const wm_announce_table pair = {
-        "PROBE_PAIR", pair_rows, 4, 0, 2, false
+        "PROBE_PAIR", pair_rows, 4, 0, 2, false, NULL
     };
     wm_announcer_state a;
     wm_announce_ctx ctx;
@@ -4170,7 +4170,9 @@ static void test_announce_call_from_the_vm(void) {
         { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_MISSES" },
         { WM_AOP_END,  0, -1, 0, 0, 0, 0, 0, 0, NULL }
     };
-    static const wm_anim_program prog = { "test_call", "HRTSEQ2.ASM", ops, 2, 0 };
+    static const wm_anim_program prog = {
+        "test_call", "HRTSEQ2.ASM", ops, 2, 0, NULL, 0
+    };
     const wm_announce_table *misses = wm_announce_table_find("MISSES");
     wm_arcade_actor_t a;
     wm_announcer_state ann;
@@ -4212,6 +4214,308 @@ static void test_announce_call_from_the_vm(void) {
        mean the path is dead rather than unlucky. */
     CHECK(spoke);
     wm_anim_code_reset();
+}
+
+/*
+ * DNKSEQ3.ASM:2256 spunch_delay -- skick_delay's twin behind a
+ * match-configuration gate, and CROWD.ASM:1119 DO_CROWD_CHEER, the two
+ * lines that reach crowd_cheer.
+ */
+struct crowd_log {
+    int n_cheer, flags, percent;
+    int n_sound, sound, ticks;
+    bool busy;
+};
+
+static void crowd_cheer_sink(void *user, int flags, int percent) {
+    struct crowd_log *l = (struct crowd_log *)user;
+    ++l->n_cheer;
+    l->flags = flags;
+    l->percent = percent;
+}
+
+static void crowd_sound_sink(void *user, int sound, int ticks) {
+    struct crowd_log *l = (struct crowd_log *)user;
+    ++l->n_sound;
+    l->sound = sound;
+    l->ticks = ticks;
+}
+
+static bool crowd_busy_sink(void *user) {
+    return ((struct crowd_log *)user)->busy;
+}
+
+static void test_spunch_delay_and_the_crowd(void) {
+    wm_arcade_actor_t a;
+    wm_anim_env env;
+    struct crowd_log log;
+
+    memset(&env, 0, sizeof(env));
+
+    /*
+     * The gate: `move @royal_rumble,a0 / jrnz #ok` skips the check
+     * outright, so in a rumble a second super punch is never refused.
+     */
+    memset(&a, 0, sizeof(a));
+    env.royal_rumble = true;
+    env.pstatus = 3;
+    env.num_opps = 1;
+    env.pcnt = 1000u;
+    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL));
+    env.pcnt = 1001u;
+    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL));
+    CHECK((a.anim_mode & WM_MODE_STATUS) == 0);
+    /* ...and the stamp is never written either: the jump is over all of it. */
+    CHECK(a.last_spunch == 0u);
+
+    /*
+     * `move @PSTATUS,a0 / subk 3,a0 / jrz #cont` -- two humans reaches the
+     * check whatever NUM_OPPS says.
+     */
+    memset(&a, 0, sizeof(a));
+    env.royal_rumble = false;
+    env.pstatus = 3;
+    env.num_opps = 4;
+    env.pcnt = 1000u;
+    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL));
+    CHECK((a.anim_mode & WM_MODE_STATUS) == 0);
+    CHECK(a.last_spunch == 1000u);
+    env.pcnt = 1000u + (2 * 60) - 1;
+    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL));
+    CHECK((a.anim_mode & WM_MODE_STATUS) != 0);
+    /* Same as skick_delay: the stamp moves on a refused attempt too. */
+    CHECK(a.last_spunch == env.pcnt);
+
+    /* `move @NUM_OPPS,a0 / subk 1,a0 / jrnz #ok` -- one opponent, one
+       human: still checked. */
+    memset(&a, 0, sizeof(a));
+    env.pstatus = 1;
+    env.num_opps = 1;
+    env.pcnt = 500u;
+    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL));
+    env.pcnt = 500u + 30u;
+    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL));
+    CHECK((a.anim_mode & WM_MODE_STATUS) != 0);
+
+    /* Exactly two seconds is allowed -- `jrge`. */
+    memset(&a, 0, sizeof(a));
+    a.last_spunch = 500u;
+    env.pcnt = 500u + (2 * 60);
+    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL));
+    CHECK((a.anim_mode & WM_MODE_STATUS) == 0);
+
+    /* Neither one human nor one opponent: the check is skipped. */
+    memset(&a, 0, sizeof(a));
+    env.pstatus = 1;
+    env.num_opps = 3;
+    env.pcnt = 1000u;
+    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL));
+    env.pcnt = 1001u;
+    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL));
+    CHECK((a.anim_mode & WM_MODE_STATUS) == 0);
+    CHECK(a.last_spunch == 0u);
+
+    /*
+     * DO_CROWD_CHEER: `MOVK C_OVERIDE|C_LONG,A3 / CLR A4`. Both flags,
+     * and no percentage -- crowd_cheer reads A4 only when B_RANDOM is set,
+     * and this never sets it.
+     */
+    memset(&log, 0, sizeof(log));
+    memset(&a, 0, sizeof(a));
+    memset(&env, 0, sizeof(env));
+    env.crowd_user = &log;
+    env.crowd_cheer = crowd_cheer_sink;
+    CHECK(wm_anim_code_run(&a, &env, "DO_CROWD_CHEER", NULL));
+    CHECK(log.n_cheer == 1);
+    CHECK(log.flags == (WM_CROWD_OVERRIDE | WM_CROWD_LONG));
+    CHECK(log.percent == 0);
+    CHECK((log.flags & WM_CROWD_RANDOM) == 0);
+
+    /* No crowd wired: the routine still resolves, and does nothing. */
+    memset(&env, 0, sizeof(env));
+    CHECK(wm_anim_code_run(&a, &env, "DO_CROWD_CHEER", NULL));
+}
+
+/*
+ * DCSSOUND.ASM:4443's crowd tables, and DO_CROWD_ANYWAY reaching them
+ * from ADD_TO_QUEUE's `MOVE *A2(-040H),A3,L / JRZ NO_CROWD`.
+ */
+static void test_crowd_tables(void) {
+    const wm_announce_table *misses = wm_announce_table_find("MISSES");
+    const wm_announce_table *setup = wm_announce_table_find("SETUP_MOVE");
+    const wm_announce_table *yoko = wm_announce_table_find("MISS_YOKO");
+    const wm_crowd_table *fail = wm_crowd_table_find("CROWD_FAIL");
+    const wm_crowd_table *ordinary = wm_crowd_table_find("CROWD_ORDINARY");
+    wm_announcer_state ann;
+    wm_announce_ctx ctx;
+    struct crowd_log log;
+    WmRng rng;
+    size_t i, r;
+    int trial;
+
+    CHECK(wm_crowd_table_count == 8u);
+    CHECK(fail != NULL && ordinary != NULL);
+
+    /* Every table's header index is inside its own rows, and every row
+       carries a real sound id and a flag word made of WM_CROWD_* bits. */
+    for (i = 0; i < wm_crowd_table_count; ++i) {
+        const wm_crowd_table *t = &wm_crowd_tables[i];
+        CHECK(t->row_count > 0u);
+        CHECK((size_t)t->last_index < t->row_count);
+        for (r = 0; r < t->row_count; ++r) {
+            const wm_crowd_row *row = &t->rows[r];
+            CHECK(row->sound > 0);
+            CHECK(row->ticks > 0);
+            CHECK((row->flags & ~(WM_CROWD_LONG | WM_CROWD_OVERRIDE |
+                                  WM_CROWD_RANDOM)) == 0);
+            /* The percentage column is meaningful only with C_RANDOM, and
+               the source leaves it 0 on every row without it. */
+            if (row->flags & WM_CROWD_RANDOM)
+                CHECK(row->percent > 0 && row->percent <= 1000);
+            else
+                CHECK(row->percent == 0);
+        }
+    }
+
+    /* DCSSOUND.ASM:4461 CROWD_FAIL, transcribed: three rows, all
+       C_LONG|C_RANDOM at 600 per mille. */
+    CHECK(fail->last_index == 2u && fail->row_count == 3u);
+    for (r = 0; r < fail->row_count; ++r) {
+        CHECK(fail->rows[r].flags == (WM_CROWD_LONG | WM_CROWD_RANDOM));
+        CHECK(fail->rows[r].percent == 600);
+    }
+    /* CROWD_ORDINARY is the only table that is C_SHORT and random at
+       once -- no WM_CROWD_LONG bit, 250 per mille. */
+    for (r = 0; r < ordinary->row_count; ++r) {
+        CHECK((ordinary->rows[r].flags & WM_CROWD_LONG) == 0);
+        CHECK(ordinary->rows[r].percent == 250);
+    }
+
+    /* The line tables name them: MISSES -> CROWD_FAIL, SETUP_MOVE ->
+       SETUP_TABLE, and a table with no `.LONG` has no crowd at all. */
+    CHECK(misses && misses->crowd && strcmp(misses->crowd, "CROWD_FAIL") == 0);
+    CHECK(setup && setup->crowd && strcmp(setup->crowd, "SETUP_TABLE") == 0);
+    CHECK(yoko && yoko->crowd == NULL);
+    for (i = 0; i < wm_announce_table_count; ++i)
+        if (wm_announce_tables[i].crowd)
+            CHECK(wm_crowd_table_find(wm_announce_tables[i].crowd) != NULL);
+
+    /*
+     * Drawing from MISSES reaches DO_CROWD_ANYWAY, which plays the row's
+     * sound and cheers with the row's own flags. The RNDPER gate in front
+     * of the line is 350 per mille, but the crowd runs BEFORE it -- so
+     * every call, refused line or not, cheers.
+     */
+    memset(&log, 0, sizeof(log));
+    memset(&ctx, 0, sizeof(ctx));
+    wm_rng_init(&rng, 0x2468u, NULL, NULL, NULL);
+    ctx.rng = &rng;
+    ctx.wrestler_num = -1;
+    ctx.crowd_user = &log;
+    ctx.crowd_cheer = crowd_cheer_sink;
+    ctx.crowd_sound = crowd_sound_sink;
+    wm_announcer_init(&ann);
+    (void)wm_announce_from_table(&ann, misses, 350u, true, &ctx);
+    CHECK(log.n_cheer == 1);
+    CHECK(log.n_sound == 1);
+    CHECK(log.flags == (WM_CROWD_LONG | WM_CROWD_RANDOM));
+    CHECK(log.percent == 600);
+    {
+        int found = 0;
+        for (r = 0; r < fail->row_count; ++r)
+            if (fail->rows[r].sound == log.sound &&
+                fail->rows[r].ticks == log.ticks) found = 1;
+        CHECK(found);          /* a real CROWD_FAIL row, not an invention */
+    }
+
+    /* `move @crowd_dummy_exists,a0 / JRNZ NO_CROWD_ALREADY_GOING` -- the
+       sound is skipped while one is running, the cheer never is. */
+    memset(&log, 0, sizeof(log));
+    ctx.crowd_busy = true;
+    (void)wm_announce_from_table(&ann, misses, 350u, true, &ctx);
+    CHECK(log.n_sound == 0);
+    CHECK(log.n_cheer == 1);
+    ctx.crowd_busy = false;
+
+    /* A table with no crowd `.LONG` leaves it alone. */
+    memset(&log, 0, sizeof(log));
+    (void)wm_announce_from_table(&ann, yoko, 400u, true, &ctx);
+    CHECK(log.n_cheer == 0 && log.n_sound == 0);
+
+    /* Over many draws MISSES reaches more than one CROWD_FAIL row: the
+       pick is RNDRNG0 over the header's inclusive maximum, not a fixed
+       row. */
+    {
+        int seen[3] = { 0, 0, 0 };
+        int distinct = 0;
+        for (trial = 0; trial < 200; ++trial) {
+            wm_rng_set_latched_inputs(&rng, (uint16_t)(trial * 7u + 3u),
+                                      (uint32_t)(trial * 131u + 17u));
+            memset(&log, 0, sizeof(log));
+            (void)wm_announce_from_table(&ann, misses, 350u, true, &ctx);
+            for (r = 0; r < fail->row_count; ++r)
+                if (fail->rows[r].sound == log.sound) seen[r] = 1;
+        }
+        for (r = 0; r < 3u; ++r) distinct += seen[r];
+        CHECK(distinct >= 2);
+    }
+
+    /*
+     * ...and the whole way round from the VM: a CALL_MISSES in an
+     * animation CREATEs a process that sleeps five ticks, and the crowd
+     * seam has to survive that. GETPRC carries it into the process the
+     * same way it carries the announcer and the RNG.
+     */
+    {
+        static const wm_anim_op ops[] = {
+            { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_MISSES" },
+            { WM_AOP_END,  0, -1, 0, 0, 0, 0, 0, 0, NULL }
+        };
+        static const wm_anim_program prog = {
+            "test_crowd", "HRTSEQ2.ASM", ops, 2, 0, NULL, 0
+        };
+        wm_arcade_actor_t a;
+        wm_anim_env env;
+        wm_anim_exec ex;
+        int t;
+
+        memset(&log, 0, sizeof(log));
+        memset(&env, 0, sizeof(env));
+        wm_rng_init(&rng, 0x1357u, NULL, NULL, NULL);
+        env.rng = &rng;
+        env.announcer = &ann;
+        env.crowd_user = &log;
+        env.crowd_cheer = crowd_cheer_sink;
+        env.crowd_sound = crowd_sound_sink;
+        env.crowd_busy = crowd_busy_sink;
+
+        wm_anim_code_reset();
+        wm_announcer_init(&ann);
+        memset(&a, 0, sizeof(a));
+        wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        for (t = 0; t < 4; ++t) {
+            wm_anim_code_tick();
+            CHECK(log.n_cheer == 0);        /* SLEEP 5: nothing yet */
+        }
+        wm_anim_code_tick();
+        /* The crowd runs whatever the line's own 350-per-mille gate did. */
+        CHECK(log.n_cheer == 1);
+        CHECK(log.n_sound == 1);
+        CHECK(log.flags == (WM_CROWD_LONG | WM_CROWD_RANDOM));
+
+        /* Same again with a crowd sound already running: cheer only. */
+        memset(&log, 0, sizeof(log));
+        log.busy = true;
+        wm_anim_code_reset();
+        memset(&a, 0, sizeof(a));
+        wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        for (t = 0; t < 5; ++t) wm_anim_code_tick();
+        CHECK(log.n_cheer == 1);
+        CHECK(log.n_sound == 0);
+        wm_anim_code_reset();
+    }
 }
 
 /*
@@ -4358,7 +4662,9 @@ static void test_do_combo_mess_from_the_vm(void) {
         { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_COMBO_MESS" },
         { WM_AOP_END,  0, -1, 0, 0, 0, 0, 0, 0, NULL }
     };
-    static const wm_anim_program prog = { "test_mess", "HRTSEQ2.ASM", ops, 2, 0 };
+    static const wm_anim_program prog = {
+        "test_mess", "HRTSEQ2.ASM", ops, 2, 0, NULL, 0
+    };
     wm_arcade_actor_t a;
     wm_announcer_state ann;
     struct combo_award_log awards;
@@ -8666,6 +8972,8 @@ int main(void) {
     test_announce_tables_are_real();
     test_announce_match_over();
     test_announce_call_from_the_vm();
+    test_spunch_delay_and_the_crowd();
+    test_crowd_tables();
     test_do_combo_mess();
     test_do_combo_mess_from_the_vm();
     test_wrsnd_tables();

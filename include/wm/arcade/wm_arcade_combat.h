@@ -311,6 +311,9 @@ struct wm_arcade_actor {
     /* PLYR.EQU:256 LAST_SKICK -- "PCNT last time I performed a super
        kick", the stamp skick_delay measures its two-second window from. */
     uint32_t last_skick;
+    /* PLYR.EQU LAST_SPUNCH -- the same stamp for the super punch,
+       measured by spunch_delay over its own two-second window. */
+    uint32_t last_spunch;
     /*
      * PLYR.EQU:56-58 TGT_XOFF/TGT_YOFF/TGT_ZOFF -- where a leap is aimed.
      * ANIM.ASM:1428 is explicit that they are the caller's job: "NB - user

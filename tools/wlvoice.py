@@ -95,8 +95,17 @@ def _lines() -> list[str]:
 
 
 def _word(sym: str) -> int:
-    """Resolve one `.WORD` operand to its number."""
+    """Resolve one `.WORD` operand to its number.
+
+    The crowd tables write their flag column as `C_LONG|C_OVERIDE`, so an
+    operand may be an OR of several names.
+    """
     s = sym.strip()
+    if "|" in s:
+        v = 0
+        for part in s.split("|"):
+            v |= _word(part)
+        return v
     if re.fullmatch(r"-?[0-9]+", s):
         return int(s)
     if re.fullmatch(r"[0-9A-Fa-f]+[hH]", s):
@@ -197,6 +206,62 @@ def announce_tables() -> dict[str, dict]:
             "reset_note": reset_note,
             "rows": rows,
         }
+    return out
+
+
+def crowd_tables() -> dict[str, dict]:
+    """The crowd-reaction tables DO_CROWD_ANYWAY draws a row from.
+
+    DCSSOUND.ASM:4443 onwards. Same header idea as the line tables but a
+    single value: one `.WORD n` immediately before the label, which
+    DO_CROWD_ANYWAY reads at -010H and hands to RNDRNG0 as the inclusive
+    maximum. A row is four words -- sound id, its duration in ticks, the
+    crowd_cheer flags, and the RNDPER percentage the C_RANDOM flag makes
+    it use -- which is why the routine picks the row with `SLL 6,A0`.
+    """
+    lines = _lines()
+    out: dict[str, dict] = {}
+    for i, line in enumerate(lines):
+        m = LABEL_RE.match(line)
+        if not m:
+            continue
+        name = m.group(1)
+        if not name.startswith("CROWD_") and name not in (
+                "SETUP_TABLE", "CRESCENDO_TABLE", "ROPES_CHEER"):
+            continue
+        j = i - 1
+        while j >= 0 and not lines[j].strip():
+            j -= 1
+        mw = WORD_RE.match(lines[j] if j >= 0 else "")
+        if not mw:
+            continue
+        parts = _split_words(mw.group(1))
+        if len(parts) != 1:
+            continue
+        try:
+            last_index = _word(parts[0])
+        except ValueError:
+            continue
+        rows: list[list[int]] = []
+        for q in range(i + 1, len(lines)):
+            body = lines[q]
+            if not body.strip():
+                continue
+            mb = WORD_RE.match(body)
+            if not mb:
+                break
+            vals = _split_words(mb.group(1))
+            if len(vals) != 4:
+                break
+            rows.append([_word(v) for v in vals])
+        if not rows:
+            continue
+        if len(rows) <= last_index:
+            raise ValueError(
+                f"{name}: header says rows 0..{last_index} but only "
+                f"{len(rows)} were read")
+        out[name] = {"name": name, "line": i + 1,
+                     "last_index": last_index, "rows": rows}
     return out
 
 
@@ -466,12 +531,42 @@ def render_c() -> str:
     out.append("const wm_announce_table wm_announce_tables[] = {")
     for n in names:
         t = tables[n]
+        crowd = "0" if t["crowd"] is None else f'"{t["crowd"]}"'
         out.append(f'    {{ "{n}", {n.lower()}_rows, '
                    f"sizeof({n.lower()}_rows) / sizeof({n.lower()}_rows[0]), "
                    f"{t['last_index']}, {t['stride']}, "
-                   f"{'true' if t['reset_repeat'] else 'false'} }},")
+                   f"{'true' if t['reset_repeat'] else 'false'}, {crowd} }},")
     out += ["};", "const size_t wm_announce_table_count =",
             "    sizeof(wm_announce_tables) / sizeof(wm_announce_tables[0]);",
+            ""]
+
+    crowd = crowd_tables()
+    named = sorted({t["crowd"] for t in tables.values() if t["crowd"]})
+    absent_crowd = [n for n in named if n not in crowd]
+    if absent_crowd:
+        raise ValueError(f"line tables name crowd tables with no rows: "
+                         f"{absent_crowd}")
+    out.append("/* DCSSOUND.ASM:4443 CROWD TABLES, drawn from by")
+    out.append("   DO_CROWD_ANYWAY. Four words a row: the sound, how long")
+    out.append("   it runs, the crowd_cheer flags, and the RNDPER value")
+    out.append("   C_RANDOM makes it use. */")
+    for n in sorted(crowd):
+        t = crowd[n]
+        out.append(f"/* DCSSOUND.ASM:{t['line']} {n} -- rows 0..{t['last_index']}"
+                   f" of {len(t['rows'])}. */")
+        out.append(f"static const wm_crowd_row {n.lower()}_crowd_rows[] = {{")
+        for r in t["rows"]:
+            out.append("    { %d, %d, %d, %d }," % tuple(r))
+        out += ["};", ""]
+    out.append("const wm_crowd_table wm_crowd_tables[] = {")
+    for n in sorted(crowd):
+        t = crowd[n]
+        out.append(f'    {{ "{n}", {n.lower()}_crowd_rows, '
+                   f"sizeof({n.lower()}_crowd_rows) / "
+                   f"sizeof({n.lower()}_crowd_rows[0]), "
+                   f"{t['last_index']} }},")
+    out += ["};", "const size_t wm_crowd_table_count =",
+            "    sizeof(wm_crowd_tables) / sizeof(wm_crowd_tables[0]);",
             ""]
 
     out.append("/* DCSSOUND.ASM:3083 SET_UP_PERSONAL_CALL's five per-wrestler")

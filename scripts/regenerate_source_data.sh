@@ -146,6 +146,10 @@ python3 "$ROOT/tools/bret_geometry_bundle.py" \
     --allow-missing H4HU4B10 \
     --allow-missing Y2ST2Z01 \
     --out "$ROOT/src/generated/frame_geometry.c"
+python3 "$ROOT/tools/wlvoice.py" \
+    --out "$ROOT/src/generated/announce_tables.c"
+python3 "$ROOT/tools/wlwrsnd.py" \
+    --out "$ROOT/src/generated/wrestler_sound_tables.c"
 python3 "$ROOT/tools/select_source.py" \
     --source "$ORIG/SELECT.ASM" \
     --out "$ROOT/src/generated/select_tables.c"

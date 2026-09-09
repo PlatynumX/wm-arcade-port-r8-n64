@@ -56,7 +56,45 @@ typedef struct {
     uint16_t last_index;      /* RNDRNG0's inclusive maximum */
     uint8_t stride;           /* words per row: 1, or 2 for a paired line */
     bool reset_repeat;        /* the `.WORD -1` at -050H */
+    /* The `.LONG` at -040H: the crowd table DO_CROWD_ANYWAY draws from
+       before the line is queued, or NULL for a table that leaves the
+       crowd alone. */
+    const char *crowd;
 } wm_announce_table;
+
+/*
+ * GAME.EQU:299-306. crowd_cheer's A3, one bit each.
+ *
+ * C_SHORT is a literal 0 -- the absence of WM_CROWD_LONG -- so it has no
+ * name here.
+ */
+#define WM_CROWD_LONG     1   /* B_L_OR_S: the long animation */
+#define WM_CROWD_OVERRIDE 2   /* B_OVERRIDE: interrupt whatever is running */
+#define WM_CROWD_RANDOM   4   /* B_RANDOM: only `percent` of the crowd */
+
+/*
+ * DCSSOUND.ASM:4443's crowd tables. DO_CROWD_ANYWAY picks one row with
+ * RNDRNG0 over `last_index` (inclusive), plays `sound` for `ticks` unless
+ * a crowd sound is already running, and then calls crowd_cheer with
+ * `flags` -- passing `percent` only when C_RANDOM is set.
+ */
+typedef struct {
+    int16_t sound;            /* SOUND.EQU CROWD_* id */
+    int16_t ticks;            /* SOUND.EQU D_CROWD_* duration */
+    int16_t flags;            /* WM_CROWD_* */
+    int16_t percent;          /* RNDPER, per mille, when WM_CROWD_RANDOM */
+} wm_crowd_row;
+
+typedef struct {
+    const char *name;
+    const wm_crowd_row *rows;
+    size_t row_count;
+    uint16_t last_index;      /* RNDRNG0's inclusive maximum */
+} wm_crowd_table;
+
+extern const wm_crowd_table wm_crowd_tables[];
+extern const size_t wm_crowd_table_count;
+const wm_crowd_table *wm_crowd_table_find(const char *name);
 
 typedef struct {
     const char *name;         /* CALL_MISSES, ... */
@@ -115,6 +153,17 @@ typedef struct {
        through to the walk-forward exactly as a healthy roster does. */
     bool (*anyone_near_death)(void *user);
     void *user;
+    /*
+     * DCSSOUND.ASM:3046 DO_CROWD_ANYWAY, run when the drawn table carries
+     * a crowd `.LONG`. Both halves are optional: `crowd_sound` is the
+     * SNDSND of the picked row (the source guards it with
+     * crowd_dummy_exists, so pass `crowd_busy` to say one is already
+     * running), and `crowd_cheer` is CROWD.ASM's crowd_cheer itself.
+     */
+    bool crowd_busy;
+    void *crowd_user;
+    void (*crowd_sound)(void *user, int sound, int ticks);
+    void (*crowd_cheer)(void *user, int flags, int percent);
 } wm_announce_ctx;
 
 /*

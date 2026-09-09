@@ -332,6 +332,66 @@ static void do_combo_mess(wm_arcade_actor_t *actor, const wm_anim_env *env,
 }
 
 /*
+ * SHNSEQ3.ASM:3663 #check_xvel -- distinct from the global check_xvel
+ * above, and doing something different: push him 2.0 the way he is
+ * FACING if he is not already moving that way, and kill the Z drift with
+ * it. (The early-out skips the Z clear too, which is why it is written
+ * inside the branch rather than after it.)
+ */
+#define WM_CHECK_XVEL_FACE 0x20000
+
+static void check_xvel_local(wm_arcade_actor_t *actor,
+                             const wm_anim_env *env, int32_t param) {
+    (void)env;
+    (void)param;
+    if (!actor) return;
+    if (actor->facing_dir & WM_MOVE_RIGHT) {
+        if (actor->x_vel > 0) return;         /* `jrp #done0` */
+        actor->x_vel = WM_CHECK_XVEL_FACE;
+    } else {
+        if (actor->x_vel < 0) return;         /* `jrn #done0` */
+        actor->x_vel = -WM_CHECK_XVEL_FACE;
+    }
+    actor->z_vel = 0;
+}
+
+/*
+ * SHNSEQ3.ASM:2948 #grunt -- `WRSND W_SHAWN,GRABFLING_T1,GRABFLING_T2`.
+ * Like LEXSEQ3's DO_GRUNT it names the wrestler outright rather than
+ * reading WRESTLERNUM, so it always uses Shawn's row.
+ */
+#define WM_WRSND_W_SHAWN 4
+
+static void shawn_grunt(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                        int32_t param) {
+    (void)actor;
+    (void)param;
+    (void)wm_wrsndx(WM_WRSND_W_SHAWN, WM_WRSND_GRABFLING_T1,
+                    WM_WRSND_GRABFLING_T2, env ? env->rng : NULL,
+                    env ? env->sound_user : NULL, env ? env->sound : NULL);
+}
+
+/* BAMSEQ2.ASM:1347 #hit_ground -- snap him onto the ground he is over. */
+static void hit_ground(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                       int32_t param) {
+    (void)env;
+    (void)param;
+    if (actor) actor->y_int = actor->ground_y;
+}
+
+/*
+ * Hold the victim's getup meter off. Two routines share this: YOKSEQ2's
+ * `#delay_whoihit` for 55 ticks, and UNDSEQ3's `#set` for eight seconds
+ * -- the same body with a different window, so the window is the
+ * registry's param.
+ */
+static void delay_whoihit_param(wm_arcade_actor_t *actor,
+                                const wm_anim_env *env, int32_t ticks) {
+    (void)env;
+    if (actor && actor->who_i_hit) actor->who_i_hit->delay_meter = ticks;
+}
+
+/*
  * SHNSEQ2.ASM:1158 #zero_x_4 -- "Don't float if dropping straight down".
  * Kill the X drift unless the opponent is well off to the side.
  */
@@ -366,18 +426,6 @@ static void no_bk_xvel_local(wm_arcade_actor_t *actor,
     if (forward >= 0) return;                 /* `jrnn #ok` */
     actor->x_vel = 0;
     actor->z_vel = 0;                         /* the local copy's extra */
-}
-
-/* YOKSEQ2.ASM:3073 #delay_whoihit -- hold the victim's getup meter off
-   for 55 ticks. */
-#define WM_DELAY_WHOIHIT_TICKS 55
-
-static void delay_whoihit(wm_arcade_actor_t *actor, const wm_anim_env *env,
-                          int32_t param) {
-    (void)env;
-    (void)param;
-    if (actor && actor->who_i_hit)
-        actor->who_i_hit->delay_meter = WM_DELAY_WHOIHIT_TICKS;
 }
 
 /*
@@ -1794,10 +1842,19 @@ static const struct {
     { "DO_COMBO_MESS", NULL, do_combo_mess, 0 },
     /* SUBRP, so file-local -- and only HRTSEQ3.ASM calls it. */
     { "#rope_check", "HRTSEQ3.ASM", rope_check, 0 },
+    { "#check_xvel", "SHNSEQ3.ASM", check_xvel_local, 0 },
+    { "#grunt", "SHNSEQ3.ASM", shawn_grunt, 0 },
+    { "#hit_ground", "BAMSEQ2.ASM", hit_ground, 0 },
+    /* UNDSEQ3's `#set` is #delay_whoihit's shape with an eight-second
+       window instead of 55 ticks. */
+    { "#set", "UNDSEQ3.ASM", delay_whoihit_param, 8 * 60 },
+    /* YOKSEQ4's local #choose_2or4 is byte-identical to SHNSEQ4's global
+       one, so it shares the body rather than getting a second copy. */
+    { "#choose_2or4", "YOKSEQ4.ASM", choose_2or4, 0 },
     { "#zero_x_4", "SHNSEQ2.ASM", zero_x_4, 0 },
     /* The local copy kills Z as well; the global no_bk_xvel does not. */
     { "#no_bk_xvel", "SHNSEQ3.ASM", no_bk_xvel_local, 0 },
-    { "#delay_whoihit", "YOKSEQ2.ASM", delay_whoihit, 0 },
+    { "#delay_whoihit", "YOKSEQ2.ASM", delay_whoihit_param, 55 },
     { "#ck_flip", "LEXSEQ3.ASM", ck_flip, 0 },
     { "#ck_dead_opp", "HRTSEQ3.ASM", ck_dead_opp, 0 },
     { "#set_wrestler_xflip", "HRTSEQ4.ASM", set_wrestler_xflip_code, 0 },

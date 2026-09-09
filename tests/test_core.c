@@ -5555,7 +5555,92 @@ static void test_selfcontained_tail(void) {
     CHECK(a.next_damage == 2);
     CHECK(a.special_damage_time == 900u + 35u);
 
+    /*
+     * SHNSEQ3.ASM:3663 #check_xvel -- a DIFFERENT routine from the
+     * global check_xvel: push him 2.0 the way he is FACING if he is not
+     * already going that way, and kill the Z drift with it.
+     */
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_RIGHT;
+    a.x_vel = -0x10000;
+    a.z_vel = 0x30000;
+    CHECK(wm_anim_code_run(&a, &env, "#check_xvel", "SHNSEQ3.ASM"));
+    CHECK(a.x_vel == 0x20000 && a.z_vel == 0);
+    /* Already moving that way: untouched, and the Z clear is skipped
+       too -- the early-out is inside the branch, not after it. */
+    a.z_vel = 0x30000;
+    CHECK(wm_anim_code_run(&a, &env, "#check_xvel", "SHNSEQ3.ASM"));
+    CHECK(a.x_vel == 0x20000 && a.z_vel == 0x30000);
+    /* Facing left mirrors it. */
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_LEFT;
+    a.x_vel = 0x10000;
+    CHECK(wm_anim_code_run(&a, &env, "#check_xvel", "SHNSEQ3.ASM"));
+    CHECK(a.x_vel == -0x20000);
+
+    /* BAMSEQ2.ASM:1347 #hit_ground -- snap onto the ground he is over. */
+    memset(&a, 0, sizeof(a));
+    a.ground_y = 123;
+    a.y_int = 400;
+    CHECK(wm_anim_code_run(&a, &env, "#hit_ground", "BAMSEQ2.ASM"));
+    CHECK(a.y_int == 123);
+
+    /*
+     * `#delay_whoihit` and UNDSEQ3's `#set` are the same body with
+     * different windows -- 55 ticks against eight seconds.
+     */
+    memset(&a, 0, sizeof(a));
+    memset(&v, 0, sizeof(v));
+    a.who_i_hit = &v;
+    CHECK(wm_anim_code_run(&a, &env, "#set", "UNDSEQ3.ASM"));
+    CHECK(v.delay_meter == 8 * 60);
+    CHECK(wm_anim_code_run(&a, &env, "#delay_whoihit", "YOKSEQ2.ASM"));
+    CHECK(v.delay_meter == 55);
+
+    /*
+     * YOKSEQ4's `#choose_2or4` is byte-identical to SHNSEQ4's global
+     * one, so it shares the body -- and both must agree.
+     */
+    memset(&a, 0, sizeof(a));
+    a.new_facing_dir = WM_MOVE_UP;
+    CHECK(wm_anim_code_run(&a, &env, "#choose_2or4", "YOKSEQ4.ASM"));
+    CHECK((a.anim_mode & WM_MODE_STATUS) == 0);        /* a 2-count */
+    memset(&a, 0, sizeof(a));
+    a.new_facing_dir = WM_MOVE_DOWN;
+    CHECK(wm_anim_code_run(&a, &env, "#choose_2or4", "YOKSEQ4.ASM"));
+    CHECK((a.anim_mode & WM_MODE_STATUS) != 0);        /* a 4-count */
+    {
+        wm_arcade_actor_t g;
+        memset(&g, 0, sizeof(g));
+        g.new_facing_dir = WM_MOVE_DOWN;
+        CHECK(wm_anim_code_run(&g, &env, "choose_2or4", "SHNSEQ4.ASM"));
+        CHECK((g.anim_mode & WM_MODE_STATUS) ==
+              (a.anim_mode & WM_MODE_STATUS));
+    }
+
+    /* SHNSEQ3.ASM:2948 #grunt -- WRSND with a FIXED W_SHAWN rather than
+       WRESTLERNUM, so it always uses Shawn's row. */
+    {
+        struct ann_log log;
+        WmRng grng;
+        wm_anim_env genv;
+        memset(&log, 0, sizeof(log));
+        memset(&genv, 0, sizeof(genv));
+        wm_rng_init(&grng, 0x55u, NULL, NULL, NULL);
+        genv.rng = &grng;
+        genv.sound_user = &log;
+        genv.sound = ann_sound;
+        memset(&a, 0, sizeof(a));
+        a.wrestler_num = WM_ROSTER_BRET;   /* deliberately NOT Shawn */
+        CHECK(wm_anim_code_run(&a, &genv, "#grunt", "SHNSEQ3.ASM"));
+        CHECK(log.n >= 1);
+    }
+
     /* Every one of them tolerates a NULL actor. */
+    CHECK(wm_anim_code_run(NULL, &env, "#check_xvel", "SHNSEQ3.ASM"));
+    CHECK(wm_anim_code_run(NULL, &env, "#hit_ground", "BAMSEQ2.ASM"));
+    CHECK(wm_anim_code_run(NULL, &env, "#set", "UNDSEQ3.ASM"));
+    CHECK(wm_anim_code_run(NULL, &env, "#choose_2or4", "YOKSEQ4.ASM"));
     CHECK(wm_anim_code_run(NULL, &env, "#zero_x_4", "SHNSEQ2.ASM"));
     CHECK(wm_anim_code_run(NULL, &env, "#no_bk_xvel", "SHNSEQ3.ASM"));
     CHECK(wm_anim_code_run(NULL, &env, "#delay_whoihit", "YOKSEQ2.ASM"));

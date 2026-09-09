@@ -44,6 +44,17 @@ const wm_announce_call *wm_announce_call_find(const char *name) {
     return NULL;
 }
 
+/* Is this table one a CALL_x draws from? The end-of-match family is
+   reached from PROC_MATCH_OVER and WRESTLER_SPEECH instead, and is shaped
+   differently -- no walk-forward rows after the drawn range. */
+bool wm_announce_drawn_by_a_call(const char *name) {
+    size_t i;
+    if (!name) return false;
+    for (i = 0; i < wm_announce_call_count; ++i)
+        if (strcmp(wm_announce_calls[i].table, name) == 0) return true;
+    return false;
+}
+
 void wm_announce_tick_repeat(wm_announcer_state *a) {
     if (!a || !a->repeat_ticks) return;
     if (--a->repeat_ticks == 0) a->repeat_state = 0;   /* REPEAT_DUMMY */
@@ -245,4 +256,62 @@ int wm_announce_from_table(wm_announcer_state *a, const wm_announce_table *t,
             return do_the_speech(a, t, word, call, if_silent, words_left);
         word += t->stride;                      /* NO_SPECIAL_END_STUFF */
     }
+}
+
+/*
+ * DCSSOUND.ASM:3818 PROC_MATCH_OVER, the end-of-match announcement.
+ *
+ * The one caller in the announcer family that is a decision tree rather
+ * than a table and a percentage, and the one that uses ADD_TO_QUEUE
+ * instead of ADD_IF_SILENT -- the end of a match always says something,
+ * over whatever the announcer was already saying.
+ *
+ * `SLEEPK 5` is the process's own delay and belongs to whoever schedules
+ * the call, not here.
+ */
+int wm_announce_match_over_run(wm_announcer_state *a, bool loser_was_drone,
+                               int wrestler_num, int win_streak,
+                               const wm_announce_ctx *ctx) {
+    const wm_announce_match_over_cfg *cfg = &wm_announce_match_over;
+    const wm_announce_table *t;
+
+    if (!a) return 0;
+
+    /*
+     * `MOVI 200,A0 / CALLA RNDPER / JRHI WRESTLER_SPEECH` -- a one-in-five
+     * chance the WRESTLER says something instead of the announcer, out of
+     * his own table.
+     */
+    if (rndper(ctx, cfg->speech_percent)) {
+        const char *name = NULL;
+        if (wrestler_num >= 0 && wrestler_num < WM_ANNOUNCE_WRESTLERS)
+            name = wm_announce_finishes[wrestler_num];
+        if (!name) return 0;          /* the cut slot: nothing to say */
+        t = wm_announce_table_find(name);
+        if (!t) return 0;
+        return wm_announce_from_table(a, t, cfg->queue_percent, false, ctx);
+    }
+
+    /*
+     * `p1winstreak[PLYRNUM] >= 4` and another one-in-five: the announcer
+     * remarks on the streak rather than the match, with ADD_VOICE
+     * directly instead of a table.
+     */
+    if (win_streak >= (int)cfg->winstreak_min &&
+        rndper(ctx, cfg->streak_percent)) {
+        /* `RNDPER 500 / JRLO SPECIAL_DONE` keeps the first line; the
+           branch not taken swaps in the second. */
+        int16_t line = rndper(ctx, cfg->which_special_percent)
+                           ? cfg->special_line[1] : cfg->special_line[0];
+        add_speech_to_list(a, line);
+        return queue(a, line, false) ? 1 : 0;
+    }
+
+    /* `xor a8,a9 / jrz #drn_l`: the winning team's bit against PSTATUS.
+       MATCH_OVER is for a player losing -- the source's own comment,
+       "Lawlor cheers/Vince gripes" -- and MATCH_OVER_DL for a drone. */
+    t = wm_announce_table_find(loser_was_drone ? "MATCH_OVER_DL"
+                                               : "MATCH_OVER");
+    if (!t) return 0;
+    return wm_announce_from_table(a, t, cfg->queue_percent, false, ctx);
 }

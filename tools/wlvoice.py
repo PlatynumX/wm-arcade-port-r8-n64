@@ -70,6 +70,14 @@ PERSONAL_TABLES = ["GIVE_CREDIT_TO", "VERY_IMPRESSIVE_MOVE",
 # name, so a malformed one elsewhere still fails to parse.
 PARTIAL_HEADER_OK = {"SPECIAL_LAST_STUFF"}
 
+# The end-of-match tables (MATCH_OVER, MATCH_OVER_DL and the seven
+# *_FINISHES) were written with only a `.LONG crowd` and a
+# `.WORD count,stride`, and no reset-repeat word of their own. So the word
+# ADD_TO_QUEUE reads at -050H is whatever happens to sit there: the last
+# data word of the table before it, or the low half of a `.LONG`. That is
+# extracted as written rather than assumed to be zero -- it decides
+# whether the call clears REPEAT_STATE, and for most of them it does.
+
 WORD_RE = re.compile(r"^\s*\.WORD\s+(.+)$", re.I)
 LONG_RE = re.compile(r"^\s*\.LONG\s+(.+)$", re.I)
 LABEL_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)\s*$")
@@ -138,16 +146,25 @@ def announce_tables() -> dict[str, dict]:
         while k >= 0 and not lines[k].strip():
             k -= 1
         ml = LONG_RE.match(lines[k] if k >= 0 else "")
-        crowd, reset_repeat = None, False
+        crowd, reset_repeat, reset_note = None, False, None
         if ml:
             crowd = ml.group(1).strip()
             p = k - 1
             while p >= 0 and not lines[p].strip():
                 p -= 1
-            mr = WORD_RE.match(lines[p] if p >= 0 else "")
-            if not mr or len(_split_words(mr.group(1))) != 1:
+            prev = lines[p] if p >= 0 else ""
+            mr = WORD_RE.match(prev)
+            if mr and len(_split_words(mr.group(1))) == 1:
+                reset_repeat = _word(_split_words(mr.group(1))[0]) != 0
+            elif LONG_RE.match(prev):
+                # The WHICH_WRESTLER_TALKS pointer list runs straight into
+                # HART_FINISHES's header, so the word ADD_TO_QUEUE reads at
+                # -050H is the low half of a `.LONG` address -- never zero,
+                # so the flag reads as set. Accidental, but real.
+                reset_repeat = True
+                reset_note = "low half of the preceding .LONG"
+            else:
                 continue
-            reset_repeat = _word(_split_words(mr.group(1))[0]) != 0
         elif name not in PARTIAL_HEADER_OK:
             continue
 
@@ -177,6 +194,7 @@ def announce_tables() -> dict[str, dict]:
             "reset_repeat": reset_repeat,
             "crowd": None if crowd in (None, "0", "0H") else crowd,
             "partial_header": ml is None,
+            "reset_note": reset_note,
             "rows": rows,
         }
     return out
@@ -275,6 +293,102 @@ def personal_tables() -> dict[str, list[int]]:
     return out
 
 
+def which_wrestler_talks() -> list[str | None]:
+    """WRESTLER_SPEECH's per-wrestler table of tables.
+
+    `SLL 5,A5 / ADDI WHICH_WRESTLER_TALKS,A5 / MOVE *A5,A2,L` -- nine
+    LONG pointers in WRESTLERNUM order, with Adam Bomb's cut slot a
+    literal 0.
+    """
+    lines = _lines()
+    idx = next((i for i, l in enumerate(lines)
+                if l.strip() == "WHICH_WRESTLER_TALKS"), None)
+    if idx is None:
+        raise ValueError("no WHICH_WRESTLER_TALKS")
+    out: list[str | None] = []
+    for q in range(idx + 1, len(lines)):
+        if not lines[q].strip():
+            if out:
+                break
+            continue
+        m = LONG_RE.match(lines[q])
+        if not m:
+            break
+        tok = m.group(1).strip()
+        out.append(None if tok in ("0", "0H") else tok)
+    if len(out) != 9:
+        raise ValueError(f"WHICH_WRESTLER_TALKS: expected 9, got {len(out)}")
+    return out
+
+
+def match_over() -> dict:
+    """DCSSOUND.ASM:3793 CALL_MATCH_OVER / PROC_MATCH_OVER.
+
+    Unlike the CALL_x family this one is not a table plus a percentage --
+    it is a decision tree, so its constants are read out individually
+    rather than guessed:
+
+        SLEEPK 5                 the process's own delay
+        xor a8,a9 / jrz          which table: the loser is a player
+                                 (MATCH_OVER) or a drone (MATCH_OVER_DL)
+        RNDPER 200 / JRHI        20% -> WRESTLER_SPEECH instead
+        p1winstreak >= 4 and
+        RNDPER 200 / JRHI        20% -> the over-four-wins line
+        ADD_TO_QUEUE 1000        otherwise, always say something
+        RNDPER 500               which of the two over-four lines
+    """
+    lines = _lines()
+    # `SUBRP PROC_MATCH_OVER`, not a bare label.
+    head = re.compile(r"^\s*(?:SUBRP?\s+)?PROC_MATCH_OVER\s*$", re.I)
+    idx = next((i for i, l in enumerate(lines) if head.match(l)), None)
+    if idx is None:
+        raise ValueError("no PROC_MATCH_OVER")
+    got: dict = {"percents": [], "sleep": None, "winstreak": None,
+                 "special": []}
+    in_special = False
+    for q in range(idx + 1, min(idx + 60, len(lines))):
+        line = lines[q]
+        if re.match(r"^\s*SPECIAL_DONE\s*$", line):
+            break
+        # The two A2 loads before this label are the tables, not lines.
+        if re.match(r"^\s*SPECIAL_FOR_OVER_4_WINS\s*$", line):
+            in_special = True
+            continue
+        m = re.match(r"^\s*SLEEPK?\s+(\S+)", line, re.I)
+        if m and got["sleep"] is None:
+            got["sleep"] = wlanim.eval_ticks(m.group(1))
+            continue
+        m = MOVI_RE.match(line)
+        if m and m.group(2).upper() == "A0":
+            got["percents"].append(int(m.group(1)))
+            continue
+        if m and m.group(2).upper() == "A2" and in_special:
+            got["special"].append(m.group(1))
+            continue
+        m = re.match(r"^\s*CMPI\s+(\d+)\s*,\s*A0", line, re.I)
+        if m:
+            got["winstreak"] = int(m.group(1))
+    if got["sleep"] is None or got["winstreak"] is None:
+        raise ValueError(f"PROC_MATCH_OVER: incomplete read {got}")
+    # 200 (wrestler speech), 200 (over four wins), 1000 (the queue add),
+    # 500 (which of the two over-four lines).
+    if got["percents"][:4] != [200, 200, 1000, 500]:
+        raise ValueError(f"PROC_MATCH_OVER: percentages moved: "
+                         f"{got['percents']}")
+    if len(got["special"]) != 2:
+        raise ValueError(f"PROC_MATCH_OVER: expected two over-four lines, "
+                         f"got {got['special']}")
+    return {
+        "sleep": got["sleep"],
+        "speech_percent": got["percents"][0],
+        "streak_percent": got["percents"][1],
+        "queue_percent": got["percents"][2],
+        "which_special_percent": got["percents"][3],
+        "winstreak_min": got["winstreak"],
+        "special_lines": [_word(x) for x in got["special"]],
+    }
+
+
 def ascending_table() -> list[list[int]]:
     """SET_UP_PERSONAL_CALL's repeat counter, 4 words per wrestler."""
     lines = _lines()
@@ -311,7 +425,12 @@ def wanted_tables(calls: dict[str, dict]) -> list[str]:
     # END_GAME_STUFF in a picked row diverts the whole call to
     # SPECIAL_LAST_STUFF (DCSSOUND.ASM:3149 DO_END_STUFF), so that table is
     # reachable from AVERAGE_MOVE even though no caller names it.
-    return sorted({c["table"] for c in calls.values()} | {"SPECIAL_LAST_STUFF"})
+    # ...and the end-of-match family, which PROC_MATCH_OVER and
+    # WRESTLER_SPEECH reach instead of through a CALL_x row.
+    ends = {"MATCH_OVER", "MATCH_OVER_DL"}
+    ends |= {t for t in which_wrestler_talks() if t}
+    return sorted({c["table"] for c in calls.values()} |
+                  {"SPECIAL_LAST_STUFF"} | ends)
 
 
 def render_c() -> str:
@@ -371,6 +490,25 @@ def render_c() -> str:
                "[WM_ANNOUNCE_WRESTLERS][WM_ANNOUNCE_REPEAT_STEPS] = {")
     for row in asc:
         out.append("    { " + ", ".join(str(v) for v in row) + " },")
+    out += ["};", ""]
+
+    out.append("/* WRESTLER_SPEECH's WHICH_WRESTLER_TALKS: one table of")
+    out.append("   winner lines per wrestler, in WRESTLERNUM order. Adam")
+    out.append("   Bomb's cut slot is a literal 0, and the Undertaker's and")
+    out.append("   Yokozuna's tables hold a single 0 -- they win in silence. */")
+    out.append("const char *const wm_announce_finishes"
+               "[WM_ANNOUNCE_WRESTLERS] = {")
+    for t in which_wrestler_talks():
+        out.append("    0," if t is None else f'    "{t}",')
+    out += ["};", ""]
+
+    mo = match_over()
+    out.append("/* DCSSOUND.ASM:3793 PROC_MATCH_OVER's own constants. */")
+    out.append("const wm_announce_match_over_cfg wm_announce_match_over = {")
+    out.append(f"    {mo['sleep']}, {mo['speech_percent']}, "
+               f"{mo['streak_percent']}, {mo['queue_percent']},")
+    out.append(f"    {mo['which_special_percent']}, {mo['winstreak_min']},")
+    out.append(f"    {{ {mo['special_lines'][0]}, {mo['special_lines'][1]} }}")
     out += ["};", ""]
 
     out.append("/* The CALL_x entry points: each CREATEs a process that")

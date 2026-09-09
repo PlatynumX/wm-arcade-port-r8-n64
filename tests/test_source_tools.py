@@ -1372,9 +1372,25 @@ def test_announce_tables() -> None:
     # game ever says it is through the anti-repeat walk. They are part of
     # the table for that reason, and are extracted with it. (The one-line
     # *_FINISHES tables have no such rows: there is nowhere to walk to.)
-    for name in wlvoice.wanted_tables(calls):
+    for name in sorted({c["table"] for c in calls.values()}):
         t = tables[name]
         assert t["rows"][t["last_index"] + 1:], name
+
+    # The end-of-match family is the exception, and deliberately so: every
+    # row of MATCH_OVER's *_FINISHES tables is drawable and there is
+    # nothing after them. Several hold a single line, so a wrestler who
+    # just said his own line fails ARE_WE_REPEATING and the walk runs
+    # straight off the end -- into whatever the assembler put next. This
+    # port stops there and says nothing instead.
+    for name in ("HART_FINISHES", "BAM_FINISHES", "MATCH_OVER"):
+        t = tables[name]
+        if name.endswith("_FINISHES"):
+            assert not t["rows"][t["last_index"] + 1:], name
+        else:
+            assert t["rows"][t["last_index"] + 1:], name
+    # Two wrestlers win in silence: their table is a single zero.
+    assert tables["UNDERTAKER_FINISHES"]["rows"] == [[0]]
+    assert tables["YOKO_FINISHES"]["rows"] == [[0]]
 
     # Every CALL_x names a table that exists, with a real percentage.
     for name, c in calls.items():

@@ -28,6 +28,18 @@ static const int16_t average_move_rows[] = {
     339,   /* padding */
 };
 
+/* DCSSOUND.ASM:3930 BAM_FINISHES -- rows 0..2 of 3 (1 word(s) each, the rest is the walk-forward padding). */
+static const int16_t bam_finishes_rows[] = {
+    102,
+    103,
+    111,
+};
+
+/* DCSSOUND.ASM:3937 DOINK_FINISHES -- rows 0..0 of 1 (1 word(s) each, the rest is the walk-forward padding). */
+static const int16_t doink_finishes_rows[] = {
+    86,
+};
+
 /* DCSSOUND.ASM:3392 DROP_KICK -- rows 0..14 of 19 (1 word(s) each, the rest is the walk-forward padding). */
 static const int16_t drop_kick_rows[] = {
     356,
@@ -64,6 +76,45 @@ static const int16_t face_hit_rows[] = {
     487,   /* padding */
     241,   /* padding */
     399,   /* padding */
+};
+
+/* DCSSOUND.ASM:3904 HART_FINISHES -- rows 0..0 of 1 (1 word(s) each, the rest is the walk-forward padding). */
+static const int16_t hart_finishes_rows[] = {
+    568,
+};
+
+/* DCSSOUND.ASM:3942 LUGER_FINISHES -- rows 0..0 of 2 (1 word(s) each, the rest is the walk-forward padding). */
+static const int16_t luger_finishes_rows[] = {
+    499,
+    0,   /* padding */
+};
+
+/* DCSSOUND.ASM:3851 MATCH_OVER -- rows 0..6 of 12 (1 word(s) each, the rest is the walk-forward padding). */
+static const int16_t match_over_rows[] = {
+    297,
+    298,
+    762,
+    763,
+    766,
+    444,
+    769,
+    298,   /* padding */
+    762,   /* padding */
+    763,   /* padding */
+    766,   /* padding */
+    -1,   /* padding */
+};
+
+/* DCSSOUND.ASM:3869 MATCH_OVER_DL -- rows 0..3 of 8 (1 word(s) each, the rest is the walk-forward padding). */
+static const int16_t match_over_dl_rows[] = {
+    -1,
+    237,
+    756,
+    757,
+    -1,   /* padding */
+    237,   /* padding */
+    756,   /* padding */
+    757,   /* padding */
 };
 
 /* DCSSOUND.ASM:3467 MID_HIT -- rows 0..7 of 12 (1 word(s) each, the rest is the walk-forward padding). */
@@ -171,6 +222,11 @@ static const int16_t other_average_rows[] = {
     358,   /* padding */
 };
 
+/* DCSSOUND.ASM:3909 RAZOR_FINISHES -- rows 0..0 of 1 (1 word(s) each, the rest is the walk-forward padding). */
+static const int16_t razor_finishes_rows[] = {
+    90,
+};
+
 /* DCSSOUND.ASM:3562 REVERSAL -- rows 0..14 of 19 (1 word(s) each, the rest is the walk-forward padding). */
 static const int16_t reversal_rows[] = {
     351,
@@ -217,6 +273,12 @@ static const int16_t setup_move_rows[] = {
     318,   /* padding */
     321,   /* padding */
     323,   /* padding */
+};
+
+/* DCSSOUND.ASM:3924 SHAWN_FINISHES -- rows 0..1 of 2 (1 word(s) each, the rest is the walk-forward padding). */
+static const int16_t shawn_finishes_rows[] = {
+    96,
+    97,
 };
 
 /* DCSSOUND.ASM:3772 SPECIAL_LAST_STUFF -- rows 0..6 of 11 (1 word(s) each, the rest is the walk-forward padding). */
@@ -295,20 +357,40 @@ static const int16_t thrown_out_rows[] = {
     358,   /* padding */
 };
 
+/* DCSSOUND.ASM:3914 UNDERTAKER_FINISHES -- rows 0..0 of 1 (1 word(s) each, the rest is the walk-forward padding). */
+static const int16_t undertaker_finishes_rows[] = {
+    0,
+};
+
+/* DCSSOUND.ASM:3919 YOKO_FINISHES -- rows 0..0 of 1 (1 word(s) each, the rest is the walk-forward padding). */
+static const int16_t yoko_finishes_rows[] = {
+    0,
+};
+
 const wm_announce_table wm_announce_tables[] = {
     { "AVERAGE_MOVE", average_move_rows, sizeof(average_move_rows) / sizeof(average_move_rows[0]), 17, 1, false },
+    { "BAM_FINISHES", bam_finishes_rows, sizeof(bam_finishes_rows) / sizeof(bam_finishes_rows[0]), 2, 1, true },
+    { "DOINK_FINISHES", doink_finishes_rows, sizeof(doink_finishes_rows) / sizeof(doink_finishes_rows[0]), 0, 1, true },
     { "DROP_KICK", drop_kick_rows, sizeof(drop_kick_rows) / sizeof(drop_kick_rows[0]), 14, 1, false },
     { "FACE_HIT", face_hit_rows, sizeof(face_hit_rows) / sizeof(face_hit_rows[0]), 7, 1, false },
+    { "HART_FINISHES", hart_finishes_rows, sizeof(hart_finishes_rows) / sizeof(hart_finishes_rows[0]), 0, 1, true },
+    { "LUGER_FINISHES", luger_finishes_rows, sizeof(luger_finishes_rows) / sizeof(luger_finishes_rows[0]), 0, 1, true },
+    { "MATCH_OVER", match_over_rows, sizeof(match_over_rows) / sizeof(match_over_rows[0]), 6, 1, true },
+    { "MATCH_OVER_DL", match_over_dl_rows, sizeof(match_over_dl_rows) / sizeof(match_over_dl_rows[0]), 3, 1, true },
     { "MID_HIT", mid_hit_rows, sizeof(mid_hit_rows) / sizeof(mid_hit_rows[0]), 7, 1, false },
     { "MISSES", misses_rows, sizeof(misses_rows) / sizeof(misses_rows[0]), 17, 1, true },
     { "MISS_YOKO", miss_yoko_rows, sizeof(miss_yoko_rows) / sizeof(miss_yoko_rows[0]), 6, 1, true },
     { "NASTY_MOVE", nasty_move_rows, sizeof(nasty_move_rows) / sizeof(nasty_move_rows[0]), 17, 2, true },
     { "OTHER_AVERAGE", other_average_rows, sizeof(other_average_rows) / sizeof(other_average_rows[0]), 12, 1, true },
+    { "RAZOR_FINISHES", razor_finishes_rows, sizeof(razor_finishes_rows) / sizeof(razor_finishes_rows[0]), 0, 1, true },
     { "REVERSAL", reversal_rows, sizeof(reversal_rows) / sizeof(reversal_rows[0]), 14, 1, false },
     { "SETUP_MOVE", setup_move_rows, sizeof(setup_move_rows) / sizeof(setup_move_rows[0]), 15, 1, false },
+    { "SHAWN_FINISHES", shawn_finishes_rows, sizeof(shawn_finishes_rows) / sizeof(shawn_finishes_rows[0]), 1, 1, false },
     { "SPECIAL_LAST_STUFF", special_last_stuff_rows, sizeof(special_last_stuff_rows) / sizeof(special_last_stuff_rows[0]), 6, 1, false },
     { "SPECIAL_MOVE", special_move_rows, sizeof(special_move_rows) / sizeof(special_move_rows[0]), 31, 2, false },
     { "THROWN_OUT", thrown_out_rows, sizeof(thrown_out_rows) / sizeof(thrown_out_rows[0]), 12, 1, true },
+    { "UNDERTAKER_FINISHES", undertaker_finishes_rows, sizeof(undertaker_finishes_rows) / sizeof(undertaker_finishes_rows[0]), 0, 1, true },
+    { "YOKO_FINISHES", yoko_finishes_rows, sizeof(yoko_finishes_rows) / sizeof(yoko_finishes_rows[0]), 0, 1, false },
 };
 const size_t wm_announce_table_count =
     sizeof(wm_announce_tables) / sizeof(wm_announce_tables[0]);
@@ -341,6 +423,29 @@ const int16_t wm_announce_ascending[WM_ANNOUNCE_WRESTLERS][WM_ANNOUNCE_REPEAT_ST
     { 228, 227, 226, 225 },
     { 0, 0, 0, 0 },
     { 254, 253, 252, 251 },
+};
+
+/* WRESTLER_SPEECH's WHICH_WRESTLER_TALKS: one table of
+   winner lines per wrestler, in WRESTLERNUM order. Adam
+   Bomb's cut slot is a literal 0, and the Undertaker's and
+   Yokozuna's tables hold a single 0 -- they win in silence. */
+const char *const wm_announce_finishes[WM_ANNOUNCE_WRESTLERS] = {
+    "HART_FINISHES",
+    "RAZOR_FINISHES",
+    "UNDERTAKER_FINISHES",
+    "YOKO_FINISHES",
+    "SHAWN_FINISHES",
+    "BAM_FINISHES",
+    "DOINK_FINISHES",
+    0,
+    "LUGER_FINISHES",
+};
+
+/* DCSSOUND.ASM:3793 PROC_MATCH_OVER's own constants. */
+const wm_announce_match_over_cfg wm_announce_match_over = {
+    5, 200, 200, 1000,
+    500, 4,
+    { 408, 761 }
 };
 
 /* The CALL_x entry points: each CREATEs a process that

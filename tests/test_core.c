@@ -4092,11 +4092,16 @@ static void test_announce_tables_are_real(void) {
         /* RNDRNG0's inclusive maximum must be inside the data... */
         CHECK(t->stride == 1u || t->stride == 2u);
         CHECK((size_t)(t->last_index + 1) * t->stride <= t->word_count);
-        /* ...and there are rows past it for a rejected draw to walk
-           into, which is what makes the last row survivable. Some of
-           those rows carry lines that appear nowhere in the drawn range,
-           so the anti-repeat walk is the only way the game says them. */
-        CHECK((size_t)(t->last_index + 1) * t->stride < t->word_count);
+        /* ...and, for the tables a CALL_x draws from, there are rows
+           past it for a rejected draw to walk into, which is what makes
+           the last row survivable. Some of those rows carry lines that
+           appear nowhere in the drawn range, so the anti-repeat walk is
+           the only way the game says them.
+
+           The end-of-match tables are the exception and are checked
+           separately below: they have nothing after them at all. */
+        if (wm_announce_drawn_by_a_call(t->name))
+            CHECK((size_t)(t->last_index + 1) * t->stride < t->word_count);
     }
 
     CHECK(wm_announce_call_count >= 12u);
@@ -4128,6 +4133,29 @@ static void test_announce_tables_are_real(void) {
             CHECK(c->personal);
         }
     }
+    /*
+     * WRESTLER_SPEECH's per-wrestler tables. Every row is drawable and
+     * nothing follows them, so a wrestler who just said his own line
+     * fails ARE_WE_REPEATING and the walk runs off the end -- into
+     * whatever the assembler put next, in the original. This port stops
+     * and says nothing.
+     */
+    {
+        const wm_announce_table *t = wm_announce_table_find("BAM_FINISHES");
+        CHECK(t != NULL);
+        if (t) CHECK((size_t)(t->last_index + 1) * t->stride == t->word_count);
+    }
+    /* Two wrestlers win in silence: a single zero row. */
+    {
+        const wm_announce_table *u =
+            wm_announce_table_find("UNDERTAKER_FINISHES");
+        const wm_announce_table *y = wm_announce_table_find("YOKO_FINISHES");
+        CHECK(u != NULL && y != NULL);
+        if (u) CHECK(u->word_count == 1u && u->rows[0] == 0);
+        if (y) CHECK(y->word_count == 1u && y->rows[0] == 0);
+    }
+    /* Adam Bomb's cut slot has no table at all. */
+    CHECK(wm_announce_finishes[7] == NULL);
     CHECK(wm_announce_call_find("CALL_NOT_A_ROUTINE") == NULL);
     CHECK(wm_announce_table_find(NULL) == NULL);
 }
@@ -4679,6 +4707,173 @@ static void test_digit_leading_local_labels(void) {
         CHECK(p->ops[ifst - 3].op == WM_AOP_FRAME);
         if (p->ops[ifst - 3].text)
             CHECK(strcmp(p->ops[ifst - 3].text, "S2ST2C01") == 0);
+    }
+}
+
+/*
+ * DCSSOUND.ASM:3793 CALL_MATCH_OVER -- the end-of-match announcement,
+ * and the one caller in the family that is a decision tree rather than a
+ * table and a percentage.
+ */
+/* A line the announcer could legitimately have queued from `t` for this
+   wrestler: a literal row, or -- since MATCH_OVER_DL's first row is
+   GIVE_CREDIT and MATCH_OVER's padding holds one too -- the personal line
+   a sentinel resolves to. */
+static int ann_line_is_from(const wm_announce_table *t, int who, uint16_t got) {
+    size_t w;
+    int k;
+    if (!t) return 0;
+    for (w = 0; w < t->word_count; ++w)
+        if (t->rows[w] == (int16_t)got) return 1;
+    for (w = 0; w < t->word_count; ++w) {
+        if (t->rows[w] >= 0) continue;
+        for (k = 0; k < WM_ANNOUNCE_PERSONAL_KINDS; ++k)
+            if (who >= 0 && who < WM_ANNOUNCE_WRESTLERS &&
+                wm_announce_personal[k][who] == (int16_t)got)
+                return 1;
+    }
+    return 0;
+}
+
+static void test_announce_match_over(void) {
+    wm_announcer_state a;
+    wm_announce_ctx ctx;
+    WmRng rng;
+    const wm_announce_table *over, *dl, *bam;
+    int i;
+
+    over = wm_announce_table_find("MATCH_OVER");
+    dl = wm_announce_table_find("MATCH_OVER_DL");
+    bam = wm_announce_table_find("BAM_FINISHES");
+    CHECK(over != NULL && dl != NULL && bam != NULL);
+    if (!over || !dl || !bam) return;
+
+    /* PROC_MATCH_OVER's own constants, read off the source. */
+    CHECK(wm_announce_match_over.sleep == 5u);
+    CHECK(wm_announce_match_over.speech_percent == 200u);
+    CHECK(wm_announce_match_over.streak_percent == 200u);
+    CHECK(wm_announce_match_over.queue_percent == 1000u);
+    CHECK(wm_announce_match_over.which_special_percent == 500u);
+    CHECK(wm_announce_match_over.winstreak_min == 4u);
+
+    /*
+     * `xor a8,a9 / jrz #drn_l` picks the table. Over many runs with no
+     * win streak, everything queued must come from the right one -- and
+     * at 1000 per mille something is queued every time, unless the 20%
+     * wrestler-speech branch took it into that wrestler's own table.
+     */
+    for (i = 0; i < 300; ++i) {
+        const wm_announce_table *want;
+        size_t w;
+        int found = 0, spoke;
+        wm_rng_init(&rng, (uint16_t)(0x100u + i), NULL, NULL, NULL);
+        ann_ctx_init(&ctx, &rng, 5);          /* Bam Bam */
+        ctx.rng = &rng;
+        wm_announcer_init(&a);
+        spoke = wm_announce_match_over_run(&a, false, 5, 0, &ctx);
+        CHECK(spoke >= 0);
+        if (spoke == 0) continue;             /* every row was too recent */
+        want = over;
+        (void)w;
+        found = ann_line_is_from(want, 5, a.slot[0]) ||
+                ann_line_is_from(bam, 5, a.slot[0]);
+        /* It is one or the other -- never a line unique to MATCH_OVER_DL. */
+        CHECK(found);
+    }
+
+    /* ...and with a drone losing, MATCH_OVER_DL or the wrestler's own. */
+    for (i = 0; i < 300; ++i) {
+        size_t w;
+        int found = 0;
+        ann_ctx_init(&ctx, &rng, 5);
+        /* ann_ctx_init seeds the RNG itself; re-seed per run. */
+        wm_rng_init(&rng, (uint16_t)(0x900u + i), NULL, NULL, NULL);
+        wm_announcer_init(&a);
+        if (wm_announce_match_over_run(&a, true, 5, 0, &ctx) == 0) continue;
+        (void)w;
+        found = ann_line_is_from(dl, 5, a.slot[0]) ||
+                ann_line_is_from(bam, 5, a.slot[0]);
+        CHECK(found);
+    }
+
+    /*
+     * The over-four-wins branch: below the threshold neither special line
+     * can ever come out, and at or above it they do.
+     */
+    {
+        int saw_special = 0, saw_special_low = 0;
+        for (i = 0; i < 400; ++i) {
+            ann_ctx_init(&ctx, &rng, 0);
+            /* ann_ctx_init seeds the RNG itself; re-seed per run. */
+            wm_rng_init(&rng, (uint16_t)(0x2000u + i), NULL, NULL, NULL);
+            wm_announcer_init(&a);
+            if (wm_announce_match_over_run(&a, false, 0, 3, &ctx) > 0) {
+                if (a.slot[0] ==
+                        (uint16_t)wm_announce_match_over.special_line[0] ||
+                    a.slot[0] ==
+                        (uint16_t)wm_announce_match_over.special_line[1])
+                    saw_special_low = 1;
+            }
+            ann_ctx_init(&ctx, &rng, 0);
+            /* ann_ctx_init seeds the RNG itself; re-seed per run. */
+            wm_rng_init(&rng, (uint16_t)(0x2000u + i), NULL, NULL, NULL);
+            wm_announcer_init(&a);
+            if (wm_announce_match_over_run(&a, false, 0, 9, &ctx) > 0) {
+                if (a.slot[0] ==
+                        (uint16_t)wm_announce_match_over.special_line[0] ||
+                    a.slot[0] ==
+                        (uint16_t)wm_announce_match_over.special_line[1])
+                    saw_special = 1;
+            }
+        }
+        CHECK(!saw_special_low);   /* `CMPI 4,A0 / JRLT` */
+        CHECK(saw_special);
+    }
+
+    /*
+     * The Undertaker and Yokozuna win in silence -- their own table is a
+     * single zero -- so on the wrestler-speech branch they queue nothing
+     * rather than a sound zero.
+     */
+    for (i = 0; i < 200; ++i) {
+        wm_rng_init(&rng, (uint16_t)(0x3000u + i), NULL, NULL, NULL);
+        ann_ctx_init(&ctx, &rng, 2);          /* the Undertaker */
+        ctx.rng = &rng;
+        wm_announcer_init(&a);
+        (void)wm_announce_match_over_run(&a, false, 2, 0, &ctx);
+        /* Whatever came out, it is never line 0. */
+        if (!wm_announcer_is_silent(&a)) CHECK(a.slot[0] != 0u);
+    }
+
+    /* Adam Bomb's cut slot has no table: the speech branch says nothing
+       and does not read past the array. */
+    for (i = 0; i < 100; ++i) {
+        ann_ctx_init(&ctx, &rng, 7);
+        /* ann_ctx_init seeds the RNG itself; re-seed per run. */
+        wm_rng_init(&rng, (uint16_t)(0x4000u + i), NULL, NULL, NULL);
+        wm_announcer_init(&a);
+        (void)wm_announce_match_over_run(&a, false, 7, 0, &ctx);
+    }
+    /* Out of range, and NULL, are safe. */
+    wm_announcer_init(&a);
+    (void)wm_announce_match_over_run(&a, false, 99, 0, &ctx);
+    (void)wm_announce_match_over_run(&a, false, -1, 0, &ctx);
+    CHECK(wm_announce_match_over_run(NULL, false, 0, 0, &ctx) == 0);
+
+    /* It is ADD_TO_QUEUE, not ADD_IF_SILENT: the end of a match talks
+       over whatever the announcer was already saying. */
+    {
+        int spoke_while_busy = 0;
+        for (i = 0; i < 200 && !spoke_while_busy; ++i) {
+            ann_ctx_init(&ctx, &rng, 0);
+            /* ann_ctx_init seeds the RNG itself; re-seed per run. */
+            wm_rng_init(&rng, (uint16_t)(0x5000u + i), NULL, NULL, NULL);
+            wm_announcer_init(&a);
+            CHECK(wm_announcer_add(&a, 0x300u));   /* already talking */
+            if (wm_announce_match_over_run(&a, false, 0, 0, &ctx) > 0)
+                spoke_while_busy = 1;
+        }
+        CHECK(spoke_while_busy);
     }
 }
 
@@ -7495,6 +7690,7 @@ int main(void) {
     test_inc_combo_asks_the_announcer();
     test_announce_from_table();
     test_announce_tables_are_real();
+    test_announce_match_over();
     test_announce_call_from_the_vm();
     test_do_combo_mess();
     test_do_combo_mess_from_the_vm();

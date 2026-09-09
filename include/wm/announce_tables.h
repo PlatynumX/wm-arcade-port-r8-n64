@@ -75,8 +75,32 @@ extern const int16_t
 extern const int16_t
     wm_announce_ascending[WM_ANNOUNCE_WRESTLERS][WM_ANNOUNCE_REPEAT_STEPS];
 
+/*
+ * DCSSOUND.ASM:3793 CALL_MATCH_OVER. Unlike the CALL_x family this is a
+ * decision tree rather than one table and one percentage, so its
+ * constants are carried here instead of in a wm_announce_call row.
+ */
+typedef struct {
+    uint16_t sleep;               /* the process's own SLEEPK */
+    uint16_t speech_percent;      /* -> WRESTLER_SPEECH instead */
+    uint16_t streak_percent;      /* -> the over-four-wins line */
+    uint16_t queue_percent;       /* the ordinary ADD_TO_QUEUE */
+    uint16_t which_special_percent;   /* which of the two special lines */
+    uint16_t winstreak_min;       /* `CMPI 4,A0 / JRLT` */
+    int16_t special_line[2];      /* CAN_ANYBODY_STOP_HIM / L_NO_ONE_CAN_TOUCH */
+} wm_announce_match_over_cfg;
+
+extern const wm_announce_match_over_cfg wm_announce_match_over;
+/* WRESTLER_SPEECH's WHICH_WRESTLER_TALKS, by WRESTLERNUM. NULL for the
+   cut slot; the Undertaker's and Yokozuna's tables hold a single 0, so
+   they win in silence. */
+extern const char *const wm_announce_finishes[WM_ANNOUNCE_WRESTLERS];
+
 const wm_announce_table *wm_announce_table_find(const char *name);
 const wm_announce_call *wm_announce_call_find(const char *name);
+/* True for a table some CALL_x draws from, as opposed to the
+   end-of-match family PROC_MATCH_OVER reaches directly. */
+bool wm_announce_drawn_by_a_call(const char *name);
 
 /*
  * What ADD_TO_QUEUE reaches for beyond the queue itself. Every field may
@@ -104,6 +128,19 @@ typedef struct {
 int wm_announce_from_table(wm_announcer_state *a, const wm_announce_table *t,
                            uint16_t percent, bool if_silent,
                            const wm_announce_ctx *ctx);
+
+/*
+ * PROC_MATCH_OVER, run as one call. `loser_was_drone` is the source's
+ * `xor a8,a9 / jrz #drn_l` -- the winning team's bit against PSTATUS --
+ * and picks MATCH_OVER_DL over MATCH_OVER. `win_streak` is the winner's
+ * own p1winstreak entry. Returns the number of lines queued.
+ *
+ * Note it uses ADD_TO_QUEUE at 1000 per mille, not ADD_IF_SILENT: the end
+ * of a match always says something, over whatever else is being said.
+ */
+int wm_announce_match_over_run(wm_announcer_state *a, bool loser_was_drone,
+                               int wrestler_num, int win_streak,
+                               const wm_announce_ctx *ctx);
 
 /* One tick of REPEAT_DUMMY: the 80-tick life of the repeat counter. */
 void wm_announce_tick_repeat(wm_announcer_state *a);

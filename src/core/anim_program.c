@@ -617,6 +617,46 @@ static void run_superslave2(const wm_anim_op *o, wm_arcade_actor_t *actor,
 
 /* Walk from `pc` executing commands and taking branches until a frame is
    reached (which is what a tick shows) or the program stops. */
+/*
+ * ANIM.ASM:151. How long a frame is held is NOT simply the tick count in
+ * the stream:
+ *
+ *     move  *a4+,a0            ; the frame's own count
+ *     move  *a13(ANI_SPEED),a1
+ *     mpyu  a0,a1              ; * ANI_SPEED
+ *     srl   8,a1               ; / 256, so 100h is identity
+ *     move  @hyper_speed_on,a14
+ *     srl   a14,a1             ; the powerup halves it again
+ *     move  a1,*a10(OANICNT)
+ *
+ * Only a FRAME goes through this. ANI_PAUSE (:1252) and ANI_HMBWAIT both
+ * write OANICNT directly, unscaled, so neither is affected.
+ *
+ * Every ANI_SETSPEED in the source drop is 100h and nothing sets
+ * hyper_speed, so this is identity for the whole shipped game -- which is
+ * exactly why its absence was invisible. It is here so the port is right
+ * by construction rather than by coincidence.
+ */
+#define WM_ANI_SPEED_NORMAL 0x100u
+
+static uint16_t frame_ticks(const wm_arcade_actor_t *actor, int32_t ticks) {
+    uint32_t speed = WM_ANI_SPEED_NORMAL;
+    uint32_t held;
+
+    if (ticks <= 0) ticks = 1;
+    if (actor && actor->ani_speed) speed = actor->ani_speed;
+    held = ((uint32_t)ticks * speed) >> 8;
+    if (actor && actor->hyper_speed) held >>= actor->hyper_speed;
+    /*
+     * A count of 0 means "move on next tick" in the source, which its
+     * `dec / jrgt` reaches naturally. This interpreter counts down from
+     * ticks_left instead, so the floor is one tick. Only reachable when
+     * the hyper-speed powerup halves a single-tick frame, which nothing
+     * here enables.
+     */
+    return (uint16_t)(held ? held : 1);
+}
+
 static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
                     uint16_t round_tickcount, size_t pc) {
     const wm_anim_program *p = exec->program;
@@ -631,7 +671,7 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
             case WM_AOP_FRAME:
                 exec->pc = pc;
                 exec->next_pc = pc + 1;
-                exec->ticks_left = (uint16_t)(o->a > 0 ? o->a : 1);
+                exec->ticks_left = frame_ticks(actor, o->a);
                 exec->waiting = false;
                 return;
             case WM_AOP_CHANGEANIM_TBL: {

@@ -5656,6 +5656,82 @@ static void test_selfcontained_tail(void) {
     CHECK(wm_anim_code_run(NULL, &env, "#blocked_vels", "RZRSEQ2.ASM"));
 }
 
+/*
+ * ANIM.ASM:151 -- how long a frame is held is not simply the count in
+ * the stream. It is scaled by ANI_SPEED and then shifted by the
+ * hyper-speed powerup:
+ *
+ *     mpyu a0,a1 / srl 8,a1 / srl @hyper_speed_on,a1
+ *
+ * Every ANI_SETSPEED in the whole source drop is 100h, which is
+ * identity, and nothing sets hyper_speed_on outside a powerup code. So
+ * this is identity for the entire shipped game -- which is exactly why
+ * the port ignoring it was invisible. These assert the mechanism is
+ * really there, not merely harmless.
+ */
+static void test_frame_duration_scaling(void) {
+    static const wm_anim_op ops[] = {
+        { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "TESTFR01" },
+        { WM_AOP_PAUSE, 0, -1, 10, 0, 0, 0, 0, 0, NULL },
+        { WM_AOP_END,   0, -1, 0,  0, 0, 0, 0, 0, NULL }
+    };
+    static const wm_anim_program prog = { "test_speed", "ANIM.ASM", ops, 3, 0,
+                                          0, 0 };
+    wm_arcade_actor_t a;
+    wm_anim_exec ex;
+
+    /* 100h is identity, and so is an actor that was only memset. */
+    memset(&a, 0, sizeof(a));
+    wm_anim_exec_start(&ex, &prog, &a, 0, NULL);
+    CHECK(ex.ticks_left == 10);
+    memset(&a, 0, sizeof(a));
+    a.ani_speed = 0x100;
+    wm_anim_exec_start(&ex, &prog, &a, 0, NULL);
+    CHECK(ex.ticks_left == 10);
+
+    /* Half speed doubles the hold; double speed halves it. */
+    memset(&a, 0, sizeof(a));
+    a.ani_speed = 0x200;
+    wm_anim_exec_start(&ex, &prog, &a, 0, NULL);
+    CHECK(ex.ticks_left == 20);
+    memset(&a, 0, sizeof(a));
+    a.ani_speed = 0x080;
+    wm_anim_exec_start(&ex, &prog, &a, 0, NULL);
+    CHECK(ex.ticks_left == 5);
+
+    /* The powerup shifts the already-scaled count right again. */
+    memset(&a, 0, sizeof(a));
+    a.ani_speed = 0x100;
+    a.hyper_speed = 1;
+    wm_anim_exec_start(&ex, &prog, &a, 0, NULL);
+    CHECK(ex.ticks_left == 5);
+
+    /* Never zero: the source's `dec / jrgt` reaches "next tick"
+       naturally, this interpreter counts down, so one tick is the floor. */
+    memset(&a, 0, sizeof(a));
+    a.ani_speed = 0x001;
+    wm_anim_exec_start(&ex, &prog, &a, 0, NULL);
+    CHECK(ex.ticks_left == 1);
+
+    /*
+     * ANI_PAUSE is NOT scaled -- _ani_pause (ANIM.ASM:1252) writes
+     * OANICNT directly. Run to the pause at double speed and it still
+     * holds its full ten ticks while the frame before it held five.
+     */
+    {
+        int t;
+        memset(&a, 0, sizeof(a));
+        a.ani_speed = 0x080;             /* frames at half length */
+        wm_anim_exec_start(&ex, &prog, &a, 0, NULL);
+        CHECK(ex.ticks_left == 5);
+        for (t = 0; t < 40 && !ex.ended; ++t) {
+            wm_anim_exec_tick(&ex, &a, 0);
+            if (ex.program->ops[ex.next_pc - 1].op == WM_AOP_PAUSE) break;
+        }
+        CHECK(ex.ticks_left == 10);      /* the pause kept its own count */
+    }
+}
+
 /* The self-contained state commands: no subsystem behind any of them. */
 static void test_self_contained_ops(void) {
     wm_arcade_actor_t a, v;
@@ -8577,6 +8653,7 @@ int main(void) {
     test_bret_ifbuttons_run_cancel();
     test_bret_instant_state_commands();
     test_anim_program_interpreter();
+    test_frame_duration_scaling();
     test_waithitgnd();
     test_waitroll_and_do_roll();
     test_do_roll();

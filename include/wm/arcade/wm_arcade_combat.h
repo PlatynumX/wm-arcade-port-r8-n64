@@ -263,7 +263,27 @@ struct wm_arcade_actor {
     uint16_t attack_time;          /* round_tickcount WORD */
 
     /* Final combat-core integration: animation/move-dispatch fields. */
+    /*
+     * PLYR.EQU ANI_SPEED, and ANIM.ASM:151's use of it. The animation
+     * tick scales a FRAME's own duration by it:
+     *
+     *     move *a13(ANI_SPEED),a1 / mpyu a0,a1 / srl 8,a1
+     *
+     * so 100h is identity. Every one of the 1,220 ANI_SETSPEED commands
+     * in the whole source drop is 100h, which is why ignoring it was
+     * invisible -- the port was right by a fact about the data rather
+     * than by construction. 0 is treated as identity too, so an actor
+     * that was only memset still animates at normal speed.
+     */
     uint16_t ani_speed;
+    /*
+     * AWARD.ASM's `hyper_speed_on` powerup, the second half of the same
+     * line: `srl a14,a1` shifts the scaled count right by it, so 1 makes
+     * every animation play at double speed. It is a powerup/cheat toggle
+     * (0 in normal play) and nothing in this port enables it yet, so it
+     * is carried and honoured rather than left out.
+     */
+    uint16_t hyper_speed;
     uintptr_t special_move_addr;   /* source SPECIAL_MOVE_ADDR pointer/token */
 
     /* Stage 14 / BRET.ASM character-control adapter fields. */

@@ -76,11 +76,12 @@ STREAM_OPS = {
 # explicitly rather than assumed: an op NOT named here is unverifiable,
 # so a newly-introduced one cannot silently be treated as harmless.
 #
-# ANI_SETSPEED is in here with a caveat. It only stores ANI_SPEED in this
-# port and the interpreter's tick counting never reads it, so it is
-# stream-neutral HERE by construction -- which means this check cannot
-# say whether the arcade scaled frame durations by it. That is a separate
-# open question, not something this file verifies.
+# ANI_SETSPEED is stream-neutral for a reason that has now been checked
+# rather than assumed. ANIM.ASM:151 DOES scale a frame's duration by
+# ANI_SPEED (`mpyu a0,a1 / srl 8,a1`), so 100h is identity -- and every
+# one of the 1,220 ANI_SETSPEED commands in the whole source drop is
+# 100h. The interpreter implements the scaling now, so this is neutral
+# because the data makes it neutral, not because either side ignores it.
 NEUTRAL_OPS = {
     "ANI_SETMODE", "ANI_SETPLYRMODE", "ANI_SETSPEED", "ANI_SETFACING",
     "ANI_XFLIP", "ANI_SET_WRESTLER_XFLIP", "ANI_ZEROVELS",

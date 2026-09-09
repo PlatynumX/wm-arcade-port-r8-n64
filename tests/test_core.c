@@ -5448,7 +5448,119 @@ static void test_selfcontained_tail(void) {
     CHECK(a.y_vel == 0x30000);
     CHECK(a.x_vel == -0x20000);
 
+    /*
+     * SHNSEQ2.ASM:1158 #zero_x_4 -- "Don't float if dropping straight
+     * down": kill the X drift unless the opponent is well off to the side.
+     */
+    memset(&a, 0, sizeof(a));
+    a.closest_xdist = 65;
+    a.x_vel = 0x40000;
+    CHECK(wm_anim_code_run(&a, &env, "#zero_x_4", "SHNSEQ2.ASM"));
+    CHECK(a.x_vel == 0x40000);              /* `jrgt #ok4` */
+    a.closest_xdist = 64;                   /* the boundary is inclusive */
+    CHECK(wm_anim_code_run(&a, &env, "#zero_x_4", "SHNSEQ2.ASM"));
+    CHECK(a.x_vel == 0);
+
+    /*
+     * SHNSEQ3.ASM:316 #no_bk_xvel -- the file-scoping trap once more.
+     * The GLOBAL no_bk_xvel kills only X; this local copy kills Z too.
+     */
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_RIGHT;
+    a.x_vel = -0x40000;                     /* flying backwards */
+    a.z_vel = 0x20000;
+    CHECK(wm_anim_code_run(&a, &env, "#no_bk_xvel", "SHNSEQ3.ASM"));
+    CHECK(a.x_vel == 0 && a.z_vel == 0);
+    /* The global one leaves Z alone -- which is the difference. */
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_RIGHT;
+    a.x_vel = -0x40000;
+    a.z_vel = 0x20000;
+    CHECK(wm_anim_code_run(&a, &env, "no_bk_xvel", "HRTSEQ2.ASM"));
+    CHECK(a.x_vel == 0 && a.z_vel == 0x20000);
+    /* Moving forwards, neither touches anything. */
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_RIGHT;
+    a.x_vel = 0x40000;
+    CHECK(wm_anim_code_run(&a, &env, "#no_bk_xvel", "SHNSEQ3.ASM"));
+    CHECK(a.x_vel == 0x40000);
+
+    /* YOKSEQ2.ASM:3073 #delay_whoihit. */
+    memset(&a, 0, sizeof(a));
+    memset(&v, 0, sizeof(v));
+    a.who_i_hit = &v;
+    CHECK(wm_anim_code_run(&a, &env, "#delay_whoihit", "YOKSEQ2.ASM"));
+    CHECK(v.delay_meter == 55);
+
+    /*
+     * LEXSEQ3.ASM:2220 #ck_flip -- face into the ring from either side.
+     * The two halves test the flip bit with OPPOSITE senses, which is
+     * what makes each one end up pointing inward.
+     */
+    memset(&a, 0, sizeof(a));
+    a.x_int = WM_RING_X_CENTER - 200;       /* left half: face right */
+    a.obj_control = 0;
+    CHECK(wm_anim_code_run(&a, &env, "#ck_flip", "LEXSEQ3.ASM"));
+    CHECK(a.facing_dir == (WM_MOVE_RIGHT | WM_MOVE_DOWN));
+    CHECK((a.obj_control & WM_OBJ_FLIPH) == 0);
+    /* Already flipped on the left: the sprite is corrected and the
+       facing swaps with it. */
+    memset(&a, 0, sizeof(a));
+    a.x_int = WM_RING_X_CENTER - 200;
+    a.obj_control = (uint16_t)WM_OBJ_FLIPH;
+    CHECK(wm_anim_code_run(&a, &env, "#ck_flip", "LEXSEQ3.ASM"));
+    CHECK((a.obj_control & WM_OBJ_FLIPH) == 0);
+    CHECK(a.facing_dir == (WM_MOVE_LEFT | WM_MOVE_DOWN));
+    /* Right half. */
+    memset(&a, 0, sizeof(a));
+    a.x_int = WM_RING_X_CENTER + 200;
+    a.obj_control = (uint16_t)WM_OBJ_FLIPH;
+    CHECK(wm_anim_code_run(&a, &env, "#ck_flip", "LEXSEQ3.ASM"));
+    CHECK(a.facing_dir == (WM_MOVE_LEFT | WM_MOVE_DOWN));
+
+    /*
+     * HRTSEQ3.ASM:2550 #ck_dead_opp -- ATTACH_PROC first, WHOIHIT when
+     * the grapple has already been broken.
+     */
+    memset(&a, 0, sizeof(a));
+    memset(&v, 0, sizeof(v));
+    a.attach_proc = &v;
+    v.life = 10;
+    CHECK(wm_anim_code_run(&a, &env, "#ck_dead_opp", "HRTSEQ3.ASM"));
+    CHECK((a.anim_mode & WM_MODE_STATUS) == 0);
+    v.life = 0;
+    CHECK(wm_anim_code_run(&a, &env, "#ck_dead_opp", "HRTSEQ3.ASM"));
+    CHECK((a.anim_mode & WM_MODE_STATUS) != 0);
+    /* Grapple broken: it falls back to WHOIHIT. */
+    memset(&a, 0, sizeof(a));
+    a.who_i_hit = &v;
+    CHECK(wm_anim_code_run(&a, &env, "#ck_dead_opp", "HRTSEQ3.ASM"));
+    CHECK((a.anim_mode & WM_MODE_STATUS) != 0);
+
+    /* HRTSEQ4.ASM:1134 #set_wrestler_xflip -- ANI_SET_WRESTLER_XFLIP's
+       body, reached as a routine rather than an opcode. */
+    memset(&a, 0, sizeof(a));
+    a.facing_dir = WM_MOVE_RIGHT;
+    a.obj_control = (uint16_t)WM_OBJ_FLIPH;
+    CHECK(wm_anim_code_run(&a, &env, "#set_wrestler_xflip", "HRTSEQ4.ASM"));
+    CHECK((a.obj_control & WM_OBJ_FLIPH) == 0);
+    a.facing_dir = WM_MOVE_LEFT;
+    CHECK(wm_anim_code_run(&a, &env, "#set_wrestler_xflip", "HRTSEQ4.ASM"));
+    CHECK((a.obj_control & WM_OBJ_FLIPH) != 0);
+
+    /* YOKSEQ3.ASM:3293 #stop_dmg -- another SPCDMG, its own pair. */
+    memset(&a, 0, sizeof(a));
+    env.pcnt = 900u;
+    CHECK(wm_anim_code_run(&a, &env, "#stop_dmg", "YOKSEQ3.ASM"));
+    CHECK(a.next_damage == 2);
+    CHECK(a.special_damage_time == 900u + 35u);
+
     /* Every one of them tolerates a NULL actor. */
+    CHECK(wm_anim_code_run(NULL, &env, "#zero_x_4", "SHNSEQ2.ASM"));
+    CHECK(wm_anim_code_run(NULL, &env, "#no_bk_xvel", "SHNSEQ3.ASM"));
+    CHECK(wm_anim_code_run(NULL, &env, "#delay_whoihit", "YOKSEQ2.ASM"));
+    CHECK(wm_anim_code_run(NULL, &env, "#ck_flip", "LEXSEQ3.ASM"));
+    CHECK(wm_anim_code_run(NULL, &env, "#ck_dead_opp", "HRTSEQ3.ASM"));
     CHECK(wm_anim_code_run(NULL, &env, "inc_loop", "UNDSEQ3.ASM"));
     CHECK(wm_anim_code_run(NULL, &env, "check_xvel", NULL));
     CHECK(wm_anim_code_run(NULL, &env, "#reduce_dmg", "RZRSEQ3.ASM"));

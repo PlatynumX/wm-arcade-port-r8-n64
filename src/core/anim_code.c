@@ -331,6 +331,118 @@ static void do_combo_mess(wm_arcade_actor_t *actor, const wm_anim_env *env,
     (void)wm_arcade_do_combo_mess(actor, &ctx);
 }
 
+/*
+ * SHNSEQ2.ASM:1158 #zero_x_4 -- "Don't float if dropping straight down".
+ * Kill the X drift unless the opponent is well off to the side.
+ */
+#define WM_ZERO_X4_SIDE 64
+
+static void zero_x_4(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                     int32_t param) {
+    (void)env;
+    (void)param;
+    if (!actor) return;
+    if (actor->closest_xdist > WM_ZERO_X4_SIDE) return;   /* `jrgt #ok4` */
+    actor->x_vel = 0;
+}
+
+/*
+ * SHNSEQ3.ASM:316 #no_bk_xvel, and the file-scoping trap once more: the
+ * GLOBAL no_bk_xvel kills only OBJ_XVEL, and this local copy kills
+ * OBJ_ZVEL as well. The source's own header says when to use it --
+ * "zeros the wrestler's x-velocity if he's flying backwards. Useful just
+ * after a LEAPAT."
+ */
+static void no_bk_xvel_local(wm_arcade_actor_t *actor,
+                             const wm_anim_env *env, int32_t param) {
+    int32_t forward;
+    (void)env;
+    (void)param;
+    if (!actor) return;
+    /* Facing-relative: negate when he faces left, so `forward` is always
+       "along the way he is pointing". */
+    forward = (actor->facing_dir & WM_MOVE_RIGHT) ? actor->x_vel
+                                                  : -actor->x_vel;
+    if (forward >= 0) return;                 /* `jrnn #ok` */
+    actor->x_vel = 0;
+    actor->z_vel = 0;                         /* the local copy's extra */
+}
+
+/* YOKSEQ2.ASM:3073 #delay_whoihit -- hold the victim's getup meter off
+   for 55 ticks. */
+#define WM_DELAY_WHOIHIT_TICKS 55
+
+static void delay_whoihit(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                          int32_t param) {
+    (void)env;
+    (void)param;
+    if (actor && actor->who_i_hit)
+        actor->who_i_hit->delay_meter = WM_DELAY_WHOIHIT_TICKS;
+}
+
+/*
+ * LEXSEQ3.ASM:2220 #ck_flip -- face into the ring from whichever side he
+ * is on, flipping the sprite only when it is not already the right way
+ * round. Note the two sides test the flip bit with OPPOSITE senses
+ * (`jrz` on the left, `jrnz` on the right), which is what makes each one
+ * end up facing inward.
+ */
+static void ck_flip(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                    int32_t param) {
+    int32_t facing;
+    int flipped;
+    (void)env;
+    (void)param;
+    if (!actor) return;
+
+    flipped = (actor->obj_control & WM_OBJ_FLIPH) != 0;
+    if (actor->x_int > WM_RING_X_CENTER) {
+        facing = WM_MOVE_LEFT | WM_MOVE_DOWN;
+        if (!flipped) {                       /* `jrnz #no_flip` */
+            actor->obj_control ^= (uint16_t)WM_OBJ_FLIPH;
+            facing ^= (WM_MOVE_LEFT | WM_MOVE_RIGHT);
+        }
+    } else {
+        facing = WM_MOVE_RIGHT | WM_MOVE_DOWN;
+        if (flipped) {                        /* `jrz #no_flip` */
+            actor->obj_control ^= (uint16_t)WM_OBJ_FLIPH;
+            facing ^= (WM_MOVE_LEFT | WM_MOVE_RIGHT);
+        }
+    }
+    actor->facing_dir = facing;
+}
+
+/*
+ * HRTSEQ3.ASM:2550 #ck_dead_opp -- is the man I am holding dead? Reports
+ * through MODE_STATUS, and reads ATTACH_PROC first, falling back to
+ * WHOIHIT when the grapple has already been broken.
+ */
+static void ck_dead_opp(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                        int32_t param) {
+    const wm_arcade_actor_t *opp;
+    (void)env;
+    (void)param;
+    if (!actor) return;
+    opp = actor->attach_proc ? actor->attach_proc : actor->who_i_hit;
+    if (!opp) return;
+    if (opp->life == 0) actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
+}
+
+/*
+ * HRTSEQ4.ASM:1134 #set_wrestler_xflip -- the same body as
+ * ANI_SET_WRESTLER_XFLIP, reached as a routine instead of an opcode.
+ */
+static void set_wrestler_xflip_code(wm_arcade_actor_t *actor,
+                                    const wm_anim_env *env, int32_t param) {
+    (void)env;
+    (void)param;
+    if (!actor) return;
+    if (actor->facing_dir & WM_MOVE_RIGHT)
+        actor->obj_control &= (uint16_t)~WM_OBJ_FLIPH;
+    else
+        actor->obj_control |= (uint16_t)WM_OBJ_FLIPH;
+}
+
 /* ================================================================== *
  * The last of the self-contained tail.
  * ================================================================== */
@@ -1682,6 +1794,15 @@ static const struct {
     { "DO_COMBO_MESS", NULL, do_combo_mess, 0 },
     /* SUBRP, so file-local -- and only HRTSEQ3.ASM calls it. */
     { "#rope_check", "HRTSEQ3.ASM", rope_check, 0 },
+    { "#zero_x_4", "SHNSEQ2.ASM", zero_x_4, 0 },
+    /* The local copy kills Z as well; the global no_bk_xvel does not. */
+    { "#no_bk_xvel", "SHNSEQ3.ASM", no_bk_xvel_local, 0 },
+    { "#delay_whoihit", "YOKSEQ2.ASM", delay_whoihit, 0 },
+    { "#ck_flip", "LEXSEQ3.ASM", ck_flip, 0 },
+    { "#ck_dead_opp", "HRTSEQ3.ASM", ck_dead_opp, 0 },
+    { "#set_wrestler_xflip", "HRTSEQ4.ASM", set_wrestler_xflip_code, 0 },
+    /* Another SPCDMG, with its own pair. */
+    { "#stop_dmg", "YOKSEQ3.ASM", reduce_dmg, WM_SPCDMG(2, 35) },
     { "inc_loop", "UNDSEQ3.ASM", und_inc_loop, 0 },
     { "check_xvel", NULL, check_xvel, 0 },
     /* SPCDMG's two constants, packed: damage in the high half, ticks in

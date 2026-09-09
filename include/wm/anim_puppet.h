@@ -52,6 +52,17 @@ const wm_anim_puppet_row *wm_anim_puppet_row_at(size_t id,
  * a real zero (the spare roster slot, mostly).
  */
 const char *wm_anim_slave_label(size_t id, int32_t wrestler_num);
+
+/*
+ * A per-wrestler animation table an ANI_CODE routine indexes itself, named
+ * by that routine rather than by an id: no opcode carries these, so there
+ * is no operand to key them on. DNKSEQ2.ASM:5259's `#hit_t`, which
+ * grnd_hit reads with the VICTIM's WRESTLERNUM, is the first.
+ *
+ * Returns NULL for an unknown routine, an out-of-range wrestler, or the
+ * cut Adam Bomb slot, which is a literal 0 in the source.
+ */
+const char *wm_anim_code_roster_label(const char *routine, int32_t wrestler_num);
 size_t wm_anim_slave_table_count(void);
 
 /* GAME.EQU's nine WRESTLERNUM slots, Adam Bomb's cut seventh included. */

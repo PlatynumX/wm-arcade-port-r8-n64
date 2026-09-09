@@ -254,6 +254,11 @@ struct wm_arcade_actor {
     int32_t usr_var1;
     int32_t usr_var2;              /* PLYR.EQU USR_VAR2; Yoko salt failure flag. */
     int32_t player_side;           /* PLYR.EQU PLYR_SIDE: 0, 1, or -1. */
+    /* PLYR.EQU:249 BUCKOFF_COUNT, "Buttons pressed for buckoff." Cleared
+       for everyone by announce_rnd_winner when a buckoff window closes
+       (wm/arcade/wm_arcade_round_announce.h); the mashing that fills it
+       is mode_dead's own #count_btns, which is not translated. */
+    int32_t buckoff_count;
     int32_t consecutive_hits;
     int32_t life;
 

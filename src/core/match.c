@@ -104,6 +104,51 @@ static bool match_crowd_busy(void *user) {
     return m && m->crowd.sound_ticks != 0u;
 }
 
+/* DNKSEQ2.ASM:5202 win_announce: start LIFEBAR.ASM's round-ending
+   process. Ticked below, beside round_state's own KO countdown. */
+static void match_win_announce(void *user) {
+    wm_match_state *m = (wm_match_state *)user;
+    if (!m) return;
+    (void)wm_arcade_win_announce(&m->round_announce);
+}
+
+/* announce_rnd_winner's own SNDSND calls. The crowd sink already holds
+   what the crowd is told; the victory loop is one of its sounds. */
+static void match_arw_sound(void *user, int sound, int ticks) {
+    match_crowd_sound(user, sound, ticks);
+}
+
+/* `move *a10(PLYR_SIDE),a0 / CALLA CALL_MATCH_OVER` */
+static void match_arw_match_over(void *user, int winner_side) {
+    wm_match_state *m = (wm_match_state *)user;
+    wm_announce_ctx ctx;
+    const wm_arcade_actor_t *winner;
+    if (!m || winner_side < 0) return;
+    winner = m->round_announce.winner;
+    memset(&ctx, 0, sizeof(ctx));
+    ctx.rng = m->anim_rng;
+    ctx.wrestler_num = winner ? (int)winner->wrestler_num : -1;
+    ctx.anyone_near_death = match_anyone_near_death;
+    ctx.user = m;
+    ctx.crowd_user = m;
+    ctx.crowd_cheer = match_crowd_cheer;
+    ctx.crowd_sound = match_crowd_sound;
+    ctx.crowd_busy = match_crowd_busy(m);
+    /* PROC_MATCH_OVER's `xor a8,a9 / jrz #drn_l`: the losing side was a
+       drone when it carries no PSTATUS bit. This port's PSTATUS is one
+       bit for the single human, so the loser is a drone unless he is
+       that human. */
+    /* `win_streak` is WRESTLE.ASM:233's p1winstreak, a per-credit counter
+       this port does not keep -- 0 is "no streak", which is what the
+       over-four-wins line tests against, not a stand-in for one. */
+    (void)wm_announce_match_over_run(
+        &m->announcer,
+        !(m->has_human && winner_side != 0),
+        ctx.wrestler_num,
+        0,
+        &ctx);
+}
+
 static void match_rope_set_z(void *user, int bank, int strand, int action) {
     wm_match_state *m = (wm_match_state *)user;
     if (!m || bank < 0 || bank >= WM_MATCH_ROPE_BANKS) return;
@@ -218,6 +263,7 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
     wm_announcer_init(&m->announcer);       /* RESET_VOICE_QUEUE */
     wm_anim_code_reset();
     wm_arcade_round_state_init(&m->round_state);
+    wm_arcade_round_announce_init(&m->round_announce);
     wm_arcade_match_score_init(&m->score);
 }
 
@@ -278,6 +324,7 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
     wm_announcer_init(&m->announcer);       /* RESET_VOICE_QUEUE */
     wm_anim_code_reset();
     wm_arcade_round_state_init(&m->round_state);
+    wm_arcade_round_announce_init(&m->round_announce);
     wm_arcade_match_score_init(&m->score);
 }
 
@@ -478,6 +525,10 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             m->bret_visual[i].anim_env.crowd_cheer = match_crowd_cheer;
             m->bret_visual[i].anim_env.crowd_sound = match_crowd_sound;
             m->bret_visual[i].anim_env.crowd_busy = match_crowd_busy;
+            m->wrestler_visual[i].anim_env.round_user = m;
+            m->wrestler_visual[i].anim_env.win_announce = match_win_announce;
+            m->bret_visual[i].anim_env.round_user = m;
+            m->bret_visual[i].anim_env.win_announce = match_win_announce;
             /*
              * WRESTLE.ASM's match-configuration globals, as this match
              * actually is: no royal rumble, PSTATUS 0 for the attract
@@ -605,6 +656,37 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
         wm_arcade_round_tick(&m->round_state, actor_ptrs, m->actor_count);
         if (!was_decided && m->round_state.decided)
             wm_arcade_match_score_award_round(&m->score, m->round_state.decided_winner_side);
+    }
+
+    /*
+     * LIFEBAR.ASM:2642 announce_rnd_winner, started by a pin animation's
+     * own win_announce. It ends the round on its own terms rather than
+     * waiting for the KO countdown above, and once it has, that countdown
+     * has nothing left to decide: annc_rnd_winner_done is exactly the
+     * source's own "this round has already been called" flag.
+     */
+    {
+        wm_arcade_round_announce_ctx_t arw;
+        memset(&arw, 0, sizeof(arw));
+        arw.pcnt = m->tick_count;
+        arw.royal_rumble = false;
+        /* @in_finish_move: SPECIAL.ASM's finishing-move flag, which this
+           port has no finishing-move sequence to set. */
+        arw.in_finish_move = false;
+        arw.score = &m->score;
+        arw.user = m;
+        arw.sound = match_arw_sound;
+        arw.match_over = match_arw_match_over;
+        if (wm_arcade_round_announce_tick(&m->round_announce, actor_ptrs,
+                                          m->actor_count, &arw)) {
+            /* #nobuck stamped round_end_time and awarded the round; the
+               KO countdown must not award it a second time. */
+            m->round_state.decided = true;
+            m->round_state.pin_timeout = 0;
+            m->round_state.decided_winner_side =
+                m->round_announce.winner ? (int)m->round_announce.winner->player_side
+                                         : -1;
+        }
     }
 
     ++m->tick_count;

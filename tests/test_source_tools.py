@@ -1077,6 +1077,46 @@ def test_slave_targets_all_emit() -> None:
     assert all(len(r) == wlpuppet.ROSTER_SLOTS for r in rows), "short table"
 
 
+def test_code_roster_tables_are_read_not_transcribed() -> None:
+    """The per-wrestler tables an ANI_CODE routine indexes itself.
+
+    No opcode names these, so tools/wlpuppet.py's CODE_TABLES names the
+    site -- but only the site. Every row still comes out of the source,
+    still has to be nine slots, and still has to name animations this port
+    can actually play.
+    """
+    if not (wlanim.ORIG / "DNKSEQ2.ASM").exists():
+        return
+    tables = wlpuppet.code_tables()
+    assert set(tables) == {"grnd_hit"}, sorted(tables)
+
+    generated = ROOT / "src" / "generated" / "anim_programs.c"
+    for routine, rows in tables.items():
+        assert len(rows) == wlpuppet.ROSTER_SLOTS, (routine, len(rows))
+        # Slot 7 is Adam Bomb, cut from the game: a literal 0 in the
+        # source, and it stays empty rather than being filled in.
+        assert rows[7] == "", (routine, rows[7])
+        for i, name in enumerate(rows):
+            if not name:
+                continue
+            assert name.endswith("_anim"), (routine, i, name)
+            if generated.exists():
+                assert f'"{name}"' in generated.read_text(), (routine, name)
+
+    # And the routine that reads one is registered under exactly the name
+    # the generated lookup is keyed on -- the same spelling trap the
+    # ANI_CODE registry and the announcer callers each have their own
+    # guard for.
+    reg = (ROOT / "src" / "core" / "anim_code.c").read_text()
+    for routine in tables:
+        assert f'{{ "{routine}",' in reg, routine
+    aux = ROOT / "src" / "generated" / "anim_aux_tables.c"
+    if aux.exists():
+        text = aux.read_text()
+        for routine in tables:
+            assert f'"{routine}",' in text, routine
+
+
 def test_truncated_frame_names() -> None:
     """A WIMP name field is eight characters; .LOD names can be longer.
 

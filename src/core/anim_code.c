@@ -37,6 +37,7 @@
 #include "wm/arcade/wm_arcade_combo.h"
 #include "wm/wrestler_sound_tables.h"
 #include "wm/arcade/wmania_rope_command.h"
+#include "wm/anim_puppet.h"
 
 #include <string.h>
 
@@ -341,6 +342,90 @@ static void do_combo_mess(wm_arcade_actor_t *actor, const wm_anim_env *env,
         ctx.round_award = env->round_award;
     }
     (void)wm_arcade_do_combo_mess(actor, &ctx);
+}
+
+/*
+ * DNKSEQ2.ASM:5202 win_announce, the whole of it:
+ *
+ *     move  a13,a10
+ *     CREATE ANNC_PID,announce_rnd_winner
+ *     CALLA KILL_PIN_HIM
+ *
+ * A pin animation calls it the moment the pin sticks. Everything it does
+ * is in the process it starts, which is what actually ends the round --
+ * so this is a seam onto the match, exactly like the crowd and the ropes.
+ * `move a13,a10` is the source handing the process its creator through
+ * GETPRC's register carry, which is how announce_rnd_winner knows whose
+ * PLYR_SIDE to announce; the port's own set_winner finds him from the
+ * roster instead, the same search the source runs a few lines later.
+ */
+static void win_announce(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                         int32_t param) {
+    (void)actor;
+    (void)param;
+    if (!env || !env->win_announce) return;
+    env->win_announce(env->round_user);
+}
+
+/*
+ * DNKSEQ2.ASM:5221 grnd_hit, "FOR USE ONLY IN PINS!"
+ *
+ * The pinner hits the man he is pinning, and the source argues with
+ * itself about whose pointer to use for it -- one comment says use
+ * CLOSEST because you do not actually attack during a pin, and the
+ * comment below it overrules that: "Un! DO use WHOIHIT, as this is set in
+ * all the pin_anims before this function is called." So WHOIHIT it is,
+ * and the commented-out CLOSEST_NUM walk is left where it was.
+ *
+ * Two halves. The victim is put into his own hitonground animation,
+ * looked up in `#hit_t` by HIS wrestler number, through the same
+ * change_anim1a seam ANI_SLAVEANIM uses. Then the two are aligned in Z --
+ * pinner to victim+1.0, victim to victim-1.0, so the pinner draws in
+ * front -- unless the PINNER is the Undertaker (`subk 2,a0 / jrz #z`),
+ * who is left where he is.
+ */
+#define WM_GRND_HIT_Z_GAP 0x10000       /* the source's own [1,0] */
+
+static void grnd_hit(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                     int32_t param) {
+    wm_arcade_actor_t *victim;
+    const char *label;
+    int32_t z;
+    (void)param;
+
+    if (!actor) return;
+    victim = actor->who_i_hit;
+    if (!victim) return;                          /* `jrz` on a null WHOIHIT */
+
+    label = wm_anim_code_roster_label("grnd_hit", victim->wrestler_num);
+    if (label && env && env->change_opp_anim) {
+        victim->puppet_frame = 0;      /* he drives himself again now */
+        env->change_opp_anim(victim, label, env->slave_user);
+    }
+
+    /* "align on target's z, unless we're taker" */
+    if (actor->wrestler_num == WM_ROSTER_TAKER) return;
+
+    z = victim->z_fixed;
+    actor->z_fixed = z + WM_GRND_HIT_Z_GAP;
+    actor->z_int = actor->z_fixed >> 16;
+    victim->z_fixed = z - WM_GRND_HIT_Z_GAP;
+    victim->z_int = victim->z_fixed >> 16;
+}
+
+/*
+ * LEXSEQ3.ASM:2619 #setopp_deadanim -- "If killed, don't change anim"
+ * (PLYR.EQU:413) on whoever this wrestler is attached to, so a victim who
+ * dies mid-move keeps playing the move's own ending instead of being
+ * yanked into his death animation. `SF_CLEAR_BITS` clears it again, which
+ * is what PLYR.EQU means by "cleared often".
+ */
+static void setopp_deadanim(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                            int32_t param) {
+    (void)env;
+    (void)param;
+    if (!actor || !actor->attach_proc) return;    /* `jrz #rets` */
+    actor->attach_proc->status_flags |= (uint32_t)WM_STATUS_DEAD_ANIM;
 }
 
 /*
@@ -1933,6 +2018,9 @@ static const struct {
     { "#choose_2or4", "YOKSEQ4.ASM", choose_2or4, 0 },
     { "spunch_delay", NULL, spunch_delay, 0 },
     { "DO_CROWD_CHEER", NULL, do_crowd_cheer, 0 },
+    { "win_announce", NULL, win_announce, 0 },
+    { "grnd_hit", NULL, grnd_hit, 0 },
+    { "#setopp_deadanim", NULL, setopp_deadanim, 0 },
     { "#zero_x_4", "SHNSEQ2.ASM", zero_x_4, 0 },
     /* The local copy kills Z as well; the global no_bk_xvel does not. */
     { "#no_bk_xvel", "SHNSEQ3.ASM", no_bk_xvel_local, 0 },

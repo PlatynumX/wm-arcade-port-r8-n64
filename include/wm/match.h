@@ -10,6 +10,7 @@
 #include "wm/arcade/wm_arcade_react.h"
 #include "wm/arcade/wm_arcade_roster.h"
 #include "wm/arcade/wm_arcade_round.h"
+#include "wm/arcade/wm_arcade_round_announce.h"
 #include "wm/arcade/wmania_rng.h"
 #include "wm/arcade/wmania_rope_runtime.h"
 #include "wm/arcade/wm_arcade_announcer.h"
@@ -122,6 +123,10 @@ typedef struct {
     /* DCSSOUND.ASM's announcer voice queue, drained one line a tick the
        way ANNOUNCE_VOICE drains it. */
     wm_announcer_state announcer;
+    /* LIFEBAR.ASM:2642 announce_rnd_winner: the round-ending process a
+       pin starts, ticked below round_state's own KO countdown because a
+       pin ends the round instead of waiting for it. */
+    wm_arcade_round_announce_t round_announce;
     /* set_rope_z's second-half Z per bank (ANIM.ASM:41's RZ_HIGH/RZ_NORM). */
     uint16_t rope_second_half_z[WM_MATCH_ROPE_BANKS];
 

@@ -14,6 +14,8 @@
 #include "wm/arcade/wm_arcade_veladd.h"
 #include "wm/arcade/wm_arcade_roll.h"
 #include "wm/announce_tables.h"
+#include "wm/anim_puppet.h"
+#include "wm/arcade/wm_arcade_round_announce.h"
 #include "wm/award.h"
 #include "wm/wrestler_sound_tables.h"
 #include "wm/arcade/wm_arcade_announcer.h"
@@ -4519,6 +4521,350 @@ static void test_crowd_tables(void) {
 }
 
 /*
+ * The pin group: DNKSEQ2.ASM:5221 grnd_hit, :5202 win_announce and the
+ * LIFEBAR.ASM process behind it, and LEXSEQ3.ASM:2619 #setopp_deadanim.
+ */
+struct opp_anim_log { int n; const char *label; wm_arcade_actor_t *who; };
+
+static void opp_anim_sink(wm_arcade_actor_t *opp, const char *label,
+                          void *user) {
+    struct opp_anim_log *l = (struct opp_anim_log *)user;
+    ++l->n;
+    l->label = label;
+    l->who = opp;
+}
+
+static void test_grnd_hit_and_setopp_deadanim(void) {
+    wm_arcade_actor_t pinner, victim;
+    struct opp_anim_log log;
+    wm_anim_env env;
+    int i;
+
+    /* Every wrestler's own hitonground animation, straight out of
+       DNKSEQ2.ASM's #hit_t -- and slot 7 is the cut Adam Bomb, a literal
+       0 in the source. */
+    {
+        static const char *const want[9] = {
+            "hrt_hitonground_anim", "rzr_hitonground_anim",
+            "und_hitonground_anim", "yok_hitonground_anim",
+            "shn_hitonground_anim", "bam_hitonground_anim",
+            "dnk_hitonground_anim", 0, "lex_hitonground_anim"
+        };
+        for (i = 0; i < 9; ++i) {
+            const char *got = wm_anim_code_roster_label("grnd_hit", i);
+            if (!want[i]) CHECK(got == NULL);
+            else CHECK(got && strcmp(got, want[i]) == 0);
+            /* ...and each one is a program this port can actually play. */
+            if (want[i]) CHECK(wm_anim_program_find(want[i]) != NULL);
+        }
+        CHECK(wm_anim_code_roster_label("grnd_hit", 9) == NULL);
+        CHECK(wm_anim_code_roster_label("no_such_routine", 0) == NULL);
+    }
+
+    memset(&log, 0, sizeof(log));
+    memset(&env, 0, sizeof(env));
+    env.slave_user = &log;
+    env.change_opp_anim = opp_anim_sink;
+
+    /* The victim is put into HIS OWN hitonground animation -- the table
+       is indexed by the victim's number, not the pinner's -- and the two
+       are aligned in Z with the pinner one unit in front. */
+    memset(&pinner, 0, sizeof(pinner));
+    memset(&victim, 0, sizeof(victim));
+    pinner.wrestler_num = WM_ROSTER_BRET;
+    victim.wrestler_num = WM_ROSTER_YOKO;
+    victim.z_fixed = 0x4000000;
+    victim.z_int = victim.z_fixed >> 16;
+    pinner.z_fixed = 0x1230000;
+    pinner.who_i_hit = &victim;
+    CHECK(wm_anim_code_run(&pinner, &env, "grnd_hit", NULL));
+    CHECK(log.n == 1);
+    CHECK(log.who == &victim);
+    CHECK(strcmp(log.label, "yok_hitonground_anim") == 0);
+    CHECK(pinner.z_fixed == 0x4000000 + 0x10000);
+    CHECK(victim.z_fixed == 0x4000000 - 0x10000);
+    CHECK(pinner.z_int == pinner.z_fixed >> 16);
+    CHECK(victim.z_int == victim.z_fixed >> 16);
+
+    /* "align on target's z, unless we're taker" -- and it is the PINNER's
+       number that is tested, not the victim's. */
+    memset(&log, 0, sizeof(log));
+    memset(&pinner, 0, sizeof(pinner));
+    memset(&victim, 0, sizeof(victim));
+    pinner.wrestler_num = WM_ROSTER_TAKER;
+    victim.wrestler_num = WM_ROSTER_BRET;
+    victim.z_fixed = 0x4000000;
+    pinner.z_fixed = 0x1230000;
+    pinner.who_i_hit = &victim;
+    CHECK(wm_anim_code_run(&pinner, &env, "grnd_hit", NULL));
+    CHECK(log.n == 1);                       /* he still poses the victim */
+    CHECK(strcmp(log.label, "hrt_hitonground_anim") == 0);
+    CHECK(pinner.z_fixed == 0x1230000);      /* ...and stays put */
+    CHECK(victim.z_fixed == 0x4000000);
+
+    /* No WHOIHIT: the source's own `jrz` leaves everything alone. */
+    memset(&log, 0, sizeof(log));
+    memset(&pinner, 0, sizeof(pinner));
+    pinner.wrestler_num = WM_ROSTER_BRET;
+    pinner.z_fixed = 0x1230000;
+    CHECK(wm_anim_code_run(&pinner, &env, "grnd_hit", NULL));
+    CHECK(log.n == 0);
+    CHECK(pinner.z_fixed == 0x1230000);
+
+    /* #setopp_deadanim sets M_DEAD_ANIM on ATTACH_PROC, not on WHOIHIT. */
+    memset(&pinner, 0, sizeof(pinner));
+    memset(&victim, 0, sizeof(victim));
+    pinner.who_i_hit = &victim;
+    CHECK(wm_anim_code_run(&pinner, &env, "#setopp_deadanim", NULL));
+    CHECK((victim.status_flags & WM_STATUS_DEAD_ANIM) == 0);
+    pinner.attach_proc = &victim;
+    CHECK(wm_anim_code_run(&pinner, &env, "#setopp_deadanim", NULL));
+    CHECK((victim.status_flags & WM_STATUS_DEAD_ANIM) != 0);
+    CHECK(pinner.status_flags == 0);         /* his own flags are untouched */
+}
+
+struct arw_log {
+    int n_sound, sound, ticks;
+    int n_over, over_side;
+};
+
+static void arw_sound_sink(void *user, int sound, int ticks) {
+    struct arw_log *l = (struct arw_log *)user;
+    ++l->n_sound;
+    l->sound = sound;
+    l->ticks = ticks;
+}
+
+static void arw_over_sink(void *user, int winner_side) {
+    struct arw_log *l = (struct arw_log *)user;
+    ++l->n_over;
+    l->over_side = winner_side;
+}
+
+static void test_win_announce(void) {
+    wm_arcade_actor_t p1, p2;
+    wm_arcade_actor_t *actors[2];
+    wm_arcade_round_announce_t st;
+    wm_arcade_round_announce_ctx_t ctx;
+    wm_arcade_match_score_t score;
+    struct arw_log log;
+    int t;
+
+    actors[0] = &p1;
+    actors[1] = &p2;
+
+    /* LIFEBAR.ASM:5063 set_winner: the first live wrestler, preferring
+       one whose DID_PIN is set -- so a pinner beats an earlier live one. */
+    memset(&p1, 0, sizeof(p1));
+    memset(&p2, 0, sizeof(p2));
+    p1.active = 1; p1.player_side = 0;
+    p2.active = 1; p2.player_side = 1;
+    CHECK(wm_arcade_set_winner(actors, 2) == &p1);
+    p2.status_flags |= WM_STATUS_DID_PIN;
+    CHECK(wm_arcade_set_winner(actors, 2) == &p2);
+    /* A dead man never wins, pin or no pin. */
+    p2.player_mode = WM_PMODE_DEAD;
+    CHECK(wm_arcade_set_winner(actors, 2) == &p1);
+    /* Everyone dead: the source's own "should never happen" fallback
+       hands back the first ACTIVE wrestler rather than nobody. */
+    p1.player_mode = WM_PMODE_DEAD;
+    CHECK(wm_arcade_set_winner(actors, 2) == &p1);
+    p1.active = 0;
+    p2.active = 0;
+    CHECK(wm_arcade_set_winner(actors, 2) == NULL);
+
+    /* LIFEBAR.ASM:3603 anyone_bucking. */
+    memset(&p1, 0, sizeof(p1));
+    memset(&p2, 0, sizeof(p2));
+    p1.active = 1; p2.active = 1;
+    CHECK(wm_arcade_anyone_bucking(actors, 2, false) == NULL);
+    p2.status_flags |= WM_STATUS_DO_BUCKOFF;
+    CHECK(wm_arcade_anyone_bucking(actors, 2, false) == &p2);
+    /* DID_BUCKOFF means he has had his turn... */
+    p2.status_flags |= WM_STATUS_DID_BUCKOFF;
+    CHECK(wm_arcade_anyone_bucking(actors, 2, false) == NULL);
+    /* ...unless NEW_BUCKOFF says he only just asked again. */
+    p2.status_flags |= WM_STATUS_NEW_BUCKOFF;
+    CHECK(wm_arcade_anyone_bucking(actors, 2, false) == &p2);
+    /* "no buckoffs allowed in royal rumble mode" */
+    CHECK(wm_arcade_anyone_bucking(actors, 2, true) == NULL);
+
+    /* LIFEBAR.ASM:3630 set_all_buckoffs. */
+    memset(&p1, 0, sizeof(p1));
+    memset(&p2, 0, sizeof(p2));
+    p1.active = 1;
+    wm_arcade_set_all_buckoffs(actors, 2);
+    CHECK((p1.status_flags & WM_STATUS_NO_BUCKOFF) != 0);
+    CHECK(p2.status_flags == 0);           /* inactive slots are skipped */
+
+    /*
+     * The straight-through case: a pin with nobody bucking. The round is
+     * awarded on the very first tick, and CALL_MATCH_OVER follows 30
+     * ticks later.
+     */
+    memset(&p1, 0, sizeof(p1));
+    memset(&p2, 0, sizeof(p2));
+    memset(&log, 0, sizeof(log));
+    p1.active = 1; p1.player_side = 0;
+    p1.status_flags = WM_STATUS_DID_PIN;
+    p2.active = 1; p2.player_side = 1; p2.player_mode = WM_PMODE_DEAD;
+    wm_arcade_match_score_init(&score);
+    wm_arcade_round_announce_init(&st);
+    memset(&ctx, 0, sizeof(ctx));
+    ctx.pcnt = 4242u;
+    ctx.score = &score;
+    ctx.user = &log;
+    ctx.sound = arw_sound_sink;
+    ctx.match_over = arw_over_sink;
+
+    /* Nothing runs until win_announce starts it. */
+    CHECK(!wm_arcade_round_announce_tick(&st, actors, 2, &ctx));
+    CHECK(score.p1rounds == 0);
+
+    CHECK(wm_arcade_win_announce(&st));
+    CHECK(st.pin_him_kills == 1u);          /* KILL_PIN_HIM, unconditional */
+    /* A second call while it is running does not start a second process,
+       but it DOES kill the nag again -- the source calls KILL_PIN_HIM
+       after the CREATE, outside every guard. */
+    CHECK(!wm_arcade_win_announce(&st));
+    CHECK(st.pin_him_kills == 2u);
+
+    CHECK(wm_arcade_round_announce_tick(&st, actors, 2, &ctx));
+    CHECK(st.done);
+    CHECK(st.round_end_time == 4242u);
+    CHECK(st.winner == &p1);
+    CHECK(score.p1rounds == 1 && score.p2rounds == 0);
+    /* CROWD_VICTORY_LOOP, for its own real length. */
+    CHECK(log.n_sound == 1);
+    CHECK(log.sound == WM_ARW_VICTORY_SOUND);
+    CHECK(log.ticks == WM_ARW_VICTORY_TICKS);
+    /* set_all_buckoffs ran on the way past. */
+    CHECK((p1.status_flags & WM_STATUS_NO_BUCKOFF) != 0);
+    CHECK((p2.status_flags & WM_STATUS_NO_BUCKOFF) != 0);
+
+    /* SLEEPK 30, then the token sound and CALL_MATCH_OVER. */
+    for (t = 0; t < WM_ARW_PRE_TOKEN_SLEEP; ++t) {
+        CHECK(!wm_arcade_round_announce_tick(&st, actors, 2, &ctx));
+        CHECK(log.n_over == 0);
+    }
+    CHECK(!wm_arcade_round_announce_tick(&st, actors, 2, &ctx));
+    CHECK(log.n_over == 1);
+    CHECK(log.over_side == 0);
+    CHECK(log.n_sound == 2 && log.sound == WM_ARW_TOKEN_SOUND);
+    /* The process is gone, and annc_rnd_winner_done keeps it gone. */
+    CHECK(!wm_arcade_round_announce_tick(&st, actors, 2, &ctx));
+    CHECK(!wm_arcade_win_announce(&st));
+    CHECK(score.p1rounds == 1);            /* awarded once, not twice */
+
+    /*
+     * The buckoff branch: somebody is trying to get up, so the process
+     * sleeps 90 ticks first. Nobody renews it in that time, so the round
+     * ends anyway -- with everyone's buckoff hopes cleared.
+     */
+    memset(&p1, 0, sizeof(p1));
+    memset(&p2, 0, sizeof(p2));
+    memset(&log, 0, sizeof(log));
+    p1.active = 1; p1.player_side = 0;
+    p2.active = 1; p2.player_side = 1; p2.player_mode = WM_PMODE_DEAD;
+    p2.status_flags = WM_STATUS_DO_BUCKOFF;
+    p2.buckoff_count = 7;
+    wm_arcade_match_score_init(&score);
+    wm_arcade_round_announce_init(&st);
+    CHECK(wm_arcade_win_announce(&st));
+    /* One tick to reach #any_b and find him bucking, then the SLEEP 90. */
+    for (t = 0; t < WM_ARW_BUCKOFF_SLEEP + 1; ++t)
+        CHECK(!wm_arcade_round_announce_tick(&st, actors, 2, &ctx));
+    CHECK(score.p1rounds == 0);            /* still asleep at arw_bwait */
+    CHECK(wm_arcade_round_announce_tick(&st, actors, 2, &ctx));
+    CHECK(score.p1rounds == 1);
+    CHECK(st.winner == &p1);
+    /* "clear BUCKOFF_COUNT, clear the DO_BUCKOFF flag, and set the
+       NO_BUCKOFF flag" -- for EVERYONE. */
+    CHECK(p2.buckoff_count == 0);
+    CHECK((p2.status_flags & WM_STATUS_DO_BUCKOFF) == 0);
+    CHECK((p2.status_flags & WM_STATUS_NO_BUCKOFF) != 0);
+    CHECK((p1.status_flags & WM_STATUS_NO_BUCKOFF) != 0);
+
+    /*
+     * arw_bwait's own suicide: if BOTH teams are still alive when it
+     * wakes, the round is not over after all and the process dies without
+     * awarding anything. This test exists only on the buckoff path -- the
+     * straight-through case above has no such check, which is why a pin
+     * ends the round outright.
+     */
+    memset(&p1, 0, sizeof(p1));
+    memset(&p2, 0, sizeof(p2));
+    p1.active = 1; p1.player_side = 0;
+    p2.active = 1; p2.player_side = 1;
+    p2.status_flags = WM_STATUS_DO_BUCKOFF | WM_STATUS_NEW_BUCKOFF;
+    wm_arcade_match_score_init(&score);
+    wm_arcade_round_announce_init(&st);
+    CHECK(wm_arcade_win_announce(&st));
+    for (t = 0; t < WM_ARW_BUCKOFF_SLEEP + 1; ++t)
+        CHECK(!wm_arcade_round_announce_tick(&st, actors, 2, &ctx));
+    CHECK(!wm_arcade_round_announce_tick(&st, actors, 2, &ctx));
+    CHECK(score.p1rounds == 0);
+    CHECK(!st.done);
+    /* NEW_BUCKOFF was cleared on the way through, and the process is
+       gone -- so a later pin can start a fresh one. */
+    CHECK((p2.status_flags & WM_STATUS_NEW_BUCKOFF) == 0);
+    CHECK(wm_arcade_win_announce(&st));
+
+    /*
+     * #fini_wait: "Are we doing a finishing move?" The process waits
+     * rather than ending the round underneath one.
+     */
+    memset(&p1, 0, sizeof(p1));
+    memset(&p2, 0, sizeof(p2));
+    p1.active = 1; p1.player_side = 0;
+    p2.active = 1; p2.player_side = 1; p2.player_mode = WM_PMODE_DEAD;
+    wm_arcade_match_score_init(&score);
+    wm_arcade_round_announce_init(&st);
+    ctx.in_finish_move = true;
+    CHECK(wm_arcade_win_announce(&st));
+    for (t = 0; t < 200; ++t)
+        CHECK(!wm_arcade_round_announce_tick(&st, actors, 2, &ctx));
+    CHECK(score.p1rounds == 0);
+    ctx.in_finish_move = false;
+    CHECK(wm_arcade_round_announce_tick(&st, actors, 2, &ctx));
+    CHECK(score.p1rounds == 1);
+}
+
+static void vm_win_announce_sink(void *user) {
+    (void)wm_arcade_win_announce((wm_arcade_round_announce_t *)user);
+}
+
+/* ...and the whole way round: a pin animation's own ANI_CODE reaching the
+   match's process through wm_anim_env. */
+static void test_win_announce_from_the_vm(void) {
+    static const wm_anim_op ops[] = {
+        { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "win_announce" },
+        { WM_AOP_END,  0, -1, 0, 0, 0, 0, 0, 0, NULL }
+    };
+    static const wm_anim_program prog = {
+        "test_win", "DNKSEQ2.ASM", ops, 2, 0, NULL, 0
+    };
+    wm_arcade_actor_t a;
+    wm_anim_env env;
+    wm_anim_exec ex;
+    wm_arcade_round_announce_t st;
+
+    wm_arcade_round_announce_init(&st);
+    memset(&env, 0, sizeof(env));
+    memset(&a, 0, sizeof(a));
+    env.round_user = &st;
+    env.win_announce = vm_win_announce_sink;
+    wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+    wm_anim_exec_tick(&ex, &a, 0);
+    CHECK(st.pin_him_kills == 1u);
+    CHECK(st.phase == (uint8_t)WM_ARW_FINISH_WAIT);
+
+    /* No match wired: the routine still resolves, and does nothing. */
+    memset(&env, 0, sizeof(env));
+    CHECK(wm_anim_code_run(&a, &env, "win_announce", NULL));
+}
+
+/*
  * LIFEBAR.ASM:3687 DO_COMBO_MESS -- the most-called ANI_CODE routine in
  * the game, and what actually ends a combo.
  */
@@ -8974,6 +9320,9 @@ int main(void) {
     test_announce_call_from_the_vm();
     test_spunch_delay_and_the_crowd();
     test_crowd_tables();
+    test_grnd_hit_and_setopp_deadanim();
+    test_win_announce();
+    test_win_announce_from_the_vm();
     test_do_combo_mess();
     test_do_combo_mess_from_the_vm();
     test_wrsnd_tables();

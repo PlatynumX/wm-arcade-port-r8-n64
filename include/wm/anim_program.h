@@ -413,6 +413,15 @@ typedef struct wm_anim_env {
      * so the routine that names them stays a real translation and the
      * crowd itself belongs to a CROWD.ASM port.
      */
+    /*
+     * DNKSEQ2.ASM:5202 win_announce -- the pin stuck, so end the round.
+     * The process it starts lives in the match
+     * (wm/arcade/wm_arcade_round_announce.h) because that is where the
+     * score and the roster are; the animation only says when.
+     */
+    void *round_user;
+    void (*win_announce)(void *user);
+
     void *crowd_user;
     void (*crowd_cheer)(void *user, int flags, int percent);
     /*

@@ -228,8 +228,13 @@ def program_for(path: pathlib.Path, label: str, with_entry: bool = False):
     With `with_entry`, returns (ops, entry) -- `entry` being the op the
     animation actually STARTS at, which is not always 0.
     """
-    lines = [wlanim.strip_comment(r)
-             for r in path.read_text(errors="replace").splitlines()]
+    raw = path.read_text(errors="replace").splitlines()
+    lines = [wlanim.strip_comment(r) for r in raw]
+    # The same lines with their indentation intact. A local label's scope
+    # runs between two NON-local labels, and telling those apart needs the
+    # first column: strip_comment() lstrips, which makes an indented `rets`
+    # read as a label and would cut a scope in half.
+    kept = [r.split(";", 1)[0] for r in raw]
     start, stop = _body(lines, label)
     # Where the routine's OWN first line is. Growing the body backwards
     # below (for a branch into shared code that sits earlier in the file)
@@ -446,7 +451,14 @@ def program_for(path: pathlib.Path, label: str, with_entry: bool = False):
 
         cd = CODE_RE.match(line)
         if cd:
-            ops.append(("CODE", cd.group(1)))
+            # Which DEFINITION this call site can see. `#name` is local to
+            # the assembler's block, and the source defines the same name
+            # more than once in one file with a different body each time --
+            # BAMSEQ2.ASM's two `#set_zvel2` are -5.0 and +5.0. Emitting
+            # only the name would make those indistinguishable, so the
+            # resolved definition line rides along.
+            ops.append(("CODE", cd.group(1),
+                        wlanim.local_label_site(kept, i, cd.group(1))))
             continue
 
         rg = RPTGE_RE.match(line)
@@ -674,8 +686,13 @@ def _c_op(op) -> str:
     elif kind == "SUPERSLAVE2":
         text = f'"{op[2]}"'
         args[0], args[1], args[2] = op[1], op[3], op[4]
-    elif kind in ("CHANGEANIM", "CODE"):
+    elif kind == "CHANGEANIM":
         text = f'"{op[1]}"'
+    elif kind == "CODE":
+        text = f'"{op[1]}"'
+        # `a` carries the source line the local label resolved to, 0 for a
+        # global name. src/core/anim_code.c keys its rows on it.
+        args[0] = op[2] if len(op) > 2 else 0
     elif kind == "IFBUTTONS":
         args[0] = op[1]
         text = f'"{op[2]}"'

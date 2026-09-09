@@ -345,6 +345,161 @@ static void do_combo_mess(wm_arcade_actor_t *actor, const wm_anim_env *env,
 }
 
 /*
+ * WRESTLE.ASM:6069 shake_all_ropes -- every bank at once,
+ * `ROPE_BOUNCEUD` with the source's own selector of 2. Its NUM_OPPS guard
+ * ("no shaking with two or more") is commented out in the source and is
+ * left that way here.
+ */
+static void shake_all_ropes(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                            int32_t param) {
+    static const int banks[4] = { WM_ROPE_FRONT, WM_ROPE_BACK,
+                                  WM_ROPE_LEFT, WM_ROPE_RIGHT };
+    size_t i;
+    (void)param;
+    if (!env || !env->rope_command) return;
+    for (i = 0; i < 4; ++i)
+        env->rope_command(env->rope_user, banks[i], WM_ROPE_BOUNCE_UD, 2,
+                          actor ? actor->z_fixed : 0);
+}
+
+/*
+ * WRESTLE.ASM:5978 get_leap -- may he lunge, or is he backing off?
+ *
+ * MODE_STATUS comes off first, and goes back on for "no": standing still
+ * (both X and Z velocity zero), or holding the stick the way `mv_tbl` says
+ * is AWAY for the direction he is facing. The table is four live rows in
+ * sixteen -- NEW_FACING_DIR is only ever 5, 6, 9 or 10 (the source says
+ * so in its own comment) -- and it reads a facing of 5 or 6 as "away is
+ * right", 9 or 10 as "away is left".
+ */
+static void get_leap(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                     int32_t param) {
+    int32_t away;
+    (void)env;
+    (void)param;
+    if (!actor) return;
+    actor->anim_mode &= (uint16_t)~WM_MODE_STATUS;
+
+    if (actor->x_vel == 0 && actor->z_vel == 0) {   /* `jrz #novel` */
+        actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
+        return;
+    }
+    /*
+     * WRESTLE.ASM:6035 mv_tbl, indexed by NEW_FACING_DIR, holding a BIT
+     * NUMBER for `btst a0,a1`. Facing up-left or down-left (5, 6), away
+     * is right; facing up-right or down-right (9, 10), away is left.
+     * Every other row is a literal 0, and `btst 0` is the UP bit -- not a
+     * no-op. update_newfacing can only ever produce 5, 6, 9 or 10 (the
+     * source says as much in its own comment), so those rows are dead,
+     * but they are translated as written rather than as "nothing".
+     */
+    switch (actor->new_facing_dir) {
+    case WM_MOVE_UP_LEFT:   case WM_MOVE_DOWN_LEFT:  away = WM_MOVE_RIGHT; break;
+    case WM_MOVE_UP_RIGHT:  case WM_MOVE_DOWN_RIGHT: away = WM_MOVE_LEFT;  break;
+    default:                                         away = WM_MOVE_UP;   break;
+    }
+    if (actor->move_dir & away)
+        actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
+}
+
+/*
+ * WRESTLE2.ASM:3748 hit_nearest -- "set WHOIHIT and victim WHOPINNEDME",
+ * and the victim's PINNED bit with them. CLOSEST_NUM is the fixed
+ * opponent in this port (see wm/arcade/wm_arcade_closest.h for why), so
+ * the process-table walk is the smart target.
+ */
+static void hit_nearest(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                        int32_t param) {
+    wm_arcade_actor_t *victim;
+    (void)param;
+    if (!actor) return;
+    victim = actor->smart_target ? actor->smart_target
+                                 : (env ? env->opponent : NULL);
+    if (!victim) return;
+    actor->who_i_hit = victim;
+    victim->who_pinned_me = actor;
+    victim->status_flags |= (uint32_t)WM_STATUS_PINNED;
+}
+
+/*
+ * WRESTLE2.ASM:3040 set_tbukl_confine -- climbing a turnbuckle, and
+ * whether the ring is allowed to hold you in while you do it.
+ *
+ * The sweep asks one question of every opponent: is anybody on the other
+ * team OUTSIDE the ring? If so this wrestler gets MODE_NOCONFINE, because
+ * the attack he is about to launch has to be able to follow them out.
+ * Otherwise NOCONFINE comes off -- and, since he may have drifted out
+ * already, he is yanked back: INRING cleared, GROUND_Y put back on the
+ * mat, Z clamped to RING_TOP, and X clamped to whichever rope line he is
+ * on the wrong side of, through calc_line_x.
+ *
+ * Two details that are easy to lose. Yokozuna skips the sweep outright
+ * (`cmpi W_YOKO / jreq #clear_noconfine`) and is always confined. And the
+ * "everyone on the enemy side is dead" flag, taken from the CLOSEST
+ * opponent's PLYRMODE, does not make the routine give up -- it makes it
+ * STOP SKIPPING dead opponents, so a dead man lying outside the ropes
+ * still grants NOCONFINE.
+ *
+ * INRING's polarity is the source's, not this port's: PLYR.EQU:103 says
+ * 0 = in the ring, so `jrnz #set_noconfine` fires for a wrestler who is
+ * OUT. The port stores the ordinary boolean, so the test flips.
+ */
+static void set_tbukl_confine(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                              int32_t param) {
+    wm_arcade_actor_t *opp;
+    bool other_team_dead;
+    (void)param;
+    if (!actor) return;
+
+    if (actor->wrestler_num != WM_ROSTER_YOKO) {
+        opp = actor->smart_target ? actor->smart_target
+                                  : (env ? env->opponent : NULL);
+        /* `a3 is the 'everyone is dead' flag`, from CLOSEST_NUM alone. */
+        other_team_dead = opp && opp->player_mode == WM_PMODE_DEAD;
+        /* The sweep skips inactive slots, self, and teammates; in a
+           1-on-1 match that leaves exactly the opponent. */
+        if (opp && opp->active && opp->player_side != actor->player_side &&
+            (other_team_dead || opp->player_mode != WM_PMODE_DEAD) &&
+            !opp->in_ring) {
+            actor->anim_mode |= (uint16_t)WM_MODE_NOCONFINE;
+            return;                                /* `#set_noconfine` */
+        }
+    }
+
+    /* `#clear_noconfine`: "he might have drifted out already, so we gotta
+       yank 'em back in." */
+    if (!actor->in_ring) {
+        actor->in_ring = 1;
+        actor->ground_y = WM_MAT_Y;
+        if (actor->z_int < WM_RING_TOP) {
+            actor->z_int = WM_RING_TOP;
+            actor->z_fixed = (int32_t)WM_RING_TOP << 16;
+        }
+        if (actor->x_int <= WM_RING_X_CENTER) {    /* `jrgt #rt` */
+            int32_t x = wm_ring_calc_line_x(
+                wm_ring_boundary_seed(WM_RING_BOUNDARY_LEFT_ROPE),
+                actor->z_int);
+            /* `jrz #xok` -- "bad news. leave it alone." -- and then
+               `cmp a0,a2 / jrge #xok`, so he is pushed only when he is
+               already left OF the left rope line. */
+            if (x != 0 && actor->x_int < x) {
+                actor->x_int = x;
+                actor->x_fixed = x << 16;
+            }
+        } else {
+            int32_t x = wm_ring_calc_line_x(
+                wm_ring_boundary_seed(WM_RING_BOUNDARY_RIGHT_ROPE),
+                actor->z_int);
+            if (x != 0 && actor->x_int > x) {   /* `jrle #xok` */
+                actor->x_int = x;
+                actor->x_fixed = x << 16;
+            }
+        }
+    }
+    actor->anim_mode &= (uint16_t)~WM_MODE_NOCONFINE;
+}
+
+/*
  * DNKSEQ2.ASM:5202 win_announce, the whole of it:
  *
  *     move  a13,a10
@@ -1643,11 +1798,15 @@ static void half_vels(wm_arcade_actor_t *actor, const wm_anim_env *env,
     actor->y_vel = 0x20000;
 }
 
-/* SHNSEQ3.ASM #reverse_xvel: turn him round at a quarter of the speed. */
+/*
+ * SHNSEQ3.ASM #reverse_xvel: turn him round at a fraction of the speed --
+ * `neg a14 / sra N,a14`, and N is the row's own parameter because the file
+ * defines the routine TWICE, a quarter at 1279 and a half at 3651.
+ */
 static void reverse_xvel(wm_arcade_actor_t *actor, const wm_anim_env *env,
                          int32_t param) {
-    (void)env; (void)param;
-    if (actor) actor->x_vel = (-actor->x_vel) >> 2;
+    (void)env;
+    if (actor) actor->x_vel = (-actor->x_vel) >> param;
 }
 
 /* DNKSEQ2.ASM #zero_x -- the source's own comment: "Don't float if
@@ -1881,228 +2040,281 @@ static const struct {
     const char *file;      /* NULL = global */
     wm_anim_code_fn fn;
     int32_t param;
+    /*
+     * The source line of the definition this row IS, for a local label a
+     * file defines more than once. 0 means "this file's only one".
+     *
+     * BAMSEQ2.ASM writes `#set_zvel2` twice, -5.0 in the block above
+     * bam_climbthru_top_anim and +5.0 in the one above
+     * bam_climbin_top_anim; every other file does the same, and three
+     * files write two `#inc_loop` with different caps. A row keyed only
+     * on (name, file) can be one of those or the other, never both.
+     */
+    int32_t line;
 } code_table[] = {
     /*
      * #set_zvel2, one row per file because the constant differs:
      * BAM/HRT/LEX/RZR/SHN/YOK -5.0, DNK -6.75, UND -5.75.
      */
-    { "#set_zvel2", "BAMSEQ2.ASM", set_zvel2, -0x50000 },
-    { "#set_zvel2", "HRTSEQ2.ASM", set_zvel2, -0x50000 },
-    { "#set_zvel2", "LEXSEQ2.ASM", set_zvel2, -0x50000 },
-    { "#set_zvel2", "RZRSEQ2.ASM", set_zvel2, -0x50000 },
-    { "#set_zvel2", "SHNSEQ2.ASM", set_zvel2, -0x50000 },
-    { "#set_zvel2", "YOKSEQ2.ASM", set_zvel2, -0x50000 },
-    { "#set_zvel2", "DNKSEQ2.ASM", set_zvel2, -0x6c000 },
-    { "#set_zvel2", "UNDSEQ2.ASM", set_zvel2, -0x5c000 },
+    /* ...and TWICE per file, with the sign reversed: the climb-through
+       helper rolls him one way, the climb-in helper the other. */
+    { "#set_zvel2", "BAMSEQ2.ASM", set_zvel2, -0x50000, 4287 },
+    { "#set_zvel2", "BAMSEQ2.ASM", set_zvel2,  0x50000, 4371 },
+    { "#set_zvel2", "HRTSEQ2.ASM", set_zvel2, -0x50000, 3113 },
+    { "#set_zvel2", "HRTSEQ2.ASM", set_zvel2,  0x52000, 3191 },
+    { "#set_zvel2", "LEXSEQ2.ASM", set_zvel2, -0x50000, 2916 },
+    { "#set_zvel2", "LEXSEQ2.ASM", set_zvel2,  0x52000, 2994 },
+    { "#set_zvel2", "RZRSEQ2.ASM", set_zvel2, -0x50000, 3075 },
+    { "#set_zvel2", "RZRSEQ2.ASM", set_zvel2,  0x52000, 3150 },
+    { "#set_zvel2", "SHNSEQ2.ASM", set_zvel2, -0x50000, 2328 },
+    { "#set_zvel2", "SHNSEQ2.ASM", set_zvel2,  0x50000, 2409 },
+    { "#set_zvel2", "YOKSEQ2.ASM", set_zvel2, -0x50000, 2103 },
+    { "#set_zvel2", "YOKSEQ2.ASM", set_zvel2,  0x52000, 2185 },
+    { "#set_zvel2", "DNKSEQ2.ASM", set_zvel2, -0x6c000, 5699 },
+    { "#set_zvel2", "DNKSEQ2.ASM", set_zvel2,  0x42000, 5785 },
+    { "#set_zvel2", "UNDSEQ2.ASM", set_zvel2, -0x5c000, 4586 },
+    { "#set_zvel2", "UNDSEQ2.ASM", set_zvel2,  0x52000, 4652 },
 
-    { "#half_vels", "HRTSEQ3.ASM", half_vels, 0 },
-    { "#reverse_xvel", "SHNSEQ3.ASM", reverse_xvel, 0 },
-    { "#zero_x", "DNKSEQ2.ASM", zero_x, 0 },
-    { "#store_opp_xvel", "SHNSEQ3.ASM", store_opp_xvel, 0 },
-    { "#store_opp_xvel", "YOKSEQ3.ASM", store_opp_xvel, 0 },
-    { "#merge_xvels", "SHNSEQ3.ASM", merge_xvels, 0 },
-    { "#merge_xvels", "YOKSEQ3.ASM", merge_xvels, 0 },
+    { "#half_vels", "HRTSEQ3.ASM", half_vels, 0, 0 },
+    { "#reverse_xvel", "SHNSEQ3.ASM", reverse_xvel, 2, 1279 },
+    { "#reverse_xvel", "SHNSEQ3.ASM", reverse_xvel, 1, 3651 },
+    { "#zero_x", "DNKSEQ2.ASM", zero_x, 0, 0 },
+    { "#store_opp_xvel", "SHNSEQ3.ASM", store_opp_xvel, 0, 0 },
+    { "#store_opp_xvel", "YOKSEQ3.ASM", store_opp_xvel, 0, 0 },
+    { "#merge_xvels", "SHNSEQ3.ASM", merge_xvels, 0, 0 },
+    { "#merge_xvels", "YOKSEQ3.ASM", merge_xvels, 0, 0 },
 
     /* x/z/y in whole units, per the file's own copy. BAMSEQ3/LEXSEQ3's
        #set_opp_y is 5 up, 2 along Z and 3 away; BAMSEQ2's #set_opp_xy is
        2 up and 2 away with no Z; DNKSEQ3's #set_opp_y only lifts. */
-    { "#set_opp_y", "BAMSEQ3.ASM", throw_opp, (3 << 16) | (2 << 8) | 5 },
-    { "#set_opp_y", "LEXSEQ3.ASM", throw_opp, (3 << 16) | (2 << 8) | 5 },
-    { "#set_opp_xy", "BAMSEQ2.ASM", throw_opp, (2 << 16) | (0 << 8) | 2 },
-    { "#set_opp_y", "DNKSEQ3.ASM", lift_opp, 0x40000 },
+    { "#set_opp_y", "BAMSEQ3.ASM", throw_opp, (3 << 16) | (2 << 8) | 5, 0 },
+    /* LEXSEQ3.ASM writes it twice, byte-identically; both are rows so
+       that neither call site falls through to nothing. */
+    { "#set_opp_y", "LEXSEQ3.ASM", throw_opp, (3 << 16) | (2 << 8) | 5, 1688 },
+    { "#set_opp_y", "LEXSEQ3.ASM", throw_opp, (3 << 16) | (2 << 8) | 5, 2311 },
+    { "#set_opp_xy", "BAMSEQ2.ASM", throw_opp, (2 << 16) | (0 << 8) | 2, 0 },
+    { "#set_opp_y", "DNKSEQ3.ASM", lift_opp, 0x40000, 0 },
 
     /* #set_zvel1 and #ckspin: same body, written once per file. */
-    { "#set_zvel1", "BAMSEQ2.ASM", status_from_facing, 0 },
-    { "#ckspin", "BAMSEQ2.ASM", status_from_facing, 0 },
-    { "#set_zvel1", "DNKSEQ2.ASM", status_from_facing, 0 },
-    { "#ckspin", "DNKSEQ2.ASM", status_from_facing, 0 },
-    { "#set_zvel1", "HRTSEQ2.ASM", status_from_facing, 0 },
-    { "#ckspin", "HRTSEQ2.ASM", status_from_facing, 0 },
-    { "#set_zvel1", "LEXSEQ2.ASM", status_from_facing, 0 },
-    { "#ckspin", "LEXSEQ2.ASM", status_from_facing, 0 },
-    { "#set_zvel1", "RZRSEQ2.ASM", status_from_facing, 0 },
-    { "#ckspin", "RZRSEQ2.ASM", status_from_facing, 0 },
-    { "#set_zvel1", "SHNSEQ2.ASM", status_from_facing, 0 },
-    { "#ckspin", "SHNSEQ2.ASM", status_from_facing, 0 },
-    { "#set_zvel1", "UNDSEQ2.ASM", status_from_facing, 0 },
-    { "#ckspin", "UNDSEQ2.ASM", status_from_facing, 0 },
-    { "#set_zvel1", "YOKSEQ2.ASM", status_from_facing, 0 },
-    { "#ckspin", "YOKSEQ2.ASM", status_from_facing, 0 },
+    { "#set_zvel1", "BAMSEQ2.ASM", status_from_facing, 0, 0 },
+    { "#ckspin", "BAMSEQ2.ASM", status_from_facing, 0, 0 },
+    { "#set_zvel1", "DNKSEQ2.ASM", status_from_facing, 0, 0 },
+    { "#ckspin", "DNKSEQ2.ASM", status_from_facing, 0, 0 },
+    { "#set_zvel1", "HRTSEQ2.ASM", status_from_facing, 0, 0 },
+    { "#ckspin", "HRTSEQ2.ASM", status_from_facing, 0, 0 },
+    { "#set_zvel1", "LEXSEQ2.ASM", status_from_facing, 0, 0 },
+    { "#ckspin", "LEXSEQ2.ASM", status_from_facing, 0, 0 },
+    { "#set_zvel1", "RZRSEQ2.ASM", status_from_facing, 0, 0 },
+    { "#ckspin", "RZRSEQ2.ASM", status_from_facing, 0, 0 },
+    { "#set_zvel1", "SHNSEQ2.ASM", status_from_facing, 0, 0 },
+    { "#ckspin", "SHNSEQ2.ASM", status_from_facing, 0, 0 },
+    { "#set_zvel1", "UNDSEQ2.ASM", status_from_facing, 0, 0 },
+    { "#ckspin", "UNDSEQ2.ASM", status_from_facing, 0, 0 },
+    { "#set_zvel1", "YOKSEQ2.ASM", status_from_facing, 0, 0 },
+    { "#ckspin", "YOKSEQ2.ASM", status_from_facing, 0, 0 },
 
-    { "#set_zvel3", "DNKSEQ2.ASM", set_zvel2, -0x7c000 },
-    { "#set_zvel", "DNKSEQ3.ASM", set_zvel_if_still, 0x10000 },
-    { "#set_zvel", "YOKSEQ2.ASM", set_zvel_if_still, 0x10000 },
-    { "NOT_IN_RING", NULL, not_in_ring, 0 },
-    { "#holdup", "DNKSEQ2.ASM", holdup, 0 },
-    { "#holdup", "LEXSEQ2.ASM", holdup, 0 },
-    { "#holdup", "RZRSEQ2.ASM", holdup, 0 },
-    { "#holdup", "UNDSEQ2.ASM", holdup, 0 },
+    { "#set_zvel3", "DNKSEQ2.ASM", set_zvel2, -0x7c000, 0 },
+    { "#set_zvel", "DNKSEQ3.ASM", set_zvel_if_still, 0x10000, 0 },
+    { "#set_zvel", "YOKSEQ2.ASM", set_zvel_if_still, 0x10000, 0 },
+    { "NOT_IN_RING", NULL, not_in_ring, 0, 0 },
+    { "#holdup", "DNKSEQ2.ASM", holdup, 0, 0 },
+    { "#holdup", "LEXSEQ2.ASM", holdup, 0, 0 },
+    { "#holdup", "RZRSEQ2.ASM", holdup, 0, 0 },
+    { "#holdup", "UNDSEQ2.ASM", holdup, 0, 0 },
 
     /* Both are SUBRs, so global: the same limiter over two stamps. */
-    { "hiptoss_delay", NULL, grab_rate_limit, 0 },
-    { "fling_delay", NULL, grab_rate_limit, 1 },
-    { "#set_opp_xflip", "BAMSEQ3.ASM", set_opp_xflip, 0 },
-    { "#set_opp_xflip", "DNKSEQ3.ASM", set_opp_xflip, 0 },
-    { "#set_opp_xflip", "HRTSEQ3.ASM", set_opp_xflip, 0 },
-    { "#set_opp_xflip", "RZRSEQ3.ASM", set_opp_xflip, 0 },
-    { "fix_bnc_flip", NULL, fix_bnc_flip, 0 },
-    { "#ckongrnd", "DNKSEQ2.ASM", ckongrnd, 0 },
-    { "set_position", NULL, set_position, 0 },
+    { "hiptoss_delay", NULL, grab_rate_limit, 0, 0 },
+    { "fling_delay", NULL, grab_rate_limit, 1, 0 },
+    { "#set_opp_xflip", "BAMSEQ3.ASM", set_opp_xflip, 0, 1378 },
+    { "#set_opp_xflip", "BAMSEQ3.ASM", set_opp_xflip, 0, 2479 },
+    { "#set_opp_xflip", "DNKSEQ3.ASM", set_opp_xflip, 0, 0 },
+    { "#set_opp_xflip", "HRTSEQ3.ASM", set_opp_xflip, 0, 0 },
+    { "#set_opp_xflip", "RZRSEQ3.ASM", set_opp_xflip, 0, 2428 },
+    { "#set_opp_xflip", "RZRSEQ3.ASM", set_opp_xflip, 0, 2764 },
+    { "fix_bnc_flip", NULL, fix_bnc_flip, 0, 0 },
+    { "#ckongrnd", "DNKSEQ2.ASM", ckongrnd, 0, 0 },
+    { "set_position", NULL, set_position, 0, 0 },
     /* #inc_loop: cap 3 everywhere except Doink's own copy, which is 2. */
-    { "#inc_loop", "BAMSEQ3.ASM", inc_loop, 3 },
-    { "#inc_loop", "DNKSEQ2.ASM", inc_loop, 3 },
-    { "#inc_loop", "HRTSEQ3.ASM", inc_loop, 3 },
-    { "#inc_loop", "LEXSEQ3.ASM", inc_loop, 3 },
-    { "#inc_loop", "RZRSEQ2.ASM", inc_loop, 3 },
-    { "#inc_loop", "RZRSEQ3.ASM", inc_loop, 3 },
-    { "#inc_loop", "SHNSEQ4.ASM", inc_loop, 3 },
-    { "#inc_loop", "UNDSEQ3.ASM", inc_loop, 3 },
-    { "#inc_loop", "YOKSEQ3.ASM", inc_loop, 3 },
-    { "#inc_loop", "DNKSEQ3.ASM", inc_loop, 2 },
+    /* Three files write it twice, capped 3 in the first and 2 in the
+       second; HRTSEQ3, LEXSEQ3 and YOKSEQ3 write it twice at 3 both
+       times, and the rest once. */
+    { "#inc_loop", "BAMSEQ3.ASM", inc_loop, 3, 679 },
+    { "#inc_loop", "BAMSEQ3.ASM", inc_loop, 2, 1798 },
+    { "#inc_loop", "SHNSEQ4.ASM", inc_loop, 3, 1140 },
+    { "#inc_loop", "SHNSEQ4.ASM", inc_loop, 2, 1492 },
+    { "#inc_loop", "UNDSEQ3.ASM", inc_loop, 3, 168 },
+    { "#inc_loop", "UNDSEQ3.ASM", inc_loop, 2, 2888 },
+    { "#inc_loop", "HRTSEQ3.ASM", inc_loop, 3, 166 },
+    { "#inc_loop", "HRTSEQ3.ASM", inc_loop, 3, 773 },
+    { "#inc_loop", "LEXSEQ3.ASM", inc_loop, 3, 138 },
+    { "#inc_loop", "LEXSEQ3.ASM", inc_loop, 3, 403 },
+    { "#inc_loop", "YOKSEQ3.ASM", inc_loop, 3, 272 },
+    { "#inc_loop", "YOKSEQ3.ASM", inc_loop, 3, 628 },
+    { "#inc_loop", "DNKSEQ2.ASM", inc_loop, 3, 4059 },
+    { "#inc_loop", "RZRSEQ2.ASM", inc_loop, 3, 2456 },
+    { "#inc_loop", "RZRSEQ3.ASM", inc_loop, 3, 894 },
+    { "#inc_loop", "DNKSEQ3.ASM", inc_loop, 2, 1679 },
 
-    { "#zero_butn", "BAMSEQ3.ASM", zero_butn, 1 },
-    { "#zero_butn", "DNKSEQ3.ASM", zero_butn, 0 },
-    { "#zero_butn", "SHNSEQ3.ASM", zero_butn, 0 },
-    { "#zero_butn", "UNDSEQ3.ASM", zero_butn, 0 },
-    { "ckzpos", NULL, ckzpos, 0 },
-    { "SET_DIR_FACE", NULL, set_dir_face, 0 },
-    { "set_tbukl_airmode", NULL, set_tbukl_airmode, 0 },
-    { "check_raisearm_bit", NULL, check_raisearm_bit, 0 },
-    { "clear_opp_counts", NULL, clear_opp_counts, 0 },
-    { "head_grab_time", NULL, head_grab_time, 0 },
-    { "halve_bk_xvel", NULL, halve_bk_xvel, 0 },
-    { "free_toss_check", NULL, free_toss_check, 0 },
-    { "setup_freetoss", NULL, setup_freetoss, 0 },
-    { "no_bk_xvel", NULL, no_bk_xvel, 0 },
-    { "choose_2or4", NULL, choose_2or4, 0 },
-    { "am_I_dead", NULL, am_i_dead, 0 },
-    { "make_white", NULL, make_white, 0 },
-    { "make_norm", NULL, make_norm, 0 },
-    { "set_skeleton_pal", NULL, set_skeleton_pal, 0 },
-    { "set_my_pal", NULL, set_my_pal, 0 },
-    { "tbukl_flip", NULL, tbukl_flip, 0 },
-    { "face_inside", NULL, face_inside, 0 },
-    { "HIT_THE_MAT", NULL, hit_the_mat, 0 },
-    { "DO_BLOCKED", NULL, do_blocked, 0 },
-    { "MAKE_HIM_SCREAM", NULL, make_him_scream, 0 },
-    { "DO_SCREAM", NULL, do_scream, 0 },
-    { "GOUGE_SOUND", NULL, gouge_sound, 0 },
-    { "DO_RAZOR_RUG_SPEECH", NULL, do_razor_rug_speech, 0 },
-    { "CALL_BONE_BREAK", NULL, call_bone_break, 0 },
-    { "SMALL_BOUNCE", NULL, small_bounce, 0 },
-    { "SMALL_RUN", NULL, small_run, 0 },
-    { "DO_FLAME_SND", NULL, do_flame_snd, 0 },
-    { "DO_FLAME_HIT_SND", NULL, do_flame_hit_snd, 0 },
-    { "DO_WAIL", NULL, do_wail, 0 },
-    { "DO_CHOKE", NULL, do_choke, 0 },
-    { "DO_NONO", NULL, do_nono, 0 },
-    { "DO_OTHERNONO", NULL, do_othernono, 0 },
-    { "DO_DOINK_SLAM", NULL, do_doink_slam, 0 },
-    { "FIND_AND_KILL_ENDLESS", NULL, find_and_kill_endless, 0 },
-    { "DO_RAZOR_PUSH", NULL, do_razor_push, 0 },
-    { "DO_DOINK_PUSH", NULL, do_doink_push, 0 },
-    { "DO_SHAWN_PUSH", NULL, do_shawn_push, 0 },
-    { "DO_BRET_PUSH", NULL, do_bret_push, 0 },
-    { "DO_LEX_PUSH", NULL, do_lex_push, 0 },
-    { "DO_COMBO_MESS", NULL, do_combo_mess, 0 },
+    { "#zero_butn", "BAMSEQ3.ASM", zero_butn, 1, 0 },
+    { "#zero_butn", "DNKSEQ3.ASM", zero_butn, 0, 0 },
+    { "#zero_butn", "SHNSEQ3.ASM", zero_butn, 0, 236 },
+    { "#zero_butn", "SHNSEQ3.ASM", zero_butn, 0, 491 },
+    { "#zero_butn", "UNDSEQ3.ASM", zero_butn, 0, 0 },
+    { "ckzpos", NULL, ckzpos, 0, 0 },
+    { "SET_DIR_FACE", NULL, set_dir_face, 0, 0 },
+    { "set_tbukl_airmode", NULL, set_tbukl_airmode, 0, 0 },
+    { "check_raisearm_bit", NULL, check_raisearm_bit, 0, 0 },
+    { "clear_opp_counts", NULL, clear_opp_counts, 0, 0 },
+    { "head_grab_time", NULL, head_grab_time, 0, 0 },
+    { "halve_bk_xvel", NULL, halve_bk_xvel, 0, 0 },
+    { "free_toss_check", NULL, free_toss_check, 0, 0 },
+    { "setup_freetoss", NULL, setup_freetoss, 0, 0 },
+    { "no_bk_xvel", NULL, no_bk_xvel, 0, 0 },
+    { "choose_2or4", NULL, choose_2or4, 0, 0 },
+    { "am_I_dead", NULL, am_i_dead, 0, 0 },
+    { "make_white", NULL, make_white, 0, 0 },
+    { "make_norm", NULL, make_norm, 0, 0 },
+    { "set_skeleton_pal", NULL, set_skeleton_pal, 0, 0 },
+    { "set_my_pal", NULL, set_my_pal, 0, 0 },
+    { "tbukl_flip", NULL, tbukl_flip, 0, 0 },
+    { "face_inside", NULL, face_inside, 0, 0 },
+    { "HIT_THE_MAT", NULL, hit_the_mat, 0, 0 },
+    { "DO_BLOCKED", NULL, do_blocked, 0, 0 },
+    { "MAKE_HIM_SCREAM", NULL, make_him_scream, 0, 0 },
+    { "DO_SCREAM", NULL, do_scream, 0, 0 },
+    { "GOUGE_SOUND", NULL, gouge_sound, 0, 0 },
+    { "DO_RAZOR_RUG_SPEECH", NULL, do_razor_rug_speech, 0, 0 },
+    { "CALL_BONE_BREAK", NULL, call_bone_break, 0, 0 },
+    { "SMALL_BOUNCE", NULL, small_bounce, 0, 0 },
+    { "SMALL_RUN", NULL, small_run, 0, 0 },
+    { "DO_FLAME_SND", NULL, do_flame_snd, 0, 0 },
+    { "DO_FLAME_HIT_SND", NULL, do_flame_hit_snd, 0, 0 },
+    { "DO_WAIL", NULL, do_wail, 0, 0 },
+    { "DO_CHOKE", NULL, do_choke, 0, 0 },
+    { "DO_NONO", NULL, do_nono, 0, 0 },
+    { "DO_OTHERNONO", NULL, do_othernono, 0, 0 },
+    { "DO_DOINK_SLAM", NULL, do_doink_slam, 0, 0 },
+    { "FIND_AND_KILL_ENDLESS", NULL, find_and_kill_endless, 0, 0 },
+    { "DO_RAZOR_PUSH", NULL, do_razor_push, 0, 0 },
+    { "DO_DOINK_PUSH", NULL, do_doink_push, 0, 0 },
+    { "DO_SHAWN_PUSH", NULL, do_shawn_push, 0, 0 },
+    { "DO_BRET_PUSH", NULL, do_bret_push, 0, 0 },
+    { "DO_LEX_PUSH", NULL, do_lex_push, 0, 0 },
+    { "DO_COMBO_MESS", NULL, do_combo_mess, 0, 0 },
     /* SUBRP, so file-local -- and only HRTSEQ3.ASM calls it. */
-    { "#rope_check", "HRTSEQ3.ASM", rope_check, 0 },
-    { "#check_xvel", "SHNSEQ3.ASM", check_xvel_local, 0 },
-    { "#grunt", "SHNSEQ3.ASM", shawn_grunt, 0 },
-    { "#hit_ground", "BAMSEQ2.ASM", hit_ground, 0 },
+    { "#rope_check", "HRTSEQ3.ASM", rope_check, 0, 0 },
+    { "#check_xvel", "SHNSEQ3.ASM", check_xvel_local, 0, 0 },
+    { "#grunt", "SHNSEQ3.ASM", shawn_grunt, 0, 0 },
+    { "#hit_ground", "BAMSEQ2.ASM", hit_ground, 0, 0 },
     /* UNDSEQ3's `#set` is #delay_whoihit's shape with an eight-second
        window instead of 55 ticks. */
-    { "#set", "UNDSEQ3.ASM", delay_whoihit_param, 8 * 60 },
+    { "#set", "UNDSEQ3.ASM", delay_whoihit_param, 8 * 60, 0 },
     /* YOKSEQ4's local #choose_2or4 is byte-identical to SHNSEQ4's global
        one, so it shares the body rather than getting a second copy. */
-    { "#choose_2or4", "YOKSEQ4.ASM", choose_2or4, 0 },
-    { "spunch_delay", NULL, spunch_delay, 0 },
-    { "DO_CROWD_CHEER", NULL, do_crowd_cheer, 0 },
-    { "win_announce", NULL, win_announce, 0 },
-    { "grnd_hit", NULL, grnd_hit, 0 },
-    { "#setopp_deadanim", NULL, setopp_deadanim, 0 },
-    { "#zero_x_4", "SHNSEQ2.ASM", zero_x_4, 0 },
+    { "#choose_2or4", "YOKSEQ4.ASM", choose_2or4, 0, 0 },
+    { "spunch_delay", NULL, spunch_delay, 0, 0 },
+    { "DO_CROWD_CHEER", NULL, do_crowd_cheer, 0, 0 },
+    { "shake_all_ropes", NULL, shake_all_ropes, 0, 0 },
+    { "get_leap", NULL, get_leap, 0, 0 },
+    { "hit_nearest", NULL, hit_nearest, 0, 0 },
+    { "set_tbukl_confine", NULL, set_tbukl_confine, 0, 0 },
+    { "win_announce", NULL, win_announce, 0, 0 },
+    { "grnd_hit", NULL, grnd_hit, 0, 0 },
+    { "#setopp_deadanim", NULL, setopp_deadanim, 0, 0 },
+    { "#zero_x_4", "SHNSEQ2.ASM", zero_x_4, 0, 0 },
     /* The local copy kills Z as well; the global no_bk_xvel does not. */
-    { "#no_bk_xvel", "SHNSEQ3.ASM", no_bk_xvel_local, 0 },
-    { "#delay_whoihit", "YOKSEQ2.ASM", delay_whoihit_param, 55 },
-    { "#ck_flip", "LEXSEQ3.ASM", ck_flip, 0 },
-    { "#ck_dead_opp", "HRTSEQ3.ASM", ck_dead_opp, 0 },
-    { "#set_wrestler_xflip", "HRTSEQ4.ASM", set_wrestler_xflip_code, 0 },
+    { "#no_bk_xvel", "SHNSEQ3.ASM", no_bk_xvel_local, 0, 0 },
+    { "#delay_whoihit", "YOKSEQ2.ASM", delay_whoihit_param, 55, 0 },
+    { "#ck_flip", "LEXSEQ3.ASM", ck_flip, 0, 0 },
+    { "#ck_dead_opp", "HRTSEQ3.ASM", ck_dead_opp, 0, 0 },
+    { "#set_wrestler_xflip", "HRTSEQ4.ASM", set_wrestler_xflip_code, 0, 0 },
     /* Another SPCDMG, with its own pair. */
-    { "#stop_dmg", "YOKSEQ3.ASM", reduce_dmg, WM_SPCDMG(2, 35) },
-    { "inc_loop", "UNDSEQ3.ASM", und_inc_loop, 0 },
-    { "check_xvel", NULL, check_xvel, 0 },
+    { "#stop_dmg", "YOKSEQ3.ASM", reduce_dmg, WM_SPCDMG(2, 35), 0 },
+    { "inc_loop", "UNDSEQ3.ASM", und_inc_loop, 0, 0 },
+    { "check_xvel", NULL, check_xvel, 0, 0 },
     /* SPCDMG's two constants, packed: damage in the high half, ticks in
        the low. Three files, three pairs. */
-    { "#reduce_dmg", "RZRSEQ3.ASM", reduce_dmg, WM_SPCDMG(22, 80) },
-    { "#reduce_dmg", "SHNSEQ3.ASM", reduce_dmg, WM_SPCDMG(6, 40) },
-    { "#reduce_dmg", "UNDSEQ2.ASM", reduce_dmg, WM_SPCDMG(8, 40) },
-    { "#reattach", "DNKSEQ3.ASM", reattach, 0 },
-    { "#reattach", "HRTSEQ3.ASM", reattach, 0 },
-    { "#reattach", "UNDSEQ3.ASM", reattach, 0 },
-    { "SET_OPP_GRAV_NORM", "RZRSEQ2.ASM", set_opp_grav, WM_GRAVITY },
-    { "SET_OPP_GRAV_NORM", "UNDSEQ2.ASM", set_opp_grav, WM_GRAVITY },
-    { "SET_OPP_GRAV_LOW", "RZRSEQ2.ASM", set_opp_grav, WM_GRAVITY - 0x1000 },
-    { "SET_OPP_GRAV_LOW", "UNDSEQ2.ASM", set_opp_grav, WM_GRAVITY - 0x1000 },
+    { "#reduce_dmg", "RZRSEQ3.ASM", reduce_dmg, WM_SPCDMG(22, 80), 0 },
+    { "#reduce_dmg", "SHNSEQ3.ASM", reduce_dmg, WM_SPCDMG(6, 40), 0 },
+    { "#reduce_dmg", "UNDSEQ2.ASM", reduce_dmg, WM_SPCDMG(8, 40), 0 },
+    { "#reattach", "DNKSEQ3.ASM", reattach, 0, 0 },
+    { "#reattach", "HRTSEQ3.ASM", reattach, 0, 0 },
+    { "#reattach", "UNDSEQ3.ASM", reattach, 0, 0 },
+    { "SET_OPP_GRAV_NORM", "RZRSEQ2.ASM", set_opp_grav, WM_GRAVITY, 0 },
+    { "SET_OPP_GRAV_NORM", "UNDSEQ2.ASM", set_opp_grav, WM_GRAVITY, 0 },
+    { "SET_OPP_GRAV_LOW", "RZRSEQ2.ASM", set_opp_grav, WM_GRAVITY - 0x1000, 0 },
+    { "SET_OPP_GRAV_LOW", "UNDSEQ2.ASM", set_opp_grav, WM_GRAVITY - 0x1000, 0 },
     /* Doink and Bret pop him 5.0; Razor only 4.0. */
-    { "#go_high", "DNKSEQ3.ASM", go_high, 0x50000 },
-    { "#go_high", "HRTSEQ2.ASM", go_high, 0x50000 },
-    { "#go_high", "RZRSEQ3.ASM", go_high, 0x40000 },
-    { "target_whoihit", NULL, target_whoihit, 0 },
-    { "#set_opp_facing", "SHNSEQ3.ASM", set_opp_facing, 0 },
-    { "#blocked_vels", "RZRSEQ2.ASM", blocked_vels, 0 },
-    { "MAYBE_BOUNCE_ROPE", NULL, maybe_bounce_rope, 0 },
+    { "#go_high", "DNKSEQ3.ASM", go_high, 0x50000, 0 },
+    { "#go_high", "HRTSEQ2.ASM", go_high, 0x50000, 0 },
+    { "#go_high", "RZRSEQ3.ASM", go_high, 0x40000, 0 },
+    { "target_whoihit", NULL, target_whoihit, 0, 0 },
+    { "#set_opp_facing", "SHNSEQ3.ASM", set_opp_facing, 0, 0 },
+    { "#blocked_vels", "RZRSEQ2.ASM", blocked_vels, 0, 0 },
+    { "MAYBE_BOUNCE_ROPE", NULL, maybe_bounce_rope, 0, 0 },
     /*
      * #set_trgt: seven files at 0f8h+60, Doink alone at 0f8h+50. The
      * param is that margin, so the difference is data rather than a
      * second body.
      */
-    { "#set_trgt", "BAMSEQ2.ASM", set_trgt, 60 },
-    { "#set_trgt", "HRTSEQ2.ASM", set_trgt, 60 },
-    { "#set_trgt", "LEXSEQ2.ASM", set_trgt, 60 },
-    { "#set_trgt", "RZRSEQ2.ASM", set_trgt, 60 },
-    { "#set_trgt", "SHNSEQ2.ASM", set_trgt, 60 },
-    { "#set_trgt", "UNDSEQ2.ASM", set_trgt, 60 },
-    { "#set_trgt", "YOKSEQ2.ASM", set_trgt, 60 },
-    { "#set_trgt", "DNKSEQ2.ASM", set_trgt, 50 },
-    { "#clrcnt", "DNKSEQ2.ASM", clrcnt, 0 },
-    { "#clrcnt", "LEXSEQ2.ASM", clrcnt, 0 },
-    { "#clrcnt", "RZRSEQ2.ASM", clrcnt, 0 },
-    { "#clrcnt", "UNDSEQ2.ASM", clrcnt, 0 },
-    { "set_xdrift", NULL, set_xdrift, 0 },
-    { "set_buckoff_vels", NULL, set_buckoff_vels, 0 },
-    { "skick_delay", NULL, skick_delay, 0 },
-    { "tgt_ground", NULL, tgt_ground, 0 },
-    { "tgt_tbukl", NULL, tgt_tbukl, 0 },
+    { "#set_trgt", "BAMSEQ2.ASM", set_trgt, 60, 0 },
+    { "#set_trgt", "HRTSEQ2.ASM", set_trgt, 60, 0 },
+    { "#set_trgt", "LEXSEQ2.ASM", set_trgt, 60, 0 },
+    { "#set_trgt", "RZRSEQ2.ASM", set_trgt, 60, 0 },
+    { "#set_trgt", "SHNSEQ2.ASM", set_trgt, 60, 0 },
+    { "#set_trgt", "UNDSEQ2.ASM", set_trgt, 60, 0 },
+    { "#set_trgt", "YOKSEQ2.ASM", set_trgt, 60, 0 },
+    { "#set_trgt", "DNKSEQ2.ASM", set_trgt, 50, 0 },
+    { "#clrcnt", "DNKSEQ2.ASM", clrcnt, 0, 0 },
+    { "#clrcnt", "LEXSEQ2.ASM", clrcnt, 0, 0 },
+    { "#clrcnt", "RZRSEQ2.ASM", clrcnt, 0, 0 },
+    { "#clrcnt", "UNDSEQ2.ASM", clrcnt, 0, 0 },
+    { "set_xdrift", NULL, set_xdrift, 0, 0 },
+    { "set_buckoff_vels", NULL, set_buckoff_vels, 0, 0 },
+    { "skick_delay", NULL, skick_delay, 0, 0 },
+    { "tgt_ground", NULL, tgt_ground, 0, 0 },
+    { "tgt_tbukl", NULL, tgt_tbukl, 0, 0 },
     /* SUBRP, so file-local: the rug slam without the headbutt. */
-    { "impact_sound", "HRTSEQ4.ASM", impact_sound_local, 0 },
-    { "impact_sound", "RZRSEQ3.ASM", impact_sound_local, 0 },
+    { "impact_sound", "HRTSEQ4.ASM", impact_sound_local, 0, 0 },
+    { "impact_sound", "RZRSEQ3.ASM", impact_sound_local, 0, 0 },
     /* YOKSEQ3.ASM's SUBR, which every other file reaches. */
-    { "impact_sound", NULL, impact_sound_global, 0 },
+    { "impact_sound", NULL, impact_sound_global, 0, 0 },
     /* LEXSEQ3.ASM's bare label shadows SHNSEQ2.ASM's SUBR. */
-    { "DO_GRUNT", "LEXSEQ3.ASM", do_grunt_luger, 0 },
-    { "DO_GRUNT", NULL, do_grunt, 0 },
+    { "DO_GRUNT", "LEXSEQ3.ASM", do_grunt_luger, 0, 0 },
+    { "DO_GRUNT", NULL, do_grunt, 0, 0 },
     /* #make_black, once per file, each with its own palette black. */
-    { "#make_black", "HRTSEQ4.ASM", make_black, 0x2F2F },
-    { "#make_black", "RZRSEQ3.ASM", make_black, 0x0D0D },
-    { "#make_black", "UNDSEQ3.ASM", make_black, 0x3F3F },
-    { "#make_black", "YOKSEQ3.ASM", make_black, 0x0F0F },
-    { "#make_black", "SHNSEQ4.ASM", make_black, 0x2121 },
-    { "#make_black", "BAMSEQ3.ASM", make_black, 0x0B0B },
-    { "#make_black", "DNKSEQ3.ASM", make_black, 0x0B0B },
-    { "#make_black", "LEXSEQ3.ASM", make_black, 0x1A1A },
+    { "#make_black", "HRTSEQ4.ASM", make_black, 0x2F2F, 0 },
+    { "#make_black", "RZRSEQ3.ASM", make_black, 0x0D0D, 0 },
+    { "#make_black", "UNDSEQ3.ASM", make_black, 0x3F3F, 0 },
+    { "#make_black", "YOKSEQ3.ASM", make_black, 0x0F0F, 0 },
+    { "#make_black", "SHNSEQ4.ASM", make_black, 0x2121, 0 },
+    { "#make_black", "BAMSEQ3.ASM", make_black, 0x0B0B, 0 },
+    { "#make_black", "DNKSEQ3.ASM", make_black, 0x0B0B, 0 },
+    { "#make_black", "LEXSEQ3.ASM", make_black, 0x1A1A, 0 },
 };
 
 bool wm_anim_code_run(wm_arcade_actor_t *actor, const wm_anim_env *env,
-                      const char *name, const char *source_file) {
+                      const char *name, const char *source_file,
+                      int32_t def_line) {
     size_t i;
     const size_t n = sizeof(code_table) / sizeof(code_table[0]);
     if (!name) return false;
-    /* A row scoped to this exact file wins over a global of the same name;
-       nothing in the source relies on that today, but a local label really
-       does shadow, so resolving in that order is the assembler's own. */
+    /* Most specific first: this file AND this definition, then this file's
+       unnumbered row, then a global of the same name. A local label really
+       does shadow a global, and a second definition of the same local name
+       really is a different routine, so resolving in that order is the
+       assembler's own. */
+    if (def_line)
+        for (i = 0; i < n; ++i)
+            if (code_table[i].line == def_line && code_table[i].file &&
+                source_file &&
+                strcmp(code_table[i].name, name) == 0 &&
+                strcmp(code_table[i].file, source_file) == 0) {
+                code_table[i].fn(actor, env, code_table[i].param);
+                return true;
+            }
     for (i = 0; i < n; ++i)
-        if (code_table[i].file && source_file &&
+        if (code_table[i].file && code_table[i].line == 0 && source_file &&
             strcmp(code_table[i].name, name) == 0 &&
             strcmp(code_table[i].file, source_file) == 0) {
             code_table[i].fn(actor, env, code_table[i].param);

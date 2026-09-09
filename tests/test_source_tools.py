@@ -1381,6 +1381,87 @@ def test_anim_code_registry_reaches_its_call_sites() -> None:
 
 
 
+def test_a_local_routine_defined_twice_gets_two_rows() -> None:
+    """The same `#name`, twice in one file, with a different body each.
+
+    This is the file-scoping trap one level deeper, and it shipped:
+    BAMSEQ2.ASM defines `#set_zvel2` at 4287 as -5.0 and again at 4371 as
+    +5.0 -- opposite directions -- and UNDSEQ3.ASM defines `#inc_loop` at
+    168 capped at 3 and at 2888 capped at 2. Keying a registry row on
+    (name, file) can only be one of each pair, so half the call sites in
+    every affected file were running the wrong routine.
+
+    So a call site now carries the source line of the definition it
+    resolves to, and this checks three things: that every registry row's
+    line really is that label in that file, that a file which defines a
+    translated local name more than once has a row for EVERY definition,
+    and that the emitter resolved every local call site to some
+    definition.
+    """
+    base = wlanim.ORIG
+    src = ROOT / "src" / "core" / "anim_code.c"
+    if not (base / "ANIM.ASM").exists() or not src.exists():
+        return
+
+    row_re = re.compile(
+        r'^\s*\{\s*"(#?[A-Za-z_0-9]+)"\s*,\s*(NULL|"[^"]+")\s*,'
+        r'.*,\s*(-?\d+)\s*\},\s*$', re.M)
+    rows = row_re.findall(src.read_text())
+    assert rows, "no registry rows found -- the pattern stopped matching"
+
+    lines_of = {}
+
+    def file_lines(name):
+        if name not in lines_of:
+            lines_of[name] = [r.split(";", 1)[0]
+                              for r in (base / name).read_text(
+                                  errors="replace").splitlines()]
+        return lines_of[name]
+
+    # 1. Every numbered row names that exact label at that exact line.
+    numbered = {}
+    for name, where, line in rows:
+        line = int(line)
+        if not line:
+            continue
+        assert where != "NULL", (name, line)
+        f = where.strip('"')
+        assert line in wlanim.local_label_defs(file_lines(f), name), \
+            (name, f, line)
+        numbered.setdefault((name, f), set()).add(line)
+
+    # 2. A translated local name defined more than once in its file needs
+    #    a row per definition -- otherwise the definitions the rows do not
+    #    cover fall through to nothing. This looks at EVERY row, numbered
+    #    or not: an unnumbered row for a name with two definitions is the
+    #    exact shape of the defect.
+    covered = {}
+    for name, where, line in rows:
+        if where == "NULL" or not name.startswith("#"):
+            continue
+        covered.setdefault((name, where.strip('"')), set()).add(int(line))
+    for (name, f), have in sorted(covered.items()):
+        defs = set(wlanim.local_label_defs(file_lines(f), name))
+        if len(defs) <= 1:
+            continue
+        assert have == defs, (name, f, "rows", sorted(have),
+                              "definitions", sorted(defs))
+
+    # 3. And the emitter resolved every local call site to a definition:
+    #    a 0 there would silently fall back to whichever row came first.
+    generated = ROOT / "src" / "generated" / "anim_programs.c"
+    if generated.exists():
+        code = re.findall(r'WM_AOP_CODE, 0, -1, (-?\d+),[^"]*"(#?[^"]+)"',
+                          generated.read_text())
+        assert code, "no WM_AOP_CODE rows in the generated programs"
+        unresolved = sorted({n for a, n in code
+                             if n.startswith("#") and a == "0"})
+        assert not unresolved, unresolved
+        # ...and every global one carries 0, since it has no local scope.
+        assert not [n for a, n in code
+                    if not n.startswith("#") and a != "0"]
+
+
 def test_announce_tables() -> None:
     """DCSSOUND.ASM's announcer tables, against their own headers.
 
@@ -1945,6 +2026,9 @@ def main() -> int:
     test_self_contained_command_ops()
     test_per_wrestler_aux_tables()
     test_anim_code_registry_reaches_its_call_sites()
+    test_a_local_routine_defined_twice_gets_two_rows()
+    test_code_roster_tables_are_read_not_transcribed()
+    test_crowd_tables_come_out_of_the_source()
     test_announce_tables()
     test_announce_tables_generate_the_shipped_file()
     test_announce_calls_are_spelled_as_the_call_sites_spell_them()

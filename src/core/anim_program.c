@@ -552,7 +552,10 @@ static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
             /* The file matters: a '#'-prefixed target is a local label,
                scoped to the sequence file that defines it, and those names
                are reused across files with different bodies behind them. */
-            (void)wm_anim_code_run(actor, env, o->text, source_file);
+            /* ...and `a` says WHICH definition in that file: the same
+               local name is defined more than once, with a different body
+               each time. */
+            (void)wm_anim_code_run(actor, env, o->text, source_file, o->a);
             break;
         }
         default:
@@ -756,7 +759,7 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
                 }
                 exec->waiting = false;
                 if (actor) wm_anim_code_run(actor, exec->env, "SMALL_BOUNCE",
-                                            NULL);
+                                            NULL, 0);
                 pc = pc + 1;
                 continue;
             }

@@ -1837,20 +1837,20 @@ static void test_anim_code_sound_routines(void) {
 
     /* The registry answers by the source's own name, and says so plainly
        when a routine is not translated rather than pretending. */
-    CHECK(wm_anim_code_run(&a, NULL, "HIT_THE_MAT", NULL));
-    CHECK(wm_anim_code_run(&a, NULL, "SMALL_BOUNCE", NULL));
+    CHECK(wm_anim_code_run(&a, NULL, "HIT_THE_MAT", NULL, 0));
+    CHECK(wm_anim_code_run(&a, NULL, "SMALL_BOUNCE", NULL, 0));
     /* The announcer group resolves out of wm_announce_calls[] rather than
        the registry, so it answers too -- see test_announcer_call_tables. */
-    CHECK(wm_anim_code_run(&a, NULL, "CALL_MISSES", NULL));
-    CHECK(!wm_anim_code_run(&a, NULL, "no_such_routine", NULL));
-    CHECK(!wm_anim_code_run(&a, NULL, NULL, NULL));
+    CHECK(wm_anim_code_run(&a, NULL, "CALL_MISSES", NULL, 0));
+    CHECK(!wm_anim_code_run(&a, NULL, "no_such_routine", NULL, 0));
+    CHECK(!wm_anim_code_run(&a, NULL, NULL, NULL, 0));
     CHECK(wm_anim_code_count() >= 16u);
 
     /* DCSSOUND.ASM:3999 HIT_THE_MAT: a fixed 0C1h, then one of the three
        low-priority mat hits {76h,77h,78h}. Two calls, in that order. */
     memset(&a, 0, sizeof(a));
     memset(&log, 0, sizeof(log));
-    wm_anim_code_run(&a, &env, "HIT_THE_MAT", NULL);
+    wm_anim_code_run(&a, &env, "HIT_THE_MAT", NULL, 0);
     CHECK(log.count == 2);
     CHECK(log.calls[0] == 0x0C1u);
     CHECK(log.calls[1] >= 0x76u && log.calls[1] <= 0x78u);
@@ -1862,7 +1862,7 @@ static void test_anim_code_sound_routines(void) {
         code_sound_log one;
         memset(&one, 0, sizeof(one));
         env.sound_user = &one;
-        wm_anim_code_run(&a, &env, "SMALL_BOUNCE", NULL);
+        wm_anim_code_run(&a, &env, "SMALL_BOUNCE", NULL, 0);
         CHECK(one.count == 1);
         CHECK(one.calls[0] == 0x0C0u || one.calls[0] == 0x0C2u ||
               one.calls[0] == 0x00Du);
@@ -1875,15 +1875,15 @@ static void test_anim_code_sound_routines(void) {
     code_name = "DO_WAIL";
     memset(&log, 0, sizeof(log));
     a.wrestler_num = 0;            /* Bret */
-    wm_anim_code_run(&a, &env, code_name, NULL);
+    wm_anim_code_run(&a, &env, code_name, NULL, 0);
     CHECK(log.count == 1 && log.calls[0] == 0x25Fu);
     memset(&log, 0, sizeof(log));
     a.wrestler_num = 1;            /* Razor */
-    wm_anim_code_run(&a, &env, code_name, NULL);
+    wm_anim_code_run(&a, &env, code_name, NULL, 0);
     CHECK(log.count == 1 && log.calls[0] == 0x270u);
     memset(&log, 0, sizeof(log));
     a.wrestler_num = 7;            /* the spare slot */
-    wm_anim_code_run(&a, &env, code_name, NULL);
+    wm_anim_code_run(&a, &env, code_name, NULL, 0);
     CHECK(log.count == 0);
 
     /* DO_NONO reads the number of the wrestler ATTACHED to this one (the
@@ -1895,15 +1895,15 @@ static void test_anim_code_sound_routines(void) {
     opp.wrestler_num = 6;          /* Doink held */
     a.attach_proc = &opp;
     memset(&log, 0, sizeof(log));
-    wm_anim_code_run(&a, &env, "DO_NONO", NULL);
+    wm_anim_code_run(&a, &env, "DO_NONO", NULL, 0);
     CHECK(log.count == 1 && log.calls[0] == 0x219u);      /* Doink's */
     memset(&log, 0, sizeof(log));
-    wm_anim_code_run(&a, &env, "DO_OTHERNONO", NULL);
+    wm_anim_code_run(&a, &env, "DO_OTHERNONO", NULL, 0);
     CHECK(log.count == 1 && log.calls[0] == 0x23Cu);      /* Bret's */
     /* DO_CHOKE and the NONOs are the endless sounds: the last one started
        is the one FIND_AND_KILL_ENDLESS would stop. */
     CHECK(wm_anim_code_endless_sound() == 0x23Cu);
-    wm_anim_code_run(&a, &env, "FIND_AND_KILL_ENDLESS", NULL);
+    wm_anim_code_run(&a, &env, "FIND_AND_KILL_ENDLESS", NULL, 0);
     CHECK(wm_anim_code_endless_sound() == 0u);
 
     /* DCSSOUND.ASM:4153 DO_DOINK_SLAM picks by RPT_COUNT: 0 and 1 are the
@@ -1916,20 +1916,20 @@ static void test_anim_code_sound_routines(void) {
     for (i = 0; i < 2; ++i) {
         memset(&log, 0, sizeof(log));
         a.rpt_count = (int32_t)i;
-        wm_anim_code_run(&a, &env, code_name, NULL);
+        wm_anim_code_run(&a, &env, code_name, NULL, 0);
         CHECK(log.count == 1 && log.calls[0] == 0x218u);
     }
     memset(&log, 0, sizeof(log));
     a.rpt_count = 2;
-    wm_anim_code_run(&a, &env, code_name, NULL);
+    wm_anim_code_run(&a, &env, code_name, NULL, 0);
     CHECK(log.count == 1 && log.calls[0] == 0x216u);
     memset(&log, 0, sizeof(log));
     a.rpt_count = 3;
-    wm_anim_code_run(&a, &env, code_name, NULL);
+    wm_anim_code_run(&a, &env, code_name, NULL, 0);
     CHECK(log.count == 1 && log.calls[0] == 0x217u);
     memset(&log, 0, sizeof(log));
     a.rpt_count = 9;
-    wm_anim_code_run(&a, &env, code_name, NULL);
+    wm_anim_code_run(&a, &env, code_name, NULL, 0);
     CHECK(log.count == 0);
 
     /* DCSSOUND.ASM:4319 MAKE_HIM_SCREAM screams as the wrestler he just
@@ -1941,12 +1941,12 @@ static void test_anim_code_sound_routines(void) {
     opp.wrestler_num = 6;          /* Doink taking it */
     a.who_i_hit = &opp;
     memset(&log, 0, sizeof(log));
-    wm_anim_code_run(&a, &env, "MAKE_HIM_SCREAM", NULL);
+    wm_anim_code_run(&a, &env, "MAKE_HIM_SCREAM", NULL, 0);
     CHECK(log.count == 1);
     CHECK(log.calls[0] == 0x071u || log.calls[0] == 0x072u ||
           log.calls[0] == 0x20Au || log.calls[0] == 0x20Cu);   /* Doink's */
     memset(&log, 0, sizeof(log));
-    wm_anim_code_run(&a, &env, "DO_SCREAM", NULL);
+    wm_anim_code_run(&a, &env, "DO_SCREAM", NULL, 0);
     CHECK(log.count == 1);
     CHECK(log.calls[0] == 0x265u || log.calls[0] == 0x266u ||
           log.calls[0] == 0x262u || log.calls[0] == 0x263u);   /* Bret's */
@@ -1954,7 +1954,7 @@ static void test_anim_code_sound_routines(void) {
     /* The spare roster slot is four real zeros, i.e. silence. */
     memset(&log, 0, sizeof(log));
     a.wrestler_num = 7;
-    wm_anim_code_run(&a, &env, "DO_SCREAM", NULL);
+    wm_anim_code_run(&a, &env, "DO_SCREAM", NULL, 0);
     CHECK(log.count == 0);
 
     /* DCSSOUND.ASM:4280 DO_RAZOR_RUG_SPEECH steps Razor's four lines by
@@ -1963,29 +1963,29 @@ static void test_anim_code_sound_routines(void) {
     memset(&a, 0, sizeof(a));
     memset(&log, 0, sizeof(log));
     a.rpt_count = 0;
-    wm_anim_code_run(&a, &env, "DO_RAZOR_RUG_SPEECH", NULL);
+    wm_anim_code_run(&a, &env, "DO_RAZOR_RUG_SPEECH", NULL, 0);
     CHECK(log.count == 0);
     memset(&log, 0, sizeof(log));
     a.rpt_count = 1;
-    wm_anim_code_run(&a, &env, "DO_RAZOR_RUG_SPEECH", NULL);
+    wm_anim_code_run(&a, &env, "DO_RAZOR_RUG_SPEECH", NULL, 0);
     CHECK(log.count == 1 && log.calls[0] == 0x27Du);
     memset(&log, 0, sizeof(log));
     a.rpt_count = 4;
-    wm_anim_code_run(&a, &env, "DO_RAZOR_RUG_SPEECH", NULL);
+    wm_anim_code_run(&a, &env, "DO_RAZOR_RUG_SPEECH", NULL, 0);
     CHECK(log.count == 1 && log.calls[0] == 0x27Au);
     memset(&log, 0, sizeof(log));
     a.rpt_count = 5;
-    wm_anim_code_run(&a, &env, "DO_RAZOR_RUG_SPEECH", NULL);
+    wm_anim_code_run(&a, &env, "DO_RAZOR_RUG_SPEECH", NULL, 0);
     CHECK(log.count == 0);
 
     /* GOUGE_SOUND is one fixed call and nothing else. */
     memset(&log, 0, sizeof(log));
-    wm_anim_code_run(&a, &env, "GOUGE_SOUND", NULL);
+    wm_anim_code_run(&a, &env, "GOUGE_SOUND", NULL, 0);
     CHECK(log.count == 1 && log.calls[0] == 0x0A9u);
 
     /* With no environment at all a routine does nothing rather than
        reaching through a NULL service. */
-    wm_anim_code_run(&a, NULL, "HIT_THE_MAT", NULL);
+    wm_anim_code_run(&a, NULL, "HIT_THE_MAT", NULL, 0);
 
     /* DCSSOUND.ASM's shove taunts are behind a 50% RNDPER and a 60-tick
        lockout (its DUMMY_WAIT process): once one has fired, no other can
@@ -1993,13 +1993,13 @@ static void test_anim_code_sound_routines(void) {
     wm_anim_code_reset();
     memset(&log, 0, sizeof(log));
     for (i = 0; i < 200; ++i)
-        wm_anim_code_run(&a, &env, "DO_RAZOR_PUSH", NULL);
+        wm_anim_code_run(&a, &env, "DO_RAZOR_PUSH", NULL, 0);
     CHECK(log.count == 1);
     CHECK(log.calls[0] >= 0x27Eu && log.calls[0] <= 0x280u);
     for (i = 0; i < 60; ++i) wm_anim_code_tick();
     memset(&log, 0, sizeof(log));
     for (i = 0; i < 200; ++i)
-        wm_anim_code_run(&a, &env, "DO_BRET_PUSH", NULL);
+        wm_anim_code_run(&a, &env, "DO_BRET_PUSH", NULL, 0);
     CHECK(log.count == 1);
     CHECK(log.calls[0] == 0x285u);
     wm_anim_code_reset();
@@ -2021,22 +2021,22 @@ static void test_anim_code_state_routines(void) {
        falling near the front or rear ropes, and do nothing in between. */
     code_name = "ckzpos";
     memset(&a, 0, sizeof(a));
-    a.z_int = 0x600;  wm_anim_code_run(&a, &env, code_name, NULL);  CHECK(a.z_vel == -0x24000);
+    a.z_int = 0x600;  wm_anim_code_run(&a, &env, code_name, NULL, 0);  CHECK(a.z_vel == -0x24000);
     memset(&a, 0, sizeof(a));
-    a.z_int = 0x400;  wm_anim_code_run(&a, &env, code_name, NULL);  CHECK(a.z_vel == 0x24000);
+    a.z_int = 0x400;  wm_anim_code_run(&a, &env, code_name, NULL, 0);  CHECK(a.z_vel == 0x24000);
     memset(&a, 0, sizeof(a));
-    a.z_int = 0x480;  wm_anim_code_run(&a, &env, code_name, NULL);  CHECK(a.z_vel == 0);   /* already clear */
+    a.z_int = 0x480;  wm_anim_code_run(&a, &env, code_name, NULL, 0);  CHECK(a.z_vel == 0);   /* already clear */
     /* Both tests are the source's own `jrgt`, i.e. strictly greater, so
        each boundary value itself belongs to the range BELOW it: 510h is
        still "already clear", and 442h is low enough to slide down. */
     memset(&a, 0, sizeof(a));
-    a.z_int = 0x510;  wm_anim_code_run(&a, &env, code_name, NULL);  CHECK(a.z_vel == 0);
+    a.z_int = 0x510;  wm_anim_code_run(&a, &env, code_name, NULL, 0);  CHECK(a.z_vel == 0);
     memset(&a, 0, sizeof(a));
-    a.z_int = 0x442;  wm_anim_code_run(&a, &env, code_name, NULL);  CHECK(a.z_vel == 0x24000);
+    a.z_int = 0x442;  wm_anim_code_run(&a, &env, code_name, NULL, 0);  CHECK(a.z_vel == 0x24000);
     memset(&a, 0, sizeof(a));
-    a.z_int = 0x511;  wm_anim_code_run(&a, &env, code_name, NULL);  CHECK(a.z_vel == -0x24000);
+    a.z_int = 0x511;  wm_anim_code_run(&a, &env, code_name, NULL, 0);  CHECK(a.z_vel == -0x24000);
     memset(&a, 0, sizeof(a));
-    a.z_int = 0x443;  wm_anim_code_run(&a, &env, code_name, NULL);  CHECK(a.z_vel == 0);
+    a.z_int = 0x443;  wm_anim_code_run(&a, &env, code_name, NULL, 0);  CHECK(a.z_vel == 0);
 
     /* SHNSEQ3.ASM:3260 no_bk_xvel -- kill x velocity that is carrying him
        backward, keep it when it carries him forward. Which is which
@@ -2045,14 +2045,14 @@ static void test_anim_code_state_routines(void) {
     code_name = "no_bk_xvel";
     memset(&a, 0, sizeof(a));
     a.facing_dir = WM_MOVE_UP_RIGHT;   a.x_vel = 0x10000;
-    wm_anim_code_run(&a, &env, code_name, NULL);  CHECK(a.x_vel == 0x10000);          /* forward, kept */
+    wm_anim_code_run(&a, &env, code_name, NULL, 0);  CHECK(a.x_vel == 0x10000);          /* forward, kept */
     a.x_vel = -0x10000;
-    wm_anim_code_run(&a, &env, code_name, NULL);  CHECK(a.x_vel == 0);                /* backward, killed */
+    wm_anim_code_run(&a, &env, code_name, NULL, 0);  CHECK(a.x_vel == 0);                /* backward, killed */
     memset(&a, 0, sizeof(a));
     a.facing_dir = WM_MOVE_UP_LEFT;    a.x_vel = -0x10000;
-    wm_anim_code_run(&a, &env, code_name, NULL);  CHECK(a.x_vel == -0x10000);         /* forward, kept */
+    wm_anim_code_run(&a, &env, code_name, NULL, 0);  CHECK(a.x_vel == -0x10000);         /* forward, kept */
     a.x_vel = 0x10000;
-    wm_anim_code_run(&a, &env, code_name, NULL);  CHECK(a.x_vel == 0);
+    wm_anim_code_run(&a, &env, code_name, NULL, 0);  CHECK(a.x_vel == 0);
 
     /* HRTSEQ4.ASM:1081 choose_2or4 reports the facing bank through
        MODE_STATUS: clear for the 2-bank when NEW_FACING_DIR points up. */
@@ -2060,25 +2060,25 @@ static void test_anim_code_state_routines(void) {
     memset(&a, 0, sizeof(a));
     a.new_facing_dir = WM_MOVE_UP_RIGHT;
     a.anim_mode = (uint16_t)WM_MODE_STATUS;
-    wm_anim_code_run(&a, &env, code_name, NULL);  CHECK(!(a.anim_mode & WM_MODE_STATUS));
+    wm_anim_code_run(&a, &env, code_name, NULL, 0);  CHECK(!(a.anim_mode & WM_MODE_STATUS));
     a.new_facing_dir = WM_MOVE_DOWN_RIGHT;
-    wm_anim_code_run(&a, &env, code_name, NULL);  CHECK(a.anim_mode & WM_MODE_STATUS);
+    wm_anim_code_run(&a, &env, code_name, NULL, 0);  CHECK(a.anim_mode & WM_MODE_STATUS);
 
     /* DNKSEQ3.ASM:428 am_I_dead. The live path is subtler than clearing
        the bit: a wrestler already in MODE_DEAD keeps answering yes. */
     code_name = "am_I_dead";
     memset(&a, 0, sizeof(a));
     a.life = 0;
-    wm_anim_code_run(&a, &env, code_name, NULL);
+    wm_anim_code_run(&a, &env, code_name, NULL, 0);
     CHECK(a.anim_mode & WM_MODE_STATUS);
     CHECK(a.player_mode == WM_PMODE_DEAD);
     memset(&a, 0, sizeof(a));
     a.life = 50;
     a.anim_mode = (uint16_t)WM_MODE_STATUS;
-    wm_anim_code_run(&a, &env, code_name, NULL);
+    wm_anim_code_run(&a, &env, code_name, NULL, 0);
     CHECK(!(a.anim_mode & WM_MODE_STATUS));
     a.player_mode = WM_PMODE_DEAD;
-    wm_anim_code_run(&a, &env, code_name, NULL);
+    wm_anim_code_run(&a, &env, code_name, NULL, 0);
     CHECK(a.anim_mode & WM_MODE_STATUS);
 
     /* DNKSEQ3.ASM's buzzer flash: make_white/#make_black load different
@@ -2087,7 +2087,7 @@ static void test_anim_code_state_routines(void) {
        clear the low four control bits first and leave the rest alone. */
     memset(&a, 0, sizeof(a));
     a.obj_control = (uint16_t)(0x0100u | 0x000Fu);
-    wm_anim_code_run(&a, &env, "make_white", NULL);
+    wm_anim_code_run(&a, &env, "make_white", NULL, 0);
     CHECK(a.obj_const == 0x0101u);
     CHECK((a.obj_control & 0x000Fu) == 0x0008u);
     CHECK(a.obj_control & 0x0100u);            /* untouched bits survive */
@@ -2097,8 +2097,8 @@ static void test_anim_code_state_routines(void) {
        for each wrestler." Seven distinct values across the eight files, so
        resolving it without knowing the file is not answerable, and
        answering anyway would paint six wrestlers in Doink's black. */
-    CHECK(!wm_anim_code_run(&a, &env, "#make_black", NULL));
-    CHECK(!wm_anim_code_run(&a, &env, "#make_black", "NOSUCH.ASM"));
+    CHECK(!wm_anim_code_run(&a, &env, "#make_black", NULL, 0));
+    CHECK(!wm_anim_code_run(&a, &env, "#make_black", "NOSUCH.ASM", 0));
     {
         static const struct { const char *file; uint16_t konst; } blacks[] = {
             { "HRTSEQ4.ASM", 0x2F2Fu },   /* Bret */
@@ -2113,12 +2113,12 @@ static void test_anim_code_state_routines(void) {
         size_t b;
         for (b = 0; b < sizeof(blacks) / sizeof(blacks[0]); ++b) {
             a.obj_const = 0;
-            CHECK(wm_anim_code_run(&a, &env, "#make_black", blacks[b].file));
+            CHECK(wm_anim_code_run(&a, &env, "#make_black", blacks[b].file, 0));
             CHECK(a.obj_const == blacks[b].konst);
             CHECK((a.obj_control & 0x000Fu) == 0x0008u);
         }
     }
-    wm_anim_code_run(&a, &env, "make_norm", NULL);
+    wm_anim_code_run(&a, &env, "make_norm", NULL, 0);
     CHECK((a.obj_control & 0x800Fu) == 0x8002u);   /* DMAWNZ */
 
     /* The palette pair swaps OBJ_PAL and tracks PLYR.EQU's own TEMP_PAL
@@ -2127,10 +2127,10 @@ static void test_anim_code_state_routines(void) {
     a.my_pal = 11;
     a.skeleton_pal = 77;
     a.obj_pal = 11;
-    wm_anim_code_run(&a, &env, "set_skeleton_pal", NULL);
+    wm_anim_code_run(&a, &env, "set_skeleton_pal", NULL, 0);
     CHECK(a.obj_pal == 77);
     CHECK(a.status_flags & 0x4u);
-    wm_anim_code_run(&a, &env, "set_my_pal", NULL);
+    wm_anim_code_run(&a, &env, "set_my_pal", NULL, 0);
     CHECK(a.obj_pal == 11);
     CHECK(!(a.status_flags & 0x4u));
 
@@ -2141,17 +2141,17 @@ static void test_anim_code_state_routines(void) {
     memset(&a, 0, sizeof(a));
     a.in_ring = 1;                       /* in the ring (this port's sense) */
     a.x_int = WM_RING_X_CENTER - 100;
-    wm_anim_code_run(&a, &env, "SET_DIR_FACE", NULL);
+    wm_anim_code_run(&a, &env, "SET_DIR_FACE", NULL, 0);
     CHECK(a.new_facing_dir == 6);
     a.x_int = WM_RING_X_CENTER + 100;
-    wm_anim_code_run(&a, &env, "SET_DIR_FACE", NULL);
+    wm_anim_code_run(&a, &env, "SET_DIR_FACE", NULL, 0);
     CHECK(a.new_facing_dir == 10);
     a.in_ring = 0;                       /* outside: the answers swap */
     a.x_int = WM_RING_X_CENTER - 100;
-    wm_anim_code_run(&a, &env, "SET_DIR_FACE", NULL);
+    wm_anim_code_run(&a, &env, "SET_DIR_FACE", NULL, 0);
     CHECK(a.new_facing_dir == 10);
     a.x_int = WM_RING_X_CENTER + 100;
-    wm_anim_code_run(&a, &env, "SET_DIR_FACE", NULL);
+    wm_anim_code_run(&a, &env, "SET_DIR_FACE", NULL, 0);
     CHECK(a.new_facing_dir == 6);
 
     /* WRESTLE2.ASM:4951 set_tbukl_airmode -- MODE_INAIR2 is the mode that
@@ -2162,20 +2162,20 @@ static void test_anim_code_state_routines(void) {
     memset(&opp, 0, sizeof(opp));
     env.opponent = &opp;
     opp.player_mode = WM_PMODE_NORMAL;
-    wm_anim_code_run(&a, &env, "set_tbukl_airmode", NULL);
+    wm_anim_code_run(&a, &env, "set_tbukl_airmode", NULL, 0);
     CHECK(a.player_mode == WM_PMODE_INAIR2);
     opp.player_mode = WM_PMODE_DEAD;
-    wm_anim_code_run(&a, &env, "set_tbukl_airmode", NULL);
+    wm_anim_code_run(&a, &env, "set_tbukl_airmode", NULL, 0);
     CHECK(a.player_mode == WM_PMODE_INAIR);
 
     /* WRESTLE2.ASM:4527 check_raisearm_bit -- the sense is INVERTED from
        what the name suggests: the bit being SET clears MODE_STATUS, so the
        celebration forks in only the first time. */
     memset(&a, 0, sizeof(a));
-    wm_anim_code_run(&a, &env, "check_raisearm_bit", NULL);
+    wm_anim_code_run(&a, &env, "check_raisearm_bit", NULL, 0);
     CHECK(a.anim_mode & WM_MODE_STATUS);
     a.status_flags |= (1u << 16);        /* PLYR.EQU:414 B_DID_RAISEARM */
-    wm_anim_code_run(&a, &env, "check_raisearm_bit", NULL);
+    wm_anim_code_run(&a, &env, "check_raisearm_bit", NULL, 0);
     CHECK(!(a.anim_mode & WM_MODE_STATUS));
 
     /* DNKSEQ3.ASM:1509/1516 head_grab_time falls straight through into
@@ -2188,7 +2188,7 @@ static void test_anim_code_state_routines(void) {
     opp.punchb_count = 5; opp.blockb_count = 5; opp.spunchb_count = 5;
     opp.kickb_count = 5;  opp.skickb_count = 5;
     env.pcnt = 4242u;
-    wm_anim_code_run(&a, &env, "head_grab_time", NULL);
+    wm_anim_code_run(&a, &env, "head_grab_time", NULL, 0);
     CHECK(a.last_headhold == 4242u);
     CHECK(opp.punchb_count == 0 && opp.blockb_count == 0);
     CHECK(opp.spunchb_count == 0 && opp.kickb_count == 0);
@@ -2201,10 +2201,10 @@ static void test_anim_code_state_routines(void) {
     memset(&a, 0, sizeof(a));
     a.facing_dir = WM_MOVE_UP_RIGHT;
     a.x_vel = 0x10000;
-    wm_anim_code_run(&a, &env, "halve_bk_xvel", NULL);
+    wm_anim_code_run(&a, &env, "halve_bk_xvel", NULL, 0);
     CHECK(a.x_vel == 0x10000);
     a.x_vel = -0x10000;
-    wm_anim_code_run(&a, &env, "halve_bk_xvel", NULL);
+    wm_anim_code_run(&a, &env, "halve_bk_xvel", NULL, 0);
     CHECK(a.x_vel == -0x8000);
 
     /* WRESTLE2.ASM:4967 free_toss_check -- a free hiptoss is on when the
@@ -2216,16 +2216,16 @@ static void test_anim_code_state_routines(void) {
     env.opponent = &opp;
     a.z_fixed = 100 << 16;
     opp.z_fixed = 110 << 16;                 /* 10 apart */
-    wm_anim_code_run(&a, &env, "free_toss_check", NULL);
+    wm_anim_code_run(&a, &env, "free_toss_check", NULL, 0);
     CHECK(a.anim_mode & WM_MODE_STATUS);
     opp.z_fixed = 200 << 16;                 /* 100 apart, no block held */
-    wm_anim_code_run(&a, &env, "free_toss_check", NULL);
+    wm_anim_code_run(&a, &env, "free_toss_check", NULL, 0);
     CHECK(!(a.anim_mode & WM_MODE_STATUS));
     a.but_val_cur = (uint16_t)WM_BTN_BLOCK;  /* block alone earns it */
-    wm_anim_code_run(&a, &env, "free_toss_check", NULL);
+    wm_anim_code_run(&a, &env, "free_toss_check", NULL, 0);
     CHECK(a.anim_mode & WM_MODE_STATUS);
     a.but_val_cur = (uint16_t)(WM_BTN_BLOCK | WM_BTN_PUNCH);
-    wm_anim_code_run(&a, &env, "free_toss_check", NULL);
+    wm_anim_code_run(&a, &env, "free_toss_check", NULL, 0);
     CHECK(!(a.anim_mode & WM_MODE_STATUS));
 
     /* WRESTLE2.ASM:5004 setup_freetoss: mode normal, and the victim is
@@ -2234,7 +2234,7 @@ static void test_anim_code_state_routines(void) {
     memset(&opp, 0, sizeof(opp));
     a.player_mode = WM_PMODE_RUNNING;
     a.who_i_hit = &opp;
-    wm_anim_code_run(&a, &env, "setup_freetoss", NULL);
+    wm_anim_code_run(&a, &env, "setup_freetoss", NULL, 0);
     CHECK(a.player_mode == WM_PMODE_NORMAL);
     CHECK(opp.immobilize_time == 20);
 
@@ -2246,10 +2246,10 @@ static void test_anim_code_state_routines(void) {
     env.opponent = &opp;
     opp.in_ring = 1;                     /* opponent IS in the ring */
     a.x_int = WM_RING_X_CENTER + 100;
-    wm_anim_code_run(&a, &env, "tbukl_flip", NULL);
+    wm_anim_code_run(&a, &env, "tbukl_flip", NULL, 0);
     CHECK(a.obj_control & WM_OBJ_FLIPH);
     a.x_int = WM_RING_X_CENTER - 100;
-    wm_anim_code_run(&a, &env, "tbukl_flip", NULL);
+    wm_anim_code_run(&a, &env, "tbukl_flip", NULL, 0);
     CHECK(!(a.obj_control & WM_OBJ_FLIPH));
 
     /* Opponent outside the ring: neither corner decides it any more, the
@@ -2257,10 +2257,10 @@ static void test_anim_code_state_routines(void) {
     opp.in_ring = 0;
     a.x_int = WM_RING_X_CENTER - 100;
     a.new_facing_dir = WM_MOVE_UP_LEFT;
-    wm_anim_code_run(&a, &env, "tbukl_flip", NULL);
+    wm_anim_code_run(&a, &env, "tbukl_flip", NULL, 0);
     CHECK(a.obj_control & WM_OBJ_FLIPH);
     a.new_facing_dir = WM_MOVE_UP_RIGHT;
-    wm_anim_code_run(&a, &env, "tbukl_flip", NULL);
+    wm_anim_code_run(&a, &env, "tbukl_flip", NULL, 0);
     CHECK(!(a.obj_control & WM_OBJ_FLIPH));
 
     /* "doink is the opposite... so is yoko" -- the source's own comment,
@@ -2269,13 +2269,13 @@ static void test_anim_code_state_routines(void) {
     opp.in_ring = 1;
     a.x_int = WM_RING_X_CENTER + 100;
     a.wrestler_num = WM_ROSTER_DOINK;
-    wm_anim_code_run(&a, &env, "tbukl_flip", NULL);
+    wm_anim_code_run(&a, &env, "tbukl_flip", NULL, 0);
     CHECK(!(a.obj_control & WM_OBJ_FLIPH));
     a.wrestler_num = WM_ROSTER_YOKO;
-    wm_anim_code_run(&a, &env, "tbukl_flip", NULL);
+    wm_anim_code_run(&a, &env, "tbukl_flip", NULL, 0);
     CHECK(!(a.obj_control & WM_OBJ_FLIPH));
     a.wrestler_num = WM_ROSTER_BRET;
-    wm_anim_code_run(&a, &env, "tbukl_flip", NULL);
+    wm_anim_code_run(&a, &env, "tbukl_flip", NULL, 0);
     CHECK(a.obj_control & WM_OBJ_FLIPH);
 
     /* face_inside ignores where the opponent is: it always answers as if
@@ -2283,7 +2283,7 @@ static void test_anim_code_state_routines(void) {
     opp.in_ring = 0;
     a.new_facing_dir = WM_MOVE_UP_LEFT;
     a.x_int = WM_RING_X_CENTER - 100;
-    wm_anim_code_run(&a, &env, "face_inside", NULL);
+    wm_anim_code_run(&a, &env, "face_inside", NULL, 0);
     CHECK(!(a.obj_control & WM_OBJ_FLIPH));
 }
 
@@ -4263,9 +4263,9 @@ static void test_spunch_delay_and_the_crowd(void) {
     env.pstatus = 3;
     env.num_opps = 1;
     env.pcnt = 1000u;
-    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL, 0));
     env.pcnt = 1001u;
-    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL, 0));
     CHECK((a.anim_mode & WM_MODE_STATUS) == 0);
     /* ...and the stamp is never written either: the jump is over all of it. */
     CHECK(a.last_spunch == 0u);
@@ -4279,11 +4279,11 @@ static void test_spunch_delay_and_the_crowd(void) {
     env.pstatus = 3;
     env.num_opps = 4;
     env.pcnt = 1000u;
-    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL, 0));
     CHECK((a.anim_mode & WM_MODE_STATUS) == 0);
     CHECK(a.last_spunch == 1000u);
     env.pcnt = 1000u + (2 * 60) - 1;
-    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL, 0));
     CHECK((a.anim_mode & WM_MODE_STATUS) != 0);
     /* Same as skick_delay: the stamp moves on a refused attempt too. */
     CHECK(a.last_spunch == env.pcnt);
@@ -4294,16 +4294,16 @@ static void test_spunch_delay_and_the_crowd(void) {
     env.pstatus = 1;
     env.num_opps = 1;
     env.pcnt = 500u;
-    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL, 0));
     env.pcnt = 500u + 30u;
-    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL, 0));
     CHECK((a.anim_mode & WM_MODE_STATUS) != 0);
 
     /* Exactly two seconds is allowed -- `jrge`. */
     memset(&a, 0, sizeof(a));
     a.last_spunch = 500u;
     env.pcnt = 500u + (2 * 60);
-    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL, 0));
     CHECK((a.anim_mode & WM_MODE_STATUS) == 0);
 
     /* Neither one human nor one opponent: the check is skipped. */
@@ -4311,9 +4311,9 @@ static void test_spunch_delay_and_the_crowd(void) {
     env.pstatus = 1;
     env.num_opps = 3;
     env.pcnt = 1000u;
-    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL, 0));
     env.pcnt = 1001u;
-    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "spunch_delay", NULL, 0));
     CHECK((a.anim_mode & WM_MODE_STATUS) == 0);
     CHECK(a.last_spunch == 0u);
 
@@ -4327,7 +4327,7 @@ static void test_spunch_delay_and_the_crowd(void) {
     memset(&env, 0, sizeof(env));
     env.crowd_user = &log;
     env.crowd_cheer = crowd_cheer_sink;
-    CHECK(wm_anim_code_run(&a, &env, "DO_CROWD_CHEER", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "DO_CROWD_CHEER", NULL, 0));
     CHECK(log.n_cheer == 1);
     CHECK(log.flags == (WM_CROWD_OVERRIDE | WM_CROWD_LONG));
     CHECK(log.percent == 0);
@@ -4335,7 +4335,7 @@ static void test_spunch_delay_and_the_crowd(void) {
 
     /* No crowd wired: the routine still resolves, and does nothing. */
     memset(&env, 0, sizeof(env));
-    CHECK(wm_anim_code_run(&a, &env, "DO_CROWD_CHEER", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "DO_CROWD_CHEER", NULL, 0));
 }
 
 /*
@@ -4577,7 +4577,7 @@ static void test_grnd_hit_and_setopp_deadanim(void) {
     victim.z_int = victim.z_fixed >> 16;
     pinner.z_fixed = 0x1230000;
     pinner.who_i_hit = &victim;
-    CHECK(wm_anim_code_run(&pinner, &env, "grnd_hit", NULL));
+    CHECK(wm_anim_code_run(&pinner, &env, "grnd_hit", NULL, 0));
     CHECK(log.n == 1);
     CHECK(log.who == &victim);
     CHECK(strcmp(log.label, "yok_hitonground_anim") == 0);
@@ -4596,7 +4596,7 @@ static void test_grnd_hit_and_setopp_deadanim(void) {
     victim.z_fixed = 0x4000000;
     pinner.z_fixed = 0x1230000;
     pinner.who_i_hit = &victim;
-    CHECK(wm_anim_code_run(&pinner, &env, "grnd_hit", NULL));
+    CHECK(wm_anim_code_run(&pinner, &env, "grnd_hit", NULL, 0));
     CHECK(log.n == 1);                       /* he still poses the victim */
     CHECK(strcmp(log.label, "hrt_hitonground_anim") == 0);
     CHECK(pinner.z_fixed == 0x1230000);      /* ...and stays put */
@@ -4607,7 +4607,7 @@ static void test_grnd_hit_and_setopp_deadanim(void) {
     memset(&pinner, 0, sizeof(pinner));
     pinner.wrestler_num = WM_ROSTER_BRET;
     pinner.z_fixed = 0x1230000;
-    CHECK(wm_anim_code_run(&pinner, &env, "grnd_hit", NULL));
+    CHECK(wm_anim_code_run(&pinner, &env, "grnd_hit", NULL, 0));
     CHECK(log.n == 0);
     CHECK(pinner.z_fixed == 0x1230000);
 
@@ -4615,10 +4615,10 @@ static void test_grnd_hit_and_setopp_deadanim(void) {
     memset(&pinner, 0, sizeof(pinner));
     memset(&victim, 0, sizeof(victim));
     pinner.who_i_hit = &victim;
-    CHECK(wm_anim_code_run(&pinner, &env, "#setopp_deadanim", NULL));
+    CHECK(wm_anim_code_run(&pinner, &env, "#setopp_deadanim", NULL, 0));
     CHECK((victim.status_flags & WM_STATUS_DEAD_ANIM) == 0);
     pinner.attach_proc = &victim;
-    CHECK(wm_anim_code_run(&pinner, &env, "#setopp_deadanim", NULL));
+    CHECK(wm_anim_code_run(&pinner, &env, "#setopp_deadanim", NULL, 0));
     CHECK((victim.status_flags & WM_STATUS_DEAD_ANIM) != 0);
     CHECK(pinner.status_flags == 0);         /* his own flags are untouched */
 }
@@ -4861,7 +4861,217 @@ static void test_win_announce_from_the_vm(void) {
 
     /* No match wired: the routine still resolves, and does nothing. */
     memset(&env, 0, sizeof(env));
-    CHECK(wm_anim_code_run(&a, &env, "win_announce", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "win_announce", NULL, 0));
+}
+
+struct shake_rope_log { int n; int bank[8]; int action[8]; int sel[8]; };
+
+static void shake_rope_sink(void *user, int bank, int action, int selector,
+                            int32_t z) {
+    struct shake_rope_log *l = (struct shake_rope_log *)user;
+    (void)z;
+    if (l->n < 8) {
+        l->bank[l->n] = bank;
+        l->action[l->n] = action;
+        l->sel[l->n] = selector;
+    }
+    ++l->n;
+}
+
+/*
+ * WRESTLE2.ASM:3748 hit_nearest and :3040 set_tbukl_confine -- the two
+ * routines that wanted the roster sweep and calc_line_x.
+ */
+static void test_hit_nearest_and_tbukl_confine(void) {
+    wm_arcade_actor_t a, o;
+    wm_anim_env env;
+
+    memset(&env, 0, sizeof(env));
+
+    /* hit_nearest: WHOIHIT one way, WHOPINNEDME the other, and the
+       victim's PINNED bit. */
+    memset(&a, 0, sizeof(a));
+    memset(&o, 0, sizeof(o));
+    a.smart_target = &o;
+    CHECK(wm_anim_code_run(&a, &env, "hit_nearest", NULL, 0));
+    CHECK(a.who_i_hit == &o);
+    CHECK(o.who_pinned_me == &a);
+    CHECK((o.status_flags & WM_STATUS_PINNED) != 0);
+    CHECK(a.who_pinned_me == NULL);       /* the pinner is not pinned */
+
+    /* With no CLOSEST at all it does nothing rather than pin thin air. */
+    memset(&a, 0, sizeof(a));
+    CHECK(wm_anim_code_run(&a, &env, "hit_nearest", NULL, 0));
+    CHECK(a.who_i_hit == NULL);
+
+    /*
+     * set_tbukl_confine. An opponent outside the ropes means the attack
+     * has to be able to follow him, so NOCONFINE goes on.
+     */
+    memset(&a, 0, sizeof(a));
+    memset(&o, 0, sizeof(o));
+    a.wrestler_num = WM_ROSTER_BRET;
+    a.player_side = 0;
+    a.in_ring = 1;
+    o.active = 1;
+    o.player_side = 1;
+    o.in_ring = 0;                        /* outside */
+    a.smart_target = &o;
+    CHECK(wm_anim_code_run(&a, &env, "set_tbukl_confine", NULL, 0));
+    CHECK((a.anim_mode & WM_MODE_NOCONFINE) != 0);
+
+    /* Opponent inside: NOCONFINE comes back off. */
+    o.in_ring = 1;
+    CHECK(wm_anim_code_run(&a, &env, "set_tbukl_confine", NULL, 0));
+    CHECK((a.anim_mode & WM_MODE_NOCONFINE) == 0);
+
+    /*
+     * A DEAD opponent outside is skipped -- unless he is the closest one,
+     * which in a 1-on-1 he always is, and then the source's own "entire
+     * other team is dead" flag makes the routine stop skipping the dead.
+     * So a dead man outside the ropes still grants NOCONFINE.
+     */
+    a.anim_mode = 0;
+    o.in_ring = 0;
+    o.player_mode = WM_PMODE_DEAD;
+    CHECK(wm_anim_code_run(&a, &env, "set_tbukl_confine", NULL, 0));
+    CHECK((a.anim_mode & WM_MODE_NOCONFINE) != 0);
+
+    /* Yokozuna never sweeps at all: `cmpi W_YOKO / jreq #clear_noconfine`. */
+    a.wrestler_num = WM_ROSTER_YOKO;
+    a.anim_mode = (uint16_t)WM_MODE_NOCONFINE;
+    CHECK(wm_anim_code_run(&a, &env, "set_tbukl_confine", NULL, 0));
+    CHECK((a.anim_mode & WM_MODE_NOCONFINE) == 0);
+
+    /*
+     * "he might have drifted out already, so we gotta yank 'em back in."
+     * Clearing NOCONFINE also puts him back in the ring: INRING, GROUND_Y,
+     * the Z clamp, and the X clamp against his side's rope line.
+     */
+    memset(&a, 0, sizeof(a));
+    memset(&o, 0, sizeof(o));
+    a.wrestler_num = WM_ROSTER_BRET;
+    a.player_side = 0;
+    a.in_ring = 0;                         /* he is out */
+    a.ground_y = 999;
+    a.z_int = WM_RING_TOP - 40;            /* ...and above the ring */
+    a.x_int = -5000;                       /* ...well left of the rope */
+    a.x_fixed = a.x_int << 16;
+    o.active = 1; o.player_side = 1; o.in_ring = 1;
+    a.smart_target = &o;
+    CHECK(wm_anim_code_run(&a, &env, "set_tbukl_confine", NULL, 0));
+    CHECK(a.in_ring == 1);
+    CHECK(a.ground_y == WM_MAT_Y);
+    CHECK(a.z_int == WM_RING_TOP);
+    CHECK(a.z_fixed == (int32_t)WM_RING_TOP << 16);
+    {
+        int32_t rope = wm_ring_calc_line_x(
+            wm_ring_boundary_seed(WM_RING_BOUNDARY_LEFT_ROPE), WM_RING_TOP);
+        CHECK(rope != 0);
+        CHECK(a.x_int == rope);
+        CHECK(a.x_fixed == rope << 16);
+    }
+
+    /* The right-hand side picks the other rope, and only pushes a man who
+       is actually past it. */
+    memset(&a, 0, sizeof(a));
+    a.wrestler_num = WM_ROSTER_BRET;
+    a.player_side = 0;
+    a.in_ring = 0;
+    a.z_int = WM_RING_TOP + 20;
+    a.x_int = WM_RING_X_CENTER + 5000;
+    a.x_fixed = a.x_int << 16;
+    a.smart_target = &o;
+    CHECK(wm_anim_code_run(&a, &env, "set_tbukl_confine", NULL, 0));
+    {
+        int32_t rope = wm_ring_calc_line_x(
+            wm_ring_boundary_seed(WM_RING_BOUNDARY_RIGHT_ROPE),
+            WM_RING_TOP + 20);
+        CHECK(rope != 0);
+        CHECK(a.x_int == rope);
+    }
+    /* ...and a man already inside is left where he is. */
+    a.in_ring = 0;
+    a.x_int = WM_RING_X_CENTER + 1;
+    a.x_fixed = a.x_int << 16;
+    CHECK(wm_anim_code_run(&a, &env, "set_tbukl_confine", NULL, 0));
+    CHECK(a.x_int == WM_RING_X_CENTER + 1);
+
+    /*
+     * WRESTLE.ASM:6069 shake_all_ropes -- all four banks, ROPE_BOUNCEUD,
+     * selector 2. (The rope seam itself is checked where the rope tests
+     * are; this checks that all four are asked, and asked the same way.)
+     */
+    {
+        static struct shake_rope_log rl;
+        wm_anim_env renv;
+        memset(&rl, 0, sizeof(rl));
+        memset(&renv, 0, sizeof(renv));
+        renv.rope_user = &rl;
+        renv.rope_command = shake_rope_sink;
+        memset(&a, 0, sizeof(a));
+        a.z_fixed = 0x1230000;
+        CHECK(wm_anim_code_run(&a, &renv, "shake_all_ropes", NULL, 0));
+        CHECK(rl.n == 4);
+        CHECK(rl.bank[0] == WM_ROPE_FRONT && rl.bank[1] == WM_ROPE_BACK);
+        CHECK(rl.bank[2] == WM_ROPE_LEFT && rl.bank[3] == WM_ROPE_RIGHT);
+        for (rl.n = 0; rl.n < 4; ++rl.n) {
+            CHECK(rl.action[rl.n] == WM_ROPE_BOUNCE_UD);
+            CHECK(rl.sel[rl.n] == 2);
+        }
+    }
+
+    /*
+     * WRESTLE.ASM:5978 get_leap: MODE_STATUS means "do not lunge", and it
+     * goes on for a wrestler standing still or holding the stick away.
+     */
+    memset(&a, 0, sizeof(a));
+    a.anim_mode = (uint16_t)WM_MODE_STATUS;
+    a.new_facing_dir = WM_MOVE_UP_LEFT;
+    a.x_vel = 0x20000;
+    a.move_dir = WM_MOVE_LEFT;                 /* toward, facing left */
+    CHECK(wm_anim_code_run(&a, &env, "get_leap", NULL, 0));
+    CHECK((a.anim_mode & WM_MODE_STATUS) == 0);
+
+    /* Standing still: both velocities zero, whatever the stick says. */
+    a.x_vel = 0;
+    a.z_vel = 0;
+    CHECK(wm_anim_code_run(&a, &env, "get_leap", NULL, 0));
+    CHECK((a.anim_mode & WM_MODE_STATUS) != 0);
+
+    /* Facing left, holding right: away. Z velocity alone still counts as
+       moving, so it is the stick that refuses this one. */
+    memset(&a, 0, sizeof(a));
+    a.new_facing_dir = WM_MOVE_DOWN_LEFT;
+    a.z_vel = -0x10000;
+    a.move_dir = WM_MOVE_RIGHT;
+    CHECK(wm_anim_code_run(&a, &env, "get_leap", NULL, 0));
+    CHECK((a.anim_mode & WM_MODE_STATUS) != 0);
+
+    /* ...and facing RIGHT reverses which way is away. */
+    memset(&a, 0, sizeof(a));
+    a.new_facing_dir = WM_MOVE_UP_RIGHT;
+    a.z_vel = -0x10000;
+    a.move_dir = WM_MOVE_RIGHT;
+    CHECK(wm_anim_code_run(&a, &env, "get_leap", NULL, 0));
+    CHECK((a.anim_mode & WM_MODE_STATUS) == 0);
+    a.move_dir = WM_MOVE_LEFT;
+    CHECK(wm_anim_code_run(&a, &env, "get_leap", NULL, 0));
+    CHECK((a.anim_mode & WM_MODE_STATUS) != 0);
+
+    /* A man already in the ring is not touched at all -- only the flag. */
+    memset(&a, 0, sizeof(a));
+    a.wrestler_num = WM_ROSTER_BRET;
+    a.in_ring = 1;
+    a.ground_y = 7;
+    a.z_int = 12;
+    a.x_int = 34;
+    a.anim_mode = (uint16_t)(WM_MODE_NOCONFINE | WM_MODE_UNINT);
+    a.smart_target = &o;
+    CHECK(wm_anim_code_run(&a, &env, "set_tbukl_confine", NULL, 0));
+    CHECK(a.ground_y == 7 && a.z_int == 12 && a.x_int == 34);
+    CHECK((a.anim_mode & WM_MODE_NOCONFINE) == 0);
+    CHECK((a.anim_mode & WM_MODE_UNINT) != 0);   /* only that one bit */
 }
 
 /*
@@ -5040,7 +5250,7 @@ static void test_do_combo_mess_from_the_vm(void) {
     CHECK(ann.slot[0] == (uint16_t)WM_VOICE_INCREDIBLE_COMBINATION);
     CHECK(awards.n == 1 && awards.index[0] == (unsigned)WM_AWARD_COMBOS);
     /* The registry answers by the source's own name. */
-    CHECK(wm_anim_code_run(&a, &env, "DO_COMBO_MESS", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "DO_COMBO_MESS", NULL, 0));
 }
 
 /*
@@ -5174,7 +5384,7 @@ static void test_wrsnd_anim_code_routines(void) {
     memset(&a, 0, sizeof(a));
     memset(&log, 0, sizeof(log));
     a.wrestler_num = 0;
-    CHECK(wm_anim_code_run(&a, &env, "DO_GRUNT", "HRTSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "DO_GRUNT", "HRTSEQ2.ASM", 0));
     CHECK(log.n >= 1);
 
     /*
@@ -5185,7 +5395,7 @@ static void test_wrsnd_anim_code_routines(void) {
     memset(&a, 0, sizeof(a));
     memset(&log, 0, sizeof(log));
     a.wrestler_num = 0;
-    CHECK(wm_anim_code_run(&a, &env, "impact_sound", "HRTSEQ4.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "impact_sound", "HRTSEQ4.ASM", 0));
     CHECK(log.n == 0);
 
     /*
@@ -5195,12 +5405,12 @@ static void test_wrsnd_anim_code_routines(void) {
      * that the file scoping picked different bodies.
      */
     memset(&log, 0, sizeof(log));
-    CHECK(wm_anim_code_run(&a, &env, "impact_sound", "HRTSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "impact_sound", "HRTSEQ2.ASM", 0));
     CHECK(log.n >= 1);
     {
         int with_global = log.n;
         memset(&log, 0, sizeof(log));
-        CHECK(wm_anim_code_run(&a, &env, "impact_sound", "RZRSEQ3.ASM"));
+        CHECK(wm_anim_code_run(&a, &env, "impact_sound", "RZRSEQ3.ASM", 0));
         CHECK(log.n == 0);
         CHECK(with_global > 0);
     }
@@ -5211,12 +5421,12 @@ static void test_wrsnd_anim_code_routines(void) {
     v.wrestler_num = 1;
     a.attach_proc = &v;
     memset(&log, 0, sizeof(log));
-    CHECK(wm_anim_code_run(&a, &env, "impact_sound", "HRTSEQ4.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "impact_sound", "HRTSEQ4.ASM", 0));
     CHECK(log.n >= 1);
 
     /* Nothing crashes with no env at all. */
-    CHECK(wm_anim_code_run(&a, NULL, "impact_sound", "HRTSEQ4.ASM"));
-    CHECK(wm_anim_code_run(&a, NULL, "DO_GRUNT", "LEXSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, NULL, "impact_sound", "HRTSEQ4.ASM", 0));
+    CHECK(wm_anim_code_run(&a, NULL, "DO_GRUNT", "LEXSEQ3.ASM", 0));
 }
 
 /*
@@ -5552,28 +5762,28 @@ static void test_targeting_and_drift(void) {
     memset(&a, 0, sizeof(a));
     a.in_ring = false;
     a.x_int = WM_RING_X_MID - 0x200;
-    CHECK(wm_anim_code_run(&a, &env, "set_xdrift", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "set_xdrift", NULL, 0));
     CHECK(a.x_vel == 0);
 
     /* Inside the deadband: nothing. */
     memset(&a, 0, sizeof(a));
     a.in_ring = true;
     a.x_int = WM_RING_X_MID + 0x5F;
-    CHECK(wm_anim_code_run(&a, &env, "set_xdrift", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "set_xdrift", NULL, 0));
     CHECK(a.x_vel == 0);
 
     /* Left of the midline by more than the deadband: drift right. */
     memset(&a, 0, sizeof(a));
     a.in_ring = true;
     a.x_int = WM_RING_X_MID - 0x60;
-    CHECK(wm_anim_code_run(&a, &env, "set_xdrift", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "set_xdrift", NULL, 0));
     CHECK(a.x_vel == 0x30000);
 
     /* Right of it: drift left. */
     memset(&a, 0, sizeof(a));
     a.in_ring = true;
     a.x_int = WM_RING_X_MID + 0x60;
-    CHECK(wm_anim_code_run(&a, &env, "set_xdrift", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "set_xdrift", NULL, 0));
     CHECK(a.x_vel == -0x30000);
 
     /* Exactly on the midline is inside the deadband, so nothing at all --
@@ -5581,7 +5791,7 @@ static void test_targeting_and_drift(void) {
     memset(&a, 0, sizeof(a));
     a.in_ring = true;
     a.x_int = WM_RING_X_MID;
-    CHECK(wm_anim_code_run(&a, &env, "set_xdrift", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "set_xdrift", NULL, 0));
     CHECK(a.x_vel == 0);
 
     /*
@@ -5591,7 +5801,7 @@ static void test_targeting_and_drift(void) {
     memset(&a, 0, sizeof(a));
     a.x_int = WM_RING_X_CENTER - 100;
     a.z_int = WM_RING_Z_CENTER - 100;
-    CHECK(wm_anim_code_run(&a, &env, "set_buckoff_vels", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "set_buckoff_vels", NULL, 0));
     CHECK(a.x_vel == 0x20000);
     CHECK(a.z_vel == 0x40000);
     CHECK(a.y_vel == 0x50000);
@@ -5599,7 +5809,7 @@ static void test_targeting_and_drift(void) {
     memset(&a, 0, sizeof(a));
     a.x_int = WM_RING_X_CENTER + 100;
     a.z_int = WM_RING_Z_CENTER + 100;
-    CHECK(wm_anim_code_run(&a, &env, "set_buckoff_vels", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "set_buckoff_vels", NULL, 0));
     CHECK(a.x_vel == -0x20000);
     CHECK(a.z_vel == -0x40000);
     CHECK(a.y_vel == 0x50000);
@@ -5609,7 +5819,7 @@ static void test_targeting_and_drift(void) {
     memset(&a, 0, sizeof(a));
     a.x_int = WM_RING_X_CENTER;
     a.z_int = WM_RING_Z_CENTER;
-    CHECK(wm_anim_code_run(&a, &env, "set_buckoff_vels", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "set_buckoff_vels", NULL, 0));
     CHECK(a.x_vel == 0x20000);
     CHECK(a.z_vel == 0x40000);
 
@@ -5619,14 +5829,14 @@ static void test_targeting_and_drift(void) {
      */
     memset(&a, 0, sizeof(a));
     env.pcnt = 1000u;
-    CHECK(wm_anim_code_run(&a, &env, "skick_delay", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "skick_delay", NULL, 0));
     /* First one: LAST_SKICK was 0, so the gap is huge and it passes. */
     CHECK((a.anim_mode & WM_MODE_STATUS) == 0);
     CHECK(a.last_skick == 1000u);
 
     /* Another within two seconds: refused. */
     env.pcnt = 1000u + (2 * 60) - 1;
-    CHECK(wm_anim_code_run(&a, &env, "skick_delay", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "skick_delay", NULL, 0));
     CHECK((a.anim_mode & WM_MODE_STATUS) != 0);
     /* ...and the stamp moved anyway: the source writes it BEFORE the
        comparison, so a refused attempt still restarts the window. */
@@ -5636,7 +5846,7 @@ static void test_targeting_and_drift(void) {
     memset(&a, 0, sizeof(a));
     a.last_skick = 500u;
     env.pcnt = 500u + (2 * 60);
-    CHECK(wm_anim_code_run(&a, &env, "skick_delay", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "skick_delay", NULL, 0));
     CHECK((a.anim_mode & WM_MODE_STATUS) == 0);
 
     /*
@@ -5647,7 +5857,7 @@ static void test_targeting_and_drift(void) {
     a.tgt_yoff = 999;
     a.tgt_xoff = 111;
     a.tgt_zoff = 222;
-    CHECK(wm_anim_code_run(&a, &env, "tgt_ground", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "tgt_ground", NULL, 0));
     CHECK(a.tgt_yoff == 0);
     CHECK(a.tgt_xoff == 111 && a.tgt_zoff == 222);   /* only Y */
 
@@ -5657,20 +5867,20 @@ static void test_targeting_and_drift(void) {
      */
     memset(&a, 0, sizeof(a));
     a.x_int = WM_RING_X_CENTER - 200;
-    CHECK(wm_anim_code_run(&a, &env, "tgt_tbukl", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "tgt_tbukl", NULL, 0));
     CHECK(a.tgt_xoff == WM_ROPE_LINE_LEFT_X);
     CHECK(a.tgt_zoff == WM_ROPE_LINE_TOP_Z - 16);
     CHECK(a.tgt_yoff == WM_MAT_Y + 80);
 
     memset(&a, 0, sizeof(a));
     a.x_int = WM_RING_X_CENTER + 200;
-    CHECK(wm_anim_code_run(&a, &env, "tgt_tbukl", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "tgt_tbukl", NULL, 0));
     CHECK(a.tgt_xoff == WM_ROPE_LINE_RIGHT_X);
 
     /* `jrgt` again: exactly on centre climbs the LEFT one. */
     memset(&a, 0, sizeof(a));
     a.x_int = WM_RING_X_CENTER;
-    CHECK(wm_anim_code_run(&a, &env, "tgt_tbukl", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "tgt_tbukl", NULL, 0));
     CHECK(a.tgt_xoff == WM_ROPE_LINE_LEFT_X);
 
     /* RING.ASM's right rope line is not WRESTLE.ASM's -- five units
@@ -5678,12 +5888,12 @@ static void test_targeting_and_drift(void) {
     CHECK(WM_ROPE_LINE_RIGHT_X != WM_RING_TOP_RIGHT);
 
     /* All five are answered by name, and none of them crashes on NULL. */
-    CHECK(wm_anim_code_run(NULL, &env, "set_xdrift", NULL));
-    CHECK(wm_anim_code_run(NULL, &env, "set_buckoff_vels", NULL));
-    CHECK(wm_anim_code_run(NULL, &env, "skick_delay", NULL));
-    CHECK(wm_anim_code_run(NULL, &env, "tgt_ground", NULL));
-    CHECK(wm_anim_code_run(NULL, &env, "tgt_tbukl", NULL));
-    CHECK(wm_anim_code_run(&a, NULL, "skick_delay", NULL));
+    CHECK(wm_anim_code_run(NULL, &env, "set_xdrift", NULL, 0));
+    CHECK(wm_anim_code_run(NULL, &env, "set_buckoff_vels", NULL, 0));
+    CHECK(wm_anim_code_run(NULL, &env, "skick_delay", NULL, 0));
+    CHECK(wm_anim_code_run(NULL, &env, "tgt_ground", NULL, 0));
+    CHECK(wm_anim_code_run(NULL, &env, "tgt_tbukl", NULL, 0));
+    CHECK(wm_anim_code_run(&a, NULL, "skick_delay", NULL, 0));
 }
 
 /*
@@ -5747,7 +5957,7 @@ static void test_rope_check_writes_the_program_counter(void) {
     /* Not against a rope: nothing at all. */
     memset(&a, 0, sizeof(a));
     a.can_move_dir = WM_MOVE_UP | WM_MOVE_DOWN;
-    CHECK(wm_anim_code_run(&a, &env, "#rope_check", "HRTSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#rope_check", "HRTSEQ3.ASM", 0));
     CHECK(a.anipc_label == NULL);
     CHECK(log.n == 0 && sounds.n == 0);
 
@@ -5755,7 +5965,7 @@ static void test_rope_check_writes_the_program_counter(void) {
        03Ch thump plays. */
     memset(&a, 0, sizeof(a));
     a.can_move_dir = WM_MOVE_RIGHT;
-    CHECK(wm_anim_code_run(&a, &env, "#rope_check", "HRTSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#rope_check", "HRTSEQ3.ASM", 0));
     CHECK(a.anipc_label != NULL);
     CHECK(strcmp(a.anipc_label, "#stand") == 0);
     CHECK(a.anipc_program != NULL);
@@ -5768,7 +5978,7 @@ static void test_rope_check_writes_the_program_counter(void) {
     memset(&a, 0, sizeof(a));
     memset(&log, 0, sizeof(log));
     a.can_move_dir = WM_MOVE_LEFT;
-    CHECK(wm_anim_code_run(&a, &env, "#rope_check", "HRTSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#rope_check", "HRTSEQ3.ASM", 0));
     CHECK(log.n == 1 && log.banks[0] == WM_ROPE_LEFT);
 
     /*
@@ -5857,7 +6067,7 @@ static void test_bounce_rope_trgt_and_clrcnt(void) {
         wm_rng_set_latched_inputs(&rng, (uint32_t)(i * 8) & 0x1FFu,
                                   0x10000u - (uint32_t)(i * 64));
         wm_announcer_init(&ann);
-        CHECK(wm_anim_code_run(&a, &env, "MAYBE_BOUNCE_ROPE", NULL));
+        CHECK(wm_anim_code_run(&a, &env, "MAYBE_BOUNCE_ROPE", NULL, 0));
         if (!wm_announcer_is_silent(&ann)) {
             CHECK(ann.slot[0] == 0x15Bu);      /* INTO_THE_ROPES */
             ++spoke;
@@ -5871,7 +6081,7 @@ static void test_bounce_rope_trgt_and_clrcnt(void) {
     memset(&env, 0, sizeof(env));
     wm_announcer_init(&ann);
     env.announcer = &ann;
-    CHECK(wm_anim_code_run(&a, &env, "MAYBE_BOUNCE_ROPE", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "MAYBE_BOUNCE_ROPE", NULL, 0));
     CHECK(wm_announcer_is_silent(&ann));
 
     /*
@@ -5890,25 +6100,25 @@ static void test_bounce_rope_trgt_and_clrcnt(void) {
         for (k = 0; k < sizeof(sixty) / sizeof(sixty[0]); ++k) {
             memset(&a, 0, sizeof(a));
             a.x_int = WM_RING_X_CENTER - 200;
-            CHECK(wm_anim_code_run(&a, &env, "#set_trgt", sixty[k]));
+            CHECK(wm_anim_code_run(&a, &env, "#set_trgt", sixty[k], 0));
             CHECK(a.tgt_xoff == WM_RING_X_CENTER - (0xF8 + 60));
             CHECK(a.tgt_zoff == WM_RING_Z_CENTER);
             CHECK(a.tgt_yoff == WM_MAT_Y);
 
             memset(&a, 0, sizeof(a));
             a.x_int = WM_RING_X_CENTER + 200;
-            CHECK(wm_anim_code_run(&a, &env, "#set_trgt", sixty[k]));
+            CHECK(wm_anim_code_run(&a, &env, "#set_trgt", sixty[k], 0));
             CHECK(a.tgt_xoff == WM_RING_X_CENTER + (0xF8 + 60));
         }
     }
     /* Doink lands ten units closer in, on both sides. */
     memset(&a, 0, sizeof(a));
     a.x_int = WM_RING_X_CENTER - 200;
-    CHECK(wm_anim_code_run(&a, &env, "#set_trgt", "DNKSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#set_trgt", "DNKSEQ2.ASM", 0));
     CHECK(a.tgt_xoff == WM_RING_X_CENTER - (0xF8 + 50));
     memset(&a, 0, sizeof(a));
     a.x_int = WM_RING_X_CENTER + 200;
-    CHECK(wm_anim_code_run(&a, &env, "#set_trgt", "DNKSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#set_trgt", "DNKSEQ2.ASM", 0));
     CHECK(a.tgt_xoff == WM_RING_X_CENTER + (0xF8 + 50));
     /* ...and the two really are different, which is the point. */
     CHECK((0xF8 + 50) != (0xF8 + 60));
@@ -5916,14 +6126,14 @@ static void test_bounce_rope_trgt_and_clrcnt(void) {
     /* `jrlt` -- exactly on centre takes the RIGHT apron. */
     memset(&a, 0, sizeof(a));
     a.x_int = WM_RING_X_CENTER;
-    CHECK(wm_anim_code_run(&a, &env, "#set_trgt", "HRTSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#set_trgt", "HRTSEQ2.ASM", 0));
     CHECK(a.tgt_xoff == WM_RING_X_CENTER + (0xF8 + 60));
 
     /* A file with no row of its own gets nothing: there is no global
        #set_trgt to fall back on, and inventing one would hand a wrestler
        another's geometry. */
     memset(&a, 0, sizeof(a));
-    CHECK(!wm_anim_code_run(&a, &env, "#set_trgt", "HRTSEQ4.ASM"));
+    CHECK(!wm_anim_code_run(&a, &env, "#set_trgt", "HRTSEQ4.ASM", 0));
 
     /*
      * `#clrcnt` -- one clear, and the source says why the field is a
@@ -5937,14 +6147,14 @@ static void test_bounce_rope_trgt_and_clrcnt(void) {
         for (k = 0; k < sizeof(files) / sizeof(files[0]); ++k) {
             memset(&a, 0, sizeof(a));
             a.but_count = 7;
-            CHECK(wm_anim_code_run(&a, &env, "#clrcnt", files[k]));
+            CHECK(wm_anim_code_run(&a, &env, "#clrcnt", files[k], 0));
             CHECK(a.but_count == 0);
         }
-        CHECK(!wm_anim_code_run(&a, &env, "#clrcnt", "HRTSEQ2.ASM"));
+        CHECK(!wm_anim_code_run(&a, &env, "#clrcnt", "HRTSEQ2.ASM", 0));
     }
 
-    CHECK(wm_anim_code_run(NULL, &env, "#clrcnt", "DNKSEQ2.ASM"));
-    CHECK(wm_anim_code_run(NULL, &env, "#set_trgt", "HRTSEQ2.ASM"));
+    CHECK(wm_anim_code_run(NULL, &env, "#clrcnt", "DNKSEQ2.ASM", 0));
+    CHECK(wm_anim_code_run(NULL, &env, "#set_trgt", "HRTSEQ2.ASM", 0));
 }
 
 /* The last of the self-contained ANI_CODE tail. */
@@ -5960,11 +6170,11 @@ static void test_selfcontained_tail(void) {
      * `#inc_loop`, which is a different routine.
      */
     memset(&a, 0, sizeof(a));
-    CHECK(wm_anim_code_run(&a, &env, "inc_loop", "UNDSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "inc_loop", "UNDSEQ3.ASM", 0));
     CHECK(a.usr_var1 == 1 && (a.anim_mode & WM_MODE_STATUS) == 0);
-    CHECK(wm_anim_code_run(&a, &env, "inc_loop", "UNDSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "inc_loop", "UNDSEQ3.ASM", 0));
     CHECK(a.usr_var1 == 2 && (a.anim_mode & WM_MODE_STATUS) == 0);
-    CHECK(wm_anim_code_run(&a, &env, "inc_loop", "UNDSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "inc_loop", "UNDSEQ3.ASM", 0));
     CHECK(a.usr_var1 == 3 && (a.anim_mode & WM_MODE_STATUS) != 0);
 
     /*
@@ -5982,7 +6192,7 @@ static void test_selfcontained_tail(void) {
     a.x_int = WM_RING_X_MID - 100;
     a.x_vel = -0x40000;
     a.anim_mode = (uint16_t)WM_MODE_STATUS;
-    CHECK(wm_anim_code_run(&a, &env, "check_xvel", "HRTSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "check_xvel", "HRTSEQ2.ASM", 0));
     CHECK(a.x_vel == -0x40000);
     CHECK((a.anim_mode & WM_MODE_STATUS) == 0);
 
@@ -5990,20 +6200,20 @@ static void test_selfcontained_tail(void) {
     v.in_ring = true;
     a.x_int = WM_RING_X_MID - 100;
     a.x_vel = -0x40000;
-    CHECK(wm_anim_code_run(&a, &env, "check_xvel", "HRTSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "check_xvel", "HRTSEQ2.ASM", 0));
     CHECK(a.x_vel == 0x18000);
     CHECK((a.anim_mode & WM_MODE_STATUS) != 0);
 
     /* Already heading back in: left alone, and NOT reported. */
     a.x_vel = 0x40000;
-    CHECK(wm_anim_code_run(&a, &env, "check_xvel", "HRTSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "check_xvel", "HRTSEQ2.ASM", 0));
     CHECK(a.x_vel == 0x40000);
     CHECK((a.anim_mode & WM_MODE_STATUS) == 0);
 
     /* ...and the right half mirrors it. */
     a.x_int = WM_RING_X_MID + 100;
     a.x_vel = 0x40000;
-    CHECK(wm_anim_code_run(&a, &env, "check_xvel", "HRTSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "check_xvel", "HRTSEQ2.ASM", 0));
     CHECK(a.x_vel == -0x18000);
     CHECK((a.anim_mode & WM_MODE_STATUS) != 0);
 
@@ -6014,15 +6224,15 @@ static void test_selfcontained_tail(void) {
     memset(&env, 0, sizeof(env));
     env.pcnt = 5000u;
     memset(&a, 0, sizeof(a));
-    CHECK(wm_anim_code_run(&a, &env, "#reduce_dmg", "RZRSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#reduce_dmg", "RZRSEQ3.ASM", 0));
     CHECK(a.next_damage == 22);            /* RD_PILEDRIVER */
     CHECK(a.special_damage_time == 5000u + 80u);
     memset(&a, 0, sizeof(a));
-    CHECK(wm_anim_code_run(&a, &env, "#reduce_dmg", "SHNSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#reduce_dmg", "SHNSEQ3.ASM", 0));
     CHECK(a.next_damage == 6);             /* D_STOMP2 */
     CHECK(a.special_damage_time == 5000u + 40u);
     memset(&a, 0, sizeof(a));
-    CHECK(wm_anim_code_run(&a, &env, "#reduce_dmg", "UNDSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#reduce_dmg", "UNDSEQ2.ASM", 0));
     CHECK(a.next_damage == 8);             /* D_PUNCH */
     CHECK(a.special_damage_time == 5000u + 40u);
 
@@ -6030,23 +6240,23 @@ static void test_selfcontained_tail(void) {
     memset(&a, 0, sizeof(a));
     memset(&v, 0, sizeof(v));
     a.who_i_hit = &v;
-    CHECK(wm_anim_code_run(&a, &env, "#reattach", "HRTSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#reattach", "HRTSEQ3.ASM", 0));
     CHECK(a.attach_proc == &v);
     CHECK(v.attach_proc == &a);
     /* With nobody hit it does nothing rather than attaching to NULL. */
     memset(&a, 0, sizeof(a));
-    CHECK(wm_anim_code_run(&a, &env, "#reattach", "DNKSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#reattach", "DNKSEQ3.ASM", 0));
     CHECK(a.attach_proc == NULL);
 
     /* SET_OPP_GRAV_NORM / _LOW -- the held man's fall rate. */
     memset(&a, 0, sizeof(a));
     memset(&v, 0, sizeof(v));
     a.who_i_hit = &v;
-    CHECK(wm_anim_code_run(&a, &env, "SET_OPP_GRAV_LOW", "RZRSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "SET_OPP_GRAV_LOW", "RZRSEQ2.ASM", 0));
     CHECK(v.gravity == WM_GRAVITY - 0x1000);
-    CHECK(wm_anim_code_run(&a, &env, "SET_OPP_GRAV_NORM", "RZRSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "SET_OPP_GRAV_NORM", "RZRSEQ2.ASM", 0));
     CHECK(v.gravity == WM_GRAVITY);
-    CHECK(wm_anim_code_run(&a, &env, "SET_OPP_GRAV_LOW", "UNDSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "SET_OPP_GRAV_LOW", "UNDSEQ2.ASM", 0));
     CHECK(v.gravity == WM_GRAVITY - 0x1000);
 
     /*
@@ -6059,26 +6269,26 @@ static void test_selfcontained_tail(void) {
     memset(&v, 0, sizeof(v));
     env.opponent = &v;
     v.wrestler_num = WM_ROSTER_BRET;
-    CHECK(wm_anim_code_run(&a, &env, "#go_high", "HRTSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#go_high", "HRTSEQ2.ASM", 0));
     CHECK(v.y_vel == 0x50000);
     v.y_vel = 0;
-    CHECK(wm_anim_code_run(&a, &env, "#go_high", "DNKSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#go_high", "DNKSEQ3.ASM", 0));
     CHECK(v.y_vel == 0x50000);
     v.y_vel = 0;
-    CHECK(wm_anim_code_run(&a, &env, "#go_high", "RZRSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#go_high", "RZRSEQ3.ASM", 0));
     CHECK(v.y_vel == 0x40000);
     /* Yoko is not lifted at all, by any of the three. */
     v.wrestler_num = WM_ROSTER_YOKO;
     v.y_vel = 0;
-    CHECK(wm_anim_code_run(&a, &env, "#go_high", "HRTSEQ2.ASM"));
-    CHECK(wm_anim_code_run(&a, &env, "#go_high", "RZRSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#go_high", "HRTSEQ2.ASM", 0));
+    CHECK(wm_anim_code_run(&a, &env, "#go_high", "RZRSEQ3.ASM", 0));
     CHECK(v.y_vel == 0);
 
     /* WRESTLE2.ASM:3669 target_whoihit. */
     memset(&a, 0, sizeof(a));
     memset(&v, 0, sizeof(v));
     a.who_i_hit = &v;
-    CHECK(wm_anim_code_run(&a, &env, "target_whoihit", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "target_whoihit", NULL, 0));
     CHECK((a.status_flags & WM_STATUS_SMART_ATTACK) != 0);
     CHECK(a.smart_target == &v);
 
@@ -6087,16 +6297,16 @@ static void test_selfcontained_tail(void) {
     memset(&v, 0, sizeof(v));
     a.attach_proc = &v;
     v.facing_dir = WM_MOVE_RIGHT | WM_MOVE_UP;
-    CHECK(wm_anim_code_run(&a, &env, "#set_opp_facing", "SHNSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#set_opp_facing", "SHNSEQ3.ASM", 0));
     CHECK(v.facing_dir == (WM_MOVE_LEFT | WM_MOVE_UP));
     /* ...and back again: it is an XOR, so it is its own inverse. */
-    CHECK(wm_anim_code_run(&a, &env, "#set_opp_facing", "SHNSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#set_opp_facing", "SHNSEQ3.ASM", 0));
     CHECK(v.facing_dir == (WM_MOVE_RIGHT | WM_MOVE_UP));
 
     /* RZRSEQ2.ASM:1528 #blocked_vels -- 3.0 up, half the X back. */
     memset(&a, 0, sizeof(a));
     a.x_vel = 0x40000;
-    CHECK(wm_anim_code_run(&a, &env, "#blocked_vels", "RZRSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#blocked_vels", "RZRSEQ2.ASM", 0));
     CHECK(a.y_vel == 0x30000);
     CHECK(a.x_vel == -0x20000);
 
@@ -6107,10 +6317,10 @@ static void test_selfcontained_tail(void) {
     memset(&a, 0, sizeof(a));
     a.closest_xdist = 65;
     a.x_vel = 0x40000;
-    CHECK(wm_anim_code_run(&a, &env, "#zero_x_4", "SHNSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#zero_x_4", "SHNSEQ2.ASM", 0));
     CHECK(a.x_vel == 0x40000);              /* `jrgt #ok4` */
     a.closest_xdist = 64;                   /* the boundary is inclusive */
-    CHECK(wm_anim_code_run(&a, &env, "#zero_x_4", "SHNSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#zero_x_4", "SHNSEQ2.ASM", 0));
     CHECK(a.x_vel == 0);
 
     /*
@@ -6121,27 +6331,27 @@ static void test_selfcontained_tail(void) {
     a.facing_dir = WM_MOVE_RIGHT;
     a.x_vel = -0x40000;                     /* flying backwards */
     a.z_vel = 0x20000;
-    CHECK(wm_anim_code_run(&a, &env, "#no_bk_xvel", "SHNSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#no_bk_xvel", "SHNSEQ3.ASM", 0));
     CHECK(a.x_vel == 0 && a.z_vel == 0);
     /* The global one leaves Z alone -- which is the difference. */
     memset(&a, 0, sizeof(a));
     a.facing_dir = WM_MOVE_RIGHT;
     a.x_vel = -0x40000;
     a.z_vel = 0x20000;
-    CHECK(wm_anim_code_run(&a, &env, "no_bk_xvel", "HRTSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "no_bk_xvel", "HRTSEQ2.ASM", 0));
     CHECK(a.x_vel == 0 && a.z_vel == 0x20000);
     /* Moving forwards, neither touches anything. */
     memset(&a, 0, sizeof(a));
     a.facing_dir = WM_MOVE_RIGHT;
     a.x_vel = 0x40000;
-    CHECK(wm_anim_code_run(&a, &env, "#no_bk_xvel", "SHNSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#no_bk_xvel", "SHNSEQ3.ASM", 0));
     CHECK(a.x_vel == 0x40000);
 
     /* YOKSEQ2.ASM:3073 #delay_whoihit. */
     memset(&a, 0, sizeof(a));
     memset(&v, 0, sizeof(v));
     a.who_i_hit = &v;
-    CHECK(wm_anim_code_run(&a, &env, "#delay_whoihit", "YOKSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#delay_whoihit", "YOKSEQ2.ASM", 0));
     CHECK(v.delay_meter == 55);
 
     /*
@@ -6152,7 +6362,7 @@ static void test_selfcontained_tail(void) {
     memset(&a, 0, sizeof(a));
     a.x_int = WM_RING_X_CENTER - 200;       /* left half: face right */
     a.obj_control = 0;
-    CHECK(wm_anim_code_run(&a, &env, "#ck_flip", "LEXSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#ck_flip", "LEXSEQ3.ASM", 0));
     CHECK(a.facing_dir == (WM_MOVE_RIGHT | WM_MOVE_DOWN));
     CHECK((a.obj_control & WM_OBJ_FLIPH) == 0);
     /* Already flipped on the left: the sprite is corrected and the
@@ -6160,14 +6370,14 @@ static void test_selfcontained_tail(void) {
     memset(&a, 0, sizeof(a));
     a.x_int = WM_RING_X_CENTER - 200;
     a.obj_control = (uint16_t)WM_OBJ_FLIPH;
-    CHECK(wm_anim_code_run(&a, &env, "#ck_flip", "LEXSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#ck_flip", "LEXSEQ3.ASM", 0));
     CHECK((a.obj_control & WM_OBJ_FLIPH) == 0);
     CHECK(a.facing_dir == (WM_MOVE_LEFT | WM_MOVE_DOWN));
     /* Right half. */
     memset(&a, 0, sizeof(a));
     a.x_int = WM_RING_X_CENTER + 200;
     a.obj_control = (uint16_t)WM_OBJ_FLIPH;
-    CHECK(wm_anim_code_run(&a, &env, "#ck_flip", "LEXSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#ck_flip", "LEXSEQ3.ASM", 0));
     CHECK(a.facing_dir == (WM_MOVE_LEFT | WM_MOVE_DOWN));
 
     /*
@@ -6178,15 +6388,15 @@ static void test_selfcontained_tail(void) {
     memset(&v, 0, sizeof(v));
     a.attach_proc = &v;
     v.life = 10;
-    CHECK(wm_anim_code_run(&a, &env, "#ck_dead_opp", "HRTSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#ck_dead_opp", "HRTSEQ3.ASM", 0));
     CHECK((a.anim_mode & WM_MODE_STATUS) == 0);
     v.life = 0;
-    CHECK(wm_anim_code_run(&a, &env, "#ck_dead_opp", "HRTSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#ck_dead_opp", "HRTSEQ3.ASM", 0));
     CHECK((a.anim_mode & WM_MODE_STATUS) != 0);
     /* Grapple broken: it falls back to WHOIHIT. */
     memset(&a, 0, sizeof(a));
     a.who_i_hit = &v;
-    CHECK(wm_anim_code_run(&a, &env, "#ck_dead_opp", "HRTSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#ck_dead_opp", "HRTSEQ3.ASM", 0));
     CHECK((a.anim_mode & WM_MODE_STATUS) != 0);
 
     /* HRTSEQ4.ASM:1134 #set_wrestler_xflip -- ANI_SET_WRESTLER_XFLIP's
@@ -6194,16 +6404,16 @@ static void test_selfcontained_tail(void) {
     memset(&a, 0, sizeof(a));
     a.facing_dir = WM_MOVE_RIGHT;
     a.obj_control = (uint16_t)WM_OBJ_FLIPH;
-    CHECK(wm_anim_code_run(&a, &env, "#set_wrestler_xflip", "HRTSEQ4.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#set_wrestler_xflip", "HRTSEQ4.ASM", 0));
     CHECK((a.obj_control & WM_OBJ_FLIPH) == 0);
     a.facing_dir = WM_MOVE_LEFT;
-    CHECK(wm_anim_code_run(&a, &env, "#set_wrestler_xflip", "HRTSEQ4.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#set_wrestler_xflip", "HRTSEQ4.ASM", 0));
     CHECK((a.obj_control & WM_OBJ_FLIPH) != 0);
 
     /* YOKSEQ3.ASM:3293 #stop_dmg -- another SPCDMG, its own pair. */
     memset(&a, 0, sizeof(a));
     env.pcnt = 900u;
-    CHECK(wm_anim_code_run(&a, &env, "#stop_dmg", "YOKSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#stop_dmg", "YOKSEQ3.ASM", 0));
     CHECK(a.next_damage == 2);
     CHECK(a.special_damage_time == 900u + 35u);
 
@@ -6216,25 +6426,25 @@ static void test_selfcontained_tail(void) {
     a.facing_dir = WM_MOVE_RIGHT;
     a.x_vel = -0x10000;
     a.z_vel = 0x30000;
-    CHECK(wm_anim_code_run(&a, &env, "#check_xvel", "SHNSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#check_xvel", "SHNSEQ3.ASM", 0));
     CHECK(a.x_vel == 0x20000 && a.z_vel == 0);
     /* Already moving that way: untouched, and the Z clear is skipped
        too -- the early-out is inside the branch, not after it. */
     a.z_vel = 0x30000;
-    CHECK(wm_anim_code_run(&a, &env, "#check_xvel", "SHNSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#check_xvel", "SHNSEQ3.ASM", 0));
     CHECK(a.x_vel == 0x20000 && a.z_vel == 0x30000);
     /* Facing left mirrors it. */
     memset(&a, 0, sizeof(a));
     a.facing_dir = WM_MOVE_LEFT;
     a.x_vel = 0x10000;
-    CHECK(wm_anim_code_run(&a, &env, "#check_xvel", "SHNSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#check_xvel", "SHNSEQ3.ASM", 0));
     CHECK(a.x_vel == -0x20000);
 
     /* BAMSEQ2.ASM:1347 #hit_ground -- snap onto the ground he is over. */
     memset(&a, 0, sizeof(a));
     a.ground_y = 123;
     a.y_int = 400;
-    CHECK(wm_anim_code_run(&a, &env, "#hit_ground", "BAMSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#hit_ground", "BAMSEQ2.ASM", 0));
     CHECK(a.y_int == 123);
 
     /*
@@ -6244,9 +6454,9 @@ static void test_selfcontained_tail(void) {
     memset(&a, 0, sizeof(a));
     memset(&v, 0, sizeof(v));
     a.who_i_hit = &v;
-    CHECK(wm_anim_code_run(&a, &env, "#set", "UNDSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#set", "UNDSEQ3.ASM", 0));
     CHECK(v.delay_meter == 8 * 60);
-    CHECK(wm_anim_code_run(&a, &env, "#delay_whoihit", "YOKSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#delay_whoihit", "YOKSEQ2.ASM", 0));
     CHECK(v.delay_meter == 55);
 
     /*
@@ -6255,17 +6465,17 @@ static void test_selfcontained_tail(void) {
      */
     memset(&a, 0, sizeof(a));
     a.new_facing_dir = WM_MOVE_UP;
-    CHECK(wm_anim_code_run(&a, &env, "#choose_2or4", "YOKSEQ4.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#choose_2or4", "YOKSEQ4.ASM", 0));
     CHECK((a.anim_mode & WM_MODE_STATUS) == 0);        /* a 2-count */
     memset(&a, 0, sizeof(a));
     a.new_facing_dir = WM_MOVE_DOWN;
-    CHECK(wm_anim_code_run(&a, &env, "#choose_2or4", "YOKSEQ4.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#choose_2or4", "YOKSEQ4.ASM", 0));
     CHECK((a.anim_mode & WM_MODE_STATUS) != 0);        /* a 4-count */
     {
         wm_arcade_actor_t g;
         memset(&g, 0, sizeof(g));
         g.new_facing_dir = WM_MOVE_DOWN;
-        CHECK(wm_anim_code_run(&g, &env, "choose_2or4", "SHNSEQ4.ASM"));
+        CHECK(wm_anim_code_run(&g, &env, "choose_2or4", "SHNSEQ4.ASM", 0));
         CHECK((g.anim_mode & WM_MODE_STATUS) ==
               (a.anim_mode & WM_MODE_STATUS));
     }
@@ -6284,28 +6494,28 @@ static void test_selfcontained_tail(void) {
         genv.sound = ann_sound;
         memset(&a, 0, sizeof(a));
         a.wrestler_num = WM_ROSTER_BRET;   /* deliberately NOT Shawn */
-        CHECK(wm_anim_code_run(&a, &genv, "#grunt", "SHNSEQ3.ASM"));
+        CHECK(wm_anim_code_run(&a, &genv, "#grunt", "SHNSEQ3.ASM", 0));
         CHECK(log.n >= 1);
     }
 
     /* Every one of them tolerates a NULL actor. */
-    CHECK(wm_anim_code_run(NULL, &env, "#check_xvel", "SHNSEQ3.ASM"));
-    CHECK(wm_anim_code_run(NULL, &env, "#hit_ground", "BAMSEQ2.ASM"));
-    CHECK(wm_anim_code_run(NULL, &env, "#set", "UNDSEQ3.ASM"));
-    CHECK(wm_anim_code_run(NULL, &env, "#choose_2or4", "YOKSEQ4.ASM"));
-    CHECK(wm_anim_code_run(NULL, &env, "#zero_x_4", "SHNSEQ2.ASM"));
-    CHECK(wm_anim_code_run(NULL, &env, "#no_bk_xvel", "SHNSEQ3.ASM"));
-    CHECK(wm_anim_code_run(NULL, &env, "#delay_whoihit", "YOKSEQ2.ASM"));
-    CHECK(wm_anim_code_run(NULL, &env, "#ck_flip", "LEXSEQ3.ASM"));
-    CHECK(wm_anim_code_run(NULL, &env, "#ck_dead_opp", "HRTSEQ3.ASM"));
-    CHECK(wm_anim_code_run(NULL, &env, "inc_loop", "UNDSEQ3.ASM"));
-    CHECK(wm_anim_code_run(NULL, &env, "check_xvel", NULL));
-    CHECK(wm_anim_code_run(NULL, &env, "#reduce_dmg", "RZRSEQ3.ASM"));
-    CHECK(wm_anim_code_run(NULL, &env, "#reattach", "HRTSEQ3.ASM"));
-    CHECK(wm_anim_code_run(NULL, &env, "SET_OPP_GRAV_LOW", "RZRSEQ2.ASM"));
-    CHECK(wm_anim_code_run(NULL, &env, "target_whoihit", NULL));
-    CHECK(wm_anim_code_run(NULL, &env, "#set_opp_facing", "SHNSEQ3.ASM"));
-    CHECK(wm_anim_code_run(NULL, &env, "#blocked_vels", "RZRSEQ2.ASM"));
+    CHECK(wm_anim_code_run(NULL, &env, "#check_xvel", "SHNSEQ3.ASM", 0));
+    CHECK(wm_anim_code_run(NULL, &env, "#hit_ground", "BAMSEQ2.ASM", 0));
+    CHECK(wm_anim_code_run(NULL, &env, "#set", "UNDSEQ3.ASM", 0));
+    CHECK(wm_anim_code_run(NULL, &env, "#choose_2or4", "YOKSEQ4.ASM", 0));
+    CHECK(wm_anim_code_run(NULL, &env, "#zero_x_4", "SHNSEQ2.ASM", 0));
+    CHECK(wm_anim_code_run(NULL, &env, "#no_bk_xvel", "SHNSEQ3.ASM", 0));
+    CHECK(wm_anim_code_run(NULL, &env, "#delay_whoihit", "YOKSEQ2.ASM", 0));
+    CHECK(wm_anim_code_run(NULL, &env, "#ck_flip", "LEXSEQ3.ASM", 0));
+    CHECK(wm_anim_code_run(NULL, &env, "#ck_dead_opp", "HRTSEQ3.ASM", 0));
+    CHECK(wm_anim_code_run(NULL, &env, "inc_loop", "UNDSEQ3.ASM", 0));
+    CHECK(wm_anim_code_run(NULL, &env, "check_xvel", NULL, 0));
+    CHECK(wm_anim_code_run(NULL, &env, "#reduce_dmg", "RZRSEQ3.ASM", 0));
+    CHECK(wm_anim_code_run(NULL, &env, "#reattach", "HRTSEQ3.ASM", 0));
+    CHECK(wm_anim_code_run(NULL, &env, "SET_OPP_GRAV_LOW", "RZRSEQ2.ASM", 0));
+    CHECK(wm_anim_code_run(NULL, &env, "target_whoihit", NULL, 0));
+    CHECK(wm_anim_code_run(NULL, &env, "#set_opp_facing", "SHNSEQ3.ASM", 0));
+    CHECK(wm_anim_code_run(NULL, &env, "#blocked_vels", "RZRSEQ2.ASM", 0));
 }
 
 /*
@@ -6538,40 +6748,61 @@ static void test_anim_code_tail(void) {
 
     memset(&env, 0, sizeof(env));
 
-    /* #set_zvel2: -5.0 for most, -6.75 for Doink, -5.75 for the Taker.
-       Resolving by bare name would give six wrestlers the wrong one. */
+    /*
+     * #set_zvel2: -5.0 for most, -6.75 for Doink, -5.75 for the Taker --
+     * and every one of those files defines it a SECOND time, in the next
+     * block, with the sign reversed. Resolving by bare name gives six
+     * wrestlers the wrong magnitude; resolving by name and file alone
+     * gives half the call sites in every file the wrong DIRECTION.
+     */
     memset(&a, 0, sizeof(a));
-    CHECK(wm_anim_code_run(&a, &env, "#set_zvel2", "HRTSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#set_zvel2", "HRTSEQ2.ASM", 3113));
     CHECK(a.z_vel == -0x50000);
-    CHECK(wm_anim_code_run(&a, &env, "#set_zvel2", "DNKSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#set_zvel2", "HRTSEQ2.ASM", 3191));
+    CHECK(a.z_vel == 0x52000);
+    CHECK(wm_anim_code_run(&a, &env, "#set_zvel2", "DNKSEQ2.ASM", 5699));
     CHECK(a.z_vel == -0x6c000);
-    CHECK(wm_anim_code_run(&a, &env, "#set_zvel2", "UNDSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#set_zvel2", "DNKSEQ2.ASM", 5785));
+    CHECK(a.z_vel == 0x42000);
+    CHECK(wm_anim_code_run(&a, &env, "#set_zvel2", "UNDSEQ2.ASM", 4586));
     CHECK(a.z_vel == -0x5c000);
-    CHECK(wm_anim_code_run(&a, &env, "#set_zvel3", "DNKSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#set_zvel2", "UNDSEQ2.ASM", 4652));
+    CHECK(a.z_vel == 0x52000);
+    /* A definition line the file does not have resolves to nothing rather
+       than to whichever row happens to be first. */
+    a.z_vel = 0x11111;
+    CHECK(!wm_anim_code_run(&a, &env, "#set_zvel2", "UNDSEQ2.ASM", 9999));
+    CHECK(!wm_anim_code_run(&a, &env, "#set_zvel2", "UNDSEQ2.ASM", 0));
+    CHECK(a.z_vel == 0x11111);
+    CHECK(wm_anim_code_run(&a, &env, "#set_zvel3", "DNKSEQ2.ASM", 0));
     CHECK(a.z_vel == -0x7c000);
 
     /* #half_vels: halve X, and a fixed 2.0 up. */
     memset(&a, 0, sizeof(a));
     a.x_vel = 0x40000;
-    CHECK(wm_anim_code_run(&a, &env, "#half_vels", "HRTSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#half_vels", "HRTSEQ3.ASM", 0));
     CHECK(a.x_vel == 0x20000);
     CHECK(a.y_vel == 0x20000);
 
-    /* #reverse_xvel: turn him round at a quarter of the speed. */
+    /* #reverse_xvel: turn him round at a fraction of the speed -- a
+       quarter in SHNSEQ3.ASM's first definition, a HALF in its second. */
     memset(&a, 0, sizeof(a));
     a.x_vel = 0x40000;
-    CHECK(wm_anim_code_run(&a, &env, "#reverse_xvel", "SHNSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#reverse_xvel", "SHNSEQ3.ASM", 1279));
     CHECK(a.x_vel == -0x10000);
+    a.x_vel = 0x40000;
+    CHECK(wm_anim_code_run(&a, &env, "#reverse_xvel", "SHNSEQ3.ASM", 3651));
+    CHECK(a.x_vel == -0x20000);
 
     /* #zero_x: "Don't float if dropping straight down" -- only when the
        opponent is underneath rather than off to the side. */
     memset(&a, 0, sizeof(a));
     a.x_vel = 0x30000;
     a.closest_xdist = 0x100;
-    CHECK(wm_anim_code_run(&a, &env, "#zero_x", "DNKSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#zero_x", "DNKSEQ2.ASM", 0));
     CHECK(a.x_vel == 0x30000);
     a.closest_xdist = 0x20;
-    CHECK(wm_anim_code_run(&a, &env, "#zero_x", "DNKSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#zero_x", "DNKSEQ2.ASM", 0));
     CHECK(a.x_vel == 0);
 
     /* #store_opp_xvel / #merge_xvels: remember his, then average -- a
@@ -6580,9 +6811,9 @@ static void test_anim_code_tail(void) {
     memset(&v, 0, sizeof(v));
     v.x_vel = 0x60000;
     env.opponent = &v;
-    CHECK(wm_anim_code_run(&a, &env, "#store_opp_xvel", "SHNSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#store_opp_xvel", "SHNSEQ3.ASM", 0));
     a.x_vel = 0x20000;
-    CHECK(wm_anim_code_run(&a, &env, "#merge_xvels", "SHNSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#merge_xvels", "SHNSEQ3.ASM", 0));
     CHECK(a.x_vel == 0x20000);
     env.opponent = NULL;
 
@@ -6590,31 +6821,31 @@ static void test_anim_code_tail(void) {
        he is, set when FACING_DIR's MOVE_UP bit is CLEAR. */
     memset(&a, 0, sizeof(a));
     a.facing_dir = WM_MOVE_UP_RIGHT;
-    CHECK(wm_anim_code_run(&a, &env, "#set_zvel1", "HRTSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#set_zvel1", "HRTSEQ2.ASM", 0));
     CHECK(!(a.anim_mode & WM_MODE_STATUS));
     a.facing_dir = WM_MOVE_DOWN_RIGHT;
-    CHECK(wm_anim_code_run(&a, &env, "#ckspin", "HRTSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#ckspin", "HRTSEQ2.ASM", 0));
     CHECK(a.anim_mode & WM_MODE_STATUS);
 
     /* #holdup: "Max time to hold up in air (*2 ticks)" is 25, and letting
        go of super kick ends it early. */
     memset(&a, 0, sizeof(a));
     a.but_val_cur = (uint16_t)WM_BTN_SKICK;
-    CHECK(wm_anim_code_run(&a, &env, "#holdup", "DNKSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#holdup", "DNKSEQ2.ASM", 0));
     CHECK(a.anim_mode & WM_MODE_STATUS);
     a.but_val_cur = 0;
-    CHECK(wm_anim_code_run(&a, &env, "#holdup", "DNKSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#holdup", "DNKSEQ2.ASM", 0));
     CHECK(!(a.anim_mode & WM_MODE_STATUS));
     a.but_val_cur = (uint16_t)WM_BTN_SKICK;
     a.but_count = 25;
-    CHECK(wm_anim_code_run(&a, &env, "#holdup", "DNKSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#holdup", "DNKSEQ2.ASM", 0));
     CHECK(!(a.anim_mode & WM_MODE_STATUS));   /* 26 is past the limit */
 
     /* NOT_IN_RING is global, and one of the places PLYR.EQU's inverted
        INRING polarity bites: the source writes 1 for OUTSIDE. */
     memset(&a, 0, sizeof(a));
     a.in_ring = 1;
-    CHECK(wm_anim_code_run(&a, &env, "NOT_IN_RING", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "NOT_IN_RING", NULL, 0));
     CHECK(a.in_ring == 0);
 
     /* The throw routines push the man he hit AWAY from his own facing. */
@@ -6622,16 +6853,16 @@ static void test_anim_code_tail(void) {
     memset(&v, 0, sizeof(v));
     a.who_i_hit = &v;
     v.new_facing_dir = WM_MOVE_UP_RIGHT;
-    CHECK(wm_anim_code_run(&a, &env, "#set_opp_y", "BAMSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#set_opp_y", "BAMSEQ3.ASM", 0));
     CHECK(v.y_vel == 0x50000);
     CHECK(v.z_vel == 0x20000);
     CHECK(v.x_vel == -0x30000);      /* facing right -> pushed left */
     v.new_facing_dir = WM_MOVE_UP_LEFT;
-    CHECK(wm_anim_code_run(&a, &env, "#set_opp_y", "BAMSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#set_opp_y", "BAMSEQ3.ASM", 0));
     CHECK(v.x_vel == 0x30000);
     /* Doink's own copy only lifts. */
     memset(&v, 0, sizeof(v));
-    CHECK(wm_anim_code_run(&a, &env, "#set_opp_y", "DNKSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#set_opp_y", "DNKSEQ3.ASM", 0));
     CHECK(v.y_vel == 0x40000);
     CHECK(v.x_vel == 0 && v.z_vel == 0);
 
@@ -6639,40 +6870,50 @@ static void test_anim_code_tail(void) {
        sets MODE_STATUS, which is what refuses the grab. */
     memset(&a, 0, sizeof(a));
     env.pcnt = 1000u;
-    CHECK(wm_anim_code_run(&a, &env, "hiptoss_delay", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "hiptoss_delay", NULL, 0));
     CHECK(!(a.anim_mode & WM_MODE_STATUS));   /* first one, long gap */
     env.pcnt = 1000u + 100u;
-    CHECK(wm_anim_code_run(&a, &env, "hiptoss_delay", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "hiptoss_delay", NULL, 0));
     CHECK(a.anim_mode & WM_MODE_STATUS);      /* 100 < 3*60 */
     env.pcnt = 1100u + 200u;
-    CHECK(wm_anim_code_run(&a, &env, "hiptoss_delay", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "hiptoss_delay", NULL, 0));
     CHECK(!(a.anim_mode & WM_MODE_STATUS));   /* 200 >= 3*60 */
     /* ...and fling_delay keeps its OWN stamp. */
     env.pcnt = 1300u + 10u;
-    CHECK(wm_anim_code_run(&a, &env, "fling_delay", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "fling_delay", NULL, 0));
     CHECK(!(a.anim_mode & WM_MODE_STATUS));
 
     wm_anim_code_reset();
 
-    /* #inc_loop: the cap is 3 everywhere except Doink's own copy. */
+    /* #inc_loop: the cap is 3, except in Doink's own copy and in the
+       SECOND definition three other files write, which is 2. */
     memset(&a, 0, sizeof(a));
-    CHECK(wm_anim_code_run(&a, &env, "#inc_loop", "HRTSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#inc_loop", "HRTSEQ3.ASM", 166));
     CHECK(a.usr_var1 == 1 && !(a.anim_mode & WM_MODE_STATUS));
     a.usr_var1 = 3;
-    CHECK(wm_anim_code_run(&a, &env, "#inc_loop", "HRTSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#inc_loop", "HRTSEQ3.ASM", 166));
     CHECK(a.anim_mode & WM_MODE_STATUS);       /* 4 > 3 */
     memset(&a, 0, sizeof(a));
     a.usr_var1 = 2;
-    CHECK(wm_anim_code_run(&a, &env, "#inc_loop", "DNKSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#inc_loop", "DNKSEQ3.ASM", 1679));
     CHECK(a.anim_mode & WM_MODE_STATUS);       /* 3 > 2, Doink breaks earlier */
+    /* UNDSEQ3.ASM's two: 168 caps at 3, 2888 at 2. Same name, same file. */
+    memset(&a, 0, sizeof(a));
+    a.usr_var1 = 2;
+    CHECK(wm_anim_code_run(&a, &env, "#inc_loop", "UNDSEQ3.ASM", 168));
+    CHECK(!(a.anim_mode & WM_MODE_STATUS));    /* 3 is not > 3 */
+    memset(&a, 0, sizeof(a));
+    a.usr_var1 = 2;
+    CHECK(wm_anim_code_run(&a, &env, "#inc_loop", "UNDSEQ3.ASM", 2888));
+    CHECK(a.anim_mode & WM_MODE_STATUS);       /* 3 > 2 */
 
     /* fix_bnc_flip: "Check to see if I'm against ropes". */
     memset(&a, 0, sizeof(a));
     a.x_int = WM_RING_X_CENTER - 100;
-    CHECK(wm_anim_code_run(&a, &env, "fix_bnc_flip", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "fix_bnc_flip", NULL, 0));
     CHECK(a.obj_control & WM_OBJ_FLIPH);
     a.x_int = WM_RING_X_CENTER + 100;
-    CHECK(wm_anim_code_run(&a, &env, "fix_bnc_flip", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "fix_bnc_flip", NULL, 0));
     CHECK(!(a.obj_control & WM_OBJ_FLIPH));
 
     /* #ckongrnd: is the man he is fighting already down? */
@@ -6680,10 +6921,10 @@ static void test_anim_code_tail(void) {
     memset(&v, 0, sizeof(v));
     env.opponent = &v;
     v.player_mode = WM_PMODE_ONGROUND;
-    CHECK(wm_anim_code_run(&a, &env, "#ckongrnd", "DNKSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#ckongrnd", "DNKSEQ2.ASM", 0));
     CHECK(a.anim_mode & WM_MODE_STATUS);
     v.player_mode = WM_PMODE_NORMAL;
-    CHECK(wm_anim_code_run(&a, &env, "#ckongrnd", "DNKSEQ2.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#ckongrnd", "DNKSEQ2.ASM", 0));
     CHECK(!(a.anim_mode & WM_MODE_STATUS));
     env.opponent = NULL;
 
@@ -6691,16 +6932,16 @@ static void test_anim_code_tail(void) {
     memset(&a, 0, sizeof(a));
     memset(&v, 0, sizeof(v));
     a.attach_proc = &v;
-    CHECK(wm_anim_code_run(&a, &env, "#set_opp_xflip", "HRTSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#set_opp_xflip", "HRTSEQ3.ASM", 0));
     CHECK(v.obj_control & WM_OBJ_FLIPH);
 
     /* #zero_butn clears a different timer in Bam Bam's copy. */
     memset(&a, 0, sizeof(a));
     a.punch_dtime = 9; a.powerp_dtime = 9;
-    CHECK(wm_anim_code_run(&a, &env, "#zero_butn", "DNKSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#zero_butn", "DNKSEQ3.ASM", 0));
     CHECK(a.punch_dtime == 0 && a.powerp_dtime == 9);
     a.punch_dtime = 9;
-    CHECK(wm_anim_code_run(&a, &env, "#zero_butn", "BAMSEQ3.ASM"));
+    CHECK(wm_anim_code_run(&a, &env, "#zero_butn", "BAMSEQ3.ASM", 0));
     CHECK(a.powerp_dtime == 0 && a.punch_dtime == 9);
 
     /* set_position moves nobody: every position write in it is commented
@@ -6708,7 +6949,7 @@ static void test_anim_code_tail(void) {
     memset(&a, 0, sizeof(a));
     a.obj_pal = 7;
     a.x_int = 123;
-    CHECK(wm_anim_code_run(&a, &env, "set_position", NULL));
+    CHECK(wm_anim_code_run(&a, &env, "set_position", NULL, 0));
     CHECK(a.my_pal == 7);
     CHECK(a.x_int == 123);
 }
@@ -9323,6 +9564,7 @@ int main(void) {
     test_grnd_hit_and_setopp_deadanim();
     test_win_announce();
     test_win_announce_from_the_vm();
+    test_hit_nearest_and_tbukl_confine();
     test_do_combo_mess();
     test_do_combo_mess_from_the_vm();
     test_wrsnd_tables();

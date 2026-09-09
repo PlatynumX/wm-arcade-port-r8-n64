@@ -91,6 +91,10 @@ struct wm_arcade_actor {
     wm_arcade_actor_t *attach_proc;
     wm_arcade_actor_t *smart_target;
     wm_arcade_actor_t *who_i_hit;
+    /* PLYR.EQU WHOPINNEDME, written by WRESTLE2.ASM:3748 hit_nearest at
+       the same moment it sets the attacker's own WHOIHIT -- the back
+       pointer from a pinned man to whoever is on top of him. */
+    wm_arcade_actor_t *who_pinned_me;
     wm_arcade_actor_t *who_hit_me;
 
     wm_arcade_box3_t hurt_box;

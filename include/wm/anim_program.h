@@ -496,9 +496,19 @@ typedef void (*wm_anim_code_fn)(wm_arcade_actor_t *actor,
  * black color within the wrestler's pal, it is different for each
  * wrestler". Resolving those by bare name hands one wrestler's routine to
  * all the others.
+ *
+ * And the file is not enough either. The same `#name` is defined MORE THAN
+ * ONCE in one file, with a different body each time: BAMSEQ2.ASM's two
+ * `#set_zvel2` are -5.0 and +5.0 -- opposite directions -- and UNDSEQ3.ASM's
+ * two `#inc_loop` cap at 3 and at 2. So a call site carries the source line
+ * of the definition it actually refers to, in the op's `a` field, and
+ * `def_line` is that. 0 means "not a local label, or unknown", and then a
+ * row without a line matches. See tools/wlanim.py's local_label_site for
+ * how a call site is resolved to a definition, and why.
  */
 bool wm_anim_code_run(wm_arcade_actor_t *actor, const wm_anim_env *env,
-                      const char *name, const char *source_file);
+                      const char *name, const char *source_file,
+                      int32_t def_line);
 
 /* How many ANI_CODE registry rows are translated, for coverage reporting.
    A routine written once per file counts once per file, since each is a

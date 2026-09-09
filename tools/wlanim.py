@@ -18,6 +18,11 @@ import sys
 from dataclasses import dataclass
 
 SUBR_RE = re.compile(r"^\s*SUBR(?:P)?\s+#?([A-Za-z_][A-Za-z0-9_]*)\b", re.I)
+# The same line with the `#` KEPT, because `SUBRP #name` declares a local
+# label and `SUBR name` a global one, and the difference decides where a
+# local-label block ends.
+SUBR_LOCAL_RE = re.compile(
+    r"^\s*SUBR(?:P)?\s+(#?[A-Za-z_][A-Za-z0-9_]*)\b", re.I)
 WL_RE = re.compile(r"^\s*WL\s+([^,]+),\s*([A-Za-z_][A-Za-z0-9_]*)\s*\+\s*FR([0-9]+)\s*$", re.I)
 WAIT_FRAME_RE = re.compile(r"^\s*WWL\s+ANI_WAITHITOPP\s*,\s*([^,]+),\s*([A-Za-z_][A-Za-z0-9_]*)\s*\+\s*FR([0-9]+)\s*$", re.I)
 REPEAT_RE = re.compile(r"^\s*\.word\s+ANI_REPEAT\s*$", re.I)
@@ -258,6 +263,55 @@ def label_def(line: str) -> str | None:
         return m.group(1)
     m = GLOBAL_LABEL_RE.match(line)
     return m.group(1) if m else None
+
+
+def local_label_defs(lines: list[str], name: str) -> list[int]:
+    """Every line (1-based) in this file that defines the local label."""
+    out = []
+    for i, raw in enumerate(lines):
+        body = raw.split(";", 1)[0]
+        m = LOCAL_LABEL_RE.match(body)
+        if m and m.group(1) == name:
+            out.append(i + 1)
+            continue
+        # `SUBRP #name` declares one too -- SUBRP emits no `.def`, so the
+        # label stays local (MACROS.H:246-255).
+        m = SUBR_LOCAL_RE.match(body)
+        if m and m.group(1) == name:
+            out.append(i + 1)
+    return out
+
+
+def local_label_site(lines: list[str], use_line: int, name: str) -> int:
+    """Which definition of `#name` a call site on `use_line` refers to.
+
+    Returns that definition's 1-based line, or 0 for a global name or one
+    with no definition in this file.
+
+    The same `#name` is defined more than once in one file, with a
+    DIFFERENT body each time -- BAMSEQ2.ASM's two `#set_zvel2` are -5.0 and
+    +5.0, UNDSEQ3.ASM's two `#inc_loop` cap at 3 and at 2 -- so a call site
+    has to say WHICH, and the name alone cannot.
+
+    The rule is a forward reference: the next definition at or after the
+    use, falling back to the last one before it. That is not a guess about
+    the assembler; it is what the source does, on every case in the drop.
+    Each of these helpers is written immediately AFTER the animation body
+    that calls it, so every use sits just above its own definition
+    (BAMSEQ2's uses are at 4248 and 4341, its definitions at 4287 and
+    4371), and the opposite rule -- nearest preceding -- leaves
+    HRTSEQ3.ASM's sixteen `#rope_check` calls pointing at no definition at
+    all, since the only one is 200 lines below the last of them.
+    """
+    if not name.startswith("#"):
+        return 0
+    defs = local_label_defs(lines, name)
+    if not defs:
+        return 0
+    for at in defs:
+        if at >= use_line + 1:
+            return at
+    return defs[-1]
 
 
 def _body_stop(lines: list[str], start: int) -> int:

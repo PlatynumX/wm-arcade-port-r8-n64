@@ -915,7 +915,11 @@ void wm_anim_exec_start(wm_anim_exec *exec, const wm_anim_program *program,
         exec->ended = true;
         return;
     }
-    advance(exec, actor, round_tickcount, 0);
+    /* Not always op 0: a routine that branches back into shared code
+       earlier in the file has that code at the head of its stream, and
+       its own first command is `entry` ops in. See wm_anim_program. */
+    advance(exec, actor, round_tickcount,
+            program->entry < program->op_count ? program->entry : 0);
     /* The loop shows a frame before consuming a tick of it, same as
        wm_visual_start's own just_started. */
     exec->just_started = true;

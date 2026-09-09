@@ -1540,6 +1540,87 @@ def test_wrsnd_tables_generate_the_shipped_file() -> None:
     assert wlwrsnd.render_c() == out.read_text()
 
 
+
+def test_digit_leading_local_labels_are_seen() -> None:
+    """A local label may begin with a digit after the '#'.
+
+    Five real ones do -- HRTSEQ4.ASM's `#4block` and SHNSEQ3.ASM's `#4`,
+    `#2`, `#4xc`, `#2xc`, named after the 2-count and 4-count pin they
+    lead to. Requiring a letter there made them invisible on BOTH sides:
+    the definitions were not seen as labels, and the seven branches to
+    them were silently skipped, so four animations ran straight through
+    branches the original takes. (A sixth, `#2block`, appears only in
+    commented-out lines in HRTSEQ4.ASM, so it is not counted here --
+    which is the difference between grepping the file and reading it.)
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    if not (base / "HRTSEQ4.ASM").exists():
+        return
+
+    defined, referenced = set(), 0
+    branch = re.compile(r"ANI_(?:GOTO|IFSTATUS|IFNOTSTATUS|IFBLOCKED)\s*,"
+                        r"\s*(#[0-9][A-Za-z0-9_]*)", re.I)
+    for p in sorted(base.glob("*SEQ*.ASM")):
+        if "'" in p.name:
+            continue
+        for raw in p.read_text(errors="replace").splitlines():
+            line = wlanim.strip_comment(raw)
+            m = wlanim.LOCAL_LABEL_RE.match(line)
+            if m and m.group(1)[1].isdigit():
+                defined.add((p.name, m.group(1)))
+            referenced += len(branch.findall(line))
+
+    assert len(defined) == 5, sorted(defined)
+    assert referenced == 6, referenced
+
+    # Both regexes see them, including the form where the label shares a
+    # line with the frame it names (`#4\tWL\t1,S4ST4C+FR1`).
+    assert wlanim.LOCAL_LABEL_RE.match("#4block")
+    assert wlanim.LOCAL_LABEL_RE.match("#4\tWL\t1,S4ST4C+FR1")
+    assert wlanim.LEADING_LOCAL_LABEL_RE.sub("", "#4\tWL\t1,S4ST4C+FR1") == \
+        "WL\t1,S4ST4C+FR1"
+
+
+def test_programs_record_where_they_start() -> None:
+    """A routine that branches BACK into shared code starts partway in.
+
+    The emitted body has to begin at the branch target for the branch to
+    resolve, so the routine's own first command is some ops in. Starting
+    such a program at op 0 plays code it merely jumps into -- a different
+    animation. Every wrestler's `*_4_hitblock_anim` is one of these: it
+    jumps into his `*_4_block_anim` hold at `#4block`.
+    """
+    if not (wlanim.ORIG / "HRTSEQ4.ASM").exists():
+        return
+    ops, entry = wlprogram.program_for(
+        wlanim.ORIG / "HRTSEQ4.ASM", "hrt_4_hitblock_anim", with_entry=True)
+    assert entry > 0, entry
+    assert entry < len(ops)
+    # Its own body starts with the SETMODE the routine opens with, and
+    # the shared hold it branches into sits before that.
+    assert ops[entry][0] == "SETMODE", ops[entry]
+    assert any(o[0] == "FRAME" and o[1] == "H4BK3A02" for o in ops[:entry])
+
+    # And the count is stable: 42 of the emitted programs are like this.
+    odd = 0
+    for src in wlanim.linked_files():
+        if "SEQ" not in src.name or src.name.startswith("FINI"):
+            continue
+        seen = []
+        for line in src.read_text(errors="replace").splitlines():
+            m = wlanim.SUBR_RE.match(line)
+            if m and m.group(1) not in seen:
+                seen.append(m.group(1))
+        for lab in seen:
+            try:
+                _o, e = wlprogram.program_for(src, lab, with_entry=True)
+            except (OSError, ValueError):
+                continue
+            if e:
+                odd += 1
+    assert odd == 42, odd
+
+
 def main() -> int:
     test_wlanim()
     test_wlprogram()
@@ -1561,6 +1642,8 @@ def main() -> int:
     test_announce_calls_are_spelled_as_the_call_sites_spell_them()
     test_wrsnd_tables()
     test_wrsnd_tables_generate_the_shipped_file()
+    test_digit_leading_local_labels_are_seen()
+    test_programs_record_where_they_start()
     test_waithitopp_is_a_mode_and_a_frame()
     test_roster_dispatcher_labels_all_emit()
     test_wlprogram_tick_expressions()

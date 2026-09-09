@@ -283,6 +283,18 @@ typedef struct {
     const char *source_file;
     const wm_anim_op *ops;
     size_t op_count;
+    /*
+     * The op this animation actually STARTS at, which is not always 0.
+     *
+     * A routine can branch BACK into shared code that sits earlier in the
+     * file -- every wrestler's `*_4_hitblock_anim` jumps into his
+     * `*_4_block_anim`'s hold at `#4block`, so the emitted body has to
+     * begin there for the branch to have a target. The routine's own
+     * first command is then some ops in, and starting at 0 would play the
+     * shared code first: 42 of the emitted programs are like this, and
+     * bam_combo_pogo_anim's own body starts 256 ops into its stream.
+     */
+    size_t entry;
 } wm_anim_program;
 
 /* Execution state. One per actor track. */

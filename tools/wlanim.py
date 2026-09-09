@@ -28,7 +28,7 @@ END_RE = re.compile(r"^\s*\.word\s+ANI_END\s*$", re.I)
 # even though it is not an ANI_END: nothing after it in the source is ever
 # reached. WRESTLE2.ASM:3992 xxx_dead_anim is four commands ending in one.
 ROT_RE = re.compile(r"^\s*\.word\s+ANI_ROT\s*$", re.I)
-GOTO_RE = re.compile(r"^\s*WL\s+ANI_GOTO\s*,\s*#?[A-Za-z_][A-Za-z0-9_]*\s*$", re.I)
+GOTO_RE = re.compile(r"^\s*WL\s+ANI_GOTO\s*,\s*(?:#[A-Za-z0-9_]+|[A-Za-z_][A-Za-z0-9_]*)\\s*$", re.I)
 PREFIX_WORD_RE = re.compile(
     r"^\s*\.word\s+(ANI_SETMODE|ANI_SETSPEED|ANI_SETFACING|ANI_XFLIP)\b", re.I)
 # The assembler accepts either case for its trailing-h hex, and the
@@ -176,7 +176,14 @@ def eval_ticks(expr: str) -> int:
 # instruction, so it is stripped before matching -- otherwise that frame is
 # silently dropped, which matters as soon as a chained continuation lands
 # on one.
-LEADING_LOCAL_LABEL_RE = re.compile(r"^\s*#[A-Za-z_][A-Za-z0-9_]*\s+(?=\S)")
+# A local label may begin with a DIGIT after the '#': HRTSEQ4.ASM's
+# `#4block` and SHNSEQ3.ASM's `#4`, `#2`, `#4xc`, `#2xc` all do, named
+# after the 2-count and 4-count pin they lead to. Requiring a letter
+# there made five real labels invisible on BOTH sides -- their
+# definitions were not seen as labels, and the branches to them were
+# silently skipped -- so four animations ran straight through branches
+# the original takes. See tests/test_source_tools.py.
+LEADING_LOCAL_LABEL_RE = re.compile(r"^\s*#[A-Za-z0-9_]+\s+(?=\S)")
 
 
 def _frame_from_line(line: str) -> Frame | None:
@@ -233,7 +240,7 @@ def extract(path: pathlib.Path, label: str) -> Sequence:
 
 GOTO_TARGET_RE = re.compile(
     r"^\s*(?:\.word|W+L+W*)\s+ANI_GOTO\s*,\s*(#?[A-Za-z_][A-Za-z0-9_]*)\s*$", re.I)
-LOCAL_LABEL_RE = re.compile(r"^\s*(#[A-Za-z_][A-Za-z0-9_]*)\b")
+LOCAL_LABEL_RE = re.compile(r"^\s*(#[A-Za-z0-9_]+)\b")
 
 # A branch target is not always a `#local`. The sequence files also place
 # plain file-scope labels in column 0 on a line of their own -- SHNSEQ2's

@@ -3857,7 +3857,7 @@ static void test_inc_combo_asks_the_announcer(void) {
         { WM_AOP_END,       0, -1, 0, 0, 0, 0, 0, 0, NULL }
     };
     static const wm_anim_program prog = {
-        "test_inc_combo", "ANIM.ASM", ops, 2
+        "test_inc_combo", "ANIM.ASM", ops, 2, 0
     };
     wm_arcade_actor_t a, v;
     wm_announcer_state ann;
@@ -4142,7 +4142,7 @@ static void test_announce_call_from_the_vm(void) {
         { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_MISSES" },
         { WM_AOP_END,  0, -1, 0, 0, 0, 0, 0, 0, NULL }
     };
-    static const wm_anim_program prog = { "test_call", "HRTSEQ2.ASM", ops, 2 };
+    static const wm_anim_program prog = { "test_call", "HRTSEQ2.ASM", ops, 2, 0 };
     const wm_announce_table *misses = wm_announce_table_find("MISSES");
     wm_arcade_actor_t a;
     wm_announcer_state ann;
@@ -4330,7 +4330,7 @@ static void test_do_combo_mess_from_the_vm(void) {
         { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_COMBO_MESS" },
         { WM_AOP_END,  0, -1, 0, 0, 0, 0, 0, 0, NULL }
     };
-    static const wm_anim_program prog = { "test_mess", "HRTSEQ2.ASM", ops, 2 };
+    static const wm_anim_program prog = { "test_mess", "HRTSEQ2.ASM", ops, 2, 0 };
     wm_arcade_actor_t a;
     wm_announcer_state ann;
     struct combo_award_log awards;
@@ -4537,6 +4537,149 @@ static void test_wrsnd_anim_code_routines(void) {
     /* Nothing crashes with no env at all. */
     CHECK(wm_anim_code_run(&a, NULL, "impact_sound", "HRTSEQ4.ASM"));
     CHECK(wm_anim_code_run(&a, NULL, "DO_GRUNT", "LEXSEQ3.ASM"));
+}
+
+/*
+ * An animation does not always start at op 0.
+ *
+ * A routine can branch BACK into shared code that sits earlier in the
+ * file, and the emitted body has to begin there for the branch to have a
+ * target -- so the routine's own first command is some ops in. 42 of the
+ * emitted programs are like that. Starting them at 0 plays the shared
+ * code first, which is a different animation.
+ */
+static void test_program_entry_points(void) {
+    const wm_anim_program *p = wm_anim_program_find("hrt_4_hitblock_anim");
+    wm_arcade_actor_t a;
+    wm_anim_exec ex;
+    const char *first;
+    int t, saw_block_hold = 0;
+
+    if (!p) return;
+
+    /*
+     * HRTSEQ4.ASM: hrt_4_hitblock_anim ends `WL ANI_GOTO,#4block`, and
+     * `#4block` is a label inside hrt_4_block_anim -- the hold that waits
+     * for the block button to be released. So the body carries that hold
+     * at its head and the routine's own body starts after it.
+     */
+    CHECK(p->entry > 0);
+    CHECK(p->entry < p->op_count);
+
+    memset(&a, 0, sizeof(a));
+    stand_in_ring(&a);
+    wm_anim_exec_start(&ex, p, &a, 0, NULL);
+
+    /* Its OWN first frame is H4BK3A04. H4BK3A02 is `#4block`'s -- the
+       shared hold -- and showing that first is the defect this catches. */
+    first = wm_anim_exec_frame(&ex);
+    CHECK(first != NULL);
+    if (first) {
+        CHECK(strcmp(first, "H4BK3A04") == 0);
+        CHECK(strcmp(first, "H4BK3A02") != 0);
+    }
+
+    /*
+     * ...and the branch is real: after its two frames the ANI_GOTO takes
+     * it back into the hold, so H4BK3A02 does show, just not first. That
+     * is the whole point of the jump -- get hit while blocking and you
+     * return to blocking.
+     */
+    for (t = 0; t < 60 && !ex.ended; ++t) {
+        const char *f = wm_anim_exec_frame(&ex);
+        if (f && strcmp(f, "H4BK3A02") == 0) saw_block_hold = 1;
+        a.stick_val_cur = 0;
+        wm_anim_exec_tick(&ex, &a, 0);
+    }
+    CHECK(saw_block_hold);
+
+    /* Every wrestler's hitblock pair is built the same way. */
+    {
+        static const char *const others[] = {
+            "rzr_4_hitblock_anim", "und_4_hitblock_anim",
+            "yok_4_hitblock_anim", "shn_4_hitblock_anim",
+            "bam_4_hitblock_anim", "dnk_4_hitblock_anim",
+            "lex_4_hitblock_anim"
+        };
+        size_t i;
+        for (i = 0; i < sizeof(others) / sizeof(others[0]); ++i) {
+            const wm_anim_program *q = wm_anim_program_find(others[i]);
+            if (!q) continue;
+            CHECK(q->entry > 0);
+            CHECK(q->entry < q->op_count);
+        }
+    }
+}
+
+/*
+ * A local label may begin with a DIGIT after the '#'. Five real ones do,
+ * named after the 2-count and 4-count pin they lead to, and requiring a
+ * letter made them invisible on BOTH sides: the definitions were not seen
+ * as labels and the branches to them were silently dropped.
+ *
+ * SHNSEQ3.ASM's gsuplex animations are where that showed. `choose_2or4`
+ * sets MODE_STATUS to pick whether Shawn's victim lands face-up (a
+ * 2-count) or face-down (a 4-count); `ANI_IFSTATUS,#4` takes the
+ * face-down arm and `ANI_GOTO,#2` skips it. With both dropped the
+ * animation ran through BOTH arms -- it played the face-up frame and the
+ * face-down frame, and did ANI_FACEUP and then ANI_FACEDOWN.
+ */
+static void test_digit_leading_local_labels(void) {
+    static const char *const labels[] = {
+        "shn_gsuplex_run_anim", "shn_combo_gsuplex_anim"
+    };
+    size_t i;
+
+    for (i = 0; i < sizeof(labels) / sizeof(labels[0]); ++i) {
+        const wm_anim_program *p = wm_anim_program_find(labels[i]);
+        size_t o, ifst = 0, got = 0;
+        int have_if = 0, have_goto = 0;
+
+        if (!p) continue;
+
+        /* Both branches survived emission, resolved to real op indices
+           inside the body -- they used to be dropped outright. */
+        for (o = 0; o < p->op_count; ++o) {
+            if (p->ops[o].op == WM_AOP_IFSTATUS && !have_if) {
+                CHECK(p->ops[o].target >= 0);
+                CHECK((size_t)p->ops[o].target < p->op_count);
+                ifst = (size_t)p->ops[o].target;
+                have_if = 1;
+            } else if (p->ops[o].op == WM_AOP_GOTO && have_if && !have_goto) {
+                CHECK(p->ops[o].target >= 0);
+                CHECK((size_t)p->ops[o].target < p->op_count);
+                got = (size_t)p->ops[o].target;
+                have_goto = 1;
+            }
+        }
+        CHECK(have_if && have_goto);
+        if (!(have_if && have_goto)) continue;
+
+        /*
+         * `ANI_IFSTATUS,#4` jumps to the FACE-DOWN frame (the 4-count),
+         * and the `ANI_GOTO,#2` that ends the fall-through arm jumps
+         * PAST it -- so exactly one of the two arms ever runs. With the
+         * branches dropped the animation played both, doing ANI_FACEUP
+         * and then ANI_FACEDOWN on the way through.
+         */
+        CHECK(p->ops[ifst].op == WM_AOP_FRAME);
+        CHECK(p->ops[ifst].text != NULL);
+        if (p->ops[ifst].text)
+            CHECK(strcmp(p->ops[ifst].text, "S4ST4C01") == 0);
+        CHECK(p->ops[ifst + 1].op == WM_AOP_FACEDOWN);
+        /*
+         * The skipped arm is the face-up one, and the GOTO that ends it
+         * clears the face-down arm entirely. Laid out as
+         * FRAME S2ST2C01 / FACEUP / GOTO / FRAME S4ST4C01 / FACEDOWN.
+         */
+        CHECK(got > ifst + 1);
+        CHECK(ifst >= 3);
+        CHECK(p->ops[ifst - 1].op == WM_AOP_GOTO);
+        CHECK(p->ops[ifst - 2].op == WM_AOP_FACEUP);
+        CHECK(p->ops[ifst - 3].op == WM_AOP_FRAME);
+        if (p->ops[ifst - 3].text)
+            CHECK(strcmp(p->ops[ifst - 3].text, "S2ST2C01") == 0);
+    }
 }
 
 /* The self-contained state commands: no subsystem behind any of them. */
@@ -7357,6 +7500,8 @@ int main(void) {
     test_do_combo_mess_from_the_vm();
     test_wrsnd_tables();
     test_wrsnd_anim_code_routines();
+    test_program_entry_points();
+    test_digit_leading_local_labels();
     test_self_contained_ops();
     test_anim_code_tail();
     test_rope_commands_from_animation();

@@ -32,6 +32,7 @@ turning that into a fallthrough would invent a playthrough.
 from __future__ import annotations
 
 import argparse
+import collections
 import pathlib
 import re
 import sys
@@ -53,13 +54,13 @@ BRANCHES = {
 }
 BRANCH_RE = re.compile(
     r"^\s*(?:\.word|W+L+W*)\s+(" + "|".join(BRANCHES) + r")\s*,\s*"
-    r"(#?[A-Za-z_][A-Za-z0-9_]*)\s*$", re.I)
+    r"((?:#[A-Za-z0-9_]+|[A-Za-z_][A-Za-z0-9_]*))\s*$", re.I)
 
 # ANI_SLIDE_BACK range,xvel,#no_slide -- a conditional forward branch taken
 # when MODE_STATUS is CLEAR (ANIM.ASM: "was there a collision? jrz #no_slide").
 SLIDE_RE = re.compile(
     r"^\s*(?:\.word|W+L+W*)\s+ANI_SLIDE_BACK\s*,\s*([^,]+)\s*,\s*([^,]+)\s*,\s*"
-    r"(#?[A-Za-z_][A-Za-z0-9_]*)\s*$", re.I)
+    r"((?:#[A-Za-z0-9_]+|[A-Za-z_][A-Za-z0-9_]*))\s*$", re.I)
 
 SET_RPT_RE = wlanim.SET_RPT_RE
 
@@ -85,17 +86,17 @@ BUTCOUNT_FIELDS = {
 # extractor drops on the floor.
 CODE_RE = re.compile(
     r"^\s*(?:\.word|W+L+W*)\s+ANI_CODE\s*,\s*"
-    r"(#?[A-Za-z_][A-Za-z0-9_]*)\s*$", re.I)
+    r"((?:#[A-Za-z0-9_]+|[A-Za-z_][A-Za-z0-9_]*))\s*$", re.I)
 
 # ANIM.ASM:119 -- branch when RPT_COUNT is at least the operand.
 RPTGE_RE = re.compile(
     r"^\s*(?:\.word|W+L+W*)\s+ANI_IF_RPTCOUNT_GE\s*,\s*([^,]+)\s*,\s*"
-    r"(#?[A-Za-z_][A-Za-z0-9_]*)\s*$", re.I)
+    r"((?:#[A-Za-z0-9_]+|[A-Za-z_][A-Za-z0-9_]*))\s*$", re.I)
 
 BUTCOUNT_RE = re.compile(
     r"^\s*(?:\.word|W+L+W*)\s+(ANI_IF_BUTCOUNT_GE|ANI_IF_BUTCOUNT_LT)\s*,\s*"
     r"([A-Za-z_][A-Za-z0-9_]*)\s*,\s*([^,]+)\s*,\s*"
-    r"(#?[A-Za-z_][A-Za-z0-9_]*)\s*$", re.I)
+    r"((?:#[A-Za-z0-9_]+|[A-Za-z_][A-Za-z0-9_]*))\s*$", re.I)
 
 # The rest of what an animation does: attack boxes and the mode/facing
 # commands the backend had been carrying in side tables keyed on a frame
@@ -129,7 +130,7 @@ OPPMODE_RE = re.compile(
 # ANI_IFOPPMODE mode,#branch -- the high bit of the mode inverts the test.
 IFOPPMODE_RE = re.compile(
     r"^\s*(?:\.word|W+L+W*)\s+ANI_IFOPPMODE\s*,\s*([^,]+),\s*"
-    r"(#?[A-Za-z_][A-Za-z0-9_]*)\s*$", re.I)
+    r"((?:#[A-Za-z0-9_]+|[A-Za-z_][A-Za-z0-9_]*))\s*$", re.I)
 SETMODE_RE = re.compile(
     r"^\s*(?:\.word|W+L+W*)\s+(ANI_SETMODE|ANI_SETPLYRMODE)\s*,\s*(.+)$", re.I)
 
@@ -221,11 +222,23 @@ def _file_equates(path: pathlib.Path, lines: list[str]) -> dict:
     return _FILE_EQU_CACHE[key]
 
 
-def program_for(path: pathlib.Path, label: str):
-    """[(op, *args)] with branch targets resolved to op indices."""
+def program_for(path: pathlib.Path, label: str, with_entry: bool = False):
+    """[(op, *args)] with branch targets resolved to op indices.
+
+    With `with_entry`, returns (ops, entry) -- `entry` being the op the
+    animation actually STARTS at, which is not always 0.
+    """
     lines = [wlanim.strip_comment(r)
              for r in path.read_text(errors="replace").splitlines()]
     start, stop = _body(lines, label)
+    # Where the routine's OWN first line is. Growing the body backwards
+    # below (for a branch into shared code that sits earlier in the file)
+    # moves `start`, and without remembering this the program would begin
+    # by playing the code it merely branches into. HRTSEQ4.ASM's
+    # hrt_4_hitblock_anim is exactly that: it branches back into
+    # hrt_4_block_anim's `#4block` hold, so its body starts eight ops
+    # before its own first command.
+    own_start = start
     # A routine that runs on into another (no ANI_END of its own) can also
     # BRANCH into it -- hrt_4_knee_to_head_anim's #skip_run_check and
     # hrt_faceup_getup_anim's #common_4 both live in the body they continue
@@ -321,9 +334,12 @@ def program_for(path: pathlib.Path, label: str):
     ops: list[tuple] = []
     label_at: dict[str, int] = {}   # local label -> op index
     fixups: list[tuple[int, str]] = []
+    entry = None                    # op index of the routine's own start
 
     for i in range(start, stop):
         line = lines[i]
+        if entry is None and i >= own_start:
+            entry = len(ops)
         if not line:
             continue
 
@@ -576,6 +592,17 @@ def program_for(path: pathlib.Path, label: str):
         # skipped, exactly as the flat extractor skips it -- but unlike the
         # flat extractor, skipping it here cannot corrupt the frame ORDER,
         # because order comes from the branches, which are all represented.
+        #
+        # Skipping is silent in the emitted C, so it is counted here
+        # instead: SKIPPED is what `--census` reports, and it is the only
+        # honest answer to "how much of the animation VM is left".
+        _sk = SKIP_NAME_RE.match(line)
+        if _sk:
+            _n = _sk.group(1).upper()
+            SKIPPED[_n] += 1
+            if len(SKIPPED_WHERE[_n]) < 4:
+                SKIPPED_WHERE[_n].append(f"{path.name}:{i + 1} {label}: "
+                                         f"{line.strip()}")
 
     for at, target in fixups:
         if target not in label_at:
@@ -597,6 +624,8 @@ def program_for(path: pathlib.Path, label: str):
         # own ANI_END; a runaway one never does.
         if not wlanim._routine_terminates(lines, (start, stop)):
             raise ValueError(f"{label}: no frames")
+    if with_entry:
+        return ops, (entry or 0)
     return ops
 
 
@@ -612,6 +641,17 @@ BRANCH_OPS = {"GOTO", "IFSTATUS", "IFNOTSTATUS", "IFBLOCKED", "IF_RPTCOUNT",
 # no-operand default and had its operands silently written out as zero --
 # which is exactly what happened to ANI_BOUNCE and ANI_GETUP.
 MOTION_OPS = {kind for kind, _nargs, _has_mode in wlcommands.COMMANDS.values()}
+
+# Every ANI_* the emitter fell through to, tallied by name. Reset by
+# census() so a run can be measured on its own.
+SKIPPED: "collections.Counter[str]" = collections.Counter()
+# A few real call sites per skipped op, so the census says WHERE as well
+# as how many -- an op that is skipped only sometimes is a defect, not a
+# gap, and the difference is invisible without this.
+SKIPPED_WHERE: "collections.defaultdict[str, list]" = \
+    collections.defaultdict(list)
+SKIP_NAME_RE = re.compile(r"^\s*(?:\.word|\.long|W+L+W*)?\s*,?\s*"
+                          r"(ANI_[A-Za-z0-9_]+)", re.I)
 
 
 def _c_op(op) -> str:
@@ -680,17 +720,19 @@ def render_c(entries) -> str:
            ""]
     names = []
     for source, label in entries:
-        ops = program_for(pathlib.Path(source), label)
+        ops, entry = program_for(pathlib.Path(source), label, with_entry=True)
         sym = "prog_" + label
         out.append(f"static const wm_anim_op {sym}_ops[] = {{")
         for op in ops:
             out.append(_c_op(op))
         out += ["};", ""]
-        names.append((label, pathlib.Path(source).name, sym))
+        names.append((label, pathlib.Path(source).name, sym, entry))
     out.append("static const wm_anim_program programs[] = {")
-    for label, src, sym in names:
+    for label, src, sym, entry in names:
+        note = "" if entry == 0 else "   /* branches back into shared code */"
         out.append(f'    {{ "{label}", "{src}", {sym}_ops,')
-        out.append(f'      sizeof({sym}_ops) / sizeof({sym}_ops[0]) }},')
+        out.append(f'      sizeof({sym}_ops) / sizeof({sym}_ops[0]),'
+                   f' {entry} }},{note}')
     out += ["};", "",
             "const wm_anim_program *wm_anim_program_find(const char *source_label) {",
             "    size_t i;",
@@ -723,6 +765,11 @@ def main(argv=None) -> int:
     # gap, because wm_anim_program_find can no longer miss.
     ap.add_argument("--roster", action="store_true")
     ap.add_argument("--out")
+    # Emit nothing; report what the emitter SKIPPED instead. Skipping is
+    # silent in the generated C, so without this there is no measured
+    # answer to "how much of the animation VM is still missing" -- only a
+    # hand-kept one, which is exactly how the MOTION_OPS defect shipped.
+    ap.add_argument("--census", action="store_true")
     ns = ap.parse_args(argv)
     entries = [(src, lab) for src, lab in ns.animation]
     if ns.source:
@@ -758,6 +805,25 @@ def main(argv=None) -> int:
             seen.add(lab)
             unique.append((src, lab))
     entries = unique
+    if ns.census:
+        SKIPPED.clear()
+        SKIPPED_WHERE.clear()
+        emitted = 0
+        for src, lab in entries:
+            try:
+                emitted += len(program_for(pathlib.Path(src), lab))
+            except (OSError, ValueError):
+                continue
+        skipped = sum(SKIPPED.values())
+        total = emitted + skipped
+        print(f"{len(entries)} programs, {emitted} ops emitted, "
+              f"{skipped} skipped "
+              f"({100.0 * emitted / total:.1f}% of {total})")
+        for name, n in SKIPPED.most_common():
+            print(f"  {n:6d}  {name}")
+            for where in SKIPPED_WHERE[name][:2]:
+                print(f"            {where}")
+        return 0
     if ns.out:
         pathlib.Path(ns.out).write_text(render_c(entries))
         print(f"wrote {len(entries)} animation programs -> {ns.out}")

@@ -331,6 +331,67 @@ static void do_combo_mess(wm_arcade_actor_t *actor, const wm_anim_env *env,
 }
 
 /*
+ * DCSSOUND.ASM:4398 MAYBE_BOUNCE_ROPE -- "into the ropes!", but only
+ * sometimes. `MOVK 10,A0 / CALLA RNDRNG0 / MOVE A0,A0 / JRNZ` speaks
+ * only when the draw lands exactly on zero, and RNDRNG0's maximum is
+ * inclusive, so that is one time in eleven rather than one in ten.
+ *
+ * Its three siblings just below it in the source -- MAYBE_HIGH_RISK,
+ * MAYBE_TOUGH_ENOUGH, MAYBE_SHOCKING -- are the same shape but end in
+ * DIE rather than RETS: they are processes created elsewhere, and no
+ * animation calls them, so they are not registered here.
+ */
+#define WM_VOICE_INTO_THE_ROPES 0x15Bu
+#define WM_BOUNCE_ROPE_ONE_IN 10u
+
+static void maybe_bounce_rope(wm_arcade_actor_t *actor,
+                              const wm_anim_env *env, int32_t param) {
+    (void)actor;
+    (void)param;
+    if (!env || !env->rng || !env->announcer) return;
+    if (rnd0(env, WM_BOUNCE_ROPE_ONE_IN) != 0u) return;
+    (void)wm_announcer_add_if_silent(env->announcer, WM_VOICE_INTO_THE_ROPES);
+}
+
+/*
+ * `#set_trgt` -- where to land when climbing out onto the apron. Pure
+ * geometry over the TGT_* offsets: the near side's apron X, mid-ring Z,
+ * and the mat's own Y.
+ *
+ * SEVEN of the eight copies are identical at RING_X_CENTER +/- (0f8h+60).
+ * Doink's is 0f8h+50 -- ten units further in. That is the whole reason
+ * this registry is keyed on (name, file): resolving `#set_trgt` by bare
+ * name would put Doink on everyone else's apron.
+ */
+#define WM_APRON_X_BASE 0x0F8
+
+static void set_trgt(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                     int32_t apron_margin) {
+    int32_t off = WM_APRON_X_BASE + apron_margin;
+    (void)env;
+    if (!actor) return;
+    /* `cmpi RING_X_CENTER,a14 / jrlt #onlft` -- exactly on centre takes
+       the RIGHT apron, since the test is strictly less-than. */
+    actor->tgt_xoff = (actor->x_int < WM_RING_X_CENTER)
+                          ? (WM_RING_X_CENTER - off)
+                          : (WM_RING_X_CENTER + off);
+    actor->tgt_zoff = WM_RING_Z_CENTER;
+    actor->tgt_yoff = WM_MAT_Y;
+}
+
+/*
+ * `#clrcnt` -- one clear, with the source's own note on why the field is
+ * an odd one to use: "We are re-using BUT_COUNT in the player process".
+ * Identical in all four files that define it.
+ */
+static void clrcnt(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                   int32_t param) {
+    (void)env;
+    (void)param;
+    if (actor) actor->but_count = 0;
+}
+
+/*
  * HRTSEQ3.ASM:2896 #rope_check -- the roll-uppercut hitting the ropes.
  *
  * This is the only translated routine that writes ANIPC, the animation's
@@ -1464,6 +1525,24 @@ static const struct {
     { "DO_COMBO_MESS", NULL, do_combo_mess, 0 },
     /* SUBRP, so file-local -- and only HRTSEQ3.ASM calls it. */
     { "#rope_check", "HRTSEQ3.ASM", rope_check, 0 },
+    { "MAYBE_BOUNCE_ROPE", NULL, maybe_bounce_rope, 0 },
+    /*
+     * #set_trgt: seven files at 0f8h+60, Doink alone at 0f8h+50. The
+     * param is that margin, so the difference is data rather than a
+     * second body.
+     */
+    { "#set_trgt", "BAMSEQ2.ASM", set_trgt, 60 },
+    { "#set_trgt", "HRTSEQ2.ASM", set_trgt, 60 },
+    { "#set_trgt", "LEXSEQ2.ASM", set_trgt, 60 },
+    { "#set_trgt", "RZRSEQ2.ASM", set_trgt, 60 },
+    { "#set_trgt", "SHNSEQ2.ASM", set_trgt, 60 },
+    { "#set_trgt", "UNDSEQ2.ASM", set_trgt, 60 },
+    { "#set_trgt", "YOKSEQ2.ASM", set_trgt, 60 },
+    { "#set_trgt", "DNKSEQ2.ASM", set_trgt, 50 },
+    { "#clrcnt", "DNKSEQ2.ASM", clrcnt, 0 },
+    { "#clrcnt", "LEXSEQ2.ASM", clrcnt, 0 },
+    { "#clrcnt", "RZRSEQ2.ASM", clrcnt, 0 },
+    { "#clrcnt", "UNDSEQ2.ASM", clrcnt, 0 },
     { "set_xdrift", NULL, set_xdrift, 0 },
     { "set_buckoff_vels", NULL, set_buckoff_vels, 0 },
     { "skick_delay", NULL, skick_delay, 0 },

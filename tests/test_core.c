@@ -5175,6 +5175,126 @@ static void test_rope_check_writes_the_program_counter(void) {
     }
 }
 
+/* Three more: a rope taunt, the apron target, and a counter clear. */
+static void test_bounce_rope_trgt_and_clrcnt(void) {
+    wm_arcade_actor_t a;
+    wm_announcer_state ann;
+    wm_anim_env env;
+    WmRng rng;
+    int i, spoke = 0;
+
+    /*
+     * DCSSOUND.ASM:4398 MAYBE_BOUNCE_ROPE. `MOVK 10,A0 / RNDRNG0 / MOVE
+     * A0,A0 / JRNZ` speaks only on a draw of exactly zero, and RNDRNG0's
+     * maximum is inclusive -- so one time in ELEVEN, not one in ten.
+     */
+    memset(&env, 0, sizeof(env));
+    wm_rng_init(&rng, 0x77u, NULL, NULL, NULL);
+    env.rng = &rng;
+    env.announcer = &ann;
+    memset(&a, 0, sizeof(a));
+
+    /*
+     * The RNG stirs from HCOUNT and the stack pointer, which is real
+     * entropy on the hardware and none at all in a bare test -- with no
+     * readers wired it settles on one value and returns it forever. The
+     * app feeds it tick-derived versions of both; this drives it the same
+     * shape through the documented latched-input path.
+     */
+    for (i = 0; i < 400; ++i) {
+        wm_rng_set_latched_inputs(&rng, (uint32_t)(i * 8) & 0x1FFu,
+                                  0x10000u - (uint32_t)(i * 64));
+        wm_announcer_init(&ann);
+        CHECK(wm_anim_code_run(&a, &env, "MAYBE_BOUNCE_ROPE", NULL));
+        if (!wm_announcer_is_silent(&ann)) {
+            CHECK(ann.slot[0] == 0x15Bu);      /* INTO_THE_ROPES */
+            ++spoke;
+        }
+    }
+    /* One in eleven of 400 is ~36. A band, not an exact count: what this
+       proves is that the gate is real and is neither always nor never. */
+    CHECK(spoke > 5 && spoke < 120);
+
+    /* With no announcer or no RNG it says nothing rather than guessing. */
+    memset(&env, 0, sizeof(env));
+    wm_announcer_init(&ann);
+    env.announcer = &ann;
+    CHECK(wm_anim_code_run(&a, &env, "MAYBE_BOUNCE_ROPE", NULL));
+    CHECK(wm_announcer_is_silent(&ann));
+
+    /*
+     * `#set_trgt` -- the apron to land on when climbing out. Seven files
+     * put it at RING_X_CENTER +/- (0f8h+60); DOINK'S is 0f8h+50, ten
+     * units further in, which is exactly why the registry is keyed on
+     * (name, file).
+     */
+    memset(&env, 0, sizeof(env));
+    {
+        static const char *const sixty[] = {
+            "BAMSEQ2.ASM", "HRTSEQ2.ASM", "LEXSEQ2.ASM", "RZRSEQ2.ASM",
+            "SHNSEQ2.ASM", "UNDSEQ2.ASM", "YOKSEQ2.ASM"
+        };
+        size_t k;
+        for (k = 0; k < sizeof(sixty) / sizeof(sixty[0]); ++k) {
+            memset(&a, 0, sizeof(a));
+            a.x_int = WM_RING_X_CENTER - 200;
+            CHECK(wm_anim_code_run(&a, &env, "#set_trgt", sixty[k]));
+            CHECK(a.tgt_xoff == WM_RING_X_CENTER - (0xF8 + 60));
+            CHECK(a.tgt_zoff == WM_RING_Z_CENTER);
+            CHECK(a.tgt_yoff == WM_MAT_Y);
+
+            memset(&a, 0, sizeof(a));
+            a.x_int = WM_RING_X_CENTER + 200;
+            CHECK(wm_anim_code_run(&a, &env, "#set_trgt", sixty[k]));
+            CHECK(a.tgt_xoff == WM_RING_X_CENTER + (0xF8 + 60));
+        }
+    }
+    /* Doink lands ten units closer in, on both sides. */
+    memset(&a, 0, sizeof(a));
+    a.x_int = WM_RING_X_CENTER - 200;
+    CHECK(wm_anim_code_run(&a, &env, "#set_trgt", "DNKSEQ2.ASM"));
+    CHECK(a.tgt_xoff == WM_RING_X_CENTER - (0xF8 + 50));
+    memset(&a, 0, sizeof(a));
+    a.x_int = WM_RING_X_CENTER + 200;
+    CHECK(wm_anim_code_run(&a, &env, "#set_trgt", "DNKSEQ2.ASM"));
+    CHECK(a.tgt_xoff == WM_RING_X_CENTER + (0xF8 + 50));
+    /* ...and the two really are different, which is the point. */
+    CHECK((0xF8 + 50) != (0xF8 + 60));
+
+    /* `jrlt` -- exactly on centre takes the RIGHT apron. */
+    memset(&a, 0, sizeof(a));
+    a.x_int = WM_RING_X_CENTER;
+    CHECK(wm_anim_code_run(&a, &env, "#set_trgt", "HRTSEQ2.ASM"));
+    CHECK(a.tgt_xoff == WM_RING_X_CENTER + (0xF8 + 60));
+
+    /* A file with no row of its own gets nothing: there is no global
+       #set_trgt to fall back on, and inventing one would hand a wrestler
+       another's geometry. */
+    memset(&a, 0, sizeof(a));
+    CHECK(!wm_anim_code_run(&a, &env, "#set_trgt", "HRTSEQ4.ASM"));
+
+    /*
+     * `#clrcnt` -- one clear, and the source says why the field is a
+     * surprising one: "We are re-using BUT_COUNT in the player process".
+     */
+    {
+        static const char *const files[] = {
+            "DNKSEQ2.ASM", "LEXSEQ2.ASM", "RZRSEQ2.ASM", "UNDSEQ2.ASM"
+        };
+        size_t k;
+        for (k = 0; k < sizeof(files) / sizeof(files[0]); ++k) {
+            memset(&a, 0, sizeof(a));
+            a.but_count = 7;
+            CHECK(wm_anim_code_run(&a, &env, "#clrcnt", files[k]));
+            CHECK(a.but_count == 0);
+        }
+        CHECK(!wm_anim_code_run(&a, &env, "#clrcnt", "HRTSEQ2.ASM"));
+    }
+
+    CHECK(wm_anim_code_run(NULL, &env, "#clrcnt", "DNKSEQ2.ASM"));
+    CHECK(wm_anim_code_run(NULL, &env, "#set_trgt", "HRTSEQ2.ASM"));
+}
+
 /* The self-contained state commands: no subsystem behind any of them. */
 static void test_self_contained_ops(void) {
     wm_arcade_actor_t a, v;
@@ -7996,6 +8116,7 @@ int main(void) {
     test_wrsnd_anim_code_routines();
     test_targeting_and_drift();
     test_rope_check_writes_the_program_counter();
+    test_bounce_rope_trgt_and_clrcnt();
     test_program_entry_points();
     test_digit_leading_local_labels();
     test_self_contained_ops();

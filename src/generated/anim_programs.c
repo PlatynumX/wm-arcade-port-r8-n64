@@ -3,6 +3,14 @@
    op indices. */
 #include "wm/anim_program.h"
 
+static const wm_anim_op prog_xxx_dead_anim_ops[] = {
+    { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 9, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "#set_pinable_bit" },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "#ko_if_drone" },
+    { WM_AOP_ROT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
 static const wm_anim_op prog_bam_zip_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3600, 0, 0, 0, 0, 0, "B2ST2A01" },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -62619,6 +62627,8 @@ static const wm_anim_label prog_lex_choking_anim_labels[] = {
 };
 
 static const wm_anim_program programs[] = {
+    { "xxx_dead_anim", "WRESTLE2.ASM", prog_xxx_dead_anim_ops,
+      sizeof(prog_xxx_dead_anim_ops) / sizeof(prog_xxx_dead_anim_ops[0]), 0, 0, 0 },
     { "bam_zip_anim", "BAMSEQ1.ASM", prog_bam_zip_anim_ops,
       sizeof(prog_bam_zip_anim_ops) / sizeof(prog_bam_zip_anim_ops[0]), 0, 0, 0 },
     { "bam_stand2_anim", "BAMSEQ1.ASM", prog_bam_stand2_anim_ops,

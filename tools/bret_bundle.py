@@ -26,6 +26,15 @@ PROGRAM_FRAME_RE = re.compile(
 # origins, so a missing victim frame leaves the victim hanging at (0,0).
 PUPPET_FRAME_RE = re.compile(
     r'\{"([A-Z][A-Z0-9_]*[0-9]{2})"\s*,\s*-?[0-9]+\s*,\s*-?[0-9]+\s*,\s*-?[0-9]+\}')
+# ...and the same victim frames appear again inside the emitted PROGRAMS,
+# carried by ANI_SUPERSLAVE2 rather than by a puppet table. PROGRAM_FRAME_RE
+# above only matches WM_AOP_FRAME -- the frames a wrestler shows HIMSELF --
+# so without this the poses he puts his VICTIM into were collected only if
+# they happened to appear in a puppet table too. 263 of them did not, and
+# a victim frame with no geometry has no hurt box: the source's own note on
+# why that matters is in the puppet comment above.
+SLAVE_FRAME_RE = re.compile(
+    r'WM_AOP_SUPERSLAVE2[^}]*?"([A-Z][A-Z0-9_]*[0-9]{2})"')
 
 
 def c_ident(s: str) -> str:
@@ -39,7 +48,8 @@ def collect_frames(paths: list[pathlib.Path]) -> list[str]:
         text = path.read_text(errors="replace")
         for match in (list(FRAME_RE.finditer(text)) +
                       list(PROGRAM_FRAME_RE.finditer(text)) +
-                      list(PUPPET_FRAME_RE.finditer(text))):
+                      list(PUPPET_FRAME_RE.finditer(text)) +
+                      list(SLAVE_FRAME_RE.finditer(text))):
             name = match.group(1).upper()
             if name not in seen:
                 seen.add(name)

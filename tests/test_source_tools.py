@@ -1673,8 +1673,11 @@ def test_emitted_programs_hold_together() -> None:
                 bad_target.append((label, op, tgt, n))
         ops = [o for o, _ in rows]
         # A program ends, loops, or hands off. Anything else runs out.
+        # ANI_ROT parks forever -- next_pc stays put and the frame holds
+        # -- so it never runs off the end either. xxx_dead_anim ends that
+        # way and nothing else does.
         if not ({"WM_AOP_END", "WM_AOP_REPEAT", "WM_AOP_GOTO",
-                 "WM_AOP_CHANGEANIM"} & set(ops[-1:])) and \
+                 "WM_AOP_CHANGEANIM", "WM_AOP_ROT"} & set(ops[-1:])) and \
                 "WM_AOP_END" not in ops:
             no_terminator.append(label)
         for f in re.findall(r'WM_AOP_FRAME,[^}]*?"([A-Z0-9]+)"', body):
@@ -1816,6 +1819,31 @@ def test_an_independent_reading_agrees() -> None:
     assert not absent, absent[:5]
 
 
+
+def test_every_hard_coded_animation_label_resolves() -> None:
+    """A label the C code hands off to by name must be a real program.
+
+    src/core/anim_program.c sets `exec->become = "xxx_dead_anim"` on the
+    death path. That program is not part of the roster sweep -- it comes
+    from an explicit `--animation WRESTLE2.ASM xxx_dead_anim` in
+    scripts/regenerate_source_data.sh -- so regenerating the file by hand
+    with only --roster --slave-targets silently drops it, and the death
+    hand-off then resolves to nothing at all. That happened during
+    development and nothing caught it, because a `become` that finds no
+    program just ends the animation quietly.
+    """
+    out = ROOT / "src" / "generated" / "anim_programs.c"
+    core = ROOT / "src" / "core" / "anim_program.c"
+    if not out.exists() or not core.exists():
+        return
+    emitted = set(re.findall(r"static const wm_anim_op prog_(\w+)_ops\[\]",
+                             out.read_text()))
+    wanted = set(re.findall(r'exec->become\s*=\s*"([A-Za-z0-9_]+)"',
+                            core.read_text()))
+    assert wanted, "no hard-coded become targets found -- pattern stale?"
+    assert wanted <= emitted, sorted(wanted - emitted)
+
+
 def main() -> int:
     test_wlanim()
     test_wlprogram()
@@ -1840,6 +1868,7 @@ def main() -> int:
     test_digit_leading_local_labels_are_seen()
     test_programs_record_where_they_start()
     test_emitted_programs_hold_together()
+    test_every_hard_coded_animation_label_resolves()
     test_the_two_extractors_agree()
     test_an_independent_reading_agrees()
     test_waithitopp_is_a_mode_and_a_frame()

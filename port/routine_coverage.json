@@ -5860,9 +5860,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_bam_leg_anims_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -6010,9 +6010,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_bam_rotate_anims_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -6295,9 +6295,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_bam_torso_anims_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -6355,10 +6355,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_wrestler_velocity_table",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "bam_walk1_f2_anim",
@@ -11231,9 +11231,9 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_dnk_leg_anims_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -11306,9 +11306,9 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_dnk_rotate_anims_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -11546,9 +11546,9 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_dnk_torso_anims_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -11636,10 +11636,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_wrestler_velocity_table",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "dnk_walk1_f2_anim",
@@ -17172,9 +17172,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "hrt_leg_anims_table",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_hrt_leg_anims_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -17322,9 +17322,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "hrt_rotate_anims_table",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_hrt_rotate_anims_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -17607,9 +17607,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "hrt_torso_anims_table",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_hrt_torso_anims_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -17682,10 +17682,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "hrt_velocity_table",
+   "status": "renamed",
+   "evidence": "wm_bret_velocity_table",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "hrt_walk1_f2_anim",
@@ -20699,9 +20699,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_lex_leg_anims_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -20789,9 +20789,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_lex_rotate_anims_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -21089,9 +21089,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_lex_torso_anims_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -21149,10 +21149,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_wrestler_velocity_table",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "lex_vsuplex_anim",
@@ -26057,9 +26057,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_rzr_leg_anims_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -26162,9 +26162,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_rzr_rotate_anims_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -26462,9 +26462,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_rzr_torso_anims_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -26552,10 +26552,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_wrestler_velocity_table",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "rzr_walk1_f2_anim",
@@ -29732,9 +29732,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_shn_leg_anims_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -29807,9 +29807,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_shn_rotate_anims_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -30167,9 +30167,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_shn_torso_anims_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -30227,10 +30227,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_wrestler_velocity_table",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "shn_walk1_f2_anim",
@@ -33647,9 +33647,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_und_leg_anims_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -33797,9 +33797,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_und_rotate_anims_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -34172,9 +34172,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_und_torso_anims_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -34232,10 +34232,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_wrestler_velocity_table",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "und_walk1_f2_anim",
@@ -37278,9 +37278,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_yok_leg_anims_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -37383,9 +37383,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_yok_rotate_anims_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -37698,9 +37698,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_yok_torso_anims_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -37758,10 +37758,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_wrestler_velocity_table",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "yok_vsuplex_anim",

@@ -112,6 +112,25 @@ extern const wm_ani_init_row wm_ani_init_rows[WM_ANI_INIT_SLOTS];
  * PLAYER_RIGHT_BIT exactly as the source does. Safe to call for a
  * wrestler with no row (Adam Bomb) -- it does nothing.
  */
+/*
+ * WRESTLE.ASM:4946 change_walk_anim and :5062 set_rotate_anim, against
+ * this wrestler's own tables (wm/wrestler_anim_tables.h).
+ *
+ * Called every tick through the roster dispatcher's execute_walk
+ * callback: it runs wm_execute_walk, then -- when MOVE_DIR is set --
+ * reselects the leg animation for (move, facing) on the primary
+ * channel and the torso animation for (facing, new facing) on the
+ * second, or, when idle, plays the turn animation for (old facing, new
+ * facing). Bret's hand-built backend has always done this; the seven
+ * wrestlers on this shared backend did none of it until the tables
+ * were generated for the whole roster.
+ *
+ * Exposed rather than left static so a test can drive one tick of it
+ * without standing up a whole match.
+ */
+void wm_wrestler_backend_execute_walk(wm_arcade_actor_t *actor,
+                                      wm_wrestler_backend_actor *state);
+
 void wm_wrestler_backend_ani_init(wm_wrestler_backend_actor *state,
                                   wm_arcade_actor_t *actor);
 

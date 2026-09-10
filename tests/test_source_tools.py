@@ -34,6 +34,7 @@ wlwrsnd = load("wlwrsnd", ROOT / "tools" / "wlwrsnd.py")
 wlstring = load("wlstring", ROOT / "tools" / "wlstring.py")
 wlpal = load("wlpal", ROOT / "tools" / "wlpal.py")
 wlrostertbl = load("wlrostertbl", ROOT / "tools" / "wlrostertbl.py")
+wlwrestlertbl = load("wlwrestlertbl", ROOT / "tools" / "wlwrestlertbl.py")
 port_coverage = load("port_coverage", ROOT / "tools" / "port_coverage.py")
 wlverify = load("wlverify", ROOT / "tools" / "wlverify.py")
 wlprogram = load("wlprogram", ROOT / "tools" / "wlprogram.py")
@@ -1282,6 +1283,86 @@ def test_a_branch_can_reach_the_head_of_a_later_routine() -> None:
         "yok_overhd_slam_anim"
     assert wlanim.label_def(" SUBR\tyok_overhd_slam_anim") is None
     assert wlprogram._label_def("\t.word\tANI_END") is None
+
+
+def test_per_wrestler_anim_tables_come_out_of_the_dispatch_lists() -> None:
+    """Each wrestler's own turn/walk/torso tables, read not assumed.
+
+    Three things here are read from the source rather than built from a
+    prefix per wrestler, because each of them is a place the obvious
+    guess is wrong:
+
+      * the roster order comes from WRESTLE.ASM's own #wres_*_anims
+        lists, where slot 7 (Adam Bomb, cut) carries DOINK's tables and
+        the Referee's rotate slot is a plain 0;
+      * the defining file is resolved against WRESTLE.CMD, because
+        DNK.ASM and DOINK.ASM both define dnk_rotate_anims_table and
+        TEMPLATE.ASM defines a copy of bam_rotate_anims_table -- only
+        DOINK.ASM is linked;
+      * the shapes are the index arithmetic in change_walk_anim
+        (`srl 1` + `X4` for the 4x4s, `X8` for the 8x8), so a table that
+        does not fill its shape is refused rather than padded.
+    """
+    if not (wlanim.ORIG / "WRESTLE.ASM").exists():
+        return
+
+    tables = wlwrestlertbl.tables()
+    assert set(tables) == {"rotate", "torso", "leg"}
+
+    for kind, (_label, rows, cols) in wlwrestlertbl.KINDS.items():
+        slots = tables[kind]
+        assert len(slots) == wlwrestlertbl.ROSTER_SLOTS, (kind, len(slots))
+        for entry in slots:
+            if entry is None:
+                continue
+            name, grid = entry
+            assert len(grid) == rows, (name, len(grid))
+            for row in grid:
+                assert len(row) == cols, (name, row)
+
+    # Adam Bomb's slot is Doink's table, not an empty one and not a
+    # table of his own -- ADAM.ASM is in the tree but not linked.
+    for kind in ("rotate", "torso", "leg"):
+        assert tables[kind][7] == tables[kind][6], kind
+        assert tables[kind][7][0].startswith("dnk_"), kind
+
+    # The Referee has no tables at all.
+    for kind in ("rotate", "torso", "leg"):
+        assert tables[kind][9] is None, kind
+
+    # Doink's table resolves to the LINKED file.
+    assert wlwrestlertbl._defining_file("dnk_rotate_anims_table").name \
+        == "DOINK.ASM"
+    assert wlwrestlertbl._defining_file("bam_rotate_anims_table").name \
+        == "BAM.ASM"
+
+    # The 4x4s are a turn matrix: the diagonal is a pose, everything
+    # else a turn. The torso's are the `2` variants.
+    for slot in range(9):
+        rot = tables["rotate"][slot][1]
+        tor = tables["torso"][slot][1]
+        for d in range(4):
+            assert "_stand" in rot[d][d], (slot, rot[d][d])
+            assert "_torso" in tor[d][d], (slot, tor[d][d])
+        assert "turn" in rot[0][1] and "turn2" not in rot[0][1]
+        assert "turn2" in tor[0][1]
+
+    # And every label is an animation, spelled the way a program is.
+    for kind in tables:
+        for entry in tables[kind]:
+            if entry is None:
+                continue
+            for row in entry[1]:
+                for lab in row:
+                    assert re.fullmatch(r"[a-z]{3}_[a-z0-9_]+_anim", lab), lab
+
+
+def test_per_wrestler_tables_generate_the_shipped_file() -> None:
+    """The checked-in file is what the tool emits, byte for byte."""
+    out = ROOT / "src" / "generated" / "wrestler_anim_tables.c"
+    if not (wlanim.ORIG / "WRESTLE.ASM").exists() or not out.exists():
+        return
+    assert wlwrestlertbl.render_c() == out.read_text()
 
 
 def test_waithitopp_is_a_mode_and_a_frame() -> None:
@@ -2769,6 +2850,8 @@ def main() -> int:
     test_roster_anim_tables_name_real_routines()
     test_roster_anim_tables_refuse_ambiguous_labels()
     test_roster_anim_tables_generate_the_shipped_file()
+    test_per_wrestler_anim_tables_come_out_of_the_dispatch_lists()
+    test_per_wrestler_tables_generate_the_shipped_file()
     test_coverage_does_not_count_a_comment_as_an_implementation()
     test_coverage_matches_only_a_suffix_or_a_generated_wrapper()
     test_coverage_only_counts_linked_files()

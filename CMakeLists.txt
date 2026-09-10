@@ -44,6 +44,7 @@ add_library(wmcore STATIC
     src/generated/announce_tables.c
     src/generated/wrestler_sound_tables.c
     src/generated/progress_wrestlers.c
+    src/generated/wrestler_anim_tables.c
 )
 # BEGIN FIX38 CUMULATIVE ARCADE SOURCE PORTS
 target_sources(wmcore PRIVATE
@@ -51,7 +52,6 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_attach_anim.c
     src/core/arcade/wm_arcade_bam.c
     src/core/arcade/wm_arcade_bret.c
-    src/core/arcade/wm_arcade_bret_tables.c
     src/core/arcade/wm_arcade_closest.c
     src/core/arcade/wm_arcade_combat.c
     src/core/arcade/wm_arcade_confine.c
@@ -76,7 +76,6 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_mode_dead.c
     src/core/arcade/wm_arcade_move_dispatch.c
     src/core/arcade/wm_arcade_razor.c
-    src/core/arcade/wm_arcade_razor_tables.c
     src/core/arcade/wm_arcade_react.c
     src/core/arcade/wm_arcade_react1_core.c
     src/core/arcade/wm_arcade_react2_core.c

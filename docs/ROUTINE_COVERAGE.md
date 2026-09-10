@@ -7,18 +7,18 @@ only in a note saying it is missing does not count as present.
 
 | status | meaning | count |
 |---|---|---|
-| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1836 |
+| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1860 |
 | `inlined` | the port does it, spelled out at each use site (ledger) | 3 |
-| `renamed` | the port does it under another name (ledger) | 36 |
+| `renamed` | the port does it under another name (ledger) | 44 |
 | `partial` | partly translated; the ledger note says which part | 1 |
 | `process` | a CREATE/SLEEP wrapper (ledger) | 4 |
 | `display` | object/DMA drawing; this port has no renderer (ledger) | 8 |
 | `hardware` | talks to the cabinet (ledger) | 4 |
 | `dead` | **measured**: no caller outside its own file | 48 |
-| `cited` | named only in a comment -- not evidence of anything | 169 |
-| `unknown` | no mention anywhere | 425 |
+| `cited` | named only in a comment -- not evidence of anything | 165 |
+| `unknown` | no mention anywhere | 397 |
 
-**1940 of 2534 routines are accounted for; 594 are open** (`cited` + `unknown`).
+**1972 of 2534 routines are accounted for; 562 are open** (`cited` + `unknown`).
 
 ## Open routines by file
 
@@ -38,29 +38,29 @@ only in a note saying it is missing does not count as present.
 | SELECT.ASM | 17 | `GAME_BEATEN`, `THIS_GAME_IS_BEATEN`, `buyin_counter`, `buyin_select`, `call_wrestler_name`, `display_croutons`, `draw_mugshot`, `erase_mugshot`, `obj_off`, `obj_on`, `pin_speed_in_case`, `place_cursor`, ... |
 | MAIN.ASM | 15 | `AddressSet1`, `AddressSet2`, `AddressSet3`, `AddressSet4`, `INTIO`, `InitAddresses`, `InitPIC`, `RemapIO`, `SecFuncCheck`, `SetAddresses`, `WDOGDIS`, `_AlarmClock`, ... |
 | DISPLAY.ASM | 14 | `ANI`, `SPECIAL_DISPLAY_INIT`, `anipt_getxy`, `dma_irq`, `obj_addworldxy`, `obj_yzsort`, `rnd`, `scrn_copy`, `scrn_scale`, `scrn_scale140`, `scrn_scale180`, `scrn_scaledison`, ... |
-| BRET.ASM | 11 | `hrt_finish_move1`, `hrt_finish_move2`, `hrt_grab_toss_air`, `hrt_hdhold_ddt`, `hrt_hdhold_faceslam`, `hrt_leg_anims_table`, `hrt_roll_uppercut`, `hrt_rotate_anims_table`, `hrt_smove_table`, `hrt_torso_anims_table`, `hrt_velocity_table` |
 | ATTRACT.ASM | 10 | `GENERIC_DISPLAY`, `MAKE_UP_LOGO`, `ONE_BALL`, `dan_test`, `mk_a0`, `octopus_page`, `print_gen_tips`, `show_wres_tips`, `wait_but`, `wait_on_butn` |
 | REACT1.ASM | 10 | `body_hit_dizzy_tbl`, `body_hit_tbl`, `dead_or_dying`, `head_hit2_sand_tbl`, `head_hit2_tbl`, `head_hit_dizzy_tbl`, `head_hit_tbl`, `hit_flykick`, `xxx_aborted_attach_anim`, `xxx_goto_stand_anim` |
-| DOINK.ASM | 10 | `dnk_finish_move1`, `dnk_finish_move2`, `dnk_leg_anims_table`, `dnk_rotate_anims_table`, `dnk_smove_table`, `dnk_torso_anims_table`, `dnk_velocity_table`, `do_taunt`, `std_taunt`, `std_walk_fast` |
-| TAKER.ASM | 9 | `adjust_view`, `shake_world`, `und_finish_move1`, `und_finish_move2`, `und_leg_anims_table`, `und_rotate_anims_table`, `und_smove_table`, `und_torso_anims_table`, `und_velocity_table` |
-| LEX.ASM | 9 | `lex_finish_move1`, `lex_finish_move2`, `lex_hdhold_elbow_face`, `lex_hdhold_pile`, `lex_leg_anims_table`, `lex_rotate_anims_table`, `lex_smove_table`, `lex_torso_anims_table`, `lex_velocity_table` |
 | MENU.ASM | 8 | `GetSoundRev`, `_GetTime`, `adjust_bar_height`, `aud_prtone`, `background_sound`, `poll_sdav`, `vol_bar_line`, `vol_to_ht` |
 | DRONE.ASM | 8 | `drn_combo`, `drn_enterring`, `drn_taunt`, `drone_calcskill`, `drone_seek`, `drone_seek2`, `drone_seekdirdist`, `drone_seekxz` |
-| BAM.ASM | 7 | `bam_finish_move1`, `bam_finish_move2`, `bam_leg_anims_table`, `bam_rotate_anims_table`, `bam_smove_table`, `bam_torso_anims_table`, `bam_velocity_table` |
-| RAZOR.ASM | 7 | `rzr_finish_move1`, `rzr_finish_move2`, `rzr_leg_anims_table`, `rzr_rotate_anims_table`, `rzr_smove_table`, `rzr_torso_anims_table`, `rzr_velocity_table` |
-| SHAWN.ASM | 7 | `shn_finish_move1`, `shn_finish_move2`, `shn_leg_anims_table`, `shn_rotate_anims_table`, `shn_smove_table`, `shn_torso_anims_table`, `shn_velocity_table` |
-| YOKO.ASM | 7 | `yok_finish_move1`, `yok_finish_move2`, `yok_leg_anims_table`, `yok_rotate_anims_table`, `yok_smove_table`, `yok_torso_anims_table`, `yok_velocity_table` |
+| BRET.ASM | 7 | `hrt_finish_move1`, `hrt_finish_move2`, `hrt_grab_toss_air`, `hrt_hdhold_ddt`, `hrt_hdhold_faceslam`, `hrt_roll_uppercut`, `hrt_smove_table` |
 | BAKGND.ASM | 6 | `BGND_UD1`, `bgnd_addblk`, `bgnd_addmod`, `bgnd_delnonvis`, `bgnd_get1stx`, `bgnd_scanmod` |
 | DIAG.ASM | 6 | `_aquire_time`, `_get_time`, `_set_time`, `bcd2hex`, `bin2bcd`, `line_draw` |
 | COLLIS.ASM | 6 | `check_collis`, `check_collisions`, `overlap_collision`, `set_collision_boxes`, `set_xyz`, `wres_collis_off` |
+| DOINK.ASM | 6 | `dnk_finish_move1`, `dnk_finish_move2`, `dnk_smove_table`, `do_taunt`, `std_taunt`, `std_walk_fast` |
+| TAKER.ASM | 5 | `adjust_view`, `shake_world`, `und_finish_move1`, `und_finish_move2`, `und_smove_table` |
 | ANIM.ASM | 5 | `animate_wrestler`, `animate_wrestler1`, `animate_wrestler2`, `attacker_flip_test`, `set_images` |
+| LEX.ASM | 5 | `lex_finish_move1`, `lex_finish_move2`, `lex_hdhold_elbow_face`, `lex_hdhold_pile`, `lex_smove_table` |
 | MPROC.ASM | 3 | `IKIL1C`, `process_dispatch`, `process_init` |
 | PAL.ASM | 3 | `addbae`, `addbrt_ae`, `pal_getb` |
 | AUDIT.ASM | 3 | `audit_ud`, `crd_updatetxt`, `form_crc32` |
+| BAM.ASM | 3 | `bam_finish_move1`, `bam_finish_move2`, `bam_smove_table` |
 | REACT5.ASM | 3 | `bncoff`, `bncoff_gate`, `hit_puppet_even_if_dead` |
 | ROPES.ASM | 3 | `fastanic`, `rope_update`, `set_rope_z` |
 | REACT2.ASM | 3 | `hit_grabfling`, `hit_grabhold`, `hit_push` |
 | TEST.ASM | 3 | `opmsg_clr`, `opmsg_main`, `print_multi` |
+| RAZOR.ASM | 3 | `rzr_finish_move1`, `rzr_finish_move2`, `rzr_smove_table` |
+| SHAWN.ASM | 3 | `shn_finish_move1`, `shn_finish_move2`, `shn_smove_table` |
+| YOKO.ASM | 3 | `yok_finish_move1`, `yok_finish_move2`, `yok_smove_table` |
 | CROWD.ASM | 2 | `animate_back`, `crowd_anim` |
 | REACT4.ASM | 2 | `hit_buttstomp`, `hit_headhold` |
 | REACT9.ASM | 2 | `hit_headdslash`, `hit_headuslash` |

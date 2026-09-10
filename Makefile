@@ -73,7 +73,6 @@ FIX38_ARCADE_C := \
     src/core/arcade/wm_arcade_attach_anim.c \
     src/core/arcade/wm_arcade_bam.c \
     src/core/arcade/wm_arcade_bret.c \
-    src/core/arcade/wm_arcade_bret_tables.c \
     src/core/arcade/wm_arcade_closest.c \
     src/core/arcade/wm_arcade_combat.c \
     src/core/arcade/wm_arcade_doink.c \
@@ -82,7 +81,6 @@ FIX38_ARCADE_C := \
     src/core/arcade/wm_arcade_lifebar.c \
     src/core/arcade/wm_arcade_move_dispatch.c \
     src/core/arcade/wm_arcade_razor.c \
-    src/core/arcade/wm_arcade_razor_tables.c \
     src/core/arcade/wm_arcade_react.c \
     src/core/arcade/wm_arcade_react1_core.c \
     src/core/arcade/wm_arcade_react2_core.c \
@@ -106,6 +104,7 @@ FIX38_ARCADE_C := \
     src/core/arcade/wm_arcade_life_data.c \
     src/core/arcade/wm_arcade_roster_anims.c \
     src/generated/roster_anim_tables.c \
+    src/generated/wrestler_anim_tables.c \
     src/generated/ani_init_tables.c \
     src/generated/palettes.c \
     src/generated/font_tables.c \

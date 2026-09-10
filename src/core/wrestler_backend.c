@@ -5,6 +5,8 @@
 #include "wm/arcade/wm_arcade_anim_combat.h"
 #include "wm/bret_backend.h"
 #include "wm/arcade/wm_arcade_start_run.h"
+#include "wm/wrestler_anim_tables.h"
+#include "wm/movement.h"
 
 #include <string.h>
 
@@ -41,10 +43,107 @@ const wm_move_velocity_entry *wm_wrestler_velocity_table(int32_t wrestler_num) {
     return wrestler_num == (int32_t)WM_ROSTER_DOINK ? s_velocity_doink : s_velocity_std;
 }
 
-static void backend_execute_walk(wm_arcade_actor_t *actor, void *user) {
-    wm_wrestler_backend_actor *st = (wm_wrestler_backend_actor *)user;
+/* Defined below, beside the other channel plumbing. */
+static void backend_change_anim_label(wm_arcade_actor_t *actor,
+                                      const char *source_label, void *user);
+static void backend_change_anim2_label(wm_arcade_actor_t *actor,
+                                       const char *source_label, void *user);
+
+/*
+ * The label a slot's table holds at (row, col), or NULL.
+ *
+ * The 4x4 tables are indexed by DIAGONAL: the source does
+ * `callr convert_facing / srl 1`, so the eight compass directions
+ * collapse to four (WRESTLE.ASM:4978's own comment, "only uses
+ * diagonals (0-3)"). The 8x8 leg table is the full compass, no shift.
+ */
+static const char *slot_label(const wm_wrestler_anim_table *tables,
+                              int wrestler_num, int row, int col) {
+    if (wrestler_num < 0 || wrestler_num >= WM_WRESTLER_ANIM_SLOTS)
+        return NULL;
+    if (row < 0 || col < 0) return NULL;     /* convert_facing found none */
+    return wm_wrestler_anim_label(&tables[wrestler_num], row, col);
+}
+
+/*
+ * WRESTLE.ASM:4946 change_walk_anim and WRESTLE.ASM:5062 set_rotate_anim,
+ * for the seven wrestlers driven by the shared program backend.
+ *
+ * Bret's hand-built backend has had both since his walk was wired
+ * (src/core/bret_backend.c's wm_bret_backend_execute_walk); this is the
+ * same two routines against the generated per-wrestler tables, so the
+ * other seven stop walking and turning with whatever animation they
+ * happened to be left in. Until now the shared backend called
+ * wm_execute_walk and nothing else: no leg reselection, no turn, and a
+ * torso frozen at whatever *_ani_init started it on.
+ *
+ * The structure follows the source exactly, including which half runs
+ * when. change_walk_anim is reached only from the eight real-movement
+ * walk_table handlers, never from #zip, so both its halves are nested
+ * under MOVE_DIR != 0; set_rotate_anim is the idle path's counterpart
+ * and drives the legs alone -- the source never touches the torso from
+ * #zip.
+ */
+void wm_wrestler_backend_execute_walk(wm_arcade_actor_t *actor,
+                                      wm_wrestler_backend_actor *st) {
+    int32_t old_facing_dir;
+
     if (!actor || !st) return;
+    old_facing_dir = actor->facing_dir;
     wm_execute_walk(actor, st->opponent, wm_wrestler_velocity_table(st->wrestler_num));
+
+    if (actor->move_dir != 0) {
+        int move_compass = wm_convert_facing(actor->move_dir);
+        int facing_compass = wm_convert_facing(actor->facing_dir);
+        const char *legs = slot_label(wm_wrestler_leg_anims, st->wrestler_num,
+                                      move_compass, facing_compass);
+
+        /* The leg half (WRESTLE.ASM:5000). It never writes FACING_DIR, so
+           neither does this: FACING_DIR stays frozen at its last idle
+           value while walking, exactly as the source leaves it. */
+        if (legs) backend_change_anim_label(actor, legs, st);
+
+        /* The torso half (WRESTLE.ASM:4973).
+         *
+         * The source gates this on ANIMODE2 -- the SECOND channel's
+         * mode word. This port has one mode field on the actor, not
+         * two: nothing writes an ANIMODE2, so there is no second word
+         * to read and inventing one here would be worse than saying so.
+         * The gate below is the PRIMARY channel's MODE_UNINT, which is
+         * the same approximation Bret's hand-built backend has always
+         * made (src/core/bret_backend.c). It errs the same way in both:
+         * a torso reselect is suppressed while the legs are in an
+         * uninterruptible animation, where the source would have
+         * allowed it. Splitting ANIMODE2 out is its own change. */
+        if (!(actor->anim_mode & WM_MODE_UNINT)) {
+            int new_compass = wm_convert_facing(actor->new_facing_dir);
+            const char *torso = slot_label(
+                wm_wrestler_torso_anims, st->wrestler_num,
+                facing_compass >= 0 ? facing_compass >> 1 : -1,
+                new_compass >= 0 ? new_compass >> 1 : -1);
+            if (torso) backend_change_anim2_label(actor, torso, st);
+        }
+        return;
+    }
+
+    /* set_rotate_anim (WRESTLE.ASM:5062), the idle path. It reads
+       FACING_DIR as it was BEFORE wm_execute_walk's WM_MOVE_ZIP catch-up
+       applied the new value -- which is what the real routine sees,
+       since it overwrites FACING_DIR itself afterwards. */
+    {
+        int old_compass = wm_convert_facing(old_facing_dir);
+        int new_compass = wm_convert_facing(actor->new_facing_dir);
+        const char *turn = slot_label(
+            wm_wrestler_rotate_anims, st->wrestler_num,
+            old_compass >= 0 ? old_compass >> 1 : -1,
+            new_compass >= 0 ? new_compass >> 1 : -1);
+        if (turn) backend_change_anim_label(actor, turn, st);
+    }
+}
+
+static void backend_execute_walk(wm_arcade_actor_t *actor, void *user) {
+    wm_wrestler_backend_execute_walk(actor,
+                                     (wm_wrestler_backend_actor *)user);
 }
 
 static void backend_adjust_health(wm_arcade_actor_t *actor, int delta, void *user) {

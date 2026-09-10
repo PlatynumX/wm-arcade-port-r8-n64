@@ -334,5 +334,53 @@
     "status": "inlined",
     "symbol": "smart_target",
     "note": "The closest-opponent lookup. This port holds one fixed opponent per actor, documented in wm/arcade/wm_arcade_closest.h, so there is nothing to search."
+  },
+  "hrt_velocity_table": {
+    "file": "BRET.ASM",
+    "status": "renamed",
+    "symbol": "wm_bret_velocity_table",
+    "note": "The eight walk-velocity tables have identical BODIES -- the same compass-ordered `.long 0,-#VEL / #DVEL,-#DVEL / ...` in every file -- and differ only in the two per-wrestler equates #VEL and #DVEL. Doink is the one wrestler whose pair differs from the other seven, so the port carries the shape once as a macro and two instantiations (s_velocity_std, s_velocity_doink) behind wm_wrestler_velocity_table(WRESTLERNUM); Bret's predates the shared backend and is wm_bret_velocity_table. Same numbers, one copy of the layout."
+  },
+  "rzr_velocity_table": {
+    "file": "RAZOR.ASM",
+    "status": "renamed",
+    "symbol": "wm_wrestler_velocity_table",
+    "note": "The eight walk-velocity tables have identical BODIES -- the same compass-ordered `.long 0,-#VEL / #DVEL,-#DVEL / ...` in every file -- and differ only in the two per-wrestler equates #VEL and #DVEL. Doink is the one wrestler whose pair differs from the other seven, so the port carries the shape once as a macro and two instantiations (s_velocity_std, s_velocity_doink) behind wm_wrestler_velocity_table(WRESTLERNUM); Bret's predates the shared backend and is wm_bret_velocity_table. Same numbers, one copy of the layout."
+  },
+  "und_velocity_table": {
+    "file": "TAKER.ASM",
+    "status": "renamed",
+    "symbol": "wm_wrestler_velocity_table",
+    "note": "The eight walk-velocity tables have identical BODIES -- the same compass-ordered `.long 0,-#VEL / #DVEL,-#DVEL / ...` in every file -- and differ only in the two per-wrestler equates #VEL and #DVEL. Doink is the one wrestler whose pair differs from the other seven, so the port carries the shape once as a macro and two instantiations (s_velocity_std, s_velocity_doink) behind wm_wrestler_velocity_table(WRESTLERNUM); Bret's predates the shared backend and is wm_bret_velocity_table. Same numbers, one copy of the layout."
+  },
+  "yok_velocity_table": {
+    "file": "YOKO.ASM",
+    "status": "renamed",
+    "symbol": "wm_wrestler_velocity_table",
+    "note": "The eight walk-velocity tables have identical BODIES -- the same compass-ordered `.long 0,-#VEL / #DVEL,-#DVEL / ...` in every file -- and differ only in the two per-wrestler equates #VEL and #DVEL. Doink is the one wrestler whose pair differs from the other seven, so the port carries the shape once as a macro and two instantiations (s_velocity_std, s_velocity_doink) behind wm_wrestler_velocity_table(WRESTLERNUM); Bret's predates the shared backend and is wm_bret_velocity_table. Same numbers, one copy of the layout."
+  },
+  "shn_velocity_table": {
+    "file": "SHAWN.ASM",
+    "status": "renamed",
+    "symbol": "wm_wrestler_velocity_table",
+    "note": "The eight walk-velocity tables have identical BODIES -- the same compass-ordered `.long 0,-#VEL / #DVEL,-#DVEL / ...` in every file -- and differ only in the two per-wrestler equates #VEL and #DVEL. Doink is the one wrestler whose pair differs from the other seven, so the port carries the shape once as a macro and two instantiations (s_velocity_std, s_velocity_doink) behind wm_wrestler_velocity_table(WRESTLERNUM); Bret's predates the shared backend and is wm_bret_velocity_table. Same numbers, one copy of the layout."
+  },
+  "bam_velocity_table": {
+    "file": "BAM.ASM",
+    "status": "renamed",
+    "symbol": "wm_wrestler_velocity_table",
+    "note": "The eight walk-velocity tables have identical BODIES -- the same compass-ordered `.long 0,-#VEL / #DVEL,-#DVEL / ...` in every file -- and differ only in the two per-wrestler equates #VEL and #DVEL. Doink is the one wrestler whose pair differs from the other seven, so the port carries the shape once as a macro and two instantiations (s_velocity_std, s_velocity_doink) behind wm_wrestler_velocity_table(WRESTLERNUM); Bret's predates the shared backend and is wm_bret_velocity_table. Same numbers, one copy of the layout."
+  },
+  "dnk_velocity_table": {
+    "file": "DOINK.ASM",
+    "status": "renamed",
+    "symbol": "wm_wrestler_velocity_table",
+    "note": "The eight walk-velocity tables have identical BODIES -- the same compass-ordered `.long 0,-#VEL / #DVEL,-#DVEL / ...` in every file -- and differ only in the two per-wrestler equates #VEL and #DVEL. Doink is the one wrestler whose pair differs from the other seven, so the port carries the shape once as a macro and two instantiations (s_velocity_std, s_velocity_doink) behind wm_wrestler_velocity_table(WRESTLERNUM); Bret's predates the shared backend and is wm_bret_velocity_table. Same numbers, one copy of the layout."
+  },
+  "lex_velocity_table": {
+    "file": "LEX.ASM",
+    "status": "renamed",
+    "symbol": "wm_wrestler_velocity_table",
+    "note": "The eight walk-velocity tables have identical BODIES -- the same compass-ordered `.long 0,-#VEL / #DVEL,-#DVEL / ...` in every file -- and differ only in the two per-wrestler equates #VEL and #DVEL. Doink is the one wrestler whose pair differs from the other seven, so the port carries the shape once as a macro and two instantiations (s_velocity_std, s_velocity_doink) behind wm_wrestler_velocity_table(WRESTLERNUM); Bret's predates the shared backend and is wm_bret_velocity_table. Same numbers, one copy of the layout."
   }
 }

@@ -277,6 +277,8 @@ typedef enum {
     WM_AOP_START_DIZZY,    /* ANIM.ASM:2005 :57   a = #dizzy_offsets slot */
     WM_AOP_LEAPATPOS,      /* ANIM.ASM:1633 :39   a=ticks b=maxdist c,d,e=off */
     WM_AOP_SLIDEATOPP,     /* ANIM.ASM:3838 :96   a=vel b=target c=maxticks */
+    WM_AOP_DEBRIS,         /* ANIM.ASM:3340 :94   a=%% b=shape c,d,e=off */
+    WM_AOP_DEBRISAT,       /* ANIM.ASM:3324 :93   the same, on the victim */
 
     /* Present in the source but needing a system this port does not have
        (a renderer, paired actors, a callback bridge). Carried so the
@@ -479,6 +481,16 @@ typedef struct wm_anim_env {
      */
     void (*create_dizzy)(void *user, wm_arcade_actor_t *at,
                          int32_t xoff, int32_t yoff);
+    /*
+     * SPECIAL.ASM:3415 react_debris. The gates, the global cap, the
+     * impact sound and the burst shape are all translated
+     * (wm/arcade/wm_arcade_debris.h); this is where the state lives and
+     * where the pieces would be drawn. `victim` is who the debris comes
+     * off, which for ANI_DEBRISAT is the attached wrestler.
+     */
+    void (*react_debris)(void *user, wm_arcade_actor_t *victim,
+                         int percent, int shape,
+                         int32_t xoff, int32_t yoff, int32_t zoff);
     /*
      * WRESTLE.ASM:257 allow_offscrn, set to 80 by ANI_SET_IDIOT ("Allow
      * players off screen on toss outs"). WRESTLE2.ASM:2214 counts it down

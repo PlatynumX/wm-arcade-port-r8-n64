@@ -13,6 +13,7 @@
 #include "wm/arcade/wm_arcade_round_announce.h"
 #include "wm/arcade/wm_arcade_target.h"
 #include "wm/arcade/wm_arcade_shake.h"
+#include "wm/arcade/wm_arcade_debris.h"
 #include "wm/arcade/wmania_rng.h"
 #include "wm/arcade/wmania_rope_runtime.h"
 #include "wm/arcade/wm_arcade_announcer.h"
@@ -179,6 +180,11 @@ typedef struct {
         const char *image;
         uint32_t drawn;
     } move_name;
+
+    /* SPECIAL.ASM:3415 react_debris's global @debris_count, and what
+       the last burst was told to be. */
+    wm_debris_state debris_runtime;
+    wm_debris_burst last_burst;
 
     struct {
         bool no_debris;

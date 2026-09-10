@@ -773,6 +773,37 @@ static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
             break;
         }
 
+        /*
+         * ANIM.ASM:3340 _ani_debris (:94) and :3324 _ani_debrisat (:93).
+         * The same command with a different victim: ANI_DEBRIS throws
+         * pieces off the WRESTLER RUNNING THE ANIMATION, ANI_DEBRISAT off
+         * the one attached to him -- and only when the attachment is
+         * MUTUAL (`move *a11(ATTACH_PROC),a14 / cmp a13,a14 / jreq`),
+         * which is the same check every other paired command makes.
+         *
+         * Both share the gate below the label: no debris when it is
+         * switched off or the bog is being reduced, and -- the one that
+         * is easy to read backwards -- only when the wrestler is INSIDE
+         * the ring. The source's comment is "Too much bog outside...",
+         * and INRING's polarity is its own (0 is in), so the port's
+         * boolean inverts the test.
+         */
+        case WM_AOP_DEBRIS:
+        case WM_AOP_DEBRISAT: {
+            wm_arcade_actor_t *victim = actor;
+            if (!actor) break;
+            if (o->op == WM_AOP_DEBRISAT) {
+                victim = actor->attach_proc;
+                if (!victim || victim->attach_proc != actor) break;
+            }
+            if (!env || env->no_debris || env->reduce_bog) break;
+            if (!actor->in_ring) break;
+            if (env->react_debris)
+                env->react_debris(env->debris_user, victim,
+                                  (int)o->a, (int)o->b, o->c, o->d, o->e);
+            break;
+        }
+
         case WM_AOP_CODE: {
             /* ANIM.ASM:1277: an ordinary call, then straight on to the
                next command. A routine this port has not translated leaves

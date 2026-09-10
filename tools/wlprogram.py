@@ -94,6 +94,11 @@ CODE_RE = re.compile(
 # skipped for exactly that reason, all of them DEBRIS_X.
 VALUE = r"(?:\[[^\]]*\]|[^,\[\]]+)"
 
+# ANIM.ASM:3324/:3340 ANI_DEBRIS / ANI_DEBRISAT,<%chance>,<shape>,<x,y,z>.
+DEBRIS_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+(ANI_DEBRIS|ANI_DEBRISAT)\s*,\s*([^,]+),"
+    r"\s*([^,]+),\s*([^,]+),\s*([^,]+),\s*([^,]+)\s*$", re.I)
+
 # ANIM.ASM:1633 ANI_LEAPATPOS,<ticks>,<maxdist>,<x>,<y>,<z> -- jump so as
 # to arrive at TGT_XOFF/YOFF/ZOFF in that many ticks.
 LEAPATPOS_RE = re.compile(
@@ -498,6 +503,13 @@ def program_for(path: pathlib.Path, label: str, with_entry: bool = False):
                         int(ss.group(5))))
             continue
 
+        db = DEBRIS_RE.match(line)
+        if db:
+            ops.append(("DEBRISAT" if db.group(1).upper() == "ANI_DEBRISAT"
+                        else "DEBRIS",) + tuple(
+                wlcommands._value(db.group(k), equates) for k in range(2, 7)))
+            continue
+
         lp = LEAPATPOS_RE.match(line)
         if lp:
             ops.append(("LEAPATPOS",) + tuple(
@@ -802,6 +814,9 @@ def _c_op(op) -> str:
         args[0] = op[1]
     elif kind in ("IFROPE", "IFNOTROPE"):
         args[0], args[1] = op[2], op[3]
+    elif kind in ("DEBRIS", "DEBRISAT"):
+        args[0], args[1], args[2] = op[1], op[2], op[3]
+        args[3], args[4] = op[4], op[5]
     elif kind == "LEAPATPOS":
         args[0], args[1], args[2] = op[1], op[2], op[3]
         args[3], args[4] = op[4], op[5]

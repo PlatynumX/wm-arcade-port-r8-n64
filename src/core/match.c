@@ -177,6 +177,38 @@ static void match_wake_round_announce(void *user) {
     m->round_announce.sleep_left = 0;      /* `movk 1,a14 / move a14,*a0(PTIME)` */
 }
 
+/*
+ * SPECIAL.ASM:3415 react_debris. The decision half is real -- the RNDPER
+ * gate, the DEBRIS_MAX cap, the per-wrestler impact sound, the
+ * Undertaker's pin bat -- and the pieces are objects a renderer would
+ * make. The burst is resolved here and released immediately, because
+ * nothing in this port holds the pieces for their lifespan yet.
+ */
+static void match_react_debris(void *user, wm_arcade_actor_t *victim,
+                               int percent, int shape,
+                               int32_t xoff, int32_t yoff, int32_t zoff) {
+    wm_match_state *m = (wm_match_state *)user;
+    wm_debris_burst burst;
+    bool taker_pin;
+    (void)xoff; (void)yoff; (void)zoff;
+    if (!m || !victim) return;
+    /* `cmpi und_4_pin2_anim,a1` -- the source tests the victim's own
+       ANIBASE, which this port carries as the running program's label. */
+    taker_pin = victim->anipc_program &&
+        strcmp(victim->anipc_program, "und_4_pin2_anim") == 0;
+    if (!wm_debris_react(&m->debris_runtime, m->anim_rng, victim,
+                         percent, shape, taker_pin, &burst))
+        return;
+    m->last_burst = burst;
+    if (burst.sound && m->anim_sound)
+        m->anim_sound(m->anim_sound_user, (uint16_t)burst.sound);
+    m->debris.last_count = burst.pieces;
+    m->debris.created += (uint32_t)burst.pieces;
+    /* No object system holds the pieces, so the slots come straight back
+       rather than being leaked for the whole match. */
+    wm_debris_finish(&m->debris_runtime);
+}
+
 /* @no_debris, written by create_impact4/flykick and by LEXSEQ2's
    #stop_debris / #restore_debris pair. */
 static void match_set_no_debris(void *user, bool off) {
@@ -348,6 +380,8 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
     m->debris.no_debris = false;
     m->debris.reduce_bog = (int32_t)m->actor_count - 2;
     wm_shake_init(&m->shake);
+    wm_debris_init(&m->debris_runtime);
+    memset(&m->last_burst, 0, sizeof(m->last_burst));
     m->allow_offscrn = 0;
     memset(&m->dizzy, 0, sizeof(m->dizzy));
     wm_move_name_init(&m->move_names);
@@ -417,6 +451,8 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
     m->debris.no_debris = false;
     m->debris.reduce_bog = (int32_t)m->actor_count - 2;
     wm_shake_init(&m->shake);
+    wm_debris_init(&m->debris_runtime);
+    memset(&m->last_burst, 0, sizeof(m->last_burst));
     m->allow_offscrn = 0;
     memset(&m->dizzy, 0, sizeof(m->dizzy));
     wm_move_name_init(&m->move_names);
@@ -638,6 +674,8 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             m->bret_visual[i].anim_env.debris_user = m;
             m->bret_visual[i].anim_env.create_debris = match_create_debris;
             m->bret_visual[i].anim_env.set_no_debris = match_set_no_debris;
+            m->wrestler_visual[i].anim_env.react_debris = match_react_debris;
+            m->bret_visual[i].anim_env.react_debris = match_react_debris;
             m->wrestler_visual[i].anim_env.screen_user = m;
             m->wrestler_visual[i].anim_env.draw_move_name = match_draw_move_name;
             m->bret_visual[i].anim_env.screen_user = m;

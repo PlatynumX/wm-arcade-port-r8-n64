@@ -18,6 +18,7 @@
 #include "wm/arcade/wm_arcade_round_announce.h"
 #include "wm/arcade/wm_arcade_target.h"
 #include "wm/arcade/wm_arcade_shake.h"
+#include "wm/arcade/wm_arcade_debris.h"
 #include "wm/award.h"
 #include "wm/wrestler_sound_tables.h"
 #include "wm/arcade/wm_arcade_announcer.h"
@@ -6614,6 +6615,231 @@ static void test_square_root_and_leaps(void) {
 }
 
 /*
+ * SPECIAL.ASM:3415 react_debris and the two commands that start it.
+ */
+struct react_log {
+    int n;
+    wm_arcade_actor_t *victim;
+    int percent, shape;
+    int32_t x, y, z;
+};
+
+static void react_debris_sink(void *user, wm_arcade_actor_t *victim,
+                              int percent, int shape,
+                              int32_t x, int32_t y, int32_t z) {
+    struct react_log *l = (struct react_log *)user;
+    ++l->n;
+    l->victim = victim;
+    l->percent = percent;
+    l->shape = shape;
+    l->x = x; l->y = y; l->z = z;
+}
+
+static void test_react_debris(void) {
+    wm_debris_state st;
+    wm_debris_burst burst;
+    wm_arcade_actor_t a, v;
+    wm_anim_env env;
+    wm_anim_exec ex;
+    WmRng rng;
+    int i, t;
+
+    /* SPECIAL.ASM:3542, transcribed. #db0 is three rounds of one piece,
+       two ticks apart; #db7 -- the Taker's hand pin -- is eight of two. */
+    CHECK(wm_debris_shapes[0].loop == 3 && wm_debris_shapes[0].count == 1);
+    CHECK(wm_debris_shapes[0].sleep == 2);
+    CHECK(wm_debris_shapes[0].yvel == 0x50000);
+    CHECK(wm_debris_shapes[7].loop == 8 && wm_debris_shapes[7].count == 2);
+    /* Every shape falls at the standard rate and lives about a second. */
+    for (i = 0; i < WM_DEBRIS_SHAPES; ++i) {
+        CHECK(wm_debris_shapes[i].gravity == WM_GRAVITY);
+        CHECK(wm_debris_shapes[i].lifespan >= 60);
+        CHECK(wm_debris_shapes[i].rlifespan == 5);
+        CHECK(wm_debris_shapes[i].loop > 0 && wm_debris_shapes[i].count > 0);
+    }
+
+    /*
+     * WHICH_DEBRIS_SOUND. Several wrestlers SHARE a row because the
+     * labels are stacked on it -- Bret and Shawn get the same two, Lex
+     * and Razor the same two -- and slot 7 is the cut wrestler, who has
+     * no row at all rather than a borrowed one.
+     */
+    CHECK(wm_debris_sound_table[WM_ROSTER_BRET].count == 2);
+    CHECK(wm_debris_sound_table[WM_ROSTER_SHAWN].count == 2);
+    CHECK(wm_debris_sound_table[WM_ROSTER_BRET].sounds[0] ==
+          wm_debris_sound_table[WM_ROSTER_SHAWN].sounds[0]);
+    CHECK(wm_debris_sound_table[WM_ROSTER_BAM].count == 5);
+    CHECK(wm_debris_sound_table[WM_ROSTER_YOKO].count == 4);
+    CHECK(wm_debris_sound_table[7].sounds == NULL);
+    CHECK(wm_debris_sound_table[7].count == 0);
+
+    /* Every wrestler has eight debris sprites named. */
+    for (i = 0; i < WM_DEBRIS_WRESTLERS; ++i) {
+        int k;
+        for (k = 0; k < WM_DEBRIS_ANIMS; ++k)
+            CHECK(wm_debris_anims[i][k] != NULL);
+    }
+
+    wm_rng_init(&rng, 0x9753u, NULL, NULL, NULL);
+    memset(&v, 0, sizeof(v));
+    v.wrestler_num = WM_ROSTER_BAM;
+
+    /* A percentage of 0 never fires; 1000 always does. */
+    wm_debris_init(&st);
+    for (t = 0; t < 50; ++t) {
+        wm_rng_set_latched_inputs(&rng, (uint16_t)(t * 7u + 1u),
+                                  (uint32_t)(t * 97u + 13u));
+        CHECK(!wm_debris_react(&st, &rng, &v, 0, 0, false, &burst));
+    }
+    CHECK(st.count == 0);
+
+    /* The global cap: DEBRIS_MAX bursts and no more, until they finish. */
+    wm_debris_init(&st);
+    for (i = 0; i < WM_DEBRIS_MAX; ++i)
+        CHECK(wm_debris_react(&st, &rng, &v, 1000, 0, false, &burst));
+    CHECK(st.count == WM_DEBRIS_MAX);
+    CHECK(!wm_debris_react(&st, &rng, &v, 1000, 0, false, &burst));
+    wm_debris_finish(&st);
+    CHECK(st.count == WM_DEBRIS_MAX - 1);
+    CHECK(wm_debris_react(&st, &rng, &v, 1000, 0, false, &burst));
+
+    /* The piece count is the two nested loops: loop * count. */
+    wm_debris_init(&st);
+    CHECK(wm_debris_react(&st, &rng, &v, 1000, 7, false, &burst));
+    CHECK(burst.pieces == 8 * 2);
+    CHECK(burst.shape == &wm_debris_shapes[7]);
+
+    /* The impact sound is drawn from the VICTIM's own row -- over many
+       draws Bam Bam's five all appear, and only his five. */
+    {
+        int seen[5] = { 0, 0, 0, 0, 0 };
+        int distinct = 0;
+        for (t = 0; t < 300; ++t) {
+            wm_rng_set_latched_inputs(&rng, (uint16_t)(t * 11u + 3u),
+                                      (uint32_t)(t * 131u + 7u));
+            wm_debris_init(&st);
+            CHECK(wm_debris_react(&st, &rng, &v, 1000, 0, false, &burst));
+            for (i = 0; i < 5; ++i)
+                if (burst.sound ==
+                    wm_debris_sound_table[WM_ROSTER_BAM].sounds[i]) seen[i] = 1;
+        }
+        for (i = 0; i < 5; ++i) distinct += seen[i];
+        CHECK(distinct == 5);
+    }
+
+    /* The cut wrestler is silent rather than reading somebody else's row. */
+    {
+        wm_arcade_actor_t cut;
+        memset(&cut, 0, sizeof(cut));
+        cut.wrestler_num = 7;
+        wm_debris_init(&st);
+        CHECK(wm_debris_react(&st, &rng, &cut, 1000, 0, false, &burst));
+        CHECK(burst.sound == 0);
+    }
+
+    /*
+     * The Undertaker's pin: every piece plays the bat instead, and only
+     * when the victim really is the Taker.
+     */
+    {
+        wm_arcade_actor_t taker;
+        memset(&taker, 0, sizeof(taker));
+        taker.wrestler_num = WM_ROSTER_TAKER;
+        wm_debris_init(&st);
+        CHECK(wm_debris_react(&st, &rng, &taker, 1000, 0, true, &burst));
+        CHECK(burst.taker_pin);
+        CHECK(burst.sound == WM_DEBRIS_TAKER_BAT_SOUND);
+        /* Same animation, different wrestler: no bat. */
+        wm_debris_init(&st);
+        CHECK(wm_debris_react(&st, &rng, &v, 1000, 0, true, &burst));
+        CHECK(!burst.taker_pin);
+        CHECK(burst.sound != WM_DEBRIS_TAKER_BAT_SOUND);
+    }
+
+    /*
+     * The two commands. ANI_DEBRIS throws pieces off the wrestler running
+     * the animation; ANI_DEBRISAT off the one attached to him, and only
+     * when the attachment is MUTUAL.
+     */
+    {
+        static struct react_log log;
+        static const wm_anim_op d_ops[] = {
+            { WM_AOP_DEBRIS, 0, -1, 150, 3, -21, 100, 0, 0, NULL },
+            { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, NULL }
+        };
+        static const wm_anim_program d_prog = {
+            "t_debris", "BAMSEQ2.ASM", d_ops, 2, 0, NULL, 0
+        };
+        static const wm_anim_op at_ops[] = {
+            { WM_AOP_DEBRISAT, 0, -1, 250, 1, 10, 50, 0, 0, NULL },
+            { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, NULL }
+        };
+        static const wm_anim_program at_prog = {
+            "t_debrisat", "DNKSEQ3.ASM", at_ops, 2, 0, NULL, 0
+        };
+
+        memset(&log, 0, sizeof(log));
+        memset(&env, 0, sizeof(env));
+        memset(&a, 0, sizeof(a));
+        env.debris_user = &log;
+        env.react_debris = react_debris_sink;
+        a.in_ring = 1;
+
+        wm_anim_exec_start(&ex, &d_prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(log.n == 1);
+        CHECK(log.victim == &a);          /* himself */
+        CHECK(log.percent == 150 && log.shape == 3);
+        CHECK(log.x == -21 && log.y == 100 && log.z == 0);
+
+        /* "Too much bog outside" -- outside the ring, nothing happens.
+           INRING's polarity is the source's, so this is the in-ring test
+           inverted, and getting it backwards would fire only outdoors. */
+        memset(&log, 0, sizeof(log));
+        a.in_ring = 0;
+        wm_anim_exec_start(&ex, &d_prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(log.n == 0);
+        a.in_ring = 1;
+
+        /* ...and neither with debris switched off, or the bog reduced. */
+        memset(&log, 0, sizeof(log));
+        env.no_debris = true;
+        wm_anim_exec_start(&ex, &d_prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(log.n == 0);
+        env.no_debris = false;
+        env.reduce_bog = true;
+        wm_anim_exec_start(&ex, &d_prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(log.n == 0);
+        env.reduce_bog = false;
+
+        /* ANI_DEBRISAT with no attachment does nothing. */
+        memset(&log, 0, sizeof(log));
+        memset(&v, 0, sizeof(v));
+        wm_anim_exec_start(&ex, &at_prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(log.n == 0);
+
+        /* A one-way attachment is not enough -- the check is mutual. */
+        a.attach_proc = &v;
+        v.attach_proc = NULL;
+        wm_anim_exec_start(&ex, &at_prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(log.n == 0);
+
+        /* Mutual: the pieces come off the OTHER man. */
+        v.attach_proc = &a;
+        wm_anim_exec_start(&ex, &at_prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(log.n == 1);
+        CHECK(log.victim == &v);
+        CHECK(log.percent == 250 && log.shape == 1);
+    }
+}
+
+/*
  * LIFEBAR.ASM:3687 DO_COMBO_MESS -- the most-called ANI_CODE routine in
  * the game, and what actually ends a combo.
  */
@@ -11110,6 +11336,7 @@ int main(void) {
     test_shaker();
     test_conditional_and_state_ops();
     test_square_root_and_leaps();
+    test_react_debris();
     test_do_combo_mess();
     test_do_combo_mess_from_the_vm();
     test_wrsnd_tables();

@@ -146,6 +146,8 @@ python3 "$ROOT/tools/bret_geometry_bundle.py" \
     --allow-missing H4HU4B10 \
     --allow-missing Y2ST2Z01 \
     --out "$ROOT/src/generated/frame_geometry.c"
+python3 "$ROOT/tools/wldebris.py" \
+    --out "$ROOT/src/generated/debris_tables.c"
 python3 "$ROOT/tools/wltarget.py" \
     --out "$ROOT/src/generated/target_tables.c"
 python3 "$ROOT/tools/wlvoice.py" \

@@ -1,25 +1,23 @@
 #include "wm/arcade/wm_arcade_closest.h"
+#include "wm/arcade/wm_arcade_target.h"
 
 static int32_t iabs32(int32_t v) {
     return v < 0 ? -v : v;
 }
 
-/* Standard binary integer square root (largest r such that r*r <= v). */
+/*
+ * calc_closest ends its distance computation with `calla square_root`
+ * (WRESTLE.ASM:4183), and that routine is SQUARE.ASM:40 -- translated,
+ * table and all, as wm_arcade_square_root. This file used to use a
+ * textbook binary integer square root instead, on the argument that the
+ * difference could not matter because the callers that gate behaviour
+ * read only closest_xdist/closest_zdist. That is no longer true:
+ * wm_arcade_drone.c compares closest_dist against 200 and
+ * wm_arcade_doink.c against 0x70, so the quantisation the arcade's own
+ * table introduces is load-bearing. Use the source's function.
+ */
 static int32_t isqrt32(uint32_t v) {
-    uint32_t res = 0;
-    uint32_t bit = 1u << 30;
-
-    while (bit > v) bit >>= 2;
-    while (bit != 0) {
-        if (v >= res + bit) {
-            v -= res + bit;
-            res = (res >> 1) + bit;
-        } else {
-            res >>= 1;
-        }
-        bit >>= 2;
-    }
-    return (int32_t)res;
+    return wm_arcade_square_root(v);
 }
 
 void wm_arcade_calc_closest(wm_arcade_actor_t *a, const wm_arcade_actor_t *o) {

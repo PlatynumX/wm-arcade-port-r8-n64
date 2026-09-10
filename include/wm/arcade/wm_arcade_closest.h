@@ -30,12 +30,15 @@ extern "C" {
  * optimization for scanning many candidates -- irrelevant to a single fixed
  * pair, so this recomputes every tick instead.
  *
- * closest_dist uses a real (if not bit-exact) integer square root rather
- * than SQUARE.ASM's fast quantized table-lookup approximation
- * (square_root, max input 262,143, discards its input's low 5 bits before
- * a table lookup) -- the two callers that actually gate behavior on these
- * fields, BRET.ASM's near()/do_punch and mode_block, only ever read
- * closest_xdist/closest_zdist, which are exact either way.
+ * closest_dist comes from SQUARE.ASM's own square_root, which is what
+ * WRESTLE.ASM:4183 calls -- a 1024-entry table lookup that discards the
+ * input's low five bits and rescales, so it is deliberately quantised.
+ * An earlier pass here used a textbook binary integer square root on the
+ * argument that the difference could not matter, because the callers
+ * that gate on these fields read only closest_xdist/closest_zdist. That
+ * is not true any more: wm_arcade_drone.c compares closest_dist against
+ * 200 and wm_arcade_doink.c against 0x70, so the quantisation is
+ * load-bearing and the source's table is what decides those.
  */
 void wm_arcade_calc_closest(wm_arcade_actor_t *a, const wm_arcade_actor_t *o);
 

@@ -170,6 +170,9 @@ python3 "$ROOT/tools/select_source.py" \
 python3 "$ROOT/tools/attract_sequence.py" \
     --source "$ORIG/ATTRACT.ASM" \
     --out "$ROOT/src/generated/attract_sequence.c"
+python3 "$ROOT/tools/port_coverage.py" \
+    --out-md "$ROOT/docs/ROUTINE_COVERAGE.md" \
+    --out-json "$ROOT/port/routine_coverage.json"
 python3 "$ROOT/tools/port_manifest.py" \
     --manifest "$ROOT/port/translation_manifest.json" \
     --out-c "$ROOT/src/generated/port_status.c" \

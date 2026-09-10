@@ -33,6 +33,7 @@ wlwrsnd = load("wlwrsnd", ROOT / "tools" / "wlwrsnd.py")
 wlstring = load("wlstring", ROOT / "tools" / "wlstring.py")
 wlpal = load("wlpal", ROOT / "tools" / "wlpal.py")
 wlrostertbl = load("wlrostertbl", ROOT / "tools" / "wlrostertbl.py")
+port_coverage = load("port_coverage", ROOT / "tools" / "port_coverage.py")
 wlverify = load("wlverify", ROOT / "tools" / "wlverify.py")
 wlprogram = load("wlprogram", ROOT / "tools" / "wlprogram.py")
 manifest = load("bret_manifest", ROOT / "tools" / "bret_manifest.py")
@@ -2381,6 +2382,196 @@ def test_roster_anim_tables_generate_the_shipped_file() -> None:
     assert wlrostertbl.render_c() == out.read_text()
 
 
+def test_coverage_does_not_count_a_comment_as_an_implementation() -> None:
+    """The bug this tool exists to fix.
+
+    An earlier ad-hoc measurement grepped each routine name in the
+    port's text, so a comment saying "foo is not translated" counted
+    foo as translated. Definitions and prose are separated before
+    anything is matched; this checks that separation directly rather
+    than trusting it.
+    """
+    code, prose = port_coverage._split_code_and_prose(
+        "/* mode_dead is not translated */\n"
+        "int wm_thing(void) { return 1; } // see also other_thing\n"
+        'static const char *n = "named_in_a_string";\n')
+    assert "wm_thing" in code
+    assert "mode_dead" not in code
+    assert "other_thing" not in code
+    assert "named_in_a_string" not in code
+    # ...but the prose keeps them, so "cited" can be reported as its
+    # own answer instead of being mistaken for either extreme.
+    assert "mode_dead" in prose
+    assert "named_in_a_string" in prose
+
+
+def test_coverage_matches_only_a_suffix_or_a_generated_wrapper() -> None:
+    """A port identifier counts for a routine when it IS the name, ends
+    with `_` and the name, or is a shape a generator wraps it in.
+
+    "Contains it somewhere" was the first rule and it matched
+    LIFEBAR.ASM's `meters` against AWARD.ASM's `drone_meters_on` flag.
+    The ledger guard caught that, which is the whole reason the guard
+    exists.
+    """
+    pool = {"wm_arcade_round_award", "round_award", "unround_awardx",
+            "round_award_fn", "drone_round_award_on",
+            "prog_round_award_ops"}
+    hits = set(port_coverage._boundary_hits("round_award", pool))
+    assert hits == {"wm_arcade_round_award", "round_award",
+                    "prog_round_award_ops"}
+    assert "round_award_fn" not in hits          # trailing qualifier
+    assert "drone_round_award_on" not in hits    # embedded, not a suffix
+    assert "unround_awardx" not in hits
+
+    # The real false positive that motivated the rule.
+    assert port_coverage._boundary_hits("meters", {"drone_meters_on"}) == []
+    # Below the minimum length nothing is matched loosely at all.
+    assert port_coverage._boundary_hits("abc", {"wm_abc_thing"}) == []
+
+
+def test_coverage_only_counts_linked_files() -> None:
+    """ROBO.ASM and friends are other Williams games sitting in the same
+    tree. Counting `bullet`, `hulk` and `enforcer` as untranslated
+    WrestleMania routines inflated the denominator by 250."""
+    if not (wlanim.ORIG / "WRESTLE.CMD").exists():
+        return
+    linked = port_coverage.linked_asm()
+    assert "WRESTLE.ASM" in linked and "LIFEBAR.ASM" in linked
+    assert "ROBO.ASM" not in linked
+    assert "FIREBAK.ASM" not in linked
+    assert "ADAM.ASM" not in linked
+    routines = port_coverage.source_routines()
+    for gone in ("bullet", "hulk", "enforcer", "quark"):
+        assert gone not in routines, gone
+
+
+def test_coverage_dead_means_nothing_names_it() -> None:
+    """`dead` used to mean "no caller outside its own file", which is
+    wrong for anything reached through an address table -- ATTRACT.ASM's
+    show_operatormsg sits in the attract sequence table in its own file.
+    It now means zero references anywhere, definition line excluded."""
+    if not wlanim.ORIG.exists():
+        return
+    outside, total = port_coverage.reference_counts()
+    assert total["show_operatormsg"] > 0
+    assert outside["show_operatormsg"] == 0      # the old test would fire
+    # A genuinely unreferenced routine, verified by hand.
+    assert total["HORZ_SHAKER2"] == 0
+
+    data = port_coverage.classify()
+    for row in data["routines"]:
+        if row["status"] == "dead":
+            assert row["references"] == 0, row["name"]
+
+
+def test_the_routine_ledger_justifies_every_entry() -> None:
+    """port/routine_map.json is where an unanswered question becomes an
+    answered one, not where it goes to be forgotten.
+
+    Each entry has to name a real routine in a linked file, carry a
+    status the tool knows and a note, and -- if it claims the port does
+    the work under another name -- name a port identifier that really
+    is defined in code rather than merely mentioned.
+    """
+    if not wlanim.ORIG.exists():
+        return
+    ledger = port_coverage.load_ledger()
+    assert ledger, "expected a non-empty ledger"
+
+    routines = port_coverage.source_routines()
+    code_ids, _prose, _gen = port_coverage.port_symbols()
+    _outside, total = port_coverage.reference_counts()
+
+    for name, entry in ledger.items():
+        assert name in routines, "%s is not a routine in a linked file" % name
+        assert entry["status"] in port_coverage.LEDGER_STATUSES, name
+        assert entry.get("note"), "%s has no note" % name
+        # The recorded file has to be where the routine actually is.
+        files = {f for f, _l, _loc in routines[name]}
+        assert entry["file"] in files, (name, entry["file"], sorted(files))
+        if entry["status"] in ("inlined", "renamed", "partial"):
+            sym = entry.get("symbol")
+            assert sym, "%s claims %s but names no symbol" % (name, entry["status"])
+            assert sym in code_ids, \
+                "%s points at %s, which the port does not define" % (name, sym)
+        if entry["status"] == "dead":
+            assert total[name] == 0, name
+
+
+def test_the_ledger_cannot_shadow_real_code() -> None:
+    """No entry may claim a routine the automatic pass already resolves.
+
+    If it could, the ledger would keep asserting a routine was fine
+    after the code implementing it was deleted -- the failure mode that
+    makes hand-maintained coverage files worthless.
+    """
+    if not wlanim.ORIG.exists():
+        return
+    ledger = port_coverage.load_ledger()
+    code_ids, _prose, _gen = port_coverage.port_symbols()
+    for name in ledger:
+        assert not port_coverage._boundary_hits(name, code_ids), \
+            "%s resolves on its own; the ledger entry is stale" % name
+
+
+# Routines translated in this port and verified by hand, one at a time,
+# against the C that implements them. The resolver is measured against
+# this rather than trusted: when it was first written it got 35 of them
+# right, and each miss was a real bug in it -- a `SUBRP name:` with a
+# trailing colon that the label regex dropped, case-sensitive matching
+# that could not see wm_rng_rndrng0 for RNDRNG0, and a suffix rule that
+# needed the ledger for names the port spells differently.
+VERIFIED_TRANSLATED = (
+    "read_switches", "init_life_data", "init_wres_life_data",
+    "init_rnd_life_data", "inc_life", "get_health", "clear_lifebar",
+    "pal_init", "pal_find", "pal_getf", "pal_set", "pal_transfer",
+    "pal_clean", "pal_blacken", "pal_fade", "pal_addb", "do_fade",
+    "fade_up", "fade_down", "fade_up_half", "fade_down_half",
+    "dec_to_asc", "dec_to_pct", "copy_string", "concat_string",
+    "get_string_len", "print_string", "setup_message", "print_message",
+    "clear_buffers", "ck_teammate_pin", "ck_live_teammates",
+    "ck_any_teammates", "is_a14_behind", "clr_climb", "get_powerups",
+    "powerup_check", "round_award", "match_award", "rst_awards",
+    "accumulate_awards", "adjust_perfects", "total_icons",
+    "get_num_awards", "is_it_a_really_quick_win", "arm_comeback_award",
+    "get_stick_val_cur", "get_but_val_cur", "get_all_buttons_cur",
+    "get_start_cur", "fall_back_tbl", "RNDRNG0", "square_root",
+)
+
+RESOLVED = ("implemented", "renamed", "inlined", "partial")
+
+
+def test_coverage_resolves_every_routine_known_to_be_translated() -> None:
+    """The resolver's own accuracy, measured not assumed.
+
+    A coverage tool that quietly stops recognising work is worse than
+    no tool, because it turns into a to-do list of things already
+    done -- which is exactly what the previous grep-based measurement
+    became.
+    """
+    if not wlanim.ORIG.exists():
+        return
+    data = port_coverage.classify()
+    status = {r["name"]: r["status"] for r in data["routines"]}
+    missed = [(n, status.get(n, "not-a-routine"))
+              for n in VERIFIED_TRANSLATED
+              if status.get(n) not in RESOLVED]
+    assert not missed, missed
+
+
+def test_coverage_does_not_claim_things_that_are_not_translated() -> None:
+    """The other direction. These are named in the port only by
+    comments explaining that they are NOT translated, and the earlier
+    grep-based measurement counted every one of them as covered."""
+    if not wlanim.ORIG.exists():
+        return
+    data = port_coverage.classify()
+    status = {r["name"]: r["status"] for r in data["routines"]}
+    for name in ("obj_aniq", "civanic", "CLR_SCRN", "meters", "set_volume"):
+        assert status.get(name) not in ("implemented",), (name, status.get(name))
+
+
 def main() -> int:
     test_wlanim()
     test_wlprogram()
@@ -2418,6 +2609,14 @@ def main() -> int:
     test_roster_anim_tables_name_real_routines()
     test_roster_anim_tables_refuse_ambiguous_labels()
     test_roster_anim_tables_generate_the_shipped_file()
+    test_coverage_does_not_count_a_comment_as_an_implementation()
+    test_coverage_matches_only_a_suffix_or_a_generated_wrapper()
+    test_coverage_only_counts_linked_files()
+    test_coverage_dead_means_nothing_names_it()
+    test_the_routine_ledger_justifies_every_entry()
+    test_the_ledger_cannot_shadow_real_code()
+    test_coverage_resolves_every_routine_known_to_be_translated()
+    test_coverage_does_not_claim_things_that_are_not_translated()
     test_digit_leading_local_labels_are_seen()
     test_programs_record_where_they_start()
     test_emitted_programs_hold_together()

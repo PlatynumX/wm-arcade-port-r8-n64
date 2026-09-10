@@ -1,0 +1,254 @@
+{
+  "_README": [
+    "Hand-written answers for source routines whose name cannot resolve to a",
+    "port symbol on its own. tools/port_coverage.py merges this with what it",
+    "can determine automatically.",
+    "",
+    "Every entry must justify itself and a source-tool test enforces it:",
+    "the key has to be a routine in a linked .ASM file, the status has to be",
+    "one the tool knows, an 'inlined' or 'renamed' entry has to name a port",
+    "identifier that really is defined, a 'dead' entry has to have zero",
+    "references in the source, and no entry may claim a routine the automatic",
+    "pass already resolves -- otherwise the ledger could mask a regression by",
+    "asserting something is fine after it stopped being true.",
+    "",
+    "This file is where an unanswered question becomes an answered one. It is",
+    "not where an unanswered question goes to be forgotten."
+  ],
+  "get_opp_plyrmode": {
+    "file": "WRESTLE.ASM",
+    "status": "inlined",
+    "symbol": "player_mode",
+    "note": "process_ptrs[CLOSEST_NUM]->PLYRMODE. The port holds the opponent as a pointer rather than a roster index, so every one of the 115 call sites reads o->player_mode directly; there is nothing left for a function to do."
+  },
+  "get_process_ptr": {
+    "file": "WRESTLE.ASM",
+    "status": "inlined",
+    "symbol": "wm_arcade_actor_t",
+    "note": "process_ptrs[n]. The port passes wm_arcade_actor_t pointers around instead of indexing a global process table."
+  },
+  "wres_get_but_val_cur": {
+    "file": "WRESTLE2.ASM",
+    "status": "renamed",
+    "symbol": "wm_read_switches_one",
+    "note": "The per-wrestler accessors are read_switches' own loop body. wm_read_switches_one computes all six cached readings plus both relative ones in one pass, exactly as read_switches does."
+  },
+  "wres_get_but_val_down": {
+    "file": "WRESTLE2.ASM",
+    "status": "renamed",
+    "symbol": "wm_read_switches_one",
+    "note": "See wres_get_but_val_cur."
+  },
+  "wres_get_but_val_up": {
+    "file": "WRESTLE2.ASM",
+    "status": "renamed",
+    "symbol": "wm_read_switches_one",
+    "note": "See wres_get_but_val_cur."
+  },
+  "wres_get_stick_val_cur": {
+    "file": "WRESTLE2.ASM",
+    "status": "renamed",
+    "symbol": "wm_read_switches_one",
+    "note": "See wres_get_but_val_cur."
+  },
+  "wres_get_stick_val_down": {
+    "file": "WRESTLE2.ASM",
+    "status": "renamed",
+    "symbol": "wm_read_switches_one",
+    "note": "See wres_get_but_val_cur."
+  },
+  "wres_get_stick_val_up": {
+    "file": "WRESTLE2.ASM",
+    "status": "renamed",
+    "symbol": "wm_read_switches_one",
+    "note": "See wres_get_but_val_cur."
+  },
+  "wres_get_stick_rel_cur": {
+    "file": "WRESTLE2.ASM",
+    "status": "renamed",
+    "symbol": "wm_stick_flip",
+    "note": "The facing-relative reading. wm_read_switches_one derives it via wm_stick_flip; note the standalone routine tests the sprite's FLIPH bit where read_switches tests FACING_DIR's PLAYER_RIGHT_BIT."
+  },
+  "wres_get_stick_rel_new": {
+    "file": "WRESTLE2.ASM",
+    "status": "renamed",
+    "symbol": "wm_read_switches_one",
+    "note": "Same derivation, gated on there being a stick transition this tick."
+  },
+  "civani": {
+    "file": "UTIL.ASM",
+    "status": "display",
+    "note": "Writes OIMG/OSIZE/OSAG/OCTRL on a display object to swap its image. There is no object system in this port; every animation change ends at a frame-name seam instead."
+  },
+  "civanic": {
+    "file": "UTIL.ASM",
+    "status": "display",
+    "note": "civani with the object's existing OCTRL preserved. Same reason."
+  },
+  "CLR_SCRN": {
+    "file": "UTIL.ASM",
+    "status": "display",
+    "note": "Blanks DISPLAYON and clears the frame buffer."
+  },
+  "obj_aniq": {
+    "file": "DISPLAY.ASM",
+    "status": "display",
+    "note": "The object animation queue."
+  },
+  "begin_obj": {
+    "file": "WRESTLE2.ASM",
+    "status": "display",
+    "note": "A BEGINOBJ wrapper -- DMAWNZ|M_SCRNREL flags and an object id."
+  },
+  "BEGINOBJ_TBL": {
+    "file": "DISPLAY.ASM",
+    "status": "display",
+    "note": "Creates an object from a table of its parameters."
+  },
+  "DO_REVERSAL_MESS": {
+    "file": "LIFEBAR.ASM",
+    "status": "process",
+    "note": "A display process. Its one piece of logic -- RND_AWARD a8,REVERSAL_AWD -- is translated in wm/award.h; the rest is the message object and its voice call."
+  },
+  "BONUS_MESS": {
+    "file": "LIFEBAR.ASM",
+    "status": "process",
+    "note": "The source's own comment: 'Process which displays high risk - 2x damage & possibly move name'."
+  },
+  "meters": {
+    "file": "LIFEBAR.ASM",
+    "status": "process",
+    "note": "Builds the two lifebar meter objects and the credit box, then loops. The values it displays are wm/arcade/wm_arcade_life_data.h."
+  },
+  "SET_FLASHING": {
+    "file": "LIFEBAR.ASM",
+    "status": "process",
+    "note": "Starts the combo-flash process and its sound. The COMBO_FLASH_FLAG guard it wraps is the actor's combo_flash field."
+  },
+  "rewire_meter": {
+    "file": "LIFEBAR.ASM",
+    "status": "display",
+    "note": "Repoints a meter's objects at a different wrestler in a multi-drone match."
+  },
+  "draw_combo_meter": {
+    "file": "LIFEBAR.ASM",
+    "status": "display",
+    "note": "Draws the combo bar at a given size."
+  },
+  "set_volume": {
+    "file": "DCSSOUND.ASM",
+    "status": "hardware",
+    "note": "send_code_a3 with 55AAh -- a command to the DCS sound board."
+  },
+  "QSNDRST": {
+    "file": "DCSSOUND.ASM",
+    "status": "hardware",
+    "note": "Resets the QSound DSP."
+  },
+  "nosounds": {
+    "file": "DCSSOUND.ASM",
+    "status": "hardware",
+    "note": "Silences the sound board."
+  },
+  "KILL_ALL_CHANNELS": {
+    "file": "DCSSOUND.ASM",
+    "status": "hardware",
+    "note": "Stops every DCS channel."
+  },
+  "read_switches": {
+    "file": "WRESTLE2.ASM",
+    "status": "renamed",
+    "symbol": "wm_read_switches_one",
+    "note": "The per-wrestler caching pass. Named for the one wrestler it does rather than the loop, because the port has no process_ptrs array to walk."
+  },
+  "init_life_data": {
+    "file": "LIFEBAR.ASM",
+    "status": "renamed",
+    "symbol": "wm_life_init_match",
+    "note": "Named for when it runs. It is the reset that leaves PLT_CLIFE at zero so the bars fill in."
+  },
+  "init_wres_life_data": {
+    "file": "LIFEBAR.ASM",
+    "status": "renamed",
+    "symbol": "wm_life_init_wrestler",
+    "note": "The change_wrestler reset, which snaps the displayed bar to full instead."
+  },
+  "init_rnd_life_data": {
+    "file": "LIFEBAR.ASM",
+    "status": "renamed",
+    "symbol": "wm_life_init_round",
+    "note": "The round-two reset, which leaves combo and turbo alone."
+  },
+  "do_fade": {
+    "file": "PAL.ASM",
+    "status": "renamed",
+    "symbol": "wm_pal_global_fade_step",
+    "note": "The arcade runs it as a process; the port exposes one loop iteration so a caller drives it from whatever scheduler it has."
+  },
+  "copy_string": {
+    "file": "STRING.ASM",
+    "status": "renamed",
+    "symbol": "wm_string_copy",
+    "note": "message_buffer2 -> message_buffer."
+  },
+  "concat_string": {
+    "file": "STRING.ASM",
+    "status": "renamed",
+    "symbol": "wm_string_concat",
+    "note": "Appends message_buffer2 to message_buffer."
+  },
+  "get_string_len": {
+    "file": "STRING.ASM",
+    "status": "renamed",
+    "symbol": "wm_string_buffer_len",
+    "note": "The entry point that presets a4 to message_buffer and falls into get_string_len2. Nothing in the source references the label -- every caller uses get_string_len2 -- so it also reads as dead; both are true."
+  },
+  "is_a14_behind": {
+    "file": "WRESTLE2.ASM",
+    "status": "renamed",
+    "symbol": "wm_is_behind",
+    "note": "The register name in the source's label is not worth carrying into C."
+  },
+  "powerup_check": {
+    "file": "AWARD.ASM",
+    "status": "partial",
+    "symbol": "wm_powerup_reset",
+    "note": "Two halves. The clearing half -- both request words and every output flag -- is wm_powerup_reset. The other half CREATEs player_powerup_checker twice, and process spawning is not translated; the code state machine those processes run is, as wm_powerup_attempt_tick."
+  },
+  "rst_awards": {
+    "file": "AWARD.ASM",
+    "status": "renamed",
+    "symbol": "wm_award_reset_round",
+    "note": "Named for what it clears. Includes the source's sixty-three-byte off-by-one."
+  },
+  "accumulate_awards": {
+    "file": "AWARD.ASM",
+    "status": "renamed",
+    "symbol": "wm_award_accumulate_round",
+    "note": "Folds the round arrays into the match arrays, inverting the blocks award on the way."
+  },
+  "adjust_perfects": {
+    "file": "AWARD.ASM",
+    "status": "renamed",
+    "symbol": "wm_award_adjust_perfects_and_blocks",
+    "note": "The source's name undersells it: it adjusts blocks as well, in a second and differently-shaped pass."
+  },
+  "get_num_awards": {
+    "file": "AWARD.ASM",
+    "status": "renamed",
+    "symbol": "wm_award_num_rows",
+    "note": "How many rows the end-of-match bar shows, capped at six."
+  },
+  "is_it_a_really_quick_win": {
+    "file": "AWARD.ASM",
+    "status": "renamed",
+    "symbol": "wm_award_quick_win",
+    "note": "Including the unconditional jruc that makes its SUPER_QUICK and VERY_QUICK branches unreachable."
+  },
+  "arm_comeback_award": {
+    "file": "AWARD.ASM",
+    "status": "renamed",
+    "symbol": "wm_award_arm_comeback",
+    "note": "The 80%-health sweep over every live enemy."
+  }
+}

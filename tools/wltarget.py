@@ -166,6 +166,14 @@ def render_c() -> str:
         out.append("    %d,   /* %2d %s */" % (block_index(name), i, name))
     out += ["};", ""]
 
+    sq = sqroot_table()
+    out.append("/* SQUARE.ASM:74 #sqroot_tab -- \"square root of multiples")
+    out.append("   of 32\", 1024 bytes. */")
+    out.append("const uint8_t wm_sqroot_tab[WM_SQROOT_ENTRIES] = {")
+    for i in range(0, len(sq), 16):
+        out.append("    " + ", ".join(str(v) for v in sq[i:i + 16]) + ",")
+    out += ["};", ""]
+
     dizzy = dizzy_offsets()
     out.append("/* SPECIAL.ASM:141 #dizzy_offsets -- where the stars go.")
     out.append("   Row 9 is the referee, who is in the table and is not a")
@@ -269,6 +277,37 @@ def dizzy_offsets() -> list[list[tuple[int, int]]]:
         raise ValueError(f"#dizzy_offsets has {len(rows)} rows, "
                          f"not {DIZZY_ROWS}")
     return rows
+
+
+# SQUARE.ASM:74 #sqroot_tab -- 1024 bytes, "square root of multiples of
+# 32", which is what square_root looks up after discarding its input's low
+# five bits.
+SQUARE = wlanim.ORIG / "SQUARE.ASM"
+SQROOT_ENTRIES = 1024
+BYTE_RE = re.compile(r"^\s*\.byte\s+(.+)$", re.I)
+
+
+def sqroot_table() -> list[int]:
+    lines = [wlanim.strip_comment(r)
+             for r in SQUARE.read_text(errors="replace").splitlines()]
+    at = None
+    for i, line in enumerate(lines):
+        if wlanim.label_def(line) == "#sqroot_tab":
+            at = i
+            break
+    if at is None:
+        raise ValueError("SQUARE.ASM: no #sqroot_tab")
+    vals: list[int] = []
+    for line in lines[at + 1:]:
+        if not line:
+            continue
+        m = BYTE_RE.match(line)
+        if not m:
+            break
+        vals += [int(v.strip()) for v in m.group(1).split(",") if v.strip()]
+    if len(vals) != SQROOT_ENTRIES:
+        raise ValueError(f"#sqroot_tab has {len(vals)}, not {SQROOT_ENTRIES}")
+    return vals
 
 
 def main() -> int:

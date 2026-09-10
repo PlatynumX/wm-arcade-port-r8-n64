@@ -101,3 +101,39 @@ int wm_move_name_should_draw(wm_move_name_state *st, int side, int index,
     }
     return 1;
 }
+
+/* ------------------------------------------------------------------ *
+ * SQUARE.ASM:40 square_root.
+ * ------------------------------------------------------------------ */
+
+int32_t wm_arcade_square_root(uint32_t v) {
+    uint32_t a0 = v >> 5;               /* `srl 5,a0` */
+    int bits, shift = 0;                /* a1, a14 */
+
+    /*
+     * `lmo a0,a1 / neg a1 / addk 32,a1` -- LMO gives the count of leading
+     * zeros (and 0 for an input of 0, which this matches), so a1 is how
+     * many bits of data are left. The source's own comment: "(0-27)".
+     */
+    bits = 32;
+    if (a0) {
+        uint32_t t = a0;
+        int clz = 0;
+        while (!(t & 0x80000000u)) { t <<= 1; ++clz; }
+        bits = 32 - clz;
+    }
+
+    bits -= 10;
+    if (bits > 0) {
+        /*
+         * "even after discarding lower 5, we've more than ten bits left.
+         * divide by 2, rounding up, and that's half the number we shift
+         * right right now, and THE number we shift left later."
+         */
+        shift = (bits + 1) >> 1;
+        a0 >>= (unsigned)(shift * 2);
+    }
+
+    if (a0 >= WM_SQROOT_ENTRIES) a0 = WM_SQROOT_ENTRIES - 1;
+    return (int32_t)((uint32_t)wm_sqroot_tab[a0] << shift);
+}

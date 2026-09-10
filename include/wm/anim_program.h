@@ -275,6 +275,8 @@ typedef enum {
     WM_AOP_SCROLL_CTRL,    /* ANIM.ASM:4448 :127  a = SCROLL_Y, <0 keeps */
     WM_AOP_LOOP,           /* ANIM.ASM:1568 :42   no operand; parks */
     WM_AOP_START_DIZZY,    /* ANIM.ASM:2005 :57   a = #dizzy_offsets slot */
+    WM_AOP_LEAPATPOS,      /* ANIM.ASM:1633 :39   a=ticks b=maxdist c,d,e=off */
+    WM_AOP_SLIDEATOPP,     /* ANIM.ASM:3838 :96   a=vel b=target c=maxticks */
 
     /* Present in the source but needing a system this port does not have
        (a renderer, paired actors, a callback bridge). Carried so the

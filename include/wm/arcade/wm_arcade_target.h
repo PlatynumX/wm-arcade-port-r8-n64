@@ -104,6 +104,21 @@ void wm_arcade_anim_target(wm_arcade_actor_t *actor,
  * decision has three real parts, all translated here.
  * ==================================================================== */
 
+/*
+ * SQUARE.ASM:40 square_root and its table. Not an approximation of one:
+ * the routine discards its input's low five bits, normalises what is left
+ * to at most ten bits by an even shift, looks the result up in a 1024-byte
+ * table of "square root of multiples of 32", and shifts the answer back.
+ * Every entry in that table is within 1 of the real sqrt(i*32), so the
+ * error the game actually sees comes from the shifting, not the data.
+ */
+#define WM_SQROOT_ENTRIES 1024
+extern const uint8_t wm_sqroot_tab[WM_SQROOT_ENTRIES];
+
+/* The routine itself. Max useful input is 262,143; larger values are
+   normalised the same way and simply lose more precision. */
+int32_t wm_arcade_square_root(uint32_t v);
+
 /* SPECIAL.ASM:141 #dizzy_offsets -- where a wrestler's stars go, per
    "mode" slot (the source's header: "stand, on stomach, on back,?,?").
    Ten rows: the nine roster slots and the referee. */

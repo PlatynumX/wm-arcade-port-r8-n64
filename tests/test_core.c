@@ -6418,6 +6418,202 @@ static void test_conditional_and_state_ops(void) {
 }
 
 /*
+ * SQUARE.ASM:40 square_root, and the two movement commands that use the
+ * grid and the root together.
+ */
+static void test_square_root_and_leaps(void) {
+    wm_arcade_actor_t a, v;
+    wm_anim_env env;
+    wm_anim_exec ex;
+    uint32_t n;
+    int i;
+
+    /* The table is "square root of multiples of 32", and every entry is
+       within 1 of the real thing -- so the error the game sees comes from
+       the shifting, not the data. */
+    for (i = 0; i < WM_SQROOT_ENTRIES; ++i) {
+        double want = 0.0;
+        int lo, hi;
+        {   /* integer sqrt of i*32, without libm */
+            uint32_t t = (uint32_t)i * 32u, r = 0;
+            while ((r + 1) * (r + 1) <= t) ++r;
+            lo = (int)r;
+            hi = (int)r + 1;
+        }
+        (void)want;
+        CHECK(wm_sqroot_tab[i] >= lo - 1 && wm_sqroot_tab[i] <= hi);
+    }
+    CHECK(wm_sqroot_tab[0] == 0);
+    CHECK(wm_sqroot_tab[1] == 6);          /* sqrt(32) = 5.65 */
+    CHECK(wm_sqroot_tab[1023] == 181);     /* sqrt(32736) = 180.9 */
+
+    /* The routine itself. Small inputs lose their low five bits, so it is
+       coarse by construction -- but it never wanders far. */
+    CHECK(wm_arcade_square_root(0) == 0);
+    for (n = 0; n < 200000u; n += 337u) {
+        int32_t got = wm_arcade_square_root(n);
+        uint32_t r = 0;
+        while ((r + 1) * (r + 1) <= n) ++r;
+        /* Within about 3% plus a unit, across the whole useful range. */
+        CHECK(got >= 0);
+        CHECK((uint32_t)got <= r + 2u + r / 32u);
+        CHECK((uint32_t)got + 2u + r / 32u >= r);
+    }
+
+    memset(&env, 0, sizeof(env));
+    memset(&v, 0, sizeof(v));
+
+    /*
+     * ANI_LEAPATPOS. The source's own note: "user must set TGT_XOFF,YOFF
+     * & ZOFF <- these are the actual target", so the command reads what an
+     * earlier ANI_TARGET already decided.
+     */
+    {
+        static const wm_anim_op ops[] = {
+            { WM_AOP_LEAPATPOS, 0, -1, 20, 200, 0, 0, 0, 0, NULL },
+            { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, NULL }
+        };
+        static const wm_anim_program prog = {
+            "t_leap", "BAMSEQ2.ASM", ops, 2, 0, NULL, 0
+        };
+        memset(&a, 0, sizeof(a));
+        a.x_fixed = 0;  a.y_fixed = 0;  a.z_fixed = 0;
+        a.tgt_xoff = 40;                   /* 40 units away in 20 ticks */
+        a.tgt_yoff = 0;
+        a.tgt_zoff = 20;
+        wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        /* 40.0 over 20 ticks is 2.0 a tick; 20.0 over 20 is 1.0. */
+        CHECK(a.x_vel == 0x20000);
+        CHECK(a.z_vel == 0x10000);
+        /*
+         * Y is NOT zero even though the target is level with him, and
+         * that is the point of the formula: starting an animation resets
+         * OBJ_GRAVITY to the default (change_anim1's own "reset
+         * gravity"), so arriving level after 20 ticks needs enough upward
+         * v0 to cancel 0.5*g*t^2 on the way. Setting a.gravity before the
+         * start would be overwritten -- the reset is what the source does.
+         */
+        CHECK(a.gravity == WM_GRAVITY);
+        CHECK(a.y_vel == (int32_t)(((uint32_t)(20 * 20) *
+                                    (uint32_t)WM_GRAVITY >> 1) / 20u));
+        CHECK(a.y_vel > 0);
+        /* Distance is sqrt(40^2 + 20^2) = 44.7, well under the 200 cap,
+           so nothing is scaled down. */
+    }
+
+    /* With gravity, Y solves y-y0 = v0*t + 0.5*a*t^2 -- so a leap to the
+       same height needs an upward v0 that gravity will cancel. */
+    {
+        static const wm_anim_op ops[] = {
+            { WM_AOP_LEAPATPOS, 0, -1, 10, 200, 0, 0, 0, 0, NULL },
+            { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, NULL }
+        };
+        static const wm_anim_program prog = {
+            "t_leap_g", "BAMSEQ2.ASM", ops, 2, 0, NULL, 0
+        };
+        memset(&a, 0, sizeof(a));
+        a.tgt_xoff = 10;
+        wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        /* Half the ticks, so half the v0 the 20-tick leap above needed. */
+        CHECK(a.y_vel == (int32_t)(((uint32_t)(10 * 10) *
+                                    (uint32_t)WM_GRAVITY >> 1) / 10u));
+        CHECK(a.y_vel > 0);
+    }
+
+    /* `cmpi >0f0000,a1` -- the Y velocity is capped, which is what stops a
+       long drop turning into a launch. */
+    {
+        static const wm_anim_op ops[] = {
+            { WM_AOP_LEAPATPOS, 0, -1, 2, 4000, 0, 0, 0, 0, NULL },
+            { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, NULL }
+        };
+        static const wm_anim_program prog = {
+            "t_leap_cap", "BAMSEQ2.ASM", ops, 2, 0, NULL, 0
+        };
+        memset(&a, 0, sizeof(a));
+        a.tgt_yoff = 3000;                  /* absurdly high, in 2 ticks */
+        wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(a.y_vel == 0x0F0000);
+    }
+
+    /*
+     * The max-distance clamp: a leap further than `maxdist` has BOTH
+     * horizontal velocities scaled by maxdist/distance, so the direction
+     * is kept and only the reach is cut.
+     */
+    {
+        static const wm_anim_op ops[] = {
+            { WM_AOP_LEAPATPOS, 0, -1, 10, 20, 0, 0, 0, 0, NULL },
+            { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, NULL }
+        };
+        static const wm_anim_program prog = {
+            "t_leap_clamp", "BAMSEQ2.ASM", ops, 2, 0, NULL, 0
+        };
+        int32_t unclamped_x, unclamped_z;
+        memset(&a, 0, sizeof(a));
+        a.tgt_xoff = 300;
+        a.tgt_zoff = 400;                   /* 500 away, capped at 20 */
+        unclamped_x = (300 << 16) / 10;
+        unclamped_z = (400 << 16) / 10;
+        wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(a.x_vel > 0 && a.z_vel > 0);
+        CHECK(a.x_vel < unclamped_x / 10);   /* cut hard */
+        CHECK(a.z_vel < unclamped_z / 10);
+        /* ...and the DIRECTION survives: 300:400 is 3:4, within the
+           rounding the 8-bit scale factor allows. */
+        CHECK(a.z_vel * 3 > a.x_vel * 4 - 0x2000);
+        CHECK(a.z_vel * 3 < a.x_vel * 4 + 0x2000);
+    }
+
+    /*
+     * ANI_SLIDEATOPP. Most of what the source computes here it throws
+     * away -- the opponent-position prediction goes into globals that this
+     * routine then never reads, and the `move a0,*a10(OANICNT)` that would
+     * have used it is commented out. What ships is the INRING-match gate,
+     * the target, and one velocity.
+     */
+    {
+        static const wm_anim_op ops[] = {
+            { WM_AOP_SLIDEATOPP, 0, -1, 0x90000, WM_TGT_CHEST, 18,
+              0, 0, 0, NULL },
+            { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, NULL }
+        };
+        static const wm_anim_program prog = {
+            "t_slide", "LEXSEQ3.ASM", ops, 2, 0, NULL, 0
+        };
+        memset(&a, 0, sizeof(a));
+        memset(&v, 0, sizeof(v));
+        a.wrestler_num = WM_ROSTER_LEX;
+        v.wrestler_num = WM_ROSTER_BRET;
+        a.smart_target = &v;
+        a.in_ring = 1;
+        v.in_ring = 1;
+        a.facing_dir = WM_MOVE_UP_RIGHT;
+        wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(a.x_vel == 0x90000);           /* facing right: positive */
+        CHECK(a.tgt_yoff == 85);             /* Bret's chest */
+
+        a.facing_dir = WM_MOVE_UP_LEFT;
+        wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(a.x_vel == -0x90000);
+
+        /* "make sure both have the same INRING value" -- one of them
+           outside and the whole command is skipped, velocity included. */
+        a.x_vel = 0x1234;
+        v.in_ring = 0;
+        wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(a.x_vel == 0x1234);
+    }
+}
+
+/*
  * LIFEBAR.ASM:3687 DO_COMBO_MESS -- the most-called ANI_CODE routine in
  * the game, and what actually ends a combo.
  */
@@ -10913,6 +11109,7 @@ int main(void) {
     test_the_last_ani_code_routines();
     test_shaker();
     test_conditional_and_state_ops();
+    test_square_root_and_leaps();
     test_do_combo_mess();
     test_do_combo_mess_from_the_vm();
     test_wrsnd_tables();

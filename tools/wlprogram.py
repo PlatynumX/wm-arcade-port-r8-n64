@@ -94,6 +94,17 @@ CODE_RE = re.compile(
 # skipped for exactly that reason, all of them DEBRIS_X.
 VALUE = r"(?:\[[^\]]*\]|[^,\[\]]+)"
 
+# ANIM.ASM:1633 ANI_LEAPATPOS,<ticks>,<maxdist>,<x>,<y>,<z> -- jump so as
+# to arrive at TGT_XOFF/YOFF/ZOFF in that many ticks.
+LEAPATPOS_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_LEAPATPOS\s*,\s*([^,]+),\s*([^,]+),"
+    r"\s*([^,]+),\s*([^,]+),\s*([^,]+)\s*$", re.I)
+
+# ANIM.ASM:3838 ANI_SLIDEATOPP,<ticks>,<vel>,<maxz>,<trgt>,<x>,<y>,<z>.
+SLIDEATOPP_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_SLIDEATOPP\s*,\s*([^,]+),\s*([^,]+),"
+    r"\s*([^,]+),\s*([^,]+),\s*([^,]+),\s*([^,]+),\s*([^,]+)\s*$", re.I)
+
 # ANIM.ASM:2504/:2509 ANI_IFROPE / ANI_IFNOTROPE,<mode>,<distance>,<label>
 # -- branch on there being (or not being) a rope within `distance`.
 IFROPE_RE = re.compile(
@@ -487,6 +498,20 @@ def program_for(path: pathlib.Path, label: str, with_entry: bool = False):
                         int(ss.group(5))))
             continue
 
+        lp = LEAPATPOS_RE.match(line)
+        if lp:
+            ops.append(("LEAPATPOS",) + tuple(
+                wlcommands._value(lp.group(k), equates) for k in range(1, 6)))
+            continue
+
+        sa = SLIDEATOPP_RE.match(line)
+        if sa:
+            ops.append(("SLIDEATOPP",
+                        wlcommands._value(sa.group(2), equates),   # velocity
+                        wlcommands._value(sa.group(4), equates),   # target
+                        wlcommands._value(sa.group(1), equates)))  # max ticks
+            continue
+
         ir = IFROPE_RE.match(line)
         if ir:
             fixups.append((len(ops), ir.group(4)))
@@ -777,6 +802,11 @@ def _c_op(op) -> str:
         args[0] = op[1]
     elif kind in ("IFROPE", "IFNOTROPE"):
         args[0], args[1] = op[2], op[3]
+    elif kind == "LEAPATPOS":
+        args[0], args[1], args[2] = op[1], op[2], op[3]
+        args[3], args[4] = op[4], op[5]
+    elif kind == "SLIDEATOPP":
+        args[0], args[1], args[2] = op[1], op[2], op[3]
     elif kind == "TARGET":
         args[0], args[1], args[2] = op[1], op[2], op[3]
     elif kind in ("SET_RPTCOUNT", "SETOPPMODE", "CLROPPMODE", "IMMOBILIZE"):

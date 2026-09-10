@@ -23,6 +23,9 @@
 /* ANIM.ASM:4405 `movi 80,a0 / move a0,@allow_offscrn`. */
 #define WM_ALLOW_OFFSCRN_TICKS 80
 
+/* ANIM.ASM:1683 `cmpi >0f0000,a1` -- the leap's Y velocity cap. */
+#define WM_LEAP_MAX_YVEL 0x0F0000
+
 static void play_sound(const wm_anim_env *env, uint16_t call) {
     if (env && env->sound) env->sound(env->sound_user, call);
 }
@@ -681,6 +684,92 @@ static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
             x = (actor->obj_control & WM_OBJ_FLIPH) ? -off->x : off->x;
             if (env && env->create_dizzy)
                 env->create_dizzy(env->screen_user, actor, x, off->y);
+            break;
+        }
+
+        /*
+         * ANIM.ASM:1633 _ani_leapatpos -- jump so as to ARRIVE at the
+         * target in `a` ticks, gravity included. The source's own note
+         * above it: "user must set TGT_XOFF,YOFF & ZOFF <- these are the
+         * actual target", so this reads the offsets some earlier command
+         * (ANI_TARGET, set_target_offsets) already put there.
+         *
+         * X and Z are the plain delta over the tick count. Y solves
+         * `y - y0 = v0*t + 0.5*a*t^2` for v0, and is CLAMPED at 0F0000h --
+         * fifteen units a tick, which is what stops a long drop turning
+         * into a launch. Then, if the flight would exceed `b`, both
+         * horizontal velocities are scaled down by maxdist/distance in
+         * 8-bit fixed point.
+         */
+        case WM_AOP_LEAPATPOS: {
+            int32_t ticks = o->a, maxdist = o->b;
+            int32_t ax, ay, az, dx, dz, dist;
+            if (!actor || ticks <= 0) break;
+
+            /* `btst B_FLIPH / neg` on the attack X offset. */
+            ax = o->c << 16;
+            if (actor->obj_control & WM_OBJ_FLIPH) ax = -ax;
+            dx = (actor->tgt_xoff << 16) - (actor->x_fixed + ax);
+            actor->x_vel = dx / ticks;
+
+            /* `mpyu a8,a1 / mpyu a0,a1 / srl 1,a1` -- t^2 * gravity / 2,
+               all with odd destinations, so plain 32-bit products. */
+            ay = o->d << 16;
+            {
+                int32_t half_at2 =
+                    (int32_t)(((uint32_t)(ticks * ticks) *
+                               (uint32_t)actor->gravity) >> 1);
+                int32_t dy = (actor->tgt_yoff << 16) - (actor->y_fixed - ay);
+                int32_t v0 = (int32_t)(((uint32_t)(dy + half_at2)) /
+                                       (uint32_t)ticks);
+                if (v0 >= WM_LEAP_MAX_YVEL) v0 = WM_LEAP_MAX_YVEL;
+                actor->y_vel = v0;
+            }
+
+            az = o->e << 16;
+            dz = (actor->tgt_zoff << 16) - (actor->z_fixed + az);
+            actor->z_vel = dz / ticks;
+
+            /* `abs / srl 16 / mpyu` on each, then square_root of the sum
+               -- the distance in whole units, not 16.16. */
+            {
+                int32_t ux = dx < 0 ? -dx : dx;
+                int32_t uz = dz < 0 ? -dz : dz;
+                uint32_t sx = (uint32_t)(ux >> 16), sz = (uint32_t)(uz >> 16);
+                dist = wm_arcade_square_root(sx * sx + sz * sz);
+            }
+            /* `cmp a0,a9 / jrgt #ok` -- only scale when the distance is
+               at least the maximum. */
+            if (dist > 0 && maxdist <= dist) {
+                int32_t scale = (int32_t)(((uint32_t)maxdist << 8) /
+                                          (uint32_t)dist);
+                actor->x_vel = (actor->x_vel * scale) >> 8;
+                actor->z_vel = (actor->z_vel * scale) >> 8;
+            }
+            break;
+        }
+
+        /*
+         * ANIM.ASM:3838 _ani_slideatopp -- slide along the floor at the
+         * man you are aiming at.
+         *
+         * Most of what it computes it then throws away: it integrates the
+         * opponent's velocity forward MAX_TICKS ticks into oppx/oppy/oppz,
+         * works out a target X from that, and never uses the answer -- the
+         * `move a0,*a10(OANICNT)` that would have consumed it is commented
+         * out, and so is the X it built. What actually SHIPS is the
+         * INRING-match gate, the target selection, and one velocity.
+         */
+        case WM_AOP_SLIDEATOPP: {
+            wm_arcade_actor_t *opp = env ? env->opponent : NULL;
+            if (!actor) break;
+            if (actor->smart_target) opp = actor->smart_target;
+            if (!opp) break;
+            /* "make sure both have the same INRING value" */
+            if ((opp->in_ring != 0) != (actor->in_ring != 0)) break;
+            if (o->b >= 0)
+                wm_arcade_set_target_offsets(actor, opp, (int)o->b);
+            actor->x_vel = (actor->facing_dir & WM_MOVE_RIGHT) ? o->a : -o->a;
             break;
         }
 

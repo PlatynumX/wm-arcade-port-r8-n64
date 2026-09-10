@@ -394,6 +394,34 @@ const wm_wrestler_smove_table wm_wrestler_smoves[WM_WRESTLER_ANIM_SLOTS] = {
     { NULL, 0 },   /* 9 Referee */
 };
 
+/* REACT5.ASM bncoff -- [roster slot][facing 2, 4] */
+const char *const wm_wrestler_bncoff[WM_WRESTLER_ANIM_SLOTS][2] = {
+    { "hrt_2_bncoff_anim", "hrt_4_bncoff_anim" },   /* 0 Bret Hart */
+    { "rzr_2_bncoff_anim", "rzr_4_bncoff_anim" },   /* 1 Razor Ramon */
+    { "und_2_bncoff_anim", "und_4_bncoff_anim" },   /* 2 Undertaker */
+    { "yok_2_bncoff_anim", "yok_4_bncoff_anim" },   /* 3 Yokozuna */
+    { "shn_2_bncoff_anim", "shn_4_bncoff_anim" },   /* 4 Shawn Michaels */
+    { "bam_2_bncoff_anim", "bam_4_bncoff_anim" },   /* 5 Bam Bam */
+    { "dnk_2_bncoff_anim", "dnk_4_bncoff_anim" },   /* 6 Doink */
+    { "dnk_2_bncoff_anim", "dnk_4_bncoff_anim" },   /* 7 Adam Bomb */
+    { "lex_2_bncoff_anim", "lex_4_bncoff_anim" },   /* 8 Lex Luger */
+    { "dnk_2_bncoff_anim", "dnk_4_bncoff_anim" },   /* 9 Referee */
+};
+
+/* REACT5.ASM bncoff_gate -- [roster slot][facing 2, 4] */
+const char *const wm_wrestler_bncoff_gate[WM_WRESTLER_ANIM_SLOTS][2] = {
+    { "hrt_2_bncoff_anim", "hrt_4_bncoff_anim" },   /* 0 Bret Hart */
+    { "rzr_2_bncoff_anim", "rzr_4_bncoff_anim" },   /* 1 Razor Ramon */
+    { "und_2_bncoff_anim", "und_4_bncoff_anim" },   /* 2 Undertaker */
+    { "yok_2_bncoff_gate_anim", "yok_4_bncoff_gate_anim" },   /* 3 Yokozuna */
+    { "shn_2_bncoff_anim", "shn_4_bncoff_anim" },   /* 4 Shawn Michaels */
+    { "bam_2_bncoff_anim", "bam_4_bncoff_anim" },   /* 5 Bam Bam */
+    { "dnk_2_bncoff_anim", "dnk_4_bncoff_anim" },   /* 6 Doink */
+    { "dnk_2_bncoff_anim", "dnk_4_bncoff_anim" },   /* 7 Adam Bomb */
+    { "lex_2_bncoff_anim", "lex_4_bncoff_anim" },   /* 8 Lex Luger */
+    { "dnk_2_bncoff_anim", "dnk_4_bncoff_anim" },   /* 9 Referee */
+};
+
 const char *const wm_wrestler_taunt_anims[WM_WRESTLER_ANIM_SLOTS] = {
     "hrt_4_taunt_anim",   /* 0 Bret Hart */
     "rzr_4_taunt_anim",   /* 1 Razor Ramon */

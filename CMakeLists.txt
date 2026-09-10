@@ -195,12 +195,14 @@ if(WM_BUILD_TESTS)
          ${CMAKE_SOURCE_DIR}/tests/arcade_port/lifebar/test_*.c)
     file(GLOB WM_ARCADE_ANIM_TESTS
          ${CMAKE_SOURCE_DIR}/tests/arcade_port/anim/test_*.c)
+    file(GLOB WM_ARCADE_COLLIS_TESTS
+         ${CMAKE_SOURCE_DIR}/tests/arcade_port/collis/test_*.c)
 
     foreach(test_src ${WM_ARCADE_STAGE25_TESTS} ${WM_ARCADE_RING_RNG_TESTS}
                      ${WM_ARCADE_TEXT_TESTS} ${WM_ARCADE_PAL_TESTS}
                      ${WM_ARCADE_AWARD_TESTS} ${WM_ARCADE_INPUT_TESTS}
                      ${WM_ARCADE_PREGAME_TESTS} ${WM_ARCADE_DISPLAY_TESTS}
-                     ${WM_ARCADE_LIFEBAR_TESTS} ${WM_ARCADE_ANIM_TESTS})
+                     ${WM_ARCADE_LIFEBAR_TESTS} ${WM_ARCADE_ANIM_TESTS} ${WM_ARCADE_COLLIS_TESTS})
         get_filename_component(test_name ${test_src} NAME_WE)
         set(test_target wm_${test_name})
         add_executable(${test_target} ${test_src})

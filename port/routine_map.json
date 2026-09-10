@@ -502,5 +502,11 @@
     "status": "inlined",
     "symbol": "run_superslave2",
     "note": "The defender's attach offset uses its own aniX, or (xsize - aniX) when the puppet table's flip disagrees with which way the attacker is facing. src/core/anim_program.c's run_superslave2 spells that out at its one use site, reading real per-frame geometry rather than a guessed width."
+  },
+  "set_xyz": {
+    "file": "COLLIS.ASM",
+    "status": "renamed",
+    "symbol": "wm_arcade_set_attack_box",
+    "note": "COLLIS.ASM:669. Builds the ATTACK box in world space from OBJ_ATT{X,Y,Z}OFF and OBJ_ATT{WIDTH,HEIGHT,DEPTH}, including the FLIPH branch that mirrors the X extent for a wrestler facing left. wm_arcade_set_attack_box is that routine line for line; it is named for what it produces rather than for the three axes it writes."
   }
 }

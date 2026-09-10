@@ -93,6 +93,22 @@ extern const wm_wrestler_smove_table
     wm_wrestler_smoves[WM_WRESTLER_ANIM_SLOTS];
 
 /*
+ * REACT5.ASM:333 bncoff and :353 bncoff_gate -- the animation a
+ * wrestler plays when he bounces off something, indexed
+ * [WRESTLERNUM][0 = facing 2, 1 = facing 4].
+ *
+ * Shared globals rather than one table per wrestler, which is why they
+ * sit beside the taunt table rather than in the three above.
+ * bncoff_gate is the same list with Yokozuna's pair swapped for his
+ * *_bncoff_gate_anim variants: he is the only wrestler the source
+ * gives a different animation for bouncing off the gate.
+ */
+extern const char *const
+    wm_wrestler_bncoff[WM_WRESTLER_ANIM_SLOTS][2];
+extern const char *const
+    wm_wrestler_bncoff_gate[WM_WRESTLER_ANIM_SLOTS][2];
+
+/*
  * DOINK.ASM:1632 #taunt_t -- the animation each wrestler plays for the
  * start-of-round taunt, indexed by WRESTLERNUM. Defined in DOINK.ASM
  * because do_taunt is, and every wrestler's control code CREATEs that

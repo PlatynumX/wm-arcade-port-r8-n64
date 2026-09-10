@@ -126,6 +126,36 @@ int wm_arcade_resolve_overlap(wm_arcade_actor_t *mover,
     return 1;
 }
 
+/*
+ * COLLIS.ASM:56 overlap_collision.
+ *
+ * `movi process_ptrs,a9 / movk NUM_WRES,a10 / #collis_loop` -- walk the
+ * process table, skip the empty slots and skip self, and try to push
+ * out of everyone else. Every other guard the source applies before
+ * the push (ZOMBIE, the other man dead, MODE_OVERLAP, attached, this
+ * man on the ground or dead, running through a downed opponent) lives
+ * in resolve_overlap, exactly where the source has it: the loop's job
+ * is only to choose the pairs.
+ */
+int wm_arcade_overlap_collision(wm_arcade_actor_t *mover,
+                                wm_arcade_actor_t *const *actors,
+                                size_t actor_count)
+{
+    size_t i;
+    int separated = 0;
+
+    if (!mover || !actors) return 0;
+
+    for (i = 0; i < actor_count; ++i) {
+        const wm_arcade_actor_t *other = actors[i];
+        if (!other) continue;                 /* `jrz #inactive` */
+        if (other == mover) continue;         /* `cmp a11,a13 / jreq #skip` */
+        if (!other->active) continue;
+        separated += wm_arcade_resolve_overlap(mover, other);
+    }
+    return separated;
+}
+
 wm_arcade_hit_result_t wm_arcade_try_attack_hit(
     wm_arcade_actor_t *attacker,
     wm_arcade_actor_t *victim,

@@ -7,7 +7,7 @@ only in a note saying it is missing does not count as present.
 
 | status | meaning | count |
 |---|---|---|
-| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1872 |
+| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1875 |
 | `inlined` | the port does it, spelled out at each use site (ledger) | 7 |
 | `renamed` | the port does it under another name (ledger) | 60 |
 | `partial` | partly translated; the ledger note says which part | 1 |
@@ -17,9 +17,9 @@ only in a note saying it is missing does not count as present.
 | `dead` | **measured**: no caller outside its own file | 39 |
 | `unassembled` | **measured**: inside a `.if` the assembler skipped | 60 |
 | `cited` | named only in a comment -- not evidence of anything | 123 |
-| `unknown` | no mention anywhere | 356 |
+| `unknown` | no mention anywhere | 353 |
 
-**2055 of 2534 routines are accounted for; 479 are open** (`cited` + `unknown`).
+**2058 of 2534 routines are accounted for; 476 are open** (`cited` + `unknown`).
 
 ## Open routines by file
 
@@ -47,18 +47,18 @@ only in a note saying it is missing does not count as present.
 | DIAG.ASM | 6 | `_aquire_time`, `_get_time`, `_set_time`, `bcd2hex`, `bin2bcd`, `line_draw` |
 | MPROC.ASM | 3 | `IKIL1C`, `process_dispatch`, `process_init` |
 | AUDIT.ASM | 3 | `audit_ud`, `crd_updatetxt`, `form_crc32` |
-| REACT5.ASM | 3 | `bncoff`, `bncoff_gate`, `hit_puppet_even_if_dead` |
-| COLLIS.ASM | 3 | `check_collis`, `overlap_collision`, `set_xyz` |
 | ROPES.ASM | 3 | `fastanic`, `rope_update`, `set_rope_z` |
 | TEST.ASM | 3 | `opmsg_clr`, `opmsg_main`, `print_multi` |
 | PAL.ASM | 2 | `addbae`, `addbrt_ae` |
 | CROWD.ASM | 2 | `animate_back`, `crowd_anim` |
+| COLLIS.ASM | 2 | `check_collis`, `set_xyz` |
 | REACT4.ASM | 2 | `hit_buttstomp`, `hit_headhold` |
 | REACT2.ASM | 2 | `hit_grabfling`, `hit_grabhold` |
 | REACT9.ASM | 2 | `hit_headdslash`, `hit_headuslash` |
 | STORIES.ASM | 2 | `print_story`, `show_wrestler_end_story` |
 | SCREEN.ASM | 1 | `DRKTRPLTP` |
 | WRESPAL.ASM | 1 | `UNDBLU_P` |
+| REACT5.ASM | 1 | `hit_puppet_even_if_dead` |
 | REACT3.ASM | 1 | `knee_hit_tbl` |
 | STRING.ASM | 1 | `print_string_with_zb` |
 | ANIM.ASM | 1 | `set_images` |

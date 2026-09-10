@@ -304,6 +304,46 @@ static void test_who_actually_taunts(void)
     assert(wm_wrestler_do_taunt(&a, false, NULL) == NULL);
 }
 
+/*
+ * REACT5.ASM:333 bncoff and :353 bncoff_gate -- what a wrestler plays
+ * when he bounces off something, per roster slot and facing.
+ */
+static void test_the_bounce_off_tables(void)
+{
+    int i;
+
+    for (i = 0; i < WM_WRESTLER_ANIM_SLOTS; ++i) {
+        int f;
+        for (f = 0; f < 2; ++f) {
+            const char *plain = wm_wrestler_bncoff[i][f];
+            const char *gate = wm_wrestler_bncoff_gate[i][f];
+            assert(plain && gate);
+            assert(strstr(plain, "_bncoff") != NULL);
+            assert(strstr(gate, "_bncoff") != NULL);
+            assert(wm_anim_program_find(plain) != NULL);
+            assert(wm_anim_program_find(gate) != NULL);
+        }
+        /* Facing 2 and facing 4 are different animations. */
+        assert(strcmp(wm_wrestler_bncoff[i][0],
+                      wm_wrestler_bncoff[i][1]) != 0);
+    }
+
+    /* Every slot the source fills, filled -- including the two it gives
+       Doink's animation to rather than leaving empty. */
+    assert(strncmp(wm_wrestler_bncoff[SLOT_ADAM][0], "dnk_", 4) == 0);
+    assert(strncmp(wm_wrestler_bncoff[SLOT_REF][0], "dnk_", 4) == 0);
+
+    /* Yokozuna is the only wrestler with a separate GATE animation; for
+       everyone else the two tables agree. */
+    for (i = 0; i < WM_WRESTLER_ANIM_SLOTS; ++i) {
+        int same = strcmp(wm_wrestler_bncoff[i][0],
+                          wm_wrestler_bncoff_gate[i][0]) == 0;
+        if (i == 3) assert(!same);
+        else assert(same);
+    }
+    assert(strstr(wm_wrestler_bncoff_gate[3][0], "gate") != NULL);
+}
+
 int main(void)
 {
     test_shapes_are_the_index_arithmetic();
@@ -316,6 +356,7 @@ int main(void)
     test_the_torso_channel_follows_the_facing();
     test_the_taunt_table();
     test_who_actually_taunts();
+    test_the_bounce_off_tables();
     printf("per-wrestler turn/walk/torso tables: all checks passed\n");
     return 0;
 }

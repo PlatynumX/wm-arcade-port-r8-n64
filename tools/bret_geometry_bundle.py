@@ -107,7 +107,14 @@ def emit(out_path: pathlib.Path, lods: list[pathlib.Path], img_dir: pathlib.Path
         "static const wm_frame_geometry_t frames[] = {",
     ]
     for frame, im in resolved:
-        lines.append(f'    {{"{frame}", {im.width}, {im.height}, {im.xani}, {im.yani}}},')
+        # Tail words 3 and 4 are the channel-2 attachment pair
+        # (wm/bret_sprites.h's note: established by hardware scanning,
+        # not guessed). Emitted here so the body/torso composite offset
+        # can be computed without the pixel data linked in.
+        ax = im.tail_words[3] if len(im.tail_words) > 4 else -1
+        ay = im.tail_words[4] if len(im.tail_words) > 4 else -1
+        lines.append(f'    {{"{frame}", {im.width}, {im.height}, '
+                     f'{im.xani}, {im.yani}, {ax}, {ay}}},')
     lines += [
         "};",
         "",

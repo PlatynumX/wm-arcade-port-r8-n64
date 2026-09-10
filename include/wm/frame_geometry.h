@@ -8,9 +8,10 @@ extern "C" {
 #endif
 
 /*
- * Per-frame WIMP image geometry (width/height/xani/yani) for every Bret
- * source frame wm/bret_visuals.h and wm/bret_attacks.h reference, with no
- * pixel or palette data attached.
+ * Per-frame WIMP image geometry (width, height, animation origin and
+ * the channel-2 attachment pair) for every source frame the port can
+ * show, across the whole roster, with no pixel or palette data
+ * attached.
  *
  * This exists as its own small generated table (tools/bret_geometry_bundle.py,
  * src/generated/frame_geometry.c) distinct from wm/bret_sprites.h's
@@ -28,6 +29,19 @@ typedef struct {
     uint16_t height;
     int16_t xani;
     int16_t yani;
+    /*
+     * The channel-2 attachment pair -- WIMP tail words 3 and 4, which
+     * hardware scanning established as where the SECOND animation
+     * channel hangs off this frame. (-1, -1) means the frame carries
+     * no attachment and the torso layer is not drawn over it.
+     *
+     * Geometry, not pixels, for the same reason the sizes above are
+     * here: the composite offset has to come out the same on host
+     * ctest and on console, and must not depend on which wrestler's
+     * artwork happens to be linked in.
+     */
+    int16_t attach_x;
+    int16_t attach_y;
 } wm_frame_geometry_t;
 
 const wm_frame_geometry_t *wm_frame_geometry_find(const char *source_frame);

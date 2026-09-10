@@ -815,6 +815,25 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
 
         (void)wm_arcade_check_wrestler_collisions(actor_ptrs, m->actor_count,
                                                   m->tick_count, &combat_cb);
+
+        /*
+         * COLLIS.ASM:56 overlap_collision, which keeps two wrestlers from
+         * standing inside one another. The port has had its body
+         * (wm_arcade_resolve_overlap) for a long time with nothing calling
+         * it, so nothing ever pushed them apart.
+         *
+         * It runs after the attack sweep and reads the same hurt boxes,
+         * which are this tick's: set_collision_boxes' hurt-box half is
+         * applied in each backend's tick above, before confine_wrestler.
+         */
+        {
+            size_t oi;
+            for (oi = 0; oi < m->actor_count; ++oi) {
+                if (!actor_ptrs[oi] || !actor_ptrs[oi]->active) continue;
+                (void)wm_arcade_overlap_collision(actor_ptrs[oi], actor_ptrs,
+                                                  m->actor_count);
+            }
+        }
     }
 
     {

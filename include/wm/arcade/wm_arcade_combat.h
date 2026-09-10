@@ -392,6 +392,21 @@ void wm_arcade_set_hurt_box(wm_arcade_actor_t *actor,
 void wm_arcade_set_attack_box(wm_arcade_actor_t *actor);
 int wm_arcade_resolve_overlap(wm_arcade_actor_t *mover,
                               const wm_arcade_actor_t *other);
+/*
+ * COLLIS.ASM:56 overlap_collision -- the loop around resolve_overlap.
+ *
+ * The source walks process_ptrs for NUM_WRES entries and tries to push
+ * `mover` out of each other live wrestler in turn. wm_arcade_resolve_
+ * overlap above is that loop's BODY, and has been a faithful
+ * translation for some time -- with nothing calling it. Two wrestlers
+ * could stand inside each other indefinitely, because the code that
+ * separates them was never reached.
+ *
+ * Returns the number of separations applied this pass.
+ */
+int wm_arcade_overlap_collision(wm_arcade_actor_t *mover,
+                                wm_arcade_actor_t *const *actors,
+                                size_t actor_count);
 wm_arcade_hit_result_t wm_arcade_try_attack_hit(
     wm_arcade_actor_t *attacker,
     wm_arcade_actor_t *victim,

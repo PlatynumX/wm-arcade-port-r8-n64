@@ -430,5 +430,77 @@
     "status": "renamed",
     "symbol": "special_processes",
     "note": "The run monitor every wrestler's smove table carries, defined once in DOINK.ASM like std_taunt."
+  },
+  "check_collisions": {
+    "file": "COLLIS.ASM",
+    "status": "renamed",
+    "symbol": "wm_arcade_check_wrestler_collisions",
+    "note": "The whole attacker/victim sweep, including the source's alternating scan order (round_tick parity) and its exit after the first accepted hit. Named for what it iterates over rather than for the file it came from, which is why the name does not resolve on its own."
+  },
+  "wres_collis_off": {
+    "file": "COLLIS.ASM",
+    "status": "renamed",
+    "symbol": "wm_arcade_wrestler_collisions_off",
+    "note": "Clears MODE_CHECKHIT. Eleven call sites across the react modules and the lifebar reach it under this name."
+  },
+  "set_collision_boxes": {
+    "file": "COLLIS.ASM",
+    "status": "inlined",
+    "symbol": "wm_arcade_set_attack_box",
+    "note": "The source sets BOTH boxes in one routine; the port sets them where each is needed. The hurt box comes from the frame the animation is showing (wm_hurt_box_for_frame / wm_arcade_set_hurt_box in wrestler_backend.c's tick), and the attack box from the attacker just before the collision sweep (wm_arcade_set_attack_box). Splitting them is what lets the hurt box follow real per-frame geometry rather than a single box per wrestler."
+  },
+  "hit_push": {
+    "file": "REACT2.ASM",
+    "status": "renamed",
+    "symbol": "hit_push_common",
+    "note": "REACT2.ASM:427. The port shares one body between the two reactions that need it, which is why it carries the _common suffix."
+  },
+  "CHECK_SCORE": {
+    "file": "HSTD.ASM",
+    "status": "renamed",
+    "symbol": "wm_hs_check_score_arcade",
+    "note": "The high-score table's placement search, over packed-BCD scores. Prefixed and suffixed to sit beside the rest of the hiscore core."
+  },
+  "SPRINKLE_GLINTS": {
+    "file": "LIFEBAR.ASM",
+    "status": "renamed",
+    "symbol": "sprinkle_glints_proc",
+    "note": "The title-screen glint process, translated as a wm_process in src/core/app.c -- the _proc suffix marks it as one, which is what stops the name resolving."
+  },
+  "und_spirit_pull": {
+    "file": "SPECIAL.ASM",
+    "status": "renamed",
+    "symbol": "special_processes",
+    "note": "One of Undertaker's smove monitors. His dispatcher selects by position in his special_processes list rather than by a named id, so the source label IS the key -- same positional dispatch as lex_hdhold_pile."
+  },
+  "und_spirit_push": {
+    "file": "SPECIAL.ASM",
+    "status": "renamed",
+    "symbol": "special_processes",
+    "note": "An smove monitor, same positional dispatch as und_spirit_pull."
+  },
+  "animate_wrestler": {
+    "file": "ANIM.ASM",
+    "status": "renamed",
+    "symbol": "wm_wrestler_backend_tick",
+    "note": "ANIM.ASM:68. Its whole body is `animate` on ANIMODE then `animate` on ANIMODE2 -- the two animation channels, in that order, gated on match_time being non-zero. wm_wrestler_backend_tick does exactly that with the primary program and the torso program; wm_anim_exec_tick is the `animate` underneath."
+  },
+  "animate_wrestler1": {
+    "file": "ANIM.ASM",
+    "status": "inlined",
+    "symbol": "wm_anim_exec_start",
+    "note": "ANIM.ASM:92, called from change_anim1a (:4554) right after it writes ANIMODE, ANICNT and the gravity reset: it runs the new animation's first command immediately rather than waiting a tick. The port's exec_start ends with the same advance() call, so starting an animation already shows its first frame. Its other call site is commented out in the source (:76)."
+  },
+  "animate_wrestler2": {
+    "file": "ANIM.ASM",
+    "status": "inlined",
+    "symbol": "wm_anim_exec_start_secondary",
+    "note": "ANIM.ASM:103, the secondary channel's half of animate_wrestler1 and inlined the same way -- change_anim2a's own advance(). Its other call site is commented out at :77."
+  },
+  "attacker_flip_test": {
+    "file": "ANIM.ASM",
+    "status": "inlined",
+    "symbol": "run_superslave2",
+    "note": "The defender's attach offset uses its own aniX, or (xsize - aniX) when the puppet table's flip disagrees with which way the attacker is facing. src/core/anim_program.c's run_superslave2 spells that out at its one use site, reading real per-frame geometry rather than a guessed width."
   }
 }

@@ -445,10 +445,10 @@
    "local": false,
    "external_callers": 1,
    "references": 5,
-   "status": "cited",
-   "evidence": "CHECK_SCORE",
+   "status": "renamed",
+   "evidence": "wm_hs_check_score_arcade",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "CLEAR_PROCESSES",
@@ -2215,10 +2215,10 @@
    "local": false,
    "external_callers": 1,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "sprinkle_glints_proc",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "START_HI_FLASHES",
@@ -3145,10 +3145,10 @@
    "local": false,
    "external_callers": 5,
    "references": 6,
-   "status": "cited",
-   "evidence": "animate_wrestler",
+   "status": "renamed",
+   "evidence": "wm_wrestler_backend_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "animate_wrestler1",
@@ -3160,10 +3160,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "inlined",
+   "evidence": "wm_anim_exec_start",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "animate_wrestler2",
@@ -3175,10 +3175,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "inlined",
+   "evidence": "wm_anim_exec_start_secondary",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "anipt_getxy",
@@ -3355,10 +3355,10 @@
    "local": true,
    "external_callers": 0,
    "references": 2,
-   "status": "cited",
-   "evidence": "attacker_flip_test",
+   "status": "inlined",
+   "evidence": "run_superslave2",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "attract_mode",
@@ -7360,10 +7360,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "check_collisions",
+   "status": "renamed",
+   "evidence": "wm_arcade_check_wrestler_collisions",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "check_for_award_for_big_comeback",
@@ -14757,10 +14757,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "hit_push_common",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "hit_rslash",
@@ -27062,10 +27062,10 @@
    "local": false,
    "external_callers": 8,
    "references": 8,
-   "status": "cited",
-   "evidence": "set_collision_boxes",
+   "status": "inlined",
+   "evidence": "wm_arcade_set_attack_box",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "set_getup_time",
@@ -33917,10 +33917,10 @@
    "local": false,
    "external_callers": 3,
    "references": 3,
-   "status": "cited",
-   "evidence": "und_spirit_pull",
+   "status": "renamed",
+   "evidence": "special_processes",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "und_spirit_pull_anim",
@@ -33947,10 +33947,10 @@
    "local": false,
    "external_callers": 3,
    "references": 3,
-   "status": "cited",
-   "evidence": "und_spirit_push",
+   "status": "renamed",
+   "evidence": "special_processes",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "und_spirit_push_anim",
@@ -34728,10 +34728,10 @@
    "local": false,
    "external_callers": 81,
    "references": 81,
-   "status": "cited",
-   "evidence": "wres_collis_off",
+   "status": "renamed",
+   "evidence": "wm_arcade_wrestler_collisions_off",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "wres_get_but_val_cur",

@@ -22,6 +22,7 @@ def load(name: str, path: pathlib.Path):
     return module
 
 wlanim = load("wlanim", ROOT / "tools" / "wlanim.py")
+asmseq = load("asmseq", ROOT / "tools" / "asmseq.py")
 wlattack = load("wlattack", ROOT / "tools" / "wlattack.py")
 wlcommands = load("wlcommands", ROOT / "tools" / "wlcommands.py")
 wlpuppet = load("wlpuppet", ROOT / "tools" / "wlpuppet.py")
@@ -1496,6 +1497,79 @@ def test_coverage_does_not_count_code_the_assembler_skipped() -> None:
     ledger = port_coverage.load_ledger()
     for name in skipped:
         assert name not in ledger, name
+
+
+def test_the_two_bmod_producers_agree() -> None:
+    """src/generated/bmod_tables.c has two producers; they must match.
+
+    scripts/prepare_frontend_assets.sh and scripts/prepare_select_assets.sh
+    both run tools/bmod_source.py against the same output file, and
+    bmod_source numbers its bmod_words_N arrays by the order the modules
+    arrive in. So a difference in the two `--module` lists is not a
+    harmless style difference: whichever script ran last renumbers the
+    arrays, the checked-in file stops reproducing, and every regeneration
+    produces a spurious diff.
+
+    They DID differ -- LADDERBMOD and wwfselbkBMOD were swapped -- which
+    is how this was found: running the frontend script rewrote a file
+    nothing had asked it to change, with identical data under different
+    indices.
+    """
+    scripts = [ROOT / "scripts" / "prepare_frontend_assets.sh",
+               ROOT / "scripts" / "prepare_select_assets.sh"]
+    if not all(p.exists() for p in scripts):
+        return
+
+    lists = []
+    for path in scripts:
+        text = path.read_text()
+        # The bmod_source.py invocation and the --module lines under it.
+        at = text.index("bmod_source.py")
+        chunk = text[at:]
+        end = chunk.index("--out")
+        lists.append((path.name, re.findall(r"--module\s+(\w+)",
+                                            chunk[:end])))
+
+    (name_a, mods_a), (name_b, mods_b) = lists
+    assert mods_a, name_a
+    assert mods_a == mods_b, (name_a, mods_a, name_b, mods_b)
+
+    # And the checked-in file is in that order, so it reproduces.
+    out = ROOT / "src" / "generated" / "bmod_tables.c"
+    if out.exists():
+        order = re.findall(r'\{"(\w+)", \{', out.read_text())
+        assert order == mods_a, (order, mods_a)
+
+
+def test_extracted_cut_content_says_so() -> None:
+    """A generated file for a routine the assembler skipped is labelled.
+
+    src/generated/finish_sequences.c holds FINISEQ.ASM's
+    hrt_finish1_move, and GAME.EQU:580 sets NUM_BRET_FINISHES to 0 --
+    the routine is inside that `.if`, so Bret has no finishing move in
+    the shipped game. Extracting it is fine; leaving it unlabelled is
+    not, because a generated file with no note reads as translated
+    behaviour.
+
+    The banner is decided by port_coverage from the `.if` conditions
+    rather than written by hand, so it tracks the switch instead of
+    going stale.
+    """
+    if not (wlanim.ORIG / "FINISEQ.ASM").exists():
+        return
+
+    assert "hrt_finish1_move" in port_coverage.unassembled_routines()
+
+    note = asmseq._unassembled_note("hrt_finish1_move")
+    assert "NOT IN THE SHIPPED GAME" in note
+    assert "NUM_BRET_FINISHES" in note
+
+    # A routine that IS assembled gets no banner.
+    assert asmseq._unassembled_note("wrestler_veladd") == ""
+
+    out = ROOT / "src" / "generated" / "finish_sequences.c"
+    if out.exists():
+        assert "NOT IN THE SHIPPED GAME" in out.read_text()
 
 
 def test_waithitopp_is_a_mode_and_a_frame() -> None:
@@ -2987,6 +3061,8 @@ def main() -> int:
     test_per_wrestler_tables_generate_the_shipped_file()
     test_smove_tables_honour_the_finishing_move_switch()
     test_coverage_does_not_count_code_the_assembler_skipped()
+    test_the_two_bmod_producers_agree()
+    test_extracted_cut_content_says_so()
     test_coverage_does_not_count_a_comment_as_an_implementation()
     test_coverage_matches_only_a_suffix_or_a_generated_wrapper()
     test_coverage_only_counts_linked_files()

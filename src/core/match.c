@@ -146,6 +146,37 @@ static void match_screen_shake(void *user, int32_t ticks) {
     if (m) wm_shake_start(&m->shake, ticks);
 }
 
+/* SPECIAL.ASM:87 create_dizzy_proc. The gate and the per-wrestler offset
+   are in the VM; the star itself is a DEBRIS_PID object. */
+static void match_create_dizzy(void *user, wm_arcade_actor_t *at,
+                               int32_t xoff, int32_t yoff) {
+    wm_match_state *m = (wm_match_state *)user;
+    (void)at;
+    if (!m) return;
+    m->dizzy.xoff = xoff;
+    m->dizzy.yoff = yoff;
+    ++m->dizzy.created;
+}
+
+/* ANIM.ASM:4403 ANI_SET_IDIOT -- WRESTLE.ASM:257 allow_offscrn. */
+static void match_set_allow_offscrn(void *user, int32_t ticks) {
+    wm_match_state *m = (wm_match_state *)user;
+    if (m) m->allow_offscrn = ticks;
+}
+
+/*
+ * ANI_LOOP's own reason for existing beyond parking: if announce_rnd_winner
+ * is asleep at arw_bwait waiting to see whether anybody bucks off, a pinned
+ * wrestler reaching the loop wakes it NOW rather than letting it sleep out
+ * its 90 ticks.
+ */
+static void match_wake_round_announce(void *user) {
+    wm_match_state *m = (wm_match_state *)user;
+    if (!m) return;
+    if (m->round_announce.phase != (uint8_t)WM_ARW_BUCKOFF_WAIT) return;
+    m->round_announce.sleep_left = 0;      /* `movk 1,a14 / move a14,*a0(PTIME)` */
+}
+
 /* @no_debris, written by create_impact4/flykick and by LEXSEQ2's
    #stop_debris / #restore_debris pair. */
 static void match_set_no_debris(void *user, bool off) {
@@ -317,6 +348,8 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
     m->debris.no_debris = false;
     m->debris.reduce_bog = (int32_t)m->actor_count - 2;
     wm_shake_init(&m->shake);
+    m->allow_offscrn = 0;
+    memset(&m->dizzy, 0, sizeof(m->dizzy));
     wm_move_name_init(&m->move_names);
     memset(&m->move_name, 0, sizeof(m->move_name));
     wm_arcade_match_score_init(&m->score);
@@ -384,6 +417,8 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
     m->debris.no_debris = false;
     m->debris.reduce_bog = (int32_t)m->actor_count - 2;
     wm_shake_init(&m->shake);
+    m->allow_offscrn = 0;
+    memset(&m->dizzy, 0, sizeof(m->dizzy));
     wm_move_name_init(&m->move_names);
     memset(&m->move_name, 0, sizeof(m->move_name));
     wm_arcade_match_score_init(&m->score);
@@ -609,6 +644,16 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             m->bret_visual[i].anim_env.draw_move_name = match_draw_move_name;
             m->wrestler_visual[i].anim_env.screen_shake = match_screen_shake;
             m->bret_visual[i].anim_env.screen_shake = match_screen_shake;
+            m->wrestler_visual[i].anim_env.create_dizzy = match_create_dizzy;
+            m->bret_visual[i].anim_env.create_dizzy = match_create_dizzy;
+            m->wrestler_visual[i].anim_env.set_allow_offscrn =
+                match_set_allow_offscrn;
+            m->bret_visual[i].anim_env.set_allow_offscrn =
+                match_set_allow_offscrn;
+            m->wrestler_visual[i].anim_env.wake_round_announce =
+                match_wake_round_announce;
+            m->bret_visual[i].anim_env.wake_round_announce =
+                match_wake_round_announce;
             /*
              * WRESTLE.ASM's match-configuration globals, as this match
              * actually is: no royal rumble, PSTATUS 0 for the attract
@@ -700,6 +745,8 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
     wm_announce_tick_repeat(&m->announcer);   /* REPEAT_DUMMY */
     if (m->crowd.sound_ticks) --m->crowd.sound_ticks;   /* CROWD_DUMMY */
     (void)wm_shake_tick(&m->shake);                    /* UTIL.ASM #shaker */
+    /* WRESTLE2.ASM:2214 `move @allow_offscrn,a14 / jrz #ok / dec / ...` */
+    if (m->allow_offscrn > 0) --m->allow_offscrn;
     (void)wm_announcer_tick(&m->announcer, m->anim_sound_user, m->anim_sound,
                             NULL);
 

@@ -20,6 +20,9 @@
    bounce and by the three shake commands that make one. */
 #define WM_ROPE_THUMP_SOUND 0x3Cu
 
+/* ANIM.ASM:4405 `movi 80,a0 / move a0,@allow_offscrn`. */
+#define WM_ALLOW_OFFSCRN_TICKS 80
+
 static void play_sound(const wm_anim_env *env, uint16_t call) {
     if (env && env->sound) env->sound(env->sound_user, call);
 }
@@ -638,6 +641,49 @@ static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
                               WM_ROPE_BOUNCE_UD, 1, actor->z_fixed);
             break;
 
+        /*
+         * ANIM.ASM:4403 _ani_set_idiot -- "Allow players off screen on
+         * toss outs", 80 ticks of it.
+         */
+        case WM_AOP_SET_IDIOT:
+            if (env && env->set_allow_offscrn)
+                env->set_allow_offscrn(env->screen_user,
+                                       WM_ALLOW_OFFSCRN_TICKS);
+            break;
+
+        /*
+         * ANIM.ASM:4448 _ani_scroll_ctrl -- hand the camera a Y of its
+         * own. A NEGATIVE operand sets the flag WITHOUT writing the value
+         * (`jrn #cont`), which is how a routine says "keep following what
+         * you were following".
+         */
+        case WM_AOP_SCROLL_CTRL:
+            if (!actor) break;
+            if (o->a >= 0) actor->scroll_y = o->a;
+            actor->status_flags |= (uint32_t)WM_STATUS_SCROLL_CTRL;
+            break;
+
+        /*
+         * ANIM.ASM:2005 _ani_start_dizzy -- the stars. The operand says
+         * WHICH offset slot ("stand, on stomach, on back"), and
+         * create_dizzy_proc's own STARS_FLAG makes it once at a time.
+         */
+        case WM_AOP_START_DIZZY: {
+            const wm_dizzy_offset *off;
+            int32_t x;
+            if (!actor || actor->stars_flag) break;   /* `jrnz #x` */
+            if (actor->wrestler_num < 0 ||
+                actor->wrestler_num >= WM_DIZZY_ROWS) break;
+            if (o->a < 0 || o->a >= WM_DIZZY_SLOTS) break;
+            off = &wm_dizzy_offsets[actor->wrestler_num][o->a];
+            actor->stars_flag = 1;
+            /* `btst B_FLIPH / neg a1` -- the X offset mirrors with him. */
+            x = (actor->obj_control & WM_OBJ_FLIPH) ? -off->x : off->x;
+            if (env && env->create_dizzy)
+                env->create_dizzy(env->screen_user, actor, x, off->y);
+            break;
+        }
+
         case WM_AOP_CODE: {
             /* ANIM.ASM:1277: an ordinary call, then straight on to the
                next command. A routine this port has not translated leaves
@@ -943,6 +989,80 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
             case WM_AOP_GOTO:
                 pc = (size_t)o->target;
                 continue;
+            /*
+             * ANIM.ASM:2504/:2509 _ani_ifrope / _ani_ifnotrope -- "is
+             * there a rope within `b` of me", branching when there is (or
+             * when there is not).
+             *
+             * Two details that are easy to lose. The MODE's HIGH byte
+             * chooses WHOSE position is measured (RC_OPPONENT), and the
+             * LOW byte which rope: RC_FRONT by his facing, RC_BACK the
+             * other way, RC_EITHER by which half of the ring he is in.
+             *
+             * And the out-of-the-ring case is NOT symmetric: `move
+             * *a13(INRING),a0 / jrnz #definitly_too_far` jumps PAST the
+             * inversion, so an IFNOTROPE outside the ring falls through
+             * rather than branching. That is the source's own asymmetry,
+             * not a simplification here. (INRING's polarity is the
+             * source's; the port stores the boolean, so the test flips.)
+             */
+            case WM_AOP_IFROPE:
+            case WM_AOP_IFNOTROPE: {
+                const wm_arcade_actor_t *who = actor;
+                int invert = (o->op == WM_AOP_IFNOTROPE);
+                int right, close;
+                int32_t rope_x, dist;
+
+                if (!actor || !actor->in_ring) {
+                    pc = pc + 1;            /* `#definitly_too_far` */
+                    continue;
+                }
+                if ((o->a >> 8) != 0) {     /* RC_OPPONENT */
+                    who = actor->smart_target ? actor->smart_target
+                        : (exec->env ? exec->env->opponent : NULL);
+                    if (!who) { pc = pc + 1; continue; }
+                }
+                switch (o->a & 0xFF) {
+                case 0:                     /* RC_FRONT */
+                    right = (who->facing_dir & WM_MOVE_RIGHT) != 0;
+                    break;
+                case 1:                     /* RC_BACK */
+                    right = (who->facing_dir & WM_MOVE_LEFT) != 0;
+                    break;
+                default:                    /* RC_EITHER: the nearer side */
+                    right = who->x_int > WM_RING_X_CENTER;
+                    break;
+                }
+                rope_x = wm_ring_calc_line_x(
+                    wm_ring_boundary_seed(right ? WM_RING_BOUNDARY_RIGHT_ROPE
+                                                : WM_RING_BOUNDARY_LEFT_ROPE),
+                    who->z_int);
+                dist = who->x_int - rope_x;
+                if (dist < 0) dist = -dist;         /* `abs a1` */
+                close = dist <= o->b;               /* `jrle #close_enough` */
+                pc = (close != invert) ? (size_t)o->target : pc + 1;
+                continue;
+            }
+            /*
+             * ANIM.ASM:1568 _ani_loop -- the pin hold. It parks on its
+             * frame forever (OANICNT 1 and `rets`, so the program counter
+             * never moves), and on the way it does one other thing: if
+             * this wrestler is PINNED and announce_rnd_winner is asleep at
+             * arw_bwait waiting to see whether anyone bucks off, it wakes
+             * it now. The p1rounds/p2rounds test above that is the
+             * match-over case, where the round is already decided.
+             */
+            case WM_AOP_LOOP:
+                if (actor && (actor->status_flags & WM_STATUS_PINNED) &&
+                    exec->env && exec->env->wake_round_announce)
+                    exec->env->wake_round_announce(exec->env->screen_user);
+                /* It stops the counter without touching OANIPC, so the
+                   frame already showing keeps showing -- exec->pc is left
+                   where the last frame op put it. */
+                exec->next_pc = pc;
+                exec->ticks_left = 1;
+                exec->waiting = true;
+                return;
             case WM_AOP_IFSTATUS:
                 pc = (actor && (actor->anim_mode & WM_MODE_STATUS))
                     ? (size_t)o->target : pc + 1;

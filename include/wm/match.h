@@ -156,6 +156,18 @@ typedef struct {
      */
     /* UTIL.ASM:2406 SHAKER2's oscillator and the WORLDTLY it moves. */
     wm_shake_state shake;
+    /*
+     * WRESTLE.ASM:257 allow_offscrn -- ANI_SET_IDIOT's 80 ticks of "let
+     * them off screen on toss outs". WRESTLE2.ASM:2214 counts it down once
+     * a tick and skips the ring-out check entirely while it is set.
+     */
+    int32_t allow_offscrn;
+    /* What SPECIAL.ASM's create_dizzy_proc was asked for, for a star
+       sprite a renderer would make. */
+    struct {
+        int32_t xoff, yoff;
+        uint32_t created;
+    } dizzy;
 
     /* LIFEBAR.ASM's MOVE_NAME_ANNC state: which names have been shown
        and whether one is up on either side. */

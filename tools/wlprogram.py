@@ -94,6 +94,17 @@ CODE_RE = re.compile(
 # skipped for exactly that reason, all of them DEBRIS_X.
 VALUE = r"(?:\[[^\]]*\]|[^,\[\]]+)"
 
+# ANIM.ASM:2504/:2509 ANI_IFROPE / ANI_IFNOTROPE,<mode>,<distance>,<label>
+# -- branch on there being (or not being) a rope within `distance`.
+IFROPE_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+(ANI_IFROPE|ANI_IFNOTROPE)\s*,\s*([^,]+),"
+    r"\s*([^,]+),\s*((?:#[A-Za-z0-9_]+|[A-Za-z_][A-Za-z0-9_]*))\s*$", re.I)
+
+# Four commands that are their own operand, or have none at all.
+SOLO_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+(ANI_SET_IDIOT|ANI_SCROLL_CTRL|ANI_LOOP|"
+    r"ANI_START_DIZZY)\s*(?:,\s*([^,]+))?\s*$", re.I)
+
 # The four screen/rope shakes. ANI_SHAKER (:31) takes SHAKER2's own
 # "ticks and power" value; ANI_SHAKEALL (:55) and ANI_SHAKEROPES (:36) take
 # a rope selector; ANI_SHAKECORNER (:77) takes nothing.
@@ -303,7 +314,8 @@ def program_for(path: pathlib.Path, label: str, with_entry: bool = False):
         wanted = []
         for i in range(start, stop):
             bm = (BRANCH_RE.match(lines[i]) or SLIDE_RE.match(lines[i])
-                  or BUTCOUNT_RE.match(lines[i]))
+                  or BUTCOUNT_RE.match(lines[i])
+                  or IFROPE_RE.match(lines[i]))
             if bm:
                 name = bm.group(bm.re.groups)
                 if name not in wanted:
@@ -473,6 +485,22 @@ def program_for(path: pathlib.Path, label: str, with_entry: bool = False):
                         "%s%02d" % (ss.group(2).upper(), int(ss.group(3))),
                         wlpuppet.table_id_for(path, i, ss.group(4)),
                         int(ss.group(5))))
+            continue
+
+        ir = IFROPE_RE.match(line)
+        if ir:
+            fixups.append((len(ops), ir.group(4)))
+            ops.append(("IFROPE" if ir.group(1).upper() == "ANI_IFROPE"
+                        else "IFNOTROPE", -1,
+                        wlcommands._value(ir.group(2), equates),
+                        wlcommands._value(ir.group(3), equates)))
+            continue
+
+        so = SOLO_RE.match(line)
+        if so:
+            kind = so.group(1).upper()[4:]
+            arg = so.group(2)
+            ops.append((kind, wlcommands._value(arg, equates) if arg else 0))
             continue
 
         sk = SHAKE_RE.match(line)
@@ -744,8 +772,11 @@ def _c_op(op) -> str:
         args[0] = op[1]
         text = f'"{op[2]}"'
     elif kind in ("DRAW_NAME", "SHAKER", "SHAKEALL", "SHAKEROPES",
-                  "SHAKECORNER"):
+                  "SHAKECORNER", "SET_IDIOT", "SCROLL_CTRL", "LOOP",
+                  "START_DIZZY"):
         args[0] = op[1]
+    elif kind in ("IFROPE", "IFNOTROPE"):
+        args[0], args[1] = op[2], op[3]
     elif kind == "TARGET":
         args[0], args[1], args[2] = op[1], op[2], op[3]
     elif kind in ("SET_RPTCOUNT", "SETOPPMODE", "CLROPPMODE", "IMMOBILIZE"):

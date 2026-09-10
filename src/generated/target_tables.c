@@ -80,6 +80,22 @@ static const uint8_t mode_block[WM_TARGET_MODES] = {
     0,   /* 25 mode_choking */
 };
 
+/* SPECIAL.ASM:141 #dizzy_offsets -- where the stars go.
+   Row 9 is the referee, who is in the table and is not a
+   wrestler; slot 0 is standing. */
+const wm_dizzy_offset wm_dizzy_offsets[WM_DIZZY_ROWS][WM_DIZZY_SLOTS] = {
+    { { 6, 109 }, { 0, 0 }, { 0, 0 }, { 0, 0 } },
+    { { 2, 115 }, { 0, 0 }, { 0, 0 }, { 0, 0 } },
+    { { 25, 116 }, { 0, 0 }, { 0, 0 }, { 0, 0 } },
+    { { 10, 109 }, { 0, 0 }, { 0, 0 }, { 0, 0 } },
+    { { -5, 107 }, { 0, 0 }, { 0, 0 }, { 0, 0 } },
+    { { 5, 116 }, { 0, 0 }, { 0, 0 }, { 0, 0 } },
+    { { 7, 116 }, { 46, 48 }, { 48, 32 }, { 0, 0 } },
+    { { 7, 116 }, { 0, 0 }, { 0, 0 }, { 0, 0 } },
+    { { 7, 116 }, { 0, 0 }, { 0, 0 }, { 0, 0 } },
+    { { 7, 116 }, { 0, 0 }, { 0, 0 }, { 0, 0 } },
+};
+
 /* LIFEBAR.ASM:3490 #message_tbl -- MOVE_NAME_ANNC's own
    image per move index. "" is the source's `.long 0`. */
 const char *const wm_move_name_images[WM_MOVE_NAME_COUNT] = {

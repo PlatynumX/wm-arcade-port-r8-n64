@@ -269,6 +269,12 @@ typedef enum {
     WM_AOP_SHAKEALL,       /* ANIM.ASM:1962 :55   a = rope selector */
     WM_AOP_SHAKEROPES,     /* ANIM.ASM:1361 :36   a = rope selector */
     WM_AOP_SHAKECORNER,    /* ANIM.ASM:2645 :77   no operand */
+    WM_AOP_IFROPE,         /* ANIM.ASM:2504 :74   a = mode, b = distance */
+    WM_AOP_IFNOTROPE,      /* ANIM.ASM:2509 :75   the same, inverted */
+    WM_AOP_SET_IDIOT,      /* ANIM.ASM:4403 :123  no operand */
+    WM_AOP_SCROLL_CTRL,    /* ANIM.ASM:4448 :127  a = SCROLL_Y, <0 keeps */
+    WM_AOP_LOOP,           /* ANIM.ASM:1568 :42   no operand; parks */
+    WM_AOP_START_DIZZY,    /* ANIM.ASM:2005 :57   a = #dizzy_offsets slot */
 
     /* Present in the source but needing a system this port does not have
        (a renderer, paired actors, a callback bridge). Carried so the
@@ -464,6 +470,26 @@ typedef struct wm_anim_env {
      * state lives, which is the match rather than a copy of the env.
      */
     void (*screen_shake)(void *user, int32_t ticks);
+    /*
+     * SPECIAL.ASM:87 create_dizzy_proc -- the stars. Its own gate
+     * (STARS_FLAG, once at a time) and its per-wrestler offset are real
+     * and live in the VM; the star sprite is a DEBRIS_PID object.
+     */
+    void (*create_dizzy)(void *user, wm_arcade_actor_t *at,
+                         int32_t xoff, int32_t yoff);
+    /*
+     * WRESTLE.ASM:257 allow_offscrn, set to 80 by ANI_SET_IDIOT ("Allow
+     * players off screen on toss outs"). WRESTLE2.ASM:2214 counts it down
+     * once a tick and, while it is non-zero, skips the ring-out check
+     * entirely -- so it belongs to the match, not to a copy of the env.
+     */
+    void (*set_allow_offscrn)(void *user, int32_t ticks);
+    /*
+     * ANIM.ASM:1568 _ani_loop's own reason for existing beyond parking:
+     * if this wrestler is PINNED and announce_rnd_winner is asleep at
+     * arw_bwait, wake it now rather than let it sleep out its 90 ticks.
+     */
+    void (*wake_round_announce)(void *user);
 
     void *screen_user;
     void (*screen_flash)(void *user, uint16_t colour, int w, int h);

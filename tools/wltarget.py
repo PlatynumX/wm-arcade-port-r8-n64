@@ -27,6 +27,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import wlanim  # noqa: E402
+import wlcommands  # noqa: E402
 
 SRC = wlanim.ORIG / "TABLES.ASM"
 
@@ -165,6 +166,17 @@ def render_c() -> str:
         out.append("    %d,   /* %2d %s */" % (block_index(name), i, name))
     out += ["};", ""]
 
+    dizzy = dizzy_offsets()
+    out.append("/* SPECIAL.ASM:141 #dizzy_offsets -- where the stars go.")
+    out.append("   Row 9 is the referee, who is in the table and is not a")
+    out.append("   wrestler; slot 0 is standing. */")
+    out.append("const wm_dizzy_offset "
+               "wm_dizzy_offsets[WM_DIZZY_ROWS][WM_DIZZY_SLOTS] = {")
+    for row in dizzy:
+        out.append("    { " + ", ".join("{ %d, %d }" % xy for xy in row)
+                   + " },")
+    out += ["};", ""]
+
     names = message_names()
     out.append("/* LIFEBAR.ASM:3490 #message_tbl -- MOVE_NAME_ANNC's own")
     out.append("   image per move index. \"\" is the source's `.long 0`. */")
@@ -219,6 +231,44 @@ def message_names() -> list[str]:
             continue
         out.append("" if m.group(1) == "0" else m.group(1))
     return out
+
+
+# SPECIAL.ASM:141 #dizzy_offsets -- where the stars go, per wrestler and
+# per "mode" slot (the source's own header: "stand, on stomach, on back,?,?").
+# Four slots of two words each, and ten rows: the nine roster slots plus the
+# referee, who is not a wrestler but is in the table.
+DIZZY_ROWS = 10
+DIZZY_SLOTS = 4
+SPECIAL = wlanim.ORIG / "SPECIAL.ASM"
+
+
+def dizzy_offsets() -> list[list[tuple[int, int]]]:
+    """[row][slot] -> (x, y). Row 9 is the referee."""
+    lines = [wlanim.strip_comment(r)
+             for r in SPECIAL.read_text(errors="replace").splitlines()]
+    at = None
+    for i, line in enumerate(lines):
+        if wlanim.label_def(line) == "#dizzy_offsets":
+            at = i
+            break
+    if at is None:
+        raise ValueError("SPECIAL.ASM: no #dizzy_offsets")
+    rows: list[list[tuple[int, int]]] = []
+    for line in lines[at + 1:]:
+        if not line:
+            continue
+        m = WORD_RE.match(line)
+        if not m:
+            break
+        vals = [wlcommands._value(v, {}) for v in m.group(1).split(",")]
+        if len(vals) != DIZZY_SLOTS * 2:
+            raise ValueError(f"#dizzy_offsets row has {len(vals)} words")
+        rows.append([(vals[2 * k], vals[2 * k + 1])
+                     for k in range(DIZZY_SLOTS)])
+    if len(rows) != DIZZY_ROWS:
+        raise ValueError(f"#dizzy_offsets has {len(rows)} rows, "
+                         f"not {DIZZY_ROWS}")
+    return rows
 
 
 def main() -> int:

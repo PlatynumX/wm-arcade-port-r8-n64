@@ -2825,13 +2825,34 @@ static void test_bret_rptcount_loop(void) {
     CHECK(bva.visual.rpt_count == 3);
     CHECK(a.anim_mode & WM_MODE_UNINT);
     CHECK(a.anim_mode & WM_MODE_OVERLAP);
-    /* The pin is genuinely long -- 35 frames with real holds, plus its
-       own 10-frame span three times, ~1300 ticks end to end. */
+    /*
+     * The pin is genuinely long -- 35 frames with real holds, plus its own
+     * 10-frame span three times -- and then it does NOT end. HRTSEQ2.ASM:
+     * 3254 is an `ANI_LOOP`, which sets OANICNT to 1 and returns WITHOUT
+     * advancing the program counter, so the pin holds its last frame until
+     * something outside the animation moves him. Everything the source
+     * wrote after that line is unreachable, `;???? IS THIS WHERE IT GOES ?`
+     * and all.
+     *
+     * This test used to assert the opposite, because ANI_LOOP was a
+     * skipped no-op and the program ran off its own end.
+     */
     for (guard = 0; guard < 3000 && !bva.prog.ended; ++guard) {
         tick_bret(&bva, &a, 0);
         CHECK(!(a.anim_mode & WM_MODE_CHECKHIT));
     }
-    CHECK(bva.prog.ended);
+    CHECK(!bva.prog.ended);
+    CHECK(bva.prog.waiting);
+    /* ...and it is genuinely parked: the frame stops changing. */
+    {
+        const char *held = wm_anim_exec_frame(&bva.prog);
+        CHECK(held != NULL);
+        for (guard = 0; guard < 500; ++guard) {
+            tick_bret(&bva, &a, 0);
+            CHECK(!bva.prog.ended);
+            CHECK(strcmp(wm_anim_exec_frame(&bva.prog), held) == 0);
+        }
+    }
 }
 
 /* Batch 6's attack windows and header commands, all traced with
@@ -6128,6 +6149,271 @@ static void test_shaker(void) {
         wm_anim_exec_start(&ex, &corner_prog, &a, 0, &env);
         wm_anim_exec_tick(&ex, &a, 0);
         CHECK(rl.bank[1] == WM_ROPE_RIGHT);
+    }
+}
+
+/*
+ * The conditional and state ops: ANI_IFROPE / ANI_IFNOTROPE,
+ * ANI_SET_IDIOT, ANI_SCROLL_CTRL, ANI_LOOP and ANI_START_DIZZY.
+ */
+static void dizzy_sink(void *user, wm_arcade_actor_t *at, int32_t x, int32_t y) {
+    struct { int n; wm_arcade_actor_t *at; int32_t x, y; } *l = user;
+    ++l->n;
+    l->at = at;
+    l->x = x;
+    l->y = y;
+}
+
+static void offscrn_sink(void *user, int32_t ticks) {
+    *(int32_t *)user = ticks;
+}
+
+static void wake_sink(void *user) { ++*(int *)user; }
+
+static void test_conditional_and_state_ops(void) {
+    wm_arcade_actor_t a, v;
+    wm_anim_env env;
+    wm_anim_exec ex;
+    /* op 0 branches to op 3; op 1 and 2 are the fall-through. */
+    static const wm_anim_op rope_ops[] = {
+        { WM_AOP_IFROPE,    0,  3, 0, 100, 0, 0, 0, 0, NULL },
+        { WM_AOP_FRAME,     0, -1, 4, 0, 0, 0, 0, 0, "FALLTHRU" },
+        { WM_AOP_END,       0, -1, 0, 0, 0, 0, 0, 0, NULL },
+        { WM_AOP_FRAME,     0, -1, 4, 0, 0, 0, 0, 0, "BRANCHED" },
+        { WM_AOP_END,       0, -1, 0, 0, 0, 0, 0, 0, NULL }
+    };
+    static const wm_anim_program rope_prog = {
+        "t_rope", "BAMSEQ2.ASM", rope_ops, 5, 0, NULL, 0
+    };
+    static wm_anim_op notrope_ops[5];
+    static wm_anim_program notrope_prog = {
+        "t_notrope", "BAMSEQ2.ASM", notrope_ops, 5, 0, NULL, 0
+    };
+    int32_t left_rope, right_rope;
+    size_t i;
+
+    for (i = 0; i < 5; ++i) notrope_ops[i] = rope_ops[i];
+    notrope_ops[0].op = WM_AOP_IFNOTROPE;
+
+    memset(&env, 0, sizeof(env));
+    memset(&v, 0, sizeof(v));
+
+    /* Where the ropes actually are at this Z, so the distances below are
+       measured against the real ring rather than a guess. */
+    left_rope = wm_ring_calc_line_x(
+        wm_ring_boundary_seed(WM_RING_BOUNDARY_LEFT_ROPE), WM_RING_TOP + 100);
+    right_rope = wm_ring_calc_line_x(
+        wm_ring_boundary_seed(WM_RING_BOUNDARY_RIGHT_ROPE), WM_RING_TOP + 100);
+    CHECK(left_rope != 0 && right_rope != 0);
+
+    /* RC_FRONT (mode 0): the rope he is FACING. Standing 10 from the left
+       rope and facing left is well inside 100. */
+    memset(&a, 0, sizeof(a));
+    a.in_ring = 1;
+    a.z_int = WM_RING_TOP + 100;
+    a.x_int = left_rope + 10;
+    a.facing_dir = WM_MOVE_UP_LEFT;
+    wm_anim_exec_start(&ex, &rope_prog, &a, 0, &env);
+    wm_anim_exec_tick(&ex, &a, 0);
+    CHECK(strcmp(wm_anim_exec_frame(&ex), "BRANCHED") == 0);
+
+    /* Facing the other way, RC_FRONT measures the RIGHT rope, which is
+       far -- so the same position falls through. */
+    a.facing_dir = WM_MOVE_UP_RIGHT;
+    wm_anim_exec_start(&ex, &rope_prog, &a, 0, &env);
+    wm_anim_exec_tick(&ex, &a, 0);
+    CHECK(strcmp(wm_anim_exec_frame(&ex), "FALLTHRU") == 0);
+
+    /* ...and RC_BACK (mode 1) is the mirror of that. */
+    {
+        static wm_anim_op back_ops[5];
+        static wm_anim_program back_prog = {
+            "t_back", "BAMSEQ2.ASM", back_ops, 5, 0, NULL, 0
+        };
+        for (i = 0; i < 5; ++i) back_ops[i] = rope_ops[i];
+        back_ops[0].a = 1;
+        wm_anim_exec_start(&ex, &back_prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(strcmp(wm_anim_exec_frame(&ex), "BRANCHED") == 0);
+    }
+
+    /* IFNOTROPE inverts it. */
+    a.facing_dir = WM_MOVE_UP_LEFT;
+    wm_anim_exec_start(&ex, &notrope_prog, &a, 0, &env);
+    wm_anim_exec_tick(&ex, &a, 0);
+    CHECK(strcmp(wm_anim_exec_frame(&ex), "FALLTHRU") == 0);
+
+    /*
+     * ...but NOT when he is outside the ring. `move *a13(INRING),a0 /
+     * jrnz #definitly_too_far` jumps PAST the inversion, so an IFNOTROPE
+     * outside the ropes falls through rather than branching. Both
+     * commands take the same exit, which is the asymmetry worth pinning.
+     */
+    a.in_ring = 0;
+    wm_anim_exec_start(&ex, &rope_prog, &a, 0, &env);
+    wm_anim_exec_tick(&ex, &a, 0);
+    CHECK(strcmp(wm_anim_exec_frame(&ex), "FALLTHRU") == 0);
+    wm_anim_exec_start(&ex, &notrope_prog, &a, 0, &env);
+    wm_anim_exec_tick(&ex, &a, 0);
+    CHECK(strcmp(wm_anim_exec_frame(&ex), "FALLTHRU") == 0);
+
+    /* RC_OPPONENT (the mode's high byte) measures the OTHER man. */
+    {
+        static wm_anim_op opp_ops[5];
+        static wm_anim_program opp_prog = {
+            "t_opp", "BAMSEQ2.ASM", opp_ops, 5, 0, NULL, 0
+        };
+        for (i = 0; i < 5; ++i) opp_ops[i] = rope_ops[i];
+        opp_ops[0].a = 0x0100;                  /* RC_OPPONENT|RC_FRONT */
+        memset(&a, 0, sizeof(a));
+        a.in_ring = 1;
+        a.z_int = WM_RING_TOP + 100;
+        a.x_int = WM_RING_X_CENTER;             /* HE is nowhere near */
+        a.facing_dir = WM_MOVE_UP_LEFT;
+        a.smart_target = &v;
+        memset(&v, 0, sizeof(v));
+        v.z_int = WM_RING_TOP + 100;
+        v.x_int = left_rope + 10;               /* the OPPONENT is */
+        v.facing_dir = WM_MOVE_UP_LEFT;
+        wm_anim_exec_start(&ex, &opp_prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(strcmp(wm_anim_exec_frame(&ex), "BRANCHED") == 0);
+        /* Move the opponent away and it falls through, even though the
+           caller has not moved. */
+        v.x_int = WM_RING_X_CENTER;
+        wm_anim_exec_start(&ex, &opp_prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(strcmp(wm_anim_exec_frame(&ex), "FALLTHRU") == 0);
+    }
+
+    /* ANI_SET_IDIOT: 80 ticks of allow_offscrn. */
+    {
+        static const wm_anim_op ops[] = {
+            { WM_AOP_SET_IDIOT, 0, -1, 0, 0, 0, 0, 0, 0, NULL },
+            { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, NULL }
+        };
+        static const wm_anim_program prog = {
+            "t_idiot", "BAMSEQ2.ASM", ops, 2, 0, NULL, 0
+        };
+        int32_t offscrn = 0;
+        memset(&a, 0, sizeof(a));
+        env.screen_user = &offscrn;
+        env.set_allow_offscrn = offscrn_sink;
+        wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(offscrn == 80);
+        env.set_allow_offscrn = NULL;
+    }
+
+    /*
+     * ANI_SCROLL_CTRL: a NEGATIVE operand sets the flag WITHOUT writing
+     * the value -- `jrn #cont` -- which is how a routine says "keep
+     * following whatever you were following".
+     */
+    {
+        static wm_anim_op ops[2];
+        static wm_anim_program prog = {
+            "t_scroll", "BAMSEQ2.ASM", ops, 2, 0, NULL, 0
+        };
+        ops[0].op = WM_AOP_SCROLL_CTRL; ops[0].target = -1; ops[0].a = 190;
+        ops[0].mode = 0; ops[0].b = ops[0].c = ops[0].d = ops[0].e = 0;
+        ops[0].f = 0; ops[0].text = NULL;
+        ops[1].op = WM_AOP_END; ops[1].target = -1; ops[1].a = 0;
+        ops[1].mode = 0; ops[1].b = ops[1].c = ops[1].d = ops[1].e = 0;
+        ops[1].f = 0; ops[1].text = NULL;
+        memset(&a, 0, sizeof(a));
+        wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(a.scroll_y == 190);
+        CHECK((a.status_flags & WM_STATUS_SCROLL_CTRL) != 0);
+
+        a.status_flags = 0;
+        ops[0].a = -1;
+        wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(a.scroll_y == 190);            /* left where it was */
+        CHECK((a.status_flags & WM_STATUS_SCROLL_CTRL) != 0);
+    }
+
+    /*
+     * ANI_START_DIZZY: SPECIAL.ASM's per-wrestler star offsets, its
+     * STARS_FLAG "one at a time" gate, and the flip that mirrors X.
+     */
+    {
+        static struct { int n; wm_arcade_actor_t *at; int32_t x, y; } dlog;
+        static const wm_anim_op ops[] = {
+            { WM_AOP_START_DIZZY, 0, -1, 0, 0, 0, 0, 0, 0, NULL },
+            { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, NULL }
+        };
+        static const wm_anim_program prog = {
+            "t_dizzy", "BAMSEQ2.ASM", ops, 2, 0, NULL, 0
+        };
+        /* SPECIAL.ASM:144, transcribed: Bret's standing stars at 6,6dh. */
+        CHECK(wm_dizzy_offsets[WM_ROSTER_BRET][0].x == 6);
+        CHECK(wm_dizzy_offsets[WM_ROSTER_BRET][0].y == 0x6d);
+        /* Only Doink has more than one live slot. */
+        CHECK(wm_dizzy_offsets[WM_ROSTER_DOINK][1].x == 0x2e);
+        CHECK(wm_dizzy_offsets[WM_ROSTER_BRET][1].x == 0);
+
+        memset(&dlog, 0, sizeof(dlog));
+        memset(&a, 0, sizeof(a));
+        a.wrestler_num = WM_ROSTER_BRET;
+        env.screen_user = &dlog;
+        env.create_dizzy = dizzy_sink;
+        wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(dlog.n == 1 && dlog.at == &a);
+        CHECK(dlog.x == 6 && dlog.y == 0x6d);
+        CHECK(a.stars_flag == 1);
+
+        /* `move *a13(STARS_FLAG),a0 / jrnz #x` -- one lot at a time. */
+        wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(dlog.n == 1);
+
+        /* Facing the other way mirrors the X, not the Y. */
+        memset(&dlog, 0, sizeof(dlog));
+        a.stars_flag = 0;
+        a.obj_control = WM_OBJ_FLIPH;
+        wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(dlog.x == -6 && dlog.y == 0x6d);
+        env.create_dizzy = NULL;
+    }
+
+    /*
+     * ANI_LOOP parks forever without moving the frame, and on the way
+     * wakes a round announce that is asleep at arw_bwait.
+     */
+    {
+        static const wm_anim_op ops[] = {
+            { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "HELD" },
+            { WM_AOP_LOOP,  0, -1, 0, 0, 0, 0, 0, 0, NULL },
+            { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "UNREACHED" },
+            { WM_AOP_END,   0, -1, 0, 0, 0, 0, 0, 0, NULL }
+        };
+        static const wm_anim_program prog = {
+            "t_loop", "HRTSEQ2.ASM", ops, 4, 0, NULL, 0
+        };
+        int woke = 0;
+        int t;
+        memset(&a, 0, sizeof(a));
+        env.screen_user = &woke;
+        env.wake_round_announce = wake_sink;
+        wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+        for (t = 0; t < 300; ++t) {
+            wm_anim_exec_tick(&ex, &a, 0);
+            CHECK(!ex.ended);
+            CHECK(strcmp(wm_anim_exec_frame(&ex), "HELD") == 0);
+        }
+        /* Not pinned, so the wake never fires. */
+        CHECK(woke == 0);
+
+        a.status_flags = WM_STATUS_PINNED;
+        wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+        for (t = 0; t < 5; ++t) wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(woke >= 1);
+        env.wake_round_announce = NULL;
     }
 }
 
@@ -10626,6 +10912,7 @@ int main(void) {
     test_target_offsets();
     test_the_last_ani_code_routines();
     test_shaker();
+    test_conditional_and_state_ops();
     test_do_combo_mess();
     test_do_combo_mess_from_the_vm();
     test_wrsnd_tables();

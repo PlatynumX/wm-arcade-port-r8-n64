@@ -104,6 +104,16 @@ void wm_arcade_anim_target(wm_arcade_actor_t *actor,
  * decision has three real parts, all translated here.
  * ==================================================================== */
 
+/* SPECIAL.ASM:141 #dizzy_offsets -- where a wrestler's stars go, per
+   "mode" slot (the source's header: "stand, on stomach, on back,?,?").
+   Ten rows: the nine roster slots and the referee. */
+#define WM_DIZZY_ROWS 10
+#define WM_DIZZY_SLOTS 4
+
+typedef struct { int16_t x, y; } wm_dizzy_offset;
+
+extern const wm_dizzy_offset wm_dizzy_offsets[WM_DIZZY_ROWS][WM_DIZZY_SLOTS];
+
 #define WM_MOVE_NAME_COUNT 43
 
 /* `cmpi 41,a10 / jrz #skip` -- index 41 shows even when reduce_bog is on,

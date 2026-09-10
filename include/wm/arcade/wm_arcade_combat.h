@@ -130,6 +130,10 @@ struct wm_arcade_actor {
 
     int32_t ptime;
     int32_t stars_flag;
+    /* PLYR.EQU:246 SCROLL_Y, "if SCROLL_CTRL bit in STATUS_FLAGS" -- what
+       the camera should follow instead of this wrestler's own Y while
+       ANI_SCROLL_CTRL has that bit set. */
+    int32_t scroll_y;
     int32_t debris_x;
     int32_t run_time;
     void *shadtrail_proc;

@@ -1235,6 +1235,55 @@ def test_a_label_past_the_last_op_is_not_a_position() -> None:
     assert checked > 1400, checked
 
 
+def test_a_branch_can_reach_the_head_of_a_later_routine() -> None:
+    """ANI_IFSTATUS writes the animation PC, so it can name a SUBR.
+
+    ANIM.ASM:29 is `move a0,a4` -- a raw PC write, not a call. Three
+    animations use that to reach the head of another routine rather than
+    a local label inside their own:
+
+        BAMSEQ2.ASM:3443 bam_faceup_getup_anim -> bam_4_faceup_getup_anim
+        DNKSEQ2.ASM:2013 dnk_faceup_getup_anim -> dnk_2_faceup_getup_anim
+        YOKSEQ3.ASM:3063 yok_combo_scissor_anim -> yok_overhd_slam_anim
+
+    wlanim.label_def cannot see those definitions -- its GLOBAL_LABEL_RE
+    wants the name alone in column 0, which is right for the other job it
+    does, delimiting a local label's scope. So the emitter refused all
+    three, and because ANI_CHANGEANIM elsewhere names them, a wrestler
+    knocked onto his back changed to an animation nothing had emitted and
+    stopped where he lay.
+
+    The branch has to resolve to a real op, not merely stop raising.
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    if not (base / "BAMSEQ2.ASM").exists():
+        return
+
+    for name, src, target in (
+            ("bam_faceup_getup_anim", "BAMSEQ2.ASM", "bam_4_faceup_getup_anim"),
+            ("dnk_faceup_getup_anim", "DNKSEQ2.ASM", "dnk_2_faceup_getup_anim"),
+            ("yok_combo_scissor_anim", "YOKSEQ3.ASM", "yok_overhd_slam_anim")):
+        ops, entry, labels = wlprogram.program_for(
+            base / src, name, with_entry=True)
+        assert target in labels, (name, sorted(labels))
+        at = labels[target]
+        assert 0 <= at < len(ops), (name, target, at, len(ops))
+        # And something actually branches there.
+        assert any(o[0] in wlprogram.BRANCH_OPS and o[1] == at for o in ops), \
+            (name, target, at)
+        # The routine still starts at its own first command, not at the
+        # code it merely branches into.
+        assert entry < len(ops), (name, entry, len(ops))
+
+    # A SUBR line is a definition for the purpose of resolving a branch,
+    # and NOT for the purpose of cutting a local label's scope -- those
+    # are different questions and wlanim answers the second one.
+    assert wlprogram._label_def(" SUBR\tyok_overhd_slam_anim") == \
+        "yok_overhd_slam_anim"
+    assert wlanim.label_def(" SUBR\tyok_overhd_slam_anim") is None
+    assert wlprogram._label_def("\t.word\tANI_END") is None
+
+
 def test_waithitopp_is_a_mode_and_a_frame() -> None:
     """ANIM.ASM:2300's own note: "just like an ordinary WL ticks,frame type
     command except that the ANICNT is zeroed if we hit the opponent." The
@@ -1974,7 +2023,11 @@ def test_programs_record_where_they_start() -> None:
     assert ops[entry][0] == "SETMODE", ops[entry]
     assert any(o[0] == "FRAME" and o[1] == "H4BK3A02" for o in ops[:entry])
 
-    # And the count is stable: 42 of the emitted programs are like this.
+    # And the count is stable: 45 of the emitted programs are like this.
+    # It was 42 until branch resolution learned to see a SUBR line as a
+    # definition; the three that joined are yok_spinslam_anim,
+    # yok_graboh_TB_anim and yok_combo_scissor_anim, each of which
+    # ANI_IFSTATUSes back into yok_overhd_slam_anim earlier in the file.
     odd = 0
     for src in wlanim.linked_files():
         if "SEQ" not in src.name or src.name.startswith("FINI"):
@@ -1991,7 +2044,7 @@ def test_programs_record_where_they_start() -> None:
                 continue
             if e:
                 odd += 1
-    assert odd == 42, odd
+    assert odd == 45, odd
 
 
 
@@ -2651,9 +2704,13 @@ def test_no_emitted_branch_has_a_lost_destination() -> None:
     assert not bad, collections.Counter(bad)
 
     # And the two that were lost really are emitted, resolved, in
-    # numbers -- so this cannot pass by them vanishing instead.
-    assert text.count("WM_AOP_IFROPE,") == 68
-    assert text.count("WM_AOP_IFNOTROPE,") == 7
+    # numbers -- so this cannot pass by them vanishing instead. A floor
+    # rather than an equality: the corpus grows when the emitter learns
+    # to accept a routine it used to refuse, and it did (75 branches at
+    # the time of the fix, 78 once branches into a later SUBR resolved).
+    # What must never happen is the count going DOWN.
+    assert text.count("WM_AOP_IFROPE,") >= 68
+    assert text.count("WM_AOP_IFNOTROPE,") >= 7
 
 
 def test_every_branch_op_is_listed_as_one() -> None:
@@ -2729,6 +2786,7 @@ def main() -> int:
     test_the_two_extractors_agree()
     test_an_independent_reading_agrees()
     test_a_label_past_the_last_op_is_not_a_position()
+    test_a_branch_can_reach_the_head_of_a_later_routine()
     test_waithitopp_is_a_mode_and_a_frame()
     test_roster_dispatcher_labels_all_emit()
     test_wlprogram_tick_expressions()

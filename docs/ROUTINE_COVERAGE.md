@@ -7,7 +7,7 @@ only in a note saying it is missing does not count as present.
 
 | status | meaning | count |
 |---|---|---|
-| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1831 |
+| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1836 |
 | `inlined` | the port does it, spelled out at each use site (ledger) | 3 |
 | `renamed` | the port does it under another name (ledger) | 36 |
 | `partial` | partly translated; the ledger note says which part | 1 |
@@ -15,10 +15,10 @@ only in a note saying it is missing does not count as present.
 | `display` | object/DMA drawing; this port has no renderer (ledger) | 8 |
 | `hardware` | talks to the cabinet (ledger) | 4 |
 | `dead` | **measured**: no caller outside its own file | 48 |
-| `cited` | named only in a comment -- not evidence of anything | 171 |
-| `unknown` | no mention anywhere | 428 |
+| `cited` | named only in a comment -- not evidence of anything | 169 |
+| `unknown` | no mention anywhere | 425 |
 
-**1935 of 2534 routines are accounted for; 599 are open** (`cited` + `unknown`).
+**1940 of 2534 routines are accounted for; 594 are open** (`cited` + `unknown`).
 
 ## Open routines by file
 
@@ -61,14 +61,11 @@ only in a note saying it is missing does not count as present.
 | ROPES.ASM | 3 | `fastanic`, `rope_update`, `set_rope_z` |
 | REACT2.ASM | 3 | `hit_grabfling`, `hit_grabhold`, `hit_push` |
 | TEST.ASM | 3 | `opmsg_clr`, `opmsg_main`, `print_multi` |
-| YOKSEQ3.ASM | 3 | `yok_combo_scissor_anim`, `yok_graboh_TB_anim`, `yok_spinslam_anim` |
 | CROWD.ASM | 2 | `animate_back`, `crowd_anim` |
 | REACT4.ASM | 2 | `hit_buttstomp`, `hit_headhold` |
 | REACT9.ASM | 2 | `hit_headdslash`, `hit_headuslash` |
 | STORIES.ASM | 2 | `print_story`, `show_wrestler_end_story` |
 | SCREEN.ASM | 1 | `DRKTRPLTP` |
 | WRESPAL.ASM | 1 | `UNDBLU_P` |
-| BAMSEQ2.ASM | 1 | `bam_faceup_getup_anim` |
-| DNKSEQ2.ASM | 1 | `dnk_faceup_getup_anim` |
 | REACT3.ASM | 1 | `knee_hit_tbl` |
 | STRING.ASM | 1 | `print_string_with_zb` |

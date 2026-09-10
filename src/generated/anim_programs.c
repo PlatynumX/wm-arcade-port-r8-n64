@@ -35,6 +35,10 @@ static const wm_anim_op prog_bam_stand2_anim_ops[] = {
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_stand2_anim_labels[] = {
+    { "bam_stand8_anim", 0 },
+};
+
 static const wm_anim_op prog_bam_stand8_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -69,6 +73,10 @@ static const wm_anim_op prog_bam_stand4_anim_ops[] = {
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_stand4_anim_labels[] = {
+    { "bam_stand6_anim", 0 },
+};
+
 static const wm_anim_op prog_bam_stand6_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -92,6 +100,10 @@ static const wm_anim_op prog_bam_torso2_anim_ops[] = {
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_torso2_anim_labels[] = {
+    { "bam_torso8_anim", 0 },
+};
+
 static const wm_anim_op prog_bam_torso8_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 6, 0, 0, 0, 0, 0, "B2TW2Z01" },
     { WM_AOP_FRAME, 0, -1, 6, 0, 0, 0, 0, 0, "B2TW2Z02" },
@@ -106,6 +118,10 @@ static const wm_anim_op prog_bam_torso4_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 6, 0, 0, 0, 0, 0, "B4TW4Z03" },
     { WM_AOP_FRAME, 0, -1, 6, 0, 0, 0, 0, 0, "B4TW4Z02" },
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_torso4_anim_labels[] = {
+    { "bam_torso6_anim", 0 },
 };
 
 static const wm_anim_op prog_bam_torso6_anim_ops[] = {
@@ -366,6 +382,10 @@ static const wm_anim_op prog_bam_2_to_4_turn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_2_to_4_turn_anim_labels[] = {
+    { "bam_8_to_6_turn_anim", 0 },
+};
+
 static const wm_anim_op prog_bam_8_to_6_turn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -382,6 +402,10 @@ static const wm_anim_op prog_bam_4_to_2_turn_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B1TT5Z02" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_4_to_2_turn_anim_labels[] = {
+    { "bam_6_to_8_turn_anim", 0 },
 };
 
 static const wm_anim_op prog_bam_6_to_8_turn_anim_ops[] = {
@@ -401,6 +425,10 @@ static const wm_anim_op prog_bam_4_to_6_turn_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B1TT5Z04" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_4_to_6_turn_anim_labels[] = {
+    { "bam_6_to_4_turn_anim", 0 },
 };
 
 static const wm_anim_op prog_bam_6_to_4_turn_anim_ops[] = {
@@ -423,6 +451,10 @@ static const wm_anim_op prog_bam_2_to_8_turn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_2_to_8_turn_anim_labels[] = {
+    { "bam_8_to_2_turn_anim", 0 },
+};
+
 static const wm_anim_op prog_bam_8_to_2_turn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -443,6 +475,10 @@ static const wm_anim_op prog_bam_4_to_8_turn_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B1TT5Z01" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_4_to_8_turn_anim_labels[] = {
+    { "bam_6_to_2_turn_anim", 0 },
 };
 
 static const wm_anim_op prog_bam_6_to_2_turn_anim_ops[] = {
@@ -469,6 +505,10 @@ static const wm_anim_op prog_bam_2_to_6_turn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_2_to_6_turn_anim_labels[] = {
+    { "bam_8_to_4_turn_anim", 0 },
+};
+
 static const wm_anim_op prog_bam_8_to_4_turn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -491,6 +531,10 @@ static const wm_anim_op prog_bam_2_to_4_turn2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_2_to_4_turn2_anim_labels[] = {
+    { "bam_8_to_6_turn2_anim", 0 },
+};
+
 static const wm_anim_op prog_bam_8_to_6_turn2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -509,6 +553,10 @@ static const wm_anim_op prog_bam_4_to_2_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B1TR5Z02" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_4_to_2_turn2_anim_labels[] = {
+    { "bam_6_to_8_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_bam_6_to_8_turn2_anim_ops[] = {
@@ -531,6 +579,10 @@ static const wm_anim_op prog_bam_4_to_6_turn2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_bam_4_to_6_turn2_anim_labels[] = {
+    { "bam_6_to_4_turn2_anim", 0 },
+};
+
 static const wm_anim_op prog_bam_6_to_4_turn2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -549,6 +601,10 @@ static const wm_anim_op prog_bam_2_to_8_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B1TR5Z01" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_2_to_8_turn2_anim_labels[] = {
+    { "bam_8_to_2_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_bam_8_to_2_turn2_anim_ops[] = {
@@ -572,6 +628,10 @@ static const wm_anim_op prog_bam_4_to_8_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B1TR5Z02" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_4_to_8_turn2_anim_labels[] = {
+    { "bam_6_to_2_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_bam_6_to_2_turn2_anim_ops[] = {
@@ -598,6 +658,10 @@ static const wm_anim_op prog_bam_2_to_6_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B1TR5Z04" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_2_to_6_turn2_anim_labels[] = {
+    { "bam_8_to_4_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_bam_8_to_4_turn2_anim_ops[] = {
@@ -641,6 +705,7 @@ static const wm_anim_op prog_bam_run2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_bam_run2_anim_labels[] = {
+    { "bam_run_anim", 4 },
     { "#lp1", 7 },
     { "#run2", 13 },
 };
@@ -922,6 +987,7 @@ static const wm_anim_label prog_bam_4_fpunch_anim_labels[] = {
     { "#gotim2", 47 },
     { "#blocked2", 48 },
     { "#fail", 55 },
+    { "bam_4_fpunch_anim", 59 },
     { "#loop2", 66 },
     { "#gotim2a", 87 },
     { "#blocked2a", 88 },
@@ -1713,14 +1779,22 @@ static const wm_anim_op prog_attach_victim_ops[] = {
 
 static const wm_anim_label prog_attach_victim_labels[] = {
     { "rets", 0 },
+    { "set_new_position", 0 },
     { "#lp1", 0 },
     { "#nxt1", 0 },
     { "#usea0", 0 },
     { "#init_positions", 0 },
+    { "burn_tbl", 0 },
+    { "release_table", 0 },
+    { "xxx_burn_anim", 0 },
     { "#loop", 11 },
     { "#nodead", 22 },
+    { "hit_ground", 23 },
+    { "set_pal", 23 },
+    { "restore_pal", 23 },
     { "#liedown_table", 23 },
     { "#convulse", 23 },
+    { "bam_2_butt_anim", 23 },
     { "#no_hit", 47 },
 };
 
@@ -1784,10 +1858,17 @@ static const wm_anim_label prog_set_new_position_labels[] = {
     { "#usea0", 0 },
     { "rets", 0 },
     { "#init_positions", 0 },
+    { "burn_tbl", 0 },
+    { "release_table", 0 },
+    { "xxx_burn_anim", 0 },
     { "#loop", 11 },
     { "#nodead", 22 },
+    { "hit_ground", 23 },
+    { "set_pal", 23 },
+    { "restore_pal", 23 },
     { "#liedown_table", 23 },
     { "#convulse", 23 },
+    { "bam_2_butt_anim", 23 },
     { "#no_hit", 47 },
 };
 
@@ -1846,11 +1927,17 @@ static const wm_anim_op prog_burn_tbl_ops[] = {
 };
 
 static const wm_anim_label prog_burn_tbl_labels[] = {
+    { "release_table", 0 },
+    { "xxx_burn_anim", 0 },
     { "#loop", 11 },
     { "#nodead", 22 },
+    { "hit_ground", 23 },
     { "rets", 23 },
+    { "set_pal", 23 },
+    { "restore_pal", 23 },
     { "#liedown_table", 23 },
     { "#convulse", 23 },
+    { "bam_2_butt_anim", 23 },
     { "#no_hit", 47 },
 };
 
@@ -1909,11 +1996,16 @@ static const wm_anim_op prog_release_table_ops[] = {
 };
 
 static const wm_anim_label prog_release_table_labels[] = {
+    { "xxx_burn_anim", 0 },
     { "#loop", 11 },
     { "#nodead", 22 },
+    { "hit_ground", 23 },
     { "rets", 23 },
+    { "set_pal", 23 },
+    { "restore_pal", 23 },
     { "#liedown_table", 23 },
     { "#convulse", 23 },
+    { "bam_2_butt_anim", 23 },
     { "#no_hit", 47 },
 };
 
@@ -1974,9 +2066,13 @@ static const wm_anim_op prog_xxx_burn_anim_ops[] = {
 static const wm_anim_label prog_xxx_burn_anim_labels[] = {
     { "#loop", 11 },
     { "#nodead", 22 },
+    { "hit_ground", 23 },
     { "rets", 23 },
+    { "set_pal", 23 },
+    { "restore_pal", 23 },
     { "#liedown_table", 23 },
     { "#convulse", 23 },
+    { "bam_2_butt_anim", 23 },
     { "#no_hit", 47 },
 };
 
@@ -2013,8 +2109,11 @@ static const wm_anim_op prog_hit_ground_ops[] = {
 
 static const wm_anim_label prog_hit_ground_labels[] = {
     { "rets", 0 },
+    { "set_pal", 0 },
+    { "restore_pal", 0 },
     { "#liedown_table", 0 },
     { "#convulse", 0 },
+    { "bam_2_butt_anim", 0 },
     { "#no_hit", 24 },
 };
 
@@ -2051,8 +2150,10 @@ static const wm_anim_op prog_set_pal_ops[] = {
 
 static const wm_anim_label prog_set_pal_labels[] = {
     { "rets", 0 },
+    { "restore_pal", 0 },
     { "#liedown_table", 0 },
     { "#convulse", 0 },
+    { "bam_2_butt_anim", 0 },
     { "#no_hit", 24 },
 };
 
@@ -2091,6 +2192,7 @@ static const wm_anim_label prog_restore_pal_labels[] = {
     { "rets", 0 },
     { "#liedown_table", 0 },
     { "#convulse", 0 },
+    { "bam_2_butt_anim", 0 },
     { "#no_hit", 24 },
 };
 
@@ -2466,6 +2568,7 @@ static const wm_anim_op prog_bam_2_superkick_anim_ops[] = {
 };
 
 static const wm_anim_label prog_bam_2_superkick_anim_labels[] = {
+    { "bam_4_superkick_anim", 6 },
     { "#no_hit2", 34 },
     { "#none", 40 },
     { "#missedb", 50 },
@@ -3052,6 +3155,7 @@ static const wm_anim_op prog_bam_4_knee2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_bam_4_knee2_anim_labels[] = {
+    { "bam_4_knee_anim", 8 },
     { "#cont2a", 21 },
     { "#no_hit2", 34 },
     { "#cont2", 37 },
@@ -3163,6 +3267,7 @@ static const wm_anim_op prog_bam_2_grabfling_anim_ops[] = {
 };
 
 static const wm_anim_label prog_bam_2_grabfling_anim_labels[] = {
+    { "bam_4_grabfling_anim", 9 },
     { "#cont", 15 },
     { "#missedb", 47 },
     { "#missed", 50 },
@@ -3617,6 +3722,11 @@ static const wm_anim_op prog_bam_hitonground_xflip_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_faceup_getup_anim" },
 };
 
+static const wm_anim_label prog_bam_hitonground_xflip_anim_labels[] = {
+    { "bam_hitonground_anim", 1 },
+    { "bam_liedown_anim", 19 },
+};
+
 static const wm_anim_op prog_bam_hitonground_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -3639,6 +3749,10 @@ static const wm_anim_op prog_bam_hitonground_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "B3RL1A01" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_bam_hitonground_anim_labels[] = {
+    { "bam_liedown_anim", 18 },
 };
 
 static const wm_anim_op prog_bam_liedown_anim_ops[] = {
@@ -3776,6 +3890,92 @@ static const wm_anim_op prog_bam_fall_back_tbukl_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_faceup_getup_anim" },
 };
 
+static const wm_anim_op prog_bam_faceup_getup_anim_ops[] = {
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "choose_2or4" },
+    { WM_AOP_IFSTATUS, 0, 37, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_2_faceup_getup_anim" },
+    { WM_AOP_SETMODE, 0, -1, 268, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B3GU2A01" },
+    { WM_AOP_GOTO, 0, 11, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 268, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B3GU2A02" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "B3GU2A03" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B3GU2A04" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "B3GU2A05" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B3GU2A06" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "B3GU2A07" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B3GU2A08" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "B3GU2A09" },
+    { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "B3GU2A10" },
+    { WM_AOP_SETFACING, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SET_WRESTLER_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "B3GU2A10" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "B3GU2A11" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B3GU2A12" },
+    { WM_AOP_SAFE_TIME, 0, -1, 50, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "free_toss_check" },
+    { WM_AOP_IFNOTSTATUS, 0, 34, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ATTACK_ON, 38, -1, 36, 85, 49, 17, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "B3GU2A12" },
+    { WM_AOP_ATTACK_OFF, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFNOTSTATUS, 0, 34, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "setup_freetoss" },
+    { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_4_push_anim" },
+    { WM_AOP_FACEUP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 268, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B3GU4A01" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "B3GU4A02" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B3GU4A03" },
+    { WM_AOP_GOTO, 0, 47, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 268, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "B3GU4A04" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B3GU4A05" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "B3GU4A06" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B3GU4A07" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "B3GU4A08" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B3GU4A09" },
+    { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "B3GU4A10" },
+    { WM_AOP_SETFACING, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SET_WRESTLER_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "B3GU4A10" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "B3GU4A11" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "B3GU4A12" },
+    { WM_AOP_SAFE_TIME, 0, -1, 50, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "free_toss_check" },
+    { WM_AOP_IFNOTSTATUS, 0, 68, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ATTACK_ON, 38, -1, 36, 85, 49, 17, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "B3GU4A12" },
+    { WM_AOP_ATTACK_OFF, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFNOTSTATUS, 0, 68, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "setup_freetoss" },
+    { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "bam_4_push_anim" },
+    { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_bam_faceup_getup_anim_labels[] = {
+    { "bam_2_faceup_getup_anim", 3 },
+    { "bam_2_faceup_getup2_anim", 8 },
+    { "#common2", 11 },
+    { "#no_freetoss2", 34 },
+    { "bam_4_faceup_getup_anim", 37 },
+    { "bam_4_faceup_getup2_anim", 44 },
+    { "#common4", 47 },
+    { "#frame7", 50 },
+    { "#no_freetoss3", 68 },
+};
+
 static const wm_anim_op prog_bam_2_faceup_getup_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 268, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -3814,6 +4014,7 @@ static const wm_anim_op prog_bam_2_faceup_getup_anim_ops[] = {
 };
 
 static const wm_anim_label prog_bam_2_faceup_getup_anim_labels[] = {
+    { "bam_2_faceup_getup2_anim", 5 },
     { "#common2", 8 },
     { "#no_freetoss2", 31 },
 };
@@ -3893,6 +4094,7 @@ static const wm_anim_op prog_bam_4_faceup_getup_anim_ops[] = {
 };
 
 static const wm_anim_label prog_bam_4_faceup_getup_anim_labels[] = {
+    { "bam_4_faceup_getup2_anim", 7 },
     { "#common4", 10 },
     { "#frame7", 13 },
     { "#no_freetoss3", 31 },
@@ -3983,6 +4185,8 @@ static const wm_anim_op prog_bam_4_faceup_getup3_anim_ops[] = {
 static const wm_anim_label prog_bam_4_faceup_getup3_anim_labels[] = {
     { "#frame7", 0 },
     { "#no_freetoss3", 18 },
+    { "bam_4_faceup_getup3_anim", 21 },
+    { "bam_dizzy_anim", 25 },
     { "#loop", 30 },
 };
 
@@ -4034,6 +4238,8 @@ static const wm_anim_op prog_bam_roll_frames_ops[] = {
 };
 
 static const wm_anim_label prog_bam_roll_frames_labels[] = {
+    { "bam_rxn2_fsteiner_anim", 0 },
+    { "bam_4_block_anim", 1 },
     { "#blk4", 10 },
 };
 
@@ -4090,6 +4296,7 @@ static const wm_anim_op prog_bam_4_hitblock_anim_ops[] = {
 
 static const wm_anim_label prog_bam_4_hitblock_anim_labels[] = {
     { "#blk4", 0 },
+    { "bam_4_hitblock_anim", 9 },
 };
 
 static const wm_anim_op prog_bam_4_hitblock2_anim_ops[] = {
@@ -4129,6 +4336,8 @@ static const wm_anim_op prog_bam_4_hitblock2_anim_ops[] = {
 
 static const wm_anim_label prog_bam_4_hitblock2_anim_labels[] = {
     { "#blk4", 0 },
+    { "bam_4_hitblock_anim", 9 },
+    { "bam_4_hitblock2_anim", 19 },
 };
 
 static const wm_anim_op prog_bam_flyout_anim_ops[] = {
@@ -4203,6 +4412,8 @@ static const wm_anim_op prog_bam_flyout2_anim_ops[] = {
 
 static const wm_anim_label prog_bam_flyout2_anim_labels[] = {
     { "#cont", 0 },
+    { "bam_flyout2_anim", 10 },
+    { "bam_tossed_anim", 17 },
 };
 
 static const wm_anim_op prog_bam_tossed_anim_ops[] = {
@@ -4673,6 +4884,7 @@ static const wm_anim_op prog_bam_2_pin_anim_ops[] = {
 };
 
 static const wm_anim_label prog_bam_2_pin_anim_labels[] = {
+    { "bam_4_pin_anim", 5 },
     { "#floop", 60 },
 };
 
@@ -4804,6 +5016,7 @@ static const wm_anim_op prog_bam_2_raise_arm_anim_ops[] = {
 };
 
 static const wm_anim_label prog_bam_2_raise_arm_anim_labels[] = {
+    { "bam_4_raise_arm_anim", 8 },
     { "#cont", 13 },
     { "#lp", 38 },
     { "#wakeup", 53 },
@@ -5066,6 +5279,7 @@ static const wm_anim_op prog_bam_3_hiptoss2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_bam_3_hiptoss2_anim_labels[] = {
+    { "bam_3_hiptoss_anim", 17 },
     { "#cont", 35 },
     { "#got_him", 38 },
     { "#missedb", 65 },
@@ -5258,6 +5472,7 @@ static const wm_anim_op prog_bam_2_slap_anim_ops[] = {
 };
 
 static const wm_anim_label prog_bam_2_slap_anim_labels[] = {
+    { "bam_4_slap_anim", 8 },
     { "#no_hit2", 34 },
     { "#missed", 34 },
     { "#missedb", 34 },
@@ -5394,6 +5609,7 @@ static const wm_anim_op prog_bam_combo_slap_anim_ops[] = {
 };
 
 static const wm_anim_label prog_bam_combo_slap_anim_labels[] = {
+    { "bam_combo_slap_anim_no_vel", 1 },
     { "#loop_butt", 29 },
     { "#CHECK_OTHER_BUT", 60 },
     { "#missed_c", 62 },
@@ -5655,6 +5871,7 @@ static const wm_anim_op prog_bam_2_graboh_anim_ops[] = {
 };
 
 static const wm_anim_label prog_bam_2_graboh_anim_labels[] = {
+    { "bam_4_graboh_anim", 8 },
     { "#missedb", 42 },
     { "#missed", 45 },
 };
@@ -5996,6 +6213,7 @@ static const wm_anim_label prog_set_xdrift_labels[] = {
     { "#Adam", 0 },
     { "#Lex", 0 },
     { "bncoff_tbl", 0 },
+    { "bam_backbroken_anim", 0 },
 };
 
 static const wm_anim_op prog_bam_backbroken_anim_ops[] = {
@@ -6460,6 +6678,7 @@ static const wm_anim_op prog_bam_combo_pogo_anim_ops[] = {
 
 static const wm_anim_label prog_bam_combo_pogo_anim_labels[] = {
     { "#missed", 0 },
+    { "bam_combo_graboh_anim", 10 },
     { "START_OF_BREAKER", 33 },
     { "LET_GO_VICTIM", 68 },
     { "#missed_c", 82 },
@@ -6474,17 +6693,25 @@ static const wm_anim_label prog_bam_combo_pogo_anim_labels[] = {
     { "#Adam", 95 },
     { "#Lex", 95 },
     { "#strt_flail_tbl", 95 },
+    { "bam_stndholdoh_anim", 95 },
+    { "bam_slamdwn_anim", 100 },
     { "#set_opp_y", 149 },
     { "#abs", 149 },
     { "rets", 149 },
     { "#faced_tbl", 149 },
+    { "bam_heldoh_anim", 149 },
     { "#loop", 154 },
     { "#inc_loop", 182 },
     { "#breakout", 182 },
+    { "bam_backbreaker_anim", 182 },
+    { "set_xdrift", 222 },
     { "#onrgt", 222 },
     { "#ok", 222 },
     { "puppet_tbl_back", 222 },
     { "bncoff_tbl", 222 },
+    { "bam_backbroken_anim", 222 },
+    { "bam_neckbroken_anim", 249 },
+    { "bam_combo_pogo_anim", 265 },
     { "#letgo_c", 313 },
     { "#CHECK_NEXT_BUT", 332 },
     { "#CHECK_NEXT_BUTA", 337 },
@@ -6809,6 +7036,7 @@ static const wm_anim_op prog_bam_3_head_held_anim_ops[] = {
 
 static const wm_anim_label prog_bam_3_head_held_anim_labels[] = {
     { "#loop", 6 },
+    { "bam_3_head_held_brk_anim", 17 },
 };
 
 static const wm_anim_op prog_bam_3_head_held_brk_anim_ops[] = {
@@ -7004,6 +7232,7 @@ static const wm_anim_op prog_bam_2_hair_pickup_anim_ops[] = {
 };
 
 static const wm_anim_label prog_bam_2_hair_pickup_anim_labels[] = {
+    { "bam_4_hair_pickup_anim", 7 },
     { "#missed", 41 },
 };
 
@@ -7395,6 +7624,8 @@ static const wm_anim_op prog_bam_3_fake_hold_anim_ops[] = {
 };
 
 static const wm_anim_label prog_bam_3_fake_hold_anim_labels[] = {
+    { "bam_3_head_hold2_anim", 11 },
+    { "bam_3_head_hold_anim", 29 },
     { "#gothim", 43 },
     { "#missed", 61 },
     { "#missedb", 71 },
@@ -7476,6 +7707,7 @@ static const wm_anim_op prog_bam_3_head_hold2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_bam_3_head_hold2_anim_labels[] = {
+    { "bam_3_head_hold_anim", 18 },
     { "#gothim", 32 },
     { "#missed", 50 },
     { "#missedb", 60 },
@@ -7639,6 +7871,8 @@ static const wm_anim_op prog_bam_neckbreaker2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_bam_neckbreaker2_anim_labels[] = {
+    { "bam_neckbreaker_run_anim", 15 },
+    { "bam_neckbreaker_anim", 34 },
     { "#gothim", 45 },
     { "#missedb", 82 },
     { "#missed", 84 },
@@ -7724,6 +7958,7 @@ static const wm_anim_op prog_bam_neckbreaker_run_anim_ops[] = {
 };
 
 static const wm_anim_label prog_bam_neckbreaker_run_anim_labels[] = {
+    { "bam_neckbreaker_anim", 19 },
     { "#gothim", 30 },
     { "#missedb", 67 },
     { "#missed", 69 },
@@ -7825,6 +8060,7 @@ static const wm_anim_op prog_bam_2_napalm_anim_ops[] = {
 };
 
 static const wm_anim_label prog_bam_2_napalm_anim_labels[] = {
+    { "bam_4_napalm_anim", 7 },
     { "#cont", 11 },
 };
 
@@ -7993,6 +8229,10 @@ static const wm_anim_op prog_dnk_stand2_anim_ops[] = {
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_stand2_anim_labels[] = {
+    { "dnk_stand8_anim", 0 },
+};
+
 static const wm_anim_op prog_dnk_stand8_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -8017,6 +8257,10 @@ static const wm_anim_op prog_dnk_stand4_anim_ops[] = {
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_stand4_anim_labels[] = {
+    { "dnk_stand6_anim", 0 },
+};
+
 static const wm_anim_op prog_dnk_stand6_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -8039,6 +8283,10 @@ static const wm_anim_op prog_dnk_torso2_anim_ops[] = {
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_torso2_anim_labels[] = {
+    { "dnk_torso8_anim", 0 },
+};
+
 static const wm_anim_op prog_dnk_torso8_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "D2TW2B01" },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "D2TW2B02" },
@@ -8057,6 +8305,10 @@ static const wm_anim_op prog_dnk_torso4_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "D4TW4B03" },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "D4TW4B02" },
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_torso4_anim_labels[] = {
+    { "dnk_torso6_anim", 0 },
 };
 
 static const wm_anim_op prog_dnk_torso6_anim_ops[] = {
@@ -8345,6 +8597,10 @@ static const wm_anim_op prog_dnk_2_to_4_turn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_2_to_4_turn_anim_labels[] = {
+    { "dnk_8_to_6_turn_anim", 0 },
+};
+
 static const wm_anim_op prog_dnk_8_to_6_turn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -8361,6 +8617,10 @@ static const wm_anim_op prog_dnk_4_to_2_turn_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D1TT5Z02" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_4_to_2_turn_anim_labels[] = {
+    { "dnk_6_to_8_turn_anim", 0 },
 };
 
 static const wm_anim_op prog_dnk_6_to_8_turn_anim_ops[] = {
@@ -8380,6 +8640,10 @@ static const wm_anim_op prog_dnk_4_to_6_turn_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D1TT5Z04" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_4_to_6_turn_anim_labels[] = {
+    { "dnk_6_to_4_turn_anim", 0 },
 };
 
 static const wm_anim_op prog_dnk_6_to_4_turn_anim_ops[] = {
@@ -8402,6 +8666,10 @@ static const wm_anim_op prog_dnk_2_to_8_turn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_2_to_8_turn_anim_labels[] = {
+    { "dnk_8_to_2_turn_anim", 0 },
+};
+
 static const wm_anim_op prog_dnk_8_to_2_turn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -8422,6 +8690,10 @@ static const wm_anim_op prog_dnk_4_to_8_turn_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D1TT5Z01" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_4_to_8_turn_anim_labels[] = {
+    { "dnk_6_to_2_turn_anim", 0 },
 };
 
 static const wm_anim_op prog_dnk_6_to_2_turn_anim_ops[] = {
@@ -8448,6 +8720,10 @@ static const wm_anim_op prog_dnk_2_to_6_turn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_2_to_6_turn_anim_labels[] = {
+    { "dnk_8_to_4_turn_anim", 0 },
+};
+
 static const wm_anim_op prog_dnk_8_to_4_turn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -8470,6 +8746,10 @@ static const wm_anim_op prog_dnk_2_to_4_turn2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_2_to_4_turn2_anim_labels[] = {
+    { "dnk_8_to_6_turn2_anim", 0 },
+};
+
 static const wm_anim_op prog_dnk_8_to_6_turn2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -8488,6 +8768,10 @@ static const wm_anim_op prog_dnk_4_to_2_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D1TR5Z02" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_4_to_2_turn2_anim_labels[] = {
+    { "dnk_6_to_8_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_dnk_6_to_8_turn2_anim_ops[] = {
@@ -8510,6 +8794,10 @@ static const wm_anim_op prog_dnk_4_to_6_turn2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_dnk_4_to_6_turn2_anim_labels[] = {
+    { "dnk_6_to_4_turn2_anim", 0 },
+};
+
 static const wm_anim_op prog_dnk_6_to_4_turn2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -8528,6 +8816,10 @@ static const wm_anim_op prog_dnk_2_to_8_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D1TR5Z01" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_2_to_8_turn2_anim_labels[] = {
+    { "dnk_8_to_2_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_dnk_8_to_2_turn2_anim_ops[] = {
@@ -8551,6 +8843,10 @@ static const wm_anim_op prog_dnk_4_to_8_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D1TR5Z02" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_4_to_8_turn2_anim_labels[] = {
+    { "dnk_6_to_2_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_dnk_6_to_2_turn2_anim_ops[] = {
@@ -8577,6 +8873,10 @@ static const wm_anim_op prog_dnk_2_to_6_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D1TR5Z04" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_2_to_6_turn2_anim_labels[] = {
+    { "dnk_8_to_4_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_dnk_8_to_4_turn2_anim_ops[] = {
@@ -8621,6 +8921,7 @@ static const wm_anim_op prog_dnk_run2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_dnk_run2_anim_labels[] = {
+    { "dnk_run_anim", 4 },
     { "#lp1", 7 },
     { "#run2", 14 },
 };
@@ -9386,6 +9687,7 @@ static const wm_anim_op prog_skick_delay_ops[] = {
 static const wm_anim_label prog_skick_delay_labels[] = {
     { "rets", 0 },
     { "#ok", 0 },
+    { "dnk_2_spin_kick_TB_anim", 0 },
 };
 
 static const wm_anim_op prog_dnk_2_spin_kick_TB_anim_ops[] = {
@@ -9725,7 +10027,9 @@ static const wm_anim_op prog_dnk_4_knee_fall_anim_ops[] = {
 
 static const wm_anim_label prog_dnk_4_knee_fall_anim_labels[] = {
     { "#no_hit3", 19 },
+    { "dnk_combo_knee_fall_anim", 21 },
     { "#no_hit4", 39 },
+    { "dnk_4_knee_anim", 45 },
     { "#no_hit2", 70 },
     { "#cont2", 71 },
 };
@@ -9791,6 +10095,7 @@ static const wm_anim_op prog_dnk_combo_knee_fall_anim_ops[] = {
 
 static const wm_anim_label prog_dnk_combo_knee_fall_anim_labels[] = {
     { "#no_hit4", 18 },
+    { "dnk_4_knee_anim", 24 },
     { "#no_hit2", 49 },
     { "#cont2", 50 },
 };
@@ -10204,6 +10509,7 @@ static const wm_anim_label prog_ckzpos_labels[] = {
     { "rets", 0 },
     { "#slideup", 0 },
     { "#ok", 0 },
+    { "dnk_fall_back2_anim", 0 },
 };
 
 static const wm_anim_op prog_dnk_fall_back2_anim_ops[] = {
@@ -10282,6 +10588,78 @@ static const wm_anim_op prog_dnk_fall_back_tbukl_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D3SA3A09" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
+};
+
+static const wm_anim_op prog_dnk_faceup_getup_anim_ops[] = {
+    { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETFACING, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "choose_2or4" },
+    { WM_AOP_IFNOTSTATUS, 0, 33, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_4_faceup_getup_anim" },
+    { WM_AOP_SETMODE, 0, -1, 268, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "D3SA3A09" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "D3GU4A02" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D3GU4A03" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "D3GU4A04" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D3GU4A05" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "D3GU4A06" },
+    { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "D3GU4A07" },
+    { WM_AOP_SETFACING, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SET_WRESTLER_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "D3GU4A07" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "D3GU4A08" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D3GU4A09" },
+    { WM_AOP_SAFE_TIME, 0, -1, 50, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "free_toss_check" },
+    { WM_AOP_IFNOTSTATUS, 0, 29, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ATTACK_ON, 38, -1, 37, 88, 63, 9, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "D3GU4A09" },
+    { WM_AOP_ATTACK_OFF, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFNOTSTATUS, 0, 29, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "setup_freetoss" },
+    { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_4_push_anim" },
+    { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 268, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "D3RL1B02" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "D3RL1B03" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "D3RL1B04" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "D3RL1B05" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "D3RL1B06" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D2GD2A04" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "D2GD2A06" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D2GD2A07" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "D2GD2A09" },
+    { WM_AOP_SETFACING, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SET_WRESTLER_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "D2GD2A09" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "D2GD2A10" },
+    { WM_AOP_SAFE_TIME, 0, -1, 50, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "free_toss_check" },
+    { WM_AOP_IFNOTSTATUS, 0, 58, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ATTACK_ON, 38, -1, 37, 88, 63, 9, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "D2GD2A10" },
+    { WM_AOP_ATTACK_OFF, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFNOTSTATUS, 0, 58, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "setup_freetoss" },
+    { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_4_push_anim" },
+    { WM_AOP_FACEUP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_dnk_faceup_getup_anim_labels[] = {
+    { "dnk_4_faceup_getup_anim", 5 },
+    { "#no_freetoss2", 29 },
+    { "dnk_2_faceup_getup_anim", 33 },
+    { "#no_freetoss3", 58 },
 };
 
 static const wm_anim_op prog_dnk_4_faceup_getup_anim_ops[] = {
@@ -11197,6 +11575,7 @@ static const wm_anim_op prog_dnk_4_bstomp_anim_ops[] = {
 static const wm_anim_label prog_dnk_4_bstomp_anim_labels[] = {
     { "#nooff", 15 },
     { "#opp_onground", 25 },
+    { "check_xvel", 45 },
     { "rets", 45 },
     { "#onrgt", 45 },
     { "#ok", 45 },
@@ -11274,6 +11653,11 @@ static const wm_anim_op prog_dnk_hitonground_xflip_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
 };
 
+static const wm_anim_label prog_dnk_hitonground_xflip_anim_labels[] = {
+    { "dnk_hitonground_anim", 1 },
+    { "dnk_liedown_anim", 18 },
+};
+
 static const wm_anim_op prog_dnk_hitonground_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -11295,6 +11679,10 @@ static const wm_anim_op prog_dnk_hitonground_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "D3SA3A09" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "dnk_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_dnk_hitonground_anim_labels[] = {
+    { "dnk_liedown_anim", 17 },
 };
 
 static const wm_anim_op prog_dnk_liedown_anim_ops[] = {
@@ -11544,6 +11932,7 @@ static const wm_anim_op prog_dnk_2_grabfling_anim_ops[] = {
 };
 
 static const wm_anim_label prog_dnk_2_grabfling_anim_labels[] = {
+    { "dnk_4_grabfling_anim", 9 },
     { "#cont", 15 },
     { "#missedb", 49 },
     { "#missed", 52 },
@@ -11661,6 +12050,7 @@ static const wm_anim_label prog_fling_delay_labels[] = {
     { "#Adam", 0 },
     { "#Lex", 0 },
     { "#strt_run_tbl", 0 },
+    { "dnk_heldoh_anim", 0 },
     { "#loop", 5 },
 };
 
@@ -11753,6 +12143,7 @@ static const wm_anim_op prog_dnk_4_hitblock_anim_ops[] = {
 
 static const wm_anim_label prog_dnk_4_hitblock_anim_labels[] = {
     { "#blk4", 0 },
+    { "dnk_4_hitblock_anim", 9 },
 };
 
 static const wm_anim_op prog_dnk_4_hitblock2_anim_ops[] = {
@@ -11788,6 +12179,8 @@ static const wm_anim_op prog_dnk_4_hitblock2_anim_ops[] = {
 
 static const wm_anim_label prog_dnk_4_hitblock2_anim_labels[] = {
     { "#blk4", 0 },
+    { "dnk_4_hitblock_anim", 9 },
+    { "dnk_4_hitblock2_anim", 16 },
 };
 
 static const wm_anim_op prog_dnk_2_hiptoss2_anim_ops[] = {
@@ -11905,10 +12298,14 @@ static const wm_anim_op prog_dnk_2_hiptoss2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_dnk_2_hiptoss2_anim_labels[] = {
+    { "dnk_4_hiptoss2_anim", 7 },
+    { "dnk_2_hiptoss_anim", 22 },
+    { "dnk_4_hiptoss_anim", 29 },
     { "#cont", 44 },
     { "#got_him", 47 },
     { "#missedb", 81 },
     { "#missed", 85 },
+    { "hiptoss_delay", 92 },
     { "rets", 92 },
     { "#oka", 92 },
     { "#throw_him_out", 92 },
@@ -12022,10 +12419,13 @@ static const wm_anim_op prog_dnk_4_hiptoss2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_dnk_4_hiptoss2_anim_labels[] = {
+    { "dnk_2_hiptoss_anim", 15 },
+    { "dnk_4_hiptoss_anim", 22 },
     { "#cont", 37 },
     { "#got_him", 40 },
     { "#missedb", 74 },
     { "#missed", 78 },
+    { "hiptoss_delay", 85 },
     { "rets", 85 },
     { "#oka", 85 },
     { "#throw_him_out", 85 },
@@ -12124,10 +12524,12 @@ static const wm_anim_op prog_dnk_2_hiptoss_anim_ops[] = {
 };
 
 static const wm_anim_label prog_dnk_2_hiptoss_anim_labels[] = {
+    { "dnk_4_hiptoss_anim", 7 },
     { "#cont", 22 },
     { "#got_him", 25 },
     { "#missedb", 59 },
     { "#missed", 63 },
+    { "hiptoss_delay", 70 },
     { "rets", 70 },
     { "#oka", 70 },
     { "#throw_him_out", 70 },
@@ -12223,6 +12625,7 @@ static const wm_anim_label prog_dnk_4_hiptoss_anim_labels[] = {
     { "#got_him", 18 },
     { "#missedb", 52 },
     { "#missed", 56 },
+    { "hiptoss_delay", 63 },
     { "rets", 63 },
     { "#oka", 63 },
     { "#throw_him_out", 63 },
@@ -12679,6 +13082,7 @@ static const wm_anim_op prog_dnk_2_pin_anim_ops[] = {
 };
 
 static const wm_anim_label prog_dnk_2_pin_anim_labels[] = {
+    { "dnk_4_pin_anim", 5 },
     { "#loop", 46 },
 };
 
@@ -12774,6 +13178,7 @@ static const wm_anim_op prog_dnk_2_raise_arm_anim_ops[] = {
 };
 
 static const wm_anim_label prog_dnk_2_raise_arm_anim_labels[] = {
+    { "dnk_4_raise_arm_anim", 8 },
     { "#cont", 13 },
     { "#loop2", 17 },
     { "#wakeup", 24 },
@@ -12841,8 +13246,10 @@ static const wm_anim_op prog_win_announce_ops[] = {
 
 static const wm_anim_label prog_win_announce_labels[] = {
     { "rets", 0 },
+    { "grnd_hit", 0 },
     { "#z", 0 },
     { "#hit_t", 0 },
+    { "dnk_buckoff_anim", 0 },
 };
 
 static const wm_anim_op prog_grnd_hit_ops[] = {
@@ -12870,6 +13277,7 @@ static const wm_anim_op prog_grnd_hit_ops[] = {
 static const wm_anim_label prog_grnd_hit_labels[] = {
     { "#z", 0 },
     { "#hit_t", 0 },
+    { "dnk_buckoff_anim", 0 },
 };
 
 static const wm_anim_op prog_dnk_buckoff_anim_ops[] = {
@@ -12952,6 +13360,7 @@ static const wm_anim_label prog_set_buckoff_vels_labels[] = {
     { "#xok", 0 },
     { "#zok", 0 },
     { "rets", 0 },
+    { "dnk_climbthru_side_anim", 0 },
 };
 
 static const wm_anim_op prog_dnk_climbthru_side_anim_ops[] = {
@@ -13103,6 +13512,7 @@ static const wm_anim_label prog_SET_DIR_FACE_labels[] = {
     { "RETS", 0 },
     { "#method2", 0 },
     { "#onlft2", 0 },
+    { "dnk_climbthru_bot_anim", 0 },
     { "#dir4", 7 },
 };
 
@@ -13354,6 +13764,7 @@ static const wm_anim_op prog_dnk_2_buzz_anim_ops[] = {
 };
 
 static const wm_anim_label prog_dnk_2_buzz_anim_labels[] = {
+    { "dnk_4_buzz_anim", 11 },
     { "#cont", 19 },
     { "#cont4", 28 },
     { "#gothim", 31 },
@@ -13508,6 +13919,8 @@ static const wm_anim_label prog_dnk_2_buzz2_anim_labels[] = {
     { "#cont4", 0 },
     { "#gothim", 3 },
     { "#cont2", 36 },
+    { "dnk_2_buzz2_anim", 44 },
+    { "dnk_4_buzz2_anim", 52 },
     { "#cont3", 56 },
     { "#normal", 63 },
     { "#contz", 63 },
@@ -13590,6 +14003,8 @@ static const wm_anim_label prog_dnk_4_buzz2_anim_labels[] = {
     { "#cont4", 0 },
     { "#gothim", 3 },
     { "#cont2", 36 },
+    { "dnk_2_buzz2_anim", 44 },
+    { "dnk_4_buzz2_anim", 52 },
     { "#cont3", 56 },
     { "#normal", 63 },
     { "#contz", 63 },
@@ -13692,9 +14107,12 @@ static const wm_anim_label prog_dnk_combo_buzz2_anim_labels[] = {
     { "#cont4", 0 },
     { "#gothim", 3 },
     { "#cont2", 36 },
+    { "dnk_2_buzz2_anim", 44 },
+    { "dnk_4_buzz2_anim", 52 },
     { "#cont3", 56 },
     { "#normal", 63 },
     { "#contz", 63 },
+    { "dnk_combo_buzz2_anim", 70 },
     { "#normalc", 81 },
     { "#contzc", 81 },
 };
@@ -13873,12 +14291,20 @@ static const wm_anim_op prog_am_I_dizzy_ops[] = {
 static const wm_anim_label prog_am_I_dizzy_labels[] = {
     { "#not_dizzy", 0 },
     { "rets", 0 },
+    { "am_I_dead", 0 },
     { "#notdead", 0 },
     { "#not_dead", 0 },
+    { "make_white", 0 },
     { "#make_black", 0 },
+    { "make_norm", 0 },
+    { "set_position", 0 },
     { "#rgt", 0 },
     { "#lft", 0 },
+    { "set_skeleton_pal", 0 },
+    { "set_my_pal", 0 },
+    { "start_smoke", 0 },
     { "#rets", 0 },
+    { "dnk_3_pile_driver_anim", 0 },
     { "#no_freetoss", 61 },
     { "#missed", 65 },
     { "#no_freetoss2", 104 },
@@ -13999,10 +14425,17 @@ static const wm_anim_label prog_am_I_dead_labels[] = {
     { "rets", 0 },
     { "#notdead", 0 },
     { "#not_dead", 0 },
+    { "make_white", 0 },
     { "#make_black", 0 },
+    { "make_norm", 0 },
+    { "set_position", 0 },
     { "#rgt", 0 },
     { "#lft", 0 },
+    { "set_skeleton_pal", 0 },
+    { "set_my_pal", 0 },
+    { "start_smoke", 0 },
     { "#rets", 0 },
+    { "dnk_3_pile_driver_anim", 0 },
     { "#no_freetoss", 61 },
     { "#missed", 65 },
     { "#no_freetoss2", 104 },
@@ -14122,9 +14555,15 @@ static const wm_anim_op prog_make_white_ops[] = {
 static const wm_anim_label prog_make_white_labels[] = {
     { "rets", 0 },
     { "#make_black", 0 },
+    { "make_norm", 0 },
+    { "set_position", 0 },
     { "#rgt", 0 },
     { "#lft", 0 },
+    { "set_skeleton_pal", 0 },
+    { "set_my_pal", 0 },
+    { "start_smoke", 0 },
     { "#rets", 0 },
+    { "dnk_3_pile_driver_anim", 0 },
     { "#no_freetoss", 61 },
     { "#missed", 65 },
     { "#no_freetoss2", 104 },
@@ -14243,9 +14682,14 @@ static const wm_anim_op prog_make_norm_ops[] = {
 
 static const wm_anim_label prog_make_norm_labels[] = {
     { "rets", 0 },
+    { "set_position", 0 },
     { "#rgt", 0 },
     { "#lft", 0 },
+    { "set_skeleton_pal", 0 },
+    { "set_my_pal", 0 },
+    { "start_smoke", 0 },
     { "#rets", 0 },
+    { "dnk_3_pile_driver_anim", 0 },
     { "#no_freetoss", 61 },
     { "#missed", 65 },
     { "#no_freetoss2", 104 },
@@ -14366,7 +14810,11 @@ static const wm_anim_label prog_set_position_labels[] = {
     { "#rgt", 0 },
     { "#lft", 0 },
     { "rets", 0 },
+    { "set_skeleton_pal", 0 },
+    { "set_my_pal", 0 },
+    { "start_smoke", 0 },
     { "#rets", 0 },
+    { "dnk_3_pile_driver_anim", 0 },
     { "#no_freetoss", 61 },
     { "#missed", 65 },
     { "#no_freetoss2", 104 },
@@ -14485,7 +14933,10 @@ static const wm_anim_op prog_set_skeleton_pal_ops[] = {
 
 static const wm_anim_label prog_set_skeleton_pal_labels[] = {
     { "rets", 0 },
+    { "set_my_pal", 0 },
+    { "start_smoke", 0 },
     { "#rets", 0 },
+    { "dnk_3_pile_driver_anim", 0 },
     { "#no_freetoss", 61 },
     { "#missed", 65 },
     { "#no_freetoss2", 104 },
@@ -14604,7 +15055,9 @@ static const wm_anim_op prog_set_my_pal_ops[] = {
 
 static const wm_anim_label prog_set_my_pal_labels[] = {
     { "rets", 0 },
+    { "start_smoke", 0 },
     { "#rets", 0 },
+    { "dnk_3_pile_driver_anim", 0 },
     { "#no_freetoss", 61 },
     { "#missed", 65 },
     { "#no_freetoss2", 104 },
@@ -14723,6 +15176,7 @@ static const wm_anim_op prog_start_smoke_ops[] = {
 
 static const wm_anim_label prog_start_smoke_labels[] = {
     { "#rets", 0 },
+    { "dnk_3_pile_driver_anim", 0 },
     { "#no_freetoss", 61 },
     { "#missed", 65 },
     { "#no_freetoss2", 104 },
@@ -14961,6 +15415,7 @@ static const wm_anim_label prog_is_this_yoko_labels[] = {
     { "#Adam", 0 },
     { "#Lex", 0 },
     { "#rollout_tbl", 0 },
+    { "dnk_combo_head_slam_anim", 0 },
     { "#try_rptc", 34 },
     { "#slam_againc", 38 },
     { "#norepeatc", 62 },
@@ -15318,6 +15773,8 @@ static const wm_anim_op prog_dnk_3_fake_hold_anim_ops[] = {
 };
 
 static const wm_anim_label prog_dnk_3_fake_hold_anim_labels[] = {
+    { "dnk_3_head_hold2_anim", 10 },
+    { "dnk_3_head_hold_anim", 26 },
     { "#gothim", 39 },
     { "#missedb", 57 },
     { "#missed", 69 },
@@ -15398,6 +15855,7 @@ static const wm_anim_op prog_dnk_3_head_hold2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_dnk_3_head_hold2_anim_labels[] = {
+    { "dnk_3_head_hold_anim", 16 },
     { "#gothim", 29 },
     { "#missedb", 47 },
     { "#missed", 59 },
@@ -15504,6 +15962,7 @@ static const wm_anim_op prog_head_grab_time_ops[] = {
 };
 
 static const wm_anim_label prog_head_grab_time_labels[] = {
+    { "clear_opp_counts", 0 },
     { "rets", 0 },
     { "#puppet_tbl", 0 },
     { "#Bret", 0 },
@@ -15516,7 +15975,9 @@ static const wm_anim_label prog_head_grab_time_labels[] = {
     { "#Adam", 0 },
     { "#Lex", 0 },
     { "#headheld_tbl", 0 },
+    { "dnk_3_head_held_anim", 0 },
     { "#loop", 6 },
+    { "dnk_3_head_held_brk_anim", 16 },
 };
 
 static const wm_anim_op prog_clear_opp_counts_ops[] = {
@@ -15568,7 +16029,9 @@ static const wm_anim_label prog_clear_opp_counts_labels[] = {
     { "#Adam", 0 },
     { "#Lex", 0 },
     { "#headheld_tbl", 0 },
+    { "dnk_3_head_held_anim", 0 },
     { "#loop", 6 },
+    { "dnk_3_head_held_brk_anim", 16 },
 };
 
 static const wm_anim_op prog_dnk_3_head_held_anim_ops[] = {
@@ -15609,6 +16072,7 @@ static const wm_anim_op prog_dnk_3_head_held_anim_ops[] = {
 
 static const wm_anim_label prog_dnk_3_head_held_anim_labels[] = {
     { "#loop", 6 },
+    { "dnk_3_head_held_brk_anim", 16 },
 };
 
 static const wm_anim_op prog_dnk_3_head_held_brk_anim_ops[] = {
@@ -16109,6 +16573,8 @@ static const wm_anim_label prog_spunch_delay_labels[] = {
     { "#cont", 0 },
     { "rets", 0 },
     { "#ok", 0 },
+    { "dnk_2_earslap_anim", 0 },
+    { "dnk_4_earslap_anim", 0 },
     { "#contz", 24 },
     { "#gothim", 28 },
     { "#no_hitz", 34 },
@@ -16212,6 +16678,7 @@ static const wm_anim_op prog_dnk_2_earslap_anim_ops[] = {
 };
 
 static const wm_anim_label prog_dnk_2_earslap_anim_labels[] = {
+    { "dnk_4_earslap_anim", 0 },
     { "#cont", 22 },
     { "#contz", 24 },
     { "#gothim", 28 },
@@ -16440,6 +16907,7 @@ static const wm_anim_op prog_body_smoke_ops[] = {
 static const wm_anim_label prog_body_smoke_labels[] = {
     { "#lp", 0 },
     { "DIE", 0 },
+    { "smokepuff", 0 },
     { "#no_flip", 0 },
     { "#x_tbl", 0 },
     { "#y_tbl", 0 },
@@ -16448,12 +16916,15 @@ static const wm_anim_label prog_body_smoke_labels[] = {
     { "cldblg_l", 0 },
     { "cldbgry_l", 0 },
     { "cldblg2_l", 0 },
+    { "hand_sparks", 0 },
+    { "one_spark", 0 },
     { "#strt", 0 },
     { "#noani", 0 },
     { "#die", 0 },
     { "spark_l", 0 },
     { "clobber_sparks", 0 },
     { "clb_spark", 0 },
+    { "dnk_break_neck2_anim", 0 },
 };
 
 static const wm_anim_op prog_smokepuff_ops[] = {
@@ -16487,14 +16958,17 @@ static const wm_anim_label prog_smokepuff_labels[] = {
     { "cldblg_l", 0 },
     { "cldbgry_l", 0 },
     { "cldblg2_l", 0 },
+    { "hand_sparks", 0 },
     { "#lp", 0 },
     { "DIE", 0 },
+    { "one_spark", 0 },
     { "#strt", 0 },
     { "#noani", 0 },
     { "#die", 0 },
     { "spark_l", 0 },
     { "clobber_sparks", 0 },
     { "clb_spark", 0 },
+    { "dnk_break_neck2_anim", 0 },
 };
 
 static const wm_anim_op prog_hand_sparks_ops[] = {
@@ -16522,6 +16996,7 @@ static const wm_anim_op prog_hand_sparks_ops[] = {
 static const wm_anim_label prog_hand_sparks_labels[] = {
     { "#lp", 0 },
     { "DIE", 0 },
+    { "one_spark", 0 },
     { "#no_flip", 0 },
     { "#strt", 0 },
     { "#noani", 0 },
@@ -16529,6 +17004,7 @@ static const wm_anim_label prog_hand_sparks_labels[] = {
     { "spark_l", 0 },
     { "clobber_sparks", 0 },
     { "clb_spark", 0 },
+    { "dnk_break_neck2_anim", 0 },
 };
 
 static const wm_anim_op prog_one_spark_ops[] = {
@@ -16563,6 +17039,7 @@ static const wm_anim_label prog_one_spark_labels[] = {
     { "clobber_sparks", 0 },
     { "DIE", 0 },
     { "clb_spark", 0 },
+    { "dnk_break_neck2_anim", 0 },
 };
 
 static const wm_anim_op prog_dnk_break_neck2_anim_ops[] = {
@@ -16706,6 +17183,7 @@ static const wm_anim_op prog_dnk_2_hair_pickup_anim_ops[] = {
 };
 
 static const wm_anim_label prog_dnk_2_hair_pickup_anim_labels[] = {
+    { "dnk_4_hair_pickup_anim", 6 },
     { "#missed", 41 },
 };
 
@@ -16794,6 +17272,7 @@ static const wm_anim_label prog_ck_getup_labels[] = {
     { "#Doink", 0 },
     { "#Adam", 0 },
     { "#Lex", 0 },
+    { "dnk_flyout_anim", 0 },
     { "#cont", 8 },
 };
 
@@ -16871,6 +17350,8 @@ static const wm_anim_op prog_dnk_flyout2_anim_ops[] = {
 
 static const wm_anim_label prog_dnk_flyout2_anim_labels[] = {
     { "#cont", 0 },
+    { "dnk_flyout2_anim", 10 },
+    { "dnk_4_taunt_anim", 17 },
 };
 
 static const wm_anim_op prog_dnk_4_taunt_anim_ops[] = {
@@ -17081,6 +17562,10 @@ static const wm_anim_op prog_hrt_stand2_anim_ops[] = {
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_stand2_anim_labels[] = {
+    { "hrt_stand8_anim", 0 },
+};
+
 static const wm_anim_op prog_hrt_stand8_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -17121,6 +17606,10 @@ static const wm_anim_op prog_hrt_stand4_anim_ops[] = {
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_stand4_anim_labels[] = {
+    { "hrt_stand6_anim", 0 },
+};
+
 static const wm_anim_op prog_hrt_stand6_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -17151,6 +17640,10 @@ static const wm_anim_op prog_hrt_torso2_anim_ops[] = {
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_torso2_anim_labels[] = {
+    { "hrt_torso8_anim", 0 },
+};
+
 static const wm_anim_op prog_hrt_torso8_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "H2TW2A01" },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "H2TW2A02" },
@@ -17169,6 +17662,10 @@ static const wm_anim_op prog_hrt_torso4_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "H4TW4A03" },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "H4TW4A02" },
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_torso4_anim_labels[] = {
+    { "hrt_torso6_anim", 0 },
 };
 
 static const wm_anim_op prog_hrt_torso6_anim_ops[] = {
@@ -17428,6 +17925,10 @@ static const wm_anim_op prog_hrt_2_to_4_turn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_2_to_4_turn_anim_labels[] = {
+    { "hrt_8_to_6_turn_anim", 0 },
+};
+
 static const wm_anim_op prog_hrt_8_to_6_turn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -17444,6 +17945,10 @@ static const wm_anim_op prog_hrt_4_to_2_turn_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H1TL5A03" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_4_to_2_turn_anim_labels[] = {
+    { "hrt_6_to_8_turn_anim", 0 },
 };
 
 static const wm_anim_op prog_hrt_6_to_8_turn_anim_ops[] = {
@@ -17463,6 +17968,10 @@ static const wm_anim_op prog_hrt_4_to_6_turn_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H1TL5A05" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_4_to_6_turn_anim_labels[] = {
+    { "hrt_6_to_4_turn_anim", 0 },
 };
 
 static const wm_anim_op prog_hrt_6_to_4_turn_anim_ops[] = {
@@ -17485,6 +17994,10 @@ static const wm_anim_op prog_hrt_2_to_8_turn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_2_to_8_turn_anim_labels[] = {
+    { "hrt_8_to_2_turn_anim", 0 },
+};
+
 static const wm_anim_op prog_hrt_8_to_2_turn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -17505,6 +18018,10 @@ static const wm_anim_op prog_hrt_4_to_8_turn_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H1TL5A02" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_4_to_8_turn_anim_labels[] = {
+    { "hrt_6_to_2_turn_anim", 0 },
 };
 
 static const wm_anim_op prog_hrt_6_to_2_turn_anim_ops[] = {
@@ -17531,6 +18048,10 @@ static const wm_anim_op prog_hrt_2_to_6_turn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_2_to_6_turn_anim_labels[] = {
+    { "hrt_8_to_4_turn_anim", 0 },
+};
+
 static const wm_anim_op prog_hrt_8_to_4_turn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -17553,6 +18074,10 @@ static const wm_anim_op prog_hrt_2_to_4_turn2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_2_to_4_turn2_anim_labels[] = {
+    { "hrt_8_to_6_turn2_anim", 0 },
+};
+
 static const wm_anim_op prog_hrt_8_to_6_turn2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -17571,6 +18096,10 @@ static const wm_anim_op prog_hrt_4_to_2_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H1TT5A03" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_4_to_2_turn2_anim_labels[] = {
+    { "hrt_6_to_8_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_hrt_6_to_8_turn2_anim_ops[] = {
@@ -17593,6 +18122,10 @@ static const wm_anim_op prog_hrt_4_to_6_turn2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_hrt_4_to_6_turn2_anim_labels[] = {
+    { "hrt_6_to_4_turn2_anim", 0 },
+};
+
 static const wm_anim_op prog_hrt_6_to_4_turn2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -17611,6 +18144,10 @@ static const wm_anim_op prog_hrt_2_to_8_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H1TT5A02" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_2_to_8_turn2_anim_labels[] = {
+    { "hrt_8_to_2_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_hrt_8_to_2_turn2_anim_ops[] = {
@@ -17634,6 +18171,10 @@ static const wm_anim_op prog_hrt_4_to_8_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H1TT5A03" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_4_to_8_turn2_anim_labels[] = {
+    { "hrt_6_to_2_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_hrt_6_to_2_turn2_anim_ops[] = {
@@ -17660,6 +18201,10 @@ static const wm_anim_op prog_hrt_2_to_6_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H1TT5A05" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_hrt_2_to_6_turn2_anim_labels[] = {
+    { "hrt_8_to_4_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_hrt_8_to_4_turn2_anim_ops[] = {
@@ -17703,6 +18248,7 @@ static const wm_anim_op prog_hrt_run2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_hrt_run2_anim_labels[] = {
+    { "hrt_run_anim", 4 },
     { "#lp1", 7 },
     { "#run2", 13 },
 };
@@ -18025,6 +18571,7 @@ static const wm_anim_op prog_hrt_2_uppercut_anim_ops[] = {
 };
 
 static const wm_anim_label prog_hrt_2_uppercut_anim_labels[] = {
+    { "hrt_4_uppercut_anim", 0 },
     { "#blocked", 32 },
     { "#missed", 32 },
     { "#no_slide", 32 },
@@ -18868,6 +19415,7 @@ static const wm_anim_op prog_hrt_2_super_kick_anim_ops[] = {
 };
 
 static const wm_anim_label prog_hrt_2_super_kick_anim_labels[] = {
+    { "hrt_4_super_kick_anim", 0 },
     { "#norm", 24 },
     { "#blocked", 28 },
     { "#missed", 32 },
@@ -19340,6 +19888,7 @@ static const wm_anim_op prog_hrt_4_knee_to_head_anim_ops[] = {
 };
 
 static const wm_anim_label prog_hrt_4_knee_to_head_anim_labels[] = {
+    { "hrt_4_knee_anim", 6 },
     { "#skip_run_check", 20 },
     { "#no_hit", 33 },
     { "#cont", 36 },
@@ -19691,6 +20240,7 @@ static const wm_anim_op prog_hrt_2_grabfling_anim_ops[] = {
 };
 
 static const wm_anim_label prog_hrt_2_grabfling_anim_labels[] = {
+    { "hrt_4_grabfling_anim", 9 },
     { "#cont", 15 },
     { "#missedb", 48 },
     { "#missed", 51 },
@@ -19775,6 +20325,10 @@ static const wm_anim_op prog_hrt_roll_frames_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "H2CP3A08" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_hrt_roll_frames_labels[] = {
+    { "hrt_tossed_anim", 0 },
 };
 
 static const wm_anim_op prog_hrt_tossed_anim_ops[] = {
@@ -20230,6 +20784,7 @@ static const wm_anim_op prog_hrt_2_pin_anim_ops[] = {
 };
 
 static const wm_anim_label prog_hrt_2_pin_anim_labels[] = {
+    { "hrt_4_pin_anim", 5 },
     { "#lp0", 42 },
 };
 
@@ -20343,6 +20898,7 @@ static const wm_anim_op prog_hrt_2_raise_arm_anim_ops[] = {
 };
 
 static const wm_anim_label prog_hrt_2_raise_arm_anim_labels[] = {
+    { "hrt_4_raise_arm_anim", 8 },
     { "#cont", 13 },
     { "#lp1", 17 },
     { "#wakeup", 33 },
@@ -20508,7 +21064,9 @@ static const wm_anim_op prog_hrt_neckbroken_anim_ops[] = {
 };
 
 static const wm_anim_label prog_hrt_neckbroken_anim_labels[] = {
+    { "hrt_pogo_anim", 3 },
     { "#yoff", 5 },
+    { "hrt_climb_up_anim", 5 },
     { "#repeat", 22 },
 };
 
@@ -20779,6 +21337,8 @@ static const wm_anim_label prog_hrt_combo_hiptoss_anim_labels[] = {
     { "#missedbc", 62 },
     { "#missedc", 63 },
     { "SLAM_HIM", 72 },
+    { "hrt_hiptoss2_anim", 72 },
+    { "hrt_hiptoss_anim", 88 },
     { "#cont", 104 },
     { "#got_him", 106 },
     { "#throw_him_out", 144 },
@@ -20899,6 +21459,7 @@ static const wm_anim_op prog_hrt_hiptoss2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_hrt_hiptoss2_anim_labels[] = {
+    { "hrt_hiptoss_anim", 16 },
     { "#cont", 32 },
     { "#got_him", 34 },
     { "#throw_him_out", 72 },
@@ -21049,6 +21610,7 @@ static const wm_anim_op prog_hrt_3_head_held_anim_ops[] = {
 
 static const wm_anim_label prog_hrt_3_head_held_anim_labels[] = {
     { "#loop", 6 },
+    { "hrt_3_head_held_brk_anim", 14 },
 };
 
 static const wm_anim_op prog_hrt_3_head_held_brk_anim_ops[] = {
@@ -21173,6 +21735,7 @@ static const wm_anim_op prog_hrt_2_hair_pickup_anim_ops[] = {
 };
 
 static const wm_anim_label prog_hrt_2_hair_pickup_anim_labels[] = {
+    { "hrt_4_hair_pickup_anim", 7 },
     { "#missed", 41 },
 };
 
@@ -21360,6 +21923,8 @@ static const wm_anim_op prog_hrt_3_fake_hold_anim_ops[] = {
 };
 
 static const wm_anim_label prog_hrt_3_fake_hold_anim_labels[] = {
+    { "hrt_3_head_hold2_anim", 9 },
+    { "hrt_3_head_hold_anim", 25 },
     { "#gothim", 39 },
     { "#missedb", 58 },
     { "#missed", 69 },
@@ -21439,6 +22004,7 @@ static const wm_anim_op prog_hrt_3_head_hold2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_hrt_3_head_hold2_anim_labels[] = {
+    { "hrt_3_head_hold_anim", 16 },
     { "#gothim", 30 },
     { "#missedb", 49 },
     { "#missed", 60 },
@@ -22186,6 +22752,8 @@ static const wm_anim_op prog_xxx_get_face_rake_anim_ops[] = {
 
 static const wm_anim_label prog_xxx_get_face_rake_anim_labels[] = {
     { "#face_hit2_tbl", 2 },
+    { "xxx_get_face_rake2_anim", 2 },
+    { "hrt_combo_roll_uppercut_anim", 4 },
     { "#loopc", 12 },
     { "#standc", 37 },
     { "#do_uppercutc", 45 },
@@ -22291,6 +22859,7 @@ static const wm_anim_op prog_xxx_get_face_rake2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_xxx_get_face_rake2_anim_labels[] = {
+    { "hrt_combo_roll_uppercut_anim", 2 },
     { "#loopc", 10 },
     { "#standc", 35 },
     { "#do_uppercutc", 43 },
@@ -22562,6 +23131,9 @@ static const wm_anim_op prog_hrt_4_hitblock_anim_ops[] = {
 
 static const wm_anim_label prog_hrt_4_hitblock_anim_labels[] = {
     { "#4block", 0 },
+    { "hrt_4_hitblock_anim", 8 },
+    { "hrt_4_hitblock2_anim", 15 },
+    { "hrt_2_head_hit_anim", 27 },
 };
 
 static const wm_anim_op prog_hrt_4_hitblock2_anim_ops[] = {
@@ -22611,6 +23183,9 @@ static const wm_anim_op prog_hrt_4_hitblock2_anim_ops[] = {
 
 static const wm_anim_label prog_hrt_4_hitblock2_anim_labels[] = {
     { "#4block", 0 },
+    { "hrt_4_hitblock_anim", 8 },
+    { "hrt_4_hitblock2_anim", 15 },
+    { "hrt_2_head_hit_anim", 27 },
 };
 
 static const wm_anim_op prog_hrt_2_head_hit_anim_ops[] = {
@@ -23074,6 +23649,10 @@ static const wm_anim_op prog_hrt_hitonground_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_faceup_getup_anim" },
 };
 
+static const wm_anim_label prog_hrt_hitonground_anim_labels[] = {
+    { "hrt_liedown_anim", 18 },
+};
+
 static const wm_anim_op prog_hrt_liedown_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "H2CP3A08" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -23277,6 +23856,7 @@ static const wm_anim_label prog_hrt_faceup_getup_anim_labels[] = {
     { "#getup_in_2", 5 },
     { "#no_freetoss", 24 },
     { "#getup_in_4", 28 },
+    { "hrt_4_faceup_getup2_anim", 33 },
     { "#common_4", 36 },
     { "#no_freetoss1", 51 },
 };
@@ -23882,6 +24462,7 @@ static const wm_anim_op prog_hrt_2_shooter_anim_ops[] = {
 };
 
 static const wm_anim_label prog_hrt_2_shooter_anim_labels[] = {
+    { "hrt_4_shooter_anim", 7 },
     { "#fail", 70 },
     { "#missed", 87 },
 };
@@ -24002,6 +24583,10 @@ static const wm_anim_op prog_lex_stand2_anim_ops[] = {
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_stand2_anim_labels[] = {
+    { "lex_stand8_anim", 0 },
+};
+
 static const wm_anim_op prog_lex_stand8_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -24036,6 +24621,10 @@ static const wm_anim_op prog_lex_stand4_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "L4ST4C02" },
     { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "L4ST4C03" },
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_stand4_anim_labels[] = {
+    { "lex_stand6_anim", 0 },
 };
 
 static const wm_anim_op prog_lex_stand6_anim_ops[] = {
@@ -24081,6 +24670,10 @@ static const wm_anim_op prog_lex_torso2_anim_ops[] = {
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_torso2_anim_labels[] = {
+    { "lex_torso8_anim", 0 },
+};
+
 static const wm_anim_op prog_lex_torso8_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "L2TW2Z01" },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "L2TW2Z02" },
@@ -24103,6 +24696,10 @@ static const wm_anim_op prog_lex_torso4_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "L4TW4Z03" },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "L4TW4Z02" },
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_torso4_anim_labels[] = {
+    { "lex_torso6_anim", 0 },
 };
 
 static const wm_anim_op prog_lex_torso6_anim_ops[] = {
@@ -24379,6 +24976,10 @@ static const wm_anim_op prog_lex_2_to_4_turn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_2_to_4_turn_anim_labels[] = {
+    { "lex_8_to_6_turn_anim", 0 },
+};
+
 static const wm_anim_op prog_lex_8_to_6_turn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -24397,6 +24998,10 @@ static const wm_anim_op prog_lex_4_to_2_turn_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "L1TT5A04" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_4_to_2_turn_anim_labels[] = {
+    { "lex_6_to_8_turn_anim", 0 },
 };
 
 static const wm_anim_op prog_lex_6_to_8_turn_anim_ops[] = {
@@ -24420,6 +25025,10 @@ static const wm_anim_op prog_lex_4_to_6_turn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_4_to_6_turn_anim_labels[] = {
+    { "lex_6_to_4_turn_anim", 0 },
+};
+
 static const wm_anim_op prog_lex_6_to_4_turn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -24440,6 +25049,10 @@ static const wm_anim_op prog_lex_2_to_8_turn_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "L1TT5A02" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_2_to_8_turn_anim_labels[] = {
+    { "lex_8_to_2_turn_anim", 0 },
 };
 
 static const wm_anim_op prog_lex_8_to_2_turn_anim_ops[] = {
@@ -24466,6 +25079,10 @@ static const wm_anim_op prog_lex_4_to_8_turn_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "L1TT5A04" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_4_to_8_turn_anim_labels[] = {
+    { "lex_6_to_2_turn_anim", 0 },
 };
 
 static const wm_anim_op prog_lex_6_to_2_turn_anim_ops[] = {
@@ -24498,6 +25115,10 @@ static const wm_anim_op prog_lex_2_to_6_turn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_2_to_6_turn_anim_labels[] = {
+    { "lex_8_to_4_turn_anim", 0 },
+};
+
 static const wm_anim_op prog_lex_8_to_4_turn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -24525,6 +25146,10 @@ static const wm_anim_op prog_lex_2_to_4_turn2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_2_to_4_turn2_anim_labels[] = {
+    { "lex_8_to_6_turn2_anim", 0 },
+};
+
 static const wm_anim_op prog_lex_8_to_6_turn2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -24547,6 +25172,10 @@ static const wm_anim_op prog_lex_4_to_2_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "L1TR5A04" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_4_to_2_turn2_anim_labels[] = {
+    { "lex_6_to_8_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_lex_6_to_8_turn2_anim_ops[] = {
@@ -24572,6 +25201,10 @@ static const wm_anim_op prog_lex_4_to_6_turn2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_lex_4_to_6_turn2_anim_labels[] = {
+    { "lex_6_to_4_turn2_anim", 0 },
+};
+
 static const wm_anim_op prog_lex_6_to_4_turn2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -24592,6 +25225,10 @@ static const wm_anim_op prog_lex_2_to_8_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "L1TR5A02" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_2_to_8_turn2_anim_labels[] = {
+    { "lex_8_to_2_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_lex_8_to_2_turn2_anim_ops[] = {
@@ -24618,6 +25255,10 @@ static const wm_anim_op prog_lex_4_to_8_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "L1TR5A04" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_4_to_8_turn2_anim_labels[] = {
+    { "lex_6_to_2_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_lex_6_to_2_turn2_anim_ops[] = {
@@ -24648,6 +25289,10 @@ static const wm_anim_op prog_lex_2_to_6_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "L1TR5A08" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_lex_2_to_6_turn2_anim_labels[] = {
+    { "lex_8_to_4_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_lex_8_to_4_turn2_anim_ops[] = {
@@ -24693,6 +25338,7 @@ static const wm_anim_op prog_lex_run2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_lex_run2_anim_labels[] = {
+    { "lex_run_anim", 4 },
     { "#lp1", 7 },
     { "#run2", 12 },
 };
@@ -26153,6 +26799,7 @@ static const wm_anim_op prog_lex_flying_kick_anim_ops[] = {
 };
 
 static const wm_anim_label prog_lex_flying_kick_anim_labels[] = {
+    { "lex_super_kick_anim", 16 },
     { "#atk_off", 30 },
     { "#hit", 34 },
     { "#no_slide", 39 },
@@ -26516,6 +27163,9 @@ static const wm_anim_op prog_lex_3_knee_to_head_anim_ops[] = {
 };
 
 static const wm_anim_label prog_lex_3_knee_to_head_anim_labels[] = {
+    { "lex_4_knee_fall_anim", 7 },
+    { "lex_4_knee2_anim", 17 },
+    { "lex_4_knee_anim", 24 },
     { "#cont2a", 36 },
     { "#atk", 39 },
     { "#no_slide", 46 },
@@ -26574,6 +27224,8 @@ static const wm_anim_op prog_lex_4_knee_fall_anim_ops[] = {
 };
 
 static const wm_anim_label prog_lex_4_knee_fall_anim_labels[] = {
+    { "lex_4_knee2_anim", 10 },
+    { "lex_4_knee_anim", 17 },
     { "#cont2a", 29 },
     { "#atk", 32 },
     { "#no_slide", 39 },
@@ -26622,6 +27274,7 @@ static const wm_anim_op prog_lex_4_knee2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_lex_4_knee2_anim_labels[] = {
+    { "lex_4_knee_anim", 7 },
     { "#cont2a", 19 },
     { "#atk", 22 },
     { "#no_slide", 29 },
@@ -26729,6 +27382,7 @@ static const wm_anim_op prog_lex_2_grabfling_anim_ops[] = {
 };
 
 static const wm_anim_label prog_lex_2_grabfling_anim_labels[] = {
+    { "lex_4_grabfling_anim", 9 },
     { "#cont", 15 },
     { "#missedb", 47 },
     { "#missed", 50 },
@@ -27260,6 +27914,7 @@ static const wm_anim_op prog_lex_2_pin_anim_ops[] = {
 };
 
 static const wm_anim_label prog_lex_2_pin_anim_labels[] = {
+    { "lex_4_pin_anim", 6 },
     { "#lp", 64 },
 };
 
@@ -27689,6 +28344,7 @@ static const wm_anim_op prog_lex_3_head_held_anim_ops[] = {
 
 static const wm_anim_label prog_lex_3_head_held_anim_labels[] = {
     { "#loop", 6 },
+    { "lex_3_head_held_brk_anim", 14 },
 };
 
 static const wm_anim_op prog_lex_3_head_held_brk_anim_ops[] = {
@@ -27878,6 +28534,7 @@ static const wm_anim_op prog_lex_2_hair_pickup_anim_ops[] = {
 };
 
 static const wm_anim_label prog_lex_2_hair_pickup_anim_labels[] = {
+    { "lex_4_hair_pickup_anim", 7 },
     { "#missed", 41 },
 };
 
@@ -28129,6 +28786,8 @@ static const wm_anim_op prog_lex_3_fake_hold_anim_ops[] = {
 };
 
 static const wm_anim_label prog_lex_3_fake_hold_anim_labels[] = {
+    { "lex_3_head_hold2_anim", 9 },
+    { "lex_3_head_hold_anim", 23 },
     { "#gothim", 37 },
     { "#missed", 55 },
     { "#missedb", 65 },
@@ -28205,6 +28864,7 @@ static const wm_anim_op prog_lex_3_head_hold2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_lex_3_head_hold2_anim_labels[] = {
+    { "lex_3_head_hold_anim", 14 },
     { "#gothim", 28 },
     { "#missed", 46 },
     { "#missedb", 56 },
@@ -28426,6 +29086,7 @@ static const wm_anim_op prog_lex_combo_vsuplex_anim_ops[] = {
 static const wm_anim_label prog_lex_combo_vsuplex_anim_labels[] = {
     { "#missedc", 55 },
     { "#throw_him_outc", 60 },
+    { "lex_vsuplex_anim", 63 },
     { "#missed", 118 },
     { "#throw_him_out", 122 },
 };
@@ -28990,6 +29651,7 @@ static const wm_anim_op prog_lex_grab2elbow_rev_anim_ops[] = {
 
 static const wm_anim_label prog_lex_grab2elbow_rev_anim_labels[] = {
     { "#gotimr", 15 },
+    { "lex_grab2elbow_anim", 19 },
     { "#gotim", 36 },
     { "#inhere", 40 },
 };
@@ -29585,33 +30247,43 @@ static const wm_anim_label prog_setopp_deadanim_labels[] = {
     { "#Doink", 26 },
     { "#Adam", 26 },
     { "#Lex", 26 },
+    { "lex_4_graboh_anim", 26 },
     { "#missedb", 61 },
     { "#missed", 65 },
     { "heldoh_tbl", 76 },
     { "lex_grab_tbl", 76 },
     { "puppet_tbl", 76 },
+    { "lex_slamdown_anim", 76 },
     { "#set_opp_y", 117 },
     { "#abs", 117 },
     { "rets", 117 },
     { "#breakneck_tbl", 136 },
+    { "lex_combo_backbreak_anim", 136 },
     { "#back_loop", 163 },
     { "#no_more_back", 187 },
     { "#no_hammer", 198 },
     { "#exit_move", 200 },
     { "#special_exit_move", 204 },
     { "#missedbc", 215 },
+    { "lex_backbreaker_anim", 224 },
     { "#bounceoff_tbl", 260 },
+    { "lex_ohslam_anim", 260 },
     { "#ok", 265 },
     { "#ck_flip", 305 },
     { "#no_flip", 305 },
     { "#check_right_rope", 305 },
+    { "lex_combo_grab2elbow_anim", 305 },
     { "#gotimc", 323 },
+    { "lex_grab2elbow_rev_anim", 366 },
     { "#gotimr", 381 },
+    { "lex_grab2elbow_anim", 385 },
     { "#gotim", 402 },
     { "#inhere", 406 },
+    { "setopp_deadanim", 439 },
     { "#rets", 439 },
     { "#flsh_wht", 439 },
     { "#breakneck2_tbl", 439 },
+    { "lex_combo_hiptoss_anim", 439 },
     { "#hiptoss_loop", 446 },
     { "#next_combo_bit", 487 },
     { "#not_grab", 489 },
@@ -30148,33 +30820,43 @@ static const wm_anim_label prog_lex_combo_hiptoss_anim_labels[] = {
     { "#Doink", 26 },
     { "#Adam", 26 },
     { "#Lex", 26 },
+    { "lex_4_graboh_anim", 26 },
     { "#missedb", 61 },
     { "#missed", 65 },
     { "heldoh_tbl", 76 },
     { "lex_grab_tbl", 76 },
     { "puppet_tbl", 76 },
+    { "lex_slamdown_anim", 76 },
     { "#set_opp_y", 117 },
     { "#abs", 117 },
     { "rets", 117 },
     { "#breakneck_tbl", 136 },
+    { "lex_combo_backbreak_anim", 136 },
     { "#back_loop", 163 },
     { "#no_more_back", 187 },
     { "#no_hammer", 198 },
     { "#exit_move", 200 },
     { "#special_exit_move", 204 },
     { "#missedbc", 215 },
+    { "lex_backbreaker_anim", 224 },
     { "#bounceoff_tbl", 260 },
+    { "lex_ohslam_anim", 260 },
     { "#ok", 265 },
     { "#ck_flip", 305 },
     { "#no_flip", 305 },
     { "#check_right_rope", 305 },
+    { "lex_combo_grab2elbow_anim", 305 },
     { "#gotimc", 323 },
+    { "lex_grab2elbow_rev_anim", 366 },
     { "#gotimr", 381 },
+    { "lex_grab2elbow_anim", 385 },
     { "#gotim", 402 },
     { "#inhere", 406 },
+    { "setopp_deadanim", 439 },
     { "#rets", 439 },
     { "#flsh_wht", 439 },
     { "#breakneck2_tbl", 439 },
+    { "lex_combo_hiptoss_anim", 439 },
     { "#hiptoss_loop", 446 },
     { "#next_combo_bit", 487 },
     { "#not_grab", 489 },
@@ -30274,6 +30956,7 @@ static const wm_anim_op prog_lex_hiptoss_anim_ops[] = {
 };
 
 static const wm_anim_label prog_lex_hiptoss_anim_labels[] = {
+    { "lex_hiptoss2_anim", 16 },
     { "#common", 30 },
     { "#got_him", 32 },
     { "#missedb", 63 },
@@ -30558,6 +31241,7 @@ static const wm_anim_op prog_lex_4_hitblock_anim_ops[] = {
 
 static const wm_anim_label prog_lex_4_hitblock_anim_labels[] = {
     { "#blk4", 0 },
+    { "lex_4_hitblock_anim", 8 },
 };
 
 static const wm_anim_op prog_lex_4_hitblock2_anim_ops[] = {
@@ -30592,6 +31276,8 @@ static const wm_anim_op prog_lex_4_hitblock2_anim_ops[] = {
 
 static const wm_anim_label prog_lex_4_hitblock2_anim_labels[] = {
     { "#blk4", 0 },
+    { "lex_4_hitblock_anim", 8 },
+    { "lex_4_hitblock2_anim", 15 },
 };
 
 static const wm_anim_op prog_lex_slamnobounce_anim_ops[] = {
@@ -31095,6 +31781,10 @@ static const wm_anim_op prog_lex_hitonground_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_faceup_getup_anim" },
 };
 
+static const wm_anim_label prog_lex_hitonground_anim_labels[] = {
+    { "lex_liedown_anim", 17 },
+};
+
 static const wm_anim_op prog_lex_liedown_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "L3CP3X01" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -31313,6 +32003,8 @@ static const wm_anim_op prog_lex_flyout2_anim_ops[] = {
 
 static const wm_anim_label prog_lex_flyout2_anim_labels[] = {
     { "#cont", 0 },
+    { "lex_flyout2_anim", 18 },
+    { "lex_faceup_getup_anim", 25 },
     { "#no_freetoss", 51 },
     { "#getup_in_4", 54 },
     { "#no_freetoss2", 75 },
@@ -31424,6 +32116,10 @@ static const wm_anim_op prog_lex_roll_frames_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "lex_faceup_getup_anim" },
 };
 
+static const wm_anim_label prog_lex_roll_frames_labels[] = {
+    { "lex_tossed_anim", 0 },
+};
+
 static const wm_anim_op prog_lex_tossed_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -31493,6 +32189,11 @@ static const wm_anim_op prog_rzr_zip_anim_ops[] = {
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_zip_anim_labels[] = {
+    { "rzr_stand2_anim", 1 },
+    { "rzr_stand8_anim", 1 },
+};
+
 static const wm_anim_op prog_rzr_stand2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 7, 0, 0, 0, 0, 0, "R2ST2C03" },
     { WM_AOP_FRAME, 0, -1, 6, 0, 0, 0, 0, 0, "R2ST2C05" },
@@ -31501,6 +32202,10 @@ static const wm_anim_op prog_rzr_stand2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 6, 0, 0, 0, 0, 0, "R2ST2C07" },
     { WM_AOP_FRAME, 0, -1, 7, 0, 0, 0, 0, 0, "R2ST2C05" },
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_stand2_anim_labels[] = {
+    { "rzr_stand8_anim", 0 },
 };
 
 static const wm_anim_op prog_rzr_stand8_anim_ops[] = {
@@ -31523,6 +32228,10 @@ static const wm_anim_op prog_rzr_stand4_anim_ops[] = {
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_stand4_anim_labels[] = {
+    { "rzr_stand6_anim", 0 },
+};
+
 static const wm_anim_op prog_rzr_stand6_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 7, 0, 0, 0, 0, 0, "R4ST4G01" },
     { WM_AOP_FRAME, 0, -1, 6, 0, 0, 0, 0, 0, "R4ST4G03" },
@@ -31543,6 +32252,10 @@ static const wm_anim_op prog_rzr_torso2_anim_ops[] = {
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_torso2_anim_labels[] = {
+    { "rzr_torso8_anim", 0 },
+};
+
 static const wm_anim_op prog_rzr_torso8_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "R2TW2Z01" },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "R2TW2Z02" },
@@ -31561,6 +32274,10 @@ static const wm_anim_op prog_rzr_torso4_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "R4TW4Z03" },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "R4TW4Z02" },
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_torso4_anim_labels[] = {
+    { "rzr_torso6_anim", 0 },
 };
 
 static const wm_anim_op prog_rzr_torso6_anim_ops[] = {
@@ -31864,6 +32581,10 @@ static const wm_anim_op prog_rzr_2_to_4_turn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_2_to_4_turn_anim_labels[] = {
+    { "rzr_8_to_6_turn_anim", 0 },
+};
+
 static const wm_anim_op prog_rzr_8_to_6_turn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -31880,6 +32601,10 @@ static const wm_anim_op prog_rzr_4_to_2_turn_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R1TT5Z02" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_4_to_2_turn_anim_labels[] = {
+    { "rzr_6_to_8_turn_anim", 0 },
 };
 
 static const wm_anim_op prog_rzr_6_to_8_turn_anim_ops[] = {
@@ -31899,6 +32624,10 @@ static const wm_anim_op prog_rzr_4_to_6_turn_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R1TT5Z04" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_4_to_6_turn_anim_labels[] = {
+    { "rzr_6_to_4_turn_anim", 0 },
 };
 
 static const wm_anim_op prog_rzr_6_to_4_turn_anim_ops[] = {
@@ -31921,6 +32650,10 @@ static const wm_anim_op prog_rzr_2_to_8_turn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_2_to_8_turn_anim_labels[] = {
+    { "rzr_8_to_2_turn_anim", 0 },
+};
+
 static const wm_anim_op prog_rzr_8_to_2_turn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -31941,6 +32674,10 @@ static const wm_anim_op prog_rzr_4_to_8_turn_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R1TT5Z01" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_4_to_8_turn_anim_labels[] = {
+    { "rzr_6_to_2_turn_anim", 0 },
 };
 
 static const wm_anim_op prog_rzr_6_to_2_turn_anim_ops[] = {
@@ -31967,6 +32704,10 @@ static const wm_anim_op prog_rzr_2_to_6_turn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_2_to_6_turn_anim_labels[] = {
+    { "rzr_8_to_4_turn_anim", 0 },
+};
+
 static const wm_anim_op prog_rzr_8_to_4_turn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -31989,6 +32730,10 @@ static const wm_anim_op prog_rzr_2_to_4_turn2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_2_to_4_turn2_anim_labels[] = {
+    { "rzr_8_to_6_turn2_anim", 0 },
+};
+
 static const wm_anim_op prog_rzr_8_to_6_turn2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -32007,6 +32752,10 @@ static const wm_anim_op prog_rzr_4_to_2_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R1TR5Z02" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_4_to_2_turn2_anim_labels[] = {
+    { "rzr_6_to_8_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_rzr_6_to_8_turn2_anim_ops[] = {
@@ -32029,6 +32778,10 @@ static const wm_anim_op prog_rzr_4_to_6_turn2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_rzr_4_to_6_turn2_anim_labels[] = {
+    { "rzr_6_to_4_turn2_anim", 0 },
+};
+
 static const wm_anim_op prog_rzr_6_to_4_turn2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -32047,6 +32800,10 @@ static const wm_anim_op prog_rzr_2_to_8_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R1TR5Z01" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_2_to_8_turn2_anim_labels[] = {
+    { "rzr_8_to_2_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_rzr_8_to_2_turn2_anim_ops[] = {
@@ -32070,6 +32827,10 @@ static const wm_anim_op prog_rzr_4_to_8_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R1TR5Z02" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_4_to_8_turn2_anim_labels[] = {
+    { "rzr_6_to_2_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_rzr_6_to_2_turn2_anim_ops[] = {
@@ -32096,6 +32857,10 @@ static const wm_anim_op prog_rzr_2_to_6_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "R1TR5Z04" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_rzr_2_to_6_turn2_anim_labels[] = {
+    { "rzr_8_to_4_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_rzr_8_to_4_turn2_anim_ops[] = {
@@ -32141,6 +32906,7 @@ static const wm_anim_op prog_rzr_run2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_rzr_run2_anim_labels[] = {
+    { "rzr_run_anim", 4 },
     { "#lp1", 7 },
     { "#run2", 13 },
 };
@@ -32467,6 +33233,7 @@ static const wm_anim_op prog_rzr_4_pummel_anim_ops[] = {
 };
 
 static const wm_anim_label prog_rzr_4_pummel_anim_labels[] = {
+    { "rzr_2_pummel_anim", 8 },
     { "#rpt", 17 },
     { "#no_hit2", 39 },
     { "#ex", 47 },
@@ -33212,6 +33979,8 @@ static const wm_anim_op prog_rzr_4_kick2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_rzr_4_kick2_anim_labels[] = {
+    { "rzr_2_kick_anim", 7 },
+    { "rzr_4_kick_anim", 7 },
     { "#cont2a", 19 },
     { "#no_slide", 29 },
     { "#end_in_2", 37 },
@@ -33261,6 +34030,7 @@ static const wm_anim_op prog_rzr_2_kick_anim_ops[] = {
 };
 
 static const wm_anim_label prog_rzr_2_kick_anim_labels[] = {
+    { "rzr_4_kick_anim", 0 },
     { "#cont2a", 12 },
     { "#no_slide", 22 },
     { "#end_in_2", 30 },
@@ -33489,6 +34259,7 @@ static const wm_anim_op prog_rzr_2_super_kick_anim_ops[] = {
 };
 
 static const wm_anim_label prog_rzr_2_super_kick_anim_labels[] = {
+    { "rzr_4_super_kick_anim", 0 },
     { "#missed", 25 },
     { "#missedb", 27 },
     { "#missed_wait", 28 },
@@ -33612,6 +34383,7 @@ static const wm_anim_op prog_blocked_vels_ops[] = {
 
 static const wm_anim_label prog_blocked_vels_labels[] = {
     { "rets", 0 },
+    { "rzr_kick_TB_anim", 0 },
 };
 
 static const wm_anim_op prog_rzr_kick_TB_anim_ops[] = {
@@ -33681,6 +34453,7 @@ static const wm_anim_op prog_rzr_2_knee_anim_ops[] = {
 };
 
 static const wm_anim_label prog_rzr_2_knee_anim_labels[] = {
+    { "rzr_4_knee_anim", 0 },
     { "#no_slide", 22 },
 };
 
@@ -34251,6 +35024,7 @@ static const wm_anim_op prog_rzr_2_grabfling_anim_ops[] = {
 };
 
 static const wm_anim_label prog_rzr_2_grabfling_anim_labels[] = {
+    { "rzr_4_grabfling_anim", 9 },
     { "#cont", 15 },
     { "#missedb", 48 },
     { "#missed", 51 },
@@ -34456,6 +35230,10 @@ static const wm_anim_op prog_rzr_roll_frames_ops[] = {
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "R3AM3D01" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_rzr_roll_frames_labels[] = {
+    { "rzr_tossed_anim", 0 },
 };
 
 static const wm_anim_op prog_rzr_tossed_anim_ops[] = {
@@ -34904,6 +35682,7 @@ static const wm_anim_op prog_rzr_2_pin_anim_ops[] = {
 };
 
 static const wm_anim_label prog_rzr_2_pin_anim_labels[] = {
+    { "rzr_4_pin_anim", 5 },
     { "#floop", 56 },
 };
 
@@ -35016,6 +35795,7 @@ static const wm_anim_op prog_rzr_2_raise_arm_anim_ops[] = {
 };
 
 static const wm_anim_label prog_rzr_2_raise_arm_anim_labels[] = {
+    { "rzr_4_raise_arm_anim", 8 },
     { "#cont", 13 },
     { "#lp", 23 },
     { "#wakeup", 38 },
@@ -35376,6 +36156,7 @@ static const wm_anim_label prog_impact_sound_labels[] = {
     { "#done0", 28 },
     { "#done", 29 },
     { "missed_rug", 41 },
+    { "impact_sound", 51 },
     { "#x", 51 },
     { "#puppet_tbl", 51 },
     { "#Bret", 51 },
@@ -35388,9 +36169,11 @@ static const wm_anim_label prog_impact_sound_labels[] = {
     { "#Adam", 51 },
     { "#Lex", 51 },
     { "#release_tbl", 51 },
+    { "rzr_sliding_rug_anim", 51 },
     { "#pickup0", 76 },
     { "missed_rug2", 84 },
     { "missed_rug1", 85 },
+    { "rzr_rugshake2_anim", 94 },
     { "#go", 111 },
 };
 
@@ -35537,6 +36320,7 @@ static const wm_anim_label prog_rzr_sliding_rug_anim_labels[] = {
     { "#done0", 28 },
     { "#done", 29 },
     { "missed_rug", 41 },
+    { "impact_sound", 51 },
     { "#x", 51 },
     { "#puppet_tbl", 51 },
     { "#Bret", 51 },
@@ -35549,9 +36333,11 @@ static const wm_anim_label prog_rzr_sliding_rug_anim_labels[] = {
     { "#Adam", 51 },
     { "#Lex", 51 },
     { "#release_tbl", 51 },
+    { "rzr_sliding_rug_anim", 51 },
     { "#pickup0", 76 },
     { "missed_rug2", 84 },
     { "missed_rug1", 85 },
+    { "rzr_rugshake2_anim", 94 },
     { "#go", 111 },
 };
 
@@ -35698,6 +36484,7 @@ static const wm_anim_label prog_rzr_rugshake2_anim_labels[] = {
     { "#done0", 28 },
     { "#done", 29 },
     { "missed_rug", 41 },
+    { "impact_sound", 51 },
     { "#x", 51 },
     { "#puppet_tbl", 51 },
     { "#Bret", 51 },
@@ -35710,9 +36497,11 @@ static const wm_anim_label prog_rzr_rugshake2_anim_labels[] = {
     { "#Adam", 51 },
     { "#Lex", 51 },
     { "#release_tbl", 51 },
+    { "rzr_sliding_rug_anim", 51 },
     { "#pickup0", 76 },
     { "missed_rug2", 84 },
     { "missed_rug1", 85 },
+    { "rzr_rugshake2_anim", 94 },
     { "#go", 111 },
 };
 
@@ -35829,6 +36618,7 @@ static const wm_anim_op prog_rzr_3_head_held_anim_ops[] = {
 
 static const wm_anim_label prog_rzr_3_head_held_anim_labels[] = {
     { "#loop", 6 },
+    { "rzr_3_head_held_brk_anim", 16 },
 };
 
 static const wm_anim_op prog_rzr_3_head_held_brk_anim_ops[] = {
@@ -36075,6 +36865,9 @@ static const wm_anim_op prog_rzr_2_hiptoss2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_rzr_2_hiptoss2_anim_labels[] = {
+    { "rzr_4_hiptoss2_anim", 7 },
+    { "rzr_2_hiptoss_anim", 21 },
+    { "rzr_4_hiptoss_anim", 28 },
     { "#cont", 44 },
     { "#got_him", 46 },
     { "#missedb", 75 },
@@ -36180,6 +36973,8 @@ static const wm_anim_op prog_rzr_4_hiptoss2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_rzr_4_hiptoss2_anim_labels[] = {
+    { "rzr_2_hiptoss_anim", 14 },
+    { "rzr_4_hiptoss_anim", 21 },
     { "#cont", 37 },
     { "#got_him", 39 },
     { "#missedb", 68 },
@@ -36271,6 +37066,7 @@ static const wm_anim_op prog_rzr_2_hiptoss_anim_ops[] = {
 };
 
 static const wm_anim_label prog_rzr_2_hiptoss_anim_labels[] = {
+    { "rzr_4_hiptoss_anim", 7 },
     { "#cont", 23 },
     { "#got_him", 25 },
     { "#missedb", 54 },
@@ -36415,6 +37211,7 @@ static const wm_anim_op prog_rzr_2_hair_pickup_anim_ops[] = {
 };
 
 static const wm_anim_label prog_rzr_2_hair_pickup_anim_labels[] = {
+    { "rzr_4_hair_pickup_anim", 7 },
     { "#missed", 40 },
 };
 
@@ -36868,6 +37665,8 @@ static const wm_anim_op prog_rzr_3_fake_hold_anim_ops[] = {
 };
 
 static const wm_anim_label prog_rzr_3_fake_hold_anim_labels[] = {
+    { "rzr_3_head_hold2_anim", 9 },
+    { "rzr_3_head_hold_anim", 24 },
     { "#gothim", 37 },
     { "#missed", 55 },
     { "#missedb", 65 },
@@ -36945,6 +37744,7 @@ static const wm_anim_op prog_rzr_3_head_hold2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_rzr_3_head_hold2_anim_labels[] = {
+    { "rzr_3_head_hold_anim", 15 },
     { "#gothim", 28 },
     { "#missed", 46 },
     { "#missedb", 56 },
@@ -37189,6 +37989,7 @@ static const wm_anim_op prog_rzr_3_pile_driver2_anim_ops[] = {
 static const wm_anim_label prog_rzr_3_pile_driver2_anim_labels[] = {
     { "#reduce_dmg", 24 },
     { "rets", 24 },
+    { "rzr_3_pile_driver_anim", 24 },
     { "#in", 44 },
     { "#missed", 72 },
 };
@@ -37554,6 +38355,7 @@ static const wm_anim_op prog_rzr_2_block_anim_ops[] = {
 };
 
 static const wm_anim_label prog_rzr_2_block_anim_labels[] = {
+    { "rzr_4_block_anim", 11 },
     { "#hold_block", 20 },
 };
 
@@ -37604,6 +38406,7 @@ static const wm_anim_op prog_rzr_4_hitblock_anim_ops[] = {
 
 static const wm_anim_label prog_rzr_4_hitblock_anim_labels[] = {
     { "#hold_block", 0 },
+    { "rzr_4_hitblock_anim", 9 },
 };
 
 static const wm_anim_op prog_rzr_4_hitblock2_anim_ops[] = {
@@ -37640,6 +38443,8 @@ static const wm_anim_op prog_rzr_4_hitblock2_anim_ops[] = {
 
 static const wm_anim_label prog_rzr_4_hitblock2_anim_labels[] = {
     { "#hold_block", 0 },
+    { "rzr_4_hitblock_anim", 9 },
+    { "rzr_4_hitblock2_anim", 17 },
 };
 
 static const wm_anim_op prog_rzr_4_losebal_anim_ops[] = {
@@ -38382,6 +39187,10 @@ static const wm_anim_op prog_rzr_hitonground_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "rzr_faceup_getup_anim" },
 };
 
+static const wm_anim_label prog_rzr_hitonground_anim_labels[] = {
+    { "rzr_liedown_anim", 18 },
+};
+
 static const wm_anim_op prog_rzr_liedown_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "R3AM3D01" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -38727,6 +39536,10 @@ static const wm_anim_op prog_shn_stand2_anim_ops[] = {
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_stand2_anim_labels[] = {
+    { "shn_stand8_anim", 0 },
+};
+
 static const wm_anim_op prog_shn_stand8_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -38758,6 +39571,10 @@ static const wm_anim_op prog_shn_stand4_anim_ops[] = {
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_stand4_anim_labels[] = {
+    { "shn_stand6_anim", 0 },
+};
+
 static const wm_anim_op prog_shn_stand6_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -38784,6 +39601,10 @@ static const wm_anim_op prog_shn_torso2_anim_ops[] = {
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_torso2_anim_labels[] = {
+    { "shn_torso8_anim", 0 },
+};
+
 static const wm_anim_op prog_shn_torso8_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 6, 0, 0, 0, 0, 0, "S2TW2B01" },
     { WM_AOP_FRAME, 0, -1, 6, 0, 0, 0, 0, 0, "S2TW2B02" },
@@ -38802,6 +39623,10 @@ static const wm_anim_op prog_shn_torso4_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 6, 0, 0, 0, 0, 0, "S4TW4C03" },
     { WM_AOP_FRAME, 0, -1, 6, 0, 0, 0, 0, 0, "S4TW4C02" },
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_torso4_anim_labels[] = {
+    { "shn_torso6_anim", 0 },
 };
 
 static const wm_anim_op prog_shn_torso6_anim_ops[] = {
@@ -39071,6 +39896,10 @@ static const wm_anim_op prog_shn_2_to_4_turn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_2_to_4_turn_anim_labels[] = {
+    { "shn_8_to_6_turn_anim", 0 },
+};
+
 static const wm_anim_op prog_shn_8_to_6_turn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -39087,6 +39916,10 @@ static const wm_anim_op prog_shn_4_to_2_turn_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S1TT5Z02" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_4_to_2_turn_anim_labels[] = {
+    { "shn_6_to_8_turn_anim", 0 },
 };
 
 static const wm_anim_op prog_shn_6_to_8_turn_anim_ops[] = {
@@ -39106,6 +39939,10 @@ static const wm_anim_op prog_shn_4_to_6_turn_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S1TT5Z04" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_4_to_6_turn_anim_labels[] = {
+    { "shn_6_to_4_turn_anim", 0 },
 };
 
 static const wm_anim_op prog_shn_6_to_4_turn_anim_ops[] = {
@@ -39128,6 +39965,10 @@ static const wm_anim_op prog_shn_2_to_8_turn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_2_to_8_turn_anim_labels[] = {
+    { "shn_8_to_2_turn_anim", 0 },
+};
+
 static const wm_anim_op prog_shn_8_to_2_turn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -39148,6 +39989,10 @@ static const wm_anim_op prog_shn_4_to_8_turn_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S1TT5Z01" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_4_to_8_turn_anim_labels[] = {
+    { "shn_6_to_2_turn_anim", 0 },
 };
 
 static const wm_anim_op prog_shn_6_to_2_turn_anim_ops[] = {
@@ -39174,6 +40019,10 @@ static const wm_anim_op prog_shn_2_to_6_turn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_2_to_6_turn_anim_labels[] = {
+    { "shn_8_to_4_turn_anim", 0 },
+};
+
 static const wm_anim_op prog_shn_8_to_4_turn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -39196,6 +40045,10 @@ static const wm_anim_op prog_shn_2_to_4_turn2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_2_to_4_turn2_anim_labels[] = {
+    { "shn_8_to_6_turn2_anim", 0 },
+};
+
 static const wm_anim_op prog_shn_8_to_6_turn2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -39214,6 +40067,10 @@ static const wm_anim_op prog_shn_4_to_2_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S1TR5Z02" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_4_to_2_turn2_anim_labels[] = {
+    { "shn_6_to_8_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_shn_6_to_8_turn2_anim_ops[] = {
@@ -39236,6 +40093,10 @@ static const wm_anim_op prog_shn_4_to_6_turn2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_shn_4_to_6_turn2_anim_labels[] = {
+    { "shn_6_to_4_turn2_anim", 0 },
+};
+
 static const wm_anim_op prog_shn_6_to_4_turn2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -39254,6 +40115,10 @@ static const wm_anim_op prog_shn_2_to_8_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S1TR5Z01" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_2_to_8_turn2_anim_labels[] = {
+    { "shn_8_to_2_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_shn_8_to_2_turn2_anim_ops[] = {
@@ -39277,6 +40142,10 @@ static const wm_anim_op prog_shn_4_to_8_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S1TR5Z02" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_4_to_8_turn2_anim_labels[] = {
+    { "shn_6_to_2_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_shn_6_to_2_turn2_anim_ops[] = {
@@ -39303,6 +40172,10 @@ static const wm_anim_op prog_shn_2_to_6_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "S1TR5Z04" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_shn_2_to_6_turn2_anim_labels[] = {
+    { "shn_8_to_4_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_shn_8_to_4_turn2_anim_ops[] = {
@@ -39347,6 +40220,7 @@ static const wm_anim_op prog_shn_run2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_shn_run2_anim_labels[] = {
+    { "shn_run_anim", 4 },
     { "#lp1", 7 },
     { "#run2", 12 },
 };
@@ -40350,6 +41224,7 @@ static const wm_anim_op prog_shn_2_grabfling_anim_ops[] = {
 };
 
 static const wm_anim_label prog_shn_2_grabfling_anim_labels[] = {
+    { "shn_4_grabfling_anim", 9 },
     { "#cont", 15 },
     { "#missedb", 48 },
     { "#missed", 51 },
@@ -40468,6 +41343,7 @@ static const wm_anim_label prog_DO_GRUNT_labels[] = {
     { "#Adam", 0 },
     { "#Lex", 0 },
     { "#strt_run_tbl", 0 },
+    { "shn_climb_up_anim", 0 },
     { "#repeat", 22 },
 };
 
@@ -40655,6 +41531,7 @@ static const wm_anim_op prog_tbukl_flip_ops[] = {
 };
 
 static const wm_anim_label prog_tbukl_flip_labels[] = {
+    { "face_inside", 0 },
     { "#cont", 0 },
     { "#onlft", 0 },
     { "#onrt", 0 },
@@ -40664,6 +41541,8 @@ static const wm_anim_label prog_tbukl_flip_labels[] = {
     { "rets", 0 },
     { "#yes", 0 },
     { "#yfx", 0 },
+    { "shn_combo_flying_kick_anim", 0 },
+    { "shn_flying_kick_anim", 25 },
     { "#no_hdrel2", 32 },
     { "getup_in_2", 53 },
     { "#no_freetoss", 76 },
@@ -40791,6 +41670,8 @@ static const wm_anim_label prog_face_inside_labels[] = {
     { "rets", 0 },
     { "#yes", 0 },
     { "#yfx", 0 },
+    { "shn_combo_flying_kick_anim", 0 },
+    { "shn_flying_kick_anim", 25 },
     { "#no_hdrel2", 32 },
     { "getup_in_2", 53 },
     { "#no_freetoss", 76 },
@@ -40909,6 +41790,7 @@ static const wm_anim_op prog_shn_combo_flying_kick_anim_ops[] = {
 };
 
 static const wm_anim_label prog_shn_combo_flying_kick_anim_labels[] = {
+    { "shn_flying_kick_anim", 25 },
     { "#no_hdrel2", 32 },
     { "getup_in_2", 53 },
     { "#no_freetoss", 76 },
@@ -41031,6 +41913,10 @@ static const wm_anim_op prog_shn_roll_frames_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "S3CP3B07" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_shn_roll_frames_labels[] = {
+    { "shn_tossed_anim", 0 },
 };
 
 static const wm_anim_op prog_shn_tossed_anim_ops[] = {
@@ -41423,6 +42309,7 @@ static const wm_anim_op prog_shn_2_pin_anim_ops[] = {
 };
 
 static const wm_anim_label prog_shn_2_pin_anim_labels[] = {
+    { "shn_4_pin_anim", 5 },
     { "#raise", 38 },
     { "#floop", 47 },
 };
@@ -41524,6 +42411,7 @@ static const wm_anim_op prog_shn_2_raise_arm_anim_ops[] = {
 };
 
 static const wm_anim_label prog_shn_2_raise_arm_anim_labels[] = {
+    { "shn_4_raise_arm_anim", 8 },
     { "#cont", 13 },
     { "#lp0", 23 },
     { "#wakeup", 30 },
@@ -41611,6 +42499,8 @@ static const wm_anim_op prog_tgt_tbukl_ops[] = {
 static const wm_anim_label prog_tgt_tbukl_labels[] = {
     { "#right", 0 },
     { "rets", 0 },
+    { "shn_2_slap_anim", 0 },
+    { "shn_4_slap_anim", 8 },
     { "#no_hit2", 26 },
 };
 
@@ -41655,6 +42545,7 @@ static const wm_anim_op prog_shn_2_slap_anim_ops[] = {
 };
 
 static const wm_anim_label prog_shn_2_slap_anim_labels[] = {
+    { "shn_4_slap_anim", 8 },
     { "#no_hit2", 26 },
 };
 
@@ -41757,6 +42648,7 @@ static const wm_anim_op prog_shn_2_pummel_anim_ops[] = {
 };
 
 static const wm_anim_label prog_shn_2_pummel_anim_labels[] = {
+    { "shn_4_pummel_anim", 8 },
     { "#rpt", 17 },
     { "#no_hit2", 36 },
     { "#ex", 44 },
@@ -42083,6 +42975,7 @@ static const wm_anim_label prog_shn_gsuplex_run_anim_labels[] = {
     { "#clrvel", 39 },
     { "#ok", 39 },
     { "rets", 39 },
+    { "shn_gsuplex_anim", 39 },
     { "#front_grab", 50 },
     { "#back_grab", 53 },
     { "#common", 76 },
@@ -42420,10 +43313,12 @@ static const wm_anim_op prog_shn_fstein2_anim_ops[] = {
 
 static const wm_anim_label prog_shn_fstein2_anim_labels[] = {
     { "#no_hdrel2", 5 },
+    { "shn_combo_fstein_anim", 13 },
     { "#NO_STOMPING1", 66 },
     { "#missedb_c", 72 },
     { "#missed_c", 75 },
     { "#throw_him_out_c", 78 },
+    { "shn_fstein_anim", 81 },
     { "#hdrel", 86 },
     { "#no_hdrel", 86 },
     { "#cont", 94 },
@@ -42693,11 +43588,14 @@ static const wm_anim_label prog_shn_combo_fstein_anim_labels[] = {
     { "#Adam", 14 },
     { "#Lex", 14 },
     { "rollout_tbl1", 14 },
+    { "shn_fstein2_anim", 14 },
     { "#no_hdrel2", 19 },
+    { "shn_combo_fstein_anim", 27 },
     { "#NO_STOMPING1", 80 },
     { "#missedb_c", 86 },
     { "#missed_c", 89 },
     { "#throw_him_out_c", 92 },
+    { "shn_fstein_anim", 95 },
     { "#hdrel", 100 },
     { "#no_hdrel", 100 },
     { "#cont", 108 },
@@ -43559,6 +44457,7 @@ static const wm_anim_label prog_set_opp_xy_labels[] = {
     { "recover_tbl", 80 },
     { "#flyout_tbl", 80 },
     { "#release_offsets", 80 },
+    { "shn_combo_spinkick_anim", 80 },
     { "#spin_loop", 86 },
     { "#NO_SLAM", 112 },
     { "#NO_KNEE", 114 },
@@ -43566,18 +44465,23 @@ static const wm_anim_label prog_set_opp_xy_labels[] = {
     { "#EXIT_MOVE", 118 },
     { "#missed_c", 125 },
     { "#cont_c", 129 },
+    { "shn_spinkick_anim", 138 },
     { "#no_slide", 158 },
     { "#cont", 164 },
     { "#reverse_xvel", 173 },
+    { "shn_spinkick_TB_anim", 173 },
+    { "shn_super_speedkick_anim", 201 },
     { "#loop", 235 },
     { "#missedb2", 245 },
     { "#gothim", 259 },
     { "#gothim2", 288 },
     { "#fail", 295 },
     { "#miss", 303 },
+    { "set_opp_xy", 314 },
     { "#noz", 314 },
     { "#ok", 314 },
     { "#abs", 314 },
+    { "shn_combo_hiptoss_anim", 314 },
     { "#bslam_loop", 343 },
     { "#exit", 362 },
     { "#EXIT_BSLAM", 372 },
@@ -44010,6 +44914,7 @@ static const wm_anim_label prog_shn_combo_hiptoss_anim_labels[] = {
     { "recover_tbl", 80 },
     { "#flyout_tbl", 80 },
     { "#release_offsets", 80 },
+    { "shn_combo_spinkick_anim", 80 },
     { "#spin_loop", 86 },
     { "#NO_SLAM", 112 },
     { "#NO_KNEE", 114 },
@@ -44017,18 +44922,23 @@ static const wm_anim_label prog_shn_combo_hiptoss_anim_labels[] = {
     { "#EXIT_MOVE", 118 },
     { "#missed_c", 125 },
     { "#cont_c", 129 },
+    { "shn_spinkick_anim", 138 },
     { "#no_slide", 158 },
     { "#cont", 164 },
     { "#reverse_xvel", 173 },
+    { "shn_spinkick_TB_anim", 173 },
+    { "shn_super_speedkick_anim", 201 },
     { "#loop", 235 },
     { "#missedb2", 245 },
     { "#gothim", 259 },
     { "#gothim2", 288 },
     { "#fail", 295 },
     { "#miss", 303 },
+    { "set_opp_xy", 314 },
     { "#noz", 314 },
     { "#ok", 314 },
     { "#abs", 314 },
+    { "shn_combo_hiptoss_anim", 314 },
     { "#bslam_loop", 343 },
     { "#exit", 362 },
     { "#EXIT_BSLAM", 372 },
@@ -44238,6 +45148,9 @@ static const wm_anim_op prog_shn_2_hiptoss2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_shn_2_hiptoss2_anim_labels[] = {
+    { "shn_4_hiptoss2_anim", 8 },
+    { "shn_2_hiptoss_anim", 23 },
+    { "shn_4_hiptoss_anim", 30 },
     { "#cont", 45 },
     { "#got_him", 47 },
     { "#missedb", 79 },
@@ -44353,6 +45266,8 @@ static const wm_anim_op prog_shn_4_hiptoss2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_shn_4_hiptoss2_anim_labels[] = {
+    { "shn_2_hiptoss_anim", 15 },
+    { "shn_4_hiptoss_anim", 22 },
     { "#cont", 37 },
     { "#got_him", 39 },
     { "#missedb", 71 },
@@ -44453,6 +45368,7 @@ static const wm_anim_op prog_shn_2_hiptoss_anim_ops[] = {
 };
 
 static const wm_anim_label prog_shn_2_hiptoss_anim_labels[] = {
+    { "shn_4_hiptoss_anim", 7 },
     { "#cont", 22 },
     { "#got_him", 24 },
     { "#missedb", 56 },
@@ -44605,6 +45521,7 @@ static const wm_anim_op prog_shn_2_hair_pickup_anim_ops[] = {
 };
 
 static const wm_anim_label prog_shn_2_hair_pickup_anim_labels[] = {
+    { "shn_4_hair_pickup_anim", 6 },
     { "#missed", 39 },
 };
 
@@ -44929,6 +45846,7 @@ static const wm_anim_label prog_shn_combo_run_stomp_anim_labels[] = {
     { "#gothim", 33 },
     { "#done_c", 40 },
     { "#missed_c", 43 },
+    { "shn_run_stomp_anim", 46 },
     { "#attack_loop", 59 },
     { "#attack", 71 },
     { "#atk_on", 77 },
@@ -45360,6 +46278,9 @@ static const wm_anim_label prog_no_bk_xvel_labels[] = {
     { "#clrvel", 0 },
     { "#ok", 0 },
     { "rets", 0 },
+    { "shn_3_fake_hold_anim", 0 },
+    { "shn_3_head_hold2_anim", 10 },
+    { "shn_3_head_hold_anim", 25 },
     { "#gothim", 37 },
     { "#missed", 55 },
     { "#missedb", 66 },
@@ -45446,6 +46367,8 @@ static const wm_anim_op prog_shn_3_fake_hold_anim_ops[] = {
 };
 
 static const wm_anim_label prog_shn_3_fake_hold_anim_labels[] = {
+    { "shn_3_head_hold2_anim", 10 },
+    { "shn_3_head_hold_anim", 25 },
     { "#gothim", 37 },
     { "#missed", 55 },
     { "#missedb", 66 },
@@ -45522,6 +46445,7 @@ static const wm_anim_op prog_shn_3_head_hold2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_shn_3_head_hold2_anim_labels[] = {
+    { "shn_3_head_hold_anim", 15 },
     { "#gothim", 27 },
     { "#missed", 45 },
     { "#missedb", 56 },
@@ -45876,10 +46800,13 @@ static const wm_anim_op prog_reverse_xvel_ops[] = {
 
 static const wm_anim_label prog_reverse_xvel_labels[] = {
     { "#missed", 0 },
+    { "reverse_xvel", 13 },
     { "rets", 13 },
+    { "check_xvel", 13 },
     { "#facing_right", 13 },
     { "#set", 13 },
     { "#done0", 13 },
+    { "set_opp_facing", 13 },
     { "#done1", 13 },
     { "#puppet_tbl", 13 },
     { "#Bret", 13 },
@@ -45893,6 +46820,8 @@ static const wm_anim_label prog_reverse_xvel_labels[] = {
     { "#Lex", 13 },
     { "#release_offsets", 13 },
     { "#release_tbl", 13 },
+    { "shn_rpt_hdbutts2_anim", 13 },
+    { "shn_rpt_hdbutts_anim", 44 },
     { "#rpt", 78 },
     { "last_hitx", 113 },
     { "#last_hit", 113 },
@@ -46042,10 +46971,13 @@ static const wm_anim_op prog_set_opp_facing_ops[] = {
 
 static const wm_anim_label prog_set_opp_facing_labels[] = {
     { "#missed", 0 },
+    { "reverse_xvel", 13 },
     { "rets", 13 },
+    { "check_xvel", 13 },
     { "#facing_right", 13 },
     { "#set", 13 },
     { "#done0", 13 },
+    { "set_opp_facing", 13 },
     { "#done1", 13 },
     { "#puppet_tbl", 13 },
     { "#Bret", 13 },
@@ -46059,6 +46991,8 @@ static const wm_anim_label prog_set_opp_facing_labels[] = {
     { "#Lex", 13 },
     { "#release_offsets", 13 },
     { "#release_tbl", 13 },
+    { "shn_rpt_hdbutts2_anim", 13 },
+    { "shn_rpt_hdbutts_anim", 44 },
     { "#rpt", 78 },
     { "last_hitx", 113 },
     { "#last_hit", 113 },
@@ -46208,10 +47142,13 @@ static const wm_anim_op prog_shn_rpt_hdbutts2_anim_ops[] = {
 
 static const wm_anim_label prog_shn_rpt_hdbutts2_anim_labels[] = {
     { "#missed", 0 },
+    { "reverse_xvel", 13 },
     { "rets", 13 },
+    { "check_xvel", 13 },
     { "#facing_right", 13 },
     { "#set", 13 },
     { "#done0", 13 },
+    { "set_opp_facing", 13 },
     { "#done1", 13 },
     { "#puppet_tbl", 13 },
     { "#Bret", 13 },
@@ -46225,6 +47162,8 @@ static const wm_anim_label prog_shn_rpt_hdbutts2_anim_labels[] = {
     { "#Lex", 13 },
     { "#release_offsets", 13 },
     { "#release_tbl", 13 },
+    { "shn_rpt_hdbutts2_anim", 13 },
+    { "shn_rpt_hdbutts_anim", 44 },
     { "#rpt", 78 },
     { "last_hitx", 113 },
     { "#last_hit", 113 },
@@ -46803,6 +47742,11 @@ static const wm_anim_op prog_shn_hitonground_xflip_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
 };
 
+static const wm_anim_label prog_shn_hitonground_xflip_anim_labels[] = {
+    { "shn_hitonground_anim", 1 },
+    { "shn_liedown_anim", 20 },
+};
+
 static const wm_anim_op prog_shn_hitonground_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -46826,6 +47770,10 @@ static const wm_anim_op prog_shn_hitonground_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "S3CP3B07" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_shn_hitonground_anim_labels[] = {
+    { "shn_liedown_anim", 19 },
 };
 
 static const wm_anim_op prog_shn_liedown_anim_ops[] = {
@@ -46894,6 +47842,7 @@ static const wm_anim_op prog_shn_4_hitblock_anim_ops[] = {
 
 static const wm_anim_label prog_shn_4_hitblock_anim_labels[] = {
     { "#hold_block", 0 },
+    { "shn_4_hitblock_anim", 8 },
 };
 
 static const wm_anim_op prog_shn_4_hitblock2_anim_ops[] = {
@@ -46930,6 +47879,8 @@ static const wm_anim_op prog_shn_4_hitblock2_anim_ops[] = {
 
 static const wm_anim_label prog_shn_4_hitblock2_anim_labels[] = {
     { "#hold_block", 0 },
+    { "shn_4_hitblock_anim", 8 },
+    { "shn_4_hitblock2_anim", 16 },
 };
 
 static const wm_anim_op prog_shn_fall_back_anim_ops[] = {
@@ -47176,8 +48127,11 @@ static const wm_anim_op prog_shn_faceup_getup2_anim_ops[] = {
 static const wm_anim_label prog_shn_faceup_getup2_anim_labels[] = {
     { "#g4_frame_4", 0 },
     { "#no_freetoss2", 18 },
+    { "shn_faceup_getup2_anim", 22 },
+    { "choose_2or4", 26 },
     { "#choose_2", 26 },
     { "rets", 26 },
+    { "shn_dizzy_anim", 26 },
     { "#loop", 31 },
 };
 
@@ -47199,6 +48153,7 @@ static const wm_anim_op prog_choose_2or4_ops[] = {
 static const wm_anim_label prog_choose_2or4_labels[] = {
     { "#choose_2", 0 },
     { "rets", 0 },
+    { "shn_dizzy_anim", 0 },
     { "#loop", 5 },
 };
 
@@ -47298,6 +48253,7 @@ static const wm_anim_op prog_shn_break_neck_anim_ops[] = {
 };
 
 static const wm_anim_label prog_shn_break_neck_anim_labels[] = {
+    { "shn_break_neck3_anim", 4 },
     { "#common", 5 },
     { "#fall_back", 22 },
 };
@@ -47423,6 +48379,7 @@ static const wm_anim_op prog_shn_flyout_anim_ops[] = {
 };
 
 static const wm_anim_label prog_shn_flyout_anim_labels[] = {
+    { "shn_flyout2_anim", 11 },
     { "#common", 17 },
 };
 
@@ -47565,6 +48522,7 @@ static const wm_anim_op prog_shn_3_head_held_anim_ops[] = {
 
 static const wm_anim_label prog_shn_3_head_held_anim_labels[] = {
     { "#loop", 6 },
+    { "shn_3_head_held_brk_anim", 15 },
 };
 
 static const wm_anim_op prog_shn_3_head_held_brk_anim_ops[] = {
@@ -47773,6 +48731,10 @@ static const wm_anim_op prog_und_stand2_anim_ops[] = {
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_stand2_anim_labels[] = {
+    { "und_stand8_anim", 0 },
+};
+
 static const wm_anim_op prog_und_stand8_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -47801,6 +48763,10 @@ static const wm_anim_op prog_und_stand4_anim_ops[] = {
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_stand4_anim_labels[] = {
+    { "und_stand6_anim", 0 },
+};
+
 static const wm_anim_op prog_und_stand6_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -47827,6 +48793,10 @@ static const wm_anim_op prog_und_torso2_anim_ops[] = {
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_torso2_anim_labels[] = {
+    { "und_torso8_anim", 0 },
+};
+
 static const wm_anim_op prog_und_torso8_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "U2TW2A01" },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "U2TW2A02" },
@@ -47849,6 +48819,10 @@ static const wm_anim_op prog_und_torso4_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "U4TW4A03" },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "U4TW4A02" },
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_torso4_anim_labels[] = {
+    { "und_torso6_anim", 0 },
 };
 
 static const wm_anim_op prog_und_torso6_anim_ops[] = {
@@ -48049,6 +49023,10 @@ static const wm_anim_op prog_und_2_to_4_turn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_2_to_4_turn_anim_labels[] = {
+    { "und_8_to_6_turn_anim", 0 },
+};
+
 static const wm_anim_op prog_und_8_to_6_turn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -48067,6 +49045,10 @@ static const wm_anim_op prog_und_4_to_2_turn_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "U1TT5A02" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_4_to_2_turn_anim_labels[] = {
+    { "und_6_to_8_turn_anim", 0 },
 };
 
 static const wm_anim_op prog_und_6_to_8_turn_anim_ops[] = {
@@ -48089,6 +49071,10 @@ static const wm_anim_op prog_und_4_to_6_turn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_4_to_6_turn_anim_labels[] = {
+    { "und_6_to_4_turn_anim", 0 },
+};
+
 static const wm_anim_op prog_und_6_to_4_turn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -48107,6 +49093,10 @@ static const wm_anim_op prog_und_2_to_8_turn_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "U1TT5A01" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_2_to_8_turn_anim_labels[] = {
+    { "und_8_to_2_turn_anim", 0 },
 };
 
 static const wm_anim_op prog_und_8_to_2_turn_anim_ops[] = {
@@ -48130,6 +49120,10 @@ static const wm_anim_op prog_und_4_to_8_turn_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "U1TT5A02" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_4_to_8_turn_anim_labels[] = {
+    { "und_6_to_2_turn_anim", 0 },
 };
 
 static const wm_anim_op prog_und_6_to_2_turn_anim_ops[] = {
@@ -48158,6 +49152,10 @@ static const wm_anim_op prog_und_2_to_6_turn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_2_to_6_turn_anim_labels[] = {
+    { "und_8_to_4_turn_anim", 0 },
+};
+
 static const wm_anim_op prog_und_8_to_4_turn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -48181,6 +49179,10 @@ static const wm_anim_op prog_und_2_to_4_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "U1TR5A04" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_2_to_4_turn2_anim_labels[] = {
+    { "und_8_to_6_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_und_8_to_6_turn2_anim_ops[] = {
@@ -48207,6 +49209,10 @@ static const wm_anim_op prog_und_4_to_2_turn2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_4_to_2_turn2_anim_labels[] = {
+    { "und_6_to_8_turn2_anim", 0 },
+};
+
 static const wm_anim_op prog_und_6_to_8_turn2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -48229,6 +49235,10 @@ static const wm_anim_op prog_und_4_to_6_turn2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_und_4_to_6_turn2_anim_labels[] = {
+    { "und_6_to_4_turn2_anim", 0 },
+};
+
 static const wm_anim_op prog_und_6_to_4_turn2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -48247,6 +49257,10 @@ static const wm_anim_op prog_und_2_to_8_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "U1TR5A01" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_2_to_8_turn2_anim_labels[] = {
+    { "und_8_to_2_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_und_8_to_2_turn2_anim_ops[] = {
@@ -48270,6 +49284,10 @@ static const wm_anim_op prog_und_4_to_8_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "U1TR5A02" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_4_to_8_turn2_anim_labels[] = {
+    { "und_6_to_2_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_und_6_to_2_turn2_anim_ops[] = {
@@ -48296,6 +49314,10 @@ static const wm_anim_op prog_und_2_to_6_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "U1TR5A05" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_und_2_to_6_turn2_anim_labels[] = {
+    { "und_8_to_4_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_und_8_to_4_turn2_anim_ops[] = {
@@ -48334,6 +49356,7 @@ static const wm_anim_op prog_und_run2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_und_run2_anim_labels[] = {
+    { "und_run_anim", 3 },
     { "#lp1", 6 },
     { "#ocrun_start", 7 },
     { "#run2", 11 },
@@ -48593,6 +49616,7 @@ static const wm_anim_op prog_und_2_uppercut_anim_ops[] = {
 };
 
 static const wm_anim_label prog_und_2_uppercut_anim_labels[] = {
+    { "und_4_uppercut_anim", 5 },
     { "#no_hit2", 27 },
     { "#missedb", 35 },
     { "#missed", 36 },
@@ -48968,6 +49992,9 @@ static const wm_anim_op prog_und_2_run_slap_anim_ops[] = {
 };
 
 static const wm_anim_label prog_und_2_run_slap_anim_labels[] = {
+    { "und_4_run_slap_anim", 7 },
+    { "und_2_slap_anim", 20 },
+    { "und_4_slap_anim", 27 },
     { "#tag", 39 },
     { "#no_hit2", 58 },
     { "#missed", 58 },
@@ -49088,6 +50115,8 @@ static const wm_anim_op prog_und_4_run_slap_anim_ops[] = {
 };
 
 static const wm_anim_label prog_und_4_run_slap_anim_labels[] = {
+    { "und_2_slap_anim", 13 },
+    { "und_4_slap_anim", 20 },
     { "#tag", 32 },
     { "#no_hit2", 51 },
     { "#missed", 51 },
@@ -49195,6 +50224,7 @@ static const wm_anim_op prog_und_2_slap_anim_ops[] = {
 };
 
 static const wm_anim_label prog_und_2_slap_anim_labels[] = {
+    { "und_4_slap_anim", 7 },
     { "#tag", 19 },
     { "#no_hit2", 38 },
     { "#missed", 38 },
@@ -50619,6 +51649,7 @@ static const wm_anim_op prog_und_4_knee2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_und_4_knee2_anim_labels[] = {
+    { "und_4_knee_anim", 8 },
     { "#cont2a", 21 },
     { "#cont0", 23 },
     { "#no_hit2", 33 },
@@ -50712,6 +51743,7 @@ static const wm_anim_label prog_und_4_knee_fall_anim_labels[] = {
     { "#no_hit2", 10 },
     { "#nodrft2", 12 },
     { "#cont2", 16 },
+    { "und_4_knee_fall_anim", 21 },
 };
 
 static const wm_anim_op prog_und_4_knee_butts_anim_ops[] = {
@@ -50882,6 +51914,7 @@ static const wm_anim_op prog_und_2_grabfling_anim_ops[] = {
 };
 
 static const wm_anim_label prog_und_2_grabfling_anim_labels[] = {
+    { "und_4_grabfling_anim", 9 },
     { "#cont", 15 },
     { "#missedb", 48 },
     { "#missed", 51 },
@@ -51301,6 +52334,11 @@ static const wm_anim_op prog_und_hitonground_xflip_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_getup_anim" },
 };
 
+static const wm_anim_label prog_und_hitonground_xflip_anim_labels[] = {
+    { "und_hitonground_anim", 1 },
+    { "und_liedown_anim", 18 },
+};
+
 static const wm_anim_op prog_und_hitonground_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -51322,6 +52360,10 @@ static const wm_anim_op prog_und_hitonground_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "U3CP3B01" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_getup_anim" },
+};
+
+static const wm_anim_label prog_und_hitonground_anim_labels[] = {
+    { "und_liedown_anim", 17 },
 };
 
 static const wm_anim_op prog_und_liedown_anim_ops[] = {
@@ -51631,6 +52673,7 @@ static const wm_anim_op prog_und_getup_anim_ops[] = {
 };
 
 static const wm_anim_label prog_und_getup_anim_labels[] = {
+    { "und_getup2_anim", 10 },
     { "#common", 13 },
     { "#no_freetoss", 35 },
     { "#getup_in_4", 38 },
@@ -51765,6 +52808,7 @@ static const wm_anim_op prog_und_4_hitblock_anim_ops[] = {
 
 static const wm_anim_label prog_und_4_hitblock_anim_labels[] = {
     { "#blk4", 0 },
+    { "und_4_hitblock_anim", 9 },
 };
 
 static const wm_anim_op prog_und_4_hitblock2_anim_ops[] = {
@@ -51800,6 +52844,8 @@ static const wm_anim_op prog_und_4_hitblock2_anim_ops[] = {
 
 static const wm_anim_label prog_und_4_hitblock2_anim_labels[] = {
     { "#blk4", 0 },
+    { "und_4_hitblock_anim", 9 },
+    { "und_4_hitblock2_anim", 16 },
 };
 
 static const wm_anim_op prog_und_flyout_anim_ops[] = {
@@ -51885,6 +52931,8 @@ static const wm_anim_op prog_und_flyout2_anim_ops[] = {
 
 static const wm_anim_label prog_und_flyout2_anim_labels[] = {
     { "#cont", 0 },
+    { "und_flyout2_anim", 9 },
+    { "und_4_pin2_anim", 16 },
     { "#cont2", 43 },
     { "#floop", 49 },
 };
@@ -51975,6 +53023,7 @@ static const wm_anim_op prog_und_2_raise_arm_anim_ops[] = {
 };
 
 static const wm_anim_label prog_und_2_raise_arm_anim_labels[] = {
+    { "und_4_raise_arm_anim", 9 },
     { "#cont", 14 },
     { "#lp0", 20 },
     { "#floop1", 25 },
@@ -52118,6 +53167,8 @@ static const wm_anim_op prog_und_roll_frames_ops[] = {
 };
 
 static const wm_anim_label prog_und_roll_frames_labels[] = {
+    { "und_flying_kick2_anim", 0 },
+    { "und_flying_kick_anim", 14 },
     { "#cont", 27 },
     { "#got", 46 },
     { "#cont2", 47 },
@@ -52226,6 +53277,7 @@ static const wm_anim_op prog_und_flying_kick2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_und_flying_kick2_anim_labels[] = {
+    { "und_flying_kick_anim", 14 },
     { "#cont", 27 },
     { "#got", 46 },
     { "#cont2", 47 },
@@ -53831,6 +54883,8 @@ static const wm_anim_op prog_und_neckbreaker2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_und_neckbreaker2_anim_labels[] = {
+    { "und_neckbreaker3_anim", 15 },
+    { "und_neckbreaker_anim", 34 },
     { "#gothim", 45 },
     { "#missedb", 83 },
     { "#missed", 85 },
@@ -53917,6 +54971,7 @@ static const wm_anim_op prog_und_neckbreaker3_anim_ops[] = {
 };
 
 static const wm_anim_label prog_und_neckbreaker3_anim_labels[] = {
+    { "und_neckbreaker_anim", 19 },
     { "#gothim", 30 },
     { "#missedb", 68 },
     { "#missed", 70 },
@@ -54208,9 +55263,13 @@ static const wm_anim_op prog_und_2_snapmirror2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_und_2_snapmirror2_anim_labels[] = {
+    { "und_4_snapmirror2_anim", 7 },
+    { "und_combo_snapmirror_anim", 23 },
     { "#missedbcx", 79 },
     { "#missedcx", 79 },
     { "#throw_him_outcx", 93 },
+    { "und_2_snapmirror_anim", 116 },
+    { "und_4_snapmirror_anim", 121 },
     { "#cont", 136 },
     { "#got_him", 138 },
     { "#missedb", 177 },
@@ -54430,9 +55489,12 @@ static const wm_anim_op prog_und_4_snapmirror2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_und_4_snapmirror2_anim_labels[] = {
+    { "und_combo_snapmirror_anim", 16 },
     { "#missedbcx", 72 },
     { "#missedcx", 72 },
     { "#throw_him_outcx", 86 },
+    { "und_2_snapmirror_anim", 109 },
+    { "und_4_snapmirror_anim", 114 },
     { "#cont", 129 },
     { "#got_him", 131 },
     { "#missedb", 170 },
@@ -54639,6 +55701,8 @@ static const wm_anim_label prog_und_combo_snapmirror_anim_labels[] = {
     { "#missedbcx", 56 },
     { "#missedcx", 56 },
     { "#throw_him_outcx", 70 },
+    { "und_2_snapmirror_anim", 93 },
+    { "und_4_snapmirror_anim", 98 },
     { "#cont", 113 },
     { "#got_him", 115 },
     { "#missedb", 154 },
@@ -54749,6 +55813,7 @@ static const wm_anim_op prog_und_2_snapmirror_anim_ops[] = {
 };
 
 static const wm_anim_label prog_und_2_snapmirror_anim_labels[] = {
+    { "und_4_snapmirror_anim", 5 },
     { "#cont", 20 },
     { "#got_him", 22 },
     { "#missedb", 61 },
@@ -55059,6 +56124,7 @@ static const wm_anim_op prog_und_3_head_held_anim_ops[] = {
 
 static const wm_anim_label prog_und_3_head_held_anim_labels[] = {
     { "#loop", 6 },
+    { "und_3_head_held_brk_anim", 15 },
 };
 
 static const wm_anim_op prog_und_3_head_held_brk_anim_ops[] = {
@@ -55225,6 +56291,7 @@ static const wm_anim_op prog_und_2_hair_pickup_anim_ops[] = {
 };
 
 static const wm_anim_label prog_und_2_hair_pickup_anim_labels[] = {
+    { "und_4_hair_pickup_anim", 6 },
     { "#missed", 42 },
 };
 
@@ -55478,6 +56545,8 @@ static const wm_anim_op prog_und_3_fake_hold_anim_ops[] = {
 };
 
 static const wm_anim_label prog_und_3_fake_hold_anim_labels[] = {
+    { "und_3_head_hold2_anim", 9 },
+    { "und_3_head_hold_anim", 23 },
     { "#gothim", 35 },
     { "#missedb", 54 },
     { "#missed", 66 },
@@ -55556,6 +56625,7 @@ static const wm_anim_op prog_und_3_head_hold2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_und_3_head_hold2_anim_labels[] = {
+    { "und_3_head_hold_anim", 14 },
     { "#gothim", 26 },
     { "#missedb", 45 },
     { "#missed", 57 },
@@ -55870,6 +56940,10 @@ static const wm_anim_op prog_yok_stand2_anim_ops[] = {
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_stand2_anim_labels[] = {
+    { "yok_stand8_anim", 0 },
+};
+
 static const wm_anim_op prog_yok_stand8_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -55902,6 +56976,10 @@ static const wm_anim_op prog_yok_stand4_anim_ops[] = {
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_stand4_anim_labels[] = {
+    { "yok_stand6_anim", 0 },
+};
+
 static const wm_anim_op prog_yok_stand6_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -55928,6 +57006,10 @@ static const wm_anim_op prog_yok_torso2_anim_ops[] = {
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_torso2_anim_labels[] = {
+    { "yok_torso8_anim", 0 },
+};
+
 static const wm_anim_op prog_yok_torso8_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y2TW2X01" },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y2TW2X02" },
@@ -55946,6 +57028,10 @@ static const wm_anim_op prog_yok_torso4_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4TW4X03" },
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4TW4X02" },
     { WM_AOP_REPEAT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_torso4_anim_labels[] = {
+    { "yok_torso6_anim", 0 },
 };
 
 static const wm_anim_op prog_yok_torso6_anim_ops[] = {
@@ -56160,6 +57246,10 @@ static const wm_anim_op prog_yok_2_to_4_turn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_2_to_4_turn_anim_labels[] = {
+    { "yok_8_to_6_turn_anim", 0 },
+};
+
 static const wm_anim_op prog_yok_8_to_6_turn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -56176,6 +57266,10 @@ static const wm_anim_op prog_yok_4_to_2_turn_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y1TT5Z02" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_4_to_2_turn_anim_labels[] = {
+    { "yok_6_to_8_turn_anim", 0 },
 };
 
 static const wm_anim_op prog_yok_6_to_8_turn_anim_ops[] = {
@@ -56195,6 +57289,10 @@ static const wm_anim_op prog_yok_4_to_6_turn_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y1TT5Z04" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_4_to_6_turn_anim_labels[] = {
+    { "yok_6_to_4_turn_anim", 0 },
 };
 
 static const wm_anim_op prog_yok_6_to_4_turn_anim_ops[] = {
@@ -56217,6 +57315,10 @@ static const wm_anim_op prog_yok_2_to_8_turn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_2_to_8_turn_anim_labels[] = {
+    { "yok_8_to_2_turn_anim", 0 },
+};
+
 static const wm_anim_op prog_yok_8_to_2_turn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -56237,6 +57339,10 @@ static const wm_anim_op prog_yok_4_to_8_turn_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y1TT5Z01" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_4_to_8_turn_anim_labels[] = {
+    { "yok_6_to_2_turn_anim", 0 },
 };
 
 static const wm_anim_op prog_yok_6_to_2_turn_anim_ops[] = {
@@ -56263,6 +57369,10 @@ static const wm_anim_op prog_yok_2_to_6_turn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_2_to_6_turn_anim_labels[] = {
+    { "yok_8_to_4_turn_anim", 0 },
+};
+
 static const wm_anim_op prog_yok_8_to_4_turn_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -56284,6 +57394,10 @@ static const wm_anim_op prog_yok_2_to_4_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y1TR5Z06" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_2_to_4_turn2_anim_labels[] = {
+    { "yok_8_to_6_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_yok_8_to_6_turn2_anim_ops[] = {
@@ -56308,6 +57422,10 @@ static const wm_anim_op prog_yok_4_to_2_turn2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_4_to_2_turn2_anim_labels[] = {
+    { "yok_6_to_8_turn2_anim", 0 },
+};
+
 static const wm_anim_op prog_yok_6_to_8_turn2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -56329,6 +57447,10 @@ static const wm_anim_op prog_yok_4_to_6_turn2_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
+static const wm_anim_label prog_yok_4_to_6_turn2_anim_labels[] = {
+    { "yok_6_to_4_turn2_anim", 0 },
+};
+
 static const wm_anim_op prog_yok_6_to_4_turn2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -56347,6 +57469,10 @@ static const wm_anim_op prog_yok_2_to_8_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y1TR5Z01" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_2_to_8_turn2_anim_labels[] = {
+    { "yok_8_to_2_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_yok_8_to_2_turn2_anim_ops[] = {
@@ -56372,6 +57498,10 @@ static const wm_anim_op prog_yok_4_to_8_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y1TR5Z04" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_4_to_8_turn2_anim_labels[] = {
+    { "yok_6_to_2_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_yok_6_to_2_turn2_anim_ops[] = {
@@ -56402,6 +57532,10 @@ static const wm_anim_op prog_yok_2_to_6_turn2_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y1TR5Z09" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_2_to_6_turn2_anim_labels[] = {
+    { "yok_8_to_4_turn2_anim", 0 },
 };
 
 static const wm_anim_op prog_yok_8_to_4_turn2_anim_ops[] = {
@@ -56451,6 +57585,7 @@ static const wm_anim_op prog_yok_run2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_yok_run2_anim_labels[] = {
+    { "yok_run_anim", 4 },
     { "#lp1", 7 },
     { "#run2", 15 },
 };
@@ -57339,6 +58474,7 @@ static const wm_anim_op prog_yok_4_knee2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_yok_4_knee2_anim_labels[] = {
+    { "yok_4_knee_anim", 7 },
     { "#tag", 19 },
     { "#missedb", 29 },
     { "#missed", 29 },
@@ -57465,6 +58601,7 @@ static const wm_anim_op prog_yok_2_superkick_anim_ops[] = {
 };
 
 static const wm_anim_label prog_yok_2_superkick_anim_labels[] = {
+    { "yok_4_superkick_anim", 6 },
     { "#no_hit2", 32 },
     { "#none0", 37 },
     { "#missed", 45 },
@@ -57934,6 +59071,7 @@ static const wm_anim_op prog_yok_2_grabfling_anim_ops[] = {
 };
 
 static const wm_anim_label prog_yok_2_grabfling_anim_labels[] = {
+    { "yok_4_grabfling_anim", 9 },
     { "#cont", 15 },
     { "#missedb", 47 },
     { "#missed", 50 },
@@ -58392,6 +59530,7 @@ static const wm_anim_op prog_yok_2_pin_anim_ops[] = {
 };
 
 static const wm_anim_label prog_yok_2_pin_anim_labels[] = {
+    { "yok_4_pin_anim", 5 },
     { "#hold", 71 },
 };
 
@@ -58513,6 +59652,7 @@ static const wm_anim_op prog_yok_2_raise_arm_anim_ops[] = {
 };
 
 static const wm_anim_label prog_yok_2_raise_arm_anim_labels[] = {
+    { "yok_4_raise_arm_anim", 8 },
     { "#cont", 13 },
     { "#lp0", 25 },
     { "#floop", 30 },
@@ -58729,6 +59869,7 @@ static const wm_anim_op prog_yok_2_jabs_anim_ops[] = {
 };
 
 static const wm_anim_label prog_yok_2_jabs_anim_labels[] = {
+    { "yok_4_jabs_anim", 8 },
     { "#rpt", 16 },
     { "#no_hit2", 31 },
     { "#goto", 46 },
@@ -58993,6 +60134,7 @@ static const wm_anim_op prog_yok_2_run_slap_anim_ops[] = {
 };
 
 static const wm_anim_label prog_yok_2_run_slap_anim_labels[] = {
+    { "yok_2_slap2_anim", 10 },
     { "#cont", 21 },
     { "#no_hit2", 45 },
     { "#none", 53 },
@@ -59150,6 +60292,7 @@ static const wm_anim_op prog_yok_4_run_slap_anim_ops[] = {
 };
 
 static const wm_anim_label prog_yok_4_run_slap_anim_labels[] = {
+    { "yok_4_slap2_anim", 10 },
     { "#cont", 19 },
     { "#no_hit2", 43 },
     { "#missed", 46 },
@@ -59350,6 +60493,7 @@ static const wm_anim_op prog_delay_whoihit_ops[] = {
 
 static const wm_anim_label prog_delay_whoihit_labels[] = {
     { "rets", 0 },
+    { "yok_buckoff_anim", 0 },
 };
 
 static const wm_anim_op prog_yok_buckoff_anim_ops[] = {
@@ -59487,6 +60631,7 @@ static const wm_anim_op prog_yok_3_head_held_anim_ops[] = {
 
 static const wm_anim_label prog_yok_3_head_held_anim_labels[] = {
     { "#loop", 5 },
+    { "yok_3_head_held_brk_anim", 13 },
 };
 
 static const wm_anim_op prog_yok_3_head_held_brk_anim_ops[] = {
@@ -59574,6 +60719,7 @@ static const wm_anim_op prog_yok_2_hair_pickup_anim_ops[] = {
 };
 
 static const wm_anim_label prog_yok_2_hair_pickup_anim_labels[] = {
+    { "yok_4_hair_pickup_anim", 5 },
     { "#missed", 37 },
 };
 
@@ -59834,6 +60980,8 @@ static const wm_anim_op prog_yok_flyout2_anim_ops[] = {
 
 static const wm_anim_label prog_yok_flyout2_anim_labels[] = {
     { "#cont", 0 },
+    { "yok_flyout2_anim", 12 },
+    { "yok_tossed_anim", 19 },
 };
 
 static const wm_anim_op prog_yok_tossed_anim_ops[] = {
@@ -59984,6 +61132,8 @@ static const wm_anim_op prog_yok_3_fake_hold_anim_ops[] = {
 };
 
 static const wm_anim_label prog_yok_3_fake_hold_anim_labels[] = {
+    { "yok_3_head_hold2_anim", 9 },
+    { "yok_3_head_hold_anim", 23 },
     { "#gothim", 35 },
     { "#missedb", 54 },
     { "#missed", 66 },
@@ -60060,6 +61210,7 @@ static const wm_anim_op prog_yok_3_head_hold2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_yok_3_head_hold2_anim_labels[] = {
+    { "yok_3_head_hold_anim", 14 },
     { "#gothim", 26 },
     { "#missedb", 45 },
     { "#missed", 57 },
@@ -60389,6 +61540,10 @@ static const wm_anim_label prog_yok_combo_hiptoss_anim_labels[] = {
     { "#missedc", 70 },
     { "#throw_him_outc", 76 },
     { "SLAM_HIM", 79 },
+    { "yok_4_hiptoss2_anim", 79 },
+    { "yok_2_hiptoss2_anim", 86 },
+    { "yok_4_hiptoss_anim", 101 },
+    { "yok_2_hiptoss_anim", 108 },
     { "#cont", 124 },
     { "#got_him", 126 },
     { "#missedb", 158 },
@@ -60509,6 +61664,9 @@ static const wm_anim_op prog_yok_4_hiptoss2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_yok_4_hiptoss2_anim_labels[] = {
+    { "yok_2_hiptoss2_anim", 7 },
+    { "yok_4_hiptoss_anim", 22 },
+    { "yok_2_hiptoss_anim", 29 },
     { "#cont", 45 },
     { "#got_him", 47 },
     { "#missedb", 79 },
@@ -60622,6 +61780,8 @@ static const wm_anim_op prog_yok_2_hiptoss2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_yok_2_hiptoss2_anim_labels[] = {
+    { "yok_4_hiptoss_anim", 15 },
+    { "yok_2_hiptoss_anim", 22 },
     { "#cont", 38 },
     { "#got_him", 40 },
     { "#missedb", 72 },
@@ -60720,6 +61880,7 @@ static const wm_anim_op prog_yok_4_hiptoss_anim_ops[] = {
 };
 
 static const wm_anim_label prog_yok_4_hiptoss_anim_labels[] = {
+    { "yok_2_hiptoss_anim", 7 },
     { "#cont", 23 },
     { "#got_him", 25 },
     { "#missedb", 57 },
@@ -61077,6 +62238,7 @@ static const wm_anim_label prog_yok_heldheadbutt_rpt_anim_labels[] = {
     { "#Lex", 30 },
     { "#release_table", 30 },
     { "#flyout_tbl", 30 },
+    { "yok_combo_heldheadbutt_rpt_anim", 30 },
     { "#loopc", 51 },
     { "#last_hitc", 68 },
     { "#NO_KNEE", 77 },
@@ -61085,6 +62247,7 @@ static const wm_anim_label prog_yok_heldheadbutt_rpt_anim_labels[] = {
     { "#NO_GUT", 83 },
     { "#missedbc", 92 },
     { "#missedc", 93 },
+    { "yok_heldheadbutt_rpt_anim", 100 },
     { "#loop", 122 },
     { "#last_hit", 139 },
 };
@@ -61180,6 +62343,441 @@ static const wm_anim_label prog_yok_combo_spinslam_anim_labels[] = {
     { "#NO_BUTTa", 76 },
 };
 
+static const wm_anim_op prog_yok_spinslam_anim_ops[] = {
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_THROWN_OUT" },
+    { WM_AOP_ATTACHVEL, 0, -1, 524288, 589824, 0, 0, 0, 0, 0 },
+    { WM_AOP_SLAVEANIM, 0, -1, 88, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_OPPOFFSET, 0, -1, 17, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4LZ3A04" },
+    { WM_AOP_OFFSET, 0, -1, 0, 50, 0, 0, 0, 0, 0 },
+    { WM_AOP_SET_YVEL, 0, -1, 8192, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4LZ3A05" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4LZ3A06" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4LZ3A07" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4LZ3A08" },
+    { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
+    { WM_AOP_SHAKEALL, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SHAKER, 0, -1, 20, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4LZ3A09" },
+    { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4LZ3A09" },
+    { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup2_anim" },
+    { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETFACING, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SET_WRESTLER_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CLR_BUTCOUNT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_STARTATTACK, 0, -1, 20, 6, 0, 0, 0, 0, 0 },
+    { WM_AOP_FACE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y4CD3A01" },
+    { WM_AOP_ATTACK_ON, 21, -1, 33, 36, 64, 48, 0, 0, 0 },
+    { WM_AOP_WAITHITOPP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4CD3A02" },
+    { WM_AOP_ATTACK_OFF, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFNOTSTATUS, 0, 85, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFBLOCKED, 0, 84, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, -2, 0, 0, 0, 0 },
+    { WM_AOP_SETOPPMODE, 0, -1, 2048, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 9228, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 7, 69, 0, 0, 0, 0, "Y4CD3A02" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 69, 1, 0, 0, 0, "Y4CD3A04" },
+    { WM_AOP_SET_RPTCOUNT, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 69, 2, 0, 0, 0, "Y4CD3A07" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 69, 3, 0, 0, 0, "Y4CD3A08" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 69, 4, 0, 0, 0, "Y4CD3A09" },
+    { WM_AOP_DEC_RPTCOUNT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFNOT_RPTCOUNT, 0, 60, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CLR_BUTCOUNT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_DEBRISAT, 0, -1, 100, 2, 0, 100, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "impact_sound" },
+    { WM_AOP_SHAKEALL, 0, -1, 1, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SHAKER, 0, -1, 25, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_DAMAGEOPP, 0, -1, 9, 6, 0, 0, 0, 0, 0 },
+    { WM_AOP_INC_COMBO, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4CD3A09" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 69, 5, 0, 0, 0, "Y4CD3Z02" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 69, 6, 0, 0, 0, "Y4CD3Z01" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 69, 7, 0, 0, 0, "Y4CD3A08" },
+    { WM_AOP_GOTO, 0, 43, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "impact_sound" },
+    { WM_AOP_SHAKEALL, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SHAKER, 0, -1, 25, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_DAMAGEOPP, 0, -1, 12, 8, 0, 0, 0, 0, 0 },
+    { WM_AOP_DEBRISAT, 0, -1, 100, 1, 0, 8, 0, 0, 0 },
+    { WM_AOP_SETOPP_PLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IF_BUTCOUNT_LT, 0, 69, 0, 1, 0, 0, 0, 0, 0 },
+    { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_combo_knee_anim" },
+    { WM_AOP_IF_BUTCOUNT_LT, 0, 71, 2, 1, 0, 0, 0, 0, 0 },
+    { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_combo_uppercut_anim" },
+    { WM_AOP_IF_BUTCOUNT_LT, 0, 73, 4, 1, 0, 0, 0, 0, 0 },
+    { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_combo_hiptoss_anim" },
+    { WM_AOP_IF_BUTCOUNT_LT, 0, 75, 3, 1, 0, 0, 0, 0, 0 },
+    { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_combo_gut_push_anim" },
+    { WM_AOP_SLAVEANIM, 0, -1, 89, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 7, 0, 0, 0, 0, 0, "Y4CD3A09" },
+    { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4CD3Z01" },
+    { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "Y4ST4Y04" },
+    { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_COMBO_MESS" },
+    { WM_AOP_CLEAR_COMBO, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "Y4CD3A02" },
+    { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_COMBO_MESS" },
+    { WM_AOP_CLEAR_COMBO, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "Y4CD3A02" },
+    { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4CD3A01" },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETFACING, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SET_WRESTLER_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CLR_BUTCOUNT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_STARTATTACK, 0, -1, 20, 2, 0, 0, 0, 0, 0 },
+    { WM_AOP_FACE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y4CD3A01" },
+    { WM_AOP_ATTACK_ON, 53, -1, 33, 56, 44, 18, 0, 0, 0 },
+    { WM_AOP_WAITHITOPP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4CD3A02" },
+    { WM_AOP_ATTACK_OFF, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ADD_MOVE, 0, -1, 16, 2, 2, 0, 0, 0, 0 },
+    { WM_AOP_IFNOTSTATUS, 0, 148, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFBLOCKED, 0, 146, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, -2, 0, 0, 0, 0 },
+    { WM_AOP_SETOPPMODE, 0, -1, 2048, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 9228, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 10, 69, 0, 0, 0, 0, "Y4CD3A02" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 4, 69, 1, 0, 0, 0, "Y4CD3A04" },
+    { WM_AOP_SET_RPTCOUNT, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 5, 69, 2, 0, 0, 0, "Y4CD3A07" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 69, 3, 0, 0, 0, "Y4CD3A08" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 69, 4, 0, 0, 0, "Y4CD3A09" },
+    { WM_AOP_IF_BUTCOUNT_LT, 0, 131, 0, 1, 0, 0, 0, 0, 0 },
+    { WM_AOP_DEC_RPTCOUNT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFNOT_RPTCOUNT, 0, 131, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CLR_BUTCOUNT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_DEBRISAT, 0, -1, 100, 2, 0, 100, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "impact_sound" },
+    { WM_AOP_SHAKEALL, 0, -1, 1, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SHAKER, 0, -1, 25, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_DAMAGEOPP, 0, -1, 9, 6, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4CD3A09" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 69, 5, 0, 0, 0, "Y4CD3Z02" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 69, 6, 0, 0, 0, "Y4CD3Z01" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 69, 7, 0, 0, 0, "Y4CD3A08" },
+    { WM_AOP_GOTO, 0, 114, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_SPECIAL_MOVE" },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "impact_sound" },
+    { WM_AOP_SHAKEALL, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SHAKER, 0, -1, 25, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_DAMAGEOPP, 0, -1, 12, 8, 0, 0, 0, 0, 0 },
+    { WM_AOP_DEBRISAT, 0, -1, 100, 1, 0, 8, 0, 0, 0 },
+    { WM_AOP_SLAVEANIM, 0, -1, 89, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPPVELS, 0, -1, 196608, 393216, 65536, 0, 0, 0, 0 },
+    { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 7, 0, 0, 0, 0, 0, "Y4CD3A09" },
+    { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4CD3Z01" },
+    { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "Y4ST4Y04" },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SLIDE_BACK, 0, 147, 48, -458752, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 8, 0, 0, 0, 0, 0, "Y4CD3A02" },
+    { WM_AOP_FRAME, 0, -1, 8, 0, 0, 0, 0, 0, "Y4CD3A02" },
+    { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4CD3A01" },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 9228, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFOPP, 0, -1, 64, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFSTATUS, 0, 228, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFOPP, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFSTATUS, 0, 228, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SET_ATTACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_SLAVEANIM, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPP_PLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPPMODE, 0, -1, 2048, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SET_RPTCOUNT, 0, -1, 3, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CLR_BUTCOUNT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, -2, 0, 0, 0, 0 },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 0, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 4, 0, 0, 0, "Y4HT3Z01" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 1, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 5, 0, 0, 0, "Y5JS5A03" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 2, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 6, 0, 0, 0, "Y5JS5A02" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 3, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 7, 0, 0, 0, "Y5JS5A01" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 4, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 8, 0, 0, 0, "Y5JS5F02" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 5, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 9, 0, 0, 0, "Y5JS5F03" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 6, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 10, 0, 0, 0, "Y5JS5F04" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 7, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 11, 0, 0, 0, "Y5JS5F05" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 8, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 12, 0, 0, 0, "Y5JS5F06" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 9, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 13, 0, 0, 0, "Y5JS5A06" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 10, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 14, 0, 0, 0, "Y5JS5A05" },
+    { WM_AOP_DEC_RPTCOUNT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IF_RPTCOUNT, 0, 166, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, -2, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 15, 0, 0, 0, "Y5JS5A04" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 16, 0, 0, 0, "Y3GS3A02" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 17, 0, 0, 0, "Y3GS3A03" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 18, 0, 0, 0, "Y4OT3A01" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 19, 0, 0, 0, "Y4OT3A02" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 20, 0, 0, 0, "Y4OT3A03" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 21, 0, 0, 0, "Y4OT3A04" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 22, 0, 0, 0, "Y4OT3A05" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 23, 0, 0, 0, "Y4OT3A06" },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
+    { WM_AOP_SHAKEALL, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SHAKER, 0, -1, 45, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_DAMAGEOPP, 0, -1, 27, 18, 0, 0, 0, 0, 0 },
+    { WM_AOP_INC_COMBO, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP_TBL, 0, -1, 16, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SLAVEANIM, 0, -1, 86, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPPVELS, 0, -1, 0, 589824, 0, 0, 0, 0, 0 },
+    { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4OT3A06" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4OT3A07" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4OT3A08" },
+    { WM_AOP_FACE, 0, -1, 6, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "Y4ST4Y04" },
+    { WM_AOP_IF_BUTCOUNT_LT, 0, 222, 2, 1, 0, 0, 0, 0, 0 },
+    { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_combo_slap_anim" },
+    { WM_AOP_IF_BUTCOUNT_LT, 0, 224, 4, 1, 0, 0, 0, 0, 0 },
+    { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_combo_butt_drop_anim" },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_COMBO_MESS" },
+    { WM_AOP_CLEAR_COMBO, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 2266, 0, 0, 0, 0, 0, "#set_immob" },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_COMBO_MESS" },
+    { WM_AOP_CLEAR_COMBO, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 9228, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ADD_MOVE, 0, -1, 16, 2, 2, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFOPP, 0, -1, 64, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFSTATUS, 0, 346, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFOPP, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFSTATUS, 0, 346, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_SLAVEANIM, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPP_PLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPPMODE, 0, -1, 2048, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "MAKE_HIM_SCREAM" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 0, 0, 0, 0, "Y4OT3F01" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 1, 0, 0, 0, "Y4OT3F02" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 2, 0, 0, 0, "Y4OT3F03" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 3, 0, 0, 0, "Y4OT3F04" },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_SPECIAL_MOVE" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, -2, 0, 0, 0, 0 },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 0, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 4, 0, 0, 0, "Y4HT3Z01" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 1, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 5, 0, 0, 0, "Y5JS5A03" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 2, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 6, 0, 0, 0, "Y5JS5A02" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 3, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 7, 0, 0, 0, "Y5JS5A01" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 4, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 8, 0, 0, 0, "Y5JS5F02" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 5, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 9, 0, 0, 0, "Y5JS5F03" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 6, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 10, 0, 0, 0, "Y5JS5F04" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 7, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 11, 0, 0, 0, "Y5JS5F05" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 8, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 12, 0, 0, 0, "Y5JS5F06" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 9, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 13, 0, 0, 0, "Y5JS5A06" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 10, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 14, 0, 0, 0, "Y5JS5A05" },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "MAKE_HIM_SCREAM" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, -2, 0, 0, 0, 0 },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 0, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 4, 0, 0, 0, "Y4HT3Z01" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 1, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 5, 0, 0, 0, "Y5JS5A03" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 2, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 6, 0, 0, 0, "Y5JS5A02" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 3, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 7, 0, 0, 0, "Y5JS5A01" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 4, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 8, 0, 0, 0, "Y5JS5F02" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 5, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 9, 0, 0, 0, "Y5JS5F03" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 6, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 10, 0, 0, 0, "Y5JS5F04" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 7, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 11, 0, 0, 0, "Y5JS5F05" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 8, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 12, 0, 0, 0, "Y5JS5F06" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 9, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 13, 0, 0, 0, "Y5JS5A06" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 10, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 14, 0, 0, 0, "Y5JS5A05" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, -2, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 15, 0, 0, 0, "Y5JS5A04" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 16, 0, 0, 0, "Y3GS3A02" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 17, 0, 0, 0, "Y3GS3A03" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 18, 0, 0, 0, "Y4OT3A01" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 19, 0, 0, 0, "Y4OT3A02" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 20, 0, 0, 0, "Y4OT3A03" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 21, 0, 0, 0, "Y4OT3A04" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 22, 0, 0, 0, "Y4OT3A05" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 23, 0, 0, 0, "Y4OT3A06" },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
+    { WM_AOP_SHAKEALL, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SHAKER, 0, -1, 45, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_DAMAGEOPP, 0, -1, 33, 22, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP_TBL, 0, -1, 16, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SLAVEANIM, 0, -1, 91, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPPVELS, 0, -1, -131072, 327680, 0, 0, 0, 0, 0 },
+    { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4OT3A06" },
+    { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4OT3A07" },
+    { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4OT3A08" },
+    { WM_AOP_FACE, 0, -1, 6, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "Y4ST4Y04" },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 9228, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ADD_MOVE, 0, -1, 16, 2, 2, 0, 0, 0, 0 },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, -2, 0, 0, 0, 0 },
+    { WM_AOP_SLAVEANIM, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FACE, 0, -1, 6, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPP_PLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPPMODE, 0, -1, 2048, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP_OPP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FACE_OPP, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 18, 0, 0, 0, "Y4OT3A01" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 19, 0, 0, 0, "Y4OT3A02" },
+    { WM_AOP_IFROPE, 0, 0, 1, 90, 0, 0, 0, 0, 0 },
+    { WM_AOP_GOTO, 0, 361, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 9228, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ADD_MOVE, 0, -1, 16, 2, 2, 0, 0, 0, 0 },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, -2, 0, 0, 0, 0 },
+    { WM_AOP_SLAVEANIM, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FACE, 0, -1, 6, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPP_PLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPPMODE, 0, -1, 2048, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP_OPP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FACE_OPP, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 18, 0, 0, 0, "Y4OT3A01" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 19, 0, 0, 0, "Y4OT3A02" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 20, 0, 0, 0, "Y4OT3A03" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 21, 0, 0, 0, "Y4OT3A04" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 22, 0, 0, 0, "Y4OT3A05" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 23, 0, 0, 0, "Y4OT3A06" },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
+    { WM_AOP_SHAKEALL, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SHAKER, 0, -1, 45, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_DAMAGEOPP, 0, -1, 27, 18, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP_TBL, 0, -1, 16, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SLAVEANIM, 0, -1, 91, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPPVELS, 0, -1, -131072, 327680, 131072, 0, 0, 0, 0 },
+    { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4OT3A06" },
+    { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4OT3A07" },
+    { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4OT3A08" },
+    { WM_AOP_FACE, 0, -1, 6, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "Y4ST4Y04" },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_spinslam_anim_labels[] = {
+    { "#throw_him_out", 0 },
+    { "#xflip_tbl", 22 },
+    { "#slambounce_tbl", 22 },
+    { "#puppet_tbl", 22 },
+    { "#Bret", 22 },
+    { "#Razor", 22 },
+    { "#Taker", 22 },
+    { "#Yokozuna", 22 },
+    { "#Shawn", 22 },
+    { "#BamBam", 22 },
+    { "#Doink", 22 },
+    { "#Adam", 22 },
+    { "#Lex", 22 },
+    { "#release_table", 22 },
+    { "#flyout_tbl", 22 },
+    { "yok_combo_heldheadbutt_rpt_anim", 22 },
+    { "#loopc", 43 },
+    { "#last_hitc", 60 },
+    { "#NO_KNEE", 69 },
+    { "#NO_UPPER", 71 },
+    { "#NO_HIPTOSS", 73 },
+    { "#NO_GUT", 75 },
+    { "#missedbc", 84 },
+    { "#missedc", 85 },
+    { "yok_heldheadbutt_rpt_anim", 92 },
+    { "#loop", 114 },
+    { "#last_hit", 131 },
+    { "impact_sound", 146 },
+    { "#x", 146 },
+    { "#missedb", 146 },
+    { "#no_hit", 147 },
+    { "#missed", 148 },
+    { "#head_hit2_tbl", 152 },
+    { "yok_combo_spinslam_anim", 152 },
+    { "#spin_loop", 166 },
+    { "#NO_SLAP", 222 },
+    { "#NO_BUTT", 224 },
+    { "#NO_BUTTa", 228 },
+    { "#set_immob", 233 },
+    { "rets", 233 },
+    { "#keep_ongrnd", 233 },
+    { "DIE", 233 },
+    { "yok_spinslam_anim", 233 },
+    { "yok_overhd_slam2_anim", 329 },
+    { "yok_overhd_slam_anim", 346 },
+    { "#inherex", 361 },
+};
+
 static const wm_anim_op prog_yok_overhd_slam2_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 9228, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -61262,6 +62860,7 @@ static const wm_anim_op prog_yok_overhd_slam2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_yok_overhd_slam2_anim_labels[] = {
+    { "yok_overhd_slam_anim", 17 },
     { "#inherex", 32 },
     { "#throw_him_out", 54 },
 };
@@ -61335,6 +62934,373 @@ static const wm_anim_label prog_yok_overhd_slam_anim_labels[] = {
     { "#throw_him_out", 37 },
 };
 
+static const wm_anim_op prog_yok_graboh_TB_anim_ops[] = {
+    { WM_AOP_SLIDE_BACK, 0, 1, 48, -458752, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 8, 0, 0, 0, 0, 0, "Y4CD3A02" },
+    { WM_AOP_FRAME, 0, -1, 8, 0, 0, 0, 0, 0, "Y4CD3A02" },
+    { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4CD3A01" },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 9228, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFOPP, 0, -1, 64, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFSTATUS, 0, 82, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFOPP, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFSTATUS, 0, 82, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SET_ATTACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_SLAVEANIM, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPP_PLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPPMODE, 0, -1, 2048, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SET_RPTCOUNT, 0, -1, 3, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CLR_BUTCOUNT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, -2, 0, 0, 0, 0 },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 0, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 4, 0, 0, 0, "Y4HT3Z01" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 1, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 5, 0, 0, 0, "Y5JS5A03" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 2, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 6, 0, 0, 0, "Y5JS5A02" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 3, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 7, 0, 0, 0, "Y5JS5A01" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 4, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 8, 0, 0, 0, "Y5JS5F02" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 5, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 9, 0, 0, 0, "Y5JS5F03" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 6, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 10, 0, 0, 0, "Y5JS5F04" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 7, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 11, 0, 0, 0, "Y5JS5F05" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 8, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 12, 0, 0, 0, "Y5JS5F06" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 9, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 13, 0, 0, 0, "Y5JS5A06" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 10, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 14, 0, 0, 0, "Y5JS5A05" },
+    { WM_AOP_DEC_RPTCOUNT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IF_RPTCOUNT, 0, 20, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, -2, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 15, 0, 0, 0, "Y5JS5A04" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 16, 0, 0, 0, "Y3GS3A02" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 17, 0, 0, 0, "Y3GS3A03" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 18, 0, 0, 0, "Y4OT3A01" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 19, 0, 0, 0, "Y4OT3A02" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 20, 0, 0, 0, "Y4OT3A03" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 21, 0, 0, 0, "Y4OT3A04" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 22, 0, 0, 0, "Y4OT3A05" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 23, 0, 0, 0, "Y4OT3A06" },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
+    { WM_AOP_SHAKEALL, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SHAKER, 0, -1, 45, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_DAMAGEOPP, 0, -1, 27, 18, 0, 0, 0, 0, 0 },
+    { WM_AOP_INC_COMBO, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP_TBL, 0, -1, 16, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SLAVEANIM, 0, -1, 86, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPPVELS, 0, -1, 0, 589824, 0, 0, 0, 0, 0 },
+    { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4OT3A06" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4OT3A07" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4OT3A08" },
+    { WM_AOP_FACE, 0, -1, 6, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "Y4ST4Y04" },
+    { WM_AOP_IF_BUTCOUNT_LT, 0, 76, 2, 1, 0, 0, 0, 0, 0 },
+    { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_combo_slap_anim" },
+    { WM_AOP_IF_BUTCOUNT_LT, 0, 78, 4, 1, 0, 0, 0, 0, 0 },
+    { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_combo_butt_drop_anim" },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_COMBO_MESS" },
+    { WM_AOP_CLEAR_COMBO, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 2266, 0, 0, 0, 0, 0, "#set_immob" },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_COMBO_MESS" },
+    { WM_AOP_CLEAR_COMBO, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 9228, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ADD_MOVE, 0, -1, 16, 2, 2, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFOPP, 0, -1, 64, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFSTATUS, 0, 200, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFOPP, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFSTATUS, 0, 200, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_SLAVEANIM, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPP_PLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPPMODE, 0, -1, 2048, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "MAKE_HIM_SCREAM" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 0, 0, 0, 0, "Y4OT3F01" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 1, 0, 0, 0, "Y4OT3F02" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 2, 0, 0, 0, "Y4OT3F03" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 3, 0, 0, 0, "Y4OT3F04" },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_SPECIAL_MOVE" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, -2, 0, 0, 0, 0 },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 0, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 4, 0, 0, 0, "Y4HT3Z01" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 1, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 5, 0, 0, 0, "Y5JS5A03" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 2, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 6, 0, 0, 0, "Y5JS5A02" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 3, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 7, 0, 0, 0, "Y5JS5A01" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 4, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 8, 0, 0, 0, "Y5JS5F02" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 5, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 9, 0, 0, 0, "Y5JS5F03" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 6, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 10, 0, 0, 0, "Y5JS5F04" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 7, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 11, 0, 0, 0, "Y5JS5F05" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 8, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 12, 0, 0, 0, "Y5JS5F06" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 9, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 13, 0, 0, 0, "Y5JS5A06" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 10, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 14, 0, 0, 0, "Y5JS5A05" },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "MAKE_HIM_SCREAM" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, -2, 0, 0, 0, 0 },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 0, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 4, 0, 0, 0, "Y4HT3Z01" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 1, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 5, 0, 0, 0, "Y5JS5A03" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 2, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 6, 0, 0, 0, "Y5JS5A02" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 3, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 7, 0, 0, 0, "Y5JS5A01" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 4, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 8, 0, 0, 0, "Y5JS5F02" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 5, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 9, 0, 0, 0, "Y5JS5F03" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 6, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 10, 0, 0, 0, "Y5JS5F04" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 7, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 11, 0, 0, 0, "Y5JS5F05" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 8, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 12, 0, 0, 0, "Y5JS5F06" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 9, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 13, 0, 0, 0, "Y5JS5A06" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 10, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 14, 0, 0, 0, "Y5JS5A05" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, -2, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 15, 0, 0, 0, "Y5JS5A04" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 16, 0, 0, 0, "Y3GS3A02" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 17, 0, 0, 0, "Y3GS3A03" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 18, 0, 0, 0, "Y4OT3A01" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 19, 0, 0, 0, "Y4OT3A02" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 20, 0, 0, 0, "Y4OT3A03" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 21, 0, 0, 0, "Y4OT3A04" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 22, 0, 0, 0, "Y4OT3A05" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 23, 0, 0, 0, "Y4OT3A06" },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
+    { WM_AOP_SHAKEALL, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SHAKER, 0, -1, 45, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_DAMAGEOPP, 0, -1, 33, 22, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP_TBL, 0, -1, 16, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SLAVEANIM, 0, -1, 91, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPPVELS, 0, -1, -131072, 327680, 0, 0, 0, 0, 0 },
+    { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4OT3A06" },
+    { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4OT3A07" },
+    { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4OT3A08" },
+    { WM_AOP_FACE, 0, -1, 6, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "Y4ST4Y04" },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 9228, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ADD_MOVE, 0, -1, 16, 2, 2, 0, 0, 0, 0 },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, -2, 0, 0, 0, 0 },
+    { WM_AOP_SLAVEANIM, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FACE, 0, -1, 6, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPP_PLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPPMODE, 0, -1, 2048, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP_OPP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FACE_OPP, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 18, 0, 0, 0, "Y4OT3A01" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 19, 0, 0, 0, "Y4OT3A02" },
+    { WM_AOP_IFROPE, 0, 237, 1, 90, 0, 0, 0, 0, 0 },
+    { WM_AOP_GOTO, 0, 215, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 9228, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ADD_MOVE, 0, -1, 16, 2, 2, 0, 0, 0, 0 },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, -2, 0, 0, 0, 0 },
+    { WM_AOP_SLAVEANIM, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FACE, 0, -1, 6, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPP_PLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPPMODE, 0, -1, 2048, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP_OPP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FACE_OPP, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 18, 0, 0, 0, "Y4OT3A01" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 19, 0, 0, 0, "Y4OT3A02" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 20, 0, 0, 0, "Y4OT3A03" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 21, 0, 0, 0, "Y4OT3A04" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 22, 0, 0, 0, "Y4OT3A05" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 23, 0, 0, 0, "Y4OT3A06" },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
+    { WM_AOP_SHAKEALL, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SHAKER, 0, -1, 45, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_DAMAGEOPP, 0, -1, 27, 18, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP_TBL, 0, -1, 16, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SLAVEANIM, 0, -1, 91, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPPVELS, 0, -1, -131072, 327680, 131072, 0, 0, 0, 0 },
+    { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4OT3A06" },
+    { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4OT3A07" },
+    { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4OT3A08" },
+    { WM_AOP_FACE, 0, -1, 6, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "Y4ST4Y04" },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_THROWN_OUT" },
+    { WM_AOP_ATTACHVEL, 0, -1, -655360, 458752, 0, 0, 0, 0, 0 },
+    { WM_AOP_SLAVEANIM, 0, -1, 90, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_OPPOFFSET, 0, -1, 18, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ADD_MOVE, 0, -1, 16, 2, 2, 0, 0, 0, 0 },
+    { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4OT3A03" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4OT3A04" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4OT3A05" },
+    { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "Y4OT3A06" },
+    { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
+    { WM_AOP_SHAKEALL, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4OT3A06" },
+    { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4OT3A07" },
+    { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4OT3A08" },
+    { WM_AOP_FACE, 0, -1, 6, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "Y4ST4Y04" },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETFACING, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SET_WRESTLER_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 21, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_STARTATTACK, 0, -1, 20, 7, 0, 0, 0, 0, 0 },
+    { WM_AOP_ADD_MOVE, 0, -1, 16, 2, 2, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y4PO4X01" },
+    { WM_AOP_SET_YVEL, 0, -1, 458752, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SET_XVEL, 1, -1, -98304, 1, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "Y4PO4X02" },
+    { WM_AOP_ATTACK_ON, 21, -1, 8, 46, 65, 33, 0, 0, 0 },
+    { WM_AOP_WAITHITOPP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 8, 0, 0, 0, 0, 0, "Y4PO4X03" },
+    { WM_AOP_ATTACK_OFF, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFNOTSTATUS, 0, 2, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SET_YVEL, 0, -1, -131072, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_SETUP" },
+    { WM_AOP_SOUND, 0, -1, 130, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 9228, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 71, 2, 0, 0, 0, "Y4PO4X05" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 71, 3, 0, 0, 0, "Y4PO4X06" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 71, 4, 0, 0, 0, "Y4PO4X07" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 71, 5, 0, 0, 0, "Y4PO4X08" },
+    { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
+    { WM_AOP_SHAKEALL, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SHAKER, 0, -1, 50, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_GOTO, 0, 321, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETFACING, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SET_WRESTLER_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_STARTATTACK, 0, -1, 20, 7, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4PO4X01" },
+    { WM_AOP_ADD_MOVE, 0, -1, 16, 2, 2, 0, 0, 0, 0 },
+    { WM_AOP_SET_YVEL, 0, -1, 131072, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "Y4PO4X02" },
+    { WM_AOP_ATTACK_ON, 21, -1, 8, 46, 65, 33, 0, 0, 0 },
+    { WM_AOP_WAITHITOPP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "Y4PO4X02" },
+    { WM_AOP_ATTACK_OFF, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFNOTSTATUS, 0, 2, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFBLOCKED, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_SETUP" },
+    { WM_AOP_SOUND, 0, -1, 130, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_NONO" },
+    { WM_AOP_SETMODE, 0, -1, 9228, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 4, 71, 0, 0, 0, 0, "Y4PO4X03" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 4, 71, 1, 0, 0, 0, "Y4PO4X04" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 4, 71, 2, 0, 0, 0, "Y4PO4X05" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 4, 71, 3, 0, 0, 0, "Y4PO4X06" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 4, 71, 4, 0, 0, 0, "Y4PO4X07" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 4, 71, 5, 0, 0, 0, "Y4PO4X08" },
+    { WM_AOP_SLAVEANIM, 0, -1, 92, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FACE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 8, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_graboh_TB_anim_labels[] = {
+    { "#missedb", 0 },
+    { "#no_hit", 1 },
+    { "#missed", 2 },
+    { "#head_hit2_tbl", 6 },
+    { "#puppet_tbl", 6 },
+    { "#Bret", 6 },
+    { "#Razor", 6 },
+    { "#Taker", 6 },
+    { "#Yokozuna", 6 },
+    { "#Shawn", 6 },
+    { "#BamBam", 6 },
+    { "#Doink", 6 },
+    { "#Adam", 6 },
+    { "#Lex", 6 },
+    { "yok_combo_spinslam_anim", 6 },
+    { "#spin_loop", 20 },
+    { "#NO_SLAP", 76 },
+    { "#NO_BUTT", 78 },
+    { "#NO_BUTTa", 82 },
+    { "#set_immob", 87 },
+    { "rets", 87 },
+    { "#keep_ongrnd", 87 },
+    { "DIE", 87 },
+    { "yok_spinslam_anim", 87 },
+    { "yok_overhd_slam2_anim", 183 },
+    { "yok_overhd_slam_anim", 200 },
+    { "#inherex", 215 },
+    { "#throw_him_out", 237 },
+    { "release_throw_table", 261 },
+    { "flyout_tbl", 261 },
+    { "#xflip_tbl", 261 },
+    { "#slambounce_tbl", 261 },
+    { "yok_graboh_TB_anim", 261 },
+    { "yok_graboh_anim", 293 },
+    { "#inhere", 321 },
+};
+
 static const wm_anim_op prog_yok_graboh_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -61389,6 +63355,483 @@ static const wm_anim_label prog_yok_graboh_anim_labels[] = {
     { "#inhere", 28 },
     { "#missedb", 33 },
     { "#missed", 37 },
+};
+
+static const wm_anim_op prog_yok_combo_scissor_anim_ops[] = {
+    { WM_AOP_FRAME, 0, -1, 8, 0, 0, 0, 0, 0, "Y4CD3A02" },
+    { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4CD3A01" },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 9228, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFOPP, 0, -1, 64, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFSTATUS, 0, 80, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFOPP, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFSTATUS, 0, 80, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SET_ATTACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_SLAVEANIM, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPP_PLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPPMODE, 0, -1, 2048, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SET_RPTCOUNT, 0, -1, 3, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CLR_BUTCOUNT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, -2, 0, 0, 0, 0 },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 0, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 4, 0, 0, 0, "Y4HT3Z01" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 1, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 5, 0, 0, 0, "Y5JS5A03" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 2, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 6, 0, 0, 0, "Y5JS5A02" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 3, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 7, 0, 0, 0, "Y5JS5A01" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 4, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 8, 0, 0, 0, "Y5JS5F02" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 5, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 9, 0, 0, 0, "Y5JS5F03" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 6, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 10, 0, 0, 0, "Y5JS5F04" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 7, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 11, 0, 0, 0, "Y5JS5F05" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 8, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 12, 0, 0, 0, "Y5JS5F06" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 9, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 13, 0, 0, 0, "Y5JS5A06" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 10, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 14, 0, 0, 0, "Y5JS5A05" },
+    { WM_AOP_DEC_RPTCOUNT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IF_RPTCOUNT, 0, 18, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, -2, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 15, 0, 0, 0, "Y5JS5A04" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 16, 0, 0, 0, "Y3GS3A02" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 17, 0, 0, 0, "Y3GS3A03" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 18, 0, 0, 0, "Y4OT3A01" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 19, 0, 0, 0, "Y4OT3A02" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 20, 0, 0, 0, "Y4OT3A03" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 21, 0, 0, 0, "Y4OT3A04" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 22, 0, 0, 0, "Y4OT3A05" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 23, 0, 0, 0, "Y4OT3A06" },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
+    { WM_AOP_SHAKEALL, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SHAKER, 0, -1, 45, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_DAMAGEOPP, 0, -1, 27, 18, 0, 0, 0, 0, 0 },
+    { WM_AOP_INC_COMBO, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP_TBL, 0, -1, 16, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SLAVEANIM, 0, -1, 86, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPPVELS, 0, -1, 0, 589824, 0, 0, 0, 0, 0 },
+    { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4OT3A06" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4OT3A07" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4OT3A08" },
+    { WM_AOP_FACE, 0, -1, 6, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "Y4ST4Y04" },
+    { WM_AOP_IF_BUTCOUNT_LT, 0, 74, 2, 1, 0, 0, 0, 0, 0 },
+    { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_combo_slap_anim" },
+    { WM_AOP_IF_BUTCOUNT_LT, 0, 76, 4, 1, 0, 0, 0, 0, 0 },
+    { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_combo_butt_drop_anim" },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_COMBO_MESS" },
+    { WM_AOP_CLEAR_COMBO, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 2266, 0, 0, 0, 0, 0, "#set_immob" },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_COMBO_MESS" },
+    { WM_AOP_CLEAR_COMBO, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 9228, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ADD_MOVE, 0, -1, 16, 2, 2, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFOPP, 0, -1, 64, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFSTATUS, 0, 198, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFOPP, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFSTATUS, 0, 198, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_SLAVEANIM, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPP_PLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPPMODE, 0, -1, 2048, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "MAKE_HIM_SCREAM" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 0, 0, 0, 0, "Y4OT3F01" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 1, 0, 0, 0, "Y4OT3F02" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 2, 0, 0, 0, "Y4OT3F03" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 3, 0, 0, 0, "Y4OT3F04" },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_SPECIAL_MOVE" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, -2, 0, 0, 0, 0 },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 0, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 4, 0, 0, 0, "Y4HT3Z01" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 1, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 5, 0, 0, 0, "Y5JS5A03" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 2, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 6, 0, 0, 0, "Y5JS5A02" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 3, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 7, 0, 0, 0, "Y5JS5A01" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 4, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 8, 0, 0, 0, "Y5JS5F02" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 5, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 9, 0, 0, 0, "Y5JS5F03" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 6, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 10, 0, 0, 0, "Y5JS5F04" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 7, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 11, 0, 0, 0, "Y5JS5F05" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 8, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 12, 0, 0, 0, "Y5JS5F06" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 9, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 13, 0, 0, 0, "Y5JS5A06" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 10, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 14, 0, 0, 0, "Y5JS5A05" },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "MAKE_HIM_SCREAM" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, -2, 0, 0, 0, 0 },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 0, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 4, 0, 0, 0, "Y4HT3Z01" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 1, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 5, 0, 0, 0, "Y5JS5A03" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 2, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 6, 0, 0, 0, "Y5JS5A02" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 3, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 7, 0, 0, 0, "Y5JS5A01" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 4, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 8, 0, 0, 0, "Y5JS5F02" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 5, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 9, 0, 0, 0, "Y5JS5F03" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 6, 2, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 10, 0, 0, 0, "Y5JS5F04" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 7, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 11, 0, 0, 0, "Y5JS5F05" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 8, 1, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 12, 0, 0, 0, "Y5JS5F06" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 9, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 13, 0, 0, 0, "Y5JS5A06" },
+    { WM_AOP_CREATEPROC, 0, -1, 0, 10, 0, 0, 0, 0, "SPIN_SWEAT" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 14, 0, 0, 0, "Y5JS5A05" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, -2, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 15, 0, 0, 0, "Y5JS5A04" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 16, 0, 0, 0, "Y3GS3A02" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 17, 0, 0, 0, "Y3GS3A03" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 18, 0, 0, 0, "Y4OT3A01" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 19, 0, 0, 0, "Y4OT3A02" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 20, 0, 0, 0, "Y4OT3A03" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 2, 70, 21, 0, 0, 0, "Y4OT3A04" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 22, 0, 0, 0, "Y4OT3A05" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 23, 0, 0, 0, "Y4OT3A06" },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
+    { WM_AOP_SHAKEALL, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SHAKER, 0, -1, 45, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_DAMAGEOPP, 0, -1, 33, 22, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP_TBL, 0, -1, 16, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SLAVEANIM, 0, -1, 91, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPPVELS, 0, -1, -131072, 327680, 0, 0, 0, 0, 0 },
+    { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4OT3A06" },
+    { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4OT3A07" },
+    { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4OT3A08" },
+    { WM_AOP_FACE, 0, -1, 6, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "Y4ST4Y04" },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 9228, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ADD_MOVE, 0, -1, 16, 2, 2, 0, 0, 0, 0 },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, -2, 0, 0, 0, 0 },
+    { WM_AOP_SLAVEANIM, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FACE, 0, -1, 6, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPP_PLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPPMODE, 0, -1, 2048, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP_OPP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FACE_OPP, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 18, 0, 0, 0, "Y4OT3A01" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 19, 0, 0, 0, "Y4OT3A02" },
+    { WM_AOP_IFROPE, 0, 235, 1, 90, 0, 0, 0, 0, 0 },
+    { WM_AOP_GOTO, 0, 213, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 9228, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ADD_MOVE, 0, -1, 16, 2, 2, 0, 0, 0, 0 },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, -2, 0, 0, 0, 0 },
+    { WM_AOP_SLAVEANIM, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FACE, 0, -1, 6, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPP_PLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPPMODE, 0, -1, 2048, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP_OPP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FACE_OPP, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 18, 0, 0, 0, "Y4OT3A01" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 19, 0, 0, 0, "Y4OT3A02" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 20, 0, 0, 0, "Y4OT3A03" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 21, 0, 0, 0, "Y4OT3A04" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 70, 22, 0, 0, 0, "Y4OT3A05" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 1, 70, 23, 0, 0, 0, "Y4OT3A06" },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
+    { WM_AOP_SHAKEALL, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SHAKER, 0, -1, 45, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_DAMAGEOPP, 0, -1, 27, 18, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP_TBL, 0, -1, 16, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SLAVEANIM, 0, -1, 91, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETOPPVELS, 0, -1, -131072, 327680, 131072, 0, 0, 0, 0 },
+    { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4OT3A06" },
+    { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4OT3A07" },
+    { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4OT3A08" },
+    { WM_AOP_FACE, 0, -1, 6, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "Y4ST4Y04" },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_THROWN_OUT" },
+    { WM_AOP_ATTACHVEL, 0, -1, -655360, 458752, 0, 0, 0, 0, 0 },
+    { WM_AOP_SLAVEANIM, 0, -1, 90, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_OPPOFFSET, 0, -1, 18, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ADD_MOVE, 0, -1, 16, 2, 2, 0, 0, 0, 0 },
+    { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4OT3A03" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4OT3A04" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4OT3A05" },
+    { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "Y4OT3A06" },
+    { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "SMALL_BOUNCE" },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
+    { WM_AOP_SHAKEALL, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4OT3A06" },
+    { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4OT3A07" },
+    { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y4OT3A08" },
+    { WM_AOP_FACE, 0, -1, 6, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "Y4ST4Y04" },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETFACING, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SET_WRESTLER_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 21, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_STARTATTACK, 0, -1, 20, 7, 0, 0, 0, 0, 0 },
+    { WM_AOP_ADD_MOVE, 0, -1, 16, 2, 2, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y4PO4X01" },
+    { WM_AOP_SET_YVEL, 0, -1, 458752, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SET_XVEL, 1, -1, -98304, 1, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "Y4PO4X02" },
+    { WM_AOP_ATTACK_ON, 21, -1, 8, 46, 65, 33, 0, 0, 0 },
+    { WM_AOP_WAITHITOPP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 8, 0, 0, 0, 0, 0, "Y4PO4X03" },
+    { WM_AOP_ATTACK_OFF, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFNOTSTATUS, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SET_YVEL, 0, -1, -131072, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_SETUP" },
+    { WM_AOP_SOUND, 0, -1, 130, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 9228, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 71, 2, 0, 0, 0, "Y4PO4X05" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 71, 3, 0, 0, 0, "Y4PO4X06" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 71, 4, 0, 0, 0, "Y4PO4X07" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 3, 71, 5, 0, 0, 0, "Y4PO4X08" },
+    { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
+    { WM_AOP_SHAKEALL, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SHAKER, 0, -1, 50, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_GOTO, 0, 319, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETFACING, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SET_WRESTLER_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_STARTATTACK, 0, -1, 20, 7, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4PO4X01" },
+    { WM_AOP_ADD_MOVE, 0, -1, 16, 2, 2, 0, 0, 0, 0 },
+    { WM_AOP_SET_YVEL, 0, -1, 131072, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "Y4PO4X02" },
+    { WM_AOP_ATTACK_ON, 21, -1, 8, 46, 65, 33, 0, 0, 0 },
+    { WM_AOP_WAITHITOPP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 5, 0, 0, 0, 0, 0, "Y4PO4X02" },
+    { WM_AOP_ATTACK_OFF, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZERO_XZVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFNOTSTATUS, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFBLOCKED, 0, 324, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_SETUP" },
+    { WM_AOP_SOUND, 0, -1, 130, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, 2, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_NONO" },
+    { WM_AOP_SETMODE, 0, -1, 9228, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 4, 71, 0, 0, 0, 0, "Y4PO4X03" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 4, 71, 1, 0, 0, 0, "Y4PO4X04" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 4, 71, 2, 0, 0, 0, "Y4PO4X05" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 4, 71, 3, 0, 0, 0, "Y4PO4X06" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 4, 71, 4, 0, 0, 0, "Y4PO4X07" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 4, 71, 5, 0, 0, 0, "Y4PO4X08" },
+    { WM_AOP_SLAVEANIM, 0, -1, 92, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FACE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 8, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "Y4PO4X03" },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "CALL_MISSES" },
+    { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 10, 0, 0, 0, 0, 0, "Y4PO4X03" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4PO4X02" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y4PO4X01" },
+    { WM_AOP_FACE, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 8, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETFACING, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SET_WRESTLER_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_STARTATTACK, 0, -1, 57, 12, 0, 0, 0, 0, 0 },
+    { WM_AOP_CLR_BUTCOUNT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3JK3A01" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3JK3A02" },
+    { WM_AOP_IFOPPMODE, 0, 349, -20, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "no_bk_xvel" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3JK3A03" },
+    { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3JK3A04" },
+    { WM_AOP_OFFSET, 0, -1, 0, 55, 0, 0, 0, 0, 0 },
+    { WM_AOP_ATTACK_ON, 21, -1, -26, -20, 56, 33, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 3354, 0, 0, 0, 0, 0, "#store_opp_xvel" },
+    { WM_AOP_WAITHITOPP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 17, 0, 0, 0, 0, 0, "Y3JK3A05" },
+    { WM_AOP_ATTACK_OFF, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFNOTSTATUS, 0, 425, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFBLOCKED, 0, 421, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CLR_STATUS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_INC_COMBO, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETLONG, 0, -1, 0, 49152, 0, 0, 0, 0, 0 },
+    { WM_AOP_SET_YVEL, 0, -1, 327680, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 3343, 0, 0, 0, 0, 0, "#merge_xvels" },
+    { WM_AOP_ATTACHZ, 0, -1, 0, 0, -10, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 9228, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 4, 72, 0, 0, 0, 0, "Y3JK3Z05" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 4, 72, 1, 0, 0, 0, "Y3JK3Z05" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 4, 72, 2, 0, 0, 0, "Y3JK3Z05" },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 4, 72, 3, 0, 0, 0, "Y3JK3Z05" },
+    { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETLONG, 0, -1, 0, 32768, 0, 0, 0, 0, 0 },
+    { WM_AOP_SUPERSLAVE2, 0, -1, 4, 72, 4, 0, 0, 0, "Y3JK3A06" },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
+    { WM_AOP_SHAKEALL, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SHAKER, 0, -1, 50, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_DAMAGEOPP, 0, -1, 32, 21, 0, 0, 0, 0, 0 },
+    { WM_AOP_OPP_GETUP, 0, -1, 300, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_XFLIP_TBL, 0, -1, 17, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SLAVEANIM, 0, -1, 93, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IMMOBILIZE, 0, -1, 25, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_INC_COMBO, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_BOUNCE, 0, -1, 6, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ATTACK_ON_Z, 15, -1, -22, -20, -30, 54, 36, 50, 0 },
+    { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "Y3JK3Z05" },
+    { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ATTACK_OFF, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "HIT_THE_MAT" },
+    { WM_AOP_SHAKER, 0, -1, 35, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IFNOTSTATUS, 0, 397, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_IMMOBILIZE, 0, -1, 75, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_OFFSET, 0, -1, 0, 0, 25, 0, 0, 0, 0 },
+    { WM_AOP_OPP_GETUP, 0, -1, -100, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y3JK3A06" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y3JK3A07" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y3JK3A08" },
+    { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y3GU2A04" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y3GU2A06" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y3GU2A07" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y3GU2A08" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y3GU2A10" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y3GU2A11" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y3GU2A12" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y3GU4A13" },
+    { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "Y3GU4A14" },
+    { WM_AOP_SETFACING, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SET_WRESTLER_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "Y3GU4A14" },
+    { WM_AOP_IF_BUTCOUNT_LT, 0, 415, 0, 1, 0, 0, 0, 0, 0 },
+    { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_combo_butt_drop_anim" },
+    { WM_AOP_OPP_GETUP, 0, -1, 10, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_COMBO_MESS" },
+    { WM_AOP_CLEAR_COMBO, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_COMBO_MESS" },
+    { WM_AOP_CLEAR_COMBO, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_GOTO, 0, 324, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_DETACH, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 0, 0, 0, 0, 0, 0, "DO_COMBO_MESS" },
+    { WM_AOP_CLEAR_COMBO, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_GOTO, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_yok_combo_scissor_anim_labels[] = {
+    { "#missed", 0 },
+    { "#head_hit2_tbl", 4 },
+    { "#puppet_tbl", 4 },
+    { "#Bret", 4 },
+    { "#Razor", 4 },
+    { "#Taker", 4 },
+    { "#Yokozuna", 4 },
+    { "#Shawn", 4 },
+    { "#BamBam", 4 },
+    { "#Doink", 4 },
+    { "#Adam", 4 },
+    { "#Lex", 4 },
+    { "yok_combo_spinslam_anim", 4 },
+    { "#spin_loop", 18 },
+    { "#NO_SLAP", 74 },
+    { "#NO_BUTT", 76 },
+    { "#NO_BUTTa", 80 },
+    { "#set_immob", 85 },
+    { "rets", 85 },
+    { "#keep_ongrnd", 85 },
+    { "DIE", 85 },
+    { "yok_spinslam_anim", 85 },
+    { "yok_overhd_slam2_anim", 181 },
+    { "yok_overhd_slam_anim", 198 },
+    { "#inherex", 213 },
+    { "#throw_him_out", 235 },
+    { "release_throw_table", 259 },
+    { "flyout_tbl", 259 },
+    { "#xflip_tbl", 259 },
+    { "#slambounce_tbl", 259 },
+    { "yok_graboh_TB_anim", 259 },
+    { "yok_graboh_anim", 291 },
+    { "#inhere", 319 },
+    { "#missedb", 324 },
+    { "#strt_flail_tbl", 338 },
+    { "yok_combo_scissor_anim", 338 },
+    { "#no_hdrel2c", 349 },
+    { "#missed2nd", 397 },
+    { "#do_bounce_now", 401 },
+    { "#NO_REPEAT", 415 },
+    { "#missedbc", 421 },
+    { "#missedc", 425 },
 };
 
 static const wm_anim_op prog_yok_scissor_anim_ops[] = {
@@ -61537,6 +63980,7 @@ static const wm_anim_op prog_yok_2_salt_anim_ops[] = {
 };
 
 static const wm_anim_label prog_yok_2_salt_anim_labels[] = {
+    { "yok_4_salt_anim", 7 },
     { "#no_hdrel2", 17 },
     { "#no", 27 },
 };
@@ -61657,6 +64101,7 @@ static const wm_anim_op prog_yok_4_hitblock_anim_ops[] = {
 
 static const wm_anim_label prog_yok_4_hitblock_anim_labels[] = {
     { "#hold_block", 0 },
+    { "yok_4_hitblock_anim", 9 },
 };
 
 static const wm_anim_op prog_yok_4_hitblock2_anim_ops[] = {
@@ -61692,6 +64137,8 @@ static const wm_anim_op prog_yok_4_hitblock2_anim_ops[] = {
 
 static const wm_anim_label prog_yok_4_hitblock2_anim_labels[] = {
     { "#hold_block", 0 },
+    { "yok_4_hitblock_anim", 9 },
+    { "yok_4_hitblock2_anim", 16 },
 };
 
 static const wm_anim_op prog_yok_4_losebal_anim_ops[] = {
@@ -61858,6 +64305,7 @@ static const wm_anim_op prog_yok_2_head_hit2_anim_ops[] = {
 };
 
 static const wm_anim_label prog_yok_2_head_hit2_anim_labels[] = {
+    { "yok_4_head_hit2_anim", 0 },
     { "#nodead", 21 },
 };
 
@@ -62340,6 +64788,7 @@ static const wm_anim_op prog_yok_faceup_getup_anim_ops[] = {
 };
 
 static const wm_anim_label prog_yok_faceup_getup_anim_labels[] = {
+    { "yok_faceup_getup2_anim", 7 },
     { "#common", 10 },
     { "#getup_in_2", 19 },
     { "#no_freetoss", 33 },
@@ -62454,6 +64903,11 @@ static const wm_anim_op prog_yok_hitonground_xflip_anim_ops[] = {
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup_anim" },
 };
 
+static const wm_anim_label prog_yok_hitonground_xflip_anim_labels[] = {
+    { "yok_hitonground_anim", 1 },
+    { "yok_liedown_anim", 21 },
+};
+
 static const wm_anim_op prog_yok_hitonground_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -62478,6 +64932,10 @@ static const wm_anim_op prog_yok_hitonground_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 1, 0, 0, 0, 0, 0, "Y3RL1A01" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_yok_hitonground_anim_labels[] = {
+    { "yok_liedown_anim", 20 },
 };
 
 static const wm_anim_op prog_yok_liedown_anim_ops[] = {
@@ -62631,6 +65089,10 @@ static const wm_anim_op prog_yok_roll_frames_ops[] = {
     { WM_AOP_FRAME, 0, -1, 3, 0, 0, 0, 0, 0, "Y3RL1A01" },
     { WM_AOP_WAITROLL, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "yok_faceup_getup_anim" },
+};
+
+static const wm_anim_label prog_yok_roll_frames_labels[] = {
+    { "yok_backbroken_anim", 0 },
 };
 
 static const wm_anim_op prog_yok_backbroken_anim_ops[] = {
@@ -63015,19 +65477,19 @@ static const wm_anim_program programs[] = {
     { "bam_zip_anim", "BAMSEQ1.ASM", prog_bam_zip_anim_ops,
       sizeof(prog_bam_zip_anim_ops) / sizeof(prog_bam_zip_anim_ops[0]), 0, 0, 0 },
     { "bam_stand2_anim", "BAMSEQ1.ASM", prog_bam_stand2_anim_ops,
-      sizeof(prog_bam_stand2_anim_ops) / sizeof(prog_bam_stand2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_bam_stand2_anim_ops) / sizeof(prog_bam_stand2_anim_ops[0]), 0, prog_bam_stand2_anim_labels, sizeof(prog_bam_stand2_anim_labels) / sizeof(prog_bam_stand2_anim_labels[0]) },
     { "bam_stand8_anim", "BAMSEQ1.ASM", prog_bam_stand8_anim_ops,
       sizeof(prog_bam_stand8_anim_ops) / sizeof(prog_bam_stand8_anim_ops[0]), 0, 0, 0 },
     { "bam_stand4_anim", "BAMSEQ1.ASM", prog_bam_stand4_anim_ops,
-      sizeof(prog_bam_stand4_anim_ops) / sizeof(prog_bam_stand4_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_bam_stand4_anim_ops) / sizeof(prog_bam_stand4_anim_ops[0]), 0, prog_bam_stand4_anim_labels, sizeof(prog_bam_stand4_anim_labels) / sizeof(prog_bam_stand4_anim_labels[0]) },
     { "bam_stand6_anim", "BAMSEQ1.ASM", prog_bam_stand6_anim_ops,
       sizeof(prog_bam_stand6_anim_ops) / sizeof(prog_bam_stand6_anim_ops[0]), 0, 0, 0 },
     { "bam_torso2_anim", "BAMSEQ1.ASM", prog_bam_torso2_anim_ops,
-      sizeof(prog_bam_torso2_anim_ops) / sizeof(prog_bam_torso2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_bam_torso2_anim_ops) / sizeof(prog_bam_torso2_anim_ops[0]), 0, prog_bam_torso2_anim_labels, sizeof(prog_bam_torso2_anim_labels) / sizeof(prog_bam_torso2_anim_labels[0]) },
     { "bam_torso8_anim", "BAMSEQ1.ASM", prog_bam_torso8_anim_ops,
       sizeof(prog_bam_torso8_anim_ops) / sizeof(prog_bam_torso8_anim_ops[0]), 0, 0, 0 },
     { "bam_torso4_anim", "BAMSEQ1.ASM", prog_bam_torso4_anim_ops,
-      sizeof(prog_bam_torso4_anim_ops) / sizeof(prog_bam_torso4_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_bam_torso4_anim_ops) / sizeof(prog_bam_torso4_anim_ops[0]), 0, prog_bam_torso4_anim_labels, sizeof(prog_bam_torso4_anim_labels) / sizeof(prog_bam_torso4_anim_labels[0]) },
     { "bam_torso6_anim", "BAMSEQ1.ASM", prog_bam_torso6_anim_ops,
       sizeof(prog_bam_torso6_anim_ops) / sizeof(prog_bam_torso6_anim_ops[0]), 0, 0, 0 },
     { "bam_holdoh_anim", "BAMSEQ1.ASM", prog_bam_holdoh_anim_ops,
@@ -63057,51 +65519,51 @@ static const wm_anim_program programs[] = {
     { "bam_walk8_f4_anim", "BAMSEQ1.ASM", prog_bam_walk8_f4_anim_ops,
       sizeof(prog_bam_walk8_f4_anim_ops) / sizeof(prog_bam_walk8_f4_anim_ops[0]), 0, 0, 0 },
     { "bam_2_to_4_turn_anim", "BAMSEQ1.ASM", prog_bam_2_to_4_turn_anim_ops,
-      sizeof(prog_bam_2_to_4_turn_anim_ops) / sizeof(prog_bam_2_to_4_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_bam_2_to_4_turn_anim_ops) / sizeof(prog_bam_2_to_4_turn_anim_ops[0]), 0, prog_bam_2_to_4_turn_anim_labels, sizeof(prog_bam_2_to_4_turn_anim_labels) / sizeof(prog_bam_2_to_4_turn_anim_labels[0]) },
     { "bam_8_to_6_turn_anim", "BAMSEQ1.ASM", prog_bam_8_to_6_turn_anim_ops,
       sizeof(prog_bam_8_to_6_turn_anim_ops) / sizeof(prog_bam_8_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "bam_4_to_2_turn_anim", "BAMSEQ1.ASM", prog_bam_4_to_2_turn_anim_ops,
-      sizeof(prog_bam_4_to_2_turn_anim_ops) / sizeof(prog_bam_4_to_2_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_bam_4_to_2_turn_anim_ops) / sizeof(prog_bam_4_to_2_turn_anim_ops[0]), 0, prog_bam_4_to_2_turn_anim_labels, sizeof(prog_bam_4_to_2_turn_anim_labels) / sizeof(prog_bam_4_to_2_turn_anim_labels[0]) },
     { "bam_6_to_8_turn_anim", "BAMSEQ1.ASM", prog_bam_6_to_8_turn_anim_ops,
       sizeof(prog_bam_6_to_8_turn_anim_ops) / sizeof(prog_bam_6_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "bam_4_to_6_turn_anim", "BAMSEQ1.ASM", prog_bam_4_to_6_turn_anim_ops,
-      sizeof(prog_bam_4_to_6_turn_anim_ops) / sizeof(prog_bam_4_to_6_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_bam_4_to_6_turn_anim_ops) / sizeof(prog_bam_4_to_6_turn_anim_ops[0]), 0, prog_bam_4_to_6_turn_anim_labels, sizeof(prog_bam_4_to_6_turn_anim_labels) / sizeof(prog_bam_4_to_6_turn_anim_labels[0]) },
     { "bam_6_to_4_turn_anim", "BAMSEQ1.ASM", prog_bam_6_to_4_turn_anim_ops,
       sizeof(prog_bam_6_to_4_turn_anim_ops) / sizeof(prog_bam_6_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "bam_2_to_8_turn_anim", "BAMSEQ1.ASM", prog_bam_2_to_8_turn_anim_ops,
-      sizeof(prog_bam_2_to_8_turn_anim_ops) / sizeof(prog_bam_2_to_8_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_bam_2_to_8_turn_anim_ops) / sizeof(prog_bam_2_to_8_turn_anim_ops[0]), 0, prog_bam_2_to_8_turn_anim_labels, sizeof(prog_bam_2_to_8_turn_anim_labels) / sizeof(prog_bam_2_to_8_turn_anim_labels[0]) },
     { "bam_8_to_2_turn_anim", "BAMSEQ1.ASM", prog_bam_8_to_2_turn_anim_ops,
       sizeof(prog_bam_8_to_2_turn_anim_ops) / sizeof(prog_bam_8_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "bam_4_to_8_turn_anim", "BAMSEQ1.ASM", prog_bam_4_to_8_turn_anim_ops,
-      sizeof(prog_bam_4_to_8_turn_anim_ops) / sizeof(prog_bam_4_to_8_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_bam_4_to_8_turn_anim_ops) / sizeof(prog_bam_4_to_8_turn_anim_ops[0]), 0, prog_bam_4_to_8_turn_anim_labels, sizeof(prog_bam_4_to_8_turn_anim_labels) / sizeof(prog_bam_4_to_8_turn_anim_labels[0]) },
     { "bam_6_to_2_turn_anim", "BAMSEQ1.ASM", prog_bam_6_to_2_turn_anim_ops,
       sizeof(prog_bam_6_to_2_turn_anim_ops) / sizeof(prog_bam_6_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "bam_2_to_6_turn_anim", "BAMSEQ1.ASM", prog_bam_2_to_6_turn_anim_ops,
-      sizeof(prog_bam_2_to_6_turn_anim_ops) / sizeof(prog_bam_2_to_6_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_bam_2_to_6_turn_anim_ops) / sizeof(prog_bam_2_to_6_turn_anim_ops[0]), 0, prog_bam_2_to_6_turn_anim_labels, sizeof(prog_bam_2_to_6_turn_anim_labels) / sizeof(prog_bam_2_to_6_turn_anim_labels[0]) },
     { "bam_8_to_4_turn_anim", "BAMSEQ1.ASM", prog_bam_8_to_4_turn_anim_ops,
       sizeof(prog_bam_8_to_4_turn_anim_ops) / sizeof(prog_bam_8_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "bam_2_to_4_turn2_anim", "BAMSEQ1.ASM", prog_bam_2_to_4_turn2_anim_ops,
-      sizeof(prog_bam_2_to_4_turn2_anim_ops) / sizeof(prog_bam_2_to_4_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_bam_2_to_4_turn2_anim_ops) / sizeof(prog_bam_2_to_4_turn2_anim_ops[0]), 0, prog_bam_2_to_4_turn2_anim_labels, sizeof(prog_bam_2_to_4_turn2_anim_labels) / sizeof(prog_bam_2_to_4_turn2_anim_labels[0]) },
     { "bam_8_to_6_turn2_anim", "BAMSEQ1.ASM", prog_bam_8_to_6_turn2_anim_ops,
       sizeof(prog_bam_8_to_6_turn2_anim_ops) / sizeof(prog_bam_8_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "bam_4_to_2_turn2_anim", "BAMSEQ1.ASM", prog_bam_4_to_2_turn2_anim_ops,
-      sizeof(prog_bam_4_to_2_turn2_anim_ops) / sizeof(prog_bam_4_to_2_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_bam_4_to_2_turn2_anim_ops) / sizeof(prog_bam_4_to_2_turn2_anim_ops[0]), 0, prog_bam_4_to_2_turn2_anim_labels, sizeof(prog_bam_4_to_2_turn2_anim_labels) / sizeof(prog_bam_4_to_2_turn2_anim_labels[0]) },
     { "bam_6_to_8_turn2_anim", "BAMSEQ1.ASM", prog_bam_6_to_8_turn2_anim_ops,
       sizeof(prog_bam_6_to_8_turn2_anim_ops) / sizeof(prog_bam_6_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "bam_4_to_6_turn2_anim", "BAMSEQ1.ASM", prog_bam_4_to_6_turn2_anim_ops,
-      sizeof(prog_bam_4_to_6_turn2_anim_ops) / sizeof(prog_bam_4_to_6_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_bam_4_to_6_turn2_anim_ops) / sizeof(prog_bam_4_to_6_turn2_anim_ops[0]), 0, prog_bam_4_to_6_turn2_anim_labels, sizeof(prog_bam_4_to_6_turn2_anim_labels) / sizeof(prog_bam_4_to_6_turn2_anim_labels[0]) },
     { "bam_6_to_4_turn2_anim", "BAMSEQ1.ASM", prog_bam_6_to_4_turn2_anim_ops,
       sizeof(prog_bam_6_to_4_turn2_anim_ops) / sizeof(prog_bam_6_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "bam_2_to_8_turn2_anim", "BAMSEQ1.ASM", prog_bam_2_to_8_turn2_anim_ops,
-      sizeof(prog_bam_2_to_8_turn2_anim_ops) / sizeof(prog_bam_2_to_8_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_bam_2_to_8_turn2_anim_ops) / sizeof(prog_bam_2_to_8_turn2_anim_ops[0]), 0, prog_bam_2_to_8_turn2_anim_labels, sizeof(prog_bam_2_to_8_turn2_anim_labels) / sizeof(prog_bam_2_to_8_turn2_anim_labels[0]) },
     { "bam_8_to_2_turn2_anim", "BAMSEQ1.ASM", prog_bam_8_to_2_turn2_anim_ops,
       sizeof(prog_bam_8_to_2_turn2_anim_ops) / sizeof(prog_bam_8_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "bam_4_to_8_turn2_anim", "BAMSEQ1.ASM", prog_bam_4_to_8_turn2_anim_ops,
-      sizeof(prog_bam_4_to_8_turn2_anim_ops) / sizeof(prog_bam_4_to_8_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_bam_4_to_8_turn2_anim_ops) / sizeof(prog_bam_4_to_8_turn2_anim_ops[0]), 0, prog_bam_4_to_8_turn2_anim_labels, sizeof(prog_bam_4_to_8_turn2_anim_labels) / sizeof(prog_bam_4_to_8_turn2_anim_labels[0]) },
     { "bam_6_to_2_turn2_anim", "BAMSEQ1.ASM", prog_bam_6_to_2_turn2_anim_ops,
       sizeof(prog_bam_6_to_2_turn2_anim_ops) / sizeof(prog_bam_6_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "bam_2_to_6_turn2_anim", "BAMSEQ1.ASM", prog_bam_2_to_6_turn2_anim_ops,
-      sizeof(prog_bam_2_to_6_turn2_anim_ops) / sizeof(prog_bam_2_to_6_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_bam_2_to_6_turn2_anim_ops) / sizeof(prog_bam_2_to_6_turn2_anim_ops[0]), 0, prog_bam_2_to_6_turn2_anim_labels, sizeof(prog_bam_2_to_6_turn2_anim_labels) / sizeof(prog_bam_2_to_6_turn2_anim_labels[0]) },
     { "bam_8_to_4_turn2_anim", "BAMSEQ1.ASM", prog_bam_8_to_4_turn2_anim_ops,
       sizeof(prog_bam_8_to_4_turn2_anim_ops) / sizeof(prog_bam_8_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "bam_run2_anim", "BAMSEQ1.ASM", prog_bam_run2_anim_ops,
@@ -63231,9 +65693,9 @@ static const wm_anim_program programs[] = {
     { "bam_quick_knee_hit_anim", "BAMSEQ2.ASM", prog_bam_quick_knee_hit_anim_ops,
       sizeof(prog_bam_quick_knee_hit_anim_ops) / sizeof(prog_bam_quick_knee_hit_anim_ops[0]), 0, prog_bam_quick_knee_hit_anim_labels, sizeof(prog_bam_quick_knee_hit_anim_labels) / sizeof(prog_bam_quick_knee_hit_anim_labels[0]) },
     { "bam_hitonground_xflip_anim", "BAMSEQ2.ASM", prog_bam_hitonground_xflip_anim_ops,
-      sizeof(prog_bam_hitonground_xflip_anim_ops) / sizeof(prog_bam_hitonground_xflip_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_bam_hitonground_xflip_anim_ops) / sizeof(prog_bam_hitonground_xflip_anim_ops[0]), 0, prog_bam_hitonground_xflip_anim_labels, sizeof(prog_bam_hitonground_xflip_anim_labels) / sizeof(prog_bam_hitonground_xflip_anim_labels[0]) },
     { "bam_hitonground_anim", "BAMSEQ2.ASM", prog_bam_hitonground_anim_ops,
-      sizeof(prog_bam_hitonground_anim_ops) / sizeof(prog_bam_hitonground_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_bam_hitonground_anim_ops) / sizeof(prog_bam_hitonground_anim_ops[0]), 0, prog_bam_hitonground_anim_labels, sizeof(prog_bam_hitonground_anim_labels) / sizeof(prog_bam_hitonground_anim_labels[0]) },
     { "bam_liedown_anim", "BAMSEQ2.ASM", prog_bam_liedown_anim_ops,
       sizeof(prog_bam_liedown_anim_ops) / sizeof(prog_bam_liedown_anim_ops[0]), 0, 0, 0 },
     { "bam_up_anim", "BAMSEQ2.ASM", prog_bam_up_anim_ops,
@@ -63244,6 +65706,8 @@ static const wm_anim_program programs[] = {
       sizeof(prog_bam_fall_back2_anim_ops) / sizeof(prog_bam_fall_back2_anim_ops[0]), 0, 0, 0 },
     { "bam_fall_back_tbukl_anim", "BAMSEQ2.ASM", prog_bam_fall_back_tbukl_anim_ops,
       sizeof(prog_bam_fall_back_tbukl_anim_ops) / sizeof(prog_bam_fall_back_tbukl_anim_ops[0]), 0, 0, 0 },
+    { "bam_faceup_getup_anim", "BAMSEQ2.ASM", prog_bam_faceup_getup_anim_ops,
+      sizeof(prog_bam_faceup_getup_anim_ops) / sizeof(prog_bam_faceup_getup_anim_ops[0]), 0, prog_bam_faceup_getup_anim_labels, sizeof(prog_bam_faceup_getup_anim_labels) / sizeof(prog_bam_faceup_getup_anim_labels[0]) },
     { "bam_2_faceup_getup_anim", "BAMSEQ2.ASM", prog_bam_2_faceup_getup_anim_ops,
       sizeof(prog_bam_2_faceup_getup_anim_ops) / sizeof(prog_bam_2_faceup_getup_anim_ops[0]), 0, prog_bam_2_faceup_getup_anim_labels, sizeof(prog_bam_2_faceup_getup_anim_labels) / sizeof(prog_bam_2_faceup_getup_anim_labels[0]) },
     { "bam_2_faceup_getup2_anim", "BAMSEQ2.ASM", prog_bam_2_faceup_getup2_anim_ops,
@@ -63409,19 +65873,19 @@ static const wm_anim_program programs[] = {
     { "dnk_zip_anim", "DNKSEQ1.ASM", prog_dnk_zip_anim_ops,
       sizeof(prog_dnk_zip_anim_ops) / sizeof(prog_dnk_zip_anim_ops[0]), 0, 0, 0 },
     { "dnk_stand2_anim", "DNKSEQ1.ASM", prog_dnk_stand2_anim_ops,
-      sizeof(prog_dnk_stand2_anim_ops) / sizeof(prog_dnk_stand2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_dnk_stand2_anim_ops) / sizeof(prog_dnk_stand2_anim_ops[0]), 0, prog_dnk_stand2_anim_labels, sizeof(prog_dnk_stand2_anim_labels) / sizeof(prog_dnk_stand2_anim_labels[0]) },
     { "dnk_stand8_anim", "DNKSEQ1.ASM", prog_dnk_stand8_anim_ops,
       sizeof(prog_dnk_stand8_anim_ops) / sizeof(prog_dnk_stand8_anim_ops[0]), 0, 0, 0 },
     { "dnk_stand4_anim", "DNKSEQ1.ASM", prog_dnk_stand4_anim_ops,
-      sizeof(prog_dnk_stand4_anim_ops) / sizeof(prog_dnk_stand4_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_dnk_stand4_anim_ops) / sizeof(prog_dnk_stand4_anim_ops[0]), 0, prog_dnk_stand4_anim_labels, sizeof(prog_dnk_stand4_anim_labels) / sizeof(prog_dnk_stand4_anim_labels[0]) },
     { "dnk_stand6_anim", "DNKSEQ1.ASM", prog_dnk_stand6_anim_ops,
       sizeof(prog_dnk_stand6_anim_ops) / sizeof(prog_dnk_stand6_anim_ops[0]), 0, 0, 0 },
     { "dnk_torso2_anim", "DNKSEQ1.ASM", prog_dnk_torso2_anim_ops,
-      sizeof(prog_dnk_torso2_anim_ops) / sizeof(prog_dnk_torso2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_dnk_torso2_anim_ops) / sizeof(prog_dnk_torso2_anim_ops[0]), 0, prog_dnk_torso2_anim_labels, sizeof(prog_dnk_torso2_anim_labels) / sizeof(prog_dnk_torso2_anim_labels[0]) },
     { "dnk_torso8_anim", "DNKSEQ1.ASM", prog_dnk_torso8_anim_ops,
       sizeof(prog_dnk_torso8_anim_ops) / sizeof(prog_dnk_torso8_anim_ops[0]), 0, 0, 0 },
     { "dnk_torso4_anim", "DNKSEQ1.ASM", prog_dnk_torso4_anim_ops,
-      sizeof(prog_dnk_torso4_anim_ops) / sizeof(prog_dnk_torso4_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_dnk_torso4_anim_ops) / sizeof(prog_dnk_torso4_anim_ops[0]), 0, prog_dnk_torso4_anim_labels, sizeof(prog_dnk_torso4_anim_labels) / sizeof(prog_dnk_torso4_anim_labels[0]) },
     { "dnk_torso6_anim", "DNKSEQ1.ASM", prog_dnk_torso6_anim_ops,
       sizeof(prog_dnk_torso6_anim_ops) / sizeof(prog_dnk_torso6_anim_ops[0]), 0, 0, 0 },
     { "dnk_holdoh_anim", "DNKSEQ1.ASM", prog_dnk_holdoh_anim_ops,
@@ -63451,51 +65915,51 @@ static const wm_anim_program programs[] = {
     { "dnk_walk8_f4_anim", "DNKSEQ1.ASM", prog_dnk_walk8_f4_anim_ops,
       sizeof(prog_dnk_walk8_f4_anim_ops) / sizeof(prog_dnk_walk8_f4_anim_ops[0]), 0, 0, 0 },
     { "dnk_2_to_4_turn_anim", "DNKSEQ1.ASM", prog_dnk_2_to_4_turn_anim_ops,
-      sizeof(prog_dnk_2_to_4_turn_anim_ops) / sizeof(prog_dnk_2_to_4_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_dnk_2_to_4_turn_anim_ops) / sizeof(prog_dnk_2_to_4_turn_anim_ops[0]), 0, prog_dnk_2_to_4_turn_anim_labels, sizeof(prog_dnk_2_to_4_turn_anim_labels) / sizeof(prog_dnk_2_to_4_turn_anim_labels[0]) },
     { "dnk_8_to_6_turn_anim", "DNKSEQ1.ASM", prog_dnk_8_to_6_turn_anim_ops,
       sizeof(prog_dnk_8_to_6_turn_anim_ops) / sizeof(prog_dnk_8_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "dnk_4_to_2_turn_anim", "DNKSEQ1.ASM", prog_dnk_4_to_2_turn_anim_ops,
-      sizeof(prog_dnk_4_to_2_turn_anim_ops) / sizeof(prog_dnk_4_to_2_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_dnk_4_to_2_turn_anim_ops) / sizeof(prog_dnk_4_to_2_turn_anim_ops[0]), 0, prog_dnk_4_to_2_turn_anim_labels, sizeof(prog_dnk_4_to_2_turn_anim_labels) / sizeof(prog_dnk_4_to_2_turn_anim_labels[0]) },
     { "dnk_6_to_8_turn_anim", "DNKSEQ1.ASM", prog_dnk_6_to_8_turn_anim_ops,
       sizeof(prog_dnk_6_to_8_turn_anim_ops) / sizeof(prog_dnk_6_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "dnk_4_to_6_turn_anim", "DNKSEQ1.ASM", prog_dnk_4_to_6_turn_anim_ops,
-      sizeof(prog_dnk_4_to_6_turn_anim_ops) / sizeof(prog_dnk_4_to_6_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_dnk_4_to_6_turn_anim_ops) / sizeof(prog_dnk_4_to_6_turn_anim_ops[0]), 0, prog_dnk_4_to_6_turn_anim_labels, sizeof(prog_dnk_4_to_6_turn_anim_labels) / sizeof(prog_dnk_4_to_6_turn_anim_labels[0]) },
     { "dnk_6_to_4_turn_anim", "DNKSEQ1.ASM", prog_dnk_6_to_4_turn_anim_ops,
       sizeof(prog_dnk_6_to_4_turn_anim_ops) / sizeof(prog_dnk_6_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "dnk_2_to_8_turn_anim", "DNKSEQ1.ASM", prog_dnk_2_to_8_turn_anim_ops,
-      sizeof(prog_dnk_2_to_8_turn_anim_ops) / sizeof(prog_dnk_2_to_8_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_dnk_2_to_8_turn_anim_ops) / sizeof(prog_dnk_2_to_8_turn_anim_ops[0]), 0, prog_dnk_2_to_8_turn_anim_labels, sizeof(prog_dnk_2_to_8_turn_anim_labels) / sizeof(prog_dnk_2_to_8_turn_anim_labels[0]) },
     { "dnk_8_to_2_turn_anim", "DNKSEQ1.ASM", prog_dnk_8_to_2_turn_anim_ops,
       sizeof(prog_dnk_8_to_2_turn_anim_ops) / sizeof(prog_dnk_8_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "dnk_4_to_8_turn_anim", "DNKSEQ1.ASM", prog_dnk_4_to_8_turn_anim_ops,
-      sizeof(prog_dnk_4_to_8_turn_anim_ops) / sizeof(prog_dnk_4_to_8_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_dnk_4_to_8_turn_anim_ops) / sizeof(prog_dnk_4_to_8_turn_anim_ops[0]), 0, prog_dnk_4_to_8_turn_anim_labels, sizeof(prog_dnk_4_to_8_turn_anim_labels) / sizeof(prog_dnk_4_to_8_turn_anim_labels[0]) },
     { "dnk_6_to_2_turn_anim", "DNKSEQ1.ASM", prog_dnk_6_to_2_turn_anim_ops,
       sizeof(prog_dnk_6_to_2_turn_anim_ops) / sizeof(prog_dnk_6_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "dnk_2_to_6_turn_anim", "DNKSEQ1.ASM", prog_dnk_2_to_6_turn_anim_ops,
-      sizeof(prog_dnk_2_to_6_turn_anim_ops) / sizeof(prog_dnk_2_to_6_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_dnk_2_to_6_turn_anim_ops) / sizeof(prog_dnk_2_to_6_turn_anim_ops[0]), 0, prog_dnk_2_to_6_turn_anim_labels, sizeof(prog_dnk_2_to_6_turn_anim_labels) / sizeof(prog_dnk_2_to_6_turn_anim_labels[0]) },
     { "dnk_8_to_4_turn_anim", "DNKSEQ1.ASM", prog_dnk_8_to_4_turn_anim_ops,
       sizeof(prog_dnk_8_to_4_turn_anim_ops) / sizeof(prog_dnk_8_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "dnk_2_to_4_turn2_anim", "DNKSEQ1.ASM", prog_dnk_2_to_4_turn2_anim_ops,
-      sizeof(prog_dnk_2_to_4_turn2_anim_ops) / sizeof(prog_dnk_2_to_4_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_dnk_2_to_4_turn2_anim_ops) / sizeof(prog_dnk_2_to_4_turn2_anim_ops[0]), 0, prog_dnk_2_to_4_turn2_anim_labels, sizeof(prog_dnk_2_to_4_turn2_anim_labels) / sizeof(prog_dnk_2_to_4_turn2_anim_labels[0]) },
     { "dnk_8_to_6_turn2_anim", "DNKSEQ1.ASM", prog_dnk_8_to_6_turn2_anim_ops,
       sizeof(prog_dnk_8_to_6_turn2_anim_ops) / sizeof(prog_dnk_8_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "dnk_4_to_2_turn2_anim", "DNKSEQ1.ASM", prog_dnk_4_to_2_turn2_anim_ops,
-      sizeof(prog_dnk_4_to_2_turn2_anim_ops) / sizeof(prog_dnk_4_to_2_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_dnk_4_to_2_turn2_anim_ops) / sizeof(prog_dnk_4_to_2_turn2_anim_ops[0]), 0, prog_dnk_4_to_2_turn2_anim_labels, sizeof(prog_dnk_4_to_2_turn2_anim_labels) / sizeof(prog_dnk_4_to_2_turn2_anim_labels[0]) },
     { "dnk_6_to_8_turn2_anim", "DNKSEQ1.ASM", prog_dnk_6_to_8_turn2_anim_ops,
       sizeof(prog_dnk_6_to_8_turn2_anim_ops) / sizeof(prog_dnk_6_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "dnk_4_to_6_turn2_anim", "DNKSEQ1.ASM", prog_dnk_4_to_6_turn2_anim_ops,
-      sizeof(prog_dnk_4_to_6_turn2_anim_ops) / sizeof(prog_dnk_4_to_6_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_dnk_4_to_6_turn2_anim_ops) / sizeof(prog_dnk_4_to_6_turn2_anim_ops[0]), 0, prog_dnk_4_to_6_turn2_anim_labels, sizeof(prog_dnk_4_to_6_turn2_anim_labels) / sizeof(prog_dnk_4_to_6_turn2_anim_labels[0]) },
     { "dnk_6_to_4_turn2_anim", "DNKSEQ1.ASM", prog_dnk_6_to_4_turn2_anim_ops,
       sizeof(prog_dnk_6_to_4_turn2_anim_ops) / sizeof(prog_dnk_6_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "dnk_2_to_8_turn2_anim", "DNKSEQ1.ASM", prog_dnk_2_to_8_turn2_anim_ops,
-      sizeof(prog_dnk_2_to_8_turn2_anim_ops) / sizeof(prog_dnk_2_to_8_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_dnk_2_to_8_turn2_anim_ops) / sizeof(prog_dnk_2_to_8_turn2_anim_ops[0]), 0, prog_dnk_2_to_8_turn2_anim_labels, sizeof(prog_dnk_2_to_8_turn2_anim_labels) / sizeof(prog_dnk_2_to_8_turn2_anim_labels[0]) },
     { "dnk_8_to_2_turn2_anim", "DNKSEQ1.ASM", prog_dnk_8_to_2_turn2_anim_ops,
       sizeof(prog_dnk_8_to_2_turn2_anim_ops) / sizeof(prog_dnk_8_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "dnk_4_to_8_turn2_anim", "DNKSEQ1.ASM", prog_dnk_4_to_8_turn2_anim_ops,
-      sizeof(prog_dnk_4_to_8_turn2_anim_ops) / sizeof(prog_dnk_4_to_8_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_dnk_4_to_8_turn2_anim_ops) / sizeof(prog_dnk_4_to_8_turn2_anim_ops[0]), 0, prog_dnk_4_to_8_turn2_anim_labels, sizeof(prog_dnk_4_to_8_turn2_anim_labels) / sizeof(prog_dnk_4_to_8_turn2_anim_labels[0]) },
     { "dnk_6_to_2_turn2_anim", "DNKSEQ1.ASM", prog_dnk_6_to_2_turn2_anim_ops,
       sizeof(prog_dnk_6_to_2_turn2_anim_ops) / sizeof(prog_dnk_6_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "dnk_2_to_6_turn2_anim", "DNKSEQ1.ASM", prog_dnk_2_to_6_turn2_anim_ops,
-      sizeof(prog_dnk_2_to_6_turn2_anim_ops) / sizeof(prog_dnk_2_to_6_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_dnk_2_to_6_turn2_anim_ops) / sizeof(prog_dnk_2_to_6_turn2_anim_ops[0]), 0, prog_dnk_2_to_6_turn2_anim_labels, sizeof(prog_dnk_2_to_6_turn2_anim_labels) / sizeof(prog_dnk_2_to_6_turn2_anim_labels[0]) },
     { "dnk_8_to_4_turn2_anim", "DNKSEQ1.ASM", prog_dnk_8_to_4_turn2_anim_ops,
       sizeof(prog_dnk_8_to_4_turn2_anim_ops) / sizeof(prog_dnk_8_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "dnk_run2_anim", "DNKSEQ1.ASM", prog_dnk_run2_anim_ops,
@@ -63572,6 +66036,8 @@ static const wm_anim_program programs[] = {
       sizeof(prog_dnk_fall_back2_anim_ops) / sizeof(prog_dnk_fall_back2_anim_ops[0]), 0, 0, 0 },
     { "dnk_fall_back_tbukl_anim", "DNKSEQ2.ASM", prog_dnk_fall_back_tbukl_anim_ops,
       sizeof(prog_dnk_fall_back_tbukl_anim_ops) / sizeof(prog_dnk_fall_back_tbukl_anim_ops[0]), 0, 0, 0 },
+    { "dnk_faceup_getup_anim", "DNKSEQ2.ASM", prog_dnk_faceup_getup_anim_ops,
+      sizeof(prog_dnk_faceup_getup_anim_ops) / sizeof(prog_dnk_faceup_getup_anim_ops[0]), 0, prog_dnk_faceup_getup_anim_labels, sizeof(prog_dnk_faceup_getup_anim_labels) / sizeof(prog_dnk_faceup_getup_anim_labels[0]) },
     { "dnk_4_faceup_getup_anim", "DNKSEQ2.ASM", prog_dnk_4_faceup_getup_anim_ops,
       sizeof(prog_dnk_4_faceup_getup_anim_ops) / sizeof(prog_dnk_4_faceup_getup_anim_ops[0]), 0, prog_dnk_4_faceup_getup_anim_labels, sizeof(prog_dnk_4_faceup_getup_anim_labels) / sizeof(prog_dnk_4_faceup_getup_anim_labels[0]) },
     { "dnk_2_faceup_getup_anim", "DNKSEQ2.ASM", prog_dnk_2_faceup_getup_anim_ops,
@@ -63619,9 +66085,9 @@ static const wm_anim_program programs[] = {
     { "dnk_knockdwn_anim", "DNKSEQ2.ASM", prog_dnk_knockdwn_anim_ops,
       sizeof(prog_dnk_knockdwn_anim_ops) / sizeof(prog_dnk_knockdwn_anim_ops[0]), 0, prog_dnk_knockdwn_anim_labels, sizeof(prog_dnk_knockdwn_anim_labels) / sizeof(prog_dnk_knockdwn_anim_labels[0]) },
     { "dnk_hitonground_xflip_anim", "DNKSEQ2.ASM", prog_dnk_hitonground_xflip_anim_ops,
-      sizeof(prog_dnk_hitonground_xflip_anim_ops) / sizeof(prog_dnk_hitonground_xflip_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_dnk_hitonground_xflip_anim_ops) / sizeof(prog_dnk_hitonground_xflip_anim_ops[0]), 0, prog_dnk_hitonground_xflip_anim_labels, sizeof(prog_dnk_hitonground_xflip_anim_labels) / sizeof(prog_dnk_hitonground_xflip_anim_labels[0]) },
     { "dnk_hitonground_anim", "DNKSEQ2.ASM", prog_dnk_hitonground_anim_ops,
-      sizeof(prog_dnk_hitonground_anim_ops) / sizeof(prog_dnk_hitonground_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_dnk_hitonground_anim_ops) / sizeof(prog_dnk_hitonground_anim_ops[0]), 0, prog_dnk_hitonground_anim_labels, sizeof(prog_dnk_hitonground_anim_labels) / sizeof(prog_dnk_hitonground_anim_labels[0]) },
     { "dnk_liedown_anim", "DNKSEQ2.ASM", prog_dnk_liedown_anim_ops,
       sizeof(prog_dnk_liedown_anim_ops) / sizeof(prog_dnk_liedown_anim_ops[0]), 0, 0, 0 },
     { "dnk_up_anim", "DNKSEQ2.ASM", prog_dnk_up_anim_ops,
@@ -63835,19 +66301,19 @@ static const wm_anim_program programs[] = {
     { "hrt_zip_anim", "HRTSEQ1.ASM", prog_hrt_zip_anim_ops,
       sizeof(prog_hrt_zip_anim_ops) / sizeof(prog_hrt_zip_anim_ops[0]), 0, 0, 0 },
     { "hrt_stand2_anim", "HRTSEQ1.ASM", prog_hrt_stand2_anim_ops,
-      sizeof(prog_hrt_stand2_anim_ops) / sizeof(prog_hrt_stand2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_hrt_stand2_anim_ops) / sizeof(prog_hrt_stand2_anim_ops[0]), 0, prog_hrt_stand2_anim_labels, sizeof(prog_hrt_stand2_anim_labels) / sizeof(prog_hrt_stand2_anim_labels[0]) },
     { "hrt_stand8_anim", "HRTSEQ1.ASM", prog_hrt_stand8_anim_ops,
       sizeof(prog_hrt_stand8_anim_ops) / sizeof(prog_hrt_stand8_anim_ops[0]), 0, 0, 0 },
     { "hrt_stand4_anim", "HRTSEQ1.ASM", prog_hrt_stand4_anim_ops,
-      sizeof(prog_hrt_stand4_anim_ops) / sizeof(prog_hrt_stand4_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_hrt_stand4_anim_ops) / sizeof(prog_hrt_stand4_anim_ops[0]), 0, prog_hrt_stand4_anim_labels, sizeof(prog_hrt_stand4_anim_labels) / sizeof(prog_hrt_stand4_anim_labels[0]) },
     { "hrt_stand6_anim", "HRTSEQ1.ASM", prog_hrt_stand6_anim_ops,
       sizeof(prog_hrt_stand6_anim_ops) / sizeof(prog_hrt_stand6_anim_ops[0]), 0, 0, 0 },
     { "hrt_torso2_anim", "HRTSEQ1.ASM", prog_hrt_torso2_anim_ops,
-      sizeof(prog_hrt_torso2_anim_ops) / sizeof(prog_hrt_torso2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_hrt_torso2_anim_ops) / sizeof(prog_hrt_torso2_anim_ops[0]), 0, prog_hrt_torso2_anim_labels, sizeof(prog_hrt_torso2_anim_labels) / sizeof(prog_hrt_torso2_anim_labels[0]) },
     { "hrt_torso8_anim", "HRTSEQ1.ASM", prog_hrt_torso8_anim_ops,
       sizeof(prog_hrt_torso8_anim_ops) / sizeof(prog_hrt_torso8_anim_ops[0]), 0, 0, 0 },
     { "hrt_torso4_anim", "HRTSEQ1.ASM", prog_hrt_torso4_anim_ops,
-      sizeof(prog_hrt_torso4_anim_ops) / sizeof(prog_hrt_torso4_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_hrt_torso4_anim_ops) / sizeof(prog_hrt_torso4_anim_ops[0]), 0, prog_hrt_torso4_anim_labels, sizeof(prog_hrt_torso4_anim_labels) / sizeof(prog_hrt_torso4_anim_labels[0]) },
     { "hrt_torso6_anim", "HRTSEQ1.ASM", prog_hrt_torso6_anim_ops,
       sizeof(prog_hrt_torso6_anim_ops) / sizeof(prog_hrt_torso6_anim_ops[0]), 0, 0, 0 },
     { "hrt_walk1_f2_anim", "HRTSEQ1.ASM", prog_hrt_walk1_f2_anim_ops,
@@ -63875,51 +66341,51 @@ static const wm_anim_program programs[] = {
     { "hrt_walk8_f4_anim", "HRTSEQ1.ASM", prog_hrt_walk8_f4_anim_ops,
       sizeof(prog_hrt_walk8_f4_anim_ops) / sizeof(prog_hrt_walk8_f4_anim_ops[0]), 0, 0, 0 },
     { "hrt_2_to_4_turn_anim", "HRTSEQ1.ASM", prog_hrt_2_to_4_turn_anim_ops,
-      sizeof(prog_hrt_2_to_4_turn_anim_ops) / sizeof(prog_hrt_2_to_4_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_hrt_2_to_4_turn_anim_ops) / sizeof(prog_hrt_2_to_4_turn_anim_ops[0]), 0, prog_hrt_2_to_4_turn_anim_labels, sizeof(prog_hrt_2_to_4_turn_anim_labels) / sizeof(prog_hrt_2_to_4_turn_anim_labels[0]) },
     { "hrt_8_to_6_turn_anim", "HRTSEQ1.ASM", prog_hrt_8_to_6_turn_anim_ops,
       sizeof(prog_hrt_8_to_6_turn_anim_ops) / sizeof(prog_hrt_8_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "hrt_4_to_2_turn_anim", "HRTSEQ1.ASM", prog_hrt_4_to_2_turn_anim_ops,
-      sizeof(prog_hrt_4_to_2_turn_anim_ops) / sizeof(prog_hrt_4_to_2_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_hrt_4_to_2_turn_anim_ops) / sizeof(prog_hrt_4_to_2_turn_anim_ops[0]), 0, prog_hrt_4_to_2_turn_anim_labels, sizeof(prog_hrt_4_to_2_turn_anim_labels) / sizeof(prog_hrt_4_to_2_turn_anim_labels[0]) },
     { "hrt_6_to_8_turn_anim", "HRTSEQ1.ASM", prog_hrt_6_to_8_turn_anim_ops,
       sizeof(prog_hrt_6_to_8_turn_anim_ops) / sizeof(prog_hrt_6_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "hrt_4_to_6_turn_anim", "HRTSEQ1.ASM", prog_hrt_4_to_6_turn_anim_ops,
-      sizeof(prog_hrt_4_to_6_turn_anim_ops) / sizeof(prog_hrt_4_to_6_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_hrt_4_to_6_turn_anim_ops) / sizeof(prog_hrt_4_to_6_turn_anim_ops[0]), 0, prog_hrt_4_to_6_turn_anim_labels, sizeof(prog_hrt_4_to_6_turn_anim_labels) / sizeof(prog_hrt_4_to_6_turn_anim_labels[0]) },
     { "hrt_6_to_4_turn_anim", "HRTSEQ1.ASM", prog_hrt_6_to_4_turn_anim_ops,
       sizeof(prog_hrt_6_to_4_turn_anim_ops) / sizeof(prog_hrt_6_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "hrt_2_to_8_turn_anim", "HRTSEQ1.ASM", prog_hrt_2_to_8_turn_anim_ops,
-      sizeof(prog_hrt_2_to_8_turn_anim_ops) / sizeof(prog_hrt_2_to_8_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_hrt_2_to_8_turn_anim_ops) / sizeof(prog_hrt_2_to_8_turn_anim_ops[0]), 0, prog_hrt_2_to_8_turn_anim_labels, sizeof(prog_hrt_2_to_8_turn_anim_labels) / sizeof(prog_hrt_2_to_8_turn_anim_labels[0]) },
     { "hrt_8_to_2_turn_anim", "HRTSEQ1.ASM", prog_hrt_8_to_2_turn_anim_ops,
       sizeof(prog_hrt_8_to_2_turn_anim_ops) / sizeof(prog_hrt_8_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "hrt_4_to_8_turn_anim", "HRTSEQ1.ASM", prog_hrt_4_to_8_turn_anim_ops,
-      sizeof(prog_hrt_4_to_8_turn_anim_ops) / sizeof(prog_hrt_4_to_8_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_hrt_4_to_8_turn_anim_ops) / sizeof(prog_hrt_4_to_8_turn_anim_ops[0]), 0, prog_hrt_4_to_8_turn_anim_labels, sizeof(prog_hrt_4_to_8_turn_anim_labels) / sizeof(prog_hrt_4_to_8_turn_anim_labels[0]) },
     { "hrt_6_to_2_turn_anim", "HRTSEQ1.ASM", prog_hrt_6_to_2_turn_anim_ops,
       sizeof(prog_hrt_6_to_2_turn_anim_ops) / sizeof(prog_hrt_6_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "hrt_2_to_6_turn_anim", "HRTSEQ1.ASM", prog_hrt_2_to_6_turn_anim_ops,
-      sizeof(prog_hrt_2_to_6_turn_anim_ops) / sizeof(prog_hrt_2_to_6_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_hrt_2_to_6_turn_anim_ops) / sizeof(prog_hrt_2_to_6_turn_anim_ops[0]), 0, prog_hrt_2_to_6_turn_anim_labels, sizeof(prog_hrt_2_to_6_turn_anim_labels) / sizeof(prog_hrt_2_to_6_turn_anim_labels[0]) },
     { "hrt_8_to_4_turn_anim", "HRTSEQ1.ASM", prog_hrt_8_to_4_turn_anim_ops,
       sizeof(prog_hrt_8_to_4_turn_anim_ops) / sizeof(prog_hrt_8_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "hrt_2_to_4_turn2_anim", "HRTSEQ1.ASM", prog_hrt_2_to_4_turn2_anim_ops,
-      sizeof(prog_hrt_2_to_4_turn2_anim_ops) / sizeof(prog_hrt_2_to_4_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_hrt_2_to_4_turn2_anim_ops) / sizeof(prog_hrt_2_to_4_turn2_anim_ops[0]), 0, prog_hrt_2_to_4_turn2_anim_labels, sizeof(prog_hrt_2_to_4_turn2_anim_labels) / sizeof(prog_hrt_2_to_4_turn2_anim_labels[0]) },
     { "hrt_8_to_6_turn2_anim", "HRTSEQ1.ASM", prog_hrt_8_to_6_turn2_anim_ops,
       sizeof(prog_hrt_8_to_6_turn2_anim_ops) / sizeof(prog_hrt_8_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "hrt_4_to_2_turn2_anim", "HRTSEQ1.ASM", prog_hrt_4_to_2_turn2_anim_ops,
-      sizeof(prog_hrt_4_to_2_turn2_anim_ops) / sizeof(prog_hrt_4_to_2_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_hrt_4_to_2_turn2_anim_ops) / sizeof(prog_hrt_4_to_2_turn2_anim_ops[0]), 0, prog_hrt_4_to_2_turn2_anim_labels, sizeof(prog_hrt_4_to_2_turn2_anim_labels) / sizeof(prog_hrt_4_to_2_turn2_anim_labels[0]) },
     { "hrt_6_to_8_turn2_anim", "HRTSEQ1.ASM", prog_hrt_6_to_8_turn2_anim_ops,
       sizeof(prog_hrt_6_to_8_turn2_anim_ops) / sizeof(prog_hrt_6_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "hrt_4_to_6_turn2_anim", "HRTSEQ1.ASM", prog_hrt_4_to_6_turn2_anim_ops,
-      sizeof(prog_hrt_4_to_6_turn2_anim_ops) / sizeof(prog_hrt_4_to_6_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_hrt_4_to_6_turn2_anim_ops) / sizeof(prog_hrt_4_to_6_turn2_anim_ops[0]), 0, prog_hrt_4_to_6_turn2_anim_labels, sizeof(prog_hrt_4_to_6_turn2_anim_labels) / sizeof(prog_hrt_4_to_6_turn2_anim_labels[0]) },
     { "hrt_6_to_4_turn2_anim", "HRTSEQ1.ASM", prog_hrt_6_to_4_turn2_anim_ops,
       sizeof(prog_hrt_6_to_4_turn2_anim_ops) / sizeof(prog_hrt_6_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "hrt_2_to_8_turn2_anim", "HRTSEQ1.ASM", prog_hrt_2_to_8_turn2_anim_ops,
-      sizeof(prog_hrt_2_to_8_turn2_anim_ops) / sizeof(prog_hrt_2_to_8_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_hrt_2_to_8_turn2_anim_ops) / sizeof(prog_hrt_2_to_8_turn2_anim_ops[0]), 0, prog_hrt_2_to_8_turn2_anim_labels, sizeof(prog_hrt_2_to_8_turn2_anim_labels) / sizeof(prog_hrt_2_to_8_turn2_anim_labels[0]) },
     { "hrt_8_to_2_turn2_anim", "HRTSEQ1.ASM", prog_hrt_8_to_2_turn2_anim_ops,
       sizeof(prog_hrt_8_to_2_turn2_anim_ops) / sizeof(prog_hrt_8_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "hrt_4_to_8_turn2_anim", "HRTSEQ1.ASM", prog_hrt_4_to_8_turn2_anim_ops,
-      sizeof(prog_hrt_4_to_8_turn2_anim_ops) / sizeof(prog_hrt_4_to_8_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_hrt_4_to_8_turn2_anim_ops) / sizeof(prog_hrt_4_to_8_turn2_anim_ops[0]), 0, prog_hrt_4_to_8_turn2_anim_labels, sizeof(prog_hrt_4_to_8_turn2_anim_labels) / sizeof(prog_hrt_4_to_8_turn2_anim_labels[0]) },
     { "hrt_6_to_2_turn2_anim", "HRTSEQ1.ASM", prog_hrt_6_to_2_turn2_anim_ops,
       sizeof(prog_hrt_6_to_2_turn2_anim_ops) / sizeof(prog_hrt_6_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "hrt_2_to_6_turn2_anim", "HRTSEQ1.ASM", prog_hrt_2_to_6_turn2_anim_ops,
-      sizeof(prog_hrt_2_to_6_turn2_anim_ops) / sizeof(prog_hrt_2_to_6_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_hrt_2_to_6_turn2_anim_ops) / sizeof(prog_hrt_2_to_6_turn2_anim_ops[0]), 0, prog_hrt_2_to_6_turn2_anim_labels, sizeof(prog_hrt_2_to_6_turn2_anim_labels) / sizeof(prog_hrt_2_to_6_turn2_anim_labels[0]) },
     { "hrt_8_to_4_turn2_anim", "HRTSEQ1.ASM", prog_hrt_8_to_4_turn2_anim_ops,
       sizeof(prog_hrt_8_to_4_turn2_anim_ops) / sizeof(prog_hrt_8_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "hrt_run2_anim", "HRTSEQ1.ASM", prog_hrt_run2_anim_ops,
@@ -64007,7 +66473,7 @@ static const wm_anim_program programs[] = {
     { "hrt_4_grabfling_anim", "HRTSEQ2.ASM", prog_hrt_4_grabfling_anim_ops,
       sizeof(prog_hrt_4_grabfling_anim_ops) / sizeof(prog_hrt_4_grabfling_anim_ops[0]), 0, prog_hrt_4_grabfling_anim_labels, sizeof(prog_hrt_4_grabfling_anim_labels) / sizeof(prog_hrt_4_grabfling_anim_labels[0]) },
     { "hrt_roll_frames", "HRTSEQ2.ASM", prog_hrt_roll_frames_ops,
-      sizeof(prog_hrt_roll_frames_ops) / sizeof(prog_hrt_roll_frames_ops[0]), 0, 0, 0 },
+      sizeof(prog_hrt_roll_frames_ops) / sizeof(prog_hrt_roll_frames_ops[0]), 0, prog_hrt_roll_frames_labels, sizeof(prog_hrt_roll_frames_labels) / sizeof(prog_hrt_roll_frames_labels[0]) },
     { "hrt_tossed_anim", "HRTSEQ2.ASM", prog_hrt_tossed_anim_ops,
       sizeof(prog_hrt_tossed_anim_ops) / sizeof(prog_hrt_tossed_anim_ops[0]), 0, 0, 0 },
     { "hrt_tossed2_anim", "HRTSEQ2.ASM", prog_hrt_tossed2_anim_ops,
@@ -64149,7 +66615,7 @@ static const wm_anim_program programs[] = {
     { "hrt_up_anim", "HRTSEQ4.ASM", prog_hrt_up_anim_ops,
       sizeof(prog_hrt_up_anim_ops) / sizeof(prog_hrt_up_anim_ops[0]), 0, 0, 0 },
     { "hrt_hitonground_anim", "HRTSEQ4.ASM", prog_hrt_hitonground_anim_ops,
-      sizeof(prog_hrt_hitonground_anim_ops) / sizeof(prog_hrt_hitonground_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_hrt_hitonground_anim_ops) / sizeof(prog_hrt_hitonground_anim_ops[0]), 0, prog_hrt_hitonground_anim_labels, sizeof(prog_hrt_hitonground_anim_labels) / sizeof(prog_hrt_hitonground_anim_labels[0]) },
     { "hrt_liedown_anim", "HRTSEQ4.ASM", prog_hrt_liedown_anim_ops,
       sizeof(prog_hrt_liedown_anim_ops) / sizeof(prog_hrt_liedown_anim_ops[0]), 0, 0, 0 },
     { "hrt_hitonground_facedown_anim", "HRTSEQ4.ASM", prog_hrt_hitonground_facedown_anim_ops,
@@ -64203,11 +66669,11 @@ static const wm_anim_program programs[] = {
     { "lex_zip_anim", "LEXSEQ1.ASM", prog_lex_zip_anim_ops,
       sizeof(prog_lex_zip_anim_ops) / sizeof(prog_lex_zip_anim_ops[0]), 0, 0, 0 },
     { "lex_stand2_anim", "LEXSEQ1.ASM", prog_lex_stand2_anim_ops,
-      sizeof(prog_lex_stand2_anim_ops) / sizeof(prog_lex_stand2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_lex_stand2_anim_ops) / sizeof(prog_lex_stand2_anim_ops[0]), 0, prog_lex_stand2_anim_labels, sizeof(prog_lex_stand2_anim_labels) / sizeof(prog_lex_stand2_anim_labels[0]) },
     { "lex_stand8_anim", "LEXSEQ1.ASM", prog_lex_stand8_anim_ops,
       sizeof(prog_lex_stand8_anim_ops) / sizeof(prog_lex_stand8_anim_ops[0]), 0, 0, 0 },
     { "lex_stand4_anim", "LEXSEQ1.ASM", prog_lex_stand4_anim_ops,
-      sizeof(prog_lex_stand4_anim_ops) / sizeof(prog_lex_stand4_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_lex_stand4_anim_ops) / sizeof(prog_lex_stand4_anim_ops[0]), 0, prog_lex_stand4_anim_labels, sizeof(prog_lex_stand4_anim_labels) / sizeof(prog_lex_stand4_anim_labels[0]) },
     { "lex_stand6_anim", "LEXSEQ1.ASM", prog_lex_stand6_anim_ops,
       sizeof(prog_lex_stand6_anim_ops) / sizeof(prog_lex_stand6_anim_ops[0]), 0, 0, 0 },
     { "lex_holdoh_anim", "LEXSEQ1.ASM", prog_lex_holdoh_anim_ops,
@@ -64215,11 +66681,11 @@ static const wm_anim_program programs[] = {
     { "lex_stndholdoh_anim", "LEXSEQ1.ASM", prog_lex_stndholdoh_anim_ops,
       sizeof(prog_lex_stndholdoh_anim_ops) / sizeof(prog_lex_stndholdoh_anim_ops[0]), 0, 0, 0 },
     { "lex_torso2_anim", "LEXSEQ1.ASM", prog_lex_torso2_anim_ops,
-      sizeof(prog_lex_torso2_anim_ops) / sizeof(prog_lex_torso2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_lex_torso2_anim_ops) / sizeof(prog_lex_torso2_anim_ops[0]), 0, prog_lex_torso2_anim_labels, sizeof(prog_lex_torso2_anim_labels) / sizeof(prog_lex_torso2_anim_labels[0]) },
     { "lex_torso8_anim", "LEXSEQ1.ASM", prog_lex_torso8_anim_ops,
       sizeof(prog_lex_torso8_anim_ops) / sizeof(prog_lex_torso8_anim_ops[0]), 0, 0, 0 },
     { "lex_torso4_anim", "LEXSEQ1.ASM", prog_lex_torso4_anim_ops,
-      sizeof(prog_lex_torso4_anim_ops) / sizeof(prog_lex_torso4_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_lex_torso4_anim_ops) / sizeof(prog_lex_torso4_anim_ops[0]), 0, prog_lex_torso4_anim_labels, sizeof(prog_lex_torso4_anim_labels) / sizeof(prog_lex_torso4_anim_labels[0]) },
     { "lex_torso6_anim", "LEXSEQ1.ASM", prog_lex_torso6_anim_ops,
       sizeof(prog_lex_torso6_anim_ops) / sizeof(prog_lex_torso6_anim_ops[0]), 0, 0, 0 },
     { "lex_walk1_f2_anim", "LEXSEQ1.ASM", prog_lex_walk1_f2_anim_ops,
@@ -64247,51 +66713,51 @@ static const wm_anim_program programs[] = {
     { "lex_walk8_f4_anim", "LEXSEQ1.ASM", prog_lex_walk8_f4_anim_ops,
       sizeof(prog_lex_walk8_f4_anim_ops) / sizeof(prog_lex_walk8_f4_anim_ops[0]), 0, 0, 0 },
     { "lex_2_to_4_turn_anim", "LEXSEQ1.ASM", prog_lex_2_to_4_turn_anim_ops,
-      sizeof(prog_lex_2_to_4_turn_anim_ops) / sizeof(prog_lex_2_to_4_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_lex_2_to_4_turn_anim_ops) / sizeof(prog_lex_2_to_4_turn_anim_ops[0]), 0, prog_lex_2_to_4_turn_anim_labels, sizeof(prog_lex_2_to_4_turn_anim_labels) / sizeof(prog_lex_2_to_4_turn_anim_labels[0]) },
     { "lex_8_to_6_turn_anim", "LEXSEQ1.ASM", prog_lex_8_to_6_turn_anim_ops,
       sizeof(prog_lex_8_to_6_turn_anim_ops) / sizeof(prog_lex_8_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "lex_4_to_2_turn_anim", "LEXSEQ1.ASM", prog_lex_4_to_2_turn_anim_ops,
-      sizeof(prog_lex_4_to_2_turn_anim_ops) / sizeof(prog_lex_4_to_2_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_lex_4_to_2_turn_anim_ops) / sizeof(prog_lex_4_to_2_turn_anim_ops[0]), 0, prog_lex_4_to_2_turn_anim_labels, sizeof(prog_lex_4_to_2_turn_anim_labels) / sizeof(prog_lex_4_to_2_turn_anim_labels[0]) },
     { "lex_6_to_8_turn_anim", "LEXSEQ1.ASM", prog_lex_6_to_8_turn_anim_ops,
       sizeof(prog_lex_6_to_8_turn_anim_ops) / sizeof(prog_lex_6_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "lex_4_to_6_turn_anim", "LEXSEQ1.ASM", prog_lex_4_to_6_turn_anim_ops,
-      sizeof(prog_lex_4_to_6_turn_anim_ops) / sizeof(prog_lex_4_to_6_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_lex_4_to_6_turn_anim_ops) / sizeof(prog_lex_4_to_6_turn_anim_ops[0]), 0, prog_lex_4_to_6_turn_anim_labels, sizeof(prog_lex_4_to_6_turn_anim_labels) / sizeof(prog_lex_4_to_6_turn_anim_labels[0]) },
     { "lex_6_to_4_turn_anim", "LEXSEQ1.ASM", prog_lex_6_to_4_turn_anim_ops,
       sizeof(prog_lex_6_to_4_turn_anim_ops) / sizeof(prog_lex_6_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "lex_2_to_8_turn_anim", "LEXSEQ1.ASM", prog_lex_2_to_8_turn_anim_ops,
-      sizeof(prog_lex_2_to_8_turn_anim_ops) / sizeof(prog_lex_2_to_8_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_lex_2_to_8_turn_anim_ops) / sizeof(prog_lex_2_to_8_turn_anim_ops[0]), 0, prog_lex_2_to_8_turn_anim_labels, sizeof(prog_lex_2_to_8_turn_anim_labels) / sizeof(prog_lex_2_to_8_turn_anim_labels[0]) },
     { "lex_8_to_2_turn_anim", "LEXSEQ1.ASM", prog_lex_8_to_2_turn_anim_ops,
       sizeof(prog_lex_8_to_2_turn_anim_ops) / sizeof(prog_lex_8_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "lex_4_to_8_turn_anim", "LEXSEQ1.ASM", prog_lex_4_to_8_turn_anim_ops,
-      sizeof(prog_lex_4_to_8_turn_anim_ops) / sizeof(prog_lex_4_to_8_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_lex_4_to_8_turn_anim_ops) / sizeof(prog_lex_4_to_8_turn_anim_ops[0]), 0, prog_lex_4_to_8_turn_anim_labels, sizeof(prog_lex_4_to_8_turn_anim_labels) / sizeof(prog_lex_4_to_8_turn_anim_labels[0]) },
     { "lex_6_to_2_turn_anim", "LEXSEQ1.ASM", prog_lex_6_to_2_turn_anim_ops,
       sizeof(prog_lex_6_to_2_turn_anim_ops) / sizeof(prog_lex_6_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "lex_2_to_6_turn_anim", "LEXSEQ1.ASM", prog_lex_2_to_6_turn_anim_ops,
-      sizeof(prog_lex_2_to_6_turn_anim_ops) / sizeof(prog_lex_2_to_6_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_lex_2_to_6_turn_anim_ops) / sizeof(prog_lex_2_to_6_turn_anim_ops[0]), 0, prog_lex_2_to_6_turn_anim_labels, sizeof(prog_lex_2_to_6_turn_anim_labels) / sizeof(prog_lex_2_to_6_turn_anim_labels[0]) },
     { "lex_8_to_4_turn_anim", "LEXSEQ1.ASM", prog_lex_8_to_4_turn_anim_ops,
       sizeof(prog_lex_8_to_4_turn_anim_ops) / sizeof(prog_lex_8_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "lex_2_to_4_turn2_anim", "LEXSEQ1.ASM", prog_lex_2_to_4_turn2_anim_ops,
-      sizeof(prog_lex_2_to_4_turn2_anim_ops) / sizeof(prog_lex_2_to_4_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_lex_2_to_4_turn2_anim_ops) / sizeof(prog_lex_2_to_4_turn2_anim_ops[0]), 0, prog_lex_2_to_4_turn2_anim_labels, sizeof(prog_lex_2_to_4_turn2_anim_labels) / sizeof(prog_lex_2_to_4_turn2_anim_labels[0]) },
     { "lex_8_to_6_turn2_anim", "LEXSEQ1.ASM", prog_lex_8_to_6_turn2_anim_ops,
       sizeof(prog_lex_8_to_6_turn2_anim_ops) / sizeof(prog_lex_8_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "lex_4_to_2_turn2_anim", "LEXSEQ1.ASM", prog_lex_4_to_2_turn2_anim_ops,
-      sizeof(prog_lex_4_to_2_turn2_anim_ops) / sizeof(prog_lex_4_to_2_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_lex_4_to_2_turn2_anim_ops) / sizeof(prog_lex_4_to_2_turn2_anim_ops[0]), 0, prog_lex_4_to_2_turn2_anim_labels, sizeof(prog_lex_4_to_2_turn2_anim_labels) / sizeof(prog_lex_4_to_2_turn2_anim_labels[0]) },
     { "lex_6_to_8_turn2_anim", "LEXSEQ1.ASM", prog_lex_6_to_8_turn2_anim_ops,
       sizeof(prog_lex_6_to_8_turn2_anim_ops) / sizeof(prog_lex_6_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "lex_4_to_6_turn2_anim", "LEXSEQ1.ASM", prog_lex_4_to_6_turn2_anim_ops,
-      sizeof(prog_lex_4_to_6_turn2_anim_ops) / sizeof(prog_lex_4_to_6_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_lex_4_to_6_turn2_anim_ops) / sizeof(prog_lex_4_to_6_turn2_anim_ops[0]), 0, prog_lex_4_to_6_turn2_anim_labels, sizeof(prog_lex_4_to_6_turn2_anim_labels) / sizeof(prog_lex_4_to_6_turn2_anim_labels[0]) },
     { "lex_6_to_4_turn2_anim", "LEXSEQ1.ASM", prog_lex_6_to_4_turn2_anim_ops,
       sizeof(prog_lex_6_to_4_turn2_anim_ops) / sizeof(prog_lex_6_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "lex_2_to_8_turn2_anim", "LEXSEQ1.ASM", prog_lex_2_to_8_turn2_anim_ops,
-      sizeof(prog_lex_2_to_8_turn2_anim_ops) / sizeof(prog_lex_2_to_8_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_lex_2_to_8_turn2_anim_ops) / sizeof(prog_lex_2_to_8_turn2_anim_ops[0]), 0, prog_lex_2_to_8_turn2_anim_labels, sizeof(prog_lex_2_to_8_turn2_anim_labels) / sizeof(prog_lex_2_to_8_turn2_anim_labels[0]) },
     { "lex_8_to_2_turn2_anim", "LEXSEQ1.ASM", prog_lex_8_to_2_turn2_anim_ops,
       sizeof(prog_lex_8_to_2_turn2_anim_ops) / sizeof(prog_lex_8_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "lex_4_to_8_turn2_anim", "LEXSEQ1.ASM", prog_lex_4_to_8_turn2_anim_ops,
-      sizeof(prog_lex_4_to_8_turn2_anim_ops) / sizeof(prog_lex_4_to_8_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_lex_4_to_8_turn2_anim_ops) / sizeof(prog_lex_4_to_8_turn2_anim_ops[0]), 0, prog_lex_4_to_8_turn2_anim_labels, sizeof(prog_lex_4_to_8_turn2_anim_labels) / sizeof(prog_lex_4_to_8_turn2_anim_labels[0]) },
     { "lex_6_to_2_turn2_anim", "LEXSEQ1.ASM", prog_lex_6_to_2_turn2_anim_ops,
       sizeof(prog_lex_6_to_2_turn2_anim_ops) / sizeof(prog_lex_6_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "lex_2_to_6_turn2_anim", "LEXSEQ1.ASM", prog_lex_2_to_6_turn2_anim_ops,
-      sizeof(prog_lex_2_to_6_turn2_anim_ops) / sizeof(prog_lex_2_to_6_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_lex_2_to_6_turn2_anim_ops) / sizeof(prog_lex_2_to_6_turn2_anim_ops[0]), 0, prog_lex_2_to_6_turn2_anim_labels, sizeof(prog_lex_2_to_6_turn2_anim_labels) / sizeof(prog_lex_2_to_6_turn2_anim_labels[0]) },
     { "lex_8_to_4_turn2_anim", "LEXSEQ1.ASM", prog_lex_8_to_4_turn2_anim_ops,
       sizeof(prog_lex_8_to_4_turn2_anim_ops) / sizeof(prog_lex_8_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "lex_run2_anim", "LEXSEQ1.ASM", prog_lex_run2_anim_ops,
@@ -64533,7 +66999,7 @@ static const wm_anim_program programs[] = {
     { "lex_4_knee_hit_dizzy_anim", "LEXSEQ4.ASM", prog_lex_4_knee_hit_dizzy_anim_ops,
       sizeof(prog_lex_4_knee_hit_dizzy_anim_ops) / sizeof(prog_lex_4_knee_hit_dizzy_anim_ops[0]), 0, 0, 0 },
     { "lex_hitonground_anim", "LEXSEQ4.ASM", prog_lex_hitonground_anim_ops,
-      sizeof(prog_lex_hitonground_anim_ops) / sizeof(prog_lex_hitonground_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_lex_hitonground_anim_ops) / sizeof(prog_lex_hitonground_anim_ops[0]), 0, prog_lex_hitonground_anim_labels, sizeof(prog_lex_hitonground_anim_labels) / sizeof(prog_lex_hitonground_anim_labels[0]) },
     { "lex_liedown_anim", "LEXSEQ4.ASM", prog_lex_liedown_anim_ops,
       sizeof(prog_lex_liedown_anim_ops) / sizeof(prog_lex_liedown_anim_ops[0]), 0, 0, 0 },
     { "lex_up_anim", "LEXSEQ4.ASM", prog_lex_up_anim_ops,
@@ -64553,27 +67019,27 @@ static const wm_anim_program programs[] = {
     { "lex_dizzy_anim", "LEXSEQ4.ASM", prog_lex_dizzy_anim_ops,
       sizeof(prog_lex_dizzy_anim_ops) / sizeof(prog_lex_dizzy_anim_ops[0]), 0, prog_lex_dizzy_anim_labels, sizeof(prog_lex_dizzy_anim_labels) / sizeof(prog_lex_dizzy_anim_labels[0]) },
     { "lex_roll_frames", "LEXSEQ4.ASM", prog_lex_roll_frames_ops,
-      sizeof(prog_lex_roll_frames_ops) / sizeof(prog_lex_roll_frames_ops[0]), 0, 0, 0 },
+      sizeof(prog_lex_roll_frames_ops) / sizeof(prog_lex_roll_frames_ops[0]), 0, prog_lex_roll_frames_labels, sizeof(prog_lex_roll_frames_labels) / sizeof(prog_lex_roll_frames_labels[0]) },
     { "lex_tossed_anim", "LEXSEQ4.ASM", prog_lex_tossed_anim_ops,
       sizeof(prog_lex_tossed_anim_ops) / sizeof(prog_lex_tossed_anim_ops[0]), 0, 0, 0 },
     { "lex_tossed2_anim", "LEXSEQ4.ASM", prog_lex_tossed2_anim_ops,
       sizeof(prog_lex_tossed2_anim_ops) / sizeof(prog_lex_tossed2_anim_ops[0]), 0, 0, 0 },
     { "rzr_zip_anim", "RZRSEQ1.ASM", prog_rzr_zip_anim_ops,
-      sizeof(prog_rzr_zip_anim_ops) / sizeof(prog_rzr_zip_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_rzr_zip_anim_ops) / sizeof(prog_rzr_zip_anim_ops[0]), 0, prog_rzr_zip_anim_labels, sizeof(prog_rzr_zip_anim_labels) / sizeof(prog_rzr_zip_anim_labels[0]) },
     { "rzr_stand2_anim", "RZRSEQ1.ASM", prog_rzr_stand2_anim_ops,
-      sizeof(prog_rzr_stand2_anim_ops) / sizeof(prog_rzr_stand2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_rzr_stand2_anim_ops) / sizeof(prog_rzr_stand2_anim_ops[0]), 0, prog_rzr_stand2_anim_labels, sizeof(prog_rzr_stand2_anim_labels) / sizeof(prog_rzr_stand2_anim_labels[0]) },
     { "rzr_stand8_anim", "RZRSEQ1.ASM", prog_rzr_stand8_anim_ops,
       sizeof(prog_rzr_stand8_anim_ops) / sizeof(prog_rzr_stand8_anim_ops[0]), 0, 0, 0 },
     { "rzr_stand4_anim", "RZRSEQ1.ASM", prog_rzr_stand4_anim_ops,
-      sizeof(prog_rzr_stand4_anim_ops) / sizeof(prog_rzr_stand4_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_rzr_stand4_anim_ops) / sizeof(prog_rzr_stand4_anim_ops[0]), 0, prog_rzr_stand4_anim_labels, sizeof(prog_rzr_stand4_anim_labels) / sizeof(prog_rzr_stand4_anim_labels[0]) },
     { "rzr_stand6_anim", "RZRSEQ1.ASM", prog_rzr_stand6_anim_ops,
       sizeof(prog_rzr_stand6_anim_ops) / sizeof(prog_rzr_stand6_anim_ops[0]), 0, 0, 0 },
     { "rzr_torso2_anim", "RZRSEQ1.ASM", prog_rzr_torso2_anim_ops,
-      sizeof(prog_rzr_torso2_anim_ops) / sizeof(prog_rzr_torso2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_rzr_torso2_anim_ops) / sizeof(prog_rzr_torso2_anim_ops[0]), 0, prog_rzr_torso2_anim_labels, sizeof(prog_rzr_torso2_anim_labels) / sizeof(prog_rzr_torso2_anim_labels[0]) },
     { "rzr_torso8_anim", "RZRSEQ1.ASM", prog_rzr_torso8_anim_ops,
       sizeof(prog_rzr_torso8_anim_ops) / sizeof(prog_rzr_torso8_anim_ops[0]), 0, 0, 0 },
     { "rzr_torso4_anim", "RZRSEQ1.ASM", prog_rzr_torso4_anim_ops,
-      sizeof(prog_rzr_torso4_anim_ops) / sizeof(prog_rzr_torso4_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_rzr_torso4_anim_ops) / sizeof(prog_rzr_torso4_anim_ops[0]), 0, prog_rzr_torso4_anim_labels, sizeof(prog_rzr_torso4_anim_labels) / sizeof(prog_rzr_torso4_anim_labels[0]) },
     { "rzr_torso6_anim", "RZRSEQ1.ASM", prog_rzr_torso6_anim_ops,
       sizeof(prog_rzr_torso6_anim_ops) / sizeof(prog_rzr_torso6_anim_ops[0]), 0, 0, 0 },
     { "rzr_walk1_f2_anim", "RZRSEQ1.ASM", prog_rzr_walk1_f2_anim_ops,
@@ -64601,51 +67067,51 @@ static const wm_anim_program programs[] = {
     { "rzr_walk8_f4_anim", "RZRSEQ1.ASM", prog_rzr_walk8_f4_anim_ops,
       sizeof(prog_rzr_walk8_f4_anim_ops) / sizeof(prog_rzr_walk8_f4_anim_ops[0]), 0, 0, 0 },
     { "rzr_2_to_4_turn_anim", "RZRSEQ1.ASM", prog_rzr_2_to_4_turn_anim_ops,
-      sizeof(prog_rzr_2_to_4_turn_anim_ops) / sizeof(prog_rzr_2_to_4_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_rzr_2_to_4_turn_anim_ops) / sizeof(prog_rzr_2_to_4_turn_anim_ops[0]), 0, prog_rzr_2_to_4_turn_anim_labels, sizeof(prog_rzr_2_to_4_turn_anim_labels) / sizeof(prog_rzr_2_to_4_turn_anim_labels[0]) },
     { "rzr_8_to_6_turn_anim", "RZRSEQ1.ASM", prog_rzr_8_to_6_turn_anim_ops,
       sizeof(prog_rzr_8_to_6_turn_anim_ops) / sizeof(prog_rzr_8_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "rzr_4_to_2_turn_anim", "RZRSEQ1.ASM", prog_rzr_4_to_2_turn_anim_ops,
-      sizeof(prog_rzr_4_to_2_turn_anim_ops) / sizeof(prog_rzr_4_to_2_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_rzr_4_to_2_turn_anim_ops) / sizeof(prog_rzr_4_to_2_turn_anim_ops[0]), 0, prog_rzr_4_to_2_turn_anim_labels, sizeof(prog_rzr_4_to_2_turn_anim_labels) / sizeof(prog_rzr_4_to_2_turn_anim_labels[0]) },
     { "rzr_6_to_8_turn_anim", "RZRSEQ1.ASM", prog_rzr_6_to_8_turn_anim_ops,
       sizeof(prog_rzr_6_to_8_turn_anim_ops) / sizeof(prog_rzr_6_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "rzr_4_to_6_turn_anim", "RZRSEQ1.ASM", prog_rzr_4_to_6_turn_anim_ops,
-      sizeof(prog_rzr_4_to_6_turn_anim_ops) / sizeof(prog_rzr_4_to_6_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_rzr_4_to_6_turn_anim_ops) / sizeof(prog_rzr_4_to_6_turn_anim_ops[0]), 0, prog_rzr_4_to_6_turn_anim_labels, sizeof(prog_rzr_4_to_6_turn_anim_labels) / sizeof(prog_rzr_4_to_6_turn_anim_labels[0]) },
     { "rzr_6_to_4_turn_anim", "RZRSEQ1.ASM", prog_rzr_6_to_4_turn_anim_ops,
       sizeof(prog_rzr_6_to_4_turn_anim_ops) / sizeof(prog_rzr_6_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "rzr_2_to_8_turn_anim", "RZRSEQ1.ASM", prog_rzr_2_to_8_turn_anim_ops,
-      sizeof(prog_rzr_2_to_8_turn_anim_ops) / sizeof(prog_rzr_2_to_8_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_rzr_2_to_8_turn_anim_ops) / sizeof(prog_rzr_2_to_8_turn_anim_ops[0]), 0, prog_rzr_2_to_8_turn_anim_labels, sizeof(prog_rzr_2_to_8_turn_anim_labels) / sizeof(prog_rzr_2_to_8_turn_anim_labels[0]) },
     { "rzr_8_to_2_turn_anim", "RZRSEQ1.ASM", prog_rzr_8_to_2_turn_anim_ops,
       sizeof(prog_rzr_8_to_2_turn_anim_ops) / sizeof(prog_rzr_8_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "rzr_4_to_8_turn_anim", "RZRSEQ1.ASM", prog_rzr_4_to_8_turn_anim_ops,
-      sizeof(prog_rzr_4_to_8_turn_anim_ops) / sizeof(prog_rzr_4_to_8_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_rzr_4_to_8_turn_anim_ops) / sizeof(prog_rzr_4_to_8_turn_anim_ops[0]), 0, prog_rzr_4_to_8_turn_anim_labels, sizeof(prog_rzr_4_to_8_turn_anim_labels) / sizeof(prog_rzr_4_to_8_turn_anim_labels[0]) },
     { "rzr_6_to_2_turn_anim", "RZRSEQ1.ASM", prog_rzr_6_to_2_turn_anim_ops,
       sizeof(prog_rzr_6_to_2_turn_anim_ops) / sizeof(prog_rzr_6_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "rzr_2_to_6_turn_anim", "RZRSEQ1.ASM", prog_rzr_2_to_6_turn_anim_ops,
-      sizeof(prog_rzr_2_to_6_turn_anim_ops) / sizeof(prog_rzr_2_to_6_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_rzr_2_to_6_turn_anim_ops) / sizeof(prog_rzr_2_to_6_turn_anim_ops[0]), 0, prog_rzr_2_to_6_turn_anim_labels, sizeof(prog_rzr_2_to_6_turn_anim_labels) / sizeof(prog_rzr_2_to_6_turn_anim_labels[0]) },
     { "rzr_8_to_4_turn_anim", "RZRSEQ1.ASM", prog_rzr_8_to_4_turn_anim_ops,
       sizeof(prog_rzr_8_to_4_turn_anim_ops) / sizeof(prog_rzr_8_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "rzr_2_to_4_turn2_anim", "RZRSEQ1.ASM", prog_rzr_2_to_4_turn2_anim_ops,
-      sizeof(prog_rzr_2_to_4_turn2_anim_ops) / sizeof(prog_rzr_2_to_4_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_rzr_2_to_4_turn2_anim_ops) / sizeof(prog_rzr_2_to_4_turn2_anim_ops[0]), 0, prog_rzr_2_to_4_turn2_anim_labels, sizeof(prog_rzr_2_to_4_turn2_anim_labels) / sizeof(prog_rzr_2_to_4_turn2_anim_labels[0]) },
     { "rzr_8_to_6_turn2_anim", "RZRSEQ1.ASM", prog_rzr_8_to_6_turn2_anim_ops,
       sizeof(prog_rzr_8_to_6_turn2_anim_ops) / sizeof(prog_rzr_8_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "rzr_4_to_2_turn2_anim", "RZRSEQ1.ASM", prog_rzr_4_to_2_turn2_anim_ops,
-      sizeof(prog_rzr_4_to_2_turn2_anim_ops) / sizeof(prog_rzr_4_to_2_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_rzr_4_to_2_turn2_anim_ops) / sizeof(prog_rzr_4_to_2_turn2_anim_ops[0]), 0, prog_rzr_4_to_2_turn2_anim_labels, sizeof(prog_rzr_4_to_2_turn2_anim_labels) / sizeof(prog_rzr_4_to_2_turn2_anim_labels[0]) },
     { "rzr_6_to_8_turn2_anim", "RZRSEQ1.ASM", prog_rzr_6_to_8_turn2_anim_ops,
       sizeof(prog_rzr_6_to_8_turn2_anim_ops) / sizeof(prog_rzr_6_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "rzr_4_to_6_turn2_anim", "RZRSEQ1.ASM", prog_rzr_4_to_6_turn2_anim_ops,
-      sizeof(prog_rzr_4_to_6_turn2_anim_ops) / sizeof(prog_rzr_4_to_6_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_rzr_4_to_6_turn2_anim_ops) / sizeof(prog_rzr_4_to_6_turn2_anim_ops[0]), 0, prog_rzr_4_to_6_turn2_anim_labels, sizeof(prog_rzr_4_to_6_turn2_anim_labels) / sizeof(prog_rzr_4_to_6_turn2_anim_labels[0]) },
     { "rzr_6_to_4_turn2_anim", "RZRSEQ1.ASM", prog_rzr_6_to_4_turn2_anim_ops,
       sizeof(prog_rzr_6_to_4_turn2_anim_ops) / sizeof(prog_rzr_6_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "rzr_2_to_8_turn2_anim", "RZRSEQ1.ASM", prog_rzr_2_to_8_turn2_anim_ops,
-      sizeof(prog_rzr_2_to_8_turn2_anim_ops) / sizeof(prog_rzr_2_to_8_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_rzr_2_to_8_turn2_anim_ops) / sizeof(prog_rzr_2_to_8_turn2_anim_ops[0]), 0, prog_rzr_2_to_8_turn2_anim_labels, sizeof(prog_rzr_2_to_8_turn2_anim_labels) / sizeof(prog_rzr_2_to_8_turn2_anim_labels[0]) },
     { "rzr_8_to_2_turn2_anim", "RZRSEQ1.ASM", prog_rzr_8_to_2_turn2_anim_ops,
       sizeof(prog_rzr_8_to_2_turn2_anim_ops) / sizeof(prog_rzr_8_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "rzr_4_to_8_turn2_anim", "RZRSEQ1.ASM", prog_rzr_4_to_8_turn2_anim_ops,
-      sizeof(prog_rzr_4_to_8_turn2_anim_ops) / sizeof(prog_rzr_4_to_8_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_rzr_4_to_8_turn2_anim_ops) / sizeof(prog_rzr_4_to_8_turn2_anim_ops[0]), 0, prog_rzr_4_to_8_turn2_anim_labels, sizeof(prog_rzr_4_to_8_turn2_anim_labels) / sizeof(prog_rzr_4_to_8_turn2_anim_labels[0]) },
     { "rzr_6_to_2_turn2_anim", "RZRSEQ1.ASM", prog_rzr_6_to_2_turn2_anim_ops,
       sizeof(prog_rzr_6_to_2_turn2_anim_ops) / sizeof(prog_rzr_6_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "rzr_2_to_6_turn2_anim", "RZRSEQ1.ASM", prog_rzr_2_to_6_turn2_anim_ops,
-      sizeof(prog_rzr_2_to_6_turn2_anim_ops) / sizeof(prog_rzr_2_to_6_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_rzr_2_to_6_turn2_anim_ops) / sizeof(prog_rzr_2_to_6_turn2_anim_ops[0]), 0, prog_rzr_2_to_6_turn2_anim_labels, sizeof(prog_rzr_2_to_6_turn2_anim_labels) / sizeof(prog_rzr_2_to_6_turn2_anim_labels[0]) },
     { "rzr_8_to_4_turn2_anim", "RZRSEQ1.ASM", prog_rzr_8_to_4_turn2_anim_ops,
       sizeof(prog_rzr_8_to_4_turn2_anim_ops) / sizeof(prog_rzr_8_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "rzr_run2_anim", "RZRSEQ1.ASM", prog_rzr_run2_anim_ops,
@@ -64741,7 +67207,7 @@ static const wm_anim_program programs[] = {
     { "rzr_4_bigboot_anim", "RZRSEQ2.ASM", prog_rzr_4_bigboot_anim_ops,
       sizeof(prog_rzr_4_bigboot_anim_ops) / sizeof(prog_rzr_4_bigboot_anim_ops[0]), 0, prog_rzr_4_bigboot_anim_labels, sizeof(prog_rzr_4_bigboot_anim_labels) / sizeof(prog_rzr_4_bigboot_anim_labels[0]) },
     { "rzr_roll_frames", "RZRSEQ2.ASM", prog_rzr_roll_frames_ops,
-      sizeof(prog_rzr_roll_frames_ops) / sizeof(prog_rzr_roll_frames_ops[0]), 0, 0, 0 },
+      sizeof(prog_rzr_roll_frames_ops) / sizeof(prog_rzr_roll_frames_ops[0]), 0, prog_rzr_roll_frames_labels, sizeof(prog_rzr_roll_frames_labels) / sizeof(prog_rzr_roll_frames_labels[0]) },
     { "rzr_tossed_anim", "RZRSEQ2.ASM", prog_rzr_tossed_anim_ops,
       sizeof(prog_rzr_tossed_anim_ops) / sizeof(prog_rzr_tossed_anim_ops[0]), 0, 0, 0 },
     { "rzr_tossed2_anim", "RZRSEQ2.ASM", prog_rzr_tossed2_anim_ops,
@@ -64901,7 +67367,7 @@ static const wm_anim_program programs[] = {
     { "rzr_up_anim", "RZRSEQ4.ASM", prog_rzr_up_anim_ops,
       sizeof(prog_rzr_up_anim_ops) / sizeof(prog_rzr_up_anim_ops[0]), 0, 0, 0 },
     { "rzr_hitonground_anim", "RZRSEQ4.ASM", prog_rzr_hitonground_anim_ops,
-      sizeof(prog_rzr_hitonground_anim_ops) / sizeof(prog_rzr_hitonground_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_rzr_hitonground_anim_ops) / sizeof(prog_rzr_hitonground_anim_ops[0]), 0, prog_rzr_hitonground_anim_labels, sizeof(prog_rzr_hitonground_anim_labels) / sizeof(prog_rzr_hitonground_anim_labels[0]) },
     { "rzr_liedown_anim", "RZRSEQ4.ASM", prog_rzr_liedown_anim_ops,
       sizeof(prog_rzr_liedown_anim_ops) / sizeof(prog_rzr_liedown_anim_ops[0]), 0, 0, 0 },
     { "rzr_dizzy_anim", "RZRSEQ4.ASM", prog_rzr_dizzy_anim_ops,
@@ -64931,19 +67397,19 @@ static const wm_anim_program programs[] = {
     { "shn_zip_anim", "SHNSEQ1.ASM", prog_shn_zip_anim_ops,
       sizeof(prog_shn_zip_anim_ops) / sizeof(prog_shn_zip_anim_ops[0]), 0, 0, 0 },
     { "shn_stand2_anim", "SHNSEQ1.ASM", prog_shn_stand2_anim_ops,
-      sizeof(prog_shn_stand2_anim_ops) / sizeof(prog_shn_stand2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_shn_stand2_anim_ops) / sizeof(prog_shn_stand2_anim_ops[0]), 0, prog_shn_stand2_anim_labels, sizeof(prog_shn_stand2_anim_labels) / sizeof(prog_shn_stand2_anim_labels[0]) },
     { "shn_stand8_anim", "SHNSEQ1.ASM", prog_shn_stand8_anim_ops,
       sizeof(prog_shn_stand8_anim_ops) / sizeof(prog_shn_stand8_anim_ops[0]), 0, 0, 0 },
     { "shn_stand4_anim", "SHNSEQ1.ASM", prog_shn_stand4_anim_ops,
-      sizeof(prog_shn_stand4_anim_ops) / sizeof(prog_shn_stand4_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_shn_stand4_anim_ops) / sizeof(prog_shn_stand4_anim_ops[0]), 0, prog_shn_stand4_anim_labels, sizeof(prog_shn_stand4_anim_labels) / sizeof(prog_shn_stand4_anim_labels[0]) },
     { "shn_stand6_anim", "SHNSEQ1.ASM", prog_shn_stand6_anim_ops,
       sizeof(prog_shn_stand6_anim_ops) / sizeof(prog_shn_stand6_anim_ops[0]), 0, 0, 0 },
     { "shn_torso2_anim", "SHNSEQ1.ASM", prog_shn_torso2_anim_ops,
-      sizeof(prog_shn_torso2_anim_ops) / sizeof(prog_shn_torso2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_shn_torso2_anim_ops) / sizeof(prog_shn_torso2_anim_ops[0]), 0, prog_shn_torso2_anim_labels, sizeof(prog_shn_torso2_anim_labels) / sizeof(prog_shn_torso2_anim_labels[0]) },
     { "shn_torso8_anim", "SHNSEQ1.ASM", prog_shn_torso8_anim_ops,
       sizeof(prog_shn_torso8_anim_ops) / sizeof(prog_shn_torso8_anim_ops[0]), 0, 0, 0 },
     { "shn_torso4_anim", "SHNSEQ1.ASM", prog_shn_torso4_anim_ops,
-      sizeof(prog_shn_torso4_anim_ops) / sizeof(prog_shn_torso4_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_shn_torso4_anim_ops) / sizeof(prog_shn_torso4_anim_ops[0]), 0, prog_shn_torso4_anim_labels, sizeof(prog_shn_torso4_anim_labels) / sizeof(prog_shn_torso4_anim_labels[0]) },
     { "shn_torso6_anim", "SHNSEQ1.ASM", prog_shn_torso6_anim_ops,
       sizeof(prog_shn_torso6_anim_ops) / sizeof(prog_shn_torso6_anim_ops[0]), 0, 0, 0 },
     { "shn_walk1_f2_anim", "SHNSEQ1.ASM", prog_shn_walk1_f2_anim_ops,
@@ -64971,51 +67437,51 @@ static const wm_anim_program programs[] = {
     { "shn_walk8_f4_anim", "SHNSEQ1.ASM", prog_shn_walk8_f4_anim_ops,
       sizeof(prog_shn_walk8_f4_anim_ops) / sizeof(prog_shn_walk8_f4_anim_ops[0]), 0, 0, 0 },
     { "shn_2_to_4_turn_anim", "SHNSEQ1.ASM", prog_shn_2_to_4_turn_anim_ops,
-      sizeof(prog_shn_2_to_4_turn_anim_ops) / sizeof(prog_shn_2_to_4_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_shn_2_to_4_turn_anim_ops) / sizeof(prog_shn_2_to_4_turn_anim_ops[0]), 0, prog_shn_2_to_4_turn_anim_labels, sizeof(prog_shn_2_to_4_turn_anim_labels) / sizeof(prog_shn_2_to_4_turn_anim_labels[0]) },
     { "shn_8_to_6_turn_anim", "SHNSEQ1.ASM", prog_shn_8_to_6_turn_anim_ops,
       sizeof(prog_shn_8_to_6_turn_anim_ops) / sizeof(prog_shn_8_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "shn_4_to_2_turn_anim", "SHNSEQ1.ASM", prog_shn_4_to_2_turn_anim_ops,
-      sizeof(prog_shn_4_to_2_turn_anim_ops) / sizeof(prog_shn_4_to_2_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_shn_4_to_2_turn_anim_ops) / sizeof(prog_shn_4_to_2_turn_anim_ops[0]), 0, prog_shn_4_to_2_turn_anim_labels, sizeof(prog_shn_4_to_2_turn_anim_labels) / sizeof(prog_shn_4_to_2_turn_anim_labels[0]) },
     { "shn_6_to_8_turn_anim", "SHNSEQ1.ASM", prog_shn_6_to_8_turn_anim_ops,
       sizeof(prog_shn_6_to_8_turn_anim_ops) / sizeof(prog_shn_6_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "shn_4_to_6_turn_anim", "SHNSEQ1.ASM", prog_shn_4_to_6_turn_anim_ops,
-      sizeof(prog_shn_4_to_6_turn_anim_ops) / sizeof(prog_shn_4_to_6_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_shn_4_to_6_turn_anim_ops) / sizeof(prog_shn_4_to_6_turn_anim_ops[0]), 0, prog_shn_4_to_6_turn_anim_labels, sizeof(prog_shn_4_to_6_turn_anim_labels) / sizeof(prog_shn_4_to_6_turn_anim_labels[0]) },
     { "shn_6_to_4_turn_anim", "SHNSEQ1.ASM", prog_shn_6_to_4_turn_anim_ops,
       sizeof(prog_shn_6_to_4_turn_anim_ops) / sizeof(prog_shn_6_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "shn_2_to_8_turn_anim", "SHNSEQ1.ASM", prog_shn_2_to_8_turn_anim_ops,
-      sizeof(prog_shn_2_to_8_turn_anim_ops) / sizeof(prog_shn_2_to_8_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_shn_2_to_8_turn_anim_ops) / sizeof(prog_shn_2_to_8_turn_anim_ops[0]), 0, prog_shn_2_to_8_turn_anim_labels, sizeof(prog_shn_2_to_8_turn_anim_labels) / sizeof(prog_shn_2_to_8_turn_anim_labels[0]) },
     { "shn_8_to_2_turn_anim", "SHNSEQ1.ASM", prog_shn_8_to_2_turn_anim_ops,
       sizeof(prog_shn_8_to_2_turn_anim_ops) / sizeof(prog_shn_8_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "shn_4_to_8_turn_anim", "SHNSEQ1.ASM", prog_shn_4_to_8_turn_anim_ops,
-      sizeof(prog_shn_4_to_8_turn_anim_ops) / sizeof(prog_shn_4_to_8_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_shn_4_to_8_turn_anim_ops) / sizeof(prog_shn_4_to_8_turn_anim_ops[0]), 0, prog_shn_4_to_8_turn_anim_labels, sizeof(prog_shn_4_to_8_turn_anim_labels) / sizeof(prog_shn_4_to_8_turn_anim_labels[0]) },
     { "shn_6_to_2_turn_anim", "SHNSEQ1.ASM", prog_shn_6_to_2_turn_anim_ops,
       sizeof(prog_shn_6_to_2_turn_anim_ops) / sizeof(prog_shn_6_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "shn_2_to_6_turn_anim", "SHNSEQ1.ASM", prog_shn_2_to_6_turn_anim_ops,
-      sizeof(prog_shn_2_to_6_turn_anim_ops) / sizeof(prog_shn_2_to_6_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_shn_2_to_6_turn_anim_ops) / sizeof(prog_shn_2_to_6_turn_anim_ops[0]), 0, prog_shn_2_to_6_turn_anim_labels, sizeof(prog_shn_2_to_6_turn_anim_labels) / sizeof(prog_shn_2_to_6_turn_anim_labels[0]) },
     { "shn_8_to_4_turn_anim", "SHNSEQ1.ASM", prog_shn_8_to_4_turn_anim_ops,
       sizeof(prog_shn_8_to_4_turn_anim_ops) / sizeof(prog_shn_8_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "shn_2_to_4_turn2_anim", "SHNSEQ1.ASM", prog_shn_2_to_4_turn2_anim_ops,
-      sizeof(prog_shn_2_to_4_turn2_anim_ops) / sizeof(prog_shn_2_to_4_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_shn_2_to_4_turn2_anim_ops) / sizeof(prog_shn_2_to_4_turn2_anim_ops[0]), 0, prog_shn_2_to_4_turn2_anim_labels, sizeof(prog_shn_2_to_4_turn2_anim_labels) / sizeof(prog_shn_2_to_4_turn2_anim_labels[0]) },
     { "shn_8_to_6_turn2_anim", "SHNSEQ1.ASM", prog_shn_8_to_6_turn2_anim_ops,
       sizeof(prog_shn_8_to_6_turn2_anim_ops) / sizeof(prog_shn_8_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "shn_4_to_2_turn2_anim", "SHNSEQ1.ASM", prog_shn_4_to_2_turn2_anim_ops,
-      sizeof(prog_shn_4_to_2_turn2_anim_ops) / sizeof(prog_shn_4_to_2_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_shn_4_to_2_turn2_anim_ops) / sizeof(prog_shn_4_to_2_turn2_anim_ops[0]), 0, prog_shn_4_to_2_turn2_anim_labels, sizeof(prog_shn_4_to_2_turn2_anim_labels) / sizeof(prog_shn_4_to_2_turn2_anim_labels[0]) },
     { "shn_6_to_8_turn2_anim", "SHNSEQ1.ASM", prog_shn_6_to_8_turn2_anim_ops,
       sizeof(prog_shn_6_to_8_turn2_anim_ops) / sizeof(prog_shn_6_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "shn_4_to_6_turn2_anim", "SHNSEQ1.ASM", prog_shn_4_to_6_turn2_anim_ops,
-      sizeof(prog_shn_4_to_6_turn2_anim_ops) / sizeof(prog_shn_4_to_6_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_shn_4_to_6_turn2_anim_ops) / sizeof(prog_shn_4_to_6_turn2_anim_ops[0]), 0, prog_shn_4_to_6_turn2_anim_labels, sizeof(prog_shn_4_to_6_turn2_anim_labels) / sizeof(prog_shn_4_to_6_turn2_anim_labels[0]) },
     { "shn_6_to_4_turn2_anim", "SHNSEQ1.ASM", prog_shn_6_to_4_turn2_anim_ops,
       sizeof(prog_shn_6_to_4_turn2_anim_ops) / sizeof(prog_shn_6_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "shn_2_to_8_turn2_anim", "SHNSEQ1.ASM", prog_shn_2_to_8_turn2_anim_ops,
-      sizeof(prog_shn_2_to_8_turn2_anim_ops) / sizeof(prog_shn_2_to_8_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_shn_2_to_8_turn2_anim_ops) / sizeof(prog_shn_2_to_8_turn2_anim_ops[0]), 0, prog_shn_2_to_8_turn2_anim_labels, sizeof(prog_shn_2_to_8_turn2_anim_labels) / sizeof(prog_shn_2_to_8_turn2_anim_labels[0]) },
     { "shn_8_to_2_turn2_anim", "SHNSEQ1.ASM", prog_shn_8_to_2_turn2_anim_ops,
       sizeof(prog_shn_8_to_2_turn2_anim_ops) / sizeof(prog_shn_8_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "shn_4_to_8_turn2_anim", "SHNSEQ1.ASM", prog_shn_4_to_8_turn2_anim_ops,
-      sizeof(prog_shn_4_to_8_turn2_anim_ops) / sizeof(prog_shn_4_to_8_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_shn_4_to_8_turn2_anim_ops) / sizeof(prog_shn_4_to_8_turn2_anim_ops[0]), 0, prog_shn_4_to_8_turn2_anim_labels, sizeof(prog_shn_4_to_8_turn2_anim_labels) / sizeof(prog_shn_4_to_8_turn2_anim_labels[0]) },
     { "shn_6_to_2_turn2_anim", "SHNSEQ1.ASM", prog_shn_6_to_2_turn2_anim_ops,
       sizeof(prog_shn_6_to_2_turn2_anim_ops) / sizeof(prog_shn_6_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "shn_2_to_6_turn2_anim", "SHNSEQ1.ASM", prog_shn_2_to_6_turn2_anim_ops,
-      sizeof(prog_shn_2_to_6_turn2_anim_ops) / sizeof(prog_shn_2_to_6_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_shn_2_to_6_turn2_anim_ops) / sizeof(prog_shn_2_to_6_turn2_anim_ops[0]), 0, prog_shn_2_to_6_turn2_anim_labels, sizeof(prog_shn_2_to_6_turn2_anim_labels) / sizeof(prog_shn_2_to_6_turn2_anim_labels[0]) },
     { "shn_8_to_4_turn2_anim", "SHNSEQ1.ASM", prog_shn_8_to_4_turn2_anim_ops,
       sizeof(prog_shn_8_to_4_turn2_anim_ops) / sizeof(prog_shn_8_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "shn_run2_anim", "SHNSEQ1.ASM", prog_shn_run2_anim_ops,
@@ -65083,7 +67549,7 @@ static const wm_anim_program programs[] = {
     { "shn_flying_kick_anim", "SHNSEQ2.ASM", prog_shn_flying_kick_anim_ops,
       sizeof(prog_shn_flying_kick_anim_ops) / sizeof(prog_shn_flying_kick_anim_ops[0]), 0, prog_shn_flying_kick_anim_labels, sizeof(prog_shn_flying_kick_anim_labels) / sizeof(prog_shn_flying_kick_anim_labels[0]) },
     { "shn_roll_frames", "SHNSEQ2.ASM", prog_shn_roll_frames_ops,
-      sizeof(prog_shn_roll_frames_ops) / sizeof(prog_shn_roll_frames_ops[0]), 0, 0, 0 },
+      sizeof(prog_shn_roll_frames_ops) / sizeof(prog_shn_roll_frames_ops[0]), 0, prog_shn_roll_frames_labels, sizeof(prog_shn_roll_frames_labels) / sizeof(prog_shn_roll_frames_labels[0]) },
     { "shn_tossed_anim", "SHNSEQ2.ASM", prog_shn_tossed_anim_ops,
       sizeof(prog_shn_tossed_anim_ops) / sizeof(prog_shn_tossed_anim_ops[0]), 0, 0, 0 },
     { "shn_tossed2_anim", "SHNSEQ2.ASM", prog_shn_tossed2_anim_ops,
@@ -65245,9 +67711,9 @@ static const wm_anim_program programs[] = {
     { "shn_quick_knee_hit_anim", "SHNSEQ4.ASM", prog_shn_quick_knee_hit_anim_ops,
       sizeof(prog_shn_quick_knee_hit_anim_ops) / sizeof(prog_shn_quick_knee_hit_anim_ops[0]), 0, prog_shn_quick_knee_hit_anim_labels, sizeof(prog_shn_quick_knee_hit_anim_labels) / sizeof(prog_shn_quick_knee_hit_anim_labels[0]) },
     { "shn_hitonground_xflip_anim", "SHNSEQ4.ASM", prog_shn_hitonground_xflip_anim_ops,
-      sizeof(prog_shn_hitonground_xflip_anim_ops) / sizeof(prog_shn_hitonground_xflip_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_shn_hitonground_xflip_anim_ops) / sizeof(prog_shn_hitonground_xflip_anim_ops[0]), 0, prog_shn_hitonground_xflip_anim_labels, sizeof(prog_shn_hitonground_xflip_anim_labels) / sizeof(prog_shn_hitonground_xflip_anim_labels[0]) },
     { "shn_hitonground_anim", "SHNSEQ4.ASM", prog_shn_hitonground_anim_ops,
-      sizeof(prog_shn_hitonground_anim_ops) / sizeof(prog_shn_hitonground_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_shn_hitonground_anim_ops) / sizeof(prog_shn_hitonground_anim_ops[0]), 0, prog_shn_hitonground_anim_labels, sizeof(prog_shn_hitonground_anim_labels) / sizeof(prog_shn_hitonground_anim_labels[0]) },
     { "shn_liedown_anim", "SHNSEQ4.ASM", prog_shn_liedown_anim_ops,
       sizeof(prog_shn_liedown_anim_ops) / sizeof(prog_shn_liedown_anim_ops[0]), 0, 0, 0 },
     { "shn_up_anim", "SHNSEQ4.ASM", prog_shn_up_anim_ops,
@@ -65311,19 +67777,19 @@ static const wm_anim_program programs[] = {
     { "und_zip_anim", "UNDSEQ1.ASM", prog_und_zip_anim_ops,
       sizeof(prog_und_zip_anim_ops) / sizeof(prog_und_zip_anim_ops[0]), 0, 0, 0 },
     { "und_stand2_anim", "UNDSEQ1.ASM", prog_und_stand2_anim_ops,
-      sizeof(prog_und_stand2_anim_ops) / sizeof(prog_und_stand2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_und_stand2_anim_ops) / sizeof(prog_und_stand2_anim_ops[0]), 0, prog_und_stand2_anim_labels, sizeof(prog_und_stand2_anim_labels) / sizeof(prog_und_stand2_anim_labels[0]) },
     { "und_stand8_anim", "UNDSEQ1.ASM", prog_und_stand8_anim_ops,
       sizeof(prog_und_stand8_anim_ops) / sizeof(prog_und_stand8_anim_ops[0]), 0, 0, 0 },
     { "und_stand4_anim", "UNDSEQ1.ASM", prog_und_stand4_anim_ops,
-      sizeof(prog_und_stand4_anim_ops) / sizeof(prog_und_stand4_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_und_stand4_anim_ops) / sizeof(prog_und_stand4_anim_ops[0]), 0, prog_und_stand4_anim_labels, sizeof(prog_und_stand4_anim_labels) / sizeof(prog_und_stand4_anim_labels[0]) },
     { "und_stand6_anim", "UNDSEQ1.ASM", prog_und_stand6_anim_ops,
       sizeof(prog_und_stand6_anim_ops) / sizeof(prog_und_stand6_anim_ops[0]), 0, 0, 0 },
     { "und_torso2_anim", "UNDSEQ1.ASM", prog_und_torso2_anim_ops,
-      sizeof(prog_und_torso2_anim_ops) / sizeof(prog_und_torso2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_und_torso2_anim_ops) / sizeof(prog_und_torso2_anim_ops[0]), 0, prog_und_torso2_anim_labels, sizeof(prog_und_torso2_anim_labels) / sizeof(prog_und_torso2_anim_labels[0]) },
     { "und_torso8_anim", "UNDSEQ1.ASM", prog_und_torso8_anim_ops,
       sizeof(prog_und_torso8_anim_ops) / sizeof(prog_und_torso8_anim_ops[0]), 0, 0, 0 },
     { "und_torso4_anim", "UNDSEQ1.ASM", prog_und_torso4_anim_ops,
-      sizeof(prog_und_torso4_anim_ops) / sizeof(prog_und_torso4_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_und_torso4_anim_ops) / sizeof(prog_und_torso4_anim_ops[0]), 0, prog_und_torso4_anim_labels, sizeof(prog_und_torso4_anim_labels) / sizeof(prog_und_torso4_anim_labels[0]) },
     { "und_torso6_anim", "UNDSEQ1.ASM", prog_und_torso6_anim_ops,
       sizeof(prog_und_torso6_anim_ops) / sizeof(prog_und_torso6_anim_ops[0]), 0, 0, 0 },
     { "und_walk1_f2_anim", "UNDSEQ1.ASM", prog_und_walk1_f2_anim_ops,
@@ -65351,51 +67817,51 @@ static const wm_anim_program programs[] = {
     { "und_walk8_f4_anim", "UNDSEQ1.ASM", prog_und_walk8_f4_anim_ops,
       sizeof(prog_und_walk8_f4_anim_ops) / sizeof(prog_und_walk8_f4_anim_ops[0]), 0, 0, 0 },
     { "und_2_to_4_turn_anim", "UNDSEQ1.ASM", prog_und_2_to_4_turn_anim_ops,
-      sizeof(prog_und_2_to_4_turn_anim_ops) / sizeof(prog_und_2_to_4_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_und_2_to_4_turn_anim_ops) / sizeof(prog_und_2_to_4_turn_anim_ops[0]), 0, prog_und_2_to_4_turn_anim_labels, sizeof(prog_und_2_to_4_turn_anim_labels) / sizeof(prog_und_2_to_4_turn_anim_labels[0]) },
     { "und_8_to_6_turn_anim", "UNDSEQ1.ASM", prog_und_8_to_6_turn_anim_ops,
       sizeof(prog_und_8_to_6_turn_anim_ops) / sizeof(prog_und_8_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "und_4_to_2_turn_anim", "UNDSEQ1.ASM", prog_und_4_to_2_turn_anim_ops,
-      sizeof(prog_und_4_to_2_turn_anim_ops) / sizeof(prog_und_4_to_2_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_und_4_to_2_turn_anim_ops) / sizeof(prog_und_4_to_2_turn_anim_ops[0]), 0, prog_und_4_to_2_turn_anim_labels, sizeof(prog_und_4_to_2_turn_anim_labels) / sizeof(prog_und_4_to_2_turn_anim_labels[0]) },
     { "und_6_to_8_turn_anim", "UNDSEQ1.ASM", prog_und_6_to_8_turn_anim_ops,
       sizeof(prog_und_6_to_8_turn_anim_ops) / sizeof(prog_und_6_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "und_4_to_6_turn_anim", "UNDSEQ1.ASM", prog_und_4_to_6_turn_anim_ops,
-      sizeof(prog_und_4_to_6_turn_anim_ops) / sizeof(prog_und_4_to_6_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_und_4_to_6_turn_anim_ops) / sizeof(prog_und_4_to_6_turn_anim_ops[0]), 0, prog_und_4_to_6_turn_anim_labels, sizeof(prog_und_4_to_6_turn_anim_labels) / sizeof(prog_und_4_to_6_turn_anim_labels[0]) },
     { "und_6_to_4_turn_anim", "UNDSEQ1.ASM", prog_und_6_to_4_turn_anim_ops,
       sizeof(prog_und_6_to_4_turn_anim_ops) / sizeof(prog_und_6_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "und_2_to_8_turn_anim", "UNDSEQ1.ASM", prog_und_2_to_8_turn_anim_ops,
-      sizeof(prog_und_2_to_8_turn_anim_ops) / sizeof(prog_und_2_to_8_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_und_2_to_8_turn_anim_ops) / sizeof(prog_und_2_to_8_turn_anim_ops[0]), 0, prog_und_2_to_8_turn_anim_labels, sizeof(prog_und_2_to_8_turn_anim_labels) / sizeof(prog_und_2_to_8_turn_anim_labels[0]) },
     { "und_8_to_2_turn_anim", "UNDSEQ1.ASM", prog_und_8_to_2_turn_anim_ops,
       sizeof(prog_und_8_to_2_turn_anim_ops) / sizeof(prog_und_8_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "und_4_to_8_turn_anim", "UNDSEQ1.ASM", prog_und_4_to_8_turn_anim_ops,
-      sizeof(prog_und_4_to_8_turn_anim_ops) / sizeof(prog_und_4_to_8_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_und_4_to_8_turn_anim_ops) / sizeof(prog_und_4_to_8_turn_anim_ops[0]), 0, prog_und_4_to_8_turn_anim_labels, sizeof(prog_und_4_to_8_turn_anim_labels) / sizeof(prog_und_4_to_8_turn_anim_labels[0]) },
     { "und_6_to_2_turn_anim", "UNDSEQ1.ASM", prog_und_6_to_2_turn_anim_ops,
       sizeof(prog_und_6_to_2_turn_anim_ops) / sizeof(prog_und_6_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "und_2_to_6_turn_anim", "UNDSEQ1.ASM", prog_und_2_to_6_turn_anim_ops,
-      sizeof(prog_und_2_to_6_turn_anim_ops) / sizeof(prog_und_2_to_6_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_und_2_to_6_turn_anim_ops) / sizeof(prog_und_2_to_6_turn_anim_ops[0]), 0, prog_und_2_to_6_turn_anim_labels, sizeof(prog_und_2_to_6_turn_anim_labels) / sizeof(prog_und_2_to_6_turn_anim_labels[0]) },
     { "und_8_to_4_turn_anim", "UNDSEQ1.ASM", prog_und_8_to_4_turn_anim_ops,
       sizeof(prog_und_8_to_4_turn_anim_ops) / sizeof(prog_und_8_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "und_2_to_4_turn2_anim", "UNDSEQ1.ASM", prog_und_2_to_4_turn2_anim_ops,
-      sizeof(prog_und_2_to_4_turn2_anim_ops) / sizeof(prog_und_2_to_4_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_und_2_to_4_turn2_anim_ops) / sizeof(prog_und_2_to_4_turn2_anim_ops[0]), 0, prog_und_2_to_4_turn2_anim_labels, sizeof(prog_und_2_to_4_turn2_anim_labels) / sizeof(prog_und_2_to_4_turn2_anim_labels[0]) },
     { "und_8_to_6_turn2_anim", "UNDSEQ1.ASM", prog_und_8_to_6_turn2_anim_ops,
       sizeof(prog_und_8_to_6_turn2_anim_ops) / sizeof(prog_und_8_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "und_4_to_2_turn2_anim", "UNDSEQ1.ASM", prog_und_4_to_2_turn2_anim_ops,
-      sizeof(prog_und_4_to_2_turn2_anim_ops) / sizeof(prog_und_4_to_2_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_und_4_to_2_turn2_anim_ops) / sizeof(prog_und_4_to_2_turn2_anim_ops[0]), 0, prog_und_4_to_2_turn2_anim_labels, sizeof(prog_und_4_to_2_turn2_anim_labels) / sizeof(prog_und_4_to_2_turn2_anim_labels[0]) },
     { "und_6_to_8_turn2_anim", "UNDSEQ1.ASM", prog_und_6_to_8_turn2_anim_ops,
       sizeof(prog_und_6_to_8_turn2_anim_ops) / sizeof(prog_und_6_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "und_4_to_6_turn2_anim", "UNDSEQ1.ASM", prog_und_4_to_6_turn2_anim_ops,
-      sizeof(prog_und_4_to_6_turn2_anim_ops) / sizeof(prog_und_4_to_6_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_und_4_to_6_turn2_anim_ops) / sizeof(prog_und_4_to_6_turn2_anim_ops[0]), 0, prog_und_4_to_6_turn2_anim_labels, sizeof(prog_und_4_to_6_turn2_anim_labels) / sizeof(prog_und_4_to_6_turn2_anim_labels[0]) },
     { "und_6_to_4_turn2_anim", "UNDSEQ1.ASM", prog_und_6_to_4_turn2_anim_ops,
       sizeof(prog_und_6_to_4_turn2_anim_ops) / sizeof(prog_und_6_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "und_2_to_8_turn2_anim", "UNDSEQ1.ASM", prog_und_2_to_8_turn2_anim_ops,
-      sizeof(prog_und_2_to_8_turn2_anim_ops) / sizeof(prog_und_2_to_8_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_und_2_to_8_turn2_anim_ops) / sizeof(prog_und_2_to_8_turn2_anim_ops[0]), 0, prog_und_2_to_8_turn2_anim_labels, sizeof(prog_und_2_to_8_turn2_anim_labels) / sizeof(prog_und_2_to_8_turn2_anim_labels[0]) },
     { "und_8_to_2_turn2_anim", "UNDSEQ1.ASM", prog_und_8_to_2_turn2_anim_ops,
       sizeof(prog_und_8_to_2_turn2_anim_ops) / sizeof(prog_und_8_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "und_4_to_8_turn2_anim", "UNDSEQ1.ASM", prog_und_4_to_8_turn2_anim_ops,
-      sizeof(prog_und_4_to_8_turn2_anim_ops) / sizeof(prog_und_4_to_8_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_und_4_to_8_turn2_anim_ops) / sizeof(prog_und_4_to_8_turn2_anim_ops[0]), 0, prog_und_4_to_8_turn2_anim_labels, sizeof(prog_und_4_to_8_turn2_anim_labels) / sizeof(prog_und_4_to_8_turn2_anim_labels[0]) },
     { "und_6_to_2_turn2_anim", "UNDSEQ1.ASM", prog_und_6_to_2_turn2_anim_ops,
       sizeof(prog_und_6_to_2_turn2_anim_ops) / sizeof(prog_und_6_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "und_2_to_6_turn2_anim", "UNDSEQ1.ASM", prog_und_2_to_6_turn2_anim_ops,
-      sizeof(prog_und_2_to_6_turn2_anim_ops) / sizeof(prog_und_2_to_6_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_und_2_to_6_turn2_anim_ops) / sizeof(prog_und_2_to_6_turn2_anim_ops[0]), 0, prog_und_2_to_6_turn2_anim_labels, sizeof(prog_und_2_to_6_turn2_anim_labels) / sizeof(prog_und_2_to_6_turn2_anim_labels[0]) },
     { "und_8_to_4_turn2_anim", "UNDSEQ1.ASM", prog_und_8_to_4_turn2_anim_ops,
       sizeof(prog_und_8_to_4_turn2_anim_ops) / sizeof(prog_und_8_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "und_run2_anim", "UNDSEQ1.ASM", prog_und_run2_anim_ops,
@@ -65523,9 +67989,9 @@ static const wm_anim_program programs[] = {
     { "und_4_body_hit_dizzy_anim", "UNDSEQ2.ASM", prog_und_4_body_hit_dizzy_anim_ops,
       sizeof(prog_und_4_body_hit_dizzy_anim_ops) / sizeof(prog_und_4_body_hit_dizzy_anim_ops[0]), 0, 0, 0 },
     { "und_hitonground_xflip_anim", "UNDSEQ2.ASM", prog_und_hitonground_xflip_anim_ops,
-      sizeof(prog_und_hitonground_xflip_anim_ops) / sizeof(prog_und_hitonground_xflip_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_und_hitonground_xflip_anim_ops) / sizeof(prog_und_hitonground_xflip_anim_ops[0]), 0, prog_und_hitonground_xflip_anim_labels, sizeof(prog_und_hitonground_xflip_anim_labels) / sizeof(prog_und_hitonground_xflip_anim_labels[0]) },
     { "und_hitonground_anim", "UNDSEQ2.ASM", prog_und_hitonground_anim_ops,
-      sizeof(prog_und_hitonground_anim_ops) / sizeof(prog_und_hitonground_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_und_hitonground_anim_ops) / sizeof(prog_und_hitonground_anim_ops[0]), 0, prog_und_hitonground_anim_labels, sizeof(prog_und_hitonground_anim_labels) / sizeof(prog_und_hitonground_anim_labels[0]) },
     { "und_liedown_anim", "UNDSEQ2.ASM", prog_und_liedown_anim_ops,
       sizeof(prog_und_liedown_anim_ops) / sizeof(prog_und_liedown_anim_ops[0]), 0, 0, 0 },
     { "und_up_anim", "UNDSEQ2.ASM", prog_und_up_anim_ops,
@@ -65683,19 +68149,19 @@ static const wm_anim_program programs[] = {
     { "yok_zip_anim", "YOKSEQ1.ASM", prog_yok_zip_anim_ops,
       sizeof(prog_yok_zip_anim_ops) / sizeof(prog_yok_zip_anim_ops[0]), 0, 0, 0 },
     { "yok_stand2_anim", "YOKSEQ1.ASM", prog_yok_stand2_anim_ops,
-      sizeof(prog_yok_stand2_anim_ops) / sizeof(prog_yok_stand2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_yok_stand2_anim_ops) / sizeof(prog_yok_stand2_anim_ops[0]), 0, prog_yok_stand2_anim_labels, sizeof(prog_yok_stand2_anim_labels) / sizeof(prog_yok_stand2_anim_labels[0]) },
     { "yok_stand8_anim", "YOKSEQ1.ASM", prog_yok_stand8_anim_ops,
       sizeof(prog_yok_stand8_anim_ops) / sizeof(prog_yok_stand8_anim_ops[0]), 0, 0, 0 },
     { "yok_stand4_anim", "YOKSEQ1.ASM", prog_yok_stand4_anim_ops,
-      sizeof(prog_yok_stand4_anim_ops) / sizeof(prog_yok_stand4_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_yok_stand4_anim_ops) / sizeof(prog_yok_stand4_anim_ops[0]), 0, prog_yok_stand4_anim_labels, sizeof(prog_yok_stand4_anim_labels) / sizeof(prog_yok_stand4_anim_labels[0]) },
     { "yok_stand6_anim", "YOKSEQ1.ASM", prog_yok_stand6_anim_ops,
       sizeof(prog_yok_stand6_anim_ops) / sizeof(prog_yok_stand6_anim_ops[0]), 0, 0, 0 },
     { "yok_torso2_anim", "YOKSEQ1.ASM", prog_yok_torso2_anim_ops,
-      sizeof(prog_yok_torso2_anim_ops) / sizeof(prog_yok_torso2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_yok_torso2_anim_ops) / sizeof(prog_yok_torso2_anim_ops[0]), 0, prog_yok_torso2_anim_labels, sizeof(prog_yok_torso2_anim_labels) / sizeof(prog_yok_torso2_anim_labels[0]) },
     { "yok_torso8_anim", "YOKSEQ1.ASM", prog_yok_torso8_anim_ops,
       sizeof(prog_yok_torso8_anim_ops) / sizeof(prog_yok_torso8_anim_ops[0]), 0, 0, 0 },
     { "yok_torso4_anim", "YOKSEQ1.ASM", prog_yok_torso4_anim_ops,
-      sizeof(prog_yok_torso4_anim_ops) / sizeof(prog_yok_torso4_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_yok_torso4_anim_ops) / sizeof(prog_yok_torso4_anim_ops[0]), 0, prog_yok_torso4_anim_labels, sizeof(prog_yok_torso4_anim_labels) / sizeof(prog_yok_torso4_anim_labels[0]) },
     { "yok_torso6_anim", "YOKSEQ1.ASM", prog_yok_torso6_anim_ops,
       sizeof(prog_yok_torso6_anim_ops) / sizeof(prog_yok_torso6_anim_ops[0]), 0, 0, 0 },
     { "yok_holdoh_anim", "YOKSEQ1.ASM", prog_yok_holdoh_anim_ops,
@@ -65727,51 +68193,51 @@ static const wm_anim_program programs[] = {
     { "yok_walk8_f4_anim", "YOKSEQ1.ASM", prog_yok_walk8_f4_anim_ops,
       sizeof(prog_yok_walk8_f4_anim_ops) / sizeof(prog_yok_walk8_f4_anim_ops[0]), 0, 0, 0 },
     { "yok_2_to_4_turn_anim", "YOKSEQ1.ASM", prog_yok_2_to_4_turn_anim_ops,
-      sizeof(prog_yok_2_to_4_turn_anim_ops) / sizeof(prog_yok_2_to_4_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_yok_2_to_4_turn_anim_ops) / sizeof(prog_yok_2_to_4_turn_anim_ops[0]), 0, prog_yok_2_to_4_turn_anim_labels, sizeof(prog_yok_2_to_4_turn_anim_labels) / sizeof(prog_yok_2_to_4_turn_anim_labels[0]) },
     { "yok_8_to_6_turn_anim", "YOKSEQ1.ASM", prog_yok_8_to_6_turn_anim_ops,
       sizeof(prog_yok_8_to_6_turn_anim_ops) / sizeof(prog_yok_8_to_6_turn_anim_ops[0]), 0, 0, 0 },
     { "yok_4_to_2_turn_anim", "YOKSEQ1.ASM", prog_yok_4_to_2_turn_anim_ops,
-      sizeof(prog_yok_4_to_2_turn_anim_ops) / sizeof(prog_yok_4_to_2_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_yok_4_to_2_turn_anim_ops) / sizeof(prog_yok_4_to_2_turn_anim_ops[0]), 0, prog_yok_4_to_2_turn_anim_labels, sizeof(prog_yok_4_to_2_turn_anim_labels) / sizeof(prog_yok_4_to_2_turn_anim_labels[0]) },
     { "yok_6_to_8_turn_anim", "YOKSEQ1.ASM", prog_yok_6_to_8_turn_anim_ops,
       sizeof(prog_yok_6_to_8_turn_anim_ops) / sizeof(prog_yok_6_to_8_turn_anim_ops[0]), 0, 0, 0 },
     { "yok_4_to_6_turn_anim", "YOKSEQ1.ASM", prog_yok_4_to_6_turn_anim_ops,
-      sizeof(prog_yok_4_to_6_turn_anim_ops) / sizeof(prog_yok_4_to_6_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_yok_4_to_6_turn_anim_ops) / sizeof(prog_yok_4_to_6_turn_anim_ops[0]), 0, prog_yok_4_to_6_turn_anim_labels, sizeof(prog_yok_4_to_6_turn_anim_labels) / sizeof(prog_yok_4_to_6_turn_anim_labels[0]) },
     { "yok_6_to_4_turn_anim", "YOKSEQ1.ASM", prog_yok_6_to_4_turn_anim_ops,
       sizeof(prog_yok_6_to_4_turn_anim_ops) / sizeof(prog_yok_6_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "yok_2_to_8_turn_anim", "YOKSEQ1.ASM", prog_yok_2_to_8_turn_anim_ops,
-      sizeof(prog_yok_2_to_8_turn_anim_ops) / sizeof(prog_yok_2_to_8_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_yok_2_to_8_turn_anim_ops) / sizeof(prog_yok_2_to_8_turn_anim_ops[0]), 0, prog_yok_2_to_8_turn_anim_labels, sizeof(prog_yok_2_to_8_turn_anim_labels) / sizeof(prog_yok_2_to_8_turn_anim_labels[0]) },
     { "yok_8_to_2_turn_anim", "YOKSEQ1.ASM", prog_yok_8_to_2_turn_anim_ops,
       sizeof(prog_yok_8_to_2_turn_anim_ops) / sizeof(prog_yok_8_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "yok_4_to_8_turn_anim", "YOKSEQ1.ASM", prog_yok_4_to_8_turn_anim_ops,
-      sizeof(prog_yok_4_to_8_turn_anim_ops) / sizeof(prog_yok_4_to_8_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_yok_4_to_8_turn_anim_ops) / sizeof(prog_yok_4_to_8_turn_anim_ops[0]), 0, prog_yok_4_to_8_turn_anim_labels, sizeof(prog_yok_4_to_8_turn_anim_labels) / sizeof(prog_yok_4_to_8_turn_anim_labels[0]) },
     { "yok_6_to_2_turn_anim", "YOKSEQ1.ASM", prog_yok_6_to_2_turn_anim_ops,
       sizeof(prog_yok_6_to_2_turn_anim_ops) / sizeof(prog_yok_6_to_2_turn_anim_ops[0]), 0, 0, 0 },
     { "yok_2_to_6_turn_anim", "YOKSEQ1.ASM", prog_yok_2_to_6_turn_anim_ops,
-      sizeof(prog_yok_2_to_6_turn_anim_ops) / sizeof(prog_yok_2_to_6_turn_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_yok_2_to_6_turn_anim_ops) / sizeof(prog_yok_2_to_6_turn_anim_ops[0]), 0, prog_yok_2_to_6_turn_anim_labels, sizeof(prog_yok_2_to_6_turn_anim_labels) / sizeof(prog_yok_2_to_6_turn_anim_labels[0]) },
     { "yok_8_to_4_turn_anim", "YOKSEQ1.ASM", prog_yok_8_to_4_turn_anim_ops,
       sizeof(prog_yok_8_to_4_turn_anim_ops) / sizeof(prog_yok_8_to_4_turn_anim_ops[0]), 0, 0, 0 },
     { "yok_2_to_4_turn2_anim", "YOKSEQ1.ASM", prog_yok_2_to_4_turn2_anim_ops,
-      sizeof(prog_yok_2_to_4_turn2_anim_ops) / sizeof(prog_yok_2_to_4_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_yok_2_to_4_turn2_anim_ops) / sizeof(prog_yok_2_to_4_turn2_anim_ops[0]), 0, prog_yok_2_to_4_turn2_anim_labels, sizeof(prog_yok_2_to_4_turn2_anim_labels) / sizeof(prog_yok_2_to_4_turn2_anim_labels[0]) },
     { "yok_8_to_6_turn2_anim", "YOKSEQ1.ASM", prog_yok_8_to_6_turn2_anim_ops,
       sizeof(prog_yok_8_to_6_turn2_anim_ops) / sizeof(prog_yok_8_to_6_turn2_anim_ops[0]), 0, 0, 0 },
     { "yok_4_to_2_turn2_anim", "YOKSEQ1.ASM", prog_yok_4_to_2_turn2_anim_ops,
-      sizeof(prog_yok_4_to_2_turn2_anim_ops) / sizeof(prog_yok_4_to_2_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_yok_4_to_2_turn2_anim_ops) / sizeof(prog_yok_4_to_2_turn2_anim_ops[0]), 0, prog_yok_4_to_2_turn2_anim_labels, sizeof(prog_yok_4_to_2_turn2_anim_labels) / sizeof(prog_yok_4_to_2_turn2_anim_labels[0]) },
     { "yok_6_to_8_turn2_anim", "YOKSEQ1.ASM", prog_yok_6_to_8_turn2_anim_ops,
       sizeof(prog_yok_6_to_8_turn2_anim_ops) / sizeof(prog_yok_6_to_8_turn2_anim_ops[0]), 0, 0, 0 },
     { "yok_4_to_6_turn2_anim", "YOKSEQ1.ASM", prog_yok_4_to_6_turn2_anim_ops,
-      sizeof(prog_yok_4_to_6_turn2_anim_ops) / sizeof(prog_yok_4_to_6_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_yok_4_to_6_turn2_anim_ops) / sizeof(prog_yok_4_to_6_turn2_anim_ops[0]), 0, prog_yok_4_to_6_turn2_anim_labels, sizeof(prog_yok_4_to_6_turn2_anim_labels) / sizeof(prog_yok_4_to_6_turn2_anim_labels[0]) },
     { "yok_6_to_4_turn2_anim", "YOKSEQ1.ASM", prog_yok_6_to_4_turn2_anim_ops,
       sizeof(prog_yok_6_to_4_turn2_anim_ops) / sizeof(prog_yok_6_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "yok_2_to_8_turn2_anim", "YOKSEQ1.ASM", prog_yok_2_to_8_turn2_anim_ops,
-      sizeof(prog_yok_2_to_8_turn2_anim_ops) / sizeof(prog_yok_2_to_8_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_yok_2_to_8_turn2_anim_ops) / sizeof(prog_yok_2_to_8_turn2_anim_ops[0]), 0, prog_yok_2_to_8_turn2_anim_labels, sizeof(prog_yok_2_to_8_turn2_anim_labels) / sizeof(prog_yok_2_to_8_turn2_anim_labels[0]) },
     { "yok_8_to_2_turn2_anim", "YOKSEQ1.ASM", prog_yok_8_to_2_turn2_anim_ops,
       sizeof(prog_yok_8_to_2_turn2_anim_ops) / sizeof(prog_yok_8_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "yok_4_to_8_turn2_anim", "YOKSEQ1.ASM", prog_yok_4_to_8_turn2_anim_ops,
-      sizeof(prog_yok_4_to_8_turn2_anim_ops) / sizeof(prog_yok_4_to_8_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_yok_4_to_8_turn2_anim_ops) / sizeof(prog_yok_4_to_8_turn2_anim_ops[0]), 0, prog_yok_4_to_8_turn2_anim_labels, sizeof(prog_yok_4_to_8_turn2_anim_labels) / sizeof(prog_yok_4_to_8_turn2_anim_labels[0]) },
     { "yok_6_to_2_turn2_anim", "YOKSEQ1.ASM", prog_yok_6_to_2_turn2_anim_ops,
       sizeof(prog_yok_6_to_2_turn2_anim_ops) / sizeof(prog_yok_6_to_2_turn2_anim_ops[0]), 0, 0, 0 },
     { "yok_2_to_6_turn2_anim", "YOKSEQ1.ASM", prog_yok_2_to_6_turn2_anim_ops,
-      sizeof(prog_yok_2_to_6_turn2_anim_ops) / sizeof(prog_yok_2_to_6_turn2_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_yok_2_to_6_turn2_anim_ops) / sizeof(prog_yok_2_to_6_turn2_anim_ops[0]), 0, prog_yok_2_to_6_turn2_anim_labels, sizeof(prog_yok_2_to_6_turn2_anim_labels) / sizeof(prog_yok_2_to_6_turn2_anim_labels[0]) },
     { "yok_8_to_4_turn2_anim", "YOKSEQ1.ASM", prog_yok_8_to_4_turn2_anim_ops,
       sizeof(prog_yok_8_to_4_turn2_anim_ops) / sizeof(prog_yok_8_to_4_turn2_anim_ops[0]), 0, 0, 0 },
     { "yok_run2_anim", "YOKSEQ1.ASM", prog_yok_run2_anim_ops,
@@ -65936,12 +68402,18 @@ static const wm_anim_program programs[] = {
       sizeof(prog_yok_heldheadbutt_rpt_anim_ops) / sizeof(prog_yok_heldheadbutt_rpt_anim_ops[0]), 100, prog_yok_heldheadbutt_rpt_anim_labels, sizeof(prog_yok_heldheadbutt_rpt_anim_labels) / sizeof(prog_yok_heldheadbutt_rpt_anim_labels[0]) },   /* branches back into shared code */
     { "yok_combo_spinslam_anim", "YOKSEQ3.ASM", prog_yok_combo_spinslam_anim_ops,
       sizeof(prog_yok_combo_spinslam_anim_ops) / sizeof(prog_yok_combo_spinslam_anim_ops[0]), 0, prog_yok_combo_spinslam_anim_labels, sizeof(prog_yok_combo_spinslam_anim_labels) / sizeof(prog_yok_combo_spinslam_anim_labels[0]) },
+    { "yok_spinslam_anim", "YOKSEQ3.ASM", prog_yok_spinslam_anim_ops,
+      sizeof(prog_yok_spinslam_anim_ops) / sizeof(prog_yok_spinslam_anim_ops[0]), 233, prog_yok_spinslam_anim_labels, sizeof(prog_yok_spinslam_anim_labels) / sizeof(prog_yok_spinslam_anim_labels[0]) },   /* branches back into shared code */
     { "yok_overhd_slam2_anim", "YOKSEQ3.ASM", prog_yok_overhd_slam2_anim_ops,
       sizeof(prog_yok_overhd_slam2_anim_ops) / sizeof(prog_yok_overhd_slam2_anim_ops[0]), 0, prog_yok_overhd_slam2_anim_labels, sizeof(prog_yok_overhd_slam2_anim_labels) / sizeof(prog_yok_overhd_slam2_anim_labels[0]) },
     { "yok_overhd_slam_anim", "YOKSEQ3.ASM", prog_yok_overhd_slam_anim_ops,
       sizeof(prog_yok_overhd_slam_anim_ops) / sizeof(prog_yok_overhd_slam_anim_ops[0]), 0, prog_yok_overhd_slam_anim_labels, sizeof(prog_yok_overhd_slam_anim_labels) / sizeof(prog_yok_overhd_slam_anim_labels[0]) },
+    { "yok_graboh_TB_anim", "YOKSEQ3.ASM", prog_yok_graboh_TB_anim_ops,
+      sizeof(prog_yok_graboh_TB_anim_ops) / sizeof(prog_yok_graboh_TB_anim_ops[0]), 261, prog_yok_graboh_TB_anim_labels, sizeof(prog_yok_graboh_TB_anim_labels) / sizeof(prog_yok_graboh_TB_anim_labels[0]) },   /* branches back into shared code */
     { "yok_graboh_anim", "YOKSEQ3.ASM", prog_yok_graboh_anim_ops,
       sizeof(prog_yok_graboh_anim_ops) / sizeof(prog_yok_graboh_anim_ops[0]), 0, prog_yok_graboh_anim_labels, sizeof(prog_yok_graboh_anim_labels) / sizeof(prog_yok_graboh_anim_labels[0]) },
+    { "yok_combo_scissor_anim", "YOKSEQ3.ASM", prog_yok_combo_scissor_anim_ops,
+      sizeof(prog_yok_combo_scissor_anim_ops) / sizeof(prog_yok_combo_scissor_anim_ops[0]), 338, prog_yok_combo_scissor_anim_labels, sizeof(prog_yok_combo_scissor_anim_labels) / sizeof(prog_yok_combo_scissor_anim_labels[0]) },   /* branches back into shared code */
     { "yok_scissor_anim", "YOKSEQ3.ASM", prog_yok_scissor_anim_ops,
       sizeof(prog_yok_scissor_anim_ops) / sizeof(prog_yok_scissor_anim_ops[0]), 0, prog_yok_scissor_anim_labels, sizeof(prog_yok_scissor_anim_labels) / sizeof(prog_yok_scissor_anim_labels[0]) },
     { "yok_2_salt_anim", "YOKSEQ3.ASM", prog_yok_2_salt_anim_ops,
@@ -66011,9 +68483,9 @@ static const wm_anim_program programs[] = {
     { "yok_dizzy_anim", "YOKSEQ4.ASM", prog_yok_dizzy_anim_ops,
       sizeof(prog_yok_dizzy_anim_ops) / sizeof(prog_yok_dizzy_anim_ops[0]), 0, prog_yok_dizzy_anim_labels, sizeof(prog_yok_dizzy_anim_labels) / sizeof(prog_yok_dizzy_anim_labels[0]) },
     { "yok_hitonground_xflip_anim", "YOKSEQ4.ASM", prog_yok_hitonground_xflip_anim_ops,
-      sizeof(prog_yok_hitonground_xflip_anim_ops) / sizeof(prog_yok_hitonground_xflip_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_yok_hitonground_xflip_anim_ops) / sizeof(prog_yok_hitonground_xflip_anim_ops[0]), 0, prog_yok_hitonground_xflip_anim_labels, sizeof(prog_yok_hitonground_xflip_anim_labels) / sizeof(prog_yok_hitonground_xflip_anim_labels[0]) },
     { "yok_hitonground_anim", "YOKSEQ4.ASM", prog_yok_hitonground_anim_ops,
-      sizeof(prog_yok_hitonground_anim_ops) / sizeof(prog_yok_hitonground_anim_ops[0]), 0, 0, 0 },
+      sizeof(prog_yok_hitonground_anim_ops) / sizeof(prog_yok_hitonground_anim_ops[0]), 0, prog_yok_hitonground_anim_labels, sizeof(prog_yok_hitonground_anim_labels) / sizeof(prog_yok_hitonground_anim_labels[0]) },
     { "yok_liedown_anim", "YOKSEQ4.ASM", prog_yok_liedown_anim_ops,
       sizeof(prog_yok_liedown_anim_ops) / sizeof(prog_yok_liedown_anim_ops[0]), 0, 0, 0 },
     { "yok_up_anim", "YOKSEQ4.ASM", prog_yok_up_anim_ops,
@@ -66027,7 +68499,7 @@ static const wm_anim_program programs[] = {
     { "yok_break_neck_anim", "YOKSEQ4.ASM", prog_yok_break_neck_anim_ops,
       sizeof(prog_yok_break_neck_anim_ops) / sizeof(prog_yok_break_neck_anim_ops[0]), 0, prog_yok_break_neck_anim_labels, sizeof(prog_yok_break_neck_anim_labels) / sizeof(prog_yok_break_neck_anim_labels[0]) },
     { "yok_roll_frames", "YOKSEQ4.ASM", prog_yok_roll_frames_ops,
-      sizeof(prog_yok_roll_frames_ops) / sizeof(prog_yok_roll_frames_ops[0]), 0, 0, 0 },
+      sizeof(prog_yok_roll_frames_ops) / sizeof(prog_yok_roll_frames_ops[0]), 0, prog_yok_roll_frames_labels, sizeof(prog_yok_roll_frames_labels) / sizeof(prog_yok_roll_frames_labels[0]) },
     { "yok_backbroken_anim", "YOKSEQ4.ASM", prog_yok_backbroken_anim_ops,
       sizeof(prog_yok_backbroken_anim_ops) / sizeof(prog_yok_backbroken_anim_ops[0]), 0, 0, 0 },
     { "yok_slamnobounce_anim", "YOKSEQ4.ASM", prog_yok_slamnobounce_anim_ops,

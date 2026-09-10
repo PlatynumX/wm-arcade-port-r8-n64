@@ -335,6 +335,36 @@ def _file_equates(path: pathlib.Path, lines: list[str]) -> dict:
     return _FILE_EQU_CACHE[key]
 
 
+def _label_def(line: str) -> str | None:
+    """The label this line defines, counting `SUBR name` as one.
+
+    wlanim.label_def deliberately does not: its GLOBAL_LABEL_RE wants the
+    name alone in column 0, because it is also what delimits a local
+    label's scope, and treating every SUBR as a scope boundary is right
+    for that job.
+
+    Resolving a branch is the other job. ANIM.ASM:29 implements
+    ANI_IFSTATUS as a raw write to the animation PC (`move a0,a4`), so a
+    routine can branch to ANY address -- including the head of the next
+    routine, which is spelled `SUBR name` rather than as a bare label.
+    Three animations do exactly that:
+
+        BAMSEQ2.ASM:3443 bam_faceup_getup_anim -> bam_4_faceup_getup_anim
+        DNKSEQ2.ASM:2013 dnk_faceup_getup_anim -> dnk_2_faceup_getup_anim
+        YOKSEQ3.ASM:3063 yok_combo_scissor_anim -> yok_overhd_slam_anim
+
+    each to a SUBR later in its own file. Without this the emitter could
+    not see the definition and refused all three, and because
+    ANI_CHANGEANIM elsewhere names them, a wrestler knocked onto his back
+    changed to an animation nothing had emitted and simply stopped.
+    """
+    got = wlanim.label_def(line)
+    if got:
+        return got
+    m = wlanim.SUBR_RE.match(line)
+    return m.group(1) if m else None
+
+
 def program_for(path: pathlib.Path, label: str, with_entry: bool = False):
     """[(op, *args)] with branch targets resolved to op indices.
 
@@ -397,7 +427,7 @@ def program_for(path: pathlib.Path, label: str, with_entry: bool = False):
                 if name not in wanted:
                     wanted.append(name)
         have = {name for name in
-                (wlanim.label_def(lines[i]) for i in range(start, stop))
+                (_label_def(lines[i]) for i in range(start, stop))
                 if name}
         missing = [name for name in wanted if name not in have]
         if not missing:
@@ -407,7 +437,7 @@ def program_for(path: pathlib.Path, label: str, with_entry: bool = False):
         # region in by starting the body there instead.
         for name in list(missing):
             for i in range(start - 1, -1, -1):
-                if wlanim.label_def(lines[i]) == name:
+                if _label_def(lines[i]) == name:
                     start = i
                     missing.remove(name)
                     break
@@ -417,7 +447,7 @@ def program_for(path: pathlib.Path, label: str, with_entry: bool = False):
         grew = stop
         for name in missing:
             for i in range(stop, len(lines)):
-                if wlanim.label_def(lines[i]) == name:
+                if _label_def(lines[i]) == name:
                     # Include the code the label names, not just the label
                     # line: stopping at the label itself resolves the branch
                     # to one past the last op, which is not a real target.
@@ -462,7 +492,7 @@ def program_for(path: pathlib.Path, label: str, with_entry: bool = False):
         if not line:
             continue
 
-        lm = wlanim.label_def(line)
+        lm = _label_def(line)
         if lm:
             label_at.setdefault(lm, len(ops))
             # a label can share its line with an instruction, so fall through

@@ -1,17 +1,19 @@
 /*
  * Every animation program in the game, played.
  *
- * The port emits 1,525 animation programs out of the wrestlers' sequence
+ * The port emits 1,530 animation programs out of the wrestlers' sequence
  * files, and until now no test touched more than the dozen or so it
  * thought to name by hand. That is how three real defects shipped:
  *
  *   ANI_REPEAT was executed as ANI_END, so 169 programs died after one
  *   pass; ANI_IFROPE and ANI_IFNOTROPE were emitted with no branch
- *   destination at all, so 75 branches walked off the end of their
- *   program and killed the animation before its first frame; and
- *   ANI_CHANGEANIM still names five labels nothing emits.
+ *   destination, so 75 branches walked off the end of their program and
+ *   killed the animation before its first frame; 1,794 label entries
+ *   named an op index one past their program's last op; and three
+ *   animations were refused outright because they branch into the head
+ *   of a later routine, which the emitter could not see as a label.
  *
- * None of the three needed a subtle test to catch. Each one shows up the
+ * None of them needed a subtle test to catch. Each one shows up the
  * moment you play the whole corpus and ask the obvious question: did a
  * frame ever appear? So this plays all of them, with the physics running,
  * and asserts the shape of the answer.
@@ -26,6 +28,14 @@
  *
  * and wm_match_tick (src/core/match.c:584) keeps that order, so the tick
  * loop below does too. With it, the nineteen become four.
+ *
+ * AND THE HAND-OFFS ARE FOLLOWED. ANI_CHANGEANIM does not stop an
+ * animation, it replaces it: the interpreter sets exec->become and ends,
+ * and wrestler_backend.c:196 drives that straight back through
+ * change_anim_label so the target gets its own header. A test that
+ * stopped at the first `ended` would call every routine that opens with
+ * a hand-off frameless, which is what the remaining four were. Followed,
+ * the four become one -- and that one is a data table, not an animation.
  */
 #include "wm/anim_program.h"
 #include "wm/arcade/wm_arcade_combat.h"
@@ -38,75 +48,58 @@
 
 /* The corpus as it stands. Emitting more is always fine; emitting fewer
    means the emitter started refusing something it used to accept. */
-#define CORPUS_FLOOR 1525u
+#define CORPUS_FLOOR 1530u
 
 /* How long to play each program. Long enough that everything with an end
    reaches it -- the longest terminating program in the corpus finishes
-   well inside this -- and short enough that 1,525 of them stay quick. */
+   well inside this -- and short enough that all of them stay quick. */
 #define TICKS 400
 
-/* Programs that terminate rather than loop, as measured. A program that
-   used to end and now runs forever is a hang in the making, so this may
-   grow but must not shrink. */
-#define ENDING_FLOOR 1278
+/* How many ANI_CHANGEANIM hand-offs to follow before giving up. Two
+   animations that become each other would otherwise never come to rest. */
+#define MAX_HANDOFFS 8
+
+/* Chains that come to rest rather than loop, as measured -- a program
+   plus every ANI_CHANGEANIM it hands off to. One that used to come to
+   rest and now runs forever is a hang in the making, so this may grow
+   but must not shrink. */
+#define ENDING_FLOOR 1238
 
 /*
- * Programs that contain a frame op yet never show one.
+ * Programs that contain a frame op yet never show one, following the
+ * ANI_CHANGEANIM hand-offs the way the backend does.
  *
- * All four are explained, and the list is asserted EXACTLY: a fifth is a
- * regression, and one of these four starting to work is a fix that should
- * come with the line below deleted rather than pass silently.
+ * Exactly one, and it is not an animation. BAMSEQ2.ASM keeps a
+ * roll-frame data table beside Bam Bam's animations, and the emitter
+ * picks it up because it has the shape of one; nothing ever starts it.
  *
- *   bam_roll_frames         is not an animation. It is the roll-frame
- *                           data table BAMSEQ2.ASM keeps beside them, and
- *                           the emitter picks it up because it looks like
- *                           one. Harmless; it is never started.
- *
- *   hrt_neckbroken_anim     hands off with ANI_CHANGEANIM before reaching
- *   xxx_get_face_rake_anim  a frame of its own -- the frames further down
- *   xxx_get_face_rake2_anim their bodies belong to the label they jump
- *                           to, and get played there.
+ * The list is asserted EXACTLY: a second is a regression, and this one
+ * starting to work is a fix that should come with the line deleted
+ * rather than pass silently.
  */
 static const char *const FRAMELESS[] = {
     "bam_roll_frames",
-    "hrt_neckbroken_anim",
-    "xxx_get_face_rake_anim",
-    "xxx_get_face_rake2_anim",
 };
 
 /*
  * ANI_CHANGEANIM targets that no emitted program answers to, and why.
  *
- * This is a live defect, not a curiosity: backend_change_anim_label sets
- * prog = NULL and ended = true when the label does not resolve, so a
- * wrestler who reaches one of these simply stops. Two of the five are
- * dangling in the original as well; three exist in the source and are
- * refused by the emitter:
+ * Both are dangling in the arcade build itself: nothing in the linked
+ * source defines either label, only `.ref`s and the ANI_CHANGEANIM
+ * operands that name them. They were 54 operands across five labels
+ * until the emitter learned to follow a branch into a later SUBR --
+ * ANIM.ASM:29 implements ANI_IFSTATUS as a raw write to the animation
+ * PC, so three routines reached the head of another routine and the
+ * emitter, unable to see a SUBR line as a label definition, refused all
+ * three. Those three now emit; these two have nowhere to point.
  *
- *   bam_faceup_getup_anim   branches to bam_4_faceup_getup_anim
- *   dnk_faceup_getup_anim   branches to dnk_2_faceup_getup_anim
- *   yok_combo_scissor_anim  branches to yok_overhd_slam_anim
- *
- * all three via ANI_IFSTATUS, which ANIM.ASM:29 implements as a raw write
- * to the animation PC (`move a0,a4`) -- a jump into another routine's
- * instruction stream, keeping ANIBASE where it was. The emitter resolves
- * branch targets to op indices inside one program and has no way to spell
- * that, so it refuses the whole routine rather than emit a branch it
- * cannot honour. The refusal is the honest answer; the gap is real.
- *
- *   dnk_combo_hammer_anim   named by ANI_CHANGEANIM, defined nowhere in
- *   re_enter_combo_hiptoss  the linked source. Dangling in the arcade
- *                           build too.
- *
- * The first two matter most: they are how a wrestler knocked onto his
- * back gets up.
+ * This still matters at runtime: backend_change_anim_label sets
+ * prog = NULL and ended = true on a label it cannot find, so a wrestler
+ * who reaches one of these stops where he stands.
  */
 static const char *const UNRESOLVED_CHANGEANIM[] = {
-    "bam_faceup_getup_anim",
     "dnk_combo_hammer_anim",
-    "dnk_faceup_getup_anim",
     "re_enter_combo_hiptoss",
-    "yok_combo_scissor_anim",
 };
 
 static int in_list(const char *const *list, size_t n, const char *s)
@@ -261,7 +254,7 @@ static void test_playing_the_whole_corpus(void)
         const wm_anim_program *p = wm_anim_program_at(i);
         wm_anim_exec exec;
         wm_arcade_actor_t a;
-        int t, has_frame_op = 0, showed = 0;
+        int t, has_frame_op = 0, showed = 0, hops = 0;
         size_t j;
 
         for (j = 0; j < p->op_count; ++j)
@@ -272,7 +265,20 @@ static void test_playing_the_whole_corpus(void)
         wm_anim_exec_start(&exec, p, &a, 0, NULL);
         if (wm_anim_exec_frame(&exec)) showed = 1;
 
-        for (t = 0; t < TICKS && !exec.ended; ++t) {
+        for (t = 0; t < TICKS; ++t) {
+            if (exec.ended) {
+                /* wrestler_backend.c:196 -- an animation that ends by
+                   BECOMING another does not stop. Bounded, because a
+                   pair that hand off to each other would not. */
+                const wm_anim_program *next;
+                if (!exec.become || hops >= MAX_HANDOFFS) break;
+                next = wm_anim_program_find(exec.become);
+                if (!next) break;      /* the dangling two, asserted above */
+                ++hops;
+                wm_anim_exec_start(&exec, next, &a, (uint16_t)t, NULL);
+                if (wm_anim_exec_frame(&exec)) showed = 1;
+                continue;
+            }
             wm_wrestler_veladd(&a, &exec, 0);
             wm_wrestler_friction(&a);
             wm_anim_exec_tick(&exec, &a, (uint16_t)t);
@@ -309,8 +315,8 @@ static void test_playing_the_whole_corpus(void)
         assert(frameless_hit[k]);
     }
 
-    printf("  played %zu programs: %d end, %d still running after %d ticks\n",
-           n, ending, looping, TICKS);
+    printf("  played %zu programs: %d come to rest, %d still running "
+           "after %d ticks\n", n, ending, looping, TICKS);
     assert(ending >= ENDING_FLOOR);
 }
 

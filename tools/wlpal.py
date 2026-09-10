@@ -30,9 +30,21 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import wlanim  # noqa: E402
 
 SRC = wlanim.ORIG / "IMGPAL.ASM"
+WRESPAL = wlanim.ORIG / "WRESPAL.ASM"
+
+# Both files are linked (WRESTLE.CMD lists wrespal.obj and imgpal.obj), and
+# they share names -- BAMBLU_P is declared in each. WRESPAL.ASM's copy is
+# inside `.if 0`, so the assembler only ever sees IMGPAL.ASM's. Getting the
+# conditionals right is therefore not optional here.
+SOURCES = (SRC, WRESPAL)
 
 LABEL_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*):\s*$")
+# WRESPAL.ASM labels its palettes with the SUBR macro instead of a colon.
+SUBR_RE = re.compile(r"^\s*SUBRP?\s+([A-Za-z_][A-Za-z0-9_]*)\s*$", re.I)
 WORD_RE = re.compile(r"^\s*\.word\s+(.+)$", re.I)
+IF_RE = re.compile(r"^\s*\.if\s+(.+)$", re.I)
+ELSE_RE = re.compile(r"^\s*\.else\s*$", re.I)
+ENDIF_RE = re.compile(r"^\s*\.endif\s*$", re.I)
 
 # PAL.ASM's 9-bit mask on the count word.
 COUNT_MASK = 0x1FF
@@ -47,70 +59,134 @@ def _num(tok: str) -> int:
     return int(tok, 10)
 
 
-def palettes(path: pathlib.Path | None = None) -> dict[str, list[int]]:
-    """Every labelled palette, as [count word] + colours.
+def _one_file(path: pathlib.Path, out: dict[str, list[int]],
+              aliases: dict[str, str]) -> None:
+    """Read one file's palettes into `out`, honouring `.if`.
 
-    A label whose block does not hold exactly `count & 0x1FF` colours
-    after the count word is refused rather than truncated or padded --
-    that would mean this reader has misunderstood the layout.
+    Only constant conditions are understood. A `.if` on anything else is
+    refused rather than assumed true, because guessing wrong here would
+    silently pull in a disabled duplicate of a live palette.
+
+    Several labels can share one block -- WRESPAL.ASM stacks UNDGRN_P and
+    UNDBLU_P on the same data -- so each extra name is recorded as an
+    alias and gets the same colours.
     """
-    path = path or SRC
     lines = [wlanim.strip_comment(r)
              for r in path.read_text(errors="replace").splitlines()]
 
-    out: dict[str, list[int]] = {}
-    name: str | None = None
+    names: list[str] = []
     words: list[int] = []
+    # A stack of "is this region assembled", so a nested .if inside a
+    # disabled one stays disabled.
+    stack: list[bool] = []
+
+    def live() -> bool:
+        return all(stack)
 
     def close() -> None:
-        nonlocal name, words
-        if name is None:
+        nonlocal names, words
+        if not names:
             return
         if not words:
-            raise ValueError(f"{name}: no data")
+            # A label with no data of its own is not an error; it is a
+            # second name for whatever block comes next.
+            return
         want = words[0] & COUNT_MASK
         if len(words) - 1 != want:
             raise ValueError(
-                f"{name}: count word {words[0]:#x} says {want} colours "
-                f"but the block holds {len(words) - 1}")
-        if name in out:
-            raise ValueError(f"{name}: defined twice")
-        out[name] = words
-        name, words = None, []
+                f"{path.name}: {names[0]}: count word {words[0]:#x} says "
+                f"{want} colours but the block holds {len(words) - 1}")
+        for i, name in enumerate(names):
+            if name in out:
+                raise ValueError(f"{name}: defined twice")
+            out[name] = words
+            if i:
+                aliases[name] = names[0]
+        names, words = [], []
 
     for line in lines:
-        m = LABEL_RE.match(line)
+        m = IF_RE.match(line)
         if m:
+            cond = m.group(1).strip()
+            if cond not in ("0", "1"):
+                raise ValueError(
+                    f"{path.name}: `.if {cond}` is not a constant; this "
+                    f"reader cannot tell whether the block assembles")
             close()
-            name, words = m.group(1), []
+            stack.append(cond == "1")
+            continue
+        if ELSE_RE.match(line):
+            close()
+            if not stack:
+                raise ValueError(f"{path.name}: .else with no .if")
+            stack[-1] = not stack[-1]
+            continue
+        if ENDIF_RE.match(line):
+            close()
+            if not stack:
+                raise ValueError(f"{path.name}: .endif with no .if")
+            stack.pop()
+            continue
+        if not live():
+            continue
+
+        m = LABEL_RE.match(line) or SUBR_RE.match(line)
+        if m:
+            if words:
+                close()         # a new label after data starts a new block
+            names.append(m.group(1))
             continue
         m = WORD_RE.match(line)
         if m:
-            if name is None:
+            if not names:
                 continue        # data before the first label
-            words += [_num(t) for t in m.group(1).split(",") if t.strip()]
+            words += [_num(tok) for tok in m.group(1).split(",") if tok.strip()]
             continue
         if line.strip() and not line.lstrip().startswith("."):
-            # Anything else ends the current block.
             close()
     close()
-    return out
+    if stack:
+        raise ValueError(f"{path.name}: {len(stack)} unterminated .if")
+
+
+def palettes(paths=None) -> dict[str, list[int]]:
+    """Every assembled palette across IMGPAL.ASM and WRESPAL.ASM."""
+    return palettes_with_aliases(paths)[0]
+
+
+def palettes_with_aliases(paths=None):
+    out: dict[str, list[int]] = {}
+    aliases: dict[str, str] = {}
+    for path in (paths or SOURCES):
+        if path.exists():
+            _one_file(path, out, aliases)
+    return out, aliases
 
 
 def render_c() -> str:
-    pals = palettes()
+    pals, aliases = palettes_with_aliases()
     out = [
-        "/* Generated by tools/wlpal.py from IMGPAL.ASM. Do not edit.",
+        "/* Generated by tools/wlpal.py from IMGPAL.ASM and WRESPAL.ASM.",
+        " * Do not edit.",
         " *",
         " * Each palette is a count word followed by that many RGB555",
         " * colours, which is exactly how PAL.ASM reads one. The count",
         " * word's low nine bits are the length; the rest are flags.",
+        " *",
+        " * Both files are linked and they share names, so the `.if`",
+        " * blocks decide which copy exists. Seven of WRESPAL.ASM's",
+        " * palettes -- BAMBLU_P among them -- sit inside `.if 0` and",
+        " * are not here; IMGPAL.ASM's BAMBLU_P is.",
         " */",
         '#include "wm/arcade/wm_arcade_pal.h"',
         "",
     ]
+    emitted: set[str] = set()
     for name in pals:
+        if name in aliases:
+            continue            # a second name for a block already emitted
         words = pals[name]
+        emitted.add(name)
         out.append("static const uint16_t pal_%s[] = {" % name)
         for base in range(0, len(words), 8):
             out.append("    " + ", ".join("0x%04X" % w
@@ -120,7 +196,9 @@ def render_c() -> str:
     out.append("/* Sorted by name so the lookup can bisect. */")
     out.append("const wm_palette wm_palettes[] = {")
     for name in sorted(pals):
-        out.append('    { "%s", pal_%s },' % (name, name))
+        target = aliases.get(name, name)
+        note = "  /* the same block as %s */" % target if name in aliases else ""
+        out.append('    { "%s", pal_%s },%s' % (name, target, note))
     out.append("};")
     out.append("")
     out.append("const int wm_palette_count = %d;" % len(pals))
@@ -133,17 +211,19 @@ def main() -> int:
     ap.add_argument("--out")
     ap.add_argument("--list", action="store_true")
     ns = ap.parse_args()
-    pals = palettes()
+    pals, aliases = palettes_with_aliases()
     if ns.list:
         for name, words in pals.items():
-            print("%-16s %3d colours  flags=%#06x"
-                  % (name, words[0] & COUNT_MASK, words[0] & ~COUNT_MASK))
-        print("\n%d palettes" % len(pals))
+            note = "  (same block as %s)" % aliases[name] if name in aliases else ""
+            print("%-16s %3d colours  flags=%#06x%s"
+                  % (name, words[0] & COUNT_MASK, words[0] & ~COUNT_MASK, note))
+        print("\n%d palettes, %d of them extra names on a shared block"
+              % (len(pals), len(aliases)))
         return 0
     text = render_c()
     if ns.out:
         pathlib.Path(ns.out).write_text(text)
-        print("palettes: %d from IMGPAL.ASM" % len(pals))
+        print("palettes: %d from IMGPAL.ASM and WRESPAL.ASM" % len(pals))
     else:
         sys.stdout.write(text)
     return 0

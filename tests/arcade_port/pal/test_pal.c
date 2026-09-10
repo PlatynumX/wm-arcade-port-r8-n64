@@ -29,13 +29,21 @@ static void test_palette_data(void)
     const uint16_t *bam = wm_palette_find("BAMBLU_P");
     int i;
 
-    assert(wm_palette_count == 337);
+    assert(wm_palette_count == 396);
     assert(diagp && wm_pal_color_count(diagp) == 29);
     /* IMGPAL.ASM:739 -- the first three colours, read straight out. */
     assert(diagp[1] == 0x0000 && diagp[2] == 0x56B5 && diagp[3] == 0x7BDE);
     /* The palette anim_code's #set_pal asks for by name really exists. */
     assert(bam && wm_pal_color_count(bam) == 64);
     assert(wm_palette_find("NO_SUCH_P") == NULL);
+
+    /* WRESPAL.ASM's alternate-colour palettes are here too, and its
+     * seven `.if 0` copies are not -- BAMBLU_P above is IMGPAL.ASM's,
+     * the only one the assembler ever sees. UNDGRN_P and UNDBLU_P are
+     * two labels stacked on one block, so they share it. */
+    assert(wm_palette_find("HRTPNK_P") != NULL);
+    assert(wm_palette_find("YOKYEL_P") != NULL);
+    assert(wm_palette_find("UNDGRN_P") == wm_palette_find("UNDBLU_P"));
 
     /* Every block's count word agrees with its length, and no shipped
      * palette sets any of the flag bits above the low nine. */

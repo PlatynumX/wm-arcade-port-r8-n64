@@ -2270,10 +2270,29 @@ def test_imgpal_palettes_are_self_consistent() -> None:
     truncating, so simply calling it is the check; these assertions pin
     the shape it produced.
     """
-    if not wlpal.SRC.exists():
+    if not wlpal.SRC.exists() or not wlpal.WRESPAL.exists():
         return
-    pals = wlpal.palettes()
-    assert len(pals) == 337, len(pals)
+    pals, aliases = wlpal.palettes_with_aliases()
+    assert len(pals) == 396, len(pals)
+
+    # WRESTLE.CMD links both files and they share names, so the `.if`
+    # blocks decide which copy assembles. All seven of WRESPAL.ASM's
+    # `.if 0` palettes have a live counterpart in IMGPAL.ASM -- that is
+    # what the guard is for. Reading them as live would define each
+    # name twice, which the extractor refuses outright.
+    img = wlpal.palettes([wlpal.SRC])
+    live_wrespal = wlpal.palettes([wlpal.WRESPAL])
+    assert len(img) == 337 and len(live_wrespal) == 59
+    assert not (set(img) & set(live_wrespal))
+    for name in ("BAMBLU_P", "DNKBLU_P", "LEXWHT_P", "RZRGRN_P",
+                 "SHNRED_P", "UNDPRP_P", "YOKRED_P"):
+        assert name not in live_wrespal, name
+        assert name in img, name
+
+    # Two labels stacked on one block share it rather than one of them
+    # silently taking the next palette's colours.
+    assert aliases == {"UNDBLU_P": "UNDGRN_P"}
+    assert pals["UNDBLU_P"] is pals["UNDGRN_P"]
 
     for name, words in pals.items():
         count = words[0] & wlpal.COUNT_MASK
@@ -2293,6 +2312,7 @@ def test_imgpal_palettes_are_self_consistent() -> None:
     # The palette anim_code's #set_pal asks for by name (BAMSEQ2.ASM
     # #set_pal -> `movi BAMBLU_P,a0 / calla pal_getf`).
     assert "BAMBLU_P" in pals
+    assert pals["BAMBLU_P"] == img["BAMBLU_P"]
 
 
 def test_palettes_generate_the_shipped_file() -> None:

@@ -96,6 +96,7 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_pal.c
     src/core/arcade/wm_arcade_powerup.c
     src/core/arcade/wm_arcade_switches.c
+    src/core/arcade/wm_arcade_teammates.c
     src/generated/palettes.c
     src/generated/font_tables.c
     src/generated/font_metrics.c

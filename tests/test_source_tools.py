@@ -5,6 +5,7 @@ import pathlib
 import struct
 import subprocess
 import os
+import collections
 import re
 import sys
 import tempfile
@@ -2572,6 +2573,57 @@ def test_coverage_does_not_claim_things_that_are_not_translated() -> None:
         assert status.get(name) not in ("implemented",), (name, status.get(name))
 
 
+def test_no_emitted_branch_has_a_lost_destination() -> None:
+    """Every branch op in the corpus carries a real destination.
+
+    IFROPE and IFNOTROPE registered their fixup correctly and the
+    fixup resolved `#fall_back` correctly -- and then `_c_op` wrote -1,
+    because it only reads op[1] as the target for ops listed in
+    BRANCH_OPS and those two were not in it. Seventy-five branches lost
+    their destination on the way out of the emitter.
+
+    In the interpreter `(size_t)-1` fails the `pc < op_count` test and
+    falls out of the dispatch loop into `ended = true`, so a wrestler
+    standing within 100 of a rope did not fall back -- his animation
+    simply stopped. Seven programs, every wrestler's break_neck among
+    them.
+    """
+    out = ROOT / "src" / "generated" / "anim_programs.c"
+    if not out.exists():
+        return
+    text = out.read_text()
+    kinds = {"WM_AOP_" + k for k in wlprogram.BRANCH_OPS}
+    bad = []
+    for m in re.finditer(r"\{ (WM_AOP_\w+), (\d+), (-?\d+),", text):
+        if m.group(1) in kinds and int(m.group(3)) < 0:
+            bad.append(m.group(1))
+    assert not bad, collections.Counter(bad)
+
+    # And the two that were lost really are emitted, resolved, in
+    # numbers -- so this cannot pass by them vanishing instead.
+    assert text.count("WM_AOP_IFROPE,") == 68
+    assert text.count("WM_AOP_IFNOTROPE,") == 7
+
+
+def test_every_branch_op_is_listed_as_one() -> None:
+    """The root cause, guarded directly: an op that registers a fixup
+    must be in BRANCH_OPS, or its resolved target is silently dropped."""
+    src = (ROOT / "tools" / "wlprogram.py").read_text()
+    # Each `fixups.append((len(ops), ...))` is followed by the
+    # ops.append that it annotates; the kind is the first string in it.
+    for m in re.finditer(r"fixups\.append\(\(len\(ops\),[^\n]*\n\s*ops\.append\(\(([^\n]*)",
+                         src):
+        chunk = m.group(1)
+        names = re.findall(r'"(\w+)"', chunk)
+        for n in names:
+            if n in wlprogram.BRANCH_OPS:
+                break
+        else:
+            # A conditional whose kind is chosen at run time (BRANCHES[..])
+            # is fine -- every value in that table is in BRANCH_OPS.
+            assert "BRANCHES[" in chunk, chunk
+
+
 def main() -> int:
     test_wlanim()
     test_wlprogram()
@@ -2617,6 +2669,8 @@ def main() -> int:
     test_the_ledger_cannot_shadow_real_code()
     test_coverage_resolves_every_routine_known_to_be_translated()
     test_coverage_does_not_claim_things_that_are_not_translated()
+    test_no_emitted_branch_has_a_lost_destination()
+    test_every_branch_op_is_listed_as_one()
     test_digit_leading_local_labels_are_seen()
     test_programs_record_where_they_start()
     test_emitted_programs_hold_together()

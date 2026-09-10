@@ -220,6 +220,61 @@ static void test_ani_repeat_loops_rather_than_ending(void)
     }
 }
 
+static void test_ifrope_actually_branches(void)
+{
+    /*
+     * ANI_IFROPE's destination was being dropped by the emitter -- the
+     * fixup resolved `#fall_back` and the renderer then wrote -1,
+     * because _c_op only reads a target for ops listed in BRANCH_OPS
+     * and IFROPE was not one. In the interpreter that -1 becomes
+     * SIZE_MAX, fails `pc < op_count`, and falls out of the dispatch
+     * loop into `ended = true`.
+     *
+     * So a wrestler within 100 of a rope did not fall back: his
+     * animation stopped dead, before its first frame. Seven programs,
+     * every wrestler's break_neck among them.
+     */
+    wm_anim_exec exec;
+    wm_arcade_actor_t a;
+    const wm_anim_program *prog = wm_anim_program_find("hrt_break_neck_anim");
+    const char *near_rope;
+    const char *away;
+    int i;
+
+    assert(prog != NULL);
+
+    /* In the ring and near a rope: the branch is taken. */
+    memset(&exec, 0, sizeof(exec));
+    memset(&a, 0, sizeof(a));
+    a.life = 163;
+    a.in_ring = 1;
+    a.facing_dir = WM_MOVE_RIGHT;
+    wm_anim_exec_start(&exec, prog, &a, 0, NULL);
+    assert(wm_anim_exec_frame(&exec) != NULL);   /* it used to be gone */
+    for (i = 0; i < 12; ++i) {
+        wm_anim_exec_tick(&exec, &a, (uint16_t)i);
+    }
+    assert(!exec.ended);
+    near_rope = wm_anim_exec_frame(&exec);
+    assert(near_rope != NULL);
+
+    /*
+     * Outside the ring the source jumps to `#definitly_too_far`, which
+     * falls THROUGH rather than branching -- so the two paths must end
+     * up somewhere different. Equal frames here would mean the branch
+     * is not being taken at all.
+     */
+    memset(&exec, 0, sizeof(exec));
+    a.in_ring = 0;
+    wm_anim_exec_start(&exec, prog, &a, 0, NULL);
+    for (i = 0; i < 12; ++i) {
+        wm_anim_exec_tick(&exec, &a, (uint16_t)i);
+    }
+    away = wm_anim_exec_frame(&exec);
+    assert(away != NULL);
+    assert(strcmp(near_rope, away) != 0);
+}
+
 int main(void)
 {
     test_ani_init_rows();
@@ -228,6 +283,7 @@ int main(void)
     test_change_anim1_guard();
     test_only_the_primary_channel_resets_gravity();
     test_ani_repeat_loops_rather_than_ending();
+    test_ifrope_actually_branches();
     printf("ANIM.ASM change_anim and the torso channel: all checks passed\n");
     return 0;
 }

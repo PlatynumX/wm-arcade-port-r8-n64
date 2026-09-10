@@ -1254,7 +1254,24 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
                 dist = who->x_int - rope_x;
                 if (dist < 0) dist = -dist;         /* `abs a1` */
                 close = dist <= o->b;               /* `jrle #close_enough` */
-                pc = (close != invert) ? (size_t)o->target : pc + 1;
+                /*
+                 * A branch with no destination must not silently end the
+                 * animation. `(size_t)-1` leaves the dispatch loop's
+                 * `pc < op_count` test and falls out to `ended = true`,
+                 * which is how 75 unresolved IFROPE/IFNOTROPE targets --
+                 * every one of them a real `#label` in the source that
+                 * the emitter dropped on the way out -- turned into
+                 * "this animation is over" the moment a wrestler stood
+                 * near a rope. The emitter is fixed and a source-tool
+                 * test now refuses a negative target, so this cannot
+                 * happen; falling through is the safe answer if it ever
+                 * does again.
+                 */
+                if (close != invert && o->target >= 0) {
+                    pc = (size_t)o->target;
+                } else {
+                    pc = pc + 1;
+                }
                 continue;
             }
             /*

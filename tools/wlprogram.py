@@ -848,10 +848,15 @@ def program_for(path: pathlib.Path, label: str, with_entry: bool = False):
     return ops
 
 
+# Every op that carries a branch destination. `_c_op` reads op[1] as the
+# resolved target for exactly these, so an op that registers a fixup and
+# is NOT in here has its destination silently dropped on the way out --
+# which is what happened to IFROPE and IFNOTROPE: the fixup resolved
+# #fall_back correctly and the renderer then wrote -1.
 BRANCH_OPS = {"GOTO", "IFSTATUS", "IFNOTSTATUS", "IFBLOCKED", "IF_RPTCOUNT",
               "IFNOT_RPTCOUNT",
               "SLIDE_BACK", "IF_BUTCOUNT_GE", "IF_BUTCOUNT_LT", "IFOPPMODE",
-              "IF_RPTCOUNT_GE"}
+              "IF_RPTCOUNT_GE", "IFROPE", "IFNOTROPE"}
 # Ops carrying (mode, a, b, c, d, e) from wlcommands' 5-tuple shape.
 # Every op that comes out of wlcommands' command table carries the same
 # (kind, mode, a, b, c) shape, so this is DERIVED from that table rather
@@ -890,6 +895,8 @@ def _c_op(op) -> str:
             args[0] = op[2]
         elif kind == "IFOPPMODE":
             args[0] = op[2]
+        elif kind in ("IFROPE", "IFNOTROPE"):
+            args[0], args[1] = op[2], op[3]
     elif kind == "SUPERSLAVE2":
         text = f'"{op[2]}"'
         args[0], args[1], args[2] = op[1], op[3], op[4]
@@ -907,8 +914,6 @@ def _c_op(op) -> str:
                   "SHAKECORNER", "SET_IDIOT", "SCROLL_CTRL", "LOOP",
                   "START_DIZZY"):
         args[0] = op[1]
-    elif kind in ("IFROPE", "IFNOTROPE"):
-        args[0], args[1] = op[2], op[3]
     elif kind == "CREATEPROC":
         text = f'"{op[1]}"'
         args[0], args[1], args[2], args[3] = op[2], op[3], op[4], op[5]

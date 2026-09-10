@@ -44,17 +44,18 @@ static bool any_source_button(const wm_input_state *in) {
            in->light_kick || in->power_kick || in->block;
 }
 
-/* RNDRNG0 is external/shared Wolf Unit code and is not present in this game's
- * source drop.  Keep the bridge isolated: the ladder *algorithm* below is a
- * direct port; only the entropy primitive is platform-local until RNDRNG0 is
- * recovered from shipped program ROM. */
-static uint32_t rndrng0_bridge(wm_pregame_state *s, uint32_t maximum) {
-    uint32_t x = s->rng_state ? s->rng_state : 0x57574650u;
-    x ^= x << 13;
-    x ^= x >> 17;
-    x ^= x << 5;
-    s->rng_state = x;
-    return (uint32_t)(((uint64_t)x * ((uint64_t)maximum + 1u)) >> 32);
+/*
+ * RNDRNG0 is UTIL.ASM:1713, and it is translated -- wm_rng_rndrng0 in
+ * wm/arcade/wmania_rng.h.  An earlier version of this file used a local
+ * xorshift instead, on the stated grounds that RNDRNG0 was "external/shared
+ * Wolf Unit code and is not present in this game's source drop".  That was
+ * wrong on both counts: the routine is in UTIL.ASM and the port already
+ * had it.  The ladder now draws from the one shared RAND, which is also
+ * what the arcade does -- there is a single @RAND and every RNDRNG0 caller
+ * in the game stirs it.
+ */
+static uint32_t rndrng0(wm_pregame_state *s, uint32_t maximum) {
+    return s->rng ? wm_rng_rndrng0(s->rng, maximum) : 0u;
 }
 
 static void init_temp_table(uint8_t temp[8]) {
@@ -68,7 +69,7 @@ static void randomize_order(wm_pregame_state *s, uint8_t temp[8]) {
        RNDRNG0(A10) chooses an inclusive offset in the remaining suffix. */
     for (unsigned current = 0; current < 8u; ++current) {
         unsigned maximum = 7u - current;
-        unsigned offset = rndrng0_bridge(s, maximum);
+        unsigned offset = rndrng0(s, maximum);
         unsigned other = current + offset;
         uint8_t t = temp[current];
         temp[current] = temp[other];
@@ -139,7 +140,7 @@ static uint8_t get_rnd_wrestler(wm_pregame_state *s, uint8_t excluded) {
        isolated bridge above. */
     unsigned excluded_count = count_bits8(excluded);
     unsigned maximum = 7u - excluded_count;
-    unsigned nth = rndrng0_bridge(s, maximum) + 1u;
+    unsigned nth = rndrng0(s, maximum) + 1u;
     for (uint8_t w = 0; w < 8u; ++w) {
         if (excluded & (uint8_t)(1u << w))
             continue;
@@ -293,16 +294,16 @@ static void progress_create_bits(wm_pregame_state *s) {
         wm_progress_bit *b = &s->progress_bits[i];
 
         if ((remaining & 3u) == 0u) {
-            shared_y_fp = (int32_t)(rndrng0_bridge(s, ymax) << 16);
+            shared_y_fp = (int32_t)(rndrng0(s, ymax) << 16);
             ymax += 20u;
         }
 
         b->active = true;
         b->x_fp = (200 << 16);
         b->y_fp = shared_y_fp;
-        b->yvel_fp = -(int32_t)rndrng0_bridge(s, 0x58000u);
-        b->xvel_fp = (int32_t)rndrng0_bridge(s, 0x80000u) - 0x40000;
-        b->kind = (uint8_t)rndrng0_bridge(s, 13u);
+        b->yvel_fp = -(int32_t)rndrng0(s, 0x58000u);
+        b->xvel_fp = (int32_t)rndrng0(s, 0x80000u) - 0x40000;
+        b->kind = (uint8_t)rndrng0(s, 13u);
         b->delay = PROGRESS_BIT_INITIAL_DELAY;
         b->anim_index = 0u;
         b->anim_started = false;
@@ -400,9 +401,11 @@ static void tick_progress_close(wm_pregame_state *s) {
 
 void wm_pregame_init(wm_pregame_state *s,
                      uint8_t selected_source_wrestler,
-                     wm_wrestler_id selected_roster_wrestler) {
+                     wm_wrestler_id selected_roster_wrestler,
+                     WmRng *rng) {
     if (!s) return;
     memset(s, 0, sizeof(*s));
+    s->rng = rng;
     s->phase = WM_PREGAME_BELT_SETUP;
     s->belt_type = WM_PREGAME_BELT_INTERCONTINENTAL; /* INTER_DEFAULT .set 1 */
     s->player_source_wrestler = selected_source_wrestler < 9u ? selected_source_wrestler : 0u;
@@ -411,7 +414,6 @@ void wm_pregame_init(wm_pregame_state *s,
     s->belt_world_y = 0;
     s->match_count = 1u; /* WRESTLE.ASM increments match_cnt before pregame_show. */
     s->win_streak = 0u; /* Fresh one-player run: both source win-streak counters are clear. */
-    s->rng_state = 0x50524731u ^ ((uint32_t)s->player_source_wrestler * 0x9E3779B9u);
 }
 
 void wm_pregame_tick(wm_pregame_state *s,

@@ -182,10 +182,13 @@ if(WM_BUILD_TESTS)
          ${CMAKE_SOURCE_DIR}/tests/arcade_port/award/test_*.c)
     file(GLOB WM_ARCADE_INPUT_TESTS
          ${CMAKE_SOURCE_DIR}/tests/arcade_port/input/test_*.c)
+    file(GLOB WM_ARCADE_PREGAME_TESTS
+         ${CMAKE_SOURCE_DIR}/tests/arcade_port/pregame/test_*.c)
 
     foreach(test_src ${WM_ARCADE_STAGE25_TESTS} ${WM_ARCADE_RING_RNG_TESTS}
                      ${WM_ARCADE_TEXT_TESTS} ${WM_ARCADE_PAL_TESTS}
-                     ${WM_ARCADE_AWARD_TESTS} ${WM_ARCADE_INPUT_TESTS})
+                     ${WM_ARCADE_AWARD_TESTS} ${WM_ARCADE_INPUT_TESTS}
+                     ${WM_ARCADE_PREGAME_TESTS})
         get_filename_component(test_name ${test_src} NAME_WE)
         set(test_target wm_${test_name})
         add_executable(${test_target} ${test_src})

@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "wm/audio.h"
+#include "wm/arcade/wmania_rng.h"
 #include "wm/input.h"
 #include "wm/roster.h"
 #include "wm/progress_wrestlers.h"
@@ -69,7 +70,15 @@ typedef struct {
     int current_ladder_index;
     uint8_t opponent_count;
     uint8_t opponents[WM_PREGAME_MAX_OPPONENTS];
-    uint32_t rng_state; /* isolated portable bridge for missing RNDRNG0 primitive */
+    /*
+     * The one shared RAND. PROGRESS.ASM calls the same RNDRNG0
+     * (UTIL.ASM:1713) as everything else in the game, so this points at
+     * the app's single WmRng rather than owning a second stream. A NULL
+     * here means an un-wired state and every draw comes back zero --
+     * which is exactly what the arcade's own RAND does when nothing
+     * stirs it, and is documented in wm/arcade/wmania_rng.h.
+     */
+    WmRng *rng;
 
     /* PROGRESS.ASM world scroll registers represented as source pixels/fixed 16.16. */
     int belt_world_y;
@@ -106,7 +115,8 @@ typedef struct {
 
 void wm_pregame_init(wm_pregame_state *state,
                      uint8_t selected_source_wrestler,
-                     wm_wrestler_id selected_roster_wrestler);
+                     wm_wrestler_id selected_roster_wrestler,
+                     WmRng *rng);
 
 void wm_pregame_tick(wm_pregame_state *state,
                      const wm_input_state *input,

@@ -558,7 +558,8 @@ void wm_app_tick_dual(wm_app *app,
              */
             wm_pregame_init(&app->pregame,
                             app->select.selected_source_wrestler,
-                            app->p1_choice);
+                            app->p1_choice,
+                            &app->rng);
             app->pregame.win_streak = app->awards.win_streak[0];
             app->mode = WM_APP_MODE_PREGAME;
         }
@@ -611,7 +612,7 @@ void wm_app_tick_dual(wm_app *app,
         input && input->start) {
         kill_call_processes(app, app->attract.call);
         app->mode = WM_APP_MODE_SELECT;
-        wm_select_screen_init(&app->select);
+        wm_select_screen_init(&app->select, &app->rng);
         wm_select_screen_set_howard_done(&app->select, app->done_howard);
         /* SELECT.ASM::show_bonus_icons with SHOW_ACCUM_ICONS=0 clears the
            accumulated total on a fresh (zero-winstreak) player. */

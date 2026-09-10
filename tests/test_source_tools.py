@@ -31,6 +31,7 @@ wlroll = load("wlroll", ROOT / "tools" / "wlroll.py")
 wlvoice = load("wlvoice", ROOT / "tools" / "wlvoice.py")
 wlwrsnd = load("wlwrsnd", ROOT / "tools" / "wlwrsnd.py")
 wlstring = load("wlstring", ROOT / "tools" / "wlstring.py")
+wlpal = load("wlpal", ROOT / "tools" / "wlpal.py")
 wlverify = load("wlverify", ROOT / "tools" / "wlverify.py")
 wlprogram = load("wlprogram", ROOT / "tools" / "wlprogram.py")
 manifest = load("bret_manifest", ROOT / "tools" / "bret_manifest.py")
@@ -2258,6 +2259,49 @@ def test_glyph_metrics_generate_the_shipped_file() -> None:
     assert wlstring.render_metrics_c() == out.read_text()
 
 
+def test_imgpal_palettes_are_self_consistent() -> None:
+    """IMGPAL.ASM's palettes, checked against their own count words.
+
+    Every routine in PAL.ASM reads a palette as [count word][colours],
+    masking the count to nine bits (`sll 32-9 / srl 32-9`). So the one
+    thing that can go wrong in extraction -- running a block on into the
+    next label, or stopping short -- shows up as a count that disagrees
+    with the block's length. wlpal.palettes() refuses rather than
+    truncating, so simply calling it is the check; these assertions pin
+    the shape it produced.
+    """
+    if not wlpal.SRC.exists():
+        return
+    pals = wlpal.palettes()
+    assert len(pals) == 337, len(pals)
+
+    for name, words in pals.items():
+        count = words[0] & wlpal.COUNT_MASK
+        assert len(words) - 1 == count, name
+        assert 1 <= count <= 256, (name, count)
+        assert all(0 <= w <= 0xFFFF for w in words), name
+
+    # No shipped palette sets any of the count word's flag bits, so the
+    # port's mask is load-bearing only in principle -- worth knowing.
+    assert {w[0] & ~wlpal.COUNT_MASK for w in pals.values()} == {0}
+
+    # PAL.ASM:118 takes DIAGP first so it is always colour map 0; its
+    # first colours are read straight out of IMGPAL.ASM:739.
+    assert pals["DIAGP"][0] == 29
+    assert pals["DIAGP"][1:4] == [0x0000, 0x56B5, 0x7BDE]
+
+    # The palette anim_code's #set_pal asks for by name (BAMSEQ2.ASM
+    # #set_pal -> `movi BAMBLU_P,a0 / calla pal_getf`).
+    assert "BAMBLU_P" in pals
+
+
+def test_palettes_generate_the_shipped_file() -> None:
+    out = ROOT / "src" / "generated" / "palettes.c"
+    if not wlpal.SRC.exists() or not out.exists():
+        return
+    assert wlpal.render_c() == out.read_text()
+
+
 def main() -> int:
     test_wlanim()
     test_wlprogram()
@@ -2290,6 +2334,8 @@ def main() -> int:
     test_font_tables_generate_the_shipped_file()
     test_glyph_metrics_come_out_of_the_artwork()
     test_glyph_metrics_generate_the_shipped_file()
+    test_imgpal_palettes_are_self_consistent()
+    test_palettes_generate_the_shipped_file()
     test_digit_leading_local_labels_are_seen()
     test_programs_record_where_they_start()
     test_emitted_programs_hold_together()

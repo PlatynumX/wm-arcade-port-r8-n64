@@ -106,6 +106,7 @@ FIX38_ARCADE_C := \
     src/core/arcade/wm_arcade_life_data.c \
     src/core/arcade/wm_arcade_roster_anims.c \
     src/generated/roster_anim_tables.c \
+    src/generated/ani_init_tables.c \
     src/generated/palettes.c \
     src/generated/font_tables.c \
     src/generated/font_metrics.c \

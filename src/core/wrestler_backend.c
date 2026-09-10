@@ -113,9 +113,71 @@ static void backend_change_anim_label(wm_arcade_actor_t *actor,
                        &st->anim_env);
 }
 
+/*
+ * change_anim2 on the generic backend. Mirrors the primary path above,
+ * including its "already playing this" guard, and differs in the two
+ * ways the source differs: it writes the second channel, and starting
+ * it does not reset gravity.
+ */
+static void backend_change_anim2_label(wm_arcade_actor_t *actor,
+                                       const char *source_label, void *user) {
+    wm_wrestler_backend_actor *st = (wm_wrestler_backend_actor *)user;
+    const wm_anim_program *prog;
+    if (!actor || !st || !source_label) return;
+
+    if (st->torso_label && st->torso_prog.program && !st->torso_prog.ended &&
+        strcmp(st->torso_label, source_label) == 0)
+        return;
+
+    prog = wm_anim_program_find(source_label);
+    st->torso_label = source_label;
+    if (!prog) {
+        st->torso_prog.program = NULL;
+        st->torso_prog.ended = true;
+        return;
+    }
+    st->anim_env.opponent = st->opponent;
+    st->anim_env.pcnt = st->pcnt;
+    wm_anim_exec_start_secondary(&st->torso_prog, prog, actor,
+                                 (uint16_t)st->pcnt, &st->anim_env);
+}
+
+void wm_wrestler_backend_ani_init(wm_wrestler_backend_actor *state,
+                                  wm_arcade_actor_t *actor) {
+    const wm_ani_init_row *row;
+    bool facing_right;
+
+    if (!state || !actor) return;
+    if (state->wrestler_num < 0 ||
+        state->wrestler_num >= WM_ANI_INIT_SLOTS) return;
+    row = &wm_ani_init_rows[state->wrestler_num];
+    if (!row->stand2) return;           /* Adam Bomb: cut, no animations */
+
+    /* `move *a13(FACING_DIR),a0 / btst PLAYER_RIGHT_BIT,a0 / jrnz #p1` */
+    facing_right = (actor->facing_dir & WM_MOVE_RIGHT) != 0;
+    backend_change_anim_label(actor,
+                              facing_right ? row->stand2 : row->stand4, state);
+    backend_change_anim2_label(actor,
+                               facing_right ? row->torso2 : row->torso4, state);
+}
+
+const char *wm_wrestler_backend_torso_frame(
+    const wm_wrestler_backend_actor *state) {
+    if (!state || !state->torso_prog.program) return NULL;
+    return wm_anim_exec_frame(&state->torso_prog);
+}
+
 void wm_wrestler_backend_tick(wm_wrestler_backend_actor *state,
                               wm_arcade_actor_t *actor) {
     if (!actor) return;
+
+    if (state && state->torso_prog.program) {
+        /* The torso runs on its own clock beside the primary channel,
+           which is what having two ANIPCs means. */
+        state->anim_env.opponent = state->opponent;
+        state->anim_env.pcnt = state->pcnt;
+        wm_anim_exec_tick(&state->torso_prog, actor, (uint16_t)state->pcnt);
+    }
 
     if (state && state->prog.program) {
         const char *frame;

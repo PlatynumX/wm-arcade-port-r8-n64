@@ -654,12 +654,60 @@ void wm_anim_code_reset(void);
 /* DCSSOUND.ASM's ENDLESS_SOUND: the one looping sound the machine allows. */
 uint16_t wm_anim_code_endless_sound(void);
 
-/* Start `program`: runs its header commands and stops on the first frame.
-   `env` is kept for the life of the animation, so it must outlive it; NULL
-   means the ANI_CODE routines that need a service simply do nothing. */
+/*
+ * ANIM.ASM's four change_anim entry points.
+ *
+ * The source has two animation channels per wrestler and a guarded and
+ * an unguarded way into each:
+ *
+ *   change_anim1   ANIM.ASM:4560   primary, guarded
+ *   change_anim1a  ANIM.ASM:4568   primary, unconditional
+ *   change_anim2   ANIM.ASM:4592   secondary, guarded
+ *   change_anim2a  ANIM.ASM:4600   secondary, unconditional
+ *
+ * The guard is the same in both: if the animation already ended
+ * (MODE_END_BIT) restart it regardless, otherwise selecting the
+ * animation that is already playing does nothing. Every dispatcher
+ * calls the guarded form every tick it stays in one mode, so without
+ * it a wrestler would restart his walk on frame 0 forever.
+ *
+ * The two channels differ in exactly one thing besides which fields
+ * they write: change_anim1a resets OBJ_GRAVITY to GRAVITY and
+ * change_anim2a does not. The secondary channel is the torso, which
+ * does not fall.
+ */
+
+/* change_anim1a: start `program` unconditionally on the primary
+   channel, running its header commands and stopping on the first
+   frame. Resets the actor's gravity, as the source does.
+   `env` is kept for the life of the animation, so it must outlive it;
+   NULL means the ANI_CODE routines that need a service do nothing. */
 void wm_anim_exec_start(wm_anim_exec *exec, const wm_anim_program *program,
                         wm_arcade_actor_t *actor, uint16_t round_tickcount,
                         const wm_anim_env *env);
+
+/* change_anim2a: the same, on the secondary (torso) channel -- which
+   means WITHOUT the gravity reset. Pass the wrestler's second
+   wm_anim_exec. */
+void wm_anim_exec_start_secondary(wm_anim_exec *exec,
+                                  const wm_anim_program *program,
+                                  wm_arcade_actor_t *actor,
+                                  uint16_t round_tickcount,
+                                  const wm_anim_env *env);
+
+/* change_anim1 / change_anim2: the guarded forms. Return true when the
+   call really did (re)start the program, which is what one-shot
+   side effects at the start of an animation hang off. */
+bool wm_anim_exec_start_if_new(wm_anim_exec *exec,
+                               const wm_anim_program *program,
+                               wm_arcade_actor_t *actor,
+                               uint16_t round_tickcount,
+                               const wm_anim_env *env);
+bool wm_anim_exec_start_secondary_if_new(wm_anim_exec *exec,
+                                         const wm_anim_program *program,
+                                         wm_arcade_actor_t *actor,
+                                         uint16_t round_tickcount,
+                                         const wm_anim_env *env);
 
 /* Advance one tick. Runs commands and takes branches as the frame expires. */
 void wm_anim_exec_tick(wm_anim_exec *exec, wm_arcade_actor_t *actor,

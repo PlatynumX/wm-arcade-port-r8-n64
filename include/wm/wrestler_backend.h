@@ -67,9 +67,58 @@ typedef struct wm_wrestler_backend_actor {
     wm_anim_env anim_env;
     /* The label most recently selected, so a repeated call with the same
        one continues rather than restarting -- the source's own
-       "already playing this" behaviour. */
+       "already playing this" behaviour, ANIM.ASM's change_anim1 guard. */
     const char *current_label;
+
+    /*
+     * ANIM.ASM's SECOND animation channel -- ANIBASE2/ANIPC2/ANIMODE2/
+     * ANICNT2, driven by change_anim2 and change_anim2a. It is the
+     * torso, and every wrestler has one: each *_ani_init starts a
+     * stand animation on channel 1 and a torso animation on channel 2,
+     * chosen by facing.
+     *
+     * Bret's own backend has had a second visual track since it was
+     * written; the other seven had none at all, so seven of the eight
+     * wrestlers were running with no torso. This is that channel, in
+     * the shared path where all of them get it.
+     *
+     * The one behavioural difference from channel 1 is that starting a
+     * secondary animation does NOT reset gravity -- the torso does not
+     * fall. See wm_anim_exec_start_secondary.
+     */
+    wm_anim_exec torso_prog;
+    const char *torso_label;
 } wm_wrestler_backend_actor;
+
+/*
+ * Each wrestler's *_ani_init pair, indexed by WRESTLERNUM. Slot 7 is
+ * Adam Bomb, cut from the game, and is all NULL. Extracted by
+ * tools/wlaniinit.py; the `2` form faces right, the `4` form left.
+ */
+#define WM_ANI_INIT_SLOTS 9
+
+typedef struct wm_ani_init_row {
+    const char *stand2;
+    const char *stand4;
+    const char *torso2;
+    const char *torso4;
+} wm_ani_init_row;
+
+extern const wm_ani_init_row wm_ani_init_rows[WM_ANI_INIT_SLOTS];
+
+/*
+ * *_ani_init: put this wrestler in his standing pose on both channels,
+ * picking the facing-right or facing-left pair from FACING_DIR's
+ * PLAYER_RIGHT_BIT exactly as the source does. Safe to call for a
+ * wrestler with no row (Adam Bomb) -- it does nothing.
+ */
+void wm_wrestler_backend_ani_init(wm_wrestler_backend_actor *state,
+                                  wm_arcade_actor_t *actor);
+
+/* The torso frame currently showing, or NULL. The primary frame is
+   whatever wm_wrestler_backend_tick already publishes. */
+const char *wm_wrestler_backend_torso_frame(
+    const wm_wrestler_backend_actor *state);
 
 /*
  * Each wrestler's own xxx_velocity_table (BRET.ASM:2848 hrt_, RAZOR.ASM:2586

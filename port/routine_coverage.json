@@ -4930,10 +4930,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_wrestler_backend_ani_init",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "bam_arm_broken_anim",
@@ -7180,10 +7180,10 @@
    "local": false,
    "external_callers": 46,
    "references": 46,
-   "status": "cited",
-   "evidence": "change_anim1",
+   "status": "renamed",
+   "evidence": "wm_anim_exec_start_if_new",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "change_anim1a",
@@ -7195,10 +7195,10 @@
    "local": false,
    "external_callers": 501,
    "references": 503,
-   "status": "cited",
-   "evidence": "change_anim1a",
+   "status": "renamed",
+   "evidence": "wm_anim_exec_start",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "change_anim2",
@@ -7210,10 +7210,10 @@
    "local": false,
    "external_callers": 5,
    "references": 5,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_anim_exec_start_secondary_if_new",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "change_anim2a",
@@ -7225,10 +7225,10 @@
    "local": false,
    "external_callers": 18,
    "references": 19,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_anim_exec_start_secondary",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "change_anim_anim",
@@ -7240,10 +7240,10 @@
    "local": false,
    "external_callers": 4,
    "references": 4,
-   "status": "cited",
-   "evidence": "change_anim_anim",
+   "status": "renamed",
+   "evidence": "wm_anim_exec_start",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "change_image",
@@ -7991,10 +7991,10 @@
    "local": false,
    "external_callers": 31,
    "references": 31,
-   "status": "cited",
-   "evidence": "concat_rom_string",
+   "status": "renamed",
+   "evidence": "wm_string_concat_rom",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "concat_string",
@@ -8126,10 +8126,10 @@
    "local": false,
    "external_callers": 14,
    "references": 14,
-   "status": "cited",
-   "evidence": "copy_rom_string",
+   "status": "renamed",
+   "evidence": "wm_string_copy_rom",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "copy_string",
@@ -12012,10 +12012,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_wrestler_backend_ani_init",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "doink_pie",
@@ -13647,10 +13647,10 @@
    "local": false,
    "external_callers": 24,
    "references": 28,
-   "status": "cited",
-   "evidence": "get_opp_process",
+   "status": "inlined",
+   "evidence": "smart_target",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "get_powerk_dtime",
@@ -19724,10 +19724,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_wrestler_backend_ani_init",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "lex_arm_broken_anim",
@@ -27587,10 +27587,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_wrestler_backend_ani_init",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "shn_2_bncoff_anim",
@@ -31217,10 +31217,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_wrestler_backend_ani_init",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "target_whoihit",
@@ -37983,10 +37983,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_wrestler_backend_ani_init",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "zero_combo_meter",

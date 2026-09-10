@@ -156,6 +156,8 @@ if [ -d "$ORIG/IMG" ]; then
     python3 "$ROOT/tools/wlstring.py" \
         --metrics-out "$ROOT/src/generated/font_metrics.c"
 fi
+python3 "$ROOT/tools/wlaniinit.py" \
+    --out "$ROOT/src/generated/ani_init_tables.c"
 python3 "$ROOT/tools/wlrostertbl.py" \
     --out "$ROOT/src/generated/roster_anim_tables.c"
 python3 "$ROOT/tools/wlpal.py" \

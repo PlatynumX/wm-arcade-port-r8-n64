@@ -250,5 +250,89 @@
     "status": "renamed",
     "symbol": "wm_award_arm_comeback",
     "note": "The 80%-health sweep over every live enemy."
+  },
+  "change_anim1": {
+    "file": "ANIM.ASM",
+    "status": "renamed",
+    "symbol": "wm_anim_exec_start_if_new",
+    "note": "The guarded primary entry: restart if the animation ended, do nothing if it is already the one playing, else fall into change_anim1a."
+  },
+  "change_anim1a": {
+    "file": "ANIM.ASM",
+    "status": "renamed",
+    "symbol": "wm_anim_exec_start",
+    "note": "The unconditional primary entry, gravity reset included. 503 call sites, the most-referenced routine in the game."
+  },
+  "change_anim2": {
+    "file": "ANIM.ASM",
+    "status": "renamed",
+    "symbol": "wm_anim_exec_start_secondary_if_new",
+    "note": "The guarded secondary entry."
+  },
+  "change_anim2a": {
+    "file": "ANIM.ASM",
+    "status": "renamed",
+    "symbol": "wm_anim_exec_start_secondary",
+    "note": "The unconditional secondary entry -- the torso channel, and the one that does NOT reset gravity."
+  },
+  "change_anim_anim": {
+    "file": "ANIM.ASM",
+    "status": "renamed",
+    "symbol": "wm_anim_exec_start",
+    "note": "change_anim1a's body on an arbitrary process rather than a13, and without the immediate animate_wrestler1. The port passes the exec and actor explicitly, so it is the same call."
+  },
+  "bam_ani_init": {
+    "file": "BAM.ASM",
+    "status": "renamed",
+    "symbol": "wm_wrestler_backend_ani_init",
+    "note": "See bret_ani_init."
+  },
+  "doink_ani_init": {
+    "file": "DOINK.ASM",
+    "status": "renamed",
+    "symbol": "wm_wrestler_backend_ani_init",
+    "note": "See bret_ani_init."
+  },
+  "lex_ani_init": {
+    "file": "LEX.ASM",
+    "status": "renamed",
+    "symbol": "wm_wrestler_backend_ani_init",
+    "note": "See bret_ani_init."
+  },
+  "shawn_ani_init": {
+    "file": "SHAWN.ASM",
+    "status": "renamed",
+    "symbol": "wm_wrestler_backend_ani_init",
+    "note": "See bret_ani_init."
+  },
+  "taker_ani_init": {
+    "file": "TAKER.ASM",
+    "status": "renamed",
+    "symbol": "wm_wrestler_backend_ani_init",
+    "note": "See bret_ani_init."
+  },
+  "yoko_ani_init": {
+    "file": "YOKO.ASM",
+    "status": "renamed",
+    "symbol": "wm_wrestler_backend_ani_init",
+    "note": "See bret_ani_init."
+  },
+  "concat_rom_string": {
+    "file": "STRING.ASM",
+    "status": "renamed",
+    "symbol": "wm_string_concat_rom",
+    "note": "The C name reorders the words."
+  },
+  "copy_rom_string": {
+    "file": "STRING.ASM",
+    "status": "renamed",
+    "symbol": "wm_string_copy_rom",
+    "note": "The C name reorders the words."
+  },
+  "get_opp_process": {
+    "file": "WRESTLE.ASM",
+    "status": "inlined",
+    "symbol": "smart_target",
+    "note": "The closest-opponent lookup. This port holds one fixed opponent per actor, documented in wm/arcade/wm_arcade_closest.h, so there is nothing to search."
   }
 }

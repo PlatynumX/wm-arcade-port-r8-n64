@@ -1175,9 +1175,31 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
                 if (actor) run_superslave2(o, actor, exec->env);
                 return;
             case WM_AOP_END:
-            case WM_AOP_REPEAT:
                 exec->ended = true;
                 return;
+            case WM_AOP_REPEAT:
+                /*
+                 * ANIM.ASM:364 _ani_repeat:
+                 *
+                 *     move  *a10(OANIBASE),a4,L
+                 *     move  a4,*a10(OANIPC),L
+                 *     jruc  _next_command1
+                 *
+                 * It rewinds to the animation's base and KEEPS GOING --
+                 * it is a loop, not an end. This used to fall in with
+                 * ANI_END and stop the program, which silently killed
+                 * every animation that loops this way after one pass:
+                 * 169 of the 1,525 emitted programs, every idle stance
+                 * and torso cycle among them.
+                 *
+                 * The base is `entry`, not 0. change_anim1a writes the
+                 * ROUTINE's own address into both OANIBASE and OANIPC,
+                 * so a program whose stream begins with shared code it
+                 * branches back into rewinds to its own first command,
+                 * not to that shared code.
+                 */
+                pc = p->entry;
+                continue;
             case WM_AOP_GOTO:
                 pc = (size_t)o->target;
                 continue;
@@ -1391,9 +1413,9 @@ int wm_anim_program_label(const wm_anim_program *program, const char *label) {
     return -1;
 }
 
-void wm_anim_exec_start(wm_anim_exec *exec, const wm_anim_program *program,
-                        wm_arcade_actor_t *actor, uint16_t round_tickcount,
-                        const wm_anim_env *env) {
+static void exec_start(wm_anim_exec *exec, const wm_anim_program *program,
+                       wm_arcade_actor_t *actor, uint16_t round_tickcount,
+                       const wm_anim_env *env, bool reset_gravity) {
     if (!exec) return;
     memset(exec, 0, sizeof(*exec));
     exec->program = program;
@@ -1405,8 +1427,13 @@ void wm_anim_exec_start(wm_anim_exec *exec, const wm_anim_program *program,
      * fall rate, and an animation that wants its own must say so with
      * ANI_SETLONG,OBJ_GRAVITY. Without this reset a single heavy fall
      * would make the wrestler heavy for the rest of the match.
+     *
+     * change_anim2a does NOT do this, which is why it is a parameter:
+     * the secondary channel is the torso and the torso does not fall.
+     * Resetting gravity from it would undo whatever the primary
+     * animation had just set.
      */
-    if (actor) actor->gravity = WM_GRAVITY;
+    if (actor && reset_gravity) actor->gravity = WM_GRAVITY;
     if (!program || program->op_count == 0) {
         exec->ended = true;
         return;
@@ -1467,4 +1494,65 @@ const char *wm_anim_exec_frame(const wm_anim_exec *exec) {
     if (!exec || exec->ended || !exec->program) return NULL;
     if (exec->pc >= exec->program->op_count) return NULL;
     return exec->program->ops[exec->pc].text;
+}
+
+
+/* ------------------------------------------------------------------ */
+/* ANIM.ASM's four change_anim entry points.                           */
+
+void wm_anim_exec_start(wm_anim_exec *exec, const wm_anim_program *program,
+                        wm_arcade_actor_t *actor, uint16_t round_tickcount,
+                        const wm_anim_env *env) {
+    /* change_anim1a */
+    exec_start(exec, program, actor, round_tickcount, env, true);
+}
+
+void wm_anim_exec_start_secondary(wm_anim_exec *exec,
+                                  const wm_anim_program *program,
+                                  wm_arcade_actor_t *actor,
+                                  uint16_t round_tickcount,
+                                  const wm_anim_env *env) {
+    /* change_anim2a -- no gravity reset. */
+    exec_start(exec, program, actor, round_tickcount, env, false);
+}
+
+/*
+ * change_anim1 / change_anim2's shared guard:
+ *
+ *     move  *a13(ANIMODE),a2
+ *     btst  MODE_END_BIT,a2    ; if anim has ended, then
+ *     jrnz  change_anim1a      ; always restart it
+ *     move  *a13(ANIBASE),a2,L
+ *     cmp   a0,a2
+ *     jreq  #no_change
+ *
+ * The port compares the program pointer where the source compares
+ * ANIBASE, which is the same thing: ANIBASE holds the animation
+ * script's address and each program is a distinct object.
+ */
+static bool start_if_new(wm_anim_exec *exec, const wm_anim_program *program,
+                         wm_arcade_actor_t *actor, uint16_t round_tickcount,
+                         const wm_anim_env *env, bool reset_gravity) {
+    if (!exec) return false;
+    if (exec->program == program && !exec->ended) {
+        return false;                   /* `jreq #no_change` */
+    }
+    exec_start(exec, program, actor, round_tickcount, env, reset_gravity);
+    return true;
+}
+
+bool wm_anim_exec_start_if_new(wm_anim_exec *exec,
+                               const wm_anim_program *program,
+                               wm_arcade_actor_t *actor,
+                               uint16_t round_tickcount,
+                               const wm_anim_env *env) {
+    return start_if_new(exec, program, actor, round_tickcount, env, true);
+}
+
+bool wm_anim_exec_start_secondary_if_new(wm_anim_exec *exec,
+                                         const wm_anim_program *program,
+                                         wm_arcade_actor_t *actor,
+                                         uint16_t round_tickcount,
+                                         const wm_anim_env *env) {
+    return start_if_new(exec, program, actor, round_tickcount, env, false);
 }

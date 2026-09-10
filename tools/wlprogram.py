@@ -994,6 +994,16 @@ def render_c(entries) -> str:
         out.append(f'      sizeof({sym}_ops) / sizeof({sym}_ops[0]),'
                    f' {entry}, {lab} }},{note}')
     out += ["};", "",
+            "/* The whole corpus, so a test can play every program rather",
+            "   than only the ones it thought to name. */",
+            "size_t wm_anim_program_count(void) {",
+            "    return sizeof(programs) / sizeof(programs[0]);",
+            "}",
+            "",
+            "const wm_anim_program *wm_anim_program_at(size_t index) {",
+            "    return index < wm_anim_program_count() ? &programs[index] : 0;",
+            "}",
+            "",
             "const wm_anim_program *wm_anim_program_find(const char *source_label) {",
             "    size_t i;",
             "    if (!source_label) return 0;",

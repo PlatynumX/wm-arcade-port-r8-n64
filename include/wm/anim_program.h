@@ -605,6 +605,12 @@ typedef struct {
 
 const wm_anim_program *wm_anim_program_find(const char *source_label);
 
+/* Enumerate the whole corpus. A test that can only reach programs by
+   name can only check the ones someone thought to name, which is how
+   ANI_REPEAT killed 169 of them unnoticed. */
+size_t wm_anim_program_count(void);
+const wm_anim_program *wm_anim_program_at(size_t index);
+
 /*
  * An ANI_CODE routine. `param` is the constant its registry row carries,
  * for the routines the source writes once per file with a different value

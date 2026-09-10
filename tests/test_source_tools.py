@@ -32,6 +32,7 @@ wlvoice = load("wlvoice", ROOT / "tools" / "wlvoice.py")
 wlwrsnd = load("wlwrsnd", ROOT / "tools" / "wlwrsnd.py")
 wlstring = load("wlstring", ROOT / "tools" / "wlstring.py")
 wlpal = load("wlpal", ROOT / "tools" / "wlpal.py")
+wlrostertbl = load("wlrostertbl", ROOT / "tools" / "wlrostertbl.py")
 wlverify = load("wlverify", ROOT / "tools" / "wlverify.py")
 wlprogram = load("wlprogram", ROOT / "tools" / "wlprogram.py")
 manifest = load("bret_manifest", ROOT / "tools" / "bret_manifest.py")
@@ -2322,6 +2323,64 @@ def test_palettes_generate_the_shipped_file() -> None:
     assert wlpal.render_c() == out.read_text()
 
 
+def test_roster_anim_tables_name_real_routines() -> None:
+    """Every label in a per-wrestler table is a routine that exists.
+
+    This is the check that says the extraction is reading and not
+    pattern-matching: the table rows look derivable from the wrestler
+    prefix, and they are not. fall_back_tbukl_tbl gives Yokozuna
+    `yok_fall_back_anim` where the pattern would predict
+    `yok_fall_back_tbukl_anim`, and that second name is not a routine
+    at all -- so a generator that derived rows would emit a dangling
+    reference here and this would catch it.
+    """
+    tables = wlrostertbl.roster_tables()
+    if not tables:
+        return
+    assert len(tables) == 18, sorted(tables)
+
+    routines = set()
+    for path in sorted(wlanim.ORIG.glob("*.ASM")):
+        text = path.read_text(errors="replace")
+        routines.update(re.findall(r"^\s*SUBRP?\s+([A-Za-z_]\w*)\s*$",
+                                   text, re.M))
+
+    for name, (fname, line, rows) in tables.items():
+        for slot, label in enumerate(rows):
+            if label is None:
+                continue
+            assert label in routines, (name, fname, line, slot, label)
+
+    # The two details the header claims, asserted against the data.
+    assert tables["fall_back_tbukl_tbl"][2][3] == "yok_fall_back_anim"
+    assert "yok_fall_back_tbukl_anim" not in routines
+    for slot in (7, 9):
+        assert tables["climbthru_bot_anims"][2][slot] == "dnk_climbthru_bot_anim"
+
+
+def test_roster_anim_tables_refuse_ambiguous_labels() -> None:
+    """A label defined more than once is left to wlpuppet.py.
+
+    Those are `#local` and block-scoped; only a use site can say which
+    definition a caller means, and picking one would be the same class
+    of mistake as resolving #make_black by bare name.
+    """
+    if not wlanim.ORIG.exists():
+        return
+    tables = wlrostertbl.roster_tables()
+    ambiguous = wlrostertbl._ambiguous()
+    assert ambiguous, "expected at least one reused table label"
+    for name in ambiguous:
+        assert name not in tables, name
+
+
+def test_roster_anim_tables_generate_the_shipped_file() -> None:
+    out = ROOT / "src" / "generated" / "roster_anim_tables.c"
+    if not wlanim.ORIG.exists() or not out.exists():
+        return
+    assert wlrostertbl.render_c() == out.read_text()
+
+
 def main() -> int:
     test_wlanim()
     test_wlprogram()
@@ -2356,6 +2415,9 @@ def main() -> int:
     test_glyph_metrics_generate_the_shipped_file()
     test_imgpal_palettes_are_self_consistent()
     test_palettes_generate_the_shipped_file()
+    test_roster_anim_tables_name_real_routines()
+    test_roster_anim_tables_refuse_ambiguous_labels()
+    test_roster_anim_tables_generate_the_shipped_file()
     test_digit_leading_local_labels_are_seen()
     test_programs_record_where_they_start()
     test_emitted_programs_hold_together()

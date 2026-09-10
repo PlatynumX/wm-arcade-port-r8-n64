@@ -97,6 +97,7 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_powerup.c
     src/core/arcade/wm_arcade_switches.c
     src/core/arcade/wm_arcade_teammates.c
+    src/core/arcade/wm_arcade_life_data.c
     src/generated/palettes.c
     src/generated/font_tables.c
     src/generated/font_metrics.c
@@ -186,11 +187,14 @@ if(WM_BUILD_TESTS)
          ${CMAKE_SOURCE_DIR}/tests/arcade_port/pregame/test_*.c)
     file(GLOB WM_ARCADE_DISPLAY_TESTS
          ${CMAKE_SOURCE_DIR}/tests/arcade_port/display/test_*.c)
+    file(GLOB WM_ARCADE_LIFEBAR_TESTS
+         ${CMAKE_SOURCE_DIR}/tests/arcade_port/lifebar/test_*.c)
 
     foreach(test_src ${WM_ARCADE_STAGE25_TESTS} ${WM_ARCADE_RING_RNG_TESTS}
                      ${WM_ARCADE_TEXT_TESTS} ${WM_ARCADE_PAL_TESTS}
                      ${WM_ARCADE_AWARD_TESTS} ${WM_ARCADE_INPUT_TESTS}
-                     ${WM_ARCADE_PREGAME_TESTS} ${WM_ARCADE_DISPLAY_TESTS})
+                     ${WM_ARCADE_PREGAME_TESTS} ${WM_ARCADE_DISPLAY_TESTS}
+                     ${WM_ARCADE_LIFEBAR_TESTS})
         get_filename_component(test_name ${test_src} NAME_WE)
         set(test_target wm_${test_name})
         add_executable(${test_target} ${test_src})

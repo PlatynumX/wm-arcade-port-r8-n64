@@ -829,6 +829,17 @@ def program_for(path: pathlib.Path, label: str, with_entry: bool = False):
                 f"{label}: branch to {target}, which is not defined inside "
                 f"this routine -- the animation continues somewhere this "
                 f"emitter cannot follow")
+        if label_at[target] >= len(ops):
+            # The label is real, but it sits past the last op this body
+            # emitted -- trailing ANI_CODE, a puppet table, an `equ`. A
+            # branch there resolves to one past the end, which the
+            # dispatcher reads as "the program is over" and the animation
+            # dies before its first frame. That is exactly how ANI_IFROPE
+            # shipped broken; refuse instead of emitting it again.
+            raise ValueError(
+                f"{label}: branch to {target}, which is defined after this "
+                f"routine's last animation command -- one past the end is "
+                f"not a target")
         op = ops[at]
         ops[at] = (op[0], label_at[target]) + op[2:]
 
@@ -844,7 +855,20 @@ def program_for(path: pathlib.Path, label: str, with_entry: bool = False):
         if not wlanim._routine_terminates(lines, (start, stop)):
             raise ValueError(f"{label}: no frames")
     if with_entry:
-        return ops, (entry or 0), label_at
+        # Only labels that name an op the animation can actually reach.
+        #
+        # A routine's trailing assembly, its puppet tables and its `equ`
+        # lines all sit after the last animation command, and every symbol
+        # among them was being recorded at index len(ops) -- one past the
+        # end. 1,794 of them, across the corpus. Nothing distinguishes
+        # that from a real index at the C end, so wm_anim_program_label
+        # answered an ANIPC redirect to `#yoff` or `#puppet_tbl` with a
+        # position the dispatcher then read as "the program is over".
+        # A symbol that is not a position in the stream has no position;
+        # the honest answer is -1, which dropping it here produces.
+        reachable = {name: at for name, at in label_at.items()
+                     if at < len(ops)}
+        return ops, (entry or 0), reachable
     return ops
 
 

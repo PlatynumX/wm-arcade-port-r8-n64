@@ -4016,7 +4016,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_bam_3_head_held_brk_anim_labels",
+   "evidence": "prog_bam_3_head_held_brk_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -4511,7 +4511,7 @@
    "external_callers": 4,
    "references": 4,
    "status": "implemented",
-   "evidence": "prog_bam_4_losebal_anim_labels",
+   "evidence": "prog_bam_4_losebal_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -5201,7 +5201,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_bam_climbin_side_anim_labels",
+   "evidence": "prog_bam_climbin_side_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -5216,7 +5216,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_bam_climbin_top_anim_labels",
+   "evidence": "prog_bam_climbin_top_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -5231,7 +5231,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_bam_climbthru_bot_anim_labels",
+   "evidence": "prog_bam_climbthru_bot_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -6101,7 +6101,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_bam_slamdwn_anim_labels",
+   "evidence": "prog_bam_slamdwn_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -9357,7 +9357,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_dnk_3_head_held_brk_anim_labels",
+   "evidence": "prog_dnk_3_head_held_brk_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -10677,7 +10677,7 @@
    "external_callers": 3,
    "references": 3,
    "status": "implemented",
-   "evidence": "prog_dnk_climbin_side_anim_labels",
+   "evidence": "prog_dnk_climbin_side_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -10692,7 +10692,7 @@
    "external_callers": 3,
    "references": 3,
    "status": "implemented",
-   "evidence": "prog_dnk_climbin_top_anim_labels",
+   "evidence": "prog_dnk_climbin_top_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -15388,7 +15388,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_hrt_3_head_held_brk_anim_labels",
+   "evidence": "prog_hrt_3_head_held_brk_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -16528,7 +16528,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_hrt_climbin_side_anim_labels",
+   "evidence": "prog_hrt_climbin_side_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -16543,7 +16543,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_hrt_climbin_top_anim_labels",
+   "evidence": "prog_hrt_climbin_top_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -16558,7 +16558,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_hrt_climbthru_bot_anim_labels",
+   "evidence": "prog_hrt_climbthru_bot_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -16933,7 +16933,7 @@
    "external_callers": 2,
    "references": 2,
    "status": "implemented",
-   "evidence": "prog_hrt_flying_kick_anim_labels",
+   "evidence": "prog_hrt_flying_kick_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -17128,7 +17128,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_hrt_kick_TB_anim_labels",
+   "evidence": "prog_hrt_kick_TB_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -18885,7 +18885,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_lex_3_head_held_brk_anim_labels",
+   "evidence": "prog_lex_3_head_held_brk_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -19755,7 +19755,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_lex_backbreaker_anim_labels",
+   "evidence": "prog_lex_backbreaker_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -19995,7 +19995,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_lex_climbin_side_anim_labels",
+   "evidence": "prog_lex_climbin_side_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -20010,7 +20010,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_lex_climbin_top_anim_labels",
+   "evidence": "prog_lex_climbin_top_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -20415,7 +20415,7 @@
    "external_callers": 2,
    "references": 2,
    "status": "implemented",
-   "evidence": "prog_lex_flying_ground_punch_anim_labels",
+   "evidence": "prog_lex_flying_ground_punch_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -24333,7 +24333,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_rzr_3_head_held_brk_anim_labels",
+   "evidence": "prog_rzr_3_head_held_brk_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -25458,7 +25458,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_rzr_climbin_side_anim_labels",
+   "evidence": "prog_rzr_climbin_side_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -25473,7 +25473,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_rzr_climbin_top_anim_labels",
+   "evidence": "prog_rzr_climbin_top_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -28023,7 +28023,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_shn_3_head_held_brk_anim_labels",
+   "evidence": "prog_shn_3_head_held_brk_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -28563,7 +28563,7 @@
    "external_callers": 3,
    "references": 3,
    "status": "implemented",
-   "evidence": "prog_shn_4_taunt_anim_labels",
+   "evidence": "prog_shn_4_taunt_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -29133,7 +29133,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_shn_climbin_side_anim_labels",
+   "evidence": "prog_shn_climbin_side_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -29148,7 +29148,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_shn_climbin_top_anim_labels",
+   "evidence": "prog_shn_climbin_top_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -29163,7 +29163,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_shn_climbthru_bot_anim_labels",
+   "evidence": "prog_shn_climbthru_bot_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -31863,7 +31863,7 @@
    "external_callers": 0,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_und_3_head_held_brk_anim_labels",
+   "evidence": "prog_und_3_head_held_brk_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -32283,7 +32283,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_und_4_losebal_dizzy_anim_labels",
+   "evidence": "prog_und_4_losebal_dizzy_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -32928,7 +32928,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_und_chokeslam_anim_labels",
+   "evidence": "prog_und_chokeslam_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -32988,7 +32988,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_und_climbin_side_anim_labels",
+   "evidence": "prog_und_climbin_side_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -33003,7 +33003,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_und_climbin_top_anim_labels",
+   "evidence": "prog_und_climbin_top_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -33018,7 +33018,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_und_climbthru_bot_anim_labels",
+   "evidence": "prog_und_climbthru_bot_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -33933,7 +33933,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_und_spirit_pull_anim_labels",
+   "evidence": "prog_und_spirit_pull_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -33963,7 +33963,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_und_spirit_push_anim_labels",
+   "evidence": "prog_und_spirit_push_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -35569,7 +35569,7 @@
    "external_callers": 4,
    "references": 4,
    "status": "implemented",
-   "evidence": "prog_yok_3_head_held_brk_anim_labels",
+   "evidence": "prog_yok_3_head_held_brk_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -36679,7 +36679,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_yok_climbin_side_anim_labels",
+   "evidence": "prog_yok_climbin_side_anim_ops",
    "from_generated": true,
    "ledgered": false
   },
@@ -36694,7 +36694,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_yok_climbin_top_anim_labels",
+   "evidence": "prog_yok_climbin_top_anim_ops",
    "from_generated": true,
    "ledgered": false
   },

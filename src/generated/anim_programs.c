@@ -928,9 +928,6 @@ static const wm_anim_label prog_bam_4_fpunch_anim_labels[] = {
     { "#gotima", 112 },
     { "#blockeda", 113 },
     { "#fail2", 120 },
-    { "#set_opp_xy", 124 },
-    { "#abs", 124 },
-    { "rets", 124 },
 };
 
 static const wm_anim_op prog_bam_combo_fpunch_ops[] = {
@@ -1317,10 +1314,6 @@ static const wm_anim_op prog_bam_4_losebal_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
-static const wm_anim_label prog_bam_4_losebal_anim_labels[] = {
-    { "#yoff", 19 },
-};
-
 static const wm_anim_op prog_bam_2_lbowdrop_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -1369,7 +1362,6 @@ static const wm_anim_label prog_bam_2_lbowdrop_anim_labels[] = {
     { "#no_leapat", 14 },
     { "#missed", 35 },
     { "#hit", 36 },
-    { "#yoff", 41 },
 };
 
 static const wm_anim_op prog_bam_combo_lbowdrop_anim_ops[] = {
@@ -1469,7 +1461,6 @@ static const wm_anim_label prog_bam_4_lbowdrop_anim_labels[] = {
     { "#no_leapat", 13 },
     { "#missed", 34 },
     { "#hit", 35 },
-    { "#yoff", 40 },
 };
 
 static const wm_anim_op prog_bam_combo_butt_drop_anim_ops[] = {
@@ -3175,17 +3166,6 @@ static const wm_anim_label prog_bam_2_grabfling_anim_labels[] = {
     { "#cont", 15 },
     { "#missedb", 47 },
     { "#missed", 50 },
-    { "#puppet_tbl", 57 },
-    { "#Bret", 57 },
-    { "#Razor", 57 },
-    { "#Taker", 57 },
-    { "#Yokozuna", 57 },
-    { "#Shawn", 57 },
-    { "#BamBam", 57 },
-    { "#Doink", 57 },
-    { "#Adam", 57 },
-    { "#Lex", 57 },
-    { "#strt_run_tbl", 57 },
 };
 
 static const wm_anim_op prog_bam_4_grabfling_anim_ops[] = {
@@ -3243,17 +3223,6 @@ static const wm_anim_label prog_bam_4_grabfling_anim_labels[] = {
     { "#cont", 6 },
     { "#missedb", 38 },
     { "#missed", 41 },
-    { "#puppet_tbl", 48 },
-    { "#Bret", 48 },
-    { "#Razor", 48 },
-    { "#Taker", 48 },
-    { "#Yokozuna", 48 },
-    { "#Shawn", 48 },
-    { "#BamBam", 48 },
-    { "#Doink", 48 },
-    { "#Adam", 48 },
-    { "#Lex", 48 },
-    { "#strt_run_tbl", 48 },
 };
 
 static const wm_anim_op prog_bam_2_head_hit_anim_ops[] = {
@@ -4452,12 +4421,6 @@ static const wm_anim_op prog_bam_climbin_side_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
-static const wm_anim_label prog_bam_climbin_side_anim_labels[] = {
-    { "#set_trgt", 60 },
-    { "#onlft", 60 },
-    { "rets", 60 },
-};
-
 static const wm_anim_op prog_bam_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1420, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -4496,14 +4459,6 @@ static const wm_anim_op prog_bam_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 128, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-};
-
-static const wm_anim_label prog_bam_climbthru_bot_anim_labels[] = {
-    { "#ckspin", 37 },
-    { "RETS", 37 },
-    { "#faceup", 37 },
-    { "rets", 37 },
-    { "NOT_IN_RING", 37 },
 };
 
 static const wm_anim_op prog_bam_climbin_bot_anim_ops[] = {
@@ -4590,10 +4545,6 @@ static const wm_anim_op prog_bam_climbthru_top_anim_ops[] = {
 
 static const wm_anim_label prog_bam_climbthru_top_anim_labels[] = {
     { "#dir4", 7 },
-    { "#set_zvel1", 38 },
-    { "rets", 38 },
-    { "#facedwn", 38 },
-    { "#set_zvel2", 38 },
 };
 
 static const wm_anim_op prog_bam_rollthru_top_anim_ops[] = {
@@ -4651,11 +4602,6 @@ static const wm_anim_op prog_bam_climbin_top_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 128, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-};
-
-static const wm_anim_label prog_bam_climbin_top_anim_labels[] = {
-    { "#set_zvel2", 31 },
-    { "rets", 31 },
 };
 
 static const wm_anim_op prog_bam_2_pin_anim_ops[] = {
@@ -5125,19 +5071,6 @@ static const wm_anim_label prog_bam_3_hiptoss2_anim_labels[] = {
     { "#missedb", 65 },
     { "#missed", 69 },
     { "#throw_him_out", 78 },
-    { "#flyout_tbl", 94 },
-    { "release_table", 94 },
-    { "#puppet_tbl", 94 },
-    { "#Bret", 94 },
-    { "#Razor", 94 },
-    { "#Taker", 94 },
-    { "#Yokozuna", 94 },
-    { "#Shawn", 94 },
-    { "#BamBam", 94 },
-    { "#Doink", 94 },
-    { "#Adam", 94 },
-    { "#Lex", 94 },
-    { "#rollout_tbl", 94 },
 };
 
 static const wm_anim_op prog_bam_3_hiptoss_anim_ops[] = {
@@ -5226,19 +5159,6 @@ static const wm_anim_label prog_bam_3_hiptoss_anim_labels[] = {
     { "#missedb", 48 },
     { "#missed", 52 },
     { "#throw_him_out", 61 },
-    { "#flyout_tbl", 77 },
-    { "release_table", 77 },
-    { "#puppet_tbl", 77 },
-    { "#Bret", 77 },
-    { "#Razor", 77 },
-    { "#Taker", 77 },
-    { "#Yokozuna", 77 },
-    { "#Shawn", 77 },
-    { "#BamBam", 77 },
-    { "#Doink", 77 },
-    { "#Adam", 77 },
-    { "#Lex", 77 },
-    { "#rollout_tbl", 77 },
 };
 
 static const wm_anim_op prog_bam_fly_cline_anim_ops[] = {
@@ -5886,17 +5806,6 @@ static const wm_anim_label prog_bam_combo_graboh_anim_labels[] = {
     { "START_OF_BREAKER", 23 },
     { "LET_GO_VICTIM", 58 },
     { "#missed_c", 72 },
-    { "#puppet_tbl", 85 },
-    { "#Bret", 85 },
-    { "#Razor", 85 },
-    { "#Taker", 85 },
-    { "#Yokozuna", 85 },
-    { "#Shawn", 85 },
-    { "#BamBam", 85 },
-    { "#Doink", 85 },
-    { "#Adam", 85 },
-    { "#Lex", 85 },
-    { "#strt_flail_tbl", 85 },
 };
 
 static const wm_anim_op prog_bam_stndholdoh_anim_ops[] = {
@@ -5959,23 +5868,6 @@ static const wm_anim_op prog_bam_slamdwn_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
-static const wm_anim_label prog_bam_slamdwn_anim_labels[] = {
-    { "#set_opp_y", 49 },
-    { "#abs", 49 },
-    { "rets", 49 },
-    { "#puppet_tbl", 49 },
-    { "#Bret", 49 },
-    { "#Razor", 49 },
-    { "#Taker", 49 },
-    { "#Yokozuna", 49 },
-    { "#Shawn", 49 },
-    { "#BamBam", 49 },
-    { "#Doink", 49 },
-    { "#Adam", 49 },
-    { "#Lex", 49 },
-    { "#faced_tbl", 49 },
-};
-
 static const wm_anim_op prog_bam_heldoh_anim_ops[] = {
     { WM_AOP_SETPLYRMODE, 0, -1, 3, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 44, 0, 0, 0, 0, 0, 0 },
@@ -6014,9 +5906,6 @@ static const wm_anim_op prog_bam_heldoh_anim_ops[] = {
 
 static const wm_anim_label prog_bam_heldoh_anim_labels[] = {
     { "#loop", 5 },
-    { "#inc_loop", 33 },
-    { "rets", 33 },
-    { "#breakout", 33 },
 };
 
 static const wm_anim_op prog_bam_backbreaker_anim_ops[] = {
@@ -6735,19 +6624,6 @@ static const wm_anim_label prog_bam_pogo_anim_labels[] = {
     { "#missed", 62 },
     { "#cont", 68 },
     { "#rpt_loop", 89 },
-    { "#set_opp_xflip", 124 },
-    { "rets", 124 },
-    { "#puppet_tbl", 124 },
-    { "#Bret", 124 },
-    { "#Razor", 124 },
-    { "#Taker", 124 },
-    { "#Yokozuna", 124 },
-    { "#Shawn", 124 },
-    { "#BamBam", 124 },
-    { "#Doink", 124 },
-    { "#Adam", 124 },
-    { "#Lex", 124 },
-    { "#rollout_tbl", 124 },
 };
 
 static const wm_anim_op prog_bam_climb_up_anim_ops[] = {
@@ -6892,8 +6768,6 @@ static const wm_anim_op prog_bam_get_buzz_anim_ops[] = {
 
 static const wm_anim_label prog_bam_get_buzz_anim_labels[] = {
     { "#nodead", 65 },
-    { "#make_black", 67 },
-    { "rets", 67 },
 };
 
 static const wm_anim_op prog_bam_3_head_held_anim_ops[] = {
@@ -6935,9 +6809,6 @@ static const wm_anim_op prog_bam_3_head_held_anim_ops[] = {
 
 static const wm_anim_label prog_bam_3_head_held_anim_labels[] = {
     { "#loop", 6 },
-    { "#inc_loop", 34 },
-    { "rets", 34 },
-    { "#breakout", 34 },
 };
 
 static const wm_anim_op prog_bam_3_head_held_brk_anim_ops[] = {
@@ -6958,12 +6829,6 @@ static const wm_anim_op prog_bam_3_head_held_brk_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-};
-
-static const wm_anim_label prog_bam_3_head_held_brk_anim_labels[] = {
-    { "#inc_loop", 17 },
-    { "rets", 17 },
-    { "#breakout", 17 },
 };
 
 static const wm_anim_op prog_bam_3_head_held_stand_anim_ops[] = {
@@ -7140,17 +7005,6 @@ static const wm_anim_op prog_bam_2_hair_pickup_anim_ops[] = {
 
 static const wm_anim_label prog_bam_2_hair_pickup_anim_labels[] = {
     { "#missed", 41 },
-    { "#headheld_tbl", 50 },
-    { "#puppet_tbl", 50 },
-    { "#Bret", 50 },
-    { "#Razor", 50 },
-    { "#Taker", 50 },
-    { "#Yokozuna", 50 },
-    { "#Shawn", 50 },
-    { "#BamBam", 50 },
-    { "#Doink", 50 },
-    { "#Adam", 50 },
-    { "#Lex", 50 },
 };
 
 static const wm_anim_op prog_bam_4_hair_pickup_anim_ops[] = {
@@ -7201,17 +7055,6 @@ static const wm_anim_op prog_bam_4_hair_pickup_anim_ops[] = {
 
 static const wm_anim_label prog_bam_4_hair_pickup_anim_labels[] = {
     { "#missed", 34 },
-    { "#headheld_tbl", 43 },
-    { "#puppet_tbl", 43 },
-    { "#Bret", 43 },
-    { "#Razor", 43 },
-    { "#Taker", 43 },
-    { "#Yokozuna", 43 },
-    { "#Shawn", 43 },
-    { "#BamBam", 43 },
-    { "#Doink", 43 },
-    { "#Adam", 43 },
-    { "#Lex", 43 },
 };
 
 static const wm_anim_op prog_bam_4_taunt_anim_ops[] = {
@@ -7375,8 +7218,6 @@ static const wm_anim_op prog_bam_3_pile_driver_anim_ops[] = {
 static const wm_anim_label prog_bam_3_pile_driver_anim_labels[] = {
     { "#missed", 49 },
     { "#cont", 55 },
-    { "#set_opp_xflip", 76 },
-    { "rets", 76 },
 };
 
 static const wm_anim_op prog_bam_combo_pile_driver_anim_ops[] = {
@@ -7465,17 +7306,6 @@ static const wm_anim_op prog_bam_combo_pile_driver_anim_ops[] = {
 
 static const wm_anim_label prog_bam_combo_pile_driver_anim_labels[] = {
     { "#missedxc", 51 },
-    { "#puppet_tbl", 81 },
-    { "#Bret", 81 },
-    { "#Razor", 81 },
-    { "#Taker", 81 },
-    { "#Yokozuna", 81 },
-    { "#Shawn", 81 },
-    { "#BamBam", 81 },
-    { "#Doink", 81 },
-    { "#Adam", 81 },
-    { "#Lex", 81 },
-    { "#rollout_tbl", 81 },
 };
 
 static const wm_anim_op prog_bam_3_fake_hold_anim_ops[] = {
@@ -7568,17 +7398,6 @@ static const wm_anim_label prog_bam_3_fake_hold_anim_labels[] = {
     { "#gothim", 43 },
     { "#missed", 61 },
     { "#missedb", 71 },
-    { "#puppet_tbl", 83 },
-    { "#Bret", 83 },
-    { "#Razor", 83 },
-    { "#Taker", 83 },
-    { "#Yokozuna", 83 },
-    { "#Shawn", 83 },
-    { "#BamBam", 83 },
-    { "#Doink", 83 },
-    { "#Adam", 83 },
-    { "#Lex", 83 },
-    { "#headheld_tbl", 83 },
 };
 
 static const wm_anim_op prog_bam_3_head_hold2_anim_ops[] = {
@@ -7660,17 +7479,6 @@ static const wm_anim_label prog_bam_3_head_hold2_anim_labels[] = {
     { "#gothim", 32 },
     { "#missed", 50 },
     { "#missedb", 60 },
-    { "#puppet_tbl", 72 },
-    { "#Bret", 72 },
-    { "#Razor", 72 },
-    { "#Taker", 72 },
-    { "#Yokozuna", 72 },
-    { "#Shawn", 72 },
-    { "#BamBam", 72 },
-    { "#Doink", 72 },
-    { "#Adam", 72 },
-    { "#Lex", 72 },
-    { "#headheld_tbl", 72 },
 };
 
 static const wm_anim_op prog_bam_3_head_hold_anim_ops[] = {
@@ -7734,17 +7542,6 @@ static const wm_anim_label prog_bam_3_head_hold_anim_labels[] = {
     { "#gothim", 14 },
     { "#missed", 32 },
     { "#missedb", 42 },
-    { "#puppet_tbl", 54 },
-    { "#Bret", 54 },
-    { "#Razor", 54 },
-    { "#Taker", 54 },
-    { "#Yokozuna", 54 },
-    { "#Shawn", 54 },
-    { "#BamBam", 54 },
-    { "#Doink", 54 },
-    { "#Adam", 54 },
-    { "#Lex", 54 },
-    { "#headheld_tbl", 54 },
 };
 
 static const wm_anim_op prog_bam_neckbreaker2_anim_ops[] = {
@@ -7845,20 +7642,6 @@ static const wm_anim_label prog_bam_neckbreaker2_anim_labels[] = {
     { "#gothim", 45 },
     { "#missedb", 82 },
     { "#missed", 84 },
-    { "#zero_butn", 91 },
-    { "rets", 91 },
-    { "#xflip_tbl", 91 },
-    { "#slambounce_tbl", 91 },
-    { "#puppet_tbl", 91 },
-    { "#Bret", 91 },
-    { "#Razor", 91 },
-    { "#Taker", 91 },
-    { "#Yokozuna", 91 },
-    { "#Shawn", 91 },
-    { "#BamBam", 91 },
-    { "#Doink", 91 },
-    { "#Adam", 91 },
-    { "#Lex", 91 },
 };
 
 static const wm_anim_op prog_bam_neckbreaker_run_anim_ops[] = {
@@ -7944,20 +7727,6 @@ static const wm_anim_label prog_bam_neckbreaker_run_anim_labels[] = {
     { "#gothim", 30 },
     { "#missedb", 67 },
     { "#missed", 69 },
-    { "#zero_butn", 76 },
-    { "rets", 76 },
-    { "#xflip_tbl", 76 },
-    { "#slambounce_tbl", 76 },
-    { "#puppet_tbl", 76 },
-    { "#Bret", 76 },
-    { "#Razor", 76 },
-    { "#Taker", 76 },
-    { "#Yokozuna", 76 },
-    { "#Shawn", 76 },
-    { "#BamBam", 76 },
-    { "#Doink", 76 },
-    { "#Adam", 76 },
-    { "#Lex", 76 },
 };
 
 static const wm_anim_op prog_bam_neckbreaker_anim_ops[] = {
@@ -8024,20 +7793,6 @@ static const wm_anim_label prog_bam_neckbreaker_anim_labels[] = {
     { "#gothim", 11 },
     { "#missedb", 48 },
     { "#missed", 50 },
-    { "#zero_butn", 57 },
-    { "rets", 57 },
-    { "#xflip_tbl", 57 },
-    { "#slambounce_tbl", 57 },
-    { "#puppet_tbl", 57 },
-    { "#Bret", 57 },
-    { "#Razor", 57 },
-    { "#Taker", 57 },
-    { "#Yokozuna", 57 },
-    { "#Shawn", 57 },
-    { "#BamBam", 57 },
-    { "#Doink", 57 },
-    { "#Adam", 57 },
-    { "#Lex", 57 },
 };
 
 static const wm_anim_op prog_bam_2_napalm_anim_ops[] = {
@@ -9973,7 +9728,6 @@ static const wm_anim_label prog_dnk_4_knee_fall_anim_labels[] = {
     { "#no_hit4", 39 },
     { "#no_hit2", 70 },
     { "#cont2", 71 },
-    { "#yoff1", 77 },
 };
 
 static const wm_anim_op prog_dnk_combo_knee_fall_anim_ops[] = {
@@ -10039,7 +9793,6 @@ static const wm_anim_label prog_dnk_combo_knee_fall_anim_labels[] = {
     { "#no_hit4", 18 },
     { "#no_hit2", 49 },
     { "#cont2", 50 },
-    { "#yoff1", 56 },
 };
 
 static const wm_anim_op prog_dnk_4_knee_anim_ops[] = {
@@ -10080,7 +9833,6 @@ static const wm_anim_op prog_dnk_4_knee_anim_ops[] = {
 static const wm_anim_label prog_dnk_4_knee_anim_labels[] = {
     { "#no_hit2", 25 },
     { "#cont2", 26 },
-    { "#yoff1", 32 },
 };
 
 static const wm_anim_op prog_dnk_combo_flying_kick_anim_ops[] = {
@@ -10218,9 +9970,6 @@ static const wm_anim_label prog_dnk_flying_kick_anim_labels[] = {
     { "#got", 32 },
     { "#cont2", 33 },
     { "#no_freetoss1", 56 },
-    { "#ckongrnd", 60 },
-    { "rets", 60 },
-    { "#inplace", 60 },
 };
 
 static const wm_anim_op prog_dnk_4_body_hit_anim_ops[] = {
@@ -10968,9 +10717,6 @@ static const wm_anim_label prog_dnk_belly_anim_labels[] = {
     { "#cont", 28 },
     { "#cont4", 40 },
     { "#no_freetoss5", 63 },
-    { "#close", 67 },
-    { "rets", 67 },
-    { "#inplace", 67 },
 };
 
 static const wm_anim_op prog_dnk_2_lbowdrop_anim_ops[] = {
@@ -11309,13 +11055,6 @@ static const wm_anim_label prog_dnk_4_hammer_anim_labels[] = {
     { "dnk_combo_hammer_anim", 66 },
     { "dnk_repeat_combo_hammer_anim", 81 },
     { "#missed2", 101 },
-    { "#set_target", 110 },
-    { "rets", 110 },
-    { "#head", 110 },
-    { "#drop", 110 },
-    { "#zero_x", 110 },
-    { "#ok", 110 },
-    { "#get_off", 110 },
 };
 
 static const wm_anim_op prog_dnk_2_stomp_anim_ops[] = {
@@ -11479,14 +11218,6 @@ static const wm_anim_label prog_check_xvel_labels[] = {
     { "#onrgt", 0 },
     { "#ok", 0 },
     { "#gothimb4", 0 },
-    { "#set_target", 7 },
-    { "#lft", 7 },
-    { "#head", 7 },
-    { "#rgt", 7 },
-    { "#chest", 7 },
-    { "#targets", 7 },
-    { "#get_off", 7 },
-    { "#get_off4", 7 },
 };
 
 static const wm_anim_op prog_dnk_knockdwn_anim_ops[] = {
@@ -11931,8 +11662,6 @@ static const wm_anim_label prog_fling_delay_labels[] = {
     { "#Lex", 0 },
     { "#strt_run_tbl", 0 },
     { "#loop", 5 },
-    { "#inc_loop", 36 },
-    { "#breakout", 36 },
 };
 
 static const wm_anim_op prog_dnk_heldoh_anim_ops[] = {
@@ -11976,9 +11705,6 @@ static const wm_anim_op prog_dnk_heldoh_anim_ops[] = {
 
 static const wm_anim_label prog_dnk_heldoh_anim_labels[] = {
     { "#loop", 5 },
-    { "#inc_loop", 36 },
-    { "rets", 36 },
-    { "#breakout", 36 },
 };
 
 static const wm_anim_op prog_dnk_4_block_anim_ops[] = {
@@ -12528,8 +12254,6 @@ static const wm_anim_label prog_hiptoss_delay_labels[] = {
     { "rets", 0 },
     { "#oka", 0 },
     { "#throw_him_out", 0 },
-    { "release_table", 19 },
-    { "#flyout_tbl", 19 },
 };
 
 static const wm_anim_op prog_dnk_4_combo_hiptoss_anim_ops[] = {
@@ -12639,17 +12363,6 @@ static const wm_anim_label prog_dnk_4_combo_hiptoss_anim_labels[] = {
     { "#missedbc", 70 },
     { "#missedc", 71 },
     { "#throw_him_out_c", 79 },
-    { "#puppet_tbl", 95 },
-    { "#Bret", 95 },
-    { "#Razor", 95 },
-    { "#Taker", 95 },
-    { "#Yokozuna", 95 },
-    { "#Shawn", 95 },
-    { "#BamBam", 95 },
-    { "#Doink", 95 },
-    { "#Adam", 95 },
-    { "#Lex", 95 },
-    { "#rollout_tbl", 95 },
 };
 
 static const wm_anim_op prog_dnk_tossed_anim_ops[] = {
@@ -12886,10 +12599,6 @@ static const wm_anim_op prog_dnk_4_bigboot_anim_ops[] = {
 static const wm_anim_label prog_dnk_4_bigboot_anim_labels[] = {
     { "#lp", 13 },
     { "#missed2", 20 },
-    { "#clrcnt", 26 },
-    { "rets", 26 },
-    { "#holdup", 26 },
-    { "#button_up", 26 },
 };
 
 static const wm_anim_op prog_dnk_dizzy_anim_ops[] = {
@@ -13352,12 +13061,6 @@ static const wm_anim_op prog_dnk_climbin_side_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
-static const wm_anim_label prog_dnk_climbin_side_anim_labels[] = {
-    { "#set_trgt", 50 },
-    { "#onlft", 50 },
-    { "rets", 50 },
-};
-
 static const wm_anim_op prog_SET_DIR_FACE_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1420, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -13401,9 +13104,6 @@ static const wm_anim_label prog_SET_DIR_FACE_labels[] = {
     { "#method2", 0 },
     { "#onlft2", 0 },
     { "#dir4", 7 },
-    { "#ckspin", 34 },
-    { "#faceup", 34 },
-    { "rets", 34 },
 };
 
 static const wm_anim_op prog_dnk_climbthru_bot_anim_ops[] = {
@@ -13445,10 +13145,6 @@ static const wm_anim_op prog_dnk_climbthru_bot_anim_ops[] = {
 
 static const wm_anim_label prog_dnk_climbthru_bot_anim_labels[] = {
     { "#dir4", 7 },
-    { "#ckspin", 34 },
-    { "RETS", 34 },
-    { "#faceup", 34 },
-    { "rets", 34 },
 };
 
 static const wm_anim_op prog_dnk_climbin_bot_anim_ops[] = {
@@ -13529,11 +13225,6 @@ static const wm_anim_op prog_dnk_climbthru_top_anim_ops[] = {
 static const wm_anim_label prog_dnk_climbthru_top_anim_labels[] = {
     { "#dir4", 11 },
     { "#cont", 21 },
-    { "#set_zvel1", 37 },
-    { "rets", 37 },
-    { "#facedwn", 37 },
-    { "#set_zvel2", 37 },
-    { "#set_zvel3", 37 },
 };
 
 static const wm_anim_op prog_dnk_rollthru_top_anim_ops[] = {
@@ -13585,11 +13276,6 @@ static const wm_anim_op prog_dnk_climbin_top_anim_ops[] = {
     { WM_AOP_CLEAR_CLIMB, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 128, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-};
-
-static const wm_anim_label prog_dnk_climbin_top_anim_labels[] = {
-    { "#set_zvel2", 27 },
-    { "rets", 27 },
 };
 
 static const wm_anim_op prog_dnk_2_buzz_anim_ops[] = {
@@ -14011,20 +13697,6 @@ static const wm_anim_label prog_dnk_combo_buzz2_anim_labels[] = {
     { "#contz", 63 },
     { "#normalc", 81 },
     { "#contzc", 81 },
-    { "#zero_butn", 90 },
-    { "rets", 90 },
-    { "start_sparks", 90 },
-    { "#rets", 90 },
-    { "#puppet_tbl", 90 },
-    { "#Bret", 90 },
-    { "#Razor", 90 },
-    { "#Taker", 90 },
-    { "#Yokozuna", 90 },
-    { "#Shawn", 90 },
-    { "#BamBam", 90 },
-    { "#Doink", 90 },
-    { "#Adam", 90 },
-    { "#Lex", 90 },
 };
 
 static const wm_anim_op prog_dnk_get_buzz_anim_ops[] = {
@@ -14210,7 +13882,6 @@ static const wm_anim_label prog_am_I_dizzy_labels[] = {
     { "#no_freetoss", 61 },
     { "#missed", 65 },
     { "#no_freetoss2", 104 },
-    { "#set_opp_xflip", 108 },
 };
 
 static const wm_anim_op prog_am_I_dead_ops[] = {
@@ -14335,7 +14006,6 @@ static const wm_anim_label prog_am_I_dead_labels[] = {
     { "#no_freetoss", 61 },
     { "#missed", 65 },
     { "#no_freetoss2", 104 },
-    { "#set_opp_xflip", 108 },
 };
 
 static const wm_anim_op prog_make_white_ops[] = {
@@ -14458,7 +14128,6 @@ static const wm_anim_label prog_make_white_labels[] = {
     { "#no_freetoss", 61 },
     { "#missed", 65 },
     { "#no_freetoss2", 104 },
-    { "#set_opp_xflip", 108 },
 };
 
 static const wm_anim_op prog_make_norm_ops[] = {
@@ -14580,7 +14249,6 @@ static const wm_anim_label prog_make_norm_labels[] = {
     { "#no_freetoss", 61 },
     { "#missed", 65 },
     { "#no_freetoss2", 104 },
-    { "#set_opp_xflip", 108 },
 };
 
 static const wm_anim_op prog_set_position_ops[] = {
@@ -14702,7 +14370,6 @@ static const wm_anim_label prog_set_position_labels[] = {
     { "#no_freetoss", 61 },
     { "#missed", 65 },
     { "#no_freetoss2", 104 },
-    { "#set_opp_xflip", 108 },
 };
 
 static const wm_anim_op prog_set_skeleton_pal_ops[] = {
@@ -14822,7 +14489,6 @@ static const wm_anim_label prog_set_skeleton_pal_labels[] = {
     { "#no_freetoss", 61 },
     { "#missed", 65 },
     { "#no_freetoss2", 104 },
-    { "#set_opp_xflip", 108 },
 };
 
 static const wm_anim_op prog_set_my_pal_ops[] = {
@@ -14942,7 +14608,6 @@ static const wm_anim_label prog_set_my_pal_labels[] = {
     { "#no_freetoss", 61 },
     { "#missed", 65 },
     { "#no_freetoss2", 104 },
-    { "#set_opp_xflip", 108 },
 };
 
 static const wm_anim_op prog_start_smoke_ops[] = {
@@ -15061,8 +14726,6 @@ static const wm_anim_label prog_start_smoke_labels[] = {
     { "#no_freetoss", 61 },
     { "#missed", 65 },
     { "#no_freetoss2", 104 },
-    { "#set_opp_xflip", 108 },
-    { "rets", 108 },
 };
 
 static const wm_anim_op prog_dnk_3_pile_driver_anim_ops[] = {
@@ -15180,8 +14843,6 @@ static const wm_anim_label prog_dnk_3_pile_driver_anim_labels[] = {
     { "#no_freetoss", 61 },
     { "#missed", 65 },
     { "#no_freetoss2", 104 },
-    { "#set_opp_xflip", 108 },
-    { "rets", 108 },
 };
 
 static const wm_anim_op prog_is_this_yoko_ops[] = {
@@ -15520,20 +15181,6 @@ static const wm_anim_label prog_dnk_3_head_slam_anim_labels[] = {
     { "#norepeat", 61 },
     { "#no_freetoss3", 86 },
     { "#missed", 90 },
-    { "#reattach", 95 },
-    { "rets", 95 },
-    { "#puppet_tbl", 95 },
-    { "#Bret", 95 },
-    { "#Razor", 95 },
-    { "#Taker", 95 },
-    { "#Yokozuna", 95 },
-    { "#Shawn", 95 },
-    { "#BamBam", 95 },
-    { "#Doink", 95 },
-    { "#Adam", 95 },
-    { "#Lex", 95 },
-    { "#faced2_tbl", 95 },
-    { "#faced_tbl", 95 },
 };
 
 static const wm_anim_op prog_dnk_break_face2_anim_ops[] = {
@@ -15870,8 +15517,6 @@ static const wm_anim_label prog_head_grab_time_labels[] = {
     { "#Lex", 0 },
     { "#headheld_tbl", 0 },
     { "#loop", 6 },
-    { "#inc_loop", 33 },
-    { "#breakout", 33 },
 };
 
 static const wm_anim_op prog_clear_opp_counts_ops[] = {
@@ -15924,8 +15569,6 @@ static const wm_anim_label prog_clear_opp_counts_labels[] = {
     { "#Lex", 0 },
     { "#headheld_tbl", 0 },
     { "#loop", 6 },
-    { "#inc_loop", 33 },
-    { "#breakout", 33 },
 };
 
 static const wm_anim_op prog_dnk_3_head_held_anim_ops[] = {
@@ -15966,9 +15609,6 @@ static const wm_anim_op prog_dnk_3_head_held_anim_ops[] = {
 
 static const wm_anim_label prog_dnk_3_head_held_anim_labels[] = {
     { "#loop", 6 },
-    { "#inc_loop", 33 },
-    { "rets", 33 },
-    { "#breakout", 33 },
 };
 
 static const wm_anim_op prog_dnk_3_head_held_brk_anim_ops[] = {
@@ -15989,12 +15629,6 @@ static const wm_anim_op prog_dnk_3_head_held_brk_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-};
-
-static const wm_anim_label prog_dnk_3_head_held_brk_anim_labels[] = {
-    { "#inc_loop", 17 },
-    { "rets", 17 },
-    { "#breakout", 17 },
 };
 
 static const wm_anim_op prog_dnk_3_head_held_stand_anim_ops[] = {
@@ -16247,9 +15881,6 @@ static const wm_anim_label prog_dnk_combo_uppercut_to_head_anim_labels[] = {
     { "#NEXT_CHECK_2", 68 },
     { "#NEXT_CHECK", 70 },
     { "#miss", 72 },
-    { "SET_OPTIMAL_POSITION", 79 },
-    { "NO_NEED_TO_NEG_XDIR", 79 },
-    { "RETS", 79 },
 };
 
 static const wm_anim_op prog_dnk_uppercuts_to_head_anim_ops[] = {
@@ -16309,11 +15940,6 @@ static const wm_anim_label prog_dnk_uppercuts_to_head_anim_labels[] = {
     { "#skp", 14 },
     { "#exit", 42 },
     { "#missed", 42 },
-    { "#go_high", 49 },
-    { "#x", 49 },
-    { "#chk_count", 49 },
-    { "#fail", 49 },
-    { "rets", 49 },
 };
 
 static const wm_anim_op prog_dnk_2_slap_anim_ops[] = {
@@ -16492,7 +16118,6 @@ static const wm_anim_label prog_spunch_delay_labels[] = {
     { "#fail2", 69 },
     { "#no_hitx", 77 },
     { "#no_hit2", 78 },
-    { "#set_opp_y", 88 },
 };
 
 static const wm_anim_op prog_dnk_2_earslap_anim_ops[] = {
@@ -16597,8 +16222,6 @@ static const wm_anim_label prog_dnk_2_earslap_anim_labels[] = {
     { "#fail2", 69 },
     { "#no_hitx", 77 },
     { "#no_hit2", 78 },
-    { "#set_opp_y", 88 },
-    { "rets", 88 },
 };
 
 static const wm_anim_op prog_dnk_4_earslap_anim_ops[] = {
@@ -16703,8 +16326,6 @@ static const wm_anim_label prog_dnk_4_earslap_anim_labels[] = {
     { "#fail2", 69 },
     { "#no_hitx", 77 },
     { "#no_hit2", 78 },
-    { "#set_opp_y", 88 },
-    { "rets", 88 },
 };
 
 static const wm_anim_op prog_dnk_4_combo_earslap_anim_ops[] = {
@@ -19341,10 +18962,6 @@ static const wm_anim_op prog_hrt_kick_TB_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
-static const wm_anim_label prog_hrt_kick_TB_anim_labels[] = {
-    { "#yoff", 29 },
-};
-
 static const wm_anim_op prog_hrt_flying_kick_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -19375,10 +18992,6 @@ static const wm_anim_op prog_hrt_flying_kick_anim_ops[] = {
     { WM_AOP_XFLIP, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETFACING, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "hrt_facedown_getup_anim" },
-};
-
-static const wm_anim_label prog_hrt_flying_kick_anim_labels[] = {
-    { "#yoff", 29 },
 };
 
 static const wm_anim_op prog_hrt_combo_flying_kick_anim_ops[] = {
@@ -19536,7 +19149,6 @@ static const wm_anim_label prog_hrt_4_stomp_anim_labels[] = {
     { "#no_leapat", 18 },
     { "#missed", 31 },
     { "#hit", 32 },
-    { "#yoff", 38 },
 };
 
 static const wm_anim_op prog_hrt_running_ground_punch_anim_ops[] = {
@@ -19580,8 +19192,6 @@ static const wm_anim_op prog_hrt_running_ground_punch_anim_ops[] = {
 static const wm_anim_label prog_hrt_running_ground_punch_anim_labels[] = {
     { "#hit", 29 },
     { "#AVOID_HIT_CALL", 30 },
-    { "#xoff", 35 },
-    { "#yoff", 35 },
 };
 
 static const wm_anim_op prog_hrt_tbukl_leap_anim_ops[] = {
@@ -20018,8 +19628,6 @@ static const wm_anim_label prog_hrt_uppercuts_to_head_anim_labels[] = {
     { "#exit", 74 },
     { "#release_offsets", 83 },
     { "#do_flykick", 83 },
-    { "#go_high", 92 },
-    { "#x", 92 },
 };
 
 static const wm_anim_op prog_hrt_2_grabfling_anim_ops[] = {
@@ -20086,17 +19694,6 @@ static const wm_anim_label prog_hrt_2_grabfling_anim_labels[] = {
     { "#cont", 15 },
     { "#missedb", 48 },
     { "#missed", 51 },
-    { "#puppet_tbl", 57 },
-    { "#Bret", 57 },
-    { "#Razor", 57 },
-    { "#Taker", 57 },
-    { "#Yokozuna", 57 },
-    { "#Shawn", 57 },
-    { "#BamBam", 57 },
-    { "#Doink", 57 },
-    { "#Adam", 57 },
-    { "#Lex", 57 },
-    { "#strt_run_tbl", 57 },
 };
 
 static const wm_anim_op prog_hrt_4_grabfling_anim_ops[] = {
@@ -20154,17 +19751,6 @@ static const wm_anim_label prog_hrt_4_grabfling_anim_labels[] = {
     { "#cont", 6 },
     { "#missedb", 39 },
     { "#missed", 42 },
-    { "#puppet_tbl", 48 },
-    { "#Bret", 48 },
-    { "#Razor", 48 },
-    { "#Taker", 48 },
-    { "#Yokozuna", 48 },
-    { "#Shawn", 48 },
-    { "#BamBam", 48 },
-    { "#Doink", 48 },
-    { "#Adam", 48 },
-    { "#Lex", 48 },
-    { "#strt_run_tbl", 48 },
 };
 
 static const wm_anim_op prog_hrt_roll_frames_ops[] = {
@@ -20402,12 +19988,6 @@ static const wm_anim_op prog_hrt_climbin_side_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
-static const wm_anim_label prog_hrt_climbin_side_anim_labels[] = {
-    { "#set_trgt", 57 },
-    { "#onlft", 57 },
-    { "rets", 57 },
-};
-
 static const wm_anim_op prog_hrt_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1420, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -20445,14 +20025,6 @@ static const wm_anim_op prog_hrt_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 128, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-};
-
-static const wm_anim_label prog_hrt_climbthru_bot_anim_labels[] = {
-    { "#ckspin", 36 },
-    { "RETS", 36 },
-    { "#faceup", 36 },
-    { "rets", 36 },
-    { "NOT_IN_RING", 36 },
 };
 
 static const wm_anim_op prog_hrt_climbin_bot_anim_ops[] = {
@@ -20535,10 +20107,6 @@ static const wm_anim_op prog_hrt_climbthru_top_anim_ops[] = {
 static const wm_anim_label prog_hrt_climbthru_top_anim_labels[] = {
     { "#dir4", 7 },
     { "#cont", 18 },
-    { "#set_zvel1", 35 },
-    { "rets", 35 },
-    { "#facedwn", 35 },
-    { "#set_zvel2", 35 },
 };
 
 static const wm_anim_op prog_hrt_rollthru_top_anim_ops[] = {
@@ -20592,11 +20160,6 @@ static const wm_anim_op prog_hrt_climbin_top_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 128, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-};
-
-static const wm_anim_label prog_hrt_climbin_top_anim_labels[] = {
-    { "#set_zvel2", 28 },
-    { "rets", 28 },
 };
 
 static const wm_anim_op prog_hrt_2_pin_anim_ops[] = {
@@ -20892,9 +20455,6 @@ static const wm_anim_op prog_hrt_heldoh_anim_ops[] = {
 
 static const wm_anim_label prog_hrt_heldoh_anim_labels[] = {
     { "#loop", 5 },
-    { "#inc_loop", 36 },
-    { "rets", 36 },
-    { "#breakout", 36 },
 };
 
 static const wm_anim_op prog_hrt_neckbroken_anim_ops[] = {
@@ -21344,19 +20904,6 @@ static const wm_anim_label prog_hrt_hiptoss2_anim_labels[] = {
     { "#throw_him_out", 72 },
     { "#missedb", 98 },
     { "#missed", 102 },
-    { "#rollout_tbl", 109 },
-    { "#puppet_tbl", 109 },
-    { "#Bret", 109 },
-    { "#Razor", 109 },
-    { "#Taker", 109 },
-    { "#Yokozuna", 109 },
-    { "#Shawn", 109 },
-    { "#BamBam", 109 },
-    { "#Doink", 109 },
-    { "#Adam", 109 },
-    { "#Lex", 109 },
-    { "#release_table", 109 },
-    { "#flyout_tbl", 109 },
 };
 
 static const wm_anim_op prog_hrt_hiptoss_anim_ops[] = {
@@ -21461,19 +21008,6 @@ static const wm_anim_label prog_hrt_hiptoss_anim_labels[] = {
     { "#throw_him_out", 56 },
     { "#missedb", 82 },
     { "#missed", 86 },
-    { "#rollout_tbl", 93 },
-    { "#puppet_tbl", 93 },
-    { "#Bret", 93 },
-    { "#Razor", 93 },
-    { "#Taker", 93 },
-    { "#Yokozuna", 93 },
-    { "#Shawn", 93 },
-    { "#BamBam", 93 },
-    { "#Doink", 93 },
-    { "#Adam", 93 },
-    { "#Lex", 93 },
-    { "#release_table", 93 },
-    { "#flyout_tbl", 93 },
 };
 
 static const wm_anim_op prog_hrt_3_head_held_anim_ops[] = {
@@ -21515,9 +21049,6 @@ static const wm_anim_op prog_hrt_3_head_held_anim_ops[] = {
 
 static const wm_anim_label prog_hrt_3_head_held_anim_labels[] = {
     { "#loop", 6 },
-    { "#inc_loop", 34 },
-    { "rets", 34 },
-    { "#breakout", 34 },
 };
 
 static const wm_anim_op prog_hrt_3_head_held_brk_anim_ops[] = {
@@ -21541,12 +21072,6 @@ static const wm_anim_op prog_hrt_3_head_held_brk_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-};
-
-static const wm_anim_label prog_hrt_3_head_held_brk_anim_labels[] = {
-    { "#inc_loop", 20 },
-    { "rets", 20 },
-    { "#breakout", 20 },
 };
 
 static const wm_anim_op prog_hrt_3_head_held_stand_anim_ops[] = {
@@ -21649,17 +21174,6 @@ static const wm_anim_op prog_hrt_2_hair_pickup_anim_ops[] = {
 
 static const wm_anim_label prog_hrt_2_hair_pickup_anim_labels[] = {
     { "#missed", 41 },
-    { "#headheld_tbl", 48 },
-    { "#puppet_tbl", 48 },
-    { "#Bret", 48 },
-    { "#Razor", 48 },
-    { "#Taker", 48 },
-    { "#Yokozuna", 48 },
-    { "#Shawn", 48 },
-    { "#BamBam", 48 },
-    { "#Doink", 48 },
-    { "#Adam", 48 },
-    { "#Lex", 48 },
 };
 
 static const wm_anim_op prog_hrt_4_hair_pickup_anim_ops[] = {
@@ -21708,17 +21222,6 @@ static const wm_anim_op prog_hrt_4_hair_pickup_anim_ops[] = {
 
 static const wm_anim_label prog_hrt_4_hair_pickup_anim_labels[] = {
     { "#missed", 34 },
-    { "#headheld_tbl", 41 },
-    { "#puppet_tbl", 41 },
-    { "#Bret", 41 },
-    { "#Razor", 41 },
-    { "#Taker", 41 },
-    { "#Yokozuna", 41 },
-    { "#Shawn", 41 },
-    { "#BamBam", 41 },
-    { "#Doink", 41 },
-    { "#Adam", 41 },
-    { "#Lex", 41 },
 };
 
 static const wm_anim_op prog_hrt_break_face2_anim_ops[] = {
@@ -21860,17 +21363,6 @@ static const wm_anim_label prog_hrt_3_fake_hold_anim_labels[] = {
     { "#gothim", 39 },
     { "#missedb", 58 },
     { "#missed", 69 },
-    { "#puppet_tbl", 79 },
-    { "#Bret", 79 },
-    { "#Razor", 79 },
-    { "#Taker", 79 },
-    { "#Yokozuna", 79 },
-    { "#Shawn", 79 },
-    { "#BamBam", 79 },
-    { "#Doink", 79 },
-    { "#Adam", 79 },
-    { "#Lex", 79 },
-    { "#headheld_tbl", 79 },
 };
 
 static const wm_anim_op prog_hrt_3_head_hold2_anim_ops[] = {
@@ -21950,17 +21442,6 @@ static const wm_anim_label prog_hrt_3_head_hold2_anim_labels[] = {
     { "#gothim", 30 },
     { "#missedb", 49 },
     { "#missed", 60 },
-    { "#puppet_tbl", 70 },
-    { "#Bret", 70 },
-    { "#Razor", 70 },
-    { "#Taker", 70 },
-    { "#Yokozuna", 70 },
-    { "#Shawn", 70 },
-    { "#BamBam", 70 },
-    { "#Doink", 70 },
-    { "#Adam", 70 },
-    { "#Lex", 70 },
-    { "#headheld_tbl", 70 },
 };
 
 static const wm_anim_op prog_hrt_3_head_hold_anim_ops[] = {
@@ -22024,17 +21505,6 @@ static const wm_anim_label prog_hrt_3_head_hold_anim_labels[] = {
     { "#gothim", 14 },
     { "#missedb", 33 },
     { "#missed", 44 },
-    { "#puppet_tbl", 54 },
-    { "#Bret", 54 },
-    { "#Razor", 54 },
-    { "#Taker", 54 },
-    { "#Yokozuna", 54 },
-    { "#Shawn", 54 },
-    { "#BamBam", 54 },
-    { "#Doink", 54 },
-    { "#Adam", 54 },
-    { "#Lex", 54 },
-    { "#headheld_tbl", 54 },
 };
 
 static const wm_anim_op prog_hrt_hh_2_ddt_anim_ops[] = {
@@ -22115,19 +21585,6 @@ static const wm_anim_op prog_hrt_hh_2_ddt_anim_ops[] = {
 
 static const wm_anim_label prog_hrt_hh_2_ddt_anim_labels[] = {
     { "#missed", 47 },
-    { "#break_face_tbl", 73 },
-    { "draw_ddt_name", 73 },
-    { "rets", 73 },
-    { "#puppet_tbl", 73 },
-    { "#Bret", 73 },
-    { "#Razor", 73 },
-    { "#Taker", 73 },
-    { "#Yokozuna", 73 },
-    { "#Shawn", 73 },
-    { "#BamBam", 73 },
-    { "#Doink", 73 },
-    { "#Adam", 73 },
-    { "#Lex", 73 },
 };
 
 static const wm_anim_op prog_hrt_combo_running_ddt_anim_ops[] = {
@@ -22267,20 +21724,6 @@ static const wm_anim_op prog_hrt_running_ddt_anim_ops[] = {
 static const wm_anim_label prog_hrt_running_ddt_anim_labels[] = {
     { "#missedb", 42 },
     { "#missed", 46 },
-    { "#half_vels", 62 },
-    { "rets", 62 },
-    { "#xflip_tbl", 62 },
-    { "#break_face_tbl", 62 },
-    { "#puppet_tbl", 62 },
-    { "#Bret", 62 },
-    { "#Razor", 62 },
-    { "#Taker", 62 },
-    { "#Yokozuna", 62 },
-    { "#Shawn", 62 },
-    { "#BamBam", 62 },
-    { "#Doink", 62 },
-    { "#Adam", 62 },
-    { "#Lex", 62 },
 };
 
 static const wm_anim_op prog_hrt_combo_pile_driver_anim_ops[] = {
@@ -22409,19 +21852,6 @@ static const wm_anim_op prog_hrt_3_pile_driver_anim_ops[] = {
 
 static const wm_anim_label prog_hrt_3_pile_driver_anim_labels[] = {
     { "#missed", 50 },
-    { "#set_opp_xflip", 54 },
-    { "rets", 54 },
-    { "#puppet_tbl", 54 },
-    { "#Bret", 54 },
-    { "#Razor", 54 },
-    { "#Taker", 54 },
-    { "#Yokozuna", 54 },
-    { "#Shawn", 54 },
-    { "#BamBam", 54 },
-    { "#Doink", 54 },
-    { "#Adam", 54 },
-    { "#Lex", 54 },
-    { "#rollout_tbl", 54 },
 };
 
 static const wm_anim_op prog_hrt_3_face_driver2_anim_ops[] = {
@@ -22522,21 +21952,6 @@ static const wm_anim_label prog_hrt_3_face_driver2_anim_labels[] = {
     { "#slam_again", 39 },
     { "#norepeat", 65 },
     { "#missed", 86 },
-    { "#flsh_wht", 90 },
-    { "rets", 90 },
-    { "#reattach", 90 },
-    { "#release_table", 90 },
-    { "#puppet_tbl", 90 },
-    { "#Bret", 90 },
-    { "#Razor", 90 },
-    { "#Taker", 90 },
-    { "#Yokozuna", 90 },
-    { "#Shawn", 90 },
-    { "#BamBam", 90 },
-    { "#Doink", 90 },
-    { "#Adam", 90 },
-    { "#Lex", 90 },
-    { "#faced2_tbl", 90 },
 };
 
 static const wm_anim_op prog_hrt_combo_rake_face_anim_ops[] = {
@@ -22672,21 +22087,6 @@ static const wm_anim_label prog_hrt_rake_face_anim_labels[] = {
     { "#dead", 39 },
     { "#missedb", 45 },
     { "#missed", 45 },
-    { "#ck_dead_opp", 56 },
-    { "#attach_found", 56 },
-    { "rets", 56 },
-    { "#ok", 56 },
-    { "#puppet_tbl", 56 },
-    { "#Bret", 56 },
-    { "#Razor", 56 },
-    { "#Taker", 56 },
-    { "#Yokozuna", 56 },
-    { "#Shawn", 56 },
-    { "#BamBam", 56 },
-    { "#Doink", 56 },
-    { "#Lex", 56 },
-    { "#react_tbl", 56 },
-    { "#react2_tbl", 56 },
 };
 
 static const wm_anim_op prog_xxx_get_face_rake_anim_ops[] = {
@@ -23909,9 +23309,6 @@ static const wm_anim_op prog_hrt_4_faceup_getup2_anim_ops[] = {
 static const wm_anim_label prog_hrt_4_faceup_getup2_anim_labels[] = {
     { "#common_4", 3 },
     { "#no_freetoss1", 18 },
-    { "choose_2or4", 22 },
-    { "#choose_2", 22 },
-    { "rets", 22 },
 };
 
 static const wm_anim_op prog_hrt_facedown_getup_anim_ops[] = {
@@ -23943,8 +23340,6 @@ static const wm_anim_op prog_hrt_facedown_getup_anim_ops[] = {
 
 static const wm_anim_label prog_hrt_facedown_getup_anim_labels[] = {
     { "#no_freetoss", 20 },
-    { "#set_wrestler_xflip", 24 },
-    { "rets", 24 },
 };
 
 static const wm_anim_op prog_hrt_dizzy_anim_ops[] = {
@@ -24181,8 +23576,6 @@ static const wm_anim_op prog_hrt_get_buzz_anim_ops[] = {
 
 static const wm_anim_label prog_hrt_get_buzz_anim_labels[] = {
     { "#nodead", 65 },
-    { "#make_black", 67 },
-    { "rets", 67 },
 };
 
 static const wm_anim_op prog_hrt_flyout_anim_ops[] = {
@@ -25933,9 +25326,6 @@ static const wm_anim_op prog_lex_combo_clobber_anim_ops[] = {
 static const wm_anim_label prog_lex_combo_clobber_anim_labels[] = {
     { "#missedc", 37 },
     { "#blockedc", 38 },
-    { "#stop_debris", 49 },
-    { "rets", 49 },
-    { "#restore_debris", 49 },
 };
 
 static const wm_anim_op prog_lex_hammer_anim_ops[] = {
@@ -26707,8 +26097,6 @@ static const wm_anim_op prog_lex_4_kick_anim_ops[] = {
 
 static const wm_anim_label prog_lex_4_kick_anim_labels[] = {
     { "#no_hit2", 22 },
-    { "#xoff", 29 },
-    { "#yoff", 29 },
 };
 
 static const wm_anim_op prog_lex_flying_kick_anim_ops[] = {
@@ -26928,7 +26316,6 @@ static const wm_anim_label prog_lex_4_stomp_anim_labels[] = {
     { "#hit", 26 },
     { "#leapat_stomp", 30 },
     { "#leapat_hit", 44 },
-    { "#yoff", 48 },
 };
 
 static const wm_anim_op prog_lex_flying_ground_punch_anim_ops[] = {
@@ -26969,10 +26356,6 @@ static const wm_anim_op prog_lex_flying_ground_punch_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-};
-
-static const wm_anim_label prog_lex_flying_ground_punch_anim_labels[] = {
-    { "#yoff", 37 },
 };
 
 static const wm_anim_op prog_lex_buckle_leap_anim_ops[] = {
@@ -27349,17 +26732,6 @@ static const wm_anim_label prog_lex_2_grabfling_anim_labels[] = {
     { "#cont", 15 },
     { "#missedb", 47 },
     { "#missed", 50 },
-    { "#puppet_tbl", 57 },
-    { "#Bret", 57 },
-    { "#Razor", 57 },
-    { "#Taker", 57 },
-    { "#Yokozuna", 57 },
-    { "#Shawn", 57 },
-    { "#BamBam", 57 },
-    { "#Doink", 57 },
-    { "#Adam", 57 },
-    { "#Lex", 57 },
-    { "#strt_run_tbl", 57 },
 };
 
 static const wm_anim_op prog_lex_4_grabfling_anim_ops[] = {
@@ -27417,17 +26789,6 @@ static const wm_anim_label prog_lex_4_grabfling_anim_labels[] = {
     { "#cont", 6 },
     { "#missedb", 38 },
     { "#missed", 41 },
-    { "#puppet_tbl", 48 },
-    { "#Bret", 48 },
-    { "#Razor", 48 },
-    { "#Taker", 48 },
-    { "#Yokozuna", 48 },
-    { "#Shawn", 48 },
-    { "#BamBam", 48 },
-    { "#Doink", 48 },
-    { "#Adam", 48 },
-    { "#Lex", 48 },
-    { "#strt_run_tbl", 48 },
 };
 
 static const wm_anim_op prog_lex_4_bigboot_anim_ops[] = {
@@ -27464,10 +26825,6 @@ static const wm_anim_op prog_lex_4_bigboot_anim_ops[] = {
 static const wm_anim_label prog_lex_4_bigboot_anim_labels[] = {
     { "#lp", 14 },
     { "#missed", 22 },
-    { "#clrcnt", 28 },
-    { "rets", 28 },
-    { "#holdup", 28 },
-    { "#button_up", 28 },
 };
 
 static const wm_anim_op prog_lex_2_bncoff_anim_ops[] = {
@@ -27620,12 +26977,6 @@ static const wm_anim_op prog_lex_climbin_side_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
-static const wm_anim_label prog_lex_climbin_side_anim_labels[] = {
-    { "#set_trgt", 55 },
-    { "#onlft", 55 },
-    { "rets", 55 },
-};
-
 static const wm_anim_op prog_lex_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1420, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -27667,11 +27018,6 @@ static const wm_anim_op prog_lex_climbthru_bot_anim_ops[] = {
 
 static const wm_anim_label prog_lex_climbthru_bot_anim_labels[] = {
     { "#dir4", 7 },
-    { "#ckspin", 36 },
-    { "#faceup", 36 },
-    { "rets", 36 },
-    { "NOT_IN_RING", 36 },
-    { "RETS", 36 },
 };
 
 static const wm_anim_op prog_lex_climbin_bot_anim_ops[] = {
@@ -27751,10 +27097,6 @@ static const wm_anim_op prog_lex_climbthru_top_anim_ops[] = {
 static const wm_anim_label prog_lex_climbthru_top_anim_labels[] = {
     { "#dir4", 7 },
     { "#cont", 19 },
-    { "#set_zvel1", 34 },
-    { "rets", 34 },
-    { "#facedwn", 34 },
-    { "#set_zvel2", 34 },
 };
 
 static const wm_anim_op prog_lex_rollthru_top_anim_ops[] = {
@@ -27812,11 +27154,6 @@ static const wm_anim_op prog_lex_climbin_top_anim_ops[] = {
     { WM_AOP_CLEAR_CLIMB, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 128, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-};
-
-static const wm_anim_label prog_lex_climbin_top_anim_labels[] = {
-    { "#set_zvel2", 27 },
-    { "rets", 27 },
 };
 
 static const wm_anim_op prog_lex_knockdwn_anim_ops[] = {
@@ -28176,9 +27513,6 @@ static const wm_anim_op prog_lex_heldoh_anim_ops[] = {
 
 static const wm_anim_label prog_lex_heldoh_anim_labels[] = {
     { "#loop", 5 },
-    { "#inc_loop", 33 },
-    { "rets", 33 },
-    { "#breakout", 33 },
 };
 
 static const wm_anim_op prog_lex_climb_up_anim_ops[] = {
@@ -28314,8 +27648,6 @@ static const wm_anim_op prog_lex_get_buzz_anim_ops[] = {
 
 static const wm_anim_label prog_lex_get_buzz_anim_labels[] = {
     { "#nodead", 65 },
-    { "#make_black", 67 },
-    { "rets", 67 },
 };
 
 static const wm_anim_op prog_lex_3_head_held_anim_ops[] = {
@@ -28357,9 +27689,6 @@ static const wm_anim_op prog_lex_3_head_held_anim_ops[] = {
 
 static const wm_anim_label prog_lex_3_head_held_anim_labels[] = {
     { "#loop", 6 },
-    { "#inc_loop", 34 },
-    { "rets", 34 },
-    { "#breakout", 34 },
 };
 
 static const wm_anim_op prog_lex_3_head_held_brk_anim_ops[] = {
@@ -28383,12 +27712,6 @@ static const wm_anim_op prog_lex_3_head_held_brk_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-};
-
-static const wm_anim_label prog_lex_3_head_held_brk_anim_labels[] = {
-    { "#inc_loop", 20 },
-    { "rets", 20 },
-    { "#breakout", 20 },
 };
 
 static const wm_anim_op prog_lex_3_head_held_stand_anim_ops[] = {
@@ -28556,17 +27879,6 @@ static const wm_anim_op prog_lex_2_hair_pickup_anim_ops[] = {
 
 static const wm_anim_label prog_lex_2_hair_pickup_anim_labels[] = {
     { "#missed", 41 },
-    { "#headheld_tbl", 50 },
-    { "#puppet_tbl", 50 },
-    { "#Bret", 50 },
-    { "#Razor", 50 },
-    { "#Taker", 50 },
-    { "#Yokozuna", 50 },
-    { "#Shawn", 50 },
-    { "#BamBam", 50 },
-    { "#Doink", 50 },
-    { "#Adam", 50 },
-    { "#Lex", 50 },
 };
 
 static const wm_anim_op prog_lex_4_hair_pickup_anim_ops[] = {
@@ -28617,17 +27929,6 @@ static const wm_anim_op prog_lex_4_hair_pickup_anim_ops[] = {
 
 static const wm_anim_label prog_lex_4_hair_pickup_anim_labels[] = {
     { "#missed", 34 },
-    { "#headheld_tbl", 43 },
-    { "#puppet_tbl", 43 },
-    { "#Bret", 43 },
-    { "#Razor", 43 },
-    { "#Taker", 43 },
-    { "#Yokozuna", 43 },
-    { "#Shawn", 43 },
-    { "#BamBam", 43 },
-    { "#Doink", 43 },
-    { "#Adam", 43 },
-    { "#Lex", 43 },
 };
 
 static const wm_anim_op prog_lex_4_taunt_anim_ops[] = {
@@ -28831,17 +28132,6 @@ static const wm_anim_label prog_lex_3_fake_hold_anim_labels[] = {
     { "#gothim", 37 },
     { "#missed", 55 },
     { "#missedb", 65 },
-    { "#puppet_tbl", 76 },
-    { "#Bret", 76 },
-    { "#Razor", 76 },
-    { "#Taker", 76 },
-    { "#Yokozuna", 76 },
-    { "#Shawn", 76 },
-    { "#BamBam", 76 },
-    { "#Doink", 76 },
-    { "#Adam", 76 },
-    { "#Lex", 76 },
-    { "#headheld_tbl", 76 },
 };
 
 static const wm_anim_op prog_lex_3_head_hold2_anim_ops[] = {
@@ -28918,17 +28208,6 @@ static const wm_anim_label prog_lex_3_head_hold2_anim_labels[] = {
     { "#gothim", 28 },
     { "#missed", 46 },
     { "#missedb", 56 },
-    { "#puppet_tbl", 67 },
-    { "#Bret", 67 },
-    { "#Razor", 67 },
-    { "#Taker", 67 },
-    { "#Yokozuna", 67 },
-    { "#Shawn", 67 },
-    { "#BamBam", 67 },
-    { "#Doink", 67 },
-    { "#Adam", 67 },
-    { "#Lex", 67 },
-    { "#headheld_tbl", 67 },
 };
 
 static const wm_anim_op prog_lex_3_head_hold_anim_ops[] = {
@@ -28991,17 +28270,6 @@ static const wm_anim_label prog_lex_3_head_hold_anim_labels[] = {
     { "#gothim", 14 },
     { "#missed", 32 },
     { "#missedb", 42 },
-    { "#puppet_tbl", 53 },
-    { "#Bret", 53 },
-    { "#Razor", 53 },
-    { "#Taker", 53 },
-    { "#Yokozuna", 53 },
-    { "#Shawn", 53 },
-    { "#BamBam", 53 },
-    { "#Doink", 53 },
-    { "#Adam", 53 },
-    { "#Lex", 53 },
-    { "#headheld_tbl", 53 },
 };
 
 static const wm_anim_op prog_lex_combo_vsuplex_anim_ops[] = {
@@ -29253,21 +28521,6 @@ static const wm_anim_op prog_lex_vsuplex_anim_ops[] = {
 static const wm_anim_label prog_lex_vsuplex_anim_labels[] = {
     { "#missed", 55 },
     { "#throw_him_out", 59 },
-    { "#release_table", 85 },
-    { "#flyout_tbl2", 85 },
-    { "#xflip_tbl", 85 },
-    { "#xflip_tbl2", 85 },
-    { "#slambounce_tbl", 85 },
-    { "#puppet_tbl", 85 },
-    { "#Bret", 85 },
-    { "#Razor", 85 },
-    { "#Taker", 85 },
-    { "#Yokozuna", 85 },
-    { "#Shawn", 85 },
-    { "#BamBam", 85 },
-    { "#Doink", 85 },
-    { "#Adam", 85 },
-    { "#Lex", 85 },
 };
 
 static const wm_anim_op prog_lex_4_graboh_anim_ops[] = {
@@ -29326,18 +28579,6 @@ static const wm_anim_op prog_lex_4_graboh_anim_ops[] = {
 static const wm_anim_label prog_lex_4_graboh_anim_labels[] = {
     { "#missedb", 35 },
     { "#missed", 39 },
-    { "heldoh_tbl", 50 },
-    { "lex_grab_tbl", 50 },
-    { "puppet_tbl", 50 },
-    { "#Bret", 50 },
-    { "#Razor", 50 },
-    { "#Taker", 50 },
-    { "#Yokozuna", 50 },
-    { "#Shawn", 50 },
-    { "#BamBam", 50 },
-    { "#Doink", 50 },
-    { "#Adam", 50 },
-    { "#Lex", 50 },
 };
 
 static const wm_anim_op prog_lex_slamdown_anim_ops[] = {
@@ -29409,18 +28650,6 @@ static const wm_anim_label prog_lex_slamdown_anim_labels[] = {
     { "#abs", 41 },
     { "rets", 41 },
     { "#throw_him_out", 41 },
-    { "#xflip_tbl", 60 },
-    { "#breakneck_tbl", 60 },
-    { "#puppet_tbl", 60 },
-    { "#Bret", 60 },
-    { "#Razor", 60 },
-    { "#Taker", 60 },
-    { "#Yokozuna", 60 },
-    { "#Shawn", 60 },
-    { "#BamBam", 60 },
-    { "#Doink", 60 },
-    { "#Adam", 60 },
-    { "#Lex", 60 },
 };
 
 static const wm_anim_op prog_lex_combo_backbreak_anim_ops[] = {
@@ -29562,21 +28791,6 @@ static const wm_anim_op prog_lex_backbreaker_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
-static const wm_anim_label prog_lex_backbreaker_anim_labels[] = {
-    { "#xflip_tbl", 36 },
-    { "#bounceoff_tbl", 36 },
-    { "#puppet_tbl", 36 },
-    { "#Bret", 36 },
-    { "#Razor", 36 },
-    { "#Taker", 36 },
-    { "#Yokozuna", 36 },
-    { "#Shawn", 36 },
-    { "#BamBam", 36 },
-    { "#Doink", 36 },
-    { "#Adam", 36 },
-    { "#Lex", 36 },
-};
-
 static const wm_anim_op prog_lex_ohslam_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 9228, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -29627,24 +28841,6 @@ static const wm_anim_op prog_lex_ohslam_anim_ops[] = {
 
 static const wm_anim_label prog_lex_ohslam_anim_labels[] = {
     { "#ok", 5 },
-    { "#ck_flip", 45 },
-    { "#no_flip", 45 },
-    { "rets", 45 },
-    { "#check_right_rope", 45 },
-    { "#set_opp_y", 45 },
-    { "#abs", 45 },
-    { "#xflip_tbl", 45 },
-    { "#slambounce_tbl", 45 },
-    { "#puppet_tbl", 45 },
-    { "#Bret", 45 },
-    { "#Razor", 45 },
-    { "#Taker", 45 },
-    { "#Yokozuna", 45 },
-    { "#Shawn", 45 },
-    { "#BamBam", 45 },
-    { "#Doink", 45 },
-    { "#Adam", 45 },
-    { "#Lex", 45 },
 };
 
 static const wm_anim_op prog_lex_combo_grab2elbow_anim_ops[] = {
@@ -30421,7 +29617,6 @@ static const wm_anim_label prog_setopp_deadanim_labels[] = {
     { "#not_grab", 489 },
     { "#missedc", 498 },
     { "#throw_him_outc", 506 },
-    { "SLAM_HIM", 509 },
 };
 
 static const wm_anim_op prog_lex_combo_hiptoss_anim_ops[] = {
@@ -30985,7 +30180,6 @@ static const wm_anim_label prog_lex_combo_hiptoss_anim_labels[] = {
     { "#not_grab", 489 },
     { "#missedc", 498 },
     { "#throw_him_outc", 506 },
-    { "SLAM_HIM", 509 },
 };
 
 static const wm_anim_op prog_lex_hiptoss_anim_ops[] = {
@@ -31085,22 +30279,6 @@ static const wm_anim_label prog_lex_hiptoss_anim_labels[] = {
     { "#missedb", 63 },
     { "#missed", 67 },
     { "#throw_him_out", 73 },
-    { "#release_table", 88 },
-    { "DO_GRUNT", 88 },
-    { "RETS", 88 },
-    { "flyout_tbl", 88 },
-    { "#xflip_tbl", 88 },
-    { "#rollout_tbl", 88 },
-    { "#puppet_tbl", 88 },
-    { "#Bret", 88 },
-    { "#Razor", 88 },
-    { "#Taker", 88 },
-    { "#Yokozuna", 88 },
-    { "#Shawn", 88 },
-    { "#BamBam", 88 },
-    { "#Doink", 88 },
-    { "#Adam", 88 },
-    { "#Lex", 88 },
 };
 
 static const wm_anim_op prog_lex_hiptoss2_anim_ops[] = {
@@ -31184,22 +30362,6 @@ static const wm_anim_label prog_lex_hiptoss2_anim_labels[] = {
     { "#missedb", 47 },
     { "#missed", 51 },
     { "#throw_him_out", 57 },
-    { "#release_table", 72 },
-    { "DO_GRUNT", 72 },
-    { "RETS", 72 },
-    { "flyout_tbl", 72 },
-    { "#xflip_tbl", 72 },
-    { "#rollout_tbl", 72 },
-    { "#puppet_tbl", 72 },
-    { "#Bret", 72 },
-    { "#Razor", 72 },
-    { "#Taker", 72 },
-    { "#Yokozuna", 72 },
-    { "#Shawn", 72 },
-    { "#BamBam", 72 },
-    { "#Doink", 72 },
-    { "#Adam", 72 },
-    { "#Lex", 72 },
 };
 
 static const wm_anim_op prog_lex_combo_sliding_elbow_anim_ops[] = {
@@ -33727,9 +32889,6 @@ static const wm_anim_op prog_rzr_combo_uppercut_anim_ops[] = {
 static const wm_anim_label prog_rzr_combo_uppercut_anim_labels[] = {
     { "#no_hitc", 16 },
     { "#AVOID", 19 },
-    { "SET_OPP_GRAV_NORM", 30 },
-    { "RETS", 30 },
-    { "SET_OPP_GRAV_LOW", 30 },
 };
 
 static const wm_anim_op prog_rzr_4_uprcut_anim_ops[] = {
@@ -34727,7 +33886,6 @@ static const wm_anim_label prog_rzr_4_ground_punch_anim_labels[] = {
     { "#no_leapat", 17 },
     { "#common", 20 },
     { "#missed", 35 },
-    { "#yoff", 41 },
 };
 
 static const wm_anim_op prog_rzr_combo_flying_kick_anim_ops[] = {
@@ -34906,7 +34064,6 @@ static const wm_anim_label prog_rzr_4_stomp_anim_labels[] = {
     { "#hit", 26 },
     { "#leapat_stomp", 30 },
     { "#leapat_hit", 44 },
-    { "#yoff", 48 },
 };
 
 static const wm_anim_op prog_rzr_flying_elbow_anim_ops[] = {
@@ -34949,7 +34106,6 @@ static const wm_anim_op prog_rzr_flying_elbow_anim_ops[] = {
 static const wm_anim_label prog_rzr_flying_elbow_anim_labels[] = {
     { "#hit", 27 },
     { "#AVOID_HIT_CALL", 28 },
-    { "#yoff", 34 },
 };
 
 static const wm_anim_op prog_rzr_tbukl_elbow_anim_ops[] = {
@@ -35098,17 +34254,6 @@ static const wm_anim_label prog_rzr_2_grabfling_anim_labels[] = {
     { "#cont", 15 },
     { "#missedb", 48 },
     { "#missed", 51 },
-    { "#puppet_tbl", 58 },
-    { "#Bret", 58 },
-    { "#Razor", 58 },
-    { "#Taker", 58 },
-    { "#Yokozuna", 58 },
-    { "#Shawn", 58 },
-    { "#BamBam", 58 },
-    { "#Doink", 58 },
-    { "#Adam", 58 },
-    { "#Lex", 58 },
-    { "#strt_run_tbl", 58 },
 };
 
 static const wm_anim_op prog_rzr_4_grabfling_anim_ops[] = {
@@ -35167,17 +34312,6 @@ static const wm_anim_label prog_rzr_4_grabfling_anim_labels[] = {
     { "#cont", 6 },
     { "#missedb", 39 },
     { "#missed", 42 },
-    { "#puppet_tbl", 49 },
-    { "#Bret", 49 },
-    { "#Razor", 49 },
-    { "#Taker", 49 },
-    { "#Yokozuna", 49 },
-    { "#Shawn", 49 },
-    { "#BamBam", 49 },
-    { "#Doink", 49 },
-    { "#Adam", 49 },
-    { "#Lex", 49 },
-    { "#strt_run_tbl", 49 },
 };
 
 static const wm_anim_op prog_rzr_heldoh_anim_ops[] = {
@@ -35221,9 +34355,6 @@ static const wm_anim_op prog_rzr_heldoh_anim_ops[] = {
 
 static const wm_anim_label prog_rzr_heldoh_anim_labels[] = {
     { "#loop", 5 },
-    { "#inc_loop", 36 },
-    { "rets", 36 },
-    { "#breakout", 36 },
 };
 
 static const wm_anim_op prog_rzr_4_push_anim_ops[] = {
@@ -35302,10 +34433,6 @@ static const wm_anim_label prog_rzr_4_bigboot_anim_labels[] = {
     { "#missed", 21 },
     { "#end_in_2", 26 },
     { "#end_in_4", 30 },
-    { "#clrcnt", 35 },
-    { "rets", 35 },
-    { "#holdup", 35 },
-    { "#button_up", 35 },
 };
 
 static const wm_anim_op prog_rzr_roll_frames_ops[] = {
@@ -35517,12 +34644,6 @@ static const wm_anim_op prog_rzr_climbin_side_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
-static const wm_anim_label prog_rzr_climbin_side_anim_labels[] = {
-    { "#set_trgt", 60 },
-    { "#onlft", 60 },
-    { "rets", 60 },
-};
-
 static const wm_anim_op prog_rzr_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1420, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -35564,10 +34685,6 @@ static const wm_anim_op prog_rzr_climbthru_bot_anim_ops[] = {
 
 static const wm_anim_label prog_rzr_climbthru_bot_anim_labels[] = {
     { "#dir4", 7 },
-    { "#ckspin", 36 },
-    { "RETS", 36 },
-    { "#faceup", 36 },
-    { "rets", 36 },
 };
 
 static const wm_anim_op prog_rzr_climbin_bot_anim_ops[] = {
@@ -35643,10 +34760,6 @@ static const wm_anim_op prog_rzr_climbthru_top_anim_ops[] = {
 
 static const wm_anim_label prog_rzr_climbthru_top_anim_labels[] = {
     { "#dir4", 7 },
-    { "#set_zvel1", 32 },
-    { "rets", 32 },
-    { "#facedwn", 32 },
-    { "#set_zvel2", 32 },
 };
 
 static const wm_anim_op prog_rzr_rollthru_top_anim_ops[] = {
@@ -35696,11 +34809,6 @@ static const wm_anim_op prog_rzr_climbin_top_anim_ops[] = {
     { WM_AOP_CLEAR_CLIMB, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 128, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-};
-
-static const wm_anim_label prog_rzr_climbin_top_anim_labels[] = {
-    { "#set_zvel2", 25 },
-    { "rets", 25 },
 };
 
 static const wm_anim_op prog_rzr_knockdwn_anim_ops[] = {
@@ -36680,8 +35788,6 @@ static const wm_anim_op prog_rzr_get_buzz_anim_ops[] = {
 
 static const wm_anim_label prog_rzr_get_buzz_anim_labels[] = {
     { "#nodead", 65 },
-    { "#make_black", 67 },
-    { "rets", 67 },
 };
 
 static const wm_anim_op prog_rzr_3_head_held_anim_ops[] = {
@@ -36723,9 +35829,6 @@ static const wm_anim_op prog_rzr_3_head_held_anim_ops[] = {
 
 static const wm_anim_label prog_rzr_3_head_held_anim_labels[] = {
     { "#loop", 6 },
-    { "#inc_loop", 34 },
-    { "rets", 34 },
-    { "#breakout", 34 },
 };
 
 static const wm_anim_op prog_rzr_3_head_held_brk_anim_ops[] = {
@@ -36747,12 +35850,6 @@ static const wm_anim_op prog_rzr_3_head_held_brk_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-};
-
-static const wm_anim_label prog_rzr_3_head_held_brk_anim_labels[] = {
-    { "#inc_loop", 18 },
-    { "rets", 18 },
-    { "#breakout", 18 },
 };
 
 static const wm_anim_op prog_rzr_3_head_held_stand_anim_ops[] = {
@@ -36871,7 +35968,6 @@ static const wm_anim_label prog_rzr_combo_hiptoss_anim_labels[] = {
     { "#missedbc", 66 },
     { "#missedc", 67 },
     { "#throw_him_outc", 76 },
-    { "SLAM_HIM", 94 },
 };
 
 static const wm_anim_op prog_rzr_2_hiptoss2_anim_ops[] = {
@@ -36984,22 +36080,6 @@ static const wm_anim_label prog_rzr_2_hiptoss2_anim_labels[] = {
     { "#missedb", 75 },
     { "#missed", 79 },
     { "#throw_him_out", 85 },
-    { "release_table", 101 },
-    { "#puppet_tbl", 101 },
-    { "#Bret", 101 },
-    { "#Razor", 101 },
-    { "#Taker", 101 },
-    { "#Yokozuna", 101 },
-    { "#Shawn", 101 },
-    { "#BamBam", 101 },
-    { "#Doink", 101 },
-    { "#Adam", 101 },
-    { "#Lex", 101 },
-    { "#release_offsets", 101 },
-    { "#xflip_tbl", 101 },
-    { "#recover_tbl", 101 },
-    { "#flyout_tbl", 101 },
-    { "flyout_tbl", 101 },
 };
 
 static const wm_anim_op prog_rzr_4_hiptoss2_anim_ops[] = {
@@ -37105,22 +36185,6 @@ static const wm_anim_label prog_rzr_4_hiptoss2_anim_labels[] = {
     { "#missedb", 68 },
     { "#missed", 72 },
     { "#throw_him_out", 78 },
-    { "release_table", 94 },
-    { "#puppet_tbl", 94 },
-    { "#Bret", 94 },
-    { "#Razor", 94 },
-    { "#Taker", 94 },
-    { "#Yokozuna", 94 },
-    { "#Shawn", 94 },
-    { "#BamBam", 94 },
-    { "#Doink", 94 },
-    { "#Adam", 94 },
-    { "#Lex", 94 },
-    { "#release_offsets", 94 },
-    { "#xflip_tbl", 94 },
-    { "#recover_tbl", 94 },
-    { "#flyout_tbl", 94 },
-    { "flyout_tbl", 94 },
 };
 
 static const wm_anim_op prog_rzr_2_hiptoss_anim_ops[] = {
@@ -37212,22 +36276,6 @@ static const wm_anim_label prog_rzr_2_hiptoss_anim_labels[] = {
     { "#missedb", 54 },
     { "#missed", 58 },
     { "#throw_him_out", 64 },
-    { "release_table", 80 },
-    { "#puppet_tbl", 80 },
-    { "#Bret", 80 },
-    { "#Razor", 80 },
-    { "#Taker", 80 },
-    { "#Yokozuna", 80 },
-    { "#Shawn", 80 },
-    { "#BamBam", 80 },
-    { "#Doink", 80 },
-    { "#Adam", 80 },
-    { "#Lex", 80 },
-    { "#release_offsets", 80 },
-    { "#xflip_tbl", 80 },
-    { "#recover_tbl", 80 },
-    { "#flyout_tbl", 80 },
-    { "flyout_tbl", 80 },
 };
 
 static const wm_anim_op prog_rzr_4_hiptoss_anim_ops[] = {
@@ -37312,22 +36360,6 @@ static const wm_anim_label prog_rzr_4_hiptoss_anim_labels[] = {
     { "#missedb", 47 },
     { "#missed", 51 },
     { "#throw_him_out", 57 },
-    { "release_table", 73 },
-    { "#puppet_tbl", 73 },
-    { "#Bret", 73 },
-    { "#Razor", 73 },
-    { "#Taker", 73 },
-    { "#Yokozuna", 73 },
-    { "#Shawn", 73 },
-    { "#BamBam", 73 },
-    { "#Doink", 73 },
-    { "#Adam", 73 },
-    { "#Lex", 73 },
-    { "#release_offsets", 73 },
-    { "#xflip_tbl", 73 },
-    { "#recover_tbl", 73 },
-    { "#flyout_tbl", 73 },
-    { "flyout_tbl", 73 },
 };
 
 static const wm_anim_op prog_rzr_2_hair_pickup_anim_ops[] = {
@@ -37384,17 +36416,6 @@ static const wm_anim_op prog_rzr_2_hair_pickup_anim_ops[] = {
 
 static const wm_anim_label prog_rzr_2_hair_pickup_anim_labels[] = {
     { "#missed", 40 },
-    { "#headheld_tbl", 49 },
-    { "#puppet_tbl", 49 },
-    { "#Bret", 49 },
-    { "#Razor", 49 },
-    { "#Taker", 49 },
-    { "#Yokozuna", 49 },
-    { "#Shawn", 49 },
-    { "#BamBam", 49 },
-    { "#Doink", 49 },
-    { "#Adam", 49 },
-    { "#Lex", 49 },
 };
 
 static const wm_anim_op prog_rzr_4_hair_pickup_anim_ops[] = {
@@ -37444,17 +36465,6 @@ static const wm_anim_op prog_rzr_4_hair_pickup_anim_ops[] = {
 
 static const wm_anim_label prog_rzr_4_hair_pickup_anim_labels[] = {
     { "#missed", 33 },
-    { "#headheld_tbl", 42 },
-    { "#puppet_tbl", 42 },
-    { "#Bret", 42 },
-    { "#Razor", 42 },
-    { "#Taker", 42 },
-    { "#Yokozuna", 42 },
-    { "#Shawn", 42 },
-    { "#BamBam", 42 },
-    { "#Doink", 42 },
-    { "#Adam", 42 },
-    { "#Lex", 42 },
 };
 
 static const wm_anim_op prog_rzr_climb_up_anim_ops[] = {
@@ -37718,8 +36728,6 @@ static const wm_anim_label prog_rzr_uslashes_to_head_anim_labels[] = {
     { "#exit", 31 },
     { "#missed", 31 },
     { "#do_flykick", 42 },
-    { "#go_high", 49 },
-    { "#x", 49 },
 };
 
 static const wm_anim_op prog_rzr_dslashes_to_head_anim_ops[] = {
@@ -37863,18 +36871,6 @@ static const wm_anim_label prog_rzr_3_fake_hold_anim_labels[] = {
     { "#gothim", 37 },
     { "#missed", 55 },
     { "#missedb", 65 },
-    { "#puppet_tbl", 77 },
-    { "#Bret", 77 },
-    { "#Razor", 77 },
-    { "#Taker", 77 },
-    { "#Yokozuna", 77 },
-    { "#Shawn", 77 },
-    { "#BamBam", 77 },
-    { "#Doink", 77 },
-    { "#Adam", 77 },
-    { "#Lex", 77 },
-    { "#headheld_tbl", 77 },
-    { "#yoff", 77 },
 };
 
 static const wm_anim_op prog_rzr_3_head_hold2_anim_ops[] = {
@@ -37952,18 +36948,6 @@ static const wm_anim_label prog_rzr_3_head_hold2_anim_labels[] = {
     { "#gothim", 28 },
     { "#missed", 46 },
     { "#missedb", 56 },
-    { "#puppet_tbl", 68 },
-    { "#Bret", 68 },
-    { "#Razor", 68 },
-    { "#Taker", 68 },
-    { "#Yokozuna", 68 },
-    { "#Shawn", 68 },
-    { "#BamBam", 68 },
-    { "#Doink", 68 },
-    { "#Adam", 68 },
-    { "#Lex", 68 },
-    { "#headheld_tbl", 68 },
-    { "#yoff", 68 },
 };
 
 static const wm_anim_op prog_rzr_3_head_hold_anim_ops[] = {
@@ -38026,18 +37010,6 @@ static const wm_anim_label prog_rzr_3_head_hold_anim_labels[] = {
     { "#gothim", 13 },
     { "#missed", 31 },
     { "#missedb", 41 },
-    { "#puppet_tbl", 53 },
-    { "#Bret", 53 },
-    { "#Razor", 53 },
-    { "#Taker", 53 },
-    { "#Yokozuna", 53 },
-    { "#Shawn", 53 },
-    { "#BamBam", 53 },
-    { "#Doink", 53 },
-    { "#Adam", 53 },
-    { "#Lex", 53 },
-    { "#headheld_tbl", 53 },
-    { "#yoff", 53 },
 };
 
 static const wm_anim_op prog_rzr_combo_pile_driver_anim_ops[] = {
@@ -38219,19 +37191,6 @@ static const wm_anim_label prog_rzr_3_pile_driver2_anim_labels[] = {
     { "rets", 24 },
     { "#in", 44 },
     { "#missed", 72 },
-    { "#set_opp_xflip", 93 },
-    { "#puppet_tbl", 93 },
-    { "#Bret", 93 },
-    { "#Razor", 93 },
-    { "#Taker", 93 },
-    { "#Yokozuna", 93 },
-    { "#Shawn", 93 },
-    { "#BamBam", 93 },
-    { "#Doink", 93 },
-    { "#Adam", 93 },
-    { "#Lex", 93 },
-    { "#rollout_tbl", 93 },
-    { "#yoff", 93 },
 };
 
 static const wm_anim_op prog_rzr_3_pile_driver_anim_ops[] = {
@@ -38309,20 +37268,6 @@ static const wm_anim_op prog_rzr_3_pile_driver_anim_ops[] = {
 static const wm_anim_label prog_rzr_3_pile_driver_anim_labels[] = {
     { "#in", 20 },
     { "#missed", 48 },
-    { "#set_opp_xflip", 69 },
-    { "rets", 69 },
-    { "#puppet_tbl", 69 },
-    { "#Bret", 69 },
-    { "#Razor", 69 },
-    { "#Taker", 69 },
-    { "#Yokozuna", 69 },
-    { "#Shawn", 69 },
-    { "#BamBam", 69 },
-    { "#Doink", 69 },
-    { "#Adam", 69 },
-    { "#Lex", 69 },
-    { "#rollout_tbl", 69 },
-    { "#yoff", 69 },
 };
 
 static const wm_anim_op prog_rzr_combo_razors_edge_anim_ops[] = {
@@ -38489,19 +37434,6 @@ static const wm_anim_op prog_rzr_razors_edge_anim_ops[] = {
 
 static const wm_anim_label prog_rzr_razors_edge_anim_labels[] = {
     { "#missed", 57 },
-    { "#set_opp_xflip", 75 },
-    { "rets", 75 },
-    { "#puppet_tbl", 75 },
-    { "#Bret", 75 },
-    { "#Razor", 75 },
-    { "#Taker", 75 },
-    { "#Yokozuna", 75 },
-    { "#Shawn", 75 },
-    { "#BamBam", 75 },
-    { "#Doink", 75 },
-    { "#Adam", 75 },
-    { "#Lex", 75 },
-    { "#rollout_tbl", 75 },
 };
 
 static const wm_anim_op prog_rzr_repeat_slash_anim_ops[] = {
@@ -38708,7 +37640,6 @@ static const wm_anim_op prog_rzr_4_hitblock2_anim_ops[] = {
 
 static const wm_anim_label prog_rzr_4_hitblock2_anim_labels[] = {
     { "#hold_block", 0 },
-    { "#FRICTION_VAL", 29 },
 };
 
 static const wm_anim_op prog_rzr_4_losebal_anim_ops[] = {
@@ -39411,9 +38342,6 @@ static const wm_anim_op prog_rzr_faceup_getup2_anim_ops[] = {
 static const wm_anim_label prog_rzr_faceup_getup2_anim_labels[] = {
     { "#common", 3 },
     { "#no_freetoss3", 18 },
-    { "choose_2or4", 22 },
-    { "#choose_2", 22 },
-    { "rets", 22 },
 };
 
 static const wm_anim_op prog_rzr_up_anim_ops[] = {
@@ -41119,7 +40047,6 @@ static const wm_anim_label prog_shn_bstomp_anim_labels[] = {
     { "#opp_onground", 17 },
     { "#hit", 30 },
     { "#common", 33 },
-    { "#yoff", 44 },
 };
 
 static const wm_anim_op prog_shn_belbow_anim_ops[] = {
@@ -41269,13 +40196,6 @@ static const wm_anim_op prog_shn_4_falling_punch_anim_ops[] = {
 static const wm_anim_label prog_shn_4_falling_punch_anim_labels[] = {
     { "#hit4", 30 },
     { "#cont4", 32 },
-    { "#set_target", 40 },
-    { "rets", 40 },
-    { "#head", 40 },
-    { "#drop", 40 },
-    { "zero_x", 40 },
-    { "#zero_x_4", 40 },
-    { "#ok4", 40 },
 };
 
 static const wm_anim_op prog_shn_2_knee_anim_ops[] = {
@@ -42087,12 +41007,6 @@ static const wm_anim_label prog_shn_flying_kick_anim_labels[] = {
     { "#no_freetoss", 51 },
     { "getup_in_4", 55 },
     { "#no_freetoss2", 78 },
-    { "#ckongrnd", 82 },
-    { "rets", 82 },
-    { "#inplace", 82 },
-    { "elbow_tgt1", 82 },
-    { "#head", 82 },
-    { "elbow_tgt2", 82 },
 };
 
 static const wm_anim_op prog_shn_roll_frames_ops[] = {
@@ -42287,12 +41201,6 @@ static const wm_anim_op prog_shn_climbin_side_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
-static const wm_anim_label prog_shn_climbin_side_anim_labels[] = {
-    { "#set_trgt", 39 },
-    { "#onlft", 39 },
-    { "rets", 39 },
-};
-
 static const wm_anim_op prog_shn_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1420, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -42326,14 +41234,6 @@ static const wm_anim_op prog_shn_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 128, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-};
-
-static const wm_anim_label prog_shn_climbthru_bot_anim_labels[] = {
-    { "#ckspin", 32 },
-    { "RETS", 32 },
-    { "#faceup", 32 },
-    { "rets", 32 },
-    { "NOT_IN_RING", 32 },
 };
 
 static const wm_anim_op prog_shn_climbin_bot_anim_ops[] = {
@@ -42413,10 +41313,6 @@ static const wm_anim_op prog_shn_climbthru_top_anim_ops[] = {
 
 static const wm_anim_label prog_shn_climbthru_top_anim_labels[] = {
     { "#dir4", 7 },
-    { "#set_zvel1", 35 },
-    { "rets", 35 },
-    { "#facedwn", 35 },
-    { "#set_zvel2", 35 },
 };
 
 static const wm_anim_op prog_shn_rollthru_top_anim_ops[] = {
@@ -42469,11 +41365,6 @@ static const wm_anim_op prog_shn_climbin_top_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 128, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-};
-
-static const wm_anim_label prog_shn_climbin_top_anim_labels[] = {
-    { "#set_zvel2", 27 },
-    { "rets", 27 },
 };
 
 static const wm_anim_op prog_shn_2_pin_anim_ops[] = {
@@ -43053,8 +41944,6 @@ static const wm_anim_label prog_shn_combo_gsuplex_anim_labels[] = {
     { "#missedxc", 66 },
     { "#4xc", 77 },
     { "#2xc", 79 },
-    { "#zero_butn", 82 },
-    { "rets", 82 },
 };
 
 static const wm_anim_op prog_shn_gsuplex_run_anim_ops[] = {
@@ -43202,19 +42091,6 @@ static const wm_anim_label prog_shn_gsuplex_run_anim_labels[] = {
     { "#missed", 112 },
     { "#4", 121 },
     { "#2", 123 },
-    { "#pause_opp", 125 },
-    { "#zero_butn", 125 },
-    { "puppet_tbl", 125 },
-    { "#Bret", 125 },
-    { "#Razor", 125 },
-    { "#Taker", 125 },
-    { "#Yokozuna", 125 },
-    { "#Shawn", 125 },
-    { "#BamBam", 125 },
-    { "#Doink", 125 },
-    { "#Adam", 125 },
-    { "#Lex", 125 },
-    { "rollout_tbl1", 125 },
 };
 
 static const wm_anim_op prog_shn_gsuplex_anim_ops[] = {
@@ -43315,20 +42191,6 @@ static const wm_anim_label prog_shn_gsuplex_anim_labels[] = {
     { "#missed", 73 },
     { "#4", 82 },
     { "#2", 84 },
-    { "#pause_opp", 86 },
-    { "rets", 86 },
-    { "#zero_butn", 86 },
-    { "puppet_tbl", 86 },
-    { "#Bret", 86 },
-    { "#Razor", 86 },
-    { "#Taker", 86 },
-    { "#Yokozuna", 86 },
-    { "#Shawn", 86 },
-    { "#BamBam", 86 },
-    { "#Doink", 86 },
-    { "#Adam", 86 },
-    { "#Lex", 86 },
-    { "rollout_tbl1", 86 },
 };
 
 static const wm_anim_op prog_shn_fstein2_anim_ops[] = {
@@ -43571,22 +42433,6 @@ static const wm_anim_label prog_shn_fstein2_anim_labels[] = {
     { "rets", 163 },
     { "#missedb", 163 },
     { "#missed", 197 },
-    { "#merge_xvels", 222 },
-    { "#rets", 222 },
-    { "#store_opp_xvel", 222 },
-    { "#puppet_tbl", 222 },
-    { "#Bret", 222 },
-    { "#Razor", 222 },
-    { "#Taker", 222 },
-    { "#Yokozuna", 222 },
-    { "#Shawn", 222 },
-    { "#BamBam", 222 },
-    { "#Doink", 222 },
-    { "#Adam", 222 },
-    { "#Lex", 222 },
-    { "recover_tbl", 222 },
-    { "#flyout_tbl", 222 },
-    { "#release_offsets", 222 },
 };
 
 static const wm_anim_op prog_shn_combo_fstein_anim_ops[] = {
@@ -43858,13 +42704,6 @@ static const wm_anim_label prog_shn_combo_fstein_anim_labels[] = {
     { "#throw_him_out", 156 },
     { "release_table2", 177 },
     { "#set_attach", 177 },
-    { "#merge_xvels", 236 },
-    { "#rets", 236 },
-    { "#store_opp_xvel", 236 },
-    { "#puppet_tbl", 236 },
-    { "recover_tbl", 236 },
-    { "#flyout_tbl", 236 },
-    { "#release_offsets", 236 },
 };
 
 static const wm_anim_op prog_shn_fstein_anim_ops[] = {
@@ -44021,22 +42860,6 @@ static const wm_anim_label prog_shn_fstein_anim_labels[] = {
     { "rets", 82 },
     { "#missedb", 82 },
     { "#missed", 116 },
-    { "#merge_xvels", 141 },
-    { "#rets", 141 },
-    { "#store_opp_xvel", 141 },
-    { "#puppet_tbl", 141 },
-    { "#Bret", 141 },
-    { "#Razor", 141 },
-    { "#Taker", 141 },
-    { "#Yokozuna", 141 },
-    { "#Shawn", 141 },
-    { "#BamBam", 141 },
-    { "#Doink", 141 },
-    { "#Adam", 141 },
-    { "#Lex", 141 },
-    { "recover_tbl", 141 },
-    { "#flyout_tbl", 141 },
-    { "#release_offsets", 141 },
 };
 
 static const wm_anim_op prog_shn_combo_spinkick_anim_ops[] = {
@@ -44152,8 +42975,6 @@ static const wm_anim_label prog_shn_spinkick_anim_labels[] = {
     { "#no_slide", 20 },
     { "#missed", 25 },
     { "#cont", 26 },
-    { "#reverse_xvel", 35 },
-    { "rets", 35 },
 };
 
 static const wm_anim_op prog_shn_spinkick_TB_anim_ops[] = {
@@ -45422,20 +44243,6 @@ static const wm_anim_label prog_shn_2_hiptoss2_anim_labels[] = {
     { "#missedb", 79 },
     { "#missed", 83 },
     { "#throw_him_out", 91 },
-    { "release_table", 112 },
-    { "#puppet_tbl", 112 },
-    { "#Bret", 112 },
-    { "#Razor", 112 },
-    { "#Taker", 112 },
-    { "#Yokozuna", 112 },
-    { "#Shawn", 112 },
-    { "#BamBam", 112 },
-    { "#Doink", 112 },
-    { "#Adam", 112 },
-    { "#Lex", 112 },
-    { "#recover_tbl", 112 },
-    { "#flyout_tbl", 112 },
-    { "#release_offsets", 112 },
 };
 
 static const wm_anim_op prog_shn_4_hiptoss2_anim_ops[] = {
@@ -45551,20 +44358,6 @@ static const wm_anim_label prog_shn_4_hiptoss2_anim_labels[] = {
     { "#missedb", 71 },
     { "#missed", 75 },
     { "#throw_him_out", 83 },
-    { "release_table", 104 },
-    { "#puppet_tbl", 104 },
-    { "#Bret", 104 },
-    { "#Razor", 104 },
-    { "#Taker", 104 },
-    { "#Yokozuna", 104 },
-    { "#Shawn", 104 },
-    { "#BamBam", 104 },
-    { "#Doink", 104 },
-    { "#Adam", 104 },
-    { "#Lex", 104 },
-    { "#recover_tbl", 104 },
-    { "#flyout_tbl", 104 },
-    { "#release_offsets", 104 },
 };
 
 static const wm_anim_op prog_shn_2_hiptoss_anim_ops[] = {
@@ -45665,20 +44458,6 @@ static const wm_anim_label prog_shn_2_hiptoss_anim_labels[] = {
     { "#missedb", 56 },
     { "#missed", 60 },
     { "#throw_him_out", 68 },
-    { "release_table", 89 },
-    { "#puppet_tbl", 89 },
-    { "#Bret", 89 },
-    { "#Razor", 89 },
-    { "#Taker", 89 },
-    { "#Yokozuna", 89 },
-    { "#Shawn", 89 },
-    { "#BamBam", 89 },
-    { "#Doink", 89 },
-    { "#Adam", 89 },
-    { "#Lex", 89 },
-    { "#recover_tbl", 89 },
-    { "#flyout_tbl", 89 },
-    { "#release_offsets", 89 },
 };
 
 static const wm_anim_op prog_shn_4_hiptoss_anim_ops[] = {
@@ -45772,20 +44551,6 @@ static const wm_anim_label prog_shn_4_hiptoss_anim_labels[] = {
     { "#missedb", 49 },
     { "#missed", 53 },
     { "#throw_him_out", 61 },
-    { "release_table", 82 },
-    { "#puppet_tbl", 82 },
-    { "#Bret", 82 },
-    { "#Razor", 82 },
-    { "#Taker", 82 },
-    { "#Yokozuna", 82 },
-    { "#Shawn", 82 },
-    { "#BamBam", 82 },
-    { "#Doink", 82 },
-    { "#Adam", 82 },
-    { "#Lex", 82 },
-    { "#recover_tbl", 82 },
-    { "#flyout_tbl", 82 },
-    { "#release_offsets", 82 },
 };
 
 static const wm_anim_op prog_shn_2_hair_pickup_anim_ops[] = {
@@ -45841,17 +44606,6 @@ static const wm_anim_op prog_shn_2_hair_pickup_anim_ops[] = {
 
 static const wm_anim_label prog_shn_2_hair_pickup_anim_labels[] = {
     { "#missed", 39 },
-    { "#headheld_tbl", 48 },
-    { "#puppet_tbl", 48 },
-    { "#Bret", 48 },
-    { "#Razor", 48 },
-    { "#Taker", 48 },
-    { "#Yokozuna", 48 },
-    { "#Shawn", 48 },
-    { "#BamBam", 48 },
-    { "#Doink", 48 },
-    { "#Adam", 48 },
-    { "#Lex", 48 },
 };
 
 static const wm_anim_op prog_shn_4_hair_pickup_anim_ops[] = {
@@ -45901,17 +44655,6 @@ static const wm_anim_op prog_shn_4_hair_pickup_anim_ops[] = {
 
 static const wm_anim_label prog_shn_4_hair_pickup_anim_labels[] = {
     { "#missed", 33 },
-    { "#headheld_tbl", 42 },
-    { "#puppet_tbl", 42 },
-    { "#Bret", 42 },
-    { "#Razor", 42 },
-    { "#Taker", 42 },
-    { "#Yokozuna", 42 },
-    { "#Shawn", 42 },
-    { "#BamBam", 42 },
-    { "#Doink", 42 },
-    { "#Adam", 42 },
-    { "#Lex", 42 },
 };
 
 static const wm_anim_op prog_shn_speed_spinkick_anim_ops[] = {
@@ -46068,10 +44811,6 @@ static const wm_anim_op prog_shn_4_taunt_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "shn_stand4_anim" },
-};
-
-static const wm_anim_label prog_shn_4_taunt_anim_labels[] = {
-    { "#yoff", 27 },
 };
 
 static const wm_anim_op prog_shn_combo_run_stomp_anim_ops[] = {
@@ -46415,8 +45154,6 @@ static const wm_anim_label prog_shn_combo_sliding_kicktoss_anim_labels[] = {
     { "#NO_FRANK", 55 },
     { "#blocked_c", 61 },
     { "#missed_c", 65 },
-    { "#release_offsets2", 74 },
-    { "#SPECIAL_RELEASE_TBL", 74 },
 };
 
 static const wm_anim_op prog_shn_sliding_kicktoss_anim_ops[] = {
@@ -46494,20 +45231,6 @@ static const wm_anim_op prog_shn_sliding_kicktoss_anim_ops[] = {
 static const wm_anim_label prog_shn_sliding_kicktoss_anim_labels[] = {
     { "#blocked", 58 },
     { "#missed", 62 },
-    { "#grunt", 69 },
-    { "rets", 69 },
-    { "#puppet_tbl", 69 },
-    { "#Bret", 69 },
-    { "#Razor", 69 },
-    { "#Taker", 69 },
-    { "#Yokozuna", 69 },
-    { "#Shawn", 69 },
-    { "#BamBam", 69 },
-    { "#Doink", 69 },
-    { "#Adam", 69 },
-    { "#Lex", 69 },
-    { "#release_tbl", 69 },
-    { "#release_offsets", 69 },
 };
 
 static const wm_anim_op prog_shn_break_arm_anim_ops[] = {
@@ -46550,17 +45273,6 @@ static const wm_anim_op prog_shn_break_arm_anim_ops[] = {
 
 static const wm_anim_label prog_shn_break_arm_anim_labels[] = {
     { "#missed", 31 },
-    { "#puppet_tbl", 35 },
-    { "#Bret", 35 },
-    { "#Razor", 35 },
-    { "#Taker", 35 },
-    { "#Yokozuna", 35 },
-    { "#Shawn", 35 },
-    { "#BamBam", 35 },
-    { "#Doink", 35 },
-    { "#Adam", 35 },
-    { "#Lex", 35 },
-    { "#react_tbl", 35 },
 };
 
 static const wm_anim_op prog_no_bk_xvel_ops[] = {
@@ -46651,17 +45363,6 @@ static const wm_anim_label prog_no_bk_xvel_labels[] = {
     { "#gothim", 37 },
     { "#missed", 55 },
     { "#missedb", 66 },
-    { "#puppet_tbl", 77 },
-    { "#Bret", 77 },
-    { "#Razor", 77 },
-    { "#Taker", 77 },
-    { "#Yokozuna", 77 },
-    { "#Shawn", 77 },
-    { "#BamBam", 77 },
-    { "#Doink", 77 },
-    { "#Adam", 77 },
-    { "#Lex", 77 },
-    { "#headheld_tbl", 77 },
 };
 
 static const wm_anim_op prog_shn_3_fake_hold_anim_ops[] = {
@@ -46748,17 +45449,6 @@ static const wm_anim_label prog_shn_3_fake_hold_anim_labels[] = {
     { "#gothim", 37 },
     { "#missed", 55 },
     { "#missedb", 66 },
-    { "#puppet_tbl", 77 },
-    { "#Bret", 77 },
-    { "#Razor", 77 },
-    { "#Taker", 77 },
-    { "#Yokozuna", 77 },
-    { "#Shawn", 77 },
-    { "#BamBam", 77 },
-    { "#Doink", 77 },
-    { "#Adam", 77 },
-    { "#Lex", 77 },
-    { "#headheld_tbl", 77 },
 };
 
 static const wm_anim_op prog_shn_3_head_hold2_anim_ops[] = {
@@ -46835,17 +45525,6 @@ static const wm_anim_label prog_shn_3_head_hold2_anim_labels[] = {
     { "#gothim", 27 },
     { "#missed", 45 },
     { "#missedb", 56 },
-    { "#puppet_tbl", 67 },
-    { "#Bret", 67 },
-    { "#Razor", 67 },
-    { "#Taker", 67 },
-    { "#Yokozuna", 67 },
-    { "#Shawn", 67 },
-    { "#BamBam", 67 },
-    { "#Doink", 67 },
-    { "#Adam", 67 },
-    { "#Lex", 67 },
-    { "#headheld_tbl", 67 },
 };
 
 static const wm_anim_op prog_shn_3_head_hold_anim_ops[] = {
@@ -46907,17 +45586,6 @@ static const wm_anim_label prog_shn_3_head_hold_anim_labels[] = {
     { "#gothim", 12 },
     { "#missed", 30 },
     { "#missedb", 41 },
-    { "#puppet_tbl", 52 },
-    { "#Bret", 52 },
-    { "#Razor", 52 },
-    { "#Taker", 52 },
-    { "#Yokozuna", 52 },
-    { "#Shawn", 52 },
-    { "#BamBam", 52 },
-    { "#Doink", 52 },
-    { "#Adam", 52 },
-    { "#Lex", 52 },
-    { "#headheld_tbl", 52 },
 };
 
 static const wm_anim_op prog_shn_combo_flipslam_anim_ops[] = {
@@ -47673,17 +46341,6 @@ static const wm_anim_label prog_shn_rpt_hdbutts_anim_labels[] = {
     { "#cont2", 74 },
     { "#missedb", 93 },
     { "#missed", 93 },
-    { "#puppet_tbl", 98 },
-    { "#Bret", 98 },
-    { "#Razor", 98 },
-    { "#Taker", 98 },
-    { "#Yokozuna", 98 },
-    { "#Shawn", 98 },
-    { "#BamBam", 98 },
-    { "#Doink", 98 },
-    { "#Adam", 98 },
-    { "#Lex", 98 },
-    { "#react_tbl", 98 },
 };
 
 static const wm_anim_op prog_shn_4_losebal_anim_ops[] = {
@@ -48602,9 +47259,6 @@ static const wm_anim_op prog_shn_heldoh_anim_ops[] = {
 
 static const wm_anim_label prog_shn_heldoh_anim_labels[] = {
     { "#loop", 5 },
-    { "#inc_loop", 33 },
-    { "rets", 33 },
-    { "#breakout", 33 },
 };
 
 static const wm_anim_op prog_shn_break_neck_anim_ops[] = {
@@ -48869,8 +47523,6 @@ static const wm_anim_op prog_shn_get_buzz_anim_ops[] = {
 
 static const wm_anim_label prog_shn_get_buzz_anim_labels[] = {
     { "#nodead", 65 },
-    { "#make_black", 67 },
-    { "rets", 67 },
 };
 
 static const wm_anim_op prog_shn_3_head_held_anim_ops[] = {
@@ -48913,9 +47565,6 @@ static const wm_anim_op prog_shn_3_head_held_anim_ops[] = {
 
 static const wm_anim_label prog_shn_3_head_held_anim_labels[] = {
     { "#loop", 6 },
-    { "#inc_loop", 35 },
-    { "rets", 35 },
-    { "#breakout", 35 },
 };
 
 static const wm_anim_op prog_shn_3_head_held_brk_anim_ops[] = {
@@ -48939,12 +47588,6 @@ static const wm_anim_op prog_shn_3_head_held_brk_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-};
-
-static const wm_anim_label prog_shn_3_head_held_brk_anim_labels[] = {
-    { "#inc_loop", 20 },
-    { "rets", 20 },
-    { "#breakout", 20 },
 };
 
 static const wm_anim_op prog_shn_3_head_held_stand_anim_ops[] = {
@@ -50067,9 +48710,6 @@ static const wm_anim_label prog_und_combo_uppercut_anim_labels[] = {
     { "#no_hit3", 33 },
     { "#missedb_c", 44 },
     { "#missed_c", 45 },
-    { "SET_OPP_GRAV_NORM", 57 },
-    { "RETS", 57 },
-    { "SET_OPP_GRAV_LOW", 57 },
 };
 
 static const wm_anim_op prog_und_combo_slap_anim_ops[] = {
@@ -50335,7 +48975,6 @@ static const wm_anim_label prog_und_2_run_slap_anim_labels[] = {
     { "#hitx", 81 },
     { "#missedb", 86 },
     { "#none1", 102 },
-    { "#GLOVE", 114 },
 };
 
 static const wm_anim_op prog_und_4_run_slap_anim_ops[] = {
@@ -50456,7 +49095,6 @@ static const wm_anim_label prog_und_4_run_slap_anim_labels[] = {
     { "#hitx", 74 },
     { "#missedb", 79 },
     { "#none1", 95 },
-    { "#GLOVE", 107 },
 };
 
 static const wm_anim_op prog_und_2_slap_anim_ops[] = {
@@ -50564,7 +49202,6 @@ static const wm_anim_label prog_und_2_slap_anim_labels[] = {
     { "#hitx", 61 },
     { "#missedb", 66 },
     { "#none1", 82 },
-    { "#GLOVE", 94 },
 };
 
 static const wm_anim_op prog_und_4_slap_anim_ops[] = {
@@ -50665,7 +49302,6 @@ static const wm_anim_label prog_und_4_slap_anim_labels[] = {
     { "#hitx", 54 },
     { "#missedb", 59 },
     { "#none1", 75 },
-    { "#GLOVE", 87 },
 };
 
 static const wm_anim_op prog_und_4_push_anim_ops[] = {
@@ -50778,10 +49414,6 @@ static const wm_anim_op prog_und_4_losebal_dizzy_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
-static const wm_anim_label prog_und_4_losebal_dizzy_anim_labels[] = {
-    { "#yoff", 16 },
-};
-
 static const wm_anim_op prog_und_2_lbowdrop_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1036, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -50840,7 +49472,6 @@ static const wm_anim_label prog_und_2_lbowdrop_anim_labels[] = {
     { "#skip_leapat", 18 },
     { "#do_leapat", 19 },
     { "#hit", 36 },
-    { "#yoff", 51 },
 };
 
 static const wm_anim_op prog_und_4_lbowdrop_anim_ops[] = {
@@ -51708,7 +50339,6 @@ static const wm_anim_label prog_und_4_stomp_anim_labels[] = {
     { "#common", 19 },
     { "#missed", 30 },
     { "#hit", 31 },
-    { "#yoff", 37 },
 };
 
 static const wm_anim_op prog_und_combo_flying_butt_drop_anim_ops[] = {
@@ -51807,7 +50437,6 @@ static const wm_anim_op prog_und_flying_butt_drop_anim_ops[] = {
 static const wm_anim_label prog_und_flying_butt_drop_anim_labels[] = {
     { "#hit", 21 },
     { "#miss", 32 },
-    { "#yoff", 40 },
 };
 
 static const wm_anim_op prog_und_tbukl_butt_drop_anim_ops[] = {
@@ -51901,10 +50530,6 @@ static const wm_anim_op prog_und_4_bigboot_anim_ops[] = {
 static const wm_anim_label prog_und_4_bigboot_anim_labels[] = {
     { "#lp", 12 },
     { "#missed", 20 },
-    { "#clrcnt", 25 },
-    { "rets", 25 },
-    { "#holdup", 25 },
-    { "#button_up", 25 },
 };
 
 static const wm_anim_op prog_und_2_knee_anim_ops[] = {
@@ -52192,8 +50817,6 @@ static const wm_anim_label prog_und_4_knee_butts_anim_labels[] = {
     { "#exit", 77 },
     { "#missed", 77 },
     { "#exit2", 86 },
-    { "#reduce_dmg", 92 },
-    { "rets", 92 },
 };
 
 static const wm_anim_op prog_und_2_grabfling_anim_ops[] = {
@@ -52262,17 +50885,6 @@ static const wm_anim_label prog_und_2_grabfling_anim_labels[] = {
     { "#cont", 15 },
     { "#missedb", 48 },
     { "#missed", 51 },
-    { "#puppet_tbl", 59 },
-    { "#Bret", 59 },
-    { "#Razor", 59 },
-    { "#Taker", 59 },
-    { "#Yokozuna", 59 },
-    { "#Shawn", 59 },
-    { "#BamBam", 59 },
-    { "#Doink", 59 },
-    { "#Adam", 59 },
-    { "#Lex", 59 },
-    { "#strt_run_tbl", 59 },
 };
 
 static const wm_anim_op prog_und_4_grabfling_anim_ops[] = {
@@ -52332,17 +50944,6 @@ static const wm_anim_label prog_und_4_grabfling_anim_labels[] = {
     { "#cont", 6 },
     { "#missedb", 39 },
     { "#missed", 42 },
-    { "#puppet_tbl", 50 },
-    { "#Bret", 50 },
-    { "#Razor", 50 },
-    { "#Taker", 50 },
-    { "#Yokozuna", 50 },
-    { "#Shawn", 50 },
-    { "#BamBam", 50 },
-    { "#Doink", 50 },
-    { "#Adam", 50 },
-    { "#Lex", 50 },
-    { "#strt_run_tbl", 50 },
 };
 
 static const wm_anim_op prog_und_2_head_hit_anim_ops[] = {
@@ -54006,12 +52607,6 @@ static const wm_anim_op prog_und_climbin_side_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
-static const wm_anim_label prog_und_climbin_side_anim_labels[] = {
-    { "#set_trgt", 49 },
-    { "#onlft", 49 },
-    { "rets", 49 },
-};
-
 static const wm_anim_op prog_und_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1420, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -54045,13 +52640,6 @@ static const wm_anim_op prog_und_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 128, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-};
-
-static const wm_anim_label prog_und_climbthru_bot_anim_labels[] = {
-    { "#ckspin", 32 },
-    { "RETS", 32 },
-    { "#faceup", 32 },
-    { "rets", 32 },
 };
 
 static const wm_anim_op prog_und_climbin_bot_anim_ops[] = {
@@ -54117,10 +52705,6 @@ static const wm_anim_op prog_und_climbthru_top_anim_ops[] = {
 
 static const wm_anim_label prog_und_climbthru_top_anim_labels[] = {
     { "#dir4", 7 },
-    { "#set_zvel1", 31 },
-    { "rets", 31 },
-    { "#facedwn", 31 },
-    { "#set_zvel2", 31 },
 };
 
 static const wm_anim_op prog_und_rollthru_top_anim_ops[] = {
@@ -54162,11 +52746,6 @@ static const wm_anim_op prog_und_climbin_top_anim_ops[] = {
     { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CLEAR_CLIMB, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_CHANGEANIM, 0, -1, 0, 0, 0, 0, 0, 0, "und_getup_anim" },
-};
-
-static const wm_anim_label prog_und_climbin_top_anim_labels[] = {
-    { "#set_zvel2", 16 },
-    { "rets", 16 },
 };
 
 static const wm_anim_op prog_und_buckoff_anim_ops[] = {
@@ -54239,9 +52818,6 @@ static const wm_anim_op prog_und_heldoh_anim_ops[] = {
 
 static const wm_anim_label prog_und_heldoh_anim_labels[] = {
     { "#loop", 5 },
-    { "#inc_loop", 36 },
-    { "rets", 36 },
-    { "#breakout", 36 },
 };
 
 static const wm_anim_op prog_und_tombstone_smash_anim_ops[] = {
@@ -54359,7 +52935,6 @@ static const wm_anim_label prog_und_tombstone_smash_anim_labels[] = {
     { "#last_hit", 52 },
     { "#missed_nancy_boy", 74 },
     { "#gothim", 95 },
-    { "#TOMBSTONE", 106 },
 };
 
 static const wm_anim_op prog_und_combo_tombstone_smash_anim_ops[] = {
@@ -54586,7 +53161,6 @@ static const wm_anim_label prog_und_combo_sliding_choke_anim_labels[] = {
     { "#gothimc", 29 },
     { "#slam_loop", 47 },
     { "#NO_MORE", 86 },
-    { "SLAM_HIM", 103 },
 };
 
 static const wm_anim_op prog_und_sliding_choke_anim_ops[] = {
@@ -54827,8 +53401,6 @@ static const wm_anim_label prog_und_sliding_choke_anim_labels[] = {
     { "bam_choking_anim", 160 },
     { "dnk_choking_anim", 174 },
     { "lex_choking_anim", 194 },
-    { "inc_loop", 210 },
-    { "#breakout", 210 },
 };
 
 static const wm_anim_op prog_und_chokeslam_anim_ops[] = {
@@ -54872,21 +53444,6 @@ static const wm_anim_op prog_und_chokeslam_anim_ops[] = {
     { WM_AOP_FRAME, 0, -1, 4, 0, 0, 0, 0, 0, "U2NS3X10" },
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-};
-
-static const wm_anim_label prog_und_chokeslam_anim_labels[] = {
-    { "xflip_tbls", 40 },
-    { "slambounce_tbls", 40 },
-    { "puppet_tbls", 40 },
-    { "#Bret", 40 },
-    { "#Razor", 40 },
-    { "#Taker", 40 },
-    { "#Yokozuna", 40 },
-    { "#Shawn", 40 },
-    { "#BamBam", 40 },
-    { "#Doink", 40 },
-    { "#Adam", 40 },
-    { "#Lex", 40 },
 };
 
 static const wm_anim_op prog_und_choke_face_slam_anim_ops[] = {
@@ -54972,20 +53529,6 @@ static const wm_anim_op prog_und_choke_face_slam_anim_ops[] = {
 static const wm_anim_label prog_und_choke_face_slam_anim_labels[] = {
     { "#slam_again", 34 },
     { "#norepeat", 61 },
-    { "#reattach", 77 },
-    { "rets", 77 },
-    { "#faced2_tbl", 77 },
-    { "#faced_tbl", 77 },
-    { "#puppet_tbl", 77 },
-    { "#Bret", 77 },
-    { "#Razor", 77 },
-    { "#Taker", 77 },
-    { "#Yokozuna", 77 },
-    { "#Shawn", 77 },
-    { "#BamBam", 77 },
-    { "#Doink", 77 },
-    { "#Adam", 77 },
-    { "#Lex", 77 },
 };
 
 static const wm_anim_op prog_und_combo_tombstone_anim_ops[] = {
@@ -55124,18 +53667,6 @@ static const wm_anim_op prog_und_pile_anim_ops[] = {
 
 static const wm_anim_label prog_und_pile_anim_labels[] = {
     { "#missed", 57 },
-    { "#xflip_tbl", 62 },
-    { "#puppet_tbl", 62 },
-    { "#Bret", 62 },
-    { "#Razor", 62 },
-    { "#Taker", 62 },
-    { "#Yokozuna", 62 },
-    { "#Shawn", 62 },
-    { "#BamBam", 62 },
-    { "#Doink", 62 },
-    { "#Adam", 62 },
-    { "#Lex", 62 },
-    { "#breakneck_tbl", 62 },
 };
 
 static const wm_anim_op prog_und_combo_neckbreaker_anim_ops[] = {
@@ -55303,20 +53834,6 @@ static const wm_anim_label prog_und_neckbreaker2_anim_labels[] = {
     { "#gothim", 45 },
     { "#missedb", 83 },
     { "#missed", 85 },
-    { "#zero_butn", 92 },
-    { "rets", 92 },
-    { "#xflip_tbl", 92 },
-    { "#slambounce_tbl", 92 },
-    { "#puppet_tbl", 92 },
-    { "#Bret", 92 },
-    { "#Razor", 92 },
-    { "#Taker", 92 },
-    { "#Yokozuna", 92 },
-    { "#Shawn", 92 },
-    { "#BamBam", 92 },
-    { "#Doink", 92 },
-    { "#Adam", 92 },
-    { "#Lex", 92 },
 };
 
 static const wm_anim_op prog_und_neckbreaker3_anim_ops[] = {
@@ -55403,20 +53920,6 @@ static const wm_anim_label prog_und_neckbreaker3_anim_labels[] = {
     { "#gothim", 30 },
     { "#missedb", 68 },
     { "#missed", 70 },
-    { "#zero_butn", 77 },
-    { "rets", 77 },
-    { "#xflip_tbl", 77 },
-    { "#slambounce_tbl", 77 },
-    { "#puppet_tbl", 77 },
-    { "#Bret", 77 },
-    { "#Razor", 77 },
-    { "#Taker", 77 },
-    { "#Yokozuna", 77 },
-    { "#Shawn", 77 },
-    { "#BamBam", 77 },
-    { "#Doink", 77 },
-    { "#Adam", 77 },
-    { "#Lex", 77 },
 };
 
 static const wm_anim_op prog_und_neckbreaker_anim_ops[] = {
@@ -55484,20 +53987,6 @@ static const wm_anim_label prog_und_neckbreaker_anim_labels[] = {
     { "#gothim", 11 },
     { "#missedb", 49 },
     { "#missed", 51 },
-    { "#zero_butn", 58 },
-    { "rets", 58 },
-    { "#xflip_tbl", 58 },
-    { "#slambounce_tbl", 58 },
-    { "#puppet_tbl", 58 },
-    { "#Bret", 58 },
-    { "#Razor", 58 },
-    { "#Taker", 58 },
-    { "#Yokozuna", 58 },
-    { "#Shawn", 58 },
-    { "#BamBam", 58 },
-    { "#Doink", 58 },
-    { "#Adam", 58 },
-    { "#Lex", 58 },
 };
 
 static const wm_anim_op prog_und_2_snapmirror2_anim_ops[] = {
@@ -55727,20 +54216,6 @@ static const wm_anim_label prog_und_2_snapmirror2_anim_labels[] = {
     { "#missedb", 177 },
     { "#missed", 181 },
     { "#throw_him_out", 193 },
-    { "release_table", 215 },
-    { "#flyout_tbl", 215 },
-    { "#xflip_tbl", 215 },
-    { "#slambounce_tbl", 215 },
-    { "#puppet_tbl", 215 },
-    { "#Bret", 215 },
-    { "#Razor", 215 },
-    { "#Taker", 215 },
-    { "#Yokozuna", 215 },
-    { "#Shawn", 215 },
-    { "#BamBam", 215 },
-    { "#Doink", 215 },
-    { "#Adam", 215 },
-    { "#Lex", 215 },
 };
 
 static const wm_anim_op prog_und_4_snapmirror2_anim_ops[] = {
@@ -55963,20 +54438,6 @@ static const wm_anim_label prog_und_4_snapmirror2_anim_labels[] = {
     { "#missedb", 170 },
     { "#missed", 174 },
     { "#throw_him_out", 186 },
-    { "release_table", 208 },
-    { "#flyout_tbl", 208 },
-    { "#xflip_tbl", 208 },
-    { "#slambounce_tbl", 208 },
-    { "#puppet_tbl", 208 },
-    { "#Bret", 208 },
-    { "#Razor", 208 },
-    { "#Taker", 208 },
-    { "#Yokozuna", 208 },
-    { "#Shawn", 208 },
-    { "#BamBam", 208 },
-    { "#Doink", 208 },
-    { "#Adam", 208 },
-    { "#Lex", 208 },
 };
 
 static const wm_anim_op prog_und_combo_snapmirror_anim_ops[] = {
@@ -56293,20 +54754,6 @@ static const wm_anim_label prog_und_2_snapmirror_anim_labels[] = {
     { "#missedb", 61 },
     { "#missed", 65 },
     { "#throw_him_out", 77 },
-    { "release_table", 99 },
-    { "#flyout_tbl", 99 },
-    { "#xflip_tbl", 99 },
-    { "#slambounce_tbl", 99 },
-    { "#puppet_tbl", 99 },
-    { "#Bret", 99 },
-    { "#Razor", 99 },
-    { "#Taker", 99 },
-    { "#Yokozuna", 99 },
-    { "#Shawn", 99 },
-    { "#BamBam", 99 },
-    { "#Doink", 99 },
-    { "#Adam", 99 },
-    { "#Lex", 99 },
 };
 
 static const wm_anim_op prog_und_4_snapmirror_anim_ops[] = {
@@ -56412,20 +54859,6 @@ static const wm_anim_label prog_und_4_snapmirror_anim_labels[] = {
     { "#missedb", 56 },
     { "#missed", 60 },
     { "#throw_him_out", 72 },
-    { "release_table", 94 },
-    { "#flyout_tbl", 94 },
-    { "#xflip_tbl", 94 },
-    { "#slambounce_tbl", 94 },
-    { "#puppet_tbl", 94 },
-    { "#Bret", 94 },
-    { "#Razor", 94 },
-    { "#Taker", 94 },
-    { "#Yokozuna", 94 },
-    { "#Shawn", 94 },
-    { "#BamBam", 94 },
-    { "#Doink", 94 },
-    { "#Adam", 94 },
-    { "#Lex", 94 },
 };
 
 static const wm_anim_op prog_und_neckbroken_anim_ops[] = {
@@ -56584,8 +55017,6 @@ static const wm_anim_op prog_und_get_buzz_anim_ops[] = {
 
 static const wm_anim_label prog_und_get_buzz_anim_labels[] = {
     { "#nodead", 66 },
-    { "#make_black", 68 },
-    { "rets", 68 },
 };
 
 static const wm_anim_op prog_und_3_head_held_anim_ops[] = {
@@ -56628,9 +55059,6 @@ static const wm_anim_op prog_und_3_head_held_anim_ops[] = {
 
 static const wm_anim_label prog_und_3_head_held_anim_labels[] = {
     { "#loop", 6 },
-    { "#inc_loop", 35 },
-    { "rets", 35 },
-    { "#breakout", 35 },
 };
 
 static const wm_anim_op prog_und_3_head_held_brk_anim_ops[] = {
@@ -56654,12 +55082,6 @@ static const wm_anim_op prog_und_3_head_held_brk_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-};
-
-static const wm_anim_label prog_und_3_head_held_brk_anim_labels[] = {
-    { "#inc_loop", 20 },
-    { "rets", 20 },
-    { "#breakout", 20 },
 };
 
 static const wm_anim_op prog_und_3_head_held_stand_anim_ops[] = {
@@ -56804,17 +55226,6 @@ static const wm_anim_op prog_und_2_hair_pickup_anim_ops[] = {
 
 static const wm_anim_label prog_und_2_hair_pickup_anim_labels[] = {
     { "#missed", 42 },
-    { "#headheld_tbl", 53 },
-    { "#puppet_tbl", 53 },
-    { "#Bret", 53 },
-    { "#Razor", 53 },
-    { "#Taker", 53 },
-    { "#Yokozuna", 53 },
-    { "#Shawn", 53 },
-    { "#BamBam", 53 },
-    { "#Doink", 53 },
-    { "#Adam", 53 },
-    { "#Lex", 53 },
 };
 
 static const wm_anim_op prog_und_4_hair_pickup_anim_ops[] = {
@@ -56869,17 +55280,6 @@ static const wm_anim_op prog_und_4_hair_pickup_anim_ops[] = {
 
 static const wm_anim_label prog_und_4_hair_pickup_anim_labels[] = {
     { "#missed", 36 },
-    { "#headheld_tbl", 47 },
-    { "#puppet_tbl", 47 },
-    { "#Bret", 47 },
-    { "#Razor", 47 },
-    { "#Taker", 47 },
-    { "#Yokozuna", 47 },
-    { "#Shawn", 47 },
-    { "#BamBam", 47 },
-    { "#Doink", 47 },
-    { "#Adam", 47 },
-    { "#Lex", 47 },
 };
 
 static const wm_anim_op prog_und_4_taunt_anim_ops[] = {
@@ -57081,17 +55481,6 @@ static const wm_anim_label prog_und_3_fake_hold_anim_labels[] = {
     { "#gothim", 35 },
     { "#missedb", 54 },
     { "#missed", 66 },
-    { "#puppet_tbl", 78 },
-    { "#Bret", 78 },
-    { "#Razor", 78 },
-    { "#Taker", 78 },
-    { "#Yokozuna", 78 },
-    { "#Shawn", 78 },
-    { "#BamBam", 78 },
-    { "#Doink", 78 },
-    { "#Adam", 78 },
-    { "#Lex", 78 },
-    { "#headheld_tbl", 78 },
 };
 
 static const wm_anim_op prog_und_3_head_hold2_anim_ops[] = {
@@ -57170,17 +55559,6 @@ static const wm_anim_label prog_und_3_head_hold2_anim_labels[] = {
     { "#gothim", 26 },
     { "#missedb", 45 },
     { "#missed", 57 },
-    { "#puppet_tbl", 69 },
-    { "#Bret", 69 },
-    { "#Razor", 69 },
-    { "#Taker", 69 },
-    { "#Yokozuna", 69 },
-    { "#Shawn", 69 },
-    { "#BamBam", 69 },
-    { "#Doink", 69 },
-    { "#Adam", 69 },
-    { "#Lex", 69 },
-    { "#headheld_tbl", 69 },
 };
 
 static const wm_anim_op prog_und_3_head_hold_anim_ops[] = {
@@ -57245,17 +55623,6 @@ static const wm_anim_label prog_und_3_head_hold_anim_labels[] = {
     { "#gothim", 12 },
     { "#missedb", 31 },
     { "#missed", 43 },
-    { "#puppet_tbl", 55 },
-    { "#Bret", 55 },
-    { "#Razor", 55 },
-    { "#Taker", 55 },
-    { "#Yokozuna", 55 },
-    { "#Shawn", 55 },
-    { "#BamBam", 55 },
-    { "#Doink", 55 },
-    { "#Adam", 55 },
-    { "#Lex", 55 },
-    { "#headheld_tbl", 55 },
 };
 
 static const wm_anim_op prog_und_slamnobounce_anim_ops[] = {
@@ -57399,11 +55766,6 @@ static const wm_anim_op prog_und_spirit_pull_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
-static const wm_anim_label prog_und_spirit_pull_anim_labels[] = {
-    { "#fireball", 35 },
-    { "rets", 35 },
-};
-
 static const wm_anim_op prog_und_spirit_push_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
@@ -57457,11 +55819,6 @@ static const wm_anim_op prog_und_spirit_push_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-};
-
-static const wm_anim_label prog_und_spirit_push_anim_labels[] = {
-    { "#fireball", 52 },
-    { "rets", 52 },
 };
 
 static const wm_anim_op prog_und_arm_broken_anim_ops[] = {
@@ -58280,7 +56637,6 @@ static const wm_anim_op prog_yok_4_push_anim_ops[] = {
 static const wm_anim_label prog_yok_4_push_anim_labels[] = {
     { "#no_hit", 17 },
     { "#hit", 20 },
-    { "#yoff", 25 },
 };
 
 static const wm_anim_op prog_yok_2_lbowdrop_anim_ops[] = {
@@ -58331,7 +56687,6 @@ static const wm_anim_label prog_yok_2_lbowdrop_anim_labels[] = {
     { "#skip_leapat", 19 },
     { "#do_leapat", 19 },
     { "#hit", 37 },
-    { "#yoff", 41 },
 };
 
 static const wm_anim_op prog_yok_4_lbowdrop_anim_ops[] = {
@@ -58704,7 +57059,6 @@ static const wm_anim_label prog_yok_4_stomp_anim_labels[] = {
     { "#hit", 27 },
     { "#leapat_stomp", 34 },
     { "#leapat_hit", 49 },
-    { "#yoff", 54 },
 };
 
 static const wm_anim_op prog_yok_combo_butt_drop_anim_ops[] = {
@@ -59583,17 +57937,6 @@ static const wm_anim_label prog_yok_2_grabfling_anim_labels[] = {
     { "#cont", 15 },
     { "#missedb", 47 },
     { "#missed", 50 },
-    { "#puppet_tbl", 56 },
-    { "#Bret", 56 },
-    { "#Razor", 56 },
-    { "#Taker", 56 },
-    { "#Yokozuna", 56 },
-    { "#Shawn", 56 },
-    { "#BamBam", 56 },
-    { "#Doink", 56 },
-    { "#Adam", 56 },
-    { "#Lex", 56 },
-    { "#strt_run_tbl", 56 },
 };
 
 static const wm_anim_op prog_yok_4_grabfling_anim_ops[] = {
@@ -59650,17 +57993,6 @@ static const wm_anim_label prog_yok_4_grabfling_anim_labels[] = {
     { "#cont", 6 },
     { "#missedb", 38 },
     { "#missed", 41 },
-    { "#puppet_tbl", 47 },
-    { "#Bret", 47 },
-    { "#Razor", 47 },
-    { "#Taker", 47 },
-    { "#Yokozuna", 47 },
-    { "#Shawn", 47 },
-    { "#BamBam", 47 },
-    { "#Doink", 47 },
-    { "#Adam", 47 },
-    { "#Lex", 47 },
-    { "#strt_run_tbl", 47 },
 };
 
 static const wm_anim_op prog_yok_knockdwn_anim_ops[] = {
@@ -59806,12 +58138,6 @@ static const wm_anim_op prog_yok_climbin_side_anim_ops[] = {
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
 };
 
-static const wm_anim_label prog_yok_climbin_side_anim_labels[] = {
-    { "#set_trgt", 53 },
-    { "#onlft", 53 },
-    { "rets", 53 },
-};
-
 static const wm_anim_op prog_yok_climbthru_bot_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 1420, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
@@ -59852,10 +58178,6 @@ static const wm_anim_op prog_yok_climbthru_bot_anim_ops[] = {
 
 static const wm_anim_label prog_yok_climbthru_bot_anim_labels[] = {
     { "#dir4", 7 },
-    { "#ckspin", 35 },
-    { "RETS", 35 },
-    { "#faceup", 35 },
-    { "rets", 35 },
 };
 
 static const wm_anim_op prog_yok_climbin_bot_anim_ops[] = {
@@ -59933,10 +58255,6 @@ static const wm_anim_op prog_yok_climbthru_top_anim_ops[] = {
 
 static const wm_anim_label prog_yok_climbthru_top_anim_labels[] = {
     { "#dir4", 7 },
-    { "#set_zvel1", 34 },
-    { "rets", 34 },
-    { "#facedwn", 34 },
-    { "#set_zvel2", 34 },
 };
 
 static const wm_anim_op prog_yok_rollthru_top_anim_ops[] = {
@@ -59992,11 +58310,6 @@ static const wm_anim_op prog_yok_climbin_top_anim_ops[] = {
     { WM_AOP_FACEDOWN, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETMODE, 0, -1, 128, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-};
-
-static const wm_anim_label prog_yok_climbin_top_anim_labels[] = {
-    { "#set_zvel2", 27 },
-    { "rets", 27 },
 };
 
 static const wm_anim_op prog_yok_2_pin_anim_ops[] = {
@@ -60080,8 +58393,6 @@ static const wm_anim_op prog_yok_2_pin_anim_ops[] = {
 
 static const wm_anim_label prog_yok_2_pin_anim_labels[] = {
     { "#hold", 71 },
-    { "#bucket_salt", 76 },
-    { "#x", 76 },
 };
 
 static const wm_anim_op prog_yok_4_pin_anim_ops[] = {
@@ -60160,8 +58471,6 @@ static const wm_anim_op prog_yok_4_pin_anim_ops[] = {
 
 static const wm_anim_label prog_yok_4_pin_anim_labels[] = {
     { "#hold", 66 },
-    { "#bucket_salt", 71 },
-    { "#x", 71 },
 };
 
 static const wm_anim_op prog_yok_2_raise_arm_anim_ops[] = {
@@ -61137,8 +59446,6 @@ static const wm_anim_op prog_yok_get_buzz_anim_ops[] = {
 
 static const wm_anim_label prog_yok_get_buzz_anim_labels[] = {
     { "#nodead", 65 },
-    { "#make_black", 67 },
-    { "rets", 67 },
 };
 
 static const wm_anim_op prog_yok_3_head_held_anim_ops[] = {
@@ -61180,9 +59487,6 @@ static const wm_anim_op prog_yok_3_head_held_anim_ops[] = {
 
 static const wm_anim_label prog_yok_3_head_held_anim_labels[] = {
     { "#loop", 5 },
-    { "#inc_loop", 34 },
-    { "rets", 34 },
-    { "#breakout", 34 },
 };
 
 static const wm_anim_op prog_yok_3_head_held_brk_anim_ops[] = {
@@ -61207,12 +59511,6 @@ static const wm_anim_op prog_yok_3_head_held_brk_anim_ops[] = {
     { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
     { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
-};
-
-static const wm_anim_label prog_yok_3_head_held_brk_anim_labels[] = {
-    { "#inc_loop", 21 },
-    { "rets", 21 },
-    { "#breakout", 21 },
 };
 
 static const wm_anim_op prog_yok_3_head_held_stand_anim_ops[] = {
@@ -61277,17 +59575,6 @@ static const wm_anim_op prog_yok_2_hair_pickup_anim_ops[] = {
 
 static const wm_anim_label prog_yok_2_hair_pickup_anim_labels[] = {
     { "#missed", 37 },
-    { "#headheld_tbl", 46 },
-    { "#puppet_tbl", 46 },
-    { "#Bret", 46 },
-    { "#Razor", 46 },
-    { "#Taker", 46 },
-    { "#Yokozuna", 46 },
-    { "#Shawn", 46 },
-    { "#BamBam", 46 },
-    { "#Doink", 46 },
-    { "#Adam", 46 },
-    { "#Lex", 46 },
 };
 
 static const wm_anim_op prog_yok_4_hair_pickup_anim_ops[] = {
@@ -61336,17 +59623,6 @@ static const wm_anim_op prog_yok_4_hair_pickup_anim_ops[] = {
 
 static const wm_anim_label prog_yok_4_hair_pickup_anim_labels[] = {
     { "#missed", 32 },
-    { "#headheld_tbl", 41 },
-    { "#puppet_tbl", 41 },
-    { "#Bret", 41 },
-    { "#Razor", 41 },
-    { "#Taker", 41 },
-    { "#Yokozuna", 41 },
-    { "#Shawn", 41 },
-    { "#BamBam", 41 },
-    { "#Doink", 41 },
-    { "#Adam", 41 },
-    { "#Lex", 41 },
 };
 
 static const wm_anim_op prog_yok_4_taunt_anim_ops[] = {
@@ -61416,9 +59692,6 @@ static const wm_anim_op prog_yok_heldoh_anim_ops[] = {
 
 static const wm_anim_label prog_yok_heldoh_anim_labels[] = {
     { "#loop", 5 },
-    { "#inc_loop", 34 },
-    { "rets", 34 },
-    { "#breakout", 34 },
 };
 
 static const wm_anim_op prog_yok_break_neck2_anim_ops[] = {
@@ -61714,17 +59987,6 @@ static const wm_anim_label prog_yok_3_fake_hold_anim_labels[] = {
     { "#gothim", 35 },
     { "#missedb", 54 },
     { "#missed", 66 },
-    { "#puppet_tbl", 76 },
-    { "#Bret", 76 },
-    { "#Razor", 76 },
-    { "#Taker", 76 },
-    { "#Yokozuna", 76 },
-    { "#Shawn", 76 },
-    { "#BamBam", 76 },
-    { "#Doink", 76 },
-    { "#Adam", 76 },
-    { "#Lex", 76 },
-    { "#headheld_tbl", 76 },
 };
 
 static const wm_anim_op prog_yok_3_head_hold2_anim_ops[] = {
@@ -61801,17 +60063,6 @@ static const wm_anim_label prog_yok_3_head_hold2_anim_labels[] = {
     { "#gothim", 26 },
     { "#missedb", 45 },
     { "#missed", 57 },
-    { "#puppet_tbl", 67 },
-    { "#Bret", 67 },
-    { "#Razor", 67 },
-    { "#Taker", 67 },
-    { "#Yokozuna", 67 },
-    { "#Shawn", 67 },
-    { "#BamBam", 67 },
-    { "#Doink", 67 },
-    { "#Adam", 67 },
-    { "#Lex", 67 },
-    { "#headheld_tbl", 67 },
 };
 
 static const wm_anim_op prog_yok_3_head_hold_anim_ops[] = {
@@ -61874,17 +60125,6 @@ static const wm_anim_label prog_yok_3_head_hold_anim_labels[] = {
     { "#gothim", 12 },
     { "#missedb", 31 },
     { "#missed", 43 },
-    { "#puppet_tbl", 53 },
-    { "#Bret", 53 },
-    { "#Razor", 53 },
-    { "#Taker", 53 },
-    { "#Yokozuna", 53 },
-    { "#Shawn", 53 },
-    { "#BamBam", 53 },
-    { "#Doink", 53 },
-    { "#Adam", 53 },
-    { "#Lex", 53 },
-    { "#headheld_tbl", 53 },
 };
 
 static const wm_anim_op prog_yok_vsuplex_anim_ops[] = {
@@ -61949,19 +60189,6 @@ static const wm_anim_op prog_yok_vsuplex_anim_ops[] = {
 
 static const wm_anim_label prog_yok_vsuplex_anim_labels[] = {
     { "#missed", 52 },
-    { "#release_table", 57 },
-    { "#xflip_tbl", 57 },
-    { "#breakneck_tbl", 57 },
-    { "#puppet_tbl", 57 },
-    { "#Bret", 57 },
-    { "#Razor", 57 },
-    { "#Taker", 57 },
-    { "#Yokozuna", 57 },
-    { "#Shawn", 57 },
-    { "#BamBam", 57 },
-    { "#Doink", 57 },
-    { "#Adam", 57 },
-    { "#Lex", 57 },
 };
 
 static const wm_anim_op prog_yok_combo_hiptoss_anim_ops[] = {
@@ -62167,20 +60394,6 @@ static const wm_anim_label prog_yok_combo_hiptoss_anim_labels[] = {
     { "#missedb", 158 },
     { "#missed", 162 },
     { "#throw_him_out", 166 },
-    { "#xflip_tbl", 188 },
-    { "#slambounce_tbl", 188 },
-    { "#puppet_tbl", 188 },
-    { "#Bret", 188 },
-    { "#Razor", 188 },
-    { "#Taker", 188 },
-    { "#Yokozuna", 188 },
-    { "#Shawn", 188 },
-    { "#BamBam", 188 },
-    { "#Doink", 188 },
-    { "#Adam", 188 },
-    { "#Lex", 188 },
-    { "#release_table", 188 },
-    { "#flyout_tbl", 188 },
 };
 
 static const wm_anim_op prog_yok_4_hiptoss2_anim_ops[] = {
@@ -62301,20 +60514,6 @@ static const wm_anim_label prog_yok_4_hiptoss2_anim_labels[] = {
     { "#missedb", 79 },
     { "#missed", 83 },
     { "#throw_him_out", 87 },
-    { "#xflip_tbl", 109 },
-    { "#slambounce_tbl", 109 },
-    { "#puppet_tbl", 109 },
-    { "#Bret", 109 },
-    { "#Razor", 109 },
-    { "#Taker", 109 },
-    { "#Yokozuna", 109 },
-    { "#Shawn", 109 },
-    { "#BamBam", 109 },
-    { "#Doink", 109 },
-    { "#Adam", 109 },
-    { "#Lex", 109 },
-    { "#release_table", 109 },
-    { "#flyout_tbl", 109 },
 };
 
 static const wm_anim_op prog_yok_2_hiptoss2_anim_ops[] = {
@@ -62428,20 +60627,6 @@ static const wm_anim_label prog_yok_2_hiptoss2_anim_labels[] = {
     { "#missedb", 72 },
     { "#missed", 76 },
     { "#throw_him_out", 80 },
-    { "#xflip_tbl", 102 },
-    { "#slambounce_tbl", 102 },
-    { "#puppet_tbl", 102 },
-    { "#Bret", 102 },
-    { "#Razor", 102 },
-    { "#Taker", 102 },
-    { "#Yokozuna", 102 },
-    { "#Shawn", 102 },
-    { "#BamBam", 102 },
-    { "#Doink", 102 },
-    { "#Adam", 102 },
-    { "#Lex", 102 },
-    { "#release_table", 102 },
-    { "#flyout_tbl", 102 },
 };
 
 static const wm_anim_op prog_yok_4_hiptoss_anim_ops[] = {
@@ -62540,20 +60725,6 @@ static const wm_anim_label prog_yok_4_hiptoss_anim_labels[] = {
     { "#missedb", 57 },
     { "#missed", 61 },
     { "#throw_him_out", 65 },
-    { "#xflip_tbl", 87 },
-    { "#slambounce_tbl", 87 },
-    { "#puppet_tbl", 87 },
-    { "#Bret", 87 },
-    { "#Razor", 87 },
-    { "#Taker", 87 },
-    { "#Yokozuna", 87 },
-    { "#Shawn", 87 },
-    { "#BamBam", 87 },
-    { "#Doink", 87 },
-    { "#Adam", 87 },
-    { "#Lex", 87 },
-    { "#release_table", 87 },
-    { "#flyout_tbl", 87 },
 };
 
 static const wm_anim_op prog_yok_2_hiptoss_anim_ops[] = {
@@ -62645,20 +60816,6 @@ static const wm_anim_label prog_yok_2_hiptoss_anim_labels[] = {
     { "#missedb", 50 },
     { "#missed", 54 },
     { "#throw_him_out", 58 },
-    { "#xflip_tbl", 80 },
-    { "#slambounce_tbl", 80 },
-    { "#puppet_tbl", 80 },
-    { "#Bret", 80 },
-    { "#Razor", 80 },
-    { "#Taker", 80 },
-    { "#Yokozuna", 80 },
-    { "#Shawn", 80 },
-    { "#BamBam", 80 },
-    { "#Doink", 80 },
-    { "#Adam", 80 },
-    { "#Lex", 80 },
-    { "#release_table", 80 },
-    { "#flyout_tbl", 80 },
 };
 
 static const wm_anim_op prog_yok_combo_heldheadbutt_rpt_anim_ops[] = {
@@ -63021,10 +61178,6 @@ static const wm_anim_label prog_yok_combo_spinslam_anim_labels[] = {
     { "#NO_SLAP", 70 },
     { "#NO_BUTT", 72 },
     { "#NO_BUTTa", 76 },
-    { "#set_immob", 81 },
-    { "rets", 81 },
-    { "#keep_ongrnd", 81 },
-    { "DIE", 81 },
 };
 
 static const wm_anim_op prog_yok_overhd_slam2_anim_ops[] = {
@@ -63111,20 +61264,6 @@ static const wm_anim_op prog_yok_overhd_slam2_anim_ops[] = {
 static const wm_anim_label prog_yok_overhd_slam2_anim_labels[] = {
     { "#inherex", 32 },
     { "#throw_him_out", 54 },
-    { "release_throw_table", 78 },
-    { "flyout_tbl", 78 },
-    { "#xflip_tbl", 78 },
-    { "#slambounce_tbl", 78 },
-    { "#puppet_tbl", 78 },
-    { "#Bret", 78 },
-    { "#Razor", 78 },
-    { "#Taker", 78 },
-    { "#Yokozuna", 78 },
-    { "#Shawn", 78 },
-    { "#BamBam", 78 },
-    { "#Doink", 78 },
-    { "#Adam", 78 },
-    { "#Lex", 78 },
 };
 
 static const wm_anim_op prog_yok_overhd_slam_anim_ops[] = {
@@ -63194,20 +61333,6 @@ static const wm_anim_op prog_yok_overhd_slam_anim_ops[] = {
 static const wm_anim_label prog_yok_overhd_slam_anim_labels[] = {
     { "#inherex", 15 },
     { "#throw_him_out", 37 },
-    { "release_throw_table", 61 },
-    { "flyout_tbl", 61 },
-    { "#xflip_tbl", 61 },
-    { "#slambounce_tbl", 61 },
-    { "#puppet_tbl", 61 },
-    { "#Bret", 61 },
-    { "#Razor", 61 },
-    { "#Taker", 61 },
-    { "#Yokozuna", 61 },
-    { "#Shawn", 61 },
-    { "#BamBam", 61 },
-    { "#Doink", 61 },
-    { "#Adam", 61 },
-    { "#Lex", 61 },
 };
 
 static const wm_anim_op prog_yok_graboh_anim_ops[] = {
@@ -63264,17 +61389,6 @@ static const wm_anim_label prog_yok_graboh_anim_labels[] = {
     { "#inhere", 28 },
     { "#missedb", 33 },
     { "#missed", 37 },
-    { "#strt_flail_tbl", 47 },
-    { "#puppet_tbl", 47 },
-    { "#Bret", 47 },
-    { "#Razor", 47 },
-    { "#Taker", 47 },
-    { "#Yokozuna", 47 },
-    { "#Shawn", 47 },
-    { "#BamBam", 47 },
-    { "#Doink", 47 },
-    { "#Adam", 47 },
-    { "#Lex", 47 },
 };
 
 static const wm_anim_op prog_yok_scissor_anim_ops[] = {
@@ -63384,20 +61498,6 @@ static const wm_anim_label prog_yok_scissor_anim_labels[] = {
     { "#xflip_tbl", 70 },
     { "#missedb", 70 },
     { "#missed", 77 },
-    { "#merge_xvels", 96 },
-    { "#rets", 96 },
-    { "#store_opp_xvel", 96 },
-    { "#puppet_tbl", 96 },
-    { "#Bret", 96 },
-    { "#Razor", 96 },
-    { "#Taker", 96 },
-    { "#Yokozuna", 96 },
-    { "#Shawn", 96 },
-    { "#BamBam", 96 },
-    { "#Doink", 96 },
-    { "#Adam", 96 },
-    { "#Lex", 96 },
-    { "#recover_tbl", 96 },
 };
 
 static const wm_anim_op prog_yok_2_salt_anim_ops[] = {
@@ -63511,10 +61611,6 @@ static const wm_anim_label prog_yok_combo_salt_anim_labels[] = {
     { "#no_hdrel2c", 11 },
     { "#noc", 20 },
     { "#NO_SCISSORS", 23 },
-    { "#salt_blocked", 29 },
-    { "#not_blocked", 29 },
-    { "rets", 29 },
-    { "#do_salt", 29 },
 };
 
 static const wm_anim_op prog_yok_4_block_anim_ops[] = {
@@ -63596,7 +61692,6 @@ static const wm_anim_op prog_yok_4_hitblock2_anim_ops[] = {
 
 static const wm_anim_label prog_yok_4_hitblock2_anim_labels[] = {
     { "#hold_block", 0 },
-    { "#FRICTION_VAL", 28 },
 };
 
 static const wm_anim_op prog_yok_4_losebal_anim_ops[] = {
@@ -64250,9 +62345,6 @@ static const wm_anim_label prog_yok_faceup_getup_anim_labels[] = {
     { "#no_freetoss", 33 },
     { "#getup_in_4", 37 },
     { "#no_freetoss2", 51 },
-    { "#choose_2or4", 55 },
-    { "#choose_2", 55 },
-    { "rets", 55 },
 };
 
 static const wm_anim_op prog_yok_faceup_getup2_anim_ops[] = {
@@ -64312,9 +62404,6 @@ static const wm_anim_label prog_yok_faceup_getup2_anim_labels[] = {
     { "#no_freetoss", 26 },
     { "#getup_in_4", 30 },
     { "#no_freetoss2", 44 },
-    { "#choose_2or4", 48 },
-    { "#choose_2", 48 },
-    { "rets", 48 },
 };
 
 static const wm_anim_op prog_yok_dizzy_anim_ops[] = {
@@ -65042,7 +63131,7 @@ static const wm_anim_program programs[] = {
     { "bam_4_bncoff_dizzy_anim", "BAMSEQ2.ASM", prog_bam_4_bncoff_dizzy_anim_ops,
       sizeof(prog_bam_4_bncoff_dizzy_anim_ops) / sizeof(prog_bam_4_bncoff_dizzy_anim_ops[0]), 0, 0, 0 },
     { "bam_4_losebal_anim", "BAMSEQ2.ASM", prog_bam_4_losebal_anim_ops,
-      sizeof(prog_bam_4_losebal_anim_ops) / sizeof(prog_bam_4_losebal_anim_ops[0]), 0, prog_bam_4_losebal_anim_labels, sizeof(prog_bam_4_losebal_anim_labels) / sizeof(prog_bam_4_losebal_anim_labels[0]) },
+      sizeof(prog_bam_4_losebal_anim_ops) / sizeof(prog_bam_4_losebal_anim_ops[0]), 0, 0, 0 },
     { "bam_2_lbowdrop_anim", "BAMSEQ2.ASM", prog_bam_2_lbowdrop_anim_ops,
       sizeof(prog_bam_2_lbowdrop_anim_ops) / sizeof(prog_bam_2_lbowdrop_anim_ops[0]), 0, prog_bam_2_lbowdrop_anim_labels, sizeof(prog_bam_2_lbowdrop_anim_labels) / sizeof(prog_bam_2_lbowdrop_anim_labels[0]) },
     { "bam_combo_lbowdrop_anim", "BAMSEQ2.ASM", prog_bam_combo_lbowdrop_anim_ops,
@@ -65190,9 +63279,9 @@ static const wm_anim_program programs[] = {
     { "bam_climbthru_side_anim", "BAMSEQ2.ASM", prog_bam_climbthru_side_anim_ops,
       sizeof(prog_bam_climbthru_side_anim_ops) / sizeof(prog_bam_climbthru_side_anim_ops[0]), 0, 0, 0 },
     { "bam_climbin_side_anim", "BAMSEQ2.ASM", prog_bam_climbin_side_anim_ops,
-      sizeof(prog_bam_climbin_side_anim_ops) / sizeof(prog_bam_climbin_side_anim_ops[0]), 0, prog_bam_climbin_side_anim_labels, sizeof(prog_bam_climbin_side_anim_labels) / sizeof(prog_bam_climbin_side_anim_labels[0]) },
+      sizeof(prog_bam_climbin_side_anim_ops) / sizeof(prog_bam_climbin_side_anim_ops[0]), 0, 0, 0 },
     { "bam_climbthru_bot_anim", "BAMSEQ2.ASM", prog_bam_climbthru_bot_anim_ops,
-      sizeof(prog_bam_climbthru_bot_anim_ops) / sizeof(prog_bam_climbthru_bot_anim_ops[0]), 0, prog_bam_climbthru_bot_anim_labels, sizeof(prog_bam_climbthru_bot_anim_labels) / sizeof(prog_bam_climbthru_bot_anim_labels[0]) },
+      sizeof(prog_bam_climbthru_bot_anim_ops) / sizeof(prog_bam_climbthru_bot_anim_ops[0]), 0, 0, 0 },
     { "bam_climbin_bot_anim", "BAMSEQ2.ASM", prog_bam_climbin_bot_anim_ops,
       sizeof(prog_bam_climbin_bot_anim_ops) / sizeof(prog_bam_climbin_bot_anim_ops[0]), 0, 0, 0 },
     { "bam_climbthru_top_anim", "BAMSEQ2.ASM", prog_bam_climbthru_top_anim_ops,
@@ -65200,7 +63289,7 @@ static const wm_anim_program programs[] = {
     { "bam_rollthru_top_anim", "BAMSEQ2.ASM", prog_bam_rollthru_top_anim_ops,
       sizeof(prog_bam_rollthru_top_anim_ops) / sizeof(prog_bam_rollthru_top_anim_ops[0]), 0, 0, 0 },
     { "bam_climbin_top_anim", "BAMSEQ2.ASM", prog_bam_climbin_top_anim_ops,
-      sizeof(prog_bam_climbin_top_anim_ops) / sizeof(prog_bam_climbin_top_anim_ops[0]), 0, prog_bam_climbin_top_anim_labels, sizeof(prog_bam_climbin_top_anim_labels) / sizeof(prog_bam_climbin_top_anim_labels[0]) },
+      sizeof(prog_bam_climbin_top_anim_ops) / sizeof(prog_bam_climbin_top_anim_ops[0]), 0, 0, 0 },
     { "bam_2_pin_anim", "BAMSEQ2.ASM", prog_bam_2_pin_anim_ops,
       sizeof(prog_bam_2_pin_anim_ops) / sizeof(prog_bam_2_pin_anim_ops[0]), 0, prog_bam_2_pin_anim_labels, sizeof(prog_bam_2_pin_anim_labels) / sizeof(prog_bam_2_pin_anim_labels[0]) },
     { "bam_4_pin_anim", "BAMSEQ2.ASM", prog_bam_4_pin_anim_ops,
@@ -65240,7 +63329,7 @@ static const wm_anim_program programs[] = {
     { "bam_stndholdoh_anim", "BAMSEQ3.ASM", prog_bam_stndholdoh_anim_ops,
       sizeof(prog_bam_stndholdoh_anim_ops) / sizeof(prog_bam_stndholdoh_anim_ops[0]), 0, 0, 0 },
     { "bam_slamdwn_anim", "BAMSEQ3.ASM", prog_bam_slamdwn_anim_ops,
-      sizeof(prog_bam_slamdwn_anim_ops) / sizeof(prog_bam_slamdwn_anim_ops[0]), 0, prog_bam_slamdwn_anim_labels, sizeof(prog_bam_slamdwn_anim_labels) / sizeof(prog_bam_slamdwn_anim_labels[0]) },
+      sizeof(prog_bam_slamdwn_anim_ops) / sizeof(prog_bam_slamdwn_anim_ops[0]), 0, 0, 0 },
     { "bam_heldoh_anim", "BAMSEQ3.ASM", prog_bam_heldoh_anim_ops,
       sizeof(prog_bam_heldoh_anim_ops) / sizeof(prog_bam_heldoh_anim_ops[0]), 0, prog_bam_heldoh_anim_labels, sizeof(prog_bam_heldoh_anim_labels) / sizeof(prog_bam_heldoh_anim_labels[0]) },
     { "bam_backbreaker_anim", "BAMSEQ3.ASM", prog_bam_backbreaker_anim_ops,
@@ -65264,7 +63353,7 @@ static const wm_anim_program programs[] = {
     { "bam_3_head_held_anim", "BAMSEQ3.ASM", prog_bam_3_head_held_anim_ops,
       sizeof(prog_bam_3_head_held_anim_ops) / sizeof(prog_bam_3_head_held_anim_ops[0]), 0, prog_bam_3_head_held_anim_labels, sizeof(prog_bam_3_head_held_anim_labels) / sizeof(prog_bam_3_head_held_anim_labels[0]) },
     { "bam_3_head_held_brk_anim", "BAMSEQ3.ASM", prog_bam_3_head_held_brk_anim_ops,
-      sizeof(prog_bam_3_head_held_brk_anim_ops) / sizeof(prog_bam_3_head_held_brk_anim_ops[0]), 0, prog_bam_3_head_held_brk_anim_labels, sizeof(prog_bam_3_head_held_brk_anim_labels) / sizeof(prog_bam_3_head_held_brk_anim_labels[0]) },
+      sizeof(prog_bam_3_head_held_brk_anim_ops) / sizeof(prog_bam_3_head_held_brk_anim_ops[0]), 0, 0, 0 },
     { "bam_3_head_held_stand_anim", "BAMSEQ3.ASM", prog_bam_3_head_held_stand_anim_ops,
       sizeof(prog_bam_3_head_held_stand_anim_ops) / sizeof(prog_bam_3_head_held_stand_anim_ops[0]), 0, 0, 0 },
     { "bam_break_neck2_anim", "BAMSEQ3.ASM", prog_bam_break_neck2_anim_ops,
@@ -65610,7 +63699,7 @@ static const wm_anim_program programs[] = {
     { "dnk_climbthru_side_anim", "DNKSEQ2.ASM", prog_dnk_climbthru_side_anim_ops,
       sizeof(prog_dnk_climbthru_side_anim_ops) / sizeof(prog_dnk_climbthru_side_anim_ops[0]), 0, 0, 0 },
     { "dnk_climbin_side_anim", "DNKSEQ2.ASM", prog_dnk_climbin_side_anim_ops,
-      sizeof(prog_dnk_climbin_side_anim_ops) / sizeof(prog_dnk_climbin_side_anim_ops[0]), 0, prog_dnk_climbin_side_anim_labels, sizeof(prog_dnk_climbin_side_anim_labels) / sizeof(prog_dnk_climbin_side_anim_labels[0]) },
+      sizeof(prog_dnk_climbin_side_anim_ops) / sizeof(prog_dnk_climbin_side_anim_ops[0]), 0, 0, 0 },
     { "SET_DIR_FACE", "DNKSEQ2.ASM", prog_SET_DIR_FACE_ops,
       sizeof(prog_SET_DIR_FACE_ops) / sizeof(prog_SET_DIR_FACE_ops[0]), 0, prog_SET_DIR_FACE_labels, sizeof(prog_SET_DIR_FACE_labels) / sizeof(prog_SET_DIR_FACE_labels[0]) },
     { "dnk_climbthru_bot_anim", "DNKSEQ2.ASM", prog_dnk_climbthru_bot_anim_ops,
@@ -65622,7 +63711,7 @@ static const wm_anim_program programs[] = {
     { "dnk_rollthru_top_anim", "DNKSEQ2.ASM", prog_dnk_rollthru_top_anim_ops,
       sizeof(prog_dnk_rollthru_top_anim_ops) / sizeof(prog_dnk_rollthru_top_anim_ops[0]), 0, 0, 0 },
     { "dnk_climbin_top_anim", "DNKSEQ2.ASM", prog_dnk_climbin_top_anim_ops,
-      sizeof(prog_dnk_climbin_top_anim_ops) / sizeof(prog_dnk_climbin_top_anim_ops[0]), 0, prog_dnk_climbin_top_anim_labels, sizeof(prog_dnk_climbin_top_anim_labels) / sizeof(prog_dnk_climbin_top_anim_labels[0]) },
+      sizeof(prog_dnk_climbin_top_anim_ops) / sizeof(prog_dnk_climbin_top_anim_ops[0]), 0, 0, 0 },
     { "dnk_2_buzz_anim", "DNKSEQ3.ASM", prog_dnk_2_buzz_anim_ops,
       sizeof(prog_dnk_2_buzz_anim_ops) / sizeof(prog_dnk_2_buzz_anim_ops[0]), 0, prog_dnk_2_buzz_anim_labels, sizeof(prog_dnk_2_buzz_anim_labels) / sizeof(prog_dnk_2_buzz_anim_labels[0]) },
     { "dnk_4_buzz_anim", "DNKSEQ3.ASM", prog_dnk_4_buzz_anim_ops,
@@ -65678,7 +63767,7 @@ static const wm_anim_program programs[] = {
     { "dnk_3_head_held_anim", "DNKSEQ3.ASM", prog_dnk_3_head_held_anim_ops,
       sizeof(prog_dnk_3_head_held_anim_ops) / sizeof(prog_dnk_3_head_held_anim_ops[0]), 0, prog_dnk_3_head_held_anim_labels, sizeof(prog_dnk_3_head_held_anim_labels) / sizeof(prog_dnk_3_head_held_anim_labels[0]) },
     { "dnk_3_head_held_brk_anim", "DNKSEQ3.ASM", prog_dnk_3_head_held_brk_anim_ops,
-      sizeof(prog_dnk_3_head_held_brk_anim_ops) / sizeof(prog_dnk_3_head_held_brk_anim_ops[0]), 0, prog_dnk_3_head_held_brk_anim_labels, sizeof(prog_dnk_3_head_held_brk_anim_labels) / sizeof(prog_dnk_3_head_held_brk_anim_labels[0]) },
+      sizeof(prog_dnk_3_head_held_brk_anim_ops) / sizeof(prog_dnk_3_head_held_brk_anim_ops[0]), 0, 0, 0 },
     { "dnk_3_head_held_stand_anim", "DNKSEQ3.ASM", prog_dnk_3_head_held_stand_anim_ops,
       sizeof(prog_dnk_3_head_held_stand_anim_ops) / sizeof(prog_dnk_3_head_held_stand_anim_ops[0]), 0, 0, 0 },
     { "dnk_3_knee_to_head_anim", "DNKSEQ3.ASM", prog_dnk_3_knee_to_head_anim_ops,
@@ -65884,9 +63973,9 @@ static const wm_anim_program programs[] = {
     { "hrt_4_super_kick_anim", "HRTSEQ2.ASM", prog_hrt_4_super_kick_anim_ops,
       sizeof(prog_hrt_4_super_kick_anim_ops) / sizeof(prog_hrt_4_super_kick_anim_ops[0]), 0, prog_hrt_4_super_kick_anim_labels, sizeof(prog_hrt_4_super_kick_anim_labels) / sizeof(prog_hrt_4_super_kick_anim_labels[0]) },
     { "hrt_kick_TB_anim", "HRTSEQ2.ASM", prog_hrt_kick_TB_anim_ops,
-      sizeof(prog_hrt_kick_TB_anim_ops) / sizeof(prog_hrt_kick_TB_anim_ops[0]), 0, prog_hrt_kick_TB_anim_labels, sizeof(prog_hrt_kick_TB_anim_labels) / sizeof(prog_hrt_kick_TB_anim_labels[0]) },
+      sizeof(prog_hrt_kick_TB_anim_ops) / sizeof(prog_hrt_kick_TB_anim_ops[0]), 0, 0, 0 },
     { "hrt_flying_kick_anim", "HRTSEQ2.ASM", prog_hrt_flying_kick_anim_ops,
-      sizeof(prog_hrt_flying_kick_anim_ops) / sizeof(prog_hrt_flying_kick_anim_ops[0]), 0, prog_hrt_flying_kick_anim_labels, sizeof(prog_hrt_flying_kick_anim_labels) / sizeof(prog_hrt_flying_kick_anim_labels[0]) },
+      sizeof(prog_hrt_flying_kick_anim_ops) / sizeof(prog_hrt_flying_kick_anim_ops[0]), 0, 0, 0 },
     { "hrt_combo_flying_kick_anim", "HRTSEQ2.ASM", prog_hrt_combo_flying_kick_anim_ops,
       sizeof(prog_hrt_combo_flying_kick_anim_ops) / sizeof(prog_hrt_combo_flying_kick_anim_ops[0]), 0, prog_hrt_combo_flying_kick_anim_labels, sizeof(prog_hrt_combo_flying_kick_anim_labels) / sizeof(prog_hrt_combo_flying_kick_anim_labels[0]) },
     { "hrt_flying_kick2_anim", "HRTSEQ2.ASM", prog_hrt_flying_kick2_anim_ops,
@@ -65928,9 +64017,9 @@ static const wm_anim_program programs[] = {
     { "hrt_climbthru_side_anim", "HRTSEQ2.ASM", prog_hrt_climbthru_side_anim_ops,
       sizeof(prog_hrt_climbthru_side_anim_ops) / sizeof(prog_hrt_climbthru_side_anim_ops[0]), 0, 0, 0 },
     { "hrt_climbin_side_anim", "HRTSEQ2.ASM", prog_hrt_climbin_side_anim_ops,
-      sizeof(prog_hrt_climbin_side_anim_ops) / sizeof(prog_hrt_climbin_side_anim_ops[0]), 0, prog_hrt_climbin_side_anim_labels, sizeof(prog_hrt_climbin_side_anim_labels) / sizeof(prog_hrt_climbin_side_anim_labels[0]) },
+      sizeof(prog_hrt_climbin_side_anim_ops) / sizeof(prog_hrt_climbin_side_anim_ops[0]), 0, 0, 0 },
     { "hrt_climbthru_bot_anim", "HRTSEQ2.ASM", prog_hrt_climbthru_bot_anim_ops,
-      sizeof(prog_hrt_climbthru_bot_anim_ops) / sizeof(prog_hrt_climbthru_bot_anim_ops[0]), 0, prog_hrt_climbthru_bot_anim_labels, sizeof(prog_hrt_climbthru_bot_anim_labels) / sizeof(prog_hrt_climbthru_bot_anim_labels[0]) },
+      sizeof(prog_hrt_climbthru_bot_anim_ops) / sizeof(prog_hrt_climbthru_bot_anim_ops[0]), 0, 0, 0 },
     { "hrt_climbin_bot_anim", "HRTSEQ2.ASM", prog_hrt_climbin_bot_anim_ops,
       sizeof(prog_hrt_climbin_bot_anim_ops) / sizeof(prog_hrt_climbin_bot_anim_ops[0]), 0, 0, 0 },
     { "hrt_climbthru_top_anim", "HRTSEQ2.ASM", prog_hrt_climbthru_top_anim_ops,
@@ -65938,7 +64027,7 @@ static const wm_anim_program programs[] = {
     { "hrt_rollthru_top_anim", "HRTSEQ2.ASM", prog_hrt_rollthru_top_anim_ops,
       sizeof(prog_hrt_rollthru_top_anim_ops) / sizeof(prog_hrt_rollthru_top_anim_ops[0]), 0, 0, 0 },
     { "hrt_climbin_top_anim", "HRTSEQ2.ASM", prog_hrt_climbin_top_anim_ops,
-      sizeof(prog_hrt_climbin_top_anim_ops) / sizeof(prog_hrt_climbin_top_anim_ops[0]), 0, prog_hrt_climbin_top_anim_labels, sizeof(prog_hrt_climbin_top_anim_labels) / sizeof(prog_hrt_climbin_top_anim_labels[0]) },
+      sizeof(prog_hrt_climbin_top_anim_ops) / sizeof(prog_hrt_climbin_top_anim_ops[0]), 0, 0, 0 },
     { "hrt_2_pin_anim", "HRTSEQ2.ASM", prog_hrt_2_pin_anim_ops,
       sizeof(prog_hrt_2_pin_anim_ops) / sizeof(prog_hrt_2_pin_anim_ops[0]), 0, prog_hrt_2_pin_anim_labels, sizeof(prog_hrt_2_pin_anim_labels) / sizeof(prog_hrt_2_pin_anim_labels[0]) },
     { "hrt_4_pin_anim", "HRTSEQ2.ASM", prog_hrt_4_pin_anim_ops,
@@ -65968,7 +64057,7 @@ static const wm_anim_program programs[] = {
     { "hrt_3_head_held_anim", "HRTSEQ3.ASM", prog_hrt_3_head_held_anim_ops,
       sizeof(prog_hrt_3_head_held_anim_ops) / sizeof(prog_hrt_3_head_held_anim_ops[0]), 0, prog_hrt_3_head_held_anim_labels, sizeof(prog_hrt_3_head_held_anim_labels) / sizeof(prog_hrt_3_head_held_anim_labels[0]) },
     { "hrt_3_head_held_brk_anim", "HRTSEQ3.ASM", prog_hrt_3_head_held_brk_anim_ops,
-      sizeof(prog_hrt_3_head_held_brk_anim_ops) / sizeof(prog_hrt_3_head_held_brk_anim_ops[0]), 0, prog_hrt_3_head_held_brk_anim_labels, sizeof(prog_hrt_3_head_held_brk_anim_labels) / sizeof(prog_hrt_3_head_held_brk_anim_labels[0]) },
+      sizeof(prog_hrt_3_head_held_brk_anim_ops) / sizeof(prog_hrt_3_head_held_brk_anim_ops[0]), 0, 0, 0 },
     { "hrt_3_head_held_stand_anim", "HRTSEQ3.ASM", prog_hrt_3_head_held_stand_anim_ops,
       sizeof(prog_hrt_3_head_held_stand_anim_ops) / sizeof(prog_hrt_3_head_held_stand_anim_ops[0]), 0, 0, 0 },
     { "hrt_4_taunt_anim", "HRTSEQ3.ASM", prog_hrt_4_taunt_anim_ops,
@@ -66268,7 +64357,7 @@ static const wm_anim_program programs[] = {
     { "lex_4_stomp_anim", "LEXSEQ2.ASM", prog_lex_4_stomp_anim_ops,
       sizeof(prog_lex_4_stomp_anim_ops) / sizeof(prog_lex_4_stomp_anim_ops[0]), 0, prog_lex_4_stomp_anim_labels, sizeof(prog_lex_4_stomp_anim_labels) / sizeof(prog_lex_4_stomp_anim_labels[0]) },
     { "lex_flying_ground_punch_anim", "LEXSEQ2.ASM", prog_lex_flying_ground_punch_anim_ops,
-      sizeof(prog_lex_flying_ground_punch_anim_ops) / sizeof(prog_lex_flying_ground_punch_anim_ops[0]), 0, prog_lex_flying_ground_punch_anim_labels, sizeof(prog_lex_flying_ground_punch_anim_labels) / sizeof(prog_lex_flying_ground_punch_anim_labels[0]) },
+      sizeof(prog_lex_flying_ground_punch_anim_ops) / sizeof(prog_lex_flying_ground_punch_anim_ops[0]), 0, 0, 0 },
     { "lex_buckle_leap_anim", "LEXSEQ2.ASM", prog_lex_buckle_leap_anim_ops,
       sizeof(prog_lex_buckle_leap_anim_ops) / sizeof(prog_lex_buckle_leap_anim_ops[0]), 0, prog_lex_buckle_leap_anim_labels, sizeof(prog_lex_buckle_leap_anim_labels) / sizeof(prog_lex_buckle_leap_anim_labels[0]) },
     { "lex_combo_knee_fall_anim", "LEXSEQ2.ASM", prog_lex_combo_knee_fall_anim_ops,
@@ -66296,7 +64385,7 @@ static const wm_anim_program programs[] = {
     { "lex_climbthru_side_anim", "LEXSEQ2.ASM", prog_lex_climbthru_side_anim_ops,
       sizeof(prog_lex_climbthru_side_anim_ops) / sizeof(prog_lex_climbthru_side_anim_ops[0]), 0, 0, 0 },
     { "lex_climbin_side_anim", "LEXSEQ2.ASM", prog_lex_climbin_side_anim_ops,
-      sizeof(prog_lex_climbin_side_anim_ops) / sizeof(prog_lex_climbin_side_anim_ops[0]), 0, prog_lex_climbin_side_anim_labels, sizeof(prog_lex_climbin_side_anim_labels) / sizeof(prog_lex_climbin_side_anim_labels[0]) },
+      sizeof(prog_lex_climbin_side_anim_ops) / sizeof(prog_lex_climbin_side_anim_ops[0]), 0, 0, 0 },
     { "lex_climbthru_bot_anim", "LEXSEQ2.ASM", prog_lex_climbthru_bot_anim_ops,
       sizeof(prog_lex_climbthru_bot_anim_ops) / sizeof(prog_lex_climbthru_bot_anim_ops[0]), 0, prog_lex_climbthru_bot_anim_labels, sizeof(prog_lex_climbthru_bot_anim_labels) / sizeof(prog_lex_climbthru_bot_anim_labels[0]) },
     { "lex_climbin_bot_anim", "LEXSEQ2.ASM", prog_lex_climbin_bot_anim_ops,
@@ -66306,7 +64395,7 @@ static const wm_anim_program programs[] = {
     { "lex_rollthru_top_anim", "LEXSEQ2.ASM", prog_lex_rollthru_top_anim_ops,
       sizeof(prog_lex_rollthru_top_anim_ops) / sizeof(prog_lex_rollthru_top_anim_ops[0]), 0, prog_lex_rollthru_top_anim_labels, sizeof(prog_lex_rollthru_top_anim_labels) / sizeof(prog_lex_rollthru_top_anim_labels[0]) },
     { "lex_climbin_top_anim", "LEXSEQ2.ASM", prog_lex_climbin_top_anim_ops,
-      sizeof(prog_lex_climbin_top_anim_ops) / sizeof(prog_lex_climbin_top_anim_ops[0]), 0, prog_lex_climbin_top_anim_labels, sizeof(prog_lex_climbin_top_anim_labels) / sizeof(prog_lex_climbin_top_anim_labels[0]) },
+      sizeof(prog_lex_climbin_top_anim_ops) / sizeof(prog_lex_climbin_top_anim_ops[0]), 0, 0, 0 },
     { "lex_knockdwn_anim", "LEXSEQ2.ASM", prog_lex_knockdwn_anim_ops,
       sizeof(prog_lex_knockdwn_anim_ops) / sizeof(prog_lex_knockdwn_anim_ops[0]), 0, prog_lex_knockdwn_anim_labels, sizeof(prog_lex_knockdwn_anim_labels) / sizeof(prog_lex_knockdwn_anim_labels[0]) },
     { "lex_2_pin_anim", "LEXSEQ2.ASM", prog_lex_2_pin_anim_ops,
@@ -66330,7 +64419,7 @@ static const wm_anim_program programs[] = {
     { "lex_3_head_held_anim", "LEXSEQ3.ASM", prog_lex_3_head_held_anim_ops,
       sizeof(prog_lex_3_head_held_anim_ops) / sizeof(prog_lex_3_head_held_anim_ops[0]), 0, prog_lex_3_head_held_anim_labels, sizeof(prog_lex_3_head_held_anim_labels) / sizeof(prog_lex_3_head_held_anim_labels[0]) },
     { "lex_3_head_held_brk_anim", "LEXSEQ3.ASM", prog_lex_3_head_held_brk_anim_ops,
-      sizeof(prog_lex_3_head_held_brk_anim_ops) / sizeof(prog_lex_3_head_held_brk_anim_ops[0]), 0, prog_lex_3_head_held_brk_anim_labels, sizeof(prog_lex_3_head_held_brk_anim_labels) / sizeof(prog_lex_3_head_held_brk_anim_labels[0]) },
+      sizeof(prog_lex_3_head_held_brk_anim_ops) / sizeof(prog_lex_3_head_held_brk_anim_ops[0]), 0, 0, 0 },
     { "lex_3_head_held_stand_anim", "LEXSEQ3.ASM", prog_lex_3_head_held_stand_anim_ops,
       sizeof(prog_lex_3_head_held_stand_anim_ops) / sizeof(prog_lex_3_head_held_stand_anim_ops[0]), 0, 0, 0 },
     { "lex_break_neck_anim", "LEXSEQ3.ASM", prog_lex_break_neck_anim_ops,
@@ -66372,7 +64461,7 @@ static const wm_anim_program programs[] = {
     { "lex_combo_backbreak_anim", "LEXSEQ3.ASM", prog_lex_combo_backbreak_anim_ops,
       sizeof(prog_lex_combo_backbreak_anim_ops) / sizeof(prog_lex_combo_backbreak_anim_ops[0]), 0, prog_lex_combo_backbreak_anim_labels, sizeof(prog_lex_combo_backbreak_anim_labels) / sizeof(prog_lex_combo_backbreak_anim_labels[0]) },
     { "lex_backbreaker_anim", "LEXSEQ3.ASM", prog_lex_backbreaker_anim_ops,
-      sizeof(prog_lex_backbreaker_anim_ops) / sizeof(prog_lex_backbreaker_anim_ops[0]), 0, prog_lex_backbreaker_anim_labels, sizeof(prog_lex_backbreaker_anim_labels) / sizeof(prog_lex_backbreaker_anim_labels[0]) },
+      sizeof(prog_lex_backbreaker_anim_ops) / sizeof(prog_lex_backbreaker_anim_ops[0]), 0, 0, 0 },
     { "lex_ohslam_anim", "LEXSEQ3.ASM", prog_lex_ohslam_anim_ops,
       sizeof(prog_lex_ohslam_anim_ops) / sizeof(prog_lex_ohslam_anim_ops[0]), 0, prog_lex_ohslam_anim_labels, sizeof(prog_lex_ohslam_anim_labels) / sizeof(prog_lex_ohslam_anim_labels[0]) },
     { "lex_combo_grab2elbow_anim", "LEXSEQ3.ASM", prog_lex_combo_grab2elbow_anim_ops,
@@ -66660,7 +64749,7 @@ static const wm_anim_program programs[] = {
     { "rzr_climbthru_side_anim", "RZRSEQ2.ASM", prog_rzr_climbthru_side_anim_ops,
       sizeof(prog_rzr_climbthru_side_anim_ops) / sizeof(prog_rzr_climbthru_side_anim_ops[0]), 0, 0, 0 },
     { "rzr_climbin_side_anim", "RZRSEQ2.ASM", prog_rzr_climbin_side_anim_ops,
-      sizeof(prog_rzr_climbin_side_anim_ops) / sizeof(prog_rzr_climbin_side_anim_ops[0]), 0, prog_rzr_climbin_side_anim_labels, sizeof(prog_rzr_climbin_side_anim_labels) / sizeof(prog_rzr_climbin_side_anim_labels[0]) },
+      sizeof(prog_rzr_climbin_side_anim_ops) / sizeof(prog_rzr_climbin_side_anim_ops[0]), 0, 0, 0 },
     { "rzr_climbthru_bot_anim", "RZRSEQ2.ASM", prog_rzr_climbthru_bot_anim_ops,
       sizeof(prog_rzr_climbthru_bot_anim_ops) / sizeof(prog_rzr_climbthru_bot_anim_ops[0]), 0, prog_rzr_climbthru_bot_anim_labels, sizeof(prog_rzr_climbthru_bot_anim_labels) / sizeof(prog_rzr_climbthru_bot_anim_labels[0]) },
     { "rzr_climbin_bot_anim", "RZRSEQ2.ASM", prog_rzr_climbin_bot_anim_ops,
@@ -66670,7 +64759,7 @@ static const wm_anim_program programs[] = {
     { "rzr_rollthru_top_anim", "RZRSEQ2.ASM", prog_rzr_rollthru_top_anim_ops,
       sizeof(prog_rzr_rollthru_top_anim_ops) / sizeof(prog_rzr_rollthru_top_anim_ops[0]), 0, 0, 0 },
     { "rzr_climbin_top_anim", "RZRSEQ2.ASM", prog_rzr_climbin_top_anim_ops,
-      sizeof(prog_rzr_climbin_top_anim_ops) / sizeof(prog_rzr_climbin_top_anim_ops[0]), 0, prog_rzr_climbin_top_anim_labels, sizeof(prog_rzr_climbin_top_anim_labels) / sizeof(prog_rzr_climbin_top_anim_labels[0]) },
+      sizeof(prog_rzr_climbin_top_anim_ops) / sizeof(prog_rzr_climbin_top_anim_ops[0]), 0, 0, 0 },
     { "rzr_knockdwn_anim", "RZRSEQ2.ASM", prog_rzr_knockdwn_anim_ops,
       sizeof(prog_rzr_knockdwn_anim_ops) / sizeof(prog_rzr_knockdwn_anim_ops[0]), 0, prog_rzr_knockdwn_anim_labels, sizeof(prog_rzr_knockdwn_anim_labels) / sizeof(prog_rzr_knockdwn_anim_labels[0]) },
     { "rzr_2_pin_anim", "RZRSEQ2.ASM", prog_rzr_2_pin_anim_ops,
@@ -66698,7 +64787,7 @@ static const wm_anim_program programs[] = {
     { "rzr_3_head_held_anim", "RZRSEQ3.ASM", prog_rzr_3_head_held_anim_ops,
       sizeof(prog_rzr_3_head_held_anim_ops) / sizeof(prog_rzr_3_head_held_anim_ops[0]), 0, prog_rzr_3_head_held_anim_labels, sizeof(prog_rzr_3_head_held_anim_labels) / sizeof(prog_rzr_3_head_held_anim_labels[0]) },
     { "rzr_3_head_held_brk_anim", "RZRSEQ3.ASM", prog_rzr_3_head_held_brk_anim_ops,
-      sizeof(prog_rzr_3_head_held_brk_anim_ops) / sizeof(prog_rzr_3_head_held_brk_anim_ops[0]), 0, prog_rzr_3_head_held_brk_anim_labels, sizeof(prog_rzr_3_head_held_brk_anim_labels) / sizeof(prog_rzr_3_head_held_brk_anim_labels[0]) },
+      sizeof(prog_rzr_3_head_held_brk_anim_ops) / sizeof(prog_rzr_3_head_held_brk_anim_ops[0]), 0, 0, 0 },
     { "rzr_3_head_held_stand_anim", "RZRSEQ3.ASM", prog_rzr_3_head_held_stand_anim_ops,
       sizeof(prog_rzr_3_head_held_stand_anim_ops) / sizeof(prog_rzr_3_head_held_stand_anim_ops[0]), 0, 0, 0 },
     { "rzr_combo_hiptoss_anim", "RZRSEQ3.ASM", prog_rzr_combo_hiptoss_anim_ops,
@@ -67004,9 +65093,9 @@ static const wm_anim_program programs[] = {
     { "shn_climbthru_side_anim", "SHNSEQ2.ASM", prog_shn_climbthru_side_anim_ops,
       sizeof(prog_shn_climbthru_side_anim_ops) / sizeof(prog_shn_climbthru_side_anim_ops[0]), 0, 0, 0 },
     { "shn_climbin_side_anim", "SHNSEQ2.ASM", prog_shn_climbin_side_anim_ops,
-      sizeof(prog_shn_climbin_side_anim_ops) / sizeof(prog_shn_climbin_side_anim_ops[0]), 0, prog_shn_climbin_side_anim_labels, sizeof(prog_shn_climbin_side_anim_labels) / sizeof(prog_shn_climbin_side_anim_labels[0]) },
+      sizeof(prog_shn_climbin_side_anim_ops) / sizeof(prog_shn_climbin_side_anim_ops[0]), 0, 0, 0 },
     { "shn_climbthru_bot_anim", "SHNSEQ2.ASM", prog_shn_climbthru_bot_anim_ops,
-      sizeof(prog_shn_climbthru_bot_anim_ops) / sizeof(prog_shn_climbthru_bot_anim_ops[0]), 0, prog_shn_climbthru_bot_anim_labels, sizeof(prog_shn_climbthru_bot_anim_labels) / sizeof(prog_shn_climbthru_bot_anim_labels[0]) },
+      sizeof(prog_shn_climbthru_bot_anim_ops) / sizeof(prog_shn_climbthru_bot_anim_ops[0]), 0, 0, 0 },
     { "shn_climbin_bot_anim", "SHNSEQ2.ASM", prog_shn_climbin_bot_anim_ops,
       sizeof(prog_shn_climbin_bot_anim_ops) / sizeof(prog_shn_climbin_bot_anim_ops[0]), 0, 0, 0 },
     { "shn_climbthru_top_anim", "SHNSEQ2.ASM", prog_shn_climbthru_top_anim_ops,
@@ -67014,7 +65103,7 @@ static const wm_anim_program programs[] = {
     { "shn_rollthru_top_anim", "SHNSEQ2.ASM", prog_shn_rollthru_top_anim_ops,
       sizeof(prog_shn_rollthru_top_anim_ops) / sizeof(prog_shn_rollthru_top_anim_ops[0]), 0, 0, 0 },
     { "shn_climbin_top_anim", "SHNSEQ2.ASM", prog_shn_climbin_top_anim_ops,
-      sizeof(prog_shn_climbin_top_anim_ops) / sizeof(prog_shn_climbin_top_anim_ops[0]), 0, prog_shn_climbin_top_anim_labels, sizeof(prog_shn_climbin_top_anim_labels) / sizeof(prog_shn_climbin_top_anim_labels[0]) },
+      sizeof(prog_shn_climbin_top_anim_ops) / sizeof(prog_shn_climbin_top_anim_ops[0]), 0, 0, 0 },
     { "shn_2_pin_anim", "SHNSEQ2.ASM", prog_shn_2_pin_anim_ops,
       sizeof(prog_shn_2_pin_anim_ops) / sizeof(prog_shn_2_pin_anim_ops[0]), 0, prog_shn_2_pin_anim_labels, sizeof(prog_shn_2_pin_anim_labels) / sizeof(prog_shn_2_pin_anim_labels[0]) },
     { "shn_4_pin_anim", "SHNSEQ2.ASM", prog_shn_4_pin_anim_ops,
@@ -67078,7 +65167,7 @@ static const wm_anim_program programs[] = {
     { "shn_knee_fstein_anim", "SHNSEQ3.ASM", prog_shn_knee_fstein_anim_ops,
       sizeof(prog_shn_knee_fstein_anim_ops) / sizeof(prog_shn_knee_fstein_anim_ops[0]), 0, prog_shn_knee_fstein_anim_labels, sizeof(prog_shn_knee_fstein_anim_labels) / sizeof(prog_shn_knee_fstein_anim_labels[0]) },
     { "shn_4_taunt_anim", "SHNSEQ3.ASM", prog_shn_4_taunt_anim_ops,
-      sizeof(prog_shn_4_taunt_anim_ops) / sizeof(prog_shn_4_taunt_anim_ops[0]), 0, prog_shn_4_taunt_anim_labels, sizeof(prog_shn_4_taunt_anim_labels) / sizeof(prog_shn_4_taunt_anim_labels[0]) },
+      sizeof(prog_shn_4_taunt_anim_ops) / sizeof(prog_shn_4_taunt_anim_ops[0]), 0, 0, 0 },
     { "shn_combo_run_stomp_anim", "SHNSEQ3.ASM", prog_shn_combo_run_stomp_anim_ops,
       sizeof(prog_shn_combo_run_stomp_anim_ops) / sizeof(prog_shn_combo_run_stomp_anim_ops[0]), 0, prog_shn_combo_run_stomp_anim_labels, sizeof(prog_shn_combo_run_stomp_anim_labels) / sizeof(prog_shn_combo_run_stomp_anim_labels[0]) },
     { "shn_run_stomp_anim", "SHNSEQ3.ASM", prog_shn_run_stomp_anim_ops,
@@ -67204,7 +65293,7 @@ static const wm_anim_program programs[] = {
     { "shn_3_head_held_anim", "SHNSEQ4.ASM", prog_shn_3_head_held_anim_ops,
       sizeof(prog_shn_3_head_held_anim_ops) / sizeof(prog_shn_3_head_held_anim_ops[0]), 0, prog_shn_3_head_held_anim_labels, sizeof(prog_shn_3_head_held_anim_labels) / sizeof(prog_shn_3_head_held_anim_labels[0]) },
     { "shn_3_head_held_brk_anim", "SHNSEQ4.ASM", prog_shn_3_head_held_brk_anim_ops,
-      sizeof(prog_shn_3_head_held_brk_anim_ops) / sizeof(prog_shn_3_head_held_brk_anim_ops[0]), 0, prog_shn_3_head_held_brk_anim_labels, sizeof(prog_shn_3_head_held_brk_anim_labels) / sizeof(prog_shn_3_head_held_brk_anim_labels[0]) },
+      sizeof(prog_shn_3_head_held_brk_anim_ops) / sizeof(prog_shn_3_head_held_brk_anim_ops[0]), 0, 0, 0 },
     { "shn_3_head_held_stand_anim", "SHNSEQ4.ASM", prog_shn_3_head_held_stand_anim_ops,
       sizeof(prog_shn_3_head_held_stand_anim_ops) / sizeof(prog_shn_3_head_held_stand_anim_ops[0]), 0, 0, 0 },
     { "shn_arm_broken_anim", "SHNSEQ4.ASM", prog_shn_arm_broken_anim_ops,
@@ -67348,7 +65437,7 @@ static const wm_anim_program programs[] = {
     { "und_4_losebal_anim", "UNDSEQ2.ASM", prog_und_4_losebal_anim_ops,
       sizeof(prog_und_4_losebal_anim_ops) / sizeof(prog_und_4_losebal_anim_ops[0]), 0, 0, 0 },
     { "und_4_losebal_dizzy_anim", "UNDSEQ2.ASM", prog_und_4_losebal_dizzy_anim_ops,
-      sizeof(prog_und_4_losebal_dizzy_anim_ops) / sizeof(prog_und_4_losebal_dizzy_anim_ops[0]), 0, prog_und_4_losebal_dizzy_anim_labels, sizeof(prog_und_4_losebal_dizzy_anim_labels) / sizeof(prog_und_4_losebal_dizzy_anim_labels[0]) },
+      sizeof(prog_und_4_losebal_dizzy_anim_ops) / sizeof(prog_und_4_losebal_dizzy_anim_ops[0]), 0, 0, 0 },
     { "und_2_lbowdrop_anim", "UNDSEQ2.ASM", prog_und_2_lbowdrop_anim_ops,
       sizeof(prog_und_2_lbowdrop_anim_ops) / sizeof(prog_und_2_lbowdrop_anim_ops[0]), 0, prog_und_2_lbowdrop_anim_labels, sizeof(prog_und_2_lbowdrop_anim_labels) / sizeof(prog_und_2_lbowdrop_anim_labels[0]) },
     { "und_4_lbowdrop_anim", "UNDSEQ2.ASM", prog_und_4_lbowdrop_anim_ops,
@@ -67488,9 +65577,9 @@ static const wm_anim_program programs[] = {
     { "und_climbthru_side_anim", "UNDSEQ2.ASM", prog_und_climbthru_side_anim_ops,
       sizeof(prog_und_climbthru_side_anim_ops) / sizeof(prog_und_climbthru_side_anim_ops[0]), 0, 0, 0 },
     { "und_climbin_side_anim", "UNDSEQ2.ASM", prog_und_climbin_side_anim_ops,
-      sizeof(prog_und_climbin_side_anim_ops) / sizeof(prog_und_climbin_side_anim_ops[0]), 0, prog_und_climbin_side_anim_labels, sizeof(prog_und_climbin_side_anim_labels) / sizeof(prog_und_climbin_side_anim_labels[0]) },
+      sizeof(prog_und_climbin_side_anim_ops) / sizeof(prog_und_climbin_side_anim_ops[0]), 0, 0, 0 },
     { "und_climbthru_bot_anim", "UNDSEQ2.ASM", prog_und_climbthru_bot_anim_ops,
-      sizeof(prog_und_climbthru_bot_anim_ops) / sizeof(prog_und_climbthru_bot_anim_ops[0]), 0, prog_und_climbthru_bot_anim_labels, sizeof(prog_und_climbthru_bot_anim_labels) / sizeof(prog_und_climbthru_bot_anim_labels[0]) },
+      sizeof(prog_und_climbthru_bot_anim_ops) / sizeof(prog_und_climbthru_bot_anim_ops[0]), 0, 0, 0 },
     { "und_climbin_bot_anim", "UNDSEQ2.ASM", prog_und_climbin_bot_anim_ops,
       sizeof(prog_und_climbin_bot_anim_ops) / sizeof(prog_und_climbin_bot_anim_ops[0]), 0, 0, 0 },
     { "und_climbthru_top_anim", "UNDSEQ2.ASM", prog_und_climbthru_top_anim_ops,
@@ -67498,7 +65587,7 @@ static const wm_anim_program programs[] = {
     { "und_rollthru_top_anim", "UNDSEQ2.ASM", prog_und_rollthru_top_anim_ops,
       sizeof(prog_und_rollthru_top_anim_ops) / sizeof(prog_und_rollthru_top_anim_ops[0]), 0, 0, 0 },
     { "und_climbin_top_anim", "UNDSEQ2.ASM", prog_und_climbin_top_anim_ops,
-      sizeof(prog_und_climbin_top_anim_ops) / sizeof(prog_und_climbin_top_anim_ops[0]), 0, prog_und_climbin_top_anim_labels, sizeof(prog_und_climbin_top_anim_labels) / sizeof(prog_und_climbin_top_anim_labels[0]) },
+      sizeof(prog_und_climbin_top_anim_ops) / sizeof(prog_und_climbin_top_anim_ops[0]), 0, 0, 0 },
     { "und_buckoff_anim", "UNDSEQ2.ASM", prog_und_buckoff_anim_ops,
       sizeof(prog_und_buckoff_anim_ops) / sizeof(prog_und_buckoff_anim_ops[0]), 0, 0, 0 },
     { "und_heldoh_anim", "UNDSEQ3.ASM", prog_und_heldoh_anim_ops,
@@ -67512,7 +65601,7 @@ static const wm_anim_program programs[] = {
     { "und_sliding_choke_anim", "UNDSEQ3.ASM", prog_und_sliding_choke_anim_ops,
       sizeof(prog_und_sliding_choke_anim_ops) / sizeof(prog_und_sliding_choke_anim_ops[0]), 0, prog_und_sliding_choke_anim_labels, sizeof(prog_und_sliding_choke_anim_labels) / sizeof(prog_und_sliding_choke_anim_labels[0]) },
     { "und_chokeslam_anim", "UNDSEQ3.ASM", prog_und_chokeslam_anim_ops,
-      sizeof(prog_und_chokeslam_anim_ops) / sizeof(prog_und_chokeslam_anim_ops[0]), 0, prog_und_chokeslam_anim_labels, sizeof(prog_und_chokeslam_anim_labels) / sizeof(prog_und_chokeslam_anim_labels[0]) },
+      sizeof(prog_und_chokeslam_anim_ops) / sizeof(prog_und_chokeslam_anim_ops[0]), 0, 0, 0 },
     { "und_choke_face_slam_anim", "UNDSEQ3.ASM", prog_und_choke_face_slam_anim_ops,
       sizeof(prog_und_choke_face_slam_anim_ops) / sizeof(prog_und_choke_face_slam_anim_ops[0]), 0, prog_und_choke_face_slam_anim_labels, sizeof(prog_und_choke_face_slam_anim_labels) / sizeof(prog_und_choke_face_slam_anim_labels[0]) },
     { "und_combo_tombstone_anim", "UNDSEQ3.ASM", prog_und_combo_tombstone_anim_ops,
@@ -67548,7 +65637,7 @@ static const wm_anim_program programs[] = {
     { "und_3_head_held_anim", "UNDSEQ3.ASM", prog_und_3_head_held_anim_ops,
       sizeof(prog_und_3_head_held_anim_ops) / sizeof(prog_und_3_head_held_anim_ops[0]), 0, prog_und_3_head_held_anim_labels, sizeof(prog_und_3_head_held_anim_labels) / sizeof(prog_und_3_head_held_anim_labels[0]) },
     { "und_3_head_held_brk_anim", "UNDSEQ3.ASM", prog_und_3_head_held_brk_anim_ops,
-      sizeof(prog_und_3_head_held_brk_anim_ops) / sizeof(prog_und_3_head_held_brk_anim_ops[0]), 0, prog_und_3_head_held_brk_anim_labels, sizeof(prog_und_3_head_held_brk_anim_labels) / sizeof(prog_und_3_head_held_brk_anim_labels[0]) },
+      sizeof(prog_und_3_head_held_brk_anim_ops) / sizeof(prog_und_3_head_held_brk_anim_ops[0]), 0, 0, 0 },
     { "und_3_head_held_stand_anim", "UNDSEQ3.ASM", prog_und_3_head_held_stand_anim_ops,
       sizeof(prog_und_3_head_held_stand_anim_ops) / sizeof(prog_und_3_head_held_stand_anim_ops[0]), 0, 0, 0 },
     { "und_break_neck_anim", "UNDSEQ3.ASM", prog_und_break_neck_anim_ops,
@@ -67586,9 +65675,9 @@ static const wm_anim_program programs[] = {
     { "und_breakneck2_anim", "UNDSEQ4.ASM", prog_und_breakneck2_anim_ops,
       sizeof(prog_und_breakneck2_anim_ops) / sizeof(prog_und_breakneck2_anim_ops[0]), 0, 0, 0 },
     { "und_spirit_pull_anim", "UNDSEQ4.ASM", prog_und_spirit_pull_anim_ops,
-      sizeof(prog_und_spirit_pull_anim_ops) / sizeof(prog_und_spirit_pull_anim_ops[0]), 0, prog_und_spirit_pull_anim_labels, sizeof(prog_und_spirit_pull_anim_labels) / sizeof(prog_und_spirit_pull_anim_labels[0]) },
+      sizeof(prog_und_spirit_pull_anim_ops) / sizeof(prog_und_spirit_pull_anim_ops[0]), 0, 0, 0 },
     { "und_spirit_push_anim", "UNDSEQ4.ASM", prog_und_spirit_push_anim_ops,
-      sizeof(prog_und_spirit_push_anim_ops) / sizeof(prog_und_spirit_push_anim_ops[0]), 0, prog_und_spirit_push_anim_labels, sizeof(prog_und_spirit_push_anim_labels) / sizeof(prog_und_spirit_push_anim_labels[0]) },
+      sizeof(prog_und_spirit_push_anim_ops) / sizeof(prog_und_spirit_push_anim_ops[0]), 0, 0, 0 },
     { "und_arm_broken_anim", "UNDSEQ4.ASM", prog_und_arm_broken_anim_ops,
       sizeof(prog_und_arm_broken_anim_ops) / sizeof(prog_und_arm_broken_anim_ops[0]), 0, prog_und_arm_broken_anim_labels, sizeof(prog_und_arm_broken_anim_labels) / sizeof(prog_und_arm_broken_anim_labels[0]) },
     { "yok_zip_anim", "YOKSEQ1.ASM", prog_yok_zip_anim_ops,
@@ -67752,7 +65841,7 @@ static const wm_anim_program programs[] = {
     { "yok_climbthru_side_anim", "YOKSEQ2.ASM", prog_yok_climbthru_side_anim_ops,
       sizeof(prog_yok_climbthru_side_anim_ops) / sizeof(prog_yok_climbthru_side_anim_ops[0]), 0, 0, 0 },
     { "yok_climbin_side_anim", "YOKSEQ2.ASM", prog_yok_climbin_side_anim_ops,
-      sizeof(prog_yok_climbin_side_anim_ops) / sizeof(prog_yok_climbin_side_anim_ops[0]), 0, prog_yok_climbin_side_anim_labels, sizeof(prog_yok_climbin_side_anim_labels) / sizeof(prog_yok_climbin_side_anim_labels[0]) },
+      sizeof(prog_yok_climbin_side_anim_ops) / sizeof(prog_yok_climbin_side_anim_ops[0]), 0, 0, 0 },
     { "yok_climbthru_bot_anim", "YOKSEQ2.ASM", prog_yok_climbthru_bot_anim_ops,
       sizeof(prog_yok_climbthru_bot_anim_ops) / sizeof(prog_yok_climbthru_bot_anim_ops[0]), 0, prog_yok_climbthru_bot_anim_labels, sizeof(prog_yok_climbthru_bot_anim_labels) / sizeof(prog_yok_climbthru_bot_anim_labels[0]) },
     { "yok_climbin_bot_anim", "YOKSEQ2.ASM", prog_yok_climbin_bot_anim_ops,
@@ -67762,7 +65851,7 @@ static const wm_anim_program programs[] = {
     { "yok_rollthru_top_anim", "YOKSEQ2.ASM", prog_yok_rollthru_top_anim_ops,
       sizeof(prog_yok_rollthru_top_anim_ops) / sizeof(prog_yok_rollthru_top_anim_ops[0]), 0, 0, 0 },
     { "yok_climbin_top_anim", "YOKSEQ2.ASM", prog_yok_climbin_top_anim_ops,
-      sizeof(prog_yok_climbin_top_anim_ops) / sizeof(prog_yok_climbin_top_anim_ops[0]), 0, prog_yok_climbin_top_anim_labels, sizeof(prog_yok_climbin_top_anim_labels) / sizeof(prog_yok_climbin_top_anim_labels[0]) },
+      sizeof(prog_yok_climbin_top_anim_ops) / sizeof(prog_yok_climbin_top_anim_ops[0]), 0, 0, 0 },
     { "yok_2_pin_anim", "YOKSEQ2.ASM", prog_yok_2_pin_anim_ops,
       sizeof(prog_yok_2_pin_anim_ops) / sizeof(prog_yok_2_pin_anim_ops[0]), 0, prog_yok_2_pin_anim_labels, sizeof(prog_yok_2_pin_anim_labels) / sizeof(prog_yok_2_pin_anim_labels[0]) },
     { "yok_4_pin_anim", "YOKSEQ2.ASM", prog_yok_4_pin_anim_ops,
@@ -67800,7 +65889,7 @@ static const wm_anim_program programs[] = {
     { "yok_3_head_held_anim", "YOKSEQ3.ASM", prog_yok_3_head_held_anim_ops,
       sizeof(prog_yok_3_head_held_anim_ops) / sizeof(prog_yok_3_head_held_anim_ops[0]), 0, prog_yok_3_head_held_anim_labels, sizeof(prog_yok_3_head_held_anim_labels) / sizeof(prog_yok_3_head_held_anim_labels[0]) },
     { "yok_3_head_held_brk_anim", "YOKSEQ3.ASM", prog_yok_3_head_held_brk_anim_ops,
-      sizeof(prog_yok_3_head_held_brk_anim_ops) / sizeof(prog_yok_3_head_held_brk_anim_ops[0]), 0, prog_yok_3_head_held_brk_anim_labels, sizeof(prog_yok_3_head_held_brk_anim_labels) / sizeof(prog_yok_3_head_held_brk_anim_labels[0]) },
+      sizeof(prog_yok_3_head_held_brk_anim_ops) / sizeof(prog_yok_3_head_held_brk_anim_ops[0]), 0, 0, 0 },
     { "yok_3_head_held_stand_anim", "YOKSEQ3.ASM", prog_yok_3_head_held_stand_anim_ops,
       sizeof(prog_yok_3_head_held_stand_anim_ops) / sizeof(prog_yok_3_head_held_stand_anim_ops[0]), 0, 0, 0 },
     { "yok_2_hair_pickup_anim", "YOKSEQ3.ASM", prog_yok_2_hair_pickup_anim_ops,

@@ -1184,6 +1184,57 @@ def test_gravity_opcodes() -> None:
     assert set(wlprogram.SETLONG_FIELDS) == {"OBJ_GRAVITY", "DEBRIS_X"}
 
 
+def test_a_label_past_the_last_op_is_not_a_position() -> None:
+    """A symbol after the animation's last command names no op.
+
+    Every routine ends in trailing assembly, a puppet table or a pair of
+    `equ` lines, and each symbol among them was being recorded at index
+    len(ops) -- one past the end. 1,794 across the corpus. Nothing at the
+    C end distinguishes that from a real index, so an ANIPC redirect to
+    `#yoff` or `#puppet_tbl` got back a position the dispatcher then read
+    as "the program is over" and killed the animation. Exactly the shape
+    of the ANI_IFROPE defect.
+
+    Two rules, both checked here: a branch to such a label is refused
+    outright, and the label map a program carries holds only labels that
+    name an op the animation can reach.
+    """
+    base = ROOT / "original" / "wwf-wrestlemania"
+    if not (base / "BAMSEQ2.ASM").exists():
+        return
+
+    # BAMSEQ2.ASM:759 bam_4_losebal_anim ends on ANI_END, and `#yoff equ
+    # 50` follows it -- a scoped equate for the NEXT routine, picked up as
+    # a label because it looks like one.
+    ops, entry, labels = wlprogram.program_for(
+        base / "BAMSEQ2.ASM", "bam_4_losebal_anim", with_entry=True)
+    assert "#yoff" not in labels, labels
+    for name, at in labels.items():
+        assert at < len(ops), (name, at, len(ops))
+
+    # And across the whole roster: no program hands out a label that is
+    # not a reachable op index.
+    checked = 0
+    for src in wlanim.linked_files():
+        if "SEQ" not in src.name or src.name.startswith("FINI"):
+            continue
+        lines = src.read_text(errors="replace").splitlines()
+        for line in lines:
+            m = wlanim.SUBR_RE.match(line)
+            if not m:
+                continue
+            try:
+                ops, entry, labels = wlprogram.program_for(
+                    src, m.group(1), with_entry=True)
+            except (OSError, ValueError):
+                continue
+            checked += 1
+            assert entry < len(ops), (src.name, m.group(1))
+            for name, at in labels.items():
+                assert at < len(ops), (src.name, m.group(1), name, at)
+    assert checked > 1400, checked
+
+
 def test_waithitopp_is_a_mode_and_a_frame() -> None:
     """ANIM.ASM:2300's own note: "just like an ordinary WL ticks,frame type
     command except that the ANICNT is zeroed if we hit the opponent." The
@@ -2677,6 +2728,7 @@ def main() -> int:
     test_every_hard_coded_animation_label_resolves()
     test_the_two_extractors_agree()
     test_an_independent_reading_agrees()
+    test_a_label_past_the_last_op_is_not_a_position()
     test_waithitopp_is_a_mode_and_a_frame()
     test_roster_dispatcher_labels_all_emit()
     test_wlprogram_tick_expressions()

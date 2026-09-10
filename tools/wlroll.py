@@ -112,7 +112,7 @@ def render_c() -> str:
     out.append("const wm_roll_table wm_roll_tables[WM_ROLL_SLOTS] = {")
     for r in rows:
         if not r:
-            out.append("    { 0, 0, 0, 0 },   /* Adam Bomb: `.long 0` */")
+            out.append("    { 0, 0, 0, 0, 0 },   /* Adam Bomb: `.long 0` */")
             continue
         out.append(f"    {{ {r['speed']}, {r['zvel']}, {r['multiplier']}, "
                    f"{r['who']}_roll_frames, "

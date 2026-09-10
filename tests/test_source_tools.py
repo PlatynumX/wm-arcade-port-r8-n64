@@ -30,6 +30,7 @@ ani_code_census = load("ani_code_census",
 wlroll = load("wlroll", ROOT / "tools" / "wlroll.py")
 wlvoice = load("wlvoice", ROOT / "tools" / "wlvoice.py")
 wlwrsnd = load("wlwrsnd", ROOT / "tools" / "wlwrsnd.py")
+wlstring = load("wlstring", ROOT / "tools" / "wlstring.py")
 wlverify = load("wlverify", ROOT / "tools" / "wlverify.py")
 wlprogram = load("wlprogram", ROOT / "tools" / "wlprogram.py")
 manifest = load("bret_manifest", ROOT / "tools" / "bret_manifest.py")
@@ -2144,6 +2145,119 @@ def test_every_hard_coded_animation_label_resolves() -> None:
     assert wanted <= emitted, sorted(wanted - emitted)
 
 
+def test_font_tables_are_read_not_transcribed() -> None:
+    """STRING.ASM's ten *_ascii tables, checked against the source's shape.
+
+    Each is exactly 128 .long slots because the printer indexes it with
+    `sll 5,a0` on a byte-masked ASCII code. Two things the extractor could
+    get wrong and this catches: picking up the commented-out sgmd8_ascii
+    (a leading `;` on every one of its lines), and running a table's
+    parse past its end into the next label's rows.
+    """
+    if not wlstring.SRC.exists():
+        return
+    tables = wlstring.font_tables()
+    assert len(tables) == 10, sorted(tables)
+    assert "sgmd8_ascii" not in tables
+
+    for name, slots in tables.items():
+        assert len(slots) == wlstring.TABLE_SLOTS, (name, len(slots))
+        # Space is never looked up -- print_string handles code 32 before
+        # the table, so every table has 0 there.
+        assert slots[ord(" ")] is None, name
+        # Lower case aliases upper case in all ten.
+        for ch in range(ord("a"), ord("z") + 1):
+            assert slots[ch] == slots[ch - 0x20], (name, chr(ch))
+        # A table that ran on into the next label would carry that
+        # label's symbols. Every glyph in a table belongs to one image
+        # family, named by the prefix its 'A' carries -- the only
+        # documented exception being the digits, which font9A and
+        # win_ascii swap for another family's.
+        family = slots[ord("A")]
+        assert family and family.endswith("_A"), (name, family)
+        family = family[:-2]
+        for ch, sym in enumerate(slots):
+            if sym is None or ord("0") <= ch <= ord("9"):
+                continue
+            assert sym.startswith(family), (name, chr(ch), sym)
+
+    # font9A is font9 with the alternate digits and nothing else; win is
+    # ogmd10 with the WFONT digits and nothing else. Both differences are
+    # exactly ten slots wide.
+    for base, variant, marker in (("font9_ascii", "font9A_ascii", "A"),
+                                  ("ogmd10_ascii", "win_ascii", "WFONT_")):
+        a, b = tables[base], tables[variant]
+        differ = [i for i in range(128) if a[i] != b[i]]
+        assert differ == list(range(ord("0"), ord("9") + 1)), (variant, differ)
+        if marker == "WFONT_":
+            assert all(b[i].startswith(marker) for i in differ)
+        else:
+            assert all(b[i].endswith(marker) for i in differ)
+
+    # The high-score editor's three cursor glyphs sit at $10-$12, above
+    # the control codes and below the printable range.
+    assert tables["font9_ascii"][0x10] == "FNT9_SPC"
+    assert tables["font9_ascii"][0x11] == "FNT9_DEL"
+    assert tables["font9_ascii"][0x12] == "FNT9_END"
+
+
+def test_font_tables_generate_the_shipped_file() -> None:
+    out = ROOT / "src" / "generated" / "font_tables.c"
+    if not wlstring.SRC.exists() or not out.exists():
+        return
+    assert wlstring.render_c() == out.read_text()
+
+
+def test_glyph_metrics_come_out_of_the_artwork() -> None:
+    """Glyph widths, read from the .IMG containers rather than invented.
+
+    STRING.ASM has no widths in it -- the printer reads the image header's
+    first word -- so this is the one part of the text engine that has to
+    come from the art. Two limits are real and are asserted here rather
+    than papered over: a WIMP name field is eight characters, so symbols
+    that truncate to a shared stem cannot be separated without FONTS.LOD's
+    packing order (that file is empty in this tree), and the osgmd10_*
+    family has no artwork at all.
+    """
+    if not wlstring.IMG_DIR.exists() or not wlstring.SRC.exists():
+        return
+    measured, ambiguous, absent = wlstring.glyph_metrics()
+
+    # Every symbol the tables name is accounted for exactly once.
+    named = set()
+    for slots in wlstring.font_tables().values():
+        named.update(s for s in slots if s)
+    assert set(measured) | set(ambiguous) | set(absent) == named
+    assert not (set(measured) & set(ambiguous))
+    assert not (set(measured) & set(absent))
+
+    # font9_ascii is measurable end to end: FNT9.IMG's names all fit the
+    # eight-character field, so nothing in it collides.
+    for sym in wlstring.font_table("font9_ascii"):
+        if sym:
+            assert sym in measured, sym
+
+    # Widths are real pixels, not placeholders.
+    assert measured["FNT9_A"] == 11
+    assert measured["FNT9_I"] == 4        # a narrow letter stays narrow
+    assert measured["FNT9_1"] == 5
+    assert measured["FNT9_4"] == 11
+    assert measured["WFONT_0"] == 6
+    assert all(1 <= w <= 64 for w in measured.values())
+
+    # The two documented gaps, spelled out.
+    assert "osgmd8_A" in ambiguous and "osgmd8_B" in measured
+    assert all(a.startswith("osgmd10_") for a in absent)
+    assert len(absent) == 49
+
+
+def test_glyph_metrics_generate_the_shipped_file() -> None:
+    out = ROOT / "src" / "generated" / "font_metrics.c"
+    if not wlstring.IMG_DIR.exists() or not wlstring.SRC.exists() or not out.exists():
+        return
+    assert wlstring.render_metrics_c() == out.read_text()
+
+
 def main() -> int:
     test_wlanim()
     test_wlprogram()
@@ -2172,6 +2286,10 @@ def main() -> int:
     test_announce_calls_are_spelled_as_the_call_sites_spell_them()
     test_wrsnd_tables()
     test_wrsnd_tables_generate_the_shipped_file()
+    test_font_tables_are_read_not_transcribed()
+    test_font_tables_generate_the_shipped_file()
+    test_glyph_metrics_come_out_of_the_artwork()
+    test_glyph_metrics_generate_the_shipped_file()
     test_digit_leading_local_labels_are_seen()
     test_programs_record_where_they_start()
     test_emitted_programs_hold_together()

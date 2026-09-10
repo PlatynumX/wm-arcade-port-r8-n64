@@ -98,6 +98,9 @@ FIX38_ARCADE_C := \
     src/core/arcade/wm_arcade_round_announce.c \
     src/core/arcade/wm_arcade_target.c \
     src/core/arcade/wm_arcade_shake.c \
+    src/core/arcade/wm_arcade_string.c \
+    src/generated/font_tables.c \
+    src/generated/font_metrics.c \
     src/core/arcade/wm_arcade_debris.c \
     src/generated/debris_tables.c \
     src/generated/target_tables.c \

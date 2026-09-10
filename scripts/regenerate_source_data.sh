@@ -150,6 +150,12 @@ python3 "$ROOT/tools/wldebris.py" \
     --out "$ROOT/src/generated/debris_tables.c"
 python3 "$ROOT/tools/wltarget.py" \
     --out "$ROOT/src/generated/target_tables.c"
+python3 "$ROOT/tools/wlstring.py" \
+    --out "$ROOT/src/generated/font_tables.c"
+if [ -d "$ORIG/IMG" ]; then
+    python3 "$ROOT/tools/wlstring.py" \
+        --metrics-out "$ROOT/src/generated/font_metrics.c"
+fi
 python3 "$ROOT/tools/wlvoice.py" \
     --out "$ROOT/src/generated/announce_tables.c"
 python3 "$ROOT/tools/wlwrsnd.py" \

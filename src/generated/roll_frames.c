@@ -131,6 +131,6 @@ const wm_roll_table wm_roll_tables[WM_ROLL_SLOTS] = {
     { 7, 327680, 2313, shn_roll_frames, sizeof(shn_roll_frames) / sizeof(shn_roll_frames[0]) },
     { 7, 327680, 2570, bam_roll_frames, sizeof(bam_roll_frames) / sizeof(bam_roll_frames[0]) },
     { 7, 327680, 2570, dnk_roll_frames, sizeof(dnk_roll_frames) / sizeof(dnk_roll_frames[0]) },
-    { 0, 0, 0, 0 },   /* Adam Bomb: `.long 0` */
+    { 0, 0, 0, 0, 0 },   /* Adam Bomb: `.long 0` */
     { 7, 327680, 2570, lex_roll_frames, sizeof(lex_roll_frames) / sizeof(lex_roll_frames[0]) },
 };

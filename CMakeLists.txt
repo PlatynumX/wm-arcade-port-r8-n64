@@ -92,6 +92,9 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_round_announce.c
     src/core/arcade/wm_arcade_target.c
     src/core/arcade/wm_arcade_shake.c
+    src/core/arcade/wm_arcade_string.c
+    src/generated/font_tables.c
+    src/generated/font_metrics.c
     src/core/arcade/wm_arcade_debris.c
     src/generated/debris_tables.c
     src/generated/target_tables.c
@@ -166,8 +169,11 @@ if(WM_BUILD_TESTS)
          ${CMAKE_SOURCE_DIR}/tests/arcade_port/fix38/combat_stage25/test_combat_stage*.c)
     file(GLOB WM_ARCADE_RING_RNG_TESTS
          ${CMAKE_SOURCE_DIR}/tests/arcade_port/fix38/ring_rng/test_*.c)
+    file(GLOB WM_ARCADE_TEXT_TESTS
+         ${CMAKE_SOURCE_DIR}/tests/arcade_port/text/test_*.c)
 
-    foreach(test_src ${WM_ARCADE_STAGE25_TESTS} ${WM_ARCADE_RING_RNG_TESTS})
+    foreach(test_src ${WM_ARCADE_STAGE25_TESTS} ${WM_ARCADE_RING_RNG_TESTS}
+                     ${WM_ARCADE_TEXT_TESTS})
         get_filename_component(test_name ${test_src} NAME_WE)
         set(test_target wm_${test_name})
         add_executable(${test_target} ${test_src})

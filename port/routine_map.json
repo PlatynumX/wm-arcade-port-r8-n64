@@ -382,5 +382,53 @@
     "status": "renamed",
     "symbol": "wm_wrestler_velocity_table",
     "note": "The eight walk-velocity tables have identical BODIES -- the same compass-ordered `.long 0,-#VEL / #DVEL,-#DVEL / ...` in every file -- and differ only in the two per-wrestler equates #VEL and #DVEL. Doink is the one wrestler whose pair differs from the other seven, so the port carries the shape once as a macro and two instantiations (s_velocity_std, s_velocity_doink) behind wm_wrestler_velocity_table(WRESTLERNUM); Bret's predates the shared backend and is wm_bret_velocity_table. Same numbers, one copy of the layout."
+  },
+  "hrt_grab_toss_air": {
+    "file": "BRET.ASM",
+    "status": "renamed",
+    "symbol": "WM_BRET_MON_GRAB_TOSS_AIR",
+    "note": "A secret-move monitor process. BRET.ASM:166's smove table names the routine; the port reaches the same body through a monitor id and wm_arcade_bret_fire_monitor's case for it, with the label kept as the table's own string so the two cannot drift."
+  },
+  "hrt_hdhold_ddt": {
+    "file": "BRET.ASM",
+    "status": "renamed",
+    "symbol": "WM_BRET_MON_HEADHOLD_DDT",
+    "note": "Same shape as hrt_grab_toss_air: an smove monitor reached by id."
+  },
+  "hrt_hdhold_faceslam": {
+    "file": "BRET.ASM",
+    "status": "renamed",
+    "symbol": "WM_BRET_MON_HEADHOLD_FACESLAM",
+    "note": "Same shape as hrt_grab_toss_air: an smove monitor reached by id."
+  },
+  "hrt_roll_uppercut": {
+    "file": "BRET.ASM",
+    "status": "renamed",
+    "symbol": "WM_BRET_MON_ROLL_UPPERCUT",
+    "note": "Same shape as hrt_grab_toss_air: an smove monitor reached by id. Its animation is emitted too (hrt_roll_uppercut_anim), and src/core/anim_code.c's rope check redirects into that program's #stand."
+  },
+  "lex_hdhold_pile": {
+    "file": "LEX.ASM",
+    "status": "renamed",
+    "symbol": "special_processes",
+    "note": "An smove monitor. Lex's dispatcher selects by position in his special_processes list rather than by a named id, so the source label IS the key: wm_arcade_lex_fire_monitor indexes the list and branches on the label's shape."
+  },
+  "lex_hdhold_elbow_face": {
+    "file": "LEX.ASM",
+    "status": "renamed",
+    "symbol": "special_processes",
+    "note": "An smove monitor, same positional dispatch as lex_hdhold_pile."
+  },
+  "std_taunt": {
+    "file": "DOINK.ASM",
+    "status": "renamed",
+    "symbol": "special_processes",
+    "note": "The taunt monitor every wrestler's smove table carries -- it is defined once in DOINK.ASM and referenced by all eight tables. Present in each wrestler's special_processes list in the port for the same reason it is in each source table."
+  },
+  "std_walk_fast": {
+    "file": "DOINK.ASM",
+    "status": "renamed",
+    "symbol": "special_processes",
+    "note": "The run monitor every wrestler's smove table carries, defined once in DOINK.ASM like std_taunt."
   }
 }

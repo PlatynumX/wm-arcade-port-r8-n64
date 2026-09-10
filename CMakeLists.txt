@@ -30,6 +30,7 @@ add_library(wmcore STATIC
     src/core/audio.c
     src/core/app.c
     src/core/composite.c
+    src/core/wrestler_taunt.c
     src/generated/attract_sequence.c
     src/generated/select_tables.c
     src/generated/port_status.c
@@ -55,6 +56,7 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_closest.c
     src/core/arcade/wm_arcade_combat.c
     src/core/arcade/wm_arcade_confine.c
+    src/core/arcade/wm_arcade_und_finish.c
     src/core/arcade/wm_arcade_veladd.c
     src/core/arcade/wm_arcade_roll.c
     src/core/arcade/wm_arcade_combo.c

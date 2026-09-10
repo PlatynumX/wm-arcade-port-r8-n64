@@ -7,60 +7,53 @@ only in a note saying it is missing does not count as present.
 
 | status | meaning | count |
 |---|---|---|
-| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1860 |
+| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1872 |
 | `inlined` | the port does it, spelled out at each use site (ledger) | 3 |
-| `renamed` | the port does it under another name (ledger) | 44 |
+| `renamed` | the port does it under another name (ledger) | 52 |
 | `partial` | partly translated; the ledger note says which part | 1 |
 | `process` | a CREATE/SLEEP wrapper (ledger) | 4 |
 | `display` | object/DMA drawing; this port has no renderer (ledger) | 8 |
 | `hardware` | talks to the cabinet (ledger) | 4 |
-| `dead` | **measured**: no caller outside its own file | 48 |
-| `cited` | named only in a comment -- not evidence of anything | 165 |
-| `unknown` | no mention anywhere | 397 |
+| `dead` | **measured**: no caller outside its own file | 39 |
+| `unassembled` | **measured**: inside a `.if` the assembler skipped | 60 |
+| `cited` | named only in a comment -- not evidence of anything | 131 |
+| `unknown` | no mention anywhere | 360 |
 
-**1972 of 2534 routines are accounted for; 562 are open** (`cited` + `unknown`).
+**2043 of 2534 routines are accounted for; 491 are open** (`cited` + `unknown`).
 
 ## Open routines by file
 
 | file | open | routines |
 |---|---|---|
-| AWARD.ASM | 82 | `BLACKOUT`, `accumulate_player_awards`, `adjust_text_position`, `adjust_tl`, `anim_mk`, `anim_sparkle`, `are_special_inits`, `arm_winstreak_award`, `audit_icons`, `award_text`, `bbicon_table`, `buddy_mode_powerup_check`, ... |
-| FINISEQ.ASM | 62 | `adjust_facing`, `adjust_taker_facing`, `bam_fdizzy_anim`, `bam_finish1_move`, `bam_finish2_move`, `bam_stand_anim`, `check_roll`, `close_door`, `cof_anim1`, `cof_anim2`, `disappear_wrestler`, `dizzy_wrestler`, ... |
-| WRESTLE.ASM | 45 | `CLEAR_PROCESSES`, `DO_SET_IMAGES`, `WARMSET`, `calc_closest2`, `change_image`, `change_walk_anim`, `ck_ignore_a8`, `collis_debug`, `collis_debug2`, `confine_wrestler_fix1`, `confine_wrestler_fix2`, `cputime_calcfree`, ... |
+| AWARD.ASM | 79 | `BLACKOUT`, `accumulate_player_awards`, `adjust_text_position`, `adjust_tl`, `anim_mk`, `anim_sparkle`, `arm_winstreak_award`, `audit_icons`, `award_text`, `bbicon_table`, `buddy_mode_powerup_check`, `check_for_award_for_big_comeback`, ... |
+| FINISEQ.ASM | 48 | `adjust_facing`, `adjust_taker_facing`, `bam_fdizzy_anim`, `bam_stand_anim`, `check_roll`, `close_door`, `cof_anim1`, `cof_anim2`, `disappear_wrestler`, `dizzy_wrestler`, `dnk_fdizzy_anim`, `dnk_stand_anim`, ... |
+| WRESTLE.ASM | 44 | `CLEAR_PROCESSES`, `DO_SET_IMAGES`, `WARMSET`, `calc_closest2`, `change_image`, `change_walk_anim`, `ck_ignore_a8`, `collis_debug`, `collis_debug2`, `confine_wrestler_fix1`, `confine_wrestler_fix2`, `dir_debug`, ... |
 | HSTD.ASM | 35 | `CHECK_SCORE`, `DELETE_ANY_OFF_TOP`, `DO_TAG_GAME`, `FIND_LOW_TABLE_LEVEL`, `INIT_HSTRING`, `INIT_TB`, `JUDDER_SHADOW`, `MOVE_ALL_OBJS_UP`, `PIN_SPEED_TAB`, `STOP_ALL_OBJS`, `are_inits_dirty`, `do_that_cycle`, ... |
-| SPECIAL.ASM | 32 | `ARE_WE_IN_RING`, `CHANGE_SKIRTS`, `CHANGE_SKIRTS2`, `CREATE_SWEAT`, `CREATE_TEXT_LINE`, `INIT_SKIRTS`, `SPIN_SWEAT`, `begin_ani`, `calc_veldir`, `change_image_local`, `ck_octopus2`, `create_dizzy_proc`, ... |
 | LIFEBAR.ASM | 29 | `CREATE_TIMEOUT`, `DO_RIGHT_MUSIC`, `DO_RIGHT_MUSIC2`, `DO_ROUNDS`, `FIRSTATT_MESS`, `ICON_SPARKLE`, `MOVE_NAME_ANNC`, `PIN_FLASH_ANIM`, `SHIFT_BARS_IN_Z`, `SPECIAL_MESSAGE`, `SPRINKLE_GLINTS`, `WHERE_WRESTLMANIA_SPARKLES`, ... |
-| WRESTLE2.ASM | 24 | `audit_wrestler`, `change_wrestler`, `choose_buddies`, `choose_pal`, `ditch_getup_meter_a9`, `draw_dma_meter`, `flash_red`, `get_mpart_offsets`, `get_mpart_xsize`, `inc_getup_time`, `init_smoves`, `keep_onscreen`, ... |
 | FIREWORK.ASM | 23 | `animate_fwexp`, `c1v3_tbl`, `c1v3s_tbl`, `c1v8_tbl`, `c1v8s_tbl`, `c2v8_tbl`, `c2v8s_tbl`, `calc_dxdy`, `check_camera_position`, `congrats_setup_tbl`, `congrats_str_tbl`, `do_fireworks`, ... |
+| WRESTLE2.ASM | 23 | `audit_wrestler`, `change_wrestler`, `choose_buddies`, `choose_pal`, `ditch_getup_meter_a9`, `flash_red`, `get_mpart_offsets`, `get_mpart_xsize`, `inc_getup_time`, `init_smoves`, `keep_onscreen`, `kill_smove_procs`, ... |
 | DCSSOUND.ASM | 22 | `ANNOUNCE_VOICE`, `CALL_MATCH_OVER`, `END_MATCH_SPEECH`, `KILL_PIN_HIM`, `PROC_MATCH_OVER`, `SNDSND`, `VOLBTN_PRESS`, `announcer_sound`, `channel_sound`, `clear_sound_ram`, `delay_code_a3`, `do_tune_commands`, ... |
 | PROGRESS.ASM | 18 | `CREATE_URN`, `NUM_OF_OPPS`, `PUT_UP_PROGRESS`, `START_HI_FLASHES`, `ask_belt_question`, `do_rr_vs`, `flash_it`, `flash_pcurs`, `get_final_lineup`, `get_royal_lineup`, `hilight`, `ind_select`, ... |
-| UTIL.ASM | 17 | `ERASE_TXT`, `GETCPNT`, `SPECIAL_WIPEOUT`, `STRCNRM_1`, `WIPEOUT`, `WIPEOUT2`, `ZERO_BITS`, `anim_killall`, `dirq_wait`, `display_blank`, `display_unblank`, `dma_wait`, ... |
 | SELECT.ASM | 17 | `GAME_BEATEN`, `THIS_GAME_IS_BEATEN`, `buyin_counter`, `buyin_select`, `call_wrestler_name`, `display_croutons`, `draw_mugshot`, `erase_mugshot`, `obj_off`, `obj_on`, `pin_speed_in_case`, `place_cursor`, ... |
+| SPECIAL.ASM | 17 | `begin_ani`, `change_image_local`, `create_dizzy_proc`, `create_impact3`, `delete_special_objlist`, `dizzy_proc`, `impact_proc`, `impact_proc2`, `init_special_objlist`, `react_blood`, `react_bloodnguts_gen`, `sp_animate`, ... |
+| UTIL.ASM | 16 | `ERASE_TXT`, `GETCPNT`, `SPECIAL_WIPEOUT`, `STRCNRM_1`, `WIPEOUT`, `WIPEOUT2`, `ZERO_BITS`, `dirq_wait`, `display_blank`, `display_unblank`, `dma_wait`, `dmaq_wait`, ... |
 | MAIN.ASM | 15 | `AddressSet1`, `AddressSet2`, `AddressSet3`, `AddressSet4`, `INTIO`, `InitAddresses`, `InitPIC`, `RemapIO`, `SecFuncCheck`, `SetAddresses`, `WDOGDIS`, `_AlarmClock`, ... |
 | DISPLAY.ASM | 14 | `ANI`, `SPECIAL_DISPLAY_INIT`, `anipt_getxy`, `dma_irq`, `obj_addworldxy`, `obj_yzsort`, `rnd`, `scrn_copy`, `scrn_scale`, `scrn_scale140`, `scrn_scale180`, `scrn_scaledison`, ... |
 | ATTRACT.ASM | 10 | `GENERIC_DISPLAY`, `MAKE_UP_LOGO`, `ONE_BALL`, `dan_test`, `mk_a0`, `octopus_page`, `print_gen_tips`, `show_wres_tips`, `wait_but`, `wait_on_butn` |
 | REACT1.ASM | 10 | `body_hit_dizzy_tbl`, `body_hit_tbl`, `dead_or_dying`, `head_hit2_sand_tbl`, `head_hit2_tbl`, `head_hit_dizzy_tbl`, `head_hit_tbl`, `hit_flykick`, `xxx_aborted_attach_anim`, `xxx_goto_stand_anim` |
 | MENU.ASM | 8 | `GetSoundRev`, `_GetTime`, `adjust_bar_height`, `aud_prtone`, `background_sound`, `poll_sdav`, `vol_bar_line`, `vol_to_ht` |
 | DRONE.ASM | 8 | `drn_combo`, `drn_enterring`, `drn_taunt`, `drone_calcskill`, `drone_seek`, `drone_seek2`, `drone_seekdirdist`, `drone_seekxz` |
-| BRET.ASM | 7 | `hrt_finish_move1`, `hrt_finish_move2`, `hrt_grab_toss_air`, `hrt_hdhold_ddt`, `hrt_hdhold_faceslam`, `hrt_roll_uppercut`, `hrt_smove_table` |
 | BAKGND.ASM | 6 | `BGND_UD1`, `bgnd_addblk`, `bgnd_addmod`, `bgnd_delnonvis`, `bgnd_get1stx`, `bgnd_scanmod` |
 | DIAG.ASM | 6 | `_aquire_time`, `_get_time`, `_set_time`, `bcd2hex`, `bin2bcd`, `line_draw` |
 | COLLIS.ASM | 6 | `check_collis`, `check_collisions`, `overlap_collision`, `set_collision_boxes`, `set_xyz`, `wres_collis_off` |
-| DOINK.ASM | 6 | `dnk_finish_move1`, `dnk_finish_move2`, `dnk_smove_table`, `do_taunt`, `std_taunt`, `std_walk_fast` |
-| TAKER.ASM | 5 | `adjust_view`, `shake_world`, `und_finish_move1`, `und_finish_move2`, `und_smove_table` |
 | ANIM.ASM | 5 | `animate_wrestler`, `animate_wrestler1`, `animate_wrestler2`, `attacker_flip_test`, `set_images` |
-| LEX.ASM | 5 | `lex_finish_move1`, `lex_finish_move2`, `lex_hdhold_elbow_face`, `lex_hdhold_pile`, `lex_smove_table` |
 | MPROC.ASM | 3 | `IKIL1C`, `process_dispatch`, `process_init` |
-| PAL.ASM | 3 | `addbae`, `addbrt_ae`, `pal_getb` |
 | AUDIT.ASM | 3 | `audit_ud`, `crd_updatetxt`, `form_crc32` |
-| BAM.ASM | 3 | `bam_finish_move1`, `bam_finish_move2`, `bam_smove_table` |
 | REACT5.ASM | 3 | `bncoff`, `bncoff_gate`, `hit_puppet_even_if_dead` |
 | ROPES.ASM | 3 | `fastanic`, `rope_update`, `set_rope_z` |
 | REACT2.ASM | 3 | `hit_grabfling`, `hit_grabhold`, `hit_push` |
 | TEST.ASM | 3 | `opmsg_clr`, `opmsg_main`, `print_multi` |
-| RAZOR.ASM | 3 | `rzr_finish_move1`, `rzr_finish_move2`, `rzr_smove_table` |
-| SHAWN.ASM | 3 | `shn_finish_move1`, `shn_finish_move2`, `shn_smove_table` |
-| YOKO.ASM | 3 | `yok_finish_move1`, `yok_finish_move2`, `yok_smove_table` |
+| PAL.ASM | 2 | `addbae`, `addbrt_ae` |
 | CROWD.ASM | 2 | `animate_back`, `crowd_anim` |
 | REACT4.ASM | 2 | `hit_buttstomp`, `hit_headhold` |
 | REACT9.ASM | 2 | `hit_headdslash`, `hit_headuslash` |

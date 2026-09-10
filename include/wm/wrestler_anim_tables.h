@@ -1,7 +1,11 @@
 #ifndef WM_WRESTLER_ANIM_TABLES_H
 #define WM_WRESTLER_ANIM_TABLES_H
 
+#include <stdbool.h>
 #include <stddef.h>
+
+#include "wm/arcade/wm_arcade_combat.h"
+#include "wm/arcade/wmania_rng.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -58,6 +62,63 @@ extern const wm_wrestler_anim_table
  */
 extern const wm_wrestler_anim_table
     wm_wrestler_leg_anims[WM_WRESTLER_ANIM_SLOTS];
+
+/*
+ * WRESTLE2.ASM:4079 #special_moves -- each wrestler's secret-move
+ * processes. init_smoves walks the list at match start and spawns one
+ * SMOVE_PID process per entry; each watches for its own joystick and
+ * button pattern and fires the move. The list is 0-terminated in the
+ * source and that terminator is not stored here; `count` is.
+ *
+ * These entries are ROUTINES, not animations, so unlike the three
+ * tables above they are not resolvable through wm_anim_program_find.
+ * What they are good for is knowing the real set, in the real order,
+ * for each wrestler -- and knowing which entries the arcade actually
+ * assembled.
+ *
+ * That last part is the reason this is generated. Every one of these
+ * tables wraps its finishing-move entries in `.if NUM_<name>_FINISHES`,
+ * and GAME.EQU:580-587 sets seven of the eight switches to 0 --
+ * Undertaker's is the only 1. So exactly one finishing move exists in
+ * the shipped game, und_finish_move1, and the other fifteen
+ * *_finish_move1/2 routines are source text the assembler skipped.
+ * Six of the port's hand-written lists carried eleven of them.
+ */
+typedef struct {
+    const char *const *labels;   /* NULL for an empty slot */
+    int count;
+} wm_wrestler_smove_table;
+
+extern const wm_wrestler_smove_table
+    wm_wrestler_smoves[WM_WRESTLER_ANIM_SLOTS];
+
+/*
+ * DOINK.ASM:1632 #taunt_t -- the animation each wrestler plays for the
+ * start-of-round taunt, indexed by WRESTLERNUM. Defined in DOINK.ASM
+ * because do_taunt is, and every wrestler's control code CREATEs that
+ * one shared routine.
+ *
+ * NULL for slot 7 (Adam Bomb, cut) and slot 9 (the Referee), both a
+ * plain 0 in the source.
+ */
+extern const char *const wm_wrestler_taunt_anims[WM_WRESTLER_ANIM_SLOTS];
+
+/*
+ * DOINK.ASM:1594 do_taunt, spawned as a TAUNT_PID process at the start
+ * of each round by all eight wrestlers' control code.
+ *
+ * A human taunts only if he is holding UP and BLOCK when the round
+ * starts; a drone taunts on an RNDPER(250) draw -- a 25% chance. Either
+ * way the answer is his row of #taunt_t, played through change_anim1a
+ * (the UNGUARDED entry point, so it restarts even if the same animation
+ * is already running).
+ *
+ * Returns the animation label to start, or NULL when he does not taunt.
+ * `rng` may be NULL, in which case a drone never taunts rather than
+ * taunting on a fabricated draw.
+ */
+const char *wm_wrestler_do_taunt(const wm_arcade_actor_t *actor,
+                                 bool is_drone, WmRng *rng);
 
 /*
  * The label at [row][col] of a slot's table, or NULL when the slot is

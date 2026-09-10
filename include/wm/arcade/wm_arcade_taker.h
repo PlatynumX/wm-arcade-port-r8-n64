@@ -35,8 +35,7 @@ typedef enum wm_arcade_taker_monitor_id {
     WM_TAKER_MON_8,
     WM_TAKER_MON_9,
     WM_TAKER_MON_10,
-    WM_TAKER_MON_11,
-    WM_TAKER_MON_12
+    WM_TAKER_MON_11
 } wm_arcade_taker_monitor_id_t;
 
 typedef enum wm_arcade_taker_step_result {

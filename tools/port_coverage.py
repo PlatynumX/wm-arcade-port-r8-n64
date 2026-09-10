@@ -102,6 +102,118 @@ LEDGER_STATUSES = {
 
 
 # ------------------------------------------------------------------ #
+# conditional assembly
+
+# A `SUBR` inside a `.if` the assembler evaluated as false is not in the
+# game. It is in the FILE -- so an enumeration that only greps SUBR
+# lines counts it -- but the object never contained it, nothing can call
+# it, and reporting it as an untranslated routine inflates the
+# denominator with work that does not exist.
+#
+# 77 routines in the linked source are like this:
+#
+#   30  `.if DEBUG`         SYS.EQU:13 sets DEBUG to 0, so SPECIAL.ASM's
+#                           skirt/sweat/blood debug helpers and friends
+#                           are development-only.
+#   30  `.if NUM_*_FINISHES` GAME.EQU:580-587 sets seven of the eight
+#                           switches to 0, and Undertaker's `> 1` guard
+#                           still excludes his second -- so exactly one
+#                           finishing move exists, und_finish_move1.
+#   16  `.if 0`             switched off outright.
+#    1  `.if NMBPAL`        no back-palette bank on this board.
+_IF_RE = re.compile(r"^\s*\.if\s+(.+?)\s*$", re.I)
+_ELSE_RE = re.compile(r"^\s*\.else\s*$", re.I)
+_ENDIF_RE = re.compile(r"^\s*\.endif\s*$", re.I)
+_SET_RE = re.compile(
+    r"^([A-Za-z_][A-Za-z0-9_]*)\s+\.(?:set|equ)\s+(-?\d+)\s*$")
+
+_EQU_CONSTS: dict[str, int] | None = None
+
+
+def equ_constants() -> dict[str, int]:
+    """Plain-integer equates, for deciding `.if` conditions.
+
+    A symbol two .EQU files give DIFFERENT values is dropped: an
+    ambiguous condition has to stay undecidable rather than be resolved
+    by whichever file happened to be read last.
+    """
+    global _EQU_CONSTS
+    if _EQU_CONSTS is not None:
+        return _EQU_CONSTS
+    seen: dict[str, int] = {}
+    clash: set[str] = set()
+    for equ in sorted(wlanim.ORIG.glob("*.EQU")):
+        for line in equ.read_text(errors="replace").splitlines():
+            m = _SET_RE.match(wlanim.strip_comment(line).strip())
+            if not m:
+                continue
+            name, val = m.group(1), int(m.group(2))
+            if name in seen and seen[name] != val:
+                clash.add(name)
+            seen[name] = val
+    for name in clash:
+        del seen[name]
+    _EQU_CONSTS = seen
+    return _EQU_CONSTS
+
+
+def _cond_value(expr: str, consts: dict[str, int]) -> bool | None:
+    """True/False for a condition this can decide, else None.
+
+    None means "cannot tell", and a routine under a condition this
+    cannot tell is left alone -- assumed assembled. Erring that way
+    keeps a routine in the denominator when in doubt, which is the
+    honest direction for a coverage number.
+    """
+    expr = expr.strip()
+    if re.fullmatch(r"-?\d+", expr):
+        return int(expr) != 0
+    m = re.fullmatch(r"([A-Za-z_][A-Za-z0-9_]*)", expr)
+    if m:
+        return consts[m.group(1)] != 0 if m.group(1) in consts else None
+    m = re.fullmatch(r"([A-Za-z_][A-Za-z0-9_]*)\s*([<>])\s*(-?\d+)", expr)
+    if m and m.group(1) in consts:
+        lhs, rhs = consts[m.group(1)], int(m.group(3))
+        return lhs > rhs if m.group(2) == ">" else lhs < rhs
+    return None
+
+
+def unassembled_routines() -> dict[str, str]:
+    """{routine name: "FILE:line, .if <condition>"} for skipped SUBRs."""
+    consts = equ_constants()
+    out: dict[str, str] = {}
+    linked = linked_asm()
+    for path in sorted(wlanim.ORIG.glob("*.ASM")):
+        if linked and path.name.upper() not in linked:
+            continue
+        stack: list[tuple[bool | None, str]] = []
+        for n, raw in enumerate(path.read_text(errors="replace").splitlines(),
+                                1):
+            line = wlanim.strip_comment(raw)
+            m = _IF_RE.match(line)
+            if m:
+                stack.append((_cond_value(m.group(1), consts), m.group(1)))
+                continue
+            if _ELSE_RE.match(line):
+                if stack:
+                    val, why = stack[-1]
+                    stack[-1] = (None if val is None else not val,
+                                 f"not ({why})")
+                continue
+            if _ENDIF_RE.match(line):
+                if stack:
+                    stack.pop()
+                continue
+            false_at = next((why for val, why in stack if val is False), None)
+            if false_at is None:
+                continue
+            sm = wlanim.SUBR_RE.match(line)
+            if sm:
+                out[sm.group(1)] = f"{path.name}:{n}, .if {false_at}"
+    return out
+
+
+# ------------------------------------------------------------------ #
 # the source side
 
 def source_routines() -> dict[str, list[tuple[str, int, bool]]]:
@@ -265,6 +377,7 @@ def classify() -> dict:
     callers, total_refs = reference_counts()
     code_ids, prose_ids, generated_ids = port_symbols()
     ledger = load_ledger()
+    skipped = unassembled_routines()
 
     rows = []
     for name, defs in sorted(routines.items()):
@@ -277,6 +390,14 @@ def classify() -> dict:
 
         if code_hits:
             status, why = "implemented", code_hits[0]
+        elif name in skipped:
+            # Never assembled, so there is nothing to translate. This is
+            # checked BEFORE the ledger and before `dead` deliberately: a
+            # routine the assembler skipped is not dead code that shipped,
+            # it is code that never shipped, and the two want different
+            # words. It is checked AFTER `implemented`, because the port
+            # translating a cut routine anyway is worth still reporting.
+            status, why = "unassembled", skipped[name]
         elif entry:
             status, why = entry["status"], entry.get("symbol") or entry.get("note", "")
         elif total_refs[name] == 0:
@@ -350,11 +471,12 @@ def render_md(data: dict) -> str:
         "data": "a table, extracted by a tool (ledger)",
         "partial": "partly translated; the ledger note says which part",
         "dead": "**measured**: no caller outside its own file",
+        "unassembled": "**measured**: inside a `.if` the assembler skipped",
         "cited": "named only in a comment -- not evidence of anything",
         "unknown": "no mention anywhere",
     }
     for k in ("inlined", "renamed", "partial", "data", "process", "display",
-              "hardware", "dead", "cited", "unknown"):
+              "hardware", "dead", "unassembled", "cited", "unknown"):
         if s["by_status"].get(k):
             out.append("| `%s` | %s | %d |" % (k, meanings[k], s["by_status"][k]))
     out += [

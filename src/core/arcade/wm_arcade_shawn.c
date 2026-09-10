@@ -36,6 +36,12 @@ static const wm_arcade_input_pattern_t secret_patterns[]={
     {"frankensteiner",s_toward_skick,3,32},
     {"jump_kick",s_away_skick,3,32}
 };
+/* WRESTLE2.ASM's shn_smove_table, as the assembler built it.
+   The finishing-move entries every one of these tables carries sit
+   inside `.if NUM_SHAWN_FINISHES`, and GAME.EQU:587 sets that switch to
+   0 -- so none of them was assembled. Generated as
+   wm_wrestler_smoves[] (wm/wrestler_anim_tables.h); a source-tool test
+   holds this copy to it. */
 static const char *const special_processes[]={
     "shn_hdhold_combo2",
     "shn_hdhold_combo1",
@@ -49,9 +55,7 @@ static const char *const special_processes[]={
     "shn_flipslam",
     "shn_grab_toss_air",
     "std_walk_fast",
-    "std_taunt",
-    "shn_finish_move1",
-    "shn_finish_move2"
+    "std_taunt"
 };
 
 const wm_arcade_wrestler_profile_t wm_arcade_profile_shawn={

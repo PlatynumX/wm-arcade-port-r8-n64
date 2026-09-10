@@ -182,6 +182,205 @@ def tables() -> dict[str, list[tuple[str, list[list[str]]] | None]]:
     return out
 
 
+
+# ---------------------------------------------------------------------
+# The secret-move tables.
+
+SMOVE_LIST = "#special_moves"
+SMOVE_FILE = "WRESTLE2.ASM"
+
+# `.if NUM_<WRESTLER>_FINISHES` wraps the finishing-move entries in every
+# one of these tables, and GAME.EQU:580 sets seven of the eight to 0.
+# Reading the table as plain text therefore reports moves the arcade
+# never assembled -- which is exactly what the port's six hand-written
+# lists did. Conditions are evaluated against the real equates and
+# anything this cannot decide is refused rather than guessed.
+IF_RE = re.compile(r"^\s*\.if\s+(.+?)\s*$", re.I)
+ELSE_RE = re.compile(r"^\s*\.else\s*$", re.I)
+ENDIF_RE = re.compile(r"^\s*\.endif\s*$", re.I)
+SET_RE = re.compile(
+    r"^([A-Za-z_][A-Za-z0-9_]*)\s+\.(?:set|equ)\s+(-?\d+)\s*$")
+REFLONG_RE = re.compile(r"^\s*(?:REFLONG|\.long)\s+(.+)$", re.I)
+
+
+_CONSTS: dict[str, int] | None = None
+
+
+def _constants() -> dict[str, int]:
+    """Every plain-integer equate the .EQU files define.
+
+    GAME.EQU holds the NUM_*_FINISHES switches these tables turn on;
+    SYS.EQU holds the board switches (DEBUG and friends) that other
+    `.if`s in the same files test. A symbol two files define with
+    DIFFERENT values is dropped rather than resolved by file order --
+    an ambiguous condition must refuse, not pick.
+    """
+    global _CONSTS
+    if _CONSTS is not None:
+        return _CONSTS
+    seen: dict[str, int] = {}
+    clash: set[str] = set()
+    for equ in sorted(wlanim.ORIG.glob("*.EQU")):
+        for line in equ.read_text(errors="replace").splitlines():
+            m = SET_RE.match(wlanim.strip_comment(line).strip())
+            if not m:
+                continue
+            name, val = m.group(1), int(m.group(2))
+            if name in seen and seen[name] != val:
+                clash.add(name)
+            seen[name] = val
+    for name in clash:
+        del seen[name]
+    _CONSTS = seen
+    return _CONSTS
+
+
+def _cond(expr: str, consts: dict[str, int]) -> bool:
+    """Evaluate a `.if` condition, or refuse.
+
+    Only the two forms these tables actually use are accepted -- a bare
+    symbol and `SYMBOL > n`. Anything else raises, because silently
+    treating an unknown condition as true is how the finishing moves got
+    into the port in the first place.
+    """
+    expr = expr.strip()
+    m = re.fullmatch(r"([A-Za-z_][A-Za-z0-9_]*)", expr)
+    if m:
+        if m.group(1) not in consts:
+            raise ValueError(f".if {expr}: not a constant this tool knows")
+        return consts[m.group(1)] != 0
+    m = re.fullmatch(r"([A-Za-z_][A-Za-z0-9_]*)\s*>\s*(-?\d+)", expr)
+    if m:
+        if m.group(1) not in consts:
+            raise ValueError(f".if {expr}: not a constant this tool knows")
+        return consts[m.group(1)] > int(m.group(2))
+    if re.fullmatch(r"-?\d+", expr):
+        return int(expr) != 0
+    raise ValueError(f".if {expr}: this tool cannot decide it")
+
+
+def assembled_lines(path: pathlib.Path) -> list[str]:
+    """The file's lines with false `.if` branches blanked out.
+
+    Blanked rather than removed so line numbers still line up with the
+    source, which every error message in this tool quotes.
+    """
+    consts = _constants()
+    out: list[str] = []
+    stack: list[bool] = []
+    for raw in _lines(path):
+        m = IF_RE.match(raw)
+        if m:
+            stack.append(_cond(m.group(1), consts))
+            out.append("")
+            continue
+        if ELSE_RE.match(raw):
+            if stack:
+                stack[-1] = not stack[-1]
+            out.append("")
+            continue
+        if ENDIF_RE.match(raw):
+            if stack:
+                stack.pop()
+            out.append("")
+            continue
+        out.append(raw if all(stack) else "")
+    return out
+
+
+def smove_dispatch() -> list[str | None]:
+    """The nine table names WRESTLE2.ASM:4079 #special_moves names."""
+    path = wlanim.ORIG / SMOVE_FILE
+    lines = assembled_lines(path)
+    at = next((i for i, l in enumerate(lines)
+               if LOCAL_LABEL_RE.match(l)
+               and LOCAL_LABEL_RE.match(l).group(1) == SMOVE_LIST), None)
+    if at is None:
+        raise ValueError(f"{SMOVE_FILE}: no {SMOVE_LIST}")
+    out: list[str | None] = []
+    for i in range(at + 1, len(lines)):
+        if not lines[i].strip():
+            continue
+        m = REFLONG_RE.match(lines[i])
+        if not m:
+            break
+        name = m.group(1).strip()
+        out.append(None if name == "0" else name)
+    # Nine slots: the eight playable wrestlers plus Adam Bomb's spare,
+    # which is a plain 0 here rather than Doink's table.
+    if len(out) != 9:
+        raise ValueError(f"{SMOVE_LIST}: {len(out)} slots, expected 9")
+    return out
+
+
+def smove_rows(name: str) -> list[str]:
+    """One wrestler's secret-move process list, 0-terminated in source."""
+    path = _defining_file(name)
+    lines = assembled_lines(path)
+    at = next(i for i, line in enumerate(lines)
+              if (m := wlanim.SUBR_RE.match(line)) and m.group(1) == name)
+    out: list[str] = []
+    for i in range(at + 1, len(lines)):
+        if not lines[i].strip():
+            continue
+        m = REFLONG_RE.match(lines[i])
+        if not m:
+            break
+        entry = m.group(1).strip()
+        if entry == "0":
+            return out              # WRESTLE2.ASM's loop stops on the 0
+        if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", entry):
+            raise ValueError(f"{name}: unreadable entry {entry!r}")
+        out.append(entry)
+    raise ValueError(f"{name}: ran off the end without a terminating 0")
+
+
+def smove_tables() -> list[tuple[str, list[str]] | None]:
+    """[(table name, process labels)] in roster-slot order, 9 slots."""
+    return [None if n is None else (n, smove_rows(n))
+            for n in smove_dispatch()]
+
+
+
+# DOINK.ASM:1632 #taunt_t -- the taunt animation each wrestler plays at
+# the start of a round. Shape and reader are the same as #special_moves
+# (a local label with REFLONG rows), but it is an ANIMATION table like
+# the three above, so it goes through wm_anim_program_find rather than
+# naming a routine.
+TAUNT_LIST = "#taunt_t"
+TAUNT_FILE = "DOINK.ASM"
+
+
+def _reflong_list(path: pathlib.Path, label: str,
+                  slots: int) -> list[str | None]:
+    """The `slots` REFLONG/.long rows following a local label."""
+    lines = assembled_lines(path)
+    at = next((i for i, l in enumerate(lines)
+               if LOCAL_LABEL_RE.match(l)
+               and LOCAL_LABEL_RE.match(l).group(1) == label), None)
+    if at is None:
+        raise ValueError(f"{path.name}: no {label}")
+    out: list[str | None] = []
+    for i in range(at + 1, len(lines)):
+        if not lines[i].strip():
+            continue
+        m = REFLONG_RE.match(lines[i])
+        if not m:
+            break
+        name = m.group(1).strip()
+        out.append(None if name == "0" else name)
+        if len(out) == slots:
+            break
+    if len(out) != slots:
+        raise ValueError(f"{label}: {len(out)} slots, expected {slots}")
+    return out
+
+
+def taunt_anims() -> list[str | None]:
+    """The ten taunt animations, in roster-slot order."""
+    return _reflong_list(wlanim.ORIG / TAUNT_FILE, TAUNT_LIST, ROSTER_SLOTS)
+
+
 def render_c() -> str:
     data = tables()
     out = ["/* Auto-generated by tools/wlwrestlertbl.py from the original",
@@ -223,6 +422,46 @@ def render_c() -> str:
                        f" -- {name} */")
         out.append("};")
         out.append("")
+
+    smoves = smove_tables()
+    emitted_s: dict[str, str] = {}
+    for slot, entry in enumerate(smoves):
+        if entry is None:
+            continue
+        name, procs = entry
+        if name in emitted_s:
+            continue
+        sym = f"tbl_{name}"
+        emitted_s[name] = sym
+        out.append(f"/* {name} -- {SLOT_NAMES[slot]}, {len(procs)} processes */")
+        out.append(f"static const char *const {sym}[] = {{")
+        for proc in procs:
+            out.append(f'    "{proc}",')
+        out.append("};")
+        out.append("")
+
+    out.append("const wm_wrestler_smove_table wm_wrestler_smoves"
+               "[WM_WRESTLER_ANIM_SLOTS] = {")
+    for slot in range(ROSTER_SLOTS):
+        entry = smoves[slot] if slot < len(smoves) else None
+        if entry is None:
+            out.append(f"    {{ NULL, 0 }},   /* {slot} {SLOT_NAMES[slot]} */")
+            continue
+        name, procs = entry
+        out.append(f"    {{ {emitted_s[name]}, {len(procs)} }},"
+                   f"   /* {slot} {SLOT_NAMES[slot]} -- {name} */")
+    out.append("};")
+    out.append("")
+
+    out.append("const char *const wm_wrestler_taunt_anims"
+               "[WM_WRESTLER_ANIM_SLOTS] = {")
+    for slot, lab in enumerate(taunt_anims()):
+        if lab is None:
+            out.append(f"    NULL,   /* {slot} {SLOT_NAMES[slot]} */")
+        else:
+            out.append(f'    "{lab}",   /* {slot} {SLOT_NAMES[slot]} */')
+    out.append("};")
+    out.append("")
 
     out += ["const char *wm_wrestler_anim_label("
             "const wm_wrestler_anim_table *table, int row, int col) {",

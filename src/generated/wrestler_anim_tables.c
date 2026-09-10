@@ -270,6 +270,143 @@ const wm_wrestler_anim_table wm_wrestler_leg_anims[WM_WRESTLER_ANIM_SLOTS] = {
     { NULL, 0, 0 },   /* 9 Referee */
 };
 
+/* hrt_smove_table -- Bret Hart, 11 processes */
+static const char *const tbl_hrt_smove_table[] = {
+    "hrt_charge_flying_kick",
+    "hrt_charge_face_rake",
+    "hrt_hdhold_pile",
+    "hrt_hdhold_ddt",
+    "hrt_hdhold_faceslam",
+    "hrt_grab_toss_air",
+    "hrt_roll_uppercut",
+    "hrt_hdhold_combo1",
+    "hrt_hdhold_combo2",
+    "std_walk_fast",
+    "std_taunt",
+};
+
+/* rzr_smove_table -- Razor Ramon, 10 processes */
+static const char *const tbl_rzr_smove_table[] = {
+    "rzr_charge_slashes",
+    "rzr_hdhold_pile",
+    "rzr_hdhold_combo1",
+    "rzr_hdhold_edge",
+    "rzr_hdhold_rug",
+    "rzr_grab_toss_air",
+    "rzr_hdhold_combo2",
+    "std_walk_fast",
+    "std_taunt",
+    "rzr_sliding_rug",
+};
+
+/* und_smove_table -- Undertaker, 12 processes */
+static const char *const tbl_und_smove_table[] = {
+    "und_hdhold_neckbrk",
+    "und_hdhold_faceslam",
+    "und_hdhold_pile",
+    "und_spirit_pull",
+    "und_spirit_push",
+    "und_grab_toss_air",
+    "und_hdhold_combo1",
+    "und_hdhold_combo2",
+    "und_choke_slide",
+    "std_walk_fast",
+    "std_taunt",
+    "und_finish_move1",
+};
+
+/* yok_smove_table -- Yokozuna, 8 processes */
+static const char *const tbl_yok_smove_table[] = {
+    "yok_hdhold_combo1",
+    "yok_hdhold_scissor",
+    "yok_hdhold_suplex",
+    "yok_salt_throw",
+    "yok_grab_toss_air",
+    "yok_hdhold_combo2",
+    "std_walk_fast",
+    "std_taunt",
+};
+
+/* shn_smove_table -- Shawn Michaels, 13 processes */
+static const char *const tbl_shn_smove_table[] = {
+    "shn_hdhold_combo2",
+    "shn_hdhold_combo1",
+    "shn_charge_suplex",
+    "shn_swirl_speedkick",
+    "shn_sliding_kicktoss",
+    "shn_hdhold_suplex",
+    "shn_hdhold_frank",
+    "shn_hdhold_kicktoss",
+    "shn_hdhold_butts",
+    "shn_flipslam",
+    "shn_grab_toss_air",
+    "std_walk_fast",
+    "std_taunt",
+};
+
+/* bam_smove_table -- Bam Bam, 8 processes */
+static const char *const tbl_bam_smove_table[] = {
+    "bam_charge_neckbreaker",
+    "bam_hdhold_combo1",
+    "bam_hdhold_pile",
+    "bam_hdhold_pogo",
+    "bam_hdhold_combo2",
+    "bam_grab_toss_air",
+    "std_walk_fast",
+    "std_taunt",
+};
+
+/* dnk_smove_table -- Doink, 9 processes */
+static const char *const tbl_dnk_smove_table[] = {
+    "dnk_charge_flykick",
+    "dnk_hdhold_slam",
+    "dnk_hdhold_combo1",
+    "dnk_hdhold_pile",
+    "dnk_hdhold_combo2",
+    "dnk_hdhold_buzz",
+    "dnk_grab_toss_air",
+    "std_walk_fast",
+    "std_taunt",
+};
+
+/* lex_smove_table -- Lex Luger, 8 processes */
+static const char *const tbl_lex_smove_table[] = {
+    "lex_hdhold_pile",
+    "lex_hdhold_elbow_face",
+    "lex_hdhold_graboh",
+    "lex_grab_toss_air",
+    "lex_hdhold_combo1",
+    "lex_hdhold_combo2",
+    "std_walk_fast",
+    "std_taunt",
+};
+
+const wm_wrestler_smove_table wm_wrestler_smoves[WM_WRESTLER_ANIM_SLOTS] = {
+    { tbl_hrt_smove_table, 11 },   /* 0 Bret Hart -- hrt_smove_table */
+    { tbl_rzr_smove_table, 10 },   /* 1 Razor Ramon -- rzr_smove_table */
+    { tbl_und_smove_table, 12 },   /* 2 Undertaker -- und_smove_table */
+    { tbl_yok_smove_table, 8 },   /* 3 Yokozuna -- yok_smove_table */
+    { tbl_shn_smove_table, 13 },   /* 4 Shawn Michaels -- shn_smove_table */
+    { tbl_bam_smove_table, 8 },   /* 5 Bam Bam -- bam_smove_table */
+    { tbl_dnk_smove_table, 9 },   /* 6 Doink -- dnk_smove_table */
+    { NULL, 0 },   /* 7 Adam Bomb */
+    { tbl_lex_smove_table, 8 },   /* 8 Lex Luger -- lex_smove_table */
+    { NULL, 0 },   /* 9 Referee */
+};
+
+const char *const wm_wrestler_taunt_anims[WM_WRESTLER_ANIM_SLOTS] = {
+    "hrt_4_taunt_anim",   /* 0 Bret Hart */
+    "rzr_4_taunt_anim",   /* 1 Razor Ramon */
+    "und_4_taunt_anim",   /* 2 Undertaker */
+    "yok_4_taunt_anim",   /* 3 Yokozuna */
+    "shn_4_taunt_anim",   /* 4 Shawn Michaels */
+    "bam_4_taunt_anim",   /* 5 Bam Bam */
+    "dnk_4_taunt_anim",   /* 6 Doink */
+    NULL,   /* 7 Adam Bomb */
+    "lex_4_taunt_anim",   /* 8 Lex Luger */
+    NULL,   /* 9 Referee */
+};
+
 const char *wm_wrestler_anim_label(const wm_wrestler_anim_table *table, int row, int col) {
     if (!table || !table->labels) return NULL;
     if (row < 0 || row >= table->rows) return NULL;

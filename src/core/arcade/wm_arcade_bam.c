@@ -38,6 +38,12 @@ static const wm_arcade_input_pattern_t secret_patterns[]={
     {"hip_toss2",s_hip_toss2,1,10},
     {"napalm",s_punch_dd,3,50}
 };
+/* WRESTLE2.ASM's bam_smove_table, as the assembler built it.
+   The finishing-move entries every one of these tables carries sit
+   inside `.if NUM_BAM_FINISHES`, and GAME.EQU:581 sets that switch to
+   0 -- so none of them was assembled. Generated as
+   wm_wrestler_smoves[] (wm/wrestler_anim_tables.h); a source-tool test
+   holds this copy to it. */
 static const char *const special_processes[]={
     "bam_charge_neckbreaker",
     "bam_hdhold_combo1",
@@ -46,9 +52,7 @@ static const char *const special_processes[]={
     "bam_hdhold_combo2",
     "bam_grab_toss_air",
     "std_walk_fast",
-    "std_taunt",
-    "bam_finish_move1",
-    "bam_finish_move2"
+    "std_taunt"
 };
 
 const wm_arcade_wrestler_profile_t wm_arcade_profile_bam={

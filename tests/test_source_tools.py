@@ -1365,6 +1365,139 @@ def test_per_wrestler_tables_generate_the_shipped_file() -> None:
     assert wlwrestlertbl.render_c() == out.read_text()
 
 
+def test_smove_tables_honour_the_finishing_move_switch() -> None:
+    """Each wrestler's secret-move process list, as ASSEMBLED.
+
+    Every one of the eight tables wraps its finishing-move entries in
+    `.if NUM_<name>_FINISHES`, and GAME.EQU:580-587 sets seven of the
+    eight switches to 0 -- Undertaker's is the only 1, and his `> 1`
+    guard still excludes und_finish_move2. So the shipped game has
+    exactly ONE finishing move, und_finish_move1, and the other fifteen
+    *_finish_move1/2 routines are source text the assembler skipped
+    (their SUBR definitions are inside the same `.if` blocks).
+
+    Reading the table as plain text misses all of that, which is what
+    the port's eight hand-written copies did: eleven entries between
+    them for moves the arcade never spawned.
+    """
+    if not (wlanim.ORIG / "WRESTLE2.ASM").exists():
+        return
+
+    tables = wlwrestlertbl.smove_tables()
+    assert len(tables) == 9, len(tables)
+    by_name = {e[0]: e[1] for e in tables if e}
+
+    # Adam Bomb's slot is a plain 0 here -- unlike the anim dispatch
+    # lists, which hand him Doink's tables.
+    assert tables[7] is None
+
+    # Exactly one finishing move in the whole roster.
+    finishes = [lab for rows in by_name.values() for lab in rows
+                if "_finish_move" in lab]
+    assert finishes == ["und_finish_move1"], finishes
+
+    # And the switch really is what decides: flipping the reading to
+    # ignore `.if` would put the other fifteen back.
+    consts = wlwrestlertbl._constants()
+    assert consts["NUM_TAKER_FINISHES"] == 1
+    for other in ("BRET", "BAM", "YOKO", "DOINK", "RAZOR", "LEX", "SHAWN"):
+        assert consts[f"NUM_{other}_FINISHES"] == 0, other
+
+    # A condition the tool cannot decide is refused, not assumed true.
+    try:
+        wlwrestlertbl._cond("SOMETHING_UNKNOWN", consts)
+    except ValueError:
+        pass
+    else:
+        assert False, "_cond accepted an unknown symbol"
+
+    # The in-tree copies match, wrestler for wrestler.
+    port = {
+        "hrt_smove_table": ("src/core/arcade/wm_arcade_wrestler_port.c",
+                            "bret_smove"),
+        "rzr_smove_table": ("src/core/arcade/wm_arcade_wrestler_port.c",
+                            "razor_smove"),
+        "und_smove_table": ("src/core/arcade/wm_arcade_taker.c",
+                            "special_processes"),
+        "yok_smove_table": ("src/core/arcade/wm_arcade_yoko.c",
+                            "special_processes"),
+        "shn_smove_table": ("src/core/arcade/wm_arcade_shawn.c",
+                            "special_processes"),
+        "bam_smove_table": ("src/core/arcade/wm_arcade_bam.c",
+                            "special_processes"),
+        "dnk_smove_table": ("src/core/arcade/wm_arcade_doink.c",
+                            "special_processes"),
+        "lex_smove_table": ("src/core/arcade/wm_arcade_lex.c",
+                            "special_processes"),
+    }
+    for table, (rel, sym) in port.items():
+        path = ROOT / rel
+        if not path.exists():
+            continue
+        text = path.read_text()
+        m = re.search(re.escape(sym) + r"\[\]\s*=\s*\{(.*?)\n\};",
+                      text, re.S)
+        assert m, (rel, sym)
+        got = re.findall(r'"([A-Za-z0-9_]+)"', m.group(1))
+        assert got == by_name[table], (rel, sym, got, by_name[table])
+
+
+def test_coverage_does_not_count_code_the_assembler_skipped() -> None:
+    """A SUBR inside a false `.if` is not an untranslated routine.
+
+    It is in the FILE, so an enumeration that greps SUBR lines counts
+    it, but the object never held it and nothing can call it. Reporting
+    it as open inflates the denominator with work that does not exist:
+    77 routines in the linked source are like this.
+
+    The direction of the doubt matters. A condition the tool cannot
+    decide leaves the routine alone -- assumed assembled, still counted
+    -- so an unreadable `.if` can only ever make coverage look worse
+    than it is, never better.
+    """
+    if not (wlanim.ORIG / "GAME.EQU").exists():
+        return
+
+    skipped = port_coverage.unassembled_routines()
+    consts = port_coverage.equ_constants()
+
+    # The switches that decide most of them, read not assumed.
+    assert consts["DEBUG"] == 0                    # SYS.EQU:13
+    assert consts["NUM_TAKER_FINISHES"] == 1       # GAME.EQU:586
+    assert consts["NUM_BRET_FINISHES"] == 0        # GAME.EQU:580
+
+    # Every wrestler's finishing moves are skipped except Undertaker's
+    # first -- and his second is skipped by the `> 1` guard.
+    for pre in ("hrt", "rzr", "yok", "shn", "bam", "dnk", "lex"):
+        assert f"{pre}_finish_move1" in skipped, pre
+        assert f"{pre}_finish_move2" in skipped, pre
+    assert "und_finish_move1" not in skipped
+    assert "und_finish_move2" in skipped
+
+    # `.if DEBUG` catches SPECIAL.ASM's development helpers.
+    assert "CHANGE_SKIRTS" in skipped
+    assert ".if DEBUG" in skipped["CHANGE_SKIRTS"]
+
+    # An undecidable condition must NOT mark anything skipped.
+    assert port_coverage._cond_value("SOME_UNKNOWN_SYMBOL", consts) is None
+    assert port_coverage._cond_value("0", consts) is False
+    assert port_coverage._cond_value("1", consts) is True
+
+    # And a routine that is plainly in the game is not caught.
+    for live in ("wrestler_veladd", "change_walk_anim", "adjust_health"):
+        assert live not in skipped, live
+
+    # The classification uses it, and `unassembled` is never also
+    # claimed by the ledger -- the two would be answering the same
+    # question twice.
+    data = port_coverage.classify()
+    rows = {r["name"]: r for r in data["routines"]}
+    assert rows["hrt_finish_move2"]["status"] == "unassembled"
+    ledger = port_coverage.load_ledger()
+    for name in skipped:
+        assert name not in ledger, name
+
+
 def test_waithitopp_is_a_mode_and_a_frame() -> None:
     """ANIM.ASM:2300's own note: "just like an ordinary WL ticks,frame type
     command except that the ANICNT is zeroed if we hit the opponent." The
@@ -2852,6 +2985,8 @@ def main() -> int:
     test_roster_anim_tables_generate_the_shipped_file()
     test_per_wrestler_anim_tables_come_out_of_the_dispatch_lists()
     test_per_wrestler_tables_generate_the_shipped_file()
+    test_smove_tables_honour_the_finishing_move_switch()
+    test_coverage_does_not_count_code_the_assembler_skipped()
     test_coverage_does_not_count_a_comment_as_an_implementation()
     test_coverage_matches_only_a_suffix_or_a_generated_wrapper()
     test_coverage_only_counts_linked_files()

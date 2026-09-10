@@ -55,8 +55,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "ARE_WE_IN_RING",
+   "status": "unassembled",
+   "evidence": "SPECIAL.ASM:4565, .if DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -70,8 +70,8 @@
    "local": false,
    "external_callers": 0,
    "references": 0,
-   "status": "dead",
-   "evidence": "nothing anywhere names it",
+   "status": "unassembled",
+   "evidence": "SPECIAL.ASM:4995, .if DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -400,8 +400,8 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "SPECIAL.ASM:4744, .if DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -415,8 +415,8 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "SPECIAL.ASM:4736, .if DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -520,8 +520,8 @@
    "local": false,
    "external_callers": 148,
    "references": 148,
-   "status": "cited",
-   "evidence": "CREATE_SWEAT",
+   "status": "unassembled",
+   "evidence": "SPECIAL.ASM:4985, .if DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -535,8 +535,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "SPECIAL.ASM:4237, .if DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -1330,8 +1330,8 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "SPECIAL.ASM:4727, .if DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -2200,8 +2200,8 @@
    "local": false,
    "external_callers": 33,
    "references": 33,
-   "status": "cited",
-   "evidence": "SPIN_SWEAT",
+   "status": "unassembled",
+   "evidence": "SPECIAL.ASM:5282, .if DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -2965,8 +2965,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_arcade_und_adjust_view",
    "from_generated": false,
    "ledgered": false
   },
@@ -3040,8 +3040,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "UTIL.ASM:992, .if 0",
    "from_generated": false,
    "ledgered": false
   },
@@ -3055,8 +3055,8 @@
    "local": false,
    "external_callers": 0,
    "references": 0,
-   "status": "dead",
-   "evidence": "nothing anywhere names it",
+   "status": "unassembled",
+   "evidence": "UTIL.ASM:983, .if 0",
    "from_generated": false,
    "ledgered": false
   },
@@ -3265,8 +3265,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "AWARD.ASM:3190, .if 0",
    "from_generated": false,
    "ledgered": false
   },
@@ -5545,8 +5545,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "FINISEQ.ASM:120, .if NUM_BAM_FINISHES",
    "from_generated": false,
    "ledgered": false
   },
@@ -5560,8 +5560,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "FINISEQ.ASM:138, .if NUM_BAM_FINISHES > 1",
    "from_generated": false,
    "ledgered": false
   },
@@ -5575,8 +5575,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "bam_finish_move1",
+   "status": "unassembled",
+   "evidence": "BAM.ASM:531, .if NUM_BAM_FINISHES",
    "from_generated": false,
    "ledgered": false
   },
@@ -5590,8 +5590,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "bam_finish_move2",
+   "status": "unassembled",
+   "evidence": "BAM.ASM:563, .if NUM_BAM_FINISHES > 1",
    "from_generated": false,
    "ledgered": false
   },
@@ -6130,9 +6130,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_bam_smove_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -7135,8 +7135,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "SPECIAL.ASM:3230, .if DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -7706,8 +7706,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "SPECIAL.ASM:4431, .if DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -8171,8 +8171,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "WRESTLE.ASM:6197, .if DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -8621,8 +8621,8 @@
    "local": false,
    "external_callers": 0,
    "references": 0,
-   "status": "dead",
-   "evidence": "nothing anywhere names it",
+   "status": "unassembled",
+   "evidence": "DISPLAY.ASM:972, .if 0",
    "from_generated": false,
    "ledgered": false
   },
@@ -8636,8 +8636,8 @@
    "local": false,
    "external_callers": 0,
    "references": 0,
-   "status": "dead",
-   "evidence": "nothing anywhere names it",
+   "status": "unassembled",
+   "evidence": "DISPLAY.ASM:997, .if 0",
    "from_generated": false,
    "ledgered": false
   },
@@ -10946,8 +10946,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "FINISEQ.ASM:212, .if NUM_DOINK_FINISHES",
    "from_generated": false,
    "ledgered": false
   },
@@ -10961,8 +10961,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "FINISEQ.ASM:230, .if NUM_DOINK_FINISHES > 1",
    "from_generated": false,
    "ledgered": false
   },
@@ -10976,8 +10976,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "dnk_finish_move1",
+   "status": "unassembled",
+   "evidence": "DOINK.ASM:622, .if NUM_DOINK_FINISHES",
    "from_generated": false,
    "ledgered": false
   },
@@ -10991,8 +10991,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "dnk_finish_move2",
+   "status": "unassembled",
+   "evidence": "DOINK.ASM:654, .if NUM_DOINK_FINISHES > 1",
    "from_generated": false,
    "ledgered": false
   },
@@ -11396,9 +11396,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_dnk_smove_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -11937,8 +11937,8 @@
    "local": false,
    "external_callers": 7,
    "references": 10,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_wrestler_do_taunt",
    "from_generated": false,
    "ledgered": false
   },
@@ -12087,8 +12087,8 @@
    "local": false,
    "external_callers": 0,
    "references": 0,
-   "status": "dead",
-   "evidence": "nothing anywhere names it",
+   "status": "unassembled",
+   "evidence": "WRESTLE2.ASM:3174, .if DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -12102,8 +12102,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "WRESTLE2.ASM:3158, .if DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -12912,8 +12912,8 @@
    "local": false,
    "external_callers": 0,
    "references": 0,
-   "status": "dead",
-   "evidence": "nothing anywhere names it",
+   "status": "unassembled",
+   "evidence": "SPECIAL.ASM:3040, .if DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -14082,8 +14082,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "AWARD.ASM:3100, .if 0",
    "from_generated": false,
    "ledgered": false
   },
@@ -16872,8 +16872,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "FINISEQ.ASM:92, .if NUM_BRET_FINISHES > 1",
    "from_generated": false,
    "ledgered": false
   },
@@ -16887,8 +16887,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "hrt_finish_move1",
+   "status": "unassembled",
+   "evidence": "BRET.ASM:665, .if NUM_BRET_FINISHES",
    "from_generated": false,
    "ledgered": false
   },
@@ -16902,8 +16902,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "hrt_finish_move2",
+   "status": "unassembled",
+   "evidence": "BRET.ASM:697, .if NUM_BRET_FINISHES > 1",
    "from_generated": false,
    "ledgered": false
   },
@@ -16992,10 +16992,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "hrt_grab_toss_air",
+   "status": "renamed",
+   "evidence": "WM_BRET_MON_GRAB_TOSS_AIR",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "hrt_hdhold_ddt",
@@ -17007,10 +17007,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "hrt_hdhold_ddt",
+   "status": "renamed",
+   "evidence": "WM_BRET_MON_HEADHOLD_DDT",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "hrt_hdhold_faceslam",
@@ -17022,10 +17022,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "hrt_hdhold_faceslam",
+   "status": "renamed",
+   "evidence": "WM_BRET_MON_HEADHOLD_FACESLAM",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "hrt_heldoh_anim",
@@ -17277,10 +17277,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "hrt_roll_uppercut",
+   "status": "renamed",
+   "evidence": "WM_BRET_MON_ROLL_UPPERCUT",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "hrt_roll_uppercut_anim",
@@ -17442,9 +17442,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "hrt_smove_table",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_hrt_smove_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -18194,8 +18194,8 @@
    "local": false,
    "external_callers": 1,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "init_smoves",
    "from_generated": false,
    "ledgered": false
   },
@@ -20354,8 +20354,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "FINISEQ.ASM:306, .if NUM_LEX_FINISHES",
    "from_generated": false,
    "ledgered": false
   },
@@ -20369,8 +20369,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "FINISEQ.ASM:324, .if NUM_LEX_FINISHES > 1",
    "from_generated": false,
    "ledgered": false
   },
@@ -20384,8 +20384,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "lex_finish_move1",
+   "status": "unassembled",
+   "evidence": "LEX.ASM:518, .if NUM_LEX_FINISHES",
    "from_generated": false,
    "ledgered": false
   },
@@ -20399,8 +20399,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "lex_finish_move2",
+   "status": "unassembled",
+   "evidence": "LEX.ASM:550, .if NUM_LEX_FINISHES > 1",
    "from_generated": false,
    "ledgered": false
   },
@@ -20534,10 +20534,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "lex_hdhold_elbow_face",
+   "status": "renamed",
+   "evidence": "special_processes",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "lex_hdhold_pile",
@@ -20549,10 +20549,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "lex_hdhold_pile",
+   "status": "renamed",
+   "evidence": "special_processes",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "lex_head_hit_dizzy_anim",
@@ -20909,9 +20909,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_lex_smove_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -22709,8 +22709,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "pal_getb",
+   "status": "unassembled",
+   "evidence": "PAL.ASM:280, .if NMBPAL",
    "from_generated": false,
    "ledgered": false
   },
@@ -22829,8 +22829,8 @@
    "local": false,
    "external_callers": 0,
    "references": 0,
-   "status": "dead",
-   "evidence": "nothing anywhere names it",
+   "status": "unassembled",
+   "evidence": "SPECIAL.ASM:3100, .if DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -23324,8 +23324,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "AWARD.ASM:3126, .if 0",
    "from_generated": false,
    "ledgered": false
   },
@@ -23414,8 +23414,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "und_2_raise_dead_anim",
    "from_generated": false,
    "ledgered": false
   },
@@ -23504,8 +23504,8 @@
    "local": false,
    "external_callers": 0,
    "references": 4,
-   "status": "cited",
-   "evidence": "react_debris2",
+   "status": "unassembled",
+   "evidence": "SPECIAL.ASM:3613, .if DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -23534,8 +23534,8 @@
    "local": false,
    "external_callers": 1,
    "references": 2,
-   "status": "cited",
-   "evidence": "reapersplat_anim",
+   "status": "unassembled",
+   "evidence": "SPECIAL.ASM:3027, .if DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -25862,8 +25862,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "rzr_finish1_move",
+   "status": "unassembled",
+   "evidence": "FINISEQ.ASM:259, .if NUM_RAZOR_FINISHES",
    "from_generated": false,
    "ledgered": false
   },
@@ -25877,8 +25877,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "rzr_finish2_move",
+   "status": "unassembled",
+   "evidence": "FINISEQ.ASM:277, .if NUM_RAZOR_FINISHES > 1",
    "from_generated": false,
    "ledgered": false
   },
@@ -25892,8 +25892,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "rzr_finish_move1",
+   "status": "unassembled",
+   "evidence": "RAZOR.ASM:466, .if NUM_RAZOR_FINISHES",
    "from_generated": false,
    "ledgered": false
   },
@@ -25907,8 +25907,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "rzr_finish_move2",
+   "status": "unassembled",
+   "evidence": "RAZOR.ASM:498, .if NUM_RAZOR_FINISHES > 1",
    "from_generated": false,
    "ledgered": false
   },
@@ -26297,9 +26297,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_rzr_smove_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -26762,8 +26762,8 @@
    "local": false,
    "external_callers": 2,
    "references": 3,
-   "status": "cited",
-   "evidence": "saltsplat_anim",
+   "status": "unassembled",
+   "evidence": "SPECIAL.ASM:3049, .if DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -27572,8 +27572,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_arcade_und_shake_world",
    "from_generated": false,
    "ledgered": false
   },
@@ -29492,8 +29492,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "FINISEQ.ASM:384, .if NUM_SHAWN_FINISHES",
    "from_generated": false,
    "ledgered": false
   },
@@ -29507,8 +29507,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "FINISEQ.ASM:402, .if NUM_SHAWN_FINISHES > 1",
    "from_generated": false,
    "ledgered": false
   },
@@ -29522,8 +29522,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "shn_finish_move1",
+   "status": "unassembled",
+   "evidence": "SHAWN.ASM:507, .if NUM_SHAWN_FINISHES",
    "from_generated": false,
    "ledgered": false
   },
@@ -29537,8 +29537,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "shn_finish_move2",
+   "status": "unassembled",
+   "evidence": "SHAWN.ASM:539, .if NUM_SHAWN_FINISHES > 1",
    "from_generated": false,
    "ledgered": false
   },
@@ -29957,9 +29957,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_shn_smove_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -30917,8 +30917,8 @@
    "local": false,
    "external_callers": 1,
    "references": 2,
-   "status": "cited",
-   "evidence": "spiritsplat_anim",
+   "status": "unassembled",
+   "evidence": "SPECIAL.ASM:3006, .if DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -31067,10 +31067,10 @@
    "local": false,
    "external_callers": 7,
    "references": 8,
-   "status": "cited",
-   "evidence": "std_taunt",
+   "status": "renamed",
+   "evidence": "special_processes",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "std_walk_fast",
@@ -31082,10 +31082,10 @@
    "local": false,
    "external_callers": 7,
    "references": 8,
-   "status": "cited",
-   "evidence": "std_walk_fast",
+   "status": "renamed",
+   "evidence": "special_processes",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "strip_white",
@@ -31292,8 +31292,8 @@
    "local": false,
    "external_callers": 0,
    "references": 0,
-   "status": "dead",
-   "evidence": "nothing anywhere names it",
+   "status": "unassembled",
+   "evidence": "UTIL.ASM:3027, .if DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -31307,8 +31307,8 @@
    "local": false,
    "external_callers": 0,
    "references": 0,
-   "status": "dead",
-   "evidence": "nothing anywhere names it",
+   "status": "unassembled",
+   "evidence": "UTIL.ASM:3016, .if DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -31622,8 +31622,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "und_2_raise_dead_anim",
    "from_generated": false,
    "ledgered": false
   },
@@ -33362,8 +33362,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "FINISEQ.ASM:355, .if NUM_TAKER_FINISHES > 1",
    "from_generated": false,
    "ledgered": false
   },
@@ -33377,8 +33377,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "und_finish_move1",
+   "status": "implemented",
+   "evidence": "wm_arcade_und_finish_move1",
    "from_generated": false,
    "ledgered": false
   },
@@ -33392,8 +33392,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "und_finish_move2",
+   "status": "unassembled",
+   "evidence": "TAKER.ASM:717, .if NUM_TAKER_FINISHES > 1",
    "from_generated": false,
    "ledgered": false
   },
@@ -33902,9 +33902,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_und_smove_table",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -34067,8 +34067,8 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "cited",
-   "evidence": "und_tombbits",
+   "status": "unassembled",
+   "evidence": "SPECIAL.ASM:3917, .if DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -34082,8 +34082,8 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "cited",
-   "evidence": "und_tombbits2",
+   "status": "unassembled",
+   "evidence": "SPECIAL.ASM:3890, .if DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -37038,8 +37038,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "FINISEQ.ASM:166, .if NUM_YOKO_FINISHES",
    "from_generated": false,
    "ledgered": false
   },
@@ -37053,8 +37053,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "FINISEQ.ASM:184, .if NUM_YOKO_FINISHES > 1",
    "from_generated": false,
    "ledgered": false
   },
@@ -37068,8 +37068,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "yok_finish_move1",
+   "status": "unassembled",
+   "evidence": "YOKO.ASM:543, .if NUM_YOKO_FINISHES",
    "from_generated": false,
    "ledgered": false
   },
@@ -37083,8 +37083,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "yok_finish_move2",
+   "status": "unassembled",
+   "evidence": "YOKO.ASM:575, .if NUM_YOKO_FINISHES > 1",
    "from_generated": false,
    "ledgered": false
   },
@@ -37503,9 +37503,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "tbl_yok_smove_table",
+   "from_generated": true,
    "ledgered": false
   },
   {

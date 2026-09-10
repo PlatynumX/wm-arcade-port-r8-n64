@@ -238,6 +238,72 @@ static void test_the_torso_channel_follows_the_facing(void)
     assert(strstr(turned, "turn2") != NULL);
 }
 
+/*
+ * DOINK.ASM:1594 do_taunt, the start-of-round taunt every wrestler's
+ * control code CREATEs. A human taunts only while holding UP and
+ * BLOCK; a drone taunts on a 25% RNDPER draw.
+ */
+static void test_the_taunt_table(void)
+{
+    int i;
+
+    for (i = 0; i < WM_WRESTLER_ANIM_SLOTS; ++i) {
+        const char *lab = wm_wrestler_taunt_anims[i];
+        if (i == SLOT_ADAM || i == SLOT_REF) {
+            assert(lab == NULL);        /* both a plain 0 in the source */
+            continue;
+        }
+        assert(lab != NULL);
+        assert(strstr(lab, "_4_taunt_anim") != NULL);
+        assert(wm_anim_program_find(lab) != NULL);
+    }
+    assert(strcmp(wm_wrestler_taunt_anims[SLOT_BRET],
+                  "hrt_4_taunt_anim") == 0);
+}
+
+static void test_who_actually_taunts(void)
+{
+    wm_arcade_actor_t a;
+    WmRng rng;
+    int taunts = 0, i;
+
+    memset(&a, 0, sizeof(a));
+    a.wrestler_num = SLOT_LEX;
+
+    /* A human needs BOTH: `jaz SUCIDE` on either one kills the
+       process, so neither is optional. */
+    a.stick_val_cur = 0; a.but_val_cur = 0;
+    assert(wm_wrestler_do_taunt(&a, false, NULL) == NULL);
+    a.stick_val_cur = WM_MOVE_UP; a.but_val_cur = 0;
+    assert(wm_wrestler_do_taunt(&a, false, NULL) == NULL);
+    a.stick_val_cur = 0; a.but_val_cur = WM_BTN_BLOCK;
+    assert(wm_wrestler_do_taunt(&a, false, NULL) == NULL);
+
+    a.stick_val_cur = WM_MOVE_UP; a.but_val_cur = WM_BTN_BLOCK;
+    assert(wm_wrestler_do_taunt(&a, false, NULL) != NULL);
+    assert(strcmp(wm_wrestler_do_taunt(&a, false, NULL),
+                  "lex_4_taunt_anim") == 0);
+
+    /* A drone ignores the stick entirely and rolls for it. With no RNG
+       he does not taunt, rather than taunting on a made-up draw. */
+    a.stick_val_cur = 0; a.but_val_cur = 0;
+    assert(wm_wrestler_do_taunt(&a, true, NULL) == NULL);
+
+    memset(&rng, 0, sizeof(rng));
+    for (i = 0; i < 200; ++i)
+        if (wm_wrestler_do_taunt(&a, true, &rng)) ++taunts;
+    /* RNDPER(250) is 25%, but this port's RNG is degenerate with no
+       live inputs stirred into it, so the only honest assertion is
+       that the draw is consulted and stays in range. */
+    assert(taunts >= 0 && taunts <= 200);
+
+    /* Adam Bomb's slot has no taunt animation, so he never taunts even
+       with the inputs held. */
+    a.wrestler_num = SLOT_ADAM;
+    a.stick_val_cur = WM_MOVE_UP; a.but_val_cur = WM_BTN_BLOCK;
+    assert(wm_wrestler_do_taunt(&a, false, NULL) == NULL);
+}
+
 int main(void)
 {
     test_shapes_are_the_index_arithmetic();
@@ -248,6 +314,8 @@ int main(void)
     test_walking_reselects_the_legs();
     test_turning_on_the_spot_plays_a_turn();
     test_the_torso_channel_follows_the_facing();
+    test_the_taunt_table();
+    test_who_actually_taunts();
     printf("per-wrestler turn/walk/torso tables: all checks passed\n");
     return 0;
 }

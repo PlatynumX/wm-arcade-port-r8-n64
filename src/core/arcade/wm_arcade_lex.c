@@ -36,6 +36,12 @@ static const wm_arcade_input_pattern_t secret_patterns[]={
     {"sliding_elbow",s_toward_punch,3,30},
     {"hammer",s_toward_skick,3,32}
 };
+/* WRESTLE2.ASM's lex_smove_table, as the assembler built it.
+   The finishing-move entries every one of these tables carries sit
+   inside `.if NUM_LEX_FINISHES`, and GAME.EQU:585 sets that switch to
+   0 -- so none of them was assembled. Generated as
+   wm_wrestler_smoves[] (wm/wrestler_anim_tables.h); a source-tool test
+   holds this copy to it. */
 static const char *const special_processes[]={
     "lex_hdhold_pile",
     "lex_hdhold_elbow_face",
@@ -44,9 +50,7 @@ static const char *const special_processes[]={
     "lex_hdhold_combo1",
     "lex_hdhold_combo2",
     "std_walk_fast",
-    "std_taunt",
-    "lex_finish_move1",
-    "lex_finish_move2"
+    "std_taunt"
 };
 
 const wm_arcade_wrestler_profile_t wm_arcade_profile_lex={

@@ -24,6 +24,9 @@ wlanim = load("wlanim", ROOT / "tools" / "wlanim.py")
 wlattack = load("wlattack", ROOT / "tools" / "wlattack.py")
 wlcommands = load("wlcommands", ROOT / "tools" / "wlcommands.py")
 wlpuppet = load("wlpuppet", ROOT / "tools" / "wlpuppet.py")
+wltarget = load("wltarget", ROOT / "tools" / "wltarget.py")
+ani_code_census = load("ani_code_census",
+                       ROOT / "tools" / "ani_code_census.py")
 wlroll = load("wlroll", ROOT / "tools" / "wlroll.py")
 wlvoice = load("wlvoice", ROOT / "tools" / "wlvoice.py")
 wlwrsnd = load("wlwrsnd", ROOT / "tools" / "wlwrsnd.py")
@@ -1462,6 +1465,98 @@ def test_a_local_routine_defined_twice_gets_two_rows() -> None:
                     if not n.startswith("#") and a != "0"]
 
 
+def test_every_ani_code_call_site_resolves() -> None:
+    """The other direction: every CALL SITE must reach a registry row.
+
+    test_anim_code_registry_reaches_its_call_sites checks that no row is
+    spelled in a way nothing calls. This checks that nothing called is
+    left unanswered -- resolved the way wm_anim_code_run resolves it, so
+    a routine translated for one file does not count as translated for a
+    file it was never written in, and a local definition without a row
+    does not hide behind a sibling that has one.
+
+    ANI_CODE is at 100% as of this commit. If that ever stops being true
+    this test says which routine, rather than a percentage quietly
+    slipping in a report nobody reads.
+    """
+    if not (wlanim.ORIG / "ANIM.ASM").exists():
+        return
+    uses = ani_code_census.call_sites()
+    known = ani_code_census.covered()
+    gaps = sorted(k for k in uses if not ani_code_census.resolves(k, known))
+    assert not gaps, gaps
+    assert sum(uses.values()) == 2303, sum(uses.values())
+
+
+def test_target_offsets_grid() -> None:
+    """TABLES.ASM's target grid, checked against the source a second way.
+
+    set_target_offsets indexes it `WRESTLERNUM * 5 + area`, three words
+    each, into `#mode_table[PLYRMODE]`. get_mode_height reads the SAME
+    grid at `15n + 1` words -- which is wrestler n's head Y, i.e. area 0's
+    Y -- so the two agree only if the row width really is five areas of
+    three words. That agreement is the check: it would break if the
+    extractor ever read the grid at the wrong stride.
+    """
+    if not (wlanim.ORIG / "TABLES.ASM").exists():
+        return
+    table = wltarget.mode_table()
+    blocks = wltarget.blocks()
+
+    assert len(table) == wltarget.MODE_SLOTS, len(table)
+    assert set(table) <= set(blocks), sorted(set(table) - set(blocks))
+
+    for name, grid in blocks.items():
+        assert len(grid) == wltarget.ROSTER_SLOTS, (name, len(grid))
+        for w, areas in enumerate(grid):
+            assert len(areas) == wltarget.AREAS, (name, w, len(areas))
+
+    # Every block collapses to one of four distinct ones, and PLYRMODE 17,
+    # 18, 22 and 23 have no block of their own -- the table points them at
+    # mode_normal, which is the source's own choice, not a fallback here.
+    distinct = {tuple(tuple(a) for a in blocks[n]) for n in table}
+    assert len(distinct) == 4, len(distinct)
+    for slot in (17, 18, 22, 23):
+        assert table[slot] == "mode_normal", (slot, table[slot])
+
+    # get_mode_height's own index: `15n + 1` WORDS into the block. Walk the
+    # rows flat and check that word is area 0's Y for every wrestler, in
+    # every block.
+    for name, grid in blocks.items():
+        flat = [v for areas in grid for xyz in areas for v in xyz]
+        for w in range(wltarget.ROSTER_SLOTS):
+            assert flat[15 * w + 1] == grid[w][0][1], (name, w)
+
+    # Slot 7 is Adam Bomb, cut from the game: every block writes him as
+    # literal zeroes rather than borrowing somebody else's body.
+    for name, grid in blocks.items():
+        assert all(xyz == (0, 0, 0) for xyz in grid[7]), name
+
+    # ...and nobody else is all-zero, which is what a mis-read block would
+    # look like.
+    for name, grid in blocks.items():
+        for w in range(wltarget.ROSTER_SLOTS):
+            if w == 7:
+                continue
+            assert any(v for xyz in grid[w] for v in xyz), (name, w)
+
+    # A head is above a chest is above a groin is above the knees is above
+    # the feet, for every real wrestler in the standing block. This is what
+    # makes ANI_TARGET's "higher index is nearer his feet" reading true.
+    for w in range(wltarget.ROSTER_SLOTS):
+        if w == 7:
+            continue
+        ys = [blocks["mode_normal"][w][a][1] for a in range(wltarget.AREAS)]
+        assert ys == sorted(ys, reverse=True), (w, ys)
+
+
+def test_target_tables_generate_the_shipped_file() -> None:
+    out = ROOT / "src" / "generated" / "target_tables.c"
+    if not (wlanim.ORIG / "TABLES.ASM").exists() or not out.exists():
+        return
+    assert wltarget.render_c() == out.read_text()
+
+
 def test_announce_tables() -> None:
     """DCSSOUND.ASM's announcer tables, against their own headers.
 
@@ -2027,6 +2122,9 @@ def main() -> int:
     test_per_wrestler_aux_tables()
     test_anim_code_registry_reaches_its_call_sites()
     test_a_local_routine_defined_twice_gets_two_rows()
+    test_every_ani_code_call_site_resolves()
+    test_target_offsets_grid()
+    test_target_tables_generate_the_shipped_file()
     test_code_roster_tables_are_read_not_transcribed()
     test_crowd_tables_come_out_of_the_source()
     test_announce_tables()

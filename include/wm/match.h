@@ -11,6 +11,7 @@
 #include "wm/arcade/wm_arcade_roster.h"
 #include "wm/arcade/wm_arcade_round.h"
 #include "wm/arcade/wm_arcade_round_announce.h"
+#include "wm/arcade/wm_arcade_target.h"
 #include "wm/arcade/wmania_rng.h"
 #include "wm/arcade/wmania_rope_runtime.h"
 #include "wm/arcade/wm_arcade_announcer.h"
@@ -152,6 +153,17 @@ typedef struct {
      * "active wrestlers minus two" (WRESTLE.ASM:4552), so a 1-on-1 match
      * has it at 0 and debris on.
      */
+    /* LIFEBAR.ASM's MOVE_NAME_ANNC state: which names have been shown
+       and whether one is up on either side. */
+    wm_move_name_state move_names;
+    /* What the last move-name draw asked for, for a renderer to read. */
+    struct {
+        int side;
+        int index;
+        const char *image;
+        uint32_t drawn;
+    } move_name;
+
     struct {
         bool no_debris;
         int32_t reduce_bog;

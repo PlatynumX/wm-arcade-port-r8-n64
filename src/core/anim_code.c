@@ -38,6 +38,7 @@
 #include "wm/wrestler_sound_tables.h"
 #include "wm/arcade/wmania_rope_command.h"
 #include "wm/anim_puppet.h"
+#include "wm/arcade/wm_arcade_target.h"
 
 #include <string.h>
 
@@ -760,6 +761,288 @@ static void bucket_salt(wm_arcade_actor_t *actor, const wm_anim_env *env,
     if (!actor || !env) return;
     if (!rndper(env, WM_BUCKET_SALT_PERCENT)) return;   /* `jrls #x` */
     create_bucket_salt(actor, env, param);
+}
+
+/*
+ * HRTSEQ3.ASM:1399 draw_ddt_name -- "Draw hip toss message", except the
+ * index it passes is 16, which #message_tbl calls DDT. The label is the
+ * honest one; the comment is a leftover.
+ */
+#define WM_DDT_MESSAGE_INDEX 16
+
+static void draw_ddt_name(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                          int32_t param) {
+    (void)param;
+    if (!actor || !env || !env->draw_move_name) return;
+    env->draw_move_name(env->screen_user, (int)actor->player_side,
+                        WM_DDT_MESSAGE_INDEX);
+}
+
+/*
+ * BAMSEQ2.ASM:1224 #attach_victim -- "pretend collision". It swaps a13 to
+ * the man it hit and calls REACT5.ASM:409 hit_puppet_even_if_dead, which
+ * is the attach every puppet move goes through: the victim becomes a
+ * PUPPET, the two point at each other, he starts his own wres_slave_anim,
+ * and his getup timer is cleared.
+ */
+static void attach_victim(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                          int32_t param) {
+    wm_arcade_actor_t *v;
+    (void)param;
+    if (!actor || !actor->who_i_hit) return;
+    v = actor->who_i_hit;
+    v->player_mode = (uint16_t)WM_PMODE_PUPPET;
+    v->attach_proc = actor;
+    actor->attach_proc = v;
+    v->getup_time = 0;
+    v->puppet_frame = 0;
+    if (env && env->change_opp_anim)
+        env->change_opp_anim(v, "wres_slave_anim", env->slave_user);
+}
+
+/*
+ * BAMSEQ2.ASM:1235 #set_new_position -- where Bam Bam comes back after
+ * the bellyflop takes him off screen. It walks #init_positions for the
+ * first entry that is on screen, and the source says what the last one is
+ * for: "If none of them are onscreen (should never happen,) use the last
+ * entry in the table."
+ *
+ * "On screen" is `WORLDTLX + 25 <= X <= WORLDTLX + 375` -- the source
+ * writes the second bound as `addi 350` onto the first, so it is 375 from
+ * the left edge, not the 400-25 its own comment claims. This port has no
+ * scroll, so WORLDTLX is 0 and the walk lands on whichever entry sits in
+ * that window at the ring's own coordinates. The table is read out of the
+ * source; only the camera is missing.
+ */
+typedef struct { int16_t x, z, y; uint8_t out_of_ring; } wm_reappear_pos;
+
+/* BAMSEQ2.ASM:1281 #init_positions. RING_* come from RING.EQU through
+   wm/arcade/wmania_ring_geometry.h, so the five in-ring rows are the ring
+   this port already has rather than numbers copied out. */
+static const wm_reappear_pos REAPPEAR[] = {
+    { (int16_t)WM_RING_X_CENTER, (int16_t)WM_RING_Z_CENTER,
+      (int16_t)WM_MAT_Y, 0 },                              /* center */
+    { (int16_t)WM_RING_TOP_LEFT, (int16_t)WM_RING_Z_CENTER,
+      (int16_t)WM_MAT_Y, 0 },                              /* center left */
+    { (int16_t)WM_RING_TOP_RIGHT, (int16_t)WM_RING_Z_CENTER,
+      (int16_t)WM_MAT_Y, 0 },                              /* center right */
+    { (int16_t)WM_RING_BOT_LEFT, (int16_t)WM_RING_BOT,
+      (int16_t)WM_MAT_Y, 0 },                              /* bottom left */
+    { (int16_t)WM_RING_BOT_RIGHT, (int16_t)WM_RING_BOT,
+      (int16_t)WM_MAT_Y, 0 },                              /* bottom right */
+    /* "various outside points." */
+    {  675, 1184, 0, 1 }, { 1475,  921, 0, 1 },
+    {  965,  683, 0, 1 }, { 1253,  656, 0, 1 },
+    {  814, 1648, 0, 1 }, { 1415, 1608, 0, 1 },
+    { 1097, 1648, 0, 1 }, {  659,  696, 0, 1 },
+    {  528, 1657, 0, 1 }, { 1652, 1615, 0, 1 }
+};
+
+#define WM_REAPPEAR_NEAR 25
+#define WM_REAPPEAR_FAR 375        /* `addk 25` then `addi 350` */
+
+static void set_new_position(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                             int32_t param) {
+    const size_t n = sizeof(REAPPEAR) / sizeof(REAPPEAR[0]);
+    const wm_reappear_pos *use = &REAPPEAR[n - 1];   /* `#usea0` default */
+    int32_t left;
+    size_t i;
+    (void)param;
+    if (!actor) return;
+    /* @WORLDTLX >> 16: the scroll's own left edge, which this port pins
+       at 0 because it has no scroll to move. */
+    left = env ? env->world_tlx : 0;
+    for (i = 0; i + 1 < n; ++i) {
+        int32_t x = REAPPEAR[i].x;
+        if (x < left + WM_REAPPEAR_NEAR) continue;   /* `jrlt #nxt1` */
+        if (x > left + WM_REAPPEAR_FAR) continue;    /* `jrle #usea0` */
+        use = &REAPPEAR[i];
+        break;
+    }
+    actor->x_int = use->x;
+    actor->x_fixed = (int32_t)use->x << 16;
+    actor->z_int = use->z;
+    actor->z_fixed = (int32_t)use->z << 16;
+    actor->y_int = use->y;
+    actor->y_fixed = (int32_t)use->y << 16;
+    actor->ground_y = use->y;
+    /* INRING's polarity is the source's -- the table's own column is 1
+       for the outside points -- and this port stores the boolean. */
+    actor->in_ring = use->out_of_ring ? 0 : 1;
+}
+
+/*
+ * SHNSEQ3.ASM:478 #pause_opp -- the source's own comment: "Cause opponent
+ * to pause on whatever frame he is on - no rotating allowed!" Twenty-five
+ * ticks into his animation's own counter, and MODE_UNINT on so nothing
+ * else takes him over while he is frozen.
+ */
+#define WM_PAUSE_OPP_TICKS 25u
+
+static void pause_opp(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                      int32_t param) {
+    (void)env;
+    (void)param;
+    if (!actor || !actor->who_i_hit) return;
+    actor->who_i_hit->anicnt_override = WM_PAUSE_OPP_TICKS;
+    actor->who_i_hit->anim_mode |= (uint16_t)WM_MODE_UNINT;
+}
+
+/*
+ * SHNSEQ3.ASM:1507 #set_opp_xy -- the hip toss letting go. The victim gets
+ * 3.0 up and 2.0 back in Z (unless he is BLOCKING, which keeps his Z), and
+ * 3.0 of X away from where he is facing.
+ *
+ * The X half is gated: it happens when the thrower is IN the ring, or --
+ * when he is outside it -- only while he is within 0A0h of the ring's
+ * middle. Outside that the source falls through with the X untouched, so
+ * a throw from the far corner does not fling him across the screen.
+ *
+ * INRING's polarity is the source's: 0 means in the ring
+ * (PLYR.EQU:103), so `jrnz #ok` fires for a man who is OUT.
+ */
+#define WM_SET_OPP_XY_YVEL 0x30000
+#define WM_SET_OPP_XY_ZVEL 0x20000
+#define WM_SET_OPP_XY_XVEL 0x30000
+#define WM_SET_OPP_XY_MID_LIMIT 0xA0
+
+static void set_opp_xy(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                       int32_t param) {
+    wm_arcade_actor_t *v;
+    int32_t from_mid;
+    (void)env;
+    (void)param;
+    if (!actor || !actor->who_i_hit) return;
+    v = actor->who_i_hit;
+
+    if (v->player_mode != WM_PMODE_BLOCK)          /* `jreq #noz` */
+        v->z_vel = -WM_SET_OPP_XY_ZVEL;
+    v->y_vel = WM_SET_OPP_XY_YVEL;
+
+    if (!actor->in_ring) {                         /* `jrnz #ok` inverted */
+        from_mid = actor->x_int - WM_RING_X_MID;
+        if (from_mid < 0) from_mid = -from_mid;    /* `abs a14` */
+        if (from_mid >= WM_SET_OPP_XY_MID_LIMIT) return;   /* `jrlt #ok` */
+    }
+    /* `btst MOVE_RIGHT_BIT` on the VICTIM's NEW_FACING_DIR. */
+    v->x_vel = (v->new_facing_dir & WM_MOVE_RIGHT) ? -WM_SET_OPP_XY_XVEL
+                                                   : WM_SET_OPP_XY_XVEL;
+}
+
+/* ================================================================== *
+ * The target group: everything that ends in TABLES.ASM's own
+ * set_target_offsets (wm/arcade/wm_arcade_target.h).
+ * ================================================================== */
+
+/*
+ * DNKSEQ2.ASM:3092 and SHNSEQ2.ASM:1109 #set_target -- byte-identical, and
+ * the source's own comments carry the reasoning: past 40h of X gap "we are
+ * to side of fallen opponent, we must float toward his head or his knees",
+ * and inside it "just drop straight down" onto the chest.
+ *
+ * Which end depends on BOTH flips: "Take into account my flip as well as
+ * my opponents flip!" Matching flips means he is looking at the man's
+ * feet, so the knees are the near end; differing flips put the head there.
+ */
+#define WM_SET_TARGET_SIDE_X 0x40
+
+static void set_target_side(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                            int32_t param) {
+    const wm_arcade_actor_t *opp;
+    (void)param;
+    if (!actor) return;
+    opp = actor->smart_target ? actor->smart_target
+                              : (env ? env->opponent : NULL);
+    if (!opp) return;
+    if (actor->closest_xdist < WM_SET_TARGET_SIDE_X) {   /* `jrlt #drop` */
+        wm_arcade_set_target_offsets(actor, opp, WM_TGT_CHEST);
+        return;
+    }
+    if (((actor->obj_control ^ opp->obj_control) & WM_OBJ_FLIPH) != 0)
+        wm_arcade_set_target_offsets(actor, opp, WM_TGT_HEAD);
+    else
+        wm_arcade_set_target_offsets(actor, opp, WM_TGT_KNEES);
+}
+
+/*
+ * DNKSEQ2.ASM:3394 #set_target -- the same name in the same file, and a
+ * completely different routine: this one reads the STICK.
+ *
+ * The source's own comments are "Go to chest or if opponent is flipped, go
+ * to head!" for left and the mirror for right -- but read the labels, not
+ * the comments: `#chest` sets TGT_KNEES. The name is a leftover; the
+ * value is what ships, so the value is what is translated.
+ *
+ * The no-stick case is a commented-out RNDRNG0 over four areas with a flat
+ * TGT_CHEST left live under it, so the randomisation is dead code and the
+ * chest is what actually happens.
+ */
+static void set_target_stick(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                             int32_t param) {
+    const wm_arcade_actor_t *opp;
+    bool opp_flipped;
+    (void)param;
+    if (!actor) return;
+    opp = actor->smart_target ? actor->smart_target
+                              : (env ? env->opponent : NULL);
+    if (!opp) return;
+    opp_flipped = (opp->obj_control & WM_OBJ_FLIPH) != 0;
+
+    if (actor->stick_val_cur & WM_MOVE_LEFT) {          /* `#lft` */
+        wm_arcade_set_target_offsets(
+            actor, opp, opp_flipped ? WM_TGT_HEAD : WM_TGT_KNEES);
+        return;
+    }
+    if (actor->stick_val_cur & WM_MOVE_RIGHT) {         /* `#rgt` */
+        wm_arcade_set_target_offsets(
+            actor, opp, opp_flipped ? WM_TGT_KNEES : WM_TGT_HEAD);
+        return;
+    }
+    wm_arcade_set_target_offsets(actor, opp, WM_TGT_CHEST);
+}
+
+/*
+ * SHNSEQ2.ASM:1832 elbow_tgt2 -- the elbow drop picks the groin when the
+ * two are facing the SAME way and the chest when they are not. Note the
+ * sense is inverted from #set_target's, and the `#head` label it jumps to
+ * sets TGT_CHEST -- another leftover name.
+ */
+static void elbow_tgt2(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                       int32_t param) {
+    const wm_arcade_actor_t *opp;
+    (void)param;
+    if (!actor) return;
+    opp = actor->smart_target ? actor->smart_target
+                              : (env ? env->opponent : NULL);
+    if (!opp) return;
+    /* `andi MOVE_RIGHT|MOVE_LEFT` on each FACING_DIR, then `cmp / jreq`. */
+    if ((actor->facing_dir & (WM_MOVE_RIGHT | WM_MOVE_LEFT)) ==
+        (opp->facing_dir & (WM_MOVE_RIGHT | WM_MOVE_LEFT)))
+        wm_arcade_set_target_offsets(actor, opp, WM_TGT_CHEST);
+    else
+        wm_arcade_set_target_offsets(actor, opp, WM_TGT_GROIN);
+}
+
+/*
+ * DNKSEQ3.ASM:2025 SET_OPTIMAL_POSITION -- not a target at all: it MOVES
+ * the man he is holding, to a flat 70 in front of himself, so the
+ * uppercut sequence starts from a known distance whatever the grapple
+ * left behind.
+ */
+#define WM_OPTIMAL_POSITION_X 0x460000      /* `movi [70,0],a1` */
+
+static void set_optimal_position(wm_arcade_actor_t *actor,
+                                 const wm_anim_env *env, int32_t param) {
+    wm_arcade_actor_t *victim;
+    int32_t dx;
+    (void)env;
+    (void)param;
+    if (!actor || !actor->who_i_hit) return;
+    victim = actor->who_i_hit;
+    dx = (actor->facing_dir & WM_MOVE_LEFT) ? -WM_OPTIMAL_POSITION_X
+                                            : WM_OPTIMAL_POSITION_X;
+    victim->x_fixed = actor->x_fixed + dx;
+    victim->x_int = victim->x_fixed >> 16;
 }
 
 /*
@@ -2683,6 +2966,16 @@ static const struct {
     { "BROKEN_ARM_BLOOD", NULL, broken_arm_blood, 0, 0 },
     { "#stop_debris", "LEXSEQ2.ASM", stop_debris, 0, 754 },
     { "#restore_debris", "LEXSEQ2.ASM", restore_debris, 0, 761 },
+    { "draw_ddt_name", NULL, draw_ddt_name, 0, 0 },
+    { "#attach_victim", "BAMSEQ2.ASM", attach_victim, 0, 1224 },
+    { "#set_new_position", "BAMSEQ2.ASM", set_new_position, 0, 1235 },
+    { "#pause_opp", "SHNSEQ3.ASM", pause_opp, 0, 478 },
+    { "#set_opp_xy", "SHNSEQ3.ASM", set_opp_xy, 0, 1507 },
+    { "#set_target", "DNKSEQ2.ASM", set_target_side, 0, 3092 },
+    { "#set_target", "SHNSEQ2.ASM", set_target_side, 0, 1109 },
+    { "#set_target", "DNKSEQ2.ASM", set_target_stick, 0, 3394 },
+    { "elbow_tgt2", NULL, elbow_tgt2, 0, 0 },
+    { "SET_OPTIMAL_POSITION", NULL, set_optimal_position, 0, 0 },
     { "shake_all_ropes", NULL, shake_all_ropes, 0, 0 },
     { "get_leap", NULL, get_leap, 0, 0 },
     { "hit_nearest", NULL, hit_nearest, 0, 0 },

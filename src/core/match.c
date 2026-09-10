@@ -121,6 +121,24 @@ static void match_create_debris(void *user, const char *effect,
     m->debris.created += (uint32_t)count;
 }
 
+/*
+ * LIFEBAR.ASM:3444 MOVE_NAME_ANNC. The three gates are translated
+ * (wm_move_name_should_draw); what is left is the drawing, which needs a
+ * renderer, so it is recorded for one.
+ */
+static void match_draw_move_name(void *user, int side, int index) {
+    wm_match_state *m = (wm_match_state *)user;
+    if (!m) return;
+    if (!wm_move_name_should_draw(&m->move_names, side, index,
+                                  m->debris.reduce_bog > 0))
+        return;
+    m->move_name.side = side;
+    m->move_name.index = index;
+    m->move_name.image = (index >= 0 && index < WM_MOVE_NAME_COUNT)
+                             ? wm_move_name_images[index] : 0;
+    ++m->move_name.drawn;
+}
+
 /* @no_debris, written by create_impact4/flykick and by LEXSEQ2's
    #stop_debris / #restore_debris pair. */
 static void match_set_no_debris(void *user, bool off) {
@@ -291,6 +309,8 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
     /* WRESTLE.ASM:4552 init_reduce_bog, with this match's two actors. */
     m->debris.no_debris = false;
     m->debris.reduce_bog = (int32_t)m->actor_count - 2;
+    wm_move_name_init(&m->move_names);
+    memset(&m->move_name, 0, sizeof(m->move_name));
     wm_arcade_match_score_init(&m->score);
 }
 
@@ -355,6 +375,8 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
     /* WRESTLE.ASM:4552 init_reduce_bog, with this match's two actors. */
     m->debris.no_debris = false;
     m->debris.reduce_bog = (int32_t)m->actor_count - 2;
+    wm_move_name_init(&m->move_names);
+    memset(&m->move_name, 0, sizeof(m->move_name));
     wm_arcade_match_score_init(&m->score);
 }
 
@@ -572,6 +594,10 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             m->bret_visual[i].anim_env.debris_user = m;
             m->bret_visual[i].anim_env.create_debris = match_create_debris;
             m->bret_visual[i].anim_env.set_no_debris = match_set_no_debris;
+            m->wrestler_visual[i].anim_env.screen_user = m;
+            m->wrestler_visual[i].anim_env.draw_move_name = match_draw_move_name;
+            m->bret_visual[i].anim_env.screen_user = m;
+            m->bret_visual[i].anim_env.draw_move_name = match_draw_move_name;
             /*
              * WRESTLE.ASM's match-configuration globals, as this match
              * actually is: no royal rumble, PSTATUS 0 for the attract

@@ -16,6 +16,7 @@
 #include "wm/announce_tables.h"
 #include "wm/anim_puppet.h"
 #include "wm/arcade/wm_arcade_round_announce.h"
+#include "wm/arcade/wm_arcade_target.h"
 #include "wm/award.h"
 #include "wm/wrestler_sound_tables.h"
 #include "wm/arcade/wm_arcade_announcer.h"
@@ -5485,6 +5486,429 @@ static void test_debris_family(void) {
 }
 
 /*
+ * TABLES.ASM's target grid and everything that reads it: ANI_TARGET,
+ * set_target_offsets, and the four ANI_CODE routines that end in it.
+ */
+static void test_target_offsets(void) {
+    wm_arcade_actor_t a, v;
+    wm_anim_env env;
+    wm_target_offset o;
+
+    /* 26 PLYRMODEs, four distinct blocks. */
+    CHECK(wm_target_block_count() == 4u);
+
+    /* TABLES.ASM:147, transcribed: Bret standing, head at 7,105,0. */
+    CHECK(wm_target_offsets(WM_ROSTER_BRET, WM_PMODE_NORMAL, WM_TGT_HEAD, &o));
+    CHECK(o.x == 7 && o.y == 105 && o.z == 0);
+    CHECK(wm_target_offsets(WM_ROSTER_BRET, WM_PMODE_NORMAL, WM_TGT_FEET, &o));
+    CHECK(o.x == 21 && o.y == 9 && o.z == 0);
+    /* Shawn is the short one: 97 to Bret's 105 and the Taker's 110. */
+    CHECK(wm_target_offsets(WM_ROSTER_SHAWN, WM_PMODE_NORMAL, WM_TGT_HEAD, &o));
+    CHECK(o.y == 97);
+    CHECK(wm_target_offsets(WM_ROSTER_TAKER, WM_PMODE_NORMAL, WM_TGT_HEAD, &o));
+    CHECK(o.y == 110);
+
+    /* A man on the ground is a different shape, and mode_dead shares that
+       block -- the source arguing with itself about it in a comment. */
+    CHECK(wm_target_offsets(WM_ROSTER_BRET, WM_PMODE_ONGROUND, WM_TGT_HEAD, &o));
+    CHECK(o.x == 51 && o.y == 9);
+    {
+        wm_target_offset d;
+        CHECK(wm_target_offsets(WM_ROSTER_BRET, WM_PMODE_DEAD, WM_TGT_HEAD, &d));
+        CHECK(d.x == o.x && d.y == o.y && d.z == o.z);
+    }
+
+    /* PLYRMODE 17, 18, 22 and 23 have no block of their own; #mode_table
+       points them at mode_normal. */
+    {
+        wm_target_offset n, m;
+        CHECK(wm_target_offsets(WM_ROSTER_BRET, WM_PMODE_NORMAL,
+                                WM_TGT_CHEST, &n));
+        CHECK(wm_target_offsets(WM_ROSTER_BRET, 17, WM_TGT_CHEST, &m));
+        CHECK(m.x == n.x && m.y == n.y);
+        CHECK(wm_target_offsets(WM_ROSTER_BRET, 22, WM_TGT_CHEST, &m));
+        CHECK(m.x == n.x && m.y == n.y);
+    }
+
+    /* Out of range declines rather than reading past the grid. */
+    CHECK(!wm_target_offsets(-1, WM_PMODE_NORMAL, WM_TGT_HEAD, NULL));
+    CHECK(!wm_target_offsets(9, WM_PMODE_NORMAL, WM_TGT_HEAD, NULL));
+    CHECK(!wm_target_offsets(0, 26, WM_TGT_HEAD, NULL));
+    CHECK(!wm_target_offsets(0, WM_PMODE_NORMAL, 5, NULL));
+
+    /* set_target_offsets reads the TARGET's number and mode, not the
+       actor's -- aiming at Shawn's head is 97 whoever is aiming. */
+    memset(&a, 0, sizeof(a));
+    memset(&v, 0, sizeof(v));
+    a.wrestler_num = WM_ROSTER_TAKER;
+    v.wrestler_num = WM_ROSTER_SHAWN;
+    wm_arcade_set_target_offsets(&a, &v, WM_TGT_HEAD);
+    CHECK(a.tgt_yoff == 97);
+    CHECK(v.tgt_yoff == 0);              /* the target is not written */
+
+    /* get_mode_height is the same number, read the other way round. */
+    CHECK(wm_arcade_get_mode_height(&v) == 97);
+    v.player_mode = WM_PMODE_ONGROUND;
+    CHECK(wm_arcade_get_mode_height(&v) != 97);
+
+    /*
+     * ANI_TARGET picks by FLIP BITS, not by distance. Matching flips means
+     * he is looking at the victim's feet, so the HIGHER area index is the
+     * near one; ATM_FARTHEST inverts it.
+     */
+    memset(&a, 0, sizeof(a));
+    memset(&v, 0, sizeof(v));
+    a.wrestler_num = WM_ROSTER_BRET;
+    v.wrestler_num = WM_ROSTER_BRET;
+    a.obj_control = 0;
+    v.obj_control = 0;                   /* flips match: facing his feet */
+    wm_arcade_anim_target(&a, &v, WM_TGT_HEAD, WM_TGT_KNEES, WM_ATM_CLOSEST);
+    CHECK(a.tgt_xoff == 17);             /* KNEES, the higher index */
+    wm_arcade_anim_target(&a, &v, WM_TGT_HEAD, WM_TGT_KNEES, WM_ATM_FARTHEST);
+    CHECK(a.tgt_xoff == 7);              /* HEAD */
+
+    v.obj_control = WM_OBJ_FLIPH;        /* flips differ: facing his head */
+    wm_arcade_anim_target(&a, &v, WM_TGT_HEAD, WM_TGT_KNEES, WM_ATM_CLOSEST);
+    CHECK(a.tgt_xoff == 7);
+    wm_arcade_anim_target(&a, &v, WM_TGT_HEAD, WM_TGT_KNEES, WM_ATM_FARTHEST);
+    CHECK(a.tgt_xoff == 17);
+
+    /* The operands are not required to be in order -- the routine compares
+       them rather than assuming target1 < target2. */
+    v.obj_control = 0;
+    wm_arcade_anim_target(&a, &v, WM_TGT_KNEES, WM_TGT_HEAD, WM_ATM_CLOSEST);
+    CHECK(a.tgt_xoff == 17);
+
+    /* ...and it always finishes with tgt_ground, so TGT_YOFF is zero
+       however tall the part it just aimed at was. */
+    CHECK(a.tgt_yoff == 0);
+
+    /*
+     * DNKSEQ2.ASM:3092 / SHNSEQ2.ASM:1109 #set_target: inside 40h of X,
+     * drop straight down onto the chest; outside it, head or knees by the
+     * two flips together.
+     */
+    memset(&env, 0, sizeof(env));
+    memset(&a, 0, sizeof(a));
+    memset(&v, 0, sizeof(v));
+    a.wrestler_num = WM_ROSTER_BRET;
+    v.wrestler_num = WM_ROSTER_BRET;
+    a.smart_target = &v;
+    a.closest_xdist = 0x3F;
+    CHECK(wm_anim_code_run(&a, &env, "#set_target", "DNKSEQ2.ASM", 3092));
+    CHECK(a.tgt_yoff == 85);                       /* CHEST */
+    CHECK(wm_anim_code_run(&a, &env, "#set_target", "SHNSEQ2.ASM", 1109));
+    CHECK(a.tgt_yoff == 85);                       /* the same routine */
+
+    a.closest_xdist = 0x40;                        /* `jrlt`, so 40h is out */
+    a.obj_control = 0;
+    v.obj_control = 0;                             /* flips match */
+    CHECK(wm_anim_code_run(&a, &env, "#set_target", "DNKSEQ2.ASM", 3092));
+    CHECK(a.tgt_yoff == 37);                       /* KNEES */
+    v.obj_control = WM_OBJ_FLIPH;
+    CHECK(wm_anim_code_run(&a, &env, "#set_target", "DNKSEQ2.ASM", 3092));
+    CHECK(a.tgt_yoff == 105);                      /* HEAD */
+
+    /*
+     * DNKSEQ2.ASM:3394 #set_target -- same name, same file, and a
+     * different routine entirely: this one reads the stick. Its `#chest`
+     * label sets TGT_KNEES, which is what ships.
+     */
+    memset(&a, 0, sizeof(a));
+    a.wrestler_num = WM_ROSTER_BRET;
+    a.smart_target = &v;
+    v.obj_control = 0;
+    a.stick_val_cur = WM_MOVE_LEFT;
+    CHECK(wm_anim_code_run(&a, &env, "#set_target", "DNKSEQ2.ASM", 3394));
+    CHECK(a.tgt_yoff == 37);                       /* KNEES, not chest */
+    v.obj_control = WM_OBJ_FLIPH;
+    CHECK(wm_anim_code_run(&a, &env, "#set_target", "DNKSEQ2.ASM", 3394));
+    CHECK(a.tgt_yoff == 105);                      /* HEAD */
+
+    a.stick_val_cur = WM_MOVE_RIGHT;               /* the mirror */
+    CHECK(wm_anim_code_run(&a, &env, "#set_target", "DNKSEQ2.ASM", 3394));
+    CHECK(a.tgt_yoff == 37);
+    v.obj_control = 0;
+    CHECK(wm_anim_code_run(&a, &env, "#set_target", "DNKSEQ2.ASM", 3394));
+    CHECK(a.tgt_yoff == 105);
+
+    a.stick_val_cur = 0;                           /* no stick: chest */
+    CHECK(wm_anim_code_run(&a, &env, "#set_target", "DNKSEQ2.ASM", 3394));
+    CHECK(a.tgt_yoff == 85);
+
+    /* SHNSEQ2.ASM:1832 elbow_tgt2 -- facing the same way is the chest,
+       facing opposite ways is the groin. */
+    memset(&a, 0, sizeof(a));
+    a.wrestler_num = WM_ROSTER_BRET;
+    a.smart_target = &v;
+    a.facing_dir = WM_MOVE_UP_RIGHT;
+    v.facing_dir = WM_MOVE_DOWN_RIGHT;             /* both RIGHT */
+    CHECK(wm_anim_code_run(&a, &env, "elbow_tgt2", NULL, 0));
+    CHECK(a.tgt_yoff == 85);                       /* CHEST */
+    v.facing_dir = WM_MOVE_DOWN_LEFT;
+    CHECK(wm_anim_code_run(&a, &env, "elbow_tgt2", NULL, 0));
+    CHECK(a.tgt_yoff == 57);                       /* GROIN */
+
+    /*
+     * DNKSEQ3.ASM:2025 SET_OPTIMAL_POSITION -- not a target at all: it
+     * moves the man he is holding to a flat 70 in front of himself.
+     */
+    memset(&a, 0, sizeof(a));
+    memset(&v, 0, sizeof(v));
+    a.who_i_hit = &v;
+    a.x_fixed = 0x1000000;
+    a.x_int = a.x_fixed >> 16;
+    a.facing_dir = WM_MOVE_UP_RIGHT;
+    CHECK(wm_anim_code_run(&a, &env, "SET_OPTIMAL_POSITION", NULL, 0));
+    CHECK(v.x_fixed == 0x1000000 + 0x460000);
+    CHECK(v.x_int == v.x_fixed >> 16);
+    a.facing_dir = WM_MOVE_UP_LEFT;
+    CHECK(wm_anim_code_run(&a, &env, "SET_OPTIMAL_POSITION", NULL, 0));
+    CHECK(v.x_fixed == 0x1000000 - 0x460000);
+
+    /* ...and the whole way round: an animation's own ANI_TARGET op. */
+    {
+        static const wm_anim_op ops[] = {
+            { WM_AOP_TARGET, 0, -1, WM_TGT_HEAD, WM_TGT_KNEES,
+              WM_ATM_CLOSEST, 0, 0, 0, NULL },
+            { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, NULL }
+        };
+        static const wm_anim_program prog = {
+            "test_target", "HRTSEQ2.ASM", ops, 2, 0, NULL, 0
+        };
+        wm_anim_exec ex;
+        memset(&a, 0, sizeof(a));
+        memset(&v, 0, sizeof(v));
+        memset(&env, 0, sizeof(env));
+        a.wrestler_num = WM_ROSTER_BRET;
+        v.wrestler_num = WM_ROSTER_BRET;
+        env.opponent = &v;
+        wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(a.tgt_xoff == 17);                   /* KNEES */
+        CHECK(a.tgt_yoff == 0);                    /* tgt_ground */
+    }
+}
+
+/*
+ * The last four: MOVE_NAME_ANNC's gates, #pause_opp, #set_opp_xy,
+ * #attach_victim and #set_new_position.
+ */
+static void move_name_sink(void *user, int side, int index) {
+    struct { int n; int side; int index; } *l = user;
+    ++l->n;
+    l->side = side;
+    l->index = index;
+}
+
+static void test_the_last_ani_code_routines(void) {
+    wm_arcade_actor_t a, v;
+    wm_anim_env env;
+    wm_move_name_state st;
+
+    /*
+     * LIFEBAR.ASM:3444 MOVE_NAME_ANNC's three gates. "Messages display the
+     * first time only" is one bit per index in two 32-bit words.
+     */
+    wm_move_name_init(&st);
+    CHECK(wm_move_name_should_draw(&st, 0, 16, 0));
+    CHECK(!wm_move_name_should_draw(&st, 0, 16, 0));    /* once only */
+    CHECK(wm_move_name_should_draw(&st, 0, 17, 0));     /* a different bit */
+    /* ...and the second word really is separate: 33 is bit 1 of word 1,
+       which must not collide with index 1's bit 1 of word 0. */
+    CHECK(wm_move_name_should_draw(&st, 0, 1, 0));
+    CHECK(wm_move_name_should_draw(&st, 0, 33, 0));
+    CHECK(!wm_move_name_should_draw(&st, 0, 33, 0));
+
+    /* reduce_bog suppresses them -- except index 41. */
+    wm_move_name_init(&st);
+    CHECK(!wm_move_name_should_draw(&st, 0, 16, 1));
+    CHECK(wm_move_name_should_draw(&st, 0, WM_MOVE_NAME_ALWAYS, 1));
+    /* ...and 41 is exempt from the shown-once bit too, so it repeats. */
+    CHECK(wm_move_name_should_draw(&st, 0, WM_MOVE_NAME_ALWAYS, 1));
+    CHECK(wm_move_name_should_draw(&st, 0, WM_MOVE_NAME_ALWAYS, 0));
+
+    /* is_there_one_already reads the OTHER side's flag. */
+    wm_move_name_init(&st);
+    st.showing[1] = 1;
+    CHECK(!wm_move_name_should_draw(&st, 0, 16, 0));
+    CHECK(wm_move_name_should_draw(&st, 1, 16, 0));     /* his own is clear */
+
+    /* Out of range declines rather than shifting past the word. */
+    wm_move_name_init(&st);
+    CHECK(!wm_move_name_should_draw(&st, 0, -1, 0));
+    CHECK(!wm_move_name_should_draw(&st, 0, WM_MOVE_NAME_COUNT, 0));
+    CHECK(!wm_move_name_should_draw(&st, 2, 16, 0));
+
+    /* #message_tbl, transcribed: 16 is the DDT, 41 the second wind, and
+       0 and 2 are the source's own `.long 0`. */
+    CHECK(wm_move_name_images[16] && strcmp(wm_move_name_images[16], "DDT") == 0);
+    CHECK(wm_move_name_images[41] &&
+          strcmp(wm_move_name_images[41], "SECWND09") == 0);
+    CHECK(wm_move_name_images[0] == NULL);
+    CHECK(wm_move_name_images[2] == NULL);
+
+    /* HRTSEQ3.ASM's draw_ddt_name passes 16 -- the DDT, whatever its own
+       "Draw hip toss message" comment says. */
+    {
+        static struct { int n; int side; int index; } log;
+        memset(&log, 0, sizeof(log));
+        memset(&env, 0, sizeof(env));
+        memset(&a, 0, sizeof(a));
+        a.player_side = 1;
+        env.screen_user = &log;
+        env.draw_move_name = move_name_sink;
+        CHECK(wm_anim_code_run(&a, &env, "draw_ddt_name", NULL, 0));
+        CHECK(log.n == 1 && log.index == 16 && log.side == 1);
+
+        /* ...and ANI_DRAW_NAME is the same call with its own operand. */
+        {
+            static const wm_anim_op ops[] = {
+                { WM_AOP_DRAW_NAME, 0, -1, 7, 0, 0, 0, 0, 0, NULL },
+                { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, NULL }
+            };
+            static const wm_anim_program prog = {
+                "test_name", "HRTSEQ3.ASM", ops, 2, 0, NULL, 0
+            };
+            wm_anim_exec ex;
+            memset(&log, 0, sizeof(log));
+            wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+            wm_anim_exec_tick(&ex, &a, 0);
+            CHECK(log.n == 1 && log.index == 7);     /* PILEDRV */
+        }
+    }
+
+    /*
+     * SHNSEQ3.ASM:478 #pause_opp -- "Cause opponent to pause on whatever
+     * frame he is on - no rotating allowed!"
+     */
+    memset(&env, 0, sizeof(env));
+    memset(&a, 0, sizeof(a));
+    memset(&v, 0, sizeof(v));
+    a.who_i_hit = &v;
+    CHECK(wm_anim_code_run(&a, &env, "#pause_opp", "SHNSEQ3.ASM", 478));
+    CHECK(v.anicnt_override == 25);
+    CHECK((v.anim_mode & WM_MODE_UNINT) != 0);
+    CHECK(a.anim_mode == 0);              /* his own is untouched */
+
+    /* ...and the interpreter picks it up, holding the frame it is on. */
+    {
+        static const wm_anim_op ops[] = {
+            { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "H2ST2A01" },
+            { WM_AOP_FRAME, 0, -1, 2, 0, 0, 0, 0, 0, "H2ST2A02" },
+            { WM_AOP_END,   0, -1, 0, 0, 0, 0, 0, 0, NULL }
+        };
+        static const wm_anim_program prog = {
+            "test_pause", "HRTSEQ1.ASM", ops, 3, 0, NULL, 0
+        };
+        wm_anim_exec ex;
+        int t;
+        memset(&v, 0, sizeof(v));
+        wm_anim_exec_start(&ex, &prog, &v, 0, &env);
+        wm_anim_exec_tick(&ex, &v, 0);            /* just_started */
+        CHECK(strcmp(wm_anim_exec_frame(&ex), "H2ST2A01") == 0);
+        a.who_i_hit = &v;
+        CHECK(wm_anim_code_run(&a, &env, "#pause_opp", "SHNSEQ3.ASM", 478));
+        for (t = 0; t < 24; ++t) {
+            wm_anim_exec_tick(&ex, &v, 0);
+            CHECK(strcmp(wm_anim_exec_frame(&ex), "H2ST2A01") == 0);
+        }
+        CHECK(v.anicnt_override == 0);            /* consumed once */
+        wm_anim_exec_tick(&ex, &v, 0);
+        CHECK(strcmp(wm_anim_exec_frame(&ex), "H2ST2A02") == 0);
+    }
+
+    /*
+     * SHNSEQ3.ASM:1507 #set_opp_xy -- the hip toss letting go. A blocking
+     * victim keeps his Z; everyone else is pushed back.
+     */
+    memset(&a, 0, sizeof(a));
+    memset(&v, 0, sizeof(v));
+    a.who_i_hit = &v;
+    a.in_ring = 1;
+    v.new_facing_dir = WM_MOVE_UP_RIGHT;
+    CHECK(wm_anim_code_run(&a, &env, "#set_opp_xy", "SHNSEQ3.ASM", 1507));
+    CHECK(v.z_vel == -0x20000);
+    CHECK(v.y_vel == 0x30000);
+    CHECK(v.x_vel == -0x30000);           /* away from where he faces */
+    v.new_facing_dir = WM_MOVE_UP_LEFT;
+    CHECK(wm_anim_code_run(&a, &env, "#set_opp_xy", "SHNSEQ3.ASM", 1507));
+    CHECK(v.x_vel == 0x30000);
+
+    memset(&v, 0, sizeof(v));
+    v.player_mode = WM_PMODE_BLOCK;
+    a.who_i_hit = &v;
+    CHECK(wm_anim_code_run(&a, &env, "#set_opp_xy", "SHNSEQ3.ASM", 1507));
+    CHECK(v.z_vel == 0);                  /* `jreq #noz` */
+    CHECK(v.y_vel == 0x30000);            /* the Y happens either way */
+
+    /*
+     * Outside the ring the X half only happens near the middle -- a throw
+     * from the far corner leaves the victim's X alone.
+     */
+    memset(&v, 0, sizeof(v));
+    a.who_i_hit = &v;
+    a.in_ring = 0;
+    a.x_int = WM_RING_X_MID + 0x9F;
+    CHECK(wm_anim_code_run(&a, &env, "#set_opp_xy", "SHNSEQ3.ASM", 1507));
+    CHECK(v.x_vel != 0);
+    v.x_vel = 0;
+    a.x_int = WM_RING_X_MID + 0xA0;       /* `jrlt`, so 0A0h is out */
+    CHECK(wm_anim_code_run(&a, &env, "#set_opp_xy", "SHNSEQ3.ASM", 1507));
+    CHECK(v.x_vel == 0);
+    /* `abs a14`, so the far side is the same. */
+    a.x_int = WM_RING_X_MID - 0x9F;
+    CHECK(wm_anim_code_run(&a, &env, "#set_opp_xy", "SHNSEQ3.ASM", 1507));
+    CHECK(v.x_vel != 0);
+
+    /* BAMSEQ2.ASM:1224 #attach_victim -- "pretend collision". */
+    {
+        struct opp_anim_log alog;
+        memset(&alog, 0, sizeof(alog));
+        memset(&env, 0, sizeof(env));
+        env.slave_user = &alog;
+        env.change_opp_anim = opp_anim_sink;
+        memset(&a, 0, sizeof(a));
+        memset(&v, 0, sizeof(v));
+        a.who_i_hit = &v;
+        v.getup_time = 30;
+        CHECK(wm_anim_code_run(&a, &env, "#attach_victim", "BAMSEQ2.ASM", 1224));
+        CHECK(v.player_mode == WM_PMODE_PUPPET);
+        CHECK(v.attach_proc == &a && a.attach_proc == &v);
+        CHECK(v.getup_time == 0);
+        CHECK(alog.n == 1 && strcmp(alog.label, "wres_slave_anim") == 0);
+    }
+
+    /*
+     * BAMSEQ2.ASM:1235 #set_new_position -- the reappear table. With no
+     * scroll WORLDTLX is 0, so the walk takes the first entry inside
+     * [25, 375], and every entry it can take is a real one.
+     */
+    memset(&env, 0, sizeof(env));
+    memset(&a, 0, sizeof(a));
+    a.in_ring = 0;
+    a.ground_y = 999;
+    CHECK(wm_anim_code_run(&a, &env, "#set_new_position", "BAMSEQ2.ASM", 1235));
+    CHECK(a.x_fixed == (int32_t)a.x_int << 16);
+    CHECK(a.z_fixed == (int32_t)a.z_int << 16);
+    CHECK(a.y_int == a.ground_y);          /* GROUND_Y takes the same Y */
+    /* Nothing in the table sits inside [25, 375] at the ring's own
+       coordinates, so it lands on the last entry, which is what the
+       source's own "should never happen" fallback picks -- an outside
+       point, so INRING says he is out. */
+    CHECK(a.x_int == 1652 && a.z_int == 1615);
+    CHECK(a.in_ring == 0);
+
+    /* Scroll the world right and an in-ring entry comes into the window. */
+    env.world_tlx = WM_RING_X_CENTER - 30;
+    CHECK(wm_anim_code_run(&a, &env, "#set_new_position", "BAMSEQ2.ASM", 1235));
+    CHECK(a.x_int == WM_RING_X_CENTER);
+    CHECK(a.z_int == WM_RING_Z_CENTER);
+    CHECK(a.in_ring == 1);
+    CHECK(a.y_int == WM_MAT_Y && a.ground_y == WM_MAT_Y);
+}
+
+/*
  * LIFEBAR.ASM:3687 DO_COMBO_MESS -- the most-called ANI_CODE routine in
  * the game, and what actually ends a combo.
  */
@@ -9976,6 +10400,8 @@ int main(void) {
     test_win_announce_from_the_vm();
     test_hit_nearest_and_tbukl_confine();
     test_debris_family();
+    test_target_offsets();
+    test_the_last_ani_code_routines();
     test_do_combo_mess();
     test_do_combo_mess_from_the_vm();
     test_wrsnd_tables();

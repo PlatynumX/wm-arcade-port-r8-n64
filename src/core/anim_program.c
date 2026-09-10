@@ -8,6 +8,7 @@
 #include "wm/arcade/wm_arcade_combat_defs.h"
 #include "wm/arcade/wm_arcade_anim_combat.h"
 #include "wm/arcade/wm_arcade_butcount.h"
+#include "wm/arcade/wm_arcade_target.h"
 #include "wm/frame_geometry.h"
 #include "wm/arcade/wm_arcade_lifebar.h"
 
@@ -543,6 +544,30 @@ static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
         case WM_AOP_ATTACK_OFF:
             wm_arcade_ani_attack_off(actor, round_tickcount);
             break;
+        /*
+         * ANIM.ASM:3753 _ani_target -- aim at whichever of two body parts
+         * is nearer, and "nearer" is decided by the two wrestlers' flip
+         * bits rather than by distance. The grid it reads is
+         * wm/arcade/wm_arcade_target.h; the source's own caveat comes with
+         * it: "This assumes that victim is on the ground. If he's not, the
+         * results will be screwy."
+         */
+        case WM_AOP_TARGET: {
+            wm_arcade_actor_t *opp = env ? env->opponent : NULL;
+            if (!actor || !opp) break;
+            wm_arcade_anim_target(actor, opp, (int)o->a, (int)o->b,
+                                  (int)o->c);
+            break;
+        }
+        /* ANIM.ASM:4389 _ani_draw_name -- the move's name flashed up.
+           The source's own note above it is "This is bog! Check to see if
+           we want messages before CREATE!", which is what the gates in
+           wm_move_name_should_draw do. */
+        case WM_AOP_DRAW_NAME:
+            if (actor && env && env->draw_move_name)
+                env->draw_move_name(env->screen_user,
+                                    (int)actor->player_side, (int)o->a);
+            break;
         case WM_AOP_CODE: {
             /* ANIM.ASM:1277: an ordinary call, then straight on to the
                next command. A routine this port has not translated leaves
@@ -1035,6 +1060,16 @@ void wm_anim_exec_start(wm_anim_exec *exec, const wm_anim_program *program,
 void wm_anim_exec_tick(wm_anim_exec *exec, wm_arcade_actor_t *actor,
                        uint16_t round_tickcount) {
     if (!exec || exec->ended || !exec->program) return;
+    /*
+     * OANICNT written from outside -- SHNSEQ3.ASM's #pause_opp stuffing a
+     * hold onto the man it just hit. Applied here rather than by the
+     * writer, because the counter belongs to whatever this exec is
+     * currently showing.
+     */
+    if (actor && actor->anicnt_override) {
+        exec->ticks_left = actor->anicnt_override;
+        actor->anicnt_override = 0u;
+    }
     if (exec->just_started) {
         exec->just_started = false;
         return;

@@ -263,6 +263,8 @@ typedef enum {
     WM_AOP_SETOPPVELS,     /* ANIM.ASM:3997 :110  a,b,c = x,y,z, the throw */
     WM_AOP_DAMAGEOPP,      /* ANIM.ASM:2175 :66   a,b = full, reduced */
     WM_AOP_SLAVEANIM,      /* ANIM.ASM:2130 :64   a = slave table id */
+    WM_AOP_TARGET,         /* ANIM.ASM:3753 :102  a,b = TGT_*, c = ATM_* */
+    WM_AOP_DRAW_NAME,      /* ANIM.ASM:4389 :122  a = #message_tbl index */
 
     /* Present in the source but needing a system this port does not have
        (a renderer, paired actors, a callback bridge). Carried so the
@@ -454,6 +456,20 @@ typedef struct wm_anim_env {
      */
     void *screen_user;
     void (*screen_flash)(void *user, uint16_t colour, int w, int h);
+    /*
+     * LIFEBAR.ASM:3444 MOVE_NAME_ANNC, reached by ANI_DRAW_NAME and by
+     * HRTSEQ3.ASM's draw_ddt_name. The three gates in front of it are
+     * translated (wm/arcade/wm_arcade_target.h); this is the drawing.
+     * `index` is a #message_tbl row, `side` the wrestler's PLYR_SIDE.
+     */
+    void (*draw_move_name)(void *user, int side, int index);
+    /*
+     * @WORLDTLX >> 16, the scroll's left edge. BAMSEQ2.ASM's
+     * #set_new_position walks its reappear table for an entry on screen,
+     * which needs it; this port has no scroll, so it stays 0 and the walk
+     * lands on the first in-window entry at the ring's own coordinates.
+     */
+    int32_t world_tlx;
     /*
      * SPECIAL.ASM's pal_getf, for the routines that swap a wrestler's
      * palette for a named one (BAMSEQ2.ASM's #set_pal asks for BAMBLU_P).

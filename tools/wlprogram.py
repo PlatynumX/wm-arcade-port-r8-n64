@@ -88,6 +88,18 @@ CODE_RE = re.compile(
     r"^\s*(?:\.word|W+L+W*)\s+ANI_CODE\s*,\s*"
     r"((?:#[A-Za-z0-9_]+|[A-Za-z_][A-Za-z0-9_]*))\s*$", re.I)
 
+# ANIM.ASM:4389 ANI_DRAW_NAME,<index> -- the move name flashed on screen,
+# an index into LIFEBAR.ASM's #message_tbl.
+DRAWNAME_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_DRAW_NAME\s*,\s*([^,]+)\s*$", re.I)
+
+# ANIM.ASM:3753 ANI_TARGET,<area1>,<area2>,<ATM_CLOSEST|ATM_FARTHEST> --
+# aim at whichever of two body parts is nearer (or further), decided by the
+# two wrestlers' flip bits rather than by distance.
+TARGET_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_TARGET\s*,\s*([^,]+),\s*([^,]+),\s*"
+    r"([^,]+)\s*$", re.I)
+
 # ANIM.ASM:119 -- branch when RPT_COUNT is at least the operand.
 RPTGE_RE = re.compile(
     r"^\s*(?:\.word|W+L+W*)\s+ANI_IF_RPTCOUNT_GE\s*,\s*([^,]+)\s*,\s*"
@@ -449,6 +461,19 @@ def program_for(path: pathlib.Path, label: str, with_entry: bool = False):
                         int(ss.group(5))))
             continue
 
+        dn = DRAWNAME_RE.match(line)
+        if dn:
+            ops.append(("DRAW_NAME", wlcommands._value(dn.group(1), equates)))
+            continue
+
+        tg = TARGET_RE.match(line)
+        if tg:
+            ops.append(("TARGET",
+                        wlcommands._value(tg.group(1), equates),
+                        wlcommands._value(tg.group(2), equates),
+                        wlcommands._value(tg.group(3), equates)))
+            continue
+
         cd = CODE_RE.match(line)
         if cd:
             # Which DEFINITION this call site can see. `#name` is local to
@@ -696,6 +721,10 @@ def _c_op(op) -> str:
     elif kind == "IFBUTTONS":
         args[0] = op[1]
         text = f'"{op[2]}"'
+    elif kind == "DRAW_NAME":
+        args[0] = op[1]
+    elif kind == "TARGET":
+        args[0], args[1], args[2] = op[1], op[2], op[3]
     elif kind in ("SET_RPTCOUNT", "SETOPPMODE", "CLROPPMODE", "IMMOBILIZE"):
         args[0] = op[1]
     elif kind in ("ATTACHZ", "SETOPPVELS"):

@@ -96,6 +96,8 @@ FIX38_ARCADE_C := \
     src/core/arcade/wm_arcade_roster.c \
     src/core/arcade/wm_arcade_round.c \
     src/core/arcade/wm_arcade_round_announce.c \
+    src/core/arcade/wm_arcade_target.c \
+    src/generated/target_tables.c \
     src/core/arcade/wm_arcade_shawn.c \
     src/core/arcade/wm_arcade_special.c \
     src/core/arcade/wm_arcade_taker.c \

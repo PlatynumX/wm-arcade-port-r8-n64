@@ -341,6 +341,15 @@ struct wm_arcade_actor {
      */
     const char *anipc_program;
     const char *anipc_label;
+    /*
+     * PLYR.EQU OANICNT, written from OUTSIDE the animation: SHNSEQ3.ASM's
+     * #pause_opp freezes the man he hit on whatever frame he is on by
+     * stuffing 25 into his animation's own tick counter. Like ANIPC that
+     * is a field on the wrestler rather than state inside the
+     * interpreter, so the interpreter picks it up on its next tick.
+     * 0 means nothing pending.
+     */
+    uint16_t anicnt_override;
     int32_t tgt_xoff;
     int32_t tgt_yoff;
     int32_t tgt_zoff;

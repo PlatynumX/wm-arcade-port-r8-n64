@@ -94,6 +94,7 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_shake.c
     src/core/arcade/wm_arcade_string.c
     src/core/arcade/wm_arcade_pal.c
+    src/core/arcade/wm_arcade_powerup.c
     src/generated/palettes.c
     src/generated/font_tables.c
     src/generated/font_metrics.c
@@ -175,9 +176,12 @@ if(WM_BUILD_TESTS)
          ${CMAKE_SOURCE_DIR}/tests/arcade_port/text/test_*.c)
     file(GLOB WM_ARCADE_PAL_TESTS
          ${CMAKE_SOURCE_DIR}/tests/arcade_port/pal/test_*.c)
+    file(GLOB WM_ARCADE_AWARD_TESTS
+         ${CMAKE_SOURCE_DIR}/tests/arcade_port/award/test_*.c)
 
     foreach(test_src ${WM_ARCADE_STAGE25_TESTS} ${WM_ARCADE_RING_RNG_TESTS}
-                     ${WM_ARCADE_TEXT_TESTS} ${WM_ARCADE_PAL_TESTS})
+                     ${WM_ARCADE_TEXT_TESTS} ${WM_ARCADE_PAL_TESTS}
+                     ${WM_ARCADE_AWARD_TESTS})
         get_filename_component(test_name ${test_src} NAME_WE)
         set(test_target wm_${test_name})
         add_executable(${test_target} ${test_src})

@@ -21,7 +21,17 @@ uint8_t wm_award_icon_value(unsigned award_index) {
 
 void wm_award_reset_round(wm_award_state *state) {
     if (!state) return;
-    memset(state->round, 0, sizeof(state->round));
+    /* rst_awards is `movi (NUM_AWARDS*2)-1,a0` with dsjs, so it clears
+       SIXTY-THREE bytes starting at p1rnd_award -- straight through into
+       the adjacent p2rnd_award and one short of its end. Player 2's
+       award-31 round slot is never reset. Award 31 is unused (its icon
+       value is 0 and GAME.EQU gives it no name), which is why nothing
+       ever noticed; reproduced rather than tidied. */
+    memset(state->round[0], 0, sizeof(state->round[0]));
+    memset(state->round[1], 0, sizeof(state->round[1]) - 1u);
+    /* rst_awards also zeroes both pcomeback longs. */
+    state->comeback_armed[0] = false;
+    state->comeback_armed[1] = false;
 }
 
 void wm_award_reset_match(wm_award_state *state) {
@@ -179,4 +189,67 @@ const char *wm_award_bonus_icon_source_name(uint8_t denomination) {
         case WM_BONUS_ICON_100: return "BICON_100A";
         default: return NULL;
     }
+}
+
+/* ------------------------------------------------------------------ */
+/* the award conditions (AWARD.ASM:994 onward)                         */
+
+int wm_award_quick_win(wm_award_state *state, unsigned plyrnum,
+                       unsigned player, uint32_t match_time) {
+    /* andi 0fh / movk 10 / mpyu / srl 16 / add */
+    const uint32_t score = ((match_time & 0xFu) * 10u) + (match_time >> 16);
+    /* cmpi 69,a1 / jrgt #quick / jruc #done -- everything after the jruc
+       is unreachable, so SUPER_QUICK and VERY_QUICK never happen. */
+    if ((int32_t)score > 69) {
+        if (plyrnum < 2u) wm_award_round_award(state, player, WM_AWARD_QUICK);
+        return (int)WM_AWARD_QUICK;
+    }
+    return -1;
+}
+
+void wm_award_defeat_human(wm_award_state *state, unsigned plyrnum,
+                           unsigned player, uint32_t pstatus) {
+    if (player >= WM_AWARD_PLAYER_COUNT) return;
+    /* Side 0 tests PSTATUS bit 1, side 1 tests bit 0 -- each asks
+       whether the OTHER player is a started human. */
+    if (player ? (pstatus & 0x1u) : (pstatus & 0x2u)) {
+        if (plyrnum < 2u)
+            wm_award_round_award(state, player, WM_AWARD_DEFEAT_HUMAN);
+    }
+}
+
+void wm_award_arm_comeback(wm_award_state *state, unsigned plyrnum,
+                           const bool live[WM_AWARD_NUM_WRES],
+                           const unsigned side_of[WM_AWARD_NUM_WRES],
+                           const int health[WM_AWARD_NUM_WRES]) {
+    if (!state) return;
+    /* cmpi 2,a10 / jrlt #ok_to_arm -- drones never arm. */
+    if (plyrnum >= WM_AWARD_PLAYER_COUNT) return;
+    for (unsigned i = 0; i < WM_AWARD_NUM_WRES; ++i) {
+        if (!live || !live[i]) continue;                /* skip inactive */
+        /* "humans only, so PLYRNUM == PLYR_SIDE" -- teammates skipped. */
+        if (side_of && side_of[i] == plyrnum) continue;
+        /* Abort if any enemy is under 80% strength. */
+        if (health && health[i] < WM_AWARD_COMEBACK_HEALTH) return;
+    }
+    state->comeback_armed[plyrnum] = true;
+}
+
+void wm_award_check_comeback(wm_award_state *state, unsigned plyrnum,
+                             unsigned player) {
+    if (!state || player >= WM_AWARD_PLAYER_COUNT) return;
+    if (!state->comeback_armed[player]) return;
+    if (plyrnum < 2u) wm_award_round_award(state, player, WM_AWARD_COMEBACK);
+}
+
+bool wm_award_row_uses_big_icon(uint8_t award_value) {
+    return award_value >= 5u;   /* cmpi 5,a11 / jrge #gna_big_icon */
+}
+
+unsigned wm_award_num_rows(const wm_award_state *state, unsigned player) {
+    if (!state || player >= WM_AWARD_PLAYER_COUNT) return 0u;
+    unsigned rows = 0u;
+    for (unsigned i = 0; i < WM_AWARD_COUNT; ++i)
+        if (state->match[player][i]) ++rows;
+    return rows > WM_AWARD_MAX_ROWS ? WM_AWARD_MAX_ROWS : rows;
 }

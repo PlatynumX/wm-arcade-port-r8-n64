@@ -6840,6 +6840,187 @@ static void test_react_debris(void) {
 }
 
 /*
+ * The last three: ANI_ATTCHIMAGE, ANI_CREATEPROC and ANI_SHADOWTRAIL.
+ */
+struct proc_log {
+    int n; const char *proc; int id; int32_t a, b, c;
+};
+static void create_proc_sink(void *user, wm_arcade_actor_t *at,
+                             const char *proc, int id,
+                             int32_t a, int32_t b, int32_t c) {
+    struct proc_log *l = (struct proc_log *)user;
+    (void)at;
+    ++l->n; l->proc = proc; l->id = id; l->a = a; l->b = b; l->c = c;
+}
+
+struct trail_log {
+    int n; const char *pal; int rate, life; bool restart; int kills;
+};
+static void trail_sink(void *user, wm_arcade_actor_t *at, const char *pal,
+                       int rate, int life, bool restart) {
+    struct trail_log *l = (struct trail_log *)user;
+    (void)at;
+    if (!pal) { ++l->kills; return; }
+    ++l->n; l->pal = pal; l->rate = rate; l->life = life; l->restart = restart;
+}
+
+static void test_sprite_and_process_ops(void) {
+    wm_arcade_actor_t a;
+    wm_anim_env env;
+    wm_anim_exec ex;
+
+    memset(&env, 0, sizeof(env));
+
+    /*
+     * ANI_ATTCHIMAGE. The two "no image" cases are NOT the same, and that
+     * is the detail worth pinning: a literal 0 operand takes the
+     * `#offimg` exit, which clears the frame but leaves LAST_FRAME and
+     * the Z offset alone; a table entry that is `.long 0` goes the
+     * ordinary way, so LAST_FRAME and the Z offset ARE written first.
+     */
+    {
+        static const wm_anim_op ops[] = {
+            { WM_AOP_ATTCHIMAGE, 0, -1, 10, 0, 0, 0, 0, 0, "BCDARM02" },
+            { WM_AOP_ATTCHIMAGE, 0, -1, 20, 0, 0, 0, 0, 0, "BCDARM04" },
+            { WM_AOP_ATTCHIMAGE, 0, -1, 30, 0, 0, 0, 0, 0, NULL },
+            { WM_AOP_ATTCHIMAGE, 1, -1, 99, 0, 0, 0, 0, 0, NULL },
+            { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, NULL }
+        };
+        static const wm_anim_program prog = {
+            "t_attch", "BAMSEQ3.ASM", ops, 5, 0, NULL, 0
+        };
+        memset(&a, 0, sizeof(a));
+        a.attachimg_xoff = 5;
+        a.attachimg_yoff = 6;
+        wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        /* All four run in one tick -- none of them is a frame. */
+        CHECK(a.attachimg_xoff == 0 && a.attachimg_yoff == 0);
+        /* The last one was the `#offimg` form, so the frame is gone but
+           the Z offset is still the THIRD command's 30, not 99. */
+        CHECK(a.attimg_cur_frame == NULL);
+        CHECK(a.attachimg_zoff == 30);
+        /* ...and LAST_FRAME is what the third command pushed down, which
+           is the second command's image -- the #offimg exit did not
+           touch it. */
+        CHECK(a.attimg_last_frame != NULL);
+        CHECK(strcmp(a.attimg_last_frame, "BCDARM04") == 0);
+    }
+
+    /* Step through one at a time to see the hand-off. */
+    {
+        static const wm_anim_op ops[] = {
+            { WM_AOP_ATTCHIMAGE, 0, -1, 10, 0, 0, 0, 0, 0, "BCDARM02" },
+            { WM_AOP_FRAME,      0, -1,  2, 0, 0, 0, 0, 0, "B3CD3A01" },
+            { WM_AOP_ATTCHIMAGE, 0, -1, 20, 0, 0, 0, 0, 0, "BCDARM04" },
+            { WM_AOP_END,        0, -1,  0, 0, 0, 0, 0, 0, NULL }
+        };
+        static const wm_anim_program prog = {
+            "t_attch2", "BAMSEQ3.ASM", ops, 4, 0, NULL, 0
+        };
+        memset(&a, 0, sizeof(a));
+        wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(strcmp(a.attimg_cur_frame, "BCDARM02") == 0);
+        CHECK(a.attimg_last_frame == NULL);
+        CHECK(a.attachimg_zoff == 10);
+        while (!ex.ended) wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(strcmp(a.attimg_cur_frame, "BCDARM04") == 0);
+        CHECK(strcmp(a.attimg_last_frame, "BCDARM02") == 0);
+        CHECK(a.attachimg_zoff == 20);
+    }
+
+    /* ANI_CREATEPROC carries the process name and its three arguments. */
+    {
+        static struct proc_log log;
+        static const wm_anim_op ops[] = {
+            { WM_AOP_CREATEPROC, 0, -1, 0, 0x3B4, 700, 0, 0, 0,
+              "CREATE_SWEAT" },
+            { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, NULL }
+        };
+        static const wm_anim_program prog = {
+            "t_proc", "BAMSEQ2.ASM", ops, 2, 0, NULL, 0
+        };
+        memset(&log, 0, sizeof(log));
+        memset(&a, 0, sizeof(a));
+        env.debris_user = &log;
+        env.create_proc = create_proc_sink;
+        wm_anim_exec_start(&ex, &prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(log.n == 1);
+        CHECK(strcmp(log.proc, "CREATE_SWEAT") == 0);
+        CHECK(log.id == 0 && log.a == 0x3B4 && log.b == 700 && log.c == 0);
+        env.create_proc = NULL;
+    }
+
+    /*
+     * ANI_SHADOWTRAIL. Its OFF form is a SHORTER command rather than a
+     * zero palette, it only kills a trail that is actually running, and a
+     * trail already running is RESTARTED with the new arguments rather
+     * than a second one being stacked on it.
+     */
+    {
+        static struct trail_log log;
+        static const wm_anim_op on_ops[] = {
+            { WM_AOP_SHADOWTRAIL, 0, -1, 3, 12, 0, 0, 0, 0, "BAMFRE_P" },
+            { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, NULL }
+        };
+        static const wm_anim_program on_prog = {
+            "t_trail_on", "BAMSEQ2.ASM", on_ops, 2, 0, NULL, 0
+        };
+        static const wm_anim_op off_ops[] = {
+            { WM_AOP_SHADOWTRAIL, 1, -1, 0, 0, 0, 0, 0, 0, NULL },
+            { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, NULL }
+        };
+        static const wm_anim_program off_prog = {
+            "t_trail_off", "BAMSEQ2.ASM", off_ops, 2, 0, NULL, 0
+        };
+        memset(&log, 0, sizeof(log));
+        memset(&a, 0, sizeof(a));
+        env.debris_user = &log;
+        env.shadow_trail = trail_sink;
+
+        /* OFF with nothing running kills nothing. */
+        wm_anim_exec_start(&ex, &off_prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(log.kills == 0);
+
+        wm_anim_exec_start(&ex, &on_prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(log.n == 1);
+        CHECK(strcmp(log.pal, "BAMFRE_P") == 0);
+        CHECK(log.rate == 3 && log.life == 12);
+        CHECK(!log.restart);               /* the first one is a create */
+        CHECK(a.shadtrail_proc != NULL);
+
+        /* A second ON restarts rather than stacking. */
+        wm_anim_exec_start(&ex, &on_prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(log.n == 2 && log.restart);
+
+        /* Now OFF really kills it, and a third OFF does nothing. */
+        wm_anim_exec_start(&ex, &off_prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(log.kills == 1);
+        CHECK(a.shadtrail_proc == NULL);
+        wm_anim_exec_start(&ex, &off_prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(log.kills == 1);
+
+        /* reduce_bog suppresses the ON form -- and only the ON form. */
+        memset(&log, 0, sizeof(log));
+        memset(&a, 0, sizeof(a));
+        env.reduce_bog = true;
+        wm_anim_exec_start(&ex, &on_prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(log.n == 0);
+        CHECK(a.shadtrail_proc == NULL);
+        env.reduce_bog = false;
+        env.shadow_trail = NULL;
+    }
+}
+
+/*
  * LIFEBAR.ASM:3687 DO_COMBO_MESS -- the most-called ANI_CODE routine in
  * the game, and what actually ends a combo.
  */
@@ -11337,6 +11518,7 @@ int main(void) {
     test_conditional_and_state_ops();
     test_square_root_and_leaps();
     test_react_debris();
+    test_sprite_and_process_ops();
     test_do_combo_mess();
     test_do_combo_mess_from_the_vm();
     test_wrsnd_tables();

@@ -152,8 +152,10 @@ def linked_files() -> list[pathlib.Path]:
 GLOBAL_EQU: dict[str, int] = {}
 # SOUND.H is not a .EQU but is the same shape, and ANI_SOUND names its
 # constants directly (`ANI_SOUND,run_snd`, `ANI_SOUND,bounce_l1`).
+# SWEAT.EQU carries ANI_CREATEPROC's own arguments -- which sweat effect
+# and at what percentage -- and nothing else names its constants.
 for _f in ("DISPLAY.EQU", "GAME.EQU", "PLYR.EQU", "ANIM.EQU", "DAMAGE.EQU",
-           "SOUND.H"):
+           "SWEAT.EQU", "SOUND.H"):
     GLOBAL_EQU.update(load_equ(ORIG / _f, ""))
 
 

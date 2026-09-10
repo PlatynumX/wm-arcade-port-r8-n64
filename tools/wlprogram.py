@@ -94,6 +94,66 @@ CODE_RE = re.compile(
 # skipped for exactly that reason, all of them DEBRIS_X.
 VALUE = r"(?:\[[^\]]*\]|[^,\[\]]+)"
 
+# ANIM.ASM:3634 ANI_CREATEPROC,<proc>,<procid>,<w1>,<w2>,<w3>.
+CREATEPROC_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_CREATEPROC\s*,\s*([A-Za-z_][\w]*),"
+    r"\s*([^,]+),\s*([^,]+),\s*([^,]+),\s*([^,]+)\s*$", re.I)
+
+# ANIM.ASM:3565 ANI_SHADOWTRAIL,<palette>,<rate>,<lifespan> -- and its OFF
+# form, which is a SHORTER command (one word, not four) rather than a zero
+# palette, because the routine branches before reading the rest.
+SHADOWTRAIL_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_SHADOWTRAIL\s*,\s*([A-Za-z_][\w]*),"
+    r"\s*([^,]+),\s*([^,]+)\s*$", re.I)
+SHADOWTRAIL_OFF_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_SHADOWTRAIL\s*,\s*0\s*$", re.I)
+
+# ANIM.ASM:2325 ANI_ATTCHIMAGE,<base>+FRn,<zoff> -- hang an extra image
+# off the wrestler. `base` is a table of `.long` frame pointers and FRn is
+# n*20h, one long a step, so the operand indexes it; the entry can itself
+# be `.long 0`, meaning that frame has no attached image.
+ATTCHIMAGE_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_ATTCHIMAGE\s*,\s*"
+    r"(?:(0)|([A-Za-z0-9_#]+)\s*\+\s*FR([0-9]+))\s*,\s*([^,]+)\s*$", re.I)
+
+
+def _image_table_entry(kept: list[str], base: str, index: int,
+                       path: pathlib.Path):
+    """`base+FRn` -> the frame name at index n, or None for a `.long 0`.
+
+    A `#local` base is scoped like any other local label, so it resolves
+    the same way an ANI_CODE target does.
+    """
+    at = None
+    if base.startswith("#"):
+        for i, line in enumerate(kept):
+            m = wlanim.LOCAL_LABEL_RE.match(line)
+            if m and m.group(1) == base:
+                at = i
+                break
+    else:
+        for i, line in enumerate(kept):
+            if wlanim.label_def(wlanim.strip_comment(line)) == base:
+                at = i
+                break
+    if at is None:
+        raise ValueError(f"{path.name}: ANI_ATTCHIMAGE names {base}, "
+                         f"which is not a table in this file")
+    rows = []
+    for line in kept[at + 1:]:
+        body = wlanim.strip_comment(line)
+        if not body:
+            continue
+        m = re.match(r"^\.long\s+(.+)$", body, re.I)
+        if not m:
+            break
+        rows += [v.strip() for v in m.group(1).split(",") if v.strip()]
+    if index >= len(rows):
+        raise ValueError(f"{path.name}: {base}+FR{index} is past the "
+                         f"table's {len(rows)} entries")
+    return None if rows[index] == "0" else rows[index]
+
+
 # ANIM.ASM:3324/:3340 ANI_DEBRIS / ANI_DEBRISAT,<%chance>,<shape>,<x,y,z>.
 DEBRIS_RE = re.compile(
     r"^\s*(?:\.word|W+L+W*)\s+(ANI_DEBRIS|ANI_DEBRISAT)\s*,\s*([^,]+),"
@@ -503,6 +563,41 @@ def program_for(path: pathlib.Path, label: str, with_entry: bool = False):
                         int(ss.group(5))))
             continue
 
+        cp = CREATEPROC_RE.match(line)
+        if cp:
+            ops.append(("CREATEPROC", cp.group(1),
+                        wlcommands._value(cp.group(2), equates),
+                        wlcommands._value(cp.group(3), equates),
+                        wlcommands._value(cp.group(4), equates),
+                        wlcommands._value(cp.group(5), equates)))
+            continue
+
+        stoff = SHADOWTRAIL_OFF_RE.match(line)
+        if stoff:
+            ops.append(("SHADOWTRAIL", 1, None, 0, 0))
+            continue
+        st = SHADOWTRAIL_RE.match(line)
+        if st:
+            ops.append(("SHADOWTRAIL", 0, st.group(1),
+                        wlcommands._value(st.group(2), equates),
+                        wlcommands._value(st.group(3), equates)))
+            continue
+
+        ai = ATTCHIMAGE_RE.match(line)
+        if ai:
+            zoff = wlcommands._value(ai.group(4), equates)
+            if ai.group(1) is not None:
+                # `move *a4+,a0,L / jrz #offimg` -- the operand itself is
+                # zero, which takes a DIFFERENT exit: the frame is
+                # cleared, but ATTIMG_LAST_FRAME and ATTACHIMG_ZOFF are
+                # not written. Flagged so the VM can tell the two apart.
+                ops.append(("ATTCHIMAGE", 1, zoff, None))
+            else:
+                ops.append(("ATTCHIMAGE", 0, zoff,
+                            _image_table_entry(kept, ai.group(2),
+                                               int(ai.group(3)), path)))
+            continue
+
         db = DEBRIS_RE.match(line)
         if db:
             ops.append(("DEBRISAT" if db.group(1).upper() == "ANI_DEBRISAT"
@@ -814,6 +909,17 @@ def _c_op(op) -> str:
         args[0] = op[1]
     elif kind in ("IFROPE", "IFNOTROPE"):
         args[0], args[1] = op[2], op[3]
+    elif kind == "CREATEPROC":
+        text = f'"{op[1]}"'
+        args[0], args[1], args[2], args[3] = op[2], op[3], op[4], op[5]
+    elif kind == "SHADOWTRAIL":
+        mode = op[1]          # 1 = the OFF form
+        text = "0" if op[2] is None else f'"{op[2]}"'
+        args[0], args[1] = op[3], op[4]
+    elif kind == "ATTCHIMAGE":
+        mode = op[1]          # 1 = the `#offimg` exit (a literal 0 image)
+        args[0] = op[2]       # the Z offset
+        text = "0" if op[3] is None else f'"{op[3]}"'
     elif kind in ("DEBRIS", "DEBRISAT"):
         args[0], args[1], args[2] = op[1], op[2], op[3]
         args[3], args[4] = op[4], op[5]

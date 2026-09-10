@@ -279,6 +279,9 @@ typedef enum {
     WM_AOP_SLIDEATOPP,     /* ANIM.ASM:3838 :96   a=vel b=target c=maxticks */
     WM_AOP_DEBRIS,         /* ANIM.ASM:3340 :94   a=%% b=shape c,d,e=off */
     WM_AOP_DEBRISAT,       /* ANIM.ASM:3324 :93   the same, on the victim */
+    WM_AOP_ATTCHIMAGE,     /* ANIM.ASM:2325 :69   text=frame a=zoff mode=off */
+    WM_AOP_CREATEPROC,     /* ANIM.ASM:3634 :101  text=proc a..d = args */
+    WM_AOP_SHADOWTRAIL,    /* ANIM.ASM:3565 :100  text=palette a,b, mode=off */
 
     /* Present in the source but needing a system this port does not have
        (a renderer, paired actors, a callback bridge). Carried so the
@@ -491,6 +494,25 @@ typedef struct wm_anim_env {
     void (*react_debris)(void *user, wm_arcade_actor_t *victim,
                          int percent, int shape,
                          int32_t xoff, int32_t yoff, int32_t zoff);
+    /*
+     * ANIM.ASM:3634 ANI_CREATEPROC -- GETPRC on a named process with
+     * three word arguments. Only six processes are ever named
+     * (CREATE_SWEAT 148 times, SPIN_SWEAT 33, the Undertaker's tomb bits,
+     * his coffin and raise_dead), and every one of them makes sprites, so
+     * the arguments are real and the process belongs to a SPECIAL.ASM
+     * port.
+     */
+    void (*create_proc)(void *user, wm_arcade_actor_t *at, const char *proc,
+                        int proc_id, int32_t a, int32_t b, int32_t c);
+    /*
+     * ANIM.ASM:3565 ANI_SHADOWTRAIL -- the motion trail. `palette` NULL
+     * means the command's OFF form, which kills the process instead.
+     * `restart` is the source's XFERPROC path: a trail already running is
+     * restarted with the new arguments rather than stacked.
+     */
+    void (*shadow_trail)(void *user, wm_arcade_actor_t *at,
+                         const char *palette, int rate, int lifespan,
+                         bool restart);
     /*
      * WRESTLE.ASM:257 allow_offscrn, set to 80 by ANI_SET_IDIOT ("Allow
      * players off screen on toss outs"). WRESTLE2.ASM:2214 counts it down

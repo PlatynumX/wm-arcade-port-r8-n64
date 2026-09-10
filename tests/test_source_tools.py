@@ -1465,6 +1465,45 @@ def test_a_local_routine_defined_twice_gets_two_rows() -> None:
                     if not n.startswith("#") and a != "0"]
 
 
+def test_the_emitter_skips_nothing() -> None:
+    """Every animation command in the roster is emitted, not dropped.
+
+    A skipped command is silent in the generated C -- the frame order
+    still comes out right, because order comes from the branches, so a
+    dropped command looks like nothing at all until you go looking for
+    the behaviour it was meant to cause. The emitter counts them for
+    exactly that reason, and this asserts the count is zero.
+
+    It reached zero in this commit. If it stops being zero this names the
+    command, which is the whole point of counting.
+    """
+    if not (wlanim.ORIG / "ANIM.ASM").exists():
+        return
+    wlprogram.SKIPPED.clear()
+    wlprogram.SKIPPED_WHERE.clear()
+    n = 0
+    for src in wlanim.linked_files():
+        if "SEQ" not in src.name or src.name.startswith("FINI"):
+            continue
+        lines = [wlanim.strip_comment(r)
+                 for r in src.read_text(errors="replace").splitlines()]
+        for line in lines:
+            m = wlanim.SUBR_RE.match(line)
+            if not m:
+                continue
+            try:
+                wlprogram.program_for(src, m.group(1))
+                n += 1
+            except ValueError:
+                # A routine the emitter legitimately declines (a branch it
+                # cannot follow) is a different question, checked by
+                # test_wlprogram_roster_wide.
+                pass
+    assert n > 1000, n
+    skipped = dict(wlprogram.SKIPPED)
+    assert not skipped, sorted(skipped.items(), key=lambda kv: -kv[1])
+
+
 def test_every_ani_code_call_site_resolves() -> None:
     """The other direction: every CALL SITE must reach a registry row.
 
@@ -2122,6 +2161,7 @@ def main() -> int:
     test_per_wrestler_aux_tables()
     test_anim_code_registry_reaches_its_call_sites()
     test_a_local_routine_defined_twice_gets_two_rows()
+    test_the_emitter_skips_nothing()
     test_every_ani_code_call_site_resolves()
     test_target_offsets_grid()
     test_target_tables_generate_the_shipped_file()

@@ -804,6 +804,78 @@ static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
             break;
         }
 
+        /*
+         * ANIM.ASM:2325 _ani_attchimage -- the extra sprite hung off the
+         * wrestler: Bam Bam's cast arm, the Undertaker's tombstone, the
+         * glove. The operand indexes a table of frame pointers, and the
+         * emitter has already resolved it to a name.
+         *
+         * The two "no image" cases are NOT the same, which is the detail
+         * worth keeping. A literal `ANI_ATTCHIMAGE,0,0` takes the
+         * `#offimg` exit: the frame is cleared and LAST_FRAME and the Z
+         * offset are left alone. A table entry that is `.long 0` goes the
+         * ordinary way: LAST_FRAME is updated (to the frame that was
+         * showing) and the Z offset IS written, and only then does the
+         * frame come out NULL.
+         */
+        case WM_AOP_ATTCHIMAGE:
+            if (!actor) break;
+            /* `clr a14 / move a14,*a13(ATTACHIMG_XOFF),L` -- one LONG
+               write covering both the X and the Y offset. */
+            actor->attachimg_xoff = 0;
+            actor->attachimg_yoff = 0;
+            if (o->mode) {                       /* `#offimg` */
+                actor->attimg_cur_frame = NULL;
+                break;
+            }
+            actor->attachimg_zoff = o->a;
+            actor->attimg_last_frame = actor->attimg_cur_frame;
+            actor->attimg_cur_frame = o->text;   /* NULL for a `.long 0` */
+            break;
+
+        /*
+         * ANIM.ASM:3634 _ani_createproc -- GETPRC with a wake address and
+         * three word arguments, all carried through.
+         */
+        case WM_AOP_CREATEPROC:
+            if (!actor || !env || !env->create_proc) break;
+            env->create_proc(env->debris_user, actor, o->text, (int)o->a,
+                             o->b, o->c, o->d);
+            break;
+
+        /*
+         * ANIM.ASM:3565 _ani_shadowtrail -- the motion trail.
+         *
+         * The OFF form is a SHORTER command: `move *a4,a0 / jrnz #not_off`
+         * then `addi 010h,a4`, one word rather than four, which is why it
+         * is a separate operand shape rather than a zero palette. It kills
+         * the process only if one is running.
+         *
+         * The ON form is skipped entirely under reduce_bog, and a trail
+         * already running is RESTARTED with the new arguments (XFERPROC)
+         * rather than a second one being created.
+         */
+        case WM_AOP_SHADOWTRAIL:
+            if (!actor) break;
+            if (o->mode) {                       /* the OFF form */
+                if (actor->shadtrail_proc) {
+                    if (env && env->shadow_trail)
+                        env->shadow_trail(env->debris_user, actor, NULL,
+                                          0, 0, false);
+                    actor->shadtrail_proc = NULL;
+                }
+                break;
+            }
+            if (!env || env->reduce_bog) break;
+            if (env->shadow_trail)
+                env->shadow_trail(env->debris_user, actor, o->text,
+                                  (int)o->a, (int)o->b,
+                                  actor->shadtrail_proc != NULL);
+            /* The handle is only ever "is one running" here -- the
+               process itself belongs to whoever draws the trail. */
+            actor->shadtrail_proc = actor;
+            break;
+
         case WM_AOP_CODE: {
             /* ANIM.ASM:1277: an ordinary call, then straight on to the
                next command. A routine this port has not translated leaves

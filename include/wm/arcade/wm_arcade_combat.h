@@ -137,7 +137,18 @@ struct wm_arcade_actor {
     int32_t debris_x;
     int32_t run_time;
     void *shadtrail_proc;
-    void *attimg_cur_frame;
+    /*
+     * PLYR.EQU's attached-image fields: an extra sprite hung off the
+     * wrestler (Bam Bam's cast arm, the Undertaker's tombstone, the
+     * glove) that the animation swaps frame by frame alongside his own.
+     * ANI_ATTCHIMAGE writes them; a renderer would draw cur_frame at the
+     * three offsets. NULL means no attached image this frame.
+     */
+    const char *attimg_cur_frame;
+    const char *attimg_last_frame;
+    int32_t attachimg_xoff;
+    int32_t attachimg_yoff;
+    int32_t attachimg_zoff;
     int32_t my_pal;
     int32_t obj_pal;
     /* PLYR.EQU SKELETON_PAL: the palette Doink's buzzer swaps in, put back

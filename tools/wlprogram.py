@@ -1083,9 +1083,10 @@ def main(argv=None) -> int:
     # span HRTSEQ2/3/4 -- the same shape tools/wlcommands.py takes.
     ap.add_argument("--animation", nargs=2, action="append", default=[],
                     metavar=("SOURCE", "LABEL"))
-    # Every animation an ANI_SLAVEANIM table can hand a victim. Read out of
-    # the tables (tools/wlpuppet.py) rather than listed here, so the two
-    # cannot disagree about what the op is allowed to name.
+    # Every animation an op can name a whole animation with: ANI_SLAVEANIM's
+    # tables, ANI_CHANGEANIM_TBL's rows, and plain ANI_CHANGEANIM's operand.
+    # Read out of the source (tools/wlpuppet.py) rather than listed here, so
+    # the emitter and the ops cannot disagree about what may be named.
     ap.add_argument("--slave-targets", action="store_true")
     # Every animation the eight playable wrestlers own, rather than a
     # hand-picked list. The list had been growing one label at a time
@@ -1126,6 +1127,14 @@ def main(argv=None) -> int:
         # ANI_CHANGEANIM_TBL names whole animations too.
         entries += [(str(p), lab)
                     for p, lab in wlpuppet.changeanim_targets()]
+        # And so does a plain ANI_CHANGEANIM. The roster pass above walks
+        # SUBR lines, so an animation written as a bare column-0 label
+        # was emitted only if some table happened to name it -- which is
+        # how DNKSEQ2.ASM's dnk_combo_hammer_anim and
+        # re_enter_combo_hiptoss were named by an ANI_CHANGEANIM and
+        # emitted by nothing.
+        entries += [(str(p), lab)
+                    for p, lab in wlpuppet.changeanim_op_targets()]
     if not entries:
         ap.error("nothing to emit: pass --animation, or --source with --label")
     seen, unique = set(), []

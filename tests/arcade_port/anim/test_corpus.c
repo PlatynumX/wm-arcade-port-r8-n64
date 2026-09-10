@@ -48,7 +48,7 @@
 
 /* The corpus as it stands. Emitting more is always fine; emitting fewer
    means the emitter started refusing something it used to accept. */
-#define CORPUS_FLOOR 1530u
+#define CORPUS_FLOOR 1532u
 
 /* How long to play each program. Long enough that everything with an end
    reaches it -- the longest terminating program in the corpus finishes
@@ -59,11 +59,32 @@
    animations that become each other would otherwise never come to rest. */
 #define MAX_HANDOFFS 8
 
+/* Distinct frame positions one playthrough may visit before repeating.
+   Comfortably above the longest program in the corpus times the hand-off
+   limit; the test asserts it was enough rather than assuming it. */
+#define SEEN_MAX 8192
+
 /* Chains that come to rest rather than loop, as measured -- a program
    plus every ANI_CHANGEANIM it hands off to. One that used to come to
    rest and now runs forever is a hang in the making, so this may grow
-   but must not shrink. */
-#define ENDING_FLOOR 1238
+   but must not shrink. The ones that do NOT come to rest are not left
+   as an unexplained remainder: see test_nothing_hangs below. */
+#define ENDING_FLOOR 1240
+
+/*
+ * The one program that is still running after TICKS ticks and has shown
+ * no frame twice -- because it has shown none at all.
+ *
+ * WRESTLE2.ASM:3992 xxx_dead_anim sets MODE_DEAD, runs two ANI_CODE
+ * routines and ends on ANI_ROT, whose own comment in ANIM.ASM:4441 is
+ * "just sit and do nothing". ANI_ROT holds the frame that is showing and
+ * never advances, which is exactly how a dead wrestler stays down -- and
+ * started cold, with nothing showing yet, there is no frame to hold.
+ * A wrestler reaching it in a match already has one.
+ */
+static const char *const PARKED[] = {
+    "xxx_dead_anim",
+};
 
 /*
  * Programs that contain a frame op yet never show one, following the
@@ -82,25 +103,25 @@ static const char *const FRAMELESS[] = {
 };
 
 /*
- * ANI_CHANGEANIM targets that no emitted program answers to, and why.
+ * Every ANI_CHANGEANIM operand names a program that exists. No
+ * exceptions, so there is no list -- the assertion below is simply that
+ * the count is zero.
  *
- * Both are dangling in the arcade build itself: nothing in the linked
- * source defines either label, only `.ref`s and the ANI_CHANGEANIM
- * operands that name them. They were 54 operands across five labels
- * until the emitter learned to follow a branch into a later SUBR --
- * ANIM.ASM:29 implements ANI_IFSTATUS as a raw write to the animation
- * PC, so three routines reached the head of another routine and the
- * emitter, unable to see a SUBR line as a label definition, refused all
- * three. Those three now emit; these two have nowhere to point.
+ * It was 54 operands over five labels. Three were animations the emitter
+ * refused because they branch into the head of a later routine
+ * (ANIM.ASM:29 makes ANI_IFSTATUS a raw write to the animation PC), and
+ * two were animations written as bare column-0 labels rather than SUBRs:
+ * DNKSEQ2.ASM's dnk_combo_hammer_anim (:3031) and re_enter_combo_hiptoss
+ * (:4429). The roster pass walks SUBR lines, so those two were emitted
+ * by nothing at all, and an ANI_CHANGEANIM further down the same file
+ * named both. tools/wlpuppet.py's changeanim_op_targets now reads the op
+ * itself, the same way its siblings read ANI_SLAVEANIM's and
+ * ANI_CHANGEANIM_TBL's tables.
  *
- * This still matters at runtime: backend_change_anim_label sets
- * prog = NULL and ended = true on a label it cannot find, so a wrestler
- * who reaches one of these stops where he stands.
+ * This is worth an assertion rather than a count, because an unresolved
+ * label is not inert: backend_change_anim_label sets prog = NULL and
+ * ended = true, so a wrestler who reaches one stops where he stands.
  */
-static const char *const UNRESOLVED_CHANGEANIM[] = {
-    "dnk_combo_hammer_anim",
-    "re_enter_combo_hiptoss",
-};
 
 static int in_list(const char *const *list, size_t n, const char *s)
 {
@@ -195,11 +216,8 @@ static void test_every_frame_op_names_a_frame(void)
 
 static void test_every_changeanim_target_resolves(void)
 {
-    size_t n = wm_anim_program_count(), i, j, k;
-    const size_t expected = sizeof(UNRESOLVED_CHANGEANIM)
-                          / sizeof(UNRESOLVED_CHANGEANIM[0]);
-    int hit[sizeof(UNRESOLVED_CHANGEANIM)
-            / sizeof(UNRESOLVED_CHANGEANIM[0])] = { 0 };
+    size_t n = wm_anim_program_count(), i, j;
+    int dangling = 0;
 
     for (i = 0; i < n; ++i) {
         const wm_anim_program *p = wm_anim_program_at(i);
@@ -207,24 +225,12 @@ static void test_every_changeanim_target_resolves(void)
             const wm_anim_op *o = &p->ops[j];
             if (o->op != WM_AOP_CHANGEANIM || !o->text) continue;
             if (wm_anim_program_find(o->text) != NULL) continue;
-            /* Unresolved. It had better be one of the five known ones. */
-            if (!in_list(UNRESOLVED_CHANGEANIM, expected, o->text)) {
-                printf("%s: ANI_CHANGEANIM to %s, which nothing emits\n",
-                       p->source_label, o->text);
-                assert(!"new dangling ANI_CHANGEANIM target");
-            }
-            for (k = 0; k < expected; ++k)
-                if (strcmp(UNRESOLVED_CHANGEANIM[k], o->text) == 0) hit[k] = 1;
+            printf("%s: ANI_CHANGEANIM to %s, which nothing emits\n",
+                   p->source_label, o->text);
+            ++dangling;
         }
     }
-    /* And each of the five is still dangling. When one is fixed, this
-       fires and the entry comes out of the list above. */
-    for (k = 0; k < expected; ++k) {
-        if (!hit[k])
-            printf("%s resolves now -- drop it from UNRESOLVED_CHANGEANIM\n",
-                   UNRESOLVED_CHANGEANIM[k]);
-        assert(hit[k]);
-    }
+    assert(dangling == 0);
 }
 
 /* One wrestler, standing in the ring on the mat, facing right: the state
@@ -320,6 +326,105 @@ static void test_playing_the_whole_corpus(void)
     assert(ending >= ENDING_FLOOR);
 }
 
+/*
+ * Nothing hangs: every program that is still running has been PROVEN to
+ * loop, rather than assumed to.
+ *
+ * 292 of the 1,532 are still going after 400 ticks. That number on its
+ * own says nothing -- a genuine idle stance and a program wedged on a
+ * condition that will never come true look identical from outside. So
+ * this records every frame each one shows, and requires it to show one
+ * twice: a program that revisits a frame it already played is cycling by
+ * observation, and will keep cycling forever.
+ *
+ * 291 of the 292 do. The one that does not is xxx_dead_anim, parked on
+ * ANI_ROT by design, named and explained above.
+ */
+static void test_nothing_hangs(void)
+{
+    size_t n = wm_anim_program_count(), i;
+    const size_t nparked = sizeof(PARKED) / sizeof(PARKED[0]);
+    int parked_hit[sizeof(PARKED) / sizeof(PARKED[0])] = { 0 };
+    int running = 0, cyclic = 0;
+    /* Where a frame has been shown: (program, op index). Bounded by the
+       largest program's op count times the hand-off limit. */
+    static const wm_anim_program *seen_prog[SEEN_MAX];
+    static size_t seen_pc[SEEN_MAX];
+
+    for (i = 0; i < n; ++i) {
+        const wm_anim_program *p = wm_anim_program_at(i);
+        wm_anim_exec exec;
+        wm_arcade_actor_t a;
+        int t, hops = 0, cycled = 0;
+        size_t nseen = 0;
+
+        memset(&exec, 0, sizeof(exec));
+        stage(&a);
+        wm_anim_exec_start(&exec, p, &a, 0, NULL);
+
+        for (t = 0; t < TICKS; ++t) {
+            if (exec.ended) {
+                const wm_anim_program *next;
+                if (!exec.become || hops >= MAX_HANDOFFS) break;
+                next = wm_anim_program_find(exec.become);
+                if (!next) break;
+                ++hops;
+                wm_anim_exec_start(&exec, next, &a, (uint16_t)t, NULL);
+                continue;
+            }
+            if (!cycled && exec.program && wm_anim_exec_frame(&exec)) {
+                size_t k;
+                for (k = 0; k < nseen; ++k) {
+                    if (seen_prog[k] == exec.program && seen_pc[k] == exec.pc) {
+                        cycled = 1;
+                        break;
+                    }
+                }
+                if (!cycled && nseen < SEEN_MAX) {
+                    seen_prog[nseen] = exec.program;
+                    seen_pc[nseen] = exec.pc;
+                    ++nseen;
+                }
+                /* Running out of room would turn a real cycle into a
+                   false "hang", so refuse to guess. */
+                assert(cycled || nseen < SEEN_MAX);
+            }
+            wm_wrestler_veladd(&a, &exec, 0);
+            wm_wrestler_friction(&a);
+            wm_anim_exec_tick(&exec, &a, (uint16_t)t);
+        }
+
+        if (exec.ended) continue;
+        ++running;
+        if (cycled) {
+            ++cyclic;
+            if (in_list(PARKED, nparked, p->source_label)) {
+                printf("%s cycles now -- drop it from PARKED\n",
+                       p->source_label);
+                assert(!"PARKED entry is fixed");
+            }
+            continue;
+        }
+        if (!in_list(PARKED, nparked, p->source_label)) {
+            printf("%s never ends and never repeats a frame\n",
+                   p->source_label);
+            assert(!"animation neither ends nor loops");
+        }
+        for (size_t k = 0; k < nparked; ++k)
+            if (strcmp(PARKED[k], p->source_label) == 0) parked_hit[k] = 1;
+    }
+
+    for (size_t k = 0; k < nparked; ++k) {
+        if (!parked_hit[k])
+            printf("%s no longer parks\n", PARKED[k]);
+        assert(parked_hit[k]);
+    }
+
+    printf("  %d still running: %d proven to cycle, %d parked by design\n",
+           running, cyclic, running - cyclic);
+}
+
+
 int main(void)
 {
     test_the_corpus_is_all_there();
@@ -327,6 +432,7 @@ int main(void)
     test_every_frame_op_names_a_frame();
     test_every_changeanim_target_resolves();
     test_playing_the_whole_corpus();
+    test_nothing_hangs();
     printf("the animation corpus: all checks passed\n");
     return 0;
 }

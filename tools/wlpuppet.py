@@ -440,6 +440,66 @@ def slave_targets() -> list[tuple[pathlib.Path, str]]:
     return out
 
 
+_CHANGEANIM_OP_RE = re.compile(
+    r"^\s*(?:WL|\.word)\s+ANI_CHANGEANIM\s*,\s*([A-Za-z_#][A-Za-z0-9_]*)\s*$",
+    re.I)
+
+
+def changeanim_op_targets() -> list[tuple[pathlib.Path, str]]:
+    """Every animation a plain ANI_CHANGEANIM operand names.
+
+    Its two siblings above read the TABLES -- ANI_SLAVEANIM's and
+    ANI_CHANGEANIM_TBL's. This reads the op itself, which names an
+    animation just as directly and had no equivalent: the roster pass
+    enumerates SUBR lines, so an animation defined as a bare column-0
+    label was emitted only if a table happened to name it. Two are like
+    that, both in DNKSEQ2.ASM -- `dnk_combo_hammer_anim` (:3031) and
+    `re_enter_combo_hiptoss` (:4429) -- and both are named by an
+    ANI_CHANGEANIM further down the same file. Neither was emitted, so
+    backend_change_anim_label found no program, set prog = NULL and
+    ended = true, and Doink stopped mid-combo.
+
+    A `#local` operand is a branch inside the naming routine, not an
+    animation of its own, so those are skipped -- program_for resolves
+    them itself.
+
+    Resolution follows slave_targets: a SUBR is global and may live in
+    any linked file; a bare column-0 label is file-local and resolves in
+    the file whose ANI_CHANGEANIM names it.
+    """
+    subr_in: dict[str, pathlib.Path] = {}
+    for q in wlanim.linked_files():
+        for line in q.read_text(errors="replace").splitlines():
+            m = wlanim.SUBR_RE.match(line)
+            if m:
+                subr_in.setdefault(m.group(1), q)
+
+    out: list[tuple[pathlib.Path, str]] = []
+    seen: set[str] = set()
+    for path in canonical_files():
+        lines = [wlanim.strip_comment(r)
+                 for r in path.read_text(errors="replace").splitlines()]
+        local = {wlanim.label_def(l) for l in lines}
+        for line in lines:
+            m = _CHANGEANIM_OP_RE.match(line)
+            if not m:
+                continue
+            name = m.group(1)
+            if name.startswith("#") or name in seen:
+                continue
+            where = subr_in.get(name)
+            if where is None:
+                if name not in local:
+                    # Named but defined nowhere reachable. Leave it to
+                    # the corpus test to report rather than guessing at
+                    # a file; program_for would only raise here.
+                    continue
+                where = path
+            seen.add(name)
+            out.append((where, name))
+    return out
+
+
 def slave_table_ids(paths: list[pathlib.Path] | None = None) -> dict[str, int]:
     use = paths if paths is not None else canonical_files()
     ids: dict[str, int] = {}

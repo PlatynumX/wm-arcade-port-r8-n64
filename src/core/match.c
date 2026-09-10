@@ -139,6 +139,13 @@ static void match_draw_move_name(void *user, int side, int index) {
     ++m->move_name.drawn;
 }
 
+/* UTIL.ASM:2406 SHAKER2. The oscillator is real; what reads WORLDTLY is
+   a camera this port has not got. */
+static void match_screen_shake(void *user, int32_t ticks) {
+    wm_match_state *m = (wm_match_state *)user;
+    if (m) wm_shake_start(&m->shake, ticks);
+}
+
 /* @no_debris, written by create_impact4/flykick and by LEXSEQ2's
    #stop_debris / #restore_debris pair. */
 static void match_set_no_debris(void *user, bool off) {
@@ -309,6 +316,7 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
     /* WRESTLE.ASM:4552 init_reduce_bog, with this match's two actors. */
     m->debris.no_debris = false;
     m->debris.reduce_bog = (int32_t)m->actor_count - 2;
+    wm_shake_init(&m->shake);
     wm_move_name_init(&m->move_names);
     memset(&m->move_name, 0, sizeof(m->move_name));
     wm_arcade_match_score_init(&m->score);
@@ -375,6 +383,7 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
     /* WRESTLE.ASM:4552 init_reduce_bog, with this match's two actors. */
     m->debris.no_debris = false;
     m->debris.reduce_bog = (int32_t)m->actor_count - 2;
+    wm_shake_init(&m->shake);
     wm_move_name_init(&m->move_names);
     memset(&m->move_name, 0, sizeof(m->move_name));
     wm_arcade_match_score_init(&m->score);
@@ -598,6 +607,8 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             m->wrestler_visual[i].anim_env.draw_move_name = match_draw_move_name;
             m->bret_visual[i].anim_env.screen_user = m;
             m->bret_visual[i].anim_env.draw_move_name = match_draw_move_name;
+            m->wrestler_visual[i].anim_env.screen_shake = match_screen_shake;
+            m->bret_visual[i].anim_env.screen_shake = match_screen_shake;
             /*
              * WRESTLE.ASM's match-configuration globals, as this match
              * actually is: no royal rumble, PSTATUS 0 for the attract
@@ -688,6 +699,7 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
        every other sound in this port uses. */
     wm_announce_tick_repeat(&m->announcer);   /* REPEAT_DUMMY */
     if (m->crowd.sound_ticks) --m->crowd.sound_ticks;   /* CROWD_DUMMY */
+    (void)wm_shake_tick(&m->shake);                    /* UTIL.ASM #shaker */
     (void)wm_announcer_tick(&m->announcer, m->anim_sound_user, m->anim_sound,
                             NULL);
 

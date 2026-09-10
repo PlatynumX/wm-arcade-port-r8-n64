@@ -145,8 +145,40 @@ AT_TYPES = _load_equ(_ORIG / "DAMAGE.EQU", "AT_")
 GLOBAL_EQU = wlanim.GLOBAL_EQU
 
 
+# The assembler's own 16.16 literal: `[106,-29]` is 106 in the integer half
+# and -29 in the fractional one, written as one 32-bit word. It appears
+# wherever a fixed-point constant does -- ANI_SETLONG's DEBRIS_X operands,
+# SPECIAL.ASM's offset tables -- and is not arithmetic, so it is resolved
+# before the expression evaluator sees it.
+FIXED_RE = re.compile(r"^\[\s*(-?[0-9A-Fa-fxXhH]+)\s*,\s*(-?[0-9A-Fa-fxXhH]+)\s*\]$")
+
+
+def _fixed(tok: str) -> int | None:
+    m = FIXED_RE.match(tok.strip())
+    if not m:
+        return None
+
+    def half(t: str) -> int:
+        # The assembler's own rule: a trailing h/H makes it hex, and
+        # anything else is DECIMAL -- including `-09`, whose leading zero
+        # is not an octal prefix.
+        t = t.strip()
+        neg = t.startswith("-")
+        if neg:
+            t = t[1:]
+        v = int(t[:-1], 16) if t[-1:] in "hH" else int(t, 10)
+        return -v if neg else v
+
+    hi, lo = half(m.group(1)), half(m.group(2))
+    # Both halves are packed into one 32-bit word, the low one unsigned.
+    return (hi << 16) | (lo & 0xFFFF)
+
+
 def _value(tok: str, equates: dict[str, int]) -> int:
     tok = tok.strip()
+    fx = _fixed(tok)
+    if fx is not None:
+        return fx
     if tok.upper() in AM_MODES:
         return AM_MODES[tok.upper()]
     if tok.upper() in AT_TYPES:

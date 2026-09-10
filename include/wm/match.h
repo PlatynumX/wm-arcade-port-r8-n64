@@ -12,6 +12,7 @@
 #include "wm/arcade/wm_arcade_round.h"
 #include "wm/arcade/wm_arcade_round_announce.h"
 #include "wm/arcade/wm_arcade_target.h"
+#include "wm/arcade/wm_arcade_shake.h"
 #include "wm/arcade/wmania_rng.h"
 #include "wm/arcade/wmania_rope_runtime.h"
 #include "wm/arcade/wm_arcade_announcer.h"
@@ -153,6 +154,9 @@ typedef struct {
      * "active wrestlers minus two" (WRESTLE.ASM:4552), so a 1-on-1 match
      * has it at 0 and debris on.
      */
+    /* UTIL.ASM:2406 SHAKER2's oscillator and the WORLDTLY it moves. */
+    wm_shake_state shake;
+
     /* LIFEBAR.ASM's MOVE_NAME_ANNC state: which names have been shown
        and whether one is up on either side. */
     wm_move_name_state move_names;

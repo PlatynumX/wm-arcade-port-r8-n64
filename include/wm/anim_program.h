@@ -265,6 +265,10 @@ typedef enum {
     WM_AOP_SLAVEANIM,      /* ANIM.ASM:2130 :64   a = slave table id */
     WM_AOP_TARGET,         /* ANIM.ASM:3753 :102  a,b = TGT_*, c = ATM_* */
     WM_AOP_DRAW_NAME,      /* ANIM.ASM:4389 :122  a = #message_tbl index */
+    WM_AOP_SHAKER,         /* ANIM.ASM:1287 :31   a = SHAKER2's tick/power */
+    WM_AOP_SHAKEALL,       /* ANIM.ASM:1962 :55   a = rope selector */
+    WM_AOP_SHAKEROPES,     /* ANIM.ASM:1361 :36   a = rope selector */
+    WM_AOP_SHAKECORNER,    /* ANIM.ASM:2645 :77   no operand */
 
     /* Present in the source but needing a system this port does not have
        (a renderer, paired actors, a callback bridge). Carried so the
@@ -454,6 +458,13 @@ typedef struct wm_anim_env {
      * `[1111h,0000h]` colour over `[256,400]` at the origin. The numbers
      * are real; the fill needs a framebuffer.
      */
+    /*
+     * UTIL.ASM:2406 SHAKER2 -- the earthquake. The oscillator itself is
+     * translated (wm/arcade/wm_arcade_shake.h); this is only where its
+     * state lives, which is the match rather than a copy of the env.
+     */
+    void (*screen_shake)(void *user, int32_t ticks);
+
     void *screen_user;
     void (*screen_flash)(void *user, uint16_t colour, int w, int h);
     /*

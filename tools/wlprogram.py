@@ -88,6 +88,19 @@ CODE_RE = re.compile(
     r"^\s*(?:\.word|W+L+W*)\s+ANI_CODE\s*,\s*"
     r"((?:#[A-Za-z0-9_]+|[A-Za-z_][A-Za-z0-9_]*))\s*$", re.I)
 
+# An operand can be the assembler's own 16.16 literal, `[106,-29]`, which
+# has a COMMA IN IT -- so a trailing `[^,]+` silently fails to match the
+# line and the whole command is dropped. 130 ANI_SETLONG commands were
+# skipped for exactly that reason, all of them DEBRIS_X.
+VALUE = r"(?:\[[^\]]*\]|[^,\[\]]+)"
+
+# The four screen/rope shakes. ANI_SHAKER (:31) takes SHAKER2's own
+# "ticks and power" value; ANI_SHAKEALL (:55) and ANI_SHAKEROPES (:36) take
+# a rope selector; ANI_SHAKECORNER (:77) takes nothing.
+SHAKE_RE = re.compile(
+    r"^\s*(?:\.word|W+L+W*)\s+(ANI_SHAKER|ANI_SHAKEALL|ANI_SHAKEROPES|"
+    r"ANI_SHAKECORNER)\s*(?:,\s*(" + VALUE + r"))?\s*$", re.I)
+
 # ANIM.ASM:4389 ANI_DRAW_NAME,<index> -- the move name flashed on screen,
 # an index into LIFEBAR.ASM's #message_tbl.
 DRAWNAME_RE = re.compile(
@@ -197,7 +210,8 @@ IFOPP_RE = re.compile(
 SETWORD_RE = re.compile(
     r"^\s*(?:\.word|W+L+W*)\s+ANI_SETWORD\s*,\s*(\w+)\s*,\s*([^,]+)\s*$", re.I)
 SETLONG_RE = re.compile(
-    r"^\s*(?:\.word|W+L+W*)\s+ANI_SETLONG\s*,\s*(\w+)\s*,\s*([^,]+)\s*$", re.I)
+    r"^\s*(?:\.word|W+L+W*)\s+ANI_SETLONG\s*,\s*(\w+)\s*,\s*(" + VALUE +
+    r")\s*$", re.I)
 
 DEC_RPT_RE = re.compile(r"^\s*(?:\.word|W+L+W*)\s+ANI_DEC_RPTCOUNT\s*$", re.I)
 
@@ -461,6 +475,14 @@ def program_for(path: pathlib.Path, label: str, with_entry: bool = False):
                         int(ss.group(5))))
             continue
 
+        sk = SHAKE_RE.match(line)
+        if sk:
+            kind = sk.group(1).upper()
+            arg = sk.group(2)
+            ops.append((kind[4:],
+                        wlcommands._value(arg, equates) if arg else 0))
+            continue
+
         dn = DRAWNAME_RE.match(line)
         if dn:
             ops.append(("DRAW_NAME", wlcommands._value(dn.group(1), equates)))
@@ -721,7 +743,8 @@ def _c_op(op) -> str:
     elif kind == "IFBUTTONS":
         args[0] = op[1]
         text = f'"{op[2]}"'
-    elif kind == "DRAW_NAME":
+    elif kind in ("DRAW_NAME", "SHAKER", "SHAKEALL", "SHAKEROPES",
+                  "SHAKECORNER"):
         args[0] = op[1]
     elif kind == "TARGET":
         args[0], args[1], args[2] = op[1], op[2], op[3]

@@ -91,6 +91,7 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_round.c
     src/core/arcade/wm_arcade_round_announce.c
     src/core/arcade/wm_arcade_target.c
+    src/core/arcade/wm_arcade_shake.c
     src/generated/target_tables.c
     src/core/arcade/wm_arcade_shawn.c
     src/core/arcade/wm_arcade_special.c

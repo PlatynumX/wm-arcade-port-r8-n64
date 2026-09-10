@@ -17,6 +17,7 @@
 #include "wm/anim_puppet.h"
 #include "wm/arcade/wm_arcade_round_announce.h"
 #include "wm/arcade/wm_arcade_target.h"
+#include "wm/arcade/wm_arcade_shake.h"
 #include "wm/award.h"
 #include "wm/wrestler_sound_tables.h"
 #include "wm/arcade/wm_arcade_announcer.h"
@@ -5909,6 +5910,228 @@ static void test_the_last_ani_code_routines(void) {
 }
 
 /*
+ * UTIL.ASM:2406 SHAKER2 and the four shake animation commands.
+ */
+static void shake_sink(void *user, int32_t ticks) {
+    struct { int n; int32_t ticks; } *l = user;
+    ++l->n;
+    l->ticks = ticks;
+}
+
+static void test_shaker(void) {
+    wm_shake_state sh;
+    int t;
+
+    /* UTIL.ASM:2372/2388, transcribed: ten sine entries at 36 degrees and
+       64 of e^-x scaled by 1024, so the first is 1024 and the last is 6. */
+    CHECK(wm_shake_sine[0] == -601 && wm_shake_sine[9] == 0);
+    CHECK(wm_shake_sine[4] == 0 && wm_shake_sine[6] == 974);
+    CHECK(wm_shake_exp[0] == 1024 && wm_shake_exp[63] == 6);
+    /* e^-x never rises. */
+    for (t = 1; t < WM_SHAKE_EXP_ENTRIES; ++t)
+        CHECK(wm_shake_exp[t] <= wm_shake_exp[t - 1]);
+
+    /* `move a10,a10 / jrn #done / jrz #done` -- nothing to shake with. */
+    wm_shake_init(&sh);
+    wm_shake_start(&sh, 0);
+    CHECK(!sh.on);
+    wm_shake_start(&sh, -5);
+    CHECK(!sh.on);
+    CHECK(!wm_shake_tick(&sh));
+
+    /*
+     * A real shake. WORLDTLY moves and comes back to where it started --
+     * the offset is a one-tick pulse, applied then undone, so a shake
+     * that ends must leave the camera exactly where it found it.
+     */
+    wm_shake_init(&sh);
+    sh.world_tly = 1000;
+    wm_shake_start(&sh, 20);
+    CHECK(sh.on && sh.total == 20 && sh.ticks_left == 20);
+    CHECK(sh.index == WM_SHAKE_SINE_ENTRIES - 1);
+    {
+        int moved = 0;
+        for (t = 0; t < 200 && wm_shake_tick(&sh); ++t)
+            if (sh.world_tly != 1000) moved = 1;
+        CHECK(moved);                       /* it really shook */
+        CHECK(!sh.on);
+        CHECK(sh.world_tly == 1000);        /* ...and put it back */
+        CHECK(sh.y_adj == 0);
+    }
+
+    /*
+     * "abort shake currently in progress": a second shake starting
+     * part-way through the first takes the first's outstanding offset off
+     * WORLDTLY, so the two never accumulate.
+     */
+    wm_shake_init(&sh);
+    sh.world_tly = 500;
+    wm_shake_start(&sh, 30);
+    /* The walk starts at entry 9, which is the table's 0-degree row, so
+       the first tick's offset is genuinely zero -- the shake grows out of
+       rest rather than snapping. Two more ticks to get a real one. */
+    CHECK(wm_shake_tick(&sh));
+    CHECK(sh.y_adj == 0);
+    CHECK(wm_shake_tick(&sh));
+    CHECK(wm_shake_tick(&sh));
+    CHECK(sh.y_adj != 0);
+    CHECK(sh.world_tly == 500 + sh.y_adj);
+    wm_shake_start(&sh, 12);
+    CHECK(sh.world_tly == 500);             /* the first one's offset is gone */
+    CHECK(sh.total == 12 && sh.ticks_left == 12);
+    while (wm_shake_tick(&sh)) { }
+    CHECK(sh.world_tly == 500);
+
+    /* The amplitude scales with the tick count -- "# ticks to shake AND
+       power of shake" is one operand doing both jobs. */
+    {
+        int32_t small_peak = 0, big_peak = 0, v;
+        wm_shake_init(&sh);
+        wm_shake_start(&sh, 8);
+        while (wm_shake_tick(&sh)) {
+            v = sh.y_adj < 0 ? -sh.y_adj : sh.y_adj;
+            if (v > small_peak) small_peak = v;
+        }
+        wm_shake_init(&sh);
+        wm_shake_start(&sh, 40);
+        while (wm_shake_tick(&sh)) {
+            v = sh.y_adj < 0 ? -sh.y_adj : sh.y_adj;
+            if (v > big_peak) big_peak = v;
+        }
+        CHECK(big_peak > small_peak);
+    }
+
+    /* The sine walk is 9, 8, ... 1, then back to 9 -- entry 0 is never
+       reached by the wrap. */
+    wm_shake_init(&sh);
+    wm_shake_start(&sh, 60);
+    for (t = 0; t < 40 && wm_shake_tick(&sh); ++t)
+        CHECK(sh.index >= 1 && sh.index <= WM_SHAKE_SINE_ENTRIES - 1);
+
+    /*
+     * The four commands. ANI_SHAKER hands SHAKER2 its operand; the other
+     * three go through the ropes, and they do NOT agree on their gates.
+     */
+    {
+        static struct { int n; int32_t ticks; } slog;
+        static struct shake_rope_log rl;
+        wm_arcade_actor_t a;
+        wm_anim_env env;
+        wm_anim_exec ex;
+        static const wm_anim_op shaker_ops[] = {
+            { WM_AOP_SHAKER, 0, -1, 24, 0, 0, 0, 0, 0, NULL },
+            { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, NULL }
+        };
+        static const wm_anim_program shaker_prog = {
+            "t_shaker", "HRTSEQ2.ASM", shaker_ops, 2, 0, NULL, 0
+        };
+        static const wm_anim_op all_ops[] = {
+            { WM_AOP_SHAKEALL, 0, -1, 2, 0, 0, 0, 0, 0, NULL },
+            { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, NULL }
+        };
+        static const wm_anim_program all_prog = {
+            "t_all", "HRTSEQ2.ASM", all_ops, 2, 0, NULL, 0
+        };
+        static const wm_anim_op ropes_ops[] = {
+            { WM_AOP_SHAKEROPES, 0, -1, 1, 0, 0, 0, 0, 0, NULL },
+            { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, NULL }
+        };
+        static const wm_anim_program ropes_prog = {
+            "t_ropes", "HRTSEQ2.ASM", ropes_ops, 2, 0, NULL, 0
+        };
+        static const wm_anim_op corner_ops[] = {
+            { WM_AOP_SHAKECORNER, 0, -1, 0, 0, 0, 0, 0, 0, NULL },
+            { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, NULL }
+        };
+        static const wm_anim_program corner_prog = {
+            "t_corner", "HRTSEQ2.ASM", corner_ops, 2, 0, NULL, 0
+        };
+        struct ann_log sounds;
+
+        memset(&slog, 0, sizeof(slog));
+        memset(&rl, 0, sizeof(rl));
+        memset(&sounds, 0, sizeof(sounds));
+        memset(&env, 0, sizeof(env));
+        env.screen_user = &slog;
+        env.screen_shake = shake_sink;
+        env.rope_user = &rl;
+        env.rope_command = shake_rope_sink;
+        env.sound_user = &sounds;
+        env.sound = ann_sound;
+
+        memset(&a, 0, sizeof(a));
+        a.in_ring = 1;
+        wm_anim_exec_start(&ex, &shaker_prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(slog.n == 1 && slog.ticks == 24);
+
+        /* ANI_SHAKEALL: the BACK bank plus one side, chosen by his own
+           flip -- FLIPH picks LEFT. And it thumps. */
+        memset(&rl, 0, sizeof(rl));
+        memset(&sounds, 0, sizeof(sounds));
+        a.obj_control = WM_OBJ_FLIPH;
+        wm_anim_exec_start(&ex, &all_prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(rl.n == 2);
+        CHECK(rl.bank[0] == WM_ROPE_BACK && rl.bank[1] == WM_ROPE_LEFT);
+        CHECK(rl.sel[0] == 2 && rl.sel[1] == 2);
+        CHECK(sounds.n == 1 && sounds.call[0] == 0x3Cu);
+        memset(&rl, 0, sizeof(rl));
+        a.obj_control = 0;
+        wm_anim_exec_start(&ex, &all_prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(rl.bank[1] == WM_ROPE_RIGHT);
+
+        /* Outside the ring it is skipped entirely. */
+        memset(&rl, 0, sizeof(rl));
+        memset(&sounds, 0, sizeof(sounds));
+        a.in_ring = 0;
+        wm_anim_exec_start(&ex, &all_prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(rl.n == 0 && sounds.n == 0);
+
+        /* ANI_SHAKEROPES: all four banks, and gated on reduce_bog too --
+           which ANI_SHAKEALL is not. */
+        memset(&rl, 0, sizeof(rl));
+        a.in_ring = 1;
+        env.reduce_bog = true;
+        wm_anim_exec_start(&ex, &ropes_prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(rl.n == 0);
+        env.reduce_bog = false;
+        memset(&rl, 0, sizeof(rl));
+        wm_anim_exec_start(&ex, &ropes_prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(rl.n == 4);
+        /* ...and reduce_bog does NOT stop ANI_SHAKEALL. */
+        memset(&rl, 0, sizeof(rl));
+        env.reduce_bog = true;
+        wm_anim_exec_start(&ex, &all_prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(rl.n == 2);
+        env.reduce_bog = false;
+
+        /* ANI_SHAKECORNER: back plus the side he is ON, selector 1, no
+           sound, and no in-ring gate at all. */
+        memset(&rl, 0, sizeof(rl));
+        memset(&sounds, 0, sizeof(sounds));
+        a.in_ring = 0;
+        a.x_int = WM_RING_X_CENTER - 50;
+        wm_anim_exec_start(&ex, &corner_prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(rl.n == 2);
+        CHECK(rl.bank[0] == WM_ROPE_BACK && rl.bank[1] == WM_ROPE_LEFT);
+        CHECK(rl.sel[0] == 1 && rl.sel[1] == 1);
+        CHECK(sounds.n == 0);
+        memset(&rl, 0, sizeof(rl));
+        a.x_int = WM_RING_X_CENTER + 50;
+        wm_anim_exec_start(&ex, &corner_prog, &a, 0, &env);
+        wm_anim_exec_tick(&ex, &a, 0);
+        CHECK(rl.bank[1] == WM_ROPE_RIGHT);
+    }
+}
+
+/*
  * LIFEBAR.ASM:3687 DO_COMBO_MESS -- the most-called ANI_CODE routine in
  * the game, and what actually ends a combo.
  */
@@ -10402,6 +10625,7 @@ int main(void) {
     test_debris_family();
     test_target_offsets();
     test_the_last_ani_code_routines();
+    test_shaker();
     test_do_combo_mess();
     test_do_combo_mess_from_the_vm();
     test_wrsnd_tables();

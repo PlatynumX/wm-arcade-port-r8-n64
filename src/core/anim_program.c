@@ -16,6 +16,14 @@
 
 /* ANIM.ASM:1626 _ani_set_xvel / :1829 _ani_set_zvel: absolute, or negated
    when the direction bit the AM_* mode names is clear. */
+/* `movi 3ch,a0 / calla triple_sound` -- the rope thump, shared by the
+   bounce and by the three shake commands that make one. */
+#define WM_ROPE_THUMP_SOUND 0x3Cu
+
+static void play_sound(const wm_anim_env *env, uint16_t call) {
+    if (env && env->sound) env->sound(env->sound_user, call);
+}
+
 static int32_t directional(const wm_arcade_actor_t *actor, int32_t value,
                            uint8_t mode, uint16_t bit) {
     uint16_t dir;
@@ -248,8 +256,8 @@ static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
                 env->rope_command(env->rope_user, bank, action, selector,
                                   actor->z_fixed);
             /* `movi 3ch,a0 / calla triple_sound` -- only the bounce. */
-            if (o->op == WM_AOP_BOUNCEROPE && env && env->sound)
-                env->sound(env->sound_user, 0x3Cu);
+            if (o->op == WM_AOP_BOUNCEROPE)
+                play_sound(env, WM_ROPE_THUMP_SOUND);
             break;
         }
         case WM_AOP_ROPE_Z: {
@@ -568,6 +576,68 @@ static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
                 env->draw_move_name(env->screen_user,
                                     (int)actor->player_side, (int)o->a);
             break;
+        /*
+         * ANIM.ASM:1287 _ani_shaker -- one operand doing two jobs, "#
+         * ticks to shake and power of shake", straight into SHAKER2.
+         */
+        case WM_AOP_SHAKER:
+            if (env && env->screen_shake)
+                env->screen_shake(env->screen_user, o->a);
+            break;
+
+        /*
+         * ANIM.ASM:1962 _ani_shakeall (:55) -- the back rope plus ONE
+         * side, chosen by this wrestler's own flip: `btst B_FLIPH` picks
+         * LEFT, otherwise RIGHT. Skipped entirely when he is outside the
+         * ring (INRING's polarity is the source's; the port's boolean
+         * inverts the test), and it thumps.
+         */
+        case WM_AOP_SHAKEALL: {
+            int sel = (int)(o->a & 3);      /* "force a2 into range" */
+            if (!actor || !actor->in_ring) break;
+            if (!env || !env->rope_command) break;
+            env->rope_command(env->rope_user, WM_ROPE_BACK,
+                              WM_ROPE_BOUNCE_UD, sel, actor->z_fixed);
+            env->rope_command(env->rope_user,
+                              (actor->obj_control & WM_OBJ_FLIPH)
+                                  ? WM_ROPE_LEFT : WM_ROPE_RIGHT,
+                              WM_ROPE_BOUNCE_UD, sel, actor->z_fixed);
+            play_sound(env, WM_ROPE_THUMP_SOUND);
+            break;
+        }
+
+        /*
+         * ANIM.ASM:1361 _ani_shakeropes (:36) -- all four banks. Gated on
+         * being in the ring AND on reduce_bog, which _ani_shakeall is
+         * not.
+         */
+        case WM_AOP_SHAKEROPES: {
+            int sel = (int)(o->a & 3);
+            int bank;
+            if (!actor || !actor->in_ring) break;
+            if (!env || env->reduce_bog || !env->rope_command) break;
+            for (bank = WM_ROPE_FRONT; bank <= WM_ROPE_RIGHT; ++bank)
+                env->rope_command(env->rope_user, bank, WM_ROPE_BOUNCE_UD,
+                                  sel, actor->z_fixed);
+            play_sound(env, WM_ROPE_THUMP_SOUND);
+            break;
+        }
+
+        /*
+         * ANIM.ASM:2645 _ani_shakecorner (:77) -- the back rope and
+         * whichever SIDE he is on, by X against the ring's centre. No
+         * in-ring gate, no sound, and its selector is a fixed 1.
+         */
+        case WM_AOP_SHAKECORNER:
+            if (!actor || !env || !env->rope_command) break;
+            env->rope_command(env->rope_user, WM_ROPE_BACK,
+                              WM_ROPE_BOUNCE_UD, 1, actor->z_fixed);
+            env->rope_command(env->rope_user,
+                              (actor->x_int <= WM_RING_X_CENTER)
+                                  ? WM_ROPE_LEFT : WM_ROPE_RIGHT,
+                              WM_ROPE_BOUNCE_UD, 1, actor->z_fixed);
+            break;
+
         case WM_AOP_CODE: {
             /* ANIM.ASM:1277: an ordinary call, then straight on to the
                next command. A routine this port has not translated leaves

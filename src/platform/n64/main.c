@@ -24,6 +24,8 @@
 #include "wm/title_screen.h"
 #include "wm/title_sparkle.h"
 #include "wm/visual.h"
+#include "wm/match_display.h"
+#include "wm/streamed_character_art.h"
 
 #define STICK_DEADZONE 12
 
@@ -2030,6 +2032,61 @@ static __attribute__((unused)) void render_match(const wm_app *app) {
 
 }
 
+
+static void render_source_match(const wm_app *app) {
+    wm_match_draw_item items[WM_MATCH_DRAW_MAX];
+    const wm_source_sprite *object_palette[9] = {0};
+    size_t count;
+    int camera_x, camera_y;
+
+    /* Until the exact arena object renderer is reconnected, do not put the
+       old rectangle-ring development harness behind source wrestlers. */
+    fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+    if (!app || !app->match.active)
+        return;
+
+    count = wm_match_build_draw_list(&app->match, items, WM_MATCH_DRAW_MAX);
+    camera_x = app->match.scroll.worldtlx >> 16;
+    camera_y = app->match.scroll.worldtly >> 16;
+
+    for (size_t i = 0; i < count; ++i) {
+        const wm_match_draw_item *item = &items[i];
+        const wm_source_sprite *spr;
+        const wm_source_sprite *pal;
+        int32_t id = item->wrestler_num;
+        float base_x, base_y;
+
+        /* The draw list carries the source shadow decision, but the exact
+           shadow object artwork is a separate presentation asset. Never draw
+           the old rectangle approximation here. */
+        if (item->layer == WM_DRAW_SHADOW || !item->frame)
+            continue;
+
+        spr = wm_n64_streamed_character_find(id, item->frame);
+        if (!spr)
+            continue;
+
+        if (item->layer == WM_DRAW_BODY && id >= 0 && id < 9)
+            object_palette[id] = spr;
+        pal = (id >= 0 && id < 9 && object_palette[id])
+                  ? object_palette[id] : spr;
+
+        /* match_display has already computed the exact source ODXOFF/ODYOFF
+           equivalent in anchor_x/anchor_y. Recover the actor/object origin,
+           subtract WRESTLE2.ASM's WORLDTL camera, and let the same proven
+           CI8/TLUT strip renderer apply the image origin and N64 scaling. */
+        base_x = (float)(item->screen_x - item->anchor_x - camera_x)
+                 * WM_FRONTEND_SCALE_X;
+        base_y = (float)(item->screen_y - item->anchor_y - camera_y)
+                 * WM_FRONTEND_SCALE_Y;
+        draw_source_sprite_scaled(spr, base_x, base_y,
+                                  item->anchor_x, item->anchor_y,
+                                  item->flip_x, pal,
+                                  WM_FRONTEND_SCALE_X,
+                                  WM_FRONTEND_SCALE_Y);
+    }
+}
+
 static void render_app(const wm_app *app) {
     surface_t *disp = display_get();
     rdpq_attach(disp, NULL);
@@ -2038,9 +2095,9 @@ static void render_app(const wm_app *app) {
         render_character_select(app);
     } else if (app->mode == WM_APP_MODE_PREGAME) {
         render_pregame(app);
-    } else if (app->mode == WM_APP_MODE_MATCH_INIT) {
-        /* Honest handoff boundary: render_match() is still a dev harness. */
-        fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+    } else if (app->mode == WM_APP_MODE_MATCH_INIT ||
+               app->mode == WM_APP_MODE_MATCH) {
+        render_source_match(app);
     } else switch (app->attract.call) {
         case WM_ATTRACT_DCS_LOGO:
             render_dcs_logo(app);
@@ -2052,9 +2109,7 @@ static void render_app(const wm_app *app) {
             render_title_screen(app);
             break;
         case WM_ATTRACT_SHOW_GAMEPLAY:
-            /* The existing combat renderer is a development harness only.
-               Normal product rendering can never present it as start_match. */
-            fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+            render_source_match(app);
             break;
         default:
             /* Untranslated source routines are skipped by the portable core;

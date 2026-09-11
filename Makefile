@@ -153,8 +153,16 @@ CORE_C += $(FIX38_ARCADE_C)
 
 
 ASSET_C := src/generated/bret_sprites.c src/generated/sports_logo.c src/generated/dcs_logo.c src/generated/title_screen.c src/generated/title_sparkle.c src/generated/bmod_tables.c src/generated/sports_background.c src/generated/sports_motto.c src/generated/select_sprites.c src/generated/select_background_main.c src/generated/select_background_choice.c src/generated/progress_background.c src/generated/progress_wrestlers.c
-N64_C := src/platform/n64/main.c src/platform/n64/dcs_effect.c src/platform/n64/audio_backend.c src/platform/n64/dcs_bank.c
+N64_C := src/platform/n64/main.c src/platform/n64/dcs_effect.c src/platform/n64/audio_backend.c src/platform/n64/dcs_bank.c src/platform/n64/streamed_character_art.c
 C_FILES := $(CORE_C) $(ASSET_C) $(N64_C)
+
+# Full current wrestler frame corpus stays in ROM/DragonFS, not resident RDRAM.
+STREAMED_ROSTER_STAMP := filesystem/wrestlers/STREAMED_ROSTER.txt
+$(STREAMED_ROSTER_STAMP): tools/stream_roster_assets.py scripts/prepare_streamed_character_assets.sh src/generated/frame_geometry.c
+	sh ./scripts/prepare_streamed_character_assets.sh
+
+$(BUILD_DIR)/$(ROMNAME).dfs: $(STREAMED_ROSTER_STAMP)
+$(ROMNAME).z64: $(BUILD_DIR)/$(ROMNAME).dfs
 OBJS := $(addprefix $(BUILD_DIR)/,$(C_FILES:.c=.o))
 
 all: $(ROMNAME).z64
@@ -226,7 +234,7 @@ $(ROMNAME).z64: N64_ROM_TITLE = "WM Arcade Port r9"
 $(ROMNAME).z64: N64_ROM_REGIONFREE = true
 
 clean:
-	$(RM) -r $(BUILD_DIR) $(ROMNAME).z64 $(ASSET_C) $(DCS1005_WAV64)
+	$(RM) -r $(BUILD_DIR) $(ROMNAME).z64 $(ASSET_C) $(DCS1005_WAV64) filesystem/wrestlers
 
 .PHONY: all clean assets
 

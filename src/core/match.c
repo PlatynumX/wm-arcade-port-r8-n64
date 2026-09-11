@@ -30,6 +30,18 @@
 #define WM_MATCH_P2_START_FACING WM_MOVE_DOWN_LEFT
 
 
+/* WRESTLE.ASM::init_scroller. This is called by start_match before the ring
+   background and before wrestler process creation. The current port has one
+   opponent only (NUM_OPPS==1), so the source selects [FFE5,0] for Y; the
+   [FFE9,0] branch is specifically the 1v2 case this port cannot create yet. */
+static void wm_match_init_scroller(wm_match_state *m) {
+    if (!m) return;
+    m->scroll.worldtlx = (WM_MATCH_RING_X_CENTER - 200) << 16;
+    m->scroll.worldtly = -(27 * 65536);
+}
+
+
+
 /*
  * ANIM.ASM's rope opcodes reaching ROPES.ASM. The animation says which
  * bank and what to do to it; the rope processes belong to the match, so
@@ -459,6 +471,8 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
     wm_arcade_actor_t *p1, *opp;
     if (!m) return;
 
+    wm_match_init_scroller(m);
+
     m->index1 = wm_match_draw_wrestler_index(rng);
     /* Placeholder opponent draw -- see wm/match.h. Not @index2. */
     m->opponent_wrestler = wm_match_draw_wrestler_index(rng);
@@ -529,6 +543,8 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
                              uint8_t p1_source_wrestler) {
     wm_arcade_actor_t *p1, *opp;
     if (!m) return;
+
+    wm_match_init_scroller(m);
 
     p1 = &m->actors[0];
     opp = &m->actors[1];

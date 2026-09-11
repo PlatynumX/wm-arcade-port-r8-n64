@@ -37,6 +37,10 @@ typedef enum {
 
 #define WM_PREGAME_LADDER_ENTRIES 15u
 #define WM_PREGAME_PLAYABLE_LADDER_ENTRIES 7u
+/* PROGRESS.ASM:1495 `FINAL_BATTLE equ 7`, so the last battle is the
+   entry at index FINAL_BATTLE-1. */
+#define WM_PREGAME_FINAL_BATTLE 7u
+#define WM_PREGAME_FINAL_LADDER_INDEX ((int)WM_PREGAME_FINAL_BATTLE - 1)
 #define WM_PREGAME_MAX_OPPONENTS 3u
 
 typedef struct {
@@ -123,6 +127,40 @@ void wm_pregame_tick(wm_pregame_state *state,
                      wm_audio_state *audio);
 
 uint8_t wm_pregame_opponent_at(const wm_pregame_state *state, unsigned index);
+
+/*
+ * PROGRESS.ASM:1501 is_final_match and :1516 is_8_on_1, both of which
+ * report through the carry flag.
+ *
+ *   is_final_match   CURRENT_LADDER == LADDER + (FINAL_BATTLE-1)*20h
+ *   is_8_on_1        the same, AND belt_type is nonzero
+ *
+ * FINAL_BATTLE is 7 (PROGRESS.ASM:1495) and a ladder entry is 20h bits
+ * -- one LONG -- so the last battle is index 6. The source's comment
+ * on that equ says "14th battle is last one. (keep up-to-date)", which
+ * has not been kept up to date; the number beside it is what the code
+ * uses.
+ *
+ * is_8_on_1's first line is its own comment's point: "no 8-on-1 in
+ * intercontinental belt table", so an intercontinental run never has
+ * one however far it gets.
+ *
+ * Several headers in this port state, correctly, that is_8_on_1 always
+ * reports "no" HERE -- wm/arcade/wm_arcade_mode_dead.h argues it at
+ * length, and wm_arcade_round.h and the drone skill sum both rely on
+ * it. That is a statement about the match code, which never sets up a
+ * final battle, not about this function: ask it about a final battle
+ * on a championship ladder and it says yes.
+ */
+bool wm_pregame_is_final_match(const wm_pregame_state *state);
+bool wm_pregame_is_8_on_1(const wm_pregame_state *state);
+
+/*
+ * PROGRESS.ASM:692 NUM_OF_OPPS -- `SRL 24,A3`, the top byte of a
+ * packed ladder entry, which is how many opponents that battle has.
+ * The source writes it to the NUM_OPPS global; this returns it.
+ */
+uint8_t wm_pregame_num_of_opps(uint32_t packed_ladder_entry);
 const char *wm_pregame_phase_name(wm_pregame_phase phase);
 
 #endif

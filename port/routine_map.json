@@ -648,5 +648,56 @@
     "file": "WRESTLE2.ASM",
     "status": "display",
     "note": "WRESTLE2.ASM:4370. Reads the two match_time digits, indexes digit_tbl for each one's image and hands it to change_image against the two PDATA object pointers. The clock value itself is wm/arcade/wm_arcade_round.h's; this is the two digits on screen."
+  },
+  "ZERO_BITS": {
+    "file": "UTIL.ASM",
+    "status": "hardware",
+    "note": "UTIL.ASM:103. Clears BAKBITS -- 10000/16 words of the machine's own bitmap RAM -- with a word-store loop. There is no BAKBITS on an N64."
+  },
+  "WIPEOUT": {
+    "file": "UTIL.ASM",
+    "status": "hardware",
+    "note": "UTIL.ASM:122. dirq_wait, display_init, then pal_init inside a dint, and fall through to WIPEOUT2: reset the machine between screens. Every line is the cabinet's display processor or its palette RAM."
+  },
+  "WIPEOUT2": {
+    "file": "UTIL.ASM",
+    "status": "hardware",
+    "note": "UTIL.ASM:136. The rest of the reset: zero a dozen globals, KILALL every process, ZERO_BITS the bitmap, dpageflip_off, then write SYSCTRL from SYSCOPY (with the WWFUNIT variant that leaves the 7-segment LED alone). Process and hardware state this port does not have."
+  },
+  "SPECIAL_WIPEOUT": {
+    "file": "UTIL.ASM",
+    "status": "hardware",
+    "note": "UTIL.ASM:113. WIPEOUT2 then a jump to SPECIAL_DISPLAY_INIT -- the same reset with a different display mode after it."
+  },
+  "adjust_bar_height": {
+    "file": "MENU.ASM",
+    "status": "display",
+    "note": "MENU.ASM:840. Grows or shrinks the operator volume bar one line at a time toward a target, drawing each line through vol_bar_line. The bar is pixels in the frame buffer."
+  },
+  "vol_bar_line": {
+    "file": "MENU.ASM",
+    "status": "display",
+    "note": "MENU.ASM:866. Plots one line of the volume bar with cvxyl and a byte-store loop, skipping pixels that already hold the text colour -- the source's own \"won't overwrite green pixels (text)\", which the code actually tests against ROBO_BLUE after a commented-out ROBO_GREEN. Direct frame-buffer writes."
+  },
+  "addbae": {
+    "file": "PAL.ASM",
+    "status": "renamed",
+    "symbol": "wm_pal_addb",
+    "note": "PAL.ASM:1032. Three instructions and a fallthrough into pal_addb's body at pb1c, with the autoerase colour (IRQSKYE/irqskyeo) as the palette and a count of one. The arithmetic -- including the unsigned clamp that turns a negative brightness into full brightness rather than zero -- is wm_pal_addb's, already translated with that quirk intact."
+  },
+  "addbrt_ae": {
+    "file": "PAL.ASM",
+    "status": "process",
+    "note": "PAL.ASM:1009. A CREATE0'd process that ramps the autoerase brightness from 0 (up fade) or 31 (down fade) by A10 every three ticks until it passes 31, calling addbae each step, then DIEs. The step is addbae's; the loop is a process and a SLEEPK."
+  },
+  "bcd2hex": {
+    "file": "DIAG.ASM",
+    "status": "hardware",
+    "note": "DIAG.ASM:417. Eight-digit BCD to binary, by repeated mask-multiply-accumulate. Portable arithmetic, but it exists only for the PIC security chip: its two callers (DIAG.ASM:600 and :612) both convert a serial number read out of PIC_COMMAND, and that chip is the cabinet's."
+  },
+  "bin2bcd": {
+    "file": "DIAG.ASM",
+    "status": "hardware",
+    "note": "DIAG.ASM:381 _pic_bin2bcd. The inverse, by repeated divide-by-a-descending-power-of-ten. Same three callers, same reason: it formats the PIC serial number for the diagnostics screen."
   }
 }

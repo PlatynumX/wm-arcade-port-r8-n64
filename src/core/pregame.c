@@ -577,3 +577,28 @@ const char *wm_pregame_phase_name(wm_pregame_phase phase) {
         default: return "UNKNOWN";
     }
 }
+
+/*
+ * PROGRESS.ASM:1501 is_final_match and :1516 is_8_on_1. Both report
+ * through the carry flag; see wm/pregame.h for what FINAL_BATTLE's own
+ * out-of-date comment says and what the code does.
+ */
+bool wm_pregame_is_final_match(const wm_pregame_state *state)
+{
+    if (!state) return false;
+    return state->current_ladder_index == WM_PREGAME_FINAL_LADDER_INDEX;
+}
+
+bool wm_pregame_is_8_on_1(const wm_pregame_state *state)
+{
+    if (!state) return false;
+    /* "no 8-on-1 in intercontinental belt table" -- `jrz #no`. */
+    if (state->belt_type == 0) return false;
+    return wm_pregame_is_final_match(state);
+}
+
+/* PROGRESS.ASM:692 NUM_OF_OPPS -- `SRL 24,A3`. */
+uint8_t wm_pregame_num_of_opps(uint32_t packed_ladder_entry)
+{
+    return (uint8_t)(packed_ladder_entry >> 24);
+}

@@ -7,19 +7,19 @@ only in a note saying it is missing does not count as present.
 
 | status | meaning | count |
 |---|---|---|
-| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1897 |
+| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1900 |
 | `inlined` | the port does it, spelled out at each use site (ledger) | 7 |
-| `renamed` | the port does it under another name (ledger) | 80 |
+| `renamed` | the port does it under another name (ledger) | 81 |
 | `partial` | partly translated; the ledger note says which part | 2 |
-| `process` | a CREATE/SLEEP wrapper (ledger) | 4 |
-| `display` | object/DMA drawing; this port has no renderer (ledger) | 12 |
-| `hardware` | talks to the cabinet (ledger) | 4 |
+| `process` | a CREATE/SLEEP wrapper (ledger) | 5 |
+| `display` | object/DMA drawing; this port has no renderer (ledger) | 14 |
+| `hardware` | talks to the cabinet (ledger) | 10 |
 | `dead` | **measured**: no caller outside its own file | 37 |
 | `unassembled` | **measured**: inside a `.if` the assembler skipped | 60 |
-| `cited` | named only in a comment -- not evidence of anything | 106 |
-| `unknown` | no mention anywhere | 325 |
+| `cited` | named only in a comment -- not evidence of anything | 103 |
+| `unknown` | no mention anywhere | 315 |
 
-**2103 of 2534 routines are accounted for; 431 are open** (`cited` + `unknown`).
+**2116 of 2534 routines are accounted for; 418 are open** (`cited` + `unknown`).
 
 ## Open routines by file
 
@@ -33,20 +33,19 @@ only in a note saying it is missing does not count as present.
 | FIREWORK.ASM | 23 | `animate_fwexp`, `c1v3_tbl`, `c1v3s_tbl`, `c1v8_tbl`, `c1v8s_tbl`, `c2v8_tbl`, `c2v8s_tbl`, `calc_dxdy`, `check_camera_position`, `congrats_setup_tbl`, `congrats_str_tbl`, `do_fireworks`, ... |
 | DCSSOUND.ASM | 22 | `ANNOUNCE_VOICE`, `CALL_MATCH_OVER`, `END_MATCH_SPEECH`, `KILL_PIN_HIM`, `PROC_MATCH_OVER`, `SNDSND`, `VOLBTN_PRESS`, `announcer_sound`, `channel_sound`, `clear_sound_ram`, `delay_code_a3`, `do_tune_commands`, ... |
 | WRESTLE2.ASM | 19 | `audit_wrestler`, `change_wrestler`, `choose_buddies`, `choose_pal`, `ditch_getup_meter_a9`, `flash_red`, `get_mpart_offsets`, `get_mpart_xsize`, `init_smoves`, `keep_onscreen`, `kill_smove_procs`, `loser_snd`, ... |
-| PROGRESS.ASM | 18 | `CREATE_URN`, `NUM_OF_OPPS`, `PUT_UP_PROGRESS`, `START_HI_FLASHES`, `ask_belt_question`, `do_rr_vs`, `flash_it`, `flash_pcurs`, `get_final_lineup`, `get_royal_lineup`, `hilight`, `ind_select`, ... |
 | SELECT.ASM | 17 | `GAME_BEATEN`, `THIS_GAME_IS_BEATEN`, `buyin_counter`, `buyin_select`, `call_wrestler_name`, `display_croutons`, `draw_mugshot`, `erase_mugshot`, `obj_off`, `obj_on`, `pin_speed_in_case`, `place_cursor`, ... |
-| UTIL.ASM | 16 | `ERASE_TXT`, `GETCPNT`, `SPECIAL_WIPEOUT`, `STRCNRM_1`, `WIPEOUT`, `WIPEOUT2`, `ZERO_BITS`, `dirq_wait`, `display_blank`, `display_unblank`, `dma_wait`, `dmaq_wait`, ... |
 | MAIN.ASM | 15 | `AddressSet1`, `AddressSet2`, `AddressSet3`, `AddressSet4`, `INTIO`, `InitAddresses`, `InitPIC`, `RemapIO`, `SecFuncCheck`, `SetAddresses`, `WDOGDIS`, `_AlarmClock`, ... |
+| PROGRESS.ASM | 15 | `CREATE_URN`, `PUT_UP_PROGRESS`, `START_HI_FLASHES`, `ask_belt_question`, `do_rr_vs`, `flash_it`, `flash_pcurs`, `get_final_lineup`, `get_royal_lineup`, `hilight`, `ind_select`, `mk_pcurs`, ... |
 | SPECIAL.ASM | 15 | `begin_ani`, `change_image_local`, `create_dizzy_proc`, `create_impact3`, `delete_special_objlist`, `dizzy_proc`, `impact_proc`, `impact_proc2`, `init_special_objlist`, `react_blood`, `react_bloodnguts_gen`, `sp_animate`, ... |
 | DISPLAY.ASM | 14 | `ANI`, `SPECIAL_DISPLAY_INIT`, `anipt_getxy`, `dma_irq`, `obj_addworldxy`, `obj_yzsort`, `rnd`, `scrn_copy`, `scrn_scale`, `scrn_scale140`, `scrn_scale180`, `scrn_scaledison`, ... |
+| UTIL.ASM | 12 | `ERASE_TXT`, `GETCPNT`, `STRCNRM_1`, `dirq_wait`, `display_blank`, `display_unblank`, `dma_wait`, `dmaq_wait`, `dpageflip_off`, `obj_find`, `security_chk`, `system_savegame` |
 | ATTRACT.ASM | 10 | `GENERIC_DISPLAY`, `MAKE_UP_LOGO`, `ONE_BALL`, `dan_test`, `mk_a0`, `octopus_page`, `print_gen_tips`, `show_wres_tips`, `wait_but`, `wait_on_butn` |
-| MENU.ASM | 8 | `GetSoundRev`, `_GetTime`, `adjust_bar_height`, `aud_prtone`, `background_sound`, `poll_sdav`, `vol_bar_line`, `vol_to_ht` |
 | BAKGND.ASM | 6 | `BGND_UD1`, `bgnd_addblk`, `bgnd_addmod`, `bgnd_delnonvis`, `bgnd_get1stx`, `bgnd_scanmod` |
-| DIAG.ASM | 6 | `_aquire_time`, `_get_time`, `_set_time`, `bcd2hex`, `bin2bcd`, `line_draw` |
+| MENU.ASM | 6 | `GetSoundRev`, `_GetTime`, `aud_prtone`, `background_sound`, `poll_sdav`, `vol_to_ht` |
+| DIAG.ASM | 4 | `_aquire_time`, `_get_time`, `_set_time`, `line_draw` |
 | MPROC.ASM | 3 | `IKIL1C`, `process_dispatch`, `process_init` |
 | AUDIT.ASM | 3 | `audit_ud`, `crd_updatetxt`, `form_crc32` |
 | TEST.ASM | 3 | `opmsg_clr`, `opmsg_main`, `print_multi` |
-| PAL.ASM | 2 | `addbae`, `addbrt_ae` |
 | CROWD.ASM | 2 | `animate_back`, `crowd_anim` |
 | STORIES.ASM | 2 | `print_story`, `show_wrestler_end_story` |
 | REACT1.ASM | 2 | `xxx_aborted_attach_anim`, `xxx_goto_stand_anim` |

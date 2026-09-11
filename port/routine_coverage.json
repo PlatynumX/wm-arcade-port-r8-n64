@@ -3115,10 +3115,10 @@
    "local": false,
    "external_callers": 2,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
+   "status": "partial",
+   "evidence": "match_crowd_cheer",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "animate_fwexp",
@@ -7676,10 +7676,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_arcade_ck_ignore",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "ck_live_teammates",
@@ -8381,10 +8381,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "partial",
+   "evidence": "match_crowd_cheer",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "crowd_cheer",
@@ -8428,7 +8428,7 @@
    "references": 1,
    "status": "implemented",
    "evidence": "dead_or_dying",
-   "from_generated": false,
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -12237,10 +12237,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "drn_combo",
+   "status": "renamed",
+   "evidence": "wm_arcade_drone_combo_script",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "drn_enterring",
@@ -13437,10 +13437,10 @@
    "local": false,
    "external_callers": 0,
    "references": 4,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_ring_box_overlap",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "get_but_val_cur",
@@ -18104,10 +18104,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_arcade_joystat_init",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "init_life_data",
@@ -23624,10 +23624,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "process",
+   "evidence": "WRESTLE.ASM:6140. Walk the ACTIVE process list and, for every SMOVE_PID, point PWAKE at that watchdog's SM_RESET_ADDRESS and set PTIME to 1 -- restart every special-move detector at once. This port detects secret moves by matching wm_arcade_joystat's ring buffer rather than by running a process per move, so there is nothing to restart: the equivalent is the buffer itself, which init_joystat clears.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "restore_pal",
@@ -26927,8 +26927,8 @@
    "local": false,
    "external_callers": 1,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_scroll_world",
    "from_generated": false,
    "ledgered": false
   },
@@ -31157,10 +31157,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "WRESTLE.ASM:551. Drain the coin/service switch queue: pop an entry, index switch_t by switch number times three, and GETPRC a process to handle it. The queue is filled by the switch interrupt and the table is the cabinet's wiring.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "system_savegame",
@@ -34548,8 +34548,8 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_scroll_update_positions",
    "from_generated": false,
    "ledgered": false
   },
@@ -34983,9 +34983,9 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "xxx_aborted_attach_anim",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "prog_xxx_aborted_attach_anim_labels",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -35058,9 +35058,9 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "prog_xxx_goto_stand_anim_ops",
+   "from_generated": true,
    "ledgered": false
   },
   {

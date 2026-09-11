@@ -40,6 +40,22 @@ extern "C" {
  */
 wm_arcade_drone_callbacks_t wm_arcade_drone_data_callbacks(WmRng *rng);
 
+/*
+ * DRONE.ASM:2092 drn_combo. Its first act is to index #wres_t by
+ * WRESTLERNUM and jump, so the routine is really eight scripts; this
+ * names the one a given wrestler takes. Slot 7 gets Doink's, which is
+ * what the table itself says.
+ *
+ * The eight differ only in which two buttons their 50% flip chooses
+ * between -- everyone opens with the same two reversals and everyone
+ * ends in #cstrt.
+ *
+ * Nothing selects drn_combo in this port: CHECK_COMBO_GO can never
+ * report a lit combo meter while nothing fills one. See
+ * wm/arcade/wm_arcade_mode_dead.h.
+ */
+const char *wm_arcade_drone_combo_script(int wrestler_num);
+
 #ifdef __cplusplus
 }
 #endif

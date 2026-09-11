@@ -393,3 +393,27 @@ void wm_arcade_inc_getup_time(wm_arcade_actor_t *actor, int32_t amount) {
     if (actor->getup_time < 20) return;
     actor->getup_time += amount;
 }
+
+/* WRESTLE.ASM:6044 ck_ignore_a8. See the header for mv_tbl's two edges. */
+bool wm_arcade_ck_ignore(const wm_arcade_actor_t *actor)
+{
+    int32_t away;
+
+    if (!actor) return false;
+
+    switch (actor->new_facing_dir) {
+    case WM_MOVE_UP | WM_MOVE_LEFT:      /* 5 */
+    case WM_MOVE_DOWN | WM_MOVE_LEFT:    /* 6 */
+        away = WM_MOVE_RIGHT;
+        break;
+    case WM_MOVE_UP | WM_MOVE_RIGHT:     /* 9 */
+    case WM_MOVE_DOWN | WM_MOVE_RIGHT:   /* 10 */
+        away = WM_MOVE_LEFT;
+        break;
+    default:
+        /* mv_tbl's zero is bit number zero, i.e. MOVE_UP. The source's
+           own comment says this cannot happen; see the header. */
+        return false;
+    }
+    return (actor->move_dir & away) != 0;
+}

@@ -460,6 +460,36 @@ void wm_arcade_wrestler_collisions_off(wm_arcade_actor_t *actor);
  */
 void wm_arcade_inc_getup_time(wm_arcade_actor_t *actor, int32_t amount);
 
+/*
+ * WRESTLE.ASM:6044 SUBR ck_ignore_a8 -- "If player is moving away from
+ * opponent, or standing still, tell the calling routine to ignore
+ * button press". Both of its callers, BRET.ASM:596 and DOINK.ASM:1399,
+ * gate the FLYING KICK on it: you cannot launch one while backing off.
+ *
+ * It is a table lookup. mv_tbl (WRESTLE.ASM:6035) is indexed by
+ * NEW_FACING_DIR and yields a BIT NUMBER, which is then tested in
+ * MOVE_DIR:
+ *
+ *   facing 5 (up-left)   and 6 (down-left)  -> MOVE_RIGHT_BIT
+ *   facing 9 (up-right)  and 10 (down-right)-> MOVE_LEFT_BIT
+ *   everything else                          -> 0
+ *
+ * so the bit tested is always "away from the way he is facing", and a
+ * set bit means refuse.
+ *
+ * Two things that only matter if the source's own claim -- its comment
+ * says facing is "(9,10,6,5 only)" -- ever stopped being true. A zero
+ * from the table is bit number ZERO, which is MOVE_UP_BIT, so an
+ * unexpected facing would have moving up suppress the kick. And mv_tbl
+ * is eleven entries long against a four-bit index, so a facing above
+ * 10 reads past it. This port returns "allow" for anything that is not
+ * one of the four, which is what the table means rather than what a
+ * read off its end would do.
+ *
+ * Returns true to IGNORE the press, matching the source's carry.
+ */
+bool wm_arcade_ck_ignore(const wm_arcade_actor_t *actor);
+
 void wm_arcade_set_getup_time(
     const wm_arcade_actor_t *attacker,
     wm_arcade_actor_t *victim,

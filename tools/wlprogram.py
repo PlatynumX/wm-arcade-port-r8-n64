@@ -1109,6 +1109,52 @@ def _roster_table_targets() -> list[tuple[pathlib.Path, str]]:
     return out
 
 
+def _movi_anim_targets() -> list[tuple[pathlib.Path, str]]:
+    """Animations ordinary code loads by name, in the non-sequence files.
+
+    Every other path here is driven by an opcode or a table. These are
+    reached by plain `movi <label>,a0` from native code -- REACT1.ASM:
+    749 and :757 pick between xxx_goto_stand_anim and
+    xxx_aborted_attach_anim that way -- so no table names them and the
+    roster sweep does not look in their file.
+
+    The rule is deliberately narrow: the label must be a SUBR in the
+    same file, must end in `_anim`, and its body must parse as an
+    animation. Anything that does not is skipped rather than guessed
+    at.
+    """
+    movi = re.compile(r"^\s*movi\s+([A-Za-z_][A-Za-z0-9_]*_anim)\s*,\s*a0\b",
+                      re.I)
+    out: list[tuple[pathlib.Path, str]] = []
+    seen: set[tuple[str, str]] = set()
+    for src in wlanim.linked_files():
+        if "SEQ" in src.name:
+            continue
+        lines = src.read_text(errors="replace").splitlines()
+        here = set()
+        for line in lines:
+            m = wlanim.SUBR_RE.match(line)
+            if m:
+                here.add(m.group(1))
+        for line in lines:
+            m = movi.match(wlanim.strip_comment(line))
+            if not m:
+                continue
+            lab = m.group(1)
+            if lab not in here:
+                continue        # defined elsewhere; its own file emits it
+            key = (src.name, lab)
+            if key in seen:
+                continue
+            try:
+                program_for(src, lab)
+            except (OSError, ValueError):
+                continue        # not an animation, or refused
+            seen.add(key)
+            out.append((src, lab))
+    return out
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--source")
@@ -1190,6 +1236,7 @@ def main(argv=None) -> int:
         # a sweep of FINISEQ would also emit its fourteen assembled-out
         # finishing moves, its data tables and its plain logic.
         entries += [(str(p), lab) for p, lab in _roster_table_targets()]
+        entries += [(str(p), lab) for p, lab in _movi_anim_targets()]
     if not entries:
         ap.error("nothing to emit: pass --animation, or --source with --label")
     seen, unique = set(), []

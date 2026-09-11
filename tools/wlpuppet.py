@@ -70,6 +70,10 @@ ROSTER_SLOTS = 9
 _ORIG = pathlib.Path(__file__).resolve().parents[1] / "original" / "wwf-wrestlemania"
 
 
+_AUX_USE_RE = re.compile(
+    r"\bANI_(?:CHANGEANIM_TBL|SLAVEANIM|XFLIP_TBL|OPPOFFSET)\b")
+
+
 def canonical_files() -> list[pathlib.Path]:
     """Every sequence file, in one fixed order.
 
@@ -82,8 +86,24 @@ def canonical_files() -> list[pathlib.Path]:
     game, and their tables are not the game's tables.
     """
     linked = {q.name for q in wlanim.linked_files()}
-    return sorted(q for q in _ORIG.glob("*SEQ*.ASM")
-                  if "'" not in q.name and q.name in linked)
+    out = sorted(q for q in _ORIG.glob("*SEQ*.ASM")
+                 if "'" not in q.name and q.name in linked)
+    #
+    # And any other linked file that actually writes one of these ops.
+    # Selecting by filename missed REACT1.ASM, whose
+    # xxx_aborted_attach_anim ends `ANI_CHANGEANIM_TBL,#getup_tbl` --
+    # so that table had no id and the animation could not be emitted at
+    # all. Appended AFTER the sequence files rather than sorted in with
+    # them, because a table's id is its position in this list and
+    # inserting one in the middle would renumber the rest.
+    #
+    for q in wlanim.linked_files():
+        if q in out or "SEQ" in q.name:
+            continue
+        if any(_AUX_USE_RE.search(wlanim.strip_comment(line))
+               for line in q.read_text(errors="replace").splitlines()):
+            out.append(q)
+    return out
 
 
 def _frame(name: str, n: str) -> str:

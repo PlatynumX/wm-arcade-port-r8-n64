@@ -68573,6 +68573,44 @@ static const wm_anim_label prog_lex_stand_anim_labels[] = {
     { "#loop", 21 },
 };
 
+static const wm_anim_op prog_xxx_goto_stand_anim_ops[] = {
+    { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_op prog_xxx_aborted_attach_anim_ops[] = {
+    { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CODE, 0, -1, 1901, 0, 0, 0, 0, 0, "#dead_or_dying" },
+    { WM_AOP_IFSTATUS, 0, 9, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_CHANGEANIM_TBL, 0, -1, 4, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 12, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 2, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_WAITHITGND, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETMODE, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_END, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
+static const wm_anim_label prog_xxx_aborted_attach_anim_labels[] = {
+    { "#dead", 9 },
+    { "#getup_tbl", 9 },
+    { "dead_or_dying", 9 },
+    { "#die", 9 },
+    { "#ok", 9 },
+    { "xxx_goto_stand_anim", 9 },
+};
+
 static const wm_anim_program programs[] = {
     { "xxx_dead_anim", "WRESTLE2.ASM", prog_xxx_dead_anim_ops,
       sizeof(prog_xxx_dead_anim_ops) / sizeof(prog_xxx_dead_anim_ops[0]), 0, 0, 0 },
@@ -71670,6 +71708,10 @@ static const wm_anim_program programs[] = {
       sizeof(prog_dnk_stand_anim_ops) / sizeof(prog_dnk_stand_anim_ops[0]), 0, prog_dnk_stand_anim_labels, sizeof(prog_dnk_stand_anim_labels) / sizeof(prog_dnk_stand_anim_labels[0]) },
     { "lex_stand_anim", "FINISEQ.ASM", prog_lex_stand_anim_ops,
       sizeof(prog_lex_stand_anim_ops) / sizeof(prog_lex_stand_anim_ops[0]), 0, prog_lex_stand_anim_labels, sizeof(prog_lex_stand_anim_labels) / sizeof(prog_lex_stand_anim_labels[0]) },
+    { "xxx_goto_stand_anim", "REACT1.ASM", prog_xxx_goto_stand_anim_ops,
+      sizeof(prog_xxx_goto_stand_anim_ops) / sizeof(prog_xxx_goto_stand_anim_ops[0]), 0, 0, 0 },
+    { "xxx_aborted_attach_anim", "REACT1.ASM", prog_xxx_aborted_attach_anim_ops,
+      sizeof(prog_xxx_aborted_attach_anim_ops) / sizeof(prog_xxx_aborted_attach_anim_ops[0]), 0, prog_xxx_aborted_attach_anim_labels, sizeof(prog_xxx_aborted_attach_anim_labels) / sizeof(prog_xxx_aborted_attach_anim_labels[0]) },
 };
 
 /* The whole corpus, so a test can play every program rather

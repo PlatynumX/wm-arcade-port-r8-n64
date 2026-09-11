@@ -8,6 +8,7 @@ static const char *const changeanim_rows[][WM_ANIM_ROSTER_SLOTS] = {
     { "hrt_hitonground_anim", "rzr_hitonground_anim", "und_hitonground_anim", "yok_hitonground_anim", "shn_hitonground_anim", "bam_hitonground_anim", "dnk_hitonground_anim", 0, "lex_hitonground_anim" },   /* BAMSEQ2.ASM:1385 */
     { "hrt_fall_back_anim", "rzr_fall_back_anim", "und_fall_back_anim", "yok_fall_back_anim", "shn_fall_back_anim", "bam_fall_back_anim", "dnk_fall_back_anim", 0, "lex_fall_back_anim" },   /* @REACT1.ASM:1800 */
     { "hrt_4_head_hit2_anim", "rzr_4_head_hit2_anim", "und_head_hit2_anim", "yok_4_head_hit2_anim", "shn_4_head_hit2_anim", "bam_head_hit2_anim", "dnk_head_hit2_anim", 0, "lex_4_head_hit2_anim" },   /* HRTSEQ3.ASM:2631 */
+    { "hrt_faceup_getup_anim", "rzr_faceup_getup_anim", "und_faceup_getup_anim", "yok_faceup_getup_anim", "shn_faceup_getup_anim", "bam_faceup_getup_anim", "dnk_faceup_getup_anim", 0, "lex_faceup_getup_anim" },   /* REACT1.ASM:1888 */
 };
 
 static const int16_t xflip_rows[][WM_ANIM_ROSTER_SLOTS] = {

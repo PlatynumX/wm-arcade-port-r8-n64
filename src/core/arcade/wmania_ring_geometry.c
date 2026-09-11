@@ -100,3 +100,67 @@ int32_t wm_ring_get_rope_x(int32_t xposint, int32_t zposint)
         ? WM_RING_BOUNDARY_RIGHT_ROPE : WM_RING_BOUNDARY_LEFT_ROPE;
     return wm_ring_calc_line_x(wm_ring_boundary_seed(id), zposint);
 }
+
+/*
+ * WRESTLE.ASM:5704 get_box_overlap. See the header for the tie rule
+ * and for why "outside" and "out of range in Z" look the same.
+ */
+wm_ring_pushout wm_ring_box_overlap(const WmRingBoundarySeed *left,
+                                    const WmRingBoundarySeed *right,
+                                    int32_t xposint, int32_t zposint)
+{
+    wm_ring_pushout out;
+    int32_t lx, rx;
+    int32_t dl, dr, dt, db;
+
+    out.xoff = 0;
+    out.zoff = 0;
+    if (!left || !right) return out;
+
+    /* The right line first, then the left -- and a6 keeps the LEFT
+       seed, which is whose top and bottom Z are used below. */
+    rx = wm_ring_calc_line_x(right, zposint);
+    if (rx == 0) return out;                  /* `jrz #outrange` */
+    lx = wm_ring_calc_line_x(left, zposint);
+    if (lx == 0) return out;
+
+    dl = lx - xposint;
+    if (dl > 0) return out;                   /* left of the box */
+    dl = -dl;                                 /* distance inside, from the left */
+
+    dr = rx - xposint;
+    if (dr < 0) return out;                   /* right of the box */
+
+    dt = zposint - (int32_t)left->top_z;
+    if (dt < 0) return out;                   /* above */
+
+    db = zposint - (int32_t)left->bottom_z;
+    if (db > 0) return out;                   /* below */
+    db = -db;
+
+    /*
+     * `cmp a0,a1 / jrlt #right_min` picks the nearer side first, then
+     * each arm checks the two Z edges. Every test is strict, so an
+     * exact tie keeps the horizontal push.
+     */
+    {
+        int32_t h = (dr < dl) ? dr : dl;
+        int use_right = (dr < dl);
+
+        if (h > dt || h > db) {
+            /* One of the Z edges is nearer. `#top_min` and `#bot_min`
+               each defer to the other, and the conditions are strict
+               opposites, so the pair settles rather than looping. */
+            if (dt > db) {
+                out.zoff = db;
+            } else {
+                out.zoff = -dt;
+            }
+            out.xoff = 0;
+            return out;
+        }
+        out.xoff = use_right ? dr : -dl;
+        out.zoff = 0;
+    }
+    return out;
+}

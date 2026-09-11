@@ -946,5 +946,51 @@
     "file": "SPECIAL.ASM",
     "status": "process",
     "note": "SPECIAL.ASM:1805. The generator that spawns react_blood processes. Its gates are the shared debris ones; the spray is objects."
+  },
+  "init_joystat": {
+    "file": "WRESTLE.ASM",
+    "status": "renamed",
+    "symbol": "wm_arcade_joystat_init",
+    "note": "WRESTLE.ASM:4533. Zero round_tickcount and clear the whole wrest_joystat ring buffer. The port holds the tick count at the call site rather than in the buffer, so the clear is wm_arcade_joystat_init and the counter is the caller's."
+  },
+  "reset_smoves": {
+    "file": "WRESTLE.ASM",
+    "status": "process",
+    "note": "WRESTLE.ASM:6140. Walk the ACTIVE process list and, for every SMOVE_PID, point PWAKE at that watchdog's SM_RESET_ADDRESS and set PTIME to 1 -- restart every special-move detector at once. This port detects secret moves by matching wm_arcade_joystat's ring buffer rather than by running a process per move, so there is nothing to restart: the equivalent is the buffer itself, which init_joystat clears."
+  },
+  "switch_unstack": {
+    "file": "WRESTLE.ASM",
+    "status": "hardware",
+    "note": "WRESTLE.ASM:551. Drain the coin/service switch queue: pop an entry, index switch_t by switch number times three, and GETPRC a process to handle it. The queue is filled by the switch interrupt and the table is the cabinet's wiring."
+  },
+  "crowd_anim": {
+    "file": "CROWD.ASM",
+    "status": "partial",
+    "symbol": "match_crowd_cheer",
+    "note": "CROWD.ASM:80. Thirty crowd blocks, each running its own script through animate_back, plus the BAKLST sweep that pushes the current frame into the background objects. The part this port has is the cheer seam the game pokes it with (wm_anim_env's crowd_cheer/crowd_sound and DO_CROWD_CHEER's gates); the part it does not is the background animation itself -- a six-command bytecode VM and ninety scripts (thirty spectators times norm/cheer1/cheer2, CROWD.ASM:295). Spectator artwork, not fight logic."
+  },
+  "animate_back": {
+    "file": "CROWD.ASM",
+    "status": "partial",
+    "symbol": "match_crowd_cheer",
+    "note": "CROWD.ASM:126. One tick of one crowd block: count down TIME, and on zero read the next script word -- a negative word is one of six commands (goto, rndwait, end, code, random-repeat, should-we-repeat) and a positive one is a tick count followed by a frame pointer. Its exit carries a deliberate curiosity the source flags itself: it writes zero into A14 as `MOVK 1,A14 / DEC A14` under the comment \"You think a simple CLR would do the job here? Try it. I dare you.\" -- because the assembler's CLR expands to MOVK 0, which on a TMS34010 does NOT set the status flags, and the caller branches on Z."
+  },
+  "ck_ignore_a8": {
+    "file": "WRESTLE.ASM",
+    "status": "renamed",
+    "symbol": "wm_arcade_ck_ignore",
+    "note": "WRESTLE.ASM:6044. Both callers -- BRET.ASM:596 and DOINK.ASM:1399 -- gate the FLYING KICK on it: you cannot launch one while backing away. mv_tbl (:6035) is indexed by NEW_FACING_DIR and yields a BIT NUMBER tested in MOVE_DIR, so facing 5 or 6 tests MOVE_RIGHT and facing 9 or 10 tests MOVE_LEFT -- always 'away from where he is looking'. A facing outside those four would read a zero from the table, which is bit number zero, MOVE_UP; the source's own comment says the facing is '(9,10,6,5 only)', so the port answers allow rather than reproducing a lookup the comment rules out."
+  },
+  "get_box_overlap": {
+    "file": "WRESTLE.ASM",
+    "status": "renamed",
+    "symbol": "wm_ring_box_overlap",
+    "note": "WRESTLE.ASM:5704. Given a box made of two boundary lines, the shortest push that gets a wrestler out of it: four edge distances, smallest wins, ties to the horizontal because every comparison is a strict jrgt. Note the Z bounds come from whichever seed a6 held LAST, which is the left line. It reports (0,0) both for 'not in the box' and for a Z outside the lines' range, so a caller cannot tell those apart. No live caller: all four call sites (:5545, :5584, :5633, :5682) are commented out."
+  },
+  "drn_combo": {
+    "file": "DRONE.ASM",
+    "status": "renamed",
+    "symbol": "wm_arcade_drone_combo_script",
+    "note": "DRONE.ASM:2092. Its first act is `#wres_t[WRESTLERNUM]` and a jump, so it is really eight scripts. All eight are in the port's table and differ only in which two buttons their 50% flip chooses between -- everyone opens with the same two reversals and everyone ends in #cstrt. Slot 7, the cut wrestler, is given Doink's by the table itself. Nothing selects drn_combo in this port: CHECK_COMBO_GO can never report a lit combo meter while nothing fills one (wm/arcade/wm_arcade_mode_dead.h)."
   }
 }

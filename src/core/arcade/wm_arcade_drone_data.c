@@ -480,10 +480,28 @@ static const wm_arcade_drone_script_op_t ops_combo_cstrt[] = {
                    IN(KM,6), IN(0,6), IN(KM,6), IN(0,6),
                    SKILLOP("sklrep_t"), JMPI(0)
 };
-static const wm_arcade_drone_script_op_t ops_combo_brt[] = {
-    IN(RM,2), IN(0,2), IN(RM,2), IN(0,2), RJMP(50,7), IN(PM,2), JMPX("combo_cstrt"),
-    /* 7 #brt2 */ IN(SKM,2), JMPX("combo_cstrt")
-};
+/*
+ * DRONE.ASM:2092 drn_combo's eight per-wrestler branches. Every one is
+ * the same shape -- two reversals, a 50% coin flip, one button, then
+ * into #cstrt -- and they differ only in which two buttons the flip
+ * chooses between. #wres_t (:2101) hands slot 7, the cut wrestler,
+ * Doink's branch.
+ */
+#define COMBO_BRANCH(name, first, second)                                   \
+    static const wm_arcade_drone_script_op_t ops_combo_##name[] = {         \
+        IN(RM,2), IN(0,2), IN(RM,2), IN(0,2), RJMP(50,7),                   \
+        IN(first,2), JMPX("combo_cstrt"),                                   \
+        /* 7 */ IN(second,2), JMPX("combo_cstrt")                           \
+    }
+
+COMBO_BRANCH(brt, PM,  SKM);   /* #brt */
+COMBO_BRANCH(raz, SPM, KM);    /* #raz */
+COMBO_BRANCH(ut,  SKM, KM);    /* #ut  */
+COMBO_BRANCH(yok, SPM, PM);    /* #yok */
+COMBO_BRANCH(shn, PM,  KM);    /* #shn */
+COMBO_BRANCH(bam, SPM, PM);    /* #bam */
+COMBO_BRANCH(dnk, SPM, SKM);   /* #dnk, and slot 7 */
+COMBO_BRANCH(lex, SKM, KM);    /* #lex */
 
 /* ------------------------------------------------------------------ */
 /* Range lists (wm_arcade_drone_script_list_t) -- header word is the
@@ -1136,7 +1154,11 @@ static const wm_arcade_drone_script_t s_scripts[] = {
     ENTRY("drn_retreat", ops_retreat), ENTRY("drn_seekclose", ops_seekclose),
     ENTRY("charge_run", ops_charge_run),
     ENTRY("drn_enterring", ops_enterring), ENTRY("drn_taunt", ops_taunt),
-    ENTRY("combo_cstrt", ops_combo_cstrt), ENTRY("drn_combo/brt", ops_combo_brt)
+    ENTRY("combo_cstrt", ops_combo_cstrt),
+    ENTRY("drn_combo/brt", ops_combo_brt), ENTRY("drn_combo/raz", ops_combo_raz),
+    ENTRY("drn_combo/ut", ops_combo_ut),   ENTRY("drn_combo/yok", ops_combo_yok),
+    ENTRY("drn_combo/shn", ops_combo_shn), ENTRY("drn_combo/bam", ops_combo_bam),
+    ENTRY("drn_combo/dnk", ops_combo_dnk), ENTRY("drn_combo/lex", ops_combo_lex)
 };
 
 static const wm_arcade_drone_script_t *resolve_named(const char *label) {
@@ -1157,9 +1179,18 @@ static const wm_arcade_drone_script_t *resolve_script_cb(const char *label, void
         return resolve_named(s_M_shrtblkrdl[rr(rng, 1)]);
     }
     if (strcmp(label, "drn_combo") == 0) {
-        /* Bret's own drn_combo per-wrestler branch. Never actually
-           selected by wm_arcade_drone_main in this port -- see
-           check_combo_go_cb below -- kept for completeness/fidelity. */
+        /*
+         * drn_combo's first act is `#wres_t[WRESTLERNUM]`, and this
+         * resolver is handed a label and the RNG but not an actor, so
+         * it cannot make that choice. All eight branches are in the
+         * table and wm_arcade_drone_combo_script names them; Bret's is
+         * returned here because something has to be.
+         *
+         * It costs nothing today: wm_arcade_drone_main never selects
+         * drn_combo at all, because CHECK_COMBO_GO can never report a
+         * lit meter while nothing in this port fills one (see
+         * check_combo_go_cb below, and wm/arcade/wm_arcade_mode_dead.h).
+         */
         return resolve_named("drn_combo/brt");
     }
     return resolve_named(label);
@@ -1335,4 +1366,19 @@ wm_arcade_drone_callbacks_t wm_arcade_drone_data_callbacks(WmRng *rng) {
     cb.script_selected = NULL;
     cb.user = rng;
     return cb;
+}
+
+/*
+ * DRONE.ASM:2101 #wres_t -- which branch of drn_combo a wrestler
+ * takes. Slot 7, the cut wrestler, is given Doink's, which is the
+ * table's own `.long #dnk,#dnk`.
+ */
+const char *wm_arcade_drone_combo_script(int wrestler_num) {
+    static const char *const by_slot[9] = {
+        "drn_combo/brt", "drn_combo/raz", "drn_combo/ut", "drn_combo/yok",
+        "drn_combo/shn", "drn_combo/bam", "drn_combo/dnk", "drn_combo/dnk",
+        "drn_combo/lex"
+    };
+    if (wrestler_num < 0 || wrestler_num > 8) return NULL;
+    return by_slot[wrestler_num];
 }

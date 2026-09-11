@@ -152,6 +152,35 @@ int32_t wm_ring_calc_line_x(const WmRingBoundarySeed *seed, int32_t zpos);
  */
 int32_t wm_ring_get_rope_x(int32_t xposint, int32_t zposint);
 
+/*
+ * WRESTLE.ASM:5704 SUBR get_box_overlap -- how far, and which way, to
+ * push a wrestler out of a box bounded by two of these lines.
+ *
+ * The box is a left line, a right line, and the top and bottom Z of
+ * the LEFT one (the source reuses a6 and the z reads land on whichever
+ * seed it loaded second). Four distances come out -- to each edge --
+ * and the smallest wins, so a man just inside the left edge is pushed
+ * left rather than all the way across.
+ *
+ * It reports (0, 0) for "not in the box", which is also what it
+ * reports for a Z outside either line's range, so a caller cannot tell
+ * those apart. Ties go to the horizontal push, because every
+ * comparison in the chain is a strict `jrgt`.
+ *
+ * Nothing in the shipped game calls it: all four call sites
+ * (WRESTLE.ASM:5545, :5584, :5633, :5682) are commented out. It is
+ * translated because it is self-contained geometry with an exact
+ * answer, not because anything needs it yet.
+ */
+typedef struct wm_ring_pushout {
+    int32_t xoff;
+    int32_t zoff;
+} wm_ring_pushout;
+
+wm_ring_pushout wm_ring_box_overlap(const WmRingBoundarySeed *left,
+                                    const WmRingBoundarySeed *right,
+                                    int32_t xposint, int32_t zposint);
+
 #ifdef __cplusplus
 }
 #endif

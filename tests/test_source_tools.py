@@ -1739,7 +1739,12 @@ def test_per_wrestler_aux_tables() -> None:
     ca = wlpuppet.aux_table_ids("changeanim")
     xf = wlpuppet.aux_table_ids("xflip")
     oo = wlpuppet.aux_table_ids("oppoffset")
-    assert len(ca) == 4, len(ca)
+    # Five, not four: REACT1.ASM's xxx_aborted_attach_anim ends
+    # `ANI_CHANGEANIM_TBL,#getup_tbl`, and canonical_files() used to be
+    # selected by filename (*SEQ*.ASM) rather than by whether a file
+    # writes one of these ops. That table had no id, so program_for
+    # refused the animation outright and it was never emitted.
+    assert len(ca) == 5, len(ca)
     assert len(xf) >= 15, len(xf)
     assert len(oo) >= 15, len(oo)
 

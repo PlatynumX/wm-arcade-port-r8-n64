@@ -992,5 +992,113 @@
     "status": "renamed",
     "symbol": "wm_arcade_drone_combo_script",
     "note": "DRONE.ASM:2092. Its first act is `#wres_t[WRESTLERNUM]` and a jump, so it is really eight scripts. All eight are in the port's table and differ only in which two buttons their 50% flip chooses between -- everyone opens with the same two reversals and everyone ends in #cstrt. Slot 7, the cut wrestler, is given Doink's by the table itself. Nothing selects drn_combo in this port: CHECK_COMBO_GO can never report a lit combo meter while nothing fills one (wm/arcade/wm_arcade_mode_dead.h)."
+  },
+  "change_walk_anim": {
+    "file": "WRESTLE.ASM",
+    "status": "renamed",
+    "symbol": "wm_wrestler_backend_execute_walk",
+    "note": "WRESTLE.ASM:4946. Reselect the leg cycle for the direction a wrestler is walking, and the torso with it. Reached only from the eight real-movement arms of execute_walk's dispatch, i.e. under MOVE_DIR != 0. The port gates the torso half on its single anim_mode where the source uses ANIMODE2; nothing here writes an ANIMODE2, so that is the primary channel's mode -- the same approximation Bret's backend has always made."
+  },
+  "set_rotate_anim": {
+    "file": "WRESTLE.ASM",
+    "status": "renamed",
+    "symbol": "wm_wrestler_backend_execute_walk",
+    "note": "WRESTLE.ASM:5062. change_walk_anim's counterpart on the idle path: no movement, so the turn animation is chosen from the facing alone. Both halves live in wm_wrestler_backend_execute_walk, which is the dispatch that picks between them."
+  },
+  "update_joystat": {
+    "file": "WRESTLE.ASM",
+    "status": "renamed",
+    "symbol": "wm_arcade_joystat_update",
+    "note": "WRESTLE.ASM:4569. Push this tick's input into the shared history ring: LEFT/RIGHT absolute at bits 10-11, the facing-relative direction at bits 0-3 (run through xflip_table at :4650 when facing left, which swaps only LEFT and RIGHT), and one entry per newly pressed button tagged at bits 4-8. Inserted only on a stick edge with a nonzero value, or on a button press."
+  },
+  "increment_wincount": {
+    "file": "WRESTLE.ASM",
+    "status": "renamed",
+    "symbol": "wm_arcade_match_score_award_round",
+    "note": "WRESTLE.ASM. Credit a round to a side. The port keeps the score in wm_arcade_match_score and awards through the round-announce path the animation VM already reaches."
+  },
+  "init_reduce_bog": {
+    "file": "WRESTLE.ASM",
+    "status": "renamed",
+    "symbol": "reduce_bog",
+    "note": "WRESTLE.ASM:4552. Count active wrestler processes, subtract two, and store the remainder in reduce_bog -- so a straight one-on-one leaves it at zero and every extra wrestler raises it. It is a load-shedding level, not a flag, and the debris and move-name code both read it."
+  },
+  "set_up_line_tables": {
+    "file": "WRESTLE.ASM",
+    "status": "renamed",
+    "symbol": "wm_ring_calc_line_x",
+    "note": "WRESTLE.ASM:5834. Precompute a per-Z lookup for each of the eight boundary lines at startup, stepping a 16.16 accumulator by (width<<16)/(depth+1) and reading index i AFTER i+1 steps -- so entry 0 is not top_x but one step past it. The port computes the closed form directly instead of building the tables, which is the same arithmetic including that off-by-one, and needs no boot phase this port has not got."
+  },
+  "start_match": {
+    "file": "WRESTLE.ASM",
+    "status": "partial",
+    "symbol": "wm_match_start_attract",
+    "note": "WRESTLE.ASM:1900. The match's own setup and main loop. Translated: the PSTATUS==0 attract path in full -- the RNDRNG0(7)-skip-7 wrestler draw, init_life_data, the PLYRNUM/PSIDE actor creation, and the SLEEP 3*60 plus wait_on_butn 10*TSEC timing. Not translated: the process creation for every other game mode, the scroller and background startup, and the CREATE-based subsystems (smoves, crowd, lifebar) this port has no processes for."
+  },
+  "change_wrestler": {
+    "file": "WRESTLE2.ASM",
+    "status": "renamed",
+    "symbol": "wm_life_init_wrestler",
+    "note": "WRESTLE2.ASM. Swap a dead wrestler for a fresh one mid-match. The life-table half is wm_life_init_wrestler, and its distinguishing detail is translated: CLIFE snaps to FULL rather than starting at zero, because the bar must not animate up for a replacement."
+  },
+  "flash_red": {
+    "file": "WRESTLE2.ASM",
+    "status": "display",
+    "note": "WRESTLE2.ASM. Flashes the life bar red on a hit. Pure lifebar rendering -- wm/arcade/wm_arcade_lifebar.h already records it as the one piece of adjust_health's tail that is drawing rather than damage."
+  },
+  "match_timer": {
+    "file": "WRESTLE2.ASM",
+    "status": "partial",
+    "symbol": "wm_arcade_round_tick",
+    "note": "WRESTLE2.ASM:4155. The round clock and the KO detection around it. Translated: the countdown, the difficulty-based decrement rate and the round-decided transition, in wm/arcade/wm_arcade_round.h. Not translated: the KO-detection loop's process bookkeeping and the digit drawing, which is update_timer."
+  },
+  "start_run_anim": {
+    "file": "WRESTLE2.ASM",
+    "status": "renamed",
+    "symbol": "wm_arcade_start_run",
+    "note": "WRESTLE2.ASM:3443. The run's own state setup -- 351 call sites, more than any other routine in the game. Its ANI_CODE #setup_run half, which picks the run speed, is in the animation VM (wm/bret_backend.h)."
+  },
+  "init_smoves": {
+    "file": "WRESTLE2.ASM",
+    "status": "process",
+    "note": "WRESTLE2.ASM:4055. Called once per MATCH, not per round: it CREATEs one watchdog process per entry in this wrestler's #special_moves list -- the moves the ordinary secret-move matcher cannot handle, the source says, because they involve charging a stick, exact timing, or proximity. This port has no processes; it matches patterns against wm_arcade_joystat's ring instead, and the per-wrestler move lists are wm/wrestler_anim_tables.h's."
+  },
+  "kill_smove_procs": {
+    "file": "WRESTLE2.ASM",
+    "status": "process",
+    "note": "WRESTLE2.ASM. The other end of init_smoves: kill every SMOVE_PID. Nothing to kill here."
+  },
+  "ditch_getup_meter_a9": {
+    "file": "WRESTLE2.ASM",
+    "status": "renamed",
+    "symbol": "ditch_getup_meter",
+    "note": "WRESTLE2.ASM. Drop a wrestler's getup meter, reached from keep_onscreen when a run is stopped and from the react layer. The port carries it as a callback on wm_arcade_react_callbacks_t because the meter is a display object the core does not own."
+  },
+  "obj_yzsort": {
+    "file": "DISPLAY.ASM",
+    "status": "renamed",
+    "symbol": "wm_match_build_draw_list",
+    "note": "DISPLAY.ASM:1248. Bubble-sort the object list into ascending OZPOS, then ascending OYPOS within an equal OZPOS. Those are the values #set_image writes, and both are derived from Z, so the second key cannot separate two wrestlers at the same depth -- the port's draw list reproduces the comparison rather than the bubble sort."
+  },
+  "wait_on_butn": {
+    "file": "ATTRACT.ASM",
+    "status": "renamed",
+    "symbol": "wm_app_tick",
+    "note": "ATTRACT.ASM. Sleep until a button is pressed or a timeout expires, whichever first. The attract sequence's real timings -- SLEEP TSEC/2 then wait_on_butn 8*TSEC, and show_gameplay's SLEEP 3*60 then wait_on_butn 10*TSEC -- are translated in wm/app.h as tick counts, because this port advances the app a tick at a time rather than sleeping a process."
+  },
+  "display_blank": {
+    "file": "UTIL.ASM",
+    "status": "hardware",
+    "note": "UTIL.ASM. Turns the display processor off. There is no display processor."
+  },
+  "display_unblank": {
+    "file": "UTIL.ASM",
+    "status": "hardware",
+    "note": "UTIL.ASM. And on again."
+  },
+  "RemapIO": {
+    "file": "MAIN.ASM",
+    "status": "hardware",
+    "note": "MAIN.ASM. Moves the I/O window in the address map. Its one call site in WRESTLE.ASM's main loop is commented out, under the author's own question: \"isn't there a less obvious place that we can remap the IO ???\""
   }
 }

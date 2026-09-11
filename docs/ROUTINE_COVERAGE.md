@@ -7,19 +7,19 @@ only in a note saying it is missing does not count as present.
 
 | status | meaning | count |
 |---|---|---|
-| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1921 |
+| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1922 |
 | `inlined` | the port does it, spelled out at each use site (ledger) | 7 |
-| `renamed` | the port does it under another name (ledger) | 113 |
-| `partial` | partly translated; the ledger note says which part | 3 |
-| `process` | a CREATE/SLEEP wrapper (ledger) | 13 |
-| `display` | object/DMA drawing; this port has no renderer (ledger) | 24 |
-| `hardware` | talks to the cabinet (ledger) | 11 |
+| `renamed` | the port does it under another name (ledger) | 124 |
+| `partial` | partly translated; the ledger note says which part | 5 |
+| `process` | a CREATE/SLEEP wrapper (ledger) | 15 |
+| `display` | object/DMA drawing; this port has no renderer (ledger) | 25 |
+| `hardware` | talks to the cabinet (ledger) | 14 |
 | `dead` | **measured**: no caller outside its own file | 37 |
-| `unassembled` | **measured**: inside a `.if` the assembler skipped | 60 |
-| `cited` | named only in a comment -- not evidence of anything | 76 |
-| `unknown` | no mention anywhere | 269 |
+| `unassembled` | **measured**: inside a `.if` the assembler skipped | 64 |
+| `cited` | named only in a comment -- not evidence of anything | 58 |
+| `unknown` | no mention anywhere | 263 |
 
-**2189 of 2534 routines are accounted for; 345 are open** (`cited` + `unknown`).
+**2213 of 2534 routines are accounted for; 321 are open** (`cited` + `unknown`).
 
 ## Open routines by file
 
@@ -27,18 +27,18 @@ only in a note saying it is missing does not count as present.
 |---|---|---|
 | AWARD.ASM | 64 | `BLACKOUT`, `adjust_text_position`, `adjust_tl`, `anim_mk`, `anim_sparkle`, `audit_icons`, `award_text`, `bbicon_table`, `create_end_rnd_awards`, `create_player_awards`, `decompress_string`, `del_bonus_icons`, ... |
 | FINISEQ.ASM | 32 | `adjust_facing`, `adjust_taker_facing`, `check_roll`, `close_door`, `cof_anim1`, `cof_anim2`, `disappear_wrestler`, `dizzy_wrestler`, `do_up_coffin`, `exp1_anim`, `exp2_anim`, `guy_is_in`, ... |
-| WRESTLE.ASM | 31 | `CLEAR_PROCESSES`, `DO_SET_IMAGES`, `WARMSET`, `change_image`, `change_walk_anim`, `collis_debug`, `collis_debug2`, `confine_wrestler_fix1`, `confine_wrestler_fix2`, `dir_debug`, `direction_test`, `game_interrupt`, ... |
 | LIFEBAR.ASM | 23 | `CREATE_TIMEOUT`, `DO_RIGHT_MUSIC`, `DO_RIGHT_MUSIC2`, `DO_ROUNDS`, `FIRSTATT_MESS`, `ICON_SPARKLE`, `MOVE_NAME_ANNC`, `PIN_FLASH_ANIM`, `SHIFT_BARS_IN_Z`, `SPECIAL_MESSAGE`, `WHERE_WRESTLMANIA_SPARKLES`, `arw_bwait`, ... |
 | FIREWORK.ASM | 23 | `animate_fwexp`, `c1v3_tbl`, `c1v3s_tbl`, `c1v8_tbl`, `c1v8s_tbl`, `c2v8_tbl`, `c2v8s_tbl`, `calc_dxdy`, `check_camera_position`, `congrats_setup_tbl`, `congrats_str_tbl`, `do_fireworks`, ... |
 | DCSSOUND.ASM | 22 | `ANNOUNCE_VOICE`, `CALL_MATCH_OVER`, `END_MATCH_SPEECH`, `KILL_PIN_HIM`, `PROC_MATCH_OVER`, `SNDSND`, `VOLBTN_PRESS`, `announcer_sound`, `channel_sound`, `clear_sound_ram`, `delay_code_a3`, `do_tune_commands`, ... |
+| WRESTLE.ASM | 20 | `CLEAR_PROCESSES`, `DO_SET_IMAGES`, `WARMSET`, `change_image`, `confine_wrestler_fix1`, `confine_wrestler_fix2`, `direction_test`, `game_interrupt`, `game_loop`, `init_prog`, `init_scroller`, `plyr_strtb1`, ... |
 | HSTD.ASM | 19 | `PIN_SPEED_TAB`, `do_that_cycle`, `draw_beaten_table_entry`, `draw_each_beaten_table_entry`, `draw_each_inter_table_entry`, `draw_letter_grid`, `draw_pinspeed_table_entry`, `draw_tag_table_entry`, `draw_winstreak_table_entry`, `enter_initials_beaten`, `enter_initials_streak`, `enter_initials_top_20`, ... |
-| WRESTLE2.ASM | 18 | `audit_wrestler`, `change_wrestler`, `choose_buddies`, `choose_pal`, `ditch_getup_meter_a9`, `flash_red`, `get_mpart_offsets`, `get_mpart_xsize`, `init_smoves`, `keep_onscreen`, `kill_smove_procs`, `loser_snd`, ... |
 | SELECT.ASM | 17 | `GAME_BEATEN`, `THIS_GAME_IS_BEATEN`, `buyin_counter`, `buyin_select`, `call_wrestler_name`, `display_croutons`, `draw_mugshot`, `erase_mugshot`, `obj_off`, `obj_on`, `pin_speed_in_case`, `place_cursor`, ... |
-| MAIN.ASM | 15 | `AddressSet1`, `AddressSet2`, `AddressSet3`, `AddressSet4`, `INTIO`, `InitAddresses`, `InitPIC`, `RemapIO`, `SecFuncCheck`, `SetAddresses`, `WDOGDIS`, `_AlarmClock`, ... |
 | PROGRESS.ASM | 15 | `CREATE_URN`, `PUT_UP_PROGRESS`, `START_HI_FLASHES`, `ask_belt_question`, `do_rr_vs`, `flash_it`, `flash_pcurs`, `get_final_lineup`, `get_royal_lineup`, `hilight`, `ind_select`, `mk_pcurs`, ... |
-| DISPLAY.ASM | 14 | `ANI`, `SPECIAL_DISPLAY_INIT`, `anipt_getxy`, `dma_irq`, `obj_addworldxy`, `obj_yzsort`, `rnd`, `scrn_copy`, `scrn_scale`, `scrn_scale140`, `scrn_scale180`, `scrn_scaledison`, ... |
-| UTIL.ASM | 12 | `ERASE_TXT`, `GETCPNT`, `STRCNRM_1`, `dirq_wait`, `display_blank`, `display_unblank`, `dma_wait`, `dmaq_wait`, `dpageflip_off`, `obj_find`, `security_chk`, `system_savegame` |
-| ATTRACT.ASM | 10 | `GENERIC_DISPLAY`, `MAKE_UP_LOGO`, `ONE_BALL`, `dan_test`, `mk_a0`, `octopus_page`, `print_gen_tips`, `show_wres_tips`, `wait_but`, `wait_on_butn` |
+| MAIN.ASM | 14 | `AddressSet1`, `AddressSet2`, `AddressSet3`, `AddressSet4`, `INTIO`, `InitAddresses`, `InitPIC`, `SecFuncCheck`, `SetAddresses`, `WDOGDIS`, `_AlarmClock`, `init_all`, ... |
+| DISPLAY.ASM | 13 | `ANI`, `SPECIAL_DISPLAY_INIT`, `anipt_getxy`, `dma_irq`, `obj_addworldxy`, `rnd`, `scrn_copy`, `scrn_scale`, `scrn_scale140`, `scrn_scale180`, `scrn_scaledison`, `scrn_scalein`, ... |
+| UTIL.ASM | 10 | `ERASE_TXT`, `GETCPNT`, `STRCNRM_1`, `dirq_wait`, `dma_wait`, `dmaq_wait`, `dpageflip_off`, `obj_find`, `security_chk`, `system_savegame` |
+| WRESTLE2.ASM | 10 | `audit_wrestler`, `choose_buddies`, `choose_pal`, `get_mpart_offsets`, `get_mpart_xsize`, `loser_snd`, `maybe_do_flashes`, `postgame_audits`, `slide_offscr`, `wrestler_counter` |
+| ATTRACT.ASM | 9 | `GENERIC_DISPLAY`, `MAKE_UP_LOGO`, `ONE_BALL`, `dan_test`, `mk_a0`, `octopus_page`, `print_gen_tips`, `show_wres_tips`, `wait_but` |
 | BAKGND.ASM | 6 | `BGND_UD1`, `bgnd_addblk`, `bgnd_addmod`, `bgnd_delnonvis`, `bgnd_get1stx`, `bgnd_scanmod` |
 | MENU.ASM | 6 | `GetSoundRev`, `_GetTime`, `aud_prtone`, `background_sound`, `poll_sdav`, `vol_to_ht` |
 | DIAG.ASM | 4 | `_aquire_time`, `_get_time`, `_set_time`, `line_draw` |

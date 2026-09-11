@@ -240,6 +240,105 @@ static void test_pick_pair(void)
     assert(!wm_scroll_pick_pair(NULL, 2, true, &i, &j));
 }
 
+static void test_keep_onscreen(void)
+{
+    wm_arcade_actor_t a, b;
+    int32_t allow = 0;
+    int32_t centre, left, right;
+    wm_keep_onscreen_result r;
+
+    /* Both buffers are 185 in the shipped build. */
+    assert(WM_KEEP_ONSCREEN_BUFF1 == 185);
+    assert(WM_KEEP_ONSCREEN_BUFF2 == 185);
+
+    centre = 1000;
+    left = centre - 185;
+    right = centre + 185;
+
+    /* Inside the window: nothing happens however he is moving. */
+    put(&a, centre, 1100, 150);
+    a.x_vel = -0x00040000;
+    r = wm_keep_onscreen_one(&a, left, right);
+    assert(!r.stopped && a.x_vel != 0);
+
+    /* Past the left edge and still heading left: stopped. */
+    put(&a, left - 10, 1100, 150);
+    a.x_vel = -0x00040000;
+    r = wm_keep_onscreen_one(&a, left, right);
+    assert(r.stopped && a.x_vel == 0);
+
+    /*
+     * Past the left edge but heading BACK: left alone. It only ever
+     * stops a man going further out, never pushes him in.
+     */
+    put(&a, left - 10, 1100, 150);
+    a.x_vel = 0x00040000;
+    r = wm_keep_onscreen_one(&a, left, right);
+    assert(!r.stopped && a.x_vel == 0x00040000);
+
+    /* And the same on the right. */
+    put(&a, right + 10, 1100, 150);
+    a.x_vel = 0x00040000;
+    r = wm_keep_onscreen_one(&a, left, right);
+    assert(r.stopped && a.x_vel == 0);
+
+    put(&a, right + 10, 1100, 150);
+    a.x_vel = -0x00040000;
+    r = wm_keep_onscreen_one(&a, left, right);
+    assert(!r.stopped);
+
+    /* Climbing through the ropes is exempt. */
+    put(&a, left - 10, 1100, 150);
+    a.x_vel = -0x00040000;
+    a.climbing_thru = 1;
+    r = wm_keep_onscreen_one(&a, left, right);
+    assert(!r.stopped && a.x_vel == -0x00040000);
+
+    /* A stopped run is over -- and ANIMODE is written whole, so every
+       other animation-mode bit goes with it. */
+    put(&a, left - 10, 1100, 150);
+    a.x_vel = -0x00040000;
+    a.player_mode = (uint16_t)WM_PMODE_RUNNING;
+    a.anim_mode = (uint16_t)(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
+    r = wm_keep_onscreen_one(&a, left, right);
+    assert(r.stopped && r.dropped_run);
+    assert(a.player_mode == (uint16_t)WM_PMODE_NORMAL);
+    assert(a.anim_mode == 0);
+
+    r = wm_keep_onscreen_one(NULL, left, right);
+    assert(!r.stopped);
+
+    /* The gates. One player: never confined. */
+    put(&a, 0, 1100, 150);
+    put(&b, 0, 1100, 150);
+    a.x_vel = -0x00040000;
+    a.in_ring = 1;
+    wm_keep_onscreen(&a, &b, 0x02000000, false, &allow);
+    assert(a.x_vel != 0);
+
+    /* Both inside the ring: the ropes are doing the confining. */
+    a.in_ring = 0; b.in_ring = 0;
+    wm_keep_onscreen(&a, &b, 0x02000000, true, &allow);
+    assert(a.x_vel != 0);
+
+    /*
+     * allow_offscrn is a COUNTDOWN, not a flag: it is decremented on
+     * the way past and only lets him go while it is still nonzero
+     * afterwards.
+     */
+    a.in_ring = 1;
+    allow = 3;
+    wm_keep_onscreen(&a, &b, 0x02000000, true, &allow);
+    assert(allow == 2);
+    assert(a.x_vel != 0);          /* skipped */
+
+    allow = 1;
+    wm_keep_onscreen(&a, &b, 0x02000000, true, &allow);
+    assert(allow == 0);
+    /* The last tick of the countdown does NOT skip -- the source
+       decrements first and only branches away on a nonzero result. */
+}
+
 int main(void)
 {
     test_update_positions();
@@ -249,6 +348,7 @@ int main(void)
     test_scroll_ctrl_pulls_the_camera_up();
     test_the_front_fence();
     test_pick_pair();
+    test_keep_onscreen();
     printf("scroll_world and update_positions: all checks passed\n");
     return 0;
 }

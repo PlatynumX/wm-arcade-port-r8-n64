@@ -124,8 +124,10 @@ LEDGER_STATUSES = {
 _IF_RE = re.compile(r"^\s*\.if\s+(.+?)\s*$", re.I)
 _ELSE_RE = re.compile(r"^\s*\.else\s*$", re.I)
 _ENDIF_RE = re.compile(r"^\s*\.endif\s*$", re.I)
+# The assembler writes the directive with or without its leading dot,
+# and `equ` and `.set` both bind a plain integer here.
 _SET_RE = re.compile(
-    r"^([A-Za-z_][A-Za-z0-9_]*)\s+\.(?:set|equ)\s+(-?\d+)\s*$")
+    r"^([A-Za-z_][A-Za-z0-9_]*)\s+\.?(?:set|equ)\s+(-?\d+)\s*$", re.I)
 
 _EQU_CONSTS: dict[str, int] | None = None
 
@@ -186,13 +188,29 @@ def unassembled_routines() -> dict[str, str]:
     for path in sorted(wlanim.ORIG.glob("*.ASM")):
         if linked and path.name.upper() not in linked:
             continue
+        #
+        # A file may define its own switches, and the ones that matter
+        # most are defined behind a condition themselves. WRESTLE.ASM:48
+        # opens `.if DEBUG` and sets SCRT_DEBUG, DIR_DEBUG and COL_DEBUG
+        # in each arm; DEBUG is 0, so the `.else` arm is the live one and
+        # all three are 0. Reading only the .EQU files left those three
+        # unknown, which left five routines -- collis_debug,
+        # collis_debug2, dir_debug, scrt_debug and direction_test --
+        # counted as missing from a port when they are not in the ARCADE
+        # either.
+        #
+        # Scoped to this file, seeded from the shared .EQU values, and
+        # only updated from a branch already known to be taken. A
+        # definition inside a dead branch is not a definition.
+        #
+        local = dict(consts)
         stack: list[tuple[bool | None, str]] = []
         for n, raw in enumerate(path.read_text(errors="replace").splitlines(),
                                 1):
             line = wlanim.strip_comment(raw)
             m = _IF_RE.match(line)
             if m:
-                stack.append((_cond_value(m.group(1), consts), m.group(1)))
+                stack.append((_cond_value(m.group(1), local), m.group(1)))
                 continue
             if _ELSE_RE.match(line):
                 if stack:
@@ -206,6 +224,10 @@ def unassembled_routines() -> dict[str, str]:
                 continue
             false_at = next((why for val, why in stack if val is False), None)
             if false_at is None:
+                # Live text: a constant defined here is a real one.
+                dm = _SET_RE.match(line.strip())
+                if dm:
+                    local[dm.group(1)] = int(dm.group(2))
                 continue
             sm = wlanim.SUBR_RE.match(line)
             if sm:

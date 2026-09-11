@@ -1930,10 +1930,10 @@
    "local": false,
    "external_callers": 2,
    "references": 7,
-   "status": "cited",
-   "evidence": "RemapIO",
+   "status": "hardware",
+   "evidence": "MAIN.ASM. Moves the I/O window in the address map. Its one call site in WRESTLE.ASM's main loop is commented out, under the author's own question: \"isn't there a less obvious place that we can remap the IO ???\"",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "SET_DIR_FACE",
@@ -7285,10 +7285,10 @@
    "local": false,
    "external_callers": 0,
    "references": 8,
-   "status": "cited",
-   "evidence": "change_walk_anim",
+   "status": "renamed",
+   "evidence": "wm_wrestler_backend_execute_walk",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "change_wrestler",
@@ -7300,10 +7300,10 @@
    "local": false,
    "external_callers": 3,
    "references": 3,
-   "status": "cited",
-   "evidence": "change_wrestler",
+   "status": "renamed",
+   "evidence": "wm_life_init_wrestler",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "channel_sound",
@@ -7931,8 +7931,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "WRESTLE.ASM:6235, .if COL_DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -7946,8 +7946,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "WRESTLE.ASM:6352, .if COL_DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -8561,8 +8561,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "WRESTLE.ASM:6554, .if DIR_DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -8651,10 +8651,10 @@
    "local": false,
    "external_callers": 22,
    "references": 22,
-   "status": "cited",
-   "evidence": "display_blank",
+   "status": "hardware",
+   "evidence": "UTIL.ASM. Turns the display processor off. There is no display processor.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "display_croutons",
@@ -8711,10 +8711,10 @@
    "local": false,
    "external_callers": 20,
    "references": 20,
-   "status": "cited",
-   "evidence": "display_unblank",
+   "status": "hardware",
+   "evidence": "UTIL.ASM. And on again.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "ditch_getup_meter",
@@ -8741,10 +8741,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "ditch_getup_meter",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "dizzy_proc",
@@ -13062,10 +13062,10 @@
    "local": false,
    "external_callers": 4,
    "references": 4,
-   "status": "cited",
-   "evidence": "flash_red",
+   "status": "display",
+   "evidence": "WRESTLE2.ASM. Flashes the life bar red on a hit. Pure lifebar rendering -- wm/arcade/wm_arcade_lifebar.h already records it as the one piece of adjust_health's tail that is drawing rather than damage.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "flash_white",
@@ -18044,10 +18044,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "increment_wincount",
+   "status": "renamed",
+   "evidence": "wm_arcade_match_score_award_round",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "ind_select",
@@ -18149,10 +18149,10 @@
    "local": false,
    "external_callers": 2,
    "references": 4,
-   "status": "cited",
-   "evidence": "init_reduce_bog",
+   "status": "renamed",
+   "evidence": "reduce_bog",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "init_rnd_life_data",
@@ -18194,10 +18194,10 @@
    "local": false,
    "external_callers": 1,
    "references": 2,
-   "status": "cited",
-   "evidence": "init_smoves",
+   "status": "process",
+   "evidence": "WRESTLE2.ASM:4055. Called once per MATCH, not per round: it CREATEs one watchdog process per entry in this wrestler's #special_moves list -- the moves the ordinary secret-move matcher cannot handle, the source says, because they involve charging a stick, exact timing, or proximity. This port has no processes; it matches patterns against wm_arcade_joystat's ring instead, and the per-wrestler move lists are wm/wrestler_anim_tables.h's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "init_special_objlist",
@@ -18404,8 +18404,8 @@
    "local": false,
    "external_callers": 1,
    "references": 2,
-   "status": "cited",
-   "evidence": "keep_onscreen",
+   "status": "implemented",
+   "evidence": "wm_keep_onscreen",
    "from_generated": false,
    "ledgered": false
   },
@@ -18419,10 +18419,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "process",
+   "evidence": "WRESTLE2.ASM. The other end of init_smoves: kill every SMOVE_PID. Nothing to kill here.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "kill_when_hit_ground",
@@ -21554,10 +21554,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "cited",
-   "evidence": "match_timer",
+   "status": "partial",
+   "evidence": "wm_arcade_round_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "maybe_do_flashes",
@@ -22439,10 +22439,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "obj_yzsort",
+   "status": "renamed",
+   "evidence": "wm_match_build_draw_list",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "object_collisions",
@@ -26942,8 +26942,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "unassembled",
+   "evidence": "WRESTLE.ASM:6428, .if SCRT_DEBUG",
    "from_generated": false,
    "ledgered": false
   },
@@ -27287,10 +27287,10 @@
    "local": false,
    "external_callers": 4,
    "references": 5,
-   "status": "cited",
-   "evidence": "set_rotate_anim",
+   "status": "renamed",
+   "evidence": "wm_wrestler_backend_execute_walk",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "set_skeleton_pal",
@@ -27377,10 +27377,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "set_up_line_tables",
+   "status": "renamed",
+   "evidence": "wm_ring_calc_line_x",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "set_velocities",
@@ -31007,10 +31007,10 @@
    "local": false,
    "external_callers": 1,
    "references": 3,
-   "status": "cited",
-   "evidence": "start_match",
+   "status": "partial",
+   "evidence": "wm_match_start_attract",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "start_run_anim",
@@ -31022,10 +31022,10 @@
    "local": false,
    "external_callers": 351,
    "references": 351,
-   "status": "cited",
-   "evidence": "start_run_anim",
+   "status": "renamed",
+   "evidence": "wm_arcade_start_run",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "start_run_flung",
@@ -34472,10 +34472,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "cited",
-   "evidence": "update_joystat",
+   "status": "renamed",
+   "evidence": "wm_arcade_joystat_update",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "update_links",
@@ -34638,10 +34638,10 @@
    "local": false,
    "external_callers": 3,
    "references": 24,
-   "status": "cited",
-   "evidence": "wait_on_butn",
+   "status": "renamed",
+   "evidence": "wm_app_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "win_announce",

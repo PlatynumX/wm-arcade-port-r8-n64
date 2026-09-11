@@ -4,6 +4,8 @@
  */
 #include "wm/arcade/wm_arcade_scroll.h"
 #include "wm/match_display.h"
+#include "wm/anim.h"
+#include "wm/arcade/wmania_ring_geometry.h"
 
 #include <stddef.h>
 
@@ -163,4 +165,95 @@ void wm_scroll_world(wm_scroll_state *s,
     if (!s || !p1 || !p2) return;
     scroll_x(s, p1, p2);
     scroll_y(s, p1, p2, actors, count);
+}
+
+/*
+ * WRESTLE2.ASM:2270 #do_check -- one wrestler against the window. See
+ * the header for the four gates the caller applies first.
+ */
+wm_keep_onscreen_result wm_keep_onscreen_one(wm_arcade_actor_t *actor,
+                                             int32_t left, int32_t right)
+{
+    wm_keep_onscreen_result r;
+
+    r.stopped = false;
+    r.dropped_run = false;
+    if (!actor) return r;
+
+    /*
+     * `cmp a0,a14 / jrgt #ok1` -- inside the left edge, go and check
+     * the right one. Past it, only a velocity still carrying him
+     * further left counts; zero or rightward is left alone.
+     */
+    if (actor->x_int <= left) {
+        if (actor->x_vel == 0) return r;
+        if (actor->x_vel >= 0) return r;       /* heading back in */
+    } else if (actor->x_int >= right) {
+        if (actor->x_vel == 0) return r;
+        if (actor->x_vel < 0) return r;        /* heading back in */
+    } else {
+        return r;                              /* inside the window */
+    }
+
+    /* A man climbing through the ropes is exempt. */
+    if (actor->climbing_thru) return r;
+
+    actor->x_vel = 0;
+    r.stopped = true;
+
+    /*
+     * A run that is stopped is over: PLYRMODE and ANIMODE both go to
+     * NORMAL, and the getup meter goes with them. Note the source
+     * writes MODE_NORMAL into ANIMODE as a whole word, clearing every
+     * other animation-mode bit with it.
+     */
+    if (actor->player_mode == (uint16_t)WM_PMODE_RUNNING) {
+        actor->player_mode = (uint16_t)WM_PMODE_NORMAL;
+        actor->anim_mode = (uint16_t)WM_MODE_NORMAL;
+        r.dropped_run = true;
+    }
+    return r;
+}
+
+/* WRESTLE2.ASM:2180 keep_onscreen -- the gate and the two checks. */
+void wm_keep_onscreen(wm_arcade_actor_t *p1, wm_arcade_actor_t *p2,
+                      int32_t worldtlx, bool two_player,
+                      int32_t *allow_offscrn)
+{
+    int32_t centre, left, right;
+
+    if (!two_player || !p1 || !p2) return;     /* `jrne #no_2_player` */
+
+    centre = (worldtlx >> 16) + 200;           /* WORLDTLX+16, then +200 */
+
+    /*
+     * Which buffer goes on which side flips at the ring's centre.
+     * Both are 185 in the shipped build -- #BUFF2 carries `;140` as
+     * the value it used to be -- so this currently makes no
+     * difference, and the code that would make it one is here.
+     */
+    if (centre > WM_RING_X_CENTER) {
+        left = centre - WM_KEEP_ONSCREEN_BUFF1;
+        right = centre + WM_KEEP_ONSCREEN_BUFF2;
+    } else {
+        left = centre - WM_KEEP_ONSCREEN_BUFF2;
+        right = centre + WM_KEEP_ONSCREEN_BUFF1;
+    }
+
+    /*
+     * `allow_offscrn` is a countdown. Nonzero means skip the check,
+     * and it is decremented on the way past -- so ANI_SET_IDIOT buys
+     * exactly that many ticks of freedom, not a latch.
+     */
+    if (allow_offscrn && *allow_offscrn != 0) {
+        --*allow_offscrn;
+        if (*allow_offscrn != 0) return;
+    }
+
+    /* At least one of them has to be out of the ring. INRING is zero
+       INSIDE, so `jrnz #outside` fires on the one who is out. */
+    if (p1->in_ring == 0 && p2->in_ring == 0) return;
+
+    (void)wm_keep_onscreen_one(p1, left, right);
+    (void)wm_keep_onscreen_one(p2, left, right);
 }

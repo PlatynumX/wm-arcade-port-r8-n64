@@ -120,6 +120,64 @@ void wm_scroll_world(wm_scroll_state *s,
                      const wm_scroll_point *p1, const wm_scroll_point *p2,
                      const wm_arcade_actor_t *const *actors, size_t count);
 
+/*
+ * WRESTLE2.ASM:2180 keep_onscreen -- the other half of the camera's
+ * bargain. The scroller may refuse to move; this stops a wrestler
+ * walking off the edge while it does.
+ *
+ * Four conditions before it does anything, and each is a real rule:
+ *
+ *   Two-player games only (`cmpi 3,a14` on PSTATUS). One human alone
+ *   is never confined this way.
+ *
+ *   `allow_offscrn` is a countdown, not a flag: while it is nonzero
+ *   it is decremented and the check is skipped, so ANI_SET_IDIOT buys
+ *   a move a fixed number of ticks of freedom.
+ *
+ *   At least one of the two must be OUTSIDE the ring. Both inside and
+ *   nothing happens -- the ropes are already doing the confining.
+ *
+ *   And a wrestler climbing through the ropes is exempt even then.
+ *
+ * The window is asymmetric and deliberately so: #BUFF1 is 185 toward
+ * the ring's centre and #BUFF2 185 away from it, and which is which
+ * flips at RING_X_CENTER. Both are 185 in the shipped build -- the
+ * source keeps `;140` beside #BUFF2 as the value it used to be -- so
+ * the asymmetry is currently invisible, and the code that implements
+ * it is not.
+ *
+ * What it does is only ever to STOP a man, never to move him: it
+ * zeroes X velocity, and only when that velocity is carrying him
+ * further out. A wrestler already past the edge and heading back is
+ * left alone. If he was RUNNING he is dropped to NORMAL as well, and
+ * his getup meter goes with it.
+ *
+ * `center_x` is WORLDTLX's integer half plus 200.
+ */
+#define WM_KEEP_ONSCREEN_BUFF1 185
+#define WM_KEEP_ONSCREEN_BUFF2 185
+
+typedef struct wm_keep_onscreen_result {
+    bool stopped;         /* the X velocity was zeroed */
+    bool dropped_run;     /* ...and MODE_RUNNING was dropped to NORMAL */
+} wm_keep_onscreen_result;
+
+/*
+ * One wrestler against the window. Exposed on its own because the
+ * source's `#do_check` is called twice and is where all the behaviour
+ * is; wm_keep_onscreen below is the gate plus the two calls.
+ */
+wm_keep_onscreen_result wm_keep_onscreen_one(wm_arcade_actor_t *actor,
+                                             int32_t left, int32_t right);
+
+/*
+ * `allow_offscrn` is read and decremented, so pass its address.
+ * `two_player` is PSTATUS == 3.
+ */
+void wm_keep_onscreen(wm_arcade_actor_t *p1, wm_arcade_actor_t *p2,
+                      int32_t worldtlx, bool two_player,
+                      int32_t *allow_offscrn);
+
 #ifdef __cplusplus
 }
 #endif

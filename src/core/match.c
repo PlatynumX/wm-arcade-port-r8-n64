@@ -1392,6 +1392,15 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
                INRING flag that IS maintained rather than left at a
                value that would pass the guard by accident. */
             senv.ring_time = a->in_ring ? 1 : -1;
+            /*
+             * *a8(CLOSEST_NUM) through process_ptrs, which
+             * WRESTLE.ASM:4489 get_opp_plyrmode reads. In a two-man
+             * match that is the other wrestler; the charge,
+             * grab_toss_air and free-move monitors all test his mode
+             * and refuse when he is down.
+             */
+            senv.closest = (ai == 0) ? &m->actors[1] : &m->actors[0];
+            senv.pcnt = m->tick_count;
             senv.world_tlx = m->scroll.worldtlx;
             senv.world_tly = m->scroll.worldtly;
             senv.und_cb = &ucb;
@@ -1402,6 +1411,11 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
                     continue;
                 if (fire.walk_fast) a->walk_fast = fire.walk_fast;
                 if (fire.risk) a->risk = fire.risk;
+                /* `movk 15,a14 / move a14,*a0(IMMOBILIZE_TIME)` -- the
+                   move pins the man it is done to. The amount is the
+                   row's own; eighteen of the forty pin nobody. */
+                if (fire.victim && fire.victim_immobilize > 0)
+                    fire.victim->immobilize_time = fire.victim_immobilize;
                 if (fire.anim) {
                     a->special_move_addr = (uintptr_t)fire.anim;
                     match_change_anim(a, fire.anim, m);

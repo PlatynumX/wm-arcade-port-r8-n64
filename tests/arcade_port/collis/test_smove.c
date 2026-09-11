@@ -85,9 +85,11 @@ static void test_waitswitch(void) {
 static void test_registry(void) {
     const wm_smove_monitor_t *m;
 
-    /* Three hand-written, plus the head-hold family read out of the
+    /* Five hand-written, plus the four families read out of the
        source by tools/wlsmove.py. */
-    assert(wm_smove_monitor_count() == 3 + wm_smove_hdhold_count);
+    assert(wm_smove_monitor_count()
+           == 5 + wm_smove_hdhold_count + wm_smove_charge_count
+                + wm_smove_grab_count + wm_smove_free_count);
 
     m = wm_smove_monitor_find("und_finish_move1");
     assert(m && m->steps == 3);
@@ -123,8 +125,24 @@ static void test_registry(void) {
             wm_smove_monitor_find("und_hdhold_neckbrk");
         assert(hh && hh->hdhold);
     }
-    /* One of the twenty still missing does not. */
-    assert(wm_smove_monitor_find("und_grab_toss_air") == NULL);
+    /* So does one from each of the other three families, and the
+       two hand-written monitors that are none of them. */
+    {
+        const wm_smove_monitor_t *g =
+            wm_smove_monitor_find("und_grab_toss_air");
+        const wm_smove_monitor_t *c =
+            wm_smove_monitor_find("hrt_charge_flying_kick");
+        const wm_smove_monitor_t *f =
+            wm_smove_monitor_find("und_spirit_push");
+        const wm_smove_monitor_t *x =
+            wm_smove_monitor_find("shn_flipslam");
+        assert(g && g->grab);
+        assert(c && c->charge && c->steps == 0);
+        assert(f && f->freemove);
+        assert(x && !x->grab && !x->charge && !x->freemove && !x->hdhold);
+    }
+    /* A name nothing spawns still resolves to nothing. */
+    assert(wm_smove_monitor_find("no_such_monitor") == NULL);
     assert(wm_smove_monitor_find(NULL) == NULL);
 }
 

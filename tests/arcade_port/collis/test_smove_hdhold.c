@@ -1,5 +1,5 @@
 /*
- * The head-hold special-move family: 41 monitors that are one routine
+ * The head-hold special-move family: 40 monitors that are one routine
  * with different constants, read out of the source by
  * tools/wlsmove.py.
  */
@@ -15,7 +15,7 @@ static void test_table_is_sane(void) {
     size_t i;
     int with_reversal = 0, with_bonus = 0, with_pair = 0;
 
-    assert(wm_smove_hdhold_count == 42);
+    assert(wm_smove_hdhold_count == 40);
 
     for (i = 0; i < wm_smove_hdhold_count; ++i) {
         const wm_smove_hdhold_t *r = &wm_smove_hdhold[i];
@@ -37,23 +37,53 @@ static void test_table_is_sane(void) {
            that as J_ALL would have been a transcription error a hand
            copy could not catch. */
         assert(r->step[2].mask != 0);
-        /* Almost all of them use a 60-tick window; SHAWN.ASM:780's
-           shn_flipslam is the one that does not, at 30. A hand copy
-           would very likely have written 60 for all 41. */
-        assert(r->timeout == 60 || r->timeout == 30);
+        /* Every row in THIS family uses a 60-tick window. The one
+           that does not -- SHAWN.ASM:780's shn_flipslam, at 30 -- is
+           not in the table: it has a third outcome and is translated
+           by hand. */
+        assert(r->timeout == 60);
         assert(r->bonus >= -1);
-        if (r->reversal) ++with_reversal;
+        if (r->headheld == WM_SMOVE_HH_REVERSAL) ++with_reversal;
         if (r->bonus >= 0) ++with_bonus;
         if (r->anim_flipped) ++with_pair;
     }
 
-    /* All three columns are really used -- a table where every row
-       agreed would mean the extractor was reading a constant. */
+    /* The columns are really used -- a table where every row agreed
+       would mean the extractor was reading a constant rather than
+       the source. */
     {
-        int short_window = 0;
-        for (i = 0; i < wm_smove_hdhold_count; ++i)
-            if (wm_smove_hdhold[i].timeout == 30) ++short_window;
-        assert(short_window == 1);
+        int pinning = 0, pin15 = 0, pin32 = 0, holdonly = 0, slams = 0;
+        for (i = 0; i < wm_smove_hdhold_count; ++i) {
+            const wm_smove_hdhold_t *r = &wm_smove_hdhold[i];
+            if (r->victim_immobilize) ++pinning;
+            if (r->victim_immobilize == 15) ++pin15;
+            if (r->victim_immobilize == 32) ++pin32;
+            if (!r->gate_headheld) ++holdonly;
+            if (r->headheld == WM_SMOVE_HH_SLAM) ++slams;
+        }
+        /*
+         * IMMOBILIZE_TIME is not one constant. Seventeen of these
+         * have the `movk 15,a14 / move a14,*a0(IMMOBILIZE_TIME)` pair
+         * COMMENTED OUT and pin nobody; of the rest, seventeen say 15
+         * and six say 32, 30 or 25. Baking 15 in -- which is what
+         * this port did until the column was read -- gets 23 of the
+         * 40 rows wrong.
+         */
+        assert(pinning == 23);
+        assert(pin15 == 17 && pin32 == 4);
+        /* Fifteen combo moves are gated `cmpi MODE_HEADHOLD,a0 /
+           jrnz #lp0` and belong to the holder alone -- a wrestler
+           whose head is held never arms them. */
+        assert(holdonly == 15);
+        /*
+         * Of the twenty-five that do admit him, twenty-three let him
+         * reverse, dnk_hdhold_buzz tests MODE_HEADHOLD after the
+         * sequence and refuses him, and yok_salt_throw tests nothing
+         * at all and gives him the same move. The reading this
+         * replaces had only reverse-or-refuse, and turned that last
+         * one into a refusal.
+         */
+        assert(slams == 15 + 1);
     }
     assert(with_reversal > 0 && with_reversal < (int)wm_smove_hdhold_count);
     assert(with_bonus > 0 && with_bonus < (int)wm_smove_hdhold_count);
@@ -78,8 +108,11 @@ static void test_table_is_sane(void) {
         assert(combo == 15);
         /* Five refuse while getting up, all of them Shawn's.
            YOKO.ASM:759 has the same test commented out for two of
-           Yokozuna's, which is the other half of the same trap. */
-        assert(up == 5);
+           Yokozuna's, which is the other half of the same trap.
+           Shawn's other two with the test are shn_flipslam and
+           shn_swirl_speedkick, which are hand-written rather than in
+           this table. */
+        assert(up == 4);
     }
 }
 
@@ -108,7 +141,7 @@ static void test_one_row_by_hand(void) {
     assert(r->step[2].mask == WM_J_ALL);
     assert(r->timeout == 60);
     assert(r->bonus == 1);
-    assert(r->reversal);
+    assert(r->headheld == WM_SMOVE_HH_REVERSAL);
     assert(strcmp(r->anim, "und_neckbreaker_anim") == 0);
     /* It loops rather than dying: SLEEPK 20 then `jruc #lp`, so a
        head hold can be turned into move after move. */
@@ -171,19 +204,54 @@ static void test_fire(void) {
            == WM_SMOVE_HH_NOTHING);
     me.immobilize_time = 0;
 
-    /* A move with no reversal path declines when he is the one held. */
+    /*
+     * And a move that refuses him outright. dnk_hdhold_buzz tests
+     * `cmpi MODE_HEADHOLD,a0 / jrnz #lp0` after the sequence, so a
+     * wrestler whose head is held gets nothing at all -- while the
+     * combo moves, whose fall-through lands on the slam label,
+     * perform the same move for him. Three answers, not two.
+     */
     {
         size_t i;
-        const wm_smove_hdhold_t *plain = NULL;
+        const wm_smove_hdhold_t *refusing = NULL, *sharing = NULL;
+        for (i = 0; i < wm_smove_hdhold_count; ++i) {
+            const wm_smove_hdhold_t *r = &wm_smove_hdhold[i];
+            if (!refusing && r->gate_headheld &&
+                r->headheld == WM_SMOVE_HH_NOTHING)
+                refusing = r;
+            if (!sharing && r->gate_headheld &&
+                r->headheld == WM_SMOVE_HH_SLAM)
+                sharing = r;
+        }
+        assert(refusing && sharing);
+        me.player_mode = WM_PMODE_HEADHELD;
+        assert(wm_smove_hdhold_fire(refusing, &me, &victim, &out)
+               == WM_SMOVE_HH_NOTHING);
+        assert(wm_smove_hdhold_fire(sharing, &me, &victim, &out)
+               == WM_SMOVE_HH_SLAM);
+    }
+
+    /*
+     * SMRTTGT is a column too: dnk_hdhold_buzz and yok_salt_throw
+     * call it on neither path, so they aim at nobody.
+     */
+    {
+        size_t i;
+        const wm_smove_hdhold_t *untargeted = NULL;
         for (i = 0; i < wm_smove_hdhold_count; ++i)
-            if (!wm_smove_hdhold[i].reversal) {
-                plain = &wm_smove_hdhold[i];
+            if (!wm_smove_hdhold[i].smart_target) {
+                untargeted = &wm_smove_hdhold[i];
                 break;
             }
-        assert(plain);
-        me.player_mode = WM_PMODE_HEADHELD;
-        assert(wm_smove_hdhold_fire(plain, &me, &victim, &out)
-               == WM_SMOVE_HH_NOTHING);
+        assert(untargeted);
+        memset(&me, 0, sizeof me);
+        me.who_i_hit = &him;
+        me.player_mode = WM_PMODE_HEADHOLD;
+        assert(wm_smove_hdhold_fire(untargeted, &me, &victim, &out)
+               == WM_SMOVE_HH_SLAM);
+        assert(victim == NULL);
+        assert(me.smart_target == NULL);
+        assert(out.victim == NULL);
     }
 }
 
@@ -240,11 +308,12 @@ static void test_init_covers_more(void) {
         total_missing += missing;
         assert(n + missing == (size_t)wm_wrestler_smoves[w].count);
     }
-    /* 79 table entries across the roster; the ones still missing are
-       the six charge monitors, the eight grab_toss_air, and a handful
-       of one-offs. */
+    /* 79 table entries across the roster, naming 65 distinct
+       routines, and every one of them now resolves to a monitor:
+       forty head-hold rows, six charge, eight grab_toss_air, six
+       free moves, and five written by hand. */
     assert(total_made + total_missing == 79);
-    assert(total_made > 50);
+    assert(total_missing == 0);
 }
 
 /* The two extra gates really refuse. */

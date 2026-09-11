@@ -1381,10 +1381,10 @@ def test_smove_monitor_registry_is_honest() -> None:
     WRESTLE2.ASM:4058 init_smoves makes one SMOVE_PID process per smove
     table entry, and 79 entries across the eight tables name 65 distinct
     routines -- std_walk_fast and std_taunt are the only two shared, one
-    apiece in all eight. The port implements 45 of them: three written
-    by hand and the 42-strong head-hold family read out of the source
-    by tools/wlsmove.py. The point of this test is that the other 20
-    stay VISIBLE.
+    apiece in all eight. The port now implements all 65: five written
+    by hand and sixty read out of the source by tools/wlsmove.py in
+    four families (40 head-hold, 6 charge, 8 grab_toss_air, 6 free).
+    The point of this test is that nothing can quietly fall back out.
 
     They are easy to lose. Every one is a bare column-0 label rather
     than a SUBR, so tools/port_coverage.py -- which enumerates SUBR
@@ -1406,12 +1406,14 @@ def test_smove_monitor_registry_is_honest() -> None:
     assert len(names) == 65, len(names)
 
     reg = (ROOT / "src" / "core" / "arcade" / "wm_arcade_smove.c").read_text()
-    gen = (ROOT / "src" / "generated" / "smove_hdhold.c")
-    hand = sorted(set(re.findall(r'^\s*"([a-z0-9_]+)", "([A-Z0-9]+\.ASM)",',
-                                 reg, re.M)))
-    assert [c[0] for c in hand] == ["std_taunt", "std_walk_fast",
+    gen = (ROOT / "src" / "generated" / "smove_tables.c")
+    hand = sorted(set(re.findall(
+        r'^\s*\.name = "([a-z0-9_]+)", \.file = "([A-Z0-9]+\.ASM)"',
+        reg, re.M)))
+    assert [c[0] for c in hand] == ["shn_flipslam", "shn_swirl_speedkick",
+                                    "std_taunt", "std_walk_fast",
                                     "und_finish_move1"], hand
-    # ...plus the head-hold family, read out of the source by
+    # ...plus the four families, read out of the source by
     # tools/wlsmove.py rather than written here.
     generated = sorted(set(re.findall(
         r'^\s*\{ "([a-z0-9_]+)", "([A-Z0-9]+\.ASM)",',
@@ -1431,7 +1433,17 @@ def test_smove_monitor_registry_is_honest() -> None:
                (name, fname)
 
     unported = [n for n in names if n not in {c[0] for c in claimed}]
-    assert len(unported) == 20, len(unported)
+    assert unported == [], unported
+
+    # And the families really are four, not one reader stretched over
+    # sixty routines: each of the three new tables has to be there and
+    # to be the size the census says.
+    text = gen.read_text()
+    for table, count in (("wm_smove_hdhold", 40), ("wm_smove_charge", 6),
+                         ("wm_smove_grab", 8), ("wm_smove_free", 6)):
+        body = text.split("%s[] = {" % table, 1)[1].split("\n};", 1)[0]
+        rows = re.findall(r'^\s*\{ "([a-z0-9_]+)", "', body, re.M)
+        assert len(rows) == count, (table, len(rows))
 
 
 def test_smove_tables_honour_the_finishing_move_switch() -> None:

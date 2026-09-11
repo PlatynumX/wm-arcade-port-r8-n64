@@ -7662,8 +7662,8 @@
    "external_callers": 18,
    "references": 18,
    "status": "implemented",
-   "evidence": "ck_ignore",
-   "from_generated": false,
+   "evidence": "WM_SMOVE_G_CK_IGNORE",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -18196,7 +18196,7 @@
    "references": 2,
    "status": "implemented",
    "evidence": "init_smoves",
-   "from_generated": false,
+   "from_generated": true,
    "ledgered": false
   },
   {

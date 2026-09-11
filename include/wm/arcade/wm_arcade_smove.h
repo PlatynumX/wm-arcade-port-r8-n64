@@ -112,6 +112,12 @@ typedef struct {
     int32_t countdown;    /* the macro's a11 */
     bool armed;           /* past the gate, inside the sequence */
     bool dead;            /* DIEd; one-shots do this when they fire */
+    /*
+     * The `SLEEPK 20` (or `SLEEP 120`) every one of these routines
+     * runs before looping back to #lp. It is not decoration: without
+     * it a held button re-fires the move on the very next tick.
+     */
+    int32_t cooldown;
 } wm_smove_run_t;
 
 /*
@@ -136,7 +142,16 @@ typedef struct {
      * translation already here.
      */
     const wm_arcade_und_finish_callbacks_t *und_cb;
-    /* Filled in by wm_smove_tick for a head-hold monitor: the row
+    /*
+     * *a8(CLOSEST_NUM) resolved through process_ptrs -- the wrestler
+     * WRESTLE.ASM:4489 get_opp_plyrmode reads, and the one the
+     * grab_toss_air and charge families test the mode and ATTACK_TYPE
+     * of. In a two-man match it is simply the other wrestler.
+     */
+    wm_arcade_actor_t *closest;
+    /* @PCNT, for the one monitor that stamps SPECIAL_DAMAGE_TIME. */
+    uint32_t pcnt;
+    /* Filled in by wm_smove_tick for a generated monitor: the row
        whose constants this run is using. */
     const void *hdhold_row;
 } wm_smove_env_t;
@@ -166,6 +181,9 @@ typedef struct {
      */
     int32_t bonus;
     int32_t victim_immobilize;
+    /* Who `victim_immobilize` is for: WHOIHIT on a slam, WHOHITME on
+       a reversal, NULL when the move pins nobody. */
+    wm_arcade_actor_t *victim;
 } wm_smove_fire_t;
 
 typedef struct wm_smove_monitor {
@@ -191,10 +209,25 @@ typedef struct wm_smove_monitor {
                  wm_smove_fire_t *out);
     /* `DIE` rather than looping back to #lp0 once it fires. */
     bool one_shot;
-    /* Set on the 41 generated head-hold rows, NULL on the three
-       hand-written monitors. The runtime reads it back through the
-       env so one fire() can serve every row. */
+    /* The trailing SLEEP, in ticks, before the routine loops. */
+    int32_t cooldown;
+    /*
+     * Run once per tick during that sleep, with the ticks remaining.
+     * One monitor needs it: SHAWN.ASM:570's flying-knee path waits
+     * five ticks after the animation starts and only then writes
+     * OBJ_YVEL, so the lift is part of the move rather than of the
+     * frame that begins it.
+     */
+    void (*tail)(wm_arcade_actor_t *a, int32_t remaining);
+    /*
+     * The generated row this descriptor was built from, if any. One
+     * of these four at most; the runtime hands it back through the
+     * env so a single gate() and fire() can serve a whole family.
+     */
     const struct wm_smove_hdhold *hdhold;
+    const struct wm_smove_charge *charge;
+    const struct wm_smove_grab *grab;
+    const struct wm_smove_free *freemove;
 } wm_smove_monitor_t;
 
 /* ---- the head-hold family --------------------------------------- */
@@ -234,8 +267,29 @@ typedef struct wm_smove_hdhold {
     /* `movk <n>,a10 / CREATE MESSAGE_PID,BONUS_MESS`, or -1 for a move
        that awards none. */
     int32_t bonus;
-    /* Whether the routine has the MODE_HEADHELD reversal path. */
-    bool reversal;
+    /*
+     * Which of the two modes the GATE lets in. Fifteen combo moves
+     * are written `cmpi MODE_HEADHOLD,a0 / jrnz #lp0` and run only
+     * for the man doing the holding; the rest admit both. Reading
+     * both as admitting both hands a move to the wrong wrestler.
+     */
+    bool gate_headhold;
+    bool gate_headheld;
+    /*
+     * And what a completed sequence then DOES for the man whose head
+     * is held -- one of wm_smove_hh_result_t. Three answers, not two:
+     * he reverses it (DO_REVERSAL, targeting WHOHITME), he performs
+     * the same move himself (the fall-through lands on the slam
+     * label, targeting WHOIHIT), or the tail tests MODE_HEADHOLD and
+     * refuses him.
+     */
+    uint8_t headheld;
+    /*
+     * `SMRTTGT a8,WHOIHIT`. dnk_hdhold_buzz and yok_salt_throw call
+     * it on neither path, so aiming their move at the nearest
+     * wrestler would be this port's invention rather than the game's.
+     */
+    bool smart_target;
     /*
      * Two extra gates that appear before the sequence on some of
      * them, and refuse the whole monitor rather than one step:
@@ -244,12 +298,16 @@ typedef struct wm_smove_hdhold {
      *   which are only available while a combo is running;
      *   `move *a8(GETUP_TIME),a0 / jrnz #lp0` on four of Shawn's,
      *   which refuse while he is getting up.
-     *
-     * They are columns rather than part of the shared gate because
-     * nineteen rows have one and twenty-two do not.
      */
     bool needs_combo;
     bool needs_getup_clear;
+    /*
+     * `movk 15,a14 / move a14,*a0(IMMOBILIZE_TIME)` -- how long the
+     * move pins its target. Not one constant: seventeen say 15, five
+     * say 32, 30 or 25, and eighteen have the write COMMENTED OUT and
+     * pin nobody at all.
+     */
+    int32_t victim_immobilize;
     /* The animation SPECIAL_MOVE_ADDR takes. `anim_flipped` is
        non-NULL only where the source picks it with FACE24, in which
        case `anim` is the `_2_` form and this is the `_4_`. */
@@ -260,9 +318,8 @@ typedef struct wm_smove_hdhold {
 extern const wm_smove_hdhold_t wm_smove_hdhold[];
 extern const size_t wm_smove_hdhold_count;
 
-/* The family's shared constants, from the body they all share. */
-#define WM_SMOVE_HH_VICTIM_IMMOBILIZE 15   /* `movk 15,a14` */
-#define WM_SMOVE_HH_COOLDOWN 20            /* the trailing SLEEPK 20 */
+/* The trailing `SLEEPK 20` every one of them shares. */
+#define WM_SMOVE_HH_COOLDOWN 20
 
 /*
  * Which of the two things the input did, once the sequence completes.
@@ -271,8 +328,8 @@ extern const size_t wm_smove_hdhold_count;
  */
 typedef enum {
     WM_SMOVE_HH_NOTHING = 0,
-    WM_SMOVE_HH_SLAM,        /* MODE_HEADHOLD: the move is mine */
-    WM_SMOVE_HH_REVERSAL     /* MODE_HEADHELD: I am reversing his */
+    WM_SMOVE_HH_SLAM,        /* the move is mine, targeting WHOIHIT */
+    WM_SMOVE_HH_REVERSAL     /* I am reversing his, targeting WHOHITME */
 } wm_smove_hh_result_t;
 
 /*
@@ -287,6 +344,176 @@ wm_smove_hh_result_t wm_smove_hdhold_fire(const wm_smove_hdhold_t *row,
                                           wm_arcade_actor_t *a,
                                           wm_arcade_actor_t **victim,
                                           wm_smove_fire_t *out);
+
+/* ---- the guard lists -------------------------------------------- */
+
+/*
+ * The other three families all end the same way: a list of reasons
+ * NOT to do the move, checked in order, any one of which sends the
+ * monitor back to the top. What is in the list varies from routine to
+ * routine more than anything else about them, so it is read out of
+ * the source as data rather than flattened into columns.
+ *
+ * tools/wlsmove.py REFUSES a routine containing an instruction it
+ * does not recognise here, which is the point: a test that quietly
+ * failed to translate is a move that fires in this port and would not
+ * in the arcade, and that is not a difference anyone would notice
+ * until it mattered.
+ */
+typedef enum {
+    /* `move *a8(PLYRMODE),a0 / cmpi MODE_x,a0 / jrz <top>` */
+    WM_SMOVE_G_SELF_MODE = 0,
+    /* the same on `calla get_opp_plyrmode`, which WRESTLE.ASM:4489
+       shows IS process_ptrs[CLOSEST_NUM]->PLYRMODE, so the charge
+       monitors' inline pointer walk is the same guard */
+    WM_SMOVE_G_OPP_MODE,
+    /* `move *a8(ANIMODE),a14 / btst MODE_UNINT_BIT,a14 / jrnz <top>` */
+    WM_SMOVE_G_UNINT,
+    /* `move *a8(GETUP_TIME),a0 / jrnz <top>` */
+    WM_SMOVE_G_GETUP,
+    /* `move *a8(IMMOBILIZE_TIME),a14 / jrnz <top>` */
+    WM_SMOVE_G_IMMOBILIZE,
+    /* `move *a8(I_WILL_DIE),a14 / jrnz <top>` */
+    WM_SMOVE_G_I_WILL_DIE,
+    /* WRESTLE.ASM:6016 ck_ignore / :6044 ck_ignore_a8 -- "if player is
+       moving away from opponent... ignore button press". Both refuse
+       on carry; the two spellings differ only in which register holds
+       the wrestler. */
+    WM_SMOVE_G_CK_IGNORE
+} wm_smove_guard_kind_t;
+
+#define WM_SMOVE_MAX_GUARDS 10
+
+typedef struct {
+    uint8_t kind;   /* wm_smove_guard_kind_t */
+    uint8_t mode;   /* WM_PMODE_*, for the two mode guards */
+} wm_smove_guard_t;
+
+/* True when every guard in the list passes -- i.e. none of them
+   refuses. `opp` may be NULL, in which case an opponent-mode guard
+   cannot refuse, exactly as a null process pointer would not. */
+bool wm_smove_guards_pass(const wm_smove_guard_t *guard, size_t count,
+                          const wm_arcade_actor_t *a,
+                          const wm_arcade_actor_t *opp);
+
+/* ---- the charge family ------------------------------------------ */
+
+/*
+ * BRET.ASM:543 hrt_charge_flying_kick and five others. These have no
+ * input sequence at all, which is why the head-hold reader refuses
+ * them rather than reading them badly:
+ *
+ *   #start_over  #CHARGE_TIME = 0
+ *   #loop1       SLEEPK 1; ++#CHARGE_TIME; button still held -> #loop1
+ *                #CHARGE_TIME < threshold -> #start_over
+ *                <the guard list>
+ *                SPECIAL_MOVE_ADDR = <anim>; [SETMODE]; back to the top
+ *
+ * `#CHARGE_TIME .equ SM_USRW1` is a word on the MONITOR's own process,
+ * not on the wrestler, so each of the six counts independently and a
+ * wrestler can be charging two of them at once.
+ */
+typedef struct wm_smove_charge {
+    const char *name;
+    const char *file;
+    /* The WM_BTN_* bit tested in BUT_VAL_CUR, held not newly pressed. */
+    uint16_t button;
+    /* `cmpi 100,a14 / jrlt #start_over` -- all six say 100. */
+    int32_t threshold;
+    wm_smove_guard_t guard[WM_SMOVE_MAX_GUARDS];
+    size_t guards;
+    const char *anim;
+    /* Shawn's and Bam Bam's have a second animation for a wrestler
+       who is already running: `cmpi MODE_RUNNING,a0 / jrnz #cont`. */
+    const char *anim_running;
+    /* `SETMODE INAIR` on the two flying kicks; -1 for no mode change. */
+    int32_t set_mode;
+    /* The trailing SLEEP before #start_over, in ticks; 0 for none. */
+    int32_t cooldown;
+} wm_smove_charge_t;
+
+extern const wm_smove_charge_t wm_smove_charge[];
+extern const size_t wm_smove_charge_count;
+
+/*
+ * One tick of a charge monitor. `held` is the counter the source
+ * keeps on the monitor's process; it is incremented or zeroed in
+ * place. Returns true when the move fires.
+ */
+bool wm_smove_charge_tick(const wm_smove_charge_t *row, int32_t *held,
+                          wm_arcade_actor_t *a, const wm_smove_env_t *env,
+                          wm_smove_fire_t *out);
+
+/* ---- the grab_toss_air family ----------------------------------- */
+
+/*
+ * TAKER.ASM:1149 und_grab_toss_air and seven others, one per
+ * wrestler. Three switch steps -- away, away, punch -- and then a
+ * TWO-WAY choice the head-hold row cannot hold, which is why these
+ * eight were the largest group the first pass refused:
+ *
+ *   an opponent who is MODE_INAIR, MODE_INAIR2, or in the middle of
+ *   an AT_LEAPING attack takes the `2` animation wherever he is;
+ *   anyone else has to be within CLOSEST_DIST of the threshold, and
+ *   takes the `1` animation.
+ *
+ * The threshold is per wrestler (68h, 6ch or 70h), and five of the
+ * eight pick each animation with FACE24 while three name it outright.
+ */
+typedef struct wm_smove_grab {
+    const char *name;
+    const char *file;
+    wm_smove_step_t step[3];
+    int32_t timeout;
+    /* `move *a8(CLOSEST_DIST),a0 / cmpi 68h,a0 / jrgt #lp`. */
+    int32_t near_dist;
+    const char *near_anim;
+    const char *near_anim_flipped;
+    const char *air_anim;
+    const char *air_anim_flipped;
+    /* The Undertaker alone drops his attachment: `clr a0 / move
+       a0,*a8(ATTACH_PROC),L`. */
+    bool clear_attach;
+    int32_t set_mode;      /* SETMODE NORMAL on the Undertaker; -1 else */
+    int32_t cooldown;
+} wm_smove_grab_t;
+
+extern const wm_smove_grab_t wm_smove_grab[];
+extern const size_t wm_smove_grab_count;
+
+/* ---- the free-move family --------------------------------------- */
+
+/*
+ * The head-hold shape with the head-hold GATE taken off: three switch
+ * steps, a guard list, one animation. These are done from a neutral
+ * stance, and four of the six actively REFUSE while anyone has a head
+ * hold -- which is how they were first read, because matching on the
+ * mode names alone sees MODE_HEADHOLD and MODE_HEADHELD in the body
+ * and cannot tell a requirement from a refusal. Four moves were
+ * gated on the exact opposite of their real condition.
+ */
+typedef struct wm_smove_free {
+    const char *name;
+    const char *file;
+    wm_smove_step_t step[3];
+    int32_t timeout;
+    /* Tested before the sequence starts and again on every restart:
+       the Undertaker's two spirit moves refuse while he is in a head
+       hold either way round. */
+    wm_smove_guard_t gate[WM_SMOVE_MAX_GUARDS];
+    size_t gates;
+    /* And these once it completes. */
+    wm_smove_guard_t guard[WM_SMOVE_MAX_GUARDS];
+    size_t guards;
+    const char *anim;
+    /* `clr a0 / move a0,*a8(RUN_TIME)` -- the move stops a run. */
+    bool clear_run_time;
+    int32_t set_mode;
+    int32_t cooldown;
+} wm_smove_free_t;
+
+extern const wm_smove_free_t wm_smove_free[];
+extern const size_t wm_smove_free_count;
 
 /* The monitors this port implements, by their source label. NULL for
    one it does not -- which is the point: an unimplemented monitor is a

@@ -7,27 +7,26 @@ only in a note saying it is missing does not count as present.
 
 | status | meaning | count |
 |---|---|---|
-| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1929 |
+| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1938 |
 | `inlined` | the port does it, spelled out at each use site (ledger) | 7 |
-| `renamed` | the port does it under another name (ledger) | 126 |
+| `renamed` | the port does it under another name (ledger) | 128 |
 | `partial` | partly translated; the ledger note says which part | 5 |
-| `data` | a table, extracted by a tool (ledger) | 3 |
-| `process` | a CREATE/SLEEP wrapper (ledger) | 17 |
+| `data` | a table, extracted by a tool (ledger) | 12 |
+| `process` | a CREATE/SLEEP wrapper (ledger) | 21 |
 | `display` | object/DMA drawing; this port has no renderer (ledger) | 28 |
 | `hardware` | talks to the cabinet (ledger) | 16 |
 | `dead` | **measured**: no caller outside its own file | 37 |
 | `unassembled` | **measured**: inside a `.if` the assembler skipped | 64 |
-| `cited` | named only in a comment -- not evidence of anything | 53 |
-| `unknown` | no mention anywhere | 249 |
+| `cited` | named only in a comment -- not evidence of anything | 42 |
+| `unknown` | no mention anywhere | 236 |
 
-**2232 of 2534 routines are accounted for; 302 are open** (`cited` + `unknown`).
+**2256 of 2534 routines are accounted for; 278 are open** (`cited` + `unknown`).
 
 ## Open routines by file
 
 | file | open | routines |
 |---|---|---|
 | AWARD.ASM | 64 | `BLACKOUT`, `adjust_text_position`, `adjust_tl`, `anim_mk`, `anim_sparkle`, `audit_icons`, `award_text`, `bbicon_table`, `create_end_rnd_awards`, `create_player_awards`, `decompress_string`, `del_bonus_icons`, ... |
-| FINISEQ.ASM | 24 | `adjust_taker_facing`, `close_door`, `cof_anim1`, `cof_anim2`, `disappear_wrestler`, `dizzy_wrestler`, `do_up_coffin`, `exp1_anim`, `exp2_anim`, `hover_coffin`, `is_door_open`, `is_guy_up`, ... |
 | FIREWORK.ASM | 23 | `animate_fwexp`, `c1v3_tbl`, `c1v3s_tbl`, `c1v8_tbl`, `c1v8s_tbl`, `c2v8_tbl`, `c2v8s_tbl`, `calc_dxdy`, `check_camera_position`, `congrats_setup_tbl`, `congrats_str_tbl`, `do_fireworks`, ... |
 | DCSSOUND.ASM | 22 | `ANNOUNCE_VOICE`, `CALL_MATCH_OVER`, `END_MATCH_SPEECH`, `KILL_PIN_HIM`, `PROC_MATCH_OVER`, `SNDSND`, `VOLBTN_PRESS`, `announcer_sound`, `channel_sound`, `clear_sound_ram`, `delay_code_a3`, `do_tune_commands`, ... |
 | WRESTLE.ASM | 20 | `CLEAR_PROCESSES`, `DO_SET_IMAGES`, `WARMSET`, `change_image`, `confine_wrestler_fix1`, `confine_wrestler_fix2`, `direction_test`, `game_interrupt`, `game_loop`, `init_prog`, `init_scroller`, `plyr_strtb1`, ... |

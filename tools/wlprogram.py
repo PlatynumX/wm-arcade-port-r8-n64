@@ -1175,6 +1175,62 @@ def _movi_anim_targets() -> list[tuple[pathlib.Path, str]]:
     return out
 
 
+def _change_anim1a_targets() -> list[tuple[pathlib.Path, str]]:
+    """Animations native code hands to change_anim1a without an `_anim` name.
+
+    _movi_anim_targets above keys off the `_anim` suffix, which is the
+    house convention and holds for every animation but one. The one
+    exception is FINISEQ.ASM:972 disappear_wrestler, loaded at :995 by
+    make_wres_disappear -- the routine that makes the dead man vanish
+    once the coffin door shuts. Nothing else names it, so with the
+    suffix rule alone the live coffin finish was missing a program.
+
+    change_anim1a's argument IS an animation, so the argument of a
+    `movi <label>,aN` that reaches a `calla change_anim1a` a few lines
+    later is one by definition -- a stronger signal than the naming
+    convention, not a weaker one. The window is five lines, the label
+    must be a SUBR in the same file, and the body must still parse as
+    an animation or it is skipped. Across every linked file this rule
+    finds exactly one label the suffix rule does not, which is the
+    check that it is narrow rather than a second sweep in disguise.
+    """
+    movi = re.compile(
+        r"^\s*movi\s+([A-Za-z_][A-Za-z0-9_]*)\s*,\s*a\d+\b", re.I)
+    callk = re.compile(r"^\s*calla\s+change_anim1a\b", re.I)
+
+    out: list[tuple[pathlib.Path, str]] = []
+    seen: set[tuple[str, str]] = set()
+    for src in wlanim.linked_files():
+        lines = src.read_text(errors="replace").splitlines()
+        subrs = set()
+        for line in lines:
+            m = wlanim.SUBR_RE.match(line)
+            if m:
+                subrs.add(m.group(1))
+        for i, line in enumerate(lines):
+            m = movi.match(wlanim.strip_comment(line))
+            if not m:
+                continue
+            lab = m.group(1)
+            if lab.endswith("_anim"):
+                continue        # _movi_anim_targets already has it
+            if lab not in subrs:
+                continue
+            if not any(callk.match(wlanim.strip_comment(lines[j]))
+                       for j in range(i + 1, min(i + 6, len(lines)))):
+                continue
+            key = (src.name, lab)
+            if key in seen:
+                continue
+            try:
+                program_for(src, lab)
+            except (OSError, ValueError):
+                continue        # not an animation, or refused
+            seen.add(key)
+            out.append((src, lab))
+    return out
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--source")
@@ -1257,6 +1313,8 @@ def main(argv=None) -> int:
         # finishing moves, its data tables and its plain logic.
         entries += [(str(p), lab) for p, lab in _roster_table_targets()]
         entries += [(str(p), lab) for p, lab in _movi_anim_targets()]
+        entries += [(str(p), lab)
+                    for p, lab in _change_anim1a_targets()]
     if not entries:
         ap.error("nothing to emit: pass --animation, or --source with --label")
     seen, unique = set(), []

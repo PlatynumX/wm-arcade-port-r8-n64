@@ -1101,7 +1101,13 @@ def test_code_roster_tables_are_read_not_transcribed() -> None:
     if not (wlanim.ORIG / "DNKSEQ2.ASM").exists():
         return
     tables = wlpuppet.code_tables()
-    assert set(tables) == {"grnd_hit"}, sorted(tables)
+    # DNKSEQ2's `#hit_t`, plus FINISEQ's two -- stand_table and
+    # dizzy_table, which the Undertaker's coffin finish uses to stand
+    # the dead man up and leave him swaying. Both of those are written
+    # ` SUBRP stand_table` rather than as a column-0 label, which is why
+    # the reader accepts either spelling.
+    assert set(tables) == {"grnd_hit", "stand_wrestler",
+                           "dizzy_wrestler"}, sorted(tables)
 
     generated = ROOT / "src" / "generated" / "anim_programs.c"
     for routine, rows in tables.items():

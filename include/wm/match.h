@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include "wm/arcade/wm_arcade_closest.h"
 #include "wm/arcade/wm_arcade_combat.h"
+#include "wm/arcade/wm_arcade_coffin.h"
 #include "wm/arcade/wm_arcade_confine.h"
 #include "wm/arcade/wm_arcade_drone.h"
 #include "wm/arcade/wm_arcade_lifebar.h"
@@ -227,6 +228,17 @@ typedef struct {
      */
     void *anim_award_user;
     void (*anim_round_award)(void *user, int player_num, unsigned award_index);
+    /*
+     * FINISEQ.ASM's @close_the_door / @close_the_floor / @guy_in --
+     * the Undertaker's coffin sequence. Globals in the source because
+     * only one finish can run at a time; the match owns them here and
+     * lends the struct to every wrestler's env, so the ANI_CODE
+     * routines in und_2_raise_dead_anim and push_in_anim can talk to
+     * each other the way the source's globals let them.
+     * wm_match_init clears it, as und_coffin_up's own first two
+     * instructions do.
+     */
+    wm_coffin_state_t coffin;
 
 } wm_match_state;
 

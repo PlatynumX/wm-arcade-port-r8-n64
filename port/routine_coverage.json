@@ -2920,10 +2920,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "adjust_taker_facing",
+   "status": "renamed",
+   "evidence": "adjust_facing",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "adjust_text_position",
@@ -7871,8 +7871,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "close_door",
+   "status": "implemented",
+   "evidence": "coffin_close_door",
    "from_generated": false,
    "ledgered": false
   },
@@ -7901,10 +7901,10 @@
    "local": true,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "wm_coffin_door_frames",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "cof_anim2",
@@ -7916,10 +7916,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "wm_coffin_close_frame",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "collis_debug",
@@ -8606,9 +8606,9 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "prog_disappear_wrestler_ops",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -8786,10 +8786,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "dizzy_wrestler",
+   "status": "renamed",
+   "evidence": "coffin_change_by_roster",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "dma_irq",
@@ -11982,10 +11982,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "process",
+   "evidence": "wm_coffin_rise_step",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "do_win_streaks",
@@ -12702,10 +12702,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "wm_coffin_exp1_frames",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "exp2_anim",
@@ -12717,10 +12717,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "wm_coffin_exp2_frames",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "face_each_other",
@@ -13932,10 +13932,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "renamed",
-   "evidence": "guy_is_up",
+   "status": "implemented",
+   "evidence": "coffin_guy_is_in",
    "from_generated": false,
-   "ledgered": true
+   "ledgered": false
   },
   {
    "name": "guy_is_up",
@@ -14922,10 +14922,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "process",
+   "evidence": "wm_coffin_hover_step",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "hrt_2_bncoff_anim",
@@ -18269,8 +18269,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "is_door_open",
+   "status": "implemented",
+   "evidence": "coffin_is_door_open",
    "from_generated": false,
    "ledgered": false
   },
@@ -18299,8 +18299,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "is_guy_up",
+   "status": "implemented",
+   "evidence": "coffin_is_guy_up",
    "from_generated": false,
    "ledgered": false
   },
@@ -18314,8 +18314,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "is_he_in",
+   "status": "implemented",
+   "evidence": "coffin_is_he_in",
    "from_generated": false,
    "ledgered": false
   },
@@ -21419,10 +21419,10 @@
    "local": false,
    "external_callers": 0,
    "references": 11,
-   "status": "unknown",
-   "evidence": "",
+   "status": "process",
+   "evidence": "wm_coffin_ltl_exp_params",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "ltl_puff",
@@ -21434,10 +21434,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "wm_coffin_exp1_frames",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "make_norm",
@@ -21479,8 +21479,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "make_wres_disappear",
+   "status": "implemented",
+   "evidence": "coffin_make_wres_disappear",
    "from_generated": false,
    "ledgered": false
   },
@@ -21509,10 +21509,10 @@
    "local": true,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "wm_coffin_mat_frames",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mat_anim2",
@@ -21524,10 +21524,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "wm_coffin_close_frame",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "match_award",
@@ -23355,8 +23355,8 @@
    "external_callers": 0,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_push_in_anim_labels",
-   "from_generated": true,
+   "evidence": "WM_COFFIN_PUSH_IN_ANIM",
+   "from_generated": false,
    "ledgered": false
   },
   {
@@ -23369,8 +23369,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "push_to_coffin",
+   "status": "implemented",
+   "evidence": "coffin_push_to_coffin",
    "from_generated": false,
    "ledgered": false
   },
@@ -23415,8 +23415,8 @@
    "external_callers": 0,
    "references": 1,
    "status": "implemented",
-   "evidence": "prog_raise_dead_anim_labels",
-   "from_generated": true,
+   "evidence": "WM_COFFIN_RAISE_DEAD_ANIM",
+   "from_generated": false,
    "ledgered": false
   },
   {
@@ -27317,8 +27317,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "set_speeds",
+   "status": "implemented",
+   "evidence": "coffin_set_speeds",
    "from_generated": false,
    "ledgered": false
   },
@@ -30977,10 +30977,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "stand_wrestler",
+   "status": "renamed",
+   "evidence": "coffin_change_by_roster",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "start_credbox",
@@ -31382,10 +31382,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "WM_COFFIN_TSTONE_UNUSED_FIRST",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "tstone_test",
@@ -31397,10 +31397,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "wm_coffin_tstone_frames",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "und_2_bncoff_anim",
@@ -33062,10 +33062,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "und_coffin_up",
+   "status": "process",
+   "evidence": "wm_coffin_reset",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "und_combo_butt_anim",

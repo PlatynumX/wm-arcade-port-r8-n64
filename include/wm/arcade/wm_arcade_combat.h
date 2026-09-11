@@ -378,6 +378,19 @@ struct wm_arcade_actor {
     const char *anipc_program;
     const char *anipc_label;
     /*
+     * `calla change_anim1a` on a13 itself, from inside an ANI_CODE
+     * routine -- a whole new animation from its top, not a jump inside
+     * the one running. FINISEQ.ASM:1488 stand_wrestler and :1505
+     * dizzy_wrestler are both exactly that and nothing else: index a
+     * FACETBL by the wrestler, call change_anim1a, return. ANIPC above
+     * cannot express it, because the target is not a label in any
+     * program the caller is running.
+     *
+     * The routine sets it; the VM turns it into a `become` and clears
+     * it the moment the routine returns, the same way it treats ANIPC.
+     */
+    const char *change_anim_label;
+    /*
      * PLYR.EQU OANICNT, written from OUTSIDE the animation: SHNSEQ3.ASM's
      * #pause_opp freezes the man he hit on whatever frame he is on by
      * stuffing 25 into his animation's own tick counter. Like ANIPC that

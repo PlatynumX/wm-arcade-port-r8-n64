@@ -9,6 +9,7 @@
 #include "wm/anim_puppet.h"
 #include "wm/arcade/wmania_rng.h"
 #include "wm/arcade/wm_arcade_announcer.h"
+#include "wm/arcade/wm_arcade_coffin.h"
 
 /*
  * An animation as the program it is in ANIM.ASM, rather than as a flat list
@@ -564,6 +565,20 @@ typedef struct wm_anim_env {
      */
     void (*crowd_sound)(void *user, int sound, int ticks);
     bool (*crowd_busy)(void *user);
+
+    /*
+     * FINISEQ.ASM's coffin sequence state -- @close_the_door,
+     * @close_the_floor and @guy_in, the three globals the Undertaker's
+     * und_2_raise_dead_anim polls with is_door_open, is_he_in and
+     * make_wres_disappear and pushes forward with close_door. They are
+     * globals in the source because only one finish runs at a time;
+     * here they belong to whatever is running the finish, so the match
+     * owns the struct and lends it through the env.
+     *
+     * NULL when no coffin finish is in progress, and then those
+     * routines answer "no" -- which is what BSS zeroed to anyway.
+     */
+    wm_coffin_state_t *coffin;
 
     void *rope_user;
     void (*rope_command)(void *user, int bank, int action, int selector,

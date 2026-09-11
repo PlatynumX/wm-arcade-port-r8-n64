@@ -72,18 +72,23 @@
 #define ENDING_FLOOR 1240
 
 /*
- * The one program that is still running after TICKS ticks and has shown
- * no frame twice -- because it has shown none at all.
+ * The programs that are still running after TICKS ticks and have shown
+ * no frame twice -- because they have shown none at all.
  *
- * WRESTLE2.ASM:3992 xxx_dead_anim sets MODE_DEAD, runs two ANI_CODE
- * routines and ends on ANI_ROT, whose own comment in ANIM.ASM:4441 is
- * "just sit and do nothing". ANI_ROT holds the frame that is showing and
- * never advances, which is exactly how a dead wrestler stays down -- and
+ * Both end on ANI_ROT, whose own comment in ANIM.ASM:4441 is "just sit
+ * and do nothing". ANI_ROT holds the frame that is showing and never
+ * advances, which is exactly how a dead wrestler stays down -- and
  * started cold, with nothing showing yet, there is no frame to hold.
- * A wrestler reaching it in a match already has one.
+ * A wrestler reaching either in a match already has one.
+ *
+ * WRESTLE2.ASM:3992 xxx_dead_anim sets MODE_DEAD and runs two ANI_CODE
+ * routines first. FINISEQ.ASM:972 disappear_wrestler is the end of the
+ * Undertaker's coffin finish: MODE_INVISIBLE plus MODE_DEAD, and then
+ * nothing, because the man is inside the box and gone.
  */
 static const char *const PARKED[] = {
     "xxx_dead_anim",
+    "disappear_wrestler",
 };
 
 /*

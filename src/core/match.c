@@ -677,6 +677,10 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             m->wrestler_visual[i].anim_env.pcnt = m->tick_count;
             m->wrestler_visual[i].anim_env.sound_user = m->anim_sound_user;
             m->wrestler_visual[i].anim_env.sound = m->anim_sound;
+            /* FINISEQ.ASM's coffin globals, shared by both wrestlers:
+               the Undertaker's animation and the dead man's push_in_anim
+               poll and set the same three. */
+            m->wrestler_visual[i].anim_env.coffin = &m->coffin;
 
             m->bret_visual[i].opponent = opp;
             m->bret_visual[i].pcnt = m->tick_count;
@@ -685,6 +689,7 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             m->bret_visual[i].anim_env.pcnt = m->tick_count;
             m->bret_visual[i].anim_env.sound_user = m->anim_sound_user;
             m->bret_visual[i].anim_env.sound = m->anim_sound;
+            m->bret_visual[i].anim_env.coffin = &m->coffin;
 
             /* Both backends reach the same rope banks. */
             m->wrestler_visual[i].anim_env.rope_user = m;

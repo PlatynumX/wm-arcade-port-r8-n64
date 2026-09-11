@@ -1110,12 +1110,6 @@
     "status": "process",
     "note": "FINISEQ.ASM:1535. `SLEEP TSEC/2` -- \"Give him a bit before standing up\" -- then put @dead_wrestler into raise_dead_anim and DIE. A CREATE'd delay around one change_anim1a."
   },
-  "guy_is_in": {
-    "file": "FINISEQ.ASM",
-    "status": "renamed",
-    "symbol": "guy_is_up",
-    "note": "FINISEQ.ASM:1548. One store into @guy_in, the coffin sequence's other flag, and the exact mirror of guy_is_up at :1009. The port carries both as status bits on the actor rather than as globals, since only one finish runs at a time and each is a fact about its subject."
-  },
   "get_mpart_offsets": {
     "file": "WRESTLE2.ASM",
     "status": "display",
@@ -1162,5 +1156,101 @@
     "status": "renamed",
     "symbol": "wm_move_name_should_draw",
     "note": "LIFEBAR.ASM:3424. MOVE_NAME_ANNC's \"first time only\" rule: index MESSAGE_FLAGS by the INVERTED low bit of the side (`NOT A1 / SLL 31 / SRL 31-4`) and read the flag. The port folds the test and its companion SET_MESS_FLAGS into wm_move_name_should_draw, which is also where reduce_bog's suppression lives."
+  },
+  "adjust_taker_facing": {
+    "file": "FINISEQ.ASM",
+    "status": "renamed",
+    "symbol": "adjust_facing",
+    "note": "FINISEQ.ASM:1032. The exact mirror of adjust_facing at :1018 -- one ORs LEFT|DOWN in and masks RIGHT|UP off and sets FLIPH, the other does the reverse -- so the port carries one body with the direction as its registry parameter. src/core/anim_code.c registers it as `{ \"adjust_taker_facing\", \"FINISEQ.ASM\", adjust_facing, 1, 0 }`; the name reaches the VM, it just is not a separate C function."
+  },
+  "stand_wrestler": {
+    "file": "FINISEQ.ASM",
+    "status": "renamed",
+    "symbol": "coffin_change_by_roster",
+    "note": "FINISEQ.ASM:1488. A FACETBL index into :1471 stand_table and a change_anim1a on a13 -- nothing else. dizzy_wrestler at :1505 is the same two instructions against :1493 dizzy_table, so the port carries one body and picks the table with the registry parameter. The nine rows of each table are read out of the source by tools/wlpuppet.py's CODE_TABLES into src/generated/anim_aux_tables.c, not transcribed."
+  },
+  "dizzy_wrestler": {
+    "file": "FINISEQ.ASM",
+    "status": "renamed",
+    "symbol": "coffin_change_by_roster",
+    "note": "FINISEQ.ASM:1505. See stand_wrestler: the same body with the other FACETBL, registered as `{ \"dizzy_wrestler\", \"FINISEQ.ASM\", coffin_change_by_roster, 1, 0 }`."
+  },
+  "und_coffin_up": {
+    "file": "FINISEQ.ASM",
+    "status": "process",
+    "symbol": "wm_coffin_reset",
+    "note": "FINISEQ.ASM:580. The mat process: BEGINOBJ the mat at [HOLE_XPOS,HOLE_YPOS], step #mat_anim with SLEEPK 3 + obj_aniq, split it into MATCOF05B/05A, fire 25 ltl_exp, CREATE0 do_up_coffin, wait on @close_the_floor, run #mat_anim2 BACKWARDS, then raise the tombstone. Everything it does is object choreography this port has no renderer for. What it DECIDES is translated: its first two instructions (clear both globals) are wm_coffin_reset, the state values it writes (@close_the_floor 1/2/3 and @finish_completed 3) are documented on wm_coffin_state_t, and the frame lists it walks -- forwards and backwards -- are wm_coffin_mat_frames with wm_coffin_close_frame. Worth recording that :645's `calla DELOBJA8` deletes the FRONT piece despite its comment saying back: a8 was overwritten by the second BEGINOBJ at :623 and the back piece is the one saved in a11."
+  },
+  "do_up_coffin": {
+    "file": "FINISEQ.ASM",
+    "status": "process",
+    "symbol": "wm_coffin_rise_step",
+    "note": "FINISEQ.ASM:702. The coffin process, created by und_coffin_up. Same split: the BEGINOBJ/obj_aniq/DELOBJA8 choreography is display, and the arithmetic inside it is translated -- the rise and fall ramps (wm_coffin_rise_step / wm_coffin_fall_step, OSIZEY against OYPOS in steps of COFFIN_VEL), the door's frame walk forwards and backwards (wm_coffin_door_frames, wm_coffin_close_frame), the door-slam shake (wm_coffin_shake_offset, whose Y jitter is -2..0 rather than symmetric), and the @close_the_door 1/3 and @close_the_floor 1 transitions on wm_coffin_state_t."
+  },
+  "hover_coffin": {
+    "file": "FINISEQ.ASM",
+    "status": "process",
+    "symbol": "wm_coffin_hover_step",
+    "note": "FINISEQ.ASM:879. A two-object bob that runs until do_up_coffin kills it. The process shell (SLEEPK 7, the OYPOS writes, the CREATE0 ltl_exp burst) is display; one iteration of its state machine is wm_coffin_hover_step, including the asymmetry that makes it interesting -- the turnaround is `movk 1,a8 / not a8`, a ones complement, so the up delta is -2 and not the -1 the comment beside it claims."
+  },
+  "ltl_exp": {
+    "file": "FINISEQ.ASM",
+    "status": "process",
+    "symbol": "wm_coffin_ltl_exp_params",
+    "note": "FINISEQ.ASM:474. One puff of smoke, created 25 at a time and again on every hover turnaround. The BEGINOBJ, the SNDSND and the three-tick frame walk are display; its six RNDRNG0 draws -- delay, X, Y, Z, velocity and which of the two smoke lists -- are wm_coffin_ltl_exp_params, in the source's own order, because they come off one shared stream."
+  },
+  "tstone_test": {
+    "file": "FINISEQ.ASM",
+    "status": "data",
+    "symbol": "wm_coffin_tstone_frames",
+    "note": "FINISEQ.ASM:573. A `.long` list of image headers, TMBSTN02..TMBSTN08 and a terminator, and the one the shipped game actually raises: und_coffin_up:668 has `movi #tstone_anim,a9` commented out with `movi #tstone_test,a9` beneath it. Kept as the source's own image names, since this port has no image headers yet."
+  },
+  "tstone_anim": {
+    "file": "FINISEQ.ASM",
+    "status": "data",
+    "symbol": "WM_COFFIN_TSTONE_UNUSED_FIRST",
+    "note": "FINISEQ.ASM:571. One `.long`, TMBSTN01, immediately followed by #tstone_test. Starting the tombstone here would show that frame first; the line that did is commented out at :668, so the frame is recorded as WM_COFFIN_TSTONE_UNUSED_FIRST rather than put in the live list."
+  },
+  "mat_anim": {
+    "file": "FINISEQ.ASM",
+    "status": "data",
+    "symbol": "wm_coffin_mat_frames",
+    "note": "FINISEQ.ASM:552. MATCOF01..MATCOF04, the mat opening. The closing loop at :652 walks this same list backwards, so there is no separate close list."
+  },
+  "mat_anim2": {
+    "file": "FINISEQ.ASM",
+    "status": "data",
+    "symbol": "wm_coffin_close_frame",
+    "note": "FINISEQ.ASM:557. Not an animation: a bare `.long 0` sitting immediately after #mat_anim, used as the END pointer that #fc_loop walks backwards from with `move *-a9`. The port expresses that as wm_coffin_close_frame over wm_coffin_mat_frames rather than as a second list."
+  },
+  "cof_anim1": {
+    "file": "FINISEQ.ASM",
+    "status": "data",
+    "symbol": "wm_coffin_door_frames",
+    "note": "FINISEQ.ASM:560. COFFIN02..COFFIN05, the coffin door opening. #close_loop at :786 walks it backwards to shut the door, ending on COFFIN02 -- the frame that also drops the front half and moves the Z in front of the wrestler."
+  },
+  "cof_anim2": {
+    "file": "FINISEQ.ASM",
+    "status": "data",
+    "symbol": "wm_coffin_close_frame",
+    "note": "FINISEQ.ASM:565. The same shape as #mat_anim2: a bare `.long 0` after #cof_anim1, serving as the backwards walk's start."
+  },
+  "exp1_anim": {
+    "file": "FINISEQ.ASM",
+    "status": "data",
+    "symbol": "wm_coffin_exp1_frames",
+    "note": "FINISEQ.ASM:443. SMOKE01..SMOKE10, one of the two puffs ltl_exp draws between."
+  },
+  "exp2_anim": {
+    "file": "FINISEQ.ASM",
+    "status": "data",
+    "symbol": "wm_coffin_exp2_frames",
+    "note": "FINISEQ.ASM:456. SMOKEB01..SMOKEB10, the other."
+  },
+  "ltl_puff": {
+    "file": "FINISEQ.ASM",
+    "status": "data",
+    "symbol": "wm_coffin_exp1_frames",
+    "note": "FINISEQ.ASM:470. Two `.long`s, pointers to #exp1_anim and #exp2_anim. ltl_exp indexes it with RNDRNG0(1) scaled by 32 -- the stride of a `.long` -- so the draw is just the index, and the port keeps the two lists rather than a table of pointers to them."
   }
 }

@@ -696,6 +696,13 @@ def aux_table_id_for(kind: str, path: pathlib.Path, use_line: int,
 CODE_TABLES = (
     # (file, label, the routine that reads it)
     ("DNKSEQ2.ASM", "#hit_t", "grnd_hit"),
+    # FINISEQ.ASM's two, both read with FACETBL by a one-line routine
+    # that does nothing but index and call change_anim1a: :1488
+    # stand_wrestler reads :1471 stand_table, :1505 dizzy_wrestler reads
+    # :1493 dizzy_table. They are how the Undertaker's coffin finish
+    # stands the dead man up and leaves him swaying.
+    ("FINISEQ.ASM", "stand_table", "stand_wrestler"),
+    ("FINISEQ.ASM", "dizzy_table", "dizzy_wrestler"),
 )
 
 # The same idea for a per-wrestler table of NUMBERS rather than animation
@@ -764,7 +771,11 @@ def code_tables() -> dict[str, list[str]]:
                  for r in path.read_text(errors="replace").splitlines()]
         at = None
         for i, line in enumerate(lines):
-            if wlanim.label_def(line) == label:
+            # A table is defined either as a plain label or as a SUBRP,
+            # which is what FINISEQ.ASM does with both of its --
+            # ` SUBRP stand_table` is a `.long` list, not a routine.
+            m = wlanim.SUBR_RE.match(line)
+            if wlanim.label_def(line) == label or (m and m.group(1) == label):
                 at = i
                 break
         if at is None:

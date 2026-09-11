@@ -56,11 +56,15 @@ static const int16_t oppoffset_rows[][WM_ANIM_ROSTER_SLOTS][2] = {
 
 /* Per-wrestler tables an ANI_CODE routine indexes directly. */
 static const char *const code_rows[][WM_ANIM_ROSTER_SLOTS] = {
+    { "hrt_fdizzy_anim", "rzr_fdizzy_anim", "und_fdizzy_anim", "yok_fdizzy_anim", "shn_fdizzy_anim", "bam_fdizzy_anim", "dnk_fdizzy_anim", 0, "lex_fdizzy_anim" },   /* dizzy_wrestler */
     { "hrt_hitonground_anim", "rzr_hitonground_anim", "und_hitonground_anim", "yok_hitonground_anim", "shn_hitonground_anim", "bam_hitonground_anim", "dnk_hitonground_anim", 0, "lex_hitonground_anim" },   /* grnd_hit */
+    { "hrt_stand_anim", "rzr_stand_anim", "und_stand_anim", "yok_stand_anim", "shn_stand_anim", "bam_stand_anim", "dnk_stand_anim", 0, "lex_stand_anim" },   /* stand_wrestler */
 };
 
 static const char *const code_names[] = {
+    "dizzy_wrestler",
     "grnd_hit",
+    "stand_wrestler",
 };
 
 const char *wm_anim_code_roster_label(const char *routine,

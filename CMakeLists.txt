@@ -91,6 +91,7 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_react9_core.c
     src/core/arcade/wm_arcade_roster.c
     src/core/arcade/wm_arcade_scroll.c
+    src/core/arcade/wm_arcade_coffin.c
     src/core/arcade/wm_arcade_round.c
     src/core/arcade/wm_arcade_round_announce.c
     src/core/arcade/wm_arcade_target.c

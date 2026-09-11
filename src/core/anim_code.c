@@ -29,6 +29,7 @@
  */
 #include "wm/anim_program.h"
 #include "wm/arcade/wmania_ring_geometry.h"
+#include "wm/arcade/wm_arcade_coffin.h"
 #include "wm/arcade/wm_arcade_roll.h"
 #include "wm/arcade/wm_arcade_combat_defs.h"
 #include "wm/arcade/wm_arcade_roster.h"
@@ -1640,6 +1641,136 @@ static void dead_or_dying(wm_arcade_actor_t *actor, const wm_anim_env *env,
 }
 
 /*
+ * FINISEQ.ASM's coffin-sequence ANI_CODE routines, the ones the
+ * Undertaker's und_2_raise_dead_anim polls and pokes as it runs. All
+ * four of the status ones share one shape -- clear MODE_STATUS, then
+ * put it back if the thing has happened -- and the animation reads
+ * the result with ANI_IFNOTSTATUS to decide whether to loop again.
+ * See wm/arcade/wm_arcade_coffin.h for what the state means.
+ */
+
+/* FINISEQ.ASM:924 is_door_open. */
+static void coffin_is_door_open(wm_arcade_actor_t *actor,
+                                const wm_anim_env *env, int32_t param) {
+    (void)param;
+    if (!actor) return;
+    actor->anim_mode &= (uint16_t)~WM_MODE_STATUS;
+    if (env && wm_coffin_is_door_open(env->coffin))
+        actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
+}
+
+/* FINISEQ.ASM:956 is_he_in. */
+static void coffin_is_he_in(wm_arcade_actor_t *actor,
+                            const wm_anim_env *env, int32_t param) {
+    (void)param;
+    if (!actor) return;
+    actor->anim_mode &= (uint16_t)~WM_MODE_STATUS;
+    if (env && wm_coffin_is_he_in(env->coffin))
+        actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
+}
+
+/*
+ * FINISEQ.ASM:940 is_guy_up. The one that reads a flag on somebody
+ * else: @guy_up belongs to the dead man, who set it himself at the top
+ * of his own fdizzy animation, and the Undertaker is the one asking.
+ * @dead_wrestler says who that is, latched from the Undertaker's own
+ * WHOIHIT at TAKER.ASM:661.
+ */
+static void coffin_is_guy_up(wm_arcade_actor_t *actor,
+                             const wm_anim_env *env, int32_t param) {
+    (void)param;
+    if (!actor) return;
+    actor->anim_mode &= (uint16_t)~WM_MODE_STATUS;
+    if (wm_coffin_is_guy_up(wm_coffin_dead_wrestler(env ? env->coffin : NULL,
+                                                    actor)))
+        actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
+}
+
+/* FINISEQ.ASM:915 close_door. No status: the animation calls it once
+   and walks straight into the #d_loop poll below. */
+static void coffin_close_door(wm_arcade_actor_t *actor,
+                              const wm_anim_env *env, int32_t param) {
+    (void)actor;
+    (void)param;
+    if (env) wm_coffin_close_door(env->coffin);
+}
+
+/* FINISEQ.ASM:1550 guy_is_in, from the dead man's own push_in_anim. */
+static void coffin_guy_is_in(wm_arcade_actor_t *actor,
+                             const wm_anim_env *env, int32_t param) {
+    (void)actor;
+    (void)param;
+    if (env) wm_coffin_guy_is_in(env->coffin);
+}
+
+/*
+ * FINISEQ.ASM:985 make_wres_disappear. Both a poll and an action: on
+ * the tick the door finishes shutting it answers yes AND switches the
+ * dead man to disappear_wrestler, which is MODE_INVISIBLE plus
+ * MODE_DEAD. The source swaps a13 to @dead_wrestler to do it; here
+ * the change goes through the same change_opp_anim seam ANI_SLAVEANIM
+ * uses.
+ */
+static void coffin_make_wres_disappear(wm_arcade_actor_t *actor,
+                                       const wm_anim_env *env,
+                                       int32_t param) {
+    const char *label = NULL;
+    wm_arcade_actor_t *dead;
+    (void)param;
+    if (!actor) return;
+    actor->anim_mode &= (uint16_t)~WM_MODE_STATUS;
+    if (!env || !wm_coffin_make_wres_disappear(env->coffin, &label)) return;
+    dead = wm_coffin_dead_wrestler(env->coffin, actor);
+    if (label && dead && env->change_opp_anim)
+        env->change_opp_anim(dead, label, env->slave_user);
+    actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
+}
+
+/*
+ * FINISEQ.ASM:1626 push_to_coffin. Three instructions: swap a13 to
+ * @dead_wrestler, change_anim1a to push_in_anim, swap back. The
+ * Undertaker keeps running his own animation while the dead man flies.
+ */
+static void coffin_push_to_coffin(wm_arcade_actor_t *actor,
+                                  const wm_anim_env *env, int32_t param) {
+    wm_arcade_actor_t *dead;
+    (void)param;
+    if (!actor || !env || !env->change_opp_anim) return;
+    dead = wm_coffin_dead_wrestler(env->coffin, actor);
+    if (!dead) return;
+    env->change_opp_anim(dead, WM_COFFIN_PUSH_IN_ANIM, env->slave_user);
+}
+
+/*
+ * FINISEQ.ASM:1560 set_speeds, called by the dead man's own
+ * push_in_anim on himself -- so a13 here is the actor, not the
+ * opponent.
+ */
+static void coffin_set_speeds(wm_arcade_actor_t *actor,
+                              const wm_anim_env *env, int32_t param) {
+    (void)env;
+    (void)param;
+    wm_coffin_set_speeds(actor);
+}
+
+/*
+ * FINISEQ.ASM:1488 stand_wrestler and :1505 dizzy_wrestler. Each is a
+ * FACETBL index by the wrestler's own number and a change_anim1a on
+ * himself, so each needs the self-change seam rather than ANIPC --
+ * see wm_arcade_actor_t::change_anim_label. `param` picks the table.
+ */
+static void coffin_change_by_roster(wm_arcade_actor_t *actor,
+                                    const wm_anim_env *env, int32_t param) {
+    const char *label;
+    (void)env;
+    if (!actor) return;
+    label = wm_anim_code_roster_label(param ? "dizzy_wrestler"
+                                            : "stand_wrestler",
+                                      actor->wrestler_num);
+    if (label) actor->change_anim_label = label;
+}
+
+/*
  * HRTSEQ4.ASM:1134 #set_wrestler_xflip -- the same body as
  * ANI_SET_WRESTLER_XFLIP, reached as a routine instead of an opcode.
  */
@@ -3143,6 +3274,16 @@ static const struct {
     { "guy_is_up", "FINISEQ.ASM", guy_is_up, 0, 0 },
     { "adjust_facing", "FINISEQ.ASM", adjust_facing, 0, 0 },
     { "adjust_taker_facing", "FINISEQ.ASM", adjust_facing, 1, 0 },
+    { "is_door_open", "FINISEQ.ASM", coffin_is_door_open, 0, 0 },
+    { "is_he_in", "FINISEQ.ASM", coffin_is_he_in, 0, 0 },
+    { "is_guy_up", "FINISEQ.ASM", coffin_is_guy_up, 0, 0 },
+    { "close_door", "FINISEQ.ASM", coffin_close_door, 0, 0 },
+    { "guy_is_in", "FINISEQ.ASM", coffin_guy_is_in, 0, 0 },
+    { "make_wres_disappear", "FINISEQ.ASM", coffin_make_wres_disappear, 0, 0 },
+    { "push_to_coffin", "FINISEQ.ASM", coffin_push_to_coffin, 0, 0 },
+    { "set_speeds", "FINISEQ.ASM", coffin_set_speeds, 0, 0 },
+    { "stand_wrestler", "FINISEQ.ASM", coffin_change_by_roster, 0, 0 },
+    { "dizzy_wrestler", "FINISEQ.ASM", coffin_change_by_roster, 1, 0 },
     { "#set_wrestler_xflip", "HRTSEQ4.ASM", set_wrestler_xflip_code, 0, 0 },
     /* Another SPCDMG, with its own pair. */
     { "#stop_dmg", "YOKSEQ3.ASM", reduce_dmg, WM_SPCDMG(2, 35), 0 },

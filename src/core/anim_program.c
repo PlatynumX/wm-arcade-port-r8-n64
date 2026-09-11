@@ -1378,6 +1378,23 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
                 if (actor) run_command(o, actor, round_tickcount, exec->env,
                                        p ? p->source_file : 0);
                 /*
+                 * `calla change_anim1a` on a13 from inside the routine
+                 * -- FINISEQ.ASM's stand_wrestler and dizzy_wrestler.
+                 * A whole new animation, entered at its top, so ANIPC
+                 * is cleared with it rather than carried across.
+                 */
+                if (actor && actor->change_anim_label) {
+                    const char *want = actor->change_anim_label;
+                    actor->change_anim_label = 0;
+                    if (wm_anim_program_find(want)) {
+                        actor->anipc_program = 0;
+                        actor->anipc_label = 0;
+                        exec->become = want;
+                        exec->ended = true;
+                        return;
+                    }
+                }
+                /*
                  * ANIM.ASM lets an ANI_CODE routine write the program
                  * counter itself -- HRTSEQ3.ASM's `#rope_check` does
                  * `movi #stand,a14 / move a14,*a13(ANIPC),L`. ANIPC is a

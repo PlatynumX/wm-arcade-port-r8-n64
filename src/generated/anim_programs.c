@@ -68883,6 +68883,14 @@ static const wm_anim_label prog_push_in_anim_labels[] = {
     { "#loop3", 73 },
 };
 
+static const wm_anim_op prog_disappear_wrestler_ops[] = {
+    { WM_AOP_SETMODE, 0, -1, 36908, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ZEROVELS, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETSPEED, 0, -1, 256, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_SETPLYRMODE, 0, -1, 9, 0, 0, 0, 0, 0, 0 },
+    { WM_AOP_ROT, 0, -1, 0, 0, 0, 0, 0, 0, 0 },
+};
+
 static const wm_anim_program programs[] = {
     { "xxx_dead_anim", "WRESTLE2.ASM", prog_xxx_dead_anim_ops,
       sizeof(prog_xxx_dead_anim_ops) / sizeof(prog_xxx_dead_anim_ops[0]), 0, 0, 0 },
@@ -71992,6 +72000,8 @@ static const wm_anim_program programs[] = {
       sizeof(prog_raise_dead_anim_ops) / sizeof(prog_raise_dead_anim_ops[0]), 0, prog_raise_dead_anim_labels, sizeof(prog_raise_dead_anim_labels) / sizeof(prog_raise_dead_anim_labels[0]) },
     { "push_in_anim", "FINISEQ.ASM", prog_push_in_anim_ops,
       sizeof(prog_push_in_anim_ops) / sizeof(prog_push_in_anim_ops[0]), 0, prog_push_in_anim_labels, sizeof(prog_push_in_anim_labels) / sizeof(prog_push_in_anim_labels[0]) },
+    { "disappear_wrestler", "FINISEQ.ASM", prog_disappear_wrestler_ops,
+      sizeof(prog_disappear_wrestler_ops) / sizeof(prog_disappear_wrestler_ops[0]), 0, 0, 0 },
 };
 
 /* The whole corpus, so a test can play every program rather

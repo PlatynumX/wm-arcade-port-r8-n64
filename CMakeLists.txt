@@ -93,6 +93,7 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_scroll.c
     src/core/arcade/wm_arcade_coffin.c
     src/core/arcade/wm_arcade_round.c
+    src/core/arcade/wm_arcade_round_reset.c
     src/core/arcade/wm_arcade_round_announce.c
     src/core/arcade/wm_arcade_target.c
     src/core/arcade/wm_arcade_shake.c

@@ -460,10 +460,10 @@
    "local": false,
    "external_callers": 1,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "inlined",
+   "evidence": "wm_match_init",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "CLR_SCRN",
@@ -925,10 +925,10 @@
    "local": false,
    "external_callers": 2,
    "references": 7,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "WRESTLE.ASM. Walks a wrestler's MAX_PIECES object list and points each piece at its image for the current frame -- the multi-piece sprite assembly a WIMP wrestler is drawn from. wm/match_display.h decides the ORDER and the layers this would build; nothing plots them yet.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "DO_SHAWN_PUSH",
@@ -2230,8 +2230,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "START_HI_FLASHES",
    "from_generated": false,
    "ledgered": false
   },
@@ -2515,10 +2515,10 @@
    "local": false,
    "external_callers": 7,
    "references": 8,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "The warm-reset entry: DINT, the two SETF field definitions, the stack pointer, InitPIC, POWERCMOS (skipped under DEBUG with the source's own note \"This takes all day to run. leave it out until we ship\") and init_all. TMS34010 state and cabinet hardware.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "WDOGDIS",
@@ -7255,10 +7255,10 @@
    "local": false,
    "external_callers": 5,
    "references": 7,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "WRESTLE.ASM:4290. Point an object at a new image header: OIMG, OSIZE, OSAG, and the ODXOFF/ODYOFF display offsets read out of the header's IANIOFFX/IANIOFFY. A DMA object's fields, and this port has no object pool. The animation VM reaches the same idea by handing a frame NAME to the backend.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "change_image_local",
@@ -7481,10 +7481,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "partial",
+   "evidence": "wm_powerup_attempt_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "choose_pal",
@@ -7496,10 +7496,10 @@
    "local": false,
    "external_callers": 1,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "partial",
+   "evidence": "wm_pal_find",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "civani",
@@ -8036,10 +8036,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "confine_wrestler_fix1",
+   "status": "partial",
+   "evidence": "wm_arcade_confine_wrestler",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "confine_wrestler_fix2",
@@ -8051,10 +8051,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "confine_wrestler_fix2",
+   "status": "partial",
+   "evidence": "wm_arcade_confine_wrestler",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "congrats_setup_tbl",
@@ -8576,10 +8576,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "WRESTLE.ASM:4714. A development harness: BEGINOBJ a D2ST2B03 marker at one wrestler and fly it to another over TSEC ticks, with the X and Z velocities divided out by hand, to show which way something is pointing. It is not `dead` -- it has exactly one reference, and that reference is its OWN `CREATE 0,direction_test` at :4723, carrying the source's comment \"temp!!!!!!!!!!!\" and sitting inside the `.if 0` that wraps the routine's whole first half. So nothing in the built game reaches it, but the reference count is 1 rather than 0 and calling it dead would be false. What it does is make an object, which this port has no renderer for.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "dirq_wait",
@@ -13212,10 +13212,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "WRESTLE.ASM:1500. \"Someone has bought in during gameplay of a one player game!\" -- it raises @HALT, decrements pxcpu_ladder unless the player has already lost, and prints the challenger message. A coin interrupt on a cabinet mid-match; there is no coin door and no ladder here.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "game_loop",
@@ -13227,10 +13227,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "process",
+   "evidence": "WRESTLE.ASM's main loop: PROCSTRT the process list, run the display, wait on the interrupt, repeat, forever. This port has no cooperative scheduler -- wm_match_tick is one pass of the game's work, called by whatever owns the frame, and app.c drives it. The loop itself is the one structure a port is expected to replace; what it CALLED in order is translated and is the order wm_match_tick runs in.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "get_all_buttons_cur",
@@ -13708,7 +13708,7 @@
    "external_callers": 17,
    "references": 25,
    "status": "inlined",
-   "evidence": "wm_arcade_actor_t",
+   "evidence": "wm_match_state",
    "from_generated": false,
    "ledgered": true
   },
@@ -18134,10 +18134,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "The cold-boot path: stack pointer, SETF field definitions, InitPIC, the sound-board reset, init_all. Its whole body after the first few lines sits inside a `.if 0` in the shipped source anyway. Nothing a hosted port does.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "init_reduce_bog",
@@ -18179,8 +18179,8 @@
    "local": false,
    "external_callers": 1,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_round_init_scroller",
    "from_generated": false,
    "ledgered": false
   },
@@ -21404,8 +21404,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_round_loser_snd",
    "from_generated": false,
    "ledgered": false
   },
@@ -21569,8 +21569,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_round_maybe_do_flashes",
    "from_generated": false,
    "ledgered": false
   },
@@ -23594,8 +23594,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "match_reset_for_round",
    "from_generated": false,
    "ledgered": false
   },
@@ -23609,10 +23609,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_round_reset_wrestler2",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "reset_smoves",
@@ -27227,10 +27227,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "inlined",
+   "evidence": "wm_match_start_selected",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "set_process_ptr2",
@@ -27242,10 +27242,10 @@
    "local": false,
    "external_callers": 0,
    "references": 10,
-   "status": "unknown",
-   "evidence": "",
+   "status": "inlined",
+   "evidence": "wm_match_start_selected",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "set_raisearm_bit",
@@ -30572,10 +30572,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "partial",
+   "evidence": "wm_round_most_damage",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "show_operatormsg",
@@ -34487,8 +34487,8 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_round_update_links",
    "from_generated": false,
    "ledgered": false
   },
@@ -34878,10 +34878,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "WRESTLE2.ASM:4045. Sets @wrestler_count to 8 and then builds the on-screen \"N remaining\" display -- two BEGINOBJP text objects whose X shifts by [11ah,0] when only player 2 is in, and the loop that redraws them as the count falls. The count itself belongs to the 8-on-1 and royal-rumble modes, neither of which exists here (wm/arcade/wm_arcade_mode_dead.h sets out why), so both the value and its display are unreachable.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "wrestler_friction",
@@ -34938,10 +34938,10 @@
    "local": false,
    "external_callers": 1,
    "references": 11,
-   "status": "unknown",
-   "evidence": "",
+   "status": "process",
+   "evidence": "One wrestler's process: the endless SLEEPK-1 loop that calls read_switches, calc_closest, the control layer, veladd, friction, set_collision_boxes, confine_wrestler and the animation, once a tick. Every one of those is translated and wm_match_tick calls them in that order for every actor; what is not here is the process wrapper, because there are no processes. WRESTLE.ASM:2820 reset_start2 is the same list written out straight, which is what it was checked against.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "wrestler_veladd",

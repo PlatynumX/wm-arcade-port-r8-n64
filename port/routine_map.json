@@ -24,8 +24,8 @@
   "get_process_ptr": {
     "file": "WRESTLE.ASM",
     "status": "inlined",
-    "symbol": "wm_arcade_actor_t",
-    "note": "process_ptrs[n]. The port passes wm_arcade_actor_t pointers around instead of indexing a global process table."
+    "symbol": "wm_match_state",
+    "note": "WRESTLE.ASM:4457. The read side of process_ptrs, indexed by PLYRNUM. An array index here."
   },
   "wres_get_but_val_cur": {
     "file": "WRESTLE2.ASM",
@@ -1249,5 +1249,104 @@
     "status": "data",
     "symbol": "wm_coffin_exp1_frames",
     "note": "FINISEQ.ASM:470. Two `.long`s, pointers to #exp1_anim and #exp2_anim. ltl_exp indexes it with RNDRNG0(1) scaled by 32 -- the stride of a `.long` -- so the draw is just the index, and the port keeps the two lists rather than a table of pointers to them."
+  },
+  "game_loop": {
+    "file": "WRESTLE.ASM",
+    "status": "process",
+    "note": "WRESTLE.ASM's main loop: PROCSTRT the process list, run the display, wait on the interrupt, repeat, forever. This port has no cooperative scheduler -- wm_match_tick is one pass of the game's work, called by whatever owns the frame, and app.c drives it. The loop itself is the one structure a port is expected to replace; what it CALLED in order is translated and is the order wm_match_tick runs in."
+  },
+  "wrestler_main": {
+    "file": "WRESTLE.ASM",
+    "status": "process",
+    "note": "One wrestler's process: the endless SLEEPK-1 loop that calls read_switches, calc_closest, the control layer, veladd, friction, set_collision_boxes, confine_wrestler and the animation, once a tick. Every one of those is translated and wm_match_tick calls them in that order for every actor; what is not here is the process wrapper, because there are no processes. WRESTLE.ASM:2820 reset_start2 is the same list written out straight, which is what it was checked against."
+  },
+  "game_interrupt": {
+    "file": "WRESTLE.ASM",
+    "status": "hardware",
+    "note": "WRESTLE.ASM:1500. \"Someone has bought in during gameplay of a one player game!\" -- it raises @HALT, decrements pxcpu_ladder unless the player has already lost, and prints the challenger message. A coin interrupt on a cabinet mid-match; there is no coin door and no ladder here."
+  },
+  "init_prog": {
+    "file": "WRESTLE.ASM",
+    "status": "hardware",
+    "note": "The cold-boot path: stack pointer, SETF field definitions, InitPIC, the sound-board reset, init_all. Its whole body after the first few lines sits inside a `.if 0` in the shipped source anyway. Nothing a hosted port does."
+  },
+  "WARMSET": {
+    "file": "WRESTLE.ASM",
+    "status": "hardware",
+    "note": "The warm-reset entry: DINT, the two SETF field definitions, the stack pointer, InitPIC, POWERCMOS (skipped under DEBUG with the source's own note \"This takes all day to run. leave it out until we ship\") and init_all. TMS34010 state and cabinet hardware."
+  },
+  "CLEAR_PROCESSES": {
+    "file": "WRESTLE.ASM",
+    "status": "inlined",
+    "symbol": "wm_match_init",
+    "note": "WRESTLE.ASM:2570. Two loops that zero wres0_objs (NUM_WRES*MAX_PIECES object pointers) and process_ptrs (NUM_WRES process pointers). Both arrays are things this port does not have -- there is no object pool and the actors are an array in wm_match_state rather than a pointer table -- and wm_match_init's `memset(m, 0, sizeof(*m))` is the same clear over the structure that replaced them."
+  },
+  "set_process_ptr": {
+    "file": "WRESTLE.ASM",
+    "status": "inlined",
+    "symbol": "wm_match_start_selected",
+    "note": "WRESTLE.ASM:4440. `X32 a1 / addi process_ptrs,a1 / move a13,*a1,L` -- a wrestler registering himself in the process table by PLYRNUM. The port's actors ARE that table: wm_match_state::actors is indexed the same way and is filled in by the two start paths, so there is nothing to register."
+  },
+  "set_process_ptr2": {
+    "file": "WRESTLE.ASM",
+    "status": "inlined",
+    "symbol": "wm_match_start_selected",
+    "note": "WRESTLE.ASM:4462, and the source explains why there are two: \"the new pal selector routine requires that process_ptrs are all set up before any of the wrestler processes actually wake up\", so this version is called by the code that CREATES the processes rather than by the process itself, and it also sets PLYR_SIDE, PLYRNUM and WRESTLERNUM because choose_pal needs those too. All three assignments are what the port's start paths do, in the same order and before anything ticks."
+  },
+  "show_most_damage": {
+    "file": "WRESTLE.ASM",
+    "status": "partial",
+    "symbol": "wm_round_most_damage",
+    "note": "WRESTLE.ASM:1359. Translated: the process-list walk that totals DAMAGE_GIVEN per player and SKIPS DRONES (so the percentage is of the humans' damage, not the match's), the comparison that picks the winner with the tie going to player 2, and the `mpyu 100 / divu total` percentage. Not translated: the two message objects it then builds -- pprompt_setup, dec_to_asc, copy_rom_string, concat_string and print_string_C2 for each of the two lines -- which are the text engine drawing, not the decision."
+  },
+  "change_image": {
+    "file": "WRESTLE.ASM",
+    "status": "display",
+    "note": "WRESTLE.ASM:4290. Point an object at a new image header: OIMG, OSIZE, OSAG, and the ODXOFF/ODYOFF display offsets read out of the header's IANIOFFX/IANIOFFY. A DMA object's fields, and this port has no object pool. The animation VM reaches the same idea by handing a frame NAME to the backend."
+  },
+  "DO_SET_IMAGES": {
+    "file": "WRESTLE.ASM",
+    "status": "display",
+    "note": "WRESTLE.ASM. Walks a wrestler's MAX_PIECES object list and points each piece at its image for the current frame -- the multi-piece sprite assembly a WIMP wrestler is drawn from. wm/match_display.h decides the ORDER and the layers this would build; nothing plots them yet."
+  },
+  "direction_test": {
+    "file": "WRESTLE.ASM",
+    "status": "display",
+    "note": "WRESTLE.ASM:4714. A development harness: BEGINOBJ a D2ST2B03 marker at one wrestler and fly it to another over TSEC ticks, with the X and Z velocities divided out by hand, to show which way something is pointing. It is not `dead` -- it has exactly one reference, and that reference is its OWN `CREATE 0,direction_test` at :4723, carrying the source's comment \"temp!!!!!!!!!!!\" and sitting inside the `.if 0` that wraps the routine's whole first half. So nothing in the built game reaches it, but the reference count is 1 rather than 0 and calling it dead would be false. What it does is make an object, which this port has no renderer for."
+  },
+  "choose_pal": {
+    "file": "WRESTLE2.ASM",
+    "status": "partial",
+    "symbol": "wm_pal_find",
+    "note": "WRESTLE2.ASM:3735. Assigns each wrestler one of the four palettes his table holds, in PLYRNUM order, with two special cases: buddy mode takes its own pals, and two humans on the SAME wrestler are given different ones -- the walk over process_ptrs collecting PLYRNUM 0's and 1's WRESTLERNUM is that test. PAL.ASM's allocator is translated (wm/arcade/wm_arcade_pal.h: wm_pal_find, wm_pal_alloc_range and the DIAGP reservation) and the per-wrestler palette tables are generated into src/generated/palettes.c, so both halves of what this routine needs exist. What does not is a consumer: this port draws with no palette attached to a wrestler, so SELECTING between his four has nothing to select for. The two special cases are the part that would have to be written when one appears."
+  },
+  "choose_buddies": {
+    "file": "WRESTLE2.ASM",
+    "status": "partial",
+    "symbol": "wm_powerup_attempt_tick",
+    "note": "WRESTLE2.ASM:3690. Buddy mode's two random team-mates: build an exclusion mask from @index1 and @index2, count the excluded, then two get_rnd_wrestler draws with the first added to the mask in between. Buddy mode is an AWARD.ASM powerup code and the code that TURNS IT ON is translated (wm/arcade/wm_arcade_powerup.h's WM_PU_BUDDY_MODE sequence, entered through wm_powerup_attempt_tick); what is missing is everything the mode then does, this draw included, because nothing in this port can be in it. Worth recording while reading it that get_rnd_wrestler (PROGRESS.ASM:4273) counts only the exclusion mask and not the cut Adam Bomb slot, so with two wrestlers excluded it can still return slot 7."
+  },
+  "wrestler_counter": {
+    "file": "WRESTLE2.ASM",
+    "status": "display",
+    "note": "WRESTLE2.ASM:4045. Sets @wrestler_count to 8 and then builds the on-screen \"N remaining\" display -- two BEGINOBJP text objects whose X shifts by [11ah,0] when only player 2 is in, and the loop that redraws them as the count falls. The count itself belongs to the 8-on-1 and royal-rumble modes, neither of which exists here (wm/arcade/wm_arcade_mode_dead.h sets out why), so both the value and its display are unreachable."
+  },
+  "reset_for_round2": {
+    "file": "WRESTLE.ASM",
+    "status": "renamed",
+    "symbol": "wm_round_reset_wrestler2",
+    "note": "WRESTLE.ASM:2797. Clears @annc_rnd_winner_done, then reset_wrestle2 over every wrestler: IMMOBILIZE_TIME 30, fourteen per-round fields cleared, STATUS_FLAGS masked down to SF_RESET_MASK's two surviving bits, and PTIME 1 \"just in case they were KO'd last round\". Eleven of the fourteen fields exist here; PLYR_DIZZY_CNT, AUTO_PIN_CNTDOWN, LAST_FLING_ATTEMPT and HIT_GATE_TIME do not, because nothing translated reads them. Its trailing `reset_start2` block is not a reset at all -- it is one pass of the per-tick pipeline written out straight (calc_closest, set_collision_boxes, confine_wrestler, update_positions, update_joystat, count_button_presses, veladd, friction, and again, then move_wrestler, ani_init, update_links, overlap_collision, set_wrestler_xflip, update_joy_dtime, drone_calcskill), so wm_match_tick running those in that order the next tick is the same thing, and it was what the port's tick order was checked against."
+  },
+  "confine_wrestler_fix1": {
+    "file": "WRESTLE.ASM",
+    "status": "partial",
+    "symbol": "wm_arcade_confine_wrestler",
+    "note": "WRESTLE.ASM:3743, with fix2 its twin: the source runs confine_wrestler TWICE a tick -- \"for whatever reason, confine_wrestler happens twice per tick\" is its own comment -- and ORs the two CAN_MOVE_DIR results together, because the first call's position clamp can stop the second call's collision test triggering. wm_arcade_confine_wrestler runs one real pass. The second is deliberately not simulated: it only converges because OBJ_COLLX1/X2 are refreshed from the corrected position in between, which needs the second call site located and what refreshes the box confirmed, and neither is established. Reusing the stale box was tried and confirmed to DIVERGE rather than converge -- it re-applies nearly the same correction and overshoots the other way -- so a fabricated second pass would be strictly worse than the single real one. See wm/arcade/wm_arcade_confine.h."
+  },
+  "confine_wrestler_fix2": {
+    "file": "WRESTLE.ASM",
+    "status": "partial",
+    "symbol": "wm_arcade_confine_wrestler",
+    "note": "WRESTLE.ASM:3752. The second of the pair; see confine_wrestler_fix1."
   }
 }

@@ -416,6 +416,55 @@ static void init_actor_life(wm_arcade_actor_t *a) {
  * happens in the same place and is what the finishing move's "second
  * pin attempt" test counts from.
  */
+/*
+ * LIFEBAR.ASM:3098-3099 and :3126: reset_for_round, reset_for_round2
+ * and init_scroller, the block that starts the next round.
+ *
+ * What the source also does around them and this port does not is
+ * presentation and audio: CLEAR_SPEECH_REPEAT, the round-2/round-3
+ * music (SNDSND 16 or 17 on current_round), CLOSE_VERT_SCREEN_LINE and
+ * the screen wipe, deleting the text plates, the clock's palette, the
+ * meters, and INIT_SKIRTS.
+ */
+static void match_reset_for_round(wm_match_state *m) {
+    wm_arcade_actor_t *actors[WM_MATCH_MAX_ACTORS];
+    unsigned i;
+
+    if (!m) return;
+    for (i = 0; i < WM_MATCH_MAX_ACTORS; ++i) actors[i] = &m->actors[i];
+
+    /* reset_for_round's own loop over every wrestler. */
+    for (i = 0; i < m->actor_count; ++i) {
+        if (!m->actors[i].active) continue;
+        wm_round_reset_wrestler(&m->actors[i], actors, m->actor_count,
+                                m->tick_count);
+        /* `calla init_rnd_life_data` -- LIFEBAR.ASM:238, everyone back
+           to full for round two and later. */
+        m->actors[i].life = WM_ARCADE_LIFE_MAX;
+    }
+
+    m->current_round += 1;
+    /* `callr reset_smoves` -- every watchdog back to its own entry. */
+    for (i = 0; i < WM_MATCH_MAX_ACTORS; ++i)
+        wm_smove_reset(m->smoves[i], m->smove_count[i]);
+    /* `clr a0 / move a0,@any_hits`. */
+    m->combat_runtime.any_hits = 0;
+
+    /* reset_for_round2: `clr a14 / move a14,@annc_rnd_winner_done`,
+       then the per-wrestler pass. */
+    m->round_announce.done = false;
+    for (i = 0; i < m->actor_count; ++i) {
+        if (!m->actors[i].active) continue;
+        wm_round_reset_wrestler2(&m->actors[i]);
+    }
+
+    /* `calla init_scroller` -- put the camera back too. */
+    wm_round_init_scroller(&m->scroll.worldtlx, &m->scroll.worldtly, 1);
+
+    /* The round state itself, so the next KO can decide again. */
+    wm_arcade_round_state_init(&m->round_state);
+}
+
 static void init_smoves(wm_match_state *m) {
     unsigned i;
     if (!m) return;
@@ -494,6 +543,11 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
        `move *a8(PLYR_TYPE),a14 / janz SUCIDE`, so who is a drone has
        to be settled before the watchdogs are made. */
     init_smoves(m);
+    /* WRESTLE.ASM:6688 init_scroller. The camera does not start at the
+       origin: it starts half a screen left of the ring's centre, with
+       a small negative Y. Leaving it at zero put the ring off the
+       right of the first frame. */
+    wm_round_init_scroller(&m->scroll.worldtlx, &m->scroll.worldtly, 1);
     init_bret_backends(m);
 
     m->actor_count = WM_MATCH_MAX_ACTORS;
@@ -570,6 +624,11 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
        `move *a8(PLYR_TYPE),a14 / janz SUCIDE`, so who is a drone has
        to be settled before the watchdogs are made. */
     init_smoves(m);
+    /* WRESTLE.ASM:6688 init_scroller. The camera does not start at the
+       origin: it starts half a screen left of the ring's centre, with
+       a small negative Y. Leaving it at zero put the ring off the
+       right of the first frame. */
+    wm_round_init_scroller(&m->scroll.worldtlx, &m->scroll.worldtly, 1);
     init_bret_backends(m);
 
     m->actor_count = WM_MATCH_MAX_ACTORS;
@@ -650,6 +709,24 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
 
     for (i = 0; i < m->actor_count; ++i)
         actor_ptrs[i] = &m->actors[i];
+
+    /*
+     * The reset a decided round is owed, run at the TOP of a later
+     * tick rather than the one that decided it -- so the deciding
+     * tick's own state is still there to be read, the way it is while
+     * announce_rnd_winner is still running in the source.
+     *
+     * LIFEBAR.ASM:2649 `#fini_wait` is the gate: announce_rnd_winner,
+     * and therefore everything downstream of it including
+     * WRESTLERS_RESET, sits polling while @in_finish_move is set, so a
+     * finishing move plays out in full before the next round is set
+     * up. Without it the Undertaker's coffin sequence is wiped
+     * half-way through by the reset for the round it just won.
+     */
+    if (m->round_reset_pending && !m->in_finish_move) {
+        m->round_reset_pending = false;
+        match_reset_for_round(m);
+    }
 
     memset(&world, 0, sizeof(world));
     world.actors = actor_ptrs;
@@ -1037,13 +1114,42 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
          * move, in the per-wrestler pass above.
          */
         wm_arcade_final_confine(actor_ptrs, m->actor_count);
+
+        /*
+         * WRESTLE.ASM:3003 update_links, which the source runs once a
+         * tick per wrestler: an ATTACH_PROC that is not pointing back
+         * at me is stale and gets dropped. Without it a puppet can
+         * stay attached to somebody who has already let go, and be
+         * dragged around by him for the rest of the round.
+         */
+        {
+            size_t li;
+            for (li = 0; li < m->actor_count; ++li)
+                if (actor_ptrs[li] && actor_ptrs[li]->active)
+                    wm_round_update_links(actor_ptrs[li]);
+        }
     }
 
     {
         bool was_decided = m->round_state.decided;
         wm_arcade_round_tick(&m->round_state, actor_ptrs, m->actor_count);
-        if (!was_decided && m->round_state.decided)
+        if (!was_decided && m->round_state.decided) {
             wm_arcade_match_score_award_round(&m->score, m->round_state.decided_winner_side);
+            /*
+             * LIFEBAR.ASM:3098's `WRESTLERS_RESET` -- "Cause wrestlers
+             * to re-appear in the correct spot to start the next
+             * round". Until this, a decided round was a dead end: the
+             * score moved and nothing else did, so the match simply
+             * stopped happening while it kept ticking.
+             *
+             * Owed rather than done here; see round_reset_pending.
+             * It is owed only while the match is still open, because
+             * once match_winner is set the source goes to its own
+             * end-of-match path instead, which this port does not
+             * have.
+             */
+            if (m->score.match_winner == 0) m->round_reset_pending = true;
+        }
         /*
          * WRESTLE2.ASM:4235 `CREATE PINHIM_ANIM_PID,pin_prompt`, on the
          * one tick a side is newly wiped out. The prompt itself is

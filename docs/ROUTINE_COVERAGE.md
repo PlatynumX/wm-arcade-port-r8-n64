@@ -7,20 +7,20 @@ only in a note saying it is missing does not count as present.
 
 | status | meaning | count |
 |---|---|---|
-| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1940 |
-| `inlined` | the port does it, spelled out at each use site (ledger) | 7 |
-| `renamed` | the port does it under another name (ledger) | 129 |
-| `partial` | partly translated; the ledger note says which part | 6 |
+| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1945 |
+| `inlined` | the port does it, spelled out at each use site (ledger) | 10 |
+| `renamed` | the port does it under another name (ledger) | 130 |
+| `partial` | partly translated; the ledger note says which part | 11 |
 | `data` | a table, extracted by a tool (ledger) | 12 |
-| `process` | a CREATE/SLEEP wrapper (ledger) | 18 |
-| `display` | object/DMA drawing; this port has no renderer (ledger) | 28 |
-| `hardware` | talks to the cabinet (ledger) | 16 |
+| `process` | a CREATE/SLEEP wrapper (ledger) | 20 |
+| `display` | object/DMA drawing; this port has no renderer (ledger) | 32 |
+| `hardware` | talks to the cabinet (ledger) | 19 |
 | `dead` | **measured**: no caller outside its own file | 37 |
 | `unassembled` | **measured**: inside a `.if` the assembler skipped | 64 |
-| `cited` | named only in a comment -- not evidence of anything | 43 |
-| `unknown` | no mention anywhere | 234 |
+| `cited` | named only in a comment -- not evidence of anything | 42 |
+| `unknown` | no mention anywhere | 212 |
 
-**2257 of 2534 routines are accounted for; 277 are open** (`cited` + `unknown`).
+**2280 of 2534 routines are accounted for; 254 are open** (`cited` + `unknown`).
 
 ## Open routines by file
 
@@ -29,7 +29,6 @@ only in a note saying it is missing does not count as present.
 | AWARD.ASM | 63 | `BLACKOUT`, `adjust_text_position`, `adjust_tl`, `anim_mk`, `anim_sparkle`, `audit_icons`, `award_text`, `bbicon_table`, `create_end_rnd_awards`, `create_player_awards`, `decompress_string`, `del_bonus_icons`, ... |
 | FIREWORK.ASM | 23 | `animate_fwexp`, `c1v3_tbl`, `c1v3s_tbl`, `c1v8_tbl`, `c1v8s_tbl`, `c2v8_tbl`, `c2v8s_tbl`, `calc_dxdy`, `check_camera_position`, `congrats_setup_tbl`, `congrats_str_tbl`, `do_fireworks`, ... |
 | DCSSOUND.ASM | 22 | `ANNOUNCE_VOICE`, `CALL_MATCH_OVER`, `END_MATCH_SPEECH`, `KILL_PIN_HIM`, `PROC_MATCH_OVER`, `SNDSND`, `VOLBTN_PRESS`, `announcer_sound`, `channel_sound`, `clear_sound_ram`, `delay_code_a3`, `do_tune_commands`, ... |
-| WRESTLE.ASM | 20 | `CLEAR_PROCESSES`, `DO_SET_IMAGES`, `WARMSET`, `change_image`, `confine_wrestler_fix1`, `confine_wrestler_fix2`, `direction_test`, `game_interrupt`, `game_loop`, `init_prog`, `init_scroller`, `plyr_strtb1`, ... |
 | LIFEBAR.ASM | 20 | `CREATE_TIMEOUT`, `DO_RIGHT_MUSIC`, `DO_RIGHT_MUSIC2`, `DO_ROUNDS`, `FIRSTATT_MESS`, `ICON_SPARKLE`, `MOVE_NAME_ANNC`, `PIN_FLASH_ANIM`, `SHIFT_BARS_IN_Z`, `SPECIAL_MESSAGE`, `WHERE_WRESTLMANIA_SPARKLES`, `arw_bwait`, ... |
 | HSTD.ASM | 19 | `PIN_SPEED_TAB`, `do_that_cycle`, `draw_beaten_table_entry`, `draw_each_beaten_table_entry`, `draw_each_inter_table_entry`, `draw_letter_grid`, `draw_pinspeed_table_entry`, `draw_tag_table_entry`, `draw_winstreak_table_entry`, `enter_initials_beaten`, `enter_initials_streak`, `enter_initials_top_20`, ... |
 | SELECT.ASM | 17 | `GAME_BEATEN`, `THIS_GAME_IS_BEATEN`, `buyin_counter`, `buyin_select`, `call_wrestler_name`, `display_croutons`, `draw_mugshot`, `erase_mugshot`, `obj_off`, `obj_on`, `pin_speed_in_case`, `place_cursor`, ... |
@@ -40,10 +39,10 @@ only in a note saying it is missing does not count as present.
 | ATTRACT.ASM | 9 | `GENERIC_DISPLAY`, `MAKE_UP_LOGO`, `ONE_BALL`, `dan_test`, `mk_a0`, `octopus_page`, `print_gen_tips`, `show_wres_tips`, `wait_but` |
 | BAKGND.ASM | 6 | `BGND_UD1`, `bgnd_addblk`, `bgnd_addmod`, `bgnd_delnonvis`, `bgnd_get1stx`, `bgnd_scanmod` |
 | MENU.ASM | 6 | `GetSoundRev`, `_GetTime`, `aud_prtone`, `background_sound`, `poll_sdav`, `vol_to_ht` |
-| WRESTLE2.ASM | 5 | `choose_buddies`, `choose_pal`, `loser_snd`, `maybe_do_flashes`, `wrestler_counter` |
 | DIAG.ASM | 4 | `_aquire_time`, `_get_time`, `_set_time`, `line_draw` |
 | MPROC.ASM | 3 | `IKIL1C`, `process_dispatch`, `process_init` |
 | AUDIT.ASM | 3 | `audit_ud`, `crd_updatetxt`, `form_crc32` |
 | TEST.ASM | 3 | `opmsg_clr`, `opmsg_main`, `print_multi` |
+| WRESTLE.ASM | 2 | `plyr_strtb1`, `plyr_strtb2` |
 | STORIES.ASM | 2 | `print_story`, `show_wrestler_end_story` |
 | SCREEN.ASM | 1 | `DRKTRPLTP` |

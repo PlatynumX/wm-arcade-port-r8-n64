@@ -6,6 +6,7 @@
 #include "wm/arcade/wm_arcade_combat.h"
 #include "wm/arcade/wm_arcade_coffin.h"
 #include "wm/arcade/wm_arcade_pin.h"
+#include "wm/arcade/wm_arcade_round_reset.h"
 #include "wm/arcade/wm_arcade_scroll.h"
 #include "wm/arcade/wm_arcade_smove.h"
 #include "wm/arcade/wm_arcade_confine.h"
@@ -287,6 +288,32 @@ typedef struct {
     wm_coffin_driver_t coffin_driver;
     int32_t raise_dead_delay;
     wm_arcade_actor_t *raise_dead_target;
+
+    /*
+     * LIFEBAR.ASM's WRESTLERS_RESET is owed but has not run yet.
+     *
+     * The source reaches it from deep inside announce_rnd_winner,
+     * long after the round is called -- past `#fini_wait`, the
+     * buckoff window, the victory sound, CALL_MATCH_OVER, the dufus
+     * messages and a 105-tick button wait. This port models almost
+     * none of that presentation, so it cannot reproduce the delay
+     * honestly; what it DOES reproduce is the one gate that changes
+     * behaviour rather than timing, LIFEBAR.ASM:2649's `#fini_wait`:
+     * while @in_finish_move is set the announcement waits, and so
+     * does the reset. Without that the Undertaker's coffin sequence
+     * is wiped half-way through by the reset for the round it just
+     * won.
+     *
+     * Set on the tick the round is decided and consumed on a later
+     * one, so the deciding tick's own state is still observable.
+     */
+    bool round_reset_pending;
+
+    /* @current_round (LIFEBAR.ASM), incremented by reset_for_round.
+       The round-2/round-3 music picks off it, and so does
+       VINCE_START_ROUND2_3; this port has neither yet, but the count
+       is the reset's own and is kept rather than dropped. */
+    int32_t current_round;
 
 } wm_match_state;
 

@@ -95,6 +95,7 @@ FIX38_ARCADE_C := \
     src/core/arcade/wm_arcade_react9_core.c \
     src/core/arcade/wm_arcade_roster.c \
     src/core/arcade/wm_arcade_round.c \
+    src/core/arcade/wm_arcade_round_reset.c \
     src/core/arcade/wm_arcade_round_announce.c \
     src/core/arcade/wm_arcade_target.c \
     src/core/arcade/wm_arcade_scroll.c \

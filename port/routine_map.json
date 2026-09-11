@@ -1052,12 +1052,6 @@
     "symbol": "wm_arcade_round_tick",
     "note": "WRESTLE2.ASM:4155. The round clock and the KO detection around it. Translated: the countdown, the difficulty-based decrement rate and the round-decided transition, in wm/arcade/wm_arcade_round.h. Not translated: the KO-detection loop's process bookkeeping and the digit drawing, which is update_timer."
   },
-  "start_run_anim": {
-    "file": "WRESTLE2.ASM",
-    "status": "renamed",
-    "symbol": "wm_arcade_start_run",
-    "note": "WRESTLE2.ASM:3443. The run's own state setup -- 351 call sites, more than any other routine in the game. Its ANI_CODE #setup_run half, which picks the run speed, is in the animation VM (wm/bret_backend.h)."
-  },
   "init_smoves": {
     "file": "WRESTLE2.ASM",
     "status": "process",
@@ -1100,5 +1094,73 @@
     "file": "MAIN.ASM",
     "status": "hardware",
     "note": "MAIN.ASM. Moves the I/O window in the address map. Its one call site in WRESTLE.ASM's main loop is commented out, under the author's own question: \"isn't there a less obvious place that we can remap the IO ???\""
+  },
+  "fallbacks_t": {
+    "file": "LIFEBAR.ASM",
+    "status": "data",
+    "note": "LIFEBAR.ASM:1849. Nine REFLONGs, and they are the SAME nine as REACT1.ASM:1801 fall_back_tbl -- hrt_fall_back_anim down to lex_fall_back_anim with slot 7 empty. Already extracted under that name into src/generated/roster_anim_tables.c. tools/wlrostertbl.py does not see this copy because three labels stand in a row above the rows (`SUBR fallbacks_t`, then `#fallbacks_t`, then `#fall_back`) and its reader stops at the second. Teaching it to walk an alias chain was tried and reverted: it misattributed rows across the tree and cost fourteen tables that were being read correctly, for two whose contents are already here."
+  },
+  "convulse_t": {
+    "file": "LIFEBAR.ASM",
+    "status": "data",
+    "note": "LIFEBAR.ASM:1863. The same story: nine REFLONGs identical to REACT1.ASM:1856 hitonground_tbl, behind the alias chain `SUBR convulse_t` / `#hitonground`."
+  },
+  "raise_dead": {
+    "file": "FINISEQ.ASM",
+    "status": "process",
+    "note": "FINISEQ.ASM:1535. `SLEEP TSEC/2` -- \"Give him a bit before standing up\" -- then put @dead_wrestler into raise_dead_anim and DIE. A CREATE'd delay around one change_anim1a."
+  },
+  "guy_is_in": {
+    "file": "FINISEQ.ASM",
+    "status": "renamed",
+    "symbol": "guy_is_up",
+    "note": "FINISEQ.ASM:1548. One store into @guy_in, the coffin sequence's other flag, and the exact mirror of guy_is_up at :1009. The port carries both as status bits on the actor rather than as globals, since only one finish runs at a time and each is a fact about its subject."
+  },
+  "get_mpart_offsets": {
+    "file": "WRESTLE2.ASM",
+    "status": "display",
+    "note": "WRESTLE2.ASM:1509. Walks a multi-part image's IPCOUNT pieces and returns the largest IANIOFFX/IANIOFFY among them -- the bounding anchor for a sprite drawn as several DMA objects. The port has one frame geometry per frame (wm/frame_geometry.h) rather than a piece list, so there is nothing to walk."
+  },
+  "get_mpart_xsize": {
+    "file": "WRESTLE2.ASM",
+    "status": "display",
+    "note": "WRESTLE2.ASM:1566. The same walk for the total width."
+  },
+  "slide_offscr": {
+    "file": "WRESTLE2.ASM",
+    "status": "process",
+    "note": "WRESTLE2.ASM:1045. A process that gives an object a velocity and waits for it to leave the screen. Object motion."
+  },
+  "postgame_audits": {
+    "file": "WRESTLE2.ASM",
+    "status": "hardware",
+    "note": "WRESTLE2.ASM:4662. Writes the match's counters into CMOS audit storage. There is no CMOS."
+  },
+  "audit_wrestler": {
+    "file": "WRESTLE2.ASM",
+    "status": "hardware",
+    "note": "WRESTLE2.ASM. Bumps the per-wrestler CMOS audit counter."
+  },
+  "print_string_with_zb": {
+    "file": "STRING.ASM",
+    "status": "display",
+    "note": "STRING.ASM:585. print_string with a Z-buffer value supplied, so the text sorts against the scene rather than sitting on top. The layout half is wm/arcade/wm_arcade_string.h's; the Z is the object's."
+  },
+  "UNDBLU_P": {
+    "file": "WRESPAL.ASM",
+    "status": "data",
+    "note": "WRESPAL.ASM:136. One of the Undertaker's palettes. The palette corpus is extracted wholesale by tools/wlpal.py into src/generated/palettes.c, so this is a row in generated data rather than a routine anything calls."
+  },
+  "rnd": {
+    "file": "DISPLAY.ASM",
+    "status": "renamed",
+    "symbol": "wm_rng_mix",
+    "note": "DISPLAY.ASM:1212. The shared RAND mix -- rotate by RAND's own low five bits, rotate in HCOUNT, add SP, store back -- then mask the result with A0. It is the same body as UTIL.ASM's, and wm/arcade/wmania_rng.h carries it together with the warning that `add sp,a1` is the only value-changing step, so a caller that leaves both entropy inputs at zero gets a degenerate sequence rather than a weak one."
+  },
+  "is_there_one_already": {
+    "file": "LIFEBAR.ASM",
+    "status": "renamed",
+    "symbol": "wm_move_name_should_draw",
+    "note": "LIFEBAR.ASM:3424. MOVE_NAME_ANNC's \"first time only\" rule: index MESSAGE_FLAGS by the INVERTED low bit of the side (`NOT A1 / SLL 31 / SRL 31-4`) and read the flag. The port folds the test and its companion SET_MESS_FLAGS into wm_move_name_should_draw, which is also where reduce_bog's suppression lives."
   }
 }

@@ -28,6 +28,8 @@
  * straight out of wm_announce_calls[] -- see announce_call() below.
  */
 #include "wm/anim_program.h"
+#include "wm/arcade/wmania_ring_geometry.h"
+#include "wm/arcade/wm_arcade_roll.h"
 #include "wm/arcade/wm_arcade_combat_defs.h"
 #include "wm/arcade/wm_arcade_roster.h"
 #include "wm/arcade/wm_arcade_veladd.h"
@@ -1509,6 +1511,69 @@ static void ck_dead_opp(wm_arcade_actor_t *actor, const wm_anim_env *env,
     opp = actor->attach_proc ? actor->attach_proc : actor->who_i_hit;
     if (!opp) return;
     if (opp->life == 0) actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
+}
+
+/*
+ * FINISEQ.ASM:1047 check_roll -- the head of every wrestler's
+ * stand_anim and fdizzy_anim, which the Undertaker's coffin finish
+ * runs over a dead opponent. "Check roll checks to see if the dead guy
+ * needs to be rolled down and does it if need be."
+ *
+ * It reports through MODE_STATUS, and the animation's own
+ * `#rl_loop: ANI_PAUSE,1 / ANI_CODE check_roll / ANI_IFSTATUS #rl_loop`
+ * spins on it -- so a SET flag means "still rolling, come back", which
+ * is the opposite of the usual "found it" reading.
+ *
+ * The roll itself is done by forcing MOVE_DOWN into STICK_VAL_CUR and
+ * calling do_roll: the dead man is steered by writing to his
+ * joystick.
+ */
+static void check_roll(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                       int32_t param) {
+    (void)env;
+    (void)param;
+    if (!actor) return;
+
+    actor->anim_mode &= (uint16_t)~WM_MODE_STATUS;
+    if (actor->z_int > (WM_RING_Z_CENTER + 20)) return;   /* far enough down */
+
+    actor->stick_val_cur = (uint16_t)(actor->stick_val_cur | WM_MOVE_DOWN);
+    (void)wm_arcade_do_roll(actor);
+    actor->anim_mode |= (uint16_t)WM_MODE_STATUS;         /* go round again */
+}
+
+/* FINISEQ.ASM:1009 guy_is_up -- one store into the @guy_up flag the
+   coffin sequence waits on. The port keeps it on the actor, since
+   there is one sequence at a time and it belongs to its subject. */
+static void guy_is_up(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                      int32_t param) {
+    (void)env;
+    (void)param;
+    if (!actor) return;
+    actor->status_flags |= WM_STATUS_GUY_UP;
+}
+
+/*
+ * FINISEQ.ASM:1018 adjust_facing and :1032 adjust_taker_facing -- a
+ * mirrored pair. Each FORCES a facing rather than flipping one: one
+ * ORs in LEFT|DOWN and masks off RIGHT|UP and sets FLIPH, the other
+ * does exactly the reverse. Calling either twice is the same as
+ * calling it once, which is what the coffin sequence wants -- both
+ * men must end up facing each other however they arrived.
+ */
+static void adjust_facing(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                          int32_t param) {
+    (void)env;
+    if (!actor) return;
+    if (param) {                      /* adjust_taker_facing */
+        actor->facing_dir &= ~(WM_MOVE_LEFT | WM_MOVE_DOWN);
+        actor->facing_dir |= (WM_MOVE_RIGHT | WM_MOVE_UP);
+        actor->obj_control &= (uint16_t)~WM_OBJ_FLIPH;
+    } else {
+        actor->facing_dir |= (WM_MOVE_LEFT | WM_MOVE_DOWN);
+        actor->facing_dir &= ~(WM_MOVE_RIGHT | WM_MOVE_UP);
+        actor->obj_control |= (uint16_t)WM_OBJ_FLIPH;
+    }
 }
 
 /*
@@ -3074,6 +3139,10 @@ static const struct {
     { "#dead_or_dying", "REACT1.ASM", dead_or_dying, 0, 0 },
     { "#set_pinable_bit", "WRESTLE2.ASM", set_pinable_bit, 0, 0 },
     { "#ko_if_drone", "WRESTLE2.ASM", ko_if_drone, 0, 0 },
+    { "check_roll", "FINISEQ.ASM", check_roll, 0, 0 },
+    { "guy_is_up", "FINISEQ.ASM", guy_is_up, 0, 0 },
+    { "adjust_facing", "FINISEQ.ASM", adjust_facing, 0, 0 },
+    { "adjust_taker_facing", "FINISEQ.ASM", adjust_facing, 1, 0 },
     { "#set_wrestler_xflip", "HRTSEQ4.ASM", set_wrestler_xflip_code, 0, 0 },
     /* Another SPCDMG, with its own pair. */
     { "#stop_dmg", "YOKSEQ3.ASM", reduce_dmg, WM_SPCDMG(2, 35), 0 },

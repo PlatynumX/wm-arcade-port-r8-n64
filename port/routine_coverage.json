@@ -2380,10 +2380,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "cited",
-   "evidence": "UNDBLU_P",
+   "status": "data",
+   "evidence": "WRESPAL.ASM:136. One of the Undertaker's palettes. The palette corpus is extracted wholesale by tools/wlpal.py into src/generated/palettes.c, so this is a row in generated data rather than a routine anything calls.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "UNDGRN_P",
@@ -2875,9 +2875,9 @@
    "local": false,
    "external_callers": 0,
    "references": 8,
-   "status": "cited",
+   "status": "implemented",
    "evidence": "adjust_facing",
-   "from_generated": false,
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -2920,8 +2920,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "adjust_taker_facing",
    "from_generated": false,
    "ledgered": false
   },
@@ -3445,10 +3445,10 @@
    "local": true,
    "external_callers": 0,
    "references": 4,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "WRESTLE2.ASM. Bumps the per-wrestler CMOS audit counter.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "auto_pin_check",
@@ -7420,9 +7420,9 @@
    "local": false,
    "external_callers": 0,
    "references": 8,
-   "status": "cited",
+   "status": "implemented",
    "evidence": "check_roll",
-   "from_generated": false,
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -7871,8 +7871,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "close_door",
    "from_generated": false,
    "ledgered": false
   },
@@ -8111,10 +8111,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "convulse_t",
+   "status": "data",
+   "evidence": "LIFEBAR.ASM:1863. The same story: nine REFLONGs identical to REACT1.ASM:1856 hitonground_tbl, behind the alias chain `SUBR convulse_t` / `#hitonground`.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "copy_rom_string",
@@ -8786,8 +8786,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "dizzy_wrestler",
    "from_generated": false,
    "ledgered": false
   },
@@ -12852,10 +12852,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "cited",
-   "evidence": "fallbacks_t",
+   "status": "data",
+   "evidence": "LIFEBAR.ASM:1849. Nine REFLONGs, and they are the SAME nine as REACT1.ASM:1801 fall_back_tbl -- hrt_fall_back_anim down to lex_fall_back_anim with slot 7 empty. Already extracted under that name into src/generated/roster_anim_tables.c. tools/wlrostertbl.py does not see this copy because three labels stand in a row above the rows (`SUBR fallbacks_t`, then `#fallbacks_t`, then `#fall_back`) and its reader stops at the second. Teaching it to walk an alias chain was tried and reverted: it misattributed rows across the tree and cost fourteen tables that were being read correctly, for two whose contents are already here.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "fastanic",
@@ -13587,10 +13587,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "cited",
-   "evidence": "get_mpart_offsets",
+   "status": "display",
+   "evidence": "WRESTLE2.ASM:1509. Walks a multi-part image's IPCOUNT pieces and returns the largest IANIOFFX/IANIOFFY among them -- the bounding anchor for a sprite drawn as several DMA objects. The port has one frame geometry per frame (wm/frame_geometry.h) rather than a piece list, so there is nothing to walk.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "get_mpart_xsize",
@@ -13602,10 +13602,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "cited",
-   "evidence": "get_mpart_xsize",
+   "status": "display",
+   "evidence": "WRESTLE2.ASM:1566. The same walk for the total width.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "get_num_awards",
@@ -13932,10 +13932,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "guy_is_up",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "guy_is_up",
@@ -13947,9 +13947,9 @@
    "local": false,
    "external_callers": 0,
    "references": 8,
-   "status": "cited",
+   "status": "implemented",
    "evidence": "guy_is_up",
-   "from_generated": false,
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -18269,8 +18269,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "is_door_open",
    "from_generated": false,
    "ledgered": false
   },
@@ -18299,8 +18299,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "is_guy_up",
    "from_generated": false,
    "ledgered": false
   },
@@ -18314,8 +18314,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "is_he_in",
    "from_generated": false,
    "ledgered": false
   },
@@ -18359,10 +18359,10 @@
    "local": false,
    "external_callers": 0,
    "references": 5,
-   "status": "cited",
-   "evidence": "is_there_one_already",
+   "status": "renamed",
+   "evidence": "wm_move_name_should_draw",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "is_this_yoko",
@@ -21479,8 +21479,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "make_wres_disappear",
    "from_generated": false,
    "ledgered": false
   },
@@ -22994,10 +22994,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "postgame_audits",
+   "status": "hardware",
+   "evidence": "WRESTLE2.ASM:4662. Writes the match's counters into CMOS audit storage. There is no CMOS.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "powerup_check",
@@ -23249,10 +23249,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "print_string_with_zb",
+   "status": "display",
+   "evidence": "STRING.ASM:585. print_string with a Z-buffer value supplied, so the text sorts against the scene rather than sitting on top. The layout half is wm/arcade/wm_arcade_string.h's; the Z is the object's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "print_tag",
@@ -23354,9 +23354,9 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "prog_push_in_anim_labels",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -23369,8 +23369,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "push_to_coffin",
    "from_generated": false,
    "ledgered": false
   },
@@ -23399,10 +23399,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "raise_dead",
+   "status": "process",
+   "evidence": "FINISEQ.ASM:1535. `SLEEP TSEC/2` -- \"Give him a bit before standing up\" -- then put @dead_wrestler into raise_dead_anim and DIE. A CREATE'd delay around one change_anim1a.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "raise_dead_anim",
@@ -23414,9 +23414,9 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "und_2_raise_dead_anim",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "prog_raise_dead_anim_labels",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -23731,10 +23731,10 @@
    "local": false,
    "external_callers": 11,
    "references": 35,
-   "status": "cited",
-   "evidence": "rnd",
+   "status": "renamed",
+   "evidence": "wm_rng_mix",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "rndrng0",
@@ -27317,8 +27317,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "set_speeds",
    "from_generated": false,
    "ledgered": false
   },
@@ -30767,10 +30767,10 @@
    "local": false,
    "external_callers": 1,
    "references": 4,
-   "status": "cited",
-   "evidence": "slide_offscr",
+   "status": "process",
+   "evidence": "WRESTLE2.ASM:1045. A process that gives an object a velocity and waits for it to leave the screen. Object motion.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "smokepuff",
@@ -30977,8 +30977,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "stand_wrestler",
    "from_generated": false,
    "ledgered": false
   },
@@ -31022,10 +31022,10 @@
    "local": false,
    "external_callers": 351,
    "references": 351,
-   "status": "renamed",
-   "evidence": "wm_arcade_start_run",
-   "from_generated": false,
-   "ledgered": true
+   "status": "implemented",
+   "evidence": "prog_start_run_anim_ops",
+   "from_generated": true,
+   "ledgered": false
   },
   {
    "name": "start_run_flung",
@@ -31622,9 +31622,9 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "und_2_raise_dead_anim",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "prog_und_2_raise_dead_anim_labels",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -33062,8 +33062,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "und_coffin_up",
    "from_generated": false,
    "ledgered": false
   },

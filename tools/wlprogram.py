@@ -1123,35 +1123,55 @@ def _movi_anim_targets() -> list[tuple[pathlib.Path, str]]:
     animation. Anything that does not is skipped rather than guessed
     at.
     """
-    movi = re.compile(r"^\s*movi\s+([A-Za-z_][A-Za-z0-9_]*_anim)\s*,\s*a0\b",
-                      re.I)
+    # Any register, not just a0. TAKER.ASM:693 loads
+    # und_2_raise_dead_anim into a14 and stashes it in
+    # SPECIAL_MOVE_ADDR; which register the caller used is its own
+    # business, and pinning a0 lost that animation entirely.
+    movi = re.compile(
+        r"^\s*movi\s+([A-Za-z_][A-Za-z0-9_]*_anim)\s*,\s*a\d+\b", re.I)
+    # Where each SUBR lives, so a label loaded in one file and defined
+    # in another resolves to its definition -- TAKER.ASM:693 loads
+    # und_2_raise_dead_anim, which FINISEQ.ASM:1640 defines.
+    where: dict[str, pathlib.Path] = {}
+    for q in wlanim.linked_files():
+        for line in q.read_text(errors="replace").splitlines():
+            m = wlanim.SUBR_RE.match(line)
+            if m and m.group(1) not in where:
+                where[m.group(1)] = q
+
     out: list[tuple[pathlib.Path, str]] = []
     seen: set[tuple[str, str]] = set()
     for src in wlanim.linked_files():
-        if "SEQ" in src.name:
+        # Skip only what the roster sweep above already covers, which
+        # is the same condition it uses. FINISEQ.ASM has "SEQ" in its
+        # name and is NOT swept, so excluding it here too left its
+        # raise_dead_anim reachable by nothing at all.
+        if "SEQ" in src.name and not src.name.startswith("FINI"):
             continue
-        lines = src.read_text(errors="replace").splitlines()
-        here = set()
-        for line in lines:
-            m = wlanim.SUBR_RE.match(line)
-            if m:
-                here.add(m.group(1))
-        for line in lines:
+        for line in src.read_text(errors="replace").splitlines():
             m = movi.match(wlanim.strip_comment(line))
             if not m:
                 continue
             lab = m.group(1)
-            if lab not in here:
-                continue        # defined elsewhere; its own file emits it
-            key = (src.name, lab)
+            home = where.get(lab)
+            if home is None:
+                continue        # not a SUBR anywhere: a local, or data
+            # Already emitted by the roster sweep, which covers every
+            # per-wrestler sequence file. The control files (BRET.ASM,
+            # TAKER.ASM and the rest) load those animations by name
+            # constantly, and following each one here would just queue
+            # a second copy.
+            if "SEQ" in home.name and not home.name.startswith("FINI"):
+                continue
+            key = (home.name, lab)
             if key in seen:
                 continue
             try:
-                program_for(src, lab)
+                program_for(home, lab)
             except (OSError, ValueError):
                 continue        # not an animation, or refused
             seen.add(key)
-            out.append((src, lab))
+            out.append((home, lab))
     return out
 
 

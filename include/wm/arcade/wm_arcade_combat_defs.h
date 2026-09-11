@@ -183,7 +183,13 @@ enum wm_arcade_status_bits {
     WM_STATUS_NEW_BUCKOFF   = 1u << 17,
     WM_STATUS_COUNTED_DEAD  = 1u << 18,
     WM_STATUS_COMBO_BROKEN  = 1u << 19,
-    WM_STATUS_PUSH          = 1u << 20
+    WM_STATUS_PUSH          = 1u << 20,
+    /*
+     * FINISEQ.ASM's `@guy_up`, which its coffin sequence waits on and
+     * guy_is_up sets. A global there because only one finish runs at a
+     * time; kept on the actor here, since it is a fact about him.
+     */
+    WM_STATUS_GUY_UP        = 1u << 21
 };
 
 /* PLYR.EQU:264-266 PLYR_TYPE. The referee is negative, so this is a

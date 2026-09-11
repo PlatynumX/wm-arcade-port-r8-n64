@@ -30,17 +30,24 @@
 #define WM_MATCH_P2_START_FACING WM_MOVE_DOWN_LEFT
 
 
-/* WRESTLE.ASM::init_scroller. This is called by start_match before the ring
-   background and before wrestler process creation. The current port has one
-   opponent only (NUM_OPPS==1), so the source selects [FFE5,0] for Y; the
-   [FFE9,0] branch is specifically the 1v2 case this port cannot create yet. */
+/*
+ * WRESTLE.ASM:1598 `callr init_scroller`, early in start_match --
+ * after pal_clean and the display init, before the ring is built and
+ * before any wrestler process is created. That placement is the
+ * source's and is why this is called where it is rather than beside
+ * the other per-match setup below.
+ *
+ * The routine itself is wm_round_init_scroller
+ * (wm/arcade/wm_arcade_round_reset.h), which reads both of its Y
+ * values off the source and picks between them on NUM_OPPS; it is
+ * shared with LIFEBAR.ASM:3128, where the round reset calls the same
+ * routine again. NUM_OPPS is 1 here for the reason wm/match.h gives:
+ * no ladder table, so no team is ever drawn.
+ */
 static void wm_match_init_scroller(wm_match_state *m) {
     if (!m) return;
-    m->scroll.worldtlx = (WM_MATCH_RING_X_CENTER - 200) << 16;
-    m->scroll.worldtly = -(27 * 65536);
+    wm_round_init_scroller(&m->scroll.worldtlx, &m->scroll.worldtly, 1);
 }
-
-
 
 /*
  * ANIM.ASM's rope opcodes reaching ROPES.ASM. The animation says which
@@ -557,11 +564,6 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
        `move *a8(PLYR_TYPE),a14 / janz SUCIDE`, so who is a drone has
        to be settled before the watchdogs are made. */
     init_smoves(m);
-    /* WRESTLE.ASM:6688 init_scroller. The camera does not start at the
-       origin: it starts half a screen left of the ring's centre, with
-       a small negative Y. Leaving it at zero put the ring off the
-       right of the first frame. */
-    wm_round_init_scroller(&m->scroll.worldtlx, &m->scroll.worldtly, 1);
     init_bret_backends(m);
 
     m->actor_count = WM_MATCH_MAX_ACTORS;
@@ -640,11 +642,6 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
        `move *a8(PLYR_TYPE),a14 / janz SUCIDE`, so who is a drone has
        to be settled before the watchdogs are made. */
     init_smoves(m);
-    /* WRESTLE.ASM:6688 init_scroller. The camera does not start at the
-       origin: it starts half a screen left of the ring's centre, with
-       a small negative Y. Leaving it at zero put the ring off the
-       right of the first frame. */
-    wm_round_init_scroller(&m->scroll.worldtlx, &m->scroll.worldtly, 1);
     init_bret_backends(m);
 
     m->actor_count = WM_MATCH_MAX_ACTORS;

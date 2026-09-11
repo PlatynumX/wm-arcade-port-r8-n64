@@ -2815,10 +2815,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "cited",
-   "evidence": "accumulate_player_awards",
+   "status": "renamed",
+   "evidence": "wm_award_accumulate_round",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "addbae",
@@ -2875,8 +2875,8 @@
    "local": false,
    "external_callers": 0,
    "references": 8,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "adjust_facing",
    "from_generated": false,
    "ledgered": false
   },
@@ -3295,10 +3295,10 @@
    "local": false,
    "external_callers": 2,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_award_arm_winstreak",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "arw_bwait",
@@ -5530,9 +5530,9 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "bam_fdizzy_anim",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "prog_bam_fdizzy_anim_labels",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -6205,9 +6205,9 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "bam_stand_anim",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "prog_bam_stand_anim_labels",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -6895,10 +6895,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_powerup_attempt_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "burn_tbl",
@@ -7375,10 +7375,10 @@
    "local": false,
    "external_callers": 1,
    "references": 2,
-   "status": "cited",
-   "evidence": "check_for_award_for_big_comeback",
+   "status": "renamed",
+   "evidence": "wm_award_check_comeback",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "check_for_award_for_winstreak",
@@ -7390,10 +7390,10 @@
    "local": false,
    "external_callers": 1,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_award_check_winstreak",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "check_raisearm_bit",
@@ -7420,8 +7420,8 @@
    "local": false,
    "external_callers": 0,
    "references": 8,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "check_roll",
    "from_generated": false,
    "ledgered": false
   },
@@ -7976,10 +7976,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_powerup_attempt_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "concat_rom_string",
@@ -10931,9 +10931,9 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "dnk_fdizzy_anim",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "prog_dnk_fdizzy_anim_labels",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -11471,9 +11471,9 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "dnk_stand_anim",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "prog_dnk_stand_anim_labels",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -12507,10 +12507,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_powerup_attempt_done",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "drone_seek",
@@ -13887,10 +13887,10 @@
    "local": false,
    "external_callers": 1,
    "references": 2,
-   "status": "cited",
-   "evidence": "give_award_if_opponent_is_human",
+   "status": "renamed",
+   "evidence": "wm_award_defeat_human",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "good_run_hit",
@@ -13947,8 +13947,8 @@
    "local": false,
    "external_callers": 0,
    "references": 8,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "guy_is_up",
    "from_generated": false,
    "ledgered": false
   },
@@ -16842,9 +16842,9 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "hrt_fdizzy_anim",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "prog_hrt_fdizzy_anim_labels",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -17517,9 +17517,9 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "hrt_stand_anim",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "prog_hrt_stand_anim_labels",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -17922,10 +17922,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_powerup_attempt_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "idiot_check",
@@ -20339,9 +20339,9 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "lex_fdizzy_anim",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "prog_lex_fdizzy_anim_labels",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -20984,9 +20984,9 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "lex_stand_anim",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "prog_lex_stand_anim_labels",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -22169,10 +22169,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_powerup_attempt_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "move_pu_bars_on",
@@ -22304,10 +22304,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_powerup_attempt_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "no_ring_powerup_check",
@@ -22319,10 +22319,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_powerup_attempt_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "nosounds",
@@ -22919,10 +22919,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "cited",
-   "evidence": "player_powerup_checker",
+   "status": "process",
+   "evidence": "AWARD.ASM:2182. Seven CREATEs and a DIE -- one checker process per code, per side. The port runs the same eight-row table without processes, and the row's `spawned` flag carries the one CREATE that is commented out.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "plyr_strtb1",
@@ -23009,7 +23009,7 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "partial",
+   "status": "renamed",
    "evidence": "wm_powerup_reset",
    "from_generated": false,
    "ledgered": true
@@ -23714,10 +23714,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_powerup_attempt_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "rnd",
@@ -23852,10 +23852,10 @@
    "local": false,
    "external_callers": 3,
    "references": 4,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_award_reset_winstreak",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "rzr_2_block_anim",
@@ -25847,9 +25847,9 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "rzr_fdizzy_anim",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "prog_rzr_fdizzy_anim_labels",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -26372,9 +26372,9 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "rzr_stand_anim",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "prog_rzr_stand_anim_labels",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -29477,9 +29477,9 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "shn_fdizzy_anim",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "prog_shn_fdizzy_anim_labels",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -30077,9 +30077,9 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "shn_stand_anim",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "prog_shn_stand_anim_labels",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -31097,8 +31097,8 @@
    "local": false,
    "external_callers": 0,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_string_strip_white",
    "from_generated": false,
    "ledgered": false
   },
@@ -33347,9 +33347,9 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "und_fdizzy_anim",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "prog_und_fdizzy_anim_labels",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -34037,9 +34037,9 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "und_stand_anim",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "prog_und_stand_anim_labels",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -37023,9 +37023,9 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "yok_fdizzy_anim",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "prog_yok_fdizzy_anim_labels",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -37593,9 +37593,9 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "yok_stand_anim",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "prog_yok_stand_anim_labels",
+   "from_generated": true,
    "ledgered": false
   },
   {

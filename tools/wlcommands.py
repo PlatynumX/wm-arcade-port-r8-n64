@@ -127,7 +127,14 @@ def _button_mask(expr: str) -> int:
 
 CMD_RE = re.compile(
     r"^\s*(?:\.word|W+L+W*)\s+(" + "|".join(COMMANDS) + r")\b\s*,?\s*(.*)$", re.I)
-EQU_RE = re.compile(r"^\s*(#[A-Za-z_][A-Za-z0-9_]*)\s+equ\s+(.+)$", re.I)
+# A local equate. The `#` prefix makes it block-scoped, but a file also
+# defines plain ones -- FINISEQ.ASM:1544 `TIME_FOR_MOVE .equ 16`, which
+# push_in_anim at :1588 uses -- and the assembler writes the directive
+# with or without its leading dot, and as `.set` where the value is
+# redefined later. Matching only `#name equ value` missed all of those,
+# and an animation whose tick count named one was refused outright.
+EQU_RE = re.compile(
+    r"^\s*(#?[A-Za-z_][A-Za-z0-9_]*)\s+\.?(?:equ|set)\s+(.+)$", re.I)
 # The assembler accepts either case for its trailing-h hex, and the
 # sequence files use both -- `090000h` two lines from `0000H`.
 HEX_RE = re.compile(r"\b([0-9A-Fa-f]+)[hH]\b")
@@ -204,9 +211,13 @@ def _value(tok: str, equates: dict[str, int]) -> int:
     # `-1+15`, `60*60`, `TSEC*60`. Multiplication is as real as the rest.
     # A few are bit sets rather than arithmetic -- ANI_FACE's operand is a
     # direction written as `MOVE_LEFT|MOVE_UP` -- so `|` counts too.
-    if not re.fullmatch(r"[-+*|0-9xXa-fA-F() \t]+", expr):
+    # Division too: FINISEQ.ASM's raise_dead_anim waits `(TSEC/2)`. The
+    # assembler's `/` is an integer divide, so the result is floored --
+    # and every operand it appears in is non-negative, which makes the
+    # floor/truncate distinction moot here.
+    if not re.fullmatch(r"[-+*/|0-9xXa-fA-F() \t]+", expr):
         raise ValueError(f"unresolved operand {tok!r}")
-    return int(eval(expr, {"__builtins__": {}}, {}))
+    return int(eval(expr.replace("/", "//"), {"__builtins__": {}}, {}))
 
 
 def commands_for(path: pathlib.Path, label: str):

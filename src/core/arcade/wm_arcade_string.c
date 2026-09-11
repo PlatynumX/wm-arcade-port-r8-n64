@@ -455,3 +455,77 @@ void wm_string_print_message(wm_string_state *st, const wm_message_desc *desc)
     /* `move a2,a4` -- the text sits immediately after the descriptor. */
     wm_string_print_method(st, desc->method, desc->text);
 }
+
+/*
+ * HSTD.ASM:826 strip_white. See wm/arcade/wm_arcade_string.h for the
+ * unbounded leading scan and the "copy it all" fallback.
+ */
+size_t wm_string_strip_white(const char *work_buffer, size_t length,
+                             char *out, size_t out_max)
+{
+    size_t front = 0;
+    size_t back;
+    size_t n = 0;
+
+    if (!work_buffer || !out || out_max == 0 || length == 0) return 0;
+
+    /*
+     * `#ff_loop`: walk forward off the spaces. The source has no bound
+     * here at all -- its only exit is a non-space -- so an all-spaces
+     * buffer reads past the end. Stopping at `length` is the one place
+     * this differs, and it lands on the source's own second case
+     * below rather than on whatever followed the buffer in BSS.
+     */
+    while (front < length && work_buffer[front] == ' ') ++front;
+
+    /*
+     * `#fl_loop`: walk back off the spaces from the last character,
+     * stopping at the start. A NUL counts as something to walk past
+     * too -- `move a2,a2 / jrz #get_prev`.
+     */
+    back = length - 1u;
+    for (;;) {
+        char c = work_buffer[back];
+        if (c != ' ' && c != '\0') break;
+        if (back == 0) break;
+        --back;
+    }
+    ++back;                                   /* `addk 8,a1` */
+
+    /*
+     * `cmp a0,a1 / jrgt #copy_loop` -- nothing left after trimming, so
+     * copy the whole thing untrimmed instead of producing an empty
+     * string.
+     */
+    if (back <= front) {
+        front = 0;
+        back = length;
+    }
+
+    while (front < back && n < out_max) out[n++] = work_buffer[front++];
+    return n;
+}
+
+/* HSTD.ASM:1105 val_to_dec_tenths_asc. */
+void wm_string_val_to_dec_tenths(wm_string_state *st, uint32_t value)
+{
+    uint32_t tenths;
+
+    if (!st) return;
+
+    /* `divu` twice: a0 becomes value/10, then a1 is value/100. */
+    tenths = (value / 10u) % 10u;
+
+    wm_string_dec_to_asc(st, value / 100u, 1000u);
+    wm_string_copy(st);
+    wm_string_concat_rom(st, ".");
+
+    if (tenths != 0u) {
+        wm_string_dec_to_asc(st, tenths, 10u);
+        wm_string_concat(st);
+    } else {
+        /* dec_to_asc suppresses leading zeros, so a zero digit has to
+           be written literally or it would contribute nothing. */
+        wm_string_concat_rom(st, "0");
+    }
+}

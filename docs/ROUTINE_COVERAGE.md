@@ -7,28 +7,28 @@ only in a note saying it is missing does not count as present.
 
 | status | meaning | count |
 |---|---|---|
-| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1900 |
+| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1917 |
 | `inlined` | the port does it, spelled out at each use site (ledger) | 7 |
-| `renamed` | the port does it under another name (ledger) | 81 |
-| `partial` | partly translated; the ledger note says which part | 2 |
-| `process` | a CREATE/SLEEP wrapper (ledger) | 5 |
+| `renamed` | the port does it under another name (ledger) | 96 |
+| `partial` | partly translated; the ledger note says which part | 1 |
+| `process` | a CREATE/SLEEP wrapper (ledger) | 6 |
 | `display` | object/DMA drawing; this port has no renderer (ledger) | 14 |
 | `hardware` | talks to the cabinet (ledger) | 10 |
 | `dead` | **measured**: no caller outside its own file | 37 |
 | `unassembled` | **measured**: inside a `.if` the assembler skipped | 60 |
-| `cited` | named only in a comment -- not evidence of anything | 103 |
-| `unknown` | no mention anywhere | 315 |
+| `cited` | named only in a comment -- not evidence of anything | 86 |
+| `unknown` | no mention anywhere | 300 |
 
-**2116 of 2534 routines are accounted for; 418 are open** (`cited` + `unknown`).
+**2148 of 2534 routines are accounted for; 386 are open** (`cited` + `unknown`).
 
 ## Open routines by file
 
 | file | open | routines |
 |---|---|---|
-| AWARD.ASM | 79 | `BLACKOUT`, `accumulate_player_awards`, `adjust_text_position`, `adjust_tl`, `anim_mk`, `anim_sparkle`, `arm_winstreak_award`, `audit_icons`, `award_text`, `bbicon_table`, `buddy_mode_powerup_check`, `check_for_award_for_big_comeback`, ... |
-| FINISEQ.ASM | 48 | `adjust_facing`, `adjust_taker_facing`, `bam_fdizzy_anim`, `bam_stand_anim`, `check_roll`, `close_door`, `cof_anim1`, `cof_anim2`, `disappear_wrestler`, `dizzy_wrestler`, `dnk_fdizzy_anim`, `dnk_stand_anim`, ... |
+| AWARD.ASM | 64 | `BLACKOUT`, `adjust_text_position`, `adjust_tl`, `anim_mk`, `anim_sparkle`, `audit_icons`, `award_text`, `bbicon_table`, `create_end_rnd_awards`, `create_player_awards`, `decompress_string`, `del_bonus_icons`, ... |
 | WRESTLE.ASM | 37 | `CLEAR_PROCESSES`, `DO_SET_IMAGES`, `WARMSET`, `change_image`, `change_walk_anim`, `ck_ignore_a8`, `collis_debug`, `collis_debug2`, `confine_wrestler_fix1`, `confine_wrestler_fix2`, `dir_debug`, `direction_test`, ... |
-| HSTD.ASM | 34 | `DELETE_ANY_OFF_TOP`, `DO_TAG_GAME`, `FIND_LOW_TABLE_LEVEL`, `INIT_HSTRING`, `INIT_TB`, `JUDDER_SHADOW`, `MOVE_ALL_OBJS_UP`, `PIN_SPEED_TAB`, `STOP_ALL_OBJS`, `are_inits_dirty`, `do_that_cycle`, `draw_beaten_table_entry`, ... |
+| HSTD.ASM | 33 | `DELETE_ANY_OFF_TOP`, `DO_TAG_GAME`, `FIND_LOW_TABLE_LEVEL`, `INIT_HSTRING`, `INIT_TB`, `JUDDER_SHADOW`, `MOVE_ALL_OBJS_UP`, `PIN_SPEED_TAB`, `STOP_ALL_OBJS`, `are_inits_dirty`, `do_that_cycle`, `draw_beaten_table_entry`, ... |
+| FINISEQ.ASM | 32 | `adjust_facing`, `adjust_taker_facing`, `check_roll`, `close_door`, `cof_anim1`, `cof_anim2`, `disappear_wrestler`, `dizzy_wrestler`, `do_up_coffin`, `exp1_anim`, `exp2_anim`, `guy_is_in`, ... |
 | LIFEBAR.ASM | 23 | `CREATE_TIMEOUT`, `DO_RIGHT_MUSIC`, `DO_RIGHT_MUSIC2`, `DO_ROUNDS`, `FIRSTATT_MESS`, `ICON_SPARKLE`, `MOVE_NAME_ANNC`, `PIN_FLASH_ANIM`, `SHIFT_BARS_IN_Z`, `SPECIAL_MESSAGE`, `WHERE_WRESTLMANIA_SPARKLES`, `arw_bwait`, ... |
 | FIREWORK.ASM | 23 | `animate_fwexp`, `c1v3_tbl`, `c1v3s_tbl`, `c1v8_tbl`, `c1v8s_tbl`, `c2v8_tbl`, `c2v8s_tbl`, `calc_dxdy`, `check_camera_position`, `congrats_setup_tbl`, `congrats_str_tbl`, `do_fireworks`, ... |
 | DCSSOUND.ASM | 22 | `ANNOUNCE_VOICE`, `CALL_MATCH_OVER`, `END_MATCH_SPEECH`, `KILL_PIN_HIM`, `PROC_MATCH_OVER`, `SNDSND`, `VOLBTN_PRESS`, `announcer_sound`, `channel_sound`, `clear_sound_ram`, `delay_code_a3`, `do_tune_commands`, ... |

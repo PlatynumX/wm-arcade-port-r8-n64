@@ -1075,6 +1075,40 @@ def render_c(entries) -> str:
     return "\n".join(out)
 
 
+def _roster_table_targets() -> list[tuple[pathlib.Path, str]]:
+    """(file, label) for every animation a global roster table names.
+
+    The label is resolved against the file that DEFINES it, not the one
+    the table sits in, because a table in FINISEQ.ASM names animations
+    defined in FINISEQ.ASM but a table in WRESTLE2.ASM names ones from
+    the per-wrestler sequence files.
+    """
+    import wlrostertbl
+
+    where: dict[str, pathlib.Path] = {}
+    for src in wlanim.linked_files():
+        for line in src.read_text(errors="replace").splitlines():
+            m = wlanim.SUBR_RE.match(line)
+            if m and m.group(1) not in where:
+                where[m.group(1)] = src
+
+    out: list[tuple[pathlib.Path, str]] = []
+    seen: set[tuple[str, str]] = set()
+    for _name, (_f, _line, rows) in wlrostertbl.roster_tables().items():
+        for lab in rows:
+            if not lab or not lab.endswith("_anim"):
+                continue
+            src = where.get(lab)
+            if src is None:
+                continue
+            key = (src.name, lab)
+            if key in seen:
+                continue
+            seen.add(key)
+            out.append((src, lab))
+    return out
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--source")
@@ -1108,6 +1142,18 @@ def main(argv=None) -> int:
         for src in wlanim.linked_files():
             if "SEQ" not in src.name:
                 continue
+            # FINISEQ.ASM is not swept. Two reasons, and the second is
+            # the one that matters. The first is historical: its finish
+            # moves have no frames, the alias rule ran away, and
+            # rzr_finish1_move swallowed the rest of the file -- that
+            # is fixed now, since wlanim stops at a routine's own
+            # ANI_END. The second still holds: a sweep here emits the
+            # fourteen finishing moves that GAME.EQU:580-587 assembles
+            # OUT (seven of the eight NUM_*_FINISHES are 0), plus
+            # stand_table and dizzy_table, which are data, plus
+            # check_roll and is_door_open and a dozen more that are
+            # plain logic. Everything real in this file is reached by
+            # name instead, below.
             if src.name.startswith("FINI"):
                 continue
             lines = src.read_text(errors="replace").splitlines()
@@ -1135,6 +1181,15 @@ def main(argv=None) -> int:
         # emitted by nothing.
         entries += [(str(p), lab)
                     for p, lab in wlpuppet.changeanim_op_targets()]
+        # And so do the global per-wrestler tables ordinary code indexes
+        # with FACETBL/FACE24TBL. Those rows are animations wherever
+        # they live, including in files the roster sweep above skips:
+        # FINISEQ.ASM's stand_table and dizzy_table name every
+        # wrestler's stand and fdizzy, and nothing else reaches them.
+        # Naming the rows rather than sweeping the file is the point --
+        # a sweep of FINISEQ would also emit its fourteen assembled-out
+        # finishing moves, its data tables and its plain logic.
+        entries += [(str(p), lab) for p, lab in _roster_table_targets()]
     if not entries:
         ap.error("nothing to emit: pass --animation, or --source with --label")
     seen, unique = set(), []

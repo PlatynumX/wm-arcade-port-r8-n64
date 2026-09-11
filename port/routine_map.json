@@ -211,9 +211,9 @@
   },
   "powerup_check": {
     "file": "AWARD.ASM",
-    "status": "partial",
+    "status": "renamed",
     "symbol": "wm_powerup_reset",
-    "note": "Two halves. The clearing half -- both request words and every output flag -- is wm_powerup_reset. The other half CREATEs player_powerup_checker twice, and process spawning is not translated; the code state machine those processes run is, as wm_powerup_attempt_tick."
+    "note": "AWARD.ASM:2198. Does nothing unless do_show_options is set, then clears both request words and the seven output flags and CREATEs a player_powerup_checker per side. The clearing half is wm_powerup_reset; the processes are the row table."
   },
   "rst_awards": {
     "file": "AWARD.ASM",
@@ -699,5 +699,94 @@
     "file": "DIAG.ASM",
     "status": "hardware",
     "note": "DIAG.ASM:381 _pic_bin2bcd. The inverse, by repeated divide-by-a-descending-power-of-ten. Same three callers, same reason: it formats the PIC serial number for the diagnostics screen."
+  },
+  "no_block_powerup_check": {
+    "file": "AWARD.ASM",
+    "status": "renamed",
+    "symbol": "wm_powerup_attempt_tick",
+    "note": "The whole powerup-code subsystem is wm/arcade/wm_arcade_powerup.h: the eight sequences as data, PUPWAITSWITCH as wm_powerup_attempt_tick, and get_powerups' BOTH_P_MASK reconciliation. AWARD.ASM:1967 -- three blocks, and it DIEs outright in a royal rumble. It shares its opening presses with buddy_mode (five blocks), which player_powerup_checker starts on the same side at the same time, so a player going for buddy mode turns blocking off on the way past."
+  },
+  "move_names_powerup_check": {
+    "file": "AWARD.ASM",
+    "status": "renamed",
+    "symbol": "wm_powerup_attempt_tick",
+    "note": "The whole powerup-code subsystem is wm/arcade/wm_arcade_powerup.h: the eight sequences as data, PUPWAITSWITCH as wm_powerup_attempt_tick, and get_powerups' BOTH_P_MASK reconciliation. AWARD.ASM:1992 -- four punches, setting MOVE_NAMES_ON. It is one of the two bits outside BOTH_P_MASK, so one player asking is enough."
+  },
+  "drone_meters_powerup_check": {
+    "file": "AWARD.ASM",
+    "status": "renamed",
+    "symbol": "wm_powerup_attempt_done",
+    "note": "The whole powerup-code subsystem is wm/arcade/wm_arcade_powerup.h: the eight sequences as data, PUPWAITSWITCH as wm_powerup_attempt_tick, and get_powerups' BOTH_P_MASK reconciliation. AWARD.ASM:2016 -- and it has no sequence at all: all three of its PUPWAITSWITCH lines are commented out, so once its two gates pass (PSTATUS != 3, 'only in one-player games'; NUM_OPPS == 1, 'only in one-on-one games') it sets D_METERS_ON immediately. The table carries it with a zero-length sequence and wm_powerup_attempt_done reports it complete from the start."
+  },
+  "hyper_match_powerup_check": {
+    "file": "AWARD.ASM",
+    "status": "renamed",
+    "symbol": "wm_powerup_attempt_tick",
+    "note": "The whole powerup-code subsystem is wm/arcade/wm_arcade_powerup.h: the eight sequences as data, PUPWAITSWITCH as wm_powerup_attempt_tick, and get_powerups' BOTH_P_MASK reconciliation. AWARD.ASM:2052 -- left, punch, punch, block. The `ori HYPER_MATCH_ON` carries the source's own comment '; Disabled for now', but nothing about the routine is disabled: it is created, it listens, and it sets the bit."
+  },
+  "combos_powerup_check": {
+    "file": "AWARD.ASM",
+    "status": "renamed",
+    "symbol": "wm_powerup_attempt_tick",
+    "note": "The whole powerup-code subsystem is wm/arcade/wm_arcade_powerup.h: the eight sequences as data, PUPWAITSWITCH as wm_powerup_attempt_tick, and get_powerups' BOTH_P_MASK reconciliation. AWARD.ASM:2075 -- right, punch, power punch, setting COMBOS_ON. This is where wm_arcade_mode_dead.h's instant_combos_on comes from."
+  },
+  "ring_out_powerup_check": {
+    "file": "AWARD.ASM",
+    "status": "renamed",
+    "symbol": "wm_powerup_attempt_tick",
+    "note": "The whole powerup-code subsystem is wm/arcade/wm_arcade_powerup.h: the eight sequences as data, PUPWAITSWITCH as wm_powerup_attempt_tick, and get_powerups' BOTH_P_MASK reconciliation. AWARD.ASM:2097 -- down, punch, kick, block."
+  },
+  "no_ring_powerup_check": {
+    "file": "AWARD.ASM",
+    "status": "renamed",
+    "symbol": "wm_powerup_attempt_tick",
+    "note": "The whole powerup-code subsystem is wm/arcade/wm_arcade_powerup.h: the eight sequences as data, PUPWAITSWITCH as wm_powerup_attempt_tick, and get_powerups' BOTH_P_MASK reconciliation. AWARD.ASM:2120 -- up, right, down, left. A complete code with nothing listening for it: player_powerup_checker's CREATE for it is commented out, 'Disable until we get blimp module'. The table records the sequence and marks it not spawned."
+  },
+  "buddy_mode_powerup_check": {
+    "file": "AWARD.ASM",
+    "status": "renamed",
+    "symbol": "wm_powerup_attempt_tick",
+    "note": "The whole powerup-code subsystem is wm/arcade/wm_arcade_powerup.h: the eight sequences as data, PUPWAITSWITCH as wm_powerup_attempt_tick, and get_powerups' BOTH_P_MASK reconciliation. AWARD.ASM:2146 -- five blocks, blocked in a royal rumble, and the only one with a second gate: it clears buddy_mode_checked at the top of its loop and refuses to grant if something has set it again by the time the fifth block lands."
+  },
+  "player_powerup_checker": {
+    "file": "AWARD.ASM",
+    "status": "process",
+    "note": "AWARD.ASM:2182. Seven CREATEs and a DIE -- one checker process per code, per side. The port runs the same eight-row table without processes, and the row's `spawned` flag carries the one CREATE that is commented out."
+  },
+  "accumulate_player_awards": {
+    "file": "AWARD.ASM",
+    "status": "renamed",
+    "symbol": "wm_award_accumulate_round",
+    "note": "AWARD.ASM:257. Folds one player's NUM_RND_AWARDS round bytes into his match bytes, after inverting BLOCKS_AWD -- having taken no blocks is what earns the icons, so a nonzero count becomes zero and a zero becomes BLOCK_ICONS. Skipped entirely in a royal rumble or when that player's process slot is empty."
+  },
+  "rst_winstreak_awards": {
+    "file": "AWARD.ASM",
+    "status": "renamed",
+    "symbol": "wm_award_reset_winstreak",
+    "note": "AWARD.ASM:314. `movi NUM_AWARDS-1,a0` and a dsjs loop, so it clears 31 of the 32 words and leaves the last alone -- almost certainly a slip, since the sibling rst_awards uses the full count, and unobservable because the highest award index in use is FIVE_WINS at 29. The port reproduces it rather than quietly correcting it."
+  },
+  "give_award_if_opponent_is_human": {
+    "file": "AWARD.ASM",
+    "status": "renamed",
+    "symbol": "wm_award_defeat_human",
+    "note": "AWARD.ASM:1032. DEFEAT_HUMAN, granted on each side by testing the OTHER side's PSTATUS bit -- bit 0 is 'player 1 is in', bit 1 is 'player 2 is in'."
+  },
+  "check_for_award_for_big_comeback": {
+    "file": "AWARD.ASM",
+    "status": "renamed",
+    "symbol": "wm_award_check_comeback",
+    "note": "AWARD.ASM:1096. Grants COMEBACK_AWD if this side's pcomeback flag is armed; arm_comeback_award is what arms it, and only when every live enemy is still at 80% health or better."
+  },
+  "check_for_award_for_winstreak": {
+    "file": "AWARD.ASM",
+    "status": "renamed",
+    "symbol": "wm_award_check_winstreak",
+    "note": "AWARD.ASM:1152. Grants FIVE_WINS_AWD if this side's pwsarm flag is set, and clears the flag so it is granted once."
+  },
+  "arm_winstreak_award": {
+    "file": "AWARD.ASM",
+    "status": "renamed",
+    "symbol": "wm_award_arm_winstreak",
+    "note": "AWARD.ASM:1124. Arms pwsarm when the streak is a nonzero multiple of five (`movk 5,a0 / modu a0,a1 / jrnz #awa_disarm`), and explicitly DISarms it otherwise -- so reaching six wins takes the pending award away again rather than leaving it standing."
   }
 }

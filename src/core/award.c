@@ -40,9 +40,19 @@ void wm_award_reset_match(wm_award_state *state) {
 }
 
 void wm_award_reset_winstreak(wm_award_state *state, unsigned player) {
+    /*
+     * AWARD.ASM:314 rst_winstreak_awards is `movi NUM_AWARDS-1,a0`
+     * followed by a dsjs loop, so it clears 31 of the 32 words and
+     * leaves the last one alone. That is almost certainly a slip -- the
+     * sibling rst_awards uses the full count -- and it cannot be
+     * observed, because the highest award index the game uses is
+     * FIVE_WINS at 29. Reproduced anyway rather than quietly corrected:
+     * "nothing reads it today" is not the same as "nothing reads it".
+     */
+    unsigned i;
     if (!state || player >= WM_AWARD_PLAYER_COUNT) return;
-    memset(state->winstreak_awards[player], 0,
-           sizeof(state->winstreak_awards[player]));
+    for (i = 0; i + 1u < WM_AWARD_COUNT; ++i)
+        state->winstreak_awards[player][i] = 0;
 }
 
 static void add_byte_award(uint8_t table[WM_AWARD_COUNT], unsigned award_index) {

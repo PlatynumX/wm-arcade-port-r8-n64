@@ -2872,6 +2872,67 @@ def test_a_two_long_row_is_not_always_a_facing_pair() -> None:
     assert "bncoff_gate" in operands       # WRESTLE.ASM:3698, behind a label
 
 
+def test_a_roster_table_row_gets_a_program() -> None:
+    """Every animation a global table names is emitted, wherever it lives.
+
+    The roster sweep in wlprogram walks SUBR lines in the per-wrestler
+    SEQ files and deliberately skips FINISEQ.ASM, because a sweep there
+    would emit the fourteen finishing moves GAME.EQU:580-587 assembles
+    OUT, plus its data tables, plus a dozen plain logic routines. The
+    cost of that skip was sixteen real animations: stand_table and
+    dizzy_table (FINISEQ.ASM:1476 and :1493) name every wrestler's
+    stand and fdizzy, and nothing else in the game reaches them.
+
+    Naming the rows rather than sweeping the file is what gets them
+    without the rest, so this checks both halves: the sixteen are
+    present, and the cut finishing moves still are not.
+    """
+    out = ROOT / "src" / "generated" / "anim_programs.c"
+    if not out.exists() or not wlanim.ORIG.exists():
+        return
+    text = out.read_text()
+
+    for who in ("hrt", "rzr", "und", "yok", "shn", "bam", "dnk", "lex"):
+        for kind in ("stand", "fdizzy"):
+            sym = "prog_%s_%s_anim_ops[]" % (who, kind)
+            assert sym in text, sym
+
+    # GAME.EQU:580-587 sets seven of the eight NUM_*_FINISHES to zero,
+    # so only the Undertaker's first finish is in the shipped game.
+    for who in ("bret", "bam", "yoko", "doink", "razor", "lex", "shawn"):
+        assert ("NUM_%s_FINISHES" % who.upper()) in \
+            (wlanim.ORIG / "GAME.EQU").read_text()
+    for sym in ("prog_bam_finish1_move_ops[]", "prog_hrt_finish1_move_ops[]",
+                "prog_yok_finish1_move_ops[]", "prog_rzr_finish1_move_ops[]"):
+        assert sym not in text, sym
+
+    # And neither the data tables nor the logic routines beside them.
+    for sym in ("prog_stand_table_ops[]", "prog_dizzy_table_ops[]",
+                "prog_check_roll_ops[]", "prog_is_door_open_ops[]"):
+        assert sym not in text, sym
+
+
+def test_a_file_local_equate_resolves() -> None:
+    """`.equ` without a `#`, and `/` in an operand.
+
+    Two small holes in the operand reader, each of which refused a real
+    animation outright rather than getting it wrong -- which is the
+    right failure, but it still cost the programs. FINISEQ.ASM:1544
+    writes `TIME_FOR_MOVE .equ 16` with no `#` prefix and a leading dot
+    on the directive, and push_in_anim at :1588 uses it;
+    raise_dead_anim waits `(TSEC/2)`, and division was not in the
+    expression character set.
+    """
+    if not wlanim.ORIG.exists():
+        return
+    src = wlanim.ORIG / "FINISEQ.ASM"
+    if not src.exists():
+        return
+    for label in ("push_in_anim", "raise_dead_anim"):
+        prog = wlprogram.program_for(src, label)
+        assert prog, label
+
+
 def test_declarations_are_not_the_end_of_a_table() -> None:
     """`.ref` lines mid-table, and rows written as REFLONG.
 
@@ -3201,6 +3262,8 @@ def main() -> int:
     test_face24_tables_are_two_columns_wide()
     test_a_two_long_row_is_not_always_a_facing_pair()
     test_declarations_are_not_the_end_of_a_table()
+    test_a_roster_table_row_gets_a_program()
+    test_a_file_local_equate_resolves()
     test_roster_anim_tables_refuse_ambiguous_labels()
     test_roster_anim_tables_generate_the_shipped_file()
     test_per_wrestler_anim_tables_come_out_of_the_dispatch_lists()

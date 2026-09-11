@@ -273,6 +273,49 @@ void wm_string_setup_message(wm_string_state *st, const wm_message_desc *desc);
  * method, then print the descriptor's own text through it. */
 void wm_string_print_message(wm_string_state *st, const wm_message_desc *desc);
 
+/*
+ * HSTD.ASM:826 strip_white -- trim spaces off both ends of the
+ * high-score work buffer and copy what is left into message_buffer.
+ * `length` is the source's a3, the buffer's used length; the buffer is
+ * `.bss work_buffer,8*10`, so ten characters.
+ *
+ * Two things about it worth having written down, neither of which the
+ * port smooths over:
+ *
+ *   The leading-space scan has no bound. Its only exit is finding a
+ *   character that is not a space: `cmpi 20h,a2 / jrnz #first_found`
+ *   leaves on a non-space, and the `move a2,a2 / jrz` that follows can
+ *   only be reached when a2 IS 20h, so it never fires. An all-spaces
+ *   buffer runs the scan off the end and into whatever follows. This
+ *   port stops at `length` instead of reading out of bounds, and the
+ *   result for an all-spaces buffer is therefore the source's second
+ *   case rather than whatever the arcade's BSS happened to hold.
+ *
+ *   When the trimmed range comes out empty or inverted (`cmp a0,a1 /
+ *   jrgt`), it does not produce an empty string: it resets both ends
+ *   and copies the whole untrimmed buffer.
+ *
+ * It does not write a terminator. `out` is filled for `out_max`
+ * characters at most and the count is returned.
+ */
+size_t wm_string_strip_white(const char *work_buffer, size_t length,
+                             char *out, size_t out_max);
+
+/*
+ * HSTD.ASM:1105 val_to_dec_tenths_asc -- a pin time, rendered. The
+ * value is in hundredths and comes out as tenths: the integer part is
+ * `value / 100` through dec_to_asc with a 1000 cap, then a ".", then
+ * one decimal digit, `(value / 10) % 10`.
+ *
+ * That last digit is written two different ways. Nonzero, it goes
+ * through dec_to_asc with a cap of 10; zero, the routine concatenates
+ * the ROM string "0" directly -- because dec_to_asc suppresses leading
+ * zeros and would contribute nothing at all.
+ *
+ * The result is left in the string state's buffer.
+ */
+void wm_string_val_to_dec_tenths(wm_string_state *st, uint32_t value);
+
 #ifdef __cplusplus
 }
 #endif

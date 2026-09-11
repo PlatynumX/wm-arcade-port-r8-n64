@@ -171,6 +171,7 @@ jobs:
             bret-r8-textures-png.zip
 
       - name: Publish ROM to rom-build branch
+        if: github.event_name == 'push'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}

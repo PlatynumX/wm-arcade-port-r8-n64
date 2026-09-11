@@ -67,3 +67,31 @@ void wm_arcade_confine_wrestler(wm_arcade_actor_t *actor) {
 
     actor->can_move_dir = confine_once(actor);
 }
+
+/*
+ * WRESTLE.ASM:6163 final_confine. See the header for why it only
+ * touches the attached ones.
+ */
+void wm_arcade_final_confine(wm_arcade_actor_t *const *actors,
+                             size_t actor_count)
+{
+    size_t i;
+
+    if (!actors) return;
+
+    for (i = 0; i < actor_count; ++i) {
+        wm_arcade_actor_t *a = actors[i];
+        if (!a) continue;                       /* `jrz #inactive` */
+        if (!a->attach_proc) continue;          /* `jrz #no_attach` */
+
+        /*
+         * `calla set_collision_boxes`. The hurt box depends on the
+         * frame AND the position, and the position is what moved, so
+         * it really does have to be redone rather than left alone.
+         */
+        if (a->hurt_frame_valid) wm_arcade_set_hurt_box(a, &a->hurt_frame);
+        wm_arcade_set_attack_box(a);
+
+        wm_arcade_confine_wrestler(a);
+    }
+}

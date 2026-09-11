@@ -50,3 +50,23 @@ void wm_arcade_update_newfacing(wm_arcade_actor_t *a, const wm_arcade_actor_t *o
 
     a->new_facing_dir = facing;
 }
+
+/*
+ * WRESTLE.ASM:4108 calc_closest2 -- the gate. See the header for why
+ * the throttle is behaviour and not just a saving.
+ */
+bool wm_arcade_calc_closest2(wm_arcade_actor_t *a, const wm_arcade_actor_t *o,
+                             uint32_t pcnt) {
+    if (!a || !o) return false;
+
+    /* "Always recalculate if our current closest is dead." The source
+       reaches him through CLOSEST_NUM and process_ptrs; this port holds
+       the pair fixed, so `o` is that man. */
+    if (o->player_mode != (uint16_t)WM_PMODE_DEAD) {
+        /* "Only proceed on every fourth tick", staggered so the members
+           of a pair do not refresh together. */
+        if (((uint32_t)a->player_num & 3u) != (pcnt & 3u)) return false;
+    }
+    wm_arcade_calc_closest(a, o);
+    return true;
+}

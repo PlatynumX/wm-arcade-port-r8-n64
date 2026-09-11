@@ -141,6 +141,17 @@ bool wm_ring_boundary_seed_consistent(const WmRingBoundarySeed *seed);
  */
 int32_t wm_ring_calc_line_x(const WmRingBoundarySeed *seed, int32_t zpos);
 
+/*
+ * WRESTLE.ASM:5789 SUBR get_rope_x -- calc_line_x against whichever
+ * rope this wrestler is nearer: the right one if his X is strictly
+ * greater than RING_X_CENTER, the left one otherwise. Exactly at the
+ * centre he gets the left rope, because the source's test is `jrgt`.
+ *
+ * Returns 0 when his Z puts him past either end of that rope, which is
+ * calc_line_x's own out-of-range answer and not an X of zero.
+ */
+int32_t wm_ring_get_rope_x(int32_t xposint, int32_t zposint);
+
 #ifdef __cplusplus
 }
 #endif

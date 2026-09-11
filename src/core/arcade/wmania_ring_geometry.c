@@ -89,3 +89,14 @@ int32_t wm_ring_calc_line_x(const WmRingBoundarySeed *seed, int32_t zpos)
 
     return (int32_t)(value_fixed >> 16);
 }
+
+/*
+ * WRESTLE.ASM:5789 get_rope_x. `cmpi RING_X_CENTER,a0 / jrgt #right`,
+ * so the centre line itself belongs to the left rope.
+ */
+int32_t wm_ring_get_rope_x(int32_t xposint, int32_t zposint)
+{
+    WmRingBoundaryId id = (xposint > WM_RING_X_CENTER)
+        ? WM_RING_BOUNDARY_RIGHT_ROPE : WM_RING_BOUNDARY_LEFT_ROPE;
+    return wm_ring_calc_line_x(wm_ring_boundary_seed(id), zposint);
+}

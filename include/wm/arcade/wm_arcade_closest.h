@@ -1,6 +1,9 @@
 #ifndef WM_ARCADE_CLOSEST_H
 #define WM_ARCADE_CLOSEST_H
 
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "wm/arcade/wm_arcade_combat.h"
 
 #ifdef __cplusplus
@@ -25,10 +28,9 @@ extern "C" {
  * INRING penalty, previous-closest bonus, combo-zero, Z-penalty, the
  * running/behind-us skip rule, zombie/dead precedence) and CLOSEST_NUM
  * itself (which wrestler is "closest" -- always o here, already fixed at
- * match creation). Also not translated: calc_closest2's "only recalculate
- * every 4th tick, staggered by PLYRNUM" throttle, a pure CPU-cost
- * optimization for scanning many candidates -- irrelevant to a single fixed
- * pair, so this recomputes every tick instead.
+ * match creation). calc_closest2's throttle is NOT part of this one: see
+ * wm_arcade_calc_closest2 below, which is the real entry point and
+ * decides whether this runs at all.
  *
  * closest_dist comes from SQUARE.ASM's own square_root, which is what
  * WRESTLE.ASM:4183 calls -- a 1024-entry table lookup that discards the
@@ -41,6 +43,29 @@ extern "C" {
  * load-bearing and the source's table is what decides those.
  */
 void wm_arcade_calc_closest(wm_arcade_actor_t *a, const wm_arcade_actor_t *o);
+
+/*
+ * WRESTLE.ASM:4108 SUBRP calc_closest2 -- the real entry point, and the
+ * gate in front of calc_closest:
+ *
+ *   Always recalculate if our current closest is dead.
+ *   Only proceed on every fourth tick: (PLYRNUM & 3) == (PCNT & 3).
+ *
+ * An earlier pass here dismissed that as "a pure CPU-cost optimization
+ * ... irrelevant to a single fixed pair" and recomputed every tick.
+ * That reading was wrong in a way worth recording: the throttle skips
+ * calc_closest entirely, so it skips the DISTANCE update too, not just
+ * the choice of whom to chase. On three ticks in four CLOSEST_DIST and
+ * its X/Y/Z siblings hold the previous values, and the AI reads them --
+ * wm_arcade_drone.c compares closest_dist against 200 and
+ * wm_arcade_doink.c against 0x70. A drone in the arcade acts on data up
+ * to three ticks old, and the stagger by PLYRNUM means the two members
+ * of a pair refresh on different ticks.
+ *
+ * Returns true when it actually recomputed.
+ */
+bool wm_arcade_calc_closest2(wm_arcade_actor_t *a, const wm_arcade_actor_t *o,
+                             uint32_t pcnt);
 
 /*
  * WRESTLE.ASM:3018 SUBRP update_newfacing, the shared per-wrestler routine

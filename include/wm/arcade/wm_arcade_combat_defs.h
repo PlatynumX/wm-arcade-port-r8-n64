@@ -186,6 +186,14 @@ enum wm_arcade_status_bits {
     WM_STATUS_PUSH          = 1u << 20
 };
 
+/* PLYR.EQU:264-266 PLYR_TYPE. The referee is negative, so this is a
+   signed field and "not a player" is not the same as "a drone". */
+enum {
+    WM_PTYPE_PLAYER  =  0,
+    WM_PTYPE_DRONE   =  1,
+    WM_PTYPE_REFEREE = -1
+};
+
 /* DISPLAY.EQU OCTRL flag used by collision box mirroring. */
 #define WM_OBJ_FLIPH 0x0010u
 

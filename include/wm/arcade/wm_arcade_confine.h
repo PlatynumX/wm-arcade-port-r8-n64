@@ -1,6 +1,8 @@
 #ifndef WM_ARCADE_CONFINE_H
 #define WM_ARCADE_CONFINE_H
 
+#include <stddef.h>
+
 #include "wm/arcade/wm_arcade_combat.h"
 
 #ifdef __cplusplus
@@ -70,6 +72,27 @@ extern "C" {
  *     animation-table dispatch this port hasn't translated.
  */
 void wm_arcade_confine_wrestler(wm_arcade_actor_t *actor);
+
+/*
+ * WRESTLE.ASM:6163 SUBRP final_confine, called from the main loop at
+ * :2064 after every wrestler has moved. It sweeps the process table and
+ * re-runs set_collision_boxes and confine_wrestler on each one that has
+ * an ATTACH_PROC -- and only those.
+ *
+ * The reason for the second pass is the order the first one runs in. A
+ * puppet is moved by his master, and if the master is later in the
+ * table than the puppet then the puppet was confined before he was
+ * dragged. Everybody else was confined after their own last move and
+ * needs nothing; an attached man might have been pulled through a rope
+ * since. So this is not a belt-and-braces repeat, it is the fix for a
+ * specific ordering hole, which is why the ATTACH_PROC test is there.
+ *
+ * Note it does NOT restore a13 per iteration the way the caller might
+ * expect -- it pushes once around the whole loop -- so the sweep is
+ * over every process, not just the current one's partner.
+ */
+void wm_arcade_final_confine(wm_arcade_actor_t *const *actors,
+                             size_t actor_count);
 
 #ifdef __cplusplus
 }

@@ -613,5 +613,40 @@
     "file": "LIFEBAR.ASM",
     "status": "display",
     "note": "LIFEBAR.ASM:2164 -- build the two-digit win-streak display for each player: clamp to 99, BINBCD, index #f_t for each nibble's digit image and BEGINOBJ it at a fixed screen position, plus the `lwin` label object. It reads p1winstreak/p2winstreak and writes only objects."
+  },
+  "get_punch_dtime": {
+    "file": "WRESTLE.ASM",
+    "status": "renamed",
+    "symbol": "wm_arcade_get_dtime",
+    "note": "WRESTLE.ASM:3994. Three instructions -- scale PLYRNUM, index punch_dtime1, read the word. The port keeps the nine hold counters on the actor rather than in nine parallel arrays, so the index is the actor and the array is a wm_arcade_dtime_t."
+  },
+  "get_powerp_dtime": {
+    "file": "WRESTLE.ASM",
+    "status": "renamed",
+    "symbol": "wm_arcade_get_dtime",
+    "note": "WRESTLE.ASM:3985, the same three instructions against powerp_dtime1. WM_DTIME_POWERP."
+  },
+  "get_powerk_dtime": {
+    "file": "WRESTLE.ASM",
+    "status": "renamed",
+    "symbol": "wm_arcade_get_dtime",
+    "note": "WRESTLE.ASM:4012, against powerk_dtime1. WM_DTIME_POWERK."
+  },
+  "get_block_dtime": {
+    "file": "WRESTLE.ASM",
+    "status": "renamed",
+    "symbol": "wm_arcade_get_dtime",
+    "note": "WRESTLE.ASM:3978, against block_dtime1. WM_DTIME_BLOCK."
+  },
+  "get_kick_dtime": {
+    "file": "WRESTLE.ASM",
+    "status": "renamed",
+    "symbol": "wm_arcade_get_dtime",
+    "note": "WRESTLE.ASM:4004, against kick_dtime1. WM_DTIME_KICK."
+  },
+  "update_timer": {
+    "file": "WRESTLE2.ASM",
+    "status": "display",
+    "note": "WRESTLE2.ASM:4370. Reads the two match_time digits, indexes digit_tbl for each one's image and hands it to change_image against the two PDATA object pointers. The clock value itself is wm/arcade/wm_arcade_round.h's; this is the two digits on screen."
   }
 }

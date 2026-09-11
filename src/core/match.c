@@ -309,6 +309,21 @@ static void init_actor_life(wm_arcade_actor_t *a) {
     a->life = WM_ARCADE_LIFE_MAX;
 }
 
+/*
+ * PLYR.EQU:263 PLYR_TYPE. WRESTLE2.ASM's #ko_if_drone reads it off the
+ * process at the head of xxx_dead_anim -- a dead drone is knocked out
+ * for good and a dead human is not -- so every actor needs one. The
+ * source sets it at wrestler creation; so does this.
+ */
+static void init_plyr_types(wm_match_state *m) {
+    unsigned i;
+    for (i = 0; i < WM_MATCH_MAX_ACTORS; ++i) {
+        m->actors[i].plyr_type =
+            (m->has_human && i == m->human_actor_index)
+                ? WM_PTYPE_PLAYER : WM_PTYPE_DRONE;
+    }
+}
+
 static void init_bret_backends(wm_match_state *m) {
     unsigned i;
     for (i = 0; i < WM_MATCH_MAX_ACTORS; ++i) {
@@ -358,6 +373,7 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
     wm_arcade_drone_init(&m->drones[0], 0);
     wm_arcade_drone_init(&m->drones[1], 0);
 
+    init_plyr_types(m);
     init_bret_backends(m);
 
     m->actor_count = WM_MATCH_MAX_ACTORS;
@@ -429,6 +445,7 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
     m->human_actor_index = 0;
     wm_human_input_init(&m->human_input_state);
 
+    init_plyr_types(m);
     init_bret_backends(m);
 
     m->actor_count = WM_MATCH_MAX_ACTORS;
@@ -545,8 +562,15 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
            ran inside the Bret branch below, so a drone-controlled actor's
            AI acted on the *previous* tick's stale distances; a drone-
            controlled Bret got fresh data for move_bret but stale data for
-           its own drone_main decision that same tick. */
-        wm_arcade_calc_closest(&m->actors[i], &m->actors[1u - i]);
+           its own drone_main decision that same tick.
+
+           Through calc_closest2 rather than calc_closest, because the
+           arcade's own throttle -- every fourth tick, staggered by
+           PLYRNUM, unless the opponent is dead -- skips the distance
+           update and not just the target choice, and the AI reads those
+           distances. See wm/arcade/wm_arcade_closest.h. */
+        (void)wm_arcade_calc_closest2(&m->actors[i], &m->actors[1u - i],
+                                      world.pcnt);
 
         if (m->has_human && i == m->human_actor_index) {
             wm_human_input_commit(&m->actors[i], &m->human_input_state, human_input);
@@ -855,6 +879,16 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
                                                   m->actor_count);
             }
         }
+
+        /*
+         * WRESTLE.ASM:2064 `callr final_confine`, the line straight
+         * after check_collisions in the main loop. It re-confines only
+         * the wrestlers that have an ATTACH_PROC, because a puppet is
+         * moved by his master and may have been confined before he was
+         * dragged. Everyone else was confined after their own last
+         * move, in the per-wrestler pass above.
+         */
+        wm_arcade_final_confine(actor_ptrs, m->actor_count);
     }
 
     {

@@ -19,6 +19,10 @@ void wm_arcade_set_hurt_box(wm_arcade_actor_t *actor,
 
     if (!actor || !frame) return;
 
+    /* Kept for final_confine's second pass; see the header. */
+    actor->hurt_frame = *frame;
+    actor->hurt_frame_valid = true;
+
     if (actor->player_mode == WM_PMODE_ONGROUND) {
         zoff = -15;
         zdepth = 30;
@@ -328,12 +332,64 @@ void wm_arcade_set_getup_time(
         callbacks->maybe_gidd_up(victim, callbacks->user);
 }
 
+static uint16_t step_dtime(uint16_t held, unsigned bit, uint16_t count) {
+    /* `srl 1,a0 / jrnc #clr / move *a2,a1 / inc a1 / #clr move a1,*a2` --
+       one bit per pass, counting up while set and back to zero when not. */
+    return (held & (1u << bit)) ? (uint16_t)(count + 1) : 0;
+}
+
 void wm_arcade_update_joy_dtime(wm_arcade_actor_t *actor) {
     if (!actor) return;
-    actor->punch_dtime = (actor->but_val_cur & WM_BTN_PUNCH)
-        ? (uint16_t)(actor->punch_dtime + 1) : 0;
-    actor->powerp_dtime = (actor->but_val_cur & WM_BTN_SPUNCH)
-        ? (uint16_t)(actor->powerp_dtime + 1) : 0;
-    actor->powerk_dtime = (actor->but_val_cur & WM_BTN_SKICK)
-        ? (uint16_t)(actor->powerk_dtime + 1) : 0;
+
+    /* #update_stick: STICK_VAL_CUR, bit 0 upward, four passes. */
+    actor->up_dtime    = step_dtime(actor->stick_val_cur, 0, actor->up_dtime);
+    actor->down_dtime  = step_dtime(actor->stick_val_cur, 1, actor->down_dtime);
+    actor->left_dtime  = step_dtime(actor->stick_val_cur, 2, actor->left_dtime);
+    actor->right_dtime = step_dtime(actor->stick_val_cur, 3, actor->right_dtime);
+
+    /* #update_but: BUT_VAL_CUR, bit 0 upward, five passes. The order is
+       the arrays' order, so bit 1 is block and bit 2 is the power
+       punch -- not the order the buttons are named in. */
+    actor->punch_dtime  = step_dtime(actor->but_val_cur, 0, actor->punch_dtime);
+    actor->block_dtime  = step_dtime(actor->but_val_cur, 1, actor->block_dtime);
+    actor->powerp_dtime = step_dtime(actor->but_val_cur, 2, actor->powerp_dtime);
+    actor->kick_dtime   = step_dtime(actor->but_val_cur, 3, actor->kick_dtime);
+    actor->powerk_dtime = step_dtime(actor->but_val_cur, 4, actor->powerk_dtime);
+}
+
+void wm_arcade_init_joy_dtime(wm_arcade_actor_t *actor) {
+    if (!actor) return;
+    actor->up_dtime = 0;
+    actor->down_dtime = 0;
+    actor->left_dtime = 0;
+    actor->right_dtime = 0;
+    actor->punch_dtime = 0;
+    actor->block_dtime = 0;
+    actor->powerp_dtime = 0;
+    actor->kick_dtime = 0;
+    actor->powerk_dtime = 0;
+}
+
+uint16_t wm_arcade_get_dtime(const wm_arcade_actor_t *actor,
+                             wm_arcade_dtime_t which) {
+    if (!actor) return 0;
+    switch (which) {
+    case WM_DTIME_UP:     return actor->up_dtime;
+    case WM_DTIME_DOWN:   return actor->down_dtime;
+    case WM_DTIME_LEFT:   return actor->left_dtime;
+    case WM_DTIME_RIGHT:  return actor->right_dtime;
+    case WM_DTIME_PUNCH:  return actor->punch_dtime;
+    case WM_DTIME_BLOCK:  return actor->block_dtime;
+    case WM_DTIME_POWERP: return actor->powerp_dtime;
+    case WM_DTIME_KICK:   return actor->kick_dtime;
+    case WM_DTIME_POWERK: return actor->powerk_dtime;
+    }
+    return 0;
+}
+
+/* WRESTLE2.ASM:1270 inc_getup_time. `cmpi 20,a14 / jrlt #exit`. */
+void wm_arcade_inc_getup_time(wm_arcade_actor_t *actor, int32_t amount) {
+    if (!actor) return;
+    if (actor->getup_time < 20) return;
+    actor->getup_time += amount;
 }

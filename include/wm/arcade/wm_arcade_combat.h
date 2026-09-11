@@ -1,6 +1,7 @@
 #ifndef WM_ARCADE_COMBAT_H
 #define WM_ARCADE_COMBAT_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include "wm/arcade/wm_arcade_combat_defs.h"
@@ -98,6 +99,14 @@ struct wm_arcade_actor {
     wm_arcade_actor_t *who_hit_me;
 
     wm_arcade_box3_t hurt_box;
+    /*
+     * The frame box hurt_box was last computed from, and whether one
+     * has been. The source reads it back off CUR_FRAME; this port's
+     * backends build it as a local, so set_collision_boxes keeps a copy
+     * for WRESTLE.ASM:6163 final_confine's second pass.
+     */
+    wm_arcade_frame_box_t hurt_frame;
+    bool hurt_frame_valid;
 
     int32_t attack_xoff;
     int32_t attack_yoff;
@@ -273,6 +282,10 @@ struct wm_arcade_actor {
     int32_t usr_var1;
     int32_t usr_var2;              /* PLYR.EQU USR_VAR2; Yoko salt failure flag. */
     int32_t player_side;           /* PLYR.EQU PLYR_SIDE: 0, 1, or -1. */
+    /* PLYR.EQU:263 PLYR_TYPE -- WM_PTYPE_PLAYER, _DRONE or _REFEREE.
+       WRESTLE2.ASM's #ko_if_drone and DRONE.ASM's drone_calcskill both
+       branch on it, and both do nothing at all for a human. */
+    int32_t plyr_type;
     /* PLYR.EQU:249 BUCKOFF_COUNT, "Buttons pressed for buckoff." Cleared
        for everyone by announce_rnd_winner when a buckoff window closes
        (wm/arcade/wm_arcade_round_announce.h); the mashing that fills it
@@ -322,8 +335,16 @@ struct wm_arcade_actor {
        wm_arcade_update_joy_dtime. block_dtime1/kick_dtime1 aren't tracked
        here since nothing in this port reads them yet. */
     uint16_t punch_dtime;
+    uint16_t block_dtime;
     uint16_t powerp_dtime;
+    uint16_t kick_dtime;
     uint16_t powerk_dtime;
+    /* And #update_stick's four, in the source's own !KEEP THIS ORDER!:
+       up, down, left, right, read out of STICK_VAL_CUR bit 0 upward. */
+    uint16_t up_dtime;
+    uint16_t down_dtime;
+    uint16_t left_dtime;
+    uint16_t right_dtime;
     int32_t closest_dist;
     int32_t closest_xdist;
     int32_t closest_ydist;
@@ -387,6 +408,14 @@ typedef enum wm_arcade_hit_result {
     WM_HIT_ACCEPTED = 1
 } wm_arcade_hit_result_t;
 
+/*
+ * COLLIS.ASM:260 set_collision_boxes' hurt-box half. It also remembers
+ * the frame box on the actor, because the box depends on POSITION as
+ * well as on the frame: WRESTLE.ASM:6163 final_confine has to recompute
+ * it after a puppet has been dragged, and the source reads CUR_FRAME
+ * off the process to do that. Without somewhere to keep it, the second
+ * pass would need the caller to find the frame again.
+ */
 void wm_arcade_set_hurt_box(wm_arcade_actor_t *actor,
                             const wm_arcade_frame_box_t *frame);
 void wm_arcade_set_attack_box(wm_arcade_actor_t *actor);
@@ -417,17 +446,67 @@ int wm_arcade_check_wrestler_collisions(
     uint32_t round_tick,
     const wm_arcade_combat_callbacks_t *callbacks);
 void wm_arcade_wrestler_collisions_off(wm_arcade_actor_t *actor);
+/*
+ * WRESTLE2.ASM:1270 SUBR inc_getup_time -- add to a downed wrestler's
+ * GETUP_TIME, but only while it is still at least 20. Below that he is
+ * already on his way up and cannot be held down any longer, which is
+ * the whole content of the routine: six instructions, five of them the
+ * guard.
+ *
+ * Nothing in the shipped game calls it. DNK.ASM:118 and DOINK.ASM:49
+ * each declare it with `.ref` and the only `calla` -- REACT5.ASM:873 --
+ * is commented out, so the two declarations are all that is left of
+ * whatever used to.
+ */
+void wm_arcade_inc_getup_time(wm_arcade_actor_t *actor, int32_t amount);
+
 void wm_arcade_set_getup_time(
     const wm_arcade_actor_t *attacker,
     wm_arcade_actor_t *victim,
     const wm_arcade_combat_callbacks_t *callbacks);
 
-/* WRESTLE.ASM:4023 update_joy_dtime's #update_but half (the direction half,
-   #update_stick, isn't translated -- nothing in this port reads a stick
-   hold-duration yet). Reads but_val_cur, so call this after but_val_cur is
-   set for the tick (wm_human_input_commit) and before anything that reads
-   punch_dtime/powerp_dtime/powerk_dtime this same tick. */
+/*
+ * WRESTLE.ASM:4023 update_joy_dtime -- both halves. Nine counters per
+ * wrestler, one per stick direction and one per button, each counting
+ * the ticks that input has been held and snapping back to zero the tick
+ * it is released. The source keeps them as nine consecutive BSSX arrays
+ * under its own "!KEEP THIS ORDER!" comment, because #update_stick and
+ * #update_but walk them with `addi 16*NUM_WRES,a2` rather than by name.
+ *
+ * Reads stick_val_cur and but_val_cur, so call it after those are set
+ * for the tick (wm_human_input_commit) and before anything that reads a
+ * hold time this same tick.
+ */
 void wm_arcade_update_joy_dtime(wm_arcade_actor_t *actor);
+
+/*
+ * WRESTLE.ASM:3962 init_joy_dtime -- `movi 9*NUM_WRES,a2` and clear.
+ * Note the count: nine arrays' worth in one loop, which only works
+ * because they are contiguous and in that fixed order.
+ */
+void wm_arcade_init_joy_dtime(wm_arcade_actor_t *actor);
+
+/*
+ * WRESTLE.ASM:3978-4014's five readers -- get_block_dtime,
+ * get_powerp_dtime, get_punch_dtime, get_kick_dtime, get_powerk_dtime.
+ * Each is three instructions: scale the wrestler number, index its own
+ * array, read the word. The port holds the counters on the actor
+ * instead of in a table indexed by PLYRNUM, so the index is the actor.
+ */
+typedef enum wm_arcade_dtime {
+    WM_DTIME_UP = 0,
+    WM_DTIME_DOWN,
+    WM_DTIME_LEFT,
+    WM_DTIME_RIGHT,
+    WM_DTIME_PUNCH,
+    WM_DTIME_BLOCK,
+    WM_DTIME_POWERP,
+    WM_DTIME_KICK,
+    WM_DTIME_POWERK
+} wm_arcade_dtime_t;
+
+uint16_t wm_arcade_get_dtime(const wm_arcade_actor_t *actor,
+                             wm_arcade_dtime_t which);
 
 #ifdef __cplusplus
 }

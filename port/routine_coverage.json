@@ -7060,8 +7060,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "calc_closest2",
+   "status": "implemented",
+   "evidence": "wm_arcade_calc_closest2",
    "from_generated": false,
    "ledgered": false
   },
@@ -12897,8 +12897,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_arcade_final_confine",
    "from_generated": false,
    "ledgered": false
   },
@@ -13407,10 +13407,10 @@
    "local": false,
    "external_callers": 0,
    "references": 0,
-   "status": "dead",
-   "evidence": "nothing anywhere names it",
+   "status": "renamed",
+   "evidence": "wm_arcade_get_dtime",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "get_bonus_icons",
@@ -13527,10 +13527,10 @@
    "local": false,
    "external_callers": 0,
    "references": 0,
-   "status": "dead",
-   "evidence": "nothing anywhere names it",
+   "status": "renamed",
+   "evidence": "wm_arcade_get_dtime",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "get_leap",
@@ -13662,10 +13662,10 @@
    "local": false,
    "external_callers": 3,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_arcade_get_dtime",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "get_powerp_dtime",
@@ -13677,10 +13677,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_arcade_get_dtime",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "get_powerups",
@@ -13722,10 +13722,10 @@
    "local": false,
    "external_callers": 5,
    "references": 5,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_arcade_get_dtime",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "get_rnd_wrestler",
@@ -13752,8 +13752,8 @@
    "local": false,
    "external_callers": 4,
    "references": 4,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_ring_get_rope_x",
    "from_generated": false,
    "ledgered": false
   },
@@ -17999,8 +17999,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_arcade_inc_getup_time",
    "from_generated": false,
    "ledgered": false
   },
@@ -18089,8 +18089,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_arcade_init_joy_dtime",
    "from_generated": false,
    "ledgered": false
   },
@@ -18479,9 +18479,9 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
+   "status": "implemented",
    "evidence": "ko_if_drone",
-   "from_generated": false,
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -27197,9 +27197,9 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
+   "status": "implemented",
    "evidence": "set_pinable_bit",
-   "from_generated": false,
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -34563,10 +34563,10 @@
    "local": false,
    "external_callers": 1,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "WRESTLE2.ASM:4370. Reads the two match_time digits, indexes digit_tbl for each one's image and hands it to change_image against the two PDATA object pointers. The clock value itself is wm/arcade/wm_arcade_round.h's; this is the two digits on screen.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "val_to_dec_tenths_asc",

@@ -1512,6 +1512,46 @@ static void ck_dead_opp(wm_arcade_actor_t *actor, const wm_anim_env *env,
 }
 
 /*
+ * WRESTLE2.ASM:4042 #set_pinable_bit -- the first thing xxx_dead_anim
+ * does after dropping into MODE_DEAD. One OR, and it is what lets a
+ * corpse be pinned at all.
+ */
+static void set_pinable_bit(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                            int32_t param) {
+    (void)env;
+    (void)param;
+    if (!actor) return;
+    actor->status_flags |= WM_STATUS_PINABLE;
+}
+
+/*
+ * WRESTLE2.ASM:4008 #ko_if_drone -- the second thing xxx_dead_anim
+ * does. A dead drone is knocked out for good; a dead human is not,
+ * because he may still buy back in.
+ *
+ * The source guards it with "don't go to sleep if this is an 8-on-1 or
+ * 8-on-2 match, UNLESS wrestler_count is 0, which means there's no hope
+ * of becoming a zombie" -- `@royal_rumble` or is_8_on_1, then
+ * wrestler_count. Both of those are permanently false in this port, for
+ * the reasons set out in wm/arcade/wm_arcade_mode_dead.h, so control
+ * always reaches #not8 and the guard is not written out here.
+ *
+ * What is left is three tests, and two of them are refusals: a pinned
+ * wrestler is not KO'd (the pin is already the ending) and neither is
+ * one carrying NO_KO.
+ */
+static void ko_if_drone(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                        int32_t param) {
+    (void)env;
+    (void)param;
+    if (!actor) return;
+    if (actor->plyr_type != WM_PTYPE_DRONE) return;
+    if (actor->status_flags & WM_STATUS_PINNED) return;
+    if (actor->status_flags & WM_STATUS_NO_KO) return;
+    actor->status_flags |= WM_STATUS_KOD;
+}
+
+/*
  * REACT1.ASM:1901 #dead_or_dying -- the guard on xxx_aborted_attach_anim.
  *
  * A wrestler whose puppet sequence was interrupted normally gets up.
@@ -3032,6 +3072,8 @@ static const struct {
     { "#ck_dead_opp", "HRTSEQ3.ASM", ck_dead_opp, 0, 0 },
     /* REACT1.ASM writes it once, so no line is needed to disambiguate. */
     { "#dead_or_dying", "REACT1.ASM", dead_or_dying, 0, 0 },
+    { "#set_pinable_bit", "WRESTLE2.ASM", set_pinable_bit, 0, 0 },
+    { "#ko_if_drone", "WRESTLE2.ASM", ko_if_drone, 0, 0 },
     { "#set_wrestler_xflip", "HRTSEQ4.ASM", set_wrestler_xflip_code, 0, 0 },
     /* Another SPCDMG, with its own pair. */
     { "#stop_dmg", "YOKSEQ3.ASM", reduce_dmg, WM_SPCDMG(2, 35), 0 },

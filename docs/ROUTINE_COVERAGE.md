@@ -13,14 +13,14 @@ only in a note saying it is missing does not count as present.
 | `partial` | partly translated; the ledger note says which part | 11 |
 | `data` | a table, extracted by a tool (ledger) | 12 |
 | `process` | a CREATE/SLEEP wrapper (ledger) | 20 |
-| `display` | object/DMA drawing; this port has no renderer (ledger) | 32 |
+| `display` | object/DMA drawing; this port has no renderer (ledger) | 33 |
 | `hardware` | talks to the cabinet (ledger) | 19 |
 | `dead` | **measured**: no caller outside its own file | 37 |
 | `unassembled` | **measured**: inside a `.if` the assembler skipped | 64 |
 | `cited` | named only in a comment -- not evidence of anything | 45 |
-| `unknown` | no mention anywhere | 209 |
+| `unknown` | no mention anywhere | 208 |
 
-**2280 of 2534 routines are accounted for; 254 are open** (`cited` + `unknown`).
+**2281 of 2534 routines are accounted for; 253 are open** (`cited` + `unknown`).
 
 ## Open routines by file
 
@@ -29,7 +29,7 @@ only in a note saying it is missing does not count as present.
 | AWARD.ASM | 63 | `BLACKOUT`, `adjust_text_position`, `adjust_tl`, `anim_mk`, `anim_sparkle`, `audit_icons`, `award_text`, `bbicon_table`, `create_end_rnd_awards`, `create_player_awards`, `decompress_string`, `del_bonus_icons`, ... |
 | FIREWORK.ASM | 23 | `animate_fwexp`, `c1v3_tbl`, `c1v3s_tbl`, `c1v8_tbl`, `c1v8s_tbl`, `c2v8_tbl`, `c2v8s_tbl`, `calc_dxdy`, `check_camera_position`, `congrats_setup_tbl`, `congrats_str_tbl`, `do_fireworks`, ... |
 | DCSSOUND.ASM | 22 | `ANNOUNCE_VOICE`, `CALL_MATCH_OVER`, `END_MATCH_SPEECH`, `KILL_PIN_HIM`, `PROC_MATCH_OVER`, `SNDSND`, `VOLBTN_PRESS`, `announcer_sound`, `channel_sound`, `clear_sound_ram`, `delay_code_a3`, `do_tune_commands`, ... |
-| LIFEBAR.ASM | 20 | `CREATE_TIMEOUT`, `DO_RIGHT_MUSIC`, `DO_RIGHT_MUSIC2`, `DO_ROUNDS`, `FIRSTATT_MESS`, `ICON_SPARKLE`, `MOVE_NAME_ANNC`, `PIN_FLASH_ANIM`, `SHIFT_BARS_IN_Z`, `SPECIAL_MESSAGE`, `WHERE_WRESTLMANIA_SPARKLES`, `arw_bwait`, ... |
+| LIFEBAR.ASM | 19 | `DO_RIGHT_MUSIC`, `DO_RIGHT_MUSIC2`, `DO_ROUNDS`, `FIRSTATT_MESS`, `ICON_SPARKLE`, `MOVE_NAME_ANNC`, `PIN_FLASH_ANIM`, `SHIFT_BARS_IN_Z`, `SPECIAL_MESSAGE`, `WHERE_WRESTLMANIA_SPARKLES`, `arw_bwait`, `do_game_over`, ... |
 | HSTD.ASM | 19 | `PIN_SPEED_TAB`, `do_that_cycle`, `draw_beaten_table_entry`, `draw_each_beaten_table_entry`, `draw_each_inter_table_entry`, `draw_letter_grid`, `draw_pinspeed_table_entry`, `draw_tag_table_entry`, `draw_winstreak_table_entry`, `enter_initials_beaten`, `enter_initials_streak`, `enter_initials_top_20`, ... |
 | SELECT.ASM | 17 | `GAME_BEATEN`, `THIS_GAME_IS_BEATEN`, `buyin_counter`, `buyin_select`, `call_wrestler_name`, `display_croutons`, `draw_mugshot`, `erase_mugshot`, `obj_off`, `obj_on`, `pin_speed_in_case`, `place_cursor`, ... |
 | PROGRESS.ASM | 15 | `CREATE_URN`, `PUT_UP_PROGRESS`, `START_HI_FLASHES`, `ask_belt_question`, `do_rr_vs`, `flash_it`, `flash_pcurs`, `get_final_lineup`, `get_royal_lineup`, `hilight`, `ind_select`, `mk_pcurs`, ... |

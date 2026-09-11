@@ -550,10 +550,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "LIFEBAR.ASM:4876. The TIME OUT graphic the main loop creates when the round clock expires: a sound, a BEGINOBJ at [200,300] with an upward OYVEL, two FX_PID processes copying and moving it, then four passes of TIMEOUT_FLASH_ANIM through ANIM_CROWD. Object and animation drawing throughout; what it is a consequence OF -- the clock reaching zero and the round being decided by LIFEBAR.ASM:5149 set_winner's #tmout rule -- is wm/arcade/wm_arcade_match_clock.h.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "CREATE_URN",
@@ -21555,7 +21555,7 @@
    "external_callers": 2,
    "references": 2,
    "status": "partial",
-   "evidence": "wm_arcade_round_tick",
+   "evidence": "wm_match_clock_tick",
    "from_generated": false,
    "ledgered": true
   },

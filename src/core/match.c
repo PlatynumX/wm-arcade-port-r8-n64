@@ -451,13 +451,16 @@ static void init_actor_life(wm_arcade_actor_t *a) {
  * the call site they never had, which is why a finished match awarded
  * nothing.
  *
- * Two of them need more than the match has: arm_comeback_award wants
- * every live enemy's health at the moment of arming (AWARD.ASM:1059
- * arms it, not this path, and nothing arms it here yet), and
- * is_it_a_really_quick_win reads @match_time, which this port has no
- * round clock to fill in. Both are called with what the match really
- * knows rather than skipped, so they decline for a reason that is
- * visible instead of not running at all.
+ * One of them still needs more than the match has: arm_comeback_award
+ * wants every live enemy's health at the moment of arming (AWARD.ASM:
+ * 1059 arms it, not this path, and nothing arms it here yet), so it
+ * is called with what the match really knows rather than skipped and
+ * declines for a reason that is visible.
+ *
+ * is_it_a_really_quick_win used to be the other one. It reads
+ * @match_time, which had no round clock behind it, so every win
+ * scored zero and the award could never fire; the clock is real now
+ * and it is handed the same number AWARD.ASM:996 computes.
  */
 static void match_end_awards(void *user) {
     wm_match_state *m = (wm_match_state *)user;
@@ -469,10 +472,12 @@ static void match_end_awards(void *user) {
     pstatus = m->has_human ? 1 : 0;
 
     for (p = 0; p < WM_AWARD_PLAYER_COUNT; ++p) {
-        /* `is_it_a_really_quick_win` with a match_time of 0: the
-           source's score is (t & 0xF) * 10 + (t >> 16), so zero scores
-           zero and the award declines. There is no round clock here. */
-        (void)wm_award_quick_win(&m->awards, p, p, 0);
+        /* AWARD.ASM:996's own reading of @match_time -- see
+           wm_match_clock_award_score. A win with more than 69 left on
+           the clock is "really quick". */
+        (void)wm_award_quick_win(&m->awards, p, p,
+                                 (uint32_t)wm_match_clock_award_score(
+                                     &m->clock));
         wm_award_defeat_human(&m->awards, p, p, (uint32_t)pstatus);
         wm_award_check_comeback(&m->awards, p, p);
         human[p] = (pstatus & (1 << p)) != 0;
@@ -524,6 +529,10 @@ static void match_reset_for_round(wm_match_state *m) {
     }
 
     m->current_round += 1;
+    /* WRESTLE.ASM:2657 `;reset match_time` -- the same three stores
+       match_timer opens with, so round two starts on a full clock. */
+    wm_match_clock_reset(&m->clock);
+    m->clock_warning = false;
     /* `callr reset_smoves` -- every watchdog back to its own entry. */
     for (i = 0; i < WM_MATCH_MAX_ACTORS; ++i)
         wm_smove_reset(m->smoves[i], m->smove_count[i]);
@@ -642,6 +651,22 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
     wm_announcer_init(&m->announcer);       /* RESET_VOICE_QUEUE */
     wm_anim_code_reset();
     wm_arcade_round_state_init(&m->round_state);
+    /*
+     * WRESTLE.ASM:1631 `CREATE TIMER_PID,match_timer` -- the round
+     * clock starts with the match, not with the round. Its rate is
+     * chosen once here and survives every reset.
+     *
+     * All three of match_timer's slowdowns are false, for the same
+     * reason royal_rumble is hard-coded false everywhere else in this
+     * file: this port runs a fixed two-man bout with no ladder state
+     * to ask. wm_match_clock_rate takes them so a caller that has a
+     * wm_pregame_state can pass the real answers without the clock
+     * itself having to learn about ladders.
+     */
+    wm_match_clock_start(&m->clock,
+                         wm_match_clock_rate(WM_MATCH_CLOCK_ADJSPEED_DEFAULT,
+                                             false, false, false));
+    m->clock_warning = false;
     wm_arcade_round_announce_init(&m->round_announce);
     wm_match_end_init(&m->match_end);
     wm_award_init(&m->awards);
@@ -722,6 +747,22 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
     wm_announcer_init(&m->announcer);       /* RESET_VOICE_QUEUE */
     wm_anim_code_reset();
     wm_arcade_round_state_init(&m->round_state);
+    /*
+     * WRESTLE.ASM:1631 `CREATE TIMER_PID,match_timer` -- the round
+     * clock starts with the match, not with the round. Its rate is
+     * chosen once here and survives every reset.
+     *
+     * All three of match_timer's slowdowns are false, for the same
+     * reason royal_rumble is hard-coded false everywhere else in this
+     * file: this port runs a fixed two-man bout with no ladder state
+     * to ask. wm_match_clock_rate takes them so a caller that has a
+     * wm_pregame_state can pass the real answers without the clock
+     * itself having to learn about ladders.
+     */
+    wm_match_clock_start(&m->clock,
+                         wm_match_clock_rate(WM_MATCH_CLOCK_ADJSPEED_DEFAULT,
+                                             false, false, false));
+    m->clock_warning = false;
     wm_arcade_round_announce_init(&m->round_announce);
     wm_match_end_init(&m->match_end);
     wm_award_init(&m->awards);
@@ -1258,6 +1299,44 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
 
     {
         bool was_decided = m->round_state.decided;
+
+        /*
+         * WRESTLE2.ASM:4098 match_timer, one tick, and WRESTLE.ASM:
+         * 2102's `move @match_time,a0,L / jrnz #loop` -- the main
+         * loop's own test on it. @HALT is passed false: this port has
+         * no pause state to raise it.
+         */
+        m->clock_warning = false;
+        if (!was_decided) {
+            wm_match_clock_tick(&m->clock, false, actor_ptrs,
+                                m->actor_count, &m->clock_warning);
+            if (wm_match_clock_expired(&m->clock)) {
+                if (!m->has_human) {
+                    /*
+                     * WRESTLE.ASM:2115 `#wraparound`: `move @PSTATUS,
+                     * a14 / jrnz #norm`. With nobody playing the demo
+                     * rolls the clock back to 99 and keeps going, so
+                     * an attract match is never ended by the clock.
+                     */
+                    wm_match_clock_wrap(&m->clock);
+                } else {
+                    /*
+                     * `#norm`: HALT, the velocities zeroed, the
+                     * TIME OUT graphic, and announce_rnd_winner --
+                     * of which this port has the decision,
+                     * LIFEBAR.ASM:5149 set_winner's #tmout branch.
+                     * A -1 is the source's own "neither side landed
+                     * a blow" answer and awards the round to nobody,
+                     * exactly as a double-KO does.
+                     */
+                    m->round_state.decided = true;
+                    m->round_state.decided_winner_side =
+                        wm_match_timeout_winner(actor_ptrs, m->actor_count);
+                    m->round_state.pin_timeout = 0;
+                }
+            }
+        }
+
         wm_arcade_round_tick(&m->round_state, actor_ptrs, m->actor_count);
         if (!was_decided && m->round_state.decided) {
             wm_arcade_match_score_award_round(&m->score, m->round_state.decided_winner_side);

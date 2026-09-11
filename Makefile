@@ -94,6 +94,7 @@ FIX38_ARCADE_C := \
     src/core/arcade/wm_arcade_react8_core.c \
     src/core/arcade/wm_arcade_react9_core.c \
     src/core/arcade/wm_arcade_roster.c \
+    src/core/arcade/wm_arcade_match_clock.c \
     src/core/arcade/wm_arcade_round.c \
     src/core/arcade/wm_arcade_round_reset.c \
     src/core/arcade/wm_arcade_match_end.c \

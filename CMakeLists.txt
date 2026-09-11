@@ -92,6 +92,7 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_roster.c
     src/core/arcade/wm_arcade_scroll.c
     src/core/arcade/wm_arcade_coffin.c
+    src/core/arcade/wm_arcade_match_clock.c
     src/core/arcade/wm_arcade_round.c
     src/core/arcade/wm_arcade_round_reset.c
     src/core/arcade/wm_arcade_match_end.c

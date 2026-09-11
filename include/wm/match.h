@@ -16,6 +16,7 @@
 #include "wm/arcade/wm_arcade_lifebar.h"
 #include "wm/arcade/wm_arcade_react.h"
 #include "wm/arcade/wm_arcade_roster.h"
+#include "wm/arcade/wm_arcade_match_clock.h"
 #include "wm/arcade/wm_arcade_round.h"
 #include "wm/arcade/wm_arcade_round_announce.h"
 #include "wm/arcade/wm_arcade_target.h"
@@ -121,6 +122,23 @@ typedef struct {
        5-second pin-idiot-check countdown) -- see wm/arcade/wm_arcade_round.h
        for exactly what this does and does not decide. */
     wm_arcade_round_state_t round_state;
+    /*
+     * WRESTLE2.ASM:4098 match_timer's @match_time, the round clock --
+     * see wm/arcade/wm_arcade_match_clock.h. Reset to 99 by
+     * match_reset_for_round and ticked once a source tick, and when
+     * it reaches zero the round is decided by LIFEBAR.ASM's #tmout
+     * rule instead of by a knockout.
+     */
+    wm_match_clock_t clock;
+    /*
+     * #dec_timer's `movk 10,a0 / calla triple_sound`, true for the
+     * ONE tick it fires -- once a second from ten seconds down. It is
+     * a flag rather than a call because nothing in this port plays a
+     * sound yet; the crowd channel beside it is the crowd's, and
+     * putting the clock's warning on it would be a different sound in
+     * a different place.
+     */
+    bool clock_warning;
     /*
      * ROPES.ASM's four rope banks. The whole subsystem -- rope_command's
      * table routing, the runtime's new_command_wake, and the complete

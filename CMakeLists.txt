@@ -179,6 +179,20 @@ if(WM_BUILD_TESTS)
              COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/n64_link_check.py
              WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
+    # n64_link_check skips src/platform/n64 because it needs libdragon,
+    # which left that layer compiled by nothing in a checkout without
+    # it. This type-checks the self-contained platform sources against
+    # a small shim header instead -- not a ROM build, but enough to
+    # catch an edit that does not compile.
+    add_test(NAME wm_n64_platform
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/n64_platform_check.py
+             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+    # The DragonFS roster payload's own format contract.
+    add_test(NAME wm_stream_roster
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/stream_roster_assets.py --self-test
+             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
     # Fix38 combat/ring/RNG/hiscore host verification tests. These were staged
     # under tests/arcade_port/fix38 alongside the src/core/arcade sources they
     # exercise but were never registered with CTest; the src/core/arcade code

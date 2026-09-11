@@ -5,6 +5,15 @@ The authoritative frame set is src/generated/frame_geometry.c, regenerated
 from the current translated animation/program corpus and the eight shipped
 wrestler .LOD manifests. Every emitted payload is original WIMP CI8 artwork;
 nothing is synthesized or substituted.
+
+Palettes are stored ONCE, not once per frame. A wrestler has a handful
+of TLUTs and several hundred frames -- Bret has 619 frames and two
+distinct palettes, the Undertaker 608 and seven -- so the whole roster
+is 5,126 frames sharing 23 palettes between them. Writing 512 bytes of
+TLUT into every frame file spent 2.5 MiB of cartridge storing those 23
+palettes 5,126 times, which matters on a part where the art is already
+most of the ROM. Each frame now carries a four-byte header naming its
+palette, and the palettes sit beside the frames as pN.pal.
 """
 from __future__ import annotations
 
@@ -33,6 +42,10 @@ ROSTERS = (
 FRAME_RE = re.compile(r'^\s*\{"([^"]+)"\s*,', re.M)
 SAFE_FRAME_RE = re.compile(r'^[A-Za-z0-9_]+$')
 TLUT_COLORS = 256
+TLUT_BYTES = TLUT_COLORS * 2
+# Two magic bytes then a big-endian palette index.
+PAYLOAD_MAGIC = b"WM"
+PAYLOAD_HEADER = 4
 
 
 def rgba5551(rgb555: int, index: int) -> int:
@@ -101,24 +114,40 @@ def resolve_image(frame: str, container: str, lod_order: list[str], parsed):
     return data, im, pal
 
 
-def write_payload(path: pathlib.Path, data: bytes, im, pal) -> int:
-    pixels = bytes(wimpimg.read_ci8(data, im))
-    expected = int(im.width) * int(im.height)
-    if len(pixels) != expected:
-        raise ValueError(
-            f"{im.name}: CI8 size {len(pixels)} != width*height {expected}")
+def tlut_bytes(data: bytes, im, pal) -> bytes:
+    """One frame's 256-entry big-endian RGBA5551 TLUT."""
     words = list(wimpimg.read_palette_words(data, pal))
     if len(words) > TLUT_COLORS:
         raise ValueError(f"{im.name}: palette has {len(words)} colors (>256)")
     rgba = [rgba5551(v, i) for i, v in enumerate(words)]
     rgba.extend([0] * (TLUT_COLORS - len(rgba)))
+    return b"".join(int(v).to_bytes(2, "big") for v in rgba)
+
+
+def write_payload(path: pathlib.Path, data: bytes, im,
+                  palette_index: int) -> int:
+    """One frame: a four-byte header then the CI8 pixels.
+
+    The TLUT is NOT here. A wrestler has a handful of palettes and
+    several hundred frames -- Bret has 619 frames and two distinct
+    TLUTs -- so storing 512 bytes with every frame spent 2.5 MiB of
+    cartridge on 23 palettes written 5,126 times. They live in their
+    own files beside the frames now and the header says which one.
+    """
+    pixels = bytes(wimpimg.read_ci8(data, im))
+    expected = int(im.width) * int(im.height)
+    if len(pixels) != expected:
+        raise ValueError(
+            f"{im.name}: CI8 size {len(pixels)} != width*height {expected}")
+    if palette_index < 0 or palette_index > 0xFFFF:
+        raise ValueError(f"{im.name}: palette index {palette_index} out of range")
 
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("wb") as fh:
+        fh.write(PAYLOAD_MAGIC)
+        fh.write(int(palette_index).to_bytes(2, "big"))
         fh.write(pixels)
-        for value in rgba:
-            fh.write(int(value).to_bytes(2, "big"))
-    return len(pixels) + TLUT_COLORS * 2
+    return PAYLOAD_HEADER + len(pixels)
 
 
 def emit(geometry: pathlib.Path, img_dir: pathlib.Path,
@@ -142,9 +171,13 @@ def emit(geometry: pathlib.Path, img_dir: pathlib.Path,
     total_frames = 0
     reports: list[str] = []
 
+    total_palettes = 0
     for rid, _lod_name, display in ROSTERS:
         roster_bytes = 0
         roster_frames = 0
+        # This wrestler's distinct TLUTs, in first-seen order. They are
+        # written once each rather than once per frame.
+        palettes_seen: dict[bytes, int] = {}
         for frame in per_roster[rid]:
             if not SAFE_FRAME_RE.fullmatch(frame):
                 raise ValueError(f"unsafe frame name for DragonFS path: {frame!r}")
@@ -156,14 +189,27 @@ def emit(geometry: pathlib.Path, img_dir: pathlib.Path,
                 parsed_containers[key] = (data, images, palettes)
             data, im, pal = resolve_image(
                 frame, container, order[key], parsed_containers[key])
+            tlut = tlut_bytes(data, im, pal)
+            index = palettes_seen.get(tlut)
+            if index is None:
+                index = len(palettes_seen)
+                palettes_seen[tlut] = index
             size = write_payload(out_fs / str(rid) / f"{frame}.bin",
-                                 data, im, pal)
+                                 data, im, index)
             roster_bytes += size
             roster_frames += 1
             total_bytes += size
             total_frames += 1
+        for tlut, index in palettes_seen.items():
+            pal_path = out_fs / str(rid) / f"p{index}.pal"
+            pal_path.parent.mkdir(parents=True, exist_ok=True)
+            pal_path.write_bytes(tlut)
+            roster_bytes += len(tlut)
+            total_bytes += len(tlut)
+        total_palettes += len(palettes_seen)
         reports.append(
-            f"roster={rid} name={display} frames={roster_frames} bytes={roster_bytes}")
+            f"roster={rid} name={display} frames={roster_frames} "
+            f"palettes={len(palettes_seen)} bytes={roster_bytes}")
 
     if total_frames != len(frames):
         raise ValueError(f"generated {total_frames} frames, expected {len(frames)}")
@@ -172,23 +218,70 @@ def emit(geometry: pathlib.Path, img_dir: pathlib.Path,
         "WrestleMania Arcade streamed roster art",
         f"frames={total_frames}",
         f"bytes={total_bytes}",
-        "format=CI8 pixels followed by 256 big-endian RGBA5551 TLUT entries",
+        f"palettes={total_palettes}",
+        "format=frame is 'WM' + big-endian u16 palette index + CI8 pixels;"
+        " pN.pal is 256 big-endian RGBA5551 entries",
         "source=original Midway WIMP .IMG payload resolved through shipped wrestler .LOD files",
         *reports,
         "",
     ]
     (out_fs / "STREAMED_ROSTER.txt").write_text("\n".join(stamp))
-    print(f"streamed roster: {total_frames} frames, {total_bytes} bytes")
+    print(f"streamed roster: {total_frames} frames, {total_palettes} "
+          f"palettes, {total_bytes} bytes")
     for line in reports:
         print(line)
     return total_frames, total_bytes
 
 
+class _FakeImage:
+    """Just enough of a WIMP image record for the payload writer."""
+
+    def __init__(self, name, width, height):
+        self.name = name
+        self.width = width
+        self.height = height
+
+
 def self_test() -> int:
+    import tempfile
+
     assert len(ROSTERS) == 8
     assert [r[0] for r in ROSTERS] == [0, 1, 2, 3, 4, 5, 6, 8]
     assert rgba5551(0x7FFF, 1) == 0xFFFF
     assert rgba5551(0x0000, 0) == 0
+    # Index 0 is transparent whatever colour the source gives it, and
+    # every other entry gets the alpha bit set.
+    assert rgba5551(0x7FFF, 0) == 0
+    assert PAYLOAD_HEADER == len(PAYLOAD_MAGIC) + 2
+
+    # The payload format, round-tripped: a frame is the magic, a
+    # big-endian palette index and then width*height CI8 bytes, with
+    # NO palette in it. Getting this wrong silently feeds the loader
+    # pixels offset by four bytes, which is not a crash -- it is a
+    # smeared sprite -- so it is checked rather than assumed.
+    original_read_ci8 = wimpimg.read_ci8
+    try:
+        pixels = bytes(range(64))
+        wimpimg.read_ci8 = lambda data, im: pixels
+        im = _FakeImage("TESTFRAME", 8, 8)
+        with tempfile.TemporaryDirectory() as tmp:
+            out = pathlib.Path(tmp) / "TESTFRAME.bin"
+            size = write_payload(out, b"", im, 0x0102)
+            blob = out.read_bytes()
+            assert size == len(blob) == PAYLOAD_HEADER + 64, (size, len(blob))
+            assert blob[:2] == PAYLOAD_MAGIC
+            assert blob[2] == 0x01 and blob[3] == 0x02
+            assert blob[PAYLOAD_HEADER:] == pixels
+            # A mismatched width*height is refused, not padded.
+            try:
+                write_payload(out, b"", _FakeImage("BAD", 9, 9), 0)
+            except ValueError:
+                pass
+            else:
+                raise AssertionError("write_payload accepted a size mismatch")
+    finally:
+        wimpimg.read_ci8 = original_read_ci8
+
     print("stream_roster_assets self-test: PASS")
     return 0
 

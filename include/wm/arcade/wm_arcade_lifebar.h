@@ -2,6 +2,7 @@
 #define WM_ARCADE_LIFEBAR_H
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 #include "wm/arcade/wm_arcade_combat.h"
 #include "wm/arcade/wm_arcade_react1_core.h"
@@ -194,6 +195,30 @@ void wm_arcade_adjust_health(wm_arcade_actor_t *victim, int16_t delta,
  * out.
  */
 void wm_arcade_clear_lifebar(wm_arcade_actor_t *a);
+
+/*
+ * LIFEBAR.ASM:3650 SUBRP is_perfect -- did the winning side come
+ * through the match untouched? It sweeps every active wrestler process,
+ * skips the ones on the other side, and reports "not perfect" the
+ * moment it finds one of its own whose get_health is anything but
+ * LIFE_MAX. The caller (LIFEBAR.ASM:2821) hands out PERFECT_AWD and
+ * spawns CREATE_PERFECT on a yes.
+ *
+ * Two details that are easy to get backwards. It returns through the
+ * CARRY flag and sets it for perfect, so the caller's `jrnc` is the
+ * NOT-perfect branch; and its first act is `calla is_8_on_1 / jrc
+ * #final`, which clears carry -- so in the game's own final battle
+ * nobody is ever perfect, whatever the healths say. is_8_on_1 always
+ * reports "no" in this port for the reasons set out at length in
+ * wm/arcade/wm_arcade_mode_dead.h, so `eight_on_one` is a parameter
+ * rather than a call: passing true still gives the source's answer.
+ *
+ * `actors` is the process table the source walks; a NULL slot is an
+ * inactive process and is skipped exactly as `jrz #nxt` skips it.
+ */
+bool wm_arcade_is_perfect(const wm_arcade_actor_t *winner,
+                          const wm_arcade_actor_t *const *actors,
+                          size_t actor_count, bool eight_on_one);
 
 #ifdef __cplusplus
 }

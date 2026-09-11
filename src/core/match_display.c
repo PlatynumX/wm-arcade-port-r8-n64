@@ -14,6 +14,7 @@
 #include "wm/arcade/wm_arcade_combat_defs.h"
 
 #include <stddef.h>
+#include <stdint.h>
 
 /* The frame each channel is showing, whichever backend the actor runs on.
    Bret has a hand-built wm_visual_sequence track; the other seven are
@@ -34,9 +35,39 @@ static void frames_for(const wm_match_state *m, size_t i,
     *torso = wm_wrestler_backend_torso_frame(&m->wrestler_visual[i]);
 }
 
+/*
+ * ANIM.ASM:4645 -- `move *a13(OBJ_ZPOS),a0,L / ori [01000h,0],a0`, then
+ * the out-of-ring drop. INRING is zero inside the ring.
+ */
+int32_t wm_match_display_priority(int32_t z_fixed, int32_t in_ring) {
+    int32_t p = (int32_t)((uint32_t)z_fixed | 0x10000000u);
+    if (in_ring != 0 && p <= 0x15ac0000) p -= 0x01e50000;
+    return p;
+}
+
+/* ANIM.ASM:4694 -- the shadow's own, with no Z in it at all. */
+int32_t wm_match_shadow_priority(int32_t in_ring) {
+    return in_ring == 0 ? 0x13c80000 : 0x106a0000;
+}
+
+/*
+ * ANIM.ASM:4651 -- `mpyu a0,a1` into the ODD register a1, so the low 32
+ * bits of the product are what survives.
+ */
+int32_t wm_match_screen_y_base(int32_t z_int) {
+    return (int32_t)((uint32_t)z_int * (uint32_t)WM_Y_SCALE_MULTIPLIER);
+}
+
+/*
+ * #plot_object (ANIM.ASM:4924): OXVAL and OYVAL are the 16.16 bases and
+ * ODXOFF/ODYOFF the frame's own IANIOFFX/IANIOFFY plus the caller's a10
+ * and a11. `y_base_off` is a11 -- GROUND_Y for the shadow, OBJ_YPOSINT
+ * for the body and torso.
+ */
 static void fill(wm_match_draw_item *it, wm_draw_layer layer,
                  const wm_arcade_actor_t *a, const char *frame,
-                 int16_t ax, int16_t ay) {
+                 int16_t ax, int16_t ay, int32_t y_base_off,
+                 int32_t priority) {
     it->layer = layer;
     it->frame = frame;
     it->wrestler_num = a->wrestler_num;
@@ -45,17 +76,25 @@ static void fill(wm_match_draw_item *it, wm_draw_layer layer,
     it->world_z = a->z_int;
     it->anchor_x = ax;
     it->anchor_y = ay;
+    it->screen_x = a->x_int + ax;
+    it->screen_y = (wm_match_screen_y_base(a->z_int) >> 16) + y_base_off + ay;
+    it->priority = priority;
     it->flip_x = (a->obj_control & WM_OBJ_FLIPH) != 0;
 }
 
 /*
- * DISPLAY.ASM:1248 obj_yzsort's comparison: Z first, then Y within an
- * equal Z, both ascending. The source bubble-sorts the whole object
- * list into that order every frame.
+ * DISPLAY.ASM:1248 obj_yzsort's comparison: OZPOS first, then OYPOS
+ * within an equal OZPOS, both ascending. Those are the integer halves
+ * of what #set_image wrote -- the display priority and z_int/4.794 --
+ * not the actor's raw world position, and the tiebreak is therefore
+ * degenerate for two wrestlers standing at the same Z.
  */
 static int behind(const wm_arcade_actor_t *a, const wm_arcade_actor_t *b) {
-    if (a->z_int != b->z_int) return a->z_int < b->z_int;
-    return a->y_int < b->y_int;
+    int32_t pa = wm_match_display_priority(a->z_fixed, a->in_ring) >> 16;
+    int32_t pb = wm_match_display_priority(b->z_fixed, b->in_ring) >> 16;
+    if (pa != pb) return pa < pb;
+    return (wm_match_screen_y_base(a->z_int) >> 16) <
+           (wm_match_screen_y_base(b->z_int) >> 16);
 }
 
 size_t wm_match_build_draw_list(const wm_match_state *match,
@@ -93,16 +132,23 @@ size_t wm_match_build_draw_list(const wm_match_state *match,
         frames_for(match, idx, &body, &torso);
 
         /* The shadow goes down first whether or not the wrestler has a
-           frame this tick -- he is standing there either way. */
-        if (count >= max) return count;
-        fill(&out[count++], WM_DRAW_SHADOW, a, NULL, 0, 0);
+           frame this tick -- he is standing there either way. It hangs
+           off GROUND_Y, so it stays on the mat while he is airborne. */
+        if (!(a->anim_mode & WM_MODE_NOSHADOW)) {
+            if (count >= max) return count;
+            fill(&out[count++], WM_DRAW_SHADOW, a, NULL, 0, 0,
+                 a->ground_y, wm_match_shadow_priority(a->in_ring));
+        }
 
+        /* MODE_INVISIBLE: #set_image jumps straight to #done2. */
+        if (a->anim_mode & WM_MODE_INVISIBLE) continue;
         if (!body) continue;
         bg = wm_frame_geometry_find(body);
         if (!bg) continue;      /* no geometry, nothing to anchor by */
 
         if (count >= max) return count;
-        fill(&out[count++], WM_DRAW_BODY, a, body, bg->xani, bg->yani);
+        fill(&out[count++], WM_DRAW_BODY, a, body, bg->xani, bg->yani,
+             a->y_int, wm_match_display_priority(a->z_fixed, a->in_ring));
 
         /*
          * The second channel hangs off the body frame's channel-2
@@ -121,7 +167,8 @@ size_t wm_match_build_draw_list(const wm_match_state *match,
                                          tg->xani, tg->yani, &xoff, &yoff);
             if (count >= max) return count;
             fill(&out[count++], WM_DRAW_TORSO, a, torso,
-                 (int16_t)xoff, (int16_t)yoff);
+                 (int16_t)xoff, (int16_t)yoff, a->y_int,
+                 wm_match_display_priority(a->z_fixed, a->in_ring));
         }
     }
     return count;

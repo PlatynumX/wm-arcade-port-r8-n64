@@ -779,25 +779,43 @@ static void draw_ddt_name(wm_arcade_actor_t *actor, const wm_anim_env *env,
 }
 
 /*
+ * REACT5.ASM:409 hit_puppet_even_if_dead -- the attach every puppet move
+ * goes through. The victim becomes a PUPPET, the two point at each
+ * other, he starts his own wres_slave_anim, his getup timer is cleared,
+ * and his collisions go off.
+ *
+ * It is a second entry point into hit_puppet, placed *after* that
+ * routine's MODE_BLOCK test and after the dead-guy check the source
+ * commented out ("AMODE_PUPPET vs. dead guy won't even register a
+ * collision now"). That is what the name means: the caller's dead check
+ * is skipped, not SETMODE's. SETMODE (MACROS.H) still refuses to write
+ * over MODE_DEAD, so a dead victim attaches and keeps MODE_DEAD.
+ */
+static void hit_puppet_even_if_dead(wm_arcade_actor_t *attacker,
+                                    wm_arcade_actor_t *victim,
+                                    const wm_anim_env *env) {
+    if (!attacker || !victim) return;
+    /* SETMODE PUPPET -- MODE_DEAD is immutable. */
+    if (victim->player_mode != (uint16_t)WM_PMODE_DEAD)
+        victim->player_mode = (uint16_t)WM_PMODE_PUPPET;
+    victim->attach_proc = attacker;
+    attacker->attach_proc = victim;
+    victim->getup_time = 0;
+    victim->puppet_frame = 0;
+    if (env && env->change_opp_anim)
+        env->change_opp_anim(victim, "wres_slave_anim", env->slave_user);
+    wm_arcade_wrestler_collisions_off(victim);
+}
+
+/*
  * BAMSEQ2.ASM:1224 #attach_victim -- "pretend collision". It swaps a13 to
- * the man it hit and calls REACT5.ASM:409 hit_puppet_even_if_dead, which
- * is the attach every puppet move goes through: the victim becomes a
- * PUPPET, the two point at each other, he starts his own wres_slave_anim,
- * and his getup timer is cleared.
+ * the man it hit and calls hit_puppet_even_if_dead on him.
  */
 static void attach_victim(wm_arcade_actor_t *actor, const wm_anim_env *env,
                           int32_t param) {
-    wm_arcade_actor_t *v;
     (void)param;
     if (!actor || !actor->who_i_hit) return;
-    v = actor->who_i_hit;
-    v->player_mode = (uint16_t)WM_PMODE_PUPPET;
-    v->attach_proc = actor;
-    actor->attach_proc = v;
-    v->getup_time = 0;
-    v->puppet_frame = 0;
-    if (env && env->change_opp_anim)
-        env->change_opp_anim(v, "wres_slave_anim", env->slave_user);
+    hit_puppet_even_if_dead(actor, actor->who_i_hit, env);
 }
 
 /*
@@ -1491,6 +1509,29 @@ static void ck_dead_opp(wm_arcade_actor_t *actor, const wm_anim_env *env,
     opp = actor->attach_proc ? actor->attach_proc : actor->who_i_hit;
     if (!opp) return;
     if (opp->life == 0) actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
+}
+
+/*
+ * REACT1.ASM:1901 #dead_or_dying -- the guard on xxx_aborted_attach_anim.
+ *
+ * A wrestler whose puppet sequence was interrupted normally gets up.
+ * This decides whether he does: MODE_STATUS comes off first, then goes
+ * back on if I_WILL_DIE is set or his health has already reached zero,
+ * and the ANI_IFSTATUS that follows sends him to hitonground_tbl
+ * instead of the getup table.
+ *
+ * Worth noting that it clears MODE_STATUS unconditionally before
+ * testing. The two writes are not redundant: whatever the previous
+ * opcode left in the flag would otherwise decide this.
+ */
+static void dead_or_dying(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                          int32_t param) {
+    (void)env;
+    (void)param;
+    if (!actor) return;
+    actor->anim_mode &= (uint16_t)~WM_MODE_STATUS;
+    if (actor->i_will_die || actor->life == 0)
+        actor->anim_mode |= (uint16_t)WM_MODE_STATUS;
 }
 
 /*
@@ -2989,6 +3030,8 @@ static const struct {
     { "#delay_whoihit", "YOKSEQ2.ASM", delay_whoihit_param, 55, 0 },
     { "#ck_flip", "LEXSEQ3.ASM", ck_flip, 0, 0 },
     { "#ck_dead_opp", "HRTSEQ3.ASM", ck_dead_opp, 0, 0 },
+    /* REACT1.ASM writes it once, so no line is needed to disambiguate. */
+    { "#dead_or_dying", "REACT1.ASM", dead_or_dying, 0, 0 },
     { "#set_wrestler_xflip", "HRTSEQ4.ASM", set_wrestler_xflip_code, 0, 0 },
     /* Another SPCDMG, with its own pair. */
     { "#stop_dmg", "YOKSEQ3.ASM", reduce_dmg, WM_SPCDMG(2, 35), 0 },

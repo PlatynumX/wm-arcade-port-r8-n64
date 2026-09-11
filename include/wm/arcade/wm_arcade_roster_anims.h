@@ -22,6 +22,19 @@
  *   gets his own `*_fall_back_tbukl_anim`. He has no turnbuckle fall of
  *   his own.
  *
+ * Two macros index these, and they disagree about the row width.
+ * FACETBL (MACROS.H:102) scales WRESTLERNUM by X32 -- one long per
+ * wrestler. FACE24TBL (MACROS.H:65) scales by X64 -- two longs -- and
+ * adds a long when MOVE_UP_BIT is *clear*, so column 0 is the facing-up
+ * animation (the `_2_` name) and column 1 the facing-down one (`_4_`).
+ *
+ * A two-long row is not automatically a facing pair. PROGRESS.ASM's six
+ * `*_addr` tables have the same shape, but the loop at PROGRESS.ASM:3218
+ * reads their two longs as a leg animation and a torso animation and
+ * hands them to change_anim1a and change_anim2a in turn. `columns` says
+ * how wide a row is and `kind` says what the columns mean; the meaning
+ * is read off the use site, never off the shape.
+ *
  * Tables named as command operands (ANI_SLAVEANIM, ANI_CHANGEANIM_TBL)
  * are not here: those labels are `#local` and reused across files, so
  * they can only be resolved from a use site, which tools/wlpuppet.py
@@ -42,12 +55,20 @@ extern "C" {
 #define WM_ROSTER_ANIM_ADAM_BOMB 7
 #define WM_ROSTER_ANIM_REFEREE 9
 
+typedef enum wm_roster_col_kind {
+    WM_ROSTER_COL_SLOT = 0,   /* one long per wrestler */
+    WM_ROSTER_COL_FACING,     /* [0] facing up (_2_), [1] facing down (_4_) */
+    WM_ROSTER_COL_PAIR        /* two longs the use site gives meaning to */
+} wm_roster_col_kind;
+
 typedef struct wm_roster_anim_table {
     const char *name;           /* the source label */
     const char *file;           /* where it lives */
     int line;
     int slots;                  /* 9 or 10 -- how many rows it declared */
-    const char *const *row;     /* [WM_ROSTER_ANIM_SLOTS], NULL where empty */
+    int columns;                /* 1 or 2 longs per row */
+    wm_roster_col_kind kind;
+    const char *const *row;     /* [slots * columns], NULL where empty */
 } wm_roster_anim_table;
 
 extern const wm_roster_anim_table wm_roster_anim_tables[];
@@ -62,6 +83,22 @@ const wm_roster_anim_table *wm_roster_anim_find(const char *name);
  * Referee.
  */
 const char *wm_roster_anim_for(const wm_roster_anim_table *table, int wrestler);
+
+/*
+ * One cell of a multi-column table. `column` is clamped to the table's
+ * width, so asking a one-column table for column 1 gives its only
+ * entry rather than reading off the end.
+ */
+const char *wm_roster_anim_col(const wm_roster_anim_table *table,
+                               int wrestler, int column);
+
+/*
+ * What FACE24TBL does: column 0 when MOVE_UP_BIT is set in FACING_DIR,
+ * column 1 when it is clear. Only meaningful for WM_ROSTER_COL_FACING
+ * tables; for the others this is wm_roster_anim_col(t, wrestler, 0).
+ */
+const char *wm_roster_anim_facing(const wm_roster_anim_table *table,
+                                  int wrestler, int facing_up);
 
 #ifdef __cplusplus
 }

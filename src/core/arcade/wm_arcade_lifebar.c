@@ -1,4 +1,5 @@
 #include "wm/arcade/wm_arcade_lifebar.h"
+#include "wm/arcade/wm_arcade_life_data.h"
 
 void wm_arcade_adjust_health(wm_arcade_actor_t *victim, int16_t delta,
                              wm_arcade_actor_t *damage_source,
@@ -141,4 +142,25 @@ void wm_arcade_adjust_health(wm_arcade_actor_t *victim, int16_t delta,
 void wm_arcade_clear_lifebar(wm_arcade_actor_t *a) {
     if (!a) return;
     a->life = 0;
+}
+
+/*
+ * LIFEBAR.ASM:3650 is_perfect. See wm/arcade/wm_arcade_lifebar.h --
+ * carry means perfect, and the final battle is never perfect.
+ */
+bool wm_arcade_is_perfect(const wm_arcade_actor_t *winner,
+                          const wm_arcade_actor_t *const *actors,
+                          size_t actor_count, bool eight_on_one) {
+    size_t i;
+
+    if (!winner || !actors) return false;
+    if (eight_on_one) return false;     /* `jrc #final` -> clrc */
+
+    for (i = 0; i < actor_count; ++i) {
+        const wm_arcade_actor_t *a = actors[i];
+        if (!a) continue;                            /* `jrz #nxt` */
+        if (a->player_side != winner->player_side) continue;
+        if (a->life != WM_LIFE_MAX) return false;    /* an injured one */
+    }
+    return true;                                     /* `setc` */
 }

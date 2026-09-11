@@ -555,6 +555,27 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             uint16_t old_joy = m->drones[i].joy;
             (void)wm_arcade_drone_main(&m->actors[i], &m->drones[i], &world, cb);
             wm_arcade_drone_commit_inputs(&m->actors[i], &m->drones[i], old_but, old_joy);
+
+            /*
+             * DRONE.ASM:2810 drn_taunt's own change_anim1a. It is the
+             * only drone script that plays an animation, so rather than
+             * hand the drone layer a visual backend it leaves the label
+             * on its state and this picks it up -- the same shape as
+             * wm_match_death_change_anim above. Bret runs a
+             * wm_visual_sequence track rather than the animation VM and
+             * has no label route, so his taunt still only sets RISK.
+             */
+            if (m->drones[i].pending_anim) {
+                if (m->actors[i].wrestler_num != WM_ROSTER_BRET) {
+                    wm_arcade_roster_callbacks_t taunt_cb =
+                        wm_wrestler_roster_callbacks(&m->wrestler_visual[i]);
+                    if (taunt_cb.change_anim_label)
+                        taunt_cb.change_anim_label(&m->actors[i],
+                                                   m->drones[i].pending_anim,
+                                                   taunt_cb.user);
+                }
+                m->drones[i].pending_anim = NULL;
+            }
         }
 
         /* WRESTLE.ASM:2453 `callr count_button_presses`, right after

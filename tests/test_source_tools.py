@@ -1782,19 +1782,30 @@ def test_anim_code_registry_reaches_its_call_sites() -> None:
     if not (base / "ANIM.ASM").exists() or not src.exists():
         return
 
-    use = re.compile(r"^\s*(?:\.word|W+L+W*)\s+ANI_CODE\s*,\s*(#?\w+)", re.I)
-    sites = {}
-    for who in ("HRT", "RZR", "UND", "YOK", "SHN", "BAM", "DNK", "LEX"):
-        for p in sorted(q for q in base.glob(who + "SEQ*.ASM")
-                        if "'" not in q.name):
-            for raw in p.read_text(errors="replace").splitlines():
-                m = use.match(wlanim.strip_comment(raw))
-                if m:
-                    sites.setdefault(m.group(1), set()).add(p.name)
-
     rows = re.findall(r'\{\s*"(#?[A-Za-z_0-9]+)"\s*,\s*(NULL|"[^"]+")',
                       src.read_text())
     assert rows, "no registry rows found -- the pattern stopped matching"
+
+    use = re.compile(r"^\s*(?:\.word|W+L+W*)\s+ANI_CODE\s*,\s*(#?\w+)", re.I)
+    # The per-wrestler sequence files hold nearly every ANI_CODE call, but
+    # not all of them: REACT1.ASM:1884 puts one in xxx_aborted_attach_anim.
+    # Any file a registry row names is scanned too, so a row cannot claim
+    # a file this never looks at.
+    scan = {q for who in ("HRT", "RZR", "UND", "YOK", "SHN", "BAM", "DNK",
+                          "LEX")
+            for q in base.glob(who + "SEQ*.ASM") if "'" not in q.name}
+    for _name, where in rows:
+        if where != "NULL":
+            scan.add(base / where.strip('"'))
+
+    sites = {}
+    for p in sorted(scan):
+        if not p.exists():
+            continue
+        for raw in p.read_text(errors="replace").splitlines():
+            m = use.match(wlanim.strip_comment(raw))
+            if m:
+                sites.setdefault(m.group(1), set()).add(p.name)
 
     unreachable = []
     for name, where in rows:
@@ -2763,13 +2774,16 @@ def test_roster_anim_tables_name_real_routines() -> None:
     tables = wlrostertbl.roster_tables()
     if not tables:
         return
-    assert len(tables) == 18, sorted(tables)
+    assert len(tables) == 36, sorted(tables)
 
     routines = set()
     for path in sorted(wlanim.ORIG.glob("*.ASM")):
         text = path.read_text(errors="replace")
         routines.update(re.findall(r"^\s*SUBRP?\s+([A-Za-z_]\w*)\s*$",
                                    text, re.M))
+        # PROGRESS.ASM's leg/torso rows name animations declared as bare
+        # column-0 labels rather than with SUBR.
+        routines.update(re.findall(r"^([A-Za-z_]\w*)\s*$", text, re.M))
 
     for name, (fname, line, rows) in tables.items():
         for slot, label in enumerate(rows):
@@ -2778,10 +2792,107 @@ def test_roster_anim_tables_name_real_routines() -> None:
             assert label in routines, (name, fname, line, slot, label)
 
     # The two details the header claims, asserted against the data.
+    # (Both of these tables are one column wide, so a row index is a
+    # roster slot.)
     assert tables["fall_back_tbukl_tbl"][2][3] == "yok_fall_back_anim"
     assert "yok_fall_back_tbukl_anim" not in routines
     for slot in (7, 9):
         assert tables["climbthru_bot_anims"][2][slot] == "dnk_climbthru_bot_anim"
+
+
+def test_face24_tables_are_two_columns_wide() -> None:
+    """FACE24TBL's tables carry a facing pair per wrestler.
+
+    The macro (MACROS.H:65) scales WRESTLERNUM by X64 rather than X32,
+    so each wrestler owns two longs, and it adds a long when
+    MOVE_UP_BIT is *clear* -- column 0 is facing up, column 1 facing
+    down. Reading these as one long per wrestler, which is what the
+    nine/ten-row shape test used to do, dropped them entirely: nine
+    rows of two is eighteen longs and matched nothing.
+    """
+    tables = wlrostertbl.roster_tables()
+    if not tables:
+        return
+    expected = {
+        "head_hit_tbl", "head_hit2_tbl", "head_hit_dizzy_tbl",
+        "body_hit_tbl", "body_hit_dizzy_tbl", "knee_hit_tbl",
+        "bncoff", "bncoff_gate",
+    }
+    for name in expected:
+        rows = tables[name][2]
+        assert len(rows) == wlrostertbl.ROSTER_SLOTS * 2, (name, len(rows))
+        assert wlrostertbl.column_kind(name, 2, rows) == \
+            wlrostertbl.COL_FACING, name
+
+    # head_hit_tbl's own rows, straight off REACT1.ASM:1723.
+    rows = tables["head_hit_tbl"][2]
+    assert rows[0] == "hrt_2_head_hit_anim"
+    assert rows[1] == "hrt_4_head_hit_anim"
+    assert rows[14] is None and rows[15] is None      # slot 7, Adam Bomb
+    assert rows[16] == "lex_2_head_hit_anim"
+
+    # Three wrestlers share one head_hit2 animation across both facings.
+    h2 = tables["head_hit2_tbl"][2]
+    for slot in (2, 5, 6):
+        assert h2[slot * 2] == h2[slot * 2 + 1]
+        assert "_2_" not in h2[slot * 2] and "_4_" not in h2[slot * 2]
+
+
+def test_a_two_long_row_is_not_always_a_facing_pair() -> None:
+    """PROGRESS.ASM's `*_addr` tables have the shape and not the meaning.
+
+    The loop at PROGRESS.ASM:3218 reads two longs and hands the first
+    to change_anim1a and the second to change_anim2a -- a leg animation
+    and a torso animation. Calling that a facing pair because it is two
+    longs wide would be deriving the semantics from the shape, which is
+    exactly the mistake this whole tool exists to avoid. The column
+    meaning comes off the use site: a FACE24TBL operand is a facing,
+    and nothing else is.
+    """
+    tables = wlrostertbl.roster_tables()
+    if not tables:
+        return
+    for name in ("taunting_addr", "standing_addr", "dead_addr",
+                 "running_addr", "clever_addr", "waiting_addr"):
+        rows = tables[name][2]
+        assert len(rows) == wlrostertbl.ROSTER_SLOTS * 2, name
+        assert wlrostertbl.column_kind(name, 2, rows) == \
+            wlrostertbl.COL_PAIR, name
+        # Column 1 is a torso animation wherever it is filled at all.
+        for slot in range(wlrostertbl.ROSTER_SLOTS):
+            torso = rows[slot * 2 + 1]
+            assert torso is None or "_torso" in torso, (name, slot, torso)
+
+    assert tables["taunting_addr"][2][0] == "hrt_taunt4_anim"
+    assert tables["taunting_addr"][2][1] == "hrt_torso4_anim"
+
+    # And these really are not FACE24TBL operands anywhere in the game.
+    operands = wlrostertbl.face24_operands()
+    assert "taunting_addr" not in operands
+    assert "bncoff_gate" in operands       # WRESTLE.ASM:3698, behind a label
+
+
+def test_declarations_are_not_the_end_of_a_table() -> None:
+    """`.ref` lines mid-table, and rows written as REFLONG.
+
+    knee_hit_tbl (REACT3.ASM:223) declares its eight `.ref` lines
+    between the label and the data, and head_hit2_sand_tbl
+    (REACT1.ASM:1746) writes every row as REFLONG -- which MACROS.H:45
+    expands to `.globl label` plus `.long label`. A reader that stops
+    at the first line that is not a `.long` sees neither table.
+    """
+    tables = wlrostertbl.roster_tables()
+    if not tables:
+        return
+    knee = tables["knee_hit_tbl"][2]
+    assert knee[0] == "hrt_2_knee_hit_anim"
+    assert knee[1] == "hrt_4_knee_hit_anim"
+
+    sand = tables["head_hit2_sand_tbl"][2]
+    assert len(sand) == wlrostertbl.ROSTER_SLOTS
+    assert sand[0] == "hrt_4_head_hit2s_anim"
+    assert sand[7] is None
+    assert sand[8] == "lex_4_head_hit2s_anim"
 
 
 def test_roster_anim_tables_refuse_ambiguous_labels() -> None:
@@ -3087,6 +3198,9 @@ def main() -> int:
     test_imgpal_palettes_are_self_consistent()
     test_palettes_generate_the_shipped_file()
     test_roster_anim_tables_name_real_routines()
+    test_face24_tables_are_two_columns_wide()
+    test_a_two_long_row_is_not_always_a_facing_pair()
+    test_declarations_are_not_the_end_of_a_table()
     test_roster_anim_tables_refuse_ambiguous_labels()
     test_roster_anim_tables_generate_the_shipped_file()
     test_per_wrestler_anim_tables_come_out_of_the_dispatch_lists()

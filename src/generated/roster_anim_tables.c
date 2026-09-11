@@ -4,263 +4,662 @@
  * Adam Bomb, cut from the game; slot 9 is the Referee and is only
  * present in the tables that declare ten rows. A NULL is a `.long 0`
  * in the source -- that slot has no animation at all.
+ *
+ * A row is one long wide (FACETBL, MACROS.H:102) or two
+ * (FACE24TBL, MACROS.H:65). `kind` says what a second column
+ * means: WM_ROSTER_COL_FACING is FACE24TBL's up/down pair, read
+ * off a live use site or off an unambiguous _2_/_4_ naming;
+ * WM_ROSTER_COL_PAIR is two longs whose meaning only the caller
+ * knows, as in PROGRESS.ASM's leg/torso `*_addr` tables.
  */
 #include "wm/arcade/wm_arcade_roster_anims.h"
 
-/* REACT1.ASM:1779 */
-static const char *const rows_body_hit2_tbl[WM_ROSTER_ANIM_SLOTS] = {
-    "hrt_4_body_hit_anim",       /* 0 Bret Hart */
-    "rzr_4_body_hit_anim",       /* 1 Razor Ramon */
-    "und_4_body_hit_anim",       /* 2 Undertaker */
-    "yok_4_body_hit_anim",       /* 3 Yokozuna */
-    "shn_4_body_hit_anim",       /* 4 Shawn Michaels */
-    "bam_4_body_hit_anim",       /* 5 Bam Bam */
-    "dnk_4_body_hit_anim",       /* 6 Doink */
-    NULL,                        /* 7 Adam Bomb */
-    "lex_4_body_hit_anim",       /* 8 Lex Luger */
-    NULL,                        /* 9 Referee */
+/* REACT5.ASM:333 -- facing */
+static const char *const rows_bncoff[WM_ROSTER_ANIM_SLOTS * 2] = {
+    "hrt_2_bncoff_anim",             /* 0 Bret Hart facing up */
+    "hrt_4_bncoff_anim",             /* 0 Bret Hart facing down */
+    "rzr_2_bncoff_anim",             /* 1 Razor Ramon facing up */
+    "rzr_4_bncoff_anim",             /* 1 Razor Ramon facing down */
+    "und_2_bncoff_anim",             /* 2 Undertaker facing up */
+    "und_4_bncoff_anim",             /* 2 Undertaker facing down */
+    "yok_2_bncoff_anim",             /* 3 Yokozuna facing up */
+    "yok_4_bncoff_anim",             /* 3 Yokozuna facing down */
+    "shn_2_bncoff_anim",             /* 4 Shawn Michaels facing up */
+    "shn_4_bncoff_anim",             /* 4 Shawn Michaels facing down */
+    "bam_2_bncoff_anim",             /* 5 Bam Bam facing up */
+    "bam_4_bncoff_anim",             /* 5 Bam Bam facing down */
+    "dnk_2_bncoff_anim",             /* 6 Doink facing up */
+    "dnk_4_bncoff_anim",             /* 6 Doink facing down */
+    "dnk_2_bncoff_anim",             /* 7 Adam Bomb facing up */
+    "dnk_4_bncoff_anim",             /* 7 Adam Bomb facing down */
+    "lex_2_bncoff_anim",             /* 8 Lex Luger facing up */
+    "lex_4_bncoff_anim",             /* 8 Lex Luger facing down */
+    "dnk_2_bncoff_anim",             /* 9 Referee facing up */
+    "dnk_4_bncoff_anim",             /* 9 Referee facing down */
 };
-/* WRESTLE2.ASM:745 */
-static const char *const rows_climbin_bot_anims[WM_ROSTER_ANIM_SLOTS] = {
-    "hrt_climbin_bot_anim",      /* 0 Bret Hart */
-    "rzr_climbin_bot_anim",      /* 1 Razor Ramon */
-    "und_climbin_bot_anim",      /* 2 Undertaker */
-    "yok_climbin_bot_anim",      /* 3 Yokozuna */
-    "shn_climbin_bot_anim",      /* 4 Shawn Michaels */
-    "bam_climbin_bot_anim",      /* 5 Bam Bam */
-    "dnk_climbin_bot_anim",      /* 6 Doink */
-    "dnk_climbin_bot_anim",      /* 7 Adam Bomb */
-    "lex_climbin_bot_anim",      /* 8 Lex Luger */
-    "dnk_climbin_bot_anim",      /* 9 Referee */
+/* REACT5.ASM:353 -- facing */
+static const char *const rows_bncoff_gate[WM_ROSTER_ANIM_SLOTS * 2] = {
+    "hrt_2_bncoff_anim",             /* 0 Bret Hart facing up */
+    "hrt_4_bncoff_anim",             /* 0 Bret Hart facing down */
+    "rzr_2_bncoff_anim",             /* 1 Razor Ramon facing up */
+    "rzr_4_bncoff_anim",             /* 1 Razor Ramon facing down */
+    "und_2_bncoff_anim",             /* 2 Undertaker facing up */
+    "und_4_bncoff_anim",             /* 2 Undertaker facing down */
+    "yok_2_bncoff_gate_anim",        /* 3 Yokozuna facing up */
+    "yok_4_bncoff_gate_anim",        /* 3 Yokozuna facing down */
+    "shn_2_bncoff_anim",             /* 4 Shawn Michaels facing up */
+    "shn_4_bncoff_anim",             /* 4 Shawn Michaels facing down */
+    "bam_2_bncoff_anim",             /* 5 Bam Bam facing up */
+    "bam_4_bncoff_anim",             /* 5 Bam Bam facing down */
+    "dnk_2_bncoff_anim",             /* 6 Doink facing up */
+    "dnk_4_bncoff_anim",             /* 6 Doink facing down */
+    "dnk_2_bncoff_anim",             /* 7 Adam Bomb facing up */
+    "dnk_4_bncoff_anim",             /* 7 Adam Bomb facing down */
+    "lex_2_bncoff_anim",             /* 8 Lex Luger facing up */
+    "lex_4_bncoff_anim",             /* 8 Lex Luger facing down */
+    "dnk_2_bncoff_anim",             /* 9 Referee facing up */
+    "dnk_4_bncoff_anim",             /* 9 Referee facing down */
 };
-/* WRESTLE2.ASM:781 */
-static const char *const rows_climbin_side_anims[WM_ROSTER_ANIM_SLOTS] = {
-    "hrt_climbin_side_anim",     /* 0 Bret Hart */
-    "rzr_climbin_side_anim",     /* 1 Razor Ramon */
-    "und_climbin_side_anim",     /* 2 Undertaker */
-    "yok_climbin_side_anim",     /* 3 Yokozuna */
-    "shn_climbin_side_anim",     /* 4 Shawn Michaels */
-    "bam_climbin_side_anim",     /* 5 Bam Bam */
-    "dnk_climbin_side_anim",     /* 6 Doink */
-    "dnk_climbin_side_anim",     /* 7 Adam Bomb */
-    "lex_climbin_side_anim",     /* 8 Lex Luger */
-    "dnk_climbin_side_anim",     /* 9 Referee */
+/* REACT1.ASM:1779 -- slot */
+static const char *const rows_body_hit2_tbl[WM_ROSTER_ANIM_SLOTS * 1] = {
+    "hrt_4_body_hit_anim",           /* 0 Bret Hart */
+    "rzr_4_body_hit_anim",           /* 1 Razor Ramon */
+    "und_4_body_hit_anim",           /* 2 Undertaker */
+    "yok_4_body_hit_anim",           /* 3 Yokozuna */
+    "shn_4_body_hit_anim",           /* 4 Shawn Michaels */
+    "bam_4_body_hit_anim",           /* 5 Bam Bam */
+    "dnk_4_body_hit_anim",           /* 6 Doink */
+    NULL,                            /* 7 Adam Bomb */
+    "lex_4_body_hit_anim",           /* 8 Lex Luger */
+    NULL,                            /* 9 Referee */
 };
-/* WRESTLE2.ASM:757 */
-static const char *const rows_climbin_top_anims[WM_ROSTER_ANIM_SLOTS] = {
-    "hrt_climbin_top_anim",      /* 0 Bret Hart */
-    "rzr_climbin_top_anim",      /* 1 Razor Ramon */
-    "und_climbin_top_anim",      /* 2 Undertaker */
-    "yok_climbin_top_anim",      /* 3 Yokozuna */
-    "shn_climbin_top_anim",      /* 4 Shawn Michaels */
-    "bam_climbin_top_anim",      /* 5 Bam Bam */
-    "dnk_climbin_top_anim",      /* 6 Doink */
-    "dnk_climbin_top_anim",      /* 7 Adam Bomb */
-    "lex_climbin_top_anim",      /* 8 Lex Luger */
-    "dnk_climbin_top_anim",      /* 9 Referee */
+/* REACT1.ASM:1790 -- facing */
+static const char *const rows_body_hit_dizzy_tbl[WM_ROSTER_ANIM_SLOTS * 2] = {
+    "hrt_4_body_hit_dizzy_anim",     /* 0 Bret Hart facing up */
+    "hrt_4_body_hit_dizzy_anim",     /* 0 Bret Hart facing down */
+    "rzr_4_body_hit_dizzy_anim",     /* 1 Razor Ramon facing up */
+    "rzr_4_body_hit_dizzy_anim",     /* 1 Razor Ramon facing down */
+    "und_4_body_hit_dizzy_anim",     /* 2 Undertaker facing up */
+    "und_4_body_hit_dizzy_anim",     /* 2 Undertaker facing down */
+    "yok_4_body_hit_dizzy_anim",     /* 3 Yokozuna facing up */
+    "yok_4_body_hit_dizzy_anim",     /* 3 Yokozuna facing down */
+    "shn_4_body_hit_dizzy_anim",     /* 4 Shawn Michaels facing up */
+    "shn_4_body_hit_dizzy_anim",     /* 4 Shawn Michaels facing down */
+    "bam_4_body_hit_dizzy_anim",     /* 5 Bam Bam facing up */
+    "bam_4_body_hit_dizzy_anim",     /* 5 Bam Bam facing down */
+    "dnk_4_body_hit_dizzy_anim",     /* 6 Doink facing up */
+    "dnk_4_body_hit_dizzy_anim",     /* 6 Doink facing down */
+    NULL,                            /* 7 Adam Bomb facing up */
+    NULL,                            /* 7 Adam Bomb facing down */
+    "lex_4_body_hit_dizzy_anim",     /* 8 Lex Luger facing up */
+    "lex_4_body_hit_dizzy_anim",     /* 8 Lex Luger facing down */
+    NULL,                            /* 9 Referee facing up */
+    NULL,                            /* 9 Referee facing down */
 };
-/* WRESTLE2.ASM:721 */
-static const char *const rows_climbthru_bot_anims[WM_ROSTER_ANIM_SLOTS] = {
-    "hrt_climbthru_bot_anim",    /* 0 Bret Hart */
-    "rzr_climbthru_bot_anim",    /* 1 Razor Ramon */
-    "und_climbthru_bot_anim",    /* 2 Undertaker */
-    "yok_climbthru_bot_anim",    /* 3 Yokozuna */
-    "shn_climbthru_bot_anim",    /* 4 Shawn Michaels */
-    "bam_climbthru_bot_anim",    /* 5 Bam Bam */
-    "dnk_climbthru_bot_anim",    /* 6 Doink */
-    "dnk_climbthru_bot_anim",    /* 7 Adam Bomb */
-    "lex_climbthru_bot_anim",    /* 8 Lex Luger */
-    "dnk_climbthru_bot_anim",    /* 9 Referee */
+/* REACT1.ASM:1768 -- facing */
+static const char *const rows_body_hit_tbl[WM_ROSTER_ANIM_SLOTS * 2] = {
+    "hrt_2_body_hit_anim",           /* 0 Bret Hart facing up */
+    "hrt_4_body_hit_anim",           /* 0 Bret Hart facing down */
+    "rzr_2_body_hit_anim",           /* 1 Razor Ramon facing up */
+    "rzr_4_body_hit_anim",           /* 1 Razor Ramon facing down */
+    "und_2_body_hit_anim",           /* 2 Undertaker facing up */
+    "und_4_body_hit_anim",           /* 2 Undertaker facing down */
+    "yok_2_body_hit_anim",           /* 3 Yokozuna facing up */
+    "yok_4_body_hit_anim",           /* 3 Yokozuna facing down */
+    "shn_2_body_hit_anim",           /* 4 Shawn Michaels facing up */
+    "shn_4_body_hit_anim",           /* 4 Shawn Michaels facing down */
+    "bam_2_body_hit_anim",           /* 5 Bam Bam facing up */
+    "bam_4_body_hit_anim",           /* 5 Bam Bam facing down */
+    "dnk_4_body_hit_anim",           /* 6 Doink facing up */
+    "dnk_4_body_hit_anim",           /* 6 Doink facing down */
+    NULL,                            /* 7 Adam Bomb facing up */
+    NULL,                            /* 7 Adam Bomb facing down */
+    "lex_2_body_hit_anim",           /* 8 Lex Luger facing up */
+    "lex_4_body_hit_anim",           /* 8 Lex Luger facing down */
+    NULL,                            /* 9 Referee facing up */
+    NULL,                            /* 9 Referee facing down */
 };
-/* WRESTLE2.ASM:769 */
-static const char *const rows_climbthru_side_anims[WM_ROSTER_ANIM_SLOTS] = {
-    "hrt_climbthru_side_anim",   /* 0 Bret Hart */
-    "rzr_climbthru_side_anim",   /* 1 Razor Ramon */
-    "und_climbthru_side_anim",   /* 2 Undertaker */
-    "yok_climbthru_side_anim",   /* 3 Yokozuna */
-    "shn_climbthru_side_anim",   /* 4 Shawn Michaels */
-    "bam_climbthru_side_anim",   /* 5 Bam Bam */
-    "dnk_climbthru_side_anim",   /* 6 Doink */
-    "dnk_climbthru_side_anim",   /* 7 Adam Bomb */
-    "lex_climbthru_side_anim",   /* 8 Lex Luger */
-    "dnk_climbthru_side_anim",   /* 9 Referee */
+/* PROGRESS.ASM:3313 -- pair */
+static const char *const rows_clever_addr[WM_ROSTER_ANIM_SLOTS * 2] = {
+    "hrt_clever_anim",               /* 0 Bret Hart col 0 */
+    "hrt_torso4_anim",               /* 0 Bret Hart col 1 */
+    "rzr_clever_anim",               /* 1 Razor Ramon col 0 */
+    "rzr_torso4_anim",               /* 1 Razor Ramon col 1 */
+    "und_clever_anim",               /* 2 Undertaker col 0 */
+    "und_torso4_anim",               /* 2 Undertaker col 1 */
+    "yok_clever_anim",               /* 3 Yokozuna col 0 */
+    "yok_torso4_anim",               /* 3 Yokozuna col 1 */
+    "shn_clever_anim",               /* 4 Shawn Michaels col 0 */
+    "shn_torso4_anim",               /* 4 Shawn Michaels col 1 */
+    "bam_clever_anim",               /* 5 Bam Bam col 0 */
+    "bam_torso4_anim",               /* 5 Bam Bam col 1 */
+    "dnk_clever_anim",               /* 6 Doink col 0 */
+    "dnk_torso4_anim",               /* 6 Doink col 1 */
+    NULL,                            /* 7 Adam Bomb col 0 */
+    NULL,                            /* 7 Adam Bomb col 1 */
+    "lex_clever_anim",               /* 8 Lex Luger col 0 */
+    "lex_torso4_anim",               /* 8 Lex Luger col 1 */
+    NULL,                            /* 9 Referee col 0 */
+    NULL,                            /* 9 Referee col 1 */
 };
-/* WRESTLE2.ASM:733 */
-static const char *const rows_climbthru_top_anims[WM_ROSTER_ANIM_SLOTS] = {
-    "hrt_climbthru_top_anim",    /* 0 Bret Hart */
-    "rzr_climbthru_top_anim",    /* 1 Razor Ramon */
-    "und_climbthru_top_anim",    /* 2 Undertaker */
-    "yok_climbthru_top_anim",    /* 3 Yokozuna */
-    "shn_climbthru_top_anim",    /* 4 Shawn Michaels */
-    "bam_climbthru_top_anim",    /* 5 Bam Bam */
-    "dnk_climbthru_top_anim",    /* 6 Doink */
-    "dnk_climbthru_top_anim",    /* 7 Adam Bomb */
-    "lex_climbthru_top_anim",    /* 8 Lex Luger */
-    "dnk_climbthru_top_anim",    /* 9 Referee */
+/* WRESTLE2.ASM:745 -- slot */
+static const char *const rows_climbin_bot_anims[WM_ROSTER_ANIM_SLOTS * 1] = {
+    "hrt_climbin_bot_anim",          /* 0 Bret Hart */
+    "rzr_climbin_bot_anim",          /* 1 Razor Ramon */
+    "und_climbin_bot_anim",          /* 2 Undertaker */
+    "yok_climbin_bot_anim",          /* 3 Yokozuna */
+    "shn_climbin_bot_anim",          /* 4 Shawn Michaels */
+    "bam_climbin_bot_anim",          /* 5 Bam Bam */
+    "dnk_climbin_bot_anim",          /* 6 Doink */
+    "dnk_climbin_bot_anim",          /* 7 Adam Bomb */
+    "lex_climbin_bot_anim",          /* 8 Lex Luger */
+    "dnk_climbin_bot_anim",          /* 9 Referee */
 };
-/* FINISEQ.ASM:1493 */
-static const char *const rows_dizzy_table[WM_ROSTER_ANIM_SLOTS] = {
-    "hrt_fdizzy_anim",           /* 0 Bret Hart */
-    "rzr_fdizzy_anim",           /* 1 Razor Ramon */
-    "und_fdizzy_anim",           /* 2 Undertaker */
-    "yok_fdizzy_anim",           /* 3 Yokozuna */
-    "shn_fdizzy_anim",           /* 4 Shawn Michaels */
-    "bam_fdizzy_anim",           /* 5 Bam Bam */
-    "dnk_fdizzy_anim",           /* 6 Doink */
-    NULL,                        /* 7 Adam Bomb */
-    "lex_fdizzy_anim",           /* 8 Lex Luger */
-    NULL,                        /* 9 Referee */
+/* WRESTLE2.ASM:781 -- slot */
+static const char *const rows_climbin_side_anims[WM_ROSTER_ANIM_SLOTS * 1] = {
+    "hrt_climbin_side_anim",         /* 0 Bret Hart */
+    "rzr_climbin_side_anim",         /* 1 Razor Ramon */
+    "und_climbin_side_anim",         /* 2 Undertaker */
+    "yok_climbin_side_anim",         /* 3 Yokozuna */
+    "shn_climbin_side_anim",         /* 4 Shawn Michaels */
+    "bam_climbin_side_anim",         /* 5 Bam Bam */
+    "dnk_climbin_side_anim",         /* 6 Doink */
+    "dnk_climbin_side_anim",         /* 7 Adam Bomb */
+    "lex_climbin_side_anim",         /* 8 Lex Luger */
+    "dnk_climbin_side_anim",         /* 9 Referee */
 };
-/* REACT1.ASM:1801 */
-static const char *const rows_fall_back_tbl[WM_ROSTER_ANIM_SLOTS] = {
-    "hrt_fall_back_anim",        /* 0 Bret Hart */
-    "rzr_fall_back_anim",        /* 1 Razor Ramon */
-    "und_fall_back_anim",        /* 2 Undertaker */
-    "yok_fall_back_anim",        /* 3 Yokozuna */
-    "shn_fall_back_anim",        /* 4 Shawn Michaels */
-    "bam_fall_back_anim",        /* 5 Bam Bam */
-    "dnk_fall_back_anim",        /* 6 Doink */
-    NULL,                        /* 7 Adam Bomb */
-    "lex_fall_back_anim",        /* 8 Lex Luger */
-    NULL,                        /* 9 Referee */
+/* WRESTLE2.ASM:757 -- slot */
+static const char *const rows_climbin_top_anims[WM_ROSTER_ANIM_SLOTS * 1] = {
+    "hrt_climbin_top_anim",          /* 0 Bret Hart */
+    "rzr_climbin_top_anim",          /* 1 Razor Ramon */
+    "und_climbin_top_anim",          /* 2 Undertaker */
+    "yok_climbin_top_anim",          /* 3 Yokozuna */
+    "shn_climbin_top_anim",          /* 4 Shawn Michaels */
+    "bam_climbin_top_anim",          /* 5 Bam Bam */
+    "dnk_climbin_top_anim",          /* 6 Doink */
+    "dnk_climbin_top_anim",          /* 7 Adam Bomb */
+    "lex_climbin_top_anim",          /* 8 Lex Luger */
+    "dnk_climbin_top_anim",          /* 9 Referee */
 };
-/* REACT1.ASM:1812 */
-static const char *const rows_fall_back_tbukl_tbl[WM_ROSTER_ANIM_SLOTS] = {
-    "hrt_fall_back_tbukl_anim",  /* 0 Bret Hart */
-    "rzr_fall_back_tbukl_anim",  /* 1 Razor Ramon */
-    "und_fall_back_tbukl_anim",  /* 2 Undertaker */
-    "yok_fall_back_anim",        /* 3 Yokozuna */
-    "shn_fall_back_tbukl_anim",  /* 4 Shawn Michaels */
-    "bam_fall_back_tbukl_anim",  /* 5 Bam Bam */
-    "dnk_fall_back_tbukl_anim",  /* 6 Doink */
-    NULL,                        /* 7 Adam Bomb */
-    "lex_fall_back_tbukl_anim",  /* 8 Lex Luger */
-    NULL,                        /* 9 Referee */
+/* WRESTLE2.ASM:721 -- slot */
+static const char *const rows_climbthru_bot_anims[WM_ROSTER_ANIM_SLOTS * 1] = {
+    "hrt_climbthru_bot_anim",        /* 0 Bret Hart */
+    "rzr_climbthru_bot_anim",        /* 1 Razor Ramon */
+    "und_climbthru_bot_anim",        /* 2 Undertaker */
+    "yok_climbthru_bot_anim",        /* 3 Yokozuna */
+    "shn_climbthru_bot_anim",        /* 4 Shawn Michaels */
+    "bam_climbthru_bot_anim",        /* 5 Bam Bam */
+    "dnk_climbthru_bot_anim",        /* 6 Doink */
+    "dnk_climbthru_bot_anim",        /* 7 Adam Bomb */
+    "lex_climbthru_bot_anim",        /* 8 Lex Luger */
+    "dnk_climbthru_bot_anim",        /* 9 Referee */
 };
-/* LEXSEQ3.ASM:1539 */
-static const char *const rows_heldoh_tbl[WM_ROSTER_ANIM_SLOTS] = {
-    "hrt_heldoh_anim",           /* 0 Bret Hart */
-    "rzr_heldoh_anim",           /* 1 Razor Ramon */
-    "und_heldoh_anim",           /* 2 Undertaker */
-    "yok_heldoh_anim",           /* 3 Yokozuna */
-    "shn_heldoh_anim",           /* 4 Shawn Michaels */
-    "bam_heldoh_anim",           /* 5 Bam Bam */
-    "dnk_heldoh_anim",           /* 6 Doink */
-    NULL,                        /* 7 Adam Bomb */
-    "lex_heldoh_anim",           /* 8 Lex Luger */
-    NULL,                        /* 9 Referee */
+/* WRESTLE2.ASM:769 -- slot */
+static const char *const rows_climbthru_side_anims[WM_ROSTER_ANIM_SLOTS * 1] = {
+    "hrt_climbthru_side_anim",       /* 0 Bret Hart */
+    "rzr_climbthru_side_anim",       /* 1 Razor Ramon */
+    "und_climbthru_side_anim",       /* 2 Undertaker */
+    "yok_climbthru_side_anim",       /* 3 Yokozuna */
+    "shn_climbthru_side_anim",       /* 4 Shawn Michaels */
+    "bam_climbthru_side_anim",       /* 5 Bam Bam */
+    "dnk_climbthru_side_anim",       /* 6 Doink */
+    "dnk_climbthru_side_anim",       /* 7 Adam Bomb */
+    "lex_climbthru_side_anim",       /* 8 Lex Luger */
+    "dnk_climbthru_side_anim",       /* 9 Referee */
 };
-/* REACT1.ASM:1823 */
-static const char *const rows_hitblock_tbl[WM_ROSTER_ANIM_SLOTS] = {
-    "hrt_4_hitblock_anim",       /* 0 Bret Hart */
-    "rzr_4_hitblock_anim",       /* 1 Razor Ramon */
-    "und_4_hitblock_anim",       /* 2 Undertaker */
-    "yok_4_hitblock_anim",       /* 3 Yokozuna */
-    "shn_4_hitblock_anim",       /* 4 Shawn Michaels */
-    "bam_4_hitblock_anim",       /* 5 Bam Bam */
-    "dnk_4_hitblock_anim",       /* 6 Doink */
-    NULL,                        /* 7 Adam Bomb */
-    "lex_4_hitblock_anim",       /* 8 Lex Luger */
-    NULL,                        /* 9 Referee */
+/* WRESTLE2.ASM:733 -- slot */
+static const char *const rows_climbthru_top_anims[WM_ROSTER_ANIM_SLOTS * 1] = {
+    "hrt_climbthru_top_anim",        /* 0 Bret Hart */
+    "rzr_climbthru_top_anim",        /* 1 Razor Ramon */
+    "und_climbthru_top_anim",        /* 2 Undertaker */
+    "yok_climbthru_top_anim",        /* 3 Yokozuna */
+    "shn_climbthru_top_anim",        /* 4 Shawn Michaels */
+    "bam_climbthru_top_anim",        /* 5 Bam Bam */
+    "dnk_climbthru_top_anim",        /* 6 Doink */
+    "dnk_climbthru_top_anim",        /* 7 Adam Bomb */
+    "lex_climbthru_top_anim",        /* 8 Lex Luger */
+    "dnk_climbthru_top_anim",        /* 9 Referee */
 };
-/* REACT1.ASM:1856 */
-static const char *const rows_hitonground_tbl[WM_ROSTER_ANIM_SLOTS] = {
-    "hrt_hitonground_anim",      /* 0 Bret Hart */
-    "rzr_hitonground_anim",      /* 1 Razor Ramon */
-    "und_hitonground_anim",      /* 2 Undertaker */
-    "yok_hitonground_anim",      /* 3 Yokozuna */
-    "shn_hitonground_anim",      /* 4 Shawn Michaels */
-    "bam_hitonground_anim",      /* 5 Bam Bam */
-    "dnk_hitonground_anim",      /* 6 Doink */
-    NULL,                        /* 7 Adam Bomb */
-    "lex_hitonground_anim",      /* 8 Lex Luger */
-    NULL,                        /* 9 Referee */
+/* PROGRESS.ASM:3273 -- pair */
+static const char *const rows_dead_addr[WM_ROSTER_ANIM_SLOTS * 2] = {
+    "hrt_dizzy_anim",                /* 0 Bret Hart col 0 */
+    "hrt_torso4_anim",               /* 0 Bret Hart col 1 */
+    "rzr_dizzy_anim",                /* 1 Razor Ramon col 0 */
+    "rzr_torso4_anim",               /* 1 Razor Ramon col 1 */
+    "und_dizzy_anim",                /* 2 Undertaker col 0 */
+    "und_torso4_anim",               /* 2 Undertaker col 1 */
+    "yok_dizzy_anim",                /* 3 Yokozuna col 0 */
+    "yok_torso4_anim",               /* 3 Yokozuna col 1 */
+    "shn_dizzy_anim",                /* 4 Shawn Michaels col 0 */
+    "shn_torso4_anim",               /* 4 Shawn Michaels col 1 */
+    "bam_dizzy_anim",                /* 5 Bam Bam col 0 */
+    "bam_torso4_anim",               /* 5 Bam Bam col 1 */
+    "dnk_dizzy_anim",                /* 6 Doink col 0 */
+    "dnk_torso4_anim",               /* 6 Doink col 1 */
+    NULL,                            /* 7 Adam Bomb col 0 */
+    NULL,                            /* 7 Adam Bomb col 1 */
+    "lex_dizzy_anim",                /* 8 Lex Luger col 0 */
+    "lex_torso4_anim",               /* 8 Lex Luger col 1 */
+    NULL,                            /* 9 Referee col 0 */
+    NULL,                            /* 9 Referee col 1 */
 };
-/* SHNSEQ3.ASM:1077 */
-static const char *const rows_recover_tbl[WM_ROSTER_ANIM_SLOTS] = {
-    "hrt_hitonground_anim",      /* 0 Bret Hart */
-    "rzr_hitonground_anim",      /* 1 Razor Ramon */
-    "und_hitonground_anim",      /* 2 Undertaker */
-    "yok_hitonground_xflip_anim", /* 3 Yokozuna */
-    "shn_hitonground_anim",      /* 4 Shawn Michaels */
-    "bam_hitonground_xflip_anim", /* 5 Bam Bam */
-    "dnk_hitonground_anim",      /* 6 Doink */
-    NULL,                        /* 7 Adam Bomb */
-    "lex_hitonground_anim",      /* 8 Lex Luger */
-    NULL,                        /* 9 Referee */
+/* FINISEQ.ASM:1493 -- slot */
+static const char *const rows_dizzy_table[WM_ROSTER_ANIM_SLOTS * 1] = {
+    "hrt_fdizzy_anim",               /* 0 Bret Hart */
+    "rzr_fdizzy_anim",               /* 1 Razor Ramon */
+    "und_fdizzy_anim",               /* 2 Undertaker */
+    "yok_fdizzy_anim",               /* 3 Yokozuna */
+    "shn_fdizzy_anim",               /* 4 Shawn Michaels */
+    "bam_fdizzy_anim",               /* 5 Bam Bam */
+    "dnk_fdizzy_anim",               /* 6 Doink */
+    NULL,                            /* 7 Adam Bomb */
+    "lex_fdizzy_anim",               /* 8 Lex Luger */
+    NULL,                            /* 9 Referee */
 };
-/* SHNSEQ3.ASM:588 */
-static const char *const rows_rollout_tbl1[WM_ROSTER_ANIM_SLOTS] = {
-    "hrt_break_neck_anim",       /* 0 Bret Hart */
-    "rzr_break_neck_anim",       /* 1 Razor Ramon */
-    "und_break_neck_anim",       /* 2 Undertaker */
-    "yok_break_neck_anim",       /* 3 Yokozuna */
-    "shn_break_neck_anim",       /* 4 Shawn Michaels */
-    "bam_break_neck_anim",       /* 5 Bam Bam */
-    "dnk_break_neck_anim",       /* 6 Doink */
-    NULL,                        /* 7 Adam Bomb */
-    "lex_break_neck_anim",       /* 8 Lex Luger */
-    NULL,                        /* 9 Referee */
+/* REACT1.ASM:1801 -- slot */
+static const char *const rows_fall_back_tbl[WM_ROSTER_ANIM_SLOTS * 1] = {
+    "hrt_fall_back_anim",            /* 0 Bret Hart */
+    "rzr_fall_back_anim",            /* 1 Razor Ramon */
+    "und_fall_back_anim",            /* 2 Undertaker */
+    "yok_fall_back_anim",            /* 3 Yokozuna */
+    "shn_fall_back_anim",            /* 4 Shawn Michaels */
+    "bam_fall_back_anim",            /* 5 Bam Bam */
+    "dnk_fall_back_anim",            /* 6 Doink */
+    NULL,                            /* 7 Adam Bomb */
+    "lex_fall_back_anim",            /* 8 Lex Luger */
+    NULL,                            /* 9 Referee */
 };
-/* UNDSEQ3.ASM:1143 */
-static const char *const rows_slambounce_tbls[WM_ROSTER_ANIM_SLOTS] = {
-    "hrt_slambounce_anim",       /* 0 Bret Hart */
-    "rzr_slambounce_anim",       /* 1 Razor Ramon */
-    "und_slambounce_anim",       /* 2 Undertaker */
-    "yok_slambounce_anim",       /* 3 Yokozuna */
-    "shn_slambounce_anim",       /* 4 Shawn Michaels */
-    "bam_slambounce_anim",       /* 5 Bam Bam */
-    "dnk_slambounce_anim",       /* 6 Doink */
-    "und_slambounce_anim",       /* 7 Adam Bomb */
-    "lex_slambounce_anim",       /* 8 Lex Luger */
-    NULL,                        /* 9 Referee */
+/* REACT1.ASM:1812 -- slot */
+static const char *const rows_fall_back_tbukl_tbl[WM_ROSTER_ANIM_SLOTS * 1] = {
+    "hrt_fall_back_tbukl_anim",      /* 0 Bret Hart */
+    "rzr_fall_back_tbukl_anim",      /* 1 Razor Ramon */
+    "und_fall_back_tbukl_anim",      /* 2 Undertaker */
+    "yok_fall_back_anim",            /* 3 Yokozuna */
+    "shn_fall_back_tbukl_anim",      /* 4 Shawn Michaels */
+    "bam_fall_back_tbukl_anim",      /* 5 Bam Bam */
+    "dnk_fall_back_tbukl_anim",      /* 6 Doink */
+    NULL,                            /* 7 Adam Bomb */
+    "lex_fall_back_tbukl_anim",      /* 8 Lex Luger */
+    NULL,                            /* 9 Referee */
 };
-/* ANIM.ASM:4590 */
-static const char *const rows_slaveanim_tbl[WM_ROSTER_ANIM_SLOTS] = {
-    "wres_slave_anim",           /* 0 Bret Hart */
-    "wres_slave_anim",           /* 1 Razor Ramon */
-    "wres_slave_anim",           /* 2 Undertaker */
-    "wres_slave_anim",           /* 3 Yokozuna */
-    "wres_slave_anim",           /* 4 Shawn Michaels */
-    "wres_slave_anim",           /* 5 Bam Bam */
-    "wres_slave_anim",           /* 6 Doink */
-    "wres_slave_anim",           /* 7 Adam Bomb */
-    "wres_slave_anim",           /* 8 Lex Luger */
-    NULL,                        /* 9 Referee */
+/* REACT1.ASM:1746 -- slot */
+static const char *const rows_head_hit2_sand_tbl[WM_ROSTER_ANIM_SLOTS * 1] = {
+    "hrt_4_head_hit2s_anim",         /* 0 Bret Hart */
+    "rzr_4_head_hit2s_anim",         /* 1 Razor Ramon */
+    "und_head_hit2s_anim",           /* 2 Undertaker */
+    "yok_4_head_hit2s_anim",         /* 3 Yokozuna */
+    "shn_4_head_hit2s_anim",         /* 4 Shawn Michaels */
+    "bam_head_hit2s_anim",           /* 5 Bam Bam */
+    "dnk_head_hit2s_anim",           /* 6 Doink */
+    NULL,                            /* 7 Adam Bomb */
+    "lex_4_head_hit2s_anim",         /* 8 Lex Luger */
+    NULL,                            /* 9 Referee */
 };
-/* FINISEQ.ASM:1476 */
-static const char *const rows_stand_table[WM_ROSTER_ANIM_SLOTS] = {
-    "hrt_stand_anim",            /* 0 Bret Hart */
-    "rzr_stand_anim",            /* 1 Razor Ramon */
-    "und_stand_anim",            /* 2 Undertaker */
-    "yok_stand_anim",            /* 3 Yokozuna */
-    "shn_stand_anim",            /* 4 Shawn Michaels */
-    "bam_stand_anim",            /* 5 Bam Bam */
-    "dnk_stand_anim",            /* 6 Doink */
-    NULL,                        /* 7 Adam Bomb */
-    "lex_stand_anim",            /* 8 Lex Luger */
-    NULL,                        /* 9 Referee */
+/* REACT1.ASM:1735 -- facing */
+static const char *const rows_head_hit2_tbl[WM_ROSTER_ANIM_SLOTS * 2] = {
+    "hrt_2_head_hit2_anim",          /* 0 Bret Hart facing up */
+    "hrt_4_head_hit2_anim",          /* 0 Bret Hart facing down */
+    "rzr_2_head_hit2_anim",          /* 1 Razor Ramon facing up */
+    "rzr_4_head_hit2_anim",          /* 1 Razor Ramon facing down */
+    "und_head_hit2_anim",            /* 2 Undertaker facing up */
+    "und_head_hit2_anim",            /* 2 Undertaker facing down */
+    "yok_2_head_hit2_anim",          /* 3 Yokozuna facing up */
+    "yok_4_head_hit2_anim",          /* 3 Yokozuna facing down */
+    "shn_2_head_hit2_anim",          /* 4 Shawn Michaels facing up */
+    "shn_4_head_hit2_anim",          /* 4 Shawn Michaels facing down */
+    "bam_head_hit2_anim",            /* 5 Bam Bam facing up */
+    "bam_head_hit2_anim",            /* 5 Bam Bam facing down */
+    "dnk_head_hit2_anim",            /* 6 Doink facing up */
+    "dnk_head_hit2_anim",            /* 6 Doink facing down */
+    NULL,                            /* 7 Adam Bomb facing up */
+    NULL,                            /* 7 Adam Bomb facing down */
+    "lex_2_head_hit2_anim",          /* 8 Lex Luger facing up */
+    "lex_4_head_hit2_anim",          /* 8 Lex Luger facing down */
+    NULL,                            /* 9 Referee facing up */
+    NULL,                            /* 9 Referee facing down */
+};
+/* REACT1.ASM:1757 -- facing */
+static const char *const rows_head_hit_dizzy_tbl[WM_ROSTER_ANIM_SLOTS * 2] = {
+    "hrt_4_head_hit_dizzy_anim",     /* 0 Bret Hart facing up */
+    "hrt_4_head_hit_dizzy_anim",     /* 0 Bret Hart facing down */
+    "rzr_4_head_hit_dizzy_anim",     /* 1 Razor Ramon facing up */
+    "rzr_4_head_hit_dizzy_anim",     /* 1 Razor Ramon facing down */
+    "und_head_hit_dizzy_anim",       /* 2 Undertaker facing up */
+    "und_head_hit_dizzy_anim",       /* 2 Undertaker facing down */
+    "yok_4_head_hit_dizzy_anim",     /* 3 Yokozuna facing up */
+    "yok_4_head_hit_dizzy_anim",     /* 3 Yokozuna facing down */
+    "shn_4_head_hit_dizzy_anim",     /* 4 Shawn Michaels facing up */
+    "shn_4_head_hit_dizzy_anim",     /* 4 Shawn Michaels facing down */
+    "bam_head_hit_dizzy_anim",       /* 5 Bam Bam facing up */
+    "bam_head_hit_dizzy_anim",       /* 5 Bam Bam facing down */
+    "dnk_head_hit_dizzy_anim",       /* 6 Doink facing up */
+    "dnk_head_hit_dizzy_anim",       /* 6 Doink facing down */
+    NULL,                            /* 7 Adam Bomb facing up */
+    NULL,                            /* 7 Adam Bomb facing down */
+    "lex_head_hit_dizzy_anim",       /* 8 Lex Luger facing up */
+    "lex_head_hit_dizzy_anim",       /* 8 Lex Luger facing down */
+    NULL,                            /* 9 Referee facing up */
+    NULL,                            /* 9 Referee facing down */
+};
+/* REACT1.ASM:1723 -- facing */
+static const char *const rows_head_hit_tbl[WM_ROSTER_ANIM_SLOTS * 2] = {
+    "hrt_2_head_hit_anim",           /* 0 Bret Hart facing up */
+    "hrt_4_head_hit_anim",           /* 0 Bret Hart facing down */
+    "rzr_2_head_hit_anim",           /* 1 Razor Ramon facing up */
+    "rzr_4_head_hit_anim",           /* 1 Razor Ramon facing down */
+    "und_2_head_hit_anim",           /* 2 Undertaker facing up */
+    "und_4_head_hit_anim",           /* 2 Undertaker facing down */
+    "yok_2_head_hit_anim",           /* 3 Yokozuna facing up */
+    "yok_4_head_hit_anim",           /* 3 Yokozuna facing down */
+    "shn_2_head_hit_anim",           /* 4 Shawn Michaels facing up */
+    "shn_4_head_hit_anim",           /* 4 Shawn Michaels facing down */
+    "bam_2_head_hit_anim",           /* 5 Bam Bam facing up */
+    "bam_4_head_hit_anim",           /* 5 Bam Bam facing down */
+    "dnk_2_head_hit_anim",           /* 6 Doink facing up */
+    "dnk_4_head_hit_anim",           /* 6 Doink facing down */
+    NULL,                            /* 7 Adam Bomb facing up */
+    NULL,                            /* 7 Adam Bomb facing down */
+    "lex_2_head_hit_anim",           /* 8 Lex Luger facing up */
+    "lex_4_head_hit_anim",           /* 8 Lex Luger facing down */
+    NULL,                            /* 9 Referee facing up */
+    NULL,                            /* 9 Referee facing down */
+};
+/* LEXSEQ3.ASM:1539 -- slot */
+static const char *const rows_heldoh_tbl[WM_ROSTER_ANIM_SLOTS * 1] = {
+    "hrt_heldoh_anim",               /* 0 Bret Hart */
+    "rzr_heldoh_anim",               /* 1 Razor Ramon */
+    "und_heldoh_anim",               /* 2 Undertaker */
+    "yok_heldoh_anim",               /* 3 Yokozuna */
+    "shn_heldoh_anim",               /* 4 Shawn Michaels */
+    "bam_heldoh_anim",               /* 5 Bam Bam */
+    "dnk_heldoh_anim",               /* 6 Doink */
+    NULL,                            /* 7 Adam Bomb */
+    "lex_heldoh_anim",               /* 8 Lex Luger */
+    NULL,                            /* 9 Referee */
+};
+/* REACT1.ASM:1834 -- slot */
+static const char *const rows_hitblock_flail_tbl[WM_ROSTER_ANIM_SLOTS * 1] = {
+    "hrt_4_hitblock2_anim",          /* 0 Bret Hart */
+    "rzr_4_hitblock2_anim",          /* 1 Razor Ramon */
+    "und_4_hitblock2_anim",          /* 2 Undertaker */
+    "yok_4_hitblock2_anim",          /* 3 Yokozuna */
+    "shn_4_hitblock2_anim",          /* 4 Shawn Michaels */
+    "bam_4_hitblock2_anim",          /* 5 Bam Bam */
+    "dnk_4_hitblock2_anim",          /* 6 Doink */
+    NULL,                            /* 7 Adam Bomb */
+    "lex_4_hitblock2_anim",          /* 8 Lex Luger */
+    NULL,                            /* 9 Referee */
+};
+/* REACT1.ASM:1823 -- slot */
+static const char *const rows_hitblock_tbl[WM_ROSTER_ANIM_SLOTS * 1] = {
+    "hrt_4_hitblock_anim",           /* 0 Bret Hart */
+    "rzr_4_hitblock_anim",           /* 1 Razor Ramon */
+    "und_4_hitblock_anim",           /* 2 Undertaker */
+    "yok_4_hitblock_anim",           /* 3 Yokozuna */
+    "shn_4_hitblock_anim",           /* 4 Shawn Michaels */
+    "bam_4_hitblock_anim",           /* 5 Bam Bam */
+    "dnk_4_hitblock_anim",           /* 6 Doink */
+    NULL,                            /* 7 Adam Bomb */
+    "lex_4_hitblock_anim",           /* 8 Lex Luger */
+    NULL,                            /* 9 Referee */
+};
+/* REACT1.ASM:1856 -- slot */
+static const char *const rows_hitonground_tbl[WM_ROSTER_ANIM_SLOTS * 1] = {
+    "hrt_hitonground_anim",          /* 0 Bret Hart */
+    "rzr_hitonground_anim",          /* 1 Razor Ramon */
+    "und_hitonground_anim",          /* 2 Undertaker */
+    "yok_hitonground_anim",          /* 3 Yokozuna */
+    "shn_hitonground_anim",          /* 4 Shawn Michaels */
+    "bam_hitonground_anim",          /* 5 Bam Bam */
+    "dnk_hitonground_anim",          /* 6 Doink */
+    NULL,                            /* 7 Adam Bomb */
+    "lex_hitonground_anim",          /* 8 Lex Luger */
+    NULL,                            /* 9 Referee */
+};
+/* REACT3.ASM:223 -- facing */
+static const char *const rows_knee_hit_tbl[WM_ROSTER_ANIM_SLOTS * 2] = {
+    "hrt_2_knee_hit_anim",           /* 0 Bret Hart facing up */
+    "hrt_4_knee_hit_anim",           /* 0 Bret Hart facing down */
+    "rzr_2_knee_hit_anim",           /* 1 Razor Ramon facing up */
+    "rzr_4_knee_hit_anim",           /* 1 Razor Ramon facing down */
+    "und_2_knee_hit_anim",           /* 2 Undertaker facing up */
+    "und_4_knee_hit_anim",           /* 2 Undertaker facing down */
+    "yok_2_knee_hit_anim",           /* 3 Yokozuna facing up */
+    "yok_4_knee_hit_anim",           /* 3 Yokozuna facing down */
+    "shn_2_knee_hit_anim",           /* 4 Shawn Michaels facing up */
+    "shn_4_knee_hit_anim",           /* 4 Shawn Michaels facing down */
+    "bam_2_knee_hit_anim",           /* 5 Bam Bam facing up */
+    "bam_4_knee_hit_anim",           /* 5 Bam Bam facing down */
+    "dnk_2_knee_hit_anim",           /* 6 Doink facing up */
+    "dnk_2_knee_hit_anim",           /* 6 Doink facing down */
+    NULL,                            /* 7 Adam Bomb facing up */
+    NULL,                            /* 7 Adam Bomb facing down */
+    "lex_2_knee_hit_anim",           /* 8 Lex Luger facing up */
+    "lex_4_knee_hit_anim",           /* 8 Lex Luger facing down */
+    NULL,                            /* 9 Referee facing up */
+    NULL,                            /* 9 Referee facing down */
+};
+/* REACT4.ASM:279 -- slot */
+static const char *const rows_knockdwn[WM_ROSTER_ANIM_SLOTS * 1] = {
+    "hrt_knockdwn_anim",             /* 0 Bret Hart */
+    "rzr_knockdwn_anim",             /* 1 Razor Ramon */
+    "und_knockdwn_anim",             /* 2 Undertaker */
+    "yok_knockdwn_anim",             /* 3 Yokozuna */
+    "shn_knockdwn_anim",             /* 4 Shawn Michaels */
+    "bam_knockdwn_anim",             /* 5 Bam Bam */
+    "dnk_knockdwn_anim",             /* 6 Doink */
+    NULL,                            /* 7 Adam Bomb */
+    "lex_knockdwn_anim",             /* 8 Lex Luger */
+    NULL,                            /* 9 Referee */
+};
+/* SHNSEQ3.ASM:1077 -- slot */
+static const char *const rows_recover_tbl[WM_ROSTER_ANIM_SLOTS * 1] = {
+    "hrt_hitonground_anim",          /* 0 Bret Hart */
+    "rzr_hitonground_anim",          /* 1 Razor Ramon */
+    "und_hitonground_anim",          /* 2 Undertaker */
+    "yok_hitonground_xflip_anim",    /* 3 Yokozuna */
+    "shn_hitonground_anim",          /* 4 Shawn Michaels */
+    "bam_hitonground_xflip_anim",    /* 5 Bam Bam */
+    "dnk_hitonground_anim",          /* 6 Doink */
+    NULL,                            /* 7 Adam Bomb */
+    "lex_hitonground_anim",          /* 8 Lex Luger */
+    NULL,                            /* 9 Referee */
+};
+/* SHNSEQ3.ASM:588 -- slot */
+static const char *const rows_rollout_tbl1[WM_ROSTER_ANIM_SLOTS * 1] = {
+    "hrt_break_neck_anim",           /* 0 Bret Hart */
+    "rzr_break_neck_anim",           /* 1 Razor Ramon */
+    "und_break_neck_anim",           /* 2 Undertaker */
+    "yok_break_neck_anim",           /* 3 Yokozuna */
+    "shn_break_neck_anim",           /* 4 Shawn Michaels */
+    "bam_break_neck_anim",           /* 5 Bam Bam */
+    "dnk_break_neck_anim",           /* 6 Doink */
+    NULL,                            /* 7 Adam Bomb */
+    "lex_break_neck_anim",           /* 8 Lex Luger */
+    NULL,                            /* 9 Referee */
+};
+/* WRESTLE2.ASM:793 -- slot */
+static const char *const rows_rollthru_top_anims[WM_ROSTER_ANIM_SLOTS * 1] = {
+    "hrt_rollthru_top_anim",         /* 0 Bret Hart */
+    "rzr_rollthru_top_anim",         /* 1 Razor Ramon */
+    "und_rollthru_top_anim",         /* 2 Undertaker */
+    "yok_rollthru_top_anim",         /* 3 Yokozuna */
+    "shn_rollthru_top_anim",         /* 4 Shawn Michaels */
+    "bam_rollthru_top_anim",         /* 5 Bam Bam */
+    "dnk_rollthru_top_anim",         /* 6 Doink */
+    NULL,                            /* 7 Adam Bomb */
+    "lex_rollthru_top_anim",         /* 8 Lex Luger */
+    NULL,                            /* 9 Referee */
+};
+/* PROGRESS.ASM:3293 -- pair */
+static const char *const rows_running_addr[WM_ROSTER_ANIM_SLOTS * 2] = {
+    "hrt_run2_anim",                 /* 0 Bret Hart col 0 */
+    "hrt_torso4_anim",               /* 0 Bret Hart col 1 */
+    "rzr_run2_anim",                 /* 1 Razor Ramon col 0 */
+    "rzr_torso4_anim",               /* 1 Razor Ramon col 1 */
+    "und_run2_anim",                 /* 2 Undertaker col 0 */
+    "und_torso4_anim",               /* 2 Undertaker col 1 */
+    "yok_run2_anim",                 /* 3 Yokozuna col 0 */
+    "yok_torso4_anim",               /* 3 Yokozuna col 1 */
+    "shn_run2_anim",                 /* 4 Shawn Michaels col 0 */
+    "shn_torso4_anim",               /* 4 Shawn Michaels col 1 */
+    "bam_run2_anim",                 /* 5 Bam Bam col 0 */
+    "bam_torso4_anim",               /* 5 Bam Bam col 1 */
+    "dnk_run2_anim",                 /* 6 Doink col 0 */
+    "dnk_torso4_anim",               /* 6 Doink col 1 */
+    NULL,                            /* 7 Adam Bomb col 0 */
+    NULL,                            /* 7 Adam Bomb col 1 */
+    "lex_run2_anim",                 /* 8 Lex Luger col 0 */
+    "lex_torso4_anim",               /* 8 Lex Luger col 1 */
+    NULL,                            /* 9 Referee col 0 */
+    NULL,                            /* 9 Referee col 1 */
+};
+/* UNDSEQ3.ASM:1143 -- slot */
+static const char *const rows_slambounce_tbls[WM_ROSTER_ANIM_SLOTS * 1] = {
+    "hrt_slambounce_anim",           /* 0 Bret Hart */
+    "rzr_slambounce_anim",           /* 1 Razor Ramon */
+    "und_slambounce_anim",           /* 2 Undertaker */
+    "yok_slambounce_anim",           /* 3 Yokozuna */
+    "shn_slambounce_anim",           /* 4 Shawn Michaels */
+    "bam_slambounce_anim",           /* 5 Bam Bam */
+    "dnk_slambounce_anim",           /* 6 Doink */
+    "und_slambounce_anim",           /* 7 Adam Bomb */
+    "lex_slambounce_anim",           /* 8 Lex Luger */
+    NULL,                            /* 9 Referee */
+};
+/* ANIM.ASM:4590 -- slot */
+static const char *const rows_slaveanim_tbl[WM_ROSTER_ANIM_SLOTS * 1] = {
+    "wres_slave_anim",               /* 0 Bret Hart */
+    "wres_slave_anim",               /* 1 Razor Ramon */
+    "wres_slave_anim",               /* 2 Undertaker */
+    "wres_slave_anim",               /* 3 Yokozuna */
+    "wres_slave_anim",               /* 4 Shawn Michaels */
+    "wres_slave_anim",               /* 5 Bam Bam */
+    "wres_slave_anim",               /* 6 Doink */
+    "wres_slave_anim",               /* 7 Adam Bomb */
+    "wres_slave_anim",               /* 8 Lex Luger */
+    NULL,                            /* 9 Referee */
+};
+/* FINISEQ.ASM:1476 -- slot */
+static const char *const rows_stand_table[WM_ROSTER_ANIM_SLOTS * 1] = {
+    "hrt_stand_anim",                /* 0 Bret Hart */
+    "rzr_stand_anim",                /* 1 Razor Ramon */
+    "und_stand_anim",                /* 2 Undertaker */
+    "yok_stand_anim",                /* 3 Yokozuna */
+    "shn_stand_anim",                /* 4 Shawn Michaels */
+    "bam_stand_anim",                /* 5 Bam Bam */
+    "dnk_stand_anim",                /* 6 Doink */
+    NULL,                            /* 7 Adam Bomb */
+    "lex_stand_anim",                /* 8 Lex Luger */
+    NULL,                            /* 9 Referee */
+};
+/* PROGRESS.ASM:3253 -- pair */
+static const char *const rows_standing_addr[WM_ROSTER_ANIM_SLOTS * 2] = {
+    "hrt_stand4_anim",               /* 0 Bret Hart col 0 */
+    "hrt_torso4_anim",               /* 0 Bret Hart col 1 */
+    "rzr_stand4_anim",               /* 1 Razor Ramon col 0 */
+    "rzr_torso4_anim",               /* 1 Razor Ramon col 1 */
+    "und_stand4_anim",               /* 2 Undertaker col 0 */
+    "und_torso4_anim",               /* 2 Undertaker col 1 */
+    "yok_stand4_anim",               /* 3 Yokozuna col 0 */
+    "yok_torso4_anim",               /* 3 Yokozuna col 1 */
+    "shn_stand4_anim",               /* 4 Shawn Michaels col 0 */
+    "shn_torso4_anim",               /* 4 Shawn Michaels col 1 */
+    "bam_stand4_anim",               /* 5 Bam Bam col 0 */
+    "bam_torso4_anim",               /* 5 Bam Bam col 1 */
+    "dnk_stand4_anim",               /* 6 Doink col 0 */
+    "dnk_torso4_anim",               /* 6 Doink col 1 */
+    NULL,                            /* 7 Adam Bomb col 0 */
+    NULL,                            /* 7 Adam Bomb col 1 */
+    "lex_stand4_anim",               /* 8 Lex Luger col 0 */
+    "lex_torso4_anim",               /* 8 Lex Luger col 1 */
+    NULL,                            /* 9 Referee col 0 */
+    NULL,                            /* 9 Referee col 1 */
+};
+/* PROGRESS.ASM:3233 -- pair */
+static const char *const rows_taunting_addr[WM_ROSTER_ANIM_SLOTS * 2] = {
+    "hrt_taunt4_anim",               /* 0 Bret Hart col 0 */
+    "hrt_torso4_anim",               /* 0 Bret Hart col 1 */
+    "rzr_taunt4_anim",               /* 1 Razor Ramon col 0 */
+    "rzr_torso4_anim",               /* 1 Razor Ramon col 1 */
+    "und_taunt4_anim",               /* 2 Undertaker col 0 */
+    "und_torso4_anim",               /* 2 Undertaker col 1 */
+    "yok_taunt4_anim",               /* 3 Yokozuna col 0 */
+    "yok_torso4_anim",               /* 3 Yokozuna col 1 */
+    "shn_taunt4_anim",               /* 4 Shawn Michaels col 0 */
+    "shn_torso4_anim",               /* 4 Shawn Michaels col 1 */
+    "bam_taunt4_anim",               /* 5 Bam Bam col 0 */
+    "bam_torso4_anim",               /* 5 Bam Bam col 1 */
+    "dnk_taunt4_anim",               /* 6 Doink col 0 */
+    "dnk_torso4_anim",               /* 6 Doink col 1 */
+    NULL,                            /* 7 Adam Bomb col 0 */
+    NULL,                            /* 7 Adam Bomb col 1 */
+    "lex_taunt4_anim",               /* 8 Lex Luger col 0 */
+    "lex_torso4_anim",               /* 8 Lex Luger col 1 */
+    NULL,                            /* 9 Referee col 0 */
+    NULL,                            /* 9 Referee col 1 */
+};
+/* PROGRESS.ASM:3333 -- pair */
+static const char *const rows_waiting_addr[WM_ROSTER_ANIM_SLOTS * 2] = {
+    "hrt_wait_anim",                 /* 0 Bret Hart col 0 */
+    "hrt_torso4_anim",               /* 0 Bret Hart col 1 */
+    "rzr_wait_anim",                 /* 1 Razor Ramon col 0 */
+    "rzr_torso4_anim",               /* 1 Razor Ramon col 1 */
+    "und_wait_anim",                 /* 2 Undertaker col 0 */
+    "und_torso4_anim",               /* 2 Undertaker col 1 */
+    "yok_wait_anim",                 /* 3 Yokozuna col 0 */
+    "yok_torso4_anim",               /* 3 Yokozuna col 1 */
+    "shn_wait_anim",                 /* 4 Shawn Michaels col 0 */
+    "shn_torso4_anim",               /* 4 Shawn Michaels col 1 */
+    "bam_wait_anim",                 /* 5 Bam Bam col 0 */
+    "bam_torso4_anim",               /* 5 Bam Bam col 1 */
+    "dnk_wait_anim",                 /* 6 Doink col 0 */
+    "dnk_torso4_anim",               /* 6 Doink col 1 */
+    NULL,                            /* 7 Adam Bomb col 0 */
+    NULL,                            /* 7 Adam Bomb col 1 */
+    "lex_wait_anim",                 /* 8 Lex Luger col 0 */
+    "lex_torso4_anim",               /* 8 Lex Luger col 1 */
+    NULL,                            /* 9 Referee col 0 */
+    NULL,                            /* 9 Referee col 1 */
 };
 
 const wm_roster_anim_table wm_roster_anim_tables[] = {
-    { "body_hit2_tbl", "REACT1.ASM", 1779, 9, rows_body_hit2_tbl },
-    { "climbin_bot_anims", "WRESTLE2.ASM", 745, 10, rows_climbin_bot_anims },
-    { "climbin_side_anims", "WRESTLE2.ASM", 781, 10, rows_climbin_side_anims },
-    { "climbin_top_anims", "WRESTLE2.ASM", 757, 10, rows_climbin_top_anims },
-    { "climbthru_bot_anims", "WRESTLE2.ASM", 721, 10, rows_climbthru_bot_anims },
-    { "climbthru_side_anims", "WRESTLE2.ASM", 769, 10, rows_climbthru_side_anims },
-    { "climbthru_top_anims", "WRESTLE2.ASM", 733, 10, rows_climbthru_top_anims },
-    { "dizzy_table", "FINISEQ.ASM", 1493, 9, rows_dizzy_table },
-    { "fall_back_tbl", "REACT1.ASM", 1801, 9, rows_fall_back_tbl },
-    { "fall_back_tbukl_tbl", "REACT1.ASM", 1812, 9, rows_fall_back_tbukl_tbl },
-    { "heldoh_tbl", "LEXSEQ3.ASM", 1539, 9, rows_heldoh_tbl },
-    { "hitblock_tbl", "REACT1.ASM", 1823, 9, rows_hitblock_tbl },
-    { "hitonground_tbl", "REACT1.ASM", 1856, 10, rows_hitonground_tbl },
-    { "recover_tbl", "SHNSEQ3.ASM", 1077, 9, rows_recover_tbl },
-    { "rollout_tbl1", "SHNSEQ3.ASM", 588, 9, rows_rollout_tbl1 },
-    { "slambounce_tbls", "UNDSEQ3.ASM", 1143, 9, rows_slambounce_tbls },
-    { "slaveanim_tbl", "ANIM.ASM", 4590, 9, rows_slaveanim_tbl },
-    { "stand_table", "FINISEQ.ASM", 1476, 9, rows_stand_table },
+    { "bncoff", "REACT5.ASM", 333, 10, 2, WM_ROSTER_COL_FACING, rows_bncoff },
+    { "bncoff_gate", "REACT5.ASM", 353, 10, 2, WM_ROSTER_COL_FACING, rows_bncoff_gate },
+    { "body_hit2_tbl", "REACT1.ASM", 1779, 9, 1, WM_ROSTER_COL_SLOT, rows_body_hit2_tbl },
+    { "body_hit_dizzy_tbl", "REACT1.ASM", 1790, 9, 2, WM_ROSTER_COL_FACING, rows_body_hit_dizzy_tbl },
+    { "body_hit_tbl", "REACT1.ASM", 1768, 9, 2, WM_ROSTER_COL_FACING, rows_body_hit_tbl },
+    { "clever_addr", "PROGRESS.ASM", 3313, 10, 2, WM_ROSTER_COL_PAIR, rows_clever_addr },
+    { "climbin_bot_anims", "WRESTLE2.ASM", 745, 10, 1, WM_ROSTER_COL_SLOT, rows_climbin_bot_anims },
+    { "climbin_side_anims", "WRESTLE2.ASM", 781, 10, 1, WM_ROSTER_COL_SLOT, rows_climbin_side_anims },
+    { "climbin_top_anims", "WRESTLE2.ASM", 757, 10, 1, WM_ROSTER_COL_SLOT, rows_climbin_top_anims },
+    { "climbthru_bot_anims", "WRESTLE2.ASM", 721, 10, 1, WM_ROSTER_COL_SLOT, rows_climbthru_bot_anims },
+    { "climbthru_side_anims", "WRESTLE2.ASM", 769, 10, 1, WM_ROSTER_COL_SLOT, rows_climbthru_side_anims },
+    { "climbthru_top_anims", "WRESTLE2.ASM", 733, 10, 1, WM_ROSTER_COL_SLOT, rows_climbthru_top_anims },
+    { "dead_addr", "PROGRESS.ASM", 3273, 10, 2, WM_ROSTER_COL_PAIR, rows_dead_addr },
+    { "dizzy_table", "FINISEQ.ASM", 1493, 9, 1, WM_ROSTER_COL_SLOT, rows_dizzy_table },
+    { "fall_back_tbl", "REACT1.ASM", 1801, 9, 1, WM_ROSTER_COL_SLOT, rows_fall_back_tbl },
+    { "fall_back_tbukl_tbl", "REACT1.ASM", 1812, 9, 1, WM_ROSTER_COL_SLOT, rows_fall_back_tbukl_tbl },
+    { "head_hit2_sand_tbl", "REACT1.ASM", 1746, 9, 1, WM_ROSTER_COL_SLOT, rows_head_hit2_sand_tbl },
+    { "head_hit2_tbl", "REACT1.ASM", 1735, 9, 2, WM_ROSTER_COL_FACING, rows_head_hit2_tbl },
+    { "head_hit_dizzy_tbl", "REACT1.ASM", 1757, 9, 2, WM_ROSTER_COL_FACING, rows_head_hit_dizzy_tbl },
+    { "head_hit_tbl", "REACT1.ASM", 1723, 9, 2, WM_ROSTER_COL_FACING, rows_head_hit_tbl },
+    { "heldoh_tbl", "LEXSEQ3.ASM", 1539, 9, 1, WM_ROSTER_COL_SLOT, rows_heldoh_tbl },
+    { "hitblock_flail_tbl", "REACT1.ASM", 1834, 9, 1, WM_ROSTER_COL_SLOT, rows_hitblock_flail_tbl },
+    { "hitblock_tbl", "REACT1.ASM", 1823, 9, 1, WM_ROSTER_COL_SLOT, rows_hitblock_tbl },
+    { "hitonground_tbl", "REACT1.ASM", 1856, 10, 1, WM_ROSTER_COL_SLOT, rows_hitonground_tbl },
+    { "knee_hit_tbl", "REACT3.ASM", 223, 10, 2, WM_ROSTER_COL_FACING, rows_knee_hit_tbl },
+    { "knockdwn", "REACT4.ASM", 279, 10, 1, WM_ROSTER_COL_SLOT, rows_knockdwn },
+    { "recover_tbl", "SHNSEQ3.ASM", 1077, 9, 1, WM_ROSTER_COL_SLOT, rows_recover_tbl },
+    { "rollout_tbl1", "SHNSEQ3.ASM", 588, 9, 1, WM_ROSTER_COL_SLOT, rows_rollout_tbl1 },
+    { "rollthru_top_anims", "WRESTLE2.ASM", 793, 9, 1, WM_ROSTER_COL_SLOT, rows_rollthru_top_anims },
+    { "running_addr", "PROGRESS.ASM", 3293, 10, 2, WM_ROSTER_COL_PAIR, rows_running_addr },
+    { "slambounce_tbls", "UNDSEQ3.ASM", 1143, 9, 1, WM_ROSTER_COL_SLOT, rows_slambounce_tbls },
+    { "slaveanim_tbl", "ANIM.ASM", 4590, 9, 1, WM_ROSTER_COL_SLOT, rows_slaveanim_tbl },
+    { "stand_table", "FINISEQ.ASM", 1476, 9, 1, WM_ROSTER_COL_SLOT, rows_stand_table },
+    { "standing_addr", "PROGRESS.ASM", 3253, 10, 2, WM_ROSTER_COL_PAIR, rows_standing_addr },
+    { "taunting_addr", "PROGRESS.ASM", 3233, 10, 2, WM_ROSTER_COL_PAIR, rows_taunting_addr },
+    { "waiting_addr", "PROGRESS.ASM", 3333, 10, 2, WM_ROSTER_COL_PAIR, rows_waiting_addr },
 };
 
-const int wm_roster_anim_table_count = 18;
+const int wm_roster_anim_table_count = 36;

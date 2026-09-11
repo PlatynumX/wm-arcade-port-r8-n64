@@ -6761,7 +6761,7 @@
    "external_callers": 0,
    "references": 1,
    "status": "implemented",
-   "evidence": "wm_wrestler_bncoff",
+   "evidence": "rows_bncoff",
    "from_generated": true,
    "ledgered": false
   },
@@ -6776,7 +6776,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "wm_wrestler_bncoff_gate",
+   "evidence": "rows_bncoff_gate",
    "from_generated": true,
    "ledgered": false
   },
@@ -6805,9 +6805,9 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "rows_body_hit_dizzy_tbl",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -6820,9 +6820,9 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "rows_body_hit_tbl",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -7345,10 +7345,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_arcade_try_attack_hit",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "check_collisions",
@@ -7781,8 +7781,8 @@
    "local": false,
    "external_callers": 1,
    "references": 2,
-   "status": "cited",
-   "evidence": "clear_combo_meter",
+   "status": "implemented",
+   "evidence": "wm_arcade_clear_combo_meter",
    "from_generated": false,
    "ledgered": false
   },
@@ -8426,8 +8426,8 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "dead_or_dying",
    "from_generated": false,
    "ledgered": false
   },
@@ -11997,10 +11997,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "LIFEBAR.ASM:2164 -- build the two-digit win-streak display for each player: clamp to 99, BINBCD, index #f_t for each nibble's digit image and BEGINOBJ it at a fixed screen position, plus the `lwin` label object. It reads p1winstreak/p2winstreak and writes only objects.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "doink_ani_init",
@@ -12252,8 +12252,8 @@
    "local": false,
    "external_callers": 0,
    "references": 3,
-   "status": "cited",
-   "evidence": "drn_enterring",
+   "status": "implemented",
+   "evidence": "seek_drn_enterring",
    "from_generated": false,
    "ledgered": false
   },
@@ -12417,8 +12417,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "drn_taunt",
+   "status": "implemented",
+   "evidence": "call_drn_taunt",
    "from_generated": false,
    "ledgered": false
   },
@@ -12432,8 +12432,8 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_arcade_drone_calcskill",
    "from_generated": false,
    "ledgered": false
   },
@@ -12522,10 +12522,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "cited",
-   "evidence": "drone_seek",
+   "status": "renamed",
+   "evidence": "seek_drn_seek",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "drone_seek2",
@@ -12537,10 +12537,10 @@
    "local": false,
    "external_callers": 0,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "seek_plain70",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "drone_seekdirdist",
@@ -12552,10 +12552,10 @@
    "local": false,
    "external_callers": 0,
    "references": 3,
-   "status": "cited",
-   "evidence": "drone_seekdirdist",
+   "status": "renamed",
+   "evidence": "run_seekdirdist",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "drone_seekxz",
@@ -12567,10 +12567,10 @@
    "local": false,
    "external_callers": 0,
    "references": 5,
-   "status": "cited",
-   "evidence": "drone_seekxz",
+   "status": "renamed",
+   "evidence": "seekxz_joy",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "dufus_msg_off",
@@ -12867,10 +12867,10 @@
    "local": false,
    "external_callers": 0,
    "references": 4,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "ROPES.ASM:558 -- point a DMA object at a new image: ODOFF, OIMG, OSIZE, OSAG and the five z-compare bits of OCTRL, plus a CALLERR if the image pointer is below ROM. Every line writes the object hardware and there is nothing else in it.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "fg2bg",
@@ -13977,8 +13977,8 @@
    "local": false,
    "external_callers": 2,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_arcade_halve_combo_meter",
    "from_generated": false,
    "ledgered": false
   },
@@ -14022,9 +14022,9 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "rows_head_hit2_sand_tbl",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -14037,9 +14037,9 @@
    "local": false,
    "external_callers": 5,
    "references": 10,
-   "status": "cited",
-   "evidence": "head_hit2_tbl",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "rows_head_hit2_tbl",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -14052,9 +14052,9 @@
    "local": false,
    "external_callers": 1,
    "references": 4,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "rows_head_hit_dizzy_tbl",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -14067,9 +14067,9 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "rows_head_hit_tbl",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -14322,10 +14322,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "hit_stomp",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "hit_buzz",
@@ -14412,10 +14412,10 @@
    "local": false,
    "external_callers": 4,
    "references": 5,
-   "status": "cited",
-   "evidence": "hit_flykick",
+   "status": "renamed",
+   "evidence": "react_flykick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "hit_grabfling",
@@ -14427,10 +14427,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "hit_grabfling",
+   "status": "renamed",
+   "evidence": "wm_arcade_react2_apply",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "hit_grabhold",
@@ -14442,10 +14442,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_arcade_react2_apply",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "hit_ground",
@@ -14517,10 +14517,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "hit_headslash_common",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "hit_headhold",
@@ -14532,10 +14532,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_arcade_react4_apply",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "hit_headknees",
@@ -14562,10 +14562,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "hit_headslash_common",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "hit_hitcheck",
@@ -14697,7 +14697,7 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
+   "status": "implemented",
    "evidence": "hit_puppet_even_if_dead",
    "from_generated": false,
    "ledgered": false
@@ -18344,8 +18344,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "is_perfect",
+   "status": "implemented",
+   "evidence": "wm_arcade_is_perfect",
    "from_generated": false,
    "ledgered": false
   },
@@ -18449,9 +18449,9 @@
    "local": false,
    "external_callers": 2,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "rows_knee_hit_tbl",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -23807,10 +23807,10 @@
    "local": false,
    "external_callers": 0,
    "references": 4,
-   "status": "cited",
-   "evidence": "rope_update",
+   "status": "renamed",
+   "evidence": "wm_rope_runtime_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "round_award",
@@ -27092,10 +27092,10 @@
    "local": false,
    "external_callers": 11,
    "references": 11,
-   "status": "cited",
-   "evidence": "set_images",
+   "status": "partial",
+   "evidence": "wm_match_build_draw_list",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "set_my_pal",
@@ -27272,10 +27272,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "set_rope_z",
+   "status": "renamed",
+   "evidence": "wm_rope_second_half_z",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "set_rotate_anim",
@@ -27482,10 +27482,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_arcade_set_attack_box",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "set_zvel",
@@ -34503,10 +34503,10 @@
    "local": false,
    "external_callers": 0,
    "references": 6,
-   "status": "cited",
-   "evidence": "update_meter",
+   "status": "display",
+   "evidence": "LIFEBAR.ASM:1257 -- redraw one meter: OFSET set to LIFE_MAX minus the displayed life (the pixels to hide), then the M_NODISP toggle for a wrestler who is OUTSIDE_ALONE and the WHICH_SCREEN check behind it. The value it draws, PLT_CLIFE, is real and is wm_life_inc_life's; the drawing is not.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "update_name",
@@ -34983,8 +34983,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "xxx_aborted_attach_anim",
    "from_generated": false,
    "ledgered": false
   },

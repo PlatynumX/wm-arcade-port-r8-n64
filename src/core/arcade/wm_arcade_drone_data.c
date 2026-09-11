@@ -1,6 +1,7 @@
 #include "wm/arcade/wm_arcade_drone_data.h"
 #include "wm/arcade/wm_arcade_roster.h"
 #include "wm/arcade/wmania_ring_geometry.h"
+#include "wm/wrestler_anim_tables.h"
 #include <string.h>
 
 /*
@@ -435,6 +436,20 @@ static const wm_arcade_drone_script_op_t ops_opinair[] = {
 };
 static const wm_arcade_drone_script_op_t ops_oppdead[] = {SEEKOP("drn_oppdead")};
 static const wm_arcade_drone_script_op_t ops_seek[] = {SEEKOP("drn_seek")};
+/*
+ * DRONE.ASM:2768 drn_enterring, "Enter ring at closest entry point".
+ * Its loop tail is the `#lp` at :2764 -- a DS_CODEEND + DS_SLP1 sitting
+ * textually in the PREVIOUS routine's scope, which the body falls past
+ * on entry and jumps back to while it is still walking. So it is an
+ * ordinary one-tick-per-iteration seek, and the guard ends the script
+ * without pressing anything.
+ */
+static const wm_arcade_drone_script_op_t ops_enterring[] = {
+    FUNCOP("drn_enterring_guard"), SEEKOP("drn_enterring"),
+    IN((uint16_t)(PM|SPM|KM|SKM|BM), 0)
+};
+/* DRONE.ASM:2810 drn_taunt -- one DS_CODE block and DS_END. */
+static const wm_arcade_drone_script_op_t ops_taunt[] = {FUNCOP("drn_taunt")};
 static const wm_arcade_drone_script_op_t ops_retreat[] = {
     FUNCOP("drn_retreat_init"), SEEKOP("drn_retreat")
 };
@@ -921,6 +936,83 @@ static int seek_drn_oppdead(wm_arcade_actor_t *self, wm_arcade_actor_t *opp,
     return 0;
 }
 
+/*
+ * drn_enterring's two guards, which the source re-reads at the top of
+ * every loop iteration: it gives up if the opponent has left the ring
+ * ("Opp out?") or if this drone is already in it ("In ring?"). INRING
+ * is zero INSIDE the ring, the same inversion ANIM.ASM's #set_image
+ * shadow block settles.
+ */
+static int enterring_should_stop(const wm_arcade_actor_t *self,
+                                 const wm_arcade_actor_t *opp) {
+    return opp->in_ring != 0 || self->in_ring == 0;
+}
+
+/* Where he is heading: the nearest of the four apron entry points. */
+static void enterring_target(const wm_arcade_actor_t *self,
+                             int32_t *tx, int32_t *tz) {
+    *tz = WM_RING_Z_CENTER;
+    *tx = WM_RING_X_CENTER - 260;
+    if (self->x_int <= *tx) return;                 /* off the left end */
+    *tx = WM_RING_X_CENTER + 260;
+    if (self->x_int >= *tx) return;                 /* off the right end */
+    /* Between the ends, so he comes over the near or the far side. */
+    *tx = WM_RING_X_CENTER;
+    *tz = WM_RING_TOP - 10;
+    if (self->z_int <= *tz) return;
+    *tz = WM_RING_BOT + 10;
+}
+
+static int call_drn_enterring_guard(wm_arcade_actor_t *self, wm_arcade_actor_t *opp,
+                                    wm_arcade_drone_state_t *d, const char *label,
+                                    void *user) {
+    (void)d; (void)label; (void)user;
+    return enterring_should_stop(self, opp) ? WM_DRONE_CALL_ABORT
+                                            : WM_DRONE_CALL_CONTINUE;
+}
+
+static int seek_drn_enterring(wm_arcade_actor_t *self, wm_arcade_actor_t *opp,
+                              wm_arcade_drone_state_t *d, void *user) {
+    int32_t tx, tz;
+    (void)user;
+    if (enterring_should_stop(self, opp)) {
+        /* The source re-tests these every iteration and reaches #x, which
+           is DS_CODEEND + DS_END: the script is over and nothing is
+           pressed. abort_script's two writes, from out here. */
+        d->joy = 0;
+        d->script = NULL;
+        d->script_pc = 0;
+        return 1;
+    }
+    enterring_target(self, &tx, &tz);
+    d->joy = seekxz_joy(self->x_int, self->z_int, tx, tz, 10);
+    return d->joy != 0;
+}
+
+/*
+ * DRONE.ASM:2810 drn_taunt. He only taunts a man who is a long way
+ * upfield of him -- at least 100 further back in Z -- and no more than
+ * 300 away in X, and the source's own comment on what follows is "Time
+ * to execute high-risk move!".
+ *
+ * RISK is 8000h + 6*60: the top bit is the flag and the low bits are
+ * six seconds of it.
+ */
+static int call_drn_taunt(wm_arcade_actor_t *self, wm_arcade_actor_t *opp,
+                          wm_arcade_drone_state_t *d, const char *label,
+                          void *user) {
+    const char *anim;
+    (void)label; (void)user;
+    if (opp->z_int - self->z_int < 100) return WM_DRONE_CALL_CONTINUE;
+    if (iabs32(opp->x_int - self->x_int) > 300) return WM_DRONE_CALL_CONTINUE;
+    self->risk = (uint16_t)(0x8000u + 6u * 60u);
+    anim = (self->wrestler_num >= 0 &&
+            self->wrestler_num < WM_WRESTLER_ANIM_SLOTS)
+        ? wm_wrestler_taunt_anims[self->wrestler_num] : NULL;
+    d->pending_anim = anim;
+    return WM_DRONE_CALL_CONTINUE;
+}
+
 static int seek_plain70(wm_arcade_actor_t *self, wm_arcade_actor_t *opp,
                         wm_arcade_drone_state_t *d, void *user) {
     (void)user;
@@ -975,6 +1067,7 @@ static int call_seek_dispatch(wm_arcade_actor_t *self, wm_arcade_actor_t *opp,
     if (strcmp(label, "drn_seek") == 0) return seek_drn_seek(self, opp, d, user);
     if (strcmp(label, "drn_retreat") == 0) return seek_drn_retreat(self, opp, d, user);
     if (strcmp(label, "drn_seekclose") == 0) return seek_drn_seekclose(self, opp, d, user);
+    if (strcmp(label, "drn_enterring") == 0) return seek_drn_enterring(self, opp, d, user);
     return 0;
 }
 
@@ -988,6 +1081,9 @@ static int call_function_dispatch(wm_arcade_actor_t *self, wm_arcade_actor_t *op
     if (strcmp(label, "drn_opinair_init") == 0) return call_drn_opinair_init(self, opp, d, label, user);
     if (strcmp(label, "drn_retreat_init") == 0) return call_drn_retreat_init(self, opp, d, label, user);
     if (strcmp(label, "charge_run_fire") == 0) return call_charge_run_fire(self, opp, d, label, user);
+    if (strcmp(label, "drn_enterring_guard") == 0)
+        return call_drn_enterring_guard(self, opp, d, label, user);
+    if (strcmp(label, "drn_taunt") == 0) return call_drn_taunt(self, opp, d, label, user);
     return WM_DRONE_CALL_ABORT;
 }
 
@@ -1039,6 +1135,7 @@ static const wm_arcade_drone_script_t s_scripts[] = {
     ENTRY("drn_oppdead", ops_oppdead), ENTRY("drn_seek", ops_seek),
     ENTRY("drn_retreat", ops_retreat), ENTRY("drn_seekclose", ops_seekclose),
     ENTRY("charge_run", ops_charge_run),
+    ENTRY("drn_enterring", ops_enterring), ENTRY("drn_taunt", ops_taunt),
     ENTRY("combo_cstrt", ops_combo_cstrt), ENTRY("drn_combo/brt", ops_combo_brt)
 };
 

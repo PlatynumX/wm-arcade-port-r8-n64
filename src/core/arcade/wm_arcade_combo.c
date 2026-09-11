@@ -17,6 +17,27 @@ void wm_arcade_add_to_combo_count(wm_arcade_actor_t *a, int32_t move_bits) {
 }
 
 /*
+ * LIFEBAR.ASM:5280 clear_combo_meter and :5291 halve_combo_meter. See
+ * wm/arcade/wm_arcade_combo.h for what of draw_combo_meter's tail is
+ * here and what is rendering.
+ */
+static void set_combo_meter(wm_arcade_actor_t *a, int32_t size) {
+    if (!a) return;
+    a->combo_size = size;
+    /* draw_combo_meter clears COMBO_FLASH_FLAG and kills FLASH_COMBO_PID
+       on both paths, so neither size leaves the meter flashing. */
+    a->combo_flash = 0;
+}
+
+void wm_arcade_clear_combo_meter(wm_arcade_actor_t *a) {
+    set_combo_meter(a, 0);
+}
+
+void wm_arcade_halve_combo_meter(wm_arcade_actor_t *a) {
+    set_combo_meter(a, WM_COMBO_HALF_SIZE);
+}
+
+/*
  * LIFEBAR.ASM:3687 DO_COMBO_MESS -- see wm/arcade/wm_arcade_combo.h.
  *
  * Read in the source's own order; every branch below is one of its own.

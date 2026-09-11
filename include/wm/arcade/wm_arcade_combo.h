@@ -49,6 +49,41 @@ void wm_arcade_add_to_combo_count(wm_arcade_actor_t *a, int32_t move_bits);
 /* LIFEBAR.ASM's `movk 16,a6` super-combo threshold. */
 #define WM_COMBO_SUPER_SIZE 16
 
+/* LIFEBAR.ASM:5291 halve_combo_meter's `movk 10,a2` -- not half of
+   anything the source names, just the value it writes. It is below
+   WM_COMBO_SUPER_SIZE, so halving a lit meter puts it out. */
+#define WM_COMBO_HALF_SIZE 10
+
+/*
+ * LIFEBAR.ASM:5280 clear_combo_meter and :5291 halve_combo_meter. Two
+ * entry points that read PLYR_SIDE and PLYRNUM and then fall into the
+ * same draw_combo_meter tail with a different PLT_COMBO_SIZE: zero and
+ * ten. clear_combo_meter reaches it through zero_combo_meter, whose own
+ * first act is the royal-rumble branch that pretends the victim is
+ * player 0 -- a mode this port has no equivalent of, so it is not here.
+ *
+ * Everything draw_combo_meter does after storing the size is rendering:
+ * picking a bar image out of WHICH_SIZE_BAR, setting the flip bit, and
+ * fetching SUPER_P's palette. The one part that is not is the flash,
+ * which both paths clear -- COMBO_FLASH_FLAG zeroed and the
+ * FLASH_COMBO_PID process killed -- so combo_flash goes off here too.
+ *
+ * Neither has a live caller in this port, for two different reasons,
+ * and both are worth knowing:
+ *
+ *   clear_combo_meter has exactly one in the arcade, DOINK.ASM:3100's
+ *   `#dobuck` -- the successful button-mash revival -- and
+ *   wm/arcade/wm_arcade_mode_dead.h already proves at length that
+ *   `#dobuck` is unreachable here, because CHECK_COMBO_GO can never
+ *   report a lit meter while nothing fills one.
+ *
+ *   halve_combo_meter has no live caller in the ARCADE either: its only
+ *   two call sites, SHAWN.ASM:1410 and :1413, are both commented out.
+ *   What is left is the `.ref` at SHAWN.ASM:43, which is a declaration.
+ */
+void wm_arcade_clear_combo_meter(wm_arcade_actor_t *a);
+void wm_arcade_halve_combo_meter(wm_arcade_actor_t *a);
+
 /*
  * LIFEBAR.ASM:3687 SUBR DO_COMBO_MESS -- "Combo messages come from the
  * scripts", and it is the single most-called ANI_CODE routine in the

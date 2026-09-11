@@ -249,13 +249,21 @@ int wm_arcade_check_wrestler_collisions(
 
         for (di = 0; di < actor_count; ++di) {
             wm_arcade_actor_t *victim = actors[di];
+            int hit;
             if (!victim || !victim->active || victim == attacker) continue;
 
-            if (wm_arcade_try_attack_hit(attacker, victim, callbacks) ==
-                WM_HIT_ACCEPTED) {
-                /* Original check_collisions exits after first successful hit. */
-                return 1;
-            }
+            hit = wm_arcade_try_attack_hit(attacker, victim, callbacks) ==
+                  WM_HIT_ACCEPTED;
+            /*
+             * COLLIS.ASM:411 -- what the source tests after each
+             * check_collis is the attacker's MODE_STATUS bit, not a
+             * return value, and a set bit ends the whole sweep. That
+             * is not the same as "this call hit": check_collis sets
+             * the bit, but so does anything that ran earlier and left
+             * it set, and the sweep stops for that too. Testing the
+             * flag rather than the call keeps the stale case.
+             */
+            if (attacker->anim_mode & WM_MODE_STATUS) return hit;
         }
     }
     return 0;

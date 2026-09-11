@@ -508,5 +508,110 @@
     "status": "renamed",
     "symbol": "wm_arcade_set_attack_box",
     "note": "COLLIS.ASM:669. Builds the ATTACK box in world space from OBJ_ATT{X,Y,Z}OFF and OBJ_ATT{WIDTH,HEIGHT,DEPTH}, including the FLIPH branch that mirrors the X extent for a wrestler facing left. wm_arcade_set_attack_box is that routine line for line; it is named for what it produces rather than for the three axes it writes."
+  },
+  "check_collis": {
+    "file": "COLLIS.ASM",
+    "status": "renamed",
+    "symbol": "wm_arcade_try_attack_hit",
+    "note": "COLLIS.ASM:486. The whole rejection chain -- MODE_NOCOLLIS, IMMOBILIZE_TIME, the six box comparisons, SMART_ATTACK's target, combo mode's WHOIHIT, a dead victim with live teammates, AMODE_PUPPET on a corpse, ZOMBIE, PINNED without DID_PIN, mismatched INRING, AMODE_PUSH against a man in the air, the victim's own PUSH bit -- then MODE_WAITHITOPP's clear, HITBLOCKER, PLYR_HIT_SIDE from the X and Z comparison, MODE_STATUS and wrestler_hit. The port returns a wm_arcade_hit_result_t where the source reports through the attacker's MODE_STATUS bit."
+  },
+  "hit_flykick": {
+    "file": "REACT1.ASM",
+    "status": "renamed",
+    "symbol": "react_flykick",
+    "note": "REACT1.ASM:1421. Halves the attacker's X velocity, clamps the magnitude to 4.0 once it reaches 2.0, flips its sign away from his travel and sets Y to 4.0; then Lex's two kicks take CALL_MID_HIT where everyone else takes CALL_DROP_KICK, and the victim falls back with a 2.0 push. Named in a comment in wm_arcade_react8_core.c, which is why the automatic pass reads it as cited rather than translated."
+  },
+  "hit_grabhold": {
+    "file": "REACT2.ASM",
+    "status": "renamed",
+    "symbol": "wm_arcade_react2_apply",
+    "note": "REACT2.ASM:363. Every line of its body is commented out, including the #heldoh table, so it assembles to nothing and falls straight through into hit_grabfling's rets at :396. WM_RXN_GRABHOLD is therefore a break in the dispatch, which is what the source does."
+  },
+  "hit_grabfling": {
+    "file": "REACT2.ASM",
+    "status": "renamed",
+    "symbol": "wm_arcade_react2_apply",
+    "note": "REACT2.ASM:396, a bare rets under the source's own comment 'Blank amode here....'. WM_RXN_GRABFLING is a break in the dispatch."
+  },
+  "hit_buttstomp": {
+    "file": "REACT4.ASM",
+    "status": "renamed",
+    "symbol": "hit_stomp",
+    "note": "REACT4.ASM:107 -- a second label on REACT4.ASM:106 hit_stomp's body, with no instruction between them. AMODE_STOMP and AMODE_BUTTSTOMP run the same code and the port dispatches both to the same function."
+  },
+  "hit_headhold": {
+    "file": "REACT4.ASM",
+    "status": "renamed",
+    "symbol": "wm_arcade_react4_apply",
+    "note": "REACT4.ASM:523, a bare rets. WM_RXN_HEADHOLD is a break in the dispatch."
+  },
+  "hit_headdslash": {
+    "file": "REACT9.ASM",
+    "status": "renamed",
+    "symbol": "hit_headslash_common",
+    "note": "REACT9.ASM:145. The down-slash and the up-slash (REACT9.ASM:195) differ in exactly two things: the Y velocity they give the victim -- 2C000h against 40000h -- and the five-pixel shove toward the attacker that only the down-slash adds. Both share the dead-victim fall_back tail, so the port writes one function with a flag."
+  },
+  "hit_headuslash": {
+    "file": "REACT9.ASM",
+    "status": "renamed",
+    "symbol": "hit_headslash_common",
+    "note": "REACT9.ASM:195. The up-slash half of hit_headslash_common: Y velocity 40000h, X zeroed, and no shove toward the attacker."
+  },
+  "set_images": {
+    "file": "ANIM.ASM",
+    "status": "partial",
+    "symbol": "wm_match_build_draw_list",
+    "note": "ANIM.ASM:4612, and #set_image at :4632 which it runs over every wrestler. The part that is game logic is translated in wm/match_display.h: OBJ_PRIORITY (z_fixed | 01000h, less 01e5h below the mat when outside the ring), the shadow's fixed 013c8h/0106ah, OYVAL as z_int * Y_SCALE_MULTIPLIER, the GROUND_Y shadow offset against the body's OBJ_YPOSINT, and MODE_INVISIBLE and MODE_NOSHADOW. The part that is not is the object plumbing -- walking OBJ_BASE's MAX_PIECES DMA slots, writing OSAG/OSIZE/OCTRL/OCONST, the multi-piece IPCOUNT loop and the palette handoff to pal_getf -- which is hardware this port replaces rather than translates."
+  },
+  "drone_seek": {
+    "file": "DRONE.ASM",
+    "status": "renamed",
+    "symbol": "seek_drn_seek",
+    "note": "DRONE.ASM:3027 -- `movi 70,a2` and fall straight into drone_seek2. Two labels, one body; the 70 is the only thing drone_seek contributes."
+  },
+  "drone_seek2": {
+    "file": "DRONE.ASM",
+    "status": "renamed",
+    "symbol": "seek_plain70",
+    "note": "DRONE.ASM:3031 -- reads the opponent's XZ and falls into drone_seekxz. The port folds all three labels into seekxz_joy plus the two callers that supply a range; seek_plain70 is this one, and seek_drn_seek adds drn_seek's own mode gate and 1/64 stop roll on top."
+  },
+  "drone_seekxz": {
+    "file": "DRONE.ASM",
+    "status": "renamed",
+    "symbol": "seekxz_joy",
+    "note": "DRONE.ASM:3046 -- the joystick word that walks a drone toward an XZ point, one axis at a time: `subk 4 / addk 8` for the X pair and `subk 1 / addk 2` for the Z pair, each suppressed while that axis is already within range. Returns zero once both are, which is the source's own `move a0,a0 / rets` pass-CC arrival test."
+  },
+  "drone_seekdirdist": {
+    "file": "DRONE.ASM",
+    "status": "renamed",
+    "symbol": "run_seekdirdist",
+    "note": "DRONE.ASM:2898 -- circling. #drn_getxz's six 16-entry sine bands are in s_sine_band, including the quarter-cycle phase shift that reads X out of the same table as Z, and the eight-step search outward from the wanted direction when the exact one lands outside the ring. The +-2/3 reroll on arrival happens only when DRN_MODE was -1, as the source's `addk 1,a0 / jrge #x` requires."
+  },
+  "rope_update": {
+    "file": "ROPES.ASM",
+    "status": "renamed",
+    "symbol": "wm_rope_runtime_tick",
+    "note": "ROPES.ASM:439 -- the per-tick rope animation stepper: PD_SQCNT down to the next frame, PD_SQPTR for the next time increment with its jrp/jrn split into next-frame and sequence-goto, PD_SCCNT's repeat and PD_SCPTR's advance to the next script entry. wmania_rope_runtime.c carries all of it, including the end-of-script clear of the long at PD_SQCNT that takes the priority with it."
+  },
+  "set_rope_z": {
+    "file": "ROPES.ASM",
+    "status": "renamed",
+    "symbol": "wm_rope_second_half_z",
+    "note": "ROPES.ASM:593 -- the bottom half of a rope object takes 015a9h for RZ_HIGH and otherwise copies the top half's OZPOS. The port keeps the constant as WM_ROPE_HIGH_SECOND_HALF_Z and the choice as this function; writing it into an object is the renderer's."
+  },
+  "fastanic": {
+    "file": "ROPES.ASM",
+    "status": "display",
+    "note": "ROPES.ASM:558 -- point a DMA object at a new image: ODOFF, OIMG, OSIZE, OSAG and the five z-compare bits of OCTRL, plus a CALLERR if the image pointer is below ROM. Every line writes the object hardware and there is nothing else in it."
+  },
+  "update_meter": {
+    "file": "LIFEBAR.ASM",
+    "status": "display",
+    "note": "LIFEBAR.ASM:1257 -- redraw one meter: OFSET set to LIFE_MAX minus the displayed life (the pixels to hide), then the M_NODISP toggle for a wrestler who is OUTSIDE_ALONE and the WHICH_SCREEN check behind it. The value it draws, PLT_CLIFE, is real and is wm_life_inc_life's; the drawing is not."
+  },
+  "do_win_streaks": {
+    "file": "LIFEBAR.ASM",
+    "status": "display",
+    "note": "LIFEBAR.ASM:2164 -- build the two-digit win-streak display for each player: clamp to 99, BINBCD, index #f_t for each nibble's digit image and BEGINOBJ it at a fixed screen position, plus the `lwin` label object. It reads p1winstreak/p2winstreak and writes only objects."
   }
 }

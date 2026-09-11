@@ -670,3 +670,67 @@ done:
     wm_arcade_drone_commit_inputs(self, d, old_but, old_joy);
     return (wm_arcade_drone_step_result_t)result;
 }
+
+/*
+ * DRONE.ASM:3091 drone_calcskill. See wm/arcade/wm_arcade_drone.h for
+ * the sum and the two asymmetries in it.
+ *
+ * The source's own clear of atkcnt_t at the tail is not here: this port
+ * keeps that table as each drone's own missed_blocks[] slice rather
+ * than one global array, so clearing it belongs with whatever resets
+ * the drone for the round, not with the arithmetic that decides how
+ * hard he plays.
+ */
+int wm_arcade_drone_calcskill(const wm_arcade_drone_skill_inputs_t *in,
+                              int32_t *skill_rndm, WmRng *rng)
+{
+    int32_t rndm;
+    int32_t a3;
+    int32_t a5;
+    int32_t w;
+    int32_t r;
+
+    if (!in || !skill_rndm) return -1;
+    if (in->plyr_type == 0) return -1;      /* `jrz #x` -- a human */
+
+    rndm = *skill_rndm;
+
+    /* `move @current_round,a3 / subk 1,a3 / jrgt #n1st` -- rerolled on
+       the first round of a match and kept for the rest of it. */
+    a3 = (int32_t)in->current_round - 1;
+    if (a3 <= 0) {
+        rndm = (int32_t)wm_rng_rndrng0(rng, 4u) - 2;   /* -2..2 */
+        *skill_rndm = rndm;
+    }
+
+    /* `sra 5` on the ladder pointer difference, then + half of itself. */
+    a5 = (int32_t)in->ladder_index;
+    a5 += a5 >> 1;                    /* `move a5,a1 / sra 1,a1 / add` */
+    a5 += rndm;
+
+    /*
+     * `jrlt #loser` skips the first doubling AND its add, so a winner
+     * gets 2w + 4w and a loser only 2w. Not a symmetric term.
+     */
+    w = (int32_t)in->win_streak;
+    if (w >= 0) {
+        w *= 2;
+        a5 += w;
+    }
+    w *= 2;
+    a5 += w;
+
+    /* `add a0,a5 / X2 a0 / add a0,a5` -- r then 2r, so three. */
+    r = (int32_t)in->rounds_won;
+    a5 += r;
+    a5 += r * 2;
+
+    a5 -= a3 * 2;                     /* -2 per round past the first */
+
+    /* GET_ADJ(ADJDIFF) is 1..10; the shipped default is 5, giving +6. */
+    a5 += ((int32_t)in->adj_difficulty - 2) * 2;
+
+    if (a5 < 0) a5 = 0;               /* `jrge #minok / clr a5` */
+    if (a5 > 29) a5 = 29;
+    return (int)a5;
+}

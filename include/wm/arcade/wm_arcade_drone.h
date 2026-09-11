@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include "wm/arcade/wm_arcade_combat.h"
 #include "wm/arcade/wm_arcade_damage.h"
+#include "wm/arcade/wmania_rng.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,6 +35,15 @@ typedef struct wm_arcade_drone_state {
     int32_t seek_dir;          /* DRN_SEEKDIR */
     int32_t seek_dist;         /* DRN_SEEKDIST */
     uint16_t missed_blocks[WM_AT_NUM]; /* source atkcnt_t slice */
+    /*
+     * The one drone script that plays an animation itself: DRONE.ASM:2810
+     * drn_taunt ends `#taunt_t[WRESTLERNUM] -> change_anim1a`. The drone
+     * layer has no visual backend and its callbacks' `user` is the RNG,
+     * so the label is left here for whoever owns the wrestler's
+     * animation to pick up and clear -- the same shape as the death
+     * animation seam in match.c. NULL means nothing is pending.
+     */
+    const char *pending_anim;
 } wm_arcade_drone_state_t;
 
 typedef struct wm_arcade_drone_world {
@@ -171,6 +181,56 @@ typedef enum wm_arcade_drone_call_result {
 
 void wm_arcade_drone_init(wm_arcade_drone_state_t *drone, int skill);
 int wm_arcade_drone_getup_pct(int skill);
+
+/*
+ * DRONE.ASM:3091 drone_calcskill -- "Adjust drone skill level (called
+ * each round)". Everything that decides how hard a drone plays, in one
+ * sum, and the port takes it as data rather than reaching for six
+ * globals: current_round, CURRENT_LADDER, PSTATUS, p1winstreakd,
+ * p1rounds and the operator's ADJDIFF all live outside the match.
+ *
+ * The sum, exactly as the source writes it:
+ *
+ *   base  = ladder + ladder/2                (ladder 0..6, so 0..9)
+ *         + skill_rndm                       (-2..2, rerolled each match)
+ *   won   = win_streak >= 0 ? 6*win_streak   (the source doubles twice
+ *                           : 2*win_streak    and adds both halves)
+ *         + 3*rounds_won                     (again: r, then 2r)
+ *         - 2*(current_round - 1)
+ *         + 2*(adj_difficulty - 2)
+ *   skill = clamp(base + won, 0, 29)
+ *
+ * Two things worth having written down. The win-streak term is NOT
+ * symmetric: a winner gets six times his streak and a loser only twice
+ * his (negative) one, because the `jrlt #loser` jumps past the first
+ * doubling and its add. And the source's own comment on the difficulty
+ * term says "+8 default", which would need ADJDIFF 6; the shipped
+ * default in AUDIT.ASM:2923 is 5, so the real default contribution is
+ * +6.
+ *
+ * PLYR_TYPE 0 is a human and the routine returns without touching
+ * anything, which is why this reports -1 rather than a skill.
+ */
+typedef struct wm_arcade_drone_skill_inputs {
+    int plyr_type;        /* PLYR_TYPE -- 0 is a human, and is left alone */
+    int current_round;    /* 1..3 */
+    int ladder_index;     /* (CURRENT_LADDER - LADDER) / 32, so 0..6 */
+    int win_streak;       /* p1winstreakd / p2winstreakd; negative if lost */
+    int rounds_won;       /* p1rounds / p2rounds */
+    int adj_difficulty;   /* GET_ADJ(ADJDIFF), 1..10; shipped default 5 */
+} wm_arcade_drone_skill_inputs_t;
+
+/*
+ * `skill_rndm` is DRN_SKILLRNDM, carried between rounds: on the first
+ * round of a match it is rerolled to RNDRNG0(4) - 2 and otherwise kept,
+ * so the same match keeps the same handicap. Pass the drone's own copy;
+ * it is read and written.
+ *
+ * Returns the new DRN_SKILL (0..29), or -1 for a human, in which case
+ * nothing is written.
+ */
+int wm_arcade_drone_calcskill(const wm_arcade_drone_skill_inputs_t *in,
+                              int32_t *skill_rndm, WmRng *rng);
 
 /*
  * DRONE.ASM's other SKLM-built (6 bands x 5-entry linear ramp = 30 skill

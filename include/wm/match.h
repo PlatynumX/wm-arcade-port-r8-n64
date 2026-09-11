@@ -6,6 +6,8 @@
 #include "wm/arcade/wm_arcade_combat.h"
 #include "wm/arcade/wm_arcade_coffin.h"
 #include "wm/arcade/wm_arcade_pin.h"
+#include "wm/award.h"
+#include "wm/arcade/wm_arcade_match_end.h"
 #include "wm/arcade/wm_arcade_round_reset.h"
 #include "wm/arcade/wm_arcade_scroll.h"
 #include "wm/arcade/wm_arcade_smove.h"
@@ -308,6 +310,32 @@ typedef struct {
      * one, so the deciding tick's own state is still observable.
      */
     bool round_reset_pending;
+
+    /*
+     * LIFEBAR.ASM:2852 DO_WAIT, the end-of-match path. Started on the
+     * tick match_winner is set and run out over the following few
+     * hundred, ending with @match_over = 2
+     * (wm/arcade/wm_arcade_match_end.h).
+     *
+     * `streaks` is @p1winstreak / @p2winstreak and the `old` pair
+     * beside them, which increment_wincount writes and
+     * WRESTLE2.ASM's loser_snd reads back.
+     */
+    wm_match_end_t match_end;
+    wm_match_streaks_t streaks;
+    /*
+     * AWARD.ASM's per-player award arrays. They are per CREDIT rather
+     * than per match in the source, which is why the match has always
+     * reached round_award through a callback the app owns -- but the
+     * end-of-match path calls five award routines directly and needs
+     * somewhere to put the answers. This is that, for a match played
+     * without an app around it; an app that owns its own
+     * wm_award_state can copy it in and out.
+     */
+    wm_award_state awards;
+    /* @match_cnt, for the tip rule. The cabinet counts matches across
+       credits, so the app owns it; the match reads it. */
+    int32_t match_cnt;
 
     /* @current_round (LIFEBAR.ASM), incremented by reset_for_round.
        The round-2/round-3 music picks off it, and so does

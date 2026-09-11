@@ -164,6 +164,8 @@ python3 "$ROOT/tools/wlrostertbl.py" \
 # per-wrestler animation data -- wlrostertbl reads the global ones.
 python3 "$ROOT/tools/wlwrestlertbl.py" \
     --out "$ROOT/src/generated/wrestler_anim_tables.c"
+python3 "$ROOT/tools/wlsmove.py" \
+    --out-c "$ROOT/src/generated/smove_hdhold.c"
 python3 "$ROOT/tools/wlpal.py" \
     --out "$ROOT/src/generated/palettes.c"
 python3 "$ROOT/tools/wlvoice.py" \

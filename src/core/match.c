@@ -445,6 +445,67 @@ static void init_actor_life(wm_arcade_actor_t *a) {
  * the screen wipe, deleting the text plates, the clock's palette, the
  * meters, and INIT_SKIRTS.
  */
+/*
+ * The five award routines LIFEBAR.ASM's DO_WAIT path calls in a row,
+ * in its order. Every one of them is already translated -- this is
+ * the call site they never had, which is why a finished match awarded
+ * nothing.
+ *
+ * Two of them need more than the match has: arm_comeback_award wants
+ * every live enemy's health at the moment of arming (AWARD.ASM:1059
+ * arms it, not this path, and nothing arms it here yet), and
+ * is_it_a_really_quick_win reads @match_time, which this port has no
+ * round clock to fill in. Both are called with what the match really
+ * knows rather than skipped, so they decline for a reason that is
+ * visible instead of not running at all.
+ */
+static void match_end_awards(void *user) {
+    wm_match_state *m = (wm_match_state *)user;
+    bool human[WM_AWARD_PLAYER_COUNT];
+    unsigned p;
+    int32_t pstatus;
+
+    if (!m) return;
+    pstatus = m->has_human ? 1 : 0;
+
+    for (p = 0; p < WM_AWARD_PLAYER_COUNT; ++p) {
+        /* `is_it_a_really_quick_win` with a match_time of 0: the
+           source's score is (t & 0xF) * 10 + (t >> 16), so zero scores
+           zero and the award declines. There is no round clock here. */
+        (void)wm_award_quick_win(&m->awards, p, p, 0);
+        wm_award_defeat_human(&m->awards, p, p, (uint32_t)pstatus);
+        wm_award_check_comeback(&m->awards, p, p);
+        human[p] = (pstatus & (1 << p)) != 0;
+    }
+    wm_award_accumulate_round(&m->awards, false, human);
+}
+
+/* `#end`'s check_for_award_for_winstreak, for each player. */
+static void match_end_winstreak_award(void *user) {
+    wm_match_state *m = (wm_match_state *)user;
+    unsigned p;
+    if (!m) return;
+    for (p = 0; p < WM_AWARD_PLAYER_COUNT; ++p)
+        wm_award_check_winstreak(&m->awards, p);
+}
+
+/* increment_wincount's `rst_winstreak_awards` for a streak that just
+   went to zero. */
+static void match_end_reset_winstreak_rows(void *user, unsigned mask) {
+    wm_match_state *m = (wm_match_state *)user;
+    unsigned p;
+    if (!m) return;
+    for (p = 0; p < WM_AWARD_PLAYER_COUNT; ++p)
+        if (mask & (1u << p)) wm_award_reset_winstreak(&m->awards, p);
+}
+
+/* The two sounds DO_WAIT makes itself, through triple_sound. */
+static void match_end_sound(void *user, int sound) {
+    wm_match_state *m = (wm_match_state *)user;
+    if (!m || !m->anim_sound) return;
+    m->anim_sound(m->anim_sound_user, (uint16_t)sound);
+}
+
 static void match_reset_for_round(wm_match_state *m) {
     wm_arcade_actor_t *actors[WM_MATCH_MAX_ACTORS];
     unsigned i;
@@ -582,6 +643,8 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
     wm_anim_code_reset();
     wm_arcade_round_state_init(&m->round_state);
     wm_arcade_round_announce_init(&m->round_announce);
+    wm_match_end_init(&m->match_end);
+    wm_award_init(&m->awards);
     /* WRESTLE.ASM:4552 init_reduce_bog, with this match's two actors. */
     m->debris.no_debris = false;
     m->debris.reduce_bog = (int32_t)m->actor_count - 2;
@@ -660,6 +723,8 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
     wm_anim_code_reset();
     wm_arcade_round_state_init(&m->round_state);
     wm_arcade_round_announce_init(&m->round_announce);
+    wm_match_end_init(&m->match_end);
+    wm_award_init(&m->awards);
     /* WRESTLE.ASM:4552 init_reduce_bog, with this match's two actors. */
     m->debris.no_debris = false;
     m->debris.reduce_bog = (int32_t)m->actor_count - 2;
@@ -739,6 +804,54 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
     if (m->round_reset_pending && !m->in_finish_move) {
         m->round_reset_pending = false;
         match_reset_for_round(m);
+    }
+
+    /*
+     * The end-of-match sequence, once one has started. Like the reset
+     * above it waits on a finishing move: DO_WAIT is downstream of
+     * `#fini_wait` in the same routine, so the coffin has to finish
+     * before the match does.
+     */
+    if (!m->in_finish_move) {
+        wm_match_end_ctx_t mec;
+        memset(&mec, 0, sizeof(mec));
+        mec.score = &m->score;
+        mec.streaks = &m->streaks;
+        mec.pstatus = m->has_human ? 1 : 0;
+        mec.match_cnt = m->match_cnt;
+        /*
+         * DO_RIGHT_MUSIC reads `*A10(WRESTLERNUM)` -- the winner's
+         * process, which set_winner put in a10 inside
+         * announce_rnd_winner. On the source's KO path that routine
+         * really does run (WRESTLE2.ASM:4249 CREATEs it), so a10 is
+         * always valid there. This port's KO countdown awards the
+         * round itself and never starts the announcer, so when it has
+         * no winner the side the countdown decided is used instead --
+         * with one wrestler a side, that is the same man set_winner
+         * would have found.
+         */
+        mec.winner_wrestler_num = -1;
+        if (m->round_announce.winner) {
+            mec.winner_wrestler_num = m->round_announce.winner->wrestler_num;
+        } else if (m->score.match_winner > 0) {
+            int side = (int)m->score.match_winner - 1;
+            unsigned wi;
+            for (wi = 0; wi < m->actor_count; ++wi)
+                if (m->actors[wi].active &&
+                    (int)m->actors[wi].player_side == side) {
+                    mec.winner_wrestler_num = m->actors[wi].wrestler_num;
+                    break;
+                }
+        }
+        /* @award_ok_to_die reaching 3. Nothing here draws the award
+           bar, so there is nothing to wait for. */
+        mec.awards_done = true;
+        mec.user = m;
+        mec.run_awards = match_end_awards;
+        mec.run_winstreak_award = match_end_winstreak_award;
+        mec.reset_winstreak_rows = match_end_reset_winstreak_rows;
+        mec.sound = match_end_sound;
+        (void)wm_match_end_tick(&m->match_end, &mec);
     }
 
     memset(&world, 0, sizeof(world));
@@ -1162,6 +1275,14 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
              * have.
              */
             if (m->score.match_winner == 0) m->round_reset_pending = true;
+            /*
+             * LIFEBAR.ASM:2852 DO_WAIT. The other arm of the same
+             * branch: two rounds ends the match and the source goes
+             * here instead of to WRESTLERS_RESET. Without it a
+             * finished match was a dead end -- exactly the shape of
+             * bug the round reset just fixed, one level up.
+             */
+            else wm_match_end_start(&m->match_end);
         }
         /*
          * WRESTLE2.ASM:4235 `CREATE PINHIM_ANIM_PID,pin_prompt`, on the

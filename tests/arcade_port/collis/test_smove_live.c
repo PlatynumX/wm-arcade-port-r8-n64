@@ -59,9 +59,11 @@ static void test_init_smoves_ran(void) {
     wm_rng_init(&rng, 0x12345678u, hcount, sp, &t);
     start_taker_match(&rng);
 
-    /* The Undertaker is the human here, so he keeps std_taunt. */
-    assert(M.smove_count[0] == 3);
-    assert(M.smove_unported[0] == 9);
+    /* The Undertaker is the human here, so he keeps std_taunt. Every
+       one of his twelve table entries is either made or counted; the
+       split moves as more monitors are translated, the sum does not. */
+    assert(M.smove_count[0] + M.smove_unported[0] == 12);
+    assert(M.smove_count[0] >= 3);
     /* And the counters start clear, as WRESTLE.ASM:1578 leaves them. */
     assert(M.pins.p1pins == 0 && M.pins.p2pins == 0);
     assert(!M.in_finish_move);

@@ -7,9 +7,9 @@ only in a note saying it is missing does not count as present.
 
 | status | meaning | count |
 |---|---|---|
-| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1945 |
+| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1946 |
 | `inlined` | the port does it, spelled out at each use site (ledger) | 10 |
-| `renamed` | the port does it under another name (ledger) | 130 |
+| `renamed` | the port does it under another name (ledger) | 129 |
 | `partial` | partly translated; the ledger note says which part | 11 |
 | `data` | a table, extracted by a tool (ledger) | 12 |
 | `process` | a CREATE/SLEEP wrapper (ledger) | 20 |
@@ -17,8 +17,8 @@ only in a note saying it is missing does not count as present.
 | `hardware` | talks to the cabinet (ledger) | 19 |
 | `dead` | **measured**: no caller outside its own file | 37 |
 | `unassembled` | **measured**: inside a `.if` the assembler skipped | 64 |
-| `cited` | named only in a comment -- not evidence of anything | 42 |
-| `unknown` | no mention anywhere | 212 |
+| `cited` | named only in a comment -- not evidence of anything | 45 |
+| `unknown` | no mention anywhere | 209 |
 
 **2280 of 2534 routines are accounted for; 254 are open** (`cited` + `unknown`).
 

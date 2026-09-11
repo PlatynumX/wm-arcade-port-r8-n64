@@ -85,7 +85,9 @@ static void test_waitswitch(void) {
 static void test_registry(void) {
     const wm_smove_monitor_t *m;
 
-    assert(wm_smove_monitor_count() == 3);
+    /* Three hand-written, plus the head-hold family read out of the
+       source by tools/wlsmove.py. */
+    assert(wm_smove_monitor_count() == 3 + wm_smove_hdhold_count);
 
     m = wm_smove_monitor_find("und_finish_move1");
     assert(m && m->steps == 3);
@@ -115,7 +117,14 @@ static void test_registry(void) {
             assert(m->step[i].mask == WM_B_BLOCK);
     }
 
-    assert(wm_smove_monitor_find("und_hdhold_neckbrk") == NULL);
+    /* A head-hold monitor resolves now, and carries its row. */
+    {
+        const wm_smove_monitor_t *hh =
+            wm_smove_monitor_find("und_hdhold_neckbrk");
+        assert(hh && hh->hdhold);
+    }
+    /* One of the twenty still missing does not. */
+    assert(wm_smove_monitor_find("und_grab_toss_air") == NULL);
     assert(wm_smove_monitor_find(NULL) == NULL);
 }
 
@@ -127,22 +136,25 @@ static void test_init_smoves(void) {
        its entries -- und_finish_move1, std_walk_fast, std_taunt. */
     n = wm_smove_init(WM_ROSTER_TAKER, false, runs,
                       WM_SMOVE_MAX_PER_WRESTLER, &missing);
-    assert(n == 3);
-    assert(missing == 9);
+    /* His twelve, less the ones still missing. The sum is what
+       matters: every entry is either made or counted. */
     assert(n + missing == (size_t)wm_wrestler_smoves[WM_ROSTER_TAKER].count);
+    assert(n > 3);
 
     /* A drone gets no std_taunt: its first two instructions kill it. */
-    n = wm_smove_init(WM_ROSTER_TAKER, true, runs,
-                      WM_SMOVE_MAX_PER_WRESTLER, &missing);
-    assert(n == 2);
-    assert(missing == 9);
+    {
+        size_t human = n;
+        n = wm_smove_init(WM_ROSTER_TAKER, true, runs,
+                          WM_SMOVE_MAX_PER_WRESTLER, &missing);
+        assert(n == human - 1);        /* exactly std_taunt is gone */
+    }
 
     /* Bret has no finishing move -- GAME.EQU:580 zeroes his switch --
        so his table's two shared entries are all this port can run. */
     n = wm_smove_init(WM_ROSTER_BRET, false, runs,
                       WM_SMOVE_MAX_PER_WRESTLER, &missing);
-    assert(n == 2);
     assert(n + missing == (size_t)wm_wrestler_smoves[WM_ROSTER_BRET].count);
+    assert(n > 2);
 
     /* Slot 7 is Adam Bomb, cut: a zero table pointer, no watchdogs. */
     n = wm_smove_init(7, false, runs, WM_SMOVE_MAX_PER_WRESTLER, &missing);

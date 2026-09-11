@@ -96,6 +96,7 @@ FIX38_ARCADE_C := \
     src/core/arcade/wm_arcade_roster.c \
     src/core/arcade/wm_arcade_round.c \
     src/core/arcade/wm_arcade_round_reset.c \
+    src/core/arcade/wm_arcade_match_end.c \
     src/core/arcade/wm_arcade_round_announce.c \
     src/core/arcade/wm_arcade_target.c \
     src/core/arcade/wm_arcade_scroll.c \
@@ -110,6 +111,7 @@ FIX38_ARCADE_C := \
     src/core/arcade/wm_arcade_life_data.c \
     src/core/arcade/wm_arcade_roster_anims.c \
     src/generated/roster_anim_tables.c \
+    src/generated/smove_hdhold.c \
     src/core/wrestler_taunt.c \
     src/core/match_display.c \
     src/generated/wrestler_anim_tables.c \

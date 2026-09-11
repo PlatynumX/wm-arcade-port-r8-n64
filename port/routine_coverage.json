@@ -880,8 +880,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "DO_RIGHT_MUSIC",
    "from_generated": false,
    "ledgered": false
   },
@@ -895,8 +895,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "DO_RIGHT_MUSIC2",
    "from_generated": false,
    "ledgered": false
   },
@@ -8231,8 +8231,8 @@
    "local": false,
    "external_callers": 1,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "create_end_rnd_awards",
    "from_generated": false,
    "ledgered": false
   },
@@ -18044,10 +18044,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "renamed",
-   "evidence": "wm_arcade_match_score_award_round",
+   "status": "implemented",
+   "evidence": "wm_match_increment_wincount",
    "from_generated": false,
-   "ledgered": true
+   "ledgered": false
   },
   {
    "name": "ind_select",
@@ -18180,7 +18180,7 @@
    "external_callers": 1,
    "references": 2,
    "status": "implemented",
-   "evidence": "wm_round_init_scroller",
+   "evidence": "wm_match_init_scroller",
    "from_generated": false,
    "ledgered": false
   },

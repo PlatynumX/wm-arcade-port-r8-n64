@@ -1012,12 +1012,6 @@
     "symbol": "wm_arcade_joystat_update",
     "note": "WRESTLE.ASM:4569. Push this tick's input into the shared history ring: LEFT/RIGHT absolute at bits 10-11, the facing-relative direction at bits 0-3 (run through xflip_table at :4650 when facing left, which swaps only LEFT and RIGHT), and one entry per newly pressed button tagged at bits 4-8. Inserted only on a stick edge with a nonzero value, or on a button press."
   },
-  "increment_wincount": {
-    "file": "WRESTLE.ASM",
-    "status": "renamed",
-    "symbol": "wm_arcade_match_score_award_round",
-    "note": "WRESTLE.ASM. Credit a round to a side. The port keeps the score in wm_arcade_match_score and awards through the round-announce path the animation VM already reaches."
-  },
   "init_reduce_bog": {
     "file": "WRESTLE.ASM",
     "status": "renamed",

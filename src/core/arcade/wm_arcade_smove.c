@@ -168,9 +168,83 @@ static bool taunt_fire(wm_arcade_actor_t *a, const wm_smove_env_t *env,
 }
 
 /*
+ * The head-hold family's fire(), shared by all 41 rows. Which row is
+ * running is carried on the run itself, because the monitor
+ * descriptor is built from the generated table rather than written
+ * out here.
+ */
+static bool hdhold_fire(wm_arcade_actor_t *a, const wm_smove_env_t *env,
+                        wm_smove_fire_t *out) {
+    const wm_smove_hdhold_t *row = (const wm_smove_hdhold_t *)env->hdhold_row;
+    wm_arcade_actor_t *victim = NULL;
+    if (!row) return false;
+    return wm_smove_hdhold_fire(row, a, &victim, out) != WM_SMOVE_HH_NOTHING;
+}
+
+/*
+ * The gate: live only while somebody has a head hold, either way
+ * round. `move *a8(PLYRMODE),a0 / cmpi MODE_HEADHOLD,a0 / jrz #cont /
+ * cmpi MODE_HEADHELD,a0 / jrnz #lp0`.
+ */
+static bool hdhold_gate(const wm_arcade_actor_t *a,
+                        const wm_smove_env_t *env) {
+    const wm_smove_hdhold_t *row;
+    if (!a || !env) return false;
+    if (a->player_mode != WM_PMODE_HEADHOLD &&
+        a->player_mode != WM_PMODE_HEADHELD)
+        return false;
+    row = (const wm_smove_hdhold_t *)env->hdhold_row;
+    if (!row) return true;
+    /* `move *a8(GETUP_TIME),a0 / jrnz #lp0`. */
+    if (row->needs_getup_clear && a->getup_time != 0) return false;
+    /* `calla CHECK_COMBO_GO / jrlt #lp0` -- a signed less-than, so a
+       negative answer refuses and zero does not. The combo state is
+       the actor's own combo_count, which is what CHECK_COMBO_GO
+       reads. */
+    if (row->needs_combo && a->combo_count <= 0) return false;
+    return true;
+}
+
+/*
+ * One monitor descriptor per generated row, built once. They are not
+ * written out because they differ only in the six columns the
+ * extractor read; building them here keeps the source data and the
+ * runtime shape in one place.
+ */
+static wm_smove_monitor_t HDHOLD[64];
+static size_t hdhold_built;
+
+static void build_hdhold(void) {
+    size_t i, n;
+    if (hdhold_built) return;
+    n = wm_smove_hdhold_count;
+    if (n > sizeof HDHOLD / sizeof HDHOLD[0])
+        n = sizeof HDHOLD / sizeof HDHOLD[0];
+    for (i = 0; i < n; ++i) {
+        const wm_smove_hdhold_t *r = &wm_smove_hdhold[i];
+        wm_smove_monitor_t *m = &HDHOLD[i];
+        memset(m, 0, sizeof(*m));
+        m->name = r->name;
+        m->file = r->file;
+        m->step[0] = r->step[0];
+        m->step[1] = r->step[1];
+        m->step[2] = r->step[2];
+        m->steps = 3;
+        m->timeout = r->timeout;
+        m->gate = hdhold_gate;
+        m->fire = hdhold_fire;
+        /* `SLEEPK 20 / jruc #lp` -- it goes round again rather than
+           dying, so a head hold can be turned into move after move. */
+        m->one_shot = false;
+        m->hdhold = r;
+    }
+    hdhold_built = n;
+}
+
+/*
  * The registry. A monitor is here because its whole body is
- * translated; the other 84 entries across the eight tables resolve to
- * NULL, which is what makes them countable.
+ * translated; the entries that resolve to NULL are what makes the
+ * remaining gap countable.
  */
 static const wm_smove_monitor_t MONITORS[] = {
     {
@@ -178,7 +252,8 @@ static const wm_smove_monitor_t MONITORS[] = {
         { { WM_J_UP, 0 }, { WM_J_DOWN, 0 }, { WM_B_PUNCH, WM_J_ALL } },
         3, WM_SMOVE_TIMEOUT_FINISH,
         false, NULL, NULL, und_finish_fire,
-        true                       /* `#fi1_exit DIE` */
+        true,                      /* `#fi1_exit DIE` */
+        NULL                       /* not a head-hold row */
     },
     {
         "std_walk_fast", "DOINK.ASM",
@@ -187,7 +262,8 @@ static const wm_smove_monitor_t MONITORS[] = {
           { WM_J_UP_TOWARD, 0 }, { WM_J_UP, 0 }, { WM_J_UP_AWAY, 0 } },
         8, WM_SMOVE_TIMEOUT_DOINK,
         false, walk_fast_gate, NULL, walk_fast_fire,
-        true                       /* the tail ends in DIE */
+        true,                      /* the tail ends in DIE */
+        NULL
     },
     {
         "std_taunt", "DOINK.ASM",
@@ -198,7 +274,8 @@ static const wm_smove_monitor_t MONITORS[] = {
         8, WM_SMOVE_TIMEOUT_DOINK,
         true,                      /* `PLYR_TYPE != 0 -> SUCIDE` */
         taunt_gate, taunt_mid_gate, taunt_fire,
-        true                       /* DIE after setting RISK */
+        true,                      /* DIE after setting RISK */
+        NULL
     },
 };
 
@@ -209,13 +286,22 @@ const wm_smove_monitor_t *wm_smove_monitor_find(const char *name) {
     if (!name) return NULL;
     for (i = 0; i < MONITOR_COUNT; ++i)
         if (strcmp(MONITORS[i].name, name) == 0) return &MONITORS[i];
+    build_hdhold();
+    for (i = 0; i < hdhold_built; ++i)
+        if (strcmp(HDHOLD[i].name, name) == 0) return &HDHOLD[i];
     return NULL;
 }
 
-size_t wm_smove_monitor_count(void) { return MONITOR_COUNT; }
+size_t wm_smove_monitor_count(void) {
+    build_hdhold();
+    return MONITOR_COUNT + hdhold_built;
+}
 
 const wm_smove_monitor_t *wm_smove_monitor_at(size_t i) {
-    return (i < MONITOR_COUNT) ? &MONITORS[i] : NULL;
+    if (i < MONITOR_COUNT) return &MONITORS[i];
+    build_hdhold();
+    i -= MONITOR_COUNT;
+    return (i < hdhold_built) ? &HDHOLD[i] : NULL;
 }
 
 /* ------------------------------------------------------------------ */
@@ -291,7 +377,13 @@ bool wm_smove_tick(wm_smove_run_t *run, wm_arcade_actor_t *a,
      * sequence lands back on `#lp`, which re-tests it too.
      */
     if (!run->armed) {
-        if (m->gate && !m->gate(a, env)) return false;
+        /* A head-hold monitor's gate reads its own row's two extra
+           conditions, so it needs the row the same way fire() does. */
+        if (m->gate) {
+            wm_smove_env_t g = *env;
+            g.hdhold_row = m->hdhold;
+            if (!m->gate(a, &g)) return false;
+        }
         run->at = 0;
         run->countdown = 0;      /* `clr a11` -- no deadline on step 0 */
         run->armed = true;
@@ -320,7 +412,77 @@ bool wm_smove_tick(wm_smove_run_t *run, wm_arcade_actor_t *a,
     if (run->at < m->steps) return false;
 
     run->armed = false;
-    if (!m->fire || !m->fire(a, env, out)) return false;
+    if (!m->fire) return false;
+    if (m->hdhold) {
+        /* One fire() serves all 41 generated rows; this is how it
+           learns which one is running. */
+        wm_smove_env_t local = *env;
+        local.hdhold_row = m->hdhold;
+        if (!m->fire(a, &local, out)) return false;
+    } else if (!m->fire(a, env, out)) {
+        return false;
+    }
     if (m->one_shot) run->dead = true;
     return true;
+}
+
+/* ------------------------------------------------------------------ */
+/* The head-hold family's shared tail                                 */
+
+wm_smove_hh_result_t wm_smove_hdhold_fire(const wm_smove_hdhold_t *row,
+                                          wm_arcade_actor_t *a,
+                                          wm_arcade_actor_t **victim,
+                                          wm_smove_fire_t *out) {
+    wm_arcade_actor_t *target;
+    bool reversing;
+
+    if (victim) *victim = NULL;
+    if (out) memset(out, 0, sizeof(*out));
+    if (!row || !a) return WM_SMOVE_HH_NOTHING;
+
+    /*
+     * `move *a8(PLYRMODE),a0 / cmpi MODE_HEADHOLD,a0 / jrz #slam /
+     * cmpi MODE_HEADHELD,a0 / jrnz #lp0`. Which mode he is in at THIS
+     * moment decides whose move it is -- not who started the hold.
+     */
+    if (a->player_mode == WM_PMODE_HEADHOLD) {
+        reversing = false;
+    } else if (a->player_mode == WM_PMODE_HEADHELD) {
+        /* The reversal path, and only if this move has one. */
+        if (!row->reversal) return WM_SMOVE_HH_NOTHING;
+        /* `move *a8(I_WILL_DIE),A14 / jrnz #lp0` -- a man already on
+           his way out cannot reverse. The slam path has no such test;
+           it is on the reversal side only. */
+        if (a->i_will_die) return WM_SMOVE_HH_NOTHING;
+        reversing = true;
+    } else {
+        return WM_SMOVE_HH_NOTHING;
+    }
+
+    /* `move *a8(IMMOBILIZE_TIME),a14 / jrnz #lp0 ;ignore` -- on both
+       paths, and the source's own comment is that one word. */
+    if (a->immobilize_time != 0) return WM_SMOVE_HH_NOTHING;
+
+    /* "target WHOHITME -- don't hit anyone else" on the reversal,
+       WHOIHIT on the slam. SMRTTGT is the smart-target write. */
+    target = reversing ? a->who_hit_me : a->who_i_hit;
+    if (victim) *victim = target;
+    a->smart_target = target;
+
+    if (out) {
+        out->anim = row->anim;
+        /*
+         * FACE24 picks between the `_2_` and `_4_` forms by facing.
+         * PLAYER_RIGHT_BIT is WM_MOVE_RIGHT, the same test
+         * read_switches uses for the relative stick.
+         */
+        if (row->anim_flipped && !(a->facing_dir & WM_MOVE_RIGHT))
+            out->anim = row->anim_flipped;
+        /* The slam's bonus message; a reversal gets DO_REVERSAL_MESS
+           instead, which is a different message and not this one. */
+        out->bonus = reversing ? -1 : row->bonus;
+        out->victim_immobilize = WM_SMOVE_HH_VICTIM_IMMOBILIZE;
+    }
+
+    return reversing ? WM_SMOVE_HH_REVERSAL : WM_SMOVE_HH_SLAM;
 }

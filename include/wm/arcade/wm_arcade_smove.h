@@ -136,6 +136,9 @@ typedef struct {
      * translation already here.
      */
     const wm_arcade_und_finish_callbacks_t *und_cb;
+    /* Filled in by wm_smove_tick for a head-hold monitor: the row
+       whose constants this run is using. */
+    const void *hdhold_row;
 } wm_smove_env_t;
 
 /*
@@ -155,6 +158,14 @@ typedef struct {
     uint16_t risk;
     /* und_finish_move1 raised @in_finish_move and scrolled the view. */
     bool in_finish_move;
+    /*
+     * The head-hold family's own two: the bonus message's index
+     * (`movk <n>,a10 / CREATE MESSAGE_PID,BONUS_MESS`), or -1 for a
+     * move that awards none, and the IMMOBILIZE_TIME it puts on its
+     * victim.
+     */
+    int32_t bonus;
+    int32_t victim_immobilize;
 } wm_smove_fire_t;
 
 typedef struct wm_smove_monitor {
@@ -180,7 +191,102 @@ typedef struct wm_smove_monitor {
                  wm_smove_fire_t *out);
     /* `DIE` rather than looping back to #lp0 once it fires. */
     bool one_shot;
+    /* Set on the 41 generated head-hold rows, NULL on the three
+       hand-written monitors. The runtime reads it back through the
+       env so one fire() can serve every row. */
+    const struct wm_smove_hdhold *hdhold;
 } wm_smove_monitor_t;
+
+/* ---- the head-hold family --------------------------------------- */
+
+/*
+ * 41 of the 62 monitors left after the three hand-written ones are
+ * ONE routine written out with different constants. The shape, from
+ * TAKER.ASM:748 und_hdhold_neckbrk and forty others:
+ *
+ *   #lp0  SLEEPK 1
+ *   #lp   PLYRMODE is MODE_HEADHOLD or MODE_HEADHELD, else back to
+ *         #lp0 -- so the monitor is live only while somebody has a
+ *         head hold, either way round.
+ *   #cont clr a11, then three WAITSWITCH_DWN: two stick inputs and a
+ *         button, the first with no deadline and the other two
+ *         sharing the routine's own #TIMEOUT.
+ *   then  PLYRMODE decides WHO IS DOING IT. MODE_HEADHOLD means I
+ *         have him and the move is mine; MODE_HEADHELD means he has
+ *         me and the same input is a REVERSAL -- the source calls
+ *         DO_REVERSAL and targets WHOHITME instead of WHOIHIT. Not
+ *         every move has that path, which is why `reversal` is a
+ *         column rather than an assumption.
+ *   both  I_WILL_DIE and a non-zero IMMOBILIZE_TIME refuse; the
+ *         target's IMMOBILIZE_TIME is set to 15;
+ *         FIND_AND_KILL_ENDLESS; SPECIAL_MOVE_ADDR takes the move;
+ *         SLEEPK 20; back to #lp.
+ *
+ * So six things vary, and they are what tools/wlsmove.py reads out of
+ * the source into src/generated/smove_hdhold.c. Transcribing 41
+ * copies of one routine by hand is what this tree generates instead.
+ */
+typedef struct wm_smove_hdhold {
+    const char *name;
+    const char *file;
+    wm_smove_step_t step[3];
+    int32_t timeout;
+    /* `movk <n>,a10 / CREATE MESSAGE_PID,BONUS_MESS`, or -1 for a move
+       that awards none. */
+    int32_t bonus;
+    /* Whether the routine has the MODE_HEADHELD reversal path. */
+    bool reversal;
+    /*
+     * Two extra gates that appear before the sequence on some of
+     * them, and refuse the whole monitor rather than one step:
+     *
+     *   `calla CHECK_COMBO_GO / jrlt #lp0` on fifteen combo moves,
+     *   which are only available while a combo is running;
+     *   `move *a8(GETUP_TIME),a0 / jrnz #lp0` on four of Shawn's,
+     *   which refuse while he is getting up.
+     *
+     * They are columns rather than part of the shared gate because
+     * nineteen rows have one and twenty-two do not.
+     */
+    bool needs_combo;
+    bool needs_getup_clear;
+    /* The animation SPECIAL_MOVE_ADDR takes. `anim_flipped` is
+       non-NULL only where the source picks it with FACE24, in which
+       case `anim` is the `_2_` form and this is the `_4_`. */
+    const char *anim;
+    const char *anim_flipped;
+} wm_smove_hdhold_t;
+
+extern const wm_smove_hdhold_t wm_smove_hdhold[];
+extern const size_t wm_smove_hdhold_count;
+
+/* The family's shared constants, from the body they all share. */
+#define WM_SMOVE_HH_VICTIM_IMMOBILIZE 15   /* `movk 15,a14` */
+#define WM_SMOVE_HH_COOLDOWN 20            /* the trailing SLEEPK 20 */
+
+/*
+ * Which of the two things the input did, once the sequence completes.
+ * The source decides it on PLYRMODE at that moment, not on who
+ * started the hold.
+ */
+typedef enum {
+    WM_SMOVE_HH_NOTHING = 0,
+    WM_SMOVE_HH_SLAM,        /* MODE_HEADHOLD: the move is mine */
+    WM_SMOVE_HH_REVERSAL     /* MODE_HEADHELD: I am reversing his */
+} wm_smove_hh_result_t;
+
+/*
+ * The tail every one of them shares, given the actor and the row.
+ * `victim` is filled with WHOIHIT or WHOHITME as the outcome
+ * requires, and `out` with the animation and the bonus index.
+ *
+ * Returns WM_SMOVE_HH_NOTHING when the guards refuse -- the wrong
+ * mode, I_WILL_DIE, or an immobilised attacker.
+ */
+wm_smove_hh_result_t wm_smove_hdhold_fire(const wm_smove_hdhold_t *row,
+                                          wm_arcade_actor_t *a,
+                                          wm_arcade_actor_t **victim,
+                                          wm_smove_fire_t *out);
 
 /* The monitors this port implements, by their source label. NULL for
    one it does not -- which is the point: an unimplemented monitor is a

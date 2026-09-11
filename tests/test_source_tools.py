@@ -6,6 +6,7 @@ import struct
 import subprocess
 import os
 import collections
+import inspect
 import re
 import sys
 import tempfile
@@ -22,6 +23,8 @@ def load(name: str, path: pathlib.Path):
     return module
 
 wlanim = load("wlanim", ROOT / "tools" / "wlanim.py")
+bret_manifest = load("bret_manifest", ROOT / "tools" / "bret_manifest.py")
+bret_bundle = load("bret_bundle", ROOT / "tools" / "bret_bundle.py")
 asmseq = load("asmseq", ROOT / "tools" / "asmseq.py")
 wlattack = load("wlattack", ROOT / "tools" / "wlattack.py")
 wlcommands = load("wlcommands", ROOT / "tools" / "wlcommands.py")
@@ -1572,6 +1575,35 @@ def test_extracted_cut_content_says_so() -> None:
         assert "NOT IN THE SHIPPED GAME" in out.read_text()
 
 
+def test_sprite_banks_can_be_bundled_per_wrestler() -> None:
+    """tools/bret_bundle.py can bundle any wrestler, not just Bret.
+
+    It was written around one wrestler: one .LOD, one output, symbols
+    named for him. The other seven need their own banks, which needs
+    two things -- a symbol prefix so eight of them do not collide, and
+    a way to keep each bundle to the frames its own .LOD owns.
+
+    This checks the capability and the ownership it relies on. It does
+    NOT bundle anything: one wrestler is 3.5-4.5 MiB of CI8 pixels and
+    tens of megabytes of C (see docs/N64_FIRST.md, which records why
+    that rules out holding even two resident).
+    """
+    img = wlanim.ORIG / "IMG"
+    if not img.is_dir():
+        return
+
+    sig = inspect.signature(bret_bundle.emit)
+    assert "prefix" in sig.parameters
+    assert "only_mapped" in sig.parameters
+
+    # Frames belong to their own wrestler's container, which is what
+    # lets --only-mapped split the corpus eight ways.
+    bret = bret_manifest.parse_lod(img / "BRET.LOD")
+    yoko = bret_manifest.parse_lod(img / "YOKO.LOD")
+    assert "H2WL1A01" in bret and "H2WL1A01" not in yoko
+    assert "Y3GS3A03" in yoko and "Y3GS3A03" not in bret
+
+
 def test_waithitopp_is_a_mode_and_a_frame() -> None:
     """ANIM.ASM:2300's own note: "just like an ordinary WL ticks,frame type
     command except that the ANICNT is zeroed if we hit the opponent." The
@@ -3062,6 +3094,7 @@ def main() -> int:
     test_smove_tables_honour_the_finishing_move_switch()
     test_coverage_does_not_count_code_the_assembler_skipped()
     test_the_two_bmod_producers_agree()
+    test_sprite_banks_can_be_bundled_per_wrestler()
     test_extracted_cut_content_says_so()
     test_coverage_does_not_count_a_comment_as_an_implementation()
     test_coverage_matches_only_a_suffix_or_a_generated_wrapper()

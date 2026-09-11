@@ -31,6 +31,7 @@ add_library(wmcore STATIC
     src/core/app.c
     src/core/composite.c
     src/core/wrestler_taunt.c
+    src/core/match_display.c
     src/generated/attract_sequence.c
     src/generated/select_tables.c
     src/generated/port_status.c

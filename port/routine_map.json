@@ -788,5 +788,163 @@
     "status": "renamed",
     "symbol": "wm_award_arm_winstreak",
     "note": "AWARD.ASM:1124. Arms pwsarm when the streak is a nonzero multiple of five (`movk 5,a0 / modu a0,a1 / jrnz #awa_disarm`), and explicitly DISarms it otherwise -- so reaching six wins takes the pending award away again rather than leaving it standing."
+  },
+  "FIND_LOW_TABLE_LEVEL": {
+    "file": "HSTD.ASM",
+    "status": "renamed",
+    "symbol": "wm_hs_find_level",
+    "note": "HSTD.ASM:3358. Walk the table from entry 1 down and report the first slot this score beats, or zero. It and FIND_HIGH_TABLE_LEVEL at :3322 are the same routine with one instruction different -- `JRLO` here against `JRGE` there -- which is why a lower pin time and a higher win streak both sort to the front. wm_hs_find_level carries both as the table's own WM_HS_HIGHER_IS_BETTER flag."
+  },
+  "pin_speed_check": {
+    "file": "HSTD.ASM",
+    "status": "renamed",
+    "symbol": "wm_hs_begin_pin_speed",
+    "note": "HSTD.ASM:1865. Three refusals before the table is even consulted: a drone (index >= 2) never enters, a match that took three rounds never counts (`cmpi 3,a14 / jreq #retp`), and a non-positive MATCH_TIMERS entry is dropped. Only then does FIND_LOW_TABLE_LEVEL get a look."
+  },
+  "winstreak_check": {
+    "file": "HSTD.ASM",
+    "status": "renamed",
+    "symbol": "wm_hs_begin_winstreak",
+    "note": "HSTD.ASM:1889. Unlike pin_speed_check it has no gate at all -- it reads p1oldwinstreak and goes straight to FIND_HIGH_TABLE_LEVEL, which is the only thing that can turn it away."
+  },
+  "DO_TAG_GAME": {
+    "file": "HSTD.ASM",
+    "status": "renamed",
+    "symbol": "wm_hs_begin_tag_time",
+    "note": "HSTD.ASM:1846. Clears this player's entered_inits, then enters the tag table through FIND_LOW_TABLE_LEVEL with do_entry_time as the entry routine."
+  },
+  "are_inits_dirty": {
+    "file": "HSTD.ASM",
+    "status": "renamed",
+    "symbol": "wm_hs_entry_is_dirty",
+    "note": "HSTD.ASM:2631. The profanity filter: pack each letter into five bits (`subi 40h / andi 1fh`), skipping the three non-alpha grid cells 19h, 20h and 21h, and compare the running value against #dw_table after every letter -- so a banned word is caught as a prefix, not only as the whole entry."
+  },
+  "INIT_HSTRING": {
+    "file": "HSTD.ASM",
+    "status": "renamed",
+    "symbol": "wm_hs_system_table_cmos_check",
+    "note": "HSTD.ASM:3602. Four KILL_AUD calls -- winstreak, pinspeed, beaten and tag -- and a rets. It is reached from the VAL_TAB path when a table had to be reinitialised, and clearing those audit markers is the whole of it. Notably it does NOT clear AUD_INTER."
+  },
+  "INIT_TB": {
+    "file": "HSTD.ASM",
+    "status": "renamed",
+    "symbol": "wm_hs_init_table",
+    "note": "HSTD.ASM:3623. Copy a table factory entries out of ROM into CMOS a byte at a time, then walk back down every entry INCLUDING the zero one writing its checksum. wm_hs_init_table does the same from the WmHsFactoryEntry rows, and wm_hs_rechecksum is the per-entry half."
+  },
+  "new_cursor_pos": {
+    "file": "HSTD.ASM",
+    "status": "display",
+    "note": "HSTD.ASM:2692. Places the initials-entry cursor and highlight objects on the letter grid and picks the character image under them. Worth one note even though it is display: the grid is FIVE columns wide, `movk 5,a0 / modu` for the X and `movk 5,a2 / divu` for the Y, and the source's own comments above both lines say `mod 6` and `/ 6`."
+  },
+  "print_hscores": {
+    "file": "HSTD.ASM",
+    "status": "display",
+    "note": "HSTD.ASM:636. Draws a whole high-score table: the heading, then a row per entry through draw_*_table_entry. The tables and their ordering are wmania_hiscore_core's; this is the page."
+  },
+  "print_init_string": {
+    "file": "HSTD.ASM",
+    "status": "display",
+    "note": "HSTD.ASM. Redraws the three initials being entered as objects under the cursor."
+  },
+  "MOVE_ALL_OBJS_UP": {
+    "file": "HSTD.ASM",
+    "status": "display",
+    "note": "HSTD.ASM:512. Gives every object on the high-score page an upward Y velocity so the table scrolls off. Object motion, nothing else."
+  },
+  "STOP_ALL_OBJS": {
+    "file": "HSTD.ASM",
+    "status": "display",
+    "note": "HSTD.ASM:501. Zeroes every object's velocity -- the other half of the scroll."
+  },
+  "DELETE_ANY_OFF_TOP": {
+    "file": "HSTD.ASM",
+    "status": "display",
+    "note": "HSTD.ASM:531. Deletes objects once the scroll has carried them above the screen."
+  },
+  "JUDDER_SHADOW": {
+    "file": "HSTD.ASM",
+    "status": "process",
+    "note": "HSTD.ASM. A FLASH_PID process that shakes the drop shadow behind the high-score heading. A CREATE, a loop and an object offset."
+  },
+  "init_special_objlist": {
+    "file": "SPECIAL.ASM",
+    "status": "renamed",
+    "symbol": "wm_arcade_special_lists_init",
+    "note": "SPECIAL.ASM:1278. Three stores: the heads of plyr1_objlist, plyr2_objlist and neutral_objlist. Which of the three a projectile joins is decided by SP_PLYR_SIDE, where -1 is neutral."
+  },
+  "delete_special_objlist": {
+    "file": "SPECIAL.ASM",
+    "status": "renamed",
+    "symbol": "wm_arcade_special_delete",
+    "note": "SPECIAL.ASM:1312. Unlink a projectile from whichever of the three lists its SP_PLYR_SIDE puts it in, walking from the head. The insert half is insert_special_objlist at :1292, which the port keeps as wm_arcade_special_insert."
+  },
+  "sp_change_anim": {
+    "file": "SPECIAL.ASM",
+    "status": "renamed",
+    "symbol": "wm_arcade_special_change_anim",
+    "note": "SPECIAL.ASM:2197. Point a projectile at a new animation script and run its immediate non-image opcodes straight away through sp_animate -- which is why the port's change_anim executes them rather than waiting a tick."
+  },
+  "sp_animate": {
+    "file": "SPECIAL.ASM",
+    "status": "renamed",
+    "symbol": "wm_arcade_special_change_anim",
+    "note": "SPECIAL.ASM:2208. The projectile animation stepper sp_change_anim falls into; the port folds both into one function, since the only caller of the stepper is the change."
+  },
+  "yok_salt_spray": {
+    "file": "SPECIAL.ASM",
+    "status": "renamed",
+    "symbol": "wm_arcade_spawn_yoko_salt",
+    "note": "SPECIAL.ASM:1679. Yokozuna's salt: the constructor's exact SP_ field state, which wm_arcade_spawn_yoko_salt carries value for value, plus the salt-specific grow-then-live transitions (wm_arcade_special_salt_become_live and _salt_disable_collision)."
+  },
+  "create_dizzy_proc": {
+    "file": "SPECIAL.ASM",
+    "status": "renamed",
+    "symbol": "create_dizzy",
+    "note": "SPECIAL.ASM:87. The stars over a dizzy wrestler. Its gate (STARS_FLAG, one set at a time) and its per-wrestler offset are translated in the animation VM; the star itself is a DEBRIS_PID object, so the VM reaches it through wm_anim_env's create_dizzy seam."
+  },
+  "begin_ani": {
+    "file": "SPECIAL.ASM",
+    "status": "display",
+    "note": "SPECIAL.ASM:1200. Reads a projectile process's XVAL/YVAL/ZVAL/FLAGS/XVEL/YVEL and the first entry of its animation script, then BEGINOBJP. Object creation start to finish."
+  },
+  "special_ani": {
+    "file": "SPECIAL.ASM",
+    "status": "display",
+    "note": "SPECIAL.ASM:1224. One tick of a projectile's object animation: count down, fetch the next (ticks, image) pair, write OIMG/OSIZE/OSAG/ODXOFF/ODYOFF and the five z-compare bits, and DELOBJA8 plus DIE on a zero tick count. The two `add a10,a1` / `add a11,a1` offset lines are commented out, so the anim offsets are used raw."
+  },
+  "change_image_local": {
+    "file": "SPECIAL.ASM",
+    "status": "display",
+    "note": "SPECIAL.ASM:1259. special_ani's image write on its own: OIMG, OSIZE, OSAG, the two display offsets and the z-compare byte."
+  },
+  "impact_proc": {
+    "file": "SPECIAL.ASM",
+    "status": "process",
+    "note": "SPECIAL.ASM:843. A DEBRIS_PID process that plays one impact burst and dies. The decision to create it, and how many pieces, is wm/arcade/wm_arcade_debris.h's; the pieces are objects."
+  },
+  "impact_proc2": {
+    "file": "SPECIAL.ASM",
+    "status": "process",
+    "note": "SPECIAL.ASM:830. The same, with the second burst's image set."
+  },
+  "dizzy_proc": {
+    "file": "SPECIAL.ASM",
+    "status": "process",
+    "note": "SPECIAL.ASM:158. The star process create_dizzy_proc spawns: orbit the wrestler's head until STARS_FLAG clears, then die."
+  },
+  "create_impact3": {
+    "file": "SPECIAL.ASM",
+    "status": "process",
+    "note": "SPECIAL.ASM:397. Two refusals then a CREATE: `@no_debris` and `@reduce_bog` both abort it outright, which is the same pair wm/arcade/wm_arcade_debris.h already gates on. What is left is the DEBRIS_PID creation at a fixed 58h offset."
+  },
+  "react_blood": {
+    "file": "SPECIAL.ASM",
+    "status": "display",
+    "note": "SPECIAL.ASM:1846. Sets a projectile's gravity to GRAVITY*2 and its DMA flags, then BEGINOBJs a PINSHAD1 at z 150. The second BEGINOBJ below it, for the shadow at z 149, is commented out -- so SP_SHADOW_OBJ is explicitly cleared at the top and never filled."
+  },
+  "react_bloodnguts_gen": {
+    "file": "SPECIAL.ASM",
+    "status": "process",
+    "note": "SPECIAL.ASM:1805. The generator that spawns react_blood processes. Its gates are the shared debris ones; the spray is objects."
   }
 }

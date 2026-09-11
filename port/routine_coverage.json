@@ -595,10 +595,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "HSTD.ASM:531. Deletes objects once the scroll has carried them above the screen.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "DISPATCH",
@@ -955,10 +955,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_hs_begin_tag_time",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "DRKTRPLTP",
@@ -1015,10 +1015,10 @@
    "local": false,
    "external_callers": 1,
    "references": 4,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_hs_find_level",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "FIRSTATT_MESS",
@@ -1315,10 +1315,10 @@
    "local": false,
    "external_callers": 1,
    "references": 3,
-   "status": "cited",
-   "evidence": "INIT_HSTRING",
+   "status": "renamed",
+   "evidence": "wm_hs_system_table_cmos_check",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "INIT_SKIRTS",
@@ -1345,10 +1345,10 @@
    "local": false,
    "external_callers": 5,
    "references": 7,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_hs_init_table",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "INTIO",
@@ -1405,10 +1405,10 @@
    "local": false,
    "external_callers": 3,
    "references": 8,
-   "status": "cited",
-   "evidence": "JUDDER_SHADOW",
+   "status": "process",
+   "evidence": "HSTD.ASM. A FLASH_PID process that shakes the drop shadow behind the high-score heading. A CREATE, a loop and an object offset.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "KILL_ALL_CHANNELS",
@@ -1585,10 +1585,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "HSTD.ASM:512. Gives every object on the high-score page an upward Y velocity so the table scrolls off. Object motion, nothing else.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "MOVE_NAME_ANNC",
@@ -2245,10 +2245,10 @@
    "local": false,
    "external_callers": 4,
    "references": 4,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "HSTD.ASM:501. Zeroes every object's velocity -- the other half of the scroll.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "STRCNRM_1",
@@ -3250,10 +3250,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_hs_entry_is_dirty",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "are_special_inits",
@@ -6595,10 +6595,10 @@
    "local": false,
    "external_callers": 0,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "SPECIAL.ASM:1200. Reads a projectile process's XVAL/YVAL/ZVAL/FLAGS/XVEL/YVEL and the first entry of its animation script, then BEGINOBJP. Object creation start to finish.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "begin_obj",
@@ -7270,10 +7270,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "SPECIAL.ASM:1259. special_ani's image write on its own: OIMG, OSIZE, OSAG, the two display offsets and the z-compare byte.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "change_walk_anim",
@@ -8216,10 +8216,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "create_dizzy_proc",
+   "status": "renamed",
+   "evidence": "create_dizzy",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "create_end_rnd_awards",
@@ -8276,10 +8276,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "process",
+   "evidence": "SPECIAL.ASM:397. Two refusals then a CREATE: `@no_debris` and `@reduce_bog` both abort it outright, which is the same pair wm/arcade/wm_arcade_debris.h already gates on. What is left is the DEBRIS_PID creation at a fixed 58h offset.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "create_impact4",
@@ -8546,10 +8546,10 @@
    "local": false,
    "external_callers": 1,
    "references": 7,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_arcade_special_delete",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "dir_debug",
@@ -8756,10 +8756,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "create_dizzy_proc",
+   "status": "process",
+   "evidence": "SPECIAL.ASM:158. The star process create_dizzy_proc spawns: orbit the wrestler's head until STARS_FLAG clears, then die.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "dizzy_table",
@@ -17952,10 +17952,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "process",
+   "evidence": "SPECIAL.ASM:843. A DEBRIS_PID process that plays one impact burst and dies. The decision to create it, and how many pieces, is wm/arcade/wm_arcade_debris.h's; the pieces are objects.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "impact_proc2",
@@ -17967,10 +17967,10 @@
    "local": false,
    "external_callers": 0,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
+   "status": "process",
+   "evidence": "SPECIAL.ASM:830. The same, with the second burst's image set.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "impact_sound",
@@ -18209,10 +18209,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_arcade_special_lists_init",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "init_wres_life_data",
@@ -22274,10 +22274,10 @@
    "local": false,
    "external_callers": 0,
    "references": 4,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "HSTD.ASM:2692. Places the initials-entry cursor and highlight objects on the letter grid and picks the character image under them. Worth one note even though it is display: the grid is FIVE columns wide, `movk 5,a0 / modu` for the X and `movk 5,a2 / divu` for the Y, and the source's own comments above both lines say `mod 6` and `/ 6`.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "no_bk_xvel",
@@ -22859,10 +22859,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_hs_begin_pin_speed",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "pin_speed_in_case",
@@ -23084,10 +23084,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "HSTD.ASM:636. Draws a whole high-score table: the heading, then a row per entry through draw_*_table_entry. The tables and their ordering are wmania_hiscore_core's; this is the page.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "print_init_string",
@@ -23099,10 +23099,10 @@
    "local": false,
    "external_callers": 0,
    "references": 7,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "HSTD.ASM. Redraws the three initials being entered as objects under the cursor.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "print_inter",
@@ -23459,10 +23459,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "SPECIAL.ASM:1846. Sets a projectile's gravity to GRAVITY*2 and its DMA flags, then BEGINOBJs a PINSHAD1 at z 150. The second BEGINOBJ below it, for the shadow at z 149, is commented out -- so SP_SHADOW_OBJ is explicitly cleared at the top and never filled.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "react_bloodnguts_gen",
@@ -23474,10 +23474,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "process",
+   "evidence": "SPECIAL.ASM:1805. The generator that spawns react_blood processes. Its gates are the shared debris ones; the spray is objects.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "react_debris",
@@ -30842,10 +30842,10 @@
    "local": false,
    "external_callers": 0,
    "references": 11,
-   "status": "cited",
-   "evidence": "sp_animate",
+   "status": "renamed",
+   "evidence": "wm_arcade_special_change_anim",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "sp_change_anim",
@@ -30857,10 +30857,10 @@
    "local": false,
    "external_callers": 2,
    "references": 17,
-   "status": "cited",
-   "evidence": "sp_change_anim",
+   "status": "renamed",
+   "evidence": "wm_arcade_special_change_anim",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "sparkle_frame",
@@ -30887,10 +30887,10 @@
    "local": false,
    "external_callers": 0,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "SPECIAL.ASM:1224. One tick of a projectile's object animation: count down, fetch the next (ticks, image) pair, write OIMG/OSIZE/OSAG/ODXOFF/ODYOFF and the five z-compare bits, and DELOBJA8 plus DIE on a zero tick count. The two `add a10,a1` / `add a11,a1` offset lines are commented out, so the anim offsets are used raw.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "special_hit",
@@ -34668,10 +34668,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "winstreak_check",
+   "status": "renamed",
+   "evidence": "wm_hs_begin_winstreak",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "wmania_tune",
@@ -37428,10 +37428,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "yok_salt_spray",
+   "status": "renamed",
+   "evidence": "wm_arcade_spawn_yoko_salt",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "yok_scissor_anim",

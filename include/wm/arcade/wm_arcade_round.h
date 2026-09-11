@@ -57,6 +57,19 @@ typedef struct {
     /* Valid only once decided is true: the surviving PLYR_SIDE (0 or 1),
        or -1 for a simultaneous double-KO draw. */
     int decided_winner_side;
+    /*
+     * WRESTLE2.ASM:4229-4235 `#ncrb`: true for the ONE tick a NEW
+     * all-dead condition is detected -- the source's own `#last_dead`
+     * freshness test -- which is when it CREATEs pin_prompt. It is not
+     * every tick of the countdown, and the distinction matters,
+     * because pin_prompt is what bumps @p1pins and @p2pins and
+     * und_finish_move1 counts those.
+     *
+     * `prompt_dead_side` is the a9 it hands the process: the live-team
+     * bits `xori 3` then `srl 1`, so 0 or 1.
+     */
+    bool prompt_pin;
+    int prompt_dead_side;
 } wm_arcade_round_state_t;
 
 void wm_arcade_round_state_init(wm_arcade_round_state_t *rs);

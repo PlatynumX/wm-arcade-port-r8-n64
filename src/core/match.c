@@ -178,6 +178,100 @@ static void match_wake_round_announce(void *user) {
 }
 
 /*
+ * ANIM.ASM change_anim1a, the UNGUARDED form: it starts the program
+ * whether or not the same one is already running. The dispatchers
+ * call the guarded change_anim1 every tick they stay in a mode; this
+ * is what everything that reaches ACROSS to another wrestler uses --
+ * ANI_SLAVEANIM, grnd_hit, and the coffin sequence's push_to_coffin
+ * and make_wres_disappear.
+ *
+ * Each wrestler's animation lives in his own backend's exec, and
+ * which backend that is depends on who he is (wm/match.h), so this
+ * finds the actor's slot rather than being handed one.
+ */
+static void match_change_anim(wm_arcade_actor_t *actor, const char *label,
+                              void *user) {
+    wm_match_state *m = (wm_match_state *)user;
+    const wm_anim_program *prog;
+    unsigned i;
+
+    if (!m || !actor || !label) return;
+    prog = wm_anim_program_find(label);
+    if (!prog) return;
+
+    for (i = 0; i < m->actor_count; ++i) {
+        if (&m->actors[i] != actor) continue;
+        if (m->actors[i].wrestler_num == WM_ROSTER_BRET) {
+            /* Bret's own backend selects by a typed id, and a label
+               reaching him from another wrestler's sequence has no id
+               -- his current_id is left alone deliberately, so his
+               dispatcher's next selection restarts him normally. */
+            wm_anim_exec_start(&m->bret_visual[i].prog, prog, actor,
+                               (uint16_t)m->tick_count,
+                               &m->bret_visual[i].anim_env);
+        } else {
+            m->wrestler_visual[i].current_label = label;
+            wm_anim_exec_start(&m->wrestler_visual[i].prog, prog, actor,
+                               (uint16_t)m->tick_count,
+                               &m->wrestler_visual[i].anim_env);
+        }
+        return;
+    }
+}
+
+/*
+ * ANIM.ASM:3634 ANI_CREATEPROC. Six processes are ever named, and the
+ * two that belong to the coffin finish are the two this port can run:
+ *
+ *   und_coffin_up  the mat, the coffin and the hover, as timing and a
+ *                  handshake (wm/arcade/wm_arcade_coffin.h). Its
+ *                  objects are a renderer's; its clock is the game's,
+ *                  and everything else waits on it.
+ *   raise_dead     `SLEEP TSEC/2`, change_anim1a(raise_dead_anim) on
+ *                  @dead_wrestler, DIE. That is the whole routine.
+ *
+ * The other four are CREATE_SWEAT, SPIN_SWEAT and the Undertaker's
+ * tomb bits, all of which only make sprites.
+ */
+static void match_create_proc(void *user, wm_arcade_actor_t *at,
+                              const char *proc, int proc_id,
+                              int32_t a, int32_t b, int32_t c) {
+    wm_match_state *m = (wm_match_state *)user;
+    (void)proc_id; (void)a; (void)b; (void)c;
+    if (!m || !proc) return;
+    if (strcmp(proc, "und_coffin_up") == 0) {
+        wm_coffin_driver_start(&m->coffin_driver, &m->coffin);
+        return;
+    }
+    if (strcmp(proc, "raise_dead") == 0) {
+        m->raise_dead_delay = WM_COFFIN_RAISE_DEAD_SLEEP;
+        /* @dead_wrestler, which TAKER.ASM latched from the
+           Undertaker's WHOIHIT before the sequence started. */
+        m->raise_dead_target = wm_coffin_dead_wrestler(&m->coffin, at);
+        return;
+    }
+}
+
+/* @in_finish_move (TAKER.ASM:676 and :703). Two things read it: the
+   scroller stops while it is set, and announce_rnd_winner holds off
+   calling the round. */
+static void match_set_in_finish_move(int on, void *user) {
+    wm_match_state *m = (wm_match_state *)user;
+    if (!m) return;
+    m->in_finish_move = (on != 0);
+}
+
+/* TAKER.ASM:715 adjust_view's WORLDTLX/WORLDTLY writes, each followed
+   in the source by BGND_UD1 -- a background refresh this port has no
+   renderer to need. */
+static void match_set_world_origin(int32_t tlx, int32_t tly, void *user) {
+    wm_match_state *m = (wm_match_state *)user;
+    if (!m) return;
+    m->scroll.worldtlx = tlx;
+    m->scroll.worldtly = tly;
+}
+
+/*
  * SPECIAL.ASM:3415 react_debris. The decision half is real -- the RNDPER
  * gate, the DEBRIS_MAX cap, the per-wrestler impact sound, the
  * Undertaker's pin bat -- and the pieces are objects a renderer would
@@ -315,6 +409,28 @@ static void init_actor_life(wm_arcade_actor_t *a) {
  * for good and a dead human is not -- so every actor needs one. The
  * source sets it at wrestler creation; so does this.
  */
+/*
+ * WRESTLE.ASM:2385 `calla init_smoves`, which start_match runs once
+ * per wrestler per MATCH -- and WRESTLE.ASM:1578's `clr a14 / move
+ * a14,@p1pins / move a14,@p2pins / move a14,@finish_completed`, which
+ * happens in the same place and is what the finishing move's "second
+ * pin attempt" test counts from.
+ */
+static void init_smoves(wm_match_state *m) {
+    unsigned i;
+    if (!m) return;
+    wm_arcade_pins_clear(&m->pins);
+    wm_coffin_reset(&m->coffin);
+    m->in_finish_move = false;
+    for (i = 0; i < WM_MATCH_MAX_ACTORS; ++i) {
+        m->smove_count[i] = wm_smove_init(
+            m->actors[i].wrestler_num,
+            m->actors[i].plyr_type == WM_PTYPE_DRONE,
+            m->smoves[i], WM_SMOVE_MAX_PER_WRESTLER,
+            &m->smove_unported[i]);
+    }
+}
+
 static void init_plyr_types(wm_match_state *m) {
     unsigned i;
     for (i = 0; i < WM_MATCH_MAX_ACTORS; ++i) {
@@ -374,6 +490,10 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
     wm_arcade_drone_init(&m->drones[1], 0);
 
     init_plyr_types(m);
+    /* After init_plyr_types: std_taunt's first instruction is
+       `move *a8(PLYR_TYPE),a14 / janz SUCIDE`, so who is a drone has
+       to be settled before the watchdogs are made. */
+    init_smoves(m);
     init_bret_backends(m);
 
     m->actor_count = WM_MATCH_MAX_ACTORS;
@@ -446,6 +566,10 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
     wm_human_input_init(&m->human_input_state);
 
     init_plyr_types(m);
+    /* After init_plyr_types: std_taunt's first instruction is
+       `move *a8(PLYR_TYPE),a14 / janz SUCIDE`, so who is a drone has
+       to be settled before the watchdogs are made. */
+    init_smoves(m);
     init_bret_backends(m);
 
     m->actor_count = WM_MATCH_MAX_ACTORS;
@@ -681,6 +805,23 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
                the Undertaker's animation and the dead man's push_in_anim
                poll and set the same three. */
             m->wrestler_visual[i].anim_env.coffin = &m->coffin;
+            /*
+             * ANIM.ASM:2130 ANI_SLAVEANIM and everything else that
+             * starts an animation on somebody ELSE -- grnd_hit, and
+             * the coffin sequence's push_to_coffin and
+             * make_wres_disappear. The seam has been declared since
+             * the VM was written and never supplied, so every one of
+             * those silently did nothing to the other wrestler.
+             */
+            m->wrestler_visual[i].anim_env.slave_user = m;
+            m->wrestler_visual[i].anim_env.change_opp_anim = match_change_anim;
+            m->wrestler_visual[i].anim_env.create_proc = match_create_proc;
+            m->bret_visual[i].anim_env.create_proc = match_create_proc;
+            /* can_pin's process_ptrs sweep. */
+            m->wrestler_visual[i].all_actors = actor_ptrs;
+            m->wrestler_visual[i].all_actor_count = m->actor_count;
+            m->bret_visual[i].all_actors = actor_ptrs;
+            m->bret_visual[i].all_actor_count = m->actor_count;
 
             m->bret_visual[i].opponent = opp;
             m->bret_visual[i].pcnt = m->tick_count;
@@ -690,6 +831,8 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             m->bret_visual[i].anim_env.sound_user = m->anim_sound_user;
             m->bret_visual[i].anim_env.sound = m->anim_sound;
             m->bret_visual[i].anim_env.coffin = &m->coffin;
+            m->bret_visual[i].anim_env.slave_user = m;
+            m->bret_visual[i].anim_env.change_opp_anim = match_change_anim;
 
             /* Both backends reach the same rope banks. */
             m->wrestler_visual[i].anim_env.rope_user = m;
@@ -901,6 +1044,130 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
         wm_arcade_round_tick(&m->round_state, actor_ptrs, m->actor_count);
         if (!was_decided && m->round_state.decided)
             wm_arcade_match_score_award_round(&m->score, m->round_state.decided_winner_side);
+        /*
+         * WRESTLE2.ASM:4235 `CREATE PINHIM_ANIM_PID,pin_prompt`, on the
+         * one tick a side is newly wiped out. The prompt itself is
+         * presentation this port does not draw; what it decides -- is
+         * there a live human in the ring on the winning side, and is
+         * the dead side really all dead -- is AWARD.ASM's own, and the
+         * @p1pins / @p2pins bump behind it is what the Undertaker's
+         * finishing move counts.
+         */
+        if (m->round_state.prompt_pin) {
+            wm_arcade_actor_t *pinner =
+                wm_arcade_pin_prompt(actor_ptrs, m->actor_count,
+                                     m->round_state.prompt_dead_side);
+            if (pinner)
+                wm_arcade_pins_award(&m->pins, (int)pinner->player_side);
+        }
+    }
+
+    /*
+     * WRESTLE2.ASM:1681 scroll_world, run once per tick from the main
+     * loop. Its two gates are the caller's (see wm_arcade_scroll.h):
+     * @HALT, which this port has no pause state to set, and
+     * @in_finish_move, which the coffin finish raises -- the scroller
+     * is meant to stop dead while the Undertaker's camera move owns
+     * the view.
+     */
+    if (!m->in_finish_move) {
+        size_t ia = 0, ib = 0;
+        if (wm_scroll_pick_pair((const wm_arcade_actor_t *const *)actor_ptrs,
+                                m->actor_count, m->has_human, &ia, &ib)) {
+            wm_scroll_point pa, pb;
+            wm_scroll_update_positions(actor_ptrs[ia], &pa);
+            wm_scroll_update_positions(actor_ptrs[ib], &pb);
+            wm_scroll_world(&m->scroll, &pa, &pb,
+                            (const wm_arcade_actor_t *const *)actor_ptrs,
+                            m->actor_count);
+        }
+    }
+
+    /*
+     * FINISEQ.ASM's two coffin processes, the ones ANI_CREATEPROC
+     * started above. The driver is the sequence's clock: it walks the
+     * mat, the coffin, the door and the tombstone on the source's own
+     * sleeps and moves @close_the_door / @close_the_floor /
+     * @finish_completed at the points the source moves them. The
+     * Undertaker's animation is polling exactly those.
+     *
+     * `puffs` is how many ltl_exp processes the source would have
+     * created this tick. Each one is a smoke object with a random
+     * position and lifetime and nothing else; the count is carried so
+     * a renderer can make them, and the RNG is not drawn from here --
+     * doing so would consume the shared stream for objects nothing
+     * yet displays.
+     */
+    if (wm_coffin_driver_busy(&m->coffin_driver))
+        (void)wm_coffin_driver_tick(&m->coffin_driver, &m->coffin);
+
+    /* raise_dead: SLEEP TSEC/2, then raise_dead_anim on the dead man. */
+    if (m->raise_dead_delay > 0 && --m->raise_dead_delay == 0) {
+        if (m->raise_dead_target)
+            match_change_anim(m->raise_dead_target,
+                              WM_COFFIN_RAISE_DEAD_ANIM, m);
+        m->raise_dead_target = NULL;
+    }
+
+    /*
+     * TAKER.ASM:697 `#fdone_wait`: the finishing move's own monitor
+     * sleeps five ticks at a time until @finish_completed, then clears
+     * @in_finish_move and kills the shaker. Without it the flag stays
+     * raised and the scroller never restarts.
+     */
+    if (m->in_finish_move && m->coffin.finish_completed != 0) {
+        m->in_finish_move = false;
+        m->coffin.finish_completed = 0;
+    }
+
+    /*
+     * init_smoves' watchdogs, one tick each. The arcade runs every one
+     * as its own SMOVE_PID process; there is no scheduler here, so
+     * they are ticked in the order init_smoves made them, which is the
+     * order the wrestler's own smove table lists them.
+     */
+    {
+        unsigned ai;
+        for (ai = 0; ai < m->actor_count; ++ai) {
+            size_t si;
+            wm_arcade_actor_t *a = &m->actors[ai];
+            wm_smove_env_t senv;
+            wm_arcade_und_finish_callbacks_t ucb;
+
+            if (!a->active) continue;
+
+            memset(&ucb, 0, sizeof(ucb));
+            ucb.set_in_finish_move = match_set_in_finish_move;
+            ucb.set_world_origin = match_set_world_origin;
+            ucb.rng = m->anim_rng;
+            ucb.user = m;
+
+            memset(&senv, 0, sizeof(senv));
+            senv.my_pins = wm_arcade_pins_for(&m->pins, (int)a->player_side);
+            senv.victim = a->who_i_hit ? a->who_i_hit
+                                       : (ai == 0 ? &m->actors[1]
+                                                  : &m->actors[0]);
+            /* PLYR.EQU RING_TIME. Nothing in this port counts a
+               wrestler out of the ring yet, so it is derived from the
+               INRING flag that IS maintained rather than left at a
+               value that would pass the guard by accident. */
+            senv.ring_time = a->in_ring ? 1 : -1;
+            senv.world_tlx = m->scroll.worldtlx;
+            senv.world_tly = m->scroll.worldtly;
+            senv.und_cb = &ucb;
+
+            for (si = 0; si < m->smove_count[ai]; ++si) {
+                wm_smove_fire_t fire;
+                if (!wm_smove_tick(&m->smoves[ai][si], a, &senv, &fire))
+                    continue;
+                if (fire.walk_fast) a->walk_fast = fire.walk_fast;
+                if (fire.risk) a->risk = fire.risk;
+                if (fire.anim) {
+                    a->special_move_addr = (uintptr_t)fire.anim;
+                    match_change_anim(a, fire.anim, m);
+                }
+            }
+        }
     }
 
     /*
@@ -915,9 +1182,10 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
         memset(&arw, 0, sizeof(arw));
         arw.pcnt = m->tick_count;
         arw.royal_rumble = false;
-        /* @in_finish_move: SPECIAL.ASM's finishing-move flag, which this
-           port has no finishing-move sequence to set. */
-        arw.in_finish_move = false;
+        /* @in_finish_move, raised by TAKER.ASM's und_finish_move1 and
+           cleared once @finish_completed lands. The announcer holds
+           the round while the coffin sequence owns the screen. */
+        arw.in_finish_move = m->in_finish_move;
         arw.score = &m->score;
         arw.user = m;
         arw.sound = match_arw_sound;

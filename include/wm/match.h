@@ -5,6 +5,9 @@
 #include "wm/arcade/wm_arcade_closest.h"
 #include "wm/arcade/wm_arcade_combat.h"
 #include "wm/arcade/wm_arcade_coffin.h"
+#include "wm/arcade/wm_arcade_pin.h"
+#include "wm/arcade/wm_arcade_scroll.h"
+#include "wm/arcade/wm_arcade_smove.h"
 #include "wm/arcade/wm_arcade_confine.h"
 #include "wm/arcade/wm_arcade_drone.h"
 #include "wm/arcade/wm_arcade_lifebar.h"
@@ -239,6 +242,51 @@ typedef struct {
      * instructions do.
      */
     wm_coffin_state_t coffin;
+    /*
+     * WRESTLE2.ASM:4058 init_smoves' watchdogs, one set per wrestler.
+     * The source gives each its own SMOVE_PID process, made once per
+     * MATCH; these are the same state machines ticked from here.
+     *
+     * `smove_unported` is how many of that wrestler's table entries
+     * this port has no monitor for -- carried rather than discarded so
+     * the gap is a number somebody can read, not a silence.
+     */
+    wm_smove_run_t smoves[WM_MATCH_MAX_ACTORS][WM_SMOVE_MAX_PER_WRESTLER];
+    size_t smove_count[WM_MATCH_MAX_ACTORS];
+    size_t smove_unported[WM_MATCH_MAX_ACTORS];
+
+    /* @p1pins / @p2pins (AWARD.ASM:208), cleared at match start by
+       WRESTLE.ASM:1578 and bumped by pin_prompt. und_finish_move1
+       counts them. */
+    wm_arcade_pins_t pins;
+
+    /*
+     * @in_finish_move. TAKER.ASM:676 raises it before the coffin
+     * animation and :703 clears it once @finish_completed lands. Two
+     * things read it: scroll_world stops scrolling while it is set,
+     * and announce_rnd_winner holds off calling the round.
+     */
+    bool in_finish_move;
+
+    /* WRESTLE2.ASM:1681 scroll_world's @WORLDTLX / @WORLDTLY. */
+    wm_scroll_state scroll;
+
+    /*
+     * The two processes FINISEQ.ASM's coffin finish creates through
+     * ANI_CREATEPROC -- und_coffin_up (with do_up_coffin and
+     * hover_coffin inside it) and raise_dead. The VM has had a
+     * create_proc seam since it was written and nothing supplied one,
+     * so neither ran: @finish_completed was never set, TAKER.ASM's
+     * `#fdone_wait` never ended, and @in_finish_move would have stuck
+     * raised for the rest of the match.
+     *
+     * `raise_dead_delay` is that routine's whole body bar one line --
+     * `SLEEP TSEC/2`, then change_anim1a on @dead_wrestler, then DIE.
+     * One at a time, which is all the source can have.
+     */
+    wm_coffin_driver_t coffin_driver;
+    int32_t raise_dead_delay;
+    wm_arcade_actor_t *raise_dead_target;
 
 } wm_match_state;
 

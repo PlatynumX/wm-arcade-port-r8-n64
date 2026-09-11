@@ -334,6 +334,87 @@ extern const size_t wm_coffin_exp_frame_count;        /* 10, both lists */
 const char *wm_coffin_close_frame(const char *const *frames, size_t count,
                                   size_t i);
 
+/* ---- the two driver processes ------------------------------------ */
+
+/*
+ * und_coffin_up and do_up_coffin as state machines, so the sequence
+ * actually COMPLETES.
+ *
+ * This is not the choreography -- no BEGINOBJ, no obj_aniq, no
+ * DELOBJA8 -- it is the source's own TIMING and the handshake it
+ * drives, which is what the rest of the game waits on. Without it
+ * @close_the_floor never moves, @finish_completed is never set, and
+ * TAKER.ASM:697's `#fdone_wait` spins forever with @in_finish_move
+ * raised: the scroller stays frozen and the round is never called.
+ *
+ * Every sleep below is the source's, counted from its own SLEEPK and
+ * SLEEP lines:
+ *
+ *   und_coffin_up  TSEC*2 to start; the mat opening at SLEEPK 3 a
+ *                  frame; SLEEPK 2; then it waits on @close_the_floor;
+ *                  SLEEPK 15; the mat closing at SLEEPK 3 a frame;
+ *                  SLEEPK 3; then the tombstone at SLEEPK 4 a frame.
+ *   do_up_coffin   the rise at one tick a step; the door opening at
+ *                  SLEEPK 3 a frame; it waits on @close_the_door;
+ *                  the door closing at SLEEPK 1 a frame; the 16-tick
+ *                  shake; the fall at one tick a step.
+ *
+ * `puffs` counts ltl_exp processes the caller should create this tick
+ * -- 25 at each of the two bursts, 8 on a hover turnaround, and one
+ * per tick of the fall. The caller owns the objects; the count is the
+ * source's.
+ */
+typedef struct {
+    /* Which step each of the two processes is on, and how many ticks
+       are left in it. -1 means the process has not started or has
+       DIEd, the way a CREATE0 and a DIE bracket it. */
+    int mat_step;
+    int32_t mat_timer;
+    size_t mat_frame;
+
+    int cof_step;
+    int32_t cof_timer;
+    size_t cof_frame;
+    int32_t cof_sizey;
+    int32_t cof_ypos;
+
+    /* hover_coffin, which runs while the door is open. */
+    bool hover;
+    int32_t hover_timer;
+    int32_t hover_delta;
+    int32_t hover_back_y;
+    int32_t hover_front_y;
+    int32_t hover_start_y;
+
+    /* ltl_exp processes requested this tick. */
+    int puffs;
+} wm_coffin_driver_t;
+
+/* `WLWWWW ANI_CREATEPROC,und_coffin_up` -- the animation starts it. */
+void wm_coffin_driver_start(wm_coffin_driver_t *d, wm_coffin_state_t *st);
+
+/* One tick of both processes. Returns true while either is alive. */
+bool wm_coffin_driver_tick(wm_coffin_driver_t *d, wm_coffin_state_t *st);
+
+/* Whether anything is still running. */
+bool wm_coffin_driver_busy(const wm_coffin_driver_t *d);
+
+/* The sleeps, as the source writes them. */
+#define WM_COFFIN_START_SLEEP   (53 * 2)  /* SLEEP TSEC*2 */
+#define WM_COFFIN_MAT_TICKS     3         /* SLEEPK 3 a mat frame */
+#define WM_COFFIN_OPEN_SLEEP    2         /* SLEEPK 2 after the split */
+#define WM_COFFIN_FLOOR_SLEEP   15        /* SLEEPK 15 before closing */
+#define WM_COFFIN_DOOR_TICKS    3         /* SLEEPK 3 a door frame */
+#define WM_COFFIN_CLOSE_TICKS   1         /* SLEEPK 1 a closing frame */
+#define WM_COFFIN_TSTONE_TICKS  4         /* SLEEPK 4 a tombstone frame */
+#define WM_COFFIN_HOVER_TICKS   7         /* SLEEPK 7 a hover step */
+#define WM_COFFIN_WAIT_TICKS    3         /* SLEEPK 3 in #wait_to_close */
+
+/* FINISEQ.ASM:1519 raise_dead: `SLEEP TSEC/2`, then change_anim1a on
+   @dead_wrestler and DIE. The other process und_2_raise_dead_anim
+   creates, and the one that stands the dead man up. */
+#define WM_COFFIN_RAISE_DEAD_SLEEP (53 / 2)
+
 #ifdef __cplusplus
 }
 #endif

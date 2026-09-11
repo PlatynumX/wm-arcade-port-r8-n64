@@ -88,6 +88,16 @@ typedef struct wm_wrestler_backend_actor {
      */
     wm_anim_exec torso_prog;
     const char *torso_label;
+
+    /*
+     * WRESTLE2.ASM:3925 can_pin sweeps process_ptrs for a live or
+     * zombie member of the other team before it lets anyone pin, so
+     * the callback needs every wrestler and not just the opponent.
+     * Set by whatever owns the match; a NULL list makes can_pin refuse
+     * rather than pin on an unchecked roster.
+     */
+    wm_arcade_actor_t *const *all_actors;
+    size_t all_actor_count;
 } wm_wrestler_backend_actor;
 
 /*

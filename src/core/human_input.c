@@ -1,4 +1,5 @@
 #include "wm/human_input.h"
+#include "wm/arcade/wm_arcade_switches.h"
 #include <string.h>
 
 /* Matches wm/core/demo.c's MOVE_DEADZONE, the only other place in this tree
@@ -45,4 +46,24 @@ void wm_human_input_commit(wm_arcade_actor_t *actor,
     actor->stick_val_cur = joy;
     actor->stick_val_down = (uint16_t)(joy_x & joy);
     actor->stick_val_up = (uint16_t)(joy_x & old_joy);
+
+    /*
+     * read_switches' last step (WRESTLE2.ASM:2820, `#cont`): the two
+     * RELATIVE readings, which every WAITSWITCH_DWN in the game reads
+     * instead of the absolute ones. Left and right become away and
+     * toward, so a special-move sequence is written once and works
+     * from either side of the opponent.
+     *
+     * `facing_right` is the FACING_DIR PLAYER_RIGHT_BIT test, which is
+     * WM_MOVE_RIGHT. And STICK_REL_NEW is gated on the stick having
+     * actually moved this tick -- `or a1,a0 / jrz #no_stick` over the
+     * up and down transitions -- so a held direction reads once, not
+     * every tick. Without that gate a stick rotation would complete on
+     * its first press.
+     */
+    actor->stick_rel_cur = (actor->facing_dir & WM_MOVE_RIGHT)
+                         ? joy : wm_stick_flip(joy);
+    actor->stick_rel_new =
+        (actor->stick_val_up | actor->stick_val_down)
+            ? actor->stick_rel_cur : 0u;
 }

@@ -1,4 +1,5 @@
 #include "wm/bret_backend.h"
+#include "wm/arcade/wm_arcade_pin.h"
 #include "wm/arcade/wm_arcade_start_run.h"
 #include "wm/arcade/wm_arcade_anim_combat.h"
 #include "wm/arcade/wm_arcade_lifebar.h"
@@ -752,9 +753,21 @@ static void wm_bret_backend_tick_program(wm_bret_backend_actor *bva,
 }
 
 
+/* WRESTLE2.ASM:3925 can_pin -- see wrestler_backend.c's copy for why
+   the victim comes from `opponent` rather than the const argument. */
+static int bret_can_pin(wm_arcade_actor_t *actor,
+                        const wm_arcade_actor_t *opp, void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    if (!bva || !bva->opponent) return 0;
+    if (opp && opp != bva->opponent) return 0;
+    return wm_arcade_can_pin(actor, bva->opponent,
+                             bva->all_actors, bva->all_actor_count) ? 1 : 0;
+}
+
 wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva) {
     wm_arcade_bret_callbacks_t cb;
     memset(&cb, 0, sizeof(cb));
+    cb.can_pin = bret_can_pin;
     cb.change_anim = wm_bret_backend_change_anim;
     cb.change_torso_anim = wm_bret_backend_change_torso_anim;
     cb.execute_walk = wm_bret_backend_execute_walk;

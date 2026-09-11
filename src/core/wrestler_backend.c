@@ -1,4 +1,5 @@
 #include "wm/wrestler_backend.h"
+#include "wm/arcade/wm_arcade_pin.h"
 
 #include "wm/arcade/wm_arcade_lifebar.h"
 #include "wm/arcade/wm_arcade_mode_dead.h"
@@ -315,6 +316,28 @@ void wm_wrestler_backend_tick(wm_wrestler_backend_actor *state,
     }
 }
 
+/*
+ * WRESTLE2.ASM:3925 can_pin, which all eight dispatchers ask before
+ * playing a pin animation and which nothing in this port ever
+ * answered -- so no wrestler could pin anybody, and @p1pins /
+ * @p2pins never moved, and the Undertaker's finishing move refused on
+ * "this must be my second pin attempt" forever.
+ *
+ * The victim comes from the backend's own `opponent` rather than the
+ * const pointer the callback is handed, because can_pin WRITES to him
+ * (PINNED, WHOPINNEDME, three velocities, the KOD clear). They are the
+ * same wrestler; only one of the two spellings can be assigned
+ * through.
+ */
+static int backend_can_pin(wm_arcade_actor_t *actor,
+                           const wm_arcade_actor_t *opp, void *user) {
+    wm_wrestler_backend_actor *st = (wm_wrestler_backend_actor *)user;
+    if (!st || !st->opponent) return 0;
+    if (opp && opp != st->opponent) return 0;
+    return wm_arcade_can_pin(actor, st->opponent,
+                             st->all_actors, st->all_actor_count) ? 1 : 0;
+}
+
 wm_arcade_roster_callbacks_t wm_wrestler_roster_callbacks(
     wm_wrestler_backend_actor *state) {
     wm_arcade_roster_callbacks_t cb;
@@ -324,6 +347,7 @@ wm_arcade_roster_callbacks_t wm_wrestler_roster_callbacks(
     cb.mode_dead = backend_mode_dead;
     cb.check_combo_go = backend_check_combo_go;
     cb.change_anim_label = backend_change_anim_label;
+    cb.can_pin = backend_can_pin;
     cb.user = state;
     return cb;
 }
@@ -361,6 +385,7 @@ wm_arcade_razor_callbacks_t wm_wrestler_razor_callbacks(
     cb.adjust_health = backend_adjust_health;
     cb.mode_dead = backend_mode_dead;
     cb.check_combo_go = backend_check_combo_go;
+    cb.can_pin = backend_can_pin;
     cb.user = state;
     return cb;
 }

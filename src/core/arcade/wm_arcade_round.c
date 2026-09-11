@@ -34,6 +34,9 @@ void wm_arcade_round_tick(wm_arcade_round_state_t *rs,
 
     if (!rs || rs->decided) return;
 
+    /* One tick only -- the caller consumes it before the next call. */
+    rs->prompt_pin = false;
+
     live = wm_arcade_get_live_bits(actors, actor_count);
     if (live == 3) {
         /* Both sides have a live member: no KO in progress. */
@@ -44,6 +47,12 @@ void wm_arcade_round_tick(wm_arcade_round_state_t *rs,
     if (rs->pin_timeout == 0) {
         /* WRESTLE2.ASM:4196, a newly all-dead condition. */
         rs->pin_timeout = WM_ARCADE_PIN_TIMEOUT_TICKS;
+        /* ...and WRESTLE2.ASM:4232-4235, which happens on this edge
+           and not on the ticks that follow: `move a3,a9 / xori 3,a9 /
+           srl 1,a9` turns the LIVE-team bits into the DEAD team's
+           side, then CREATE PINHIM_ANIM_PID,pin_prompt. */
+        rs->prompt_pin = true;
+        rs->prompt_dead_side = (live ^ 3) >> 1;
     }
 
     if (--rs->pin_timeout == 0) {

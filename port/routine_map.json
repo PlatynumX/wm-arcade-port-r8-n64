@@ -422,14 +422,14 @@
   "std_taunt": {
     "file": "DOINK.ASM",
     "status": "renamed",
-    "symbol": "special_processes",
-    "note": "The taunt monitor every wrestler's smove table carries -- it is defined once in DOINK.ASM and referenced by all eight tables. Present in each wrestler's special_processes list in the port for the same reason it is in each source table."
+    "symbol": "wm_smove_monitor_find",
+    "note": "DOINK.ASM:1216. Defined once and carried by all eight smove tables. A registry row in src/core/arcade/wm_arcade_smove.c: the MODE_BLOCK gate, the `PLYR_TYPE != 0 -> SUCIDE` that keeps drones out of it, the eight-way clockwise stick rotation starting at J_UP with B_BLOCK masked out of every step, the `is BLOCK still held` test between the opening UP and the one 61-tick budget, and the payload -- the #taunt_tbl row (the same table do_taunt reads) and `movi 8000h+12*60,a0 / move a0,*a8(RISK)`."
   },
   "std_walk_fast": {
     "file": "DOINK.ASM",
-    "status": "renamed",
-    "symbol": "special_processes",
-    "note": "The run monitor every wrestler's smove table carries, defined once in DOINK.ASM like std_taunt."
+    "status": "partial",
+    "symbol": "wm_smove_monitor_find",
+    "note": "DOINK.ASM:1092, the other monitor every smove table carries. Translated: the `WALK_FAST already set` and MODE_NORMAL gates (the source's own \"one time per match\"), the eight-way clockwise rotation starting at J_AWAY, the single 61-tick budget the last seven steps share, the MODE_NORMAL re-test after the rotation, and `movi 15*60,a0 / move a0,*a8(WALK_FAST)`. Not translated, and it is the bulk of the routine's length: everything after that store is presentation -- Doink's own OBJ_YVEL hop, ADD_VOICE (211h for Doink, 17eh otherwise), three OBJ_CONST/M_CONNON flashes, Doink's three 0b2h honks, the wait on WALK_FAST running out and two more flashes."
   },
   "check_collisions": {
     "file": "COLLIS.ASM",
@@ -955,8 +955,9 @@
   },
   "reset_smoves": {
     "file": "WRESTLE.ASM",
-    "status": "process",
-    "note": "WRESTLE.ASM:6140. Walk the ACTIVE process list and, for every SMOVE_PID, point PWAKE at that watchdog's SM_RESET_ADDRESS and set PTIME to 1 -- restart every special-move detector at once. This port detects secret moves by matching wm_arcade_joystat's ring buffer rather than by running a process per move, so there is nothing to restart: the equivalent is the buffer itself, which init_joystat clears."
+    "status": "renamed",
+    "symbol": "wm_smove_reset",
+    "note": "WRESTLE.ASM:6141. Walk the ACTIVE process list and, for every SMOVE_PID, point PWAKE at that watchdog's SM_RESET_ADDRESS -- the entry init_smoves saved when it made the process -- and set PTIME to 1. wm_smove_reset is that, against the state machines wm_smove_init makes: back to step 0, disarmed, countdown cleared. One thing it does NOT do is revive a monitor that has already DIEd, because such a process is off the ACTIVE list the sweep walks and cannot be reached by it."
   },
   "switch_unstack": {
     "file": "WRESTLE.ASM",
@@ -1052,15 +1053,11 @@
     "symbol": "wm_arcade_round_tick",
     "note": "WRESTLE2.ASM:4155. The round clock and the KO detection around it. Translated: the countdown, the difficulty-based decrement rate and the round-decided transition, in wm/arcade/wm_arcade_round.h. Not translated: the KO-detection loop's process bookkeeping and the digit drawing, which is update_timer."
   },
-  "init_smoves": {
-    "file": "WRESTLE2.ASM",
-    "status": "process",
-    "note": "WRESTLE2.ASM:4055. Called once per MATCH, not per round: it CREATEs one watchdog process per entry in this wrestler's #special_moves list -- the moves the ordinary secret-move matcher cannot handle, the source says, because they involve charging a stick, exact timing, or proximity. This port has no processes; it matches patterns against wm_arcade_joystat's ring instead, and the per-wrestler move lists are wm/wrestler_anim_tables.h's."
-  },
   "kill_smove_procs": {
     "file": "WRESTLE2.ASM",
-    "status": "process",
-    "note": "WRESTLE2.ASM. The other end of init_smoves: kill every SMOVE_PID. Nothing to kill here."
+    "status": "renamed",
+    "symbol": "wm_smove_kill",
+    "note": "WRESTLE2.ASM:3896. The other end of init_smoves: every SMOVE_PID process whose PA8 is this wrestler dies. The port keeps each wrestler's watchdogs in his own array (wm/match.h), so the PA8 comparison is what the array IS and wm_smove_kill marks all of them dead."
   },
   "ditch_getup_meter_a9": {
     "file": "WRESTLE2.ASM",

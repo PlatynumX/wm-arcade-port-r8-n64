@@ -985,8 +985,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "END_MATCH_SPEECH",
    "from_generated": false,
    "ledgered": false
   },
@@ -7166,7 +7166,7 @@
    "external_callers": 8,
    "references": 8,
    "status": "implemented",
-   "evidence": "can_pin",
+   "evidence": "backend_can_pin",
    "from_generated": false,
    "ledgered": false
   },
@@ -18194,10 +18194,10 @@
    "local": false,
    "external_callers": 1,
    "references": 2,
-   "status": "process",
-   "evidence": "WRESTLE2.ASM:4055. Called once per MATCH, not per round: it CREATEs one watchdog process per entry in this wrestler's #special_moves list -- the moves the ordinary secret-move matcher cannot handle, the source says, because they involve charging a stick, exact timing, or proximity. This port has no processes; it matches patterns against wm_arcade_joystat's ring instead, and the per-wrestler move lists are wm/wrestler_anim_tables.h's.",
+   "status": "implemented",
+   "evidence": "init_smoves",
    "from_generated": false,
-   "ledgered": true
+   "ledgered": false
   },
   {
    "name": "init_special_objlist",
@@ -18419,8 +18419,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "process",
-   "evidence": "WRESTLE2.ASM. The other end of init_smoves: kill every SMOVE_PID. Nothing to kill here.",
+   "status": "renamed",
+   "evidence": "wm_smove_kill",
    "from_generated": false,
    "ledgered": true
   },
@@ -22844,8 +22844,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_arcade_pin_prompt",
    "from_generated": false,
    "ledgered": false
   },
@@ -23624,8 +23624,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "process",
-   "evidence": "WRESTLE.ASM:6140. Walk the ACTIVE process list and, for every SMOVE_PID, point PWAKE at that watchdog's SM_RESET_ADDRESS and set PTIME to 1 -- restart every special-move detector at once. This port detects secret moves by matching wm_arcade_joystat's ring buffer rather than by running a process per move, so there is nothing to restart: the equivalent is the buffer itself, which init_joystat clears.",
+   "status": "renamed",
+   "evidence": "wm_smove_reset",
    "from_generated": false,
    "ledgered": true
   },
@@ -31068,7 +31068,7 @@
    "external_callers": 7,
    "references": 8,
    "status": "renamed",
-   "evidence": "special_processes",
+   "evidence": "wm_smove_monitor_find",
    "from_generated": false,
    "ledgered": true
   },
@@ -31082,8 +31082,8 @@
    "local": false,
    "external_callers": 7,
    "references": 8,
-   "status": "renamed",
-   "evidence": "special_processes",
+   "status": "partial",
+   "evidence": "wm_smove_monitor_find",
    "from_generated": false,
    "ledgered": true
   },

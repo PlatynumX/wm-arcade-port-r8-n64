@@ -142,6 +142,10 @@ typedef struct {
      * routines that need that service do nothing.
      */
     wm_anim_env anim_env;
+    /* WRESTLE2.ASM:3925 can_pin sweeps every wrestler before it lets
+       one pin; see wm_wrestler_backend_actor's copy of this. */
+    wm_arcade_actor_t *const *all_actors;
+    size_t all_actor_count;
 } wm_bret_backend_actor;
 
 void wm_bret_backend_init(wm_bret_backend_actor *bva);

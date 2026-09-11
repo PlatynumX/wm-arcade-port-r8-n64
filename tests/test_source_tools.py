@@ -1375,6 +1375,56 @@ def test_per_wrestler_tables_generate_the_shipped_file() -> None:
     assert wlwrestlertbl.render_c() == out.read_text()
 
 
+def test_smove_monitor_registry_is_honest() -> None:
+    """The special-move watchdogs the port implements, and the ones it does not.
+
+    WRESTLE2.ASM:4058 init_smoves makes one SMOVE_PID process per smove
+    table entry, and 79 entries across the eight tables name 65 distinct
+    routines -- std_walk_fast and std_taunt are the only two shared, one
+    apiece in all eight. The port implements three of them, and the
+    point of this test is that the other 62 stay VISIBLE.
+
+    They are easy to lose. Every one is a bare column-0 label rather
+    than a SUBR, so tools/port_coverage.py -- which enumerates SUBR
+    lines -- never counted them at all: they were neither implemented
+    nor open, they simply were not in the denominator. A registry that
+    quietly claimed a name it did not implement, or a table entry that
+    stopped resolving, would be invisible the same way.
+
+    So: every name the registry claims must be a real label in the
+    source, and the registry must not grow without this count moving.
+    """
+    if not (wlanim.ORIG / "WRESTLE2.ASM").exists():
+        return
+
+    tables = wlwrestlertbl.smove_tables()
+    entries = [lab for e in tables if e for lab in e[1]]
+    names = sorted(set(entries))
+    assert len(entries) == 79, len(entries)
+    assert len(names) == 65, len(names)
+
+    reg = (ROOT / "src" / "core" / "arcade" / "wm_arcade_smove.c").read_text()
+    claimed = sorted(set(re.findall(r'^\s*"([a-z0-9_]+)", "([A-Z0-9]+\.ASM)",',
+                                    reg, re.M)))
+    assert [c[0] for c in claimed] == ["std_taunt", "std_walk_fast",
+                                       "und_finish_move1"], claimed
+
+    for name, fname in claimed:
+        # It must be a table entry -- a monitor nothing spawns is not a
+        # monitor.
+        assert name in names, name
+        # ...and the file it says it lives in must really define it, as
+        # a bare column-0 label (which all of them are; that is why the
+        # coverage tool cannot see them).
+        src = (wlanim.ORIG / fname).read_text(errors="replace")
+        assert re.search(rf"^{re.escape(name)}\b", src, re.M) or \
+               re.search(rf"^\s+SUBRP?\s+{re.escape(name)}\b", src, re.M), \
+               (name, fname)
+
+    unported = [n for n in names if n not in {c[0] for c in claimed}]
+    assert len(unported) == 62, len(unported)
+
+
 def test_smove_tables_honour_the_finishing_move_switch() -> None:
     """Each wrestler's secret-move process list, as ASSEMBLED.
 
@@ -3257,6 +3307,7 @@ def main() -> int:
     test_target_offsets_grid()
     test_target_tables_generate_the_shipped_file()
     test_code_roster_tables_are_read_not_transcribed()
+    test_smove_monitor_registry_is_honest()
     test_crowd_tables_come_out_of_the_source()
     test_announce_tables()
     test_announce_tables_generate_the_shipped_file()

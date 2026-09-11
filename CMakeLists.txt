@@ -96,8 +96,10 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_round_announce.c
     src/core/arcade/wm_arcade_target.c
     src/core/arcade/wm_arcade_shake.c
+    src/core/arcade/wm_arcade_smove.c
     src/core/arcade/wm_arcade_string.c
     src/core/arcade/wm_arcade_pal.c
+    src/core/arcade/wm_arcade_pin.c
     src/core/arcade/wm_arcade_powerup.c
     src/core/arcade/wm_arcade_switches.c
     src/core/arcade/wm_arcade_teammates.c

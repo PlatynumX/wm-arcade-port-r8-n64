@@ -329,6 +329,22 @@ struct wm_arcade_actor {
     uint16_t but_val_up;
     uint16_t stick_val_down;
     uint16_t stick_val_up;
+    /*
+     * PLYR.EQU STICK_REL_CUR / STICK_REL_NEW, the last two readings
+     * read_switches caches (WRESTLE2.ASM:2820). "Relative" means
+     * relative to which way he is facing: left and right are swapped
+     * into away and toward, so a special-move sequence is written once
+     * and works from either side.
+     *
+     * STICK_REL_NEW is not "the relative stick"; it is the relative
+     * stick ONLY on a tick the stick actually changed, and zero
+     * otherwise -- `or a1,a0 / jrz #no_stick` over STICK_VAL_UP and
+     * STICK_VAL_DOWN. Every WAITSWITCH_DWN in the game reads it, and
+     * that gate is what makes a held direction count once rather than
+     * every tick.
+     */
+    uint16_t stick_rel_cur;
+    uint16_t stick_rel_new;
     /* WRESTLE.ASM's punch_dtime1/powerp_dtime1/powerk_dtime1 (BSSX,
        WRESTLE.ASM:3954-3958): consecutive ticks that button has been held,
        reset to 0 the instant it's released -- see

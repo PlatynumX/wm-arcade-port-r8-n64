@@ -131,7 +131,27 @@ typedef enum {
     WM_APP_MODE_MATCH_INIT,
     /* WRESTLE.ASM::start_match's #1plyr path -- see wm/match.h for exactly
        what wm_match_start_selected/wm_match_tick do and don't translate. */
-    WM_APP_MODE_MATCH
+    WM_APP_MODE_MATCH,
+    /*
+     * WRESTLE.ASM:1116, the code after `JSRP start_match` -- "The only
+     * time we return from start_match is when the match is over". This
+     * mode is that return: one tick that decides where the game goes,
+     * on the `PSTATUS andn match_winner` test.
+     *
+     * A human who WON goes straight back to WM_APP_MODE_PREGAME and
+     * the next rung of the ladder, with no select screen, which is
+     * the source's own `jruc do_pregame`. A human who LOST goes to
+     * the buy-in below.
+     */
+    WM_APP_MODE_MATCH_OVER,
+    /*
+     * WRESTLE.ASM:1183 `JSRP buyin_select` -- SELECT.ASM's continue
+     * offer, already translated in wm/select_continue.h and, until
+     * now, initialised by this file and never used. Accept and the
+     * same opponent comes round again; let it run out and the game
+     * is over.
+     */
+    WM_APP_MODE_CONTINUE
 } wm_app_mode;
 
 typedef struct {
@@ -167,6 +187,22 @@ typedef struct {
     wm_input_state latched_input;
     unsigned boot_ticks;
     bool attract_started;
+    /*
+     * WRESTLE.ASM:1131 `movi 60,a0 / move a0,@are_we_waiting_f` --
+     * "set delay before allowing player to select a wrestler", run on
+     * the way out of every match.
+     */
+    unsigned are_we_waiting_f;
+    /*
+     * @match_winner as the post-match code reads it: 1 = player one's
+     * side, 2 = player two's, 0 = the CPU took it. Kept here because
+     * the match state is re-initialised by the next wm_match_start_*
+     * and this outlives it.
+     */
+    int32_t last_match_winner;
+    /* The continue offer reads a Start EDGE, not the level: a Start
+       still held from the match must not buy in by itself. */
+    bool continue_start_was_down;
 } wm_app;
 
 void wm_app_init(wm_app *app);

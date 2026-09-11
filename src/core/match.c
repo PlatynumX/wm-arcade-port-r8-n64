@@ -669,6 +669,7 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
     m->clock_warning = false;
     wm_arcade_round_announce_init(&m->round_announce);
     wm_match_end_init(&m->match_end);
+    m->match_over = 0;
     wm_award_init(&m->awards);
     /* WRESTLE.ASM:4552 init_reduce_bog, with this match's two actors. */
     m->debris.no_debris = false;
@@ -765,6 +766,7 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
     m->clock_warning = false;
     wm_arcade_round_announce_init(&m->round_announce);
     wm_match_end_init(&m->match_end);
+    m->match_over = 0;
     wm_award_init(&m->awards);
     /* WRESTLE.ASM:4552 init_reduce_bog, with this match's two actors. */
     m->debris.no_debris = false;
@@ -892,7 +894,15 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
         mec.run_winstreak_award = match_end_winstreak_award;
         mec.reset_winstreak_rows = match_end_reset_winstreak_rows;
         mec.sound = match_end_sound;
-        (void)wm_match_end_tick(&m->match_end, &mec);
+        /*
+         * LIFEBAR.ASM:2985, the last thing DO_WAIT does before it
+         * dies: `MOVK 2,A0 / move a0,@match_over`. Until this the
+         * match ended and nothing above it could tell -- the app sat
+         * in its match mode forever, which was the same dead end a
+         * decided round and a finished match each used to be one
+         * level down.
+         */
+        if (wm_match_end_tick(&m->match_end, &mec)) m->match_over = 2;
     }
 
     memset(&world, 0, sizeof(world));

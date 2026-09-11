@@ -219,7 +219,16 @@ static void next_in_ladder(wm_pregame_state *s) {
 }
 
 static void enter_progress(wm_pregame_state *s, wm_audio_state *audio) {
-    init_ladder_table(s);          /* SELECT.ASM pregame_show */
+    /*
+     * ONLY next_in_ladder here. INIT_LADDER_TABLE is not part of the
+     * pregame at all -- the source calls it from ATTRACT.ASM:595 and
+     * from SELECT.ASM's GAME_BEATEN, which is to say once per GAME --
+     * while PROGRESS.ASM:2689's PUT_UP_PROGRESS does NEXT_IN_LADDER
+     * once per MATCH. Rebuilding the table here was invisible while a
+     * match was a dead end and the pregame ran once; the moment the
+     * app loops back for a second match it puts the ladder back to
+     * index 0 and the player fights the first opponent forever.
+     */
     next_in_ladder(s);             /* PUT_UP_PROGRESS */
     s->progress_world_x_fp = 0;
     /* CREATE_TEMP_WRESTLER::RUNNING_MAN starts at [140,0], Y=100 and
@@ -414,6 +423,65 @@ void wm_pregame_init(wm_pregame_state *s,
     s->belt_world_y = 0;
     s->match_count = 1u; /* WRESTLE.ASM increments match_cnt before pregame_show. */
     s->win_streak = 0u; /* Fresh one-player run: both source win-streak counters are clear. */
+    /* ATTRACT.ASM:595 / SELECT.ASM's own `calla INIT_LADDER_TABLE`:
+       the ladder is built once for the whole game. */
+    init_ladder_table(s);
+}
+
+/*
+ * WRESTLE.ASM:1061 `do_pregame`, re-entered. The source loops back to
+ * that label after every match a human wins, and what it does NOT do
+ * on the way round is as important as what it does: no select screen,
+ * no INIT_LADDER_TABLE. It clears match_winner, bumps match_cnt and
+ * runs pregame_show again, so the next PUT_UP_PROGRESS advances one
+ * rung and the player meets the next opponent.
+ */
+void wm_pregame_next_match(wm_pregame_state *s, uint32_t win_streak) {
+    int ladder;
+    WmRng *rng;
+    uint8_t src;
+    wm_wrestler_id roster;
+    uint8_t belt;
+    uint32_t matches;
+    wm_pregame_ladder_entry table[WM_PREGAME_LADDER_ENTRIES];
+
+    if (!s) return;
+    /* Everything that survives a match: the ladder and where we are on
+       it, who the player picked, the belt, and the match counter. */
+    ladder = s->current_ladder_index;
+    rng = s->rng;
+    src = s->player_source_wrestler;
+    roster = s->player_roster_wrestler;
+    belt = s->belt_type;
+    matches = s->match_count;
+    memcpy(table, s->ladder, sizeof(table));
+
+    memset(s, 0, sizeof(*s));
+    s->rng = rng;
+    s->phase = WM_PREGAME_BELT_SETUP;
+    s->belt_type = belt;
+    s->player_source_wrestler = src;
+    s->player_roster_wrestler = roster;
+    s->current_ladder_index = ladder;
+    s->belt_world_y = 0;
+    /* `move @match_cnt,a0 / inc a0 / move a0,@match_cnt`. */
+    s->match_count = matches + 1u;
+    s->win_streak = win_streak;
+    memcpy(s->ladder, table, sizeof(table));
+}
+
+/*
+ * WRESTLE.ASM:1176 `move @CURRENT_LADDER,A0,L / subi 20h,a0` -- the
+ * step back the CPU-won path takes "because NEXT_IN_LADDER
+ * automatically increments it". A player who continues after losing
+ * faces the SAME opponent again, not the next one.
+ */
+void wm_pregame_ladder_back(wm_pregame_state *s) {
+    if (!s) return;
+    /* Unconditional, as the source is. next_in_ladder's own `if
+       (index < 0) index = 0` absorbs a step back off the bottom, so
+       losing the first match still replays the first opponent. */
+    --s->current_ladder_index;
 }
 
 void wm_pregame_tick(wm_pregame_state *s,

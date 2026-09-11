@@ -17,8 +17,8 @@ only in a note saying it is missing does not count as present.
 | `hardware` | talks to the cabinet (ledger) | 19 |
 | `dead` | **measured**: no caller outside its own file | 37 |
 | `unassembled` | **measured**: inside a `.if` the assembler skipped | 64 |
-| `cited` | named only in a comment -- not evidence of anything | 45 |
-| `unknown` | no mention anywhere | 208 |
+| `cited` | named only in a comment -- not evidence of anything | 48 |
+| `unknown` | no mention anywhere | 205 |
 
 **2281 of 2534 routines are accounted for; 253 are open** (`cited` + `unknown`).
 

@@ -340,6 +340,14 @@ typedef struct {
      * WRESTLE2.ASM's loser_snd reads back.
      */
     wm_match_end_t match_end;
+    /*
+     * WRESTLE.ASM:221 `BSSX match_over, 16 ;0=not over, !0=over`, and
+     * LIFEBAR.ASM:2985's `MOVK 2,A0 / move a0,@match_over` at the end
+     * of DO_WAIT. The main loop at WRESTLE.ASM:2087 polls it and RETPs
+     * out of game_loop when it is set, which is how the arcade leaves
+     * a finished match; wm_app_tick does the same with this.
+     */
+    int32_t match_over;
     wm_match_streaks_t streaks;
     /*
      * AWARD.ASM's per-player award arrays. They are per CREDIT rather

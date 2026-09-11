@@ -581,6 +581,118 @@ void wm_app_tick_dual(wm_app *app,
     if (app->mode == WM_APP_MODE_MATCH) {
         wm_arcade_drone_callbacks_t cb = wm_arcade_drone_data_callbacks(&app->rng);
         wm_match_tick(&app->match, &cb, input);
+        /*
+         * WRESTLE.ASM:2087 `move @match_over,a0 / jrz #not_over /
+         * calla postgame_audits / RETP` -- the main loop returns out
+         * of game_loop the moment the match is over, which is how the
+         * arcade leaves a match at all. Until this the app sat here
+         * forever: the match finished, the score was final, and
+         * nothing above it ever looked.
+         */
+        if (app->match.match_over != 0) {
+            app->last_match_winner = app->match.score.match_winner;
+            app->mode = WM_APP_MODE_MATCH_OVER;
+        }
+        return;
+    }
+    /*
+     * WRESTLE.ASM:1116, the code after `JSRP start_match`: "The only
+     * time we return from start_match is when the match is over and
+     * the game must goto: 1. Buy-in screen ... 2. Ladder screen for
+     * the next matchup ... 3. Finale screens."
+     *
+     * Not here: `AUD1 AUD_TOTALGAMES` (no audit store in this port),
+     * the royal-rumble branch (no rumble), pin_speed_in_case's high
+     * score entry, and the finale.
+     */
+    if (app->mode == WM_APP_MODE_MATCH_OVER) {
+        /* `CLR A0 / MOVE A0,@DONE_HOWARD` -- so he introduces the
+           next select screen again. */
+        app->done_howard = false;
+        /* `movi 60,a0 / move a0,@are_we_waiting_f`. */
+        app->are_we_waiting_f = 60u;
+
+        /*
+         * `move @PSTATUS,a0 / move @match_winner,a1 / andn a1,a0 /
+         * jrnz #go_buyin` -- did a human LOSE? match_winner is a
+         * PSTATUS-shaped bitmask (1 = side 0, 2 = side 1), and this
+         * port's one human is side 0, so PSTATUS is 1.
+         */
+        {
+            int32_t pstatus = app->match.has_human ? 1 : 0;
+            if ((pstatus & ~app->last_match_winner) == 0) {
+                /*
+                 * "This player will keep on playing. Display ladder
+                 * of progression which shows his next opponent."
+                 * `jruc do_pregame` -- no select screen.
+                 */
+                wm_pregame_next_match(&app->pregame,
+                                      app->awards.win_streak[0]);
+                app->mode = WM_APP_MODE_PREGAME;
+                return;
+            }
+        }
+
+        /*
+         * `#go_buyin`. The CPU won, so `clr a0 / move a0,@match_winner`
+         * and CURRENT_LADDER steps back a rung -- a player who
+         * continues faces the same opponent, not the next one.
+         * loser_snd and OLD_PSTATUS are the source's other two here;
+         * loser_snd is a sound this port does not play.
+         */
+        app->last_match_winner = 0;
+        wm_pregame_ladder_back(&app->pregame);
+        wm_select_continue_init(&app->continue_select);
+        app->continue_start_was_down = true;   /* swallow a held Start */
+        wm_select_continue_begin(&app->continue_select, 0u,
+                                 app->pregame.player_source_wrestler,
+                                 false,
+                                 /*
+                                  * A console has no coin door, so the
+                                  * offer is always affordable. The
+                                  * TIMER still runs, which is what
+                                  * actually ends the game: letting it
+                                  * reach zero is declining.
+                                  */
+                                 0u, 0u, true, true,
+                                 &app->awards);
+        app->mode = WM_APP_MODE_CONTINUE;
+        return;
+    }
+    if (app->mode == WM_APP_MODE_CONTINUE) {
+        wm_select_continue_event ev;
+        bool start_level = input && input->start;
+        /*
+         * In the arcade a COIN buys in -- `#buyin: PSTATUS bit became
+         * active` -- and Start only resets the countdown. A console
+         * has no coin door, so Start IS the buy-in here, the same
+         * platform boundary the select screen already draws for
+         * player two. It is read as an EDGE so a Start carried over
+         * from the match does not spend itself.
+         */
+        bool buy_in = start_level && !app->continue_start_was_down;
+        app->continue_start_was_down = start_level;
+        ev = wm_select_continue_tick(&app->continue_select,
+                                     buy_in, 0u, false, buy_in,
+                                     start_level,
+                                     &app->audio, &app->awards);
+        if (ev == WM_SELECT_CONTINUE_ACCEPT_EVENT) {
+            /* buyin_select returns, the loser's win count is cleared,
+               and `jruc do_pregame`. */
+            app->awards.win_streak[0] = 0;
+            wm_pregame_next_match(&app->pregame, 0u);
+            app->mode = WM_APP_MODE_PREGAME;
+        } else if (ev == WM_SELECT_CONTINUE_TIMEOUT_EVENT) {
+            /*
+             * Nobody bought in. The source falls out to game over and
+             * the attract loop; this port has no game-over screen
+             * (LIFEBAR.ASM's do_game_over is still open), so it goes
+             * straight back to attract the way a finished demo does.
+             */
+            app->mode = WM_APP_MODE_ATTRACT;
+            app->attract_started = false;
+            app->boot_ticks = 0;
+        }
         return;
     }
     if (!input) input = &no_input;

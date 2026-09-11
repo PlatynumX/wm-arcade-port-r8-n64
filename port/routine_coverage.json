@@ -1045,8 +1045,8 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "GAME_BEATEN",
    "from_generated": false,
    "ledgered": false
   },
@@ -11877,8 +11877,8 @@
    "local": false,
    "external_callers": 1,
    "references": 6,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "do_game_over",
    "from_generated": false,
    "ledgered": false
   },
@@ -22874,8 +22874,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "pin_speed_in_case",
    "from_generated": false,
    "ledgered": false
   },

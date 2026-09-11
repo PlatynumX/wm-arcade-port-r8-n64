@@ -122,6 +122,22 @@ void wm_pregame_init(wm_pregame_state *state,
                      wm_wrestler_id selected_roster_wrestler,
                      WmRng *rng);
 
+/*
+ * WRESTLE.ASM:1061 do_pregame, re-entered after a match the human
+ * won: the next rung of the SAME ladder, with no select screen in
+ * between. What it does not do matters as much as what it does --
+ * INIT_LADDER_TABLE is not part of the pregame, it is called once
+ * per game from ATTRACT.ASM:595 and SELECT.ASM's GAME_BEATEN.
+ * `win_streak` is the caller's current streak, which the progress
+ * screen prints.
+ */
+void wm_pregame_next_match(wm_pregame_state *state, uint32_t win_streak);
+
+/* WRESTLE.ASM:1176's `subi 20h,a0` on CURRENT_LADDER, "because
+   NEXT_IN_LADDER automatically increments it" -- a player who
+   continues after losing meets the SAME opponent again. */
+void wm_pregame_ladder_back(wm_pregame_state *state);
+
 void wm_pregame_tick(wm_pregame_state *state,
                      const wm_input_state *input,
                      wm_audio_state *audio);

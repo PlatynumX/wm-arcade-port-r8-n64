@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include "wm/object.h"
+#include "wm/arcade/wm_arcade_combat_defs.h"
 
 /* Values copied from the original ANIM.EQU command IDs. */
 enum wm_anim_opcode {
@@ -24,25 +25,11 @@ enum wm_anim_opcode {
     WM_ANI_SET_WRESTLER_XFLIP  = 0x805F
 };
 
-enum wm_anim_mode {
-    WM_MODE_NORMAL       = 0x0000,
-    WM_MODE_END          = 0x0001,
-    WM_MODE_INTURN       = 0x0002,
-    WM_MODE_UNINT        = 0x0004,
-    WM_MODE_NOAUTOFLIP   = 0x0008,
-    WM_MODE_CHECKHIT     = 0x0010,
-    WM_MODE_NOGRAVITY    = 0x0020,
-    WM_MODE_FRICTION     = 0x0040,
-    WM_MODE_NOCONFINE    = 0x0080,
-    WM_MODE_NOCOLLIS     = 0x0100,
-    WM_MODE_STATUS       = 0x0200,
-    WM_MODE_OVERLAP      = 0x0400,
-    WM_MODE_GHOST        = 0x0800,
-    WM_MODE_NOSHADOW     = 0x1000,
-    WM_MODE_KEEPATTACHED = 0x2000,
-    WM_MODE_WAITHITOPP   = 0x4000,
-    WM_MODE_INVISIBLE    = 0x8000
-};
+/* wm_arcade_anim_mode_bits (wm/arcade/wm_arcade_combat_defs.h) is the same
+   ANIM.EQU mode-bit translation this file used to duplicate as its own
+   wm_anim_mode enum; WM_MODE_END..WM_MODE_INVISIBLE now come from there.
+   WM_MODE_NORMAL (no bits set) had no arcade-side counterpart. */
+#define WM_MODE_NORMAL 0x0000u
 
 /* Legacy WORD-only stream retained for already generated bring-up sequences.
    Commands requiring LONG operands fail closed instead of truncating source

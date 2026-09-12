@@ -1,0 +1,2568 @@
+{
+ "_README": [
+  "Hand-written answers for source routines whose name cannot resolve to a",
+  "port symbol on its own. tools/port_coverage.py merges this with what it",
+  "can determine automatically.",
+  "",
+  "Every entry must justify itself and a source-tool test enforces it:",
+  "the key has to be a routine in a linked .ASM file, the status has to be",
+  "one the tool knows, an 'inlined' or 'renamed' entry has to name a port",
+  "identifier that really is defined, a 'dead' entry has to have zero",
+  "references in the source, and no entry may claim a routine the automatic",
+  "pass already resolves -- otherwise the ledger could mask a regression by",
+  "asserting something is fine after it stopped being true.",
+  "",
+  "This file is where an unanswered question becomes an answered one. It is",
+  "not where an unanswered question goes to be forgotten."
+ ],
+ "get_opp_plyrmode": {
+  "file": "WRESTLE.ASM",
+  "status": "inlined",
+  "symbol": "player_mode",
+  "note": "process_ptrs[CLOSEST_NUM]->PLYRMODE. The port holds the opponent as a pointer rather than a roster index, so every one of the 115 call sites reads o->player_mode directly; there is nothing left for a function to do."
+ },
+ "get_process_ptr": {
+  "file": "WRESTLE.ASM",
+  "status": "inlined",
+  "symbol": "wm_match_state",
+  "note": "WRESTLE.ASM:4457. The read side of process_ptrs, indexed by PLYRNUM. An array index here."
+ },
+ "wres_get_but_val_cur": {
+  "file": "WRESTLE2.ASM",
+  "status": "renamed",
+  "symbol": "wm_read_switches_one",
+  "note": "The per-wrestler accessors are read_switches' own loop body. wm_read_switches_one computes all six cached readings plus both relative ones in one pass, exactly as read_switches does."
+ },
+ "wres_get_but_val_down": {
+  "file": "WRESTLE2.ASM",
+  "status": "renamed",
+  "symbol": "wm_read_switches_one",
+  "note": "See wres_get_but_val_cur."
+ },
+ "wres_get_but_val_up": {
+  "file": "WRESTLE2.ASM",
+  "status": "renamed",
+  "symbol": "wm_read_switches_one",
+  "note": "See wres_get_but_val_cur."
+ },
+ "wres_get_stick_val_cur": {
+  "file": "WRESTLE2.ASM",
+  "status": "renamed",
+  "symbol": "wm_read_switches_one",
+  "note": "See wres_get_but_val_cur."
+ },
+ "wres_get_stick_val_down": {
+  "file": "WRESTLE2.ASM",
+  "status": "renamed",
+  "symbol": "wm_read_switches_one",
+  "note": "See wres_get_but_val_cur."
+ },
+ "wres_get_stick_val_up": {
+  "file": "WRESTLE2.ASM",
+  "status": "renamed",
+  "symbol": "wm_read_switches_one",
+  "note": "See wres_get_but_val_cur."
+ },
+ "wres_get_stick_rel_cur": {
+  "file": "WRESTLE2.ASM",
+  "status": "renamed",
+  "symbol": "wm_stick_flip",
+  "note": "The facing-relative reading. wm_read_switches_one derives it via wm_stick_flip; note the standalone routine tests the sprite's FLIPH bit where read_switches tests FACING_DIR's PLAYER_RIGHT_BIT."
+ },
+ "wres_get_stick_rel_new": {
+  "file": "WRESTLE2.ASM",
+  "status": "renamed",
+  "symbol": "wm_read_switches_one",
+  "note": "Same derivation, gated on there being a stick transition this tick."
+ },
+ "civani": {
+  "file": "UTIL.ASM",
+  "status": "display",
+  "note": "Writes OIMG/OSIZE/OSAG/OCTRL on a display object to swap its image. There is no object system in this port; every animation change ends at a frame-name seam instead."
+ },
+ "civanic": {
+  "file": "UTIL.ASM",
+  "status": "display",
+  "note": "civani with the object's existing OCTRL preserved. Same reason."
+ },
+ "CLR_SCRN": {
+  "file": "UTIL.ASM",
+  "status": "display",
+  "note": "Blanks DISPLAYON and clears the frame buffer."
+ },
+ "obj_aniq": {
+  "file": "DISPLAY.ASM",
+  "status": "display",
+  "note": "The object animation queue."
+ },
+ "begin_obj": {
+  "file": "WRESTLE2.ASM",
+  "status": "display",
+  "note": "A BEGINOBJ wrapper -- DMAWNZ|M_SCRNREL flags and an object id."
+ },
+ "BEGINOBJ_TBL": {
+  "file": "DISPLAY.ASM",
+  "status": "display",
+  "note": "Creates an object from a table of its parameters."
+ },
+ "DO_REVERSAL_MESS": {
+  "file": "LIFEBAR.ASM",
+  "status": "process",
+  "note": "A display process. Its one piece of logic -- RND_AWARD a8,REVERSAL_AWD -- is translated in wm/award.h; the rest is the message object and its voice call."
+ },
+ "BONUS_MESS": {
+  "file": "LIFEBAR.ASM",
+  "status": "process",
+  "note": "The source's own comment: 'Process which displays high risk - 2x damage & possibly move name'."
+ },
+ "meters": {
+  "file": "LIFEBAR.ASM",
+  "status": "process",
+  "note": "Builds the two lifebar meter objects and the credit box, then loops. The values it displays are wm/arcade/wm_arcade_life_data.h."
+ },
+ "SET_FLASHING": {
+  "file": "LIFEBAR.ASM",
+  "status": "process",
+  "note": "Starts the combo-flash process and its sound. The COMBO_FLASH_FLAG guard it wraps is the actor's combo_flash field."
+ },
+ "rewire_meter": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "Repoints a meter's objects at a different wrestler in a multi-drone match."
+ },
+ "draw_combo_meter": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "Draws the combo bar at a given size."
+ },
+ "set_volume": {
+  "file": "DCSSOUND.ASM",
+  "status": "hardware",
+  "note": "send_code_a3 with 55AAh -- a command to the DCS sound board."
+ },
+ "QSNDRST": {
+  "file": "DCSSOUND.ASM",
+  "status": "hardware",
+  "note": "Resets the QSound DSP."
+ },
+ "nosounds": {
+  "file": "DCSSOUND.ASM",
+  "status": "partial",
+  "symbol": "wm_sound_clear_ram",
+  "note": "DCSSOUND.ASM:2465. `clr a3 / SNDSND` to silence the board, then clear_sound_ram. The clear is translated; the silence call is the board's."
+ },
+ "KILL_ALL_CHANNELS": {
+  "file": "DCSSOUND.ASM",
+  "status": "hardware",
+  "note": "Stops every DCS channel."
+ },
+ "read_switches": {
+  "file": "WRESTLE2.ASM",
+  "status": "renamed",
+  "symbol": "wm_read_switches_one",
+  "note": "The per-wrestler caching pass. Named for the one wrestler it does rather than the loop, because the port has no process_ptrs array to walk."
+ },
+ "init_life_data": {
+  "file": "LIFEBAR.ASM",
+  "status": "renamed",
+  "symbol": "wm_life_init_match",
+  "note": "Named for when it runs. It is the reset that leaves PLT_CLIFE at zero so the bars fill in."
+ },
+ "init_wres_life_data": {
+  "file": "LIFEBAR.ASM",
+  "status": "renamed",
+  "symbol": "wm_life_init_wrestler",
+  "note": "The change_wrestler reset, which snaps the displayed bar to full instead."
+ },
+ "init_rnd_life_data": {
+  "file": "LIFEBAR.ASM",
+  "status": "renamed",
+  "symbol": "wm_life_init_round",
+  "note": "The round-two reset, which leaves combo and turbo alone."
+ },
+ "do_fade": {
+  "file": "PAL.ASM",
+  "status": "renamed",
+  "symbol": "wm_pal_global_fade_step",
+  "note": "The arcade runs it as a process; the port exposes one loop iteration so a caller drives it from whatever scheduler it has."
+ },
+ "copy_string": {
+  "file": "STRING.ASM",
+  "status": "renamed",
+  "symbol": "wm_string_copy",
+  "note": "message_buffer2 -> message_buffer."
+ },
+ "concat_string": {
+  "file": "STRING.ASM",
+  "status": "renamed",
+  "symbol": "wm_string_concat",
+  "note": "Appends message_buffer2 to message_buffer."
+ },
+ "get_string_len": {
+  "file": "STRING.ASM",
+  "status": "renamed",
+  "symbol": "wm_string_buffer_len",
+  "note": "The entry point that presets a4 to message_buffer and falls into get_string_len2. Nothing in the source references the label -- every caller uses get_string_len2 -- so it also reads as dead; both are true."
+ },
+ "is_a14_behind": {
+  "file": "WRESTLE2.ASM",
+  "status": "renamed",
+  "symbol": "wm_is_behind",
+  "note": "The register name in the source's label is not worth carrying into C."
+ },
+ "powerup_check": {
+  "file": "AWARD.ASM",
+  "status": "renamed",
+  "symbol": "wm_powerup_reset",
+  "note": "AWARD.ASM:2198. Does nothing unless do_show_options is set, then clears both request words and the seven output flags and CREATEs a player_powerup_checker per side. The clearing half is wm_powerup_reset; the processes are the row table."
+ },
+ "rst_awards": {
+  "file": "AWARD.ASM",
+  "status": "renamed",
+  "symbol": "wm_award_reset_round",
+  "note": "Named for what it clears. Includes the source's sixty-three-byte off-by-one."
+ },
+ "accumulate_awards": {
+  "file": "AWARD.ASM",
+  "status": "renamed",
+  "symbol": "wm_award_accumulate_round",
+  "note": "Folds the round arrays into the match arrays, inverting the blocks award on the way."
+ },
+ "adjust_perfects": {
+  "file": "AWARD.ASM",
+  "status": "renamed",
+  "symbol": "wm_award_adjust_perfects_and_blocks",
+  "note": "The source's name undersells it: it adjusts blocks as well, in a second and differently-shaped pass."
+ },
+ "get_num_awards": {
+  "file": "AWARD.ASM",
+  "status": "renamed",
+  "symbol": "wm_award_num_rows",
+  "note": "How many rows the end-of-match bar shows, capped at six."
+ },
+ "is_it_a_really_quick_win": {
+  "file": "AWARD.ASM",
+  "status": "renamed",
+  "symbol": "wm_award_quick_win",
+  "note": "Including the unconditional jruc that makes its SUPER_QUICK and VERY_QUICK branches unreachable."
+ },
+ "arm_comeback_award": {
+  "file": "AWARD.ASM",
+  "status": "renamed",
+  "symbol": "wm_award_arm_comeback",
+  "note": "The 80%-health sweep over every live enemy."
+ },
+ "change_anim1": {
+  "file": "ANIM.ASM",
+  "status": "renamed",
+  "symbol": "wm_anim_exec_start_if_new",
+  "note": "The guarded primary entry: restart if the animation ended, do nothing if it is already the one playing, else fall into change_anim1a."
+ },
+ "change_anim1a": {
+  "file": "ANIM.ASM",
+  "status": "renamed",
+  "symbol": "wm_anim_exec_start",
+  "note": "The unconditional primary entry, gravity reset included. 503 call sites, the most-referenced routine in the game."
+ },
+ "change_anim2": {
+  "file": "ANIM.ASM",
+  "status": "renamed",
+  "symbol": "wm_anim_exec_start_secondary_if_new",
+  "note": "The guarded secondary entry."
+ },
+ "change_anim2a": {
+  "file": "ANIM.ASM",
+  "status": "renamed",
+  "symbol": "wm_anim_exec_start_secondary",
+  "note": "The unconditional secondary entry -- the torso channel, and the one that does NOT reset gravity."
+ },
+ "change_anim_anim": {
+  "file": "ANIM.ASM",
+  "status": "renamed",
+  "symbol": "wm_anim_exec_start",
+  "note": "change_anim1a's body on an arbitrary process rather than a13, and without the immediate animate_wrestler1. The port passes the exec and actor explicitly, so it is the same call."
+ },
+ "bam_ani_init": {
+  "file": "BAM.ASM",
+  "status": "renamed",
+  "symbol": "wm_wrestler_backend_ani_init",
+  "note": "See bret_ani_init."
+ },
+ "doink_ani_init": {
+  "file": "DOINK.ASM",
+  "status": "renamed",
+  "symbol": "wm_wrestler_backend_ani_init",
+  "note": "See bret_ani_init."
+ },
+ "lex_ani_init": {
+  "file": "LEX.ASM",
+  "status": "renamed",
+  "symbol": "wm_wrestler_backend_ani_init",
+  "note": "See bret_ani_init."
+ },
+ "shawn_ani_init": {
+  "file": "SHAWN.ASM",
+  "status": "renamed",
+  "symbol": "wm_wrestler_backend_ani_init",
+  "note": "See bret_ani_init."
+ },
+ "taker_ani_init": {
+  "file": "TAKER.ASM",
+  "status": "renamed",
+  "symbol": "wm_wrestler_backend_ani_init",
+  "note": "See bret_ani_init."
+ },
+ "yoko_ani_init": {
+  "file": "YOKO.ASM",
+  "status": "renamed",
+  "symbol": "wm_wrestler_backend_ani_init",
+  "note": "See bret_ani_init."
+ },
+ "concat_rom_string": {
+  "file": "STRING.ASM",
+  "status": "renamed",
+  "symbol": "wm_string_concat_rom",
+  "note": "The C name reorders the words."
+ },
+ "copy_rom_string": {
+  "file": "STRING.ASM",
+  "status": "renamed",
+  "symbol": "wm_string_copy_rom",
+  "note": "The C name reorders the words."
+ },
+ "get_opp_process": {
+  "file": "WRESTLE.ASM",
+  "status": "inlined",
+  "symbol": "smart_target",
+  "note": "The closest-opponent lookup. This port holds one fixed opponent per actor, documented in wm/arcade/wm_arcade_closest.h, so there is nothing to search."
+ },
+ "hrt_velocity_table": {
+  "file": "BRET.ASM",
+  "status": "renamed",
+  "symbol": "wm_bret_velocity_table",
+  "note": "The eight walk-velocity tables have identical BODIES -- the same compass-ordered `.long 0,-#VEL / #DVEL,-#DVEL / ...` in every file -- and differ only in the two per-wrestler equates #VEL and #DVEL. Doink is the one wrestler whose pair differs from the other seven, so the port carries the shape once as a macro and two instantiations (s_velocity_std, s_velocity_doink) behind wm_wrestler_velocity_table(WRESTLERNUM); Bret's predates the shared backend and is wm_bret_velocity_table. Same numbers, one copy of the layout."
+ },
+ "rzr_velocity_table": {
+  "file": "RAZOR.ASM",
+  "status": "renamed",
+  "symbol": "wm_wrestler_velocity_table",
+  "note": "The eight walk-velocity tables have identical BODIES -- the same compass-ordered `.long 0,-#VEL / #DVEL,-#DVEL / ...` in every file -- and differ only in the two per-wrestler equates #VEL and #DVEL. Doink is the one wrestler whose pair differs from the other seven, so the port carries the shape once as a macro and two instantiations (s_velocity_std, s_velocity_doink) behind wm_wrestler_velocity_table(WRESTLERNUM); Bret's predates the shared backend and is wm_bret_velocity_table. Same numbers, one copy of the layout."
+ },
+ "und_velocity_table": {
+  "file": "TAKER.ASM",
+  "status": "renamed",
+  "symbol": "wm_wrestler_velocity_table",
+  "note": "The eight walk-velocity tables have identical BODIES -- the same compass-ordered `.long 0,-#VEL / #DVEL,-#DVEL / ...` in every file -- and differ only in the two per-wrestler equates #VEL and #DVEL. Doink is the one wrestler whose pair differs from the other seven, so the port carries the shape once as a macro and two instantiations (s_velocity_std, s_velocity_doink) behind wm_wrestler_velocity_table(WRESTLERNUM); Bret's predates the shared backend and is wm_bret_velocity_table. Same numbers, one copy of the layout."
+ },
+ "yok_velocity_table": {
+  "file": "YOKO.ASM",
+  "status": "renamed",
+  "symbol": "wm_wrestler_velocity_table",
+  "note": "The eight walk-velocity tables have identical BODIES -- the same compass-ordered `.long 0,-#VEL / #DVEL,-#DVEL / ...` in every file -- and differ only in the two per-wrestler equates #VEL and #DVEL. Doink is the one wrestler whose pair differs from the other seven, so the port carries the shape once as a macro and two instantiations (s_velocity_std, s_velocity_doink) behind wm_wrestler_velocity_table(WRESTLERNUM); Bret's predates the shared backend and is wm_bret_velocity_table. Same numbers, one copy of the layout."
+ },
+ "shn_velocity_table": {
+  "file": "SHAWN.ASM",
+  "status": "renamed",
+  "symbol": "wm_wrestler_velocity_table",
+  "note": "The eight walk-velocity tables have identical BODIES -- the same compass-ordered `.long 0,-#VEL / #DVEL,-#DVEL / ...` in every file -- and differ only in the two per-wrestler equates #VEL and #DVEL. Doink is the one wrestler whose pair differs from the other seven, so the port carries the shape once as a macro and two instantiations (s_velocity_std, s_velocity_doink) behind wm_wrestler_velocity_table(WRESTLERNUM); Bret's predates the shared backend and is wm_bret_velocity_table. Same numbers, one copy of the layout."
+ },
+ "bam_velocity_table": {
+  "file": "BAM.ASM",
+  "status": "renamed",
+  "symbol": "wm_wrestler_velocity_table",
+  "note": "The eight walk-velocity tables have identical BODIES -- the same compass-ordered `.long 0,-#VEL / #DVEL,-#DVEL / ...` in every file -- and differ only in the two per-wrestler equates #VEL and #DVEL. Doink is the one wrestler whose pair differs from the other seven, so the port carries the shape once as a macro and two instantiations (s_velocity_std, s_velocity_doink) behind wm_wrestler_velocity_table(WRESTLERNUM); Bret's predates the shared backend and is wm_bret_velocity_table. Same numbers, one copy of the layout."
+ },
+ "dnk_velocity_table": {
+  "file": "DOINK.ASM",
+  "status": "renamed",
+  "symbol": "wm_wrestler_velocity_table",
+  "note": "The eight walk-velocity tables have identical BODIES -- the same compass-ordered `.long 0,-#VEL / #DVEL,-#DVEL / ...` in every file -- and differ only in the two per-wrestler equates #VEL and #DVEL. Doink is the one wrestler whose pair differs from the other seven, so the port carries the shape once as a macro and two instantiations (s_velocity_std, s_velocity_doink) behind wm_wrestler_velocity_table(WRESTLERNUM); Bret's predates the shared backend and is wm_bret_velocity_table. Same numbers, one copy of the layout."
+ },
+ "lex_velocity_table": {
+  "file": "LEX.ASM",
+  "status": "renamed",
+  "symbol": "wm_wrestler_velocity_table",
+  "note": "The eight walk-velocity tables have identical BODIES -- the same compass-ordered `.long 0,-#VEL / #DVEL,-#DVEL / ...` in every file -- and differ only in the two per-wrestler equates #VEL and #DVEL. Doink is the one wrestler whose pair differs from the other seven, so the port carries the shape once as a macro and two instantiations (s_velocity_std, s_velocity_doink) behind wm_wrestler_velocity_table(WRESTLERNUM); Bret's predates the shared backend and is wm_bret_velocity_table. Same numbers, one copy of the layout."
+ },
+ "hrt_grab_toss_air": {
+  "file": "BRET.ASM",
+  "status": "renamed",
+  "symbol": "WM_BRET_MON_GRAB_TOSS_AIR",
+  "note": "A secret-move monitor process. BRET.ASM:166's smove table names the routine; the port reaches the same body through a monitor id and wm_arcade_bret_fire_monitor's case for it, with the label kept as the table's own string so the two cannot drift."
+ },
+ "hrt_hdhold_ddt": {
+  "file": "BRET.ASM",
+  "status": "renamed",
+  "symbol": "WM_BRET_MON_HEADHOLD_DDT",
+  "note": "Same shape as hrt_grab_toss_air: an smove monitor reached by id."
+ },
+ "hrt_hdhold_faceslam": {
+  "file": "BRET.ASM",
+  "status": "renamed",
+  "symbol": "WM_BRET_MON_HEADHOLD_FACESLAM",
+  "note": "Same shape as hrt_grab_toss_air: an smove monitor reached by id."
+ },
+ "hrt_roll_uppercut": {
+  "file": "BRET.ASM",
+  "status": "renamed",
+  "symbol": "WM_BRET_MON_ROLL_UPPERCUT",
+  "note": "Same shape as hrt_grab_toss_air: an smove monitor reached by id. Its animation is emitted too (hrt_roll_uppercut_anim), and src/core/anim_code.c's rope check redirects into that program's #stand."
+ },
+ "lex_hdhold_pile": {
+  "file": "LEX.ASM",
+  "status": "renamed",
+  "symbol": "special_processes",
+  "note": "An smove monitor. Lex's dispatcher selects by position in his special_processes list rather than by a named id, so the source label IS the key: wm_arcade_lex_fire_monitor indexes the list and branches on the label's shape."
+ },
+ "lex_hdhold_elbow_face": {
+  "file": "LEX.ASM",
+  "status": "renamed",
+  "symbol": "special_processes",
+  "note": "An smove monitor, same positional dispatch as lex_hdhold_pile."
+ },
+ "std_taunt": {
+  "file": "DOINK.ASM",
+  "status": "renamed",
+  "symbol": "wm_smove_monitor_find",
+  "note": "DOINK.ASM:1216. Defined once and carried by all eight smove tables. A registry row in src/core/arcade/wm_arcade_smove.c: the MODE_BLOCK gate, the `PLYR_TYPE != 0 -> SUCIDE` that keeps drones out of it, the eight-way clockwise stick rotation starting at J_UP with B_BLOCK masked out of every step, the `is BLOCK still held` test between the opening UP and the one 61-tick budget, and the payload -- the #taunt_tbl row (the same table do_taunt reads) and `movi 8000h+12*60,a0 / move a0,*a8(RISK)`."
+ },
+ "std_walk_fast": {
+  "file": "DOINK.ASM",
+  "status": "partial",
+  "symbol": "wm_smove_monitor_find",
+  "note": "DOINK.ASM:1092, the other monitor every smove table carries. Translated: the `WALK_FAST already set` and MODE_NORMAL gates (the source's own \"one time per match\"), the eight-way clockwise rotation starting at J_AWAY, the single 61-tick budget the last seven steps share, the MODE_NORMAL re-test after the rotation, and `movi 15*60,a0 / move a0,*a8(WALK_FAST)`. Not translated, and it is the bulk of the routine's length: everything after that store is presentation -- Doink's own OBJ_YVEL hop, ADD_VOICE (211h for Doink, 17eh otherwise), three OBJ_CONST/M_CONNON flashes, Doink's three 0b2h honks, the wait on WALK_FAST running out and two more flashes."
+ },
+ "check_collisions": {
+  "file": "COLLIS.ASM",
+  "status": "renamed",
+  "symbol": "wm_arcade_check_wrestler_collisions",
+  "note": "The whole attacker/victim sweep, including the source's alternating scan order (round_tick parity) and its exit after the first accepted hit. Named for what it iterates over rather than for the file it came from, which is why the name does not resolve on its own."
+ },
+ "wres_collis_off": {
+  "file": "COLLIS.ASM",
+  "status": "renamed",
+  "symbol": "wm_arcade_wrestler_collisions_off",
+  "note": "Clears MODE_CHECKHIT. Eleven call sites across the react modules and the lifebar reach it under this name."
+ },
+ "set_collision_boxes": {
+  "file": "COLLIS.ASM",
+  "status": "inlined",
+  "symbol": "wm_arcade_set_attack_box",
+  "note": "The source sets BOTH boxes in one routine; the port sets them where each is needed. The hurt box comes from the frame the animation is showing (wm_hurt_box_for_frame / wm_arcade_set_hurt_box in wrestler_backend.c's tick), and the attack box from the attacker just before the collision sweep (wm_arcade_set_attack_box). Splitting them is what lets the hurt box follow real per-frame geometry rather than a single box per wrestler."
+ },
+ "hit_push": {
+  "file": "REACT2.ASM",
+  "status": "renamed",
+  "symbol": "hit_push_common",
+  "note": "REACT2.ASM:427. The port shares one body between the two reactions that need it, which is why it carries the _common suffix."
+ },
+ "CHECK_SCORE": {
+  "file": "HSTD.ASM",
+  "status": "renamed",
+  "symbol": "wm_hs_check_score_arcade",
+  "note": "The high-score table's placement search, over packed-BCD scores. Prefixed and suffixed to sit beside the rest of the hiscore core."
+ },
+ "SPRINKLE_GLINTS": {
+  "file": "LIFEBAR.ASM",
+  "status": "renamed",
+  "symbol": "sprinkle_glints_proc",
+  "note": "The title-screen glint process, translated as a wm_process in src/core/app.c -- the _proc suffix marks it as one, which is what stops the name resolving."
+ },
+ "und_spirit_pull": {
+  "file": "SPECIAL.ASM",
+  "status": "renamed",
+  "symbol": "special_processes",
+  "note": "One of Undertaker's smove monitors. His dispatcher selects by position in his special_processes list rather than by a named id, so the source label IS the key -- same positional dispatch as lex_hdhold_pile."
+ },
+ "und_spirit_push": {
+  "file": "SPECIAL.ASM",
+  "status": "renamed",
+  "symbol": "special_processes",
+  "note": "An smove monitor, same positional dispatch as und_spirit_pull."
+ },
+ "animate_wrestler": {
+  "file": "ANIM.ASM",
+  "status": "renamed",
+  "symbol": "wm_wrestler_backend_tick",
+  "note": "ANIM.ASM:68. Its whole body is `animate` on ANIMODE then `animate` on ANIMODE2 -- the two animation channels, in that order, gated on match_time being non-zero. wm_wrestler_backend_tick does exactly that with the primary program and the torso program; wm_anim_exec_tick is the `animate` underneath."
+ },
+ "animate_wrestler1": {
+  "file": "ANIM.ASM",
+  "status": "inlined",
+  "symbol": "wm_anim_exec_start",
+  "note": "ANIM.ASM:92, called from change_anim1a (:4554) right after it writes ANIMODE, ANICNT and the gravity reset: it runs the new animation's first command immediately rather than waiting a tick. The port's exec_start ends with the same advance() call, so starting an animation already shows its first frame. Its other call site is commented out in the source (:76)."
+ },
+ "animate_wrestler2": {
+  "file": "ANIM.ASM",
+  "status": "inlined",
+  "symbol": "wm_anim_exec_start_secondary",
+  "note": "ANIM.ASM:103, the secondary channel's half of animate_wrestler1 and inlined the same way -- change_anim2a's own advance(). Its other call site is commented out at :77."
+ },
+ "attacker_flip_test": {
+  "file": "ANIM.ASM",
+  "status": "inlined",
+  "symbol": "run_superslave2",
+  "note": "The defender's attach offset uses its own aniX, or (xsize - aniX) when the puppet table's flip disagrees with which way the attacker is facing. src/core/anim_program.c's run_superslave2 spells that out at its one use site, reading real per-frame geometry rather than a guessed width."
+ },
+ "set_xyz": {
+  "file": "COLLIS.ASM",
+  "status": "renamed",
+  "symbol": "wm_arcade_set_attack_box",
+  "note": "COLLIS.ASM:669. Builds the ATTACK box in world space from OBJ_ATT{X,Y,Z}OFF and OBJ_ATT{WIDTH,HEIGHT,DEPTH}, including the FLIPH branch that mirrors the X extent for a wrestler facing left. wm_arcade_set_attack_box is that routine line for line; it is named for what it produces rather than for the three axes it writes."
+ },
+ "check_collis": {
+  "file": "COLLIS.ASM",
+  "status": "renamed",
+  "symbol": "wm_arcade_try_attack_hit",
+  "note": "COLLIS.ASM:486. The whole rejection chain -- MODE_NOCOLLIS, IMMOBILIZE_TIME, the six box comparisons, SMART_ATTACK's target, combo mode's WHOIHIT, a dead victim with live teammates, AMODE_PUPPET on a corpse, ZOMBIE, PINNED without DID_PIN, mismatched INRING, AMODE_PUSH against a man in the air, the victim's own PUSH bit -- then MODE_WAITHITOPP's clear, HITBLOCKER, PLYR_HIT_SIDE from the X and Z comparison, MODE_STATUS and wrestler_hit. The port returns a wm_arcade_hit_result_t where the source reports through the attacker's MODE_STATUS bit."
+ },
+ "hit_flykick": {
+  "file": "REACT1.ASM",
+  "status": "renamed",
+  "symbol": "react_flykick",
+  "note": "REACT1.ASM:1421. Halves the attacker's X velocity, clamps the magnitude to 4.0 once it reaches 2.0, flips its sign away from his travel and sets Y to 4.0; then Lex's two kicks take CALL_MID_HIT where everyone else takes CALL_DROP_KICK, and the victim falls back with a 2.0 push. Named in a comment in wm_arcade_react8_core.c, which is why the automatic pass reads it as cited rather than translated."
+ },
+ "hit_grabhold": {
+  "file": "REACT2.ASM",
+  "status": "renamed",
+  "symbol": "wm_arcade_react2_apply",
+  "note": "REACT2.ASM:363. Every line of its body is commented out, including the #heldoh table, so it assembles to nothing and falls straight through into hit_grabfling's rets at :396. WM_RXN_GRABHOLD is therefore a break in the dispatch, which is what the source does."
+ },
+ "hit_grabfling": {
+  "file": "REACT2.ASM",
+  "status": "renamed",
+  "symbol": "wm_arcade_react2_apply",
+  "note": "REACT2.ASM:396, a bare rets under the source's own comment 'Blank amode here....'. WM_RXN_GRABFLING is a break in the dispatch."
+ },
+ "hit_buttstomp": {
+  "file": "REACT4.ASM",
+  "status": "renamed",
+  "symbol": "hit_stomp",
+  "note": "REACT4.ASM:107 -- a second label on REACT4.ASM:106 hit_stomp's body, with no instruction between them. AMODE_STOMP and AMODE_BUTTSTOMP run the same code and the port dispatches both to the same function."
+ },
+ "hit_headhold": {
+  "file": "REACT4.ASM",
+  "status": "renamed",
+  "symbol": "wm_arcade_react4_apply",
+  "note": "REACT4.ASM:523, a bare rets. WM_RXN_HEADHOLD is a break in the dispatch."
+ },
+ "hit_headdslash": {
+  "file": "REACT9.ASM",
+  "status": "renamed",
+  "symbol": "hit_headslash_common",
+  "note": "REACT9.ASM:145. The down-slash and the up-slash (REACT9.ASM:195) differ in exactly two things: the Y velocity they give the victim -- 2C000h against 40000h -- and the five-pixel shove toward the attacker that only the down-slash adds. Both share the dead-victim fall_back tail, so the port writes one function with a flag."
+ },
+ "hit_headuslash": {
+  "file": "REACT9.ASM",
+  "status": "renamed",
+  "symbol": "hit_headslash_common",
+  "note": "REACT9.ASM:195. The up-slash half of hit_headslash_common: Y velocity 40000h, X zeroed, and no shove toward the attacker."
+ },
+ "set_images": {
+  "file": "ANIM.ASM",
+  "status": "partial",
+  "symbol": "wm_match_build_draw_list",
+  "note": "ANIM.ASM:4612, and #set_image at :4632 which it runs over every wrestler. The part that is game logic is translated in wm/match_display.h: OBJ_PRIORITY (z_fixed | 01000h, less 01e5h below the mat when outside the ring), the shadow's fixed 013c8h/0106ah, OYVAL as z_int * Y_SCALE_MULTIPLIER, the GROUND_Y shadow offset against the body's OBJ_YPOSINT, and MODE_INVISIBLE and MODE_NOSHADOW. The part that is not is the object plumbing -- walking OBJ_BASE's MAX_PIECES DMA slots, writing OSAG/OSIZE/OCTRL/OCONST, the multi-piece IPCOUNT loop and the palette handoff to pal_getf -- which is hardware this port replaces rather than translates."
+ },
+ "drone_seek": {
+  "file": "DRONE.ASM",
+  "status": "renamed",
+  "symbol": "seek_drn_seek",
+  "note": "DRONE.ASM:3027 -- `movi 70,a2` and fall straight into drone_seek2. Two labels, one body; the 70 is the only thing drone_seek contributes."
+ },
+ "drone_seek2": {
+  "file": "DRONE.ASM",
+  "status": "renamed",
+  "symbol": "seek_plain70",
+  "note": "DRONE.ASM:3031 -- reads the opponent's XZ and falls into drone_seekxz. The port folds all three labels into seekxz_joy plus the two callers that supply a range; seek_plain70 is this one, and seek_drn_seek adds drn_seek's own mode gate and 1/64 stop roll on top."
+ },
+ "drone_seekxz": {
+  "file": "DRONE.ASM",
+  "status": "renamed",
+  "symbol": "seekxz_joy",
+  "note": "DRONE.ASM:3046 -- the joystick word that walks a drone toward an XZ point, one axis at a time: `subk 4 / addk 8` for the X pair and `subk 1 / addk 2` for the Z pair, each suppressed while that axis is already within range. Returns zero once both are, which is the source's own `move a0,a0 / rets` pass-CC arrival test."
+ },
+ "drone_seekdirdist": {
+  "file": "DRONE.ASM",
+  "status": "renamed",
+  "symbol": "run_seekdirdist",
+  "note": "DRONE.ASM:2898 -- circling. #drn_getxz's six 16-entry sine bands are in s_sine_band, including the quarter-cycle phase shift that reads X out of the same table as Z, and the eight-step search outward from the wanted direction when the exact one lands outside the ring. The +-2/3 reroll on arrival happens only when DRN_MODE was -1, as the source's `addk 1,a0 / jrge #x` requires."
+ },
+ "rope_update": {
+  "file": "ROPES.ASM",
+  "status": "renamed",
+  "symbol": "wm_rope_runtime_tick",
+  "note": "ROPES.ASM:439 -- the per-tick rope animation stepper: PD_SQCNT down to the next frame, PD_SQPTR for the next time increment with its jrp/jrn split into next-frame and sequence-goto, PD_SCCNT's repeat and PD_SCPTR's advance to the next script entry. wmania_rope_runtime.c carries all of it, including the end-of-script clear of the long at PD_SQCNT that takes the priority with it."
+ },
+ "set_rope_z": {
+  "file": "ROPES.ASM",
+  "status": "renamed",
+  "symbol": "wm_rope_second_half_z",
+  "note": "ROPES.ASM:593 -- the bottom half of a rope object takes 015a9h for RZ_HIGH and otherwise copies the top half's OZPOS. The port keeps the constant as WM_ROPE_HIGH_SECOND_HALF_Z and the choice as this function; writing it into an object is the renderer's."
+ },
+ "fastanic": {
+  "file": "ROPES.ASM",
+  "status": "display",
+  "note": "ROPES.ASM:558 -- point a DMA object at a new image: ODOFF, OIMG, OSIZE, OSAG and the five z-compare bits of OCTRL, plus a CALLERR if the image pointer is below ROM. Every line writes the object hardware and there is nothing else in it."
+ },
+ "update_meter": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "LIFEBAR.ASM:1257 -- redraw one meter: OFSET set to LIFE_MAX minus the displayed life (the pixels to hide), then the M_NODISP toggle for a wrestler who is OUTSIDE_ALONE and the WHICH_SCREEN check behind it. The value it draws, PLT_CLIFE, is real and is wm_life_inc_life's; the drawing is not."
+ },
+ "do_win_streaks": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "LIFEBAR.ASM:2164 -- build the two-digit win-streak display for each player: clamp to 99, BINBCD, index #f_t for each nibble's digit image and BEGINOBJ it at a fixed screen position, plus the `lwin` label object. It reads p1winstreak/p2winstreak and writes only objects."
+ },
+ "get_punch_dtime": {
+  "file": "WRESTLE.ASM",
+  "status": "renamed",
+  "symbol": "wm_arcade_get_dtime",
+  "note": "WRESTLE.ASM:3994. Three instructions -- scale PLYRNUM, index punch_dtime1, read the word. The port keeps the nine hold counters on the actor rather than in nine parallel arrays, so the index is the actor and the array is a wm_arcade_dtime_t."
+ },
+ "get_powerp_dtime": {
+  "file": "WRESTLE.ASM",
+  "status": "renamed",
+  "symbol": "wm_arcade_get_dtime",
+  "note": "WRESTLE.ASM:3985, the same three instructions against powerp_dtime1. WM_DTIME_POWERP."
+ },
+ "get_powerk_dtime": {
+  "file": "WRESTLE.ASM",
+  "status": "renamed",
+  "symbol": "wm_arcade_get_dtime",
+  "note": "WRESTLE.ASM:4012, against powerk_dtime1. WM_DTIME_POWERK."
+ },
+ "get_block_dtime": {
+  "file": "WRESTLE.ASM",
+  "status": "renamed",
+  "symbol": "wm_arcade_get_dtime",
+  "note": "WRESTLE.ASM:3978, against block_dtime1. WM_DTIME_BLOCK."
+ },
+ "get_kick_dtime": {
+  "file": "WRESTLE.ASM",
+  "status": "renamed",
+  "symbol": "wm_arcade_get_dtime",
+  "note": "WRESTLE.ASM:4004, against kick_dtime1. WM_DTIME_KICK."
+ },
+ "update_timer": {
+  "file": "WRESTLE2.ASM",
+  "status": "display",
+  "note": "WRESTLE2.ASM:4370. Reads the two match_time digits, indexes digit_tbl for each one's image and hands it to change_image against the two PDATA object pointers. The clock value itself is wm/arcade/wm_arcade_round.h's; this is the two digits on screen."
+ },
+ "ZERO_BITS": {
+  "file": "UTIL.ASM",
+  "status": "hardware",
+  "note": "UTIL.ASM:103. Clears BAKBITS -- 10000/16 words of the machine's own bitmap RAM -- with a word-store loop. There is no BAKBITS on an N64."
+ },
+ "WIPEOUT": {
+  "file": "UTIL.ASM",
+  "status": "hardware",
+  "note": "UTIL.ASM:122. dirq_wait, display_init, then pal_init inside a dint, and fall through to WIPEOUT2: reset the machine between screens. Every line is the cabinet's display processor or its palette RAM."
+ },
+ "WIPEOUT2": {
+  "file": "UTIL.ASM",
+  "status": "hardware",
+  "note": "UTIL.ASM:136. The rest of the reset: zero a dozen globals, KILALL every process, ZERO_BITS the bitmap, dpageflip_off, then write SYSCTRL from SYSCOPY (with the WWFUNIT variant that leaves the 7-segment LED alone). Process and hardware state this port does not have."
+ },
+ "SPECIAL_WIPEOUT": {
+  "file": "UTIL.ASM",
+  "status": "hardware",
+  "note": "UTIL.ASM:113. WIPEOUT2 then a jump to SPECIAL_DISPLAY_INIT -- the same reset with a different display mode after it."
+ },
+ "adjust_bar_height": {
+  "file": "MENU.ASM",
+  "status": "display",
+  "note": "MENU.ASM:840. Grows or shrinks the operator volume bar one line at a time toward a target, drawing each line through vol_bar_line. The bar is pixels in the frame buffer."
+ },
+ "vol_bar_line": {
+  "file": "MENU.ASM",
+  "status": "display",
+  "note": "MENU.ASM:866. Plots one line of the volume bar with cvxyl and a byte-store loop, skipping pixels that already hold the text colour -- the source's own \"won't overwrite green pixels (text)\", which the code actually tests against ROBO_BLUE after a commented-out ROBO_GREEN. Direct frame-buffer writes."
+ },
+ "addbae": {
+  "file": "PAL.ASM",
+  "status": "renamed",
+  "symbol": "wm_pal_addb",
+  "note": "PAL.ASM:1032. Three instructions and a fallthrough into pal_addb's body at pb1c, with the autoerase colour (IRQSKYE/irqskyeo) as the palette and a count of one. The arithmetic -- including the unsigned clamp that turns a negative brightness into full brightness rather than zero -- is wm_pal_addb's, already translated with that quirk intact."
+ },
+ "addbrt_ae": {
+  "file": "PAL.ASM",
+  "status": "process",
+  "note": "PAL.ASM:1009. A CREATE0'd process that ramps the autoerase brightness from 0 (up fade) or 31 (down fade) by A10 every three ticks until it passes 31, calling addbae each step, then DIEs. The step is addbae's; the loop is a process and a SLEEPK."
+ },
+ "bcd2hex": {
+  "file": "DIAG.ASM",
+  "status": "hardware",
+  "note": "DIAG.ASM:417. Eight-digit BCD to binary, by repeated mask-multiply-accumulate. Portable arithmetic, but it exists only for the PIC security chip: its two callers (DIAG.ASM:600 and :612) both convert a serial number read out of PIC_COMMAND, and that chip is the cabinet's."
+ },
+ "bin2bcd": {
+  "file": "DIAG.ASM",
+  "status": "hardware",
+  "note": "DIAG.ASM:381 _pic_bin2bcd. The inverse, by repeated divide-by-a-descending-power-of-ten. Same three callers, same reason: it formats the PIC serial number for the diagnostics screen."
+ },
+ "no_block_powerup_check": {
+  "file": "AWARD.ASM",
+  "status": "renamed",
+  "symbol": "wm_powerup_attempt_tick",
+  "note": "The whole powerup-code subsystem is wm/arcade/wm_arcade_powerup.h: the eight sequences as data, PUPWAITSWITCH as wm_powerup_attempt_tick, and get_powerups' BOTH_P_MASK reconciliation. AWARD.ASM:1967 -- three blocks, and it DIEs outright in a royal rumble. It shares its opening presses with buddy_mode (five blocks), which player_powerup_checker starts on the same side at the same time, so a player going for buddy mode turns blocking off on the way past."
+ },
+ "move_names_powerup_check": {
+  "file": "AWARD.ASM",
+  "status": "renamed",
+  "symbol": "wm_powerup_attempt_tick",
+  "note": "The whole powerup-code subsystem is wm/arcade/wm_arcade_powerup.h: the eight sequences as data, PUPWAITSWITCH as wm_powerup_attempt_tick, and get_powerups' BOTH_P_MASK reconciliation. AWARD.ASM:1992 -- four punches, setting MOVE_NAMES_ON. It is one of the two bits outside BOTH_P_MASK, so one player asking is enough."
+ },
+ "drone_meters_powerup_check": {
+  "file": "AWARD.ASM",
+  "status": "renamed",
+  "symbol": "wm_powerup_attempt_done",
+  "note": "The whole powerup-code subsystem is wm/arcade/wm_arcade_powerup.h: the eight sequences as data, PUPWAITSWITCH as wm_powerup_attempt_tick, and get_powerups' BOTH_P_MASK reconciliation. AWARD.ASM:2016 -- and it has no sequence at all: all three of its PUPWAITSWITCH lines are commented out, so once its two gates pass (PSTATUS != 3, 'only in one-player games'; NUM_OPPS == 1, 'only in one-on-one games') it sets D_METERS_ON immediately. The table carries it with a zero-length sequence and wm_powerup_attempt_done reports it complete from the start."
+ },
+ "hyper_match_powerup_check": {
+  "file": "AWARD.ASM",
+  "status": "renamed",
+  "symbol": "wm_powerup_attempt_tick",
+  "note": "The whole powerup-code subsystem is wm/arcade/wm_arcade_powerup.h: the eight sequences as data, PUPWAITSWITCH as wm_powerup_attempt_tick, and get_powerups' BOTH_P_MASK reconciliation. AWARD.ASM:2052 -- left, punch, punch, block. The `ori HYPER_MATCH_ON` carries the source's own comment '; Disabled for now', but nothing about the routine is disabled: it is created, it listens, and it sets the bit."
+ },
+ "combos_powerup_check": {
+  "file": "AWARD.ASM",
+  "status": "renamed",
+  "symbol": "wm_powerup_attempt_tick",
+  "note": "The whole powerup-code subsystem is wm/arcade/wm_arcade_powerup.h: the eight sequences as data, PUPWAITSWITCH as wm_powerup_attempt_tick, and get_powerups' BOTH_P_MASK reconciliation. AWARD.ASM:2075 -- right, punch, power punch, setting COMBOS_ON. This is where wm_arcade_mode_dead.h's instant_combos_on comes from."
+ },
+ "ring_out_powerup_check": {
+  "file": "AWARD.ASM",
+  "status": "renamed",
+  "symbol": "wm_powerup_attempt_tick",
+  "note": "The whole powerup-code subsystem is wm/arcade/wm_arcade_powerup.h: the eight sequences as data, PUPWAITSWITCH as wm_powerup_attempt_tick, and get_powerups' BOTH_P_MASK reconciliation. AWARD.ASM:2097 -- down, punch, kick, block."
+ },
+ "no_ring_powerup_check": {
+  "file": "AWARD.ASM",
+  "status": "renamed",
+  "symbol": "wm_powerup_attempt_tick",
+  "note": "The whole powerup-code subsystem is wm/arcade/wm_arcade_powerup.h: the eight sequences as data, PUPWAITSWITCH as wm_powerup_attempt_tick, and get_powerups' BOTH_P_MASK reconciliation. AWARD.ASM:2120 -- up, right, down, left. A complete code with nothing listening for it: player_powerup_checker's CREATE for it is commented out, 'Disable until we get blimp module'. The table records the sequence and marks it not spawned."
+ },
+ "buddy_mode_powerup_check": {
+  "file": "AWARD.ASM",
+  "status": "renamed",
+  "symbol": "wm_powerup_attempt_tick",
+  "note": "The whole powerup-code subsystem is wm/arcade/wm_arcade_powerup.h: the eight sequences as data, PUPWAITSWITCH as wm_powerup_attempt_tick, and get_powerups' BOTH_P_MASK reconciliation. AWARD.ASM:2146 -- five blocks, blocked in a royal rumble, and the only one with a second gate: it clears buddy_mode_checked at the top of its loop and refuses to grant if something has set it again by the time the fifth block lands."
+ },
+ "player_powerup_checker": {
+  "file": "AWARD.ASM",
+  "status": "process",
+  "note": "AWARD.ASM:2182. Seven CREATEs and a DIE -- one checker process per code, per side. The port runs the same eight-row table without processes, and the row's `spawned` flag carries the one CREATE that is commented out."
+ },
+ "accumulate_player_awards": {
+  "file": "AWARD.ASM",
+  "status": "renamed",
+  "symbol": "wm_award_accumulate_round",
+  "note": "AWARD.ASM:257. Folds one player's NUM_RND_AWARDS round bytes into his match bytes, after inverting BLOCKS_AWD -- having taken no blocks is what earns the icons, so a nonzero count becomes zero and a zero becomes BLOCK_ICONS. Skipped entirely in a royal rumble or when that player's process slot is empty."
+ },
+ "rst_winstreak_awards": {
+  "file": "AWARD.ASM",
+  "status": "renamed",
+  "symbol": "wm_award_reset_winstreak",
+  "note": "AWARD.ASM:314. `movi NUM_AWARDS-1,a0` and a dsjs loop, so it clears 31 of the 32 words and leaves the last alone -- almost certainly a slip, since the sibling rst_awards uses the full count, and unobservable because the highest award index in use is FIVE_WINS at 29. The port reproduces it rather than quietly correcting it."
+ },
+ "give_award_if_opponent_is_human": {
+  "file": "AWARD.ASM",
+  "status": "renamed",
+  "symbol": "wm_award_defeat_human",
+  "note": "AWARD.ASM:1032. DEFEAT_HUMAN, granted on each side by testing the OTHER side's PSTATUS bit -- bit 0 is 'player 1 is in', bit 1 is 'player 2 is in'."
+ },
+ "check_for_award_for_big_comeback": {
+  "file": "AWARD.ASM",
+  "status": "renamed",
+  "symbol": "wm_award_check_comeback",
+  "note": "AWARD.ASM:1096. Grants COMEBACK_AWD if this side's pcomeback flag is armed; arm_comeback_award is what arms it, and only when every live enemy is still at 80% health or better."
+ },
+ "check_for_award_for_winstreak": {
+  "file": "AWARD.ASM",
+  "status": "renamed",
+  "symbol": "wm_award_check_winstreak",
+  "note": "AWARD.ASM:1152. Grants FIVE_WINS_AWD if this side's pwsarm flag is set, and clears the flag so it is granted once."
+ },
+ "arm_winstreak_award": {
+  "file": "AWARD.ASM",
+  "status": "renamed",
+  "symbol": "wm_award_arm_winstreak",
+  "note": "AWARD.ASM:1124. Arms pwsarm when the streak is a nonzero multiple of five (`movk 5,a0 / modu a0,a1 / jrnz #awa_disarm`), and explicitly DISarms it otherwise -- so reaching six wins takes the pending award away again rather than leaving it standing."
+ },
+ "FIND_LOW_TABLE_LEVEL": {
+  "file": "HSTD.ASM",
+  "status": "renamed",
+  "symbol": "wm_hs_find_level",
+  "note": "HSTD.ASM:3358. Walk the table from entry 1 down and report the first slot this score beats, or zero. It and FIND_HIGH_TABLE_LEVEL at :3322 are the same routine with one instruction different -- `JRLO` here against `JRGE` there -- which is why a lower pin time and a higher win streak both sort to the front. wm_hs_find_level carries both as the table's own WM_HS_HIGHER_IS_BETTER flag."
+ },
+ "pin_speed_check": {
+  "file": "HSTD.ASM",
+  "status": "renamed",
+  "symbol": "wm_hs_begin_pin_speed",
+  "note": "HSTD.ASM:1865. Three refusals before the table is even consulted: a drone (index >= 2) never enters, a match that took three rounds never counts (`cmpi 3,a14 / jreq #retp`), and a non-positive MATCH_TIMERS entry is dropped. Only then does FIND_LOW_TABLE_LEVEL get a look."
+ },
+ "winstreak_check": {
+  "file": "HSTD.ASM",
+  "status": "renamed",
+  "symbol": "wm_hs_begin_winstreak",
+  "note": "HSTD.ASM:1889. Unlike pin_speed_check it has no gate at all -- it reads p1oldwinstreak and goes straight to FIND_HIGH_TABLE_LEVEL, which is the only thing that can turn it away."
+ },
+ "DO_TAG_GAME": {
+  "file": "HSTD.ASM",
+  "status": "renamed",
+  "symbol": "wm_hs_begin_tag_time",
+  "note": "HSTD.ASM:1846. Clears this player's entered_inits, then enters the tag table through FIND_LOW_TABLE_LEVEL with do_entry_time as the entry routine."
+ },
+ "are_inits_dirty": {
+  "file": "HSTD.ASM",
+  "status": "renamed",
+  "symbol": "wm_hs_entry_is_dirty",
+  "note": "HSTD.ASM:2631. The profanity filter: pack each letter into five bits (`subi 40h / andi 1fh`), skipping the three non-alpha grid cells 19h, 20h and 21h, and compare the running value against #dw_table after every letter -- so a banned word is caught as a prefix, not only as the whole entry."
+ },
+ "INIT_HSTRING": {
+  "file": "HSTD.ASM",
+  "status": "renamed",
+  "symbol": "wm_hs_system_table_cmos_check",
+  "note": "HSTD.ASM:3602. Four KILL_AUD calls -- winstreak, pinspeed, beaten and tag -- and a rets. It is reached from the VAL_TAB path when a table had to be reinitialised, and clearing those audit markers is the whole of it. Notably it does NOT clear AUD_INTER."
+ },
+ "INIT_TB": {
+  "file": "HSTD.ASM",
+  "status": "renamed",
+  "symbol": "wm_hs_init_table",
+  "note": "HSTD.ASM:3623. Copy a table factory entries out of ROM into CMOS a byte at a time, then walk back down every entry INCLUDING the zero one writing its checksum. wm_hs_init_table does the same from the WmHsFactoryEntry rows, and wm_hs_rechecksum is the per-entry half."
+ },
+ "new_cursor_pos": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "HSTD.ASM:2692. Places the initials-entry cursor and highlight objects on the letter grid and picks the character image under them. Worth one note even though it is display: the grid is FIVE columns wide, `movk 5,a0 / modu` for the X and `movk 5,a2 / divu` for the Y, and the source's own comments above both lines say `mod 6` and `/ 6`."
+ },
+ "print_hscores": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "HSTD.ASM:636. Draws a whole high-score table: the heading, then a row per entry through draw_*_table_entry. The tables and their ordering are wmania_hiscore_core's; this is the page."
+ },
+ "print_init_string": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "HSTD.ASM. Redraws the three initials being entered as objects under the cursor."
+ },
+ "MOVE_ALL_OBJS_UP": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "HSTD.ASM:512. Gives every object on the high-score page an upward Y velocity so the table scrolls off. Object motion, nothing else."
+ },
+ "STOP_ALL_OBJS": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "HSTD.ASM:501. Zeroes every object's velocity -- the other half of the scroll."
+ },
+ "DELETE_ANY_OFF_TOP": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "HSTD.ASM:531. Deletes objects once the scroll has carried them above the screen."
+ },
+ "JUDDER_SHADOW": {
+  "file": "HSTD.ASM",
+  "status": "process",
+  "note": "HSTD.ASM. A FLASH_PID process that shakes the drop shadow behind the high-score heading. A CREATE, a loop and an object offset."
+ },
+ "init_special_objlist": {
+  "file": "SPECIAL.ASM",
+  "status": "renamed",
+  "symbol": "wm_arcade_special_lists_init",
+  "note": "SPECIAL.ASM:1278. Three stores: the heads of plyr1_objlist, plyr2_objlist and neutral_objlist. Which of the three a projectile joins is decided by SP_PLYR_SIDE, where -1 is neutral."
+ },
+ "delete_special_objlist": {
+  "file": "SPECIAL.ASM",
+  "status": "renamed",
+  "symbol": "wm_arcade_special_delete",
+  "note": "SPECIAL.ASM:1312. Unlink a projectile from whichever of the three lists its SP_PLYR_SIDE puts it in, walking from the head. The insert half is insert_special_objlist at :1292, which the port keeps as wm_arcade_special_insert."
+ },
+ "sp_change_anim": {
+  "file": "SPECIAL.ASM",
+  "status": "renamed",
+  "symbol": "wm_arcade_special_change_anim",
+  "note": "SPECIAL.ASM:2197. Point a projectile at a new animation script and run its immediate non-image opcodes straight away through sp_animate -- which is why the port's change_anim executes them rather than waiting a tick."
+ },
+ "sp_animate": {
+  "file": "SPECIAL.ASM",
+  "status": "renamed",
+  "symbol": "wm_arcade_special_change_anim",
+  "note": "SPECIAL.ASM:2208. The projectile animation stepper sp_change_anim falls into; the port folds both into one function, since the only caller of the stepper is the change."
+ },
+ "yok_salt_spray": {
+  "file": "SPECIAL.ASM",
+  "status": "renamed",
+  "symbol": "wm_arcade_spawn_yoko_salt",
+  "note": "SPECIAL.ASM:1679. Yokozuna's salt: the constructor's exact SP_ field state, which wm_arcade_spawn_yoko_salt carries value for value, plus the salt-specific grow-then-live transitions (wm_arcade_special_salt_become_live and _salt_disable_collision)."
+ },
+ "create_dizzy_proc": {
+  "file": "SPECIAL.ASM",
+  "status": "renamed",
+  "symbol": "create_dizzy",
+  "note": "SPECIAL.ASM:87. The stars over a dizzy wrestler. Its gate (STARS_FLAG, one set at a time) and its per-wrestler offset are translated in the animation VM; the star itself is a DEBRIS_PID object, so the VM reaches it through wm_anim_env's create_dizzy seam."
+ },
+ "begin_ani": {
+  "file": "SPECIAL.ASM",
+  "status": "display",
+  "note": "SPECIAL.ASM:1200. Reads a projectile process's XVAL/YVAL/ZVAL/FLAGS/XVEL/YVEL and the first entry of its animation script, then BEGINOBJP. Object creation start to finish."
+ },
+ "special_ani": {
+  "file": "SPECIAL.ASM",
+  "status": "display",
+  "note": "SPECIAL.ASM:1224. One tick of a projectile's object animation: count down, fetch the next (ticks, image) pair, write OIMG/OSIZE/OSAG/ODXOFF/ODYOFF and the five z-compare bits, and DELOBJA8 plus DIE on a zero tick count. The two `add a10,a1` / `add a11,a1` offset lines are commented out, so the anim offsets are used raw."
+ },
+ "change_image_local": {
+  "file": "SPECIAL.ASM",
+  "status": "display",
+  "note": "SPECIAL.ASM:1259. special_ani's image write on its own: OIMG, OSIZE, OSAG, the two display offsets and the z-compare byte."
+ },
+ "impact_proc": {
+  "file": "SPECIAL.ASM",
+  "status": "process",
+  "note": "SPECIAL.ASM:843. A DEBRIS_PID process that plays one impact burst and dies. The decision to create it, and how many pieces, is wm/arcade/wm_arcade_debris.h's; the pieces are objects."
+ },
+ "impact_proc2": {
+  "file": "SPECIAL.ASM",
+  "status": "process",
+  "note": "SPECIAL.ASM:830. The same, with the second burst's image set."
+ },
+ "dizzy_proc": {
+  "file": "SPECIAL.ASM",
+  "status": "process",
+  "note": "SPECIAL.ASM:158. The star process create_dizzy_proc spawns: orbit the wrestler's head until STARS_FLAG clears, then die."
+ },
+ "create_impact3": {
+  "file": "SPECIAL.ASM",
+  "status": "process",
+  "note": "SPECIAL.ASM:397. Two refusals then a CREATE: `@no_debris` and `@reduce_bog` both abort it outright, which is the same pair wm/arcade/wm_arcade_debris.h already gates on. What is left is the DEBRIS_PID creation at a fixed 58h offset."
+ },
+ "react_blood": {
+  "file": "SPECIAL.ASM",
+  "status": "display",
+  "note": "SPECIAL.ASM:1846. Sets a projectile's gravity to GRAVITY*2 and its DMA flags, then BEGINOBJs a PINSHAD1 at z 150. The second BEGINOBJ below it, for the shadow at z 149, is commented out -- so SP_SHADOW_OBJ is explicitly cleared at the top and never filled."
+ },
+ "react_bloodnguts_gen": {
+  "file": "SPECIAL.ASM",
+  "status": "process",
+  "note": "SPECIAL.ASM:1805. The generator that spawns react_blood processes. Its gates are the shared debris ones; the spray is objects."
+ },
+ "init_joystat": {
+  "file": "WRESTLE.ASM",
+  "status": "renamed",
+  "symbol": "wm_arcade_joystat_init",
+  "note": "WRESTLE.ASM:4533. Zero round_tickcount and clear the whole wrest_joystat ring buffer. The port holds the tick count at the call site rather than in the buffer, so the clear is wm_arcade_joystat_init and the counter is the caller's."
+ },
+ "reset_smoves": {
+  "file": "WRESTLE.ASM",
+  "status": "renamed",
+  "symbol": "wm_smove_reset",
+  "note": "WRESTLE.ASM:6141. Walk the ACTIVE process list and, for every SMOVE_PID, point PWAKE at that watchdog's SM_RESET_ADDRESS -- the entry init_smoves saved when it made the process -- and set PTIME to 1. wm_smove_reset is that, against the state machines wm_smove_init makes: back to step 0, disarmed, countdown cleared. One thing it does NOT do is revive a monitor that has already DIEd, because such a process is off the ACTIVE list the sweep walks and cannot be reached by it."
+ },
+ "switch_unstack": {
+  "file": "WRESTLE.ASM",
+  "status": "hardware",
+  "note": "WRESTLE.ASM:551. Drain the coin/service switch queue: pop an entry, index switch_t by switch number times three, and GETPRC a process to handle it. The queue is filled by the switch interrupt and the table is the cabinet's wiring."
+ },
+ "crowd_anim": {
+  "file": "CROWD.ASM",
+  "status": "partial",
+  "symbol": "match_crowd_cheer",
+  "note": "CROWD.ASM:80. Thirty crowd blocks, each running its own script through animate_back, plus the BAKLST sweep that pushes the current frame into the background objects. The part this port has is the cheer seam the game pokes it with (wm_anim_env's crowd_cheer/crowd_sound and DO_CROWD_CHEER's gates); the part it does not is the background animation itself -- a six-command bytecode VM and ninety scripts (thirty spectators times norm/cheer1/cheer2, CROWD.ASM:295). Spectator artwork, not fight logic."
+ },
+ "animate_back": {
+  "file": "CROWD.ASM",
+  "status": "partial",
+  "symbol": "match_crowd_cheer",
+  "note": "CROWD.ASM:126. One tick of one crowd block: count down TIME, and on zero read the next script word -- a negative word is one of six commands (goto, rndwait, end, code, random-repeat, should-we-repeat) and a positive one is a tick count followed by a frame pointer. Its exit carries a deliberate curiosity the source flags itself: it writes zero into A14 as `MOVK 1,A14 / DEC A14` under the comment \"You think a simple CLR would do the job here? Try it. I dare you.\" -- because the assembler's CLR expands to MOVK 0, which on a TMS34010 does NOT set the status flags, and the caller branches on Z."
+ },
+ "ck_ignore_a8": {
+  "file": "WRESTLE.ASM",
+  "status": "renamed",
+  "symbol": "wm_arcade_ck_ignore",
+  "note": "WRESTLE.ASM:6044. Both callers -- BRET.ASM:596 and DOINK.ASM:1399 -- gate the FLYING KICK on it: you cannot launch one while backing away. mv_tbl (:6035) is indexed by NEW_FACING_DIR and yields a BIT NUMBER tested in MOVE_DIR, so facing 5 or 6 tests MOVE_RIGHT and facing 9 or 10 tests MOVE_LEFT -- always 'away from where he is looking'. A facing outside those four would read a zero from the table, which is bit number zero, MOVE_UP; the source's own comment says the facing is '(9,10,6,5 only)', so the port answers allow rather than reproducing a lookup the comment rules out."
+ },
+ "get_box_overlap": {
+  "file": "WRESTLE.ASM",
+  "status": "renamed",
+  "symbol": "wm_ring_box_overlap",
+  "note": "WRESTLE.ASM:5704. Given a box made of two boundary lines, the shortest push that gets a wrestler out of it: four edge distances, smallest wins, ties to the horizontal because every comparison is a strict jrgt. Note the Z bounds come from whichever seed a6 held LAST, which is the left line. It reports (0,0) both for 'not in the box' and for a Z outside the lines' range, so a caller cannot tell those apart. No live caller: all four call sites (:5545, :5584, :5633, :5682) are commented out."
+ },
+ "drn_combo": {
+  "file": "DRONE.ASM",
+  "status": "renamed",
+  "symbol": "wm_arcade_drone_combo_script",
+  "note": "DRONE.ASM:2092. Its first act is `#wres_t[WRESTLERNUM]` and a jump, so it is really eight scripts. All eight are in the port's table and differ only in which two buttons their 50% flip chooses between -- everyone opens with the same two reversals and everyone ends in #cstrt. Slot 7, the cut wrestler, is given Doink's by the table itself. Nothing selects drn_combo in this port: CHECK_COMBO_GO can never report a lit combo meter while nothing fills one (wm/arcade/wm_arcade_mode_dead.h)."
+ },
+ "change_walk_anim": {
+  "file": "WRESTLE.ASM",
+  "status": "renamed",
+  "symbol": "wm_wrestler_backend_execute_walk",
+  "note": "WRESTLE.ASM:4946. Reselect the leg cycle for the direction a wrestler is walking, and the torso with it. Reached only from the eight real-movement arms of execute_walk's dispatch, i.e. under MOVE_DIR != 0. The port gates the torso half on its single anim_mode where the source uses ANIMODE2; nothing here writes an ANIMODE2, so that is the primary channel's mode -- the same approximation Bret's backend has always made."
+ },
+ "set_rotate_anim": {
+  "file": "WRESTLE.ASM",
+  "status": "renamed",
+  "symbol": "wm_wrestler_backend_execute_walk",
+  "note": "WRESTLE.ASM:5062. change_walk_anim's counterpart on the idle path: no movement, so the turn animation is chosen from the facing alone. Both halves live in wm_wrestler_backend_execute_walk, which is the dispatch that picks between them."
+ },
+ "update_joystat": {
+  "file": "WRESTLE.ASM",
+  "status": "renamed",
+  "symbol": "wm_arcade_joystat_update",
+  "note": "WRESTLE.ASM:4569. Push this tick's input into the shared history ring: LEFT/RIGHT absolute at bits 10-11, the facing-relative direction at bits 0-3 (run through xflip_table at :4650 when facing left, which swaps only LEFT and RIGHT), and one entry per newly pressed button tagged at bits 4-8. Inserted only on a stick edge with a nonzero value, or on a button press."
+ },
+ "init_reduce_bog": {
+  "file": "WRESTLE.ASM",
+  "status": "renamed",
+  "symbol": "reduce_bog",
+  "note": "WRESTLE.ASM:4552. Count active wrestler processes, subtract two, and store the remainder in reduce_bog -- so a straight one-on-one leaves it at zero and every extra wrestler raises it. It is a load-shedding level, not a flag, and the debris and move-name code both read it."
+ },
+ "set_up_line_tables": {
+  "file": "WRESTLE.ASM",
+  "status": "renamed",
+  "symbol": "wm_ring_calc_line_x",
+  "note": "WRESTLE.ASM:5834. Precompute a per-Z lookup for each of the eight boundary lines at startup, stepping a 16.16 accumulator by (width<<16)/(depth+1) and reading index i AFTER i+1 steps -- so entry 0 is not top_x but one step past it. The port computes the closed form directly instead of building the tables, which is the same arithmetic including that off-by-one, and needs no boot phase this port has not got."
+ },
+ "start_match": {
+  "file": "WRESTLE.ASM",
+  "status": "partial",
+  "symbol": "wm_match_start_two_player",
+  "note": "WRESTLE.ASM:1568. All THREE of its creation paths are now translated: #0plyr (wm_match_start_attract), #1plyr (wm_match_start_selected) and #2plyr (wm_match_start_two_player), the last including buddy mode's two extra drone partners. Still not translated: the INIT_LADDER_TABLE / CURRENT_LADDER / NUM_OPPS multi-drone team selection, so a match creates one opponent rather than a full NUM_OPPS team; and #no_buddies' royal-rumble lineup rewrite, which edits a ladder table this port's match does not read."
+ },
+ "change_wrestler": {
+  "file": "WRESTLE2.ASM",
+  "status": "renamed",
+  "symbol": "wm_life_init_wrestler",
+  "note": "WRESTLE2.ASM. Swap a dead wrestler for a fresh one mid-match. The life-table half is wm_life_init_wrestler, and its distinguishing detail is translated: CLIFE snaps to FULL rather than starting at zero, because the bar must not animate up for a replacement."
+ },
+ "flash_red": {
+  "file": "WRESTLE2.ASM",
+  "status": "display",
+  "note": "WRESTLE2.ASM. Flashes the life bar red on a hit. Pure lifebar rendering -- wm/arcade/wm_arcade_lifebar.h already records it as the one piece of adjust_health's tail that is drawing rather than damage."
+ },
+ "match_timer": {
+  "file": "WRESTLE2.ASM",
+  "status": "partial",
+  "symbol": "wm_match_clock_tick",
+  "note": "WRESTLE2.ASM:4098. Two things in one routine, and both are now translated. The CLOCK -- the 99/99/0 init, the two-second sleep before it starts, the ADJSPEED rate off #timer_table with the royal-rumble/1v3/final-match slowdowns, #dec_timer's 16-bit fractional borrow chain and the ten-second warning -- is wm/arcade/wm_arcade_match_clock.h. The KO detection that shares the same #loop is wm/arcade/wm_arcade_round.h's wm_arcade_round_tick. Not translated: update_timer's two digit objects (ledgered separately), the clock digits' palette turning red at ten, and the 8-on-1/royal-rumble team bookkeeping and reduce_bog around #1tmded, none of which this port's fixed two-man match can reach."
+ },
+ "kill_smove_procs": {
+  "file": "WRESTLE2.ASM",
+  "status": "renamed",
+  "symbol": "wm_smove_kill",
+  "note": "WRESTLE2.ASM:3896. The other end of init_smoves: every SMOVE_PID process whose PA8 is this wrestler dies. The port keeps each wrestler's watchdogs in his own array (wm/match.h), so the PA8 comparison is what the array IS and wm_smove_kill marks all of them dead."
+ },
+ "ditch_getup_meter_a9": {
+  "file": "WRESTLE2.ASM",
+  "status": "renamed",
+  "symbol": "ditch_getup_meter",
+  "note": "WRESTLE2.ASM. Drop a wrestler's getup meter, reached from keep_onscreen when a run is stopped and from the react layer. The port carries it as a callback on wm_arcade_react_callbacks_t because the meter is a display object the core does not own."
+ },
+ "obj_yzsort": {
+  "file": "DISPLAY.ASM",
+  "status": "renamed",
+  "symbol": "wm_match_build_draw_list",
+  "note": "DISPLAY.ASM:1248. Bubble-sort the object list into ascending OZPOS, then ascending OYPOS within an equal OZPOS. Those are the values #set_image writes, and both are derived from Z, so the second key cannot separate two wrestlers at the same depth -- the port's draw list reproduces the comparison rather than the bubble sort."
+ },
+ "wait_on_butn": {
+  "file": "ATTRACT.ASM",
+  "status": "renamed",
+  "symbol": "wm_app_tick",
+  "note": "ATTRACT.ASM. Sleep until a button is pressed or a timeout expires, whichever first. The attract sequence's real timings -- SLEEP TSEC/2 then wait_on_butn 8*TSEC, and show_gameplay's SLEEP 3*60 then wait_on_butn 10*TSEC -- are translated in wm/app.h as tick counts, because this port advances the app a tick at a time rather than sleeping a process."
+ },
+ "display_blank": {
+  "file": "UTIL.ASM",
+  "status": "hardware",
+  "note": "UTIL.ASM. Turns the display processor off. There is no display processor."
+ },
+ "display_unblank": {
+  "file": "UTIL.ASM",
+  "status": "hardware",
+  "note": "UTIL.ASM. And on again."
+ },
+ "RemapIO": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "MAIN.ASM. Moves the I/O window in the address map. Its one call site in WRESTLE.ASM's main loop is commented out, under the author's own question: \"isn't there a less obvious place that we can remap the IO ???\""
+ },
+ "fallbacks_t": {
+  "file": "LIFEBAR.ASM",
+  "status": "data",
+  "note": "LIFEBAR.ASM:1849. Nine REFLONGs, and they are the SAME nine as REACT1.ASM:1801 fall_back_tbl -- hrt_fall_back_anim down to lex_fall_back_anim with slot 7 empty. Already extracted under that name into src/generated/roster_anim_tables.c. tools/wlrostertbl.py does not see this copy because three labels stand in a row above the rows (`SUBR fallbacks_t`, then `#fallbacks_t`, then `#fall_back`) and its reader stops at the second. Teaching it to walk an alias chain was tried and reverted: it misattributed rows across the tree and cost fourteen tables that were being read correctly, for two whose contents are already here."
+ },
+ "convulse_t": {
+  "file": "LIFEBAR.ASM",
+  "status": "data",
+  "note": "LIFEBAR.ASM:1863. The same story: nine REFLONGs identical to REACT1.ASM:1856 hitonground_tbl, behind the alias chain `SUBR convulse_t` / `#hitonground`."
+ },
+ "raise_dead": {
+  "file": "FINISEQ.ASM",
+  "status": "process",
+  "note": "FINISEQ.ASM:1535. `SLEEP TSEC/2` -- \"Give him a bit before standing up\" -- then put @dead_wrestler into raise_dead_anim and DIE. A CREATE'd delay around one change_anim1a."
+ },
+ "get_mpart_offsets": {
+  "file": "WRESTLE2.ASM",
+  "status": "display",
+  "note": "WRESTLE2.ASM:1509. Walks a multi-part image's IPCOUNT pieces and returns the largest IANIOFFX/IANIOFFY among them -- the bounding anchor for a sprite drawn as several DMA objects. The port has one frame geometry per frame (wm/frame_geometry.h) rather than a piece list, so there is nothing to walk."
+ },
+ "get_mpart_xsize": {
+  "file": "WRESTLE2.ASM",
+  "status": "display",
+  "note": "WRESTLE2.ASM:1566. The same walk for the total width."
+ },
+ "slide_offscr": {
+  "file": "WRESTLE2.ASM",
+  "status": "process",
+  "note": "WRESTLE2.ASM:1045. A process that gives an object a velocity and waits for it to leave the screen. Object motion."
+ },
+ "postgame_audits": {
+  "file": "WRESTLE2.ASM",
+  "status": "hardware",
+  "note": "WRESTLE2.ASM:4662. Writes the match's counters into CMOS audit storage. There is no CMOS."
+ },
+ "audit_wrestler": {
+  "file": "WRESTLE2.ASM",
+  "status": "hardware",
+  "note": "WRESTLE2.ASM. Bumps the per-wrestler CMOS audit counter."
+ },
+ "print_string_with_zb": {
+  "file": "STRING.ASM",
+  "status": "display",
+  "note": "STRING.ASM:585. print_string with a Z-buffer value supplied, so the text sorts against the scene rather than sitting on top. The layout half is wm/arcade/wm_arcade_string.h's; the Z is the object's."
+ },
+ "UNDBLU_P": {
+  "file": "WRESPAL.ASM",
+  "status": "data",
+  "note": "WRESPAL.ASM:136. One of the Undertaker's palettes. The palette corpus is extracted wholesale by tools/wlpal.py into src/generated/palettes.c, so this is a row in generated data rather than a routine anything calls."
+ },
+ "rnd": {
+  "file": "DISPLAY.ASM",
+  "status": "renamed",
+  "symbol": "wm_rng_mix",
+  "note": "DISPLAY.ASM:1212. The shared RAND mix -- rotate by RAND's own low five bits, rotate in HCOUNT, add SP, store back -- then mask the result with A0. It is the same body as UTIL.ASM's, and wm/arcade/wmania_rng.h carries it together with the warning that `add sp,a1` is the only value-changing step, so a caller that leaves both entropy inputs at zero gets a degenerate sequence rather than a weak one."
+ },
+ "is_there_one_already": {
+  "file": "LIFEBAR.ASM",
+  "status": "renamed",
+  "symbol": "wm_move_name_should_draw",
+  "note": "LIFEBAR.ASM:3424. MOVE_NAME_ANNC's \"first time only\" rule: index MESSAGE_FLAGS by the INVERTED low bit of the side (`NOT A1 / SLL 31 / SRL 31-4`) and read the flag. The port folds the test and its companion SET_MESS_FLAGS into wm_move_name_should_draw, which is also where reduce_bog's suppression lives."
+ },
+ "adjust_taker_facing": {
+  "file": "FINISEQ.ASM",
+  "status": "renamed",
+  "symbol": "adjust_facing",
+  "note": "FINISEQ.ASM:1032. The exact mirror of adjust_facing at :1018 -- one ORs LEFT|DOWN in and masks RIGHT|UP off and sets FLIPH, the other does the reverse -- so the port carries one body with the direction as its registry parameter. src/core/anim_code.c registers it as `{ \"adjust_taker_facing\", \"FINISEQ.ASM\", adjust_facing, 1, 0 }`; the name reaches the VM, it just is not a separate C function."
+ },
+ "stand_wrestler": {
+  "file": "FINISEQ.ASM",
+  "status": "renamed",
+  "symbol": "coffin_change_by_roster",
+  "note": "FINISEQ.ASM:1488. A FACETBL index into :1471 stand_table and a change_anim1a on a13 -- nothing else. dizzy_wrestler at :1505 is the same two instructions against :1493 dizzy_table, so the port carries one body and picks the table with the registry parameter. The nine rows of each table are read out of the source by tools/wlpuppet.py's CODE_TABLES into src/generated/anim_aux_tables.c, not transcribed."
+ },
+ "dizzy_wrestler": {
+  "file": "FINISEQ.ASM",
+  "status": "renamed",
+  "symbol": "coffin_change_by_roster",
+  "note": "FINISEQ.ASM:1505. See stand_wrestler: the same body with the other FACETBL, registered as `{ \"dizzy_wrestler\", \"FINISEQ.ASM\", coffin_change_by_roster, 1, 0 }`."
+ },
+ "und_coffin_up": {
+  "file": "FINISEQ.ASM",
+  "status": "process",
+  "symbol": "wm_coffin_reset",
+  "note": "FINISEQ.ASM:580. The mat process: BEGINOBJ the mat at [HOLE_XPOS,HOLE_YPOS], step #mat_anim with SLEEPK 3 + obj_aniq, split it into MATCOF05B/05A, fire 25 ltl_exp, CREATE0 do_up_coffin, wait on @close_the_floor, run #mat_anim2 BACKWARDS, then raise the tombstone. Everything it does is object choreography this port has no renderer for. What it DECIDES is translated: its first two instructions (clear both globals) are wm_coffin_reset, the state values it writes (@close_the_floor 1/2/3 and @finish_completed 3) are documented on wm_coffin_state_t, and the frame lists it walks -- forwards and backwards -- are wm_coffin_mat_frames with wm_coffin_close_frame. Worth recording that :645's `calla DELOBJA8` deletes the FRONT piece despite its comment saying back: a8 was overwritten by the second BEGINOBJ at :623 and the back piece is the one saved in a11."
+ },
+ "do_up_coffin": {
+  "file": "FINISEQ.ASM",
+  "status": "process",
+  "symbol": "wm_coffin_rise_step",
+  "note": "FINISEQ.ASM:702. The coffin process, created by und_coffin_up. Same split: the BEGINOBJ/obj_aniq/DELOBJA8 choreography is display, and the arithmetic inside it is translated -- the rise and fall ramps (wm_coffin_rise_step / wm_coffin_fall_step, OSIZEY against OYPOS in steps of COFFIN_VEL), the door's frame walk forwards and backwards (wm_coffin_door_frames, wm_coffin_close_frame), the door-slam shake (wm_coffin_shake_offset, whose Y jitter is -2..0 rather than symmetric), and the @close_the_door 1/3 and @close_the_floor 1 transitions on wm_coffin_state_t."
+ },
+ "hover_coffin": {
+  "file": "FINISEQ.ASM",
+  "status": "process",
+  "symbol": "wm_coffin_hover_step",
+  "note": "FINISEQ.ASM:879. A two-object bob that runs until do_up_coffin kills it. The process shell (SLEEPK 7, the OYPOS writes, the CREATE0 ltl_exp burst) is display; one iteration of its state machine is wm_coffin_hover_step, including the asymmetry that makes it interesting -- the turnaround is `movk 1,a8 / not a8`, a ones complement, so the up delta is -2 and not the -1 the comment beside it claims."
+ },
+ "ltl_exp": {
+  "file": "FINISEQ.ASM",
+  "status": "process",
+  "symbol": "wm_coffin_ltl_exp_params",
+  "note": "FINISEQ.ASM:474. One puff of smoke, created 25 at a time and again on every hover turnaround. The BEGINOBJ, the SNDSND and the three-tick frame walk are display; its six RNDRNG0 draws -- delay, X, Y, Z, velocity and which of the two smoke lists -- are wm_coffin_ltl_exp_params, in the source's own order, because they come off one shared stream."
+ },
+ "tstone_test": {
+  "file": "FINISEQ.ASM",
+  "status": "data",
+  "symbol": "wm_coffin_tstone_frames",
+  "note": "FINISEQ.ASM:573. A `.long` list of image headers, TMBSTN02..TMBSTN08 and a terminator, and the one the shipped game actually raises: und_coffin_up:668 has `movi #tstone_anim,a9` commented out with `movi #tstone_test,a9` beneath it. Kept as the source's own image names, since this port has no image headers yet."
+ },
+ "tstone_anim": {
+  "file": "FINISEQ.ASM",
+  "status": "data",
+  "symbol": "WM_COFFIN_TSTONE_UNUSED_FIRST",
+  "note": "FINISEQ.ASM:571. One `.long`, TMBSTN01, immediately followed by #tstone_test. Starting the tombstone here would show that frame first; the line that did is commented out at :668, so the frame is recorded as WM_COFFIN_TSTONE_UNUSED_FIRST rather than put in the live list."
+ },
+ "mat_anim": {
+  "file": "FINISEQ.ASM",
+  "status": "data",
+  "symbol": "wm_coffin_mat_frames",
+  "note": "FINISEQ.ASM:552. MATCOF01..MATCOF04, the mat opening. The closing loop at :652 walks this same list backwards, so there is no separate close list."
+ },
+ "mat_anim2": {
+  "file": "FINISEQ.ASM",
+  "status": "data",
+  "symbol": "wm_coffin_close_frame",
+  "note": "FINISEQ.ASM:557. Not an animation: a bare `.long 0` sitting immediately after #mat_anim, used as the END pointer that #fc_loop walks backwards from with `move *-a9`. The port expresses that as wm_coffin_close_frame over wm_coffin_mat_frames rather than as a second list."
+ },
+ "cof_anim1": {
+  "file": "FINISEQ.ASM",
+  "status": "data",
+  "symbol": "wm_coffin_door_frames",
+  "note": "FINISEQ.ASM:560. COFFIN02..COFFIN05, the coffin door opening. #close_loop at :786 walks it backwards to shut the door, ending on COFFIN02 -- the frame that also drops the front half and moves the Z in front of the wrestler."
+ },
+ "cof_anim2": {
+  "file": "FINISEQ.ASM",
+  "status": "data",
+  "symbol": "wm_coffin_close_frame",
+  "note": "FINISEQ.ASM:565. The same shape as #mat_anim2: a bare `.long 0` after #cof_anim1, serving as the backwards walk's start."
+ },
+ "exp1_anim": {
+  "file": "FINISEQ.ASM",
+  "status": "data",
+  "symbol": "wm_coffin_exp1_frames",
+  "note": "FINISEQ.ASM:443. SMOKE01..SMOKE10, one of the two puffs ltl_exp draws between."
+ },
+ "exp2_anim": {
+  "file": "FINISEQ.ASM",
+  "status": "data",
+  "symbol": "wm_coffin_exp2_frames",
+  "note": "FINISEQ.ASM:456. SMOKEB01..SMOKEB10, the other."
+ },
+ "ltl_puff": {
+  "file": "FINISEQ.ASM",
+  "status": "data",
+  "symbol": "wm_coffin_exp1_frames",
+  "note": "FINISEQ.ASM:470. Two `.long`s, pointers to #exp1_anim and #exp2_anim. ltl_exp indexes it with RNDRNG0(1) scaled by 32 -- the stride of a `.long` -- so the draw is just the index, and the port keeps the two lists rather than a table of pointers to them."
+ },
+ "game_loop": {
+  "file": "WRESTLE.ASM",
+  "status": "process",
+  "note": "WRESTLE.ASM's main loop: PROCSTRT the process list, run the display, wait on the interrupt, repeat, forever. This port has no cooperative scheduler -- wm_match_tick is one pass of the game's work, called by whatever owns the frame, and app.c drives it. The loop itself is the one structure a port is expected to replace; what it CALLED in order is translated and is the order wm_match_tick runs in."
+ },
+ "wrestler_main": {
+  "file": "WRESTLE.ASM",
+  "status": "process",
+  "note": "One wrestler's process: the endless SLEEPK-1 loop that calls read_switches, calc_closest, the control layer, veladd, friction, set_collision_boxes, confine_wrestler and the animation, once a tick. Every one of those is translated and wm_match_tick calls them in that order for every actor; what is not here is the process wrapper, because there are no processes. WRESTLE.ASM:2820 reset_start2 is the same list written out straight, which is what it was checked against."
+ },
+ "game_interrupt": {
+  "file": "WRESTLE.ASM",
+  "status": "hardware",
+  "note": "WRESTLE.ASM:1500. \"Someone has bought in during gameplay of a one player game!\" -- it raises @HALT, decrements pxcpu_ladder unless the player has already lost, and prints the challenger message. A coin interrupt on a cabinet mid-match; there is no coin door and no ladder here."
+ },
+ "init_prog": {
+  "file": "WRESTLE.ASM",
+  "status": "hardware",
+  "note": "The cold-boot path: stack pointer, SETF field definitions, InitPIC, the sound-board reset, init_all. Its whole body after the first few lines sits inside a `.if 0` in the shipped source anyway. Nothing a hosted port does."
+ },
+ "WARMSET": {
+  "file": "WRESTLE.ASM",
+  "status": "hardware",
+  "note": "The warm-reset entry: DINT, the two SETF field definitions, the stack pointer, InitPIC, POWERCMOS (skipped under DEBUG with the source's own note \"This takes all day to run. leave it out until we ship\") and init_all. TMS34010 state and cabinet hardware."
+ },
+ "CLEAR_PROCESSES": {
+  "file": "WRESTLE.ASM",
+  "status": "inlined",
+  "symbol": "wm_match_init",
+  "note": "WRESTLE.ASM:2570. Two loops that zero wres0_objs (NUM_WRES*MAX_PIECES object pointers) and process_ptrs (NUM_WRES process pointers). Both arrays are things this port does not have -- there is no object pool and the actors are an array in wm_match_state rather than a pointer table -- and wm_match_init's `memset(m, 0, sizeof(*m))` is the same clear over the structure that replaced them."
+ },
+ "set_process_ptr": {
+  "file": "WRESTLE.ASM",
+  "status": "inlined",
+  "symbol": "wm_match_start_selected",
+  "note": "WRESTLE.ASM:4440. `X32 a1 / addi process_ptrs,a1 / move a13,*a1,L` -- a wrestler registering himself in the process table by PLYRNUM. The port's actors ARE that table: wm_match_state::actors is indexed the same way and is filled in by the two start paths, so there is nothing to register."
+ },
+ "set_process_ptr2": {
+  "file": "WRESTLE.ASM",
+  "status": "inlined",
+  "symbol": "wm_match_start_selected",
+  "note": "WRESTLE.ASM:4462, and the source explains why there are two: \"the new pal selector routine requires that process_ptrs are all set up before any of the wrestler processes actually wake up\", so this version is called by the code that CREATES the processes rather than by the process itself, and it also sets PLYR_SIDE, PLYRNUM and WRESTLERNUM because choose_pal needs those too. All three assignments are what the port's start paths do, in the same order and before anything ticks."
+ },
+ "show_most_damage": {
+  "file": "WRESTLE.ASM",
+  "status": "partial",
+  "symbol": "wm_round_most_damage",
+  "note": "WRESTLE.ASM:1359. Translated: the process-list walk that totals DAMAGE_GIVEN per player and SKIPS DRONES (so the percentage is of the humans' damage, not the match's), the comparison that picks the winner with the tie going to player 2, and the `mpyu 100 / divu total` percentage. Not translated: the two message objects it then builds -- pprompt_setup, dec_to_asc, copy_rom_string, concat_string and print_string_C2 for each of the two lines -- which are the text engine drawing, not the decision."
+ },
+ "change_image": {
+  "file": "WRESTLE.ASM",
+  "status": "display",
+  "note": "WRESTLE.ASM:4290. Point an object at a new image header: OIMG, OSIZE, OSAG, and the ODXOFF/ODYOFF display offsets read out of the header's IANIOFFX/IANIOFFY. A DMA object's fields, and this port has no object pool. The animation VM reaches the same idea by handing a frame NAME to the backend."
+ },
+ "DO_SET_IMAGES": {
+  "file": "WRESTLE.ASM",
+  "status": "display",
+  "note": "WRESTLE.ASM. Walks a wrestler's MAX_PIECES object list and points each piece at its image for the current frame -- the multi-piece sprite assembly a WIMP wrestler is drawn from. wm/match_display.h decides the ORDER and the layers this would build; nothing plots them yet."
+ },
+ "direction_test": {
+  "file": "WRESTLE.ASM",
+  "status": "display",
+  "note": "WRESTLE.ASM:4714. A development harness: BEGINOBJ a D2ST2B03 marker at one wrestler and fly it to another over TSEC ticks, with the X and Z velocities divided out by hand, to show which way something is pointing. It is not `dead` -- it has exactly one reference, and that reference is its OWN `CREATE 0,direction_test` at :4723, carrying the source's comment \"temp!!!!!!!!!!!\" and sitting inside the `.if 0` that wraps the routine's whole first half. So nothing in the built game reaches it, but the reference count is 1 rather than 0 and calling it dead would be false. What it does is make an object, which this port has no renderer for."
+ },
+ "choose_pal": {
+  "file": "WRESTLE2.ASM",
+  "status": "partial",
+  "symbol": "wm_pal_find",
+  "note": "WRESTLE2.ASM:3735. Assigns each wrestler one of the four palettes his table holds, in PLYRNUM order, with two special cases: buddy mode takes its own pals, and two humans on the SAME wrestler are given different ones -- the walk over process_ptrs collecting PLYRNUM 0's and 1's WRESTLERNUM is that test. PAL.ASM's allocator is translated (wm/arcade/wm_arcade_pal.h: wm_pal_find, wm_pal_alloc_range and the DIAGP reservation) and the per-wrestler palette tables are generated into src/generated/palettes.c, so both halves of what this routine needs exist. What does not is a consumer: this port draws with no palette attached to a wrestler, so SELECTING between his four has nothing to select for. The two special cases are the part that would have to be written when one appears."
+ },
+ "wrestler_counter": {
+  "file": "WRESTLE2.ASM",
+  "status": "display",
+  "note": "WRESTLE2.ASM:4045. Sets @wrestler_count to 8 and then builds the on-screen \"N remaining\" display -- two BEGINOBJP text objects whose X shifts by [11ah,0] when only player 2 is in, and the loop that redraws them as the count falls. The count itself belongs to the 8-on-1 and royal-rumble modes, neither of which exists here (wm/arcade/wm_arcade_mode_dead.h sets out why), so both the value and its display are unreachable."
+ },
+ "reset_for_round2": {
+  "file": "WRESTLE.ASM",
+  "status": "renamed",
+  "symbol": "wm_round_reset_wrestler2",
+  "note": "WRESTLE.ASM:2797. Clears @annc_rnd_winner_done, then reset_wrestle2 over every wrestler: IMMOBILIZE_TIME 30, fourteen per-round fields cleared, STATUS_FLAGS masked down to SF_RESET_MASK's two surviving bits, and PTIME 1 \"just in case they were KO'd last round\". Eleven of the fourteen fields exist here; PLYR_DIZZY_CNT, AUTO_PIN_CNTDOWN, LAST_FLING_ATTEMPT and HIT_GATE_TIME do not, because nothing translated reads them. Its trailing `reset_start2` block is not a reset at all -- it is one pass of the per-tick pipeline written out straight (calc_closest, set_collision_boxes, confine_wrestler, update_positions, update_joystat, count_button_presses, veladd, friction, and again, then move_wrestler, ani_init, update_links, overlap_collision, set_wrestler_xflip, update_joy_dtime, drone_calcskill), so wm_match_tick running those in that order the next tick is the same thing, and it was what the port's tick order was checked against."
+ },
+ "confine_wrestler_fix1": {
+  "file": "WRESTLE.ASM",
+  "status": "partial",
+  "symbol": "wm_arcade_confine_wrestler",
+  "note": "WRESTLE.ASM:3743, with fix2 its twin: the source runs confine_wrestler TWICE a tick -- \"for whatever reason, confine_wrestler happens twice per tick\" is its own comment -- and ORs the two CAN_MOVE_DIR results together, because the first call's position clamp can stop the second call's collision test triggering. wm_arcade_confine_wrestler runs one real pass. The second is deliberately not simulated: it only converges because OBJ_COLLX1/X2 are refreshed from the corrected position in between, which needs the second call site located and what refreshes the box confirmed, and neither is established. Reusing the stale box was tried and confirmed to DIVERGE rather than converge -- it re-applies nearly the same correction and overshoots the other way -- so a fabricated second pass would be strictly worse than the single real one. See wm/arcade/wm_arcade_confine.h."
+ },
+ "confine_wrestler_fix2": {
+  "file": "WRESTLE.ASM",
+  "status": "partial",
+  "symbol": "wm_arcade_confine_wrestler",
+  "note": "WRESTLE.ASM:3752. The second of the pair; see confine_wrestler_fix1."
+ },
+ "CREATE_TIMEOUT": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "LIFEBAR.ASM:4876. The TIME OUT graphic the main loop creates when the round clock expires: a sound, a BEGINOBJ at [200,300] with an upward OYVEL, two FX_PID processes copying and moving it, then four passes of TIMEOUT_FLASH_ANIM through ANIM_CROWD. Object and animation drawing throughout; what it is a consequence OF -- the clock reaching zero and the round being decided by LIFEBAR.ASM:5149 set_winner's #tmout rule -- is wm/arcade/wm_arcade_match_clock.h."
+ },
+ "snd_update": {
+  "file": "DCSSOUND.ASM",
+  "status": "partial",
+  "symbol": "wm_sound_update",
+  "note": "DCSSOUND.ASM:2266. Every announcer's duration and every channel's, counted down once a tick, and a channel whose duration reaches zero freed for the next sound -- without it the four channels fill up once and nothing is ever heard again. Not translated: the do_tune_commands branch, where a channel running a TUNE SCRIPT runs the script's next command instead of freeing itself. No tune script is reachable here, because the routines that install one are themselves still open."
+ },
+ "ANNOUNCE_VOICE": {
+  "file": "DCSSOUND.ASM",
+  "status": "renamed",
+  "symbol": "wm_sound_who_is_it",
+  "note": "DCSSOUND.ASM:1869 WHO_IS_IT, the half of ANNOUNCE_VOICE that decides which of the three announcers owns a sound index -- entirely by where it falls between triple_sndtab's own internal labels, which is why those are generated alongside the rows."
+ },
+ "announcer_sound": {
+  "file": "DCSSOUND.ASM",
+  "status": "partial",
+  "symbol": "wm_sound_announcer",
+  "note": "DCSSOUND.ASM:1937. \"Lots like triple_sound, except that it identifies the announcer who's talking, and if he's already saying something, the new call cuts off the old one\" -- and that cut-off bypasses the priority arbitration entirely, writing straight onto the channel he is already using, so an announcer can never talk over himself. Not translated: the send to the board, which is send_code_a3."
+ },
+ "SNDSND": {
+  "file": "DCSSOUND.ASM",
+  "status": "hardware",
+  "note": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. DCSSOUND.ASM:2519 SNDSND is send_code_a3: refuse if @SOUNDSUP, refuse a negative (null) call, then write the call's high byte and low byte to the latch with a poll_sirq wait after each. The two refusals are real and are translated in the mixer; the two byte writes are the board."
+ },
+ "send_code_a3": {
+  "file": "DCSSOUND.ASM",
+  "status": "hardware",
+  "note": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. The same routine as SNDSND, which is its other entry point."
+ },
+ "poll_sirq": {
+  "file": "DCSSOUND.ASM",
+  "status": "hardware",
+  "note": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. DCSSOUND.ASM:2547: spin on the sound board's IRQ line until it says it is ready, with a 180-microsecond timeout \"so sound board can't screw things up\"."
+ },
+ "inc_sdram": {
+  "file": "DCSSOUND.ASM",
+  "status": "hardware",
+  "note": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. The SND_DEBUG ring buffer's write pointer -- a development trace of the last N sound calls, assembled out of the shipped game entirely."
+ },
+ "clear_sound_ram": {
+  "file": "DCSSOUND.ASM",
+  "status": "renamed",
+  "symbol": "wm_sound_clear_ram",
+  "note": "DCSSOUND.ASM:2477. Corrects an earlier reading in this ledger, which called it part of the SND_DEBUG trace buffer -- it is not. It sweeps chan1ram to chan4scp+32, which is every CHANNEL's priority, duration, call and script pointer: real mixer state, and translated. (inc_sdram, ledgered beside it, IS the debug ring buffer's pointer.)"
+ },
+ "snd_reset": {
+  "file": "DCSSOUND.ASM",
+  "status": "hardware",
+  "note": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. Resets the board and waits for it to come back."
+ },
+ "qsndrst_proc": {
+  "file": "DCSSOUND.ASM",
+  "status": "hardware",
+  "note": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. The process that performs a board reset out of line."
+ },
+ "delay_code_a3": {
+  "file": "DCSSOUND.ASM",
+  "status": "hardware",
+  "note": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. A send_code_a3 with a delay in front of it, for calls the board needs spacing between."
+ },
+ "snd_play1": {
+  "file": "DCSSOUND.ASM",
+  "status": "hardware",
+  "note": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. A one-shot send with no channel bookkeeping."
+ },
+ "VOLBTN_PRESS": {
+  "file": "DCSSOUND.ASM",
+  "status": "hardware",
+  "note": "DCSSOUND.ASM:2564. The cabinet's two volume buttons behind the coin door, read straight off the coin port and written to the board's volume register. There is no coin door on an N64 and no operator volume setting for it to adjust."
+ },
+ "channel_sound": {
+  "file": "DCSSOUND.ASM",
+  "status": "renamed",
+  "symbol": "wm_sound_channel",
+  "note": "DCSSOUND.ASM:1801. \"like triple_sound, only you specify the channel it goes on, priorities notwithstanding\" -- the channel is taken whatever is on it, and chanXpri/dur/snd are still updated, which is what separates it from a bare SNDSND."
+ },
+ "ring_bell": {
+  "file": "DCSSOUND.ASM",
+  "status": "renamed",
+  "symbol": "wm_sound_bell_tick",
+  "note": "DCSSOUND.ASM:1701. The match-start bell three times, a third of a second apart, with rings two and three going through channel_sound onto the channel the first one took. The source explains why beside it: it conserves tracks, and is only safe because the gap is shorter than the bell's own 89-tick duration."
+ },
+ "wmania_tune": {
+  "file": "DCSSOUND.ASM",
+  "status": "renamed",
+  "symbol": "wm_sound_tune_tick",
+  "note": "DCSSOUND.ASM:1673. Despite the name this is not a tune SCRIPT: it is a process that sends raw call 11 once and then alternates 14 and 13 every eight seconds for ever."
+ },
+ "wrtable_sound": {
+  "file": "DCSSOUND.ASM",
+  "status": "renamed",
+  "symbol": "wm_sound_wrtable",
+  "note": "DCSSOUND.ASM:1859. A wrestler's own sound table indexed by WRESTLERNUM with a DEFAULT_SOUND_TABLE fallback where his entry is negative, then triple_sound on the result. The lookup half was already generated (tools/wlwrsnd.py); this is the two joined as the source joins them, including the `sll 32-15 / srl 32-15` that strips W_LOOKUP."
+ },
+ "END_MATCH_SPEECH": {
+  "file": "DCSSOUND.ASM",
+  "status": "partial",
+  "symbol": "wm_sound_pin_him_tick",
+  "note": "DCSSOUND.ASM:3946 and the PIN_HIM_PROC it creates: the crowd's \"pin him!\" chant. Eight calls drawn from a five-entry table, each starting twenty ticks before the last one ends, and one rule that is the whole character of it -- a draw repeating the LAST call is replaced by the next table entry, which is what the two duplicate entries at the end of WHICH_PIN_HIM are for. It runs 150 times in 1000. Not translated: the commented-out SET_UP_PERSONAL_CALL/ADD_VOICE lines above it, which are commented out in the source too."
+ },
+ "KILL_PIN_HIM": {
+  "file": "DCSSOUND.ASM",
+  "status": "renamed",
+  "symbol": "wm_sound_pin_him_kill",
+  "note": "DCSSOUND.ASM:3989. `KILALL PIN_HIM_PID` -- stop the chant."
+ },
+ "do_tune_commands": {
+  "file": "DCSSOUND.ASM",
+  "status": "partial",
+  "note": "DCSSOUND.ASM:2377. A five-opcode bytecode VM for tune scripts -- send, setpri, endtune, sleep, send2 -- and NOTHING IN THE SHIPPED GAME EVER INSTALLS A SCRIPT FOR IT TO RUN. Across every linked file the only writes to a channel's script pointer are inside this routine itself (tc_sleep saving its position, tc_endtune clearing it); no caller sets one up, so every chanNscp is permanently zero and snd_update's script branch never fires. It cannot be ledgered `dead` -- it has nine references, its own internal jumps and snd_update's four calls -- but it can never execute an instruction, which is why wm_sound_update always frees the channel at zero rather than modelling the branch. tests/test_source_tools.py's test_the_tune_script_vm_has_no_programs checks that rather than asserting it, because the day something does install a script wm_sound_update quietly becomes half a routine. Two further reasons not to translate it speculatively: tc_setpri writes the priority through the SCRIPT pointer where its two neighbours use the CHANNEL pointer, which looks like a bug and cannot be tested against a program that never runs; and tc_send2 recovers its channel by scanning BACKWARDS through script bytes in TMS34010 memory for an endtune marker, a layout this port has no equivalent of.",
+  "symbol": "wm_sound_update"
+ },
+ "decompress_string": {
+  "file": "AWARD.ASM",
+  "status": "renamed",
+  "symbol": "wm_story_decompress",
+  "note": "AWARD.ASM:3056. Eleven instructions that unpack every piece of long text in the game from a six-bit stream -- `setf 6,0,0`, then each field plus 1Fh is a character and a zero field ends it. The alphabet is therefore 0x20-0x5F exactly. STORIES.ASM uses it too, for the wrestler ending stories."
+ },
+ "mk3_tip1_str1": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "The plaintext of a compressed string, extracted by tools/wlstring.py into src/generated/story_text.c and checked against the source's own comment beside it. Line 1 of Mortal Kombat 3 tip 1."
+ },
+ "mk3_tip1_str2": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "The plaintext of a compressed string, extracted by tools/wlstring.py into src/generated/story_text.c and checked against the source's own comment beside it. Line 2 of Mortal Kombat 3 tip 1."
+ },
+ "mk3_tip1_str3": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "The plaintext of a compressed string, extracted by tools/wlstring.py into src/generated/story_text.c and checked against the source's own comment beside it. Line 3 of Mortal Kombat 3 tip 1."
+ },
+ "mk3_tip2_str1": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "The plaintext of a compressed string, extracted by tools/wlstring.py into src/generated/story_text.c and checked against the source's own comment beside it. Line 1 of Mortal Kombat 3 tip 2."
+ },
+ "mk3_tip2_str2": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "The plaintext of a compressed string, extracted by tools/wlstring.py into src/generated/story_text.c and checked against the source's own comment beside it. Line 2 of Mortal Kombat 3 tip 2."
+ },
+ "mk3_tip2_str3": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "The plaintext of a compressed string, extracted by tools/wlstring.py into src/generated/story_text.c and checked against the source's own comment beside it. Line 3 of Mortal Kombat 3 tip 2."
+ },
+ "mk_code1_1": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "An object record -- x, y, z, image, DMA flags, class -- for icon 1 of Mortal Kombat 3 code 1, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons."
+ },
+ "mk_code1_2": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "An object record -- x, y, z, image, DMA flags, class -- for icon 2 of Mortal Kombat 3 code 1, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons."
+ },
+ "mk_code1_3": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "An object record -- x, y, z, image, DMA flags, class -- for icon 3 of Mortal Kombat 3 code 1, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons."
+ },
+ "mk_code1_4": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "An object record -- x, y, z, image, DMA flags, class -- for icon 4 of Mortal Kombat 3 code 1, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons."
+ },
+ "mk_code1_5": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "An object record -- x, y, z, image, DMA flags, class -- for icon 5 of Mortal Kombat 3 code 1, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons."
+ },
+ "mk_code1_6": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "An object record -- x, y, z, image, DMA flags, class -- for icon 6 of Mortal Kombat 3 code 1, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons."
+ },
+ "mk_code2_1": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "An object record -- x, y, z, image, DMA flags, class -- for icon 1 of Mortal Kombat 3 code 2, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons."
+ },
+ "mk_code2_2": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "An object record -- x, y, z, image, DMA flags, class -- for icon 2 of Mortal Kombat 3 code 2, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons."
+ },
+ "mk_code2_3": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "An object record -- x, y, z, image, DMA flags, class -- for icon 3 of Mortal Kombat 3 code 2, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons."
+ },
+ "mk_code2_4": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "An object record -- x, y, z, image, DMA flags, class -- for icon 4 of Mortal Kombat 3 code 2, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons."
+ },
+ "mk_code2_5": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "An object record -- x, y, z, image, DMA flags, class -- for icon 5 of Mortal Kombat 3 code 2, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons."
+ },
+ "mk_code2_6": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "An object record -- x, y, z, image, DMA flags, class -- for icon 6 of Mortal Kombat 3 code 2, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons."
+ },
+ "mk3_tip1_str_tbl": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "A pointer table naming tip 1's three lines. The rows it names are extracted by tools/wlstring.py; the table itself is the order they go in, which is the order they are emitted."
+ },
+ "mk3_tip2_str_tbl": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "A pointer table naming tip 2's three lines. The rows it names are extracted by tools/wlstring.py; the table itself is the order they go in, which is the order they are emitted."
+ },
+ "mk3_tip_str_tbl": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "A pointer table naming the two tips. The rows it names are extracted by tools/wlstring.py; the table itself is the order they go in, which is the order they are emitted."
+ },
+ "mk_code_tbl1": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "A pointer table naming code 1's six icons. The rows it names are extracted by tools/wlstring.py; the table itself is the order they go in, which is the order they are emitted."
+ },
+ "mk_code_tbl2": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "A pointer table naming code 2's six icons. The rows it names are extracted by tools/wlstring.py; the table itself is the order they go in, which is the order they are emitted."
+ },
+ "mk3_tip_prompt_str_tbl": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "A pointer table naming the prompt lines above a tip. The rows it names are extracted by tools/wlstring.py; the table itself is the order they go in, which is the order they are emitted."
+ },
+ "mk3_tip_prompt1": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "A JAM_STR plate and an UNCOMPRESSED string -- the prompt above a Mortal Kombat 3 tip. Plain .string data, unlike the tip lines themselves, which are packed six bits to a character."
+ },
+ "mk3_tip_prompt2": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "A JAM_STR plate and an UNCOMPRESSED string -- the prompt above a Mortal Kombat 3 tip. Plain .string data, unlike the tip lines themselves, which are packed six bits to a character."
+ },
+ "mk3_tip_prompt4": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "A JAM_STR plate and an UNCOMPRESSED string -- the prompt above a Mortal Kombat 3 tip. Plain .string data, unlike the tip lines themselves, which are packed six bits to a character."
+ },
+ "mk3_tip_prompt5": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "A JAM_STR plate and an UNCOMPRESSED string -- the prompt above a Mortal Kombat 3 tip. Plain .string data, unlike the tip lines themselves, which are packed six bits to a character."
+ },
+ "anim_mk": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It animates the Mortal Kombat 3 tip screen's icons."
+ },
+ "mk3_coin": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It the spinning coin on the tip screen."
+ },
+ "mk3_smoke": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It the smoke puffs behind it."
+ },
+ "anim_sparkle": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It the sparkle that runs along an earned icon."
+ },
+ "zip_award_bar": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It slides the award bar on and off."
+ },
+ "move_pu_bars_on": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It slides the power-up bars on."
+ },
+ "flash_bar_icons": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It flashes the icons in the bar."
+ },
+ "show_bonus_icons": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It draws a player's earned icons."
+ },
+ "del_bonus_icons": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It deletes them again."
+ },
+ "show_progress_bicons": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It draws them on the progress screen."
+ },
+ "del_progress_icon": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It deletes one of those."
+ },
+ "get_bbicons": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It picks the icon images for a bar."
+ },
+ "bbicon_table": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It the icon image table a bar draws from."
+ },
+ "create_end_rnd_awards": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It creates the end-of-round award bar."
+ },
+ "create_player_awards": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It creates one player's award objects."
+ },
+ "show_player_options": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It draws one player's options screen."
+ },
+ "show_options": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It draws the options screen."
+ },
+ "display_dufus_message": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It draws one dufus message box."
+ },
+ "show_dufus_messages": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It draws the queue of them."
+ },
+ "dufus_msg_on": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It turns a dufus message on."
+ },
+ "dufus_msg_off": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It turns it off."
+ },
+ "dufus_msgs": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It the dufus message table."
+ },
+ "reset_dufus_msgs": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It clears the queue."
+ },
+ "show_mk3_tip": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It draws a Mortal Kombat 3 tip screen."
+ },
+ "mk_code_frame": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It the frame the code icons sit in."
+ },
+ "award_text": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It the award name strings."
+ },
+ "pu_bar_text": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It the power-up bar's labels."
+ },
+ "adjust_text_position": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It nudges a text plate into place."
+ },
+ "adjust_tl": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It nudges the top-left of one."
+ },
+ "BLACKOUT": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It blanks the screen behind a message."
+ },
+ "audit_icons": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It writes the icon audits to CMOS."
+ },
+ "suspend_game": {
+  "file": "AWARD.ASM",
+  "status": "process",
+  "note": "AWARD.ASM's `CREATE 4000h,suspend_game` -- a process that adds to every ACTIVE process's PTIME so the whole game holds still while a message or a tip screen is up. This port has no cooperative process list to freeze: wm_app_tick drives one state machine, and a mode that wants to hold the match simply does not tick it."
+ },
+ "suspend_all": {
+  "file": "AWARD.ASM",
+  "status": "process",
+  "note": "The same freeze applied to every process rather than the game's, and the same answer: there is no process list here to walk."
+ },
+ "total_reset": {
+  "file": "AWARD.ASM",
+  "status": "hardware",
+  "note": "A full cabinet reset -- CMOS, audits and the watchdog -- reached from the operator menus."
+ },
+ "BGND_UD1": {
+  "file": "BAKGND.ASM",
+  "status": "partial",
+  "symbol": "wm_bgnd_update",
+  "note": "BAKGND.ASM:358. The background refresh the main loop runs every eight ticks: frame the display rect from WORLDTL, SCRNTL and SCRNLR padded by DISP_PAD, delete the blocks that have scrolled off, then add the ones that have scrolled on -- in that order, because the deletes free the objects the adds take. Translated in wm/arcade/wm_arcade_bgnd.h as a residency set with the two edges reported as events. Not translated: the object allocation and the DMA behind it."
+ },
+ "bgnd_addmod": {
+  "file": "BAKGND.ASM",
+  "status": "inlined",
+  "symbol": "wm_bgnd_scanmod",
+  "note": "BAKGND.ASM:457, the inner scan, spelled out inside wm_bgnd_scanmod's own add_module. Two phases: a full test while blocks are left of the display, then a cheaper one once they are not, which stops dead at the first block past the right edge because the table is sorted by X."
+ },
+ "bgnd_addblk": {
+  "file": "BAKGND.ASM",
+  "status": "display",
+  "note": "BAKGND.ASM:576. Allocate an object for a block and link it into the display list, sorted by Z then Y. The DECISION to add it is wm_bgnd_scanmod's, and the ordering rule is already translated as wm/bmod.h's wm_bmod_draw_before; this is the object allocation and the DMA control word, which this port has no object pool for."
+ },
+ "print_story": {
+  "file": "STORIES.ASM",
+  "status": "renamed",
+  "symbol": "wm_story_play_tick",
+  "note": "STORIES.ASM:95. The pagination and the two countdowns: twelve lines to a page at y=90 stepping 12 while below 230, then SLEEP TSEC*5, then a TSEC*15 button wait, then obj_del1c and the next page. wm_story_play_begin/wm_story_play_tick are the same state machine with the sleeps as a tick countdown; wm_arcade_story.h records why a short final page skips both waits."
+ },
+ "show_wrestler_end_story": {
+  "file": "STORIES.ASM",
+  "status": "renamed",
+  "symbol": "wm_story_end_tick",
+  "note": "STORIES.ASM:168. The winner's ending: which_player[PSTATUS>>1], the slot-7 bail, SLEEPK 30 behind fade_down, the mugshot/logo/belt scene, print_story, and a second TSEC*15 button wait before obj_del1c. wm_story_end_begin/wm_story_end_tick decide all of it; the three BEGINOBJ calls are the caller's, flagged by build_scene, with their positions in wm_arcade_story.h."
+ },
+ "animate_fwexp": {
+  "file": "FIREWORK.ASM",
+  "status": "renamed",
+  "symbol": "wm_fw_explosion_tick",
+  "note": "FIREWORK.ASM:133. Four RNDRNG0 draws for position, depth and which of the two explosions, then eleven images one tick apart with `addk 4,a9` moving OYPOS down every frame. wm_fw_explosion_begin takes the four draws rather than making them, so the placement arithmetic can be pinned; wm_fw_explosion_tick is the animate loop including the drift."
+ },
+ "firework_flare": {
+  "file": "FIREWORK.ASM",
+  "status": "renamed",
+  "symbol": "wm_fw_flare_tick",
+  "note": "FIREWORK.ASM:205. A random 1-26 tick delay, then all thirteen images of #flare_anim two ticks apart, then #flare_anim2 -- which is a label five images INTO the same list -- looping until @fizzle_flare is set, then five images walked backwards four ticks apart with `move -*a9`. wm_fw_flare_tick is the whole state machine; the position comes packed into a9 exactly as do_fireworks loads it."
+ },
+ "pan_around": {
+  "file": "FIREWORK.ASM",
+  "status": "renamed",
+  "symbol": "wm_fw_pan_tick",
+  "note": "FIREWORK.ASM:652. The camera flight: SLEEP TSEC/2, then the panning_points table a waypoint at a time, each segment moving by calc_dxdy's delta once a tick until check_camera_position has zeroed both, cheering as it goes, with the congratulations text raised once at the end of the first segment and the table looped until @pan_down is set. wm_fw_pan_tick is that loop; BGND_UD1, crowd_cheer, print_congrats and obj_del1c are the caller's, each flagged on the tick it is due."
+ },
+ "print_congrats": {
+  "file": "FIREWORK.ASM",
+  "status": "partial",
+  "symbol": "wm_fw_congrats",
+  "note": "FIREWORK.ASM:847. Walks #congrats_setup_tbl and #congrats_str_tbl in lockstep for the set a14 selects, calling setup_message and print_string_C2 for each pair. The PAIRING is what the routine is for and tools/wlfirework.py does it at build time -- wm_fw_congrats[set].lines[] is each JAM_STR placement already joined to its string, and wm_fw_congrats_index is the caller's three-way choice. The two calls that actually draw are the text layer's and are not translated here."
+ },
+ "do_fireworks": {
+  "file": "FIREWORK.ASM",
+  "status": "partial",
+  "symbol": "wm_fw_knockout_drones",
+  "note": "FIREWORK.ASM:280. The orchestration. The parts that are decisions are translated: knockout_drones (wm_fw_knockout_drones), the twenty-two flare positions (wm_fw_flare_positions, read out of the routine's own instructions by tools/wlfirework.py rather than retyped), the explosion budget (WM_FW_EXPLOSION_BUDGET / _GAP_MAX) and the pan (wm_fw_pan_*). The rest of it is twenty KIL1C calls and ten obj_del1c calls against process and object IDs this port does not have, plus fade_down/fade_up and flash_white; those are the display layer's and are not invented here."
+ },
+ "c1v3_tbl": {
+  "file": "FIREWORK.ASM",
+  "status": "data",
+  "symbol": "wm_fw_congrats",
+  "note": "The five strings shown for beating the three-man ladder; wm_fw_congrats[WM_FW_CONGRATS_1V3].lines[].text."
+ },
+ "c1v8_tbl": {
+  "file": "FIREWORK.ASM",
+  "status": "data",
+  "symbol": "wm_fw_congrats",
+  "note": "The five strings for beating all eight alone."
+ },
+ "c2v8_tbl": {
+  "file": "FIREWORK.ASM",
+  "status": "data",
+  "symbol": "wm_fw_congrats",
+  "note": "The four strings for beating all eight as a tag team."
+ },
+ "c1v3s_tbl": {
+  "file": "FIREWORK.ASM",
+  "status": "data",
+  "symbol": "wm_fw_congrats",
+  "note": "The five JAM_STR placements paired with c1v3_tbl. Two of its rows are commented out in the source and one put back, which is why this set skips y=126 and jumps from 113 to 152; the emitted table carries the shipped rows only."
+ },
+ "c1v8s_tbl": {
+  "file": "FIREWORK.ASM",
+  "status": "data",
+  "symbol": "wm_fw_congrats",
+  "note": "The five JAM_STR placements paired with c1v8_tbl."
+ },
+ "c2v8s_tbl": {
+  "file": "FIREWORK.ASM",
+  "status": "data",
+  "symbol": "wm_fw_congrats",
+  "note": "The four JAM_STR placements paired with c2v8_tbl."
+ },
+ "congrats_setup_tbl": {
+  "file": "FIREWORK.ASM",
+  "status": "data",
+  "symbol": "wm_fw_congrats",
+  "note": "The three placement sets. Indexing is the array index; WM_FW_CONGRATS_1V3/_1V8/_2V8 name the rows."
+ },
+ "congrats_str_tbl": {
+  "file": "FIREWORK.ASM",
+  "status": "data",
+  "symbol": "wm_fw_congrats",
+  "note": "The three string sets, paired positionally with congrats_setup_tbl. Only the placement tables are zero-terminated, so tools/wlfirework.py checks the lengths match rather than assuming."
+ },
+ "fw_pals": {
+  "file": "FIREWORK.ASM",
+  "status": "data",
+  "symbol": "wm_fw_palettes",
+  "note": "The five palettes a flare or an explosion picks from at random."
+ },
+ "fwexp_tbl": {
+  "file": "FIREWORK.ASM",
+  "status": "data",
+  "symbol": "wm_fw_fwexa_anim",
+  "note": "The two-entry table animate_fwexp picks an explosion from; the port takes the choice as wm_fw_explosion_t.which indexing wm_fw_fwexa_anim / wm_fw_fwexb_anim."
+ },
+ "AddressSet1": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "`movi COINS_M1,a0 / move a0,@_coin_addr,L` and the same for the switch, sound and counter addresses -- one of four I/O base-address maps the security chip selects between through trap 3. There is no coin door or PIC here."
+ },
+ "AddressSet2": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "See AddressSet1: the second I/O base-address map."
+ },
+ "AddressSet3": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "See AddressSet1: the third I/O base-address map."
+ },
+ "AddressSet4": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "See AddressSet1: the fourth I/O base-address map."
+ },
+ "SetAddresses": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "`move a0,a0 / jrn _invalid / cmpi 4,a0` then a jump into AddressSet1-4. The dispatcher for the I/O remap; nothing to remap here."
+ },
+ "InitAddresses": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "The default I/O base-address map (COINS, SWITCH and the rest at their unremapped addresses)."
+ },
+ "InitPIC": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "Initialises the PIC microcontroller that owns the coin door, the switches and the real-time clock. There is no PIC in this port."
+ },
+ "INTIO": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "`movi HESYNC,b2 / movi gspioinit_t,b0` -- loads the TMS34010's video timing registers from a table. The N64's video is libdragon's."
+ },
+ "SecFuncCheck": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "Walks SecFuncTable comparing each security-function entry point against its expected value, to catch a tampered security chip. Its first instruction in the shipped build is `rets`: the check is disabled. There is no security chip here either way."
+ },
+ "WDOGDIS": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "`.if TUNIT=0` around a write to the watchdog register. A hardware watchdog this port does not have."
+ },
+ "_AlarmClock": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "Called by the display interrupt when the RTC seconds roll over; walks ALARM_TAB firing whatever is due. The clock it reads is the PIC's."
+ },
+ "init_all": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "`dint / clr a0 / movi SCRATCH,a1` -- the cold-boot sweep of scratch RAM before anything else runs. The port's memory is the host's."
+ },
+ "switch_stack": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "Switches the 34010's stack pointer between the interrupt and main stacks based on GAMSTATE. No such thing here."
+ },
+ "trap3_handler": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "The TMS34010 trap-3 vector, dispatching into _SecurityFunctions by index. A processor trap on hardware that is not being emulated."
+ },
+ "dma_irq": {
+  "file": "DISPLAY.ASM",
+  "status": "hardware",
+  "note": "The DMA completion interrupt service routine -- `move -*b14,-*b12,L` unwinding the B-file registers it saved. An interrupt handler for a blitter this port does not have."
+ },
+ "SPECIAL_DISPLAY_INIT": {
+  "file": "DISPLAY.ASM",
+  "status": "hardware",
+  "note": "`pushst / dint / movi DIE+X2E,a0` -- programs the video controller registers for the special display mode. Video setup is libdragon's."
+ },
+ "scrn_copy": {
+  "file": "DISPLAY.ASM",
+  "status": "hardware",
+  "note": "Copies one screen page to the other by writing the DMA controller's source and destination registers directly."
+ },
+ "scrn_scale": {
+  "file": "DISPLAY.ASM",
+  "status": "hardware",
+  "note": "Reads @scrnscl and branches to scrn_scale140 or scrn_scale180; both program the horizontal timing registers to stretch the display. A CRT trick with no N64 equivalent."
+ },
+ "scrn_scale140": {
+  "file": "DISPLAY.ASM",
+  "status": "hardware",
+  "note": "See scrn_scale: the 140h timing variant."
+ },
+ "scrn_scale180": {
+  "file": "DISPLAY.ASM",
+  "status": "hardware",
+  "note": "See scrn_scale: the 180h timing variant."
+ },
+ "scrn_scaledison": {
+  "file": "DISPLAY.ASM",
+  "status": "hardware",
+  "note": "Restores HEBLNK to HEBLNKINIT and reinstalls scrn_scale on the display interrupt."
+ },
+ "scrn_scalein": {
+  "file": "DISPLAY.ASM",
+  "status": "hardware",
+  "note": "Saves @HALT and drives the timing registers inward frame by frame."
+ },
+ "scrn_scaleout": {
+  "file": "DISPLAY.ASM",
+  "status": "hardware",
+  "note": "Sets @HALT and drives the timing registers back out. The other half of scrn_scalein."
+ },
+ "ANI": {
+  "file": "DISPLAY.ASM",
+  "status": "display",
+  "symbol": "wm_anim_program_step",
+  "note": "`cmpi ROM,a1 / jrlo anierr` then the object-animation dispatch. It validates that the script pointer is in ROM -- an address-space check on a memory map this port does not have -- and then walks an animation script whose opcodes are the ANI_* set already translated in wm/anim_program.h and wm/arcade/wm_arcade_anim_combat.h. The dispatch itself is the animation VM, which is ported; what is left here is the pointer validation."
+ },
+ "dirq_wait": {
+  "file": "UTIL.ASM",
+  "status": "hardware",
+  "note": "`move @dirqtimer,a0` then spins until the display interrupt has bumped it. A busy-wait on an interrupt this port does not take."
+ },
+ "dma_wait": {
+  "file": "UTIL.ASM",
+  "status": "hardware",
+  "note": "`move @DMACTRL,b0 / jrn dwlp` -- spins on the blitter's busy bit."
+ },
+ "dmaq_wait": {
+  "file": "UTIL.ASM",
+  "status": "hardware",
+  "note": "Blanks the display, waits for the DMA queue to drain, and unblanks. Same blitter."
+ },
+ "security_chk": {
+  "file": "UTIL.ASM",
+  "status": "hardware",
+  "note": "`clr a0 / movi 63,a3` then sixty-four challenge-response rounds against the security chip."
+ },
+ "system_savegame": {
+  "file": "UTIL.ASM",
+  "status": "hardware",
+  "note": "`movi sysstate_t,a1 / SSSL OBJLST / SSSL BAKLST` -- snapshots the object, background and process lists into a save block for the diagnostic menu's state save. A debug facility over the hardware lists."
+ },
+ "dpageflip_off": {
+  "file": "UTIL.ASM",
+  "status": "display",
+  "note": "`clr a0 / move a0,@dpageflip / not a0` -- clears the page-flip flag and returns its old value so a caller can put it back. One flag; the port renders single-buffered through libdragon and has no equivalent to restore."
+ },
+ "ERASE_TXT": {
+  "file": "UTIL.ASM",
+  "status": "inlined",
+  "symbol": "wm_obj_find",
+  "note": "`movi CLSNEUT|TYPTEXT|SUBTXT,a0 / jauc obj_del1c` -- two instructions, a constant and a tail call into the class delete. It is a named constant, not a routine."
+ },
+ "STRCNRM_1": {
+  "file": "UTIL.ASM",
+  "status": "display",
+  "note": "One of six four-instruction entry points into the shared string printer (STRLNRM, STRCNRM, STRRNRM and the rest): it loads DMAWNZ|M_NOCOLL, sets the justification code to 1 for centred, copies a6 into a5 for the multi-colour path and jumps to stringr1_1. The justification and colour handling are the text layer's; wm/arcade/wm_arcade_string.h carries the font metrics side."
+ },
+ "GetSoundRev": {
+  "file": "MENU.ASM",
+  "status": "hardware",
+  "note": "`move @_coin_counter_addr,a0,L / movi 030h,a1 / move a1,*a0,W` -- writes a command to the sound board and reads its revision back. A DCS board handshake."
+ },
+ "_GetTime": {
+  "file": "MENU.ASM",
+  "status": "hardware",
+  "note": "Reads the real-time clock through the PIC, with @_auto_update_save around it so the display interrupt does not race the read."
+ },
+ "poll_sdav": {
+  "file": "MENU.ASM",
+  "status": "hardware",
+  "note": "Polls the sound board's data-available line."
+ },
+ "aud_prtone": {
+  "file": "MENU.ASM",
+  "status": "hardware",
+  "note": "Prints one audit line to the ticket printer via BEGIN_AUDIT and the AUD_ROUTINE pointer in the audit table. A printer this port does not have."
+ },
+ "background_sound": {
+  "file": "MENU.ASM",
+  "status": "display",
+  "note": "The sound test's own noise loop: `clr a3 / calla SNDSND`, then sound_fx_table on a timer forever. It exists to make the operator's sound test audible and is not reachable from the game."
+ },
+ "_aquire_time": {
+  "file": "DIAG.ASM",
+  "status": "hardware",
+  "note": "`movi 011h,a0 / move a0,@PIC_COMMAND,W` -- asks the PIC to latch the current time."
+ },
+ "_get_time": {
+  "file": "DIAG.ASM",
+  "status": "hardware",
+  "note": "Copies the eight latched time bytes out of the PIC into _tseconds and its neighbours."
+ },
+ "_set_time": {
+  "file": "DIAG.ASM",
+  "status": "hardware",
+  "note": "Writes _rtc_seconds through _rtc_year back to the PIC. The operator's clock-setting screen."
+ },
+ "line_draw": {
+  "file": "DIAG.ASM",
+  "status": "hardware",
+  "note": "`ADDI SCRXFUDGE,A0 / move a2,COLOR1` then a Bresenham walk writing pixels straight into the frame buffer through the 34010's COLOR1 register and pixel-addressing modes. The diagnostic screen's line drawer."
+ },
+ "process_init": {
+  "file": "MPROC.ASM",
+  "status": "renamed",
+  "symbol": "wm_scheduler_init",
+  "note": "`movi ACTIVE,a13 / clr a0 / move a0,*a13,L` then two passes threading NPROC process records and SNPROC super-process records into their free lists. wm_scheduler_init does the same thing for the port's process pool; the free-list threading is an allocator detail of a fixed RAM block this port does not lay out the same way."
+ },
+ "process_dispatch": {
+  "file": "MPROC.ASM",
+  "status": "renamed",
+  "symbol": "wm_scheduler_step",
+  "note": "The cooperative scheduler's round: walk ACTIVE, decrement each process's PTIME, run the ones that reach zero. wm_scheduler_step is the same round. Its body opens `.if 0` around an ERASELOC debug write, which is not assembled."
+ },
+ "IKIL1C": {
+  "file": "MPROC.ASM",
+  "status": "inlined",
+  "symbol": "wm_process_kill",
+  "note": "`clr a1` and fall through into IKILALLN. One instruction: it is IKILALLN with an empty ignore mask, the indestructible-process twin of KIL1C/KILALLN. The port kills processes through wm_process_kill and has no indestructible flag for the variant to be about."
+ },
+ "audit_ud": {
+  "file": "AUDIT.ASM",
+  "status": "hardware",
+  "note": "`movi 1,a14 / move a14,@audit_ud_flag / move @GAMSTATE,a14` -- raises the flag that tells the rest of the game an audit update is in flight, then writes the accumulated counters back to CMOS. The counters are the port's; the CMOS write is not."
+ },
+ "crd_updatetxt": {
+  "file": "AUDIT.ASM",
+  "status": "display",
+  "note": "`movi CP_PID1,a0 / movi 0ffffh,a1 / calla KILALL` then redraws the credit-page text objects. The operator credit screen's own redraw."
+ },
+ "opmsg_clr": {
+  "file": "TEST.ASM",
+  "status": "hardware",
+  "note": "Clears the CUSTOM_MESSAGE buffer in CMOS, CMESS_LINES lines of it, from the operator message editor."
+ },
+ "opmsg_main": {
+  "file": "TEST.ASM",
+  "status": "hardware",
+  "note": "The operator message editor itself, opening `.if PRINTER` around a PBADGUY call. It edits the CMOS message the attract mode then displays; wm/arcade/wmania_attract_operator.h reads that message, it does not write it."
+ },
+ "print_multi": {
+  "file": "TEST.ASM",
+  "status": "display",
+  "note": "`move a8,a2 / calla LM_SETUP` -- the diagnostic menu's multi-line printer, laying a wrapped string out through the menu's own line-mode text setup."
+ },
+ "DRKTRPLTP": {
+  "file": "SCREEN.ASM",
+  "status": "data",
+  "note": "Not a routine at all: `.word 31` followed by thirty-two colour words -- a darkened palette table for the screen fade. The disassembly's label scan cannot tell a table from an entry point; this one is a table."
+ },
+ "hscore_colcyc": {
+  "file": "HSTD.ASM",
+  "status": "renamed",
+  "symbol": "wm_colcyc_tick",
+  "note": "Six instructions: `movi [10,7],a8 / movi BLUE,a9 / movi COLTAB2,a10 / movk 3,a11 / CREATE CYCPID,CYCLE_TABLE`. The cycler is UTIL.ASM:1174 CYCLE_TABLE and this is its argument list; wm_colcyc_tick is that loop and wm_colcyc_tables[0] carries these four arguments and COLTAB2's 78 words, read out by tools/wlcolcyc.py."
+ },
+ "hscore_colcyc2": {
+  "file": "HSTD.ASM",
+  "status": "renamed",
+  "symbol": "wm_colcyc_tick",
+  "note": "The same six instructions on RUBYPAL with COLTAB3. wm_colcyc_tables[1]."
+ },
+ "val_to_dec_tenths_asc": {
+  "file": "HSTD.ASM",
+  "status": "renamed",
+  "symbol": "wm_string_val_to_dec_tenths",
+  "note": "HSTD.ASM:1105. A hundredths value as `n.t`: dec_to_asc of value/100 with a 1000 cap, a \".\", then (value/10)%10 -- through dec_to_asc with a cap of 10 when it is non-zero, and as the ROM string \"0\" when it is, because dec_to_asc suppresses leading zeros and would contribute nothing. Already translated; the name only appears here in a comment."
+ },
+ "PIN_SPEED_TAB": {
+  "file": "HSTD.ASM",
+  "status": "data",
+  "symbol": "wm_hs_table",
+  "note": "One of the five high-score table DESCRIPTORS -- `.long origin / .word entries-1, visible, select bits / .long rom image / .word reset threshold` -- alongside STREAK_TAB and its siblings. The port's table descriptors are wmania_hiscore_factory.c's; the `visible` word is marked \"unused ?\" in the source itself."
+ },
+ "draw_pinspeed_table_entry": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "Draws one pin-speed row: initials at [Y,Xleft], the time at [Y,Xright] through val_to_dec_tenths_asc, in palette a11. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's."
+ },
+ "draw_beaten_table_entry": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "The same row draw for the games-beaten table. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's."
+ },
+ "draw_tag_table_entry": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "The same row draw for the tag table. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's."
+ },
+ "draw_winstreak_table_entry": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "The same row draw for the win-streak table. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's."
+ },
+ "draw_each_beaten_table_entry": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "Walks the beaten table calling draw_beaten_table_entry per visible row. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's."
+ },
+ "draw_each_inter_table_entry": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "Walks the intercontinental table the same way. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's."
+ },
+ "draw_letter_grid": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "Lays the A-Z entry grid out for the initials screen. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's."
+ },
+ "print_beaten": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "Puts the games-beaten page up: background, heading, then the rows. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's."
+ },
+ "print_inter": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "The intercontinental page. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's."
+ },
+ "print_tag": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "The tag page. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's."
+ },
+ "print_winstreaks": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "The win-streak page. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's."
+ },
+ "enter_initials_top_20": {
+  "file": "HSTD.ASM",
+  "status": "renamed",
+  "symbol": "wm_hs_entry_tick",
+  "note": "The initials entry loop for the top-20 table. The three differ only in which table they write into and where the grid sits; the cursor movement, the button handling, the timeout and the dirty/empty rules are one loop, translated as wm_hs_entry_begin / wm_hs_entry_tick in wmania_hiscore_entry.c."
+ },
+ "enter_initials_beaten": {
+  "file": "HSTD.ASM",
+  "status": "renamed",
+  "symbol": "wm_hs_entry_tick",
+  "note": "The same loop for the games-beaten table. The three differ only in which table they write into and where the grid sits; the cursor movement, the button handling, the timeout and the dirty/empty rules are one loop, translated as wm_hs_entry_begin / wm_hs_entry_tick in wmania_hiscore_entry.c."
+ },
+ "enter_initials_streak": {
+  "file": "HSTD.ASM",
+  "status": "renamed",
+  "symbol": "wm_hs_entry_tick",
+  "note": "The same loop for the win-streak table. The three differ only in which table they write into and where the grid sits; the cursor movement, the button handling, the timeout and the dirty/empty rules are one loop, translated as wm_hs_entry_begin / wm_hs_entry_tick in wmania_hiscore_entry.c."
+ },
+ "do_that_cycle": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "symbol": "wm_colcyc_tick",
+  "note": "Starts the page's palette cyclers and the background, then sleeps out the page's dwell. The cycling itself is hscore_colcyc / hscore_colcyc2, now translated as wm_colcyc_tick; the page dwell and the object creation around it are the display layer's."
+ },
+ "SHIFT_BARS_IN_Z": {
+  "file": "LIFEBAR.ASM",
+  "status": "renamed",
+  "symbol": "wm_zflip_tick",
+  "note": "LIFEBAR.ASM:4039. A four-tick poll of WORLDTLY against ZFLIP_POS_VAR with one flag of hysteresis: at or above, every object whose OZPOS is in [bak_z, name_z] is pushed 1800h forward so the top rope cannot draw over the life bars; below, the same band -- offset by the shift -- is pushed back. wm_zflip_tick is the poll, wm_zflip_apply the object-list walk. The end of a round sets the threshold to ZFLIP_FOR_SURE (0F0F00000h), a value no camera position can be below, which is how the bars are forced forward for the winner's announcement without a second code path."
+ },
+ "rewire_monitor": {
+  "file": "LIFEBAR.ASM",
+  "status": "renamed",
+  "symbol": "wm_rewire_tick",
+  "note": "LIFEBAR.ASM:880. Three different loops behind one name, chosen once at startup: buddy (two displays, each following a human or his dead partner's stand-in), rumble (one display alternating between a pair, holding each for TSEC*4/10 POLLS -- a8 is decremented once per SLOOP, not once per tick -- and refusing to toggle onto a dead wrestler), and normal (the display follows the human's CLOSEST_NUM, with #LATENCY = TSEC/2 of debounce that is waived when the wrestler being SHOWN is dead, which is what the source's own comment says). Two exits before any of it: PSTATUS == 3 and NUM_OPPS == 1. wm_rewire_mode is the branch, wm_rewire_tick the loops; rewire_meter itself -- which rebuilds the meter graphics -- is the display layer's, and the monitor reports the (display, wrestler) pairs it would call it with."
+ },
+ "work_out_match_time": {
+  "file": "SELECT.ASM",
+  "status": "renamed",
+  "symbol": "wm_match_time_ticks_to_hundredths",
+  "note": "SELECT.ASM:533. The pin-speed clock: @match_time shuffled into the 0xIIFF form the caller's own comment describes, and the round's tick span converted to hundredths with `movi (100<<8)/55` -- fifty-five ticks a second, where DISPLAY.EQU:46 says TSEC is 53. Every pin time the game has ever recorded is therefore about 3.6% short. Translated as written; the constant is also truncated to 465 by the assembler, which takes another 0.1%."
+ },
+ "draw_mugshot": {
+  "file": "SELECT.ASM",
+  "status": "display",
+  "note": "Creates the eight image pieces of a wrestler's mugshot into #MUG1..#MUG8 in the process's own PDATA. The decisions around it are translated elsewhere; the object creation and layout are the display layer's."
+ },
+ "erase_mugshot": {
+  "file": "SELECT.ASM",
+  "status": "display",
+  "note": "Deletes those eight, walking the same PDATA slots. The decisions around it are translated elsewhere; the object creation and layout are the display layer's."
+ },
+ "display_croutons": {
+  "file": "SELECT.ASM",
+  "status": "display",
+  "note": "Puts the small per-player marker objects up for whichever players PSTATUS says are in. The decisions around it are translated elsewhere; the object creation and layout are the display layer's."
+ },
+ "update_name": {
+  "file": "SELECT.ASM",
+  "status": "display",
+  "note": "Looks the chosen wrestler up through scramble_table and redraws his name plate. The decisions around it are translated elsewhere; the object creation and layout are the display layer's."
+ },
+ "place_cursor": {
+  "file": "SELECT.ASM",
+  "status": "display",
+  "note": "Positions a player's select cursor on the grid. The decisions around it are translated elsewhere; the object creation and layout are the display layer's."
+ },
+ "player_cursor": {
+  "file": "SELECT.ASM",
+  "status": "display",
+  "note": "The cursor's own process: reads the stick, moves, and flashes. The decisions around it are translated elsewhere; the object creation and layout are the display layer's."
+ },
+ "call_wrestler_name": {
+  "file": "SELECT.ASM",
+  "status": "display",
+  "note": "Starts the announcer saying the name of the wrestler just chosen. The decisions around it are translated elsewhere; the object creation and layout are the display layer's."
+ },
+ "pregame_show": {
+  "file": "SELECT.ASM",
+  "status": "display",
+  "note": "The pregame screen's object setup. The decisions around it are translated elsewhere; the object creation and layout are the display layer's."
+ },
+ "select_screen": {
+  "file": "SELECT.ASM",
+  "status": "display",
+  "note": "The select screen's object setup. The decisions around it are translated elsewhere; the object creation and layout are the display layer's."
+ },
+ "pin_speed_in_case": {
+  "file": "SELECT.ASM",
+  "status": "display",
+  "note": "Draws the pin-speed record into the trophy case on the select screen. The decisions around it are translated elsewhere; the object creation and layout are the display layer's."
+ },
+ "GAME_BEATEN": {
+  "file": "SELECT.ASM",
+  "status": "display",
+  "note": "Puts the 'game beaten' plaque up. The decisions around it are translated elsewhere; the object creation and layout are the display layer's."
+ },
+ "THIS_GAME_IS_BEATEN": {
+  "file": "SELECT.ASM",
+  "status": "display",
+  "note": "`CLR A0 / MOVE A0,@PSTATUS / movi INGAMEOVER,a14 / move a14,@GAMSTATE` then the game-over process. The state change is three stores; the screen it puts up is the rest of it. The decisions around it are translated elsewhere; the object creation and layout are the display layer's."
+ },
+ "buyin_select": {
+  "file": "SELECT.ASM",
+  "status": "renamed",
+  "symbol": "wm_select_continue_tick",
+  "note": "The continue screen's own loop. wm/select_continue.h carries it: the countdown, the button test and the join."
+ },
+ "buyin_counter": {
+  "file": "SELECT.ASM",
+  "status": "renamed",
+  "symbol": "wm_select_continue_tick",
+  "note": "The continue countdown's digits. See buyin_select."
+ },
+ "get_final_lineup": {
+  "file": "PROGRESS.ASM",
+  "status": "partial",
+  "symbol": "wm_pregame_init",
+  "note": "PROGRESS.ASM:1593. INIT_TEMP_TABLE and RANDOMIZE_ORDER, then the first two longs of TEMP_LADDER copied into FINAL_BATTLE_LINEUP with a -1 word terminator -- four wrestlers for the final battle. The shuffle itself is the ladder builder, translated as wm_pregame_init's init_ladder_table; the four-entry copy and its terminator are not yet wired to anything that reads them."
+ },
+ "get_royal_lineup": {
+  "file": "PROGRESS.ASM",
+  "status": "partial",
+  "symbol": "wm_pregame_init",
+  "note": "PROGRESS.ASM:1535. get_final_lineup, then @index1 and @index2 pull the rumble's two named entrants out of it. Same state: the shuffle is translated, the lineup it produces has no reader in this port yet."
+ },
+ "mk_pcurs": {
+  "file": "PROGRESS.ASM",
+  "status": "display",
+  "note": "Creates the progress-ladder cursor objects from pcurs_tbl. Screen construction; the ladder state it draws is wm/pregame.h's."
+ },
+ "set_pcurs_pos": {
+  "file": "PROGRESS.ASM",
+  "status": "display",
+  "note": "Places a cursor at the rung its player is on; `btst 0,a9` picks the left or right column. Screen construction; the ladder state it draws is wm/pregame.h's."
+ },
+ "flash_pcurs": {
+  "file": "PROGRESS.ASM",
+  "status": "display",
+  "note": "Flashes a cursor on and off, indexing pcurs_obj by player. Screen construction; the ladder state it draws is wm/pregame.h's."
+ },
+ "hilight": {
+  "file": "PROGRESS.ASM",
+  "status": "display",
+  "note": "Brightens the selected ladder entry by setting bit 1 of its OCTRL. Screen construction; the ladder state it draws is wm/pregame.h's."
+ },
+ "palette_cycle": {
+  "file": "PROGRESS.ASM",
+  "status": "display",
+  "note": "Cycles the ladder's palette while the screen is up. Screen construction; the ladder state it draws is wm/pregame.h's."
+ },
+ "flash_it": {
+  "file": "PROGRESS.ASM",
+  "status": "display",
+  "note": "Flashes one ladder object. Screen construction; the ladder state it draws is wm/pregame.h's."
+ },
+ "CREATE_URN": {
+  "file": "PROGRESS.ASM",
+  "status": "display",
+  "note": "Puts the Undertaker's urn on the ladder screen. Screen construction; the ladder state it draws is wm/pregame.h's."
+ },
+ "PUT_UP_PROGRESS": {
+  "file": "PROGRESS.ASM",
+  "status": "display",
+  "note": "Builds the whole progress-ladder screen. Screen construction; the ladder state it draws is wm/pregame.h's."
+ },
+ "START_HI_FLASHES": {
+  "file": "PROGRESS.ASM",
+  "status": "display",
+  "note": "Starts the flashers on the ladder's highlighted entries. Screen construction; the ladder state it draws is wm/pregame.h's."
+ },
+ "ask_belt_question": {
+  "file": "PROGRESS.ASM",
+  "status": "display",
+  "note": "The 'which belt' prompt between ladder stages. Screen construction; the ladder state it draws is wm/pregame.h's."
+ },
+ "ind_select": {
+  "file": "PROGRESS.ASM",
+  "status": "display",
+  "note": "The individual-select variant of the ladder screen; clears p1sel/p2sel and runs the picker. Screen construction; the ladder state it draws is wm/pregame.h's."
+ },
+ "do_rr_vs": {
+  "file": "PROGRESS.ASM",
+  "status": "display",
+  "note": "Draws the royal-rumble versus screen from the two logo images index1 and index2 name. Screen construction; the ladder state it draws is wm/pregame.h's."
+ },
+ "mk_a0": {
+  "file": "ATTRACT.ASM",
+  "status": "hardware",
+  "note": "`move @_switch_addr,a0,L / move @_switch2_addr,a1,L` then reads both switch ports, rotates the second into the high half and ANDs them -- the raw coin-door and service switch words, from I/O addresses this port does not have. wm/arcade/wm_arcade_switches.h carries what the game does with the switch values once read."
+ },
+ "GENERIC_DISPLAY": {
+  "file": "ATTRACT.ASM",
+  "status": "display",
+  "note": "The attract mode's shared page frame: background, border, and the timed wait. The attract sequence's order and timing are wm/arcade/wmania_attract_core.h's; these build the pages."
+ },
+ "MAKE_UP_LOGO": {
+  "file": "ATTRACT.ASM",
+  "status": "display",
+  "note": "Builds one logo object from a table of image, X and Y, offset by the caller's a3/a5. The attract sequence's order and timing are wm/arcade/wmania_attract_core.h's; these build the pages."
+ },
+ "ONE_BALL": {
+  "file": "ATTRACT.ASM",
+  "status": "display",
+  "note": "One of the attract sequence's animated pages. The attract sequence's order and timing are wm/arcade/wmania_attract_core.h's; these build the pages."
+ },
+ "octopus_page": {
+  "file": "ATTRACT.ASM",
+  "status": "display",
+  "note": "Another of them. The attract sequence's order and timing are wm/arcade/wmania_attract_core.h's; these build the pages."
+ },
+ "dan_test": {
+  "file": "ATTRACT.ASM",
+  "status": "display",
+  "note": "A developer's test page, reachable only from the diagnostic menu. The attract sequence's order and timing are wm/arcade/wmania_attract_core.h's; these build the pages."
+ },
+ "print_gen_tips": {
+  "file": "ATTRACT.ASM",
+  "status": "display",
+  "note": "Prints the generic gameplay tips page from #gen_tip_mes. The attract sequence's order and timing are wm/arcade/wmania_attract_core.h's; these build the pages."
+ },
+ "show_wres_tips": {
+  "file": "ATTRACT.ASM",
+  "status": "display",
+  "note": "Prints the per-wrestler tips page. The attract sequence's order and timing are wm/arcade/wmania_attract_core.h's; these build the pages."
+ },
+ "wait_but": {
+  "file": "ATTRACT.ASM",
+  "status": "display",
+  "note": "Sleeps until a button is pressed or the page's time runs out. The attract sequence's order and timing are wm/arcade/wmania_attract_core.h's; these build the pages."
+ },
+ "PIN_FLASH_ANIM": {
+  "file": "LIFEBAR.ASM",
+  "status": "data",
+  "symbol": "wm_sound_which_pin_him",
+  "note": "A `WL` animation list -- PINHIM01 through its last frame, two ticks each. An image sequence, not code."
+ },
+ "DO_RIGHT_MUSIC": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "Picks the music for the round about to start and hands it to SNDSND."
+ },
+ "DO_RIGHT_MUSIC2": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "The same for the second half of a match."
+ },
+ "DO_ROUNDS": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "Puts the round-number graphic up."
+ },
+ "FIRSTATT_MESS": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "Puts the FIRSTATT message up over the player who landed the first blow."
+ },
+ "ICON_SPARKLE": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "Sparkles on a power-up icon; it checks @reduce_bog first and dies rather than adding objects when the frame rate is already suffering."
+ },
+ "MOVE_NAME_ANNC": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "Slides the wrestler name plates in at the announcement."
+ },
+ "SPECIAL_MESSAGE": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "The generic mid-match message object."
+ },
+ "WHERE_WRESTLMANIA_SPARKLES": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "The sparkle positions on the WrestleMania logo."
+ },
+ "arw_bwait": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "The arrow that waits for a button on the between-rounds screen."
+ },
+ "flash_2ndwind": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "Flashes the second-wind graphic, clearing M_FLIPH first and running wind_anim three times."
+ },
+ "flash_obj": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "Flashes any one object."
+ },
+ "replace_wins": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "Redraws the round-win markers."
+ },
+ "start_credbox": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "Puts the credit box up."
+ },
+ "update_credit_msg": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "Redraws the credit message from @SHOW_CRD_FLAG."
+ },
+ "zero_combo_meter": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "Empties a player's combo meter graphic; the combo COUNT itself is wm/arcade/wm_arcade_combo.h's."
+ },
+ "plyr_strtb1": {
+  "file": "WRESTLE.ASM",
+  "status": "renamed",
+  "symbol": "wm_plyr_start",
+  "note": "WRESTLE.ASM:663. Somebody pressed start. Two entry points with one body -- plyr_strtb1 loads a8=0, plyr_strtb2 a8=1 -- three guards, a per-player state wipe that happens BEFORE the credit check (so a player turned away for want of a coin has still lost his win streak and his pin times), the OLD_PSTATUS continue path, and a seven-way branch on GAMSTATE. wm_plyr_start reports all of it, including the two LOCKUPs the source traps on rather than halting."
+ },
+ "plyr_strtb2": {
+  "file": "WRESTLE.ASM",
+  "status": "renamed",
+  "symbol": "wm_plyr_start",
+  "note": "The player-two entry point of plyr_strtb1: one instruction, `movk 1,a8`, then the same body."
+ },
+ "CALL_MATCH_OVER": {
+  "file": "DCSSOUND.ASM",
+  "status": "renamed",
+  "symbol": "wm_announce_match_over_run",
+  "note": "DCSSOUND.ASM:3793. Five instructions: `movk 1,a8 / sll a0,a8` makes the winner's PSTATUS bit, a9 takes PSTATUS, and PROC_MATCH_OVER is created on SOUND_PID. The bit and the mask are the only things it passes, and they become wm_announce_match_over_run's `loser_was_drone` argument."
+ },
+ "PROC_MATCH_OVER": {
+  "file": "DCSSOUND.ASM",
+  "status": "renamed",
+  "symbol": "wm_announce_match_over_run",
+  "note": "DCSSOUND.ASM:3799. SLEEPK 5, then `xor a8,a9 / jrz #drn_l` -- the winner's bit removed from PSTATUS, and nothing left means the loser was a drone, which picks MATCH_OVER_DL (Vince gripes) over MATCH_OVER (Lawlor cheers). Then a three-way draw: 200 per mille to the winner's own WHICH_WRESTLER_TALKS line, otherwise 200 per mille to one of the two over-four-wins specials if his streak is at least four, otherwise the table at 1000 per mille -- ADD_TO_QUEUE and not ADD_IF_SILENT, so the end of a match always says something over whatever else is running. wm_announce_match_over_run is the tree; wm_announce_match_over carries its constants and src/generated/announce_tables.c its tables."
+ },
+ "do_game_over": {
+  "file": "LIFEBAR.ASM",
+  "status": "renamed",
+  "symbol": "wm_app_start_game_over",
+  "note": "LIFEBAR.ASM:2996 #do_game_over and SELECT.ASM:1190 do_game_over -- two routines of the same name, the SELECT one being what the declined continue runs. It sets GAMSTATE to INGAMEOVER and holds the GAME OVER graphic for its dwell before handing back to attract mode. wm_app_start_game_over is that transition; wm/app.h's game_over_ticks is the dwell."
+ }
+}

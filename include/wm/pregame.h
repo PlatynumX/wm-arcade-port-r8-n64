@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "wm/audio.h"
+#include "wm/arcade/wmania_rng.h"
 #include "wm/input.h"
 #include "wm/roster.h"
 #include "wm/progress_wrestlers.h"
@@ -36,6 +37,10 @@ typedef enum {
 
 #define WM_PREGAME_LADDER_ENTRIES 15u
 #define WM_PREGAME_PLAYABLE_LADDER_ENTRIES 7u
+/* PROGRESS.ASM:1495 `FINAL_BATTLE equ 7`, so the last battle is the
+   entry at index FINAL_BATTLE-1. */
+#define WM_PREGAME_FINAL_BATTLE 7u
+#define WM_PREGAME_FINAL_LADDER_INDEX ((int)WM_PREGAME_FINAL_BATTLE - 1)
 #define WM_PREGAME_MAX_OPPONENTS 3u
 
 typedef struct {
@@ -69,7 +74,15 @@ typedef struct {
     int current_ladder_index;
     uint8_t opponent_count;
     uint8_t opponents[WM_PREGAME_MAX_OPPONENTS];
-    uint32_t rng_state; /* isolated portable bridge for missing RNDRNG0 primitive */
+    /*
+     * The one shared RAND. PROGRESS.ASM calls the same RNDRNG0
+     * (UTIL.ASM:1713) as everything else in the game, so this points at
+     * the app's single WmRng rather than owning a second stream. A NULL
+     * here means an un-wired state and every draw comes back zero --
+     * which is exactly what the arcade's own RAND does when nothing
+     * stirs it, and is documented in wm/arcade/wmania_rng.h.
+     */
+    WmRng *rng;
 
     /* PROGRESS.ASM world scroll registers represented as source pixels/fixed 16.16. */
     int belt_world_y;
@@ -106,13 +119,64 @@ typedef struct {
 
 void wm_pregame_init(wm_pregame_state *state,
                      uint8_t selected_source_wrestler,
-                     wm_wrestler_id selected_roster_wrestler);
+                     wm_wrestler_id selected_roster_wrestler,
+                     WmRng *rng);
+
+/*
+ * WRESTLE.ASM:1061 do_pregame, re-entered after a match the human
+ * won: the next rung of the SAME ladder, with no select screen in
+ * between. What it does not do matters as much as what it does --
+ * INIT_LADDER_TABLE is not part of the pregame, it is called once
+ * per game from ATTRACT.ASM:595 and SELECT.ASM's GAME_BEATEN.
+ * `win_streak` is the caller's current streak, which the progress
+ * screen prints.
+ */
+void wm_pregame_next_match(wm_pregame_state *state, uint32_t win_streak);
+
+/* WRESTLE.ASM:1176's `subi 20h,a0` on CURRENT_LADDER, "because
+   NEXT_IN_LADDER automatically increments it" -- a player who
+   continues after losing meets the SAME opponent again. */
+void wm_pregame_ladder_back(wm_pregame_state *state);
 
 void wm_pregame_tick(wm_pregame_state *state,
                      const wm_input_state *input,
                      wm_audio_state *audio);
 
 uint8_t wm_pregame_opponent_at(const wm_pregame_state *state, unsigned index);
+
+/*
+ * PROGRESS.ASM:1501 is_final_match and :1516 is_8_on_1, both of which
+ * report through the carry flag.
+ *
+ *   is_final_match   CURRENT_LADDER == LADDER + (FINAL_BATTLE-1)*20h
+ *   is_8_on_1        the same, AND belt_type is nonzero
+ *
+ * FINAL_BATTLE is 7 (PROGRESS.ASM:1495) and a ladder entry is 20h bits
+ * -- one LONG -- so the last battle is index 6. The source's comment
+ * on that equ says "14th battle is last one. (keep up-to-date)", which
+ * has not been kept up to date; the number beside it is what the code
+ * uses.
+ *
+ * is_8_on_1's first line is its own comment's point: "no 8-on-1 in
+ * intercontinental belt table", so an intercontinental run never has
+ * one however far it gets.
+ *
+ * Several headers in this port state, correctly, that is_8_on_1 always
+ * reports "no" HERE -- wm/arcade/wm_arcade_mode_dead.h argues it at
+ * length, and wm_arcade_round.h and the drone skill sum both rely on
+ * it. That is a statement about the match code, which never sets up a
+ * final battle, not about this function: ask it about a final battle
+ * on a championship ladder and it says yes.
+ */
+bool wm_pregame_is_final_match(const wm_pregame_state *state);
+bool wm_pregame_is_8_on_1(const wm_pregame_state *state);
+
+/*
+ * PROGRESS.ASM:692 NUM_OF_OPPS -- `SRL 24,A3`, the top byte of a
+ * packed ladder entry, which is how many opponents that battle has.
+ * The source writes it to the NUM_OPPS global; this returns it.
+ */
+uint8_t wm_pregame_num_of_opps(uint32_t packed_ladder_entry);
 const char *wm_pregame_phase_name(wm_pregame_phase phase);
 
 #endif

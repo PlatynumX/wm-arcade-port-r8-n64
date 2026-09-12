@@ -38,6 +38,12 @@ static const wm_arcade_input_pattern_t secret_patterns[]={
     {"gut_push",s_toward_punch,3,40},
     {"jabs",s_punch_qcf,4,50}
 };
+/* WRESTLE2.ASM's yok_smove_table, as the assembler built it.
+   The finishing-move entries every one of these tables carries sit
+   inside `.if NUM_YOKO_FINISHES`, and GAME.EQU:582 sets that switch to
+   0 -- so none of them was assembled. Generated as
+   wm_wrestler_smoves[] (wm/wrestler_anim_tables.h); a source-tool test
+   holds this copy to it. */
 static const char *const special_processes[]={
     "yok_hdhold_combo1",
     "yok_hdhold_scissor",
@@ -46,9 +52,7 @@ static const char *const special_processes[]={
     "yok_grab_toss_air",
     "yok_hdhold_combo2",
     "std_walk_fast",
-    "std_taunt",
-    "yok_finish_move1",
-    "yok_finish_move2"
+    "std_taunt"
 };
 
 const wm_arcade_wrestler_profile_t wm_arcade_profile_yoko={

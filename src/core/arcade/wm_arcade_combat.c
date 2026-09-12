@@ -19,6 +19,10 @@ void wm_arcade_set_hurt_box(wm_arcade_actor_t *actor,
 
     if (!actor || !frame) return;
 
+    /* Kept for final_confine's second pass; see the header. */
+    actor->hurt_frame = *frame;
+    actor->hurt_frame_valid = true;
+
     if (actor->player_mode == WM_PMODE_ONGROUND) {
         zoff = -15;
         zdepth = 30;
@@ -126,6 +130,36 @@ int wm_arcade_resolve_overlap(wm_arcade_actor_t *mover,
     return 1;
 }
 
+/*
+ * COLLIS.ASM:56 overlap_collision.
+ *
+ * `movi process_ptrs,a9 / movk NUM_WRES,a10 / #collis_loop` -- walk the
+ * process table, skip the empty slots and skip self, and try to push
+ * out of everyone else. Every other guard the source applies before
+ * the push (ZOMBIE, the other man dead, MODE_OVERLAP, attached, this
+ * man on the ground or dead, running through a downed opponent) lives
+ * in resolve_overlap, exactly where the source has it: the loop's job
+ * is only to choose the pairs.
+ */
+int wm_arcade_overlap_collision(wm_arcade_actor_t *mover,
+                                wm_arcade_actor_t *const *actors,
+                                size_t actor_count)
+{
+    size_t i;
+    int separated = 0;
+
+    if (!mover || !actors) return 0;
+
+    for (i = 0; i < actor_count; ++i) {
+        const wm_arcade_actor_t *other = actors[i];
+        if (!other) continue;                 /* `jrz #inactive` */
+        if (other == mover) continue;         /* `cmp a11,a13 / jreq #skip` */
+        if (!other->active) continue;
+        separated += wm_arcade_resolve_overlap(mover, other);
+    }
+    return separated;
+}
+
 wm_arcade_hit_result_t wm_arcade_try_attack_hit(
     wm_arcade_actor_t *attacker,
     wm_arcade_actor_t *victim,
@@ -219,13 +253,21 @@ int wm_arcade_check_wrestler_collisions(
 
         for (di = 0; di < actor_count; ++di) {
             wm_arcade_actor_t *victim = actors[di];
+            int hit;
             if (!victim || !victim->active || victim == attacker) continue;
 
-            if (wm_arcade_try_attack_hit(attacker, victim, callbacks) ==
-                WM_HIT_ACCEPTED) {
-                /* Original check_collisions exits after first successful hit. */
-                return 1;
-            }
+            hit = wm_arcade_try_attack_hit(attacker, victim, callbacks) ==
+                  WM_HIT_ACCEPTED;
+            /*
+             * COLLIS.ASM:411 -- what the source tests after each
+             * check_collis is the attacker's MODE_STATUS bit, not a
+             * return value, and a set bit ends the whole sweep. That
+             * is not the same as "this call hit": check_collis sets
+             * the bit, but so does anything that ran earlier and left
+             * it set, and the sweep stops for that too. Testing the
+             * flag rather than the call keeps the stale case.
+             */
+            if (attacker->anim_mode & WM_MODE_STATUS) return hit;
         }
     }
     return 0;
@@ -288,4 +330,90 @@ void wm_arcade_set_getup_time(
 
     if (callbacks && callbacks->maybe_gidd_up)
         callbacks->maybe_gidd_up(victim, callbacks->user);
+}
+
+static uint16_t step_dtime(uint16_t held, unsigned bit, uint16_t count) {
+    /* `srl 1,a0 / jrnc #clr / move *a2,a1 / inc a1 / #clr move a1,*a2` --
+       one bit per pass, counting up while set and back to zero when not. */
+    return (held & (1u << bit)) ? (uint16_t)(count + 1) : 0;
+}
+
+void wm_arcade_update_joy_dtime(wm_arcade_actor_t *actor) {
+    if (!actor) return;
+
+    /* #update_stick: STICK_VAL_CUR, bit 0 upward, four passes. */
+    actor->up_dtime    = step_dtime(actor->stick_val_cur, 0, actor->up_dtime);
+    actor->down_dtime  = step_dtime(actor->stick_val_cur, 1, actor->down_dtime);
+    actor->left_dtime  = step_dtime(actor->stick_val_cur, 2, actor->left_dtime);
+    actor->right_dtime = step_dtime(actor->stick_val_cur, 3, actor->right_dtime);
+
+    /* #update_but: BUT_VAL_CUR, bit 0 upward, five passes. The order is
+       the arrays' order, so bit 1 is block and bit 2 is the power
+       punch -- not the order the buttons are named in. */
+    actor->punch_dtime  = step_dtime(actor->but_val_cur, 0, actor->punch_dtime);
+    actor->block_dtime  = step_dtime(actor->but_val_cur, 1, actor->block_dtime);
+    actor->powerp_dtime = step_dtime(actor->but_val_cur, 2, actor->powerp_dtime);
+    actor->kick_dtime   = step_dtime(actor->but_val_cur, 3, actor->kick_dtime);
+    actor->powerk_dtime = step_dtime(actor->but_val_cur, 4, actor->powerk_dtime);
+}
+
+void wm_arcade_init_joy_dtime(wm_arcade_actor_t *actor) {
+    if (!actor) return;
+    actor->up_dtime = 0;
+    actor->down_dtime = 0;
+    actor->left_dtime = 0;
+    actor->right_dtime = 0;
+    actor->punch_dtime = 0;
+    actor->block_dtime = 0;
+    actor->powerp_dtime = 0;
+    actor->kick_dtime = 0;
+    actor->powerk_dtime = 0;
+}
+
+uint16_t wm_arcade_get_dtime(const wm_arcade_actor_t *actor,
+                             wm_arcade_dtime_t which) {
+    if (!actor) return 0;
+    switch (which) {
+    case WM_DTIME_UP:     return actor->up_dtime;
+    case WM_DTIME_DOWN:   return actor->down_dtime;
+    case WM_DTIME_LEFT:   return actor->left_dtime;
+    case WM_DTIME_RIGHT:  return actor->right_dtime;
+    case WM_DTIME_PUNCH:  return actor->punch_dtime;
+    case WM_DTIME_BLOCK:  return actor->block_dtime;
+    case WM_DTIME_POWERP: return actor->powerp_dtime;
+    case WM_DTIME_KICK:   return actor->kick_dtime;
+    case WM_DTIME_POWERK: return actor->powerk_dtime;
+    }
+    return 0;
+}
+
+/* WRESTLE2.ASM:1270 inc_getup_time. `cmpi 20,a14 / jrlt #exit`. */
+void wm_arcade_inc_getup_time(wm_arcade_actor_t *actor, int32_t amount) {
+    if (!actor) return;
+    if (actor->getup_time < 20) return;
+    actor->getup_time += amount;
+}
+
+/* WRESTLE.ASM:6044 ck_ignore_a8. See the header for mv_tbl's two edges. */
+bool wm_arcade_ck_ignore(const wm_arcade_actor_t *actor)
+{
+    int32_t away;
+
+    if (!actor) return false;
+
+    switch (actor->new_facing_dir) {
+    case WM_MOVE_UP | WM_MOVE_LEFT:      /* 5 */
+    case WM_MOVE_DOWN | WM_MOVE_LEFT:    /* 6 */
+        away = WM_MOVE_RIGHT;
+        break;
+    case WM_MOVE_UP | WM_MOVE_RIGHT:     /* 9 */
+    case WM_MOVE_DOWN | WM_MOVE_RIGHT:   /* 10 */
+        away = WM_MOVE_LEFT;
+        break;
+    default:
+        /* mv_tbl's zero is bit number zero, i.e. MOVE_UP. The source's
+           own comment says this cannot happen; see the header. */
+        return false;
+    }
+    return (actor->move_dir & away) != 0;
 }

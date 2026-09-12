@@ -15,6 +15,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Fetch historical source for source-aware tests
+        run: sh ./scripts/fetch_original.sh
       - name: Configure portable verifier
         run: cmake -S . -B build-host -DCMAKE_BUILD_TYPE=Release
       - name: Build portable verifier
@@ -111,7 +113,14 @@ jobs:
           sh ./scripts/build_animation_ir.sh
           sh ./scripts/prepare_bret_sprites.sh
           sh ./scripts/prepare_frontend_assets.sh
+          sh ./scripts/prepare_streamed_character_assets.sh
           test -s src/generated/bret_sprites.c
+          test -s filesystem/wrestlers/STREAMED_ROSTER.txt
+          STREAMED_FRAMES=$(find filesystem/wrestlers -type f -name '*.bin' | wc -l)
+          STREAMED_BYTES=$(du -cb filesystem/wrestlers/*/*.bin | tail -1 | awk '{print $1}')
+          echo "streamed wrestler frames=$STREAMED_FRAMES bytes=$STREAMED_BYTES"
+          test "$STREAMED_FRAMES" -ge 5000
+          test "$STREAMED_BYTES" -gt 25000000
           test -s src/generated/sports_logo.c
           test -s src/generated/dcs_logo.c
           test -s src/generated/title_screen.c
@@ -150,6 +159,9 @@ jobs:
           rm -rf build/n64 wm_arcade_r9.z64
           make -j2
           test -s wm_arcade_r9.z64
+          ROM_BYTES=$(wc -c < wm_arcade_r9.z64)
+          echo "ROM bytes=$ROM_BYTES"
+          test "$ROM_BYTES" -gt 25000000
           ls -lh wm_arcade_r9.z64
 
       - name: Upload ROM and coverage as Actions artifact
@@ -169,6 +181,7 @@ jobs:
             bret-r8-textures-png.zip
 
       - name: Publish ROM to rom-build branch
+        if: github.event_name == 'push'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}

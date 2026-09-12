@@ -11,6 +11,7 @@ void wm_visual_start(wm_visual_state *state, const wm_visual_sequence *sequence)
     state->ticks_left = sequence->frames[0].ticks;
     if (state->ticks_left == 0)
         state->ticks_left = 1;
+    state->rpt_count = sequence->loop_count;
     /* The game loop advances simulation before rendering. Preserve the first
        source frame for its full duration instead of consuming one tick before
        it has ever been visible. */
@@ -36,6 +37,26 @@ void wm_visual_tick(wm_visual_state *state) {
     if (state->ticks_left > 1) {
         --state->ticks_left;
         return;
+    }
+
+    /* ANIM.ASM's ANI_DEC_RPTCOUNT + ANI_IF_RPTCOUNT, which sit at the end
+       of the repeated span: decrement, and branch back to the loop's own
+       label while the count is still nonzero. Running out falls through to
+       whatever follows, exactly like the source. Because an attack window
+       is keyed on frame index, a window inside the span re-fires on every
+       pass -- which is what the source does too, its ANI_ATTACK_ON being
+       inside the loop body. */
+    if (state->sequence->loop_count != 0 &&
+        state->frame_index == state->sequence->loop_last &&
+        state->rpt_count > 0) {
+        --state->rpt_count;
+        if (state->rpt_count != 0) {
+            state->frame_index = state->sequence->loop_first;
+            state->ticks_left = state->sequence->frames[state->frame_index].ticks;
+            if (state->ticks_left == 0)
+                state->ticks_left = 1;
+            return;
+        }
     }
 
     ++state->frame_index;

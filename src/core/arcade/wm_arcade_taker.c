@@ -34,6 +34,12 @@ static const wm_arcade_input_pattern_t secret_patterns[]={
     {"neck_grab",s_neck30,3,30},
     {"tomb_smash",s_toward_skick,3,32}
 };
+/* WRESTLE2.ASM's und_smove_table, as the assembler built it.
+   The finishing-move entries every one of these tables carries sit
+   inside `.if NUM_TAKER_FINISHES`, and GAME.EQU:586 sets that switch to
+   1 -- so only the first was assembled. Generated as
+   wm_wrestler_smoves[] (wm/wrestler_anim_tables.h); a source-tool test
+   holds this copy to it. */
 static const char *const special_processes[]={
     "und_hdhold_neckbrk",
     "und_hdhold_faceslam",
@@ -46,8 +52,7 @@ static const char *const special_processes[]={
     "und_choke_slide",
     "std_walk_fast",
     "std_taunt",
-    "und_finish_move1",
-    "und_finish_move2"
+    "und_finish_move1"
 };
 
 const wm_arcade_wrestler_profile_t wm_arcade_profile_taker={

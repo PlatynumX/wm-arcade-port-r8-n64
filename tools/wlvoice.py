@@ -1,0 +1,649 @@
+#!/usr/bin/env python3
+"""Extract DCSSOUND.ASM's announcer line tables and their callers.
+
+Every announcer routine in the game is the same shape: a `CALL_x` that
+CREATEs a process, a `PROC_x` that sleeps and then calls ADD_IF_SILENT
+with a table address and a percentage, and the table itself. The tables
+carry their shape in three values written immediately BEFORE the label,
+which ADD_TO_QUEUE reads at negative offsets (DCSSOUND.ASM:2921-2941):
+
+        .WORD   -1              ; at -050H: reset REPEAT_STATE first
+        .LONG   CROWD_FAIL      ; at -040H: crowd reaction table, 0 = none
+        .WORD   17,010H         ; at -020H: last row index; -010H: stride
+    MISSES
+        .WORD   A_MISS          ; row 0
+        ...                     ; rows 1..17
+        .WORD   A_MISS          ; padding, see below
+        ...
+
+The source's own header comment says "WORD x(NUMBER OF TABLE ENTRIES -1),
+TABLE ENTRY SIZE", so RNDRNG0 is called with the last index and picks
+0..x inclusive. Stride is a TMS34010 BIT count: 010H is one word per row,
+020H two.
+
+The rows written after the picked range are not dead. When
+ARE_WE_REPEATING rejects a row, ADD_TO_QUEUE walks FORWARD to the next one
+(`SUBI 010H,A1 / ADD A3,A1 / JRUC ADD_AGAIN`) with no bound check at all,
+so a rejected row near the end reads into the padding -- which is why the
+padding of every table is a copy of its own first few rows. They are
+extracted with the table for exactly that reason.
+"""
+from __future__ import annotations
+import argparse
+import pathlib
+import re
+import sys
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import wlanim  # noqa: E402
+
+SRC = wlanim.ORIG / "DCSSOUND.ASM"
+
+# SOUND.EQU carries the line ids (`A_MISS .EQU 159H`) and the six negative
+# sentinels ADD_TO_QUEUE tests for by name.
+EQU = wlanim.load_equ(wlanim.ORIG / "SOUND.EQU", "")
+
+# SOUND.EQU:57-63. Every one of these means "this row is not a line id,
+# work out the real one first".
+SPECIAL = {
+    "GIVE_CREDIT": -1,
+    "VERY_IMPRESSIVE": -2,
+    "END_GAME_STUFF": -3,
+    "IT_DOESNT_LOOK_GOOD": -4,
+    "R_IMPRESSIVE_MOVE": -5,
+    "GIDDUP_MODE": -6,
+    "REPEAT_MODE": -7,
+}
+
+# The five per-wrestler tables SET_UP_PERSONAL_CALL indexes with A5, plus
+# the repeat counter's own. Slot 7 is Adam Bomb, the cut wrestler, and is
+# a literal `.WORD 0` in all of them.
+PERSONAL_TABLES = ["GIVE_CREDIT_TO", "VERY_IMPRESSIVE_MOVE",
+                   "IT_DOESNT_LOOK_GOOD_FOR", "VERY_IMPRESSIVE_MOVE_R",
+                   "GIDDUP_ALL"]
+
+# DO_END_STUFF (DCSSOUND.ASM:3149) reads SPECIAL_LAST_STUFF at -010H and
+# -020H only, so the table was written with just the `.WORD count,stride`
+# pair and no crowd long or reset flag above it -- the words that DO sit at
+# its -040H and -050H belong to the previous table's padding, and nothing
+# ever reads them. It is the one table admitted without a full header, by
+# name, so a malformed one elsewhere still fails to parse.
+PARTIAL_HEADER_OK = {"SPECIAL_LAST_STUFF"}
+
+# The end-of-match tables (MATCH_OVER, MATCH_OVER_DL and the seven
+# *_FINISHES) were written with only a `.LONG crowd` and a
+# `.WORD count,stride`, and no reset-repeat word of their own. So the word
+# ADD_TO_QUEUE reads at -050H is whatever happens to sit there: the last
+# data word of the table before it, or the low half of a `.LONG`. That is
+# extracted as written rather than assumed to be zero -- it decides
+# whether the call clears REPEAT_STATE, and for most of them it does.
+
+WORD_RE = re.compile(r"^\s*\.WORD\s+(.+)$", re.I)
+LONG_RE = re.compile(r"^\s*\.LONG\s+(.+)$", re.I)
+LABEL_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)\s*$")
+CALL_RE = re.compile(r"^(CALL_[A-Z0-9_]+|DO_REVERSAL)\s*$")
+PROC_RE = re.compile(r"^(PROC_[A-Z0-9_]+)\s*$")
+CREATE_RE = re.compile(r"^\s*CREATE\s+\S+\s*,\s*(\S+)", re.I)
+SLEEP_RE = re.compile(r"^\s*SLEEP\s+(\S+)", re.I)
+MOVI_RE = re.compile(r"^\s*MOVI\s+(\S+?)\s*,\s*(A\d+)", re.I)
+WRESTLERNUM_RE = re.compile(r"^\s*MOVE\s+\*(A\d+)\(WRESTLERNUM\)\s*,\s*A9", re.I)
+
+
+def _lines() -> list[str]:
+    return [wlanim.strip_comment(r).rstrip()
+            for r in SRC.read_text(errors="replace").splitlines()]
+
+
+def _word(sym: str) -> int:
+    """Resolve one `.WORD` operand to its number.
+
+    The crowd tables write their flag column as `C_LONG|C_OVERIDE`, so an
+    operand may be an OR of several names.
+    """
+    s = sym.strip()
+    if "|" in s:
+        v = 0
+        for part in s.split("|"):
+            v |= _word(part)
+        return v
+    if re.fullmatch(r"-?[0-9]+", s):
+        return int(s)
+    if re.fullmatch(r"[0-9A-Fa-f]+[hH]", s):
+        return int(s[:-1], 16)
+    up = s.upper()
+    if up in EQU:
+        return EQU[up]
+    if up in wlanim.GLOBAL_EQU:
+        return wlanim.GLOBAL_EQU[up]
+    raise ValueError(f"unresolved announcer line id {sym!r}")
+
+
+def _split_words(operand: str) -> list[str]:
+    return [p for p in (q.strip() for q in operand.split(",")) if p]
+
+
+def announce_tables() -> dict[str, dict]:
+    """Every table with the three-value ADD_TO_QUEUE header before it."""
+    lines = _lines()
+    out: dict[str, dict] = {}
+    for i, line in enumerate(lines):
+        m = LABEL_RE.match(line)
+        if not m:
+            continue
+        name = m.group(1)
+        # Walk back over blank lines to the `.WORD count,stride`.
+        j = i - 1
+        while j >= 0 and not lines[j].strip():
+            j -= 1
+        if j < 0:
+            continue
+        mw = WORD_RE.match(lines[j])
+        if not mw:
+            continue
+        parts = _split_words(mw.group(1))
+        if len(parts) != 2:
+            continue
+        try:
+            last_index = _word(parts[0])
+            stride_bits = _word(parts[1])
+        except ValueError:
+            continue
+        if stride_bits % 16 or not 0 < stride_bits <= 64 or last_index < 0:
+            continue
+        # ...the `.LONG crowd` above it, and the `.WORD reset` above that.
+        k = j - 1
+        while k >= 0 and not lines[k].strip():
+            k -= 1
+        ml = LONG_RE.match(lines[k] if k >= 0 else "")
+        crowd, reset_repeat, reset_note = None, False, None
+        if ml:
+            crowd = ml.group(1).strip()
+            p = k - 1
+            while p >= 0 and not lines[p].strip():
+                p -= 1
+            prev = lines[p] if p >= 0 else ""
+            mr = WORD_RE.match(prev)
+            if mr and len(_split_words(mr.group(1))) == 1:
+                reset_repeat = _word(_split_words(mr.group(1))[0]) != 0
+            elif LONG_RE.match(prev):
+                # The WHICH_WRESTLER_TALKS pointer list runs straight into
+                # HART_FINISHES's header, so the word ADD_TO_QUEUE reads at
+                # -050H is the low half of a `.LONG` address -- never zero,
+                # so the flag reads as set. Accidental, but real.
+                reset_repeat = True
+                reset_note = "low half of the preceding .LONG"
+            else:
+                continue
+        elif name not in PARTIAL_HEADER_OK:
+            continue
+
+        stride = stride_bits // 16
+        rows: list[list[int]] = []
+        for q in range(i + 1, len(lines)):
+            body = lines[q]
+            if not body.strip():
+                continue
+            mb = WORD_RE.match(body)
+            if not mb:
+                break
+            vals = [_word(v) for v in _split_words(mb.group(1))]
+            if len(vals) != stride:
+                # A short final row is the next table's header, not data.
+                break
+            rows.append(vals)
+        if len(rows) <= last_index:
+            raise ValueError(
+                f"{name}: header says rows 0..{last_index} but only "
+                f"{len(rows)} were read")
+        out[name] = {
+            "name": name,
+            "line": i + 1,
+            "last_index": last_index,
+            "stride": stride,
+            "reset_repeat": reset_repeat,
+            "crowd": None if crowd in (None, "0", "0H") else crowd,
+            "partial_header": ml is None,
+            "reset_note": reset_note,
+            "rows": rows,
+        }
+    return out
+
+
+def crowd_tables() -> dict[str, dict]:
+    """The crowd-reaction tables DO_CROWD_ANYWAY draws a row from.
+
+    DCSSOUND.ASM:4443 onwards. Same header idea as the line tables but a
+    single value: one `.WORD n` immediately before the label, which
+    DO_CROWD_ANYWAY reads at -010H and hands to RNDRNG0 as the inclusive
+    maximum. A row is four words -- sound id, its duration in ticks, the
+    crowd_cheer flags, and the RNDPER percentage the C_RANDOM flag makes
+    it use -- which is why the routine picks the row with `SLL 6,A0`.
+    """
+    lines = _lines()
+    out: dict[str, dict] = {}
+    for i, line in enumerate(lines):
+        m = LABEL_RE.match(line)
+        if not m:
+            continue
+        name = m.group(1)
+        if not name.startswith("CROWD_") and name not in (
+                "SETUP_TABLE", "CRESCENDO_TABLE", "ROPES_CHEER"):
+            continue
+        j = i - 1
+        while j >= 0 and not lines[j].strip():
+            j -= 1
+        mw = WORD_RE.match(lines[j] if j >= 0 else "")
+        if not mw:
+            continue
+        parts = _split_words(mw.group(1))
+        if len(parts) != 1:
+            continue
+        try:
+            last_index = _word(parts[0])
+        except ValueError:
+            continue
+        rows: list[list[int]] = []
+        for q in range(i + 1, len(lines)):
+            body = lines[q]
+            if not body.strip():
+                continue
+            mb = WORD_RE.match(body)
+            if not mb:
+                break
+            vals = _split_words(mb.group(1))
+            if len(vals) != 4:
+                break
+            rows.append([_word(v) for v in vals])
+        if not rows:
+            continue
+        if len(rows) <= last_index:
+            raise ValueError(
+                f"{name}: header says rows 0..{last_index} but only "
+                f"{len(rows)} were read")
+        out[name] = {"name": name, "line": i + 1,
+                     "last_index": last_index, "rows": rows}
+    return out
+
+
+def callers() -> dict[str, dict]:
+    """CALL_x -> {proc, sleep, table, percent, personal}."""
+    lines = _lines()
+    procs: dict[str, dict] = {}
+    for i, line in enumerate(lines):
+        m = PROC_RE.match(line)
+        if not m:
+            continue
+        info = {"sleep": 0, "table": None, "percent": None, "personal": False}
+        for q in range(i + 1, min(i + 20, len(lines))):
+            body = lines[q]
+            if re.match(r"^\s*DIE\s*$", body, re.I):
+                break
+            ms = SLEEP_RE.match(body)
+            if ms:
+                info["sleep"] = wlanim.eval_ticks(ms.group(1))
+                continue
+            if re.match(r"^\s*MOVE\s+A9\s*,\s*A5", body, re.I):
+                info["personal"] = True
+                continue
+            mm = MOVI_RE.match(body)
+            if mm:
+                val, reg = mm.group(1), mm.group(2).upper()
+                if reg == "A2":
+                    info["table"] = val
+                elif reg == "A0":
+                    info["percent"] = int(val)
+        procs[m.group(1)] = info
+
+    out: dict[str, dict] = {}
+    for i, line in enumerate(lines):
+        m = CALL_RE.match(line)
+        if not m:
+            continue
+        name = m.group(1)
+        info = None
+        for q in range(i + 1, min(i + 30, len(lines))):
+            body = lines[q]
+            if re.match(r"^\s*RETS\s*$", body, re.I):
+                break
+            mc = CREATE_RE.match(body)
+            if mc and mc.group(1) in procs:
+                info = dict(procs[mc.group(1)])
+                info["proc"] = mc.group(1)
+                break
+            # DO_REVERSAL does the work inline instead of creating one.
+            mm = MOVI_RE.match(body)
+            if mm and mm.group(2).upper() == "A2":
+                info = {"proc": None, "sleep": 0, "table": mm.group(1),
+                        "percent": None, "personal": True}
+        if info is None:
+            continue
+        if info.get("percent") is None:
+            for q in range(i + 1, min(i + 40, len(lines))):
+                mm = MOVI_RE.match(lines[q])
+                if mm and mm.group(2).upper() == "A0":
+                    info["percent"] = int(mm.group(1))
+                    break
+        # `MOVE *A13(WRESTLERNUM),A9` is the animation entry point (a13 is
+        # the wrestler running the animation); `*A10(...)` is the other.
+        for q in range(i + 1, min(i + 6, len(lines))):
+            mw = WRESTLERNUM_RE.match(lines[q])
+            if mw:
+                info["wrestler_reg"] = mw.group(1).upper()
+        if info["table"] is None or info["percent"] is None:
+            raise ValueError(f"{name}: no table or no percentage")
+        out[name] = info
+    return out
+
+
+def personal_tables() -> dict[str, list[int]]:
+    lines = _lines()
+    out: dict[str, list[int]] = {}
+    for want in PERSONAL_TABLES:
+        idx = next((i for i, l in enumerate(lines) if l.strip() == want), None)
+        if idx is None:
+            raise ValueError(f"no personal-call table {want}")
+        rows = []
+        for q in range(idx + 1, len(lines)):
+            if not lines[q].strip():
+                if rows:
+                    break
+                continue
+            mb = WORD_RE.match(lines[q])
+            if not mb:
+                break
+            rows.append(_word(_split_words(mb.group(1))[0]))
+        if len(rows) != 9:
+            raise ValueError(f"{want}: expected 9 wrestler slots, got {len(rows)}")
+        out[want] = rows
+    return out
+
+
+def which_wrestler_talks() -> list[str | None]:
+    """WRESTLER_SPEECH's per-wrestler table of tables.
+
+    `SLL 5,A5 / ADDI WHICH_WRESTLER_TALKS,A5 / MOVE *A5,A2,L` -- nine
+    LONG pointers in WRESTLERNUM order, with Adam Bomb's cut slot a
+    literal 0.
+    """
+    lines = _lines()
+    idx = next((i for i, l in enumerate(lines)
+                if l.strip() == "WHICH_WRESTLER_TALKS"), None)
+    if idx is None:
+        raise ValueError("no WHICH_WRESTLER_TALKS")
+    out: list[str | None] = []
+    for q in range(idx + 1, len(lines)):
+        if not lines[q].strip():
+            if out:
+                break
+            continue
+        m = LONG_RE.match(lines[q])
+        if not m:
+            break
+        tok = m.group(1).strip()
+        out.append(None if tok in ("0", "0H") else tok)
+    if len(out) != 9:
+        raise ValueError(f"WHICH_WRESTLER_TALKS: expected 9, got {len(out)}")
+    return out
+
+
+def match_over() -> dict:
+    """DCSSOUND.ASM:3793 CALL_MATCH_OVER / PROC_MATCH_OVER.
+
+    Unlike the CALL_x family this one is not a table plus a percentage --
+    it is a decision tree, so its constants are read out individually
+    rather than guessed:
+
+        SLEEPK 5                 the process's own delay
+        xor a8,a9 / jrz          which table: the loser is a player
+                                 (MATCH_OVER) or a drone (MATCH_OVER_DL)
+        RNDPER 200 / JRHI        20% -> WRESTLER_SPEECH instead
+        p1winstreak >= 4 and
+        RNDPER 200 / JRHI        20% -> the over-four-wins line
+        ADD_TO_QUEUE 1000        otherwise, always say something
+        RNDPER 500               which of the two over-four lines
+    """
+    lines = _lines()
+    # `SUBRP PROC_MATCH_OVER`, not a bare label.
+    head = re.compile(r"^\s*(?:SUBRP?\s+)?PROC_MATCH_OVER\s*$", re.I)
+    idx = next((i for i, l in enumerate(lines) if head.match(l)), None)
+    if idx is None:
+        raise ValueError("no PROC_MATCH_OVER")
+    got: dict = {"percents": [], "sleep": None, "winstreak": None,
+                 "special": []}
+    in_special = False
+    for q in range(idx + 1, min(idx + 60, len(lines))):
+        line = lines[q]
+        if re.match(r"^\s*SPECIAL_DONE\s*$", line):
+            break
+        # The two A2 loads before this label are the tables, not lines.
+        if re.match(r"^\s*SPECIAL_FOR_OVER_4_WINS\s*$", line):
+            in_special = True
+            continue
+        m = re.match(r"^\s*SLEEPK?\s+(\S+)", line, re.I)
+        if m and got["sleep"] is None:
+            got["sleep"] = wlanim.eval_ticks(m.group(1))
+            continue
+        m = MOVI_RE.match(line)
+        if m and m.group(2).upper() == "A0":
+            got["percents"].append(int(m.group(1)))
+            continue
+        if m and m.group(2).upper() == "A2" and in_special:
+            got["special"].append(m.group(1))
+            continue
+        m = re.match(r"^\s*CMPI\s+(\d+)\s*,\s*A0", line, re.I)
+        if m:
+            got["winstreak"] = int(m.group(1))
+    if got["sleep"] is None or got["winstreak"] is None:
+        raise ValueError(f"PROC_MATCH_OVER: incomplete read {got}")
+    # 200 (wrestler speech), 200 (over four wins), 1000 (the queue add),
+    # 500 (which of the two over-four lines).
+    if got["percents"][:4] != [200, 200, 1000, 500]:
+        raise ValueError(f"PROC_MATCH_OVER: percentages moved: "
+                         f"{got['percents']}")
+    if len(got["special"]) != 2:
+        raise ValueError(f"PROC_MATCH_OVER: expected two over-four lines, "
+                         f"got {got['special']}")
+    return {
+        "sleep": got["sleep"],
+        "speech_percent": got["percents"][0],
+        "streak_percent": got["percents"][1],
+        "queue_percent": got["percents"][2],
+        "which_special_percent": got["percents"][3],
+        "winstreak_min": got["winstreak"],
+        "special_lines": [_word(x) for x in got["special"]],
+    }
+
+
+def ascending_table() -> list[list[int]]:
+    """SET_UP_PERSONAL_CALL's repeat counter, 4 words per wrestler."""
+    lines = _lines()
+    idx = next((i for i, l in enumerate(lines)
+                if l.strip() == "ASCENDING_TABLE"), None)
+    if idx is None:
+        raise ValueError("no ASCENDING_TABLE")
+    rows = []
+    for q in range(idx + 1, len(lines)):
+        if not lines[q].strip():
+            if rows:
+                break
+            continue
+        mb = WORD_RE.match(lines[q])
+        if not mb:
+            break
+        vals = [_word(v) for v in _split_words(mb.group(1))]
+        if len(vals) != 4:
+            break
+        rows.append(vals)
+    if len(rows) != 9:
+        raise ValueError(f"ASCENDING_TABLE: expected 9 rows, got {len(rows)}")
+    return rows
+
+
+# Only the tables something translated can actually reach are emitted. The
+# rest of DCSSOUND.ASM's tables are real and parse cleanly, but each is
+# reached from a part of the game this port has not translated:
+# CLIMB_ROPES/JUMP_ROPES from BRET.ASM/BAM.ASM's turnbuckle control layer,
+# MATCH_OVER/MATCH_OVER_DL and the seven *_FINISHES from the post-match
+# speech. Emitting them would be dead data whose correctness nothing here
+# could check.
+def wanted_tables(calls: dict[str, dict]) -> list[str]:
+    # END_GAME_STUFF in a picked row diverts the whole call to
+    # SPECIAL_LAST_STUFF (DCSSOUND.ASM:3149 DO_END_STUFF), so that table is
+    # reachable from AVERAGE_MOVE even though no caller names it.
+    # ...and the end-of-match family, which PROC_MATCH_OVER and
+    # WRESTLER_SPEECH reach instead of through a CALL_x row.
+    ends = {"MATCH_OVER", "MATCH_OVER_DL"}
+    ends |= {t for t in which_wrestler_talks() if t}
+    return sorted({c["table"] for c in calls.values()} |
+                  {"SPECIAL_LAST_STUFF"} | ends)
+
+
+def render_c() -> str:
+    tables = announce_tables()
+    calls = callers()
+    personal = personal_tables()
+    asc = ascending_table()
+
+    missing = [c["table"] for c in calls.values() if c["table"] not in tables]
+    if missing:
+        raise ValueError(f"callers name tables with no header: {missing}")
+
+    out = ["/* Auto-generated by tools/wlvoice.py from the original",
+           "   DCSSOUND.ASM announcer tables -- do not edit. */",
+           '#include "wm/announce_tables.h"',
+           ""]
+    names = [n for n in wanted_tables(calls) if n in tables]
+    absent = [n for n in wanted_tables(calls) if n not in tables]
+    if absent:
+        raise ValueError(f"no header for {absent}")
+    for n in names:
+        t = tables[n]
+        out.append(f"/* DCSSOUND.ASM:{t['line']} {n} -- rows 0..{t['last_index']}"
+                   f" of {len(t['rows'])} ({t['stride']} word(s) each,"
+                   f" the rest is the walk-forward padding). */")
+        out.append(f"static const int16_t {n.lower()}_rows[] = {{")
+        for r_i, r in enumerate(t["rows"]):
+            tag = "" if r_i <= t["last_index"] else "   /* padding */"
+            out.append("    " + ", ".join(str(v) for v in r) + ","
+                       + tag)
+        out += ["};", ""]
+
+    out.append("const wm_announce_table wm_announce_tables[] = {")
+    for n in names:
+        t = tables[n]
+        crowd = "0" if t["crowd"] is None else f'"{t["crowd"]}"'
+        out.append(f'    {{ "{n}", {n.lower()}_rows, '
+                   f"sizeof({n.lower()}_rows) / sizeof({n.lower()}_rows[0]), "
+                   f"{t['last_index']}, {t['stride']}, "
+                   f"{'true' if t['reset_repeat'] else 'false'}, {crowd} }},")
+    out += ["};", "const size_t wm_announce_table_count =",
+            "    sizeof(wm_announce_tables) / sizeof(wm_announce_tables[0]);",
+            ""]
+
+    crowd = crowd_tables()
+    named = sorted({t["crowd"] for t in tables.values() if t["crowd"]})
+    absent_crowd = [n for n in named if n not in crowd]
+    if absent_crowd:
+        raise ValueError(f"line tables name crowd tables with no rows: "
+                         f"{absent_crowd}")
+    out.append("/* DCSSOUND.ASM:4443 CROWD TABLES, drawn from by")
+    out.append("   DO_CROWD_ANYWAY. Four words a row: the sound, how long")
+    out.append("   it runs, the crowd_cheer flags, and the RNDPER value")
+    out.append("   C_RANDOM makes it use. */")
+    for n in sorted(crowd):
+        t = crowd[n]
+        out.append(f"/* DCSSOUND.ASM:{t['line']} {n} -- rows 0..{t['last_index']}"
+                   f" of {len(t['rows'])}. */")
+        out.append(f"static const wm_crowd_row {n.lower()}_crowd_rows[] = {{")
+        for r in t["rows"]:
+            out.append("    { %d, %d, %d, %d }," % tuple(r))
+        out += ["};", ""]
+    out.append("const wm_crowd_table wm_crowd_tables[] = {")
+    for n in sorted(crowd):
+        t = crowd[n]
+        out.append(f'    {{ "{n}", {n.lower()}_crowd_rows, '
+                   f"sizeof({n.lower()}_crowd_rows) / "
+                   f"sizeof({n.lower()}_crowd_rows[0]), "
+                   f"{t['last_index']} }},")
+    out += ["};", "const size_t wm_crowd_table_count =",
+            "    sizeof(wm_crowd_tables) / sizeof(wm_crowd_tables[0]);",
+            ""]
+
+    out.append("/* DCSSOUND.ASM:3083 SET_UP_PERSONAL_CALL's five per-wrestler")
+    out.append("   tables, in WRESTLERNUM order. Slot 7 is Adam Bomb, the cut")
+    out.append("   wrestler, and is a literal 0 in every one of them. */")
+    out.append("const int16_t wm_announce_personal"
+               "[WM_ANNOUNCE_PERSONAL_KINDS][WM_ANNOUNCE_WRESTLERS] = {")
+    for want in PERSONAL_TABLES:
+        out.append(f"    /* {want} */")
+        out.append("    { " + ", ".join(str(v) for v in personal[want]) + " },")
+    out += ["};", ""]
+
+    out.append("/* ASCENDING_TABLE: four lines per wrestler, indexed by the")
+    out.append("   REPEAT_STATE counter as it runs 3, 2, 1, 0. */")
+    out.append("const int16_t wm_announce_ascending"
+               "[WM_ANNOUNCE_WRESTLERS][WM_ANNOUNCE_REPEAT_STEPS] = {")
+    for row in asc:
+        out.append("    { " + ", ".join(str(v) for v in row) + " },")
+    out += ["};", ""]
+
+    out.append("/* WRESTLER_SPEECH's WHICH_WRESTLER_TALKS: one table of")
+    out.append("   winner lines per wrestler, in WRESTLERNUM order. Adam")
+    out.append("   Bomb's cut slot is a literal 0, and the Undertaker's and")
+    out.append("   Yokozuna's tables hold a single 0 -- they win in silence. */")
+    out.append("const char *const wm_announce_finishes"
+               "[WM_ANNOUNCE_WRESTLERS] = {")
+    for t in which_wrestler_talks():
+        out.append("    0," if t is None else f'    "{t}",')
+    out += ["};", ""]
+
+    mo = match_over()
+    out.append("/* DCSSOUND.ASM:3793 PROC_MATCH_OVER's own constants. */")
+    out.append("const wm_announce_match_over_cfg wm_announce_match_over = {")
+    out.append(f"    {mo['sleep']}, {mo['speech_percent']}, "
+               f"{mo['streak_percent']}, {mo['queue_percent']},")
+    out.append(f"    {mo['which_special_percent']}, {mo['winstreak_min']},")
+    out.append(f"    {{ {mo['special_lines'][0]}, {mo['special_lines'][1]} }}")
+    out += ["};", ""]
+
+    out.append("/* The CALL_x entry points: each CREATEs a process that")
+    out.append("   sleeps and then calls ADD_IF_SILENT with this table and")
+    out.append("   this RNDPER percentage. */")
+    out.append("const wm_announce_call wm_announce_calls[] = {")
+    for n in sorted(calls):
+        c = calls[n]
+        out.append(f'    {{ "{n}", "{c["table"]}", {c["sleep"]}, '
+                   f"{c['percent']}, {'true' if c['personal'] else 'false'} }},")
+    out += ["};", "const size_t wm_announce_call_count =",
+            "    sizeof(wm_announce_calls) / sizeof(wm_announce_calls[0]);",
+            ""]
+    return "\n".join(out) + "\n"
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--out")
+    ap.add_argument("--list", action="store_true")
+    args = ap.parse_args()
+    if args.list:
+        t = announce_tables()
+        for n in sorted(t):
+            r = t[n]
+            print(f"{n:24s} rows 0..{r['last_index']} of {len(r['rows']):3d} "
+                  f"stride {r['stride']} reset={r['reset_repeat']} "
+                  f"crowd={r['crowd']}")
+        print()
+        for n, c in sorted(callers().items()):
+            print(f"{n:24s} -> {c['table']:20s} sleep {c['sleep']:3d} "
+                  f"pct {c['percent']:4d} personal={c['personal']}")
+        return 0
+    text = render_c()
+    if args.out:
+        pathlib.Path(args.out).write_text(text)
+    else:
+        sys.stdout.write(text)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

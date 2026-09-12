@@ -44,11 +44,17 @@ static const wm_arcade_input_pattern_t bret_secrets[] = {
     PAT("jump_kick", bret_jump, 3, 32),
     PAT("supercut", bret_supercut, 3, 16)
 };
+/* BRET.ASM:166 hrt_smove_table, as the assembler built it. Its two
+   finishing-move entries sit inside `.if NUM_BRET_FINISHES`, and
+   GAME.EQU:580 sets that switch to 0, so neither was assembled --
+   hrt_finish_move1 and hrt_finish_move2 are not routines this game
+   has. Generated as wm_wrestler_smoves[] (wm/wrestler_anim_tables.h);
+   a source-tool test holds this copy to it. */
 static const char *const bret_smove[] = {
     "hrt_charge_flying_kick", "hrt_charge_face_rake", "hrt_hdhold_pile",
     "hrt_hdhold_ddt", "hrt_hdhold_faceslam", "hrt_grab_toss_air",
     "hrt_roll_uppercut", "hrt_hdhold_combo1", "hrt_hdhold_combo2",
-    "std_walk_fast", "std_taunt", "hrt_finish_move1", "hrt_finish_move2"
+    "std_walk_fast", "std_taunt"
 };
 
 /* RAZOR.ASM secret table records. charge_flying_kick is executable probe code. */
@@ -81,11 +87,13 @@ static const wm_arcade_input_pattern_t razor_secrets[] = {
     PAT("hip_toss2", razor_hip2, 1, 10),
     PAT("down_slash", razor_dslash, 4, 50)
 };
+/* RAZOR.ASM:154 rzr_smove_table, same story: NUM_RAZOR_FINISHES is 0
+   at GAME.EQU:584, so rzr_finish_move1 and rzr_finish_move2 were never
+   assembled either. */
 static const char *const razor_smove[] = {
     "rzr_charge_slashes", "rzr_hdhold_pile", "rzr_hdhold_combo1",
     "rzr_hdhold_edge", "rzr_hdhold_rug", "rzr_grab_toss_air",
-    "rzr_hdhold_combo2", "std_walk_fast", "std_taunt", "rzr_sliding_rug",
-    "rzr_finish_move1", "rzr_finish_move2"
+    "rzr_hdhold_combo2", "std_walk_fast", "std_taunt", "rzr_sliding_rug"
 };
 
 const wm_arcade_wrestler_profile_t wm_arcade_profile_bret = {

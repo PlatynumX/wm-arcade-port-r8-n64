@@ -16,21 +16,37 @@ add_library(wmcore STATIC
     src/core/pregame.c
     src/core/anim.c
     src/core/game.c
-    src/core/ropes.c
     src/core/demo.c
+    src/core/match.c
+    src/core/movement.c
+    src/core/bret_backend.c
+    src/core/anim_program.c
+    src/core/arcade/wm_arcade_start_run.c
+    src/core/wrestler_backend.c
+    src/core/human_input.c
     src/core/visual.c
     src/core/roster.c
     src/core/attract.c
     src/core/audio.c
     src/core/app.c
     src/core/composite.c
+    src/core/wrestler_taunt.c
+    src/core/match_display.c
     src/generated/attract_sequence.c
     src/generated/select_tables.c
     src/generated/port_status.c
     src/generated/finish_sequences.c
     src/generated/bret_visuals.c
     src/generated/bret_attacks.c
+    src/generated/bret_defense.c
+    src/generated/bret_grapple.c
+    src/generated/anim_programs.c
+    src/generated/frame_geometry.c
+    src/generated/roll_frames.c
+    src/generated/announce_tables.c
+    src/generated/wrestler_sound_tables.c
     src/generated/progress_wrestlers.c
+    src/generated/wrestler_anim_tables.c
 )
 # BEGIN FIX38 CUMULATIVE ARCADE SOURCE PORTS
 target_sources(wmcore PRIVATE
@@ -38,14 +54,31 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_attach_anim.c
     src/core/arcade/wm_arcade_bam.c
     src/core/arcade/wm_arcade_bret.c
-    src/core/arcade/wm_arcade_bret_tables.c
+    src/core/arcade/wm_arcade_closest.c
     src/core/arcade/wm_arcade_combat.c
+    src/core/arcade/wm_arcade_confine.c
+    src/core/arcade/wm_arcade_und_finish.c
+    src/core/arcade/wm_arcade_veladd.c
+    src/core/arcade/wm_arcade_roll.c
+    src/core/arcade/wm_arcade_combo.c
+    src/core/arcade/wm_arcade_announcer.c
+    src/core/arcade/wm_arcade_announce_call.c
+    src/core/arcade/wm_arcade_wrsnd.c
     src/core/arcade/wm_arcade_doink.c
     src/core/arcade/wm_arcade_drone.c
+    src/core/arcade/wm_arcade_drone_data.c
+    src/core/anim_code.c
+    src/core/anim_puppet.c
+    src/generated/puppet_tables.c
+    src/generated/anim_aux_tables.c
+    src/core/arcade/wm_arcade_butcount.c
+    src/core/arcade/wm_arcade_razor_anim_labels.c
+    src/core/arcade/wm_arcade_joystat.c
     src/core/arcade/wm_arcade_lex.c
+    src/core/arcade/wm_arcade_lifebar.c
+    src/core/arcade/wm_arcade_mode_dead.c
     src/core/arcade/wm_arcade_move_dispatch.c
     src/core/arcade/wm_arcade_razor.c
-    src/core/arcade/wm_arcade_razor_tables.c
     src/core/arcade/wm_arcade_react.c
     src/core/arcade/wm_arcade_react1_core.c
     src/core/arcade/wm_arcade_react2_core.c
@@ -57,6 +90,46 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_react8_core.c
     src/core/arcade/wm_arcade_react9_core.c
     src/core/arcade/wm_arcade_roster.c
+    src/core/arcade/wm_arcade_scroll.c
+    src/core/arcade/wm_arcade_bgnd.c
+    src/core/arcade/wm_arcade_firework.c
+    src/core/arcade/wm_arcade_objutil.c
+    src/core/arcade/wm_arcade_colcyc.c
+    src/core/arcade/wm_arcade_plyr_start.c
+    src/core/arcade/wm_arcade_buddies.c
+    src/core/arcade/wm_arcade_sound.c
+    src/core/arcade/wm_arcade_story.c
+    src/core/arcade/wm_arcade_coffin.c
+    src/core/arcade/wm_arcade_match_clock.c
+    src/core/arcade/wm_arcade_round.c
+    src/core/arcade/wm_arcade_round_reset.c
+    src/core/arcade/wm_arcade_match_end.c
+    src/core/arcade/wm_arcade_round_announce.c
+    src/core/arcade/wm_arcade_target.c
+    src/core/arcade/wm_arcade_shake.c
+    src/core/arcade/wm_arcade_smove.c
+    src/core/arcade/wm_arcade_string.c
+    src/core/arcade/wm_arcade_pal.c
+    src/core/arcade/wm_arcade_pin.c
+    src/core/arcade/wm_arcade_powerup.c
+    src/core/arcade/wm_arcade_switches.c
+    src/core/arcade/wm_arcade_teammates.c
+    src/core/arcade/wm_arcade_life_data.c
+    src/core/arcade/wm_arcade_roster_anims.c
+    src/generated/roster_anim_tables.c
+    src/generated/smove_tables.c
+    src/generated/bgnd_modules.c
+    src/generated/firework_tables.c
+    src/generated/colcyc_tables.c
+    src/generated/sound_table.c
+    src/generated/story_text.c
+    src/generated/ani_init_tables.c
+    src/generated/palettes.c
+    src/generated/font_tables.c
+    src/generated/font_metrics.c
+    src/core/arcade/wm_arcade_debris.c
+    src/generated/debris_tables.c
+    src/generated/target_tables.c
     src/core/arcade/wm_arcade_shawn.c
     src/core/arcade/wm_arcade_special.c
     src/core/arcade/wm_arcade_taker.c
@@ -109,4 +182,80 @@ if(WM_BUILD_TESTS)
              COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_asmseq.py)
     add_test(NAME wm_source_tools
              COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_source_tools.py)
+
+    # The ROM is built with libdragon, which is not present in every
+    # checkout, so nothing here ever compiled the N64 target and its source
+    # list silently drifted from this one -- six symbols' worth by the time
+    # it was checked. This compiles the ROM's own C list for mips64 and
+    # link-checks it, which needs only an ordinary cross-compiler, and skips
+    # itself when that is not installed.
+    add_test(NAME wm_n64_link
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/n64_link_check.py
+             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+    # n64_link_check skips src/platform/n64 because it needs libdragon,
+    # which left that layer compiled by nothing in a checkout without
+    # it. This type-checks the self-contained platform sources against
+    # a small shim header instead -- not a ROM build, but enough to
+    # catch an edit that does not compile.
+    add_test(NAME wm_n64_platform
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/n64_platform_check.py
+             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+    # The DragonFS roster payload's own format contract.
+    add_test(NAME wm_stream_roster
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/stream_roster_assets.py --self-test
+             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+    # Fix38 combat/ring/RNG/hiscore host verification tests. These were staged
+    # under tests/arcade_port/fix38 alongside the src/core/arcade sources they
+    # exercise but were never registered with CTest; the src/core/arcade code
+    # itself has been buildable and linked into wmcore/wm_headless since fix38.
+    file(GLOB WM_ARCADE_STAGE25_TESTS
+         ${CMAKE_SOURCE_DIR}/tests/arcade_port/fix38/combat_stage25/test_combat_stage*.c)
+    file(GLOB WM_ARCADE_RING_RNG_TESTS
+         ${CMAKE_SOURCE_DIR}/tests/arcade_port/fix38/ring_rng/test_*.c)
+    file(GLOB WM_ARCADE_TEXT_TESTS
+         ${CMAKE_SOURCE_DIR}/tests/arcade_port/text/test_*.c)
+    file(GLOB WM_ARCADE_PAL_TESTS
+         ${CMAKE_SOURCE_DIR}/tests/arcade_port/pal/test_*.c)
+    file(GLOB WM_ARCADE_AWARD_TESTS
+         ${CMAKE_SOURCE_DIR}/tests/arcade_port/award/test_*.c)
+    file(GLOB WM_ARCADE_INPUT_TESTS
+         ${CMAKE_SOURCE_DIR}/tests/arcade_port/input/test_*.c)
+    file(GLOB WM_ARCADE_PREGAME_TESTS
+         ${CMAKE_SOURCE_DIR}/tests/arcade_port/pregame/test_*.c)
+    file(GLOB WM_ARCADE_DISPLAY_TESTS
+         ${CMAKE_SOURCE_DIR}/tests/arcade_port/display/test_*.c)
+    file(GLOB WM_ARCADE_LIFEBAR_TESTS
+         ${CMAKE_SOURCE_DIR}/tests/arcade_port/lifebar/test_*.c)
+    file(GLOB WM_ARCADE_ANIM_TESTS
+         ${CMAKE_SOURCE_DIR}/tests/arcade_port/anim/test_*.c)
+    file(GLOB WM_ARCADE_COLLIS_TESTS
+         ${CMAKE_SOURCE_DIR}/tests/arcade_port/collis/test_*.c)
+
+    foreach(test_src ${WM_ARCADE_STAGE25_TESTS} ${WM_ARCADE_RING_RNG_TESTS}
+                     ${WM_ARCADE_TEXT_TESTS} ${WM_ARCADE_PAL_TESTS}
+                     ${WM_ARCADE_AWARD_TESTS} ${WM_ARCADE_INPUT_TESTS}
+                     ${WM_ARCADE_PREGAME_TESTS} ${WM_ARCADE_DISPLAY_TESTS}
+                     ${WM_ARCADE_LIFEBAR_TESTS} ${WM_ARCADE_ANIM_TESTS} ${WM_ARCADE_COLLIS_TESTS})
+        get_filename_component(test_name ${test_src} NAME_WE)
+        set(test_target wm_${test_name})
+        add_executable(${test_target} ${test_src})
+        target_link_libraries(${test_target} PRIVATE wmcore)
+        # These tests were staged as standalone units against the arcade/
+        # headers directly (e.g. "wm_arcade_drone.h"), not the wm/arcade/
+        # public include path; add it just for these targets.
+        target_include_directories(${test_target} PRIVATE include/wm/arcade)
+        target_compile_options(${test_target} PRIVATE -Wall -Wextra -Wpedantic)
+        # These tests verify themselves with plain assert(), which the
+        # project's documented release build (CMAKE_BUILD_TYPE=Release)
+        # would otherwise silently strip via the -DNDEBUG in
+        # CMAKE_C_FLAGS_RELEASE, making every assertion here a no-op and
+        # every one of these tests "pass" regardless of what it checks.
+        # -UNDEBUG (appended after the build type's flags, so it wins)
+        # keeps assert() live in these binaries no matter the build type.
+        target_compile_options(${test_target} PRIVATE -UNDEBUG)
+        add_test(NAME ${test_target} COMMAND ${test_target})
+    endforeach()
 endif()

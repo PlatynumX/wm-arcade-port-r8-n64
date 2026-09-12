@@ -4,15 +4,19 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include "wm/attract.h"
+#include "wm/arcade/wm_arcade_sound.h"
 #include "wm/audio.h"
 #include "wm/award.h"
+#include "wm/arcade/wm_arcade_powerup.h"
 #include "wm/demo.h"
+#include "wm/match.h"
 #include "wm/process.h"
 #include "wm/roster.h"
 #include "wm/source_clock.h"
 #include "wm/pregame.h"
 #include "wm/select_screen.h"
 #include "wm/select_continue.h"
+#include "wm/arcade/wmania_rng.h"
 
 /* DISPLAY.EQU: TSEC equ 53. Source sleeps expressed in TSEC use this rate.
    Literal source sleeps such as SLEEP 60 stay literal 60 source ticks. */
@@ -42,6 +46,13 @@
     (WM_TITLE_BUTTON_ENABLE_TICKS + 10u * WM_SOURCE_TICKS_PER_SEC)
 #define WM_TITLE_LAVA_PERIOD_TICKS 5u
 #define WM_TITLE_LAVA_STEPS 32u
+
+/* ATTRACT.ASM::show_gameplay (WRESTLE.ASM::start_match, PSTATUS==0 path):
+   SLEEP 3*60 (literal, not TSEC-scaled), then wait_on_butn 10*TSEC. */
+#define WM_GAMEPLAY_RUN_TICKS (3u * 60u)
+#define WM_GAMEPLAY_BUTTON_ENABLE_TICKS WM_GAMEPLAY_RUN_TICKS
+#define WM_GAMEPLAY_TOTAL_TICKS \
+    (WM_GAMEPLAY_BUTTON_ENABLE_TICKS + 10u * WM_SOURCE_TICKS_PER_SEC)
 
 /* Recovered from the rev 1.30 arcade program ROM.
    ATTRACT.ASM passes A8=[102,7], A10=WHERE_WRESTLMANIA_SPARKLES, A9=4.
@@ -119,11 +130,48 @@ typedef enum {
     WM_APP_MODE_ATTRACT = 0,
     WM_APP_MODE_SELECT,
     WM_APP_MODE_PREGAME,
-    WM_APP_MODE_MATCH_INIT
+    WM_APP_MODE_MATCH_INIT,
+    /* WRESTLE.ASM::start_match's #1plyr path -- see wm/match.h for exactly
+       what wm_match_start_selected/wm_match_tick do and don't translate. */
+    WM_APP_MODE_MATCH,
+    /*
+     * WRESTLE.ASM:1116, the code after `JSRP start_match` -- "The only
+     * time we return from start_match is when the match is over". This
+     * mode is that return: one tick that decides where the game goes,
+     * on the `PSTATUS andn match_winner` test.
+     *
+     * A human who WON goes straight back to WM_APP_MODE_PREGAME and
+     * the next rung of the ladder, with no select screen, which is
+     * the source's own `jruc do_pregame`. A human who LOST goes to
+     * the buy-in below.
+     */
+    WM_APP_MODE_MATCH_OVER,
+    /*
+     * WRESTLE.ASM:1183 `JSRP buyin_select` -- SELECT.ASM's continue
+     * offer, already translated in wm/select_continue.h and, until
+     * now, initialised by this file and never used. Accept and the
+     * same opponent comes round again; let it run out and the game
+     * is over.
+     */
+    WM_APP_MODE_CONTINUE,
+    /*
+     * SELECT.ASM:1190 do_game_over, which the declined continue used
+     * to skip straight past on its way back to attract. Four seconds
+     * of GAME OVER with the master volume fading under it, and the
+     * bookkeeping a finished game owes the next one.
+     */
+    WM_APP_MODE_GAME_OVER
 } wm_app_mode;
 
 typedef struct {
     wm_audio_state audio;
+    /*
+     * DCSSOUND.ASM's four-channel mixer (wm/arcade/wm_arcade_sound.h).
+     * Every sound index the game decides on goes through this before
+     * it reaches the queue above, which is what decides whether it is
+     * played at all.
+     */
+    wm_sound_state_t sound;
     wm_app_mode mode;
     wm_select_screen_state select;
     wm_select_continue_state continue_select;
@@ -134,7 +182,42 @@ typedef struct {
     wm_demo demo;
     wm_wrestler_id p1_choice;
     wm_wrestler_id p2_choice;
+
+    /*
+     * AWARD.ASM's @p1powerup_request / @p2powerup_request, the two
+     * words #2plyr ANDs to decide buddy mode.
+     *
+     * Nothing in the app writes them yet: wm/arcade/
+     * wm_arcade_powerup.h translates the code-entry sequence that
+     * SETS a request (WM_PU_BUDDY_MODE included), but no app mode
+     * runs it, so both stay zero and buddy mode never turns on from
+     * a real play-through. The field is here, in the source's own
+     * shape, so that wiring the code entry up is the only thing left
+     * -- rather than the match pretending to read something that
+     * does not exist.
+     */
+    wm_powerup_flags powerups;
+
+    /*
+     * @PSTATUS as the select screen left it: 1 for one player, 3
+     * when a second joined. start_match branches on it, so it is
+     * settled once when select finishes and read again at
+     * MATCH_INIT rather than re-derived.
+     */
+    int32_t match_pstatus;
     bool show_debug;
+
+    /* WRESTLE.ASM::start_match's PSTATUS==0 path, driven from
+       WM_ATTRACT_SHOW_GAMEPLAY. See wm/match.h for exactly what is and is
+       not translated. */
+    wm_match_state match;
+
+    /* Shared @RAND state. All RNDRNG0 draws (show_gameplay's wrestler pick
+       included) come from this single stream, matching the source's one
+       global RAND. HCOUNT/SP hardware entropy is not wired up yet -- see
+       wmania_rng.h -- so this is seeded plainly rather than from real
+       cabinet jitter. */
+    WmRng rng;
 
     /* Source execution infrastructure. The display backend calls
        wm_app_video_frame at 60 Hz; this advances wm_app_tick at exactly 53 Hz. */
@@ -143,6 +226,27 @@ typedef struct {
     wm_input_state latched_input;
     unsigned boot_ticks;
     bool attract_started;
+    /*
+     * WRESTLE.ASM:1131 `movi 60,a0 / move a0,@are_we_waiting_f` --
+     * "set delay before allowing player to select a wrestler", run on
+     * the way out of every match.
+     */
+    unsigned are_we_waiting_f;
+    /*
+     * @match_winner as the post-match code reads it: 1 = player one's
+     * side, 2 = player two's, 0 = the CPU took it. Kept here because
+     * the match state is re-initialised by the next wm_match_start_*
+     * and this outlives it.
+     */
+    int32_t last_match_winner;
+    /* The continue offer reads a Start EDGE, not the level: a Start
+       still held from the match must not buy in by itself. */
+    bool continue_start_was_down;
+    /* FADE_MASTER_VOL's own process state, for the one place that
+       starts it: do_game_over. */
+    wm_sound_fade_t volume_fade;
+    /* `SLEEP TSEC*4` -- how long GAME OVER stays up. */
+    int32_t game_over_ticks;
 } wm_app;
 
 void wm_app_init(wm_app *app);

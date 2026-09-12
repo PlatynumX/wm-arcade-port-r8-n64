@@ -1,6 +1,7 @@
 #ifndef WM_ARCADE_COMBAT_H
 #define WM_ARCADE_COMBAT_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include "wm/arcade/wm_arcade_combat_defs.h"
@@ -52,16 +53,60 @@ struct wm_arcade_actor {
     uint16_t stick_val_cur;
     int32_t immobilize_time;
     int32_t combo_count;
+    /*
+     * PLYR.EQU COMBO_START -- the bitmask of move identities already
+     * counted into this combo. LIFEBAR.ASM:750 ADD_TO_COMBO_COUNT ORs
+     * ANI_ADD_MOVE's operand in and skips its own "add once" branch if the
+     * bit was already there. See wm/arcade/wm_arcade_combo.h for why that
+     * branch changes nothing about the amount added.
+     */
+    int32_t combo_start;
+    /*
+     * life_data's PLT_COMBO_SIZE -- the meter bar's own length, which is
+     * NOT combo_count. combo_count drives the damage rule in
+     * adjust_health; this drives the meter and the >= 16 "super" flash.
+     */
+    int32_t combo_size;
+    /* PLYR.EQU ANTI_COMBO_TIME: the PCNT stamp ANI_CLEAR_COMBO writes on
+       the victim when a combo starts, beside his 80-tick breaker window. */
+    uint32_t anti_combo_time;
+    /* LIFEBAR.ASM SET_FLASHING_COMBO_GOING's COMBO_FLASH_FLAG, per side:
+       the meter has reached the super threshold. The flashing itself is a
+       process and a palette, which this port has no renderer for. */
+    int32_t combo_flash;
     /* Stage 4: REACT2 combo-uppercut reads WHOHITME->RPT_COUNT. */
     int32_t rpt_count;
+    /*
+     * PLYR.EQU:103 INRING, WITH THE POLARITY INVERTED. The source's own
+     * comment there reads "0 = in ring, 1 = outside"; this port stores the
+     * ordinary boolean instead -- non-zero means IN the ring -- which is
+     * what wm_match_start's own `a->in_ring = 1` and every reader here
+     * already assume. Translating a source routine that tests INRING means
+     * flipping the test, not copying it.
+     */
     int32_t in_ring;
+    /* WRESTLE.ASM PLYR.EQU CAN_MOVE_DIR: WM_MOVE_* bits the wrestler is
+       currently confined against (real, see wm/arcade/wm_arcade_confine.h). */
+    int32_t can_move_dir;
 
     wm_arcade_actor_t *attach_proc;
     wm_arcade_actor_t *smart_target;
     wm_arcade_actor_t *who_i_hit;
+    /* PLYR.EQU WHOPINNEDME, written by WRESTLE2.ASM:3748 hit_nearest at
+       the same moment it sets the attacker's own WHOIHIT -- the back
+       pointer from a pinned man to whoever is on top of him. */
+    wm_arcade_actor_t *who_pinned_me;
     wm_arcade_actor_t *who_hit_me;
 
     wm_arcade_box3_t hurt_box;
+    /*
+     * The frame box hurt_box was last computed from, and whether one
+     * has been. The source reads it back off CUR_FRAME; this port's
+     * backends build it as a local, so set_collision_boxes keeps a copy
+     * for WRESTLE.ASM:6163 final_confine's second pass.
+     */
+    wm_arcade_frame_box_t hurt_frame;
+    bool hurt_frame_valid;
 
     int32_t attack_xoff;
     int32_t attack_yoff;
@@ -94,22 +139,158 @@ struct wm_arcade_actor {
 
     int32_t ptime;
     int32_t stars_flag;
+    /* PLYR.EQU:246 SCROLL_Y, "if SCROLL_CTRL bit in STATUS_FLAGS" -- what
+       the camera should follow instead of this wrestler's own Y while
+       ANI_SCROLL_CTRL has that bit set. */
+    int32_t scroll_y;
     int32_t debris_x;
     int32_t run_time;
     void *shadtrail_proc;
-    void *attimg_cur_frame;
+    /*
+     * PLYR.EQU's attached-image fields: an extra sprite hung off the
+     * wrestler (Bam Bam's cast arm, the Undertaker's tombstone, the
+     * glove) that the animation swaps frame by frame alongside his own.
+     * ANI_ATTCHIMAGE writes them; a renderer would draw cur_frame at the
+     * three offsets. NULL means no attached image this frame.
+     */
+    const char *attimg_cur_frame;
+    const char *attimg_last_frame;
+    int32_t attachimg_xoff;
+    int32_t attachimg_yoff;
+    int32_t attachimg_zoff;
     int32_t my_pal;
     int32_t obj_pal;
+    /* PLYR.EQU SKELETON_PAL: the palette Doink's buzzer swaps in, put back
+       from MY_PAL when it ends (DNKSEQ3.ASM set_skeleton_pal/set_my_pal). */
+    int32_t skeleton_pal;
+    /* PLYR.EQU OBJ_CONST: the constant colour the DMA writes in place of
+       non-zero pixels when M_CONNON is on -- DNKSEQ3.ASM's make_white and
+       make_black are exactly this field plus that control bit. */
+    uint16_t obj_const;
 
     /* Stage 3: concrete REACT1.ASM reaction state. Velocities are source 16.16. */
     int32_t x_vel;
     int32_t y_vel;
     int32_t z_vel;
     int32_t ground_y;
+    /*
+     * PLYR.EQU:64 OBJ_GRAVITY, the per-tick pull WRESTLE2.ASM:2282
+     * wrestler_veladd subtracts from OBJ_YVEL. It is not a constant: every
+     * animation change resets it to GAME.EQU:436's GRAVITY (0x8000) --
+     * ANIM.ASM:4520 change_anim_anim and :4553 change_anim1 both do it --
+     * and an animation can then override it for itself with
+     * ANI_SETLONG,OBJ_GRAVITY (115 uses, e.g. BAMSEQ2.ASM:3746's 0E000h
+     * for a heavier fall).
+     */
+    int32_t gravity;
+    /* PLYR.EQU:33 OBJ_PRIORITY, written by WRESTLE2.ASM:2385 calc_ground_y
+       from where the wrestler is standing: 112 in the ring, 103 or 117
+       outside it depending on Z. It is the sprite's draw order. */
+    int32_t obj_priority;
+    /*
+     * PLYR.EQU:149 CLIMBING_THRU. calc_ground_y reads it to decide that a
+     * wrestler between the mat edges is climbing IN rather than standing
+     * outside, and puts him on MAT_Y. The climb subsystem this port has
+     * (wm/arcade/wmania_ring_climb.h) keeps its own player struct and is
+     * not joined to wm_arcade_actor yet, so nothing sets this field and
+     * that branch does not fire -- which is the same path a wrestler who
+     * is not climbing takes anyway.
+     */
+    int32_t climbing_thru;
+    /* PLYR.EQU OBJ_FRICTION, set by ANIM.ASM's ANI_FRICTION (:22) together
+       with MODE_FRICTION. */
+    int32_t friction;
+    /*
+     * PLYR.EQU:152-156's five button-mash counters, in the source's own
+     * order -- it comments them "keep ordered", because two pieces of code
+     * depend on the layout:
+     *
+     *   WRESTLE.ASM:4681 count_button_presses walks them with `addi 16,a2`,
+     *   one 16-bit WORD per button, testing BUT_VAL_DOWN bit 0 upward:
+     *   punch, block, super punch, kick, super kick.
+     *
+     *   ANIM.ASM:3512 _ani_clr_butcount clears all five with three writes,
+     *   two of them 32-bit: `move a14,*a13(PUNCHB_COUNT),L` covers punch
+     *   AND block, `*a13(SPUNCHB_COUNT),L` covers super punch AND kick, and
+     *   the plain 16-bit write covers super kick. The five commented-out
+     *   single-WORD lines above them in the source are the unoptimised
+     *   version of the same thing -- reading the comments rather than the
+     *   widths is what made an earlier pass here believe block and kick
+     *   were dropped from the reset. They are not.
+     */
+    /* PLYR.EQU HITBLOCKER: the wrestler who blocked this attack, which
+       ANIM.ASM:83 ANI_IFBLOCKED branches on. Nothing sets it yet -- the
+       blocked-reaction dispatch that would is still unwired -- so the
+       branch is present and always falls through, which is the same path
+       the flat model always took. */
+    int32_t hitblocker;
+    int32_t punchb_count;
+    int32_t blockb_count;
+    int32_t spunchb_count;
+    int32_t kickb_count;
+    int32_t skickb_count;
+    /*
+     * ANIM.ASM:2681 _ani_superslave2 writes the wrestler it is holding
+     * directly: `move a0,*a11(CUR_FRAME)` plus ATTACH_XOFF/ATTACH_YOFF.
+     * While a grapple is running, the victim's frame is not chosen by his
+     * own animation at all -- the attacker's is choosing it for him, which
+     * is why one throw shows a different victim pose per wrestler.
+     *
+     * puppet_frame NULL means nobody is driving him and his own animation
+     * decides, as usual.
+     */
+    const char *puppet_frame;
+    int32_t puppet_flip;
     int32_t roll_pos;
+    /*
+     * PLYR.EQU:91 Z_BOUND. WRESTLE2.ASM:1290 do_roll stops a knocked-down
+     * wrestler rolling once he is within 6 of it -- it is how far along Z
+     * he is allowed to travel. Zero means unbounded, and ANIM.ASM:3035's
+     * `#repeat` clears it on every tick the roll keeps going.
+     */
+    int32_t z_bound;
+    /*
+     * PLYR.EQU CUR_FRAME as do_roll writes it: the frame a wrestler shows
+     * while his own animation is parked. It is not the puppet field above
+     * -- that is an ATTACKER choosing the frame; this is the wrestler
+     * choosing his own, outside the animation that is waiting on him.
+     * NULL means his animation's frame stands.
+     */
+    const char *roll_frame;
+    /*
+     * PLYR.EQU PLYR_DIZZY. ANIM.ASM:_ani_getup refuses to set GETUP_TIME
+     * while it is set, and WRESTLE.ASM:2613's #clr_dizzy clears it together
+     * with STARS_FLAG the moment GETUP_TIME reaches zero. Nothing in this
+     * port sets it yet -- check_dizzy, the routine that would, is commented
+     * out in the original too (WRESTLE2.ASM:1370 onward) -- so it reads as
+     * "not dizzy" throughout, which is what the shipped game does.
+     */
+    int32_t plyr_dizzy;
+    /*
+     * PLYR.EQU FOOT_PCNT. ANIM.ASM:26 _ani_sound debounces the footstep
+     * sound against it: "if there's been another foot noise from this guy
+     * within the last 12 ticks, give it a miss."
+     */
+    uint16_t foot_pcnt;
+    /* PLYR.EQU BUT_COUNT -- the generic per-animation button counter
+       DNKSEQ2's #holdup uses to cap how long a leap may be held. */
+    int32_t but_count;
+    /* PLYR.EQU LAST_HIPTOSS / LAST_FLING: 32-bit PCNT stamps the
+       grab-rate limiters compare against. */
+    uint32_t last_hiptoss;
+    uint32_t last_fling;
     int32_t usr_var1;
     int32_t usr_var2;              /* PLYR.EQU USR_VAR2; Yoko salt failure flag. */
     int32_t player_side;           /* PLYR.EQU PLYR_SIDE: 0, 1, or -1. */
+    /* PLYR.EQU:263 PLYR_TYPE -- WM_PTYPE_PLAYER, _DRONE or _REFEREE.
+       WRESTLE2.ASM's #ko_if_drone and DRONE.ASM's drone_calcskill both
+       branch on it, and both do nothing at all for a human. */
+    int32_t plyr_type;
+    /* PLYR.EQU:249 BUCKOFF_COUNT, "Buttons pressed for buckoff." Cleared
+       for everyone by announce_rnd_winner when a buckoff window closes
+       (wm/arcade/wm_arcade_round_announce.h); the mashing that fills it
+       is mode_dead's own #count_btns, which is not translated. */
+    int32_t buckoff_count;
     int32_t consecutive_hits;
     int32_t life;
 
@@ -119,7 +300,27 @@ struct wm_arcade_actor {
     uint16_t attack_time;          /* round_tickcount WORD */
 
     /* Final combat-core integration: animation/move-dispatch fields. */
+    /*
+     * PLYR.EQU ANI_SPEED, and ANIM.ASM:151's use of it. The animation
+     * tick scales a FRAME's own duration by it:
+     *
+     *     move *a13(ANI_SPEED),a1 / mpyu a0,a1 / srl 8,a1
+     *
+     * so 100h is identity. Every one of the 1,220 ANI_SETSPEED commands
+     * in the whole source drop is 100h, which is why ignoring it was
+     * invisible -- the port was right by a fact about the data rather
+     * than by construction. 0 is treated as identity too, so an actor
+     * that was only memset still animates at normal speed.
+     */
     uint16_t ani_speed;
+    /*
+     * AWARD.ASM's `hyper_speed_on` powerup, the second half of the same
+     * line: `srl a14,a1` shifts the scaled count right by it, so 1 makes
+     * every animation play at double speed. It is a powerup/cheat toggle
+     * (0 in normal play) and nothing in this port enables it yet, so it
+     * is carried and honoured rather than left out.
+     */
+    uint16_t hyper_speed;
     uintptr_t special_move_addr;   /* source SPECIAL_MOVE_ADDR pointer/token */
 
     /* Stage 14 / BRET.ASM character-control adapter fields. */
@@ -128,6 +329,38 @@ struct wm_arcade_actor {
     uint16_t but_val_up;
     uint16_t stick_val_down;
     uint16_t stick_val_up;
+    /*
+     * PLYR.EQU STICK_REL_CUR / STICK_REL_NEW, the last two readings
+     * read_switches caches (WRESTLE2.ASM:2820). "Relative" means
+     * relative to which way he is facing: left and right are swapped
+     * into away and toward, so a special-move sequence is written once
+     * and works from either side.
+     *
+     * STICK_REL_NEW is not "the relative stick"; it is the relative
+     * stick ONLY on a tick the stick actually changed, and zero
+     * otherwise -- `or a1,a0 / jrz #no_stick` over STICK_VAL_UP and
+     * STICK_VAL_DOWN. Every WAITSWITCH_DWN in the game reads it, and
+     * that gate is what makes a held direction count once rather than
+     * every tick.
+     */
+    uint16_t stick_rel_cur;
+    uint16_t stick_rel_new;
+    /* WRESTLE.ASM's punch_dtime1/powerp_dtime1/powerk_dtime1 (BSSX,
+       WRESTLE.ASM:3954-3958): consecutive ticks that button has been held,
+       reset to 0 the instant it's released -- see
+       wm_arcade_update_joy_dtime. block_dtime1/kick_dtime1 aren't tracked
+       here since nothing in this port reads them yet. */
+    uint16_t punch_dtime;
+    uint16_t block_dtime;
+    uint16_t powerp_dtime;
+    uint16_t kick_dtime;
+    uint16_t powerk_dtime;
+    /* And #update_stick's four, in the source's own !KEEP THIS ORDER!:
+       up, down, left, right, read out of STICK_VAL_CUR bit 0 upward. */
+    uint16_t up_dtime;
+    uint16_t down_dtime;
+    uint16_t left_dtime;
+    uint16_t right_dtime;
     int32_t closest_dist;
     int32_t closest_xdist;
     int32_t closest_ydist;
@@ -136,6 +369,55 @@ struct wm_arcade_actor {
     int32_t i_will_die;
     uint32_t block_time;
     uint32_t last_headhold;
+    /* PLYR.EQU:256 LAST_SKICK -- "PCNT last time I performed a super
+       kick", the stamp skick_delay measures its two-second window from. */
+    uint32_t last_skick;
+    /* PLYR.EQU LAST_SPUNCH -- the same stamp for the super punch,
+       measured by spunch_delay over its own two-second window. */
+    uint32_t last_spunch;
+    /*
+     * PLYR.EQU:56-58 TGT_XOFF/TGT_YOFF/TGT_ZOFF -- where a leap is aimed.
+     * ANIM.ASM:1428 is explicit that they are the caller's job: "NB - user
+     * must set TGT_XOFF,YOFF & ZOFF <-- these are the actual target".
+     * The routines that set them are translated; ANI_LEAPATPOS, which
+     * reads them, is not yet.
+     */
+    /*
+     * PLYR.EQU ANIPC -- the animation's program counter, which lives on
+     * the wrestler rather than in the interpreter. ANIM.ASM lets an
+     * ANI_CODE routine write it directly to redirect the animation
+     * (HRTSEQ3.ASM's `#rope_check`: `movi #stand,a14 / move
+     * a14,*a13(ANIPC),L`). A routine that wants that sets these two, and
+     * the VM applies and clears them as soon as the routine returns.
+     * `anipc_program` NULL means "a label in whatever is running now".
+     */
+    const char *anipc_program;
+    const char *anipc_label;
+    /*
+     * `calla change_anim1a` on a13 itself, from inside an ANI_CODE
+     * routine -- a whole new animation from its top, not a jump inside
+     * the one running. FINISEQ.ASM:1488 stand_wrestler and :1505
+     * dizzy_wrestler are both exactly that and nothing else: index a
+     * FACETBL by the wrestler, call change_anim1a, return. ANIPC above
+     * cannot express it, because the target is not a label in any
+     * program the caller is running.
+     *
+     * The routine sets it; the VM turns it into a `become` and clears
+     * it the moment the routine returns, the same way it treats ANIPC.
+     */
+    const char *change_anim_label;
+    /*
+     * PLYR.EQU OANICNT, written from OUTSIDE the animation: SHNSEQ3.ASM's
+     * #pause_opp freezes the man he hit on whatever frame he is on by
+     * stuffing 25 into his animation's own tick counter. Like ANIPC that
+     * is a field on the wrestler rather than state inside the
+     * interpreter, so the interpreter picks it up on its next tick.
+     * 0 means nothing pending.
+     */
+    uint16_t anicnt_override;
+    int32_t tgt_xoff;
+    int32_t tgt_yoff;
+    int32_t tgt_zoff;
     uintptr_t code_addr;         /* source CODE_ADDR pointer/token; resolver owns meaning */
     int32_t delay_butns;
     int32_t attack_type;
@@ -155,11 +437,34 @@ typedef enum wm_arcade_hit_result {
     WM_HIT_ACCEPTED = 1
 } wm_arcade_hit_result_t;
 
+/*
+ * COLLIS.ASM:260 set_collision_boxes' hurt-box half. It also remembers
+ * the frame box on the actor, because the box depends on POSITION as
+ * well as on the frame: WRESTLE.ASM:6163 final_confine has to recompute
+ * it after a puppet has been dragged, and the source reads CUR_FRAME
+ * off the process to do that. Without somewhere to keep it, the second
+ * pass would need the caller to find the frame again.
+ */
 void wm_arcade_set_hurt_box(wm_arcade_actor_t *actor,
                             const wm_arcade_frame_box_t *frame);
 void wm_arcade_set_attack_box(wm_arcade_actor_t *actor);
 int wm_arcade_resolve_overlap(wm_arcade_actor_t *mover,
                               const wm_arcade_actor_t *other);
+/*
+ * COLLIS.ASM:56 overlap_collision -- the loop around resolve_overlap.
+ *
+ * The source walks process_ptrs for NUM_WRES entries and tries to push
+ * `mover` out of each other live wrestler in turn. wm_arcade_resolve_
+ * overlap above is that loop's BODY, and has been a faithful
+ * translation for some time -- with nothing calling it. Two wrestlers
+ * could stand inside each other indefinitely, because the code that
+ * separates them was never reached.
+ *
+ * Returns the number of separations applied this pass.
+ */
+int wm_arcade_overlap_collision(wm_arcade_actor_t *mover,
+                                wm_arcade_actor_t *const *actors,
+                                size_t actor_count);
 wm_arcade_hit_result_t wm_arcade_try_attack_hit(
     wm_arcade_actor_t *attacker,
     wm_arcade_actor_t *victim,
@@ -170,10 +475,97 @@ int wm_arcade_check_wrestler_collisions(
     uint32_t round_tick,
     const wm_arcade_combat_callbacks_t *callbacks);
 void wm_arcade_wrestler_collisions_off(wm_arcade_actor_t *actor);
+/*
+ * WRESTLE2.ASM:1270 SUBR inc_getup_time -- add to a downed wrestler's
+ * GETUP_TIME, but only while it is still at least 20. Below that he is
+ * already on his way up and cannot be held down any longer, which is
+ * the whole content of the routine: six instructions, five of them the
+ * guard.
+ *
+ * Nothing in the shipped game calls it. DNK.ASM:118 and DOINK.ASM:49
+ * each declare it with `.ref` and the only `calla` -- REACT5.ASM:873 --
+ * is commented out, so the two declarations are all that is left of
+ * whatever used to.
+ */
+void wm_arcade_inc_getup_time(wm_arcade_actor_t *actor, int32_t amount);
+
+/*
+ * WRESTLE.ASM:6044 SUBR ck_ignore_a8 -- "If player is moving away from
+ * opponent, or standing still, tell the calling routine to ignore
+ * button press". Both of its callers, BRET.ASM:596 and DOINK.ASM:1399,
+ * gate the FLYING KICK on it: you cannot launch one while backing off.
+ *
+ * It is a table lookup. mv_tbl (WRESTLE.ASM:6035) is indexed by
+ * NEW_FACING_DIR and yields a BIT NUMBER, which is then tested in
+ * MOVE_DIR:
+ *
+ *   facing 5 (up-left)   and 6 (down-left)  -> MOVE_RIGHT_BIT
+ *   facing 9 (up-right)  and 10 (down-right)-> MOVE_LEFT_BIT
+ *   everything else                          -> 0
+ *
+ * so the bit tested is always "away from the way he is facing", and a
+ * set bit means refuse.
+ *
+ * Two things that only matter if the source's own claim -- its comment
+ * says facing is "(9,10,6,5 only)" -- ever stopped being true. A zero
+ * from the table is bit number ZERO, which is MOVE_UP_BIT, so an
+ * unexpected facing would have moving up suppress the kick. And mv_tbl
+ * is eleven entries long against a four-bit index, so a facing above
+ * 10 reads past it. This port returns "allow" for anything that is not
+ * one of the four, which is what the table means rather than what a
+ * read off its end would do.
+ *
+ * Returns true to IGNORE the press, matching the source's carry.
+ */
+bool wm_arcade_ck_ignore(const wm_arcade_actor_t *actor);
+
 void wm_arcade_set_getup_time(
     const wm_arcade_actor_t *attacker,
     wm_arcade_actor_t *victim,
     const wm_arcade_combat_callbacks_t *callbacks);
+
+/*
+ * WRESTLE.ASM:4023 update_joy_dtime -- both halves. Nine counters per
+ * wrestler, one per stick direction and one per button, each counting
+ * the ticks that input has been held and snapping back to zero the tick
+ * it is released. The source keeps them as nine consecutive BSSX arrays
+ * under its own "!KEEP THIS ORDER!" comment, because #update_stick and
+ * #update_but walk them with `addi 16*NUM_WRES,a2` rather than by name.
+ *
+ * Reads stick_val_cur and but_val_cur, so call it after those are set
+ * for the tick (wm_human_input_commit) and before anything that reads a
+ * hold time this same tick.
+ */
+void wm_arcade_update_joy_dtime(wm_arcade_actor_t *actor);
+
+/*
+ * WRESTLE.ASM:3962 init_joy_dtime -- `movi 9*NUM_WRES,a2` and clear.
+ * Note the count: nine arrays' worth in one loop, which only works
+ * because they are contiguous and in that fixed order.
+ */
+void wm_arcade_init_joy_dtime(wm_arcade_actor_t *actor);
+
+/*
+ * WRESTLE.ASM:3978-4014's five readers -- get_block_dtime,
+ * get_powerp_dtime, get_punch_dtime, get_kick_dtime, get_powerk_dtime.
+ * Each is three instructions: scale the wrestler number, index its own
+ * array, read the word. The port holds the counters on the actor
+ * instead of in a table indexed by PLYRNUM, so the index is the actor.
+ */
+typedef enum wm_arcade_dtime {
+    WM_DTIME_UP = 0,
+    WM_DTIME_DOWN,
+    WM_DTIME_LEFT,
+    WM_DTIME_RIGHT,
+    WM_DTIME_PUNCH,
+    WM_DTIME_BLOCK,
+    WM_DTIME_POWERP,
+    WM_DTIME_KICK,
+    WM_DTIME_POWERK
+} wm_arcade_dtime_t;
+
+uint16_t wm_arcade_get_dtime(const wm_arcade_actor_t *actor,
+                             wm_arcade_dtime_t which);
 
 #ifdef __cplusplus
 }

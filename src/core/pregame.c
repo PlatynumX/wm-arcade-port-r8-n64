@@ -1,4 +1,5 @@
 #include "wm/pregame.h"
+#include "wm/arcade/wm_arcade_buddies.h"
 
 #include <string.h>
 
@@ -127,27 +128,14 @@ static uint8_t ladder_slot_for_source_wrestler(uint8_t source_wrestler) {
     return source_wrestler == 8u ? 7u : (source_wrestler & 7u);
 }
 
-static unsigned count_bits8(uint8_t bits) {
-    unsigned n = 0u;
-    for (unsigned i = 0; i < 8u; ++i)
-        n += (bits >> i) & 1u;
-    return n;
-}
-
 static uint8_t get_rnd_wrestler(wm_pregame_state *s, uint8_t excluded) {
-    /* PROGRESS.ASM::get_rnd_wrestler chooses the Nth non-excluded packed
-       wrestler. RNDRNG0's inclusive-range contract is preserved by the
-       isolated bridge above. */
-    unsigned excluded_count = count_bits8(excluded);
-    unsigned maximum = 7u - excluded_count;
-    unsigned nth = rndrng0(s, maximum) + 1u;
-    for (uint8_t w = 0; w < 8u; ++w) {
-        if (excluded & (uint8_t)(1u << w))
-            continue;
-        if (--nth == 0u)
-            return w;
-    }
-    return 0u;
+    /* PROGRESS.ASM:4273, shared with buddy mode's own draw -- this
+       file used to carry a second copy of the same seven
+       instructions. wm/arcade/wm_arcade_buddies.h is the one
+       translation; it takes the RNG directly rather than through
+       this file's bridge, which is the same shared @RAND either
+       way. */
+    return (uint8_t)wm_get_rnd_wrestler(excluded, s ? s->rng : NULL);
 }
 
 static uint32_t scramble_table_entry(wm_pregame_state *s,

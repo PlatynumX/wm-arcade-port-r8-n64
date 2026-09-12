@@ -1,4 +1,5 @@
 #include "wm/match.h"
+#include "wm/arcade/wm_arcade_buddies.h"
 #include "wm/announce_tables.h"
 #include "wm/award.h"
 #include "wm/anim_program.h"
@@ -16,9 +17,9 @@
  * WRESTLE.ASM:2691-2755 (#set0, wrestler-placement init): a wrestler's real
  * starting OBJ_XPOS/OBJ_ZPOS and NEW_FACING_DIR/FACING_DIR all come from the
  * SAME #teamX_starts table row (WRESTLE.ASM:2782-2792), X,Z,face_dir,unused
- * quads. This port only ever creates one wrestler per side, so the "first
- * player on team" row (index 0) is the only one ever reachable -- no
- * team-battle/royal-rumble/INIT_LADDER_TABLE support exists here.
+ * quads. #set0 picks the row by COUNTING how many wrestlers are already on
+ * your side (the `#loop0` walk above it), so the first on a team gets row 0
+ * and buddy mode's partner, arriving second, gets row 1.
  * RING_X_CENTER (RING.EQU:22) = 0400h+50 = 1074.
  */
 #define WM_MATCH_RING_X_CENTER 1074
@@ -28,6 +29,15 @@
 #define WM_MATCH_P2_START_X (WM_MATCH_RING_X_CENTER + 85)
 #define WM_MATCH_P2_START_Z (1103 + 93)
 #define WM_MATCH_P2_START_FACING WM_MOVE_DOWN_LEFT
+
+/* `#team1_starts` / `#team2_starts` row 1, "second" -- where buddy
+   mode's partner stands. Facing 9 and 5, as written. */
+#define WM_MATCH_T1_SECOND_X (WM_MATCH_RING_X_CENTER - 150)
+#define WM_MATCH_T1_SECOND_Z (1127 + 170)
+#define WM_MATCH_T1_SECOND_FACING WM_MOVE_UP_RIGHT
+#define WM_MATCH_T2_SECOND_X (WM_MATCH_RING_X_CENTER + 150)
+#define WM_MATCH_T2_SECOND_Z (1103 + 170)
+#define WM_MATCH_T2_SECOND_FACING WM_MOVE_UP_LEFT
 
 
 /*
@@ -469,7 +479,7 @@ static void match_end_awards(void *user) {
     int32_t pstatus;
 
     if (!m) return;
-    pstatus = m->has_human ? 1 : 0;
+    pstatus = m->pstatus;
 
     for (p = 0; p < WM_AWARD_PLAYER_COUNT; ++p) {
         /* AWARD.ASM:996's own reading of @match_time -- see
@@ -511,6 +521,48 @@ static void match_end_sound(void *user, int sound) {
     m->anim_sound(m->anim_sound_user, (uint16_t)sound);
 }
 
+
+/*
+ * Who counts as "the opponent" for one wrestler.
+ *
+ * WRESTLE.ASM's own answer is CLOSEST_NUM, which calc_closest fills
+ * by searching every other wrestler process on the OTHER PLYR_SIDE
+ * and keeping the nearest in X. Until buddy mode there were only
+ * ever two actors, so this port substituted `the other slot` and
+ * said so; with four in the ring that substitution stops being
+ * true -- slot 2 is player one's partner and must not be treated as
+ * his opponent.
+ *
+ * This is the search, restricted to what the port's actor records
+ * carry: nearest ACTIVE actor whose player_side differs, by absolute
+ * X. For a two-actor match it returns exactly the slot `1u - i` did,
+ * so nothing about the existing paths changes.
+ *
+ * Returns NULL if the side is empty, which a caller must handle --
+ * the source cannot reach that state and neither should this, but a
+ * null is better than slot zero pretending to be an enemy.
+ */
+static wm_arcade_actor_t *match_opponent_of(wm_match_state *m, unsigned i) {
+    wm_arcade_actor_t *best = NULL;
+    int32_t best_dx = 0;
+    unsigned k;
+
+    if (!m || i >= m->actor_count) return NULL;
+    for (k = 0; k < m->actor_count; ++k) {
+        int32_t dx;
+        if (k == i) continue;
+        if (!m->actors[k].active) continue;
+        if (m->actors[k].player_side == m->actors[i].player_side) continue;
+        dx = m->actors[k].x_int - m->actors[i].x_int;
+        if (dx < 0) dx = -dx;
+        if (!best || dx < best_dx) {
+            best = &m->actors[k];
+            best_dx = dx;
+        }
+    }
+    return best;
+}
+
 static void match_reset_for_round(wm_match_state *m) {
     wm_arcade_actor_t *actors[WM_MATCH_MAX_ACTORS];
     unsigned i;
@@ -534,7 +586,7 @@ static void match_reset_for_round(wm_match_state *m) {
     wm_match_clock_reset(&m->clock);
     m->clock_warning = false;
     /* `callr reset_smoves` -- every watchdog back to its own entry. */
-    for (i = 0; i < WM_MATCH_MAX_ACTORS; ++i)
+    for (i = 0; i < m->actor_count; ++i)
         wm_smove_reset(m->smoves[i], m->smove_count[i]);
     /* `clr a0 / move a0,@any_hits`. */
     m->combat_runtime.any_hits = 0;
@@ -560,7 +612,10 @@ static void init_smoves(wm_match_state *m) {
     wm_arcade_pins_clear(&m->pins);
     wm_coffin_reset(&m->coffin);
     m->in_finish_move = false;
-    for (i = 0; i < WM_MATCH_MAX_ACTORS; ++i) {
+    /* actor_count, not the cap: buddy mode raised the cap to four and
+       a two-wrestler match must not arm watchdogs for slots it never
+       created. */
+    for (i = 0; i < m->actor_count; ++i) {
         m->smove_count[i] = wm_smove_init(
             m->actors[i].wrestler_num,
             m->actors[i].plyr_type == WM_PTYPE_DRONE,
@@ -569,18 +624,23 @@ static void init_smoves(wm_match_state *m) {
     }
 }
 
+/*
+ * `movi PTYPE_PLAYER,a8 / btst n,a0 / jrnz #ok / movi PTYPE_DRONE,a8`
+ * -- each created wrestler is a player or a drone by its own PSTATUS
+ * bit, which is what actor_is_human records. The buddies #2plyr adds
+ * are PTYPE_DRONE unconditionally and are simply not flagged human.
+ */
 static void init_plyr_types(wm_match_state *m) {
     unsigned i;
-    for (i = 0; i < WM_MATCH_MAX_ACTORS; ++i) {
+    for (i = 0; i < m->actor_count; ++i) {
         m->actors[i].plyr_type =
-            (m->has_human && i == m->human_actor_index)
-                ? WM_PTYPE_PLAYER : WM_PTYPE_DRONE;
+            m->actor_is_human[i] ? WM_PTYPE_PLAYER : WM_PTYPE_DRONE;
     }
 }
 
 static void init_bret_backends(wm_match_state *m) {
     unsigned i;
-    for (i = 0; i < WM_MATCH_MAX_ACTORS; ++i) {
+    for (i = 0; i < m->actor_count; ++i) {
         wm_bret_backend_init(&m->bret_visual[i]);
         /* LIFEBAR.ASM adjust_health's "attract mode never dies" rule
            (PSTATUS==0) -- see wm_arcade_adjust_health. Fixed for the whole
@@ -593,52 +653,13 @@ static void init_bret_backends(wm_match_state *m) {
     }
 }
 
-void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
-    wm_arcade_actor_t *p1, *opp;
-    if (!m) return;
-
-    wm_match_init_scroller(m);
-
-    m->index1 = wm_match_draw_wrestler_index(rng);
-    /* Placeholder opponent draw -- see wm/match.h. Not @index2. */
-    m->opponent_wrestler = wm_match_draw_wrestler_index(rng);
-
-    p1 = &m->actors[0];
-    opp = &m->actors[1];
-    init_actor_life(p1);
-    init_actor_life(opp);
-
-    /* WRESTLE.ASM:1775-1782 #0plyr: P1 drone, PLYRNUM=2, PSIDE_PLYR1. */
-    p1->player_num = 2;
-    p1->player_side = WM_MATCH_PSIDE_PLYR1;
-    p1->wrestler_num = (int32_t)m->index1;
-
-    /* WRESTLE.ASM:1786-1794: opponent drone(s), PLYRNUM starts at 3,
-       PSIDE_PLYR2. The source loop repeats this NUM_OPPS times from the
-       ladder table; only one opponent is created here (see wm/match.h). */
-    opp->player_num = 3;
-    opp->player_side = WM_MATCH_PSIDE_PLYR2;
-    opp->wrestler_num = (int32_t)m->opponent_wrestler;
-
-    p1->smart_target = opp;
-    opp->smart_target = p1;
-
-    place_wrestler(p1, WM_MATCH_P1_START_X, WM_MATCH_P1_START_Z, WM_MATCH_P1_START_FACING);
-    place_wrestler(opp, WM_MATCH_P2_START_X, WM_MATCH_P2_START_Z, WM_MATCH_P2_START_FACING);
-
-    wm_arcade_drone_init(&m->drones[0], 0);
-    wm_arcade_drone_init(&m->drones[1], 0);
-
-    init_plyr_types(m);
-    /* After init_plyr_types: std_taunt's first instruction is
-       `move *a8(PLYR_TYPE),a14 / janz SUCIDE`, so who is a drone has
-       to be settled before the watchdogs are made. */
-    init_smoves(m);
-    init_bret_backends(m);
-
-    m->actor_count = WM_MATCH_MAX_ACTORS;
-    m->active = true;
-    m->tick_count = 0;
+/*
+ * Everything start_match does once the wrestlers exist, shared by
+ * all three creation paths (#0plyr, #1plyr and #2plyr) because the
+ * source shares it too -- the three paths converge on
+ * #wrestlers_created and run the same setup from there.
+ */
+static void match_start_common_tail(wm_match_state *m) {
     wm_arcade_combat_runtime_init(&m->combat_runtime);
     {
         /* ROPES.ASM creates one process per bank. reduce_bog kills only the
@@ -682,6 +703,232 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
     wm_move_name_init(&m->move_names);
     memset(&m->move_name, 0, sizeof(m->move_name));
     wm_arcade_match_score_init(&m->score);
+}
+
+
+void wm_match_set_input(wm_match_state *m, unsigned player,
+                        const wm_input_state *in) {
+    if (!m || player >= 2u) return;
+    if (!in) {
+        m->player_input_set[player] = false;
+        return;
+    }
+    m->player_input[player] = *in;
+    m->player_input_set[player] = true;
+}
+
+void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
+    wm_arcade_actor_t *p1, *opp;
+    if (!m) return;
+
+    wm_match_init_scroller(m);
+
+    /* `#0plyr` is reached on `move @PSTATUS,a0 / jrz #0plyr`: nobody
+       is playing, so no actor is a human. */
+    m->pstatus = 0;
+    memset(m->actor_is_human, 0, sizeof m->actor_is_human);
+    m->has_human = false;
+
+    m->index1 = wm_match_draw_wrestler_index(rng);
+    /* Placeholder opponent draw -- see wm/match.h. Not @index2. */
+    m->opponent_wrestler = wm_match_draw_wrestler_index(rng);
+
+    p1 = &m->actors[0];
+    opp = &m->actors[1];
+    init_actor_life(p1);
+    init_actor_life(opp);
+
+    /* WRESTLE.ASM:1775-1782 #0plyr: P1 drone, PLYRNUM=2, PSIDE_PLYR1. */
+    p1->player_num = 2;
+    p1->player_side = WM_MATCH_PSIDE_PLYR1;
+    p1->wrestler_num = (int32_t)m->index1;
+
+    /* WRESTLE.ASM:1786-1794: opponent drone(s), PLYRNUM starts at 3,
+       PSIDE_PLYR2. The source loop repeats this NUM_OPPS times from the
+       ladder table; only one opponent is created here (see wm/match.h). */
+    opp->player_num = 3;
+    opp->player_side = WM_MATCH_PSIDE_PLYR2;
+    opp->wrestler_num = (int32_t)m->opponent_wrestler;
+
+    p1->smart_target = opp;
+    opp->smart_target = p1;
+
+    place_wrestler(p1, WM_MATCH_P1_START_X, WM_MATCH_P1_START_Z, WM_MATCH_P1_START_FACING);
+    place_wrestler(opp, WM_MATCH_P2_START_X, WM_MATCH_P2_START_Z, WM_MATCH_P2_START_FACING);
+
+    wm_arcade_drone_init(&m->drones[0], 0);
+    wm_arcade_drone_init(&m->drones[1], 0);
+
+    /* #0plyr and #1plyr each create two. Set BEFORE the init
+       helpers below: every one of them loops over actor_count now
+       that buddy mode has raised the cap past it. */
+    m->actor_count = 2;
+
+    init_plyr_types(m);
+    /* After init_plyr_types: std_taunt's first instruction is
+       `move *a8(PLYR_TYPE),a14 / janz SUCIDE`, so who is a drone has
+       to be settled before the watchdogs are made. */
+    init_smoves(m);
+    init_bret_backends(m);
+    m->active = true;
+    m->tick_count = 0;
+    match_start_common_tail(m);
+}
+
+
+/* =================================================================
+ * WRESTLE.ASM:1801 #2plyr -- the two-player creation path.
+ *
+ * The third of start_match's three, and the one this port did not
+ * have. It differs from #1plyr in four ways worth stating:
+ *
+ *   Both wrestlers are created from their OWN PSTATUS bit, so each
+ *   is a player or a drone independently. On the shipped dispatch
+ *   that is dead branching -- `CMPI 3,A0 / JREQ #2plyr` means both
+ *   bits are set and both `btst` tests pass -- but the code is
+ *   written to be reached with either bit clear and is translated
+ *   that way rather than assumed away.
+ *
+ *   Player two's side is `PSIDE_PLYR2 - royal_rumble`. In a rumble
+ *   that is 1 - 1 = 0, putting both humans on side ZERO: the rumble
+ *   is how two players end up team-mates rather than opponents, and
+ *   it is one subtract that does it.
+ *
+ *   Buddy mode needs BOTH players to have asked. `move
+ *   @p1powerup_request,a8,L / move @p2powerup_request,a9,L / and
+ *   a9,a8 / andi BUDDY_MODE,a8` -- an AND, not an OR, so one
+ *   player's code is not enough.
+ *
+ *   With buddy mode on, two more wrestlers are created as
+ *   PTYPE_DRONE at slots 2 and 3, one on each side. Which buddy goes
+ *   where is not the order they were drawn -- see
+ *   wm_buddy_for_player1.
+ *
+ * Not translated here, and not faked: the `#no_buddies` tail's
+ * royal-rumble lineup rewrite (get_royal_lineup into CURRENT_LADDER
+ * with NUM_OPPS=2 and FINAL_PTR), because the ladder table it edits
+ * is not what this port's match reads.
+ * ================================================================= */
+
+/* GAME.EQU:565 `BUDDY_MODE .equ 128`. */
+#define WM_MATCH_BUDDY_MODE 128
+
+bool wm_match_buddy_mode_on(int32_t p1powerup_request,
+                            int32_t p2powerup_request) {
+    /* `and a9,a8 / andi BUDDY_MODE,a8 / jrz #no_buddies`. */
+    return ((p1powerup_request & p2powerup_request) &
+            WM_MATCH_BUDDY_MODE) != 0;
+}
+
+void wm_match_start_two_player(wm_match_state *m, WmRng *rng,
+                               int32_t pstatus,
+                               uint8_t index1, uint8_t index2,
+                               bool royal_rumble,
+                               int32_t p1powerup_request,
+                               int32_t p2powerup_request) {
+    wm_arcade_actor_t *p1, *p2;
+    bool buddies_on;
+    unsigned i;
+
+    if (!m) return;
+
+    wm_match_init_scroller(m);
+
+    p1 = &m->actors[0];
+    p2 = &m->actors[1];
+    init_actor_life(p1);
+    init_actor_life(p2);
+
+    /* First SCREATE: PSIDE_PLYR1, PLYRNUM 0, @index1. */
+    p1->player_num = 0;
+    p1->player_side = WM_MATCH_PSIDE_PLYR1;
+    p1->wrestler_num = (int32_t)index1;
+
+    /* Second SCREATE: `movi PSIDE_PLYR2,a9 / move @royal_rumble,a14
+       / sub a14,a9`, PLYRNUM 1, @index2. */
+    p2->player_num = 1;
+    p2->player_side = WM_MATCH_PSIDE_PLYR2 - (royal_rumble ? 1 : 0);
+    p2->wrestler_num = (int32_t)index2;
+
+    m->index1 = index1;
+    m->opponent_wrestler = index2;
+
+    p1->smart_target = p2;
+    p2->smart_target = p1;
+
+    place_wrestler(p1, WM_MATCH_P1_START_X, WM_MATCH_P1_START_Z,
+                   WM_MATCH_P1_START_FACING);
+    place_wrestler(p2, WM_MATCH_P2_START_X, WM_MATCH_P2_START_Z,
+                   WM_MATCH_P2_START_FACING);
+
+    m->pstatus = pstatus;
+    memset(m->actor_is_human, 0, sizeof m->actor_is_human);
+    /* `movi PTYPE_PLAYER,a8 / btst 0,a0 / jrnz #ok / movi
+       PTYPE_DRONE,a8`, and the same on bit 1 for the second. */
+    m->actor_is_human[0] = (pstatus & 1) != 0;
+    m->actor_is_human[1] = (pstatus & 2) != 0;
+    m->actor_count = 2;
+
+    /* `movk 1,a14 / move a14,@buddy_mode_checked`. */
+    m->buddy_mode_checked = true;
+    buddies_on = wm_match_buddy_mode_on(p1powerup_request,
+                                        p2powerup_request);
+    m->buddy_mode_on = buddies_on;
+
+    if (buddies_on) {
+        wm_buddies_t b = wm_choose_buddies(index1, index2, rng);
+        wm_arcade_actor_t *b1 = &m->actors[2];
+        wm_arcade_actor_t *b2 = &m->actors[3];
+
+        init_actor_life(b1);
+        init_actor_life(b2);
+
+        /* `movk PTYPE_DRONE,a8 / movi PSIDE_PLYR1,a9 / movk 2,a10 /
+           PULL a11` -- player one's partner, on his side, slot 2. */
+        b1->player_num = 2;
+        b1->player_side = WM_MATCH_PSIDE_PLYR1;
+        b1->wrestler_num = (int32_t)wm_buddy_for_player1(&b);
+
+        /* `movk PTYPE_DRONE,a8 / movk PSIDE_PLYR2,a9 / movk 3,a10 /
+           PULL a11`. Note this one is a bare PSIDE_PLYR2: the
+           royal-rumble subtract is NOT applied to the buddies, so in
+           a rumble the humans share side 0 while their partners stay
+           on opposite sides. That is what the source does. */
+        b2->player_num = 3;
+        b2->player_side = WM_MATCH_PSIDE_PLYR2;
+        b2->wrestler_num = (int32_t)wm_buddy_for_player2(&b);
+
+        /*
+         * #set0 again, and the row is the count of wrestlers
+         * already on that side -- so each partner takes row 1,
+         * "second", of his own team's table rather than an offset
+         * from his player.
+         */
+        place_wrestler(b1, WM_MATCH_T1_SECOND_X, WM_MATCH_T1_SECOND_Z,
+                       WM_MATCH_T1_SECOND_FACING);
+        place_wrestler(b2, WM_MATCH_T2_SECOND_X, WM_MATCH_T2_SECOND_Z,
+                       WM_MATCH_T2_SECOND_FACING);
+
+        m->actor_count = 4;
+    }
+
+    for (i = 0; i < m->actor_count; ++i) {
+        wm_arcade_drone_init(&m->drones[i], 0);
+        if (m->actor_is_human[i]) wm_human_input_init(&m->human_input[i]);
+    }
+
+    /* The first human, for everything that asks "is anybody
+       playing" rather than "which actor". */
+    m->has_human = m->actor_is_human[0] || m->actor_is_human[1];
+    m->human_actor_index = m->actor_is_human[0] ? 0u : 1u;
+    wm_human_input_init(&m->human_input_state);
+
+    init_plyr_types(m);
+    init_smoves(m);
+    init_bret_backends(m);
+    m->active = true;
+    m->tick_count = 0;
+    match_start_common_tail(m);
 }
 
 void wm_match_start_selected(wm_match_state *m, WmRng *rng,
@@ -720,11 +967,24 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
     wm_arcade_drone_init(&m->drones[0], 0);
     wm_arcade_drone_init(&m->drones[1], 0);
 
-    /* Set before init_bret_backends() so its attract_mode wiring
-       (!has_human) sees the right value. */
+    /*
+     * `#1plyr`: `btst 0,A0 / jrnz #set` -- PSTATUS decides which of
+     * the two slots the human drives, and this port always puts him
+     * in slot 0. Set before init_bret_backends() so its attract_mode
+     * wiring (!has_human) sees the right value.
+     */
+    m->pstatus = 1;
+    memset(m->actor_is_human, 0, sizeof m->actor_is_human);
+    m->actor_is_human[0] = true;
+    wm_human_input_init(&m->human_input[0]);
     m->has_human = true;
     m->human_actor_index = 0;
     wm_human_input_init(&m->human_input_state);
+
+    /* #0plyr and #1plyr each create two. Set BEFORE the init
+       helpers below: every one of them loops over actor_count now
+       that buddy mode has raised the cap past it. */
+    m->actor_count = 2;
 
     init_plyr_types(m);
     /* After init_plyr_types: std_taunt's first instruction is
@@ -732,53 +992,9 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
        to be settled before the watchdogs are made. */
     init_smoves(m);
     init_bret_backends(m);
-
-    m->actor_count = WM_MATCH_MAX_ACTORS;
     m->active = true;
     m->tick_count = 0;
-    wm_arcade_combat_runtime_init(&m->combat_runtime);
-    {
-        /* ROPES.ASM creates one process per bank. reduce_bog kills only the
-           front/back pair after object creation, which is the source's own
-           argument to this call. */
-        unsigned b;
-        for (b = 0; b < WM_MATCH_ROPE_BANKS; ++b)
-            wm_rope_runtime_init_bank(&m->ropes[b], (WmRopeBank)b, false);
-    }
-    wm_announcer_init(&m->announcer);       /* RESET_VOICE_QUEUE */
-    wm_anim_code_reset();
-    wm_arcade_round_state_init(&m->round_state);
-    /*
-     * WRESTLE.ASM:1631 `CREATE TIMER_PID,match_timer` -- the round
-     * clock starts with the match, not with the round. Its rate is
-     * chosen once here and survives every reset.
-     *
-     * All three of match_timer's slowdowns are false, for the same
-     * reason royal_rumble is hard-coded false everywhere else in this
-     * file: this port runs a fixed two-man bout with no ladder state
-     * to ask. wm_match_clock_rate takes them so a caller that has a
-     * wm_pregame_state can pass the real answers without the clock
-     * itself having to learn about ladders.
-     */
-    wm_match_clock_start(&m->clock,
-                         wm_match_clock_rate(WM_MATCH_CLOCK_ADJSPEED_DEFAULT,
-                                             false, false, false));
-    m->clock_warning = false;
-    wm_arcade_round_announce_init(&m->round_announce);
-    wm_match_end_init(&m->match_end);
-    m->match_over = 0;
-    wm_award_init(&m->awards);
-    /* WRESTLE.ASM:4552 init_reduce_bog, with this match's two actors. */
-    m->debris.no_debris = false;
-    m->debris.reduce_bog = (int32_t)m->actor_count - 2;
-    wm_shake_init(&m->shake);
-    wm_debris_init(&m->debris_runtime);
-    memset(&m->last_burst, 0, sizeof(m->last_burst));
-    m->allow_offscrn = 0;
-    memset(&m->dizzy, 0, sizeof(m->dizzy));
-    wm_move_name_init(&m->move_names);
-    memset(&m->move_name, 0, sizeof(m->move_name));
-    wm_arcade_match_score_init(&m->score);
+    match_start_common_tail(m);
 }
 
 /* wm_arcade_adjust_health's death_anim bridge for the generic hit path:
@@ -927,10 +1143,11 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
     for (i = 0; i < m->actor_count; ++i) {
         /* WRESTLE.ASM:2418 `callr update_newfacing`, called unconditionally
            for every wrestler process before the human/zombie/drone_main
-           branch -- WM_MATCH_MAX_ACTORS==2, so the other slot is always the
-           opponent (same fixed-pair substitution wm_arcade_calc_closest
-           below already makes). */
-        wm_arcade_update_newfacing(&m->actors[i], &m->actors[1u - i]);
+           branch. The opponent is CLOSEST_NUM's own answer -- see
+           match_opponent_of, which stops being `the other slot` once
+           buddy mode puts four wrestlers in the ring. */
+        wm_arcade_actor_t *opp_of_i = match_opponent_of(m, i);
+        if (opp_of_i) wm_arcade_update_newfacing(&m->actors[i], opp_of_i);
 
         /* WRESTLE.ASM's main loop computes each wrestler's own CLOSEST_*
            fields every tick for every process (drone_main's own AI
@@ -947,11 +1164,21 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
            PLYRNUM, unless the opponent is dead -- skips the distance
            update and not just the target choice, and the AI reads those
            distances. See wm/arcade/wm_arcade_closest.h. */
-        (void)wm_arcade_calc_closest2(&m->actors[i], &m->actors[1u - i],
-                                      world.pcnt);
+        if (opp_of_i)
+            (void)wm_arcade_calc_closest2(&m->actors[i], opp_of_i, world.pcnt);
 
-        if (m->has_human && i == m->human_actor_index) {
-            wm_human_input_commit(&m->actors[i], &m->human_input_state, human_input);
+        if (m->actor_is_human[i]) {
+            /*
+             * Each wrestler reads its OWN switches -- PLYRNUM picks
+             * the set, exactly as get_but_val_cur(PLYRNUM) does.
+             * Player one falls back to the tick's own argument so a
+             * single-player caller never has to set anything.
+             */
+            unsigned pn = (unsigned)m->actors[i].player_num;
+            const wm_input_state *in = NULL;
+            if (pn < 2 && m->player_input_set[pn]) in = &m->player_input[pn];
+            else if (pn == 0) in = human_input;
+            wm_human_input_commit(&m->actors[i], &m->human_input[i], in);
         } else {
             uint16_t old_but = m->drones[i].but;
             uint16_t old_joy = m->drones[i].joy;
@@ -1030,8 +1257,9 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
            the other seven run the same real decision logic through the
            shared, animation-free backend in wm/wrestler_backend.h. */
         {
-            /* WM_MATCH_MAX_ACTORS==2: the other slot is always the opponent. */
-            wm_arcade_actor_t *opp = &m->actors[1u - i];
+            /* CLOSEST_NUM's answer, not "the other slot" -- with
+               buddy mode a wrestler's partner shares his side. */
+            wm_arcade_actor_t *opp = opp_of_i ? opp_of_i : &m->actors[i];
             const wm_arcade_wrestler_profile_t *profile =
                 wm_arcade_roster_profile((wm_arcade_roster_id_t)m->actors[i].wrestler_num);
             wm_arcade_roster_env_t env;
@@ -1147,10 +1375,10 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
              * routines that gate on these read them rather than assuming.
              */
             m->wrestler_visual[i].anim_env.royal_rumble = false;
-            m->wrestler_visual[i].anim_env.pstatus = m->has_human ? 1 : 0;
+            m->wrestler_visual[i].anim_env.pstatus = m->pstatus;
             m->wrestler_visual[i].anim_env.num_opps = 1;
             m->bret_visual[i].anim_env.royal_rumble = false;
-            m->bret_visual[i].anim_env.pstatus = m->has_human ? 1 : 0;
+            m->bret_visual[i].anim_env.pstatus = m->pstatus;
             m->bret_visual[i].anim_env.num_opps = 1;
             m->wrestler_visual[i].anim_env.award_user = m->anim_award_user;
             m->wrestler_visual[i].anim_env.round_award = m->anim_round_award;

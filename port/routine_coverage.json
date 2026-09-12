@@ -7481,10 +7481,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "partial",
-   "evidence": "wm_powerup_attempt_tick",
+   "status": "implemented",
+   "evidence": "wm_choose_buddies",
    "from_generated": false,
-   "ledgered": true
+   "ledgered": false
   },
   {
    "name": "choose_pal",
@@ -31008,7 +31008,7 @@
    "external_callers": 1,
    "references": 3,
    "status": "partial",
-   "evidence": "wm_match_start_attract",
+   "evidence": "wm_match_start_two_player",
    "from_generated": false,
    "ledgered": true
   },

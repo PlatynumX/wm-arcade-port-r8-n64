@@ -1028,8 +1028,8 @@
  "start_match": {
   "file": "WRESTLE.ASM",
   "status": "partial",
-  "symbol": "wm_match_start_attract",
-  "note": "WRESTLE.ASM:1900. The match's own setup and main loop. Translated: the PSTATUS==0 attract path in full -- the RNDRNG0(7)-skip-7 wrestler draw, init_life_data, the PLYRNUM/PSIDE actor creation, and the SLEEP 3*60 plus wait_on_butn 10*TSEC timing. Not translated: the process creation for every other game mode, the scroller and background startup, and the CREATE-based subsystems (smoves, crowd, lifebar) this port has no processes for."
+  "symbol": "wm_match_start_two_player",
+  "note": "WRESTLE.ASM:1568. All THREE of its creation paths are now translated: #0plyr (wm_match_start_attract), #1plyr (wm_match_start_selected) and #2plyr (wm_match_start_two_player), the last including buddy mode's two extra drone partners. Still not translated: the INIT_LADDER_TABLE / CURRENT_LADDER / NUM_OPPS multi-drone team selection, so a match creates one opponent rather than a full NUM_OPPS team; and #no_buddies' royal-rumble lineup rewrite, which edits a ladder table this port's match does not read."
  },
  "change_wrestler": {
   "file": "WRESTLE2.ASM",
@@ -1314,12 +1314,6 @@
   "status": "partial",
   "symbol": "wm_pal_find",
   "note": "WRESTLE2.ASM:3735. Assigns each wrestler one of the four palettes his table holds, in PLYRNUM order, with two special cases: buddy mode takes its own pals, and two humans on the SAME wrestler are given different ones -- the walk over process_ptrs collecting PLYRNUM 0's and 1's WRESTLERNUM is that test. PAL.ASM's allocator is translated (wm/arcade/wm_arcade_pal.h: wm_pal_find, wm_pal_alloc_range and the DIAGP reservation) and the per-wrestler palette tables are generated into src/generated/palettes.c, so both halves of what this routine needs exist. What does not is a consumer: this port draws with no palette attached to a wrestler, so SELECTING between his four has nothing to select for. The two special cases are the part that would have to be written when one appears."
- },
- "choose_buddies": {
-  "file": "WRESTLE2.ASM",
-  "status": "partial",
-  "symbol": "wm_powerup_attempt_tick",
-  "note": "WRESTLE2.ASM:3690. Buddy mode's two random team-mates: build an exclusion mask from @index1 and @index2, count the excluded, then two get_rnd_wrestler draws with the first added to the mask in between. Buddy mode is an AWARD.ASM powerup code and the code that TURNS IT ON is translated (wm/arcade/wm_arcade_powerup.h's WM_PU_BUDDY_MODE sequence, entered through wm_powerup_attempt_tick); what is missing is everything the mode then does, this draw included, because nothing in this port can be in it. Worth recording while reading it that get_rnd_wrestler (PROGRESS.ASM:4273) counts only the exclusion mask and not the cut Adam Bomb slot, so with two wrestlers excluded it can still return slot 7."
  },
  "wrestler_counter": {
   "file": "WRESTLE2.ASM",

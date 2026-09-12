@@ -596,10 +596,17 @@ void wm_app_tick_dual(wm_app *app,
 
         if (app->select.finished) {
             /*
-             * Fix36 deliberately ends at the SELECT boundary.  The current
-             * pregame/progression port is still P1-oriented; do not invent a
-             * new two-player pregame here.
+             * `move @PSTATUS,a0 / cmpi 3,a0 / jreq #2plyr` -- whether
+             * a second player joined at the select screen is what
+             * decides which of start_match's paths the match takes,
+             * and it is settled here.
+             *
+             * The pregame/ladder itself is still P1-oriented and no
+             * two-player pregame is invented for it; a two-player
+             * match runs the same pregame for player one and then
+             * starts #2plyr with both choices.
              */
+            app->match_pstatus = app->select.p2_joined ? 3 : 1;
             wm_pregame_init(&app->pregame,
                             app->select.selected_source_wrestler,
                             app->p1_choice,
@@ -617,13 +624,35 @@ void wm_app_tick_dual(wm_app *app,
     }
     if (app->mode == WM_APP_MODE_MATCH_INIT) {
         wm_app_bind_anim_env(app);
-        wm_match_start_selected(&app->match, &app->rng,
-                                app->pregame.player_source_wrestler);
+        if (app->match_pstatus == 3) {
+            /*
+             * start_match's #2plyr. royal_rumble is false for the
+             * same reason it is everywhere else in this port -- there
+             * is no ladder state to ask -- and the two powerup
+             * requests come from AWARD.ASM's own per-player words, so
+             * buddy mode turns on here exactly when both players
+             * entered the code.
+             */
+            wm_match_start_two_player(&app->match, &app->rng, 3,
+                                      app->pregame.player_source_wrestler,
+                                      app->select.p2_selected_source_wrestler,
+                                      false,
+                                      (int32_t)app->powerups.p_request[0],
+                                      (int32_t)app->powerups.p_request[1]);
+        } else {
+            wm_match_start_selected(&app->match, &app->rng,
+                                    app->pregame.player_source_wrestler);
+        }
         app->mode = WM_APP_MODE_MATCH;
         return;
     }
     if (app->mode == WM_APP_MODE_MATCH) {
         wm_arcade_drone_callbacks_t cb = wm_arcade_drone_data_callbacks(&app->rng);
+        /* read_switches fills every player's set each tick; the
+           second player's only exists in a two-player match. */
+        wm_match_set_input(&app->match, 0, input);
+        wm_match_set_input(&app->match, 1,
+                           app->match_pstatus == 3 ? p2_input : NULL);
         wm_match_tick(&app->match, &cb, input);
         /*
          * WRESTLE.ASM:2087 `move @match_over,a0 / jrz #not_over /
@@ -790,9 +819,23 @@ void wm_app_tick_dual(wm_app *app,
      * SOURCE_SELECT_TITLE_START_BRIDGE
      * Cabinet coin/PSTATUS accounting is not yet a native N64 subsystem.
      * Start on the source title bridges one human player into SELECT.ASM.
+     *
+     * `>=`, not `>`. tick_title below ends the title call on the same
+     * `wm_app_any_attract_button` test, and it increments call_ticks
+     * before testing while this runs before the increment -- so with
+     * a strict `>` the title always advanced first and this bridge
+     * never fired at all. Pressing Start on the title skipped the
+     * title instead of starting a game, which made the whole
+     * select -> pregame -> match path unreachable from the app.
+     *
+     * In the arcade both things really do happen: ATTRACT.ASM's
+     * `wait_on_butn` ends the title on any button AND the start
+     * button separately runs plyr_strtb. Starting a game leaves
+     * attract mode entirely, so the bridge is the one that matters
+     * and it wins the tie.
      */
     if (app->attract.call == WM_ATTRACT_SHOW_TITLE &&
-        app->attract.call_ticks > WM_TITLE_BUTTON_ENABLE_TICKS &&
+        app->attract.call_ticks >= WM_TITLE_BUTTON_ENABLE_TICKS &&
         input && input->start) {
         kill_call_processes(app, app->attract.call);
         app->mode = WM_APP_MODE_SELECT;

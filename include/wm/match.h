@@ -38,13 +38,18 @@ extern "C" {
 #endif
 
 /*
- * WRESTLE.ASM::start_match: the PSTATUS==0 (attract/0-player, #0plyr) path
- * via wm_match_start_attract, and the PSTATUS!=0 single-human (#1plyr) path
- * via wm_match_start_selected. #2plyr (two humans) is not covered.
+ * WRESTLE.ASM::start_match, all three of its creation paths: the
+ * PSTATUS==0 (attract/0-player, #0plyr) path via
+ * wm_match_start_attract, the single-human (#1plyr) path via
+ * wm_match_start_selected, and the two-human (#2plyr, PSTATUS==3)
+ * path via wm_match_start_two_player -- the last including buddy
+ * mode, which is the only thing that puts four wrestlers in the
+ * ring and the reason WM_MATCH_MAX_ACTORS is 4.
  *
- * Source flow being translated (WRESTLE.ASM:1568-1797):
- *   start_match -> (PSTATUS==0) #amode_battle -> init_life_data -> #0plyr
- *   or #1plyr wrestler-process creation loop.
+ * Source flow being translated (WRESTLE.ASM:1568-1869):
+ *   start_match -> (PSTATUS==0) #amode_battle -> init_life_data ->
+ *   #0plyr, or #1plyr, or #2plyr's pair of creations plus
+ *   choose_buddies.
  *
  * NOT yet translated, on purpose:
  *   - INIT_LADDER_TABLE / CURRENT_LADDER / NUM_OPPS multi-drone team
@@ -79,7 +84,15 @@ extern "C" {
  * a drone's own decisions read fresh distances too.
  */
 
-#define WM_MATCH_MAX_ACTORS 2
+/*
+ * WRESTLE.ASM::start_match creates two wrestlers on every path except
+ * buddy mode, which adds a drone partner for each human: #2plyr's
+ * `calla choose_buddies` then two more SCREATEs at slots 2 and 3.
+ * Four is that maximum, and `actor_count` says how many a given match
+ * actually made -- 2 for #0plyr, #1plyr and a plain #2plyr, 4 only
+ * when both players asked for buddy mode.
+ */
+#define WM_MATCH_MAX_ACTORS 4
 
 typedef struct {
     wm_arcade_actor_t actors[WM_MATCH_MAX_ACTORS];
@@ -106,6 +119,49 @@ typedef struct {
     /* wm_match_start_selected only: which actor (if any) is the #1plyr
        PTYPE_PLAYER human, and its committed-input edge-detection state.
        Always false/unused after wm_match_start_attract. */
+    /*
+     * @buddy_mode_checked and @buddy_mode_on. #2plyr sets the first
+     * unconditionally and the second only when BOTH players' powerup
+     * requests carry BUDDY_MODE; the other two creation paths never
+     * reach the test, so both stay false there.
+     */
+    bool buddy_mode_checked;
+    bool buddy_mode_on;
+
+    /*
+     * @PSTATUS itself: 0 for attract, 1 or 2 for one human, 3 for two.
+     * The start paths set it and nothing else writes it, so the
+     * places that used to derive it from has_human now read it.
+     */
+    int32_t pstatus;
+
+    /*
+     * Which actors a human is driving, and each one's committed-input
+     * edge state. In #2plyr both of the first two are humans; in
+     * #1plyr exactly one is; after wm_match_start_attract none are.
+     */
+    bool actor_is_human[WM_MATCH_MAX_ACTORS];
+    wm_human_input_state human_input[WM_MATCH_MAX_ACTORS];
+
+    /*
+     * WRESTLE2.ASM's read_switches fills a set of per-player switch
+     * globals once a tick, and each wrestler process then reads its
+     * OWN through get_but_val_cur(PLYRNUM). This is that: the
+     * caller leaves each player's controls here and wm_match_tick
+     * commits them to whichever actor that player drives.
+     *
+     * wm_match_tick's own `human_input` argument is shorthand for
+     * player one's, so a single-player caller never has to touch
+     * this.
+     */
+    wm_input_state player_input[2];
+    bool player_input_set[2];
+
+    /*
+     * The FIRST human, kept because a good deal of the match reads
+     * "is anybody playing" rather than "which actor". Derived from
+     * actor_is_human by the start paths; do not set it directly.
+     */
     bool has_human;
     unsigned human_actor_index;
     wm_human_input_state human_input_state;
@@ -394,6 +450,30 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng);
  * full NUM_OPPS team from the ladder table here too; see the file comment).
  * p1_source_wrestler must be a real wm_arcade_roster_id_t value (0-6 or 8).
  */
+/*
+ * WRESTLE.ASM:1801 start_match's #2plyr path: two humans, each a
+ * PTYPE_PLAYER or PTYPE_DRONE by its own PSTATUS bit, and buddy
+ * mode's pair of drone partners when both players asked for it.
+ *
+ * `royal_rumble` is the source global of that name; it is
+ * SUBTRACTED from player two's PSIDE, which is what puts the two
+ * humans on the same side in a rumble. The two powerup requests are
+ * ANDed -- one player's buddy-mode code is not enough.
+ *
+ * Creates two actors, or four with buddy mode on; actor_count says
+ * which.
+ */
+void wm_match_start_two_player(wm_match_state *m, WmRng *rng,
+                               int32_t pstatus,
+                               uint8_t index1, uint8_t index2,
+                               bool royal_rumble,
+                               int32_t p1powerup_request,
+                               int32_t p2powerup_request);
+
+/* `and a9,a8 / andi BUDDY_MODE,a8` on the two powerup requests. */
+bool wm_match_buddy_mode_on(int32_t p1powerup_request,
+                            int32_t p2powerup_request);
+
 void wm_match_start_selected(wm_match_state *m, WmRng *rng,
                              uint8_t p1_source_wrestler);
 
@@ -437,6 +517,19 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
  * is still no round-2 restart, announcer, or match-over transition. */
 void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
                    const wm_input_state *human_input);
+
+/*
+ * One player's controls for the next tick. `player` is 0 or 1 --
+ * PLYRNUM, not an actor index, so it stays right whichever slot
+ * that player ended up in. Passing NULL clears the entry and lets
+ * wm_match_tick's `human_input` argument stand in for player one
+ * again.
+ *
+ * A two-player match needs this for player two; player one can use
+ * either route.
+ */
+void wm_match_set_input(wm_match_state *m, unsigned player,
+                        const wm_input_state *in);
 
 #ifdef __cplusplus
 }

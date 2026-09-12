@@ -462,7 +462,15 @@ static void test_match_start_attract(void) {
 
     wm_match_start_attract(&m, &rng);
     CHECK(m.active);
-    CHECK(m.actor_count == WM_MATCH_MAX_ACTORS);
+    /* #0plyr creates two. The cap is four, for buddy mode's pair of
+       drone partners, so the count and the cap are no longer the
+       same number and this checks the count. */
+    CHECK(m.actor_count == 2);
+    CHECK(WM_MATCH_MAX_ACTORS == 4);
+    /* Nobody is playing an attract match. */
+    CHECK(m.pstatus == 0);
+    CHECK(!m.has_human);
+    CHECK(!m.actor_is_human[0] && !m.actor_is_human[1]);
     CHECK(m.index1 <= 8 && m.index1 != 7);
     CHECK(m.opponent_wrestler <= 8 && m.opponent_wrestler != 7);
 

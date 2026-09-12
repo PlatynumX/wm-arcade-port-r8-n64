@@ -7,6 +7,7 @@
 #include "wm/arcade/wm_arcade_sound.h"
 #include "wm/audio.h"
 #include "wm/award.h"
+#include "wm/arcade/wm_arcade_powerup.h"
 #include "wm/demo.h"
 #include "wm/match.h"
 #include "wm/process.h"
@@ -181,6 +182,29 @@ typedef struct {
     wm_demo demo;
     wm_wrestler_id p1_choice;
     wm_wrestler_id p2_choice;
+
+    /*
+     * AWARD.ASM's @p1powerup_request / @p2powerup_request, the two
+     * words #2plyr ANDs to decide buddy mode.
+     *
+     * Nothing in the app writes them yet: wm/arcade/
+     * wm_arcade_powerup.h translates the code-entry sequence that
+     * SETS a request (WM_PU_BUDDY_MODE included), but no app mode
+     * runs it, so both stay zero and buddy mode never turns on from
+     * a real play-through. The field is here, in the source's own
+     * shape, so that wiring the code entry up is the only thing left
+     * -- rather than the match pretending to read something that
+     * does not exist.
+     */
+    wm_powerup_flags powerups;
+
+    /*
+     * @PSTATUS as the select screen left it: 1 for one player, 3
+     * when a second joined. start_match branches on it, so it is
+     * settled once when select finishes and read again at
+     * MATCH_INIT rather than re-derived.
+     */
+    int32_t match_pstatus;
     bool show_debug;
 
     /* WRESTLE.ASM::start_match's PSTATUS==0 path, driven from

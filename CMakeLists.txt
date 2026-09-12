@@ -92,6 +92,7 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_roster.c
     src/core/arcade/wm_arcade_scroll.c
     src/core/arcade/wm_arcade_bgnd.c
+    src/core/arcade/wm_arcade_firework.c
     src/core/arcade/wm_arcade_sound.c
     src/core/arcade/wm_arcade_story.c
     src/core/arcade/wm_arcade_coffin.c
@@ -114,6 +115,7 @@ target_sources(wmcore PRIVATE
     src/generated/roster_anim_tables.c
     src/generated/smove_tables.c
     src/generated/bgnd_modules.c
+    src/generated/firework_tables.c
     src/generated/sound_table.c
     src/generated/story_text.c
     src/generated/ani_init_tables.c

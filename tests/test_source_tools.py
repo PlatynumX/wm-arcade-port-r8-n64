@@ -37,6 +37,7 @@ wlvoice = load("wlvoice", ROOT / "tools" / "wlvoice.py")
 wlwrsnd = load("wlwrsnd", ROOT / "tools" / "wlwrsnd.py")
 wlsound = load("wlsound", ROOT / "tools" / "wlsound.py")
 wlstorytext = load("wlstorytext", ROOT / "tools" / "wlstorytext.py")
+wlfirework = load("wlfirework", ROOT / "tools" / "wlfirework.py")
 wlstring = load("wlstring", ROOT / "tools" / "wlstring.py")
 wlpal = load("wlpal", ROOT / "tools" / "wlpal.py")
 wlrostertbl = load("wlrostertbl", ROOT / "tools" / "wlrostertbl.py")
@@ -2493,6 +2494,73 @@ def test_story_text_generates_the_shipped_file() -> None:
     assert wlstorytext.emit_c(wlstorytext.read_stories(),
                            wlstorytext.read_mk3_tips(),
                            wlstorytext.read_mk3_codes()) == out.read_text()
+
+
+def test_firework_tables_read_out_of_the_source() -> None:
+    """FIREWORK.ASM's nine data tables, and the flare positions.
+
+    The flare coordinates are not written as a table -- do_fireworks
+    loads them into a9 one at a time, twelve of them from a `dsjs`
+    loop -- so the reader runs those four instructions rather than
+    having twenty-two pairs of numbers retyped. This checks what
+    comes out against what the source says it is doing.
+    """
+    if not (wlanim.ORIG / "FIREWORK.ASM").exists():
+        return
+
+    d = wlfirework.read_all()
+
+    # `panning_points`, ending on a lone 0. The first row's tick
+    # count is INIT_PAN_SPEED and every other row's is 3.
+    pts = d["panning_points"]
+    assert len(pts) == 61
+    assert pts[0][0] == wlfirework.INIT_PAN_SPEED == 53
+    assert all(t == 3 for t, _x, _y in pts[1:])
+    # Every Y is EXP_FWY plus an offset no bigger than 48.
+    assert all(abs(y - wlfirework.EXP_FWY) <= 48 for _t, _x, y in pts)
+    # It is a closed figure of eight: it ends where it starts and
+    # passes through the middle three times.
+    assert pts[0][1:] == pts[-1][1:]
+    assert sum(1 for _t, x, y in pts
+               if (x, y) == (850, wlfirework.EXP_FWY)) == 3
+
+    # #flare_anim2 is a label five images into #flare_anim, not a
+    # table of its own -- the reader refuses if that stops being so.
+    assert len(d["flare"]) == 13
+    assert d["flare2_at"] == 5
+    assert d["flare"][5] == "FWFLAR06"
+    assert len(d["fwexa"]) == len(d["fwexb"]) == 11
+    assert d["fw_pals"] == ["FWWHT_P", "FWBLV_P", "FWPNK_P",
+                            "FWBLU_P", "FWYEL_P"]
+
+    # Twenty-two flares: twelve stepping 50 from 798, then five down
+    # each side.
+    fp = d["flare_positions"]
+    assert len(fp) == 22
+    assert fp[:12] == [(798 + 50 * i, 128) for i in range(12)]
+    assert fp[12] == (770, 148) and fp[16] == (702, 228)
+    assert fp[17] == (1372, 148) and fp[21] == (1440, 228)
+
+    # The congratulations text: three sets, each pairing a placement
+    # with a string. The reader refuses if they stop lining up.
+    sets = d["congrats"]
+    assert [len(s["lines"]) for s in sets] == [5, 5, 4]
+    for s in sets:
+        assert s["lines"][0][3] == "CONGRATULATIONS!!!"
+        assert all(jam["x"] == 200 for _l, jam, _t, _x in s["lines"])
+    # The 1v3 set has two rows commented out and one put back, so it
+    # skips y=126 where the 1v8 set uses it.
+    ys = [[jam["y"] for _l, jam, _t, _x in s["lines"]] for s in sets]
+    assert ys[0] == [60, 100, 113, 152, 178]
+    assert ys[1] == [60, 100, 113, 126, 178]
+    assert ys[2] == [60, 100, 113, 178]
+
+
+def test_firework_tables_generate_the_shipped_file() -> None:
+    out = ROOT / "src" / "generated" / "firework_tables.c"
+    if not (wlanim.ORIG / "FIREWORK.ASM").exists() or not out.exists():
+        return
+    assert wlfirework.emit_c(wlfirework.read_all()) == out.read_text()
 
 
 def test_the_tune_script_vm_has_no_programs() -> None:

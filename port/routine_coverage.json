@@ -3130,10 +3130,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_fw_explosion_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "animate_wrestler",
@@ -6955,10 +6955,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "wm_fw_congrats",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "c1v3s_tbl",
@@ -6970,10 +6970,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "wm_fw_congrats",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "c1v8_tbl",
@@ -6985,10 +6985,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "wm_fw_congrats",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "c1v8s_tbl",
@@ -7000,10 +7000,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "wm_fw_congrats",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "c2v8_tbl",
@@ -7015,10 +7015,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "wm_fw_congrats",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "c2v8s_tbl",
@@ -7030,10 +7030,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "wm_fw_congrats",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "calc_closest",
@@ -7075,8 +7075,8 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_fw_calc_dxdy",
    "from_generated": false,
    "ledgered": false
   },
@@ -7330,8 +7330,8 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_fw_check_camera_position",
    "from_generated": false,
    "ledgered": false
   },
@@ -8066,10 +8066,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "wm_fw_congrats",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "congrats_str_tbl",
@@ -8081,10 +8081,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "wm_fw_congrats",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "convert_facing",
@@ -11861,10 +11861,10 @@
    "local": false,
    "external_callers": 3,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
+   "status": "partial",
+   "evidence": "wm_fw_knockout_drones",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "do_game_over",
@@ -12927,10 +12927,10 @@
    "local": false,
    "external_callers": 0,
    "references": 11,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_fw_flare_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "fix_bnc_flip",
@@ -12957,9 +12957,9 @@
    "local": true,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "wm_fw_flare_anim",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -12972,8 +12972,8 @@
    "local": true,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "WM_FW_FLARE_ANIM2",
    "from_generated": false,
    "ledgered": false
   },
@@ -13152,10 +13152,10 @@
    "local": true,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "wm_fw_palettes",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "fwexa_anim",
@@ -13167,9 +13167,9 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "wm_fw_fwexa_anim",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -13182,9 +13182,9 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
-   "from_generated": false,
+   "status": "implemented",
+   "evidence": "wm_fw_fwexb_anim",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -13197,10 +13197,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "wm_fw_fwexa_anim",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "game_interrupt",
@@ -18240,7 +18240,7 @@
    "external_callers": 20,
    "references": 22,
    "status": "implemented",
-   "evidence": "wm_pregame_is_8_on_1",
+   "evidence": "is_8_on_1",
    "from_generated": false,
    "ledgered": false
   },
@@ -18464,8 +18464,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_fw_knockout_drones",
    "from_generated": false,
    "ledgered": false
   },
@@ -22124,8 +22124,8 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_fw_move_camera",
    "from_generated": false,
    "ledgered": false
   },
@@ -22814,10 +22814,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_fw_pan_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "piesplat_anim",
@@ -23054,10 +23054,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "partial",
+   "evidence": "wm_fw_congrats",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "print_gen_tips",
@@ -23159,10 +23159,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_story_play_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "print_string",
@@ -30722,10 +30722,10 @@
    "local": false,
    "external_callers": 12,
    "references": 12,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_story_end_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "skick_delay",

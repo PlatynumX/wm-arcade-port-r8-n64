@@ -1792,5 +1792,107 @@
   "file": "BAKGND.ASM",
   "status": "display",
   "note": "BAKGND.ASM:576. Allocate an object for a block and link it into the display list, sorted by Z then Y. The DECISION to add it is wm_bgnd_scanmod's, and the ordering rule is already translated as wm/bmod.h's wm_bmod_draw_before; this is the object allocation and the DMA control word, which this port has no object pool for."
+ },
+ "print_story": {
+  "file": "STORIES.ASM",
+  "status": "renamed",
+  "symbol": "wm_story_play_tick",
+  "note": "STORIES.ASM:95. The pagination and the two countdowns: twelve lines to a page at y=90 stepping 12 while below 230, then SLEEP TSEC*5, then a TSEC*15 button wait, then obj_del1c and the next page. wm_story_play_begin/wm_story_play_tick are the same state machine with the sleeps as a tick countdown; wm_arcade_story.h records why a short final page skips both waits."
+ },
+ "show_wrestler_end_story": {
+  "file": "STORIES.ASM",
+  "status": "renamed",
+  "symbol": "wm_story_end_tick",
+  "note": "STORIES.ASM:168. The winner's ending: which_player[PSTATUS>>1], the slot-7 bail, SLEEPK 30 behind fade_down, the mugshot/logo/belt scene, print_story, and a second TSEC*15 button wait before obj_del1c. wm_story_end_begin/wm_story_end_tick decide all of it; the three BEGINOBJ calls are the caller's, flagged by build_scene, with their positions in wm_arcade_story.h."
+ },
+ "animate_fwexp": {
+  "file": "FIREWORK.ASM",
+  "status": "renamed",
+  "symbol": "wm_fw_explosion_tick",
+  "note": "FIREWORK.ASM:133. Four RNDRNG0 draws for position, depth and which of the two explosions, then eleven images one tick apart with `addk 4,a9` moving OYPOS down every frame. wm_fw_explosion_begin takes the four draws rather than making them, so the placement arithmetic can be pinned; wm_fw_explosion_tick is the animate loop including the drift."
+ },
+ "firework_flare": {
+  "file": "FIREWORK.ASM",
+  "status": "renamed",
+  "symbol": "wm_fw_flare_tick",
+  "note": "FIREWORK.ASM:205. A random 1-26 tick delay, then all thirteen images of #flare_anim two ticks apart, then #flare_anim2 -- which is a label five images INTO the same list -- looping until @fizzle_flare is set, then five images walked backwards four ticks apart with `move -*a9`. wm_fw_flare_tick is the whole state machine; the position comes packed into a9 exactly as do_fireworks loads it."
+ },
+ "pan_around": {
+  "file": "FIREWORK.ASM",
+  "status": "renamed",
+  "symbol": "wm_fw_pan_tick",
+  "note": "FIREWORK.ASM:652. The camera flight: SLEEP TSEC/2, then the panning_points table a waypoint at a time, each segment moving by calc_dxdy's delta once a tick until check_camera_position has zeroed both, cheering as it goes, with the congratulations text raised once at the end of the first segment and the table looped until @pan_down is set. wm_fw_pan_tick is that loop; BGND_UD1, crowd_cheer, print_congrats and obj_del1c are the caller's, each flagged on the tick it is due."
+ },
+ "print_congrats": {
+  "file": "FIREWORK.ASM",
+  "status": "partial",
+  "symbol": "wm_fw_congrats",
+  "note": "FIREWORK.ASM:847. Walks #congrats_setup_tbl and #congrats_str_tbl in lockstep for the set a14 selects, calling setup_message and print_string_C2 for each pair. The PAIRING is what the routine is for and tools/wlfirework.py does it at build time -- wm_fw_congrats[set].lines[] is each JAM_STR placement already joined to its string, and wm_fw_congrats_index is the caller's three-way choice. The two calls that actually draw are the text layer's and are not translated here."
+ },
+ "do_fireworks": {
+  "file": "FIREWORK.ASM",
+  "status": "partial",
+  "symbol": "wm_fw_knockout_drones",
+  "note": "FIREWORK.ASM:280. The orchestration. The parts that are decisions are translated: knockout_drones (wm_fw_knockout_drones), the twenty-two flare positions (wm_fw_flare_positions, read out of the routine's own instructions by tools/wlfirework.py rather than retyped), the explosion budget (WM_FW_EXPLOSION_BUDGET / _GAP_MAX) and the pan (wm_fw_pan_*). The rest of it is twenty KIL1C calls and ten obj_del1c calls against process and object IDs this port does not have, plus fade_down/fade_up and flash_white; those are the display layer's and are not invented here."
+ },
+ "c1v3_tbl": {
+  "file": "FIREWORK.ASM",
+  "status": "data",
+  "symbol": "wm_fw_congrats",
+  "note": "The five strings shown for beating the three-man ladder; wm_fw_congrats[WM_FW_CONGRATS_1V3].lines[].text."
+ },
+ "c1v8_tbl": {
+  "file": "FIREWORK.ASM",
+  "status": "data",
+  "symbol": "wm_fw_congrats",
+  "note": "The five strings for beating all eight alone."
+ },
+ "c2v8_tbl": {
+  "file": "FIREWORK.ASM",
+  "status": "data",
+  "symbol": "wm_fw_congrats",
+  "note": "The four strings for beating all eight as a tag team."
+ },
+ "c1v3s_tbl": {
+  "file": "FIREWORK.ASM",
+  "status": "data",
+  "symbol": "wm_fw_congrats",
+  "note": "The five JAM_STR placements paired with c1v3_tbl. Two of its rows are commented out in the source and one put back, which is why this set skips y=126 and jumps from 113 to 152; the emitted table carries the shipped rows only."
+ },
+ "c1v8s_tbl": {
+  "file": "FIREWORK.ASM",
+  "status": "data",
+  "symbol": "wm_fw_congrats",
+  "note": "The five JAM_STR placements paired with c1v8_tbl."
+ },
+ "c2v8s_tbl": {
+  "file": "FIREWORK.ASM",
+  "status": "data",
+  "symbol": "wm_fw_congrats",
+  "note": "The four JAM_STR placements paired with c2v8_tbl."
+ },
+ "congrats_setup_tbl": {
+  "file": "FIREWORK.ASM",
+  "status": "data",
+  "symbol": "wm_fw_congrats",
+  "note": "The three placement sets. Indexing is the array index; WM_FW_CONGRATS_1V3/_1V8/_2V8 name the rows."
+ },
+ "congrats_str_tbl": {
+  "file": "FIREWORK.ASM",
+  "status": "data",
+  "symbol": "wm_fw_congrats",
+  "note": "The three string sets, paired positionally with congrats_setup_tbl. Only the placement tables are zero-terminated, so tools/wlfirework.py checks the lengths match rather than assuming."
+ },
+ "fw_pals": {
+  "file": "FIREWORK.ASM",
+  "status": "data",
+  "symbol": "wm_fw_palettes",
+  "note": "The five palettes a flare or an explosion picks from at random."
+ },
+ "fwexp_tbl": {
+  "file": "FIREWORK.ASM",
+  "status": "data",
+  "symbol": "wm_fw_fwexa_anim",
+  "note": "The two-entry table animate_fwexp picks an explosion from; the port takes the choice as wm_fw_explosion_t.which indexing wm_fw_fwexa_anim / wm_fw_fwexb_anim."
  }
 }

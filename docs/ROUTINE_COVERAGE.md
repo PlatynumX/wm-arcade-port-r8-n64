@@ -7,26 +7,25 @@ only in a note saying it is missing does not count as present.
 
 | status | meaning | count |
 |---|---|---|
-| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1949 |
+| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1957 |
 | `inlined` | the port does it, spelled out at each use site (ledger) | 11 |
-| `renamed` | the port does it under another name (ledger) | 137 |
-| `partial` | partly translated; the ledger note says which part | 17 |
-| `data` | a table, extracted by a tool (ledger) | 40 |
+| `renamed` | the port does it under another name (ledger) | 142 |
+| `partial` | partly translated; the ledger note says which part | 19 |
+| `data` | a table, extracted by a tool (ledger) | 50 |
 | `process` | a CREATE/SLEEP wrapper (ledger) | 22 |
 | `display` | object/DMA drawing; this port has no renderer (ledger) | 65 |
 | `hardware` | talks to the cabinet (ledger) | 28 |
 | `dead` | **measured**: no caller outside its own file | 37 |
 | `unassembled` | **measured**: inside a `.if` the assembler skipped | 64 |
 | `cited` | named only in a comment -- not evidence of anything | 37 |
-| `unknown` | no mention anywhere | 127 |
+| `unknown` | no mention anywhere | 102 |
 
-**2370 of 2534 routines are accounted for; 164 are open** (`cited` + `unknown`).
+**2395 of 2534 routines are accounted for; 139 are open** (`cited` + `unknown`).
 
 ## Open routines by file
 
 | file | open | routines |
 |---|---|---|
-| FIREWORK.ASM | 23 | `animate_fwexp`, `c1v3_tbl`, `c1v3s_tbl`, `c1v8_tbl`, `c1v8s_tbl`, `c2v8_tbl`, `c2v8s_tbl`, `calc_dxdy`, `check_camera_position`, `congrats_setup_tbl`, `congrats_str_tbl`, `do_fireworks`, ... |
 | LIFEBAR.ASM | 19 | `DO_RIGHT_MUSIC`, `DO_RIGHT_MUSIC2`, `DO_ROUNDS`, `FIRSTATT_MESS`, `ICON_SPARKLE`, `MOVE_NAME_ANNC`, `PIN_FLASH_ANIM`, `SHIFT_BARS_IN_Z`, `SPECIAL_MESSAGE`, `WHERE_WRESTLMANIA_SPARKLES`, `arw_bwait`, `do_game_over`, ... |
 | HSTD.ASM | 19 | `PIN_SPEED_TAB`, `do_that_cycle`, `draw_beaten_table_entry`, `draw_each_beaten_table_entry`, `draw_each_inter_table_entry`, `draw_letter_grid`, `draw_pinspeed_table_entry`, `draw_tag_table_entry`, `draw_winstreak_table_entry`, `enter_initials_beaten`, `enter_initials_streak`, `enter_initials_top_20`, ... |
 | SELECT.ASM | 17 | `GAME_BEATEN`, `THIS_GAME_IS_BEATEN`, `buyin_counter`, `buyin_select`, `call_wrestler_name`, `display_croutons`, `draw_mugshot`, `erase_mugshot`, `obj_off`, `obj_on`, `pin_speed_in_case`, `place_cursor`, ... |
@@ -42,5 +41,4 @@ only in a note saying it is missing does not count as present.
 | TEST.ASM | 3 | `opmsg_clr`, `opmsg_main`, `print_multi` |
 | DCSSOUND.ASM | 2 | `CALL_MATCH_OVER`, `PROC_MATCH_OVER` |
 | WRESTLE.ASM | 2 | `plyr_strtb1`, `plyr_strtb2` |
-| STORIES.ASM | 2 | `print_story`, `show_wrestler_end_story` |
 | SCREEN.ASM | 1 | `DRKTRPLTP` |

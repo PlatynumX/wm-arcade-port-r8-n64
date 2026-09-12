@@ -310,10 +310,10 @@
    "local": false,
    "external_callers": 38,
    "references": 38,
-   "status": "cited",
-   "evidence": "BGND_UD1",
+   "status": "partial",
+   "evidence": "wm_bgnd_update",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "BLACKOUT",
@@ -6625,10 +6625,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "cited",
-   "evidence": "bgnd_addblk",
+   "status": "display",
+   "evidence": "BAKGND.ASM:576. Allocate an object for a block and link it into the display list, sorted by Z then Y. The DECISION to add it is wm_bgnd_scanmod's, and the ordering rule is already translated as wm/bmod.h's wm_bmod_draw_before; this is the object allocation and the DMA control word, which this port has no object pool for.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "bgnd_addmod",
@@ -6640,10 +6640,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "bgnd_addmod",
+   "status": "inlined",
+   "evidence": "wm_bgnd_scanmod",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "bgnd_delnonvis",
@@ -6655,8 +6655,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_bgnd_delnonvis",
    "from_generated": false,
    "ledgered": false
   },
@@ -6670,8 +6670,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_bgnd_get1stx",
    "from_generated": false,
    "ledgered": false
   },
@@ -6685,8 +6685,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_bgnd_scanmod",
    "from_generated": false,
    "ledgered": false
   },

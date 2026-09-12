@@ -7,20 +7,20 @@ only in a note saying it is missing does not count as present.
 
 | status | meaning | count |
 |---|---|---|
-| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1946 |
-| `inlined` | the port does it, spelled out at each use site (ledger) | 10 |
+| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1949 |
+| `inlined` | the port does it, spelled out at each use site (ledger) | 11 |
 | `renamed` | the port does it under another name (ledger) | 137 |
-| `partial` | partly translated; the ledger note says which part | 16 |
+| `partial` | partly translated; the ledger note says which part | 17 |
 | `data` | a table, extracted by a tool (ledger) | 40 |
 | `process` | a CREATE/SLEEP wrapper (ledger) | 22 |
-| `display` | object/DMA drawing; this port has no renderer (ledger) | 64 |
+| `display` | object/DMA drawing; this port has no renderer (ledger) | 65 |
 | `hardware` | talks to the cabinet (ledger) | 28 |
 | `dead` | **measured**: no caller outside its own file | 37 |
 | `unassembled` | **measured**: inside a `.if` the assembler skipped | 64 |
-| `cited` | named only in a comment -- not evidence of anything | 40 |
-| `unknown` | no mention anywhere | 130 |
+| `cited` | named only in a comment -- not evidence of anything | 37 |
+| `unknown` | no mention anywhere | 127 |
 
-**2364 of 2534 routines are accounted for; 170 are open** (`cited` + `unknown`).
+**2370 of 2534 routines are accounted for; 164 are open** (`cited` + `unknown`).
 
 ## Open routines by file
 
@@ -35,7 +35,6 @@ only in a note saying it is missing does not count as present.
 | DISPLAY.ASM | 12 | `ANI`, `SPECIAL_DISPLAY_INIT`, `anipt_getxy`, `dma_irq`, `obj_addworldxy`, `scrn_copy`, `scrn_scale`, `scrn_scale140`, `scrn_scale180`, `scrn_scaledison`, `scrn_scalein`, `scrn_scaleout` |
 | UTIL.ASM | 10 | `ERASE_TXT`, `GETCPNT`, `STRCNRM_1`, `dirq_wait`, `dma_wait`, `dmaq_wait`, `dpageflip_off`, `obj_find`, `security_chk`, `system_savegame` |
 | ATTRACT.ASM | 9 | `GENERIC_DISPLAY`, `MAKE_UP_LOGO`, `ONE_BALL`, `dan_test`, `mk_a0`, `octopus_page`, `print_gen_tips`, `show_wres_tips`, `wait_but` |
-| BAKGND.ASM | 6 | `BGND_UD1`, `bgnd_addblk`, `bgnd_addmod`, `bgnd_delnonvis`, `bgnd_get1stx`, `bgnd_scanmod` |
 | MENU.ASM | 6 | `GetSoundRev`, `_GetTime`, `aud_prtone`, `background_sound`, `poll_sdav`, `vol_to_ht` |
 | DIAG.ASM | 4 | `_aquire_time`, `_get_time`, `_set_time`, `line_draw` |
 | MPROC.ASM | 3 | `IKIL1C`, `process_dispatch`, `process_init` |

@@ -1775,5 +1775,22 @@
   "file": "AWARD.ASM",
   "status": "hardware",
   "note": "A full cabinet reset -- CMOS, audits and the watchdog -- reached from the operator menus."
+ },
+ "BGND_UD1": {
+  "file": "BAKGND.ASM",
+  "status": "partial",
+  "symbol": "wm_bgnd_update",
+  "note": "BAKGND.ASM:358. The background refresh the main loop runs every eight ticks: frame the display rect from WORLDTL, SCRNTL and SCRNLR padded by DISP_PAD, delete the blocks that have scrolled off, then add the ones that have scrolled on -- in that order, because the deletes free the objects the adds take. Translated in wm/arcade/wm_arcade_bgnd.h as a residency set with the two edges reported as events. Not translated: the object allocation and the DMA behind it."
+ },
+ "bgnd_addmod": {
+  "file": "BAKGND.ASM",
+  "status": "inlined",
+  "symbol": "wm_bgnd_scanmod",
+  "note": "BAKGND.ASM:457, the inner scan, spelled out inside wm_bgnd_scanmod's own add_module. Two phases: a full test while blocks are left of the display, then a cheaper one once they are not, which stops dead at the first block past the right edge because the table is sorted by X."
+ },
+ "bgnd_addblk": {
+  "file": "BAKGND.ASM",
+  "status": "display",
+  "note": "BAKGND.ASM:576. Allocate an object for a block and link it into the display list, sorted by Z then Y. The DECISION to add it is wm_bgnd_scanmod's, and the ordering rule is already translated as wm/bmod.h's wm_bmod_draw_before; this is the object allocation and the DMA control word, which this port has no object pool for."
  }
 }

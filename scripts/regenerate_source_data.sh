@@ -172,6 +172,8 @@ python3 "$ROOT/tools/wlvoice.py" \
     --out "$ROOT/src/generated/announce_tables.c"
 python3 "$ROOT/tools/wlwrsnd.py" \
     --out "$ROOT/src/generated/wrestler_sound_tables.c"
+python3 "$ROOT/tools/wlbgnd.py" \
+    --out-c "$ROOT/src/generated/bgnd_modules.c"
 python3 "$ROOT/tools/wlsound.py" \
     --out-c "$ROOT/src/generated/sound_table.c"
 python3 "$ROOT/tools/wlstorytext.py" \

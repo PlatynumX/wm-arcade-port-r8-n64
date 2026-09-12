@@ -35,6 +35,7 @@ ani_code_census = load("ani_code_census",
 wlroll = load("wlroll", ROOT / "tools" / "wlroll.py")
 wlvoice = load("wlvoice", ROOT / "tools" / "wlvoice.py")
 wlwrsnd = load("wlwrsnd", ROOT / "tools" / "wlwrsnd.py")
+wlsound = load("wlsound", ROOT / "tools" / "wlsound.py")
 wlstring = load("wlstring", ROOT / "tools" / "wlstring.py")
 wlpal = load("wlpal", ROOT / "tools" / "wlpal.py")
 wlrostertbl = load("wlrostertbl", ROOT / "tools" / "wlrostertbl.py")
@@ -2376,6 +2377,75 @@ def test_wrsnd_tables_generate_the_shipped_file() -> None:
 
 
 
+def test_sound_table_is_read_not_transcribed() -> None:
+    """DCSSOUND.ASM:235 triple_sndtab, the index every sound goes through.
+
+    Every sound in the game is a row of this table: WRSND looks one up
+    per wrestler, the animation VM's sound opcodes carry one, and a
+    hundred-odd `calla triple_sound` call sites pass one. What varies
+    per row is a priority, a duration and the DCS call, packed as two
+    words -- and the first of those packs the priority in the high
+    byte and the duration in the low one, written as an OR because
+    the sp_* group names are all `N << 8`.
+
+    Three things this pins down, because each is easy to get wrong by
+    hand and none is visible in the row itself:
+
+      the BLANK rows are load-bearing. 104 of the 771 are `.word 0,0`,
+      and dropping them would renumber every index after the first
+      hole -- and indices are what the whole game passes around;
+
+      the labels INSIDE the table are the announcer identification.
+      ANNOUNCE_VOICE decides who is speaking purely by where an index
+      falls between them, and Jerry has two blocks with a gap between
+      them the source itself calls bogus;
+
+      seven rows are written `sp_losmack|75-25`, where the precedence
+      of | against - could change the answer. The reader computes
+      both readings and refuses if they ever differ.
+    """
+    if not (wlanim.ORIG / "DCSSOUND.ASM").exists():
+        return
+
+    data = wlsound.read_table()
+    rows = data["rows"]
+    labels = data["labels"]
+
+    assert len(rows) == 771, len(rows)
+    assert sum(1 for r in rows if r == (0, 0, 0)) == 104
+
+    # The priorities really are the sp_* equates and nothing else.
+    groups = set(v >> 8 for v in wlsound.priorities().values())
+    for pri, _dur, _call in rows:
+        assert pri == 0 or pri in groups, pri
+
+    # The labels come out in the table's own order.
+    order = [labels[n] for n in wlsound.LABELS]
+    assert order == sorted(order), order
+    assert labels["triple_sndtab"] == 0
+    assert labels["triple_end"] == len(rows)
+
+    # Every announcer line is priority 100 -- sp_anncer, the top
+    # group -- so an announcer is never talked over.
+    spans = [(labels["announcer_start"], labels["howards_end"]),
+             (labels["more_jerry"], labels["triple_end"])]
+    lines = [r for lo, hi in spans for r in rows[lo:hi] if r != (0, 0, 0)]
+    assert len(lines) == 326, len(lines)
+    assert all(r[0] == 100 for r in lines)
+
+    # Three rows read against the source by hand.
+    assert rows[1] == (16, 17, 0x80)        # :237 sp_smack|17,>80
+    assert rows[3] == (40, 90, 1480)        # :239 sp_system2|90,1480
+    assert rows[0x76] == (15, 50, 0x500)    # :374 sp_losmack|75-25,>500
+
+
+def test_sound_table_generates_the_shipped_file() -> None:
+    out = ROOT / "src" / "generated" / "sound_table.c"
+    if not (wlanim.ORIG / "DCSSOUND.ASM").exists() or not out.exists():
+        return
+    assert wlsound.emit_c(wlsound.read_table()) == out.read_text()
+
+
 def test_digit_leading_local_labels_are_seen() -> None:
     """A local label may begin with a digit after the '#'.
 
@@ -3335,6 +3405,8 @@ def main() -> int:
     test_announce_calls_are_spelled_as_the_call_sites_spell_them()
     test_wrsnd_tables()
     test_wrsnd_tables_generate_the_shipped_file()
+    test_sound_table_is_read_not_transcribed()
+    test_sound_table_generates_the_shipped_file()
     test_font_tables_are_read_not_transcribed()
     test_font_tables_generate_the_shipped_file()
     test_glyph_metrics_come_out_of_the_artwork()

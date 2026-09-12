@@ -40,10 +40,10 @@
    "local": false,
    "external_callers": 1,
    "references": 5,
-   "status": "cited",
-   "evidence": "ANNOUNCE_VOICE",
+   "status": "renamed",
+   "evidence": "wm_sound_who_is_it",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "ARE_WE_IN_RING",
@@ -2140,10 +2140,10 @@
    "local": false,
    "external_callers": 53,
    "references": 69,
-   "status": "cited",
-   "evidence": "SNDSND",
+   "status": "hardware",
+   "evidence": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. DCSSOUND.ASM:2519 SNDSND is send_code_a3: refuse if @SOUNDSUP, refuse a negative (null) call, then write the call's high byte and low byte to the latch with a poll_sirq wait after each. The two refusals are real and are translated in the mixer; the two byte writes are the board.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "SPECIAL_DISPLAY_INIT",
@@ -2500,10 +2500,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "DCSSOUND.ASM:2564. The cabinet's two volume buttons behind the coin door, read straight off the coin port and written to the board's volume register. There is no coin door on an N64 and no operator volume setting for it to adjust.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "WARMSET",
@@ -3205,10 +3205,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "cited",
-   "evidence": "announcer_sound",
+   "status": "partial",
+   "evidence": "wm_sound_announcer",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "any_opp_outside",
@@ -7841,10 +7841,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. Zeroes that same SND_DEBUG trace buffer.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "climb_turnbuckle",
@@ -8516,10 +8516,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. A send_code_a3 with a delay in front of it, for calls the board needs spacing between.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "delay_whoihit",
@@ -11967,8 +11967,8 @@
    "local": false,
    "external_callers": 0,
    "references": 9,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "do_tune_commands",
    "from_generated": false,
    "ledgered": false
   },
@@ -18029,10 +18029,10 @@
    "local": true,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. The SND_DEBUG ring buffer's write pointer -- a development trace of the last N sound calls, assembled out of the shipped game entirely.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "increment_wincount",
@@ -22979,10 +22979,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. DCSSOUND.ASM:2547: spin on the sound board's IRQ line until it says it is ready, with a 180-microsecond timeout \"so sound board can't screw things up\".",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "postgame_audits",
@@ -23384,10 +23384,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. The process that performs a board reset out of line.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "raise_dead",
@@ -23699,8 +23699,8 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "ring_bell",
    "from_generated": false,
    "ledgered": false
   },
@@ -27017,10 +27017,10 @@
    "local": false,
    "external_callers": 0,
    "references": 5,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. The same routine as SNDSND, which is its other entry point.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "set_all_buckoffs",
@@ -30797,10 +30797,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. A one-shot send with no channel bookkeeping.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "snd_reset",
@@ -30812,10 +30812,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. Resets the board and waits for it to come back.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "snd_update",
@@ -30827,10 +30827,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "partial",
+   "evidence": "wm_sound_update",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "sp_animate",
@@ -31369,7 +31369,7 @@
    "references": 124,
    "status": "implemented",
    "evidence": "triple_sound",
-   "from_generated": false,
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -34683,8 +34683,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "wmania_tune",
    "from_generated": false,
    "ledgered": false
   },

@@ -1,0 +1,398 @@
+/*
+ * DCSSOUND.ASM's four-channel mixer: triple_sound, snd_update and
+ * announcer_sound, and the table they arbitrate on.
+ */
+#include <assert.h>
+#include <stdbool.h>
+#include <string.h>
+
+#include "wm_arcade_sound.h"
+#include "wm/app.h"
+#include "wm/match.h"
+#include "wm_arcade_roster.h"
+
+/* The table, read out of DCSSOUND.ASM:235 by tools/wlsound.py. */
+static void test_table(void) {
+    size_t i;
+    int blank = 0;
+
+    assert(wm_sound_table_count == 771);
+
+    for (i = 0; i < wm_sound_table_count; ++i) {
+        const wm_sound_entry_t *e = &wm_sound_table[i];
+        /* sp_anncer is the highest group at 100<<8, so no priority
+           can exceed 100 once the high byte is taken. */
+        assert(e->priority <= 100);
+        if (e->priority == 0 && e->duration == 0 && e->call == 0) ++blank;
+    }
+    /* The table really is sparse -- 104 of the 771 rows are the
+       `.word 0,0` triple_sound skips. A reader that silently dropped
+       them would renumber every index after the first hole, and the
+       indices are what the whole game passes around. */
+    assert(blank == 104);
+
+    /* Three rows checked against the source by hand.
+       DCSSOUND.ASM:237 `.word sp_smack|17,>80  ; 1 = face hit #0`:
+       sp_smack is 16<<8, so priority 16, duration 17, call 0x80. */
+    assert(wm_sound_table[1].priority == 16);
+    assert(wm_sound_table[1].duration == 17);
+    assert(wm_sound_table[1].call == 0x80);
+    /* :239 `.word sp_system2|90,1480  ; 3 = combo earned sound`. */
+    assert(wm_sound_table[3].priority == 40);
+    assert(wm_sound_table[3].duration == 90);
+    assert(wm_sound_table[3].call == 1480);
+    /* :374 `.word sp_losmack|75-25,>500`, one of the seven rows with
+       arithmetic in the operand: 15, 50, 0x500. */
+    assert(wm_sound_table[0x76].priority == 15);
+    assert(wm_sound_table[0x76].duration == 50);
+    assert(wm_sound_table[0x76].call == 0x500);
+}
+
+/* The labels, and the shape they give the announcer ranges. */
+static void test_announcer_ranges(void) {
+    assert(wm_sound_triple_sndtab == 0);
+    assert(wm_sound_announcer_start < wm_sound_vince_end);
+    assert(wm_sound_vince_end < wm_sound_randy_end);
+    assert(wm_sound_randy_end < wm_sound_howards_end);
+    assert(wm_sound_howards_end < wm_sound_more_jerry);
+    assert(wm_sound_triple_end == wm_sound_table_count);
+
+    /* Below the table's announcer section: nobody. */
+    assert(wm_sound_who_is_it(0) == WM_SOUND_ANNOUNCER_NONE);
+    assert(wm_sound_who_is_it((int32_t)wm_sound_announcer_start - 1)
+           == WM_SOUND_ANNOUNCER_NONE);
+    assert(wm_sound_who_is_it((int32_t)wm_sound_announcer_start)
+           == WM_SOUND_ANNOUNCER_VINCE);
+    assert(wm_sound_who_is_it((int32_t)wm_sound_vince_end - 1)
+           == WM_SOUND_ANNOUNCER_VINCE);
+    assert(wm_sound_who_is_it((int32_t)wm_sound_vince_end)
+           == WM_SOUND_ANNOUNCER_RANDY);
+    assert(wm_sound_who_is_it((int32_t)wm_sound_randy_end)
+           == WM_SOUND_ANNOUNCER_HOWARD);
+    /*
+     * The gap between Howard and Jerry's second block, which the
+     * source itself calls bogus: "call # in that range between
+     * howard and 2nd jerry".
+     */
+    assert(wm_sound_who_is_it((int32_t)wm_sound_howards_end)
+           == WM_SOUND_ANNOUNCER_NONE);
+    assert(wm_sound_who_is_it((int32_t)wm_sound_more_jerry - 1)
+           == WM_SOUND_ANNOUNCER_NONE);
+    /* And Jerry again on the far side of it. */
+    assert(wm_sound_who_is_it((int32_t)wm_sound_more_jerry)
+           == WM_SOUND_ANNOUNCER_RANDY);
+    assert(wm_sound_who_is_it((int32_t)wm_sound_triple_end)
+           == WM_SOUND_ANNOUNCER_NONE);
+    assert(wm_sound_who_is_it(-1) == WM_SOUND_ANNOUNCER_NONE);
+}
+
+/* Find a row with a given priority, so the tests below use real
+   indices rather than invented ones. */
+static int32_t row_with(uint8_t pri) {
+    size_t i;
+    for (i = 1; i < wm_sound_table_count; ++i)
+        if (wm_sound_table[i].priority == pri && wm_sound_table[i].call &&
+            wm_sound_table[i].duration)
+            return (int32_t)i;
+    return -1;
+}
+
+static void test_four_channels(void) {
+    wm_sound_state_t s;
+    wm_sound_result_t r;
+    int32_t idx = row_with(16);
+    int i;
+
+    assert(idx > 0);
+    wm_sound_init(&s);
+
+    /* Four free channels, taken in order. */
+    for (i = 0; i < WM_SOUND_CHANNELS; ++i) {
+        r = wm_sound_triple(&s, idx);
+        assert(r.played);
+        assert(r.channel == (uint8_t)(i + 1));
+        /* Channels two to four use the next three consecutive calls;
+           the table only stores channel one's. */
+        assert(r.call == (uint16_t)(wm_sound_table[idx].call + i));
+    }
+
+    /* A fifth of the same priority TIES the lowest, and a tie
+       preempts -- `cmp a5,a1 / jrlt #no_preempt` gives up only on a
+       negative difference. Reading that as a strict > would drop
+       most of the game's sounds, since the grunts and smacks share
+       priorities. */
+    r = wm_sound_triple(&s, idx);
+    assert(r.played);
+    assert(r.channel == 1);
+}
+
+static void test_priority_refuses(void) {
+    wm_sound_state_t s;
+    wm_sound_result_t r;
+    int32_t loud = row_with(40), quiet = row_with(4);
+    int i;
+
+    assert(loud > 0 && quiet > 0);
+    wm_sound_init(&s);
+
+    /* Fill all four with the loud one. */
+    for (i = 0; i < WM_SOUND_CHANNELS; ++i)
+        assert(wm_sound_triple(&s, loud).played);
+
+    /* The quiet one is outranked and is simply dropped. This is the
+       behaviour that keeps a pile-up of grunts from burying the
+       announcer. */
+    r = wm_sound_triple(&s, quiet);
+    assert(!r.played);
+
+    /* Free one channel and it fits. */
+    s.priority[2] = 0;
+    s.duration[2] = 0;
+    r = wm_sound_triple(&s, quiet);
+    assert(r.played && r.channel == 3);
+}
+
+/* "find lowest-priority call and bump it" -- and the FIRST channel
+   holding the minimum is the one bumped, because each step of the
+   search is `jrge`, which skips a later channel that merely ties. */
+static void test_lowest_and_first(void) {
+    wm_sound_state_t s;
+    wm_sound_result_t r;
+    int32_t mid = row_with(20);
+
+    assert(mid > 0);
+    wm_sound_init(&s);
+    s.priority[0] = 30; s.duration[0] = 50;
+    s.priority[1] = 10; s.duration[1] = 50;
+    s.priority[2] = 10; s.duration[2] = 50;
+    s.priority[3] = 30; s.duration[3] = 50;
+
+    r = wm_sound_triple(&s, mid);
+    assert(r.played);
+    assert(r.channel == 2);
+}
+
+static void test_refusals(void) {
+    wm_sound_state_t s;
+
+    wm_sound_init(&s);
+    /* @SOUNDSUP -- and note the sense the name inverts: NON-zero
+       means refuse. */
+    s.suppressed = true;
+    assert(!wm_sound_triple(&s, row_with(16)).played);
+    s.suppressed = false;
+
+    /* A negative index, one past the end, and a blank row are all
+       ordinary no-ops rather than errors -- #a0lo, #a0hi and the
+       zero-entry skip all reach triple_sound's success exit. */
+    assert(!wm_sound_triple(&s, -1).played);
+    assert(!wm_sound_triple(&s, (int32_t)wm_sound_table_count).played);
+    assert(!wm_sound_triple(&s, 0).played);          /* `.word 0,0` */
+    /* And none of them took a channel. */
+    assert(s.priority[0] == 0);
+}
+
+/* snd_update: a channel is busy until its duration runs out. */
+static void test_update_frees_channels(void) {
+    wm_sound_state_t s;
+    int32_t idx = row_with(16);
+    uint8_t dur;
+    int i;
+
+    assert(idx > 0);
+    dur = wm_sound_table[idx].duration;
+    assert(dur > 1);
+
+    wm_sound_init(&s);
+    assert(wm_sound_triple(&s, idx).played);
+    assert(s.priority[0] != 0);
+
+    for (i = 0; i < (int)dur - 1; ++i) {
+        wm_sound_update(&s);
+        assert(s.priority[0] != 0);
+    }
+    wm_sound_update(&s);
+    assert(s.priority[0] == 0);
+    assert(s.call[0] == 0);
+
+    /* An idle mixer does not underflow. */
+    for (i = 0; i < 10; ++i) wm_sound_update(&s);
+    assert(s.duration[0] == 0);
+}
+
+/*
+ * announcer_sound: "if he's already saying something, the new call
+ * cuts off the old one", and the cut-off does NOT go through the
+ * priority arbitration -- an announcer cannot lose an argument with
+ * himself.
+ */
+static void test_announcer_cuts_himself_off(void) {
+    wm_sound_state_t s;
+    wm_sound_result_t first, second;
+    int32_t a = -1, b = -1;
+    size_t i;
+    int j;
+
+    /* Two of Vince's own lines. */
+    for (i = wm_sound_announcer_start; i < wm_sound_vince_end; ++i) {
+        if (!wm_sound_table[i].call || !wm_sound_table[i].duration) continue;
+        if (a < 0) a = (int32_t)i;
+        else { b = (int32_t)i; break; }
+    }
+    assert(a > 0 && b > 0);
+
+    wm_sound_init(&s);
+    first = wm_sound_announcer(&s, a);
+    assert(first.played);
+    assert(s.announcer_channel[WM_SOUND_ANNOUNCER_VINCE] == first.channel);
+    assert(s.announcer_duration[WM_SOUND_ANNOUNCER_VINCE] == first.duration);
+
+    /* Fill the other three channels with the loudest thing there is,
+       so ordinary arbitration would refuse him outright. */
+    for (j = 0; j < WM_SOUND_CHANNELS; ++j)
+        if (j != first.channel - 1) {
+            s.priority[j] = 100;
+            s.duration[j] = 200;
+        }
+
+    second = wm_sound_announcer(&s, b);
+    assert(second.played);
+    /* Same track, as the source says. */
+    assert(second.channel == first.channel);
+    assert(s.announcer_duration[WM_SOUND_ANNOUNCER_VINCE] == second.duration);
+
+    /* A non-announcer index is refused outright rather than played. */
+    assert(!wm_sound_announcer(&s, 1).played);
+}
+
+/*
+ * Every one of the 326 announcer lines is priority 100 -- sp_anncer
+ * is the top group in the table (DCSSOUND.ASM:221, `equ 100 << 8`)
+ * and not one row in the four announcer spans uses anything else.
+ * With ties preempting, that means a silent announcer always gets a
+ * channel: he can be talked over by nobody.
+ *
+ * Only two rows outside those spans reach 100, and both are things
+ * that have to be heard over a match: :315 the buy-in sound and
+ * :440 the round-start bell.
+ */
+static void test_the_announcer_outranks_everything(void) {
+    wm_sound_state_t s;
+    size_t i;
+    int32_t vince = -1;
+    int lines = 0, top = 0, elsewhere = 0;
+    int j;
+
+    for (i = wm_sound_announcer_start; i < wm_sound_triple_end; ++i) {
+        bool is_announcer = wm_sound_who_is_it((int32_t)i)
+                            != WM_SOUND_ANNOUNCER_NONE;
+        /* Skip only a wholly blank row; 18 announcer rows carry a
+           priority with no call or no duration and are still his. */
+        if (wm_sound_table[i].call == 0 && wm_sound_table[i].duration == 0 &&
+            wm_sound_table[i].priority == 0)
+            continue;
+        if (is_announcer) {
+            ++lines;
+            if (wm_sound_table[i].priority == 100) ++top;
+            if (vince < 0 &&
+                wm_sound_who_is_it((int32_t)i) == WM_SOUND_ANNOUNCER_VINCE)
+                vince = (int32_t)i;
+        }
+    }
+    assert(lines == 326);
+    assert(top == lines);
+
+    for (i = 0; i < wm_sound_table_count; ++i)
+        if (wm_sound_table[i].priority == 100 &&
+            wm_sound_who_is_it((int32_t)i) == WM_SOUND_ANNOUNCER_NONE)
+            ++elsewhere;
+    assert(elsewhere == 2);
+
+    /* Four channels of the loudest thing in the game, and he still
+       gets in -- because a tie preempts. */
+    assert(vince > 0);
+    wm_sound_init(&s);
+    for (j = 0; j < WM_SOUND_CHANNELS; ++j) {
+        s.priority[j] = 100;
+        s.duration[j] = 200;
+    }
+    assert(wm_sound_announcer(&s, vince).played);
+    assert(s.announcer_duration[WM_SOUND_ANNOUNCER_VINCE] != 0);
+}
+
+/* ---- and the same mixer in a live app ---------------------------- */
+
+static wm_app A;
+static uint32_t hcv;
+static uint32_t hc(void *u) { (void)u; return (hcv += 0x139u) & 0x1ff; }
+static uint32_t spf(void *u) { (void)u; return 0x01000000u + ((hcv * 7u) & 0x3fff); }
+
+/*
+ * The one seam every in-match sound arrives through carries a
+ * triple_sndtab INDEX. Before the mixer existed that index went into
+ * the audio queue unchanged -- so the platform was handed a table row
+ * number where a DCS sound call belonged, and every sound was queued
+ * regardless of the four channels.
+ */
+static void test_the_app_queues_calls_not_indices(void) {
+    wm_audio_event ev;
+    int32_t idx = row_with(16);
+    const wm_sound_entry_t *e;
+
+    assert(idx > 0);
+    e = &wm_sound_table[idx];
+    /* The two really are different numbers, or this proves nothing. */
+    assert(e->call != (uint16_t)idx);
+
+    memset(&A, 0, sizeof A);
+    hcv = 1;
+    wm_app_init(&A);
+    wm_rng_init(&A.rng, 0x12345678u, hc, spf, NULL);
+    wm_match_init(&A.match);
+    A.match.anim_sound_user = &A;
+    A.match.anim_sound = NULL;   /* set by wm_app_bind_anim_env */
+
+    /* Reach the seam the way the match does. */
+    {
+        wm_sound_result_t r = wm_sound_triple(&A.sound, idx);
+        assert(r.played);
+        assert(wm_audio_send_command(&A.audio, r.call));
+    }
+    assert(wm_audio_pop_event(&A.audio, &ev));
+    assert(ev.command == e->call);
+}
+
+/*
+ * And the app ticks snd_update, without which the four channels fill
+ * up once and nothing is ever heard again.
+ */
+static void test_the_app_frees_channels(void) {
+    int32_t idx = row_with(16);
+    int i;
+
+    memset(&A, 0, sizeof A);
+    hcv = 1;
+    wm_app_init(&A);
+    assert(wm_sound_triple(&A.sound, idx).played);
+    assert(A.sound.priority[0] != 0);
+
+    for (i = 0; i < 300 && A.sound.priority[0] != 0; ++i)
+        wm_app_tick(&A, NULL);
+    assert(A.sound.priority[0] == 0);
+    assert(i <= wm_sound_table[idx].duration);
+}
+
+int main(void) {
+    test_table();
+    test_announcer_ranges();
+    test_four_channels();
+    test_priority_refuses();
+    test_lowest_and_first();
+    test_refusals();
+    test_update_frees_channels();
+    test_announcer_cuts_himself_off();
+    test_the_announcer_outranks_everything();
+    test_the_app_queues_calls_not_indices();
+    test_the_app_frees_channels();
+    return 0;
+}

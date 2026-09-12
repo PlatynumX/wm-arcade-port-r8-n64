@@ -419,13 +419,25 @@ static uint32_t app_rng_sp(void *user) {
 }
 
 /*
- * DCSSOUND.ASM triple_sound's seam for the animation VM's ANI_CODE sound
- * routines (wm/anim_program.h): the sound's own index goes into the port's
- * audio command queue unchanged. triple_sound's four-channel priority
- * arbitration is not modelled here -- that belongs to a DCSSOUND port.
+ * DCSSOUND.ASM:2061 triple_sound, and the one seam every in-match
+ * sound in this port arrives through: the animation VM's ANI_CODE
+ * sound routines, WRSND's per-wrestler tables, the debris bursts,
+ * DO_WAIT's two sounds and the announcer.
+ *
+ * The value handed in is an INDEX into triple_sndtab, not a DCS
+ * call, and until the mixer existed the two were confused: the index
+ * went into the audio queue unchanged, so the platform was handed a
+ * table row number where a sound call belonged, and every sound the
+ * game decided on was queued regardless of the four channels or the
+ * priorities. Now the mixer arbitrates and what reaches the queue is
+ * what the arcade would actually have sent to the board.
  */
 static void wm_app_anim_sound(void *user, uint16_t call) {
-    (void)wm_audio_send_command((wm_audio_state *)user, call);
+    wm_app *app = (wm_app *)user;
+    wm_sound_result_t r;
+    if (!app) return;
+    r = wm_sound_triple(&app->sound, (int32_t)call);
+    if (r.played) (void)wm_audio_send_command(&app->audio, r.call);
 }
 
 /* Hand the match the services its ANI_CODE routines reach for. Both live
@@ -445,7 +457,7 @@ static void wm_app_round_award(void *user, int player_num,
 
 static void wm_app_bind_anim_env(wm_app *app) {
     app->match.anim_rng = &app->rng;
-    app->match.anim_sound_user = &app->audio;
+    app->match.anim_sound_user = app;
     app->match.anim_sound = wm_app_anim_sound;
     app->match.anim_award_user = app;
     app->match.anim_round_award = wm_app_round_award;
@@ -491,6 +503,7 @@ void wm_app_init(wm_app *app) {
     memset(app, 0, sizeof(*app));
     app->mode = WM_APP_MODE_ATTRACT;
     wm_audio_init(&app->audio);
+    wm_sound_init(&app->sound);
     wm_select_continue_init(&app->continue_select);
     wm_award_init(&app->awards);
     wm_demo_init(&app->demo);
@@ -511,6 +524,14 @@ void wm_app_tick_dual(wm_app *app,
     const wm_input_state *input = p1_input;
     if (!app) return;
     wm_audio_source_tick(&app->audio);
+    /*
+     * DCSSOUND.ASM:2266 snd_update, which WRESTLE.ASM's interrupt
+     * runs once a tick: every channel's duration counted down, and a
+     * channel whose duration reaches zero freed for the next sound.
+     * Without it the four channels fill up once and nothing is ever
+     * heard again.
+     */
+    wm_sound_update(&app->sound);
     /* SOURCE_SELECT_MODE_TICK */
     if (app->mode == WM_APP_MODE_SELECT) {
         wm_select_screen_tick(&app->select,

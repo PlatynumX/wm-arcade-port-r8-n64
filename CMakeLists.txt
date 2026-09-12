@@ -91,6 +91,7 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_react9_core.c
     src/core/arcade/wm_arcade_roster.c
     src/core/arcade/wm_arcade_scroll.c
+    src/core/arcade/wm_arcade_sound.c
     src/core/arcade/wm_arcade_coffin.c
     src/core/arcade/wm_arcade_match_clock.c
     src/core/arcade/wm_arcade_round.c
@@ -110,6 +111,7 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_roster_anims.c
     src/generated/roster_anim_tables.c
     src/generated/smove_tables.c
+    src/generated/sound_table.c
     src/generated/ani_init_tables.c
     src/generated/palettes.c
     src/generated/font_tables.c

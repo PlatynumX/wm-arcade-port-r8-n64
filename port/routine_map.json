@@ -1347,5 +1347,73 @@
   "file": "LIFEBAR.ASM",
   "status": "display",
   "note": "LIFEBAR.ASM:4876. The TIME OUT graphic the main loop creates when the round clock expires: a sound, a BEGINOBJ at [200,300] with an upward OYVEL, two FX_PID processes copying and moving it, then four passes of TIMEOUT_FLASH_ANIM through ANIM_CROWD. Object and animation drawing throughout; what it is a consequence OF -- the clock reaching zero and the round being decided by LIFEBAR.ASM:5149 set_winner's #tmout rule -- is wm/arcade/wm_arcade_match_clock.h."
+ },
+ "snd_update": {
+  "file": "DCSSOUND.ASM",
+  "status": "partial",
+  "symbol": "wm_sound_update",
+  "note": "DCSSOUND.ASM:2266. Every announcer's duration and every channel's, counted down once a tick, and a channel whose duration reaches zero freed for the next sound -- without it the four channels fill up once and nothing is ever heard again. Not translated: the do_tune_commands branch, where a channel running a TUNE SCRIPT runs the script's next command instead of freeing itself. No tune script is reachable here, because the routines that install one are themselves still open."
+ },
+ "ANNOUNCE_VOICE": {
+  "file": "DCSSOUND.ASM",
+  "status": "renamed",
+  "symbol": "wm_sound_who_is_it",
+  "note": "DCSSOUND.ASM:1869 WHO_IS_IT, the half of ANNOUNCE_VOICE that decides which of the three announcers owns a sound index -- entirely by where it falls between triple_sndtab's own internal labels, which is why those are generated alongside the rows."
+ },
+ "announcer_sound": {
+  "file": "DCSSOUND.ASM",
+  "status": "partial",
+  "symbol": "wm_sound_announcer",
+  "note": "DCSSOUND.ASM:1937. \"Lots like triple_sound, except that it identifies the announcer who's talking, and if he's already saying something, the new call cuts off the old one\" -- and that cut-off bypasses the priority arbitration entirely, writing straight onto the channel he is already using, so an announcer can never talk over himself. Not translated: the send to the board, which is send_code_a3."
+ },
+ "SNDSND": {
+  "file": "DCSSOUND.ASM",
+  "status": "hardware",
+  "note": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. DCSSOUND.ASM:2519 SNDSND is send_code_a3: refuse if @SOUNDSUP, refuse a negative (null) call, then write the call's high byte and low byte to the latch with a poll_sirq wait after each. The two refusals are real and are translated in the mixer; the two byte writes are the board."
+ },
+ "send_code_a3": {
+  "file": "DCSSOUND.ASM",
+  "status": "hardware",
+  "note": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. The same routine as SNDSND, which is its other entry point."
+ },
+ "poll_sirq": {
+  "file": "DCSSOUND.ASM",
+  "status": "hardware",
+  "note": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. DCSSOUND.ASM:2547: spin on the sound board's IRQ line until it says it is ready, with a 180-microsecond timeout \"so sound board can't screw things up\"."
+ },
+ "inc_sdram": {
+  "file": "DCSSOUND.ASM",
+  "status": "hardware",
+  "note": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. The SND_DEBUG ring buffer's write pointer -- a development trace of the last N sound calls, assembled out of the shipped game entirely."
+ },
+ "clear_sound_ram": {
+  "file": "DCSSOUND.ASM",
+  "status": "hardware",
+  "note": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. Zeroes that same SND_DEBUG trace buffer."
+ },
+ "snd_reset": {
+  "file": "DCSSOUND.ASM",
+  "status": "hardware",
+  "note": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. Resets the board and waits for it to come back."
+ },
+ "qsndrst_proc": {
+  "file": "DCSSOUND.ASM",
+  "status": "hardware",
+  "note": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. The process that performs a board reset out of line."
+ },
+ "delay_code_a3": {
+  "file": "DCSSOUND.ASM",
+  "status": "hardware",
+  "note": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. A send_code_a3 with a delay in front of it, for calls the board needs spacing between."
+ },
+ "snd_play1": {
+  "file": "DCSSOUND.ASM",
+  "status": "hardware",
+  "note": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. A one-shot send with no channel bookkeeping."
+ },
+ "VOLBTN_PRESS": {
+  "file": "DCSSOUND.ASM",
+  "status": "hardware",
+  "note": "DCSSOUND.ASM:2564. The cabinet's two volume buttons behind the coin door, read straight off the coin port and written to the board's volume register. There is no coin door on an N64 and no operator volume setting for it to adjust."
  }
 }

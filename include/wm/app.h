@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include "wm/attract.h"
+#include "wm/arcade/wm_arcade_sound.h"
 #include "wm/audio.h"
 #include "wm/award.h"
 #include "wm/demo.h"
@@ -156,6 +157,13 @@ typedef enum {
 
 typedef struct {
     wm_audio_state audio;
+    /*
+     * DCSSOUND.ASM's four-channel mixer (wm/arcade/wm_arcade_sound.h).
+     * Every sound index the game decides on goes through this before
+     * it reaches the queue above, which is what decides whether it is
+     * played at all.
+     */
+    wm_sound_state_t sound;
     wm_app_mode mode;
     wm_select_screen_state select;
     wm_select_continue_state continue_select;

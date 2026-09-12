@@ -2264,5 +2264,311 @@
   "status": "renamed",
   "symbol": "wm_rewire_tick",
   "note": "LIFEBAR.ASM:880. Three different loops behind one name, chosen once at startup: buddy (two displays, each following a human or his dead partner's stand-in), rumble (one display alternating between a pair, holding each for TSEC*4/10 POLLS -- a8 is decremented once per SLOOP, not once per tick -- and refusing to toggle onto a dead wrestler), and normal (the display follows the human's CLOSEST_NUM, with #LATENCY = TSEC/2 of debounce that is waived when the wrestler being SHOWN is dead, which is what the source's own comment says). Two exits before any of it: PSTATUS == 3 and NUM_OPPS == 1. wm_rewire_mode is the branch, wm_rewire_tick the loops; rewire_meter itself -- which rebuilds the meter graphics -- is the display layer's, and the monitor reports the (display, wrestler) pairs it would call it with."
+ },
+ "work_out_match_time": {
+  "file": "SELECT.ASM",
+  "status": "renamed",
+  "symbol": "wm_match_time_ticks_to_hundredths",
+  "note": "SELECT.ASM:533. The pin-speed clock: @match_time shuffled into the 0xIIFF form the caller's own comment describes, and the round's tick span converted to hundredths with `movi (100<<8)/55` -- fifty-five ticks a second, where DISPLAY.EQU:46 says TSEC is 53. Every pin time the game has ever recorded is therefore about 3.6% short. Translated as written; the constant is also truncated to 465 by the assembler, which takes another 0.1%."
+ },
+ "draw_mugshot": {
+  "file": "SELECT.ASM",
+  "status": "display",
+  "note": "Creates the eight image pieces of a wrestler's mugshot into #MUG1..#MUG8 in the process's own PDATA. The decisions around it are translated elsewhere; the object creation and layout are the display layer's."
+ },
+ "erase_mugshot": {
+  "file": "SELECT.ASM",
+  "status": "display",
+  "note": "Deletes those eight, walking the same PDATA slots. The decisions around it are translated elsewhere; the object creation and layout are the display layer's."
+ },
+ "display_croutons": {
+  "file": "SELECT.ASM",
+  "status": "display",
+  "note": "Puts the small per-player marker objects up for whichever players PSTATUS says are in. The decisions around it are translated elsewhere; the object creation and layout are the display layer's."
+ },
+ "update_name": {
+  "file": "SELECT.ASM",
+  "status": "display",
+  "note": "Looks the chosen wrestler up through scramble_table and redraws his name plate. The decisions around it are translated elsewhere; the object creation and layout are the display layer's."
+ },
+ "place_cursor": {
+  "file": "SELECT.ASM",
+  "status": "display",
+  "note": "Positions a player's select cursor on the grid. The decisions around it are translated elsewhere; the object creation and layout are the display layer's."
+ },
+ "player_cursor": {
+  "file": "SELECT.ASM",
+  "status": "display",
+  "note": "The cursor's own process: reads the stick, moves, and flashes. The decisions around it are translated elsewhere; the object creation and layout are the display layer's."
+ },
+ "call_wrestler_name": {
+  "file": "SELECT.ASM",
+  "status": "display",
+  "note": "Starts the announcer saying the name of the wrestler just chosen. The decisions around it are translated elsewhere; the object creation and layout are the display layer's."
+ },
+ "pregame_show": {
+  "file": "SELECT.ASM",
+  "status": "display",
+  "note": "The pregame screen's object setup. The decisions around it are translated elsewhere; the object creation and layout are the display layer's."
+ },
+ "select_screen": {
+  "file": "SELECT.ASM",
+  "status": "display",
+  "note": "The select screen's object setup. The decisions around it are translated elsewhere; the object creation and layout are the display layer's."
+ },
+ "pin_speed_in_case": {
+  "file": "SELECT.ASM",
+  "status": "display",
+  "note": "Draws the pin-speed record into the trophy case on the select screen. The decisions around it are translated elsewhere; the object creation and layout are the display layer's."
+ },
+ "GAME_BEATEN": {
+  "file": "SELECT.ASM",
+  "status": "display",
+  "note": "Puts the 'game beaten' plaque up. The decisions around it are translated elsewhere; the object creation and layout are the display layer's."
+ },
+ "THIS_GAME_IS_BEATEN": {
+  "file": "SELECT.ASM",
+  "status": "display",
+  "note": "`CLR A0 / MOVE A0,@PSTATUS / movi INGAMEOVER,a14 / move a14,@GAMSTATE` then the game-over process. The state change is three stores; the screen it puts up is the rest of it. The decisions around it are translated elsewhere; the object creation and layout are the display layer's."
+ },
+ "buyin_select": {
+  "file": "SELECT.ASM",
+  "status": "renamed",
+  "symbol": "wm_select_continue_tick",
+  "note": "The continue screen's own loop. wm/select_continue.h carries it: the countdown, the button test and the join."
+ },
+ "buyin_counter": {
+  "file": "SELECT.ASM",
+  "status": "renamed",
+  "symbol": "wm_select_continue_tick",
+  "note": "The continue countdown's digits. See buyin_select."
+ },
+ "get_final_lineup": {
+  "file": "PROGRESS.ASM",
+  "status": "partial",
+  "symbol": "wm_pregame_init",
+  "note": "PROGRESS.ASM:1593. INIT_TEMP_TABLE and RANDOMIZE_ORDER, then the first two longs of TEMP_LADDER copied into FINAL_BATTLE_LINEUP with a -1 word terminator -- four wrestlers for the final battle. The shuffle itself is the ladder builder, translated as wm_pregame_init's init_ladder_table; the four-entry copy and its terminator are not yet wired to anything that reads them."
+ },
+ "get_royal_lineup": {
+  "file": "PROGRESS.ASM",
+  "status": "partial",
+  "symbol": "wm_pregame_init",
+  "note": "PROGRESS.ASM:1535. get_final_lineup, then @index1 and @index2 pull the rumble's two named entrants out of it. Same state: the shuffle is translated, the lineup it produces has no reader in this port yet."
+ },
+ "mk_pcurs": {
+  "file": "PROGRESS.ASM",
+  "status": "display",
+  "note": "Creates the progress-ladder cursor objects from pcurs_tbl. Screen construction; the ladder state it draws is wm/pregame.h's."
+ },
+ "set_pcurs_pos": {
+  "file": "PROGRESS.ASM",
+  "status": "display",
+  "note": "Places a cursor at the rung its player is on; `btst 0,a9` picks the left or right column. Screen construction; the ladder state it draws is wm/pregame.h's."
+ },
+ "flash_pcurs": {
+  "file": "PROGRESS.ASM",
+  "status": "display",
+  "note": "Flashes a cursor on and off, indexing pcurs_obj by player. Screen construction; the ladder state it draws is wm/pregame.h's."
+ },
+ "hilight": {
+  "file": "PROGRESS.ASM",
+  "status": "display",
+  "note": "Brightens the selected ladder entry by setting bit 1 of its OCTRL. Screen construction; the ladder state it draws is wm/pregame.h's."
+ },
+ "palette_cycle": {
+  "file": "PROGRESS.ASM",
+  "status": "display",
+  "note": "Cycles the ladder's palette while the screen is up. Screen construction; the ladder state it draws is wm/pregame.h's."
+ },
+ "flash_it": {
+  "file": "PROGRESS.ASM",
+  "status": "display",
+  "note": "Flashes one ladder object. Screen construction; the ladder state it draws is wm/pregame.h's."
+ },
+ "CREATE_URN": {
+  "file": "PROGRESS.ASM",
+  "status": "display",
+  "note": "Puts the Undertaker's urn on the ladder screen. Screen construction; the ladder state it draws is wm/pregame.h's."
+ },
+ "PUT_UP_PROGRESS": {
+  "file": "PROGRESS.ASM",
+  "status": "display",
+  "note": "Builds the whole progress-ladder screen. Screen construction; the ladder state it draws is wm/pregame.h's."
+ },
+ "START_HI_FLASHES": {
+  "file": "PROGRESS.ASM",
+  "status": "display",
+  "note": "Starts the flashers on the ladder's highlighted entries. Screen construction; the ladder state it draws is wm/pregame.h's."
+ },
+ "ask_belt_question": {
+  "file": "PROGRESS.ASM",
+  "status": "display",
+  "note": "The 'which belt' prompt between ladder stages. Screen construction; the ladder state it draws is wm/pregame.h's."
+ },
+ "ind_select": {
+  "file": "PROGRESS.ASM",
+  "status": "display",
+  "note": "The individual-select variant of the ladder screen; clears p1sel/p2sel and runs the picker. Screen construction; the ladder state it draws is wm/pregame.h's."
+ },
+ "do_rr_vs": {
+  "file": "PROGRESS.ASM",
+  "status": "display",
+  "note": "Draws the royal-rumble versus screen from the two logo images index1 and index2 name. Screen construction; the ladder state it draws is wm/pregame.h's."
+ },
+ "mk_a0": {
+  "file": "ATTRACT.ASM",
+  "status": "hardware",
+  "note": "`move @_switch_addr,a0,L / move @_switch2_addr,a1,L` then reads both switch ports, rotates the second into the high half and ANDs them -- the raw coin-door and service switch words, from I/O addresses this port does not have. wm/arcade/wm_arcade_switches.h carries what the game does with the switch values once read."
+ },
+ "GENERIC_DISPLAY": {
+  "file": "ATTRACT.ASM",
+  "status": "display",
+  "note": "The attract mode's shared page frame: background, border, and the timed wait. The attract sequence's order and timing are wm/arcade/wmania_attract_core.h's; these build the pages."
+ },
+ "MAKE_UP_LOGO": {
+  "file": "ATTRACT.ASM",
+  "status": "display",
+  "note": "Builds one logo object from a table of image, X and Y, offset by the caller's a3/a5. The attract sequence's order and timing are wm/arcade/wmania_attract_core.h's; these build the pages."
+ },
+ "ONE_BALL": {
+  "file": "ATTRACT.ASM",
+  "status": "display",
+  "note": "One of the attract sequence's animated pages. The attract sequence's order and timing are wm/arcade/wmania_attract_core.h's; these build the pages."
+ },
+ "octopus_page": {
+  "file": "ATTRACT.ASM",
+  "status": "display",
+  "note": "Another of them. The attract sequence's order and timing are wm/arcade/wmania_attract_core.h's; these build the pages."
+ },
+ "dan_test": {
+  "file": "ATTRACT.ASM",
+  "status": "display",
+  "note": "A developer's test page, reachable only from the diagnostic menu. The attract sequence's order and timing are wm/arcade/wmania_attract_core.h's; these build the pages."
+ },
+ "print_gen_tips": {
+  "file": "ATTRACT.ASM",
+  "status": "display",
+  "note": "Prints the generic gameplay tips page from #gen_tip_mes. The attract sequence's order and timing are wm/arcade/wmania_attract_core.h's; these build the pages."
+ },
+ "show_wres_tips": {
+  "file": "ATTRACT.ASM",
+  "status": "display",
+  "note": "Prints the per-wrestler tips page. The attract sequence's order and timing are wm/arcade/wmania_attract_core.h's; these build the pages."
+ },
+ "wait_but": {
+  "file": "ATTRACT.ASM",
+  "status": "display",
+  "note": "Sleeps until a button is pressed or the page's time runs out. The attract sequence's order and timing are wm/arcade/wmania_attract_core.h's; these build the pages."
+ },
+ "PIN_FLASH_ANIM": {
+  "file": "LIFEBAR.ASM",
+  "status": "data",
+  "symbol": "wm_sound_which_pin_him",
+  "note": "A `WL` animation list -- PINHIM01 through its last frame, two ticks each. An image sequence, not code."
+ },
+ "DO_RIGHT_MUSIC": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "Picks the music for the round about to start and hands it to SNDSND."
+ },
+ "DO_RIGHT_MUSIC2": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "The same for the second half of a match."
+ },
+ "DO_ROUNDS": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "Puts the round-number graphic up."
+ },
+ "FIRSTATT_MESS": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "Puts the FIRSTATT message up over the player who landed the first blow."
+ },
+ "ICON_SPARKLE": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "Sparkles on a power-up icon; it checks @reduce_bog first and dies rather than adding objects when the frame rate is already suffering."
+ },
+ "MOVE_NAME_ANNC": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "Slides the wrestler name plates in at the announcement."
+ },
+ "SPECIAL_MESSAGE": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "The generic mid-match message object."
+ },
+ "WHERE_WRESTLMANIA_SPARKLES": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "The sparkle positions on the WrestleMania logo."
+ },
+ "arw_bwait": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "The arrow that waits for a button on the between-rounds screen."
+ },
+ "flash_2ndwind": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "Flashes the second-wind graphic, clearing M_FLIPH first and running wind_anim three times."
+ },
+ "flash_obj": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "Flashes any one object."
+ },
+ "replace_wins": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "Redraws the round-win markers."
+ },
+ "start_credbox": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "Puts the credit box up."
+ },
+ "update_credit_msg": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "Redraws the credit message from @SHOW_CRD_FLAG."
+ },
+ "zero_combo_meter": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "Empties a player's combo meter graphic; the combo COUNT itself is wm/arcade/wm_arcade_combo.h's."
+ },
+ "plyr_strtb1": {
+  "file": "WRESTLE.ASM",
+  "status": "renamed",
+  "symbol": "wm_plyr_start",
+  "note": "WRESTLE.ASM:663. Somebody pressed start. Two entry points with one body -- plyr_strtb1 loads a8=0, plyr_strtb2 a8=1 -- three guards, a per-player state wipe that happens BEFORE the credit check (so a player turned away for want of a coin has still lost his win streak and his pin times), the OLD_PSTATUS continue path, and a seven-way branch on GAMSTATE. wm_plyr_start reports all of it, including the two LOCKUPs the source traps on rather than halting."
+ },
+ "plyr_strtb2": {
+  "file": "WRESTLE.ASM",
+  "status": "renamed",
+  "symbol": "wm_plyr_start",
+  "note": "The player-two entry point of plyr_strtb1: one instruction, `movk 1,a8`, then the same body."
+ },
+ "CALL_MATCH_OVER": {
+  "file": "DCSSOUND.ASM",
+  "status": "renamed",
+  "symbol": "wm_announce_match_over_run",
+  "note": "DCSSOUND.ASM:3793. Five instructions: `movk 1,a8 / sll a0,a8` makes the winner's PSTATUS bit, a9 takes PSTATUS, and PROC_MATCH_OVER is created on SOUND_PID. The bit and the mask are the only things it passes, and they become wm_announce_match_over_run's `loser_was_drone` argument."
+ },
+ "PROC_MATCH_OVER": {
+  "file": "DCSSOUND.ASM",
+  "status": "renamed",
+  "symbol": "wm_announce_match_over_run",
+  "note": "DCSSOUND.ASM:3799. SLEEPK 5, then `xor a8,a9 / jrz #drn_l` -- the winner's bit removed from PSTATUS, and nothing left means the loser was a drone, which picks MATCH_OVER_DL (Vince gripes) over MATCH_OVER (Lawlor cheers). Then a three-way draw: 200 per mille to the winner's own WHICH_WRESTLER_TALKS line, otherwise 200 per mille to one of the two over-four-wins specials if his streak is at least four, otherwise the table at 1000 per mille -- ADD_TO_QUEUE and not ADD_IF_SILENT, so the end of a match always says something over whatever else is running. wm_announce_match_over_run is the tree; wm_announce_match_over carries its constants and src/generated/announce_tables.c its tables."
+ },
+ "do_game_over": {
+  "file": "LIFEBAR.ASM",
+  "status": "renamed",
+  "symbol": "wm_app_start_game_over",
+  "note": "LIFEBAR.ASM:2996 #do_game_over and SELECT.ASM:1190 do_game_over -- two routines of the same name, the SELECT one being what the declined continue runs. It sets GAMSTATE to INGAMEOVER and holds the GAME OVER graphic for its dwell before handing back to attract mode. wm_app_start_game_over is that transition; wm/app.h's game_over_ticks is the dwell."
  }
 }

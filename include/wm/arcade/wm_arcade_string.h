@@ -110,6 +110,17 @@ const char *wm_font_glyph(const wm_font_table *font, int ch);
  * source returns ("the largest number we have"). */
 uint32_t wm_bin_to_bcd(uint32_t value);
 
+/*
+ * ADJUST.ASM:1624 BCDBIN -- the other way: read each nibble as a
+ * decimal digit and sum them with place values 1, 10, 100...
+ *
+ * It is not a validating conversion. A nibble of A-F is multiplied
+ * by its place like any other, so 0x1A comes back as 10*1 + 1*10 =
+ * 20 rather than being rejected, and BCDBIN(BINBCD(n)) == n only
+ * holds for values BINBCD did not clamp.
+ */
+uint32_t wm_bcd_to_bin(uint32_t bcd);
+
 /* STRING.ASM's justification methods.  WM_JUSTIFY_NONE is `setup_message`'s
  * `movi #rets` -- a justify hook that does nothing, leaving the working
  * cursor wherever it already was. */
@@ -315,6 +326,72 @@ size_t wm_string_strip_white(const char *work_buffer, size_t length,
  * The result is left in the string state's buffer.
  */
 void wm_string_val_to_dec_tenths(wm_string_state *st, uint32_t value);
+
+/*
+ * SELECT.ASM:533 work_out_match_time -- the pin-speed clock, and the
+ * one place in the game that disagrees with itself about how fast
+ * time runs.
+ *
+ * It answers two questions at once. The first is the match clock as
+ * a number, described by the source's own comment above the caller:
+ * "Return 100 - time elapsed in BCD, 0xIIFF format, where II is the
+ * integer part and FF is the fractional. Then convert this back to
+ * hex from BCD." The integer part is shuffled out of @match_time
+ * (`srl 8` for the high bits, `sll 24 / srl 12` to put the low byte
+ * back at bits 12-19) and the fractional part is the 16-bit word at
+ * match_time+20h scaled by 100 and shifted down 16 -- a fixed-point
+ * fraction turned into hundredths.
+ *
+ * The second is how long the round took, and this is the
+ * interesting one:
+ *
+ *     move @round_end_time,a1
+ *     move @round_start_time,a14
+ *     sub  a14,a1
+ *     movi (100<<8)/55,a14
+ *     mpyu a14,a1
+ *     srl  8,a1
+ *
+ * -- ticks to hundredths of a second at FIFTY-FIVE ticks per second.
+ * DISPLAY.EQU:46 says TSEC equ 53, and everything else in the game
+ * counts in 53s. So every pin time this routine produces is about
+ * 3.6% short of the time the player actually took, and the high
+ * score table has been recording it that way since 1995. The
+ * constant is also truncated at assembly time -- (100<<8)/55 is
+ * 465, not 465.45 -- which takes another 0.1% off.
+ *
+ * That is not corrected here. A pin time that does not match the
+ * arcade's is a different game.
+ */
+#define WM_MATCH_TIME_TICK_DIVISOR 55
+/* (100 << 8) / 55, as the assembler computes it. */
+#define WM_MATCH_TIME_SCALE 465
+
+/* `round_end_time - round_start_time` in hundredths, as above. A
+   negative span is not something the source guards against; this
+   keeps the arithmetic signed so it does not become enormous. */
+int32_t wm_match_time_ticks_to_hundredths(int32_t ticks);
+
+/*
+ * The first answer: @match_time (32 bits) and the fractional word at
+ * match_time+20h, folded together and run back through BCDBIN.
+ */
+uint32_t wm_match_time_value(uint32_t match_time, uint16_t fraction);
+
+/*
+ * SELECT.ASM:496 calc_match_time_2 -- what gets stored.
+ *
+ * The round's hundredths are ADDED to whatever the player's
+ * MATCH_TIMERS slot already holds, so the figure accumulates across
+ * the rounds of a match. Then two rejections: 50000 or more (`cmpi
+ * 50000,a0 / jrge`) and negative (`move a0,a0 / jrn`) both store -1
+ * instead, which is how "no pin speed to record" is spelled.
+ *
+ * Returns the value to store. `total` is the accumulated sum.
+ */
+int32_t wm_match_time_store(int32_t total);
+#define WM_MATCH_TIME_LIMIT 50000
+#define WM_MATCH_TIME_NONE (-1)
 
 #ifdef __cplusplus
 }

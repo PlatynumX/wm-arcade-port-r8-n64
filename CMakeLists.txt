@@ -95,6 +95,7 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_firework.c
     src/core/arcade/wm_arcade_objutil.c
     src/core/arcade/wm_arcade_colcyc.c
+    src/core/arcade/wm_arcade_plyr_start.c
     src/core/arcade/wm_arcade_sound.c
     src/core/arcade/wm_arcade_story.c
     src/core/arcade/wm_arcade_coffin.c

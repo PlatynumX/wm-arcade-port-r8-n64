@@ -88,3 +88,38 @@ uint32_t wm_form_crc32(const uint8_t *bytes, size_t count) {
     }
     return acc;
 }
+
+/* ---- obj_on / obj_off -------------------------------------------- */
+
+int16_t wm_obj_on(int16_t oypos) {
+    /* `andni 400h,a0`. */
+    return (int16_t)((uint16_t)oypos & (uint16_t)~WM_OBJ_OFFSCREEN_BIT);
+}
+
+int16_t wm_obj_off(int16_t oypos) {
+    /* `ori 400h,a0`. */
+    return (int16_t)((uint16_t)oypos | (uint16_t)WM_OBJ_OFFSCREEN_BIT);
+}
+
+bool wm_obj_is_off(int16_t oypos) {
+    return ((uint16_t)oypos & (uint16_t)WM_OBJ_OFFSCREEN_BIT) != 0u;
+}
+
+/* ---- scrn_rel_off ------------------------------------------------ */
+
+size_t wm_scrn_rel_off(wm_obj_flags_t *objs, size_t count,
+                       uint16_t spare_oid) {
+    size_t i, n = 0;
+
+    if (!objs) return 0;
+    for (i = 0; i < count; ++i) {
+        /* `cmpi CREDITID|CLSDEAD,a3 / jrz #sro_loop` -- an exact
+           compare against the whole OID, not a masked one. */
+        if (objs[i].oid == spare_oid) continue;
+        if ((objs[i].oflags & WM_OFLAGS_M_SCRNREL) == 0u) continue;
+        objs[i].oflags = (uint16_t)(objs[i].oflags &
+                                    (uint16_t)~WM_OFLAGS_M_SCRNREL);
+        n++;
+    }
+    return n;
+}

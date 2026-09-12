@@ -529,3 +529,50 @@ void wm_string_val_to_dec_tenths(wm_string_state *st, uint32_t value)
         wm_string_concat_rom(st, "0");
     }
 }
+
+/* ADJUST.ASM:1624 BCDBIN. */
+uint32_t wm_bcd_to_bin(uint32_t bcd)
+{
+    uint32_t out = 0;
+    uint32_t place = 1u;
+
+    /* `BCBLOOP: MOVE A0,A1 / JRZ BCBDONE` -- a leading zero nibble
+       ends it, so the loop runs at most eight times and zero comes
+       straight back out. */
+    while (bcd != 0u) {
+        out += (bcd & 0xfu) * place;
+        bcd >>= 4;
+        place *= 10u;
+    }
+    return out;
+}
+
+/* ---- SELECT.ASM:533 work_out_match_time -------------------------- */
+
+int32_t wm_match_time_ticks_to_hundredths(int32_t ticks)
+{
+    /* `mpyu a14,a1 / srl 8,a1` with a14 = (100<<8)/55 = 465. The
+       scale says 55 ticks a second; TSEC says 53. See the header. */
+    return (int32_t)(((int64_t)ticks * WM_MATCH_TIME_SCALE) >> 8);
+}
+
+uint32_t wm_match_time_value(uint32_t match_time, uint16_t fraction)
+{
+    /* `move a4,a1 / srl 8,a4 / sll 24,a1 / srl 12,a1 / or a1,a4`. */
+    uint32_t whole = (match_time >> 8) | ((match_time & 0xffu) << 12);
+    /* `move @match_time+020h,a5 / sll 16,a5 / srl 16,a5` masks it to
+       sixteen bits, then `movi 100 / mpyu / srl 16` turns a 16-bit
+       binary fraction into hundredths. */
+    uint32_t hundredths = ((uint32_t)fraction * 100u) >> 16;
+    /* `calla BINBCD / or a4,a0 / calla BCDBIN`. */
+    return wm_bcd_to_bin(wm_bin_to_bcd(hundredths) | whole);
+}
+
+int32_t wm_match_time_store(int32_t total)
+{
+    /* `cmpi 50000,a0 / jrge no_bother` and `move a0,a0 / jrn`. */
+    if (total >= WM_MATCH_TIME_LIMIT) return WM_MATCH_TIME_NONE;
+    if (total < 0) return WM_MATCH_TIME_NONE;
+    /* `calla BINBCD / move a0,a1` -- what is stored is BCD. */
+    return (int32_t)wm_bin_to_bcd((uint32_t)total);
+}

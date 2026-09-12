@@ -205,6 +205,66 @@ static void test_form_crc32(void) {
     }
 }
 
+/* obj_on / obj_off hide by setting bit 10 of OYPOS, not by moving. */
+static void test_obj_on_off(void) {
+    int16_t y = 120;
+
+    assert(!wm_obj_is_off(y));
+    y = wm_obj_off(y);
+    assert(wm_obj_is_off(y));
+    assert(y == 120 + 0x400);
+    /* Idempotent, which a plain add would not be. */
+    assert(wm_obj_off(y) == y);
+    y = wm_obj_on(y);
+    assert(y == 120);
+    assert(wm_obj_on(y) == y);
+
+    /* It is a BIT, so an object whose real Y already had bit 10 set
+       would be SHOWN by obj_off. Nothing on this screen sits below
+       1024, but it is why this is not an add. */
+    {
+        int16_t low = (int16_t)(0x400 + 5);
+        assert(wm_obj_is_off(low));
+        assert(wm_obj_on(low) == 5);
+    }
+    assert(WM_OBJ_OFFSCREEN_BIT == 0x400);
+}
+
+/* scrn_rel_off clears M_SCRNREL on everything but the credit box. */
+static void test_scrn_rel_off(void) {
+    const uint16_t credit = 0x1234;      /* CREDITID|CLSDEAD */
+    wm_obj_flags_t objs[5];
+    size_t n;
+    int i;
+
+    for (i = 0; i < 5; ++i) {
+        objs[i].oid = (uint16_t)(0x2000 + i);
+        objs[i].oflags = WM_OFLAGS_M_SCRNREL | 0x0001;
+    }
+    objs[2].oid = credit;
+    objs[4].oflags = 0x0001;             /* already clear */
+
+    n = wm_scrn_rel_off(objs, 5, credit);
+    assert(n == 3);
+    for (i = 0; i < 5; ++i) {
+        if (i == 2) {
+            assert(objs[i].oflags & WM_OFLAGS_M_SCRNREL);
+        } else {
+            assert(!(objs[i].oflags & WM_OFLAGS_M_SCRNREL));
+        }
+        /* Nothing else in the flags word is touched. */
+        assert(objs[i].oflags & 0x0001);
+    }
+
+    /* The spare test is an exact compare on the whole OID, so an
+       object merely sharing the class is not spared. */
+    objs[0].oid = (uint16_t)(credit ^ 0x0001);
+    objs[0].oflags = WM_OFLAGS_M_SCRNREL;
+    assert(wm_scrn_rel_off(objs, 1, credit) == 1);
+
+    assert(WM_OFLAGS_M_SCRNREL == 0x2000);
+}
+
 int main(void) {
     test_packed_xy();
     test_getcpnt();
@@ -213,6 +273,8 @@ int main(void) {
     test_anipt_getxy();
     test_vol_to_ht();
     test_form_crc32();
+    test_obj_on_off();
+    test_scrn_rel_off();
     printf("objutil ok\n");
     return 0;
 }

@@ -7,28 +7,20 @@ only in a note saying it is missing does not count as present.
 
 | status | meaning | count |
 |---|---|---|
-| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1963 |
+| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1966 |
 | `inlined` | the port does it, spelled out at each use site (ledger) | 13 |
-| `renamed` | the port does it under another name (ledger) | 152 |
-| `partial` | partly translated; the ledger note says which part | 19 |
-| `data` | a table, extracted by a tool (ledger) | 52 |
+| `renamed` | the port does it under another name (ledger) | 160 |
+| `partial` | partly translated; the ledger note says which part | 21 |
+| `data` | a table, extracted by a tool (ledger) | 53 |
 | `process` | a CREATE/SLEEP wrapper (ledger) | 22 |
-| `display` | object/DMA drawing; this port has no renderer (ledger) | 83 |
-| `hardware` | talks to the cabinet (ledger) | 67 |
+| `display` | object/DMA drawing; this port has no renderer (ledger) | 130 |
+| `hardware` | talks to the cabinet (ledger) | 68 |
 | `dead` | **measured**: no caller outside its own file | 37 |
 | `unassembled` | **measured**: inside a `.if` the assembler skipped | 64 |
-| `cited` | named only in a comment -- not evidence of anything | 35 |
-| `unknown` | no mention anywhere | 27 |
 
-**2472 of 2534 routines are accounted for; 62 are open** (`cited` + `unknown`).
+**2534 of 2534 routines are accounted for; 0 are open** (`cited` + `unknown`).
 
 ## Open routines by file
 
 | file | open | routines |
 |---|---|---|
-| LIFEBAR.ASM | 17 | `DO_RIGHT_MUSIC`, `DO_RIGHT_MUSIC2`, `DO_ROUNDS`, `FIRSTATT_MESS`, `ICON_SPARKLE`, `MOVE_NAME_ANNC`, `PIN_FLASH_ANIM`, `SPECIAL_MESSAGE`, `WHERE_WRESTLMANIA_SPARKLES`, `arw_bwait`, `do_game_over`, `flash_2ndwind`, ... |
-| SELECT.ASM | 17 | `GAME_BEATEN`, `THIS_GAME_IS_BEATEN`, `buyin_counter`, `buyin_select`, `call_wrestler_name`, `display_croutons`, `draw_mugshot`, `erase_mugshot`, `obj_off`, `obj_on`, `pin_speed_in_case`, `place_cursor`, ... |
-| PROGRESS.ASM | 15 | `CREATE_URN`, `PUT_UP_PROGRESS`, `START_HI_FLASHES`, `ask_belt_question`, `do_rr_vs`, `flash_it`, `flash_pcurs`, `get_final_lineup`, `get_royal_lineup`, `hilight`, `ind_select`, `mk_pcurs`, ... |
-| ATTRACT.ASM | 9 | `GENERIC_DISPLAY`, `MAKE_UP_LOGO`, `ONE_BALL`, `dan_test`, `mk_a0`, `octopus_page`, `print_gen_tips`, `show_wres_tips`, `wait_but` |
-| DCSSOUND.ASM | 2 | `CALL_MATCH_OVER`, `PROC_MATCH_OVER` |
-| WRESTLE.ASM | 2 | `plyr_strtb1`, `plyr_strtb2` |

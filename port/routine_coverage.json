@@ -385,10 +385,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "CALL_MATCH_OVER",
+   "status": "renamed",
+   "evidence": "wm_announce_match_over_run",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "CHANGE_SKIRTS",
@@ -565,10 +565,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "CREATE_URN",
+   "status": "display",
+   "evidence": "Puts the Undertaker's urn on the ladder screen. Screen construction; the ladder state it draws is wm/pregame.h's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "CREATE_URN2",
@@ -880,10 +880,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "DO_RIGHT_MUSIC",
+   "status": "display",
+   "evidence": "Picks the music for the round about to start and hands it to SNDSND.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "DO_RIGHT_MUSIC2",
@@ -895,10 +895,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "DO_RIGHT_MUSIC2",
+   "status": "display",
+   "evidence": "The same for the second half of a match.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "DO_ROUNDS",
@@ -910,10 +910,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "cited",
-   "evidence": "DO_ROUNDS",
+   "status": "display",
+   "evidence": "Puts the round-number graphic up.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "DO_SET_IMAGES",
@@ -1030,10 +1030,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "Puts the FIRSTATT message up over the player who landed the first blow.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "GAME_BEATEN",
@@ -1045,10 +1045,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "cited",
-   "evidence": "GAME_BEATEN",
+   "status": "display",
+   "evidence": "Puts the 'game beaten' plaque up. The decisions around it are translated elsewhere; the object creation and layout are the display layer's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "GENERIC_DISPLAY",
@@ -1060,10 +1060,10 @@
    "local": false,
    "external_callers": 2,
    "references": 5,
-   "status": "cited",
-   "evidence": "GENERIC_DISPLAY",
+   "status": "display",
+   "evidence": "The attract mode's shared page frame: background, border, and the timed wait. The attract sequence's order and timing are wm/arcade/wmania_attract_core.h's; these build the pages.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "GETCPNT",
@@ -1270,10 +1270,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "Sparkles on a power-up icon; it checks @reduce_bog first and dies rather than adding objects when the frame rate is already suffering.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "IKIL1C",
@@ -1570,10 +1570,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "Builds one logo object from a table of image, X and Y, offset by the caller's a3/a5. The attract sequence's order and timing are wm/arcade/wmania_attract_core.h's; these build the pages.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "MOVE_ALL_OBJS_UP",
@@ -1600,10 +1600,10 @@
    "local": false,
    "external_callers": 3,
    "references": 3,
-   "status": "cited",
-   "evidence": "MOVE_NAME_ANNC",
+   "status": "display",
+   "evidence": "Slides the wrestler name plates in at the announcement.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "NEXT_IN_LADDER",
@@ -1645,10 +1645,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "ONE_BALL",
+   "status": "display",
+   "evidence": "One of the attract sequence's animated pages. The attract sequence's order and timing are wm/arcade/wmania_attract_core.h's; these build the pages.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "PIN_FLASH_ANIM",
@@ -1660,10 +1660,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "wm_sound_which_pin_him",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "PIN_SPEED_TAB",
@@ -1690,10 +1690,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "PROC_MATCH_OVER",
+   "status": "renamed",
+   "evidence": "wm_announce_match_over_run",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "PUT_UP_PROGRESS",
@@ -1705,10 +1705,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "PUT_UP_PROGRESS",
+   "status": "display",
+   "evidence": "Builds the whole progress-ladder screen. Screen construction; the ladder state it draws is wm/pregame.h's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "QSNDRST",
@@ -2170,10 +2170,10 @@
    "local": false,
    "external_callers": 0,
    "references": 6,
-   "status": "cited",
-   "evidence": "SPECIAL_MESSAGE",
+   "status": "display",
+   "evidence": "The generic mid-match message object.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "SPECIAL_WIPEOUT",
@@ -2230,10 +2230,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "START_HI_FLASHES",
+   "status": "display",
+   "evidence": "Starts the flashers on the ladder's highlighted entries. Screen construction; the ladder state it draws is wm/pregame.h's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "STOP_ALL_OBJS",
@@ -2320,10 +2320,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "`CLR A0 / MOVE A0,@PSTATUS / movi INGAMEOVER,a14 / move a14,@GAMSTATE` then the game-over process. The state change is three stores; the screen it puts up is the rest of it. The decisions around it are translated elsewhere; the object creation and layout are the display layer's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "TVBP",
@@ -2545,10 +2545,10 @@
    "local": false,
    "external_callers": 1,
    "references": 2,
-   "status": "cited",
-   "evidence": "WHERE_WRESTLMANIA_SPARKLES",
+   "status": "display",
+   "evidence": "The sparkle positions on the WrestleMania logo.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "WIPEOUT",
@@ -3310,10 +3310,10 @@
    "local": false,
    "external_callers": 4,
    "references": 5,
-   "status": "cited",
-   "evidence": "arw_bwait",
+   "status": "display",
+   "evidence": "The arrow that waits for a button on the between-rounds screen.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "ask_belt_question",
@@ -3325,10 +3325,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "cited",
-   "evidence": "ask_belt_question",
+   "status": "display",
+   "evidence": "The 'which belt' prompt between ladder stages. Screen construction; the ladder state it draws is wm/pregame.h's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "attach_victim",
@@ -6925,10 +6925,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "buyin_counter",
+   "status": "renamed",
+   "evidence": "wm_select_continue_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "buyin_select",
@@ -6940,10 +6940,10 @@
    "local": false,
    "external_callers": 2,
    "references": 3,
-   "status": "cited",
-   "evidence": "buyin_select",
+   "status": "renamed",
+   "evidence": "wm_select_continue_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "c1v3_tbl",
@@ -7150,10 +7150,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "call_wrestler_name",
+   "status": "display",
+   "evidence": "Starts the announcer saying the name of the wrestler just chosen. The decisions around it are translated elsewhere; the object creation and layout are the display layer's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "can_pin",
@@ -8411,10 +8411,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "dan_test",
+   "status": "display",
+   "evidence": "A developer's test page, reachable only from the diagnostic menu. The attract sequence's order and timing are wm/arcade/wmania_attract_core.h's; these build the pages.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "dead_or_dying",
@@ -8666,10 +8666,10 @@
    "local": false,
    "external_callers": 0,
    "references": 4,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "Puts the small per-player marker objects up for whichever players PSTATUS says are in. The decisions around it are translated elsewhere; the object creation and layout are the display layer's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "display_dufus_message",
@@ -11877,10 +11877,10 @@
    "local": false,
    "external_callers": 1,
    "references": 6,
-   "status": "cited",
-   "evidence": "do_game_over",
+   "status": "renamed",
+   "evidence": "wm_app_start_game_over",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "do_ringout_dufus",
@@ -11922,10 +11922,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "Draws the royal-rumble versus screen from the two logo images index1 and index2 name. Screen construction; the ladder state it draws is wm/pregame.h's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "do_taunt",
@@ -12162,10 +12162,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "Creates the eight image pieces of a wrestler's mugshot into #MUG1..#MUG8 in the process's own PDATA. The decisions around it are translated elsewhere; the object creation and layout are the display layer's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "draw_pinspeed_table_entry",
@@ -12672,10 +12672,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "Deletes those eight, walking the same PDATA slots. The decisions around it are translated elsewhere; the object creation and layout are the display layer's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "execute_walk",
@@ -12987,10 +12987,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "Flashes the second-wind graphic, clearing M_FLIPH first and running wind_anim three times.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "flash_bar_icons",
@@ -13017,10 +13017,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "flash_it",
+   "status": "display",
+   "evidence": "Flashes one ladder object. Screen construction; the ladder state it draws is wm/pregame.h's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "flash_obj",
@@ -13032,10 +13032,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "flash_obj",
+   "status": "display",
+   "evidence": "Flashes any one object.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "flash_pcurs",
@@ -13047,10 +13047,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "Flashes a cursor on and off, indexing pcurs_obj by player. Screen construction; the ladder state it draws is wm/pregame.h's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "flash_red",
@@ -13497,10 +13497,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "partial",
+   "evidence": "wm_pregame_init",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "get_health",
@@ -13767,10 +13767,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "partial",
+   "evidence": "wm_pregame_init",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "get_start_cur",
@@ -14097,10 +14097,10 @@
    "local": false,
    "external_callers": 0,
    "references": 4,
-   "status": "cited",
-   "evidence": "hilight",
+   "status": "display",
+   "evidence": "Brightens the selected ladder entry by setting bit 1 of its OCTRL. Screen construction; the ladder state it draws is wm/pregame.h's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "hiptoss_delay",
@@ -18059,10 +18059,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "The individual-select variant of the ladder screen; clears p1sel/p2sel and runs the picker. Screen construction; the ladder state it draws is wm/pregame.h's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "init_all",
@@ -21839,10 +21839,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "`move @_switch_addr,a0,L / move @_switch2_addr,a1,L` then reads both switch ports, rotates the second into the high half and ANDs them -- the raw coin-door and service switch words, from I/O addresses this port does not have. wm/arcade/wm_arcade_switches.h carries what the game does with the switch values once read.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk_code1_1",
@@ -22079,10 +22079,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "Creates the progress-ladder cursor objects from pcurs_tbl. Screen construction; the ladder state it draws is wm/pregame.h's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "move_bam",
@@ -22409,8 +22409,8 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_obj_off",
    "from_generated": false,
    "ledgered": false
   },
@@ -22424,8 +22424,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_obj_on",
    "from_generated": false,
    "ledgered": false
   },
@@ -22469,10 +22469,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "octopus_page",
+   "status": "display",
+   "evidence": "Another of them. The attract sequence's order and timing are wm/arcade/wmania_attract_core.h's; these build the pages.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "one_spark",
@@ -22799,10 +22799,10 @@
    "local": false,
    "external_callers": 0,
    "references": 3,
-   "status": "cited",
-   "evidence": "palette_cycle",
+   "status": "display",
+   "evidence": "Cycles the ladder's palette while the screen is up. Screen construction; the ladder state it draws is wm/pregame.h's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "pan_around",
@@ -22874,10 +22874,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "pin_speed_in_case",
+   "status": "display",
+   "evidence": "Draws the pin-speed record into the trophy case on the select screen. The decisions around it are translated elsewhere; the object creation and layout are the display layer's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "place_cursor",
@@ -22889,10 +22889,10 @@
    "local": true,
    "external_callers": 0,
    "references": 3,
-   "status": "cited",
-   "evidence": "place_cursor",
+   "status": "display",
+   "evidence": "Positions a player's select cursor on the grid. The decisions around it are translated elsewhere; the object creation and layout are the display layer's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "player_cursor",
@@ -22904,10 +22904,10 @@
    "local": false,
    "external_callers": 0,
    "references": 5,
-   "status": "cited",
-   "evidence": "player_cursor",
+   "status": "display",
+   "evidence": "The cursor's own process: reads the stick, moves, and flashes. The decisions around it are translated elsewhere; the object creation and layout are the display layer's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "player_powerup_checker",
@@ -22934,10 +22934,10 @@
    "local": false,
    "external_callers": 1,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_plyr_start",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "plyr_strtb2",
@@ -22949,10 +22949,10 @@
    "local": false,
    "external_callers": 1,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_plyr_start",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "poll_sdav",
@@ -23024,10 +23024,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "pregame_show",
+   "status": "display",
+   "evidence": "The pregame screen's object setup. The decisions around it are translated elsewhere; the object creation and layout are the display layer's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "print_beaten",
@@ -23069,10 +23069,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "Prints the generic gameplay tips page from #gen_tip_mes. The attract sequence's order and timing are wm/arcade/wmania_attract_core.h's; these build the pages.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "print_hscores",
@@ -23564,10 +23564,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "replace_wins",
+   "status": "display",
+   "evidence": "Redraws the round-win markers.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "reset_dufus_msgs",
@@ -26807,8 +26807,8 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_scrn_rel_off",
    "from_generated": false,
    "ledgered": false
   },
@@ -26987,10 +26987,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "select_screen",
+   "status": "display",
+   "evidence": "The select screen's object setup. The decisions around it are translated elsewhere; the object creation and layout are the display layer's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "select_speech",
@@ -27182,10 +27182,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "Places a cursor at the rung its player is on; `btst 0,a9` picks the left or right column. Screen construction; the ladder state it draws is wm/pregame.h's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "set_pinable_bit",
@@ -30707,10 +30707,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "Prints the per-wrestler tips page. The attract sequence's order and timing are wm/arcade/wmania_attract_core.h's; these build the pages.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "show_wrestler_end_story",
@@ -30992,10 +30992,10 @@
    "local": false,
    "external_callers": 5,
    "references": 6,
-   "status": "cited",
-   "evidence": "start_credbox",
+   "status": "display",
+   "evidence": "Puts the credit box up.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "start_match",
@@ -34442,10 +34442,10 @@
    "local": false,
    "external_callers": 4,
    "references": 5,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "Redraws the credit message from @SHOW_CRD_FLAG.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "update_joy_dtime",
@@ -34518,10 +34518,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "Looks the chosen wrestler up through scramble_table and redraws his name plate. The decisions around it are translated elsewhere; the object creation and layout are the display layer's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "update_newfacing",
@@ -34623,10 +34623,10 @@
    "local": true,
    "external_callers": 0,
    "references": 2,
-   "status": "cited",
-   "evidence": "wait_but",
+   "status": "display",
+   "evidence": "Sleeps until a button is pressed or the page's time runs out. The attract sequence's order and timing are wm/arcade/wmania_attract_core.h's; these build the pages.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "wait_on_butn",
@@ -34713,10 +34713,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_match_time_ticks_to_hundredths",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "wres_collis_off",
@@ -37998,10 +37998,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "cited",
-   "evidence": "zero_combo_meter",
+   "status": "display",
+   "evidence": "Empties a player's combo meter graphic; the combo COUNT itself is wm/arcade/wm_arcade_combo.h's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "zip_award_bar",

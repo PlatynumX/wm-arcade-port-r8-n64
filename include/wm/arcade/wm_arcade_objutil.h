@@ -176,6 +176,62 @@ uint32_t wm_vol_to_ht(uint32_t volume);
  */
 uint32_t wm_form_crc32(const uint8_t *bytes, size_t count);
 
+
+/* ---- obj_on / obj_off (SELECT.ASM:2823, :2835) ------------------- */
+
+/*
+ * How the select screen hides an object: it does not touch a flag or
+ * unlink anything, it sets bit 10 of OYPOS.
+ *
+ *     obj_off:  move *a8(OYPOS),a0 / ori   400h,a0 / move a0,*a8(OYPOS)
+ *     obj_on:   move *a8(OYPOS),a0 / andni 400h,a0 / move a0,*a8(OYPOS)
+ *
+ * 400h is 1024, which on a 254-line screen is far enough below it
+ * that the object is simply never drawn. Two things follow from it
+ * being a BIT rather than an offset. It is idempotent -- hiding a
+ * hidden object does nothing -- which a plain `add 1024` would not
+ * be. And any object whose real Y already had bit 10 set would be
+ * shown by obj_off and hidden by obj_on; nothing on this screen sits
+ * below 1024, so it never comes up, but it is why this is a bit
+ * operation here and not an add.
+ */
+#define WM_OBJ_OFFSCREEN_BIT 0x400
+
+int16_t wm_obj_on(int16_t oypos);
+int16_t wm_obj_off(int16_t oypos);
+bool wm_obj_is_off(int16_t oypos);
+
+/* ---- scrn_rel_off (PROGRESS.ASM:1786) ---------------------------- */
+
+/*
+ * Walk the object list clearing M_SCRNREL, so everything left on
+ * screen scrolls with the world again instead of being pinned to the
+ * display. One object is spared:
+ *
+ *     move  *a14(OID),a3
+ *     cmpi  CREDITID|CLSDEAD,a3
+ *     jrz   #sro_loop
+ *
+ * -- the credit message, which has to stay pinned whatever the
+ * camera does. The test is an EXACT compare against the whole OID,
+ * not a masked one, so an object that merely shares the class is not
+ * spared.
+ */
+/* DISPLAY.EQU:115 `M_SCRNREL equ 2000h`. */
+#define WM_OFLAGS_M_SCRNREL 0x2000
+
+typedef struct {
+    uint16_t oid;
+    uint16_t oflags;
+} wm_obj_flags_t;
+
+/*
+ * `spare_oid` is CREDITID|CLSDEAD as the caller's constants spell
+ * it. Returns how many objects had the flag cleared.
+ */
+size_t wm_scrn_rel_off(wm_obj_flags_t *objs, size_t count,
+                       uint16_t spare_oid);
+
 #ifdef __cplusplus
 }
 #endif

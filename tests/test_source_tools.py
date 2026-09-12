@@ -38,6 +38,7 @@ wlwrsnd = load("wlwrsnd", ROOT / "tools" / "wlwrsnd.py")
 wlsound = load("wlsound", ROOT / "tools" / "wlsound.py")
 wlstorytext = load("wlstorytext", ROOT / "tools" / "wlstorytext.py")
 wlfirework = load("wlfirework", ROOT / "tools" / "wlfirework.py")
+wlcolcyc = load("wlcolcyc", ROOT / "tools" / "wlcolcyc.py")
 wlstring = load("wlstring", ROOT / "tools" / "wlstring.py")
 wlpal = load("wlpal", ROOT / "tools" / "wlpal.py")
 wlrostertbl = load("wlrostertbl", ROOT / "tools" / "wlrostertbl.py")
@@ -2494,6 +2495,70 @@ def test_story_text_generates_the_shipped_file() -> None:
     assert wlstorytext.emit_c(wlstorytext.read_stories(),
                            wlstorytext.read_mk3_tips(),
                            wlstorytext.read_mk3_codes()) == out.read_text()
+
+
+def test_colour_cycle_tables_read_out_of_the_source() -> None:
+    """COLTAB2 and COLTAB3, and the shape that makes them cycle.
+
+    CYCLE_TABLE restarts when the word it lands on is negative OR
+    equal to the table's first word, so the cycle length is the
+    distance to the next repeat of word zero and everything past
+    that is there only so the seven-colour window can be read from
+    the last position. The reader works the period out; these are
+    the properties it would refuse on.
+    """
+    if not (wlanim.ORIG / "HSTD.ASM").exists():
+        return
+
+    tables = wlcolcyc.read_all()
+    assert [c[0] for c, _t in tables] == ["hscore_colcyc", "hscore_colcyc2"]
+    for (routine, label, pal), (words, period) in tables:
+        assert len(words) == 78
+        assert period == 63
+        assert words[period] == words[0]
+        # Word zero appears nowhere inside the cycle.
+        assert words[0] not in words[1:period]
+        # Nothing inside the cycle has bit 15 set, or CYCLE_TABLE's
+        # JRN would restart there and the period would be wrong.
+        assert all((w & 0x8000) == 0 for w in words[:period])
+        # The tail covers the window.
+        assert len(words) - period >= wlcolcyc.CYCLE_COLORS - 1
+    # The two really are different palettes.
+    assert tables[0][1][0] != tables[1][1][0]
+
+
+def test_colour_cycle_tables_generate_the_shipped_file() -> None:
+    out = ROOT / "src" / "generated" / "colcyc_tables.c"
+    if not (wlanim.ORIG / "HSTD.ASM").exists() or not out.exists():
+        return
+    assert wlcolcyc.emit_c(wlcolcyc.read_all()) == out.read_text()
+
+
+def test_the_ledger_does_not_drop_underscore_names() -> None:
+    """A routine whose name starts with `_` must be ledgerable.
+
+    routine_map.json holds one non-entry, `_README`, and the loader
+    used to filter it by testing for a leading underscore. Five real
+    routines start with one -- _GetTime, _AlarmClock, _get_time,
+    _set_time and _aquire_time -- so an entry written for any of them
+    was dropped before it was read, and dropped silently: the ledger
+    said one thing and the coverage report said another, with nothing
+    to show they disagreed. The loader now filters on the shape.
+    """
+    ledger = port_coverage.load_ledger()
+    assert "_README" not in ledger
+    for name in ("_GetTime", "_AlarmClock", "_get_time", "_set_time",
+                 "_aquire_time"):
+        assert name in ledger, name
+        assert ledger[name]["status"]
+
+    # And the classification really sees them.
+    report = port_coverage.classify()
+    by_name = {r["name"]: r for r in report["routines"]}
+    for name in ("_GetTime", "_AlarmClock", "_get_time"):
+        if name in by_name:
+            assert by_name[name]["ledgered"], name
+            assert by_name[name]["status"] != "unknown", name
 
 
 def test_firework_tables_read_out_of_the_source() -> None:

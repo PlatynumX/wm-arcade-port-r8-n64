@@ -386,10 +386,30 @@ def _boundary_hits(name: str, pool: set[str]) -> list[str]:
 # the ledger
 
 def load_ledger() -> dict:
+    """The hand-written answers, minus the file's own prose.
+
+    The only non-entry in routine_map.json is `_README`, which is a
+    LIST of lines. Filtering on a leading underscore instead would
+    also drop `_GetTime`, `_AlarmClock`, `_get_time`, `_set_time`
+    and `_aquire_time` -- five real routines whose names start with
+    one -- and drop them SILENTLY, so a ledger entry for any of them
+    would read as written and never take effect. Filter on the shape
+    instead, and refuse anything that is neither.
+    """
     if not LEDGER.exists():
         return {}
     raw = json.loads(LEDGER.read_text())
-    return {k: v for k, v in raw.items() if not k.startswith("_")}
+    out = {}
+    for k, v in raw.items():
+        if isinstance(v, dict):
+            out[k] = v
+            continue
+        if k == "_README" and isinstance(v, list):
+            continue
+        raise SystemExit(
+            "port/routine_map.json: %r is neither an entry (an object) "
+            "nor the README (a list of lines)" % k)
+    return out
 
 
 # ------------------------------------------------------------------ #

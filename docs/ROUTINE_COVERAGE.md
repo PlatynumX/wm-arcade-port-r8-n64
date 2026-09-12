@@ -7,38 +7,28 @@ only in a note saying it is missing does not count as present.
 
 | status | meaning | count |
 |---|---|---|
-| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1957 |
-| `inlined` | the port does it, spelled out at each use site (ledger) | 11 |
-| `renamed` | the port does it under another name (ledger) | 142 |
+| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1963 |
+| `inlined` | the port does it, spelled out at each use site (ledger) | 13 |
+| `renamed` | the port does it under another name (ledger) | 152 |
 | `partial` | partly translated; the ledger note says which part | 19 |
-| `data` | a table, extracted by a tool (ledger) | 50 |
+| `data` | a table, extracted by a tool (ledger) | 52 |
 | `process` | a CREATE/SLEEP wrapper (ledger) | 22 |
-| `display` | object/DMA drawing; this port has no renderer (ledger) | 65 |
-| `hardware` | talks to the cabinet (ledger) | 28 |
+| `display` | object/DMA drawing; this port has no renderer (ledger) | 83 |
+| `hardware` | talks to the cabinet (ledger) | 67 |
 | `dead` | **measured**: no caller outside its own file | 37 |
 | `unassembled` | **measured**: inside a `.if` the assembler skipped | 64 |
-| `cited` | named only in a comment -- not evidence of anything | 37 |
-| `unknown` | no mention anywhere | 102 |
+| `cited` | named only in a comment -- not evidence of anything | 35 |
+| `unknown` | no mention anywhere | 27 |
 
-**2395 of 2534 routines are accounted for; 139 are open** (`cited` + `unknown`).
+**2472 of 2534 routines are accounted for; 62 are open** (`cited` + `unknown`).
 
 ## Open routines by file
 
 | file | open | routines |
 |---|---|---|
-| LIFEBAR.ASM | 19 | `DO_RIGHT_MUSIC`, `DO_RIGHT_MUSIC2`, `DO_ROUNDS`, `FIRSTATT_MESS`, `ICON_SPARKLE`, `MOVE_NAME_ANNC`, `PIN_FLASH_ANIM`, `SHIFT_BARS_IN_Z`, `SPECIAL_MESSAGE`, `WHERE_WRESTLMANIA_SPARKLES`, `arw_bwait`, `do_game_over`, ... |
-| HSTD.ASM | 19 | `PIN_SPEED_TAB`, `do_that_cycle`, `draw_beaten_table_entry`, `draw_each_beaten_table_entry`, `draw_each_inter_table_entry`, `draw_letter_grid`, `draw_pinspeed_table_entry`, `draw_tag_table_entry`, `draw_winstreak_table_entry`, `enter_initials_beaten`, `enter_initials_streak`, `enter_initials_top_20`, ... |
+| LIFEBAR.ASM | 17 | `DO_RIGHT_MUSIC`, `DO_RIGHT_MUSIC2`, `DO_ROUNDS`, `FIRSTATT_MESS`, `ICON_SPARKLE`, `MOVE_NAME_ANNC`, `PIN_FLASH_ANIM`, `SPECIAL_MESSAGE`, `WHERE_WRESTLMANIA_SPARKLES`, `arw_bwait`, `do_game_over`, `flash_2ndwind`, ... |
 | SELECT.ASM | 17 | `GAME_BEATEN`, `THIS_GAME_IS_BEATEN`, `buyin_counter`, `buyin_select`, `call_wrestler_name`, `display_croutons`, `draw_mugshot`, `erase_mugshot`, `obj_off`, `obj_on`, `pin_speed_in_case`, `place_cursor`, ... |
 | PROGRESS.ASM | 15 | `CREATE_URN`, `PUT_UP_PROGRESS`, `START_HI_FLASHES`, `ask_belt_question`, `do_rr_vs`, `flash_it`, `flash_pcurs`, `get_final_lineup`, `get_royal_lineup`, `hilight`, `ind_select`, `mk_pcurs`, ... |
-| MAIN.ASM | 14 | `AddressSet1`, `AddressSet2`, `AddressSet3`, `AddressSet4`, `INTIO`, `InitAddresses`, `InitPIC`, `SecFuncCheck`, `SetAddresses`, `WDOGDIS`, `_AlarmClock`, `init_all`, ... |
-| DISPLAY.ASM | 12 | `ANI`, `SPECIAL_DISPLAY_INIT`, `anipt_getxy`, `dma_irq`, `obj_addworldxy`, `scrn_copy`, `scrn_scale`, `scrn_scale140`, `scrn_scale180`, `scrn_scaledison`, `scrn_scalein`, `scrn_scaleout` |
-| UTIL.ASM | 10 | `ERASE_TXT`, `GETCPNT`, `STRCNRM_1`, `dirq_wait`, `dma_wait`, `dmaq_wait`, `dpageflip_off`, `obj_find`, `security_chk`, `system_savegame` |
 | ATTRACT.ASM | 9 | `GENERIC_DISPLAY`, `MAKE_UP_LOGO`, `ONE_BALL`, `dan_test`, `mk_a0`, `octopus_page`, `print_gen_tips`, `show_wres_tips`, `wait_but` |
-| MENU.ASM | 6 | `GetSoundRev`, `_GetTime`, `aud_prtone`, `background_sound`, `poll_sdav`, `vol_to_ht` |
-| DIAG.ASM | 4 | `_aquire_time`, `_get_time`, `_set_time`, `line_draw` |
-| MPROC.ASM | 3 | `IKIL1C`, `process_dispatch`, `process_init` |
-| AUDIT.ASM | 3 | `audit_ud`, `crd_updatetxt`, `form_crc32` |
-| TEST.ASM | 3 | `opmsg_clr`, `opmsg_main`, `print_multi` |
 | DCSSOUND.ASM | 2 | `CALL_MATCH_OVER`, `PROC_MATCH_OVER` |
 | WRESTLE.ASM | 2 | `plyr_strtb1`, `plyr_strtb2` |
-| SCREEN.ASM | 1 | `DRKTRPLTP` |

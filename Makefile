@@ -103,6 +103,8 @@ FIX38_ARCADE_C := \
     src/core/arcade/wm_arcade_scroll.c \
     src/core/arcade/wm_arcade_bgnd.c \
     src/core/arcade/wm_arcade_firework.c \
+    src/core/arcade/wm_arcade_objutil.c \
+    src/core/arcade/wm_arcade_colcyc.c \
     src/core/arcade/wm_arcade_sound.c \
     src/core/arcade/wm_arcade_story.c \
     src/core/arcade/wm_arcade_shake.c \
@@ -119,6 +121,7 @@ FIX38_ARCADE_C := \
     src/generated/smove_tables.c \
     src/generated/bgnd_modules.c \
     src/generated/firework_tables.c \
+    src/generated/colcyc_tables.c \
     src/generated/sound_table.c \
     src/generated/story_text.c \
     src/core/wrestler_taunt.c \

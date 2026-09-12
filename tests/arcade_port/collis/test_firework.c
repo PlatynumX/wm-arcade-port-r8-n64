@@ -311,19 +311,37 @@ static void test_flare_first_pass(void) {
     assert(f.x == 798 && f.y == 128);
     assert(f.palette == 3);
 
-    /* One delay tick, and the object appears. */
+    /* PRCSLP(1) spends a whole tick; the object appears on the
+       next one, not on it. */
+    assert(wm_fw_flare_tick(&f, false));
+    assert(!f.created);
+    assert(f.phase == WM_FW_FLARE_DELAY);
     assert(wm_fw_flare_tick(&f, false));
     assert(f.created);
     assert(f.phase == WM_FW_FLARE_RUN);
 
-    /* Thirteen images, two ticks apart, in order. */
-    for (i = 0; i < 200 && n < 13; ++i) {
-        if (!wm_fw_flare_tick(&f, false)) break;
-        if (f.changed) seen[n++] = f.frame;
-        if (f.phase == WM_FW_FLARE_LOOP) break;
+    /* The object is already showing image zero. */
+    assert(f.frame == 0);
+
+    /* Then twelve more, two ticks apart, in order. */
+    {
+        int last_change = -1;
+        for (i = 0; i < 200; ++i) {
+            if (!wm_fw_flare_tick(&f, false)) break;
+            /* The pass ends the moment the terminator sends it into
+               the loop, and that tick already shows the next pass's
+               first image -- so stop before recording it. */
+            if (f.phase != WM_FW_FLARE_RUN) break;
+            if (f.changed) {
+                if (last_change >= 0) assert(i - last_change == 2);
+                last_change = i;
+                assert(n < 13);
+                seen[n++] = f.frame;
+            }
+        }
     }
-    assert(n >= 13);
-    for (i = 0; i < 13; ++i) assert(seen[i] == i);
+    assert(n == 12);
+    for (i = 0; i < 12; ++i) assert(seen[i] == i + 1);
 }
 
 static void test_flare_loops_the_tail(void) {

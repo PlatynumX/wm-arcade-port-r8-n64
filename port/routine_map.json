@@ -1894,5 +1894,375 @@
   "status": "data",
   "symbol": "wm_fw_fwexa_anim",
   "note": "The two-entry table animate_fwexp picks an explosion from; the port takes the choice as wm_fw_explosion_t.which indexing wm_fw_fwexa_anim / wm_fw_fwexb_anim."
+ },
+ "AddressSet1": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "`movi COINS_M1,a0 / move a0,@_coin_addr,L` and the same for the switch, sound and counter addresses -- one of four I/O base-address maps the security chip selects between through trap 3. There is no coin door or PIC here."
+ },
+ "AddressSet2": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "See AddressSet1: the second I/O base-address map."
+ },
+ "AddressSet3": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "See AddressSet1: the third I/O base-address map."
+ },
+ "AddressSet4": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "See AddressSet1: the fourth I/O base-address map."
+ },
+ "SetAddresses": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "`move a0,a0 / jrn _invalid / cmpi 4,a0` then a jump into AddressSet1-4. The dispatcher for the I/O remap; nothing to remap here."
+ },
+ "InitAddresses": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "The default I/O base-address map (COINS, SWITCH and the rest at their unremapped addresses)."
+ },
+ "InitPIC": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "Initialises the PIC microcontroller that owns the coin door, the switches and the real-time clock. There is no PIC in this port."
+ },
+ "INTIO": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "`movi HESYNC,b2 / movi gspioinit_t,b0` -- loads the TMS34010's video timing registers from a table. The N64's video is libdragon's."
+ },
+ "SecFuncCheck": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "Walks SecFuncTable comparing each security-function entry point against its expected value, to catch a tampered security chip. Its first instruction in the shipped build is `rets`: the check is disabled. There is no security chip here either way."
+ },
+ "WDOGDIS": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "`.if TUNIT=0` around a write to the watchdog register. A hardware watchdog this port does not have."
+ },
+ "_AlarmClock": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "Called by the display interrupt when the RTC seconds roll over; walks ALARM_TAB firing whatever is due. The clock it reads is the PIC's."
+ },
+ "init_all": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "`dint / clr a0 / movi SCRATCH,a1` -- the cold-boot sweep of scratch RAM before anything else runs. The port's memory is the host's."
+ },
+ "switch_stack": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "Switches the 34010's stack pointer between the interrupt and main stacks based on GAMSTATE. No such thing here."
+ },
+ "trap3_handler": {
+  "file": "MAIN.ASM",
+  "status": "hardware",
+  "note": "The TMS34010 trap-3 vector, dispatching into _SecurityFunctions by index. A processor trap on hardware that is not being emulated."
+ },
+ "dma_irq": {
+  "file": "DISPLAY.ASM",
+  "status": "hardware",
+  "note": "The DMA completion interrupt service routine -- `move -*b14,-*b12,L` unwinding the B-file registers it saved. An interrupt handler for a blitter this port does not have."
+ },
+ "SPECIAL_DISPLAY_INIT": {
+  "file": "DISPLAY.ASM",
+  "status": "hardware",
+  "note": "`pushst / dint / movi DIE+X2E,a0` -- programs the video controller registers for the special display mode. Video setup is libdragon's."
+ },
+ "scrn_copy": {
+  "file": "DISPLAY.ASM",
+  "status": "hardware",
+  "note": "Copies one screen page to the other by writing the DMA controller's source and destination registers directly."
+ },
+ "scrn_scale": {
+  "file": "DISPLAY.ASM",
+  "status": "hardware",
+  "note": "Reads @scrnscl and branches to scrn_scale140 or scrn_scale180; both program the horizontal timing registers to stretch the display. A CRT trick with no N64 equivalent."
+ },
+ "scrn_scale140": {
+  "file": "DISPLAY.ASM",
+  "status": "hardware",
+  "note": "See scrn_scale: the 140h timing variant."
+ },
+ "scrn_scale180": {
+  "file": "DISPLAY.ASM",
+  "status": "hardware",
+  "note": "See scrn_scale: the 180h timing variant."
+ },
+ "scrn_scaledison": {
+  "file": "DISPLAY.ASM",
+  "status": "hardware",
+  "note": "Restores HEBLNK to HEBLNKINIT and reinstalls scrn_scale on the display interrupt."
+ },
+ "scrn_scalein": {
+  "file": "DISPLAY.ASM",
+  "status": "hardware",
+  "note": "Saves @HALT and drives the timing registers inward frame by frame."
+ },
+ "scrn_scaleout": {
+  "file": "DISPLAY.ASM",
+  "status": "hardware",
+  "note": "Sets @HALT and drives the timing registers back out. The other half of scrn_scalein."
+ },
+ "ANI": {
+  "file": "DISPLAY.ASM",
+  "status": "display",
+  "symbol": "wm_anim_program_step",
+  "note": "`cmpi ROM,a1 / jrlo anierr` then the object-animation dispatch. It validates that the script pointer is in ROM -- an address-space check on a memory map this port does not have -- and then walks an animation script whose opcodes are the ANI_* set already translated in wm/anim_program.h and wm/arcade/wm_arcade_anim_combat.h. The dispatch itself is the animation VM, which is ported; what is left here is the pointer validation."
+ },
+ "dirq_wait": {
+  "file": "UTIL.ASM",
+  "status": "hardware",
+  "note": "`move @dirqtimer,a0` then spins until the display interrupt has bumped it. A busy-wait on an interrupt this port does not take."
+ },
+ "dma_wait": {
+  "file": "UTIL.ASM",
+  "status": "hardware",
+  "note": "`move @DMACTRL,b0 / jrn dwlp` -- spins on the blitter's busy bit."
+ },
+ "dmaq_wait": {
+  "file": "UTIL.ASM",
+  "status": "hardware",
+  "note": "Blanks the display, waits for the DMA queue to drain, and unblanks. Same blitter."
+ },
+ "security_chk": {
+  "file": "UTIL.ASM",
+  "status": "hardware",
+  "note": "`clr a0 / movi 63,a3` then sixty-four challenge-response rounds against the security chip."
+ },
+ "system_savegame": {
+  "file": "UTIL.ASM",
+  "status": "hardware",
+  "note": "`movi sysstate_t,a1 / SSSL OBJLST / SSSL BAKLST` -- snapshots the object, background and process lists into a save block for the diagnostic menu's state save. A debug facility over the hardware lists."
+ },
+ "dpageflip_off": {
+  "file": "UTIL.ASM",
+  "status": "display",
+  "note": "`clr a0 / move a0,@dpageflip / not a0` -- clears the page-flip flag and returns its old value so a caller can put it back. One flag; the port renders single-buffered through libdragon and has no equivalent to restore."
+ },
+ "ERASE_TXT": {
+  "file": "UTIL.ASM",
+  "status": "inlined",
+  "symbol": "wm_obj_find",
+  "note": "`movi CLSNEUT|TYPTEXT|SUBTXT,a0 / jauc obj_del1c` -- two instructions, a constant and a tail call into the class delete. It is a named constant, not a routine."
+ },
+ "STRCNRM_1": {
+  "file": "UTIL.ASM",
+  "status": "display",
+  "note": "One of six four-instruction entry points into the shared string printer (STRLNRM, STRCNRM, STRRNRM and the rest): it loads DMAWNZ|M_NOCOLL, sets the justification code to 1 for centred, copies a6 into a5 for the multi-colour path and jumps to stringr1_1. The justification and colour handling are the text layer's; wm/arcade/wm_arcade_string.h carries the font metrics side."
+ },
+ "GetSoundRev": {
+  "file": "MENU.ASM",
+  "status": "hardware",
+  "note": "`move @_coin_counter_addr,a0,L / movi 030h,a1 / move a1,*a0,W` -- writes a command to the sound board and reads its revision back. A DCS board handshake."
+ },
+ "_GetTime": {
+  "file": "MENU.ASM",
+  "status": "hardware",
+  "note": "Reads the real-time clock through the PIC, with @_auto_update_save around it so the display interrupt does not race the read."
+ },
+ "poll_sdav": {
+  "file": "MENU.ASM",
+  "status": "hardware",
+  "note": "Polls the sound board's data-available line."
+ },
+ "aud_prtone": {
+  "file": "MENU.ASM",
+  "status": "hardware",
+  "note": "Prints one audit line to the ticket printer via BEGIN_AUDIT and the AUD_ROUTINE pointer in the audit table. A printer this port does not have."
+ },
+ "background_sound": {
+  "file": "MENU.ASM",
+  "status": "display",
+  "note": "The sound test's own noise loop: `clr a3 / calla SNDSND`, then sound_fx_table on a timer forever. It exists to make the operator's sound test audible and is not reachable from the game."
+ },
+ "_aquire_time": {
+  "file": "DIAG.ASM",
+  "status": "hardware",
+  "note": "`movi 011h,a0 / move a0,@PIC_COMMAND,W` -- asks the PIC to latch the current time."
+ },
+ "_get_time": {
+  "file": "DIAG.ASM",
+  "status": "hardware",
+  "note": "Copies the eight latched time bytes out of the PIC into _tseconds and its neighbours."
+ },
+ "_set_time": {
+  "file": "DIAG.ASM",
+  "status": "hardware",
+  "note": "Writes _rtc_seconds through _rtc_year back to the PIC. The operator's clock-setting screen."
+ },
+ "line_draw": {
+  "file": "DIAG.ASM",
+  "status": "hardware",
+  "note": "`ADDI SCRXFUDGE,A0 / move a2,COLOR1` then a Bresenham walk writing pixels straight into the frame buffer through the 34010's COLOR1 register and pixel-addressing modes. The diagnostic screen's line drawer."
+ },
+ "process_init": {
+  "file": "MPROC.ASM",
+  "status": "renamed",
+  "symbol": "wm_scheduler_init",
+  "note": "`movi ACTIVE,a13 / clr a0 / move a0,*a13,L` then two passes threading NPROC process records and SNPROC super-process records into their free lists. wm_scheduler_init does the same thing for the port's process pool; the free-list threading is an allocator detail of a fixed RAM block this port does not lay out the same way."
+ },
+ "process_dispatch": {
+  "file": "MPROC.ASM",
+  "status": "renamed",
+  "symbol": "wm_scheduler_step",
+  "note": "The cooperative scheduler's round: walk ACTIVE, decrement each process's PTIME, run the ones that reach zero. wm_scheduler_step is the same round. Its body opens `.if 0` around an ERASELOC debug write, which is not assembled."
+ },
+ "IKIL1C": {
+  "file": "MPROC.ASM",
+  "status": "inlined",
+  "symbol": "wm_process_kill",
+  "note": "`clr a1` and fall through into IKILALLN. One instruction: it is IKILALLN with an empty ignore mask, the indestructible-process twin of KIL1C/KILALLN. The port kills processes through wm_process_kill and has no indestructible flag for the variant to be about."
+ },
+ "audit_ud": {
+  "file": "AUDIT.ASM",
+  "status": "hardware",
+  "note": "`movi 1,a14 / move a14,@audit_ud_flag / move @GAMSTATE,a14` -- raises the flag that tells the rest of the game an audit update is in flight, then writes the accumulated counters back to CMOS. The counters are the port's; the CMOS write is not."
+ },
+ "crd_updatetxt": {
+  "file": "AUDIT.ASM",
+  "status": "display",
+  "note": "`movi CP_PID1,a0 / movi 0ffffh,a1 / calla KILALL` then redraws the credit-page text objects. The operator credit screen's own redraw."
+ },
+ "opmsg_clr": {
+  "file": "TEST.ASM",
+  "status": "hardware",
+  "note": "Clears the CUSTOM_MESSAGE buffer in CMOS, CMESS_LINES lines of it, from the operator message editor."
+ },
+ "opmsg_main": {
+  "file": "TEST.ASM",
+  "status": "hardware",
+  "note": "The operator message editor itself, opening `.if PRINTER` around a PBADGUY call. It edits the CMOS message the attract mode then displays; wm/arcade/wmania_attract_operator.h reads that message, it does not write it."
+ },
+ "print_multi": {
+  "file": "TEST.ASM",
+  "status": "display",
+  "note": "`move a8,a2 / calla LM_SETUP` -- the diagnostic menu's multi-line printer, laying a wrapped string out through the menu's own line-mode text setup."
+ },
+ "DRKTRPLTP": {
+  "file": "SCREEN.ASM",
+  "status": "data",
+  "note": "Not a routine at all: `.word 31` followed by thirty-two colour words -- a darkened palette table for the screen fade. The disassembly's label scan cannot tell a table from an entry point; this one is a table."
+ },
+ "hscore_colcyc": {
+  "file": "HSTD.ASM",
+  "status": "renamed",
+  "symbol": "wm_colcyc_tick",
+  "note": "Six instructions: `movi [10,7],a8 / movi BLUE,a9 / movi COLTAB2,a10 / movk 3,a11 / CREATE CYCPID,CYCLE_TABLE`. The cycler is UTIL.ASM:1174 CYCLE_TABLE and this is its argument list; wm_colcyc_tick is that loop and wm_colcyc_tables[0] carries these four arguments and COLTAB2's 78 words, read out by tools/wlcolcyc.py."
+ },
+ "hscore_colcyc2": {
+  "file": "HSTD.ASM",
+  "status": "renamed",
+  "symbol": "wm_colcyc_tick",
+  "note": "The same six instructions on RUBYPAL with COLTAB3. wm_colcyc_tables[1]."
+ },
+ "val_to_dec_tenths_asc": {
+  "file": "HSTD.ASM",
+  "status": "renamed",
+  "symbol": "wm_string_val_to_dec_tenths",
+  "note": "HSTD.ASM:1105. A hundredths value as `n.t`: dec_to_asc of value/100 with a 1000 cap, a \".\", then (value/10)%10 -- through dec_to_asc with a cap of 10 when it is non-zero, and as the ROM string \"0\" when it is, because dec_to_asc suppresses leading zeros and would contribute nothing. Already translated; the name only appears here in a comment."
+ },
+ "PIN_SPEED_TAB": {
+  "file": "HSTD.ASM",
+  "status": "data",
+  "symbol": "wm_hs_table",
+  "note": "One of the five high-score table DESCRIPTORS -- `.long origin / .word entries-1, visible, select bits / .long rom image / .word reset threshold` -- alongside STREAK_TAB and its siblings. The port's table descriptors are wmania_hiscore_factory.c's; the `visible` word is marked \"unused ?\" in the source itself."
+ },
+ "draw_pinspeed_table_entry": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "Draws one pin-speed row: initials at [Y,Xleft], the time at [Y,Xright] through val_to_dec_tenths_asc, in palette a11. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's."
+ },
+ "draw_beaten_table_entry": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "The same row draw for the games-beaten table. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's."
+ },
+ "draw_tag_table_entry": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "The same row draw for the tag table. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's."
+ },
+ "draw_winstreak_table_entry": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "The same row draw for the win-streak table. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's."
+ },
+ "draw_each_beaten_table_entry": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "Walks the beaten table calling draw_beaten_table_entry per visible row. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's."
+ },
+ "draw_each_inter_table_entry": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "Walks the intercontinental table the same way. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's."
+ },
+ "draw_letter_grid": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "Lays the A-Z entry grid out for the initials screen. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's."
+ },
+ "print_beaten": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "Puts the games-beaten page up: background, heading, then the rows. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's."
+ },
+ "print_inter": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "The intercontinental page. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's."
+ },
+ "print_tag": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "The tag page. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's."
+ },
+ "print_winstreaks": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "note": "The win-streak page. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's."
+ },
+ "enter_initials_top_20": {
+  "file": "HSTD.ASM",
+  "status": "renamed",
+  "symbol": "wm_hs_entry_tick",
+  "note": "The initials entry loop for the top-20 table. The three differ only in which table they write into and where the grid sits; the cursor movement, the button handling, the timeout and the dirty/empty rules are one loop, translated as wm_hs_entry_begin / wm_hs_entry_tick in wmania_hiscore_entry.c."
+ },
+ "enter_initials_beaten": {
+  "file": "HSTD.ASM",
+  "status": "renamed",
+  "symbol": "wm_hs_entry_tick",
+  "note": "The same loop for the games-beaten table. The three differ only in which table they write into and where the grid sits; the cursor movement, the button handling, the timeout and the dirty/empty rules are one loop, translated as wm_hs_entry_begin / wm_hs_entry_tick in wmania_hiscore_entry.c."
+ },
+ "enter_initials_streak": {
+  "file": "HSTD.ASM",
+  "status": "renamed",
+  "symbol": "wm_hs_entry_tick",
+  "note": "The same loop for the win-streak table. The three differ only in which table they write into and where the grid sits; the cursor movement, the button handling, the timeout and the dirty/empty rules are one loop, translated as wm_hs_entry_begin / wm_hs_entry_tick in wmania_hiscore_entry.c."
+ },
+ "do_that_cycle": {
+  "file": "HSTD.ASM",
+  "status": "display",
+  "symbol": "wm_colcyc_tick",
+  "note": "Starts the page's palette cyclers and the background, then sleeps out the page's dwell. The cycling itself is hscore_colcyc / hscore_colcyc2, now translated as wm_colcyc_tick; the page dwell and the object creation around it are the display layer's."
+ },
+ "SHIFT_BARS_IN_Z": {
+  "file": "LIFEBAR.ASM",
+  "status": "renamed",
+  "symbol": "wm_zflip_tick",
+  "note": "LIFEBAR.ASM:4039. A four-tick poll of WORLDTLY against ZFLIP_POS_VAR with one flag of hysteresis: at or above, every object whose OZPOS is in [bak_z, name_z] is pushed 1800h forward so the top rope cannot draw over the life bars; below, the same band -- offset by the shift -- is pushed back. wm_zflip_tick is the poll, wm_zflip_apply the object-list walk. The end of a round sets the threshold to ZFLIP_FOR_SURE (0F0F00000h), a value no camera position can be below, which is how the bars are forced forward for the winner's announcement without a second code path."
+ },
+ "rewire_monitor": {
+  "file": "LIFEBAR.ASM",
+  "status": "renamed",
+  "symbol": "wm_rewire_tick",
+  "note": "LIFEBAR.ASM:880. Three different loops behind one name, chosen once at startup: buddy (two displays, each following a human or his dead partner's stand-in), rumble (one display alternating between a pair, holding each for TSEC*4/10 POLLS -- a8 is decremented once per SLOOP, not once per tick -- and refusing to toggle onto a dead wrestler), and normal (the display follows the human's CLOSEST_NUM, with #LATENCY = TSEC/2 of debounce that is waived when the wrestler being SHOWN is dead, which is what the source's own comment says). Two exits before any of it: PSTATUS == 3 and NUM_OPPS == 1. wm_rewire_mode is the branch, wm_rewire_tick the loops; rewire_meter itself -- which rebuilds the meter graphics -- is the display layer's, and the monitor reports the (display, wrestler) pairs it would call it with."
  }
 }

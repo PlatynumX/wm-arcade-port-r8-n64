@@ -25,10 +25,10 @@
    "local": false,
    "external_callers": 4,
    "references": 4,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "wm_anim_program_step",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "ANNOUNCE_VOICE",
@@ -85,10 +85,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "`movi COINS_M1,a0 / move a0,@_coin_addr,L` and the same for the switch, sound and counter addresses -- one of four I/O base-address maps the security chip selects between through trap 3. There is no coin door or PIC here.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "AddressSet2",
@@ -100,10 +100,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "See AddressSet1: the second I/O base-address map.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "AddressSet3",
@@ -115,10 +115,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "See AddressSet1: the third I/O base-address map.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "AddressSet4",
@@ -130,10 +130,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "See AddressSet1: the fourth I/O base-address map.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "BAMBLU_P",
@@ -970,10 +970,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "Not a routine at all: `.word 31` followed by thirty-two colour words -- a darkened palette table for the screen fade. The disassembly's label scan cannot tell a table from an entry point; this one is a table.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "END_MATCH_SPEECH",
@@ -1000,10 +1000,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "inlined",
+   "evidence": "wm_obj_find",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "FIND_LOW_TABLE_LEVEL",
@@ -1075,8 +1075,8 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_obj_getcpnt",
    "from_generated": false,
    "ledgered": false
   },
@@ -1120,10 +1120,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "`move @_coin_counter_addr,a0,L / movi 030h,a1 / move a1,*a0,W` -- writes a command to the sound board and reads its revision back. A DCS board handshake.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "HORZ_SHAKER2",
@@ -1285,10 +1285,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "inlined",
+   "evidence": "wm_process_kill",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "IKILALLN",
@@ -1360,10 +1360,10 @@
    "local": false,
    "external_callers": 2,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "`movi HESYNC,b2 / movi gspioinit_t,b0` -- loads the TMS34010's video timing registers from a table. The N64's video is libdragon's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "InitAddresses",
@@ -1375,10 +1375,10 @@
    "local": false,
    "external_callers": 4,
    "references": 6,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "The default I/O base-address map (COINS, SWITCH and the rest at their unremapped addresses).",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "InitPIC",
@@ -1390,10 +1390,10 @@
    "local": false,
    "external_callers": 6,
    "references": 8,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "Initialises the PIC microcontroller that owns the coin door, the switches and the real-time clock. There is no PIC in this port.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "JUDDER_SHADOW",
@@ -1675,10 +1675,10 @@
    "local": false,
    "external_callers": 2,
    "references": 4,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "wm_hs_table",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "PROC_MATCH_OVER",
@@ -2005,10 +2005,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_zflip_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "SHNBLU_P",
@@ -2155,10 +2155,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "`pushst / dint / movi DIE+X2E,a0` -- programs the video controller registers for the special display mode. Video setup is libdragon's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "SPECIAL_MESSAGE",
@@ -2260,10 +2260,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "One of six four-instruction entry points into the shared string printer (STRLNRM, STRCNRM, STRRNRM and the rest): it loads DMAWNZ|M_NOCOLL, sets the justification code to 1 for centred, copies a6 into a5 for the multi-colour path and jumps to stringr1_1. The justification and colour handling are the text layer's; wm/arcade/wm_arcade_string.h carries the font metrics side.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "STRLNRMO_1",
@@ -2290,10 +2290,10 @@
    "local": false,
    "external_callers": 1,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "Walks SecFuncTable comparing each security-function entry point against its expected value, to catch a tampered security chip. Its first instruction in the shipped build is `rets`: the check is disabled. There is no security chip here either way.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "SetAddresses",
@@ -2305,10 +2305,10 @@
    "local": false,
    "external_callers": 0,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "`move a0,a0 / jrn _invalid / cmpi 4,a0` then a jump into AddressSet1-4. The dispatcher for the I/O remap; nothing to remap here.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "THIS_GAME_IS_BEATEN",
@@ -2530,10 +2530,10 @@
    "local": false,
    "external_callers": 6,
    "references": 6,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "`.if TUNIT=0` around a write to the watchdog register. A hardware watchdog this port does not have.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "WHERE_WRESTLMANIA_SPARKLES",
@@ -2725,10 +2725,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "Called by the display interrupt when the RTC seconds roll over; walks ALARM_TAB firing whatever is due. The clock it reads is the PIC's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "_GetTime",
@@ -2740,10 +2740,10 @@
    "local": false,
    "external_callers": 1,
    "references": 6,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "Reads the real-time clock through the PIC, with @_auto_update_save around it so the display interrupt does not race the read.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "_aquire_time",
@@ -2755,10 +2755,10 @@
    "local": false,
    "external_callers": 2,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "`movi 011h,a0 / move a0,@PIC_COMMAND,W` -- asks the PIC to latch the current time.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "_get_time",
@@ -2770,10 +2770,10 @@
    "local": false,
    "external_callers": 2,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "Copies the eight latched time bytes out of the PIC into _tseconds and its neighbours.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "_set_time",
@@ -2785,10 +2785,10 @@
    "local": false,
    "external_callers": 1,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "Writes _rtc_seconds through _rtc_year back to the PIC. The operator's clock-setting screen.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "accumulate_awards",
@@ -3190,8 +3190,8 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_anipt_getxy",
    "from_generated": false,
    "ledgered": false
   },
@@ -3400,10 +3400,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "Prints one audit line to the ticket printer via BEGIN_AUDIT and the AUD_ROUTINE pointer in the audit table. A printer this port does not have.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "audit_icons",
@@ -3430,10 +3430,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "`movi 1,a14 / move a14,@audit_ud_flag / move @GAMSTATE,a14` -- raises the flag that tells the rest of the game an audit update is in flight, then writes the accumulated counters back to CMOS. The counters are the port's; the CMOS write is not.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "audit_wrestler",
@@ -3520,10 +3520,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "The sound test's own noise loop: `clr a3 / calla SNDSND`, then sound_fx_table on a timer forever. It exists to make the operator's sound test audible and is not reachable from the game.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "bam_2_bncoff_anim",
@@ -8186,10 +8186,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "`movi CP_PID1,a0 / movi 0ffffh,a1 / calla KILALL` then redraws the credit-page text objects. The operator credit screen's own redraw.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "create_bucket_salt",
@@ -8591,10 +8591,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "`move @dirqtimer,a0` then spins until the display interrupt has bumped it. A busy-wait on an interrupt this port does not take.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "disappear_wrestler",
@@ -8801,10 +8801,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "The DMA completion interrupt service routine -- `move -*b14,-*b12,L` unwinding the B-file registers it saved. An interrupt handler for a blitter this port does not have.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "dma_wait",
@@ -8816,10 +8816,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "`move @DMACTRL,b0 / jrn dwlp` -- spins on the blitter's busy bit.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "dmaq_wait",
@@ -8831,10 +8831,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "Blanks the display, waits for the DMA queue to drain, and unblanks. Same blitter.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "dnk_2_bigboot_anim",
@@ -11952,10 +11952,10 @@
    "local": false,
    "external_callers": 5,
    "references": 5,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "wm_colcyc_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "do_tune_commands",
@@ -12042,10 +12042,10 @@
    "local": false,
    "external_callers": 4,
    "references": 5,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "`clr a0 / move a0,@dpageflip / not a0` -- clears the page-flip flag and returns its old value so a caller can put it back. One flag; the port renders single-buffered through libdragon and has no equivalent to restore.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "draw_beaten_table_entry",
@@ -12057,10 +12057,10 @@
    "local": false,
    "external_callers": 0,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "The same row draw for the games-beaten table. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "draw_combo_meter",
@@ -12117,10 +12117,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "Walks the beaten table calling draw_beaten_table_entry per visible row. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "draw_each_inter_table_entry",
@@ -12132,10 +12132,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "Walks the intercontinental table the same way. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "draw_letter_grid",
@@ -12147,10 +12147,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "Lays the A-Z entry grid out for the initials screen. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "draw_mugshot",
@@ -12177,10 +12177,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "Draws one pin-speed row: initials at [Y,Xleft], the time at [Y,Xright] through val_to_dec_tenths_asc, in palette a11. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "draw_tag_table_entry",
@@ -12192,10 +12192,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "The same row draw for the tag table. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "draw_winstreak_table_entry",
@@ -12207,10 +12207,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "The same row draw for the win-streak table. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "drn_climbtb",
@@ -12627,10 +12627,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_hs_entry_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "enter_initials_streak",
@@ -12642,10 +12642,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_hs_entry_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "enter_initials_top_20",
@@ -12657,10 +12657,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_hs_entry_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "erase_mugshot",
@@ -13122,8 +13122,8 @@
    "local": false,
    "external_callers": 1,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_form_crc32",
    "from_generated": false,
    "ledgered": false
   },
@@ -17892,10 +17892,10 @@
    "local": false,
    "external_callers": 6,
    "references": 9,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_colcyc_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "hscore_colcyc2",
@@ -17907,10 +17907,10 @@
    "local": false,
    "external_callers": 4,
    "references": 7,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_colcyc_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "hyper_match_powerup_check",
@@ -18074,10 +18074,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "`dint / clr a0 / movi SCRATCH,a1` -- the cold-boot sweep of scratch RAM before anything else runs. The port's memory is the host's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "init_joy_dtime",
@@ -21374,10 +21374,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "`ADDI SCRXFUDGE,A0 / move a2,COLOR1` then a Bresenham walk writing pixels straight into the frame buffer through the 34010's COLOR1 register and pixel-addressing modes. The diagnostic screen's line drawer.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "link_check",
@@ -22349,8 +22349,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_obj_addworldxy",
    "from_generated": false,
    "ledgered": false
   },
@@ -22394,8 +22394,8 @@
    "local": false,
    "external_callers": 0,
    "references": 7,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_obj_find",
    "from_generated": false,
    "ledgered": false
   },
@@ -22499,10 +22499,10 @@
    "local": false,
    "external_callers": 1,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "Clears the CUSTOM_MESSAGE buffer in CMOS, CMESS_LINES lines of it, from the operator message editor.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "opmsg_main",
@@ -22514,10 +22514,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "The operator message editor itself, opening `.if PRINTER` around a PBADGUY call. It edits the CMOS message the attract mode then displays; wm/arcade/wmania_attract_operator.h reads that message, it does not write it.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "overlap_collision",
@@ -22964,10 +22964,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "Polls the sound board's data-available line.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "poll_sirq",
@@ -23039,10 +23039,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "Puts the games-beaten page up: background, heading, then the rows. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "print_congrats",
@@ -23114,10 +23114,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "The intercontinental page. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "print_message",
@@ -23144,10 +23144,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "`move a8,a2 / calla LM_SETUP` -- the diagnostic menu's multi-line printer, laying a wrapped string out through the menu's own line-mode text setup.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "print_story",
@@ -23264,10 +23264,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "cited",
-   "evidence": "print_tag",
+   "status": "display",
+   "evidence": "The tag page. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "print_winstreaks",
@@ -23279,10 +23279,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "The win-streak page. The row selection and ordering are wmania_hiscore_present.h's wm_hs_present_rows; what is left here is the object creation and the font and palette choices, which are the text layer's.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "process_dispatch",
@@ -23294,10 +23294,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_scheduler_step",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "process_init",
@@ -23309,10 +23309,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_scheduler_init",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "prog_specials",
@@ -23684,10 +23684,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_rewire_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "ring_bell",
@@ -26792,10 +26792,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "Copies one screen page to the other by writing the DMA controller's source and destination registers directly.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "scrn_rel_off",
@@ -26822,10 +26822,10 @@
    "local": false,
    "external_callers": 0,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "Reads @scrnscl and branches to scrn_scale140 or scrn_scale180; both program the horizontal timing registers to stretch the display. A CRT trick with no N64 equivalent.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "scrn_scale140",
@@ -26837,10 +26837,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "See scrn_scale: the 140h timing variant.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "scrn_scale180",
@@ -26852,10 +26852,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "See scrn_scale: the 180h timing variant.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "scrn_scaledison",
@@ -26867,10 +26867,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "Restores HEBLNK to HEBLNKINIT and reinstalls scrn_scale on the display interrupt.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "scrn_scalein",
@@ -26882,10 +26882,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "Saves @HALT and drives the timing registers inward frame by frame.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "scrn_scaleininit",
@@ -26912,10 +26912,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "Sets @HALT and drives the timing registers back out. The other half of scrn_scalein.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "scroll_world",
@@ -26957,10 +26957,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "`clr a0 / movi 63,a3` then sixty-four challenge-response rounds against the security chip.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "select_clock",
@@ -31142,10 +31142,10 @@
    "local": false,
    "external_callers": 0,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "Switches the 34010's stack pointer between the interrupt and main stacks based on GAMSTATE. No such thing here.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "switch_unstack",
@@ -31172,10 +31172,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "`movi sysstate_t,a1 / SSSL OBJLST / SSSL BAKLST` -- snapshots the object, background and process lists into a save block for the diagnostic menu's state save. A debug facility over the hardware lists.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "table_cmos_check",
@@ -31352,10 +31352,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "The TMS34010 trap-3 vector, dispatching into _SecurityFunctions by index. A processor trap on hardware that is not being emulated.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "triple_sound",
@@ -34578,10 +34578,10 @@
    "local": false,
    "external_callers": 0,
    "references": 3,
-   "status": "cited",
-   "evidence": "val_to_dec_tenths_asc",
+   "status": "renamed",
+   "evidence": "wm_string_val_to_dec_tenths",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "vol_bar_line",
@@ -34608,8 +34608,8 @@
    "local": false,
    "external_callers": 0,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_vol_to_ht",
    "from_generated": false,
    "ledgered": false
   },

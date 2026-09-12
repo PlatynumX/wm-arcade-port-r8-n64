@@ -172,12 +172,13 @@ bool wm_fw_pan_tick(wm_fw_pan_t *p, bool royal_rumble, bool is_8_on_1) {
     for (;;) {
         switch (p->phase) {
         case WM_FW_PAN_START:
-            /* `SLEEP TSEC/2` before the camera is even read. */
+            /* `SLEEP TSEC/2` before the camera is even read. A
+               sleep tick is the whole tick; what follows a SLEEP
+               runs on the tick AFTER the last one. */
             if (p->timer > 0) {
                 if (spent) return true;
                 p->timer--;
-                spent = true;
-                continue;
+                return true;
             }
             p->waypoint = 0;
             load_waypoint(p);
@@ -201,11 +202,11 @@ bool wm_fw_pan_tick(wm_fw_pan_t *p, bool royal_rumble, bool is_8_on_1) {
             continue;
 
         case WM_FW_PAN_TEXT_DELAY:
+            /* `SLEEPK 5`, then print_congrats on the tick after. */
             if (p->timer > 0) {
                 if (spent) return true;
                 p->timer--;
-                spent = true;
-                continue;
+                return true;
             }
             /* The three-way choice, then `callr print_congrats`. */
             p->congrats_set = wm_fw_congrats_index(royal_rumble, is_8_on_1);
@@ -215,11 +216,11 @@ bool wm_fw_pan_tick(wm_fw_pan_t *p, bool royal_rumble, bool is_8_on_1) {
             continue;
 
         case WM_FW_PAN_TEXT_HOLD:
+            /* `SLEEPK 2` before #text_is_up. */
             if (p->timer > 0) {
                 if (spent) return true;
                 p->timer--;
-                spent = true;
-                continue;
+                return true;
             }
             advance_segment(p);
             continue;
@@ -261,8 +262,13 @@ void wm_fw_flare_begin(wm_fw_flare_t *f, wm_fw_point_t pos,
 }
 
 bool wm_fw_flare_tick(wm_fw_flare_t *f, bool fizzle) {
-    bool spent = false;
-
+    /*
+     * Sleep, then act. A SLEEPK consumes whole ticks and the
+     * instruction after it runs on the tick the process resumes --
+     * which is also the first tick of the NEXT sleep, so an image
+     * change and a sleep tick share a frame and the spacing comes
+     * out at exactly the SLEEPK's count.
+     */
     if (!f) return false;
     f->changed = false;
 
@@ -271,63 +277,70 @@ bool wm_fw_flare_tick(wm_fw_flare_t *f, bool fizzle) {
         case WM_FW_FLARE_DELAY:
             /* `PRCSLP` with a0 = 1..26. */
             if (f->timer > 0) {
-                if (spent) return true;
                 f->timer--;
-                spent = true;
-                if (f->timer > 0) return true;
+                return true;
             }
-            /* BEGINOBJP with the first image of #flare_anim. */
+            /*
+             * `movi #flare_anim,a9 / move *a9+,a2,L` then BEGINOBJP:
+             * the object is created showing image ZERO with the
+             * cursor already past it, so the animation loop's first
+             * image is index one. `#flare_loop: SLEEPK 2` follows
+             * immediately, on this same tick.
+             */
             f->created = true;
-            f->at = 0;
+            f->at = 1;
             f->frame = 0;
+            f->timer = WM_FW_FLARE_STEP_TICKS;
             f->phase = WM_FW_FLARE_RUN;
             continue;
 
         case WM_FW_FLARE_RUN:
         case WM_FW_FLARE_LOOP:
             /* `#flare_loop: SLEEPK 2 / #fl_loop: move *a9+,a0,L`. */
-            if (spent) return true;
-            spent = true;
-            f->timer = WM_FW_FLARE_STEP_TICKS;
-            if ((size_t)f->at < wm_fw_flare_anim_count) {
-                f->frame = f->at;
-                f->at++;
-                f->changed = true;
+            if (f->timer > 0) {
+                f->timer--;
                 return true;
             }
-            /*
-             * `#reset_flare`. Reached with no sleep of its own --
-             * `jruc #fl_loop` lands past the SLEEPK -- so the first
-             * image of the next pass shows on this same tick.
-             */
-            if (fizzle) {
-                f->phase = WM_FW_FLARE_FIZZLE;
+            if ((size_t)f->at >= wm_fw_flare_anim_count) {
+                /*
+                 * `#reset_flare`, reached with no sleep of its own:
+                 * `jruc #fl_loop` lands PAST the SLEEPK, so the
+                 * first image of the next pass shows on this tick.
+                 */
+                if (fizzle) {
+                    f->phase = WM_FW_FLARE_FIZZLE;
+                    f->at = WM_FW_FLARE_ANIM2;
+                    f->timer = WM_FW_FLARE_FIZZLE_TICKS;
+                    continue;
+                }
+                f->phase = WM_FW_FLARE_LOOP;
                 f->at = WM_FW_FLARE_ANIM2;
-                continue;
             }
-            f->at = WM_FW_FLARE_ANIM2;
-            f->phase = WM_FW_FLARE_LOOP;
             f->frame = f->at;
             f->at++;
             f->changed = true;
-            return true;
+            f->timer = WM_FW_FLARE_STEP_TICKS;
+            continue;
 
         case WM_FW_FLARE_FIZZLE:
             /*
-             * `#ff_loop: SLEEPK 4 / cmpi #flare_anim,a9 / jrz #ff_exit
-             * / move -*a9,a0,L`. Pre-decrement, so it plays index 4
-             * down to 0 and then exits on the comparison.
+             * `#ff_loop: SLEEPK 4 / cmpi #flare_anim,a9 / jrz
+             * #ff_exit / move -*a9,a0,L`. Pre-decrement, so it plays
+             * index 4 down to 0 and exits on the comparison.
              */
-            if (spent) return true;
-            spent = true;
+            if (f->timer > 0) {
+                f->timer--;
+                return true;
+            }
             if (f->at == 0) {
                 f->phase = WM_FW_FLARE_DEAD;   /* DELOBJA8 / DIE */
-                return true;
+                continue;
             }
             f->at--;
             f->frame = f->at;
             f->changed = true;
-            return true;
+            f->timer = WM_FW_FLARE_FIZZLE_TICKS;
+            continue;
 
         case WM_FW_FLARE_DEAD:
         default:

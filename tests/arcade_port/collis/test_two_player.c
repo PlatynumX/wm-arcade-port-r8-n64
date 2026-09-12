@@ -387,6 +387,115 @@ static void test_per_player_input_routing(void) {
     assert(m.player_input_set[0] && !m.player_input_set[1]);
 }
 
+
+static void test_rumble_uses_set0_rows_and_clock(void) {
+    wm_match_state m;
+
+    wm_match_init(&m);
+    rng_reset();
+    wm_match_start_two_player(&m, &RNG, 3, 0, 1, true, 0, 0);
+    assert(m.royal_rumble);
+    assert(m.actors[0].x_int == 1074 - 85);
+    assert(m.actors[0].z_int == 1127 + 93);
+    assert(m.actors[0].facing_dir == WM_MOVE_UP_RIGHT);
+    /* P2 is also side zero in a rumble, therefore team0 row 1. */
+    assert(m.actors[1].x_int == 1074 - 150);
+    assert(m.actors[1].z_int == 1127 + 170);
+    assert(m.actors[1].facing_dir == WM_MOVE_UP_RIGHT);
+    assert(m.clock.rate == wm_match_clock_rate(
+        WM_MATCH_CLOCK_ADJSPEED_DEFAULT, true, false, false));
+
+    wm_match_init(&m);
+    rng_reset();
+    wm_match_start_two_player(&m, &RNG, 3, 0, 1, true, 128, 128);
+    assert(m.actor_count == 4);
+    /* Creation order + side count: side0 rows 0,1,2; side1 row0. */
+    assert(m.actors[2].x_int == 1074 - 20);
+    assert(m.actors[2].z_int == 1127 + 16);
+    assert(m.actors[2].facing_dir == WM_MOVE_DOWN_RIGHT);
+    assert(m.actors[3].x_int == 1074 + 85);
+    assert(m.actors[3].z_int == 1103 + 93);
+    assert(m.actors[3].facing_dir == WM_MOVE_DOWN_LEFT);
+}
+
+static void test_one_player_can_be_p2(void) {
+    wm_match_state m;
+    wm_match_init(&m);
+    rng_reset();
+    wm_match_start_one_player(&m, &RNG, 2, 0, 4);
+    assert(m.pstatus == 2);
+    assert(!m.royal_rumble);
+    assert(m.actor_count == 2);
+    assert(m.actor_is_human[0]);
+    assert(m.actors[0].plyr_type == WM_PTYPE_PLAYER);
+    assert(m.actors[0].player_num == 1);
+    assert(m.actors[0].player_side == 1);
+    assert(m.actors[0].wrestler_num == 4);
+    assert(m.actors[1].plyr_type == WM_PTYPE_DRONE);
+    assert(m.actors[1].player_side == 0);
+}
+
+static void test_match_end_keeps_two_player_pstatus(void) {
+    wm_match_state m;
+    unsigned i;
+    wm_match_init(&m);
+    rng_reset();
+    wm_match_start_two_player(&m, &RNG, 3, 0, 1, false, 0, 0);
+    m.streaks.p1winstreak = 4;
+    m.streaks.p2winstreak = 1;
+    m.score.p1rounds = 0;
+    m.score.p2rounds = 2;
+    m.score.match_winner = 2;
+    wm_match_end_start(&m.match_end);
+    for (i = 0; i < 1000 && !m.match_over; ++i)
+        wm_match_tick(&m, NULL, NULL);
+    assert(m.match_over);
+    assert(m.streaks.p1winstreak == 0);
+    assert(m.streaks.p2winstreak == 2);
+}
+
+static void test_app_postgame_preserves_winner_bit(void) {
+    wm_app app;
+    wm_input_state p1, p2;
+    memset(&p1, 0, sizeof p1);
+    memset(&p2, 0, sizeof p2);
+
+    wm_app_init(&app);
+    app.mode = WM_APP_MODE_MATCH_OVER;
+    app.match.pstatus = 3;
+    app.match_pstatus = 3;
+    app.last_match_winner = 1;
+    app.select.selected_source_wrestler = 0;
+    app.select.p2_selected_source_wrestler = 4;
+    wm_app_tick_dual(&app, &p1, &p2);
+    assert(app.mode == WM_APP_MODE_CONTINUE);
+    assert(app.match_pstatus == 1);
+    assert(app.continue_select.player == 1);
+
+    wm_app_init(&app);
+    app.mode = WM_APP_MODE_MATCH_OVER;
+    app.match.pstatus = 3;
+    app.match_pstatus = 3;
+    app.last_match_winner = 2;
+    app.select.selected_source_wrestler = 0;
+    app.select.p2_selected_source_wrestler = 4;
+    app.p2_choice = WM_WRESTLER_SHAWN;
+    wm_app_tick_dual(&app, &p1, &p2);
+    assert(app.mode == WM_APP_MODE_CONTINUE);
+    assert(app.match_pstatus == 2);
+    assert(app.continue_select.player == 0);
+
+    /* With only P2 left, MATCH_INIT must take #1plyr, not #2plyr. */
+    app.mode = WM_APP_MODE_MATCH_INIT;
+    wm_app_tick_dual(&app, &p1, &p2);
+    assert(app.mode == WM_APP_MODE_MATCH);
+    assert(app.match.pstatus == 2);
+    assert(app.match.actor_count == 2);
+    assert(app.match.actor_is_human[0]);
+    assert(app.match.actors[0].player_num == 1);
+    assert(app.match.actors[0].wrestler_num == 4);
+}
+
 int main(void) {
     test_get_rnd_wrestler();
     test_choose_buddies();
@@ -396,6 +505,10 @@ int main(void) {
     test_buddy_mode_needs_both();
     test_buddy_mode_creates_four();
     test_rumble_does_not_move_the_buddies();
+    test_rumble_uses_set0_rows_and_clock();
+    test_one_player_can_be_p2();
+    test_match_end_keeps_two_player_pstatus();
+    test_app_postgame_preserves_winner_bit();
     test_partner_is_not_an_opponent();
     test_per_player_input_routing();
     test_app_reaches_two_player();

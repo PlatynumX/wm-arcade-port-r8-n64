@@ -135,6 +135,11 @@ typedef struct {
      */
     int32_t pstatus;
 
+    /* WRESTLE.ASM @royal_rumble. start_match, match_timer and
+       animation-code gates all read the same global, so it stays
+       match state instead of being consumed only during creation. */
+    bool royal_rumble;
+
     /*
      * Which actors a human is driving, and each one's committed-input
      * edge state. In #2plyr both of the first two are humans; in
@@ -463,6 +468,13 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng);
  * Creates two actors, or four with buddy mode on; actor_count says
  * which.
  */
+/* WRESTLE.ASM #1plyr for either legal one-human PSTATUS.
+ * pstatus==1 creates P1 from index1; pstatus==2 creates P2 from
+ * index2. The enemy drone is assigned to the opposite side. */
+void wm_match_start_one_player(wm_match_state *m, WmRng *rng,
+                               int32_t pstatus,
+                               uint8_t index1, uint8_t index2);
+
 void wm_match_start_two_player(wm_match_state *m, WmRng *rng,
                                int32_t pstatus,
                                uint8_t index1, uint8_t index2,

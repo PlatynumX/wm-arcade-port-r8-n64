@@ -36,6 +36,7 @@ wlroll = load("wlroll", ROOT / "tools" / "wlroll.py")
 wlvoice = load("wlvoice", ROOT / "tools" / "wlvoice.py")
 wlwrsnd = load("wlwrsnd", ROOT / "tools" / "wlwrsnd.py")
 wlsound = load("wlsound", ROOT / "tools" / "wlsound.py")
+wlstorytext = load("wlstorytext", ROOT / "tools" / "wlstorytext.py")
 wlstring = load("wlstring", ROOT / "tools" / "wlstring.py")
 wlpal = load("wlpal", ROOT / "tools" / "wlpal.py")
 wlrostertbl = load("wlrostertbl", ROOT / "tools" / "wlrostertbl.py")
@@ -2439,6 +2440,106 @@ def test_sound_table_is_read_not_transcribed() -> None:
     assert rows[0x76] == (15, 50, 0x500)    # :374 sp_losmack|75-25,>500
 
 
+def test_the_compressed_text_decodes_to_what_the_source_says() -> None:
+    """AWARD.ASM:3056 decompress_string, checked against 245 known answers.
+
+    Every piece of long text in the game is a six-bit packed stream:
+    the two Mortal Kombat 3 tips and the eight wrestlers' ending
+    stories. None of it is legible in the source -- but whatever tool
+    Midway compressed it with left the plaintext in a comment beside
+    every blob, so the decoder can be checked rather than trusted.
+
+    tools/wlstring.py refuses on any mismatch, so this test passing
+    at all means all of them agreed. What it adds is that the corpus
+    is really there and really the shape the routine implies: the
+    alphabet is 0x20-0x5F and nothing else, because a six-bit field
+    plus 1Fh cannot reach anything outside it.
+    """
+    if not (wlanim.ORIG / "AWARD.ASM").exists():
+        return
+
+    checked = 0
+    for name in ("AWARD.ASM",) + wlstorytext.STORY_FILES:
+        path = wlanim.ORIG / name
+        if not path.exists():
+            continue
+        for _label, (plain, got) in wlstorytext.read_strings(path).items():
+            if plain is None:
+                continue
+            assert got == plain
+            for ch in got:
+                assert 0x20 <= ord(ch) <= 0x5f, (name, got)
+            checked += 1
+    # Six in AWARD.ASM and 218 distinct story lines, every one of
+    # them with a plaintext comment that agreed.
+    assert checked == 224, checked
+
+    stories = wlstorytext.read_stories()
+    assert len(stories) == 9
+    # Slot 7 is Adam Bomb, given Doink's stories exactly as the
+    # animation dispatch lists give him Doink's animations.
+    assert stories[6][1] == stories[7][1] == "doink_stories"
+    # 245 line REFERENCES over 218 distinct lines, because Doink's
+    # 27 are reached twice -- once as his and once as Adam Bomb's.
+    refs = [l for _s, _t, sts in stories for _n, ls in sts for l in ls]
+    assert len(refs) == 245
+    assert len(set(label for label, _t in refs)) == 218
+
+
+def test_story_text_generates_the_shipped_file() -> None:
+    out = ROOT / "src" / "generated" / "story_text.c"
+    if not (wlanim.ORIG / "AWARD.ASM").exists() or not out.exists():
+        return
+    assert wlstorytext.emit_c(wlstorytext.read_stories(),
+                           wlstorytext.read_mk3_tips(),
+                           wlstorytext.read_mk3_codes()) == out.read_text()
+
+
+def test_the_tune_script_vm_has_no_programs() -> None:
+    """DCSSOUND.ASM:2377 do_tune_commands is unreachable in the shipped game.
+
+    snd_update's per-channel branch reads @chanNscp: with a script
+    pointer the channel runs the next tune command instead of freeing
+    itself at zero. That branch decides whether this port's
+    wm_sound_update -- which always frees the channel -- is the whole
+    routine or half of it.
+
+    It is the whole routine, because NOTHING EVER INSTALLS A SCRIPT.
+    Across every linked source file the only writes to a channel
+    script pointer are inside do_tune_commands itself (tc_sleep saving
+    its position, tc_endtune clearing it) and clear_sound_ram's sweep.
+    No caller anywhere sets one up, so every chanNscp is permanently
+    zero and the VM never executes an instruction.
+
+    That is worth a test rather than a comment: the day something does
+    install one, wm_sound_update quietly becomes wrong, and this is
+    what would notice.
+    """
+    if not (wlanim.ORIG / "DCSSOUND.ASM").exists():
+        return
+
+    setters = []
+    for path in wlanim.linked_files():
+        lines = path.read_text(errors="replace").splitlines()
+        for i, raw in enumerate(lines, 1):
+            line = wlanim.strip_comment(raw)
+            if not line:
+                continue
+            # A write is `move <src>,@chanNscp` or `move <src>,*aN(sndscp)`.
+            if re.search(r"move\s+[^,]+,\s*@chan[1-4]scp\b", line, re.I) or \
+               re.search(r"move\s+[^,]+,\s*\*a\d+\(sndscp\)", line, re.I):
+                setters.append((path.name, i, line))
+
+    # The only two are do_tune_commands' own tc_sleep and tc_endtune.
+    assert all(f == "DCSSOUND.ASM" for f, _i, _l in setters), setters
+    assert len(setters) == 2, setters
+    body = (wlanim.ORIG / "DCSSOUND.ASM").read_text(errors="replace")
+    lo = body.index("do_tune_commands")
+    hi = body.index("nosounds")
+    for _f, _i, line in setters:
+        assert lo < body.index(line) < hi, line
+
+
 def test_sound_table_generates_the_shipped_file() -> None:
     out = ROOT / "src" / "generated" / "sound_table.c"
     if not (wlanim.ORIG / "DCSSOUND.ASM").exists() or not out.exists():
@@ -3407,6 +3508,9 @@ def main() -> int:
     test_wrsnd_tables_generate_the_shipped_file()
     test_sound_table_is_read_not_transcribed()
     test_sound_table_generates_the_shipped_file()
+    test_the_tune_script_vm_has_no_programs()
+    test_the_compressed_text_decodes_to_what_the_source_says()
+    test_story_text_generates_the_shipped_file()
     test_font_tables_are_read_not_transcribed()
     test_font_tables_generate_the_shipped_file()
     test_glyph_metrics_come_out_of_the_artwork()

@@ -174,6 +174,8 @@ python3 "$ROOT/tools/wlwrsnd.py" \
     --out "$ROOT/src/generated/wrestler_sound_tables.c"
 python3 "$ROOT/tools/wlsound.py" \
     --out-c "$ROOT/src/generated/sound_table.c"
+python3 "$ROOT/tools/wlstorytext.py" \
+    --out-c "$ROOT/src/generated/story_text.c"
 python3 "$ROOT/tools/select_source.py" \
     --source "$ORIG/SELECT.ASM" \
     --out "$ROOT/src/generated/select_tables.c"

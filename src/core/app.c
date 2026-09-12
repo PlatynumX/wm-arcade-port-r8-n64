@@ -455,6 +455,29 @@ static void wm_app_round_award(void *user, int player_num,
     wm_award_round_award(&app->awards, (unsigned)player_num, award_index);
 }
 
+/*
+ * SELECT.ASM:1190 do_game_over's entry half, run once.
+ *
+ * `calla INIT_LADDER_TABLE` is the first thing it does and the
+ * comment beside it is ";kill the ladder" -- a finished game does
+ * not hand its ladder to the next one. wm_pregame_init rebuilds it,
+ * which is where that call lives in this port.
+ *
+ * Not translated, and all of it screen: display_blank, WIPEOUT,
+ * GENERIC_DISPLAY, the two JAM_STR plates that put GAME and OVER on
+ * it, display_unblank, and UNIT_CLR.
+ */
+static void wm_app_start_game_over(wm_app *app) {
+    if (!app) return;
+    /* `clr a14 / move a14,@rr_loss / move a14,@PSTATUS`. */
+    app->pregame.finished = false;
+    /* `MOVI -1,A11 / MOVI 100,A8 / CREATE FADE_PID,FADE_MASTER_VOL`. */
+    wm_sound_fade_start(&app->volume_fade, app->sound.master_volume, 100);
+    /* `SLEEP TSEC*4`. */
+    app->game_over_ticks = WM_MATCH_CLOCK_TSEC * 4;
+    app->mode = WM_APP_MODE_GAME_OVER;
+}
+
 static void wm_app_bind_anim_env(wm_app *app) {
     app->match.anim_rng = &app->rng;
     app->match.anim_sound_user = app;
@@ -704,16 +727,44 @@ void wm_app_tick_dual(wm_app *app,
             wm_pregame_next_match(&app->pregame, 0u);
             app->mode = WM_APP_MODE_PREGAME;
         } else if (ev == WM_SELECT_CONTINUE_TIMEOUT_EVENT) {
-            /*
-             * Nobody bought in. The source falls out to game over and
-             * the attract loop; this port has no game-over screen
-             * (LIFEBAR.ASM's do_game_over is still open), so it goes
-             * straight back to attract the way a finished demo does.
-             */
-            app->mode = WM_APP_MODE_ATTRACT;
-            app->attract_started = false;
-            app->boot_ticks = 0;
+            /* Nobody bought in: SELECT.ASM:1190 do_game_over. */
+            wm_app_start_game_over(app);
         }
+        return;
+    }
+    /*
+     * SELECT.ASM:1190 do_game_over. The bookkeeping is done on entry
+     * (see wm_app_start_game_over); this is the wait it holds the
+     * screen for, with FADE_MASTER_VOL running under it.
+     */
+    if (app->mode == WM_APP_MODE_GAME_OVER) {
+        /*
+         * `MOVI -1,A11 / MOVI 100,A8 / CREATE FADE_PID,FADE_MASTER_VOL`
+         * is started BEFORE the four-second sleep and runs beside it,
+         * so the volume is already at zero well before the screen
+         * goes -- 100 ticks against 4*53.
+         */
+        (void)wm_sound_fade_tick(&app->volume_fade, &app->sound);
+
+        /* `SLEEP TSEC*4`. */
+        if (--app->game_over_ticks > 0) return;
+
+        /*
+         * `CLR A3 / CALLA SNDSND` -- call zero, silencing the board
+         * -- then ADJVOLUME is read back and `set_volume` restores
+         * it, so attract does not start muted by the fade.
+         */
+        wm_sound_kill_all(&app->sound);
+        app->sound.master_volume = WM_SOUND_ADJVOLUME_DEFAULT;
+
+        /* `clear_icon_total` for both players. */
+        wm_award_clear_icon_total(&app->awards, 0u);
+        wm_award_clear_icon_total(&app->awards, 1u);
+
+        /* `jauc attract_mode`. */
+        app->mode = WM_APP_MODE_ATTRACT;
+        app->attract_started = false;
+        app->boot_ticks = 0;
         return;
     }
     if (!input) input = &no_input;

@@ -176,6 +176,57 @@ static void test_continuing_resumes_the_game(void) {
     assert(A.awards.win_streak[0] == 0);
 }
 
+/*
+ * SELECT.ASM:1190 do_game_over, which a declined continue used to
+ * skip straight past. Four seconds of GAME OVER with the master
+ * volume fading under it, then attract.
+ */
+static void test_declining_goes_through_game_over(void) {
+    wm_input_state in;
+    int i;
+    uint8_t vol_at_entry;
+
+    memset(&in, 0, sizeof in);
+    into_match();
+    A.awards.icon_total[0] = 7;
+    A.awards.icon_total[1] = 3;
+    finish_match(1);
+    assert(A.mode == WM_APP_MODE_CONTINUE);
+
+    for (i = 0; i < 4000 && A.mode == WM_APP_MODE_CONTINUE; ++i)
+        wm_app_tick(&A, &in);
+    assert(A.mode == WM_APP_MODE_GAME_OVER);
+
+    /* `MOVI 100,A8 / CREATE FADE_PID,FADE_MASTER_VOL` -- started on
+       entry and running under the wait. */
+    vol_at_entry = A.sound.master_volume;
+    assert(vol_at_entry == WM_SOUND_ADJVOLUME_DEFAULT);
+    assert(A.volume_fade.active);
+
+    /* The fade is 100 ticks and the hold is 4*53, so it reaches
+       silence well before the screen goes. */
+    for (i = 0; i < 100; ++i) wm_app_tick(&A, &in);
+    assert(A.mode == WM_APP_MODE_GAME_OVER);
+    assert(!A.volume_fade.active);
+    assert(A.sound.master_volume == 0);
+
+    /* `SLEEP TSEC*4` in total. */
+    for (i = 0; i < 4000 && A.mode == WM_APP_MODE_GAME_OVER; ++i)
+        wm_app_tick(&A, &in);
+    assert(A.mode == WM_APP_MODE_ATTRACT);
+    assert(i < 4 * 53);
+
+    /*
+     * ADJVOLUME is read back and set_volume restores it, so attract
+     * does not start silent -- the fade would otherwise be the last
+     * word on the volume for the rest of the machine's life.
+     */
+    assert(A.sound.master_volume == WM_SOUND_ADJVOLUME_DEFAULT);
+    /* `clear_icon_total` for both players. */
+    assert(A.awards.icon_total[0] == 0);
+    assert(A.awards.icon_total[1] == 0);
+}
+
 /* Letting it run out ends the game and the attract loop takes over. */
 static void test_declining_goes_back_to_attract(void) {
     wm_input_state in;
@@ -193,8 +244,11 @@ static void test_declining_goes_back_to_attract(void) {
      */
     for (i = 0; i < 4000 && A.mode == WM_APP_MODE_CONTINUE; ++i)
         wm_app_tick(&A, &in);
-    assert(A.mode == WM_APP_MODE_ATTRACT);
+    assert(A.mode == WM_APP_MODE_GAME_OVER);
     assert(i > 10 * (int)WM_SELECT_CONTINUE_TICKS_PER_DIGIT / 2);
+    for (i = 0; i < 4000 && A.mode != WM_APP_MODE_ATTRACT; ++i)
+        wm_app_tick(&A, &in);
+    assert(A.mode == WM_APP_MODE_ATTRACT);
 }
 
 int main(void) {
@@ -204,5 +258,6 @@ int main(void) {
     test_a_loss_offers_a_continue();
     test_continuing_resumes_the_game();
     test_declining_goes_back_to_attract();
+    test_declining_goes_through_game_over();
     return 0;
 }

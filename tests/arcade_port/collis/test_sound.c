@@ -10,6 +10,7 @@
 #include "wm/app.h"
 #include "wm/match.h"
 #include "wm_arcade_roster.h"
+#include "wm/wrestler_sound_tables.h"
 
 /* The table, read out of DCSSOUND.ASM:235 by tools/wlsound.py. */
 static void test_table(void) {
@@ -85,6 +86,10 @@ static void test_announcer_ranges(void) {
            == WM_SOUND_ANNOUNCER_NONE);
     assert(wm_sound_who_is_it(-1) == WM_SOUND_ANNOUNCER_NONE);
 }
+
+static uint32_t hcv;
+static uint32_t hc(void *u) { (void)u; return (hcv += 0x139u) & 0x1ff; }
+static uint32_t spf(void *u) { (void)u; return 0x01000000u + ((hcv * 7u) & 0x3fff); }
 
 /* Find a row with a given priority, so the tests below use real
    indices rather than invented ones. */
@@ -320,12 +325,185 @@ static void test_the_announcer_outranks_everything(void) {
     assert(s.announcer_duration[WM_SOUND_ANNOUNCER_VINCE] != 0);
 }
 
+/* ---- channel_sound: the channel is chosen, not arbitrated -------- */
+
+static void test_channel_sound(void) {
+    wm_sound_state_t s;
+    wm_sound_result_t r;
+    int32_t loud = row_with(100), quiet = row_with(4);
+    int i;
+
+    assert(loud > 0 && quiet > 0);
+    wm_sound_init(&s);
+    for (i = 0; i < WM_SOUND_CHANNELS; ++i)
+        assert(wm_sound_triple(&s, loud).played);
+
+    /* triple_sound would refuse this outright. */
+    assert(!wm_sound_triple(&s, quiet).played);
+
+    /* channel_sound takes the channel anyway -- "priorities
+       notwithstanding". */
+    r = wm_sound_channel(&s, quiet, 3);
+    assert(r.played && r.channel == 3);
+    assert(s.priority[2] == wm_sound_table[quiet].priority);
+    assert(s.call[2] == (uint16_t)(wm_sound_table[quiet].call + 2));
+
+    /* A channel outside 1-4 does nothing at all. */
+    assert(!wm_sound_channel(&s, quiet, 0).played);
+    assert(!wm_sound_channel(&s, quiet, 5).played);
+}
+
+/* ring_bell: three rings, and the second and third go onto the
+   channel the FIRST one took. */
+static void test_ring_bell(void) {
+    wm_sound_state_t s;
+    wm_sound_bell_t b;
+    uint8_t ch;
+    int i, rings = 1;
+
+    wm_sound_init(&s);
+    wm_sound_bell_start(&b, &s);
+    assert(b.active);
+    ch = b.channel;
+    assert(ch >= 1 && ch <= WM_SOUND_CHANNELS);
+    /* The bell is 0xB1, one of the two non-announcer rows at
+       priority 100 -- it has to be heard over the match. */
+    assert(wm_sound_table[WM_SOUND_BELL_CALL].priority == 100);
+
+    for (i = 0; i < 500 && b.active; ++i) {
+        wm_sound_update(&s);
+        if (wm_sound_bell_tick(&b, &s)) {
+            /* nothing */
+        }
+        if (s.call[ch - 1] ==
+            (uint16_t)(wm_sound_table[WM_SOUND_BELL_CALL].call + ch - 1) &&
+            s.duration[ch - 1] == wm_sound_table[WM_SOUND_BELL_CALL].duration)
+            ++rings;
+    }
+    assert(!b.active);
+    /* Three in total, a third of a second apart. */
+    assert(rings >= 3);
+    assert(i >= 2 * WM_SOUND_BELL_GAP);
+}
+
+/* wmania_tune: three raw calls on an eight-second loop, and not a
+   tune script despite the name. */
+static void test_wmania_tune(void) {
+    wm_sound_tune_t t;
+    uint16_t call;
+    int i, a = 0, b = 0;
+
+    wm_sound_tune_start(&t, NULL);
+    for (i = 0; i < WM_SOUND_TUNE_GAP * 4 + 4; ++i) {
+        assert(wm_sound_tune_tick(&t, &call));
+        if (call == WM_SOUND_TUNE_A) ++a;
+        if (call == WM_SOUND_TUNE_B) ++b;
+    }
+    /* They alternate, and it never stops. */
+    assert(a >= 2 && b >= 2);
+    assert(a == b || a == b + 1);
+    assert(t.active);
+}
+
+/*
+ * PIN_HIM_PROC: eight calls, and the rule that gives the chant its
+ * character -- a draw repeating the LAST call is replaced by the
+ * next table entry, so it never says the same line twice running.
+ */
+static void test_pin_him_never_repeats(void) {
+    wm_sound_state_t s;
+    wm_sound_pin_him_t p;
+    WmRng rng;
+    uint32_t t = 1;
+    uint16_t seen[WM_SOUND_PIN_HIM_CALLS];
+    int n = 0, i, started = 0, tries;
+
+    /* The table's two trailing duplicates exist only to be the "one
+       after" for the last two draws. */
+    assert(wm_sound_which_pin_him[3] == wm_sound_which_pin_him[0]);
+    assert(wm_sound_which_pin_him[4] == wm_sound_which_pin_him[1]);
+
+    /* It only runs 150 times in 1000, so try until one starts. */
+    for (tries = 0; tries < 200 && !started; ++tries) {
+        wm_rng_init(&rng, 0x1234u + (uint32_t)tries, hc, spf, &t);
+        started = wm_sound_pin_him_start(&p, &rng);
+    }
+    assert(started);
+
+    wm_sound_init(&s);
+    for (i = 0; i < 5000 && p.active; ++i) {
+        uint16_t before = p.last;
+        wm_sound_update(&s);
+        wm_sound_pin_him_tick(&p, &s, &rng);
+        if (p.last != before && n < WM_SOUND_PIN_HIM_CALLS)
+            seen[n++] = p.last;
+    }
+    assert(!p.active);
+    assert(n >= 2);
+    for (i = 1; i < n; ++i)
+        assert(seen[i] != seen[i - 1]);
+
+    /* KILL_PIN_HIM stops it dead. */
+    wm_rng_init(&rng, 0x99u, hc, spf, &t);
+    for (tries = 0; tries < 200; ++tries)
+        if (wm_sound_pin_him_start(&p, &rng)) break;
+    if (p.active) {
+        wm_sound_pin_him_kill(&p);
+        assert(!p.active);
+    }
+}
+
+/* wrtable_sound: the per-wrestler lookup joined to the mixer. */
+static void test_wrtable_sound(void) {
+    wm_sound_state_t s;
+    int w, m;
+    int played = 0;
+
+    wm_sound_init(&s);
+    for (w = 0; w < 8 && played < 3; ++w)
+        for (m = 0; m < 8 && played < 3; ++m) {
+            uint16_t idx = wm_wrsnd_lookup(w, m);
+            wm_sound_result_t r;
+            wm_sound_init(&s);
+            r = wm_sound_wrtable(&s, w, (uint16_t)m);
+            if (idx == 0) { assert(!r.played); continue; }
+            if (!r.played) continue;
+            /* What it played is that wrestler's own table row. */
+            assert(r.call == wm_sound_table[idx].call);
+            ++played;
+        }
+    assert(played > 0);
+
+    /* The W_LOOKUP bit is stripped, so 8000h|m is the same as m. */
+    {
+        wm_sound_state_t a, b;
+        wm_sound_result_t ra, rb;
+        wm_sound_init(&a);
+        wm_sound_init(&b);
+        ra = wm_sound_wrtable(&a, 0, 0u);
+        rb = wm_sound_wrtable(&b, 0, (uint16_t)(0x8000u | 0u));
+        assert(ra.played == rb.played && ra.call == rb.call);
+    }
+}
+
+/* nosounds / clear_sound_ram. */
+static void test_clear_ram(void) {
+    wm_sound_state_t s;
+    int i;
+    wm_sound_init(&s);
+    for (i = 0; i < WM_SOUND_CHANNELS; ++i)
+        assert(wm_sound_triple(&s, row_with(16)).played);
+    wm_sound_clear_ram(&s);
+    for (i = 0; i < WM_SOUND_CHANNELS; ++i) {
+        assert(s.priority[i] == 0);
+        assert(s.duration[i] == 0);
+        assert(s.call[i] == 0);
+    }
+}
+
 /* ---- and the same mixer in a live app ---------------------------- */
 
 static wm_app A;
-static uint32_t hcv;
-static uint32_t hc(void *u) { (void)u; return (hcv += 0x139u) & 0x1ff; }
-static uint32_t spf(void *u) { (void)u; return 0x01000000u + ((hcv * 7u) & 0x3fff); }
 
 /*
  * The one seam every in-match sound arrives through carries a
@@ -392,6 +570,12 @@ int main(void) {
     test_update_frees_channels();
     test_announcer_cuts_himself_off();
     test_the_announcer_outranks_everything();
+    test_channel_sound();
+    test_ring_bell();
+    test_wmania_tune();
+    test_pin_him_never_repeats();
+    test_wrtable_sound();
+    test_clear_ram();
     test_the_app_queues_calls_not_indices();
     test_the_app_frees_channels();
     return 0;

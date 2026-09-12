@@ -5,6 +5,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "wm/arcade/wmania_rng.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -104,7 +106,20 @@ typedef struct {
      * refuse when it is NON-zero. It suppresses.
      */
     bool suppressed;
+    /*
+     * The board's master volume, 0-255. SET_LOWER_VOL
+     * (DCSSOUND.ASM:4515) sends it as two calls, a `55ABh + channel`
+     * select and a packed value; the VALUE is the part that survives
+     * the boundary. It starts at the operator's ADJVOLUME, for which
+     * this port uses the arcade's own `BADCHK a0,0,255,28` fallback
+     * -- the same reasoning as every other GET_ADJ in this tree,
+     * which has no operator-settings system to read a live one from.
+     */
+    uint8_t master_volume;
 } wm_sound_state_t;
+
+/* DCSSOUND.ASM's `BADCHK a0,0,255,28` on every ADJVOLUME read. */
+#define WM_SOUND_ADJVOLUME_DEFAULT 28
 
 void wm_sound_init(wm_sound_state_t *s);
 
@@ -146,6 +161,142 @@ wm_sound_result_t wm_sound_triple(wm_sound_state_t *s, int32_t index);
  * wmania_tune) are themselves still open.
  */
 void wm_sound_update(wm_sound_state_t *s);
+
+/*
+ * DCSSOUND.ASM:4532 KILL_ALL_CHANNELS. Every channel's duration and
+ * priority cleared, and calls 994-997 sent to stop each one. The
+ * clears are the mixer's; the four calls are the board's, and are
+ * handed back so a caller can forward them.
+ */
+#define WM_SOUND_KILL_CALL_BASE 994
+void wm_sound_kill_all(wm_sound_state_t *s);
+
+/*
+ * DCSSOUND.ASM:4495 FADE_MASTER_VOL, a process rather than a call:
+ * it ramps the master volume from the operator's setting down to
+ * zero over `ticks` ticks, one step per tick, and dies.
+ *
+ * The arithmetic is worth keeping exactly: the source builds the
+ * step as `volume << 16 / ticks` and subtracts it from a 16.16
+ * accumulator, reading the volume out of the high half each tick.
+ * Doing it in integers instead loses the fraction and lands short.
+ */
+typedef struct {
+    bool active;
+    int32_t remaining;    /* a8 */
+    int32_t step;         /* a9, 16.16 */
+    int32_t level;        /* a10, 16.16 */
+} wm_sound_fade_t;
+
+void wm_sound_fade_start(wm_sound_fade_t *f, uint8_t from, int32_t ticks);
+/* One tick. Writes the new master volume through to `s`. Returns
+   true while the fade is still running. */
+bool wm_sound_fade_tick(wm_sound_fade_t *f, wm_sound_state_t *s);
+
+/*
+ * DCSSOUND.ASM:1801 channel_sound. "like triple_sound, only you
+ * specify the channel it goes on, priorities notwithstanding. This
+ * isn't quite the same thing as SNDSND, tho, since chanXpri, chanXdur
+ * and chanXsnd are updated." `channel` is 1-4.
+ */
+wm_sound_result_t wm_sound_channel(wm_sound_state_t *s, int32_t index,
+                                   unsigned channel);
+
+/*
+ * DCSSOUND.ASM:2472 nosounds / :2477 clear_sound_ram. Every channel's
+ * priority, duration, call and script pointer zeroed. The difference
+ * from KILL_ALL_CHANNELS is what goes to the board: nosounds sends
+ * ONE call (zero, silence) where KILL_ALL_CHANNELS sends four stops.
+ */
+void wm_sound_clear_ram(wm_sound_state_t *s);
+
+/*
+ * DCSSOUND.ASM:1859 wrtable_sound: a wrestler's own sound table
+ * indexed by WRESTLERNUM, falling back to DEFAULT_SOUND_TABLE where
+ * his entry is negative, then triple_sound on what comes out. The
+ * lookup half is wm/wrestler_sound_tables.h's, already generated;
+ * this is the two of them joined the way the source joins them.
+ *
+ * `index` may carry W_LOOKUP (8000h), which the source strips.
+ */
+wm_sound_result_t wm_sound_wrtable(wm_sound_state_t *s, int wrestler_num,
+                                   uint16_t index);
+
+/* ---- the two sound processes that are not the board ------------- */
+
+/*
+ * DCSSOUND.ASM:1701 ring_bell. The match-start bell, three times,
+ * a third of a second apart -- and after the first ring the other
+ * two go through channel_sound onto the SAME channel. The source
+ * explains why beside the routine: "This uses the channel_sound
+ * routine to conserve tracks. If, for whatever reason, these rings
+ * are spaced out by more than 89 ticks, (the duration of the bell
+ * sound), then this should NOT be done as it could result in other
+ * sound calls being truncated prematurely."
+ */
+#define WM_SOUND_BELL_CALL 0xB1
+#define WM_SOUND_BELL_GAP (WM_SOUND_TSEC / 3)
+#define WM_SOUND_TSEC 53
+
+typedef struct {
+    bool active;
+    uint8_t channel;      /* #BELL_CHANNEL */
+    int rings_left;
+    int32_t sleep;
+} wm_sound_bell_t;
+
+void wm_sound_bell_start(wm_sound_bell_t *b, wm_sound_state_t *s);
+/* One tick; true while it is still ringing. */
+bool wm_sound_bell_tick(wm_sound_bell_t *b, wm_sound_state_t *s);
+
+/*
+ * DCSSOUND.ASM:1673 wmania_tune -- the attract theme, and not a tune
+ * script at all despite the name: three raw calls on an eight-second
+ * loop, forever.
+ */
+#define WM_SOUND_TUNE_INTRO 11
+#define WM_SOUND_TUNE_A 14
+#define WM_SOUND_TUNE_B 13
+#define WM_SOUND_TUNE_GAP (WM_SOUND_TSEC * 8)
+
+typedef struct {
+    bool active;
+    int32_t sleep;
+    bool second;      /* which of the two looping calls comes next */
+} wm_sound_tune_t;
+
+void wm_sound_tune_start(wm_sound_tune_t *t, wm_sound_state_t *s);
+/* One tick. `*out_call` is the raw call to send, when there is one. */
+bool wm_sound_tune_tick(wm_sound_tune_t *t, uint16_t *out_call);
+
+/*
+ * DCSSOUND.ASM:3951 END_MATCH_SPEECH and its PIN_HIM_PROC: the
+ * crowd's "pin him!" chant over a downed wrestler. Eight calls, each
+ * drawn from a five-entry table, with one rule that is the whole
+ * character of it -- a draw that repeats the LAST call is replaced
+ * by the one after it, so the chant never says the same thing twice
+ * running. That is what the two spare entries at the end of the
+ * table are for.
+ *
+ * It only runs at all 150 times in 1000: `movi 150,a0 / calla RNDPER
+ * / jals SUCIDE`.
+ */
+#define WM_SOUND_PIN_HIM_CALLS 8
+extern const uint16_t wm_sound_which_pin_him[5];
+
+typedef struct {
+    bool active;
+    int calls_left;       /* a11 */
+    uint16_t last;        /* a9 */
+    int32_t sleep;
+} wm_sound_pin_him_t;
+
+/* Returns false when the RNDPER roll kills it before it starts. */
+bool wm_sound_pin_him_start(wm_sound_pin_him_t *p, WmRng *rng);
+bool wm_sound_pin_him_tick(wm_sound_pin_him_t *p, wm_sound_state_t *s,
+                           WmRng *rng);
+/* DCSSOUND.ASM:3989 KILL_PIN_HIM. */
+void wm_sound_pin_him_kill(wm_sound_pin_him_t *p);
 
 /*
  * DCSSOUND.ASM:1869 WHO_IS_IT: which announcer, if any, owns this

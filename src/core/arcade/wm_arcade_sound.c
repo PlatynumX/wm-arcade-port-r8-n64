@@ -5,9 +5,56 @@
 
 #include <string.h>
 
+#include "wm/wrestler_sound_tables.h"
+
 void wm_sound_init(wm_sound_state_t *s) {
     if (!s) return;
     memset(s, 0, sizeof(*s));
+    s->master_volume = WM_SOUND_ADJVOLUME_DEFAULT;
+}
+
+void wm_sound_kill_all(wm_sound_state_t *s) {
+    unsigned i;
+    if (!s) return;
+    /* `CLR A0 / MOVE A0,@chanNdur / MOVE A0,@chanNpri` four times,
+       each followed by its own stop call to the board. */
+    for (i = 0; i < WM_SOUND_CHANNELS; ++i) {
+        s->duration[i] = 0;
+        s->priority[i] = 0;
+        s->call[i] = 0;
+    }
+    /* An announcer cut off mid-line is no longer talking. */
+    memset(s->announcer_duration, 0, sizeof(s->announcer_duration));
+    memset(s->announcer_channel, 0, sizeof(s->announcer_channel));
+}
+
+void wm_sound_fade_start(wm_sound_fade_t *f, uint8_t from, int32_t ticks) {
+    if (!f) return;
+    memset(f, 0, sizeof(*f));
+    if (ticks <= 0) return;
+    /* `MOVE A0,A9 / SLL 16,A9 / MOVE A9,A10 / DIVU A8,A9`. */
+    f->level = (int32_t)from << 16;
+    f->step = f->level / ticks;
+    f->remaining = ticks;
+    f->active = true;
+}
+
+bool wm_sound_fade_tick(wm_sound_fade_t *f, wm_sound_state_t *s) {
+    if (!f || !f->active) return false;
+
+    /* `SUB A9,A10 / MOVE A10,A0 / SRL 16,A0 / CALLR SET_LOWER_VOL`. */
+    f->level -= f->step;
+    if (f->level < 0) f->level = 0;
+    if (s) s->master_volume = (uint8_t)((f->level >> 16) & 0xff);
+
+    /* `SLEEPK 1 / DSJS A8,NEXT_FADE`, then a final `CLR A0` before
+       the process dies -- so it really does reach silence rather
+       than stopping one step short. */
+    f->remaining -= 1;
+    if (f->remaining > 0) return true;
+    f->active = false;
+    if (s) s->master_volume = 0;
+    return false;
 }
 
 wm_sound_announcer_t wm_sound_who_is_it(int32_t index) {
@@ -176,4 +223,195 @@ wm_sound_result_t wm_sound_announcer(wm_sound_state_t *s, int32_t index) {
     out.duration = e->duration;
     out.call = s->call[ch];
     return out;
+}
+
+/* ------------------------------------------------------------------ */
+/* channel_sound, clear_sound_ram, wrtable_sound                      */
+
+wm_sound_result_t wm_sound_channel(wm_sound_state_t *s, int32_t index,
+                                   unsigned channel) {
+    wm_sound_result_t out;
+    const wm_sound_entry_t *e;
+    unsigned ch;
+
+    memset(&out, 0, sizeof(out));
+    if (!s) return out;
+    /* `dec a1 / jrz #chan1 / ... ;error!` -- a channel outside 1-4
+       falls off the end and does nothing. */
+    if (channel < 1u || channel > WM_SOUND_CHANNELS) return out;
+    if (index < 0 || (size_t)index >= wm_sound_table_count) return out;
+    ch = channel - 1u;
+    e = &wm_sound_table[(size_t)index];
+
+    /*
+     * No priority test of ANY kind -- "priorities notwithstanding",
+     * says the source. The channel is taken whatever is on it.
+     */
+    s->duration[ch] = e->duration;
+    s->priority[ch] = e->priority;
+    s->call[ch] = (uint16_t)(e->call + ch);
+
+    out.played = true;
+    out.channel = (uint8_t)channel;
+    out.duration = e->duration;
+    out.call = s->call[ch];
+    return out;
+}
+
+void wm_sound_clear_ram(wm_sound_state_t *s) {
+    unsigned i;
+    if (!s) return;
+    /* `movi chan1ram,a1 / nos2 move a0,*a1+,W / cmpi chan4scp+32,a1`
+       -- every channel's priority, duration, call and script pointer
+       in one sweep. */
+    for (i = 0; i < WM_SOUND_CHANNELS; ++i) {
+        s->priority[i] = 0;
+        s->duration[i] = 0;
+        s->call[i] = 0;
+    }
+    memset(s->announcer_duration, 0, sizeof(s->announcer_duration));
+    memset(s->announcer_channel, 0, sizeof(s->announcer_channel));
+}
+
+wm_sound_result_t wm_sound_wrtable(wm_sound_state_t *s, int wrestler_num,
+                                   uint16_t index) {
+    wm_sound_result_t out;
+    uint16_t call;
+
+    memset(&out, 0, sizeof(out));
+    /* `sll 32-15,a0 / srl 32-15,a0` -- undo the |W_LOOKUP if present. */
+    index = (uint16_t)(index & 0x7fffu);
+    call = wm_wrsnd_lookup(wrestler_num, (int)index);
+    /* `move a1,a0 / jrz #done` -- a zero on either table is silence. */
+    if (call == 0) return out;
+    return wm_sound_triple(s, (int32_t)call);
+}
+
+/* ------------------------------------------------------------------ */
+/* ring_bell                                                          */
+
+void wm_sound_bell_start(wm_sound_bell_t *b, wm_sound_state_t *s) {
+    wm_sound_result_t r;
+    if (!b) return;
+    memset(b, 0, sizeof(*b));
+    /* `movi bell_snd,a0 / callr triple_sound / sra 16,a14 / move
+       a14,*a13(#BELL_CHANNEL),W` -- the first ring goes through the
+       ordinary arbitration, and the channel it lands on is kept. */
+    r = wm_sound_triple(s, WM_SOUND_BELL_CALL);
+    b->channel = r.channel;
+    b->rings_left = 2;
+    b->sleep = WM_SOUND_BELL_GAP;
+    b->active = true;
+}
+
+bool wm_sound_bell_tick(wm_sound_bell_t *b, wm_sound_state_t *s) {
+    if (!b || !b->active) return false;
+    if (--b->sleep > 0) return true;
+    /* The second and third rings go onto the channel the first one
+       took, whatever is there now. */
+    (void)wm_sound_channel(s, WM_SOUND_BELL_CALL, b->channel);
+    if (--b->rings_left <= 0) { b->active = false; return false; }
+    b->sleep = WM_SOUND_BELL_GAP;
+    return true;
+}
+
+/* ------------------------------------------------------------------ */
+/* wmania_tune                                                        */
+
+void wm_sound_tune_start(wm_sound_tune_t *t, wm_sound_state_t *s) {
+    (void)s;
+    if (!t) return;
+    memset(t, 0, sizeof(*t));
+    t->sleep = WM_SOUND_TUNE_GAP;
+    t->active = true;
+}
+
+bool wm_sound_tune_tick(wm_sound_tune_t *t, uint16_t *out_call) {
+    if (out_call) *out_call = 0;
+    if (!t || !t->active) return false;
+    if (--t->sleep > 0) return true;
+    /* `SLEEP TSEC*8 / movi 14,a3 / SNDSND / SLEEP TSEC*8 / movi 13,a3
+       / SNDSND / jruc #loop` -- the two alternate for ever. */
+    if (out_call)
+        *out_call = t->second ? WM_SOUND_TUNE_B : WM_SOUND_TUNE_A;
+    t->second = !t->second;
+    t->sleep = WM_SOUND_TUNE_GAP;
+    return true;
+}
+
+/* ------------------------------------------------------------------ */
+/* END_MATCH_SPEECH / PIN_HIM_PROC                                    */
+
+/*
+ * `WHICH_PIN_HIM .WORD 0D3H,0D4H,0D5H,0d3h,0D4H`. RNDRNG0 draws 0-3,
+ * so the fifth entry is reachable only as the "one after" when the
+ * draw at index 3 repeats the last call -- which is exactly what the
+ * two trailing duplicates are there for.
+ */
+const uint16_t wm_sound_which_pin_him[5] = {
+    0xD3, 0xD4, 0xD5, 0xD3, 0xD4
+};
+
+/* UTIL.ASM:1734 RNDPER, the same reading the rest of the port uses:
+   RNDRNG0(999) and the event happens when the probability exceeds
+   the draw. */
+static bool sound_rndper(WmRng *rng, uint32_t per_mille) {
+    if (!rng) return false;
+    return wm_rng_rndrng0(rng, 999u) < per_mille;
+}
+
+bool wm_sound_pin_him_start(wm_sound_pin_him_t *p, WmRng *rng) {
+    if (!p) return false;
+    memset(p, 0, sizeof(*p));
+    /* `movi 150,a0 / calla RNDPER / jals SUCIDE` -- most of the time
+       the crowd says nothing at all. */
+    if (!sound_rndper(rng, 150u)) return false;
+    p->calls_left = WM_SOUND_PIN_HIM_CALLS;   /* `movk 8,a11` */
+    p->active = true;
+    return true;
+}
+
+bool wm_sound_pin_him_tick(wm_sound_pin_him_t *p, wm_sound_state_t *s,
+                           WmRng *rng) {
+    uint32_t pick;
+    uint16_t call;
+    wm_sound_result_t r;
+    int32_t nap;
+
+    if (!p || !p->active) return false;
+    if (p->sleep > 0) { p->sleep -= 1; return true; }
+
+    /* `movk 3,a0 / CALLA RNDRNG0` -- 0 to 3 inclusive. */
+    pick = rng ? wm_rng_rndrng0(rng, 3u) : 0u;
+    if (pick > 3u) pick = 3u;
+    call = wm_sound_which_pin_him[pick];
+    /*
+     * `CMP A0,A9 / JRNE NO_NEED / MOVE *A1(010H),A0` -- a draw that
+     * repeats the last call is replaced by the NEXT table entry, so
+     * the chant never says the same line twice running.
+     */
+    if (call == p->last) call = wm_sound_which_pin_him[pick + 1u];
+    p->last = call;
+
+    r = wm_sound_triple(s, (int32_t)call);
+
+    /*
+     * `CLR A0 / MOVX A14,A0 / subk 20,a0 / CALLA PRCSLP` -- the low
+     * half of triple_sound's answer is the duration, and the next
+     * line starts twenty ticks before this one ends, so they overlap.
+     * A refused call leaves a14 zero and the subtraction goes
+     * negative; the source does not guard it and PRCSLP would treat
+     * it as a very long sleep, so this floors at zero instead of
+     * reproducing a hang.
+     */
+    nap = (int32_t)r.duration - 20;
+    p->sleep = nap > 0 ? nap : 0;
+
+    if (--p->calls_left <= 0) { p->active = false; return false; }
+    return true;
+}
+
+void wm_sound_pin_him_kill(wm_sound_pin_him_t *p) {
+    /* `MOVI PIN_HIM_PID,A0 / CLR A1 / NOT A1 / CALLA KILALL`. */
+    if (p) p->active = false;
 }

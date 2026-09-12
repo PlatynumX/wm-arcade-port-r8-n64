@@ -147,8 +147,9 @@
  },
  "nosounds": {
   "file": "DCSSOUND.ASM",
-  "status": "hardware",
-  "note": "Silences the sound board."
+  "status": "partial",
+  "symbol": "wm_sound_clear_ram",
+  "note": "DCSSOUND.ASM:2465. `clr a3 / SNDSND` to silence the board, then clear_sound_ram. The clear is translated; the silence call is the board's."
  },
  "KILL_ALL_CHANNELS": {
   "file": "DCSSOUND.ASM",
@@ -1388,8 +1389,9 @@
  },
  "clear_sound_ram": {
   "file": "DCSSOUND.ASM",
-  "status": "hardware",
-  "note": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. Zeroes that same SND_DEBUG trace buffer."
+  "status": "renamed",
+  "symbol": "wm_sound_clear_ram",
+  "note": "DCSSOUND.ASM:2477. Corrects an earlier reading in this ledger, which called it part of the SND_DEBUG trace buffer -- it is not. It sweeps chan1ram to chan4scp+32, which is every CHANNEL's priority, duration, call and script pointer: real mixer state, and translated. (inc_sdram, ledgered beside it, IS the debug ring buffer's pointer.)"
  },
  "snd_reset": {
   "file": "DCSSOUND.ASM",
@@ -1415,5 +1417,363 @@
   "file": "DCSSOUND.ASM",
   "status": "hardware",
   "note": "DCSSOUND.ASM:2564. The cabinet's two volume buttons behind the coin door, read straight off the coin port and written to the board's volume register. There is no coin door on an N64 and no operator volume setting for it to adjust."
+ },
+ "channel_sound": {
+  "file": "DCSSOUND.ASM",
+  "status": "renamed",
+  "symbol": "wm_sound_channel",
+  "note": "DCSSOUND.ASM:1801. \"like triple_sound, only you specify the channel it goes on, priorities notwithstanding\" -- the channel is taken whatever is on it, and chanXpri/dur/snd are still updated, which is what separates it from a bare SNDSND."
+ },
+ "ring_bell": {
+  "file": "DCSSOUND.ASM",
+  "status": "renamed",
+  "symbol": "wm_sound_bell_tick",
+  "note": "DCSSOUND.ASM:1701. The match-start bell three times, a third of a second apart, with rings two and three going through channel_sound onto the channel the first one took. The source explains why beside it: it conserves tracks, and is only safe because the gap is shorter than the bell's own 89-tick duration."
+ },
+ "wmania_tune": {
+  "file": "DCSSOUND.ASM",
+  "status": "renamed",
+  "symbol": "wm_sound_tune_tick",
+  "note": "DCSSOUND.ASM:1673. Despite the name this is not a tune SCRIPT: it is a process that sends raw call 11 once and then alternates 14 and 13 every eight seconds for ever."
+ },
+ "wrtable_sound": {
+  "file": "DCSSOUND.ASM",
+  "status": "renamed",
+  "symbol": "wm_sound_wrtable",
+  "note": "DCSSOUND.ASM:1859. A wrestler's own sound table indexed by WRESTLERNUM with a DEFAULT_SOUND_TABLE fallback where his entry is negative, then triple_sound on the result. The lookup half was already generated (tools/wlwrsnd.py); this is the two joined as the source joins them, including the `sll 32-15 / srl 32-15` that strips W_LOOKUP."
+ },
+ "END_MATCH_SPEECH": {
+  "file": "DCSSOUND.ASM",
+  "status": "partial",
+  "symbol": "wm_sound_pin_him_tick",
+  "note": "DCSSOUND.ASM:3946 and the PIN_HIM_PROC it creates: the crowd's \"pin him!\" chant. Eight calls drawn from a five-entry table, each starting twenty ticks before the last one ends, and one rule that is the whole character of it -- a draw repeating the LAST call is replaced by the next table entry, which is what the two duplicate entries at the end of WHICH_PIN_HIM are for. It runs 150 times in 1000. Not translated: the commented-out SET_UP_PERSONAL_CALL/ADD_VOICE lines above it, which are commented out in the source too."
+ },
+ "KILL_PIN_HIM": {
+  "file": "DCSSOUND.ASM",
+  "status": "renamed",
+  "symbol": "wm_sound_pin_him_kill",
+  "note": "DCSSOUND.ASM:3989. `KILALL PIN_HIM_PID` -- stop the chant."
+ },
+ "do_tune_commands": {
+  "file": "DCSSOUND.ASM",
+  "status": "partial",
+  "note": "DCSSOUND.ASM:2377. A five-opcode bytecode VM for tune scripts -- send, setpri, endtune, sleep, send2 -- and NOTHING IN THE SHIPPED GAME EVER INSTALLS A SCRIPT FOR IT TO RUN. Across every linked file the only writes to a channel's script pointer are inside this routine itself (tc_sleep saving its position, tc_endtune clearing it); no caller sets one up, so every chanNscp is permanently zero and snd_update's script branch never fires. It cannot be ledgered `dead` -- it has nine references, its own internal jumps and snd_update's four calls -- but it can never execute an instruction, which is why wm_sound_update always frees the channel at zero rather than modelling the branch. tests/test_source_tools.py's test_the_tune_script_vm_has_no_programs checks that rather than asserting it, because the day something does install a script wm_sound_update quietly becomes half a routine. Two further reasons not to translate it speculatively: tc_setpri writes the priority through the SCRIPT pointer where its two neighbours use the CHANNEL pointer, which looks like a bug and cannot be tested against a program that never runs; and tc_send2 recovers its channel by scanning BACKWARDS through script bytes in TMS34010 memory for an endtune marker, a layout this port has no equivalent of.",
+  "symbol": "wm_sound_update"
+ },
+ "decompress_string": {
+  "file": "AWARD.ASM",
+  "status": "renamed",
+  "symbol": "wm_story_decompress",
+  "note": "AWARD.ASM:3056. Eleven instructions that unpack every piece of long text in the game from a six-bit stream -- `setf 6,0,0`, then each field plus 1Fh is a character and a zero field ends it. The alphabet is therefore 0x20-0x5F exactly. STORIES.ASM uses it too, for the wrestler ending stories."
+ },
+ "mk3_tip1_str1": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "The plaintext of a compressed string, extracted by tools/wlstring.py into src/generated/story_text.c and checked against the source's own comment beside it. Line 1 of Mortal Kombat 3 tip 1."
+ },
+ "mk3_tip1_str2": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "The plaintext of a compressed string, extracted by tools/wlstring.py into src/generated/story_text.c and checked against the source's own comment beside it. Line 2 of Mortal Kombat 3 tip 1."
+ },
+ "mk3_tip1_str3": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "The plaintext of a compressed string, extracted by tools/wlstring.py into src/generated/story_text.c and checked against the source's own comment beside it. Line 3 of Mortal Kombat 3 tip 1."
+ },
+ "mk3_tip2_str1": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "The plaintext of a compressed string, extracted by tools/wlstring.py into src/generated/story_text.c and checked against the source's own comment beside it. Line 1 of Mortal Kombat 3 tip 2."
+ },
+ "mk3_tip2_str2": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "The plaintext of a compressed string, extracted by tools/wlstring.py into src/generated/story_text.c and checked against the source's own comment beside it. Line 2 of Mortal Kombat 3 tip 2."
+ },
+ "mk3_tip2_str3": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "The plaintext of a compressed string, extracted by tools/wlstring.py into src/generated/story_text.c and checked against the source's own comment beside it. Line 3 of Mortal Kombat 3 tip 2."
+ },
+ "mk_code1_1": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "An object record -- x, y, z, image, DMA flags, class -- for icon 1 of Mortal Kombat 3 code 1, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons."
+ },
+ "mk_code1_2": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "An object record -- x, y, z, image, DMA flags, class -- for icon 2 of Mortal Kombat 3 code 1, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons."
+ },
+ "mk_code1_3": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "An object record -- x, y, z, image, DMA flags, class -- for icon 3 of Mortal Kombat 3 code 1, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons."
+ },
+ "mk_code1_4": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "An object record -- x, y, z, image, DMA flags, class -- for icon 4 of Mortal Kombat 3 code 1, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons."
+ },
+ "mk_code1_5": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "An object record -- x, y, z, image, DMA flags, class -- for icon 5 of Mortal Kombat 3 code 1, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons."
+ },
+ "mk_code1_6": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "An object record -- x, y, z, image, DMA flags, class -- for icon 6 of Mortal Kombat 3 code 1, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons."
+ },
+ "mk_code2_1": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "An object record -- x, y, z, image, DMA flags, class -- for icon 1 of Mortal Kombat 3 code 2, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons."
+ },
+ "mk_code2_2": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "An object record -- x, y, z, image, DMA flags, class -- for icon 2 of Mortal Kombat 3 code 2, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons."
+ },
+ "mk_code2_3": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "An object record -- x, y, z, image, DMA flags, class -- for icon 3 of Mortal Kombat 3 code 2, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons."
+ },
+ "mk_code2_4": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "An object record -- x, y, z, image, DMA flags, class -- for icon 4 of Mortal Kombat 3 code 2, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons."
+ },
+ "mk_code2_5": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "An object record -- x, y, z, image, DMA flags, class -- for icon 5 of Mortal Kombat 3 code 2, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons."
+ },
+ "mk_code2_6": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "An object record -- x, y, z, image, DMA flags, class -- for icon 6 of Mortal Kombat 3 code 2, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons."
+ },
+ "mk3_tip1_str_tbl": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "A pointer table naming tip 1's three lines. The rows it names are extracted by tools/wlstring.py; the table itself is the order they go in, which is the order they are emitted."
+ },
+ "mk3_tip2_str_tbl": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "A pointer table naming tip 2's three lines. The rows it names are extracted by tools/wlstring.py; the table itself is the order they go in, which is the order they are emitted."
+ },
+ "mk3_tip_str_tbl": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "A pointer table naming the two tips. The rows it names are extracted by tools/wlstring.py; the table itself is the order they go in, which is the order they are emitted."
+ },
+ "mk_code_tbl1": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "A pointer table naming code 1's six icons. The rows it names are extracted by tools/wlstring.py; the table itself is the order they go in, which is the order they are emitted."
+ },
+ "mk_code_tbl2": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "A pointer table naming code 2's six icons. The rows it names are extracted by tools/wlstring.py; the table itself is the order they go in, which is the order they are emitted."
+ },
+ "mk3_tip_prompt_str_tbl": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "A pointer table naming the prompt lines above a tip. The rows it names are extracted by tools/wlstring.py; the table itself is the order they go in, which is the order they are emitted."
+ },
+ "mk3_tip_prompt1": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "A JAM_STR plate and an UNCOMPRESSED string -- the prompt above a Mortal Kombat 3 tip. Plain .string data, unlike the tip lines themselves, which are packed six bits to a character."
+ },
+ "mk3_tip_prompt2": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "A JAM_STR plate and an UNCOMPRESSED string -- the prompt above a Mortal Kombat 3 tip. Plain .string data, unlike the tip lines themselves, which are packed six bits to a character."
+ },
+ "mk3_tip_prompt4": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "A JAM_STR plate and an UNCOMPRESSED string -- the prompt above a Mortal Kombat 3 tip. Plain .string data, unlike the tip lines themselves, which are packed six bits to a character."
+ },
+ "mk3_tip_prompt5": {
+  "file": "AWARD.ASM",
+  "status": "data",
+  "note": "A JAM_STR plate and an UNCOMPRESSED string -- the prompt above a Mortal Kombat 3 tip. Plain .string data, unlike the tip lines themselves, which are packed six bits to a character."
+ },
+ "anim_mk": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It animates the Mortal Kombat 3 tip screen's icons."
+ },
+ "mk3_coin": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It the spinning coin on the tip screen."
+ },
+ "mk3_smoke": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It the smoke puffs behind it."
+ },
+ "anim_sparkle": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It the sparkle that runs along an earned icon."
+ },
+ "zip_award_bar": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It slides the award bar on and off."
+ },
+ "move_pu_bars_on": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It slides the power-up bars on."
+ },
+ "flash_bar_icons": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It flashes the icons in the bar."
+ },
+ "show_bonus_icons": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It draws a player's earned icons."
+ },
+ "del_bonus_icons": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It deletes them again."
+ },
+ "show_progress_bicons": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It draws them on the progress screen."
+ },
+ "del_progress_icon": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It deletes one of those."
+ },
+ "get_bbicons": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It picks the icon images for a bar."
+ },
+ "bbicon_table": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It the icon image table a bar draws from."
+ },
+ "create_end_rnd_awards": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It creates the end-of-round award bar."
+ },
+ "create_player_awards": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It creates one player's award objects."
+ },
+ "show_player_options": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It draws one player's options screen."
+ },
+ "show_options": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It draws the options screen."
+ },
+ "display_dufus_message": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It draws one dufus message box."
+ },
+ "show_dufus_messages": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It draws the queue of them."
+ },
+ "dufus_msg_on": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It turns a dufus message on."
+ },
+ "dufus_msg_off": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It turns it off."
+ },
+ "dufus_msgs": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It the dufus message table."
+ },
+ "reset_dufus_msgs": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It clears the queue."
+ },
+ "show_mk3_tip": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It draws a Mortal Kombat 3 tip screen."
+ },
+ "mk_code_frame": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It the frame the code icons sit in."
+ },
+ "award_text": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It the award name strings."
+ },
+ "pu_bar_text": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It the power-up bar's labels."
+ },
+ "adjust_text_position": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It nudges a text plate into place."
+ },
+ "adjust_tl": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It nudges the top-left of one."
+ },
+ "BLACKOUT": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It blanks the screen behind a message."
+ },
+ "audit_icons": {
+  "file": "AWARD.ASM",
+  "status": "display",
+  "note": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It writes the icon audits to CMOS."
+ },
+ "suspend_game": {
+  "file": "AWARD.ASM",
+  "status": "process",
+  "note": "AWARD.ASM's `CREATE 4000h,suspend_game` -- a process that adds to every ACTIVE process's PTIME so the whole game holds still while a message or a tip screen is up. This port has no cooperative process list to freeze: wm_app_tick drives one state machine, and a mode that wants to hold the match simply does not tick it."
+ },
+ "suspend_all": {
+  "file": "AWARD.ASM",
+  "status": "process",
+  "note": "The same freeze applied to every process rather than the game's, and the same answer: there is no process list here to walk."
+ },
+ "total_reset": {
+  "file": "AWARD.ASM",
+  "status": "hardware",
+  "note": "A full cabinet reset -- CMOS, audits and the watchdog -- reached from the operator menus."
  }
 }

@@ -325,10 +325,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It blanks the screen behind a message.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "BLOCK_WOOSH",
@@ -985,10 +985,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "END_MATCH_SPEECH",
+   "status": "partial",
+   "evidence": "wm_sound_pin_him_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "ERASE_TXT",
@@ -1060,8 +1060,8 @@
    "local": false,
    "external_callers": 2,
    "references": 5,
-   "status": "unknown",
-   "evidence": "",
+   "status": "cited",
+   "evidence": "GENERIC_DISPLAY",
    "from_generated": false,
    "ledgered": false
   },
@@ -1435,10 +1435,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "KILL_PIN_HIM",
+   "status": "renamed",
+   "evidence": "wm_sound_pin_him_kill",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "LEXGRN_P",
@@ -2935,10 +2935,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It nudges a text plate into place.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "adjust_tl",
@@ -2950,10 +2950,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It nudges the top-left of one.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "adjust_view",
@@ -3070,10 +3070,10 @@
    "local": false,
    "external_callers": 0,
    "references": 7,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It animates the Mortal Kombat 3 tip screen's icons.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "anim_sparkle",
@@ -3085,10 +3085,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It the sparkle that runs along an earned icon.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "anim_wait",
@@ -3415,10 +3415,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It writes the icon audits to CMOS.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "audit_ud",
@@ -3505,10 +3505,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It the award name strings.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "background_sound",
@@ -6565,10 +6565,10 @@
    "local": false,
    "external_callers": 0,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It the icon image table a bar draws from.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "bcd2hex",
@@ -7315,10 +7315,10 @@
    "local": false,
    "external_callers": 0,
    "references": 4,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_sound_channel",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "check_camera_position",
@@ -7841,8 +7841,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "hardware",
-   "evidence": "The DCS sound board's own protocol. An N64 has no ADSP-2105 and no sample ROM to drive with it; what crosses the boundary instead is the 16-bit CALL the board would have been handed, which wm/arcade/wm_arcade_sound.h's mixer decides on and wm/audio.h's queue carries to the platform. Zeroes that same SND_DEBUG trace buffer.",
+   "status": "renamed",
+   "evidence": "wm_sound_clear_ram",
    "from_generated": false,
    "ledgered": true
   },
@@ -8231,10 +8231,10 @@
    "local": false,
    "external_callers": 1,
    "references": 2,
-   "status": "cited",
-   "evidence": "create_end_rnd_awards",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It creates the end-of-round award bar.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "create_impact",
@@ -8351,10 +8351,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It creates one player's award objects.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "creditscreen",
@@ -8471,10 +8471,10 @@
    "local": false,
    "external_callers": 1,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "renamed",
+   "evidence": "wm_story_decompress",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "del_bonus_icons",
@@ -8486,10 +8486,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It deletes them again.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "del_progress_icon",
@@ -8501,10 +8501,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It deletes one of those.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "delay_code_a3",
@@ -8681,10 +8681,10 @@
    "local": false,
    "external_callers": 0,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It draws one dufus message box.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "display_init",
@@ -11967,10 +11967,10 @@
    "local": false,
    "external_callers": 0,
    "references": 9,
-   "status": "cited",
-   "evidence": "do_tune_commands",
+   "status": "partial",
+   "evidence": "wm_sound_update",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "do_up_coffin",
@@ -12582,10 +12582,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It turns it off.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "dufus_msg_on",
@@ -12597,10 +12597,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It turns a dufus message on.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "dufus_msgs",
@@ -12612,10 +12612,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It the dufus message table.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "enter_initials_beaten",
@@ -13002,10 +13002,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It flashes the icons in the bar.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "flash_it",
@@ -13392,10 +13392,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It picks the icon images for a bar.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "get_block_dtime",
@@ -21599,10 +21599,10 @@
    "local": false,
    "external_callers": 0,
    "references": 5,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It the spinning coin on the tip screen.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk3_smoke",
@@ -21614,10 +21614,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It the smoke puffs behind it.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk3_tip1_str1",
@@ -21629,10 +21629,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "The plaintext of a compressed string, extracted by tools/wlstring.py into src/generated/story_text.c and checked against the source's own comment beside it. Line 1 of Mortal Kombat 3 tip 1.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk3_tip1_str2",
@@ -21644,10 +21644,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "The plaintext of a compressed string, extracted by tools/wlstring.py into src/generated/story_text.c and checked against the source's own comment beside it. Line 2 of Mortal Kombat 3 tip 1.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk3_tip1_str3",
@@ -21659,10 +21659,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "The plaintext of a compressed string, extracted by tools/wlstring.py into src/generated/story_text.c and checked against the source's own comment beside it. Line 3 of Mortal Kombat 3 tip 1.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk3_tip1_str_tbl",
@@ -21674,10 +21674,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "A pointer table naming tip 1's three lines. The rows it names are extracted by tools/wlstring.py; the table itself is the order they go in, which is the order they are emitted.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk3_tip2_str1",
@@ -21689,10 +21689,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "The plaintext of a compressed string, extracted by tools/wlstring.py into src/generated/story_text.c and checked against the source's own comment beside it. Line 1 of Mortal Kombat 3 tip 2.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk3_tip2_str2",
@@ -21704,10 +21704,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "The plaintext of a compressed string, extracted by tools/wlstring.py into src/generated/story_text.c and checked against the source's own comment beside it. Line 2 of Mortal Kombat 3 tip 2.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk3_tip2_str3",
@@ -21719,10 +21719,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "The plaintext of a compressed string, extracted by tools/wlstring.py into src/generated/story_text.c and checked against the source's own comment beside it. Line 3 of Mortal Kombat 3 tip 2.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk3_tip2_str_tbl",
@@ -21734,10 +21734,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "A pointer table naming tip 2's three lines. The rows it names are extracted by tools/wlstring.py; the table itself is the order they go in, which is the order they are emitted.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk3_tip_prompt1",
@@ -21749,10 +21749,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "A JAM_STR plate and an UNCOMPRESSED string -- the prompt above a Mortal Kombat 3 tip. Plain .string data, unlike the tip lines themselves, which are packed six bits to a character.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk3_tip_prompt2",
@@ -21764,10 +21764,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "A JAM_STR plate and an UNCOMPRESSED string -- the prompt above a Mortal Kombat 3 tip. Plain .string data, unlike the tip lines themselves, which are packed six bits to a character.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk3_tip_prompt4",
@@ -21779,10 +21779,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "A JAM_STR plate and an UNCOMPRESSED string -- the prompt above a Mortal Kombat 3 tip. Plain .string data, unlike the tip lines themselves, which are packed six bits to a character.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk3_tip_prompt5",
@@ -21794,10 +21794,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "A JAM_STR plate and an UNCOMPRESSED string -- the prompt above a Mortal Kombat 3 tip. Plain .string data, unlike the tip lines themselves, which are packed six bits to a character.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk3_tip_prompt_str_tbl",
@@ -21809,10 +21809,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "A pointer table naming the prompt lines above a tip. The rows it names are extracted by tools/wlstring.py; the table itself is the order they go in, which is the order they are emitted.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk3_tip_str_tbl",
@@ -21824,10 +21824,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "A pointer table naming the two tips. The rows it names are extracted by tools/wlstring.py; the table itself is the order they go in, which is the order they are emitted.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk_a0",
@@ -21854,10 +21854,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "An object record -- x, y, z, image, DMA flags, class -- for icon 1 of Mortal Kombat 3 code 1, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk_code1_2",
@@ -21869,10 +21869,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "An object record -- x, y, z, image, DMA flags, class -- for icon 2 of Mortal Kombat 3 code 1, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk_code1_3",
@@ -21884,10 +21884,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "An object record -- x, y, z, image, DMA flags, class -- for icon 3 of Mortal Kombat 3 code 1, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk_code1_4",
@@ -21899,10 +21899,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "An object record -- x, y, z, image, DMA flags, class -- for icon 4 of Mortal Kombat 3 code 1, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk_code1_5",
@@ -21914,10 +21914,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "An object record -- x, y, z, image, DMA flags, class -- for icon 5 of Mortal Kombat 3 code 1, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk_code1_6",
@@ -21929,10 +21929,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "An object record -- x, y, z, image, DMA flags, class -- for icon 6 of Mortal Kombat 3 code 1, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk_code2_1",
@@ -21944,10 +21944,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "An object record -- x, y, z, image, DMA flags, class -- for icon 1 of Mortal Kombat 3 code 2, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk_code2_2",
@@ -21959,10 +21959,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "An object record -- x, y, z, image, DMA flags, class -- for icon 2 of Mortal Kombat 3 code 2, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk_code2_3",
@@ -21974,10 +21974,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "An object record -- x, y, z, image, DMA flags, class -- for icon 3 of Mortal Kombat 3 code 2, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk_code2_4",
@@ -21989,10 +21989,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "An object record -- x, y, z, image, DMA flags, class -- for icon 4 of Mortal Kombat 3 code 2, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk_code2_5",
@@ -22004,10 +22004,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "An object record -- x, y, z, image, DMA flags, class -- for icon 5 of Mortal Kombat 3 code 2, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk_code2_6",
@@ -22019,10 +22019,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "An object record -- x, y, z, image, DMA flags, class -- for icon 6 of Mortal Kombat 3 code 2, laid out twenty-four pixels along from the last. The IMAGE is the part that carries the code, and tools/wlstring.py extracts the six of them in order into wm_mk3_code_icons.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk_code_frame",
@@ -22034,10 +22034,10 @@
    "local": true,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It the frame the code icons sit in.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk_code_tbl1",
@@ -22049,10 +22049,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "A pointer table naming code 1's six icons. The rows it names are extracted by tools/wlstring.py; the table itself is the order they go in, which is the order they are emitted.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk_code_tbl2",
@@ -22064,10 +22064,10 @@
    "local": true,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "data",
+   "evidence": "A pointer table naming code 2's six icons. The rows it names are extracted by tools/wlstring.py; the table itself is the order they go in, which is the order they are emitted.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "mk_pcurs",
@@ -22184,10 +22184,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It slides the power-up bars on.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "move_razor",
@@ -22334,8 +22334,8 @@
    "local": false,
    "external_callers": 3,
    "references": 4,
-   "status": "hardware",
-   "evidence": "Silences the sound board.",
+   "status": "partial",
+   "evidence": "wm_sound_clear_ram",
    "from_generated": false,
    "ledgered": true
   },
@@ -23339,10 +23339,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It the power-up bar's labels.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "push_in_anim",
@@ -23579,10 +23579,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It clears the queue.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "reset_for_round",
@@ -23699,10 +23699,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "cited",
-   "evidence": "ring_bell",
+   "status": "renamed",
+   "evidence": "wm_sound_bell_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "ring_out_powerup_check",
@@ -30467,10 +30467,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "cited",
-   "evidence": "show_bonus_icons",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It draws a player's earned icons.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "show_copyright",
@@ -30497,10 +30497,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It draws the queue of them.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "show_gameplay",
@@ -30557,10 +30557,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It draws a Mortal Kombat 3 tip screen.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "show_most_damage",
@@ -30602,10 +30602,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It draws the options screen.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "show_player_options",
@@ -30617,10 +30617,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It draws one player's options screen.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "show_progress_bicons",
@@ -30632,10 +30632,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "show_progress_bicons",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It draws them on the progress screen.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "show_sports_logo",
@@ -31112,10 +31112,10 @@
    "local": false,
    "external_callers": 0,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
+   "status": "process",
+   "evidence": "The same freeze applied to every process rather than the game's, and the same answer: there is no process list here to walk.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "suspend_game",
@@ -31127,10 +31127,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "process",
+   "evidence": "AWARD.ASM's `CREATE 4000h,suspend_game` -- a process that adds to every ACTIVE process's PTIME so the whole game holds still while a message or a tip screen is up. This port has no cooperative process list to freeze: wm_app_tick drives one state machine, and a mode that wants to hold the match simply does not tick it.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "switch_stack",
@@ -31337,10 +31337,10 @@
    "local": true,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "hardware",
+   "evidence": "A full cabinet reset -- CMOS, audits and the watchdog -- reached from the operator menus.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "trap3_handler",
@@ -34683,10 +34683,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "cited",
-   "evidence": "wmania_tune",
+   "status": "renamed",
+   "evidence": "wm_sound_tune_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "wobble_ropes",
@@ -34968,10 +34968,10 @@
    "local": false,
    "external_callers": 1,
    "references": 2,
-   "status": "cited",
-   "evidence": "wrtable_sound",
+   "status": "renamed",
+   "evidence": "wm_sound_wrtable",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "xxx_aborted_attach_anim",
@@ -38013,10 +38013,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "unknown",
-   "evidence": "",
+   "status": "display",
+   "evidence": "AWARD.ASM's display half. The award CONDITIONS -- which icon is earned, when, and by whom -- are translated in wm/award.h and run on the real call sites; this is the object and text drawing that shows them, which this port has no renderer for. It slides the award bar on and off.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   }
  ]
 }

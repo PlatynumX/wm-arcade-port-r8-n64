@@ -152,7 +152,14 @@ typedef enum {
      * same opponent comes round again; let it run out and the game
      * is over.
      */
-    WM_APP_MODE_CONTINUE
+    WM_APP_MODE_CONTINUE,
+    /*
+     * SELECT.ASM:1190 do_game_over, which the declined continue used
+     * to skip straight past on its way back to attract. Four seconds
+     * of GAME OVER with the master volume fading under it, and the
+     * bookkeeping a finished game owes the next one.
+     */
+    WM_APP_MODE_GAME_OVER
 } wm_app_mode;
 
 typedef struct {
@@ -211,6 +218,11 @@ typedef struct {
     /* The continue offer reads a Start EDGE, not the level: a Start
        still held from the match must not buy in by itself. */
     bool continue_start_was_down;
+    /* FADE_MASTER_VOL's own process state, for the one place that
+       starts it: do_game_over. */
+    wm_sound_fade_t volume_fade;
+    /* `SLEEP TSEC*4` -- how long GAME OVER stays up. */
+    int32_t game_over_ticks;
 } wm_app;
 
 void wm_app_init(wm_app *app);

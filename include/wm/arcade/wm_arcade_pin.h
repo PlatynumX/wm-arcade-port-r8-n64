@@ -15,13 +15,16 @@ extern "C" {
  * The pin, which the whole roster's control code asks about and
  * nothing in this port could answer.
  *
- * Every wrestler's control layer already calls a `can_pin` callback --
- * BRET.ASM:275, TAKER.ASM:147 and six more, all translated -- and no
- * caller ever supplied one, so no wrestler in this port has ever been
- * able to pin anybody. That has a second consequence: @p1pins and
- * @p2pins never move, and und_finish_move1 refuses on "this must be my
- * second pin attempt", so the Undertaker's coffin finish is
- * unreachable even with its own monitor running.
+ * Every wrestler's control layer calls a `can_pin` callback --
+ * BRET.ASM:275, TAKER.ASM:147 and six more, all translated. This header
+ * used to add that no caller ever supplied one, "so no wrestler in this
+ * port has ever been able to pin anybody", and that @p1pins/@p2pins
+ * therefore never move and the Undertaker's coffin finish is
+ * unreachable. All three have been false for a while: the callback is
+ * supplied in three places (wm_bret_backend_callbacks and both
+ * wm_wrestler_backend_callbacks variants), wm_arcade_pins_award moves
+ * the counts from the live match tick, and und_finish_move1's "this must
+ * be my second pin attempt" is a real test against a real number.
  *
  * Two routines, from two files, both of them the real thing.
  */

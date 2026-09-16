@@ -68,18 +68,17 @@ void wm_arcade_add_to_combo_count(wm_arcade_actor_t *a, int32_t move_bits);
  * which both paths clear -- COMBO_FLASH_FLAG zeroed and the
  * FLASH_COMBO_PID process killed -- so combo_flash goes off here too.
  *
- * Neither has a live caller in this port, for two different reasons,
- * and both are worth knowing:
+ * clear_combo_meter has exactly one caller in the arcade,
+ * DOINK.ASM:3100's `#dobuck` -- the successful button-mash revival --
+ * and it is LIVE here now. This header used to argue the opposite, that
+ * `#dobuck` was unreachable "because CHECK_COMBO_GO can never report a
+ * lit meter while nothing fills one". Something does fill one:
+ * add_to_combo_count, three lines up this same file, and it has since
+ * ANI_ADD_MOVE was translated.
  *
- *   clear_combo_meter has exactly one in the arcade, DOINK.ASM:3100's
- *   `#dobuck` -- the successful button-mash revival -- and
- *   wm/arcade/wm_arcade_mode_dead.h already proves at length that
- *   `#dobuck` is unreachable here, because CHECK_COMBO_GO can never
- *   report a lit meter while nothing fills one.
- *
- *   halve_combo_meter has no live caller in the ARCADE either: its only
- *   two call sites, SHAWN.ASM:1410 and :1413, are both commented out.
- *   What is left is the `.ref` at SHAWN.ASM:43, which is a declaration.
+ * halve_combo_meter has no live caller in the ARCADE either: its only
+ * two call sites, SHAWN.ASM:1410 and :1413, are both commented out.
+ * What is left is the `.ref` at SHAWN.ASM:43, which is a declaration.
  */
 void wm_arcade_clear_combo_meter(wm_arcade_actor_t *a);
 void wm_arcade_halve_combo_meter(wm_arcade_actor_t *a);

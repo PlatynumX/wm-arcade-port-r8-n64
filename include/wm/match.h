@@ -108,14 +108,15 @@ typedef struct {
        CREATE-ing start_match; #0plyr reads it back for the P1 drone. */
     unsigned index1;
 
-    /* Placeholder single opponent. Not @index2/ladder-derived -- see the
-       file comment above. Drawn with the same RNDRNG0(7)-skip-7 rule as
-       index1 only because no ladder table exists yet to draw it properly. */
+    /*
+     * The first opponent. On the #1plyr and #2plyr paths this is real --
+     * the ladder rung's own first entry, or @index2 -- and only
+     * wm_match_start_attract still draws it, with the same
+     * RNDRNG0(7)-skip-7 rule as index1, because attract mode has no
+     * ladder to read.
+     */
     unsigned opponent_wrestler;
 
-    /* wm_match_start_selected only: which actor (if any) is the #1plyr
-       PTYPE_PLAYER human, and its committed-input edge-detection state.
-       Always false/unused after wm_match_start_attract. */
     /*
      * @buddy_mode_checked and @buddy_mode_on. #2plyr sets the first
      * unconditionally and the second only when BOTH players' powerup

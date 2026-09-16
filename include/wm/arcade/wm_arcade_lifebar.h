@@ -115,10 +115,10 @@ typedef struct wm_arcade_death_anim_callback {
  *           victim->status_flags has WM_STATUS_DEAD_ANIM set, the whole
  *           death-animation dispatch below is skipped entirely (velocities
  *           untouched). None of Bret's wired attacks use those attack_mode
- *           ids and nothing in this port ever sets WM_STATUS_DEAD_ANIM on a
- *           path the live match reaches, so this is always false in
- *           practice today -- translated anyway since it's real, cheap, and
- *           correct the moment either changes.
+ *           ids, but WM_STATUS_DEAD_ANIM IS set on live paths -- the
+ *           REACT1 and REACT9 hit cores both set it, and so does
+ *           ANI_SETOPP_DEADANIM -- so this branch really does fire. An
+ *           earlier note here said nothing ever set it; that was wrong.
  *         - Otherwise, victim's own player_mode (again, before being
  *           overwritten) selects the dispatch, exactly like LIFEBAR.ASM's
  *           own #fall check: WM_PMODE_NORMAL/RUNNING/INAIR/INAIR2/BOUNCING/
@@ -168,16 +168,18 @@ typedef struct wm_arcade_death_anim_callback {
  * other real sound call a no-op too, wm_arcade_bret_callbacks_t.sound is
  * never wired anywhere, so adding a bridge for only this one call would be
  * inconsistent with every other already-real Bret sound cue), the #grnd
- * convulse_t/hitonground dispatch (real, but only reachable when a
- * wrestler's own player_mode is already WM_PMODE_ONGROUND or WM_PMODE_DEAD
- * at the moment of death, which this port's Bret dispatcher never sets --
- * so not guessed at, since no hrt_hitonground_anim data has been extracted
- * either), the #will_die HEADHELD deferral (sets i_will_die=180 without
- * immediately dying, but needs an eventual consumer this port doesn't have
- * and WM_PMODE_HEADHELD is likewise never set on Bret -- folded into the
- * same immediate catch-all as every other unmatched mode instead of
- * guessing at that consumer), and flash_red (pure lifebar-rendering
- * feedback, no rendering system exists here).
+ * convulse_t/hitonground dispatch -- and BOTH reasons this was skipped
+ * for have stopped being true, so it is a real open gap rather than an
+ * unreachable one. It was said to need a player_mode of ONGROUND or DEAD
+ * at the moment of death "which this port's Bret dispatcher never sets":
+ * four live sites set ONGROUND (ANI_WAITROLL, the attach-anim release,
+ * mode_dead's own buckoff, and the slam victim's landing). And it was
+ * said that "no hrt_hitonground_anim data has been extracted either":
+ * all nine wrestlers' hitonground animations are in the generated
+ * programs. What remains is the dispatch itself. The #will_die HEADHELD
+ * deferral (sets i_will_die=180 without immediately dying) still needs
+ * an eventual consumer this port does not have, and flash_red is pure
+ * lifebar rendering.
  */
 void wm_arcade_adjust_health(wm_arcade_actor_t *victim, int16_t delta,
                              wm_arcade_actor_t *damage_source,

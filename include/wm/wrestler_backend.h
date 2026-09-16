@@ -34,9 +34,9 @@ extern "C" {
  *     path and the REACT1.ASM hit path already share.
  *   - mode_dead: DOINK.ASM's shared mode_dead (wm/arcade/wm_arcade_mode_dead.h),
  *     which every wrestler's own mode_table[9] points at.
- *   - check_combo_go: LIFEBAR.ASM's combo-meter gate, which this port's own
- *     established finding (wm_arcade_mode_dead.h) proves always reports
- *     "not lit" here.
+ *   - check_combo_go: LIFEBAR.ASM's combo-meter gate, answered for real
+ *     from the wrestler's own COMBO_SIZE (wm/arcade/wm_arcade_combo.h).
+ *     This used to be a hardcoded "not lit".
  *
  * Every animation/sound seam is left NULL on purpose. The per-wrestler
  * dispatchers (wm_arcade_move_taker/yoko/shawn/bam/doink/lex, and Razor's

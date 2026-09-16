@@ -46,8 +46,11 @@ int wm_arcade_get_live_bits(wm_arcade_actor_t *const *actors, size_t actor_count
  * pin-based winner selection, DO_ROUNDS/p1rounds/p2rounds best-of-3
  * tracking, match_over, and postgame_audits. A double-KO (both sides dying
  * the same tick) resolves as a draw (decided_winner_side=-1) here rather
- * than guessing at set_winner's real pin-priority tie-break, which this
- * port cannot reach anyway without a translated PIN system.
+ * than guessing at set_winner's real pin-priority tie-break. That used
+ * to be justified with "which this port cannot reach anyway without a
+ * translated PIN system"; the pin system IS translated and wired
+ * (wm/arcade/wm_arcade_pin.h), so what is left is simply that
+ * set_winner's tie-break has not been read out of the source yet.
  */
 typedef struct {
     /* 0 before any all-dead condition and after a round is decided;

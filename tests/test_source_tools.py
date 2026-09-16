@@ -3635,6 +3635,124 @@ def test_every_branch_op_is_listed_as_one() -> None:
             assert "BRANCHES[" in chunk, chunk
 
 
+# ---------------------------------------------------------------------
+# Reachability claims
+#
+# Three features in a row turned out to be the same thing: code that was
+# fully translated, had no caller, and sat behind a confident comment
+# explaining why it could not be reached. The final battle, the
+# out-of-ring half of confine_wrestler, and the buckoff revival were all
+# found that way, and in each case the comment's PREMISES had gone stale
+# while its conclusion stayed on the page.
+#
+# A comment cannot be tested in general. What CAN be tested is the
+# specific mechanical premise such a comment rests on -- "nothing ever
+# sets X", "no caller supplies Y", "no data exists for Z" -- so each one
+# is written down here as a claim with a way to check it. A claim that
+# stops being true fails this test, which is the only thing that stops
+# the next one rotting in place.
+#
+# kind:
+#   "no-writer"   nothing assigns the named field/flag anywhere in src/
+#   "no-supplier" nothing assigns the named callback member
+#   "no-data"     no generated animation program has the named label
+REACHABILITY_CLAIMS = (
+    # wm/arcade/wm_arcade_mode_dead.h: no app mode starts a rumble, so
+    # @royal_rumble stays zero and the rumble gates never fire. Checked
+    # as "nothing writes it true".
+    ("royal_rumble", "no-true-writer",
+     "wm/arcade/wm_arcade_mode_dead.h and wm_arcade_round.h both rest on "
+     "royal_rumble being permanently false"),
+    # wm/arcade/wm_arcade_lifebar.h: the #will_die HEADHELD deferral has
+    # no consumer because nothing puts a wrestler in HEADHELD.
+    ("WM_PMODE_HEADHELD", "no-mode-writer",
+     "wm/arcade/wm_arcade_lifebar.h's #will_die deferral is skipped for "
+     "want of anything that sets HEADHELD"),
+)
+
+
+def _src_files():
+    root = pathlib.Path(__file__).resolve().parents[1]
+    for sub in ("src/core", "src/platform"):
+        d = root / sub
+        if not d.exists():
+            continue
+        for p in sorted(d.rglob("*.c")):
+            # Generated tables are data, not behaviour: a mode named in a
+            # shipped table is not the same as code putting a wrestler in it.
+            if "generated" in p.parts:
+                continue
+            yield p
+
+
+def _strip_comments(text: str) -> str:
+    """Crudely blank out /* */ and // so a claim's own prose cannot
+    satisfy the claim it is making."""
+    out, i, n = [], 0, len(text)
+    while i < n:
+        if text.startswith("/*", i):
+            j = text.find("*/", i + 2)
+            i = n if j < 0 else j + 2
+            out.append(" ")
+        elif text.startswith("//", i):
+            j = text.find("\n", i)
+            i = n if j < 0 else j
+            out.append(" ")
+        else:
+            out.append(text[i])
+            i += 1
+    return "".join(out)
+
+
+def test_every_reachability_claim_still_holds() -> None:
+    """Re-verify the mechanical premise under each "unreachable" comment.
+
+    This does not check that the comments are well written; it checks
+    that the facts they assert are still facts. A failure here means a
+    comment somewhere is now lying, and that whatever it was excusing
+    may be real work waiting to be done.
+    """
+    root = pathlib.Path(__file__).resolve().parents[1]
+    bodies = {p: _strip_comments(p.read_text()) for p in _src_files()}
+
+    for name, kind, why in REACHABILITY_CLAIMS:
+        hits = []
+        for p, body in bodies.items():
+            if kind == "no-true-writer":
+                pats = (r"\b%s\s*=\s*(?:true|1)\b" % re.escape(name),)
+            elif kind == "no-mode-writer":
+                pats = (r"player_mode\s*=\s*%s\b" % re.escape(name),
+                        r"=\s*\(uint16_t\)%s\b" % re.escape(name))
+            elif kind == "no-supplier":
+                pats = (r"\.%s\s*=" % re.escape(name),)
+            else:
+                raise AssertionError("unknown claim kind %r" % kind)
+            for pat in pats:
+                for m in re.finditer(pat, body):
+                    line = body.count("\n", 0, m.start()) + 1
+                    hits.append("%s:%d" % (p.relative_to(root), line))
+        assert not hits, (
+            "reachability claim about %r no longer holds (%s).\n"
+            "Written to: %s\n"
+            "The comment resting on it needs correcting, and whatever it "
+            "was excusing may now be reachable." % (name, why, ", ".join(hits)))
+
+
+def test_the_reachability_claims_are_actually_checkable() -> None:
+    """Every claim must name something the tree really contains.
+
+    Without this the test above passes trivially for a typo, which is
+    exactly how a guard stops guarding.
+    """
+    root = pathlib.Path(__file__).resolve().parents[1]
+    haystack = "".join(p.read_text() for p in _src_files())
+    for hdr in sorted((root / "include").rglob("*.h")):
+        haystack += hdr.read_text()
+    for name, _kind, _why in REACHABILITY_CLAIMS:
+        assert name in haystack, \
+            "reachability claim names %r, which appears nowhere" % name
+
+
 def main() -> int:
     test_wlanim()
     test_wlprogram()
@@ -3728,6 +3846,8 @@ def main() -> int:
     test_source_inventory()
     test_port_manifest()
     test_source_text_bundle()
+    test_every_reachability_claim_still_holds()
+    test_the_reachability_claims_are_actually_checkable()
     print("source tool tests passed")
     return 0
 

@@ -155,6 +155,13 @@ typedef struct {
     int32_t num_opps;
 
     /*
+     * AWARD.ASM's `combos_on` powerup, a global in the source. The app
+     * copies it in from its powerup flags at match start; CHECK_COMBO_GO
+     * reads it to decide whether the combo-meter threshold is 16 or 0.
+     */
+    int32_t instant_combos_on;
+
+    /*
      * PROGRESS.ASM:131 FINAL_BATTLE_LINEUP / :137 FINAL_PTR, BORROWED.
      * The pregame builds the queue and owns the storage; the match only
      * reads and advances it, which is exactly the split the source has

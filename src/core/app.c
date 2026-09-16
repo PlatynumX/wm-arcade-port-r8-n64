@@ -779,6 +779,8 @@ void wm_app_tick_dual(wm_app *app,
         powerup_window_close(app,
                              app->match_pstatus ? app->match_pstatus : 1,
                              app->pregame.opponent_count);
+        /* AWARD.ASM's combos_on powerup, read by CHECK_COMBO_GO. */
+        app->match.instant_combos_on = app->powerups.instant_combos_on;
         wm_app_bind_anim_env(app);
         if (app->match_pstatus == 3) {
             /* start_match's #2plyr. No royal-rumble app mode exists yet. */

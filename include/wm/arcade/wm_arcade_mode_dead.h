@@ -1,6 +1,9 @@
 #ifndef WM_ARCADE_MODE_DEAD_H
 #define WM_ARCADE_MODE_DEAD_H
 
+#include <stdbool.h>
+#include <stddef.h>
+
 #include "wm/arcade/wm_arcade_combat.h"
 
 #ifdef __cplusplus
@@ -9,73 +12,110 @@ extern "C" {
 
 /*
  * DOINK.ASM:2920 SUBR mode_dead ;9 -- the shared MODE_DEAD entry every
- * wrestler's own #mode_table[9] points at via .ref (confirmed identical in
- * BRET.ASM:1305, RAZOR.ASM:1153, etc: it is one real routine, not
- * per-wrestler code). wm_arcade_move_bret's own MODE_DEAD case already
- * calls a `mode_dead` callback for this; it was left unwired (NULL).
+ * wrestler's own #mode_table[9] points at (confirmed identical in
+ * BRET.ASM:1305, RAZOR.ASM:1153 and the rest: it is one real routine,
+ * not per-wrestler code).
  *
- * The real routine's job is deciding whether a freshly-dead wrestler gets
- * a "buckoff" comeback-to-life chance (mashing buttons to revive as a
- * zombie), gated on three checks, in order:
- *   1. `@royal_rumble` nonzero -> bail immediately, no flag even set.
- *   2. `is_8_on_1()` (PROGRESS.ASM:1516): reads `@belt_type`/`@CURRENT_LADDER`
- *      against the ladder's own final-battle slot.
- *   3. Own-side round-loss count (`@p1rounds`/`@p2rounds`) is 0 -> skip
- *      straight to "no buckoff"; otherwise fall through to a combo-meter
- *      check, `CHECK_COMBO_GO` (LIFEBAR.ASM:718): compares the player's
- *      `life_data[...].PLT_COMBO_SIZE` against 16, or against 0 if
- *      `@instant_combos_on` is set (an AWARD.ASM credit-screen powerup
- *      toggle).
+ * Its job is deciding whether a freshly-dead wrestler gets a "buckoff"
+ * -- the button-mashing comeback that brings him back to life as a
+ * zombie. This port used to collapse every path through it to the same
+ * outcome, on an argument that has since stopped being true in two of
+ * its three parts:
  *
- * Two of those are still always false/zero here; the middle one no
- * longer is, and that correction matters:
- *   - `@royal_rumble`: this port has no royal rumble mode at all (no app
- *     mode starts one), so it never leaves its zero default.
- *   - `is_8_on_1`: this USED to be argued away on the grounds that
- *     `@belt_type` and `@CURRENT_LADDER` belonged to an unimplemented
- *     ladder. They do not: the belt is chosen at the pregame and the
- *     ladder is real, so a championship run that reaches its last rung
- *     IS an eight-on-one. What that changes for this routine is only the
- *     round-count branch, which is skipped in an eight-on-one in favour
- *     of `#ck81` ("only the player is allowed to buckoff", PLYRNUM < 2);
- *     both sides still end at CHECK_COMBO_GO
- *   - `CHECK_COMBO_GO`: this port never tracks per-player combo-meter fill
- *     (`life_data[...].PLT_COMBO_SIZE`) at all -- only life itself is real,
- *     via `init_life_data` -- so it stays at its zero default, always below
- *     the 16 threshold; and `@instant_combos_on` is a BSS flag only ever
- *     set by AWARD.ASM's credit/powerup screens, entirely outside this
- *     port's scope (see the credit/buy-in boundary), so it also never
- *     leaves its zero default and the 0-threshold "auto combos" bypass is
- *     never taken either. So `CHECK_COMBO_GO` always reports "not lit",
- *     regardless of the round-loss count that gates whether it even runs.
+ *   - `@royal_rumble` really is always zero here: no app mode starts a
+ *     rumble. That part stands.
+ *   - `is_8_on_1` was argued away because belt_type and CURRENT_LADDER
+ *     "belong to the same unimplemented ladder system". They do not --
+ *     the belt is chosen at the pregame, the ladder is real, and the
+ *     final rung of a championship run IS an eight-on-one.
+ *   - `CHECK_COMBO_GO` was argued away because the port tracked no
+ *     combo-meter fill. It does: add_to_combo_count writes COMBO_SIZE,
+ *     and wm_arcade_check_combo_go now answers the real question.
  *
- * That means the real routine's own round-count branch doesn't change the
- * outcome (both sides of it end at "#nobuck"), so this translation doesn't
- * need round-score data at all: wm_arcade_mode_dead(actor) always takes
- * the real "#nobuck" path on a wrestler's first dead tick -- setting
- * WM_STATUS_NO_BUCKOFF, exactly like the source's own
- * `STATUS_FLAGS |= M_NO_BUCKOFF` -- and, like the source's own top-of-
- * function early-outs, is a genuine no-op on every tick after (checked via
- * WM_STATUS_ZOMBIE/DID_BUCKOFF/NO_BUCKOFF/DO_BUCKOFF exactly as the source
- * checks B_ZOMBIE/DID_BUCKOFF/NO_BUCKOFF/DO_BUCKOFF).
+ * So the whole routine is translated, and the buckoff can actually
+ * happen. The gates, in the source's own order:
  *
- * The `#zmb` zombie-transform tail IS translated now, in
- * wm/arcade/wm_arcade_final_battle.h, and reached from the match's own
- * tick rather than from here -- finishing a transform needs init_smoves'
- * tables and the life data, which only the match has. It is no longer
- * unreachable either: `#dobuck` is not the only way to become a zombie.
- * ANIM.ASM's _ani_waitroll promotes a drone straight off the
- * FINAL_BATTLE_LINEUP queue when he dies in the final battle, with no
- * buckoff involved at all.
+ *   1. Already a zombie -> the `#zmb` tail, which is
+ *      wm_final_zombie_tick in wm/arcade/wm_arcade_final_battle.h and is
+ *      driven from the match rather than here, because completing a
+ *      transform needs init_smoves' tables and the life data.
+ *   2. DID_BUCKOFF -> one per match, and he has had it.
+ *   3. NO_BUCKOFF -> already checked and refused this round.
+ *   4. DO_BUCKOFF -> already counting; go straight to the button count.
+ *   5. `@royal_rumble` -> no buckoff in a rumble, and no flag set either.
+ *   6. Is this the SECOND round he has lost? Skipped entirely in an
+ *      eight-on-one, which instead applies `#ck81`: "only the player is
+ *      allowed to buckoff", i.e. PLYRNUM below 2.
+ *   7. Is his combo meter lit (CHECK_COMBO_GO)?
+ *   8. Is he INSIDE the ring?
+ *   9. Is the Undertaker's finish move running or finished? Either one
+ *      refuses -- "Buckoff is NOT allowed if undertaker started his
+ *      finish move or has completed his finish move!!!!"
  *
- * STILL not translated: the `#count_btns`/`#dobuck` button-mashing
- * buckoff revival itself (sets WM_STATUS_ZOMBIE, does the opponent's
- * pin-broken/raise-arm bookkeeping, `clear_combo_meter`), gated on
- * CHECK_COMBO_GO, which this port answers "not lit" from a combo-meter
- * fill it does not track per player. That gate is the one thing keeping
- * the buckoff out, and it is a smaller claim than the one this comment
- * used to make.
+ * Pass all of them and BUCKOFF_COUNT is zeroed and DO_BUCKOFF set; fail
+ * any and NO_BUCKOFF is set, which is what stops it being re-asked every
+ * tick for the rest of the round.
  */
+
+/*
+ * What mode_dead needs that is not on the wrestler, and what it decides
+ * that it cannot carry out.
+ *
+ * The source reads five globals and walks process_ptrs; this is that,
+ * gathered by the caller. A NULL env is treated as "no information",
+ * which fails the gates rather than passing them.
+ */
+typedef struct {
+    /* @p1rounds / @p2rounds -- rounds lost by each SIDE. */
+    int32_t rounds[2];
+    /* is_8_on_1(), and @royal_rumble. */
+    bool eight_on_one;
+    bool royal_rumble;
+    /* AWARD.ASM's combos_on powerup, for CHECK_COMBO_GO's threshold. */
+    int32_t instant_combos_on;
+    /* @in_finish_move and @finish_completed. */
+    bool in_finish_move;
+    bool finish_completed;
+    /* process_ptrs, for #dobuck's three sweeps. */
+    wm_arcade_actor_t *const *actors;
+    size_t actor_count;
+} wm_mode_dead_env_t;
+
+typedef struct {
+    /* He passed, mashed enough, and came back to life this tick. */
+    bool bucked_off;
+    /*
+     * `FACETBL hitonground_tbl / calla change_anim1a` on himself, and
+     * `FACETBL #buckoff_tbl` on whichever opponent had pinned him. Both
+     * are per-wrestler animation-table dispatches, so the choice is
+     * reported and the caller plays it.
+     */
+    bool convulse;
+    wm_arcade_actor_t *pinner_to_buck;
+    /* `CREATE MESSAGE_PID,MOVE_NAME_ANNC` with a10=41 -- the "second
+       wind" message sliding out. Display, so it is reported. */
+    bool second_wind_message;
+} wm_mode_dead_result_t;
+
+/*
+ * DOINK.ASM:3067 `#count_btns` fires at 50. The count is of BUTTON
+ * PRESSES, not ticks: the source pops every set bit out of BUT_VAL_DOWN
+ * with `lmo`/`rl`/`sla` and adds however many it found.
+ */
+#define WM_BUCKOFF_TARGET 50
+
+/* `movk 2,a0 / calla adjust_health` -- the two points he comes back with. */
+#define WM_BUCKOFF_HEALTH 2
+
+/* The "second wind" message index: `movi 41,a10`. */
+#define WM_BUCKOFF_MESSAGE 41
+
+void wm_arcade_mode_dead_ex(wm_arcade_actor_t *actor,
+                            const wm_mode_dead_env_t *env,
+                            wm_mode_dead_result_t *out);
+
+/* The old entry point: no env, so the gates refuse and this is the
+   NO_BUCKOFF-only behaviour it has always had. */
 void wm_arcade_mode_dead(wm_arcade_actor_t *actor);
 
 #ifdef __cplusplus

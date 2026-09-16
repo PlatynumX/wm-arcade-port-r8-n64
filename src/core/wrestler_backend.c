@@ -1,4 +1,5 @@
 #include "wm/wrestler_backend.h"
+#include "wm/arcade/wm_arcade_combo.h"
 #include "wm/arcade/wm_arcade_pin.h"
 
 #include "wm/arcade/wm_arcade_lifebar.h"
@@ -164,17 +165,21 @@ static void backend_adjust_health(wm_arcade_actor_t *actor, int delta, void *use
 }
 
 static void backend_mode_dead(wm_arcade_actor_t *actor, void *user) {
-    (void)user;
-    wm_arcade_mode_dead(actor);
+    wm_wrestler_backend_actor *st = (wm_wrestler_backend_actor *)user;
+    if (!st) { wm_arcade_mode_dead(actor); return; }
+    wm_arcade_mode_dead_ex(actor, &st->mode_dead_env, &st->mode_dead_result);
 }
 
-/* LIFEBAR.ASM's CHECK_COMBO_GO: this port never tracks per-player
-   combo-meter fill at all, so it always reports "not lit" (negative) --
-   see wm/arcade/wm_arcade_mode_dead.h's own already-established finding,
-   and wm_arcade_bret_drone.c's identical gate for DRONE.ASM's drn_combo. */
+/*
+ * LIFEBAR.ASM:718 CHECK_COMBO_GO, for real. This used to return a flat
+ * -1 ("never lit") on the grounds that the port tracked no combo-meter
+ * fill; it does -- add_to_combo_count has been writing COMBO_SIZE for a
+ * while -- so the gate can answer honestly now.
+ */
 static int backend_check_combo_go(wm_arcade_actor_t *actor, void *user) {
-    (void)actor; (void)user;
-    return -1;
+    wm_wrestler_backend_actor *st = (wm_wrestler_backend_actor *)user;
+    return (int)wm_arcade_check_combo_go(
+        actor, st ? st->instant_combos_on : 0);
 }
 
 /*

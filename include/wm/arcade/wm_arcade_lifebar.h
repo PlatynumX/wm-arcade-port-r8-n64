@@ -97,10 +97,11 @@ typedef struct wm_arcade_death_anim_callback {
  *       nonzero, death is deferred: life becomes 1 and victim->i_will_die
  *       is set instead, matching mode_normal's own I_WILL_DIE resolution
  *       (BRET.ASM:1325-1350, translated in every wm_arcade_move_* wrestler
- *       dispatcher already). This is real but currently unreachable in this
- *       port: nothing yet increments combo_count anywhere (which also
- *       means the delta-override branch above is currently unreachable the
- *       same way).
+ *       dispatcher already). This used to be recorded as unreachable
+ *       because "nothing yet increments combo_count anywhere"; that
+ *       stopped being true once ANI_ADD_MOVE and ANI_INC_COMBO were
+ *       translated, so both this and the delta-override branch above are
+ *       live.
  *     - LIFEBAR.ASM:1591-1725: a genuine death (life reaches 0, not
  *       deferred) runs the real death-dispatch tail before finally setting
  *       player_mode to WM_PMODE_DEAD and turning off further hit checks
@@ -149,15 +150,16 @@ typedef struct wm_arcade_death_anim_callback {
  *     rapid-hit check) but nothing ever wrote it before this, so repeated
  *     attacks always dealt full_damage regardless of timing.
  *
- * NOT translated: CHECK_COMBO_GO (LIFEBAR.ASM:718 -- now actually located,
- * see wm/arcade/wm_arcade_mode_dead.h's own full derivation for why it's
- * provably always "not lit" in this port: no per-player combo-meter-fill
- * tracking at all, and instant_combos_on's 0-threshold bypass is an
- * AWARD.ASM credit-screen powerup toggle this port's credit system never
- * sets either -- so this function always allowing both combo_count
- * branches above, rather than gating them on CHECK_COMBO_GO like the
- * source does, is stricter than the source in a way that provably never
- * matters here), the lifebar flash-warning process (needs `ck_any_
+ * NOW TRANSLATED: CHECK_COMBO_GO (LIFEBAR.ASM:718), in
+ * wm/arcade/wm_arcade_combo.h. It was previously argued to be "provably
+ * always not lit" here on the grounds that no per-player combo-meter
+ * fill was tracked. It is: PLT_COMBO_SIZE lives on the wrestler as
+ * COMBO_SIZE and add_to_combo_count writes it. instant_combos_on is a
+ * real AWARD.ASM powerup too, and this port's powerup entry runs now, so
+ * the 0-threshold bypass is reachable as well. Both combo_count branches
+ * above are gated on it as the source gates them.
+ *
+ * NOT translated: the lifebar flash-warning process (needs `ck_any_
  * teammates` and a `flash_obj`/`FLASH_PID` rendering process this port
  * doesn't have -- see wm_arcade_calc_closest's own note on the fixed
  * 2-actor boundary), ACTUAL_PLYRNUM/royal-rumble teammate propagation,

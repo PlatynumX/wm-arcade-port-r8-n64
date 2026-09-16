@@ -1,4 +1,5 @@
 #include "wm/arcade/wm_arcade_drone_data.h"
+#include "wm/arcade/wm_arcade_combo.h"
 #include "wm/arcade/wm_arcade_roster.h"
 #include "wm/arcade/wmania_ring_geometry.h"
 #include "wm/wrestler_anim_tables.h"
@@ -1208,18 +1209,22 @@ static int32_t headhold_delay_max_cb(int skill, void *user) { (void)user; return
 static int32_t headheld_delay_max_cb(int skill, void *user) { (void)user; return wm_arcade_drone_headheld_delay_max(skill); }
 
 /*
- * CHECK_COMBO_GO (LIFEBAR.ASM:718): this port's own already-established
- * finding (wm_arcade_mode_dead.h) is that it always reports "not lit" --
- * no per-player combo-meter fill is tracked here, only life itself. DRONE.
- * ASM's own drn_combo gate (`jrlt #ncmb ;Can't combo?`) uses the exact same
- * external routine, so it must report the same "can't combo" result here
- * too: returning a negative value (matching LIFEBAR.ASM's own convention)
- * keeps wm_arcade_drone_main's `>= 0` gate closed, exactly like the real
- * arcade's own combo meter -- always empty in this port -- would.
+ * CHECK_COMBO_GO (LIFEBAR.ASM:718), now real. This used to return a flat
+ * -1 on the basis of an older finding -- "no per-player combo-meter fill
+ * is tracked here, only life itself" -- which has not been true since
+ * add_to_combo_count started writing COMBO_SIZE. DRONE.ASM's drn_combo
+ * gate (`jrlt #ncmb ;Can't combo?`) calls the same routine, so a drone
+ * whose meter really is lit can now combo, which is what the arcade
+ * does.
+ *
+ * instant_combos_on is not reachable from this callback's `user` (the
+ * drone data tables carry no powerup state), so the normal 16 threshold
+ * is used. That is the powerup being OFF, which is its default and the
+ * only value any drone has ever seen here.
  */
 static int check_combo_go_cb(wm_arcade_actor_t *actor, void *user) {
-    (void)actor; (void)user;
-    return -1;
+    (void)user;
+    return (int)wm_arcade_check_combo_go(actor, 0);
 }
 
 static wm_arcade_actor_t *closest_actor_cb(wm_arcade_actor_t *actor, void *user) {

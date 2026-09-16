@@ -2,6 +2,7 @@
 #define WM_BRET_BACKEND_H
 
 #include "wm/anim_program.h"
+#include "wm/arcade/wm_arcade_mode_dead.h"
 #include "wm/arcade/wm_arcade_bret.h"
 #include "wm/arcade/wm_arcade_joystat.h"
 #include "wm/frame_geometry.h"
@@ -113,6 +114,20 @@ typedef struct {
        callback -- LIFEBAR.ASM adjust_health's "attract mode never dies"
        rule, see wm/arcade/wm_arcade_lifebar.h. */
     bool attract_mode;
+    /*
+     * AWARD.ASM's `combos_on` powerup, a global in the source and read
+     * here by CHECK_COMBO_GO: with it set every combo meter counts as
+     * lit. The match copies it in from the app's powerup flags.
+     */
+    int32_t instant_combos_on;
+    /*
+     * DOINK.ASM mode_dead's five globals and its process_ptrs sweep,
+     * gathered by the match each tick, and what the routine decided that
+     * needs an animation system to carry out. The match fills the env
+     * before the backend runs and reads the result after.
+     */
+    wm_mode_dead_env_t mode_dead_env;
+    wm_mode_dead_result_t mode_dead_result;
     /* Set by the caller every tick (alongside wm_arcade_bret_env_t.pcnt,
        the same value) and read by the adjust_health callback for
        LIFEBAR.ASM adjust_health's LAST_DAMAGE timestamp update. */

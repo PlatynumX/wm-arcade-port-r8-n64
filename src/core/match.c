@@ -740,6 +740,62 @@ static void match_confine_actor(wm_match_state *m, unsigned i,
     }
 }
 
+/*
+ * DOINK.ASM mode_dead's five globals and its process_ptrs sweep, handed
+ * to whichever backend is about to run the wrestler's MODE_DEAD case.
+ */
+static wm_mode_dead_env_t match_mode_dead_env(wm_match_state *m,
+                                              wm_arcade_actor_t *const *ptrs) {
+    wm_mode_dead_env_t e;
+    memset(&e, 0, sizeof e);
+    if (!m) return e;
+    /* @p1rounds / @p2rounds. */
+    e.rounds[0] = m->score.p1rounds;
+    e.rounds[1] = m->score.p2rounds;
+    e.eight_on_one = m->eight_on_one;
+    e.royal_rumble = m->royal_rumble;
+    e.instant_combos_on = m->instant_combos_on;
+    e.in_finish_move = m->in_finish_move;
+    e.finish_completed = m->coffin.finish_completed != 0;
+    e.actors = ptrs;
+    e.actor_count = m->actor_count;
+    return e;
+}
+
+/*
+ * What #dobuck decided but could not do: two FACETBL animation
+ * dispatches and a display message.
+ */
+static void match_apply_mode_dead(wm_match_state *m, unsigned i,
+                                  const wm_mode_dead_result_t *r) {
+    if (!m || !r || !r->bucked_off) return;
+
+    /*
+     * `FACETBL hitonground_tbl / calla change_anim1a` -- the convulse he
+     * comes back to life on. Per-wrestler and facing-dependent; this
+     * port has no hitonground table for every wrestler, so the choice is
+     * left to the roster dispatcher's own next selection rather than
+     * guessed at here.
+     */
+    (void)i;
+
+    /*
+     * `FACETBL #buckoff_tbl` onto the man who pinned him. Same
+     * situation: the table is nine per-wrestler labels and only some of
+     * those animations are extracted, so SPECIAL_MOVE_ADDR is not
+     * written from an invented label.
+     */
+    (void)r->pinner_to_buck;
+
+    /*
+     * `calla init_reduce_bog`, "because match_timer clears it when it
+     * sees one team dead" -- and a bucked-off wrestler means it was
+     * wrong about that.
+     */
+    m->debris.no_debris = false;
+    m->debris.reduce_bog = (int32_t)m->actor_count - 2;
+}
+
 static void init_smoves(wm_match_state *m) {
     unsigned i;
     if (!m) return;
@@ -780,6 +836,7 @@ static void init_bret_backends(wm_match_state *m) {
            (PSTATUS==0) -- see wm_arcade_adjust_health. Fixed for the whole
            match: neither start path changes has_human afterward. */
         m->bret_visual[i].attract_mode = !m->has_human;
+        m->bret_visual[i].instant_combos_on = m->instant_combos_on;
         if (m->actors[i].wrestler_num == WM_ROSTER_BRET) {
             wm_arcade_bret_callbacks_t cb = wm_bret_backend_callbacks(&m->bret_visual[i]);
             wm_arcade_bret_ani_init(&m->actors[i], &cb);
@@ -1516,6 +1573,8 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             m->wrestler_visual[i].opponent = opp;
             m->wrestler_visual[i].pcnt = m->tick_count;
             m->wrestler_visual[i].attract_mode = !m->has_human;
+            m->wrestler_visual[i].instant_combos_on = m->instant_combos_on;
+            m->wrestler_visual[i].mode_dead_env = match_mode_dead_env(m, actor_ptrs);
             m->wrestler_visual[i].wrestler_num = m->actors[i].wrestler_num;
             m->wrestler_visual[i].anim_env.opponent = opp;
             m->wrestler_visual[i].anim_env.rng = m->anim_rng;
@@ -1558,6 +1617,8 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
 
             m->bret_visual[i].opponent = opp;
             m->bret_visual[i].pcnt = m->tick_count;
+            m->bret_visual[i].instant_combos_on = m->instant_combos_on;
+            m->bret_visual[i].mode_dead_env = match_mode_dead_env(m, actor_ptrs);
             m->bret_visual[i].anim_env.opponent = opp;
             m->bret_visual[i].anim_env.rng = m->anim_rng;
             m->bret_visual[i].anim_env.pcnt = m->tick_count;
@@ -1686,6 +1747,7 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
                    integration so this tick's confinement uses this tick's
                    own hurt_box. */
                 match_confine_actor(m, i, actor_ptrs);
+                match_apply_mode_dead(m, i, &m->bret_visual[i].mode_dead_result);
             } else {
                 wm_wrestler_backend_tick(&m->wrestler_visual[i], &m->actors[i]);
                 /* These six now have a real, moving hurt_box of their own
@@ -1693,6 +1755,8 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
                    applies to them exactly as it does to Bret -- it reads
                    OBJ_COLLX1/X2, which is what the hurt box is. */
                 match_confine_actor(m, i, actor_ptrs);
+                match_apply_mode_dead(m, i,
+                                      &m->wrestler_visual[i].mode_dead_result);
             }
             /*
              * Position integration used to happen here, through

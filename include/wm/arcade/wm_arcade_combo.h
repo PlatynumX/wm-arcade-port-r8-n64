@@ -85,6 +85,26 @@ void wm_arcade_clear_combo_meter(wm_arcade_actor_t *a);
 void wm_arcade_halve_combo_meter(wm_arcade_actor_t *a);
 
 /*
+ * LIFEBAR.ASM:718 CHECK_COMBO_GO -- "is this player's combo meter lit?"
+ *
+ * The source returns through the flags: `cmp a1,a14 / rets` leaves
+ * COMBO_SIZE minus the threshold, and every caller tests it with jrlt or
+ * jrge. This returns that difference, so a NEGATIVE answer is "not lit"
+ * exactly as the callers already assume.
+ *
+ * The threshold is 16, or ZERO when instant_combos_on -- AWARD.ASM's
+ * `combos_on` powerup, which makes every meter count as full.
+ *
+ * This port keeps PLT_COMBO_SIZE on the wrestler rather than in
+ * life_data's PLYRNUM-indexed row, so the source's own royal-rumble
+ * "change a 1 to a zero" PLYRNUM remap has nothing to do here: it exists
+ * to make two rumble team-mates share one meter row, and a per-wrestler
+ * field is already the thing the remap was reaching for.
+ */
+int32_t wm_arcade_check_combo_go(const wm_arcade_actor_t *a,
+                                 int32_t instant_combos_on);
+
+/*
  * LIFEBAR.ASM:3687 SUBR DO_COMBO_MESS -- "Combo messages come from the
  * scripts", and it is the single most-called ANI_CODE routine in the
  * game: 193 uses across sixteen of the sequence files. It is what ends a

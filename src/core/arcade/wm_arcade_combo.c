@@ -99,3 +99,12 @@ wm_combo_mess_result wm_arcade_do_combo_mess(wm_arcade_actor_t *a,
     a->combo_start = 0;
     return r;
 }
+
+int32_t wm_arcade_check_combo_go(const wm_arcade_actor_t *a,
+                                 int32_t instant_combos_on) {
+    int32_t threshold;
+    if (!a) return -1;
+    /* `move @instant_combos_on,a1 / jrnz #auto_combos / movk 16,a1`. */
+    threshold = instant_combos_on ? 0 : WM_COMBO_SUPER_SIZE;
+    return a->combo_size - threshold;
+}

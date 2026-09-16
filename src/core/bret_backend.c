@@ -591,12 +591,14 @@ void wm_bret_backend_execute_walk(wm_arcade_actor_t *actor, void *user) {
     }
 }
 
-/* wm_arcade_bret_callbacks_t.mode_dead body: DOINK.ASM's shared mode_dead
-   (see wm/arcade/wm_arcade_mode_dead.h) needs nothing but the actor
-   itself in this port's always-reached subset. */
+/* wm_arcade_bret_callbacks_t.mode_dead body: DOINK.ASM's shared
+   mode_dead, which needs the match's globals and roster now that the
+   buckoff is reachable -- see wm/arcade/wm_arcade_mode_dead.h. */
 static void wm_bret_backend_mode_dead(wm_arcade_actor_t *actor, void *user) {
-    (void)user;
-    wm_arcade_mode_dead(actor);
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    if (!bva) { wm_arcade_mode_dead(actor); return; }
+    wm_arcade_mode_dead_ex(actor, &bva->mode_dead_env,
+                           &bva->mode_dead_result);
 }
 
 /* wm_arcade_bret_callbacks_t.check_secret_moves body: WRESTLE.ASM's real

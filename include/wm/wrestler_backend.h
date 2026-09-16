@@ -2,6 +2,7 @@
 #define WM_WRESTLER_BACKEND_H
 
 #include <stdbool.h>
+#include "wm/arcade/wm_arcade_mode_dead.h"
 #include <stdint.h>
 
 #include "wm/arcade/wm_arcade_roster.h"
@@ -49,6 +50,20 @@ typedef struct wm_wrestler_backend_actor {
     wm_arcade_actor_t *opponent;
     uint32_t pcnt;
     bool attract_mode;
+    /*
+     * AWARD.ASM's `combos_on` powerup, a global in the source and read
+     * here by CHECK_COMBO_GO: with it set every combo meter counts as
+     * lit. The match copies it in from the app's powerup flags.
+     */
+    int32_t instant_combos_on;
+    /*
+     * DOINK.ASM mode_dead's five globals and its process_ptrs sweep,
+     * gathered by the match each tick, and what the routine decided that
+     * needs an animation system to carry out. The match fills the env
+     * before the backend runs and reads the result after.
+     */
+    wm_mode_dead_env_t mode_dead_env;
+    wm_mode_dead_result_t mode_dead_result;
     int32_t wrestler_num;
     /*
      * The animation this wrestler is playing, as the ANIM.ASM program it

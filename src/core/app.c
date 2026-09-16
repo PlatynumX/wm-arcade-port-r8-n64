@@ -541,7 +541,6 @@ void wm_app_init(wm_app *app) {
     app->attract_started = false;
 }
 
-
 /*
  * AWARD.ASM:2198 powerup_check and :2182 player_powerup_checker.
  *
@@ -733,19 +732,29 @@ void wm_app_tick_dual(wm_app *app,
                             app->p1_choice,
                             &app->rng);
             app->pregame.win_streak = app->awards.win_streak[0];
-            /* PROGRESS.ASM:284 CLOSE_PROGRESS_SCREEN CREATEs
-               powerup_check; this is the same moment.
-               WM_APP_ROYAL_RUMBLE is the one place this port's
-               always-false royal_rumble is written down, and the
-               match start below reads the same constant. */
-            powerup_window_start(app, WM_APP_ROYAL_RUMBLE);
             app->mode = WM_APP_MODE_PREGAME;
         }
         return;
     }
     if (app->mode == WM_APP_MODE_PREGAME) {
+        const wm_input_state *pregame_input =
+            app->match_pstatus == 2 ? p2_input : input;
+        /*
+         * PROGRESS.ASM:284 CLOSE_PROGRESS_SCREEN CREATEs
+         * powerup_check once per progress screen. There are several
+         * ways into the pregame now (fresh select, a won match, a
+         * continue), so the window opens on whichever of them got
+         * here rather than being wired to one of them.
+         *
+         * Both pads are read regardless of who is playing: the
+         * source runs a checker per player and a code entered by a
+         * player who is not in the match simply never survives
+         * get_powerups' AND.
+         */
+        if (!app->powerup_window_open)
+            powerup_window_start(app, WM_APP_ROYAL_RUMBLE);
         powerup_window_tick(app, input, p2_input);
-        wm_pregame_tick(&app->pregame, input, &app->audio);
+        wm_pregame_tick(&app->pregame, pregame_input, &app->audio);
         if (app->pregame.finished)
             app->mode = WM_APP_MODE_MATCH_INIT;
         return;
@@ -757,25 +766,24 @@ void wm_app_tick_dual(wm_app *app,
                              app->pregame.opponent_count);
         wm_app_bind_anim_env(app);
         if (app->match_pstatus == 3) {
-            /*
-             * start_match's #2plyr. royal_rumble is false for the
-             * same reason it is everywhere else in this port -- there
-             * is no ladder state to ask -- and the two powerup
-             * requests come from AWARD.ASM's own per-player words, so
-             * buddy mode turns on here exactly when both players
-             * entered the code.
-             */
+            /* start_match's #2plyr. No royal-rumble app mode exists yet. */
             wm_match_start_two_player(&app->match, &app->rng, 3,
-                                      app->pregame.player_source_wrestler,
+                                      app->select.selected_source_wrestler,
                                       app->select.p2_selected_source_wrestler,
-                                      WM_APP_ROYAL_RUMBLE,
+                                      false,
                                       (int32_t)app->powerups.p_request[0],
                                       (int32_t)app->powerups.p_request[1]);
         } else {
             /*
              * #1plyr falling into #ndrone: the opponents are the
-             * ladder rung the pregame just settled on, not a draw.
-             * wm_pregame_opponent_at applies SORT_OUT_WRESTLER_NUM.
+             * ladder rung the pregame settled on, not a draw.
+             * wm_pregame_opponent_at has already applied
+             * SORT_OUT_WRESTLER_NUM. Rungs 4 and 5 are two-on-one
+             * and rung 6 is three-on-one, all of which this port
+             * used to play as singles matches.
+             *
+             * `match_pstatus` is 2 when P2 is the sole surviving
+             * human and 1 otherwise.
              */
             uint8_t opps[WM_MATCH_MAX_ACTORS - 1];
             unsigned n = app->pregame.opponent_count;
@@ -784,10 +792,12 @@ void wm_app_tick_dual(wm_app *app,
                 n = (unsigned)(WM_MATCH_MAX_ACTORS - 1);
             for (k = 0; k < n; ++k)
                 opps[k] = wm_pregame_opponent_at(&app->pregame, k);
-            wm_match_start_ladder(&app->match, &app->rng,
-                                  app->pregame.player_source_wrestler,
-                                  app->match_pstatus ? app->match_pstatus : 1,
-                                  opps, n);
+            wm_match_start_one_player_team(
+                &app->match, &app->rng,
+                app->match_pstatus == 2 ? 2 : 1,
+                app->select.selected_source_wrestler,
+                app->select.p2_selected_source_wrestler,
+                n ? opps : NULL, n);
         }
         app->mode = WM_APP_MODE_MATCH;
         return;
@@ -798,7 +808,7 @@ void wm_app_tick_dual(wm_app *app,
            second player's only exists in a two-player match. */
         wm_match_set_input(&app->match, 0, input);
         wm_match_set_input(&app->match, 1,
-                           app->match_pstatus == 3 ? p2_input : NULL);
+                           (app->match_pstatus & 2) ? p2_input : NULL);
         wm_match_tick(&app->match, &cb, input);
         /*
          * WRESTLE.ASM:2087 `move @match_over,a0 / jrz #not_over /
@@ -825,85 +835,99 @@ void wm_app_tick_dual(wm_app *app,
      * score entry, and the finale.
      */
     if (app->mode == WM_APP_MODE_MATCH_OVER) {
-        /* `CLR A0 / MOVE A0,@DONE_HOWARD` -- so he introduces the
-           next select screen again. */
+        int32_t pstatus = app->match.pstatus;
+        int32_t lost_mask;
+
         app->done_howard = false;
-        /* `movi 60,a0 / move a0,@are_we_waiting_f`. */
         app->are_we_waiting_f = 60u;
 
-        /*
-         * `move @PSTATUS,a0 / move @match_winner,a1 / andn a1,a0 /
-         * jrnz #go_buyin` -- did a human LOSE? match_winner is a
-         * PSTATUS-shaped bitmask (1 = side 0, 2 = side 1), and this
-         * port's one human is side 0, so PSTATUS is 1.
-         */
-        {
-            int32_t pstatus = app->match.has_human ? 1 : 0;
-            if ((pstatus & ~app->last_match_winner) == 0) {
-                /*
-                 * "This player will keep on playing. Display ladder
-                 * of progression which shows his next opponent."
-                 * `jruc do_pregame` -- no select screen.
-                 */
-                wm_pregame_next_match(&app->pregame,
-                                      app->awards.win_streak[0]);
-                app->mode = WM_APP_MODE_PREGAME;
-                return;
+        /* WRESTLE.ASM: PSTATUS ANDN match_winner. Every active human
+           bit absent from the winning side is offered buy-in. */
+        lost_mask = pstatus & ~app->last_match_winner;
+        if (lost_mask == 0) {
+            unsigned survivor = (pstatus & 2) && !(pstatus & 1) ? 1u : 0u;
+            if (survivor == 1u) {
+                app->pregame.player_source_wrestler =
+                    app->select.p2_selected_source_wrestler;
+                app->pregame.player_roster_wrestler = app->p2_choice;
             }
+            app->match_pstatus = pstatus;
+            wm_pregame_next_match(&app->pregame,
+                                  app->awards.win_streak[survivor]);
+            app->mode = WM_APP_MODE_PREGAME;
+            return;
         }
 
-        /*
-         * `#go_buyin`. The CPU won, so `clr a0 / move a0,@match_winner`
-         * and CURRENT_LADDER steps back a rung -- a player who
-         * continues faces the same opponent, not the next one.
-         * loser_snd and OLD_PSTATUS are the source's other two here;
-         * loser_snd is a sound this port does not play.
-         */
-        app->last_match_winner = 0;
-        wm_pregame_ladder_back(&app->pregame);
-        wm_select_continue_init(&app->continue_select);
-        app->continue_start_was_down = true;   /* swallow a held Start */
-        wm_select_continue_begin(&app->continue_select, 0u,
-                                 app->pregame.player_source_wrestler,
-                                 false,
-                                 /*
-                                  * A console has no coin door, so the
-                                  * offer is always affordable. The
-                                  * TIMER still runs, which is what
-                                  * actually ends the game: letting it
-                                  * reach zero is declining.
-                                  */
-                                 0u, 0u, true, true,
-                                 &app->awards);
-        app->mode = WM_APP_MODE_CONTINUE;
+        {
+            bool human_won = (pstatus & app->last_match_winner) != 0;
+            unsigned loser = (lost_mask & 1) ? 0u : 1u;
+            const wm_input_state *loser_input = loser ? p2_input : input;
+            uint8_t loser_wrestler = loser
+                ? app->select.p2_selected_source_wrestler
+                : app->select.selected_source_wrestler;
+
+            /* If the CPU won, source clears match_winner and backs the
+               ladder up because NEXT_IN_LADDER will increment it again. */
+            if (!human_won) {
+                app->last_match_winner = 0;
+                wm_pregame_ladder_back(&app->pregame);
+            }
+
+            /* `move @match_winner,@PSTATUS`: a human winner remains
+               active while the loser is offered the continue. */
+            app->match_pstatus = app->last_match_winner;
+            if (app->match_pstatus == 2) {
+                app->pregame.player_source_wrestler =
+                    app->select.p2_selected_source_wrestler;
+                app->pregame.player_roster_wrestler = app->p2_choice;
+            }
+
+            wm_select_continue_init(&app->continue_select);
+            app->continue_start_was_down =
+                loser_input && loser_input->start;
+            wm_select_continue_begin(&app->continue_select, loser,
+                                     loser_wrestler, false,
+                                     0u, 0u, true, true,
+                                     &app->awards);
+            app->mode = WM_APP_MODE_CONTINUE;
+        }
         return;
     }
     if (app->mode == WM_APP_MODE_CONTINUE) {
         wm_select_continue_event ev;
-        bool start_level = input && input->start;
-        /*
-         * In the arcade a COIN buys in -- `#buyin: PSTATUS bit became
-         * active` -- and Start only resets the countdown. A console
-         * has no coin door, so Start IS the buy-in here, the same
-         * platform boundary the select screen already draws for
-         * player two. It is read as an EDGE so a Start carried over
-         * from the match does not spend itself.
-         */
+        unsigned player = app->continue_select.player;
+        const wm_input_state *player_input = player ? p2_input : input;
+        bool start_level = player_input && player_input->start;
+        bool either_start = (input && input->start) ||
+                            (p2_input && p2_input->start);
         bool buy_in = start_level && !app->continue_start_was_down;
         app->continue_start_was_down = start_level;
+
         ev = wm_select_continue_tick(&app->continue_select,
-                                     buy_in, 0u, false, buy_in,
-                                     start_level,
-                                     &app->audio, &app->awards);
+                                     buy_in, 0u, either_start, buy_in,
+                                     start_level, &app->audio, &app->awards);
         if (ev == WM_SELECT_CONTINUE_ACCEPT_EVENT) {
-            /* buyin_select returns, the loser's win count is cleared,
-               and `jruc do_pregame`. */
-            app->awards.win_streak[0] = 0;
-            wm_pregame_next_match(&app->pregame, 0u);
+            app->match_pstatus |= (int32_t)(1u << player);
+            app->awards.win_streak[player] = 0;
+            wm_pregame_next_match(&app->pregame,
+                                  app->awards.win_streak[
+                                      app->match_pstatus == 2 ? 1u : 0u]);
             app->mode = WM_APP_MODE_PREGAME;
         } else if (ev == WM_SELECT_CONTINUE_TIMEOUT_EVENT) {
-            /* Nobody bought in: SELECT.ASM:1190 do_game_over. */
-            wm_app_start_game_over(app);
+            app->awards.win_streak[player] = 0;
+            if (app->match_pstatus != 0) {
+                unsigned survivor = app->match_pstatus == 2 ? 1u : 0u;
+                if (survivor == 1u) {
+                    app->pregame.player_source_wrestler =
+                        app->select.p2_selected_source_wrestler;
+                    app->pregame.player_roster_wrestler = app->p2_choice;
+                }
+                wm_pregame_next_match(&app->pregame,
+                                      app->awards.win_streak[survivor]);
+                app->mode = WM_APP_MODE_PREGAME;
+            } else {
+                wm_app_start_game_over(app);
+            }
         }
         return;
     }

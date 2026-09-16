@@ -10,6 +10,7 @@
  * used to be, one and two levels down.
  */
 #include <assert.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include "wm/app.h"
@@ -32,11 +33,16 @@ static void into_match(void) {
     assert(A.match.match_over == 0);
 }
 
-/* Force the match to its end without fighting 4000 ticks of it. */
-static void finish_match(int winner_side) {
+/*
+ * Force the match to its end without fighting 4000 ticks of it.
+ * `hold_start` keeps Start pressed right through the last tick of the
+ * match, which is the state the buy-in screen has to swallow.
+ */
+static void finish_match_ex(int winner_side, bool hold_start) {
     wm_input_state in;
     int i;
     memset(&in, 0, sizeof in);
+    in.start = hold_start;
     A.match.score.p1rounds = winner_side == 0 ? 2 : 0;
     A.match.score.p2rounds = winner_side == 1 ? 2 : 0;
     A.match.score.match_winner = winner_side == 0 ? 1 : 2;
@@ -47,6 +53,10 @@ static void finish_match(int winner_side) {
     /* WM_APP_MODE_MATCH_OVER is one tick: it decides and moves on. */
     wm_app_tick(&A, &in);
     assert(A.mode != WM_APP_MODE_MATCH && A.mode != WM_APP_MODE_MATCH_OVER);
+}
+
+static void finish_match(int winner_side) {
+    finish_match_ex(winner_side, false);
 }
 
 /*
@@ -155,11 +165,16 @@ static void test_continuing_resumes_the_game(void) {
 
     into_match();
     A.awards.win_streak[0] = 4;
-    finish_match(1);
+    /* Lose with Start held down, the way a player mashing it does. */
+    finish_match_ex(1, true);
     assert(A.mode == WM_APP_MODE_CONTINUE);
     matches = A.pregame.match_count;
 
-    /* A Start still held from the match must not buy in by itself. */
+    /*
+     * A Start still held from the match must not buy in by itself:
+     * the cabinet's start switch is edge-triggered, so the level the
+     * buy-in screen inherits is swallowed rather than counted.
+     */
     memset(&in, 0, sizeof in);
     in.start = true;
     for (i = 0; i < 5; ++i) wm_app_tick(&A, &in);
@@ -174,6 +189,24 @@ static void test_continuing_resumes_the_game(void) {
     assert(A.pregame.match_count == matches + 1u);
     /* "Clear the loser's wincount." */
     assert(A.awards.win_streak[0] == 0);
+}
+
+/*
+ * The other half of the edge: a player who was NOT holding Start when
+ * he lost gets his very first press counted. The buy-in screen
+ * swallows an inherited level, not a genuine transition.
+ */
+static void test_a_fresh_press_buys_in_immediately(void) {
+    wm_input_state in;
+
+    into_match();
+    finish_match_ex(1, false);
+    assert(A.mode == WM_APP_MODE_CONTINUE);
+
+    memset(&in, 0, sizeof in);
+    in.start = true;
+    wm_app_tick(&A, &in);
+    assert(A.mode == WM_APP_MODE_PREGAME);
 }
 
 /*
@@ -257,6 +290,7 @@ int main(void) {
     test_the_ladder_advances_between_matches();
     test_a_loss_offers_a_continue();
     test_continuing_resumes_the_game();
+    test_a_fresh_press_buys_in_immediately();
     test_declining_goes_back_to_attract();
     test_declining_goes_through_game_over();
     return 0;

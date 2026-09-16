@@ -55,7 +55,7 @@ static void test_one_opponent(void) {
 
     wm_match_init(&m);
     rng_reset();
-    wm_match_start_ladder(&m, &RNG, 6, 1, opps, 1);
+    wm_match_start_one_player_team(&m, &RNG, 1, 6, 0, opps, 1);
 
     assert(m.actor_count == 2);
     assert(m.actors[0].wrestler_num == 6);
@@ -78,7 +78,7 @@ static void test_three_on_one(void) {
 
     wm_match_init(&m);
     rng_reset();
-    wm_match_start_ladder(&m, &RNG, 0, 1, opps, 3);
+    wm_match_start_one_player_team(&m, &RNG, 1, 0, 0, opps, 3);
 
     assert(m.actor_count == 4);
     /* The human alone on side 0, all three drones on side 1. */
@@ -112,7 +112,7 @@ static void test_drones_oppose_the_human(void) {
 
     wm_match_init(&m);
     rng_reset();
-    wm_match_start_ladder(&m, &RNG, 0, 2, opps, 2);   /* human is p2 */
+    wm_match_start_one_player_team(&m, &RNG, 2, 0, 0, opps, 2);   /* human is p2 */
 
     assert(m.actors[0].player_side == 1);
     assert(m.actors[1].player_side == 0);
@@ -128,7 +128,7 @@ static void test_a_team_match_runs(void) {
 
     wm_match_init(&m);
     rng_reset();
-    wm_match_start_ladder(&m, &RNG, 0, 1, opps, 3);
+    wm_match_start_one_player_team(&m, &RNG, 1, 0, 0, opps, 3);
 
     for (t = 0; t < 200; ++t) wm_match_tick(&m, NULL, NULL);
     assert(m.active);

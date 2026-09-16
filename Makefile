@@ -1,6 +1,7 @@
 # Primary target: Nintendo 64 / libdragon. Portable core remains libdragon-free.
 ROMNAME := wm_arcade_r9
 BUILD_DIR := build/n64
+.DEFAULT_GOAL := all
 
 ifeq ($(N64_INST),)
 $(error N64_INST is not set. Install/use libdragon or build with its Docker image.)

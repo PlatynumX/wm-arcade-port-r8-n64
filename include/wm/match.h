@@ -131,6 +131,11 @@ typedef struct {
      */
     int32_t pstatus;
 
+    /* WRESTLE.ASM @royal_rumble. start_match, match_timer and
+       animation-code gates all read the same global, so it stays
+       match state instead of being consumed only during creation. */
+    bool royal_rumble;
+
     /*
      * Which actors a human is driving, and each one's committed-input
      * edge state. In #2plyr both of the first two are humans; in
@@ -459,6 +464,34 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng);
  * Creates two actors, or four with buddy mode on; actor_count says
  * which.
  */
+/* WRESTLE.ASM #1plyr for either legal one-human PSTATUS.
+ * pstatus==1 creates P1 from index1; pstatus==2 creates P2 from
+ * index2. The enemy drone is assigned to the opposite side. */
+void wm_match_start_one_player(wm_match_state *m, WmRng *rng,
+                               int32_t pstatus,
+                               uint8_t index1, uint8_t index2);
+
+/*
+ * The same, plus WRESTLE.ASM:1726 #ndrone's drone TEAM: one opponent
+ * per NUM_OPPS from the packed ladder entry, PLYRNUM counting up
+ * from 2, all of them on the side opposite the human.
+ *
+ * The ladder is not flat -- rungs 0-3 are one-on-one, 4 and 5 are
+ * two-on-one and 6, the final battle, is three-on-one -- and this
+ * port played every one of them as a singles match until the ported
+ * ladder (wm/pregame.h's opponents[], already the real
+ * scramble_table's answer) was finally handed over.
+ *
+ * `opponents` should be wm_pregame_opponent_at for each index, which
+ * has already applied SORT_OUT_WRESTLER_NUM. NULL/0 keeps the old
+ * single drawn opponent.
+ */
+void wm_match_start_one_player_team(wm_match_state *m, WmRng *rng,
+                                    int32_t pstatus,
+                                    uint8_t index1, uint8_t index2,
+                                    const uint8_t *opponents,
+                                    unsigned count);
+
 void wm_match_start_two_player(wm_match_state *m, WmRng *rng,
                                int32_t pstatus,
                                uint8_t index1, uint8_t index2,
@@ -473,33 +506,6 @@ bool wm_match_buddy_mode_on(int32_t p1powerup_request,
 void wm_match_start_selected(wm_match_state *m, WmRng *rng,
                              uint8_t p1_source_wrestler);
 
-/*
- * WRESTLE.ASM:1726 #ndrone -- the drone team, which #1plyr falls
- * into and which this port used to skip in favour of one randomly
- * drawn opponent.
- *
- *     MOVE @CURRENT_LADDER,A4,L / MOVE *A4,A4,L
- *     MOVK 2,A10
- *     move @NUM_OPPS,a3
- *   #nxtdrn
- *     CALLA SORT_OUT_WRESTLER_NUM
- *     ... SCREATE ...
- *     SRL 8,A4 / INC A10 / dsj a3,#nxtdrn
- *
- * So the opponents are the successive bytes of the packed ladder
- * entry, PLYRNUM counts up from 2, and every drone goes on the side
- * OPPOSITE the human -- `btst 0,a14 / jrnz #pside_set` picks
- * PSIDE_PLYR2 for a player-one human and PSIDE_PLYR1 otherwise.
- *
- * `opponents` is wm_pregame_opponent_at for each index (which
- * already applies SORT_OUT_WRESTLER_NUM's slot-7-to-Lex promotion)
- * and `count` is wm_pregame_num_of_opps. A count of zero or one
- * behaves exactly as the old single-opponent path did.
- */
-void wm_match_start_ladder(wm_match_state *m, WmRng *rng,
-                           uint8_t p1_source_wrestler,
-                           int32_t pstatus,
-                           const uint8_t *opponents, unsigned count);
 
 /* One source tick: for the human actor (if wm_match_start_selected was
  * used), commits human_input through wm_human_input_commit; every other

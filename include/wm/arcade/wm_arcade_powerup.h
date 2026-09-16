@@ -64,6 +64,12 @@ typedef struct wm_powerup_code {
 
 extern const wm_powerup_code wm_powerup_codes[];
 extern const int wm_powerup_code_count;
+/*
+ * A compile-time bound for callers that keep one attempt per code
+ * per player. A source-tool test pins it to the real table length,
+ * so adding a code without raising this cannot pass unnoticed.
+ */
+#define WM_PUP_CODE_SLOTS 8
 
 /*
  * One player's attempt at one code. The arcade runs each as its own

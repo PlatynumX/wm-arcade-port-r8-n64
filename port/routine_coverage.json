@@ -12508,7 +12508,7 @@
    "external_callers": 0,
    "references": 1,
    "status": "renamed",
-   "evidence": "wm_powerup_attempt_done",
+   "evidence": "wm_get_powerups",
    "from_generated": false,
    "ledgered": true
   },
@@ -22919,8 +22919,8 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "process",
-   "evidence": "AWARD.ASM:2182. Seven CREATEs and a DIE -- one checker process per code, per side. The port runs the same eight-row table without processes, and the row's `spawned` flag carries the one CREATE that is commented out.",
+   "status": "renamed",
+   "evidence": "wm_powerup_attempt_start",
    "from_generated": false,
    "ledgered": true
   },

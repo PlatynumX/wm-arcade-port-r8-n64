@@ -2534,6 +2534,31 @@ def test_colour_cycle_tables_generate_the_shipped_file() -> None:
     assert wlcolcyc.emit_c(wlcolcyc.read_all()) == out.read_text()
 
 
+def test_the_powerup_code_slot_bound_matches_the_table() -> None:
+    """WM_PUP_CODE_SLOTS must cover the real code table.
+
+    wm_app keeps one attempt per code per player in a fixed array
+    sized by that macro. Adding a code to wm_arcade_powerup.c without
+    raising it would silently drop the new code -- the driver loops
+    to the macro, not to wm_powerup_code_count.
+    """
+    src = (ROOT / "src" / "core" / "arcade" / "wm_arcade_powerup.c").read_text()
+    hdr = (ROOT / "include" / "wm" / "arcade" / "wm_arcade_powerup.h").read_text()
+
+    # Rows of the table look like `{ "name", WM_PU_..., n,`.
+    rows = re.findall(r'^\s*\{\s*"([a-z_]+)",\s*WM_PU_', src, re.M)
+    assert len(rows) >= 7, rows
+
+    m = re.search(r"#define\s+WM_PUP_CODE_SLOTS\s+(\d+)", hdr)
+    assert m, "WM_PUP_CODE_SLOTS is gone"
+    assert int(m.group(1)) >= len(rows), (int(m.group(1)), len(rows))
+
+    # The two codes whose relationship the app's behaviour turns on:
+    # no_block is a PREFIX of buddy_mode, so entering buddy mode
+    # necessarily turns blocking off on the way through.
+    assert "no_block" in rows and "buddy_mode" in rows
+
+
 def test_the_ledger_does_not_drop_underscore_names() -> None:
     """A routine whose name starts with `_` must be ledgerable.
 

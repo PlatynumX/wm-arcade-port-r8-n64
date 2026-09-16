@@ -9,10 +9,10 @@ only in a note saying it is missing does not count as present.
 |---|---|---|
 | `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1967 |
 | `inlined` | the port does it, spelled out at each use site (ledger) | 13 |
-| `renamed` | the port does it under another name (ledger) | 160 |
+| `renamed` | the port does it under another name (ledger) | 161 |
 | `partial` | partly translated; the ledger note says which part | 20 |
 | `data` | a table, extracted by a tool (ledger) | 53 |
-| `process` | a CREATE/SLEEP wrapper (ledger) | 22 |
+| `process` | a CREATE/SLEEP wrapper (ledger) | 21 |
 | `display` | object/DMA drawing; this port has no renderer (ledger) | 130 |
 | `hardware` | talks to the cabinet (ledger) | 68 |
 | `dead` | **measured**: no caller outside its own file | 37 |

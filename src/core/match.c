@@ -38,6 +38,10 @@
 #define WM_MATCH_T2_SECOND_X (WM_MATCH_RING_X_CENTER + 150)
 #define WM_MATCH_T2_SECOND_Z (1103 + 170)
 #define WM_MATCH_T2_SECOND_FACING WM_MOVE_UP_LEFT
+/* `#team2_starts` row 2, "third" -- face_dir 6. */
+#define WM_MATCH_T2_THIRD_X (WM_MATCH_RING_X_CENTER + 20)
+#define WM_MATCH_T2_THIRD_Z (1103 + 16)
+#define WM_MATCH_T2_THIRD_FACING WM_MOVE_DOWN_LEFT
 
 
 /*
@@ -922,6 +926,113 @@ void wm_match_start_two_player(wm_match_state *m, WmRng *rng,
     m->has_human = m->actor_is_human[0] || m->actor_is_human[1];
     m->human_actor_index = m->actor_is_human[0] ? 0u : 1u;
     wm_human_input_init(&m->human_input_state);
+
+    init_plyr_types(m);
+    init_smoves(m);
+    init_bret_backends(m);
+    m->active = true;
+    m->tick_count = 0;
+    match_start_common_tail(m);
+}
+
+
+/*
+ * WRESTLE.ASM:1726 #ndrone -- the real drone team.
+ *
+ * #1plyr creates the human and falls straight into this loop, which
+ * walks the packed ladder entry a byte at a time and makes one drone
+ * per NUM_OPPS. This port drew a single random opponent instead and
+ * said so in the header for a long time; the ladder it needed has
+ * been ported all along (wm/pregame.h's opponents[]/opponent_count),
+ * it was simply never handed over.
+ *
+ * The start rows come from #set0 exactly as everywhere else: the row
+ * is how many wrestlers are already on your side, so the first drone
+ * takes row 0 of team 2, the second row 1, the third row 2.
+ */
+void wm_match_start_ladder(wm_match_state *m, WmRng *rng,
+                           uint8_t p1_source_wrestler,
+                           int32_t pstatus,
+                           const uint8_t *opponents, unsigned count) {
+    wm_arcade_actor_t *p1;
+    unsigned i;
+    int human_side;
+    int drone_side;
+
+    if (!m) return;
+
+    wm_match_init_scroller(m);
+
+    /* `btst 0,A0 / jrnz #set` -- which side the human is on. This
+       port always puts him in slot 0 whichever player he is. */
+    human_side = (pstatus & 1) ? WM_MATCH_PSIDE_PLYR1 : WM_MATCH_PSIDE_PLYR2;
+    /* `movi PSIDE_PLYR2,a9 / btst 0,a14 / jrnz #pside_set / movi
+       PSIDE_PLYR1,a9` -- the drones take the other side. */
+    drone_side = (pstatus & 1) ? WM_MATCH_PSIDE_PLYR2 : WM_MATCH_PSIDE_PLYR1;
+
+    p1 = &m->actors[0];
+    init_actor_life(p1);
+    p1->player_num = 0;
+    p1->player_side = human_side;
+    p1->wrestler_num = (int32_t)p1_source_wrestler;
+    m->index1 = p1_source_wrestler;
+
+    if (count < 1u) count = 1u;
+    if (count > WM_MATCH_MAX_ACTORS - 1u) count = WM_MATCH_MAX_ACTORS - 1u;
+
+    for (i = 0; i < count; ++i) {
+        wm_arcade_actor_t *d = &m->actors[1 + i];
+        uint8_t w;
+
+        init_actor_life(d);
+        /* `MOVK 2,A10` then `INC A10` each time round. */
+        d->player_num = (int32_t)(2 + i);
+        d->player_side = drone_side;
+        /* SORT_OUT_WRESTLER_NUM on the packed entry's next byte; the
+           caller has already applied it. A missing entry falls back
+           to a draw rather than fielding wrestler zero by accident. */
+        w = (opponents && i < count) ? opponents[i] : 0xffu;
+        if (w == 0xffu) w = (uint8_t)wm_match_draw_wrestler_index(rng);
+        d->wrestler_num = (int32_t)w;
+        if (i == 0) m->opponent_wrestler = w;
+    }
+
+    m->actor_count = 1u + count;
+
+    /* smart_target is a fixed pair in this port; with a team it is
+       the human against the FIRST drone, and calc_closest re-picks
+       the real nearest every tick anyway (match_opponent_of). */
+    p1->smart_target = &m->actors[1];
+    for (i = 0; i < count; ++i) m->actors[1 + i].smart_target = p1;
+
+    /* #set0: the row is the count already on that side. */
+    place_wrestler(p1, WM_MATCH_P1_START_X, WM_MATCH_P1_START_Z,
+                   WM_MATCH_P1_START_FACING);
+    for (i = 0; i < count; ++i) {
+        wm_arcade_actor_t *d = &m->actors[1 + i];
+        if (i == 0) {
+            place_wrestler(d, WM_MATCH_P2_START_X, WM_MATCH_P2_START_Z,
+                           WM_MATCH_P2_START_FACING);
+        } else if (i == 1) {
+            place_wrestler(d, WM_MATCH_T2_SECOND_X, WM_MATCH_T2_SECOND_Z,
+                           WM_MATCH_T2_SECOND_FACING);
+        } else {
+            place_wrestler(d, WM_MATCH_T2_THIRD_X, WM_MATCH_T2_THIRD_Z,
+                           WM_MATCH_T2_THIRD_FACING);
+        }
+    }
+
+    m->pstatus = pstatus;
+    memset(m->actor_is_human, 0, sizeof m->actor_is_human);
+    m->actor_is_human[0] = true;
+    wm_human_input_init(&m->human_input[0]);
+    m->has_human = true;
+    m->human_actor_index = 0;
+    wm_human_input_init(&m->human_input_state);
+    m->buddy_mode_checked = false;
+    m->buddy_mode_on = false;
+
+    for (i = 0; i < m->actor_count; ++i) wm_arcade_drone_init(&m->drones[i], 0);
 
     init_plyr_types(m);
     init_smoves(m);

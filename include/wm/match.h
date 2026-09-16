@@ -52,10 +52,6 @@ extern "C" {
  *   choose_buddies.
  *
  * NOT yet translated, on purpose:
- *   - INIT_LADDER_TABLE / CURRENT_LADDER / NUM_OPPS multi-drone team
- *     selection: the ladder matchup table is not ported, so this only ever
- *     creates a single opponent instead of a full NUM_OPPS-sized team, for
- *     either start path.
  *   - wm_arcade_move_ported_wrestler(): the generic 8-wrestler dispatcher is
  *     not used here. Only Bret (wrestler_num==WM_ROSTER_BRET) is wired,
  *     straight to wm_arcade_move_bret() with wm/bret_backend.h's adapter --
@@ -476,6 +472,34 @@ bool wm_match_buddy_mode_on(int32_t p1powerup_request,
 
 void wm_match_start_selected(wm_match_state *m, WmRng *rng,
                              uint8_t p1_source_wrestler);
+
+/*
+ * WRESTLE.ASM:1726 #ndrone -- the drone team, which #1plyr falls
+ * into and which this port used to skip in favour of one randomly
+ * drawn opponent.
+ *
+ *     MOVE @CURRENT_LADDER,A4,L / MOVE *A4,A4,L
+ *     MOVK 2,A10
+ *     move @NUM_OPPS,a3
+ *   #nxtdrn
+ *     CALLA SORT_OUT_WRESTLER_NUM
+ *     ... SCREATE ...
+ *     SRL 8,A4 / INC A10 / dsj a3,#nxtdrn
+ *
+ * So the opponents are the successive bytes of the packed ladder
+ * entry, PLYRNUM counts up from 2, and every drone goes on the side
+ * OPPOSITE the human -- `btst 0,a14 / jrnz #pside_set` picks
+ * PSIDE_PLYR2 for a player-one human and PSIDE_PLYR1 otherwise.
+ *
+ * `opponents` is wm_pregame_opponent_at for each index (which
+ * already applies SORT_OUT_WRESTLER_NUM's slot-7-to-Lex promotion)
+ * and `count` is wm_pregame_num_of_opps. A count of zero or one
+ * behaves exactly as the old single-opponent path did.
+ */
+void wm_match_start_ladder(wm_match_state *m, WmRng *rng,
+                           uint8_t p1_source_wrestler,
+                           int32_t pstatus,
+                           const uint8_t *opponents, unsigned count);
 
 /* One source tick: for the human actor (if wm_match_start_selected was
  * used), commits human_input through wm_human_input_commit; every other

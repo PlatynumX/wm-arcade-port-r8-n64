@@ -37,6 +37,15 @@
 #define WM_SPORTS_LOGO_TOTAL_TICKS \
     (WM_SPORTS_LOGO_BUTTON_ENABLE_TICKS + 8u * WM_SOURCE_TICKS_PER_SEC)
 
+/*
+ * @royal_rumble. This port has no ladder state that can set it, so
+ * it is false everywhere -- but it is read in two unrelated places
+ * (#2plyr's PSIDE subtract and the powerup codes' `jrnz #die`), and
+ * naming it once keeps those two from drifting apart when a rumble
+ * does become reachable.
+ */
+#define WM_APP_ROYAL_RUMBLE false
+
 /* ATTRACT.ASM::show_title: SLEEPK 2, build, SLEEPK 2, CREATE processes,
    SLEEP TSEC/2, wait_on_butn 10*TSEC. */
 #define WM_TITLE_SETUP_TICKS 4u
@@ -185,18 +194,33 @@ typedef struct {
 
     /*
      * AWARD.ASM's @p1powerup_request / @p2powerup_request, the two
-     * words #2plyr ANDs to decide buddy mode.
+     * words #2plyr ANDs to decide buddy mode, plus the output flags
+     * get_powerups derives from them.
      *
-     * Nothing in the app writes them yet: wm/arcade/
-     * wm_arcade_powerup.h translates the code-entry sequence that
-     * SETS a request (WM_PU_BUDDY_MODE included), but no app mode
-     * runs it, so both stay zero and buddy mode never turns on from
-     * a real play-through. The field is here, in the source's own
-     * shape, so that wiring the code entry up is the only thing left
-     * -- rather than the match pretending to read something that
-     * does not exist.
+     * Filled for real: powerup_window_start opens the code window
+     * where PROGRESS.ASM's CLOSE_PROGRESS_SCREEN opens it, the
+     * attempts below run through the pregame, and
+     * powerup_window_close runs get_powerups on the way into the
+     * match.
      */
     wm_powerup_flags powerups;
+
+    /*
+     * AWARD.ASM:2182 player_powerup_checker: each player has one
+     * live attempt per code, all racing at once, and PROGRESS.ASM's
+     * CLOSE_PROGRESS_SCREEN is what starts them -- which is why
+     * they run through WM_APP_MODE_PREGAME and are reconciled by
+     * get_powerups on the way into the match.
+     *
+     * `spawned` on a code row is the source's own commented-out
+     * CREATE (no_ring is disabled "until we get blimp module"), so a
+     * row that is not spawned never gets an attempt here either.
+     */
+    wm_powerup_attempt powerup_attempt[2][WM_PUP_CODE_SLOTS];
+    bool powerup_window_open;
+    /* PUPWAITSWITCH compares switches-DOWN, so the level a
+       controller reports has to be edge-detected first. */
+    int32_t powerup_prev_switches[2];
 
     /*
      * @PSTATUS as the select screen left it: 1 for one player, 3

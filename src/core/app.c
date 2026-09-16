@@ -541,6 +541,127 @@ void wm_app_init(wm_app *app) {
     app->attract_started = false;
 }
 
+
+/*
+ * AWARD.ASM:2198 powerup_check and :2182 player_powerup_checker.
+ *
+ * powerup_check clears both request words and spawns one checker
+ * per player; each checker CREATEs one process per code, and every
+ * one of them sits waiting for its opening press. This is that,
+ * without the processes: an attempt per code per player, all live
+ * at once, ticked together.
+ *
+ * PROGRESS.ASM:284 CLOSE_PROGRESS_SCREEN is what creates
+ * powerup_check, so the window opens as the progress screen closes
+ * and the codes are entered on the way into the match.
+ */
+static void powerup_window_start(wm_app *app, bool royal_rumble) {
+    int p, c;
+    if (!app) return;
+    /* `clr a8 / move a8,@p1powerup_request,L` and its twin, plus
+       every output flag -- wm_powerup_check does the whole clear. */
+    wm_powerup_reset(&app->powerups);
+    for (p = 0; p < 2; ++p) {
+        for (c = 0; c < WM_PUP_CODE_SLOTS; ++c) {
+            const wm_powerup_code *code =
+                (c < wm_powerup_code_count) ? &wm_powerup_codes[c] : NULL;
+            /* A code whose CREATE is commented out in the source
+               never gets a process, so it never gets an attempt. */
+            if (code && !code->spawned) code = NULL;
+            /* `move @royal_rumble,a14 / jrnz #die` -- no_block and
+               buddy_mode refuse to listen in a rumble. Dormant
+               while royal_rumble is hard-coded false, and wired so
+               it cannot drift from the match's own reading of it. */
+            if (code && royal_rumble && code->blocked_in_royal_rumble)
+                code = NULL;
+            wm_powerup_attempt_start(&app->powerup_attempt[p][c], code);
+        }
+    }
+    app->powerup_window_open = true;
+    app->powerup_prev_switches[0] = 0;
+    app->powerup_prev_switches[1] = 0;
+}
+
+/* PUPWAITSWITCH compares `(stick_down << 5) | buttons_down`. */
+static int32_t powerup_switches(const wm_input_state *in) {
+    int32_t sw = 0;
+    if (!in) return 0;
+    if (in->light_punch) sw |= WM_PUP_PUNCH;
+    if (in->block)       sw |= WM_PUP_BLOCK;
+    if (in->power_punch) sw |= WM_PUP_SUPERP;
+    if (in->light_kick)  sw |= WM_PUP_KICK;
+    if (in->stick_y > 0) sw |= WM_PUP_UP;
+    if (in->stick_y < 0) sw |= WM_PUP_DOWN;
+    if (in->stick_x < 0) sw |= WM_PUP_LEFT;
+    if (in->stick_x > 0) sw |= WM_PUP_RIGHT;
+    return sw;
+}
+
+static void powerup_window_tick(wm_app *app,
+                                const wm_input_state *p1_input,
+                                const wm_input_state *p2_input) {
+    const wm_input_state *in[2];
+    int p, c;
+
+    if (!app || !app->powerup_window_open) return;
+    in[0] = p1_input;
+    in[1] = p2_input;
+
+    for (p = 0; p < 2; ++p) {
+        /*
+         * PUPWAITSWITCH compares switches-DOWN -- what was pressed
+         * THIS tick, not what is held -- so a held button must not
+         * read as five presses.
+         */
+        int32_t level = powerup_switches(in[p]);
+        int32_t sw = level & ~app->powerup_prev_switches[p];
+        app->powerup_prev_switches[p] = level;
+        for (c = 0; c < WM_PUP_CODE_SLOTS; ++c) {
+            wm_powerup_attempt *att = &app->powerup_attempt[p][c];
+            if (!att->code) continue;
+            if (wm_powerup_attempt_tick(att, sw)) {
+                /* The completed code's bit joins that player's
+                   request word, which is all a checker process
+                   does before it dies. */
+                app->powerups.p_request[p] |= att->code->grants;
+            }
+        }
+    }
+}
+
+/*
+ * get_powerups (AWARD.ASM:2230): reconcile the two requests and
+ * write the output flags. Run once, on the way into the match.
+ *
+ * drone_meters is settled here too, and it is the odd one out.
+ * AWARD.ASM:2016 drone_meters_powerup_check has its three-Kick
+ * sequence COMMENTED OUT, so it is not a code at all: pass its two
+ * gates -- "only in one-player games" (PSTATUS != 3) and "only in
+ * one-on-one games" (NUM_OPPS == 1) -- and it grants D_METERS_ON
+ * outright. Both players' checkers run, so both request words get
+ * it. It is evaluated at the close rather than the open because
+ * NUM_OPPS is not settled until the ladder rung is; with no
+ * sequence to enter, nothing between the two instants can change
+ * the answer.
+ */
+static void powerup_window_close(wm_app *app, int32_t pstatus,
+                                 unsigned num_opps) {
+    if (!app || !app->powerup_window_open) return;
+
+    if (pstatus != 3 && num_opps == 1u) {
+        int c;
+        for (c = 0; c < WM_PUP_CODE_SLOTS && c < wm_powerup_code_count; ++c) {
+            if (wm_powerup_codes[c].grants != WM_PU_D_METERS_ON) continue;
+            if (!wm_powerup_codes[c].spawned) continue;
+            app->powerups.p_request[0] |= WM_PU_D_METERS_ON;
+            app->powerups.p_request[1] |= WM_PU_D_METERS_ON;
+        }
+    }
+
+    wm_get_powerups(&app->powerups);
+    app->powerup_window_open = false;
+}
+
 void wm_app_tick_dual(wm_app *app,
                       const wm_input_state *p1_input,
                       const wm_input_state *p2_input) {
@@ -612,17 +733,28 @@ void wm_app_tick_dual(wm_app *app,
                             app->p1_choice,
                             &app->rng);
             app->pregame.win_streak = app->awards.win_streak[0];
+            /* PROGRESS.ASM:284 CLOSE_PROGRESS_SCREEN CREATEs
+               powerup_check; this is the same moment.
+               WM_APP_ROYAL_RUMBLE is the one place this port's
+               always-false royal_rumble is written down, and the
+               match start below reads the same constant. */
+            powerup_window_start(app, WM_APP_ROYAL_RUMBLE);
             app->mode = WM_APP_MODE_PREGAME;
         }
         return;
     }
     if (app->mode == WM_APP_MODE_PREGAME) {
+        powerup_window_tick(app, input, p2_input);
         wm_pregame_tick(&app->pregame, input, &app->audio);
         if (app->pregame.finished)
             app->mode = WM_APP_MODE_MATCH_INIT;
         return;
     }
     if (app->mode == WM_APP_MODE_MATCH_INIT) {
+        /* get_powerups, before start_match reads the requests. */
+        powerup_window_close(app,
+                             app->match_pstatus ? app->match_pstatus : 1,
+                             app->pregame.opponent_count);
         wm_app_bind_anim_env(app);
         if (app->match_pstatus == 3) {
             /*
@@ -636,12 +768,26 @@ void wm_app_tick_dual(wm_app *app,
             wm_match_start_two_player(&app->match, &app->rng, 3,
                                       app->pregame.player_source_wrestler,
                                       app->select.p2_selected_source_wrestler,
-                                      false,
+                                      WM_APP_ROYAL_RUMBLE,
                                       (int32_t)app->powerups.p_request[0],
                                       (int32_t)app->powerups.p_request[1]);
         } else {
-            wm_match_start_selected(&app->match, &app->rng,
-                                    app->pregame.player_source_wrestler);
+            /*
+             * #1plyr falling into #ndrone: the opponents are the
+             * ladder rung the pregame just settled on, not a draw.
+             * wm_pregame_opponent_at applies SORT_OUT_WRESTLER_NUM.
+             */
+            uint8_t opps[WM_MATCH_MAX_ACTORS - 1];
+            unsigned n = app->pregame.opponent_count;
+            unsigned k;
+            if (n > (unsigned)(WM_MATCH_MAX_ACTORS - 1))
+                n = (unsigned)(WM_MATCH_MAX_ACTORS - 1);
+            for (k = 0; k < n; ++k)
+                opps[k] = wm_pregame_opponent_at(&app->pregame, k);
+            wm_match_start_ladder(&app->match, &app->rng,
+                                  app->pregame.player_source_wrestler,
+                                  app->match_pstatus ? app->match_pstatus : 1,
+                                  opps, n);
         }
         app->mode = WM_APP_MODE_MATCH;
         return;

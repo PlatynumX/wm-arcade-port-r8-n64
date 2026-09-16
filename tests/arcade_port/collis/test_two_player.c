@@ -9,6 +9,7 @@
 
 #include "wm/app.h"
 #include "wm/match.h"
+#include "wm/pregame.h"
 #include "wm/arcade/wm_arcade_buddies.h"
 
 static uint32_t hc(void *u) { uint32_t *t = u; return (*t += 0x139u) & 0x1ff; }
@@ -387,6 +388,50 @@ static void test_per_player_input_routing(void) {
     assert(m.player_input_set[0] && !m.player_input_set[1]);
 }
 
+/*
+ * The pregame is still P1-oriented, and this is the check that it
+ * does not matter to a two-player MATCH.
+ *
+ * #2plyr never reads CURRENT_LADDER -- it takes @index1 and
+ * @index2, the two players' own picks. So a two-player game does
+ * not climb a ladder, and the pregame's P1-ness is a DISPLAY gap
+ * (SETUP_LOGOS drawing one logo instead of two, the royal-rumble VS
+ * screen, SET_GAME_FLASHES) rather than a logic one. If that ever
+ * stops being true, this fails.
+ */
+static void test_two_player_ignores_the_ladder(void) {
+    wm_app app;
+    wm_input_state p1, p2;
+    unsigned i;
+
+    wm_app_init(&app);
+    for (i = 0; i < 40000u && app.mode != WM_APP_MODE_MATCH; ++i) {
+        memset(&p1, 0, sizeof p1);
+        memset(&p2, 0, sizeof p2);
+        p1.start = true;
+        p2.start = true;
+        /* Nothing but Start during the pregame: the powerup codes
+           are listening there and four punches spell move_names. */
+        if (app.mode != WM_APP_MODE_PREGAME) {
+            p1.light_punch = (i % 7) == 0;
+            p2.light_punch = (i % 11) == 0;
+        }
+        wm_app_tick_dual(&app, &p1, &p2);
+    }
+    assert(app.mode == WM_APP_MODE_MATCH);
+    assert(app.match.pstatus == 3);
+
+    /* Both wrestlers are the players' own choices... */
+    assert(app.match.actors[0].wrestler_num ==
+           (int32_t)app.pregame.player_source_wrestler);
+    assert(app.match.actors[1].wrestler_num ==
+           (int32_t)app.select.p2_selected_source_wrestler);
+
+    /* ...and it is head to head, not one human against the rung's
+       team, however many opponents the ladder worked out. */
+    assert(app.match.actor_count == 2);
+}
+
 int main(void) {
     test_get_rnd_wrestler();
     test_choose_buddies();
@@ -399,6 +444,7 @@ int main(void) {
     test_partner_is_not_an_opponent();
     test_per_player_input_routing();
     test_app_reaches_two_player();
+    test_two_player_ignores_the_ladder();
     printf("two player ok\n");
     return 0;
 }

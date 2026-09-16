@@ -1032,12 +1032,6 @@
   "symbol": "wm_match_start_two_player",
   "note": "WRESTLE.ASM:1568. All THREE of its creation paths are now translated: #0plyr (wm_match_start_attract), #1plyr (wm_match_start_selected) and #2plyr (wm_match_start_two_player), the last including buddy mode's two extra drone partners. Still not translated: the INIT_LADDER_TABLE / CURRENT_LADDER / NUM_OPPS multi-drone team selection, so a match creates one opponent rather than a full NUM_OPPS team; and #no_buddies' royal-rumble lineup rewrite, which edits a ladder table this port's match does not read."
  },
- "change_wrestler": {
-  "file": "WRESTLE2.ASM",
-  "status": "renamed",
-  "symbol": "wm_life_init_wrestler",
-  "note": "WRESTLE2.ASM. Swap a dead wrestler for a fresh one mid-match. The life-table half is wm_life_init_wrestler, and its distinguishing detail is translated: CLIFE snaps to FULL rather than starting at zero, because the bar must not animate up for a replacement."
- },
  "flash_red": {
   "file": "WRESTLE2.ASM",
   "status": "display",
@@ -2337,18 +2331,6 @@
   "status": "renamed",
   "symbol": "wm_select_continue_tick",
   "note": "The continue countdown's digits. See buyin_select."
- },
- "get_final_lineup": {
-  "file": "PROGRESS.ASM",
-  "status": "partial",
-  "symbol": "wm_pregame_init",
-  "note": "PROGRESS.ASM:1593. INIT_TEMP_TABLE and RANDOMIZE_ORDER, then the first two longs of TEMP_LADDER copied into FINAL_BATTLE_LINEUP with a -1 word terminator -- four wrestlers for the final battle. The shuffle itself is the ladder builder, translated as wm_pregame_init's init_ladder_table; the four-entry copy and its terminator are not yet wired to anything that reads them."
- },
- "get_royal_lineup": {
-  "file": "PROGRESS.ASM",
-  "status": "partial",
-  "symbol": "wm_pregame_init",
-  "note": "PROGRESS.ASM:1535. get_final_lineup, then @index1 and @index2 pull the rumble's two named entrants out of it. Same state: the shuffle is translated, the lineup it produces has no reader in this port yet."
  },
  "mk_pcurs": {
   "file": "PROGRESS.ASM",

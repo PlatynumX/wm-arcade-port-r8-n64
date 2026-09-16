@@ -479,6 +479,16 @@ static void wm_app_start_game_over(wm_app *app) {
 }
 
 static void wm_app_bind_anim_env(wm_app *app) {
+    /*
+     * WRESTLE.ASM:1600's FINAL_PTR re-init, run from start_match's own
+     * position -- before the creation branch, on every match. The queue
+     * itself belongs to the pregame; is_final_match and is_8_on_1 are
+     * its questions to answer, so both are asked here rather than
+     * reconstructed inside the match.
+     */
+    wm_match_bind_final_battle(&app->match, &app->pregame.final_battle,
+                               wm_pregame_is_final_match(&app->pregame),
+                               wm_pregame_is_8_on_1(&app->pregame));
     app->match.anim_rng = &app->rng;
     app->match.anim_sound_user = app;
     app->match.anim_sound = wm_app_anim_sound;
@@ -666,6 +676,11 @@ void wm_app_tick_dual(wm_app *app,
                       const wm_input_state *p2_input) {
     const wm_input_state *input = p1_input;
     if (!app) return;
+    /* WRESTLE.ASM:542, the last thing mainlp does before looping. It is
+       written first here only because every early return below would
+       otherwise skip it, and the source has no early returns to skip. */
+    ++app->pcnt;
+    app->pregame.pcnt = app->pcnt;
     wm_audio_source_tick(&app->audio);
     /*
      * DCSSOUND.ASM:2266 snd_update, which WRESTLE.ASM's interrupt

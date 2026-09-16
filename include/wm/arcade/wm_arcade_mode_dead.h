@@ -27,14 +27,18 @@ extern "C" {
  *      `@instant_combos_on` is set (an AWARD.ASM credit-screen powerup
  *      toggle).
  *
- * In this port every one of those is provably always false/zero, so every
- * path through the real routine collapses to the same outcome:
- *   - `@royal_rumble`: this port has no royal rumble mode at all (no
- *     ladder/team system -- see the confine_wrestler and calc_closest
- *     boundaries), so it never leaves its zero default.
- *   - `is_8_on_1`: reads `@belt_type` (jrz -> "no" immediately) and
- *     `@CURRENT_LADDER`, both belonging to the same unimplemented ladder
- *     system, so it always reports "not 8-on-1".
+ * Two of those are still always false/zero here; the middle one no
+ * longer is, and that correction matters:
+ *   - `@royal_rumble`: this port has no royal rumble mode at all (no app
+ *     mode starts one), so it never leaves its zero default.
+ *   - `is_8_on_1`: this USED to be argued away on the grounds that
+ *     `@belt_type` and `@CURRENT_LADDER` belonged to an unimplemented
+ *     ladder. They do not: the belt is chosen at the pregame and the
+ *     ladder is real, so a championship run that reaches its last rung
+ *     IS an eight-on-one. What that changes for this routine is only the
+ *     round-count branch, which is skipped in an eight-on-one in favour
+ *     of `#ck81` ("only the player is allowed to buckoff", PLYRNUM < 2);
+ *     both sides still end at CHECK_COMBO_GO
  *   - `CHECK_COMBO_GO`: this port never tracks per-player combo-meter fill
  *     (`life_data[...].PLT_COMBO_SIZE`) at all -- only life itself is real,
  *     via `init_life_data` -- so it stays at its zero default, always below
@@ -55,14 +59,22 @@ extern "C" {
  * WM_STATUS_ZOMBIE/DID_BUCKOFF/NO_BUCKOFF/DO_BUCKOFF exactly as the source
  * checks B_ZOMBIE/DID_BUCKOFF/NO_BUCKOFF/DO_BUCKOFF).
  *
- * NOT translated, both real and both permanently unreachable while the
- * above stays true: the `#zmb` zombie-transform tail (roll up, stand,
- * run to the side of the arena, `change_wrestler`) -- it only ever runs
- * once WM_STATUS_ZOMBIE is set, which requires reaching `#dobuck` first --
- * and the `#count_btns`/`#dobuck` button-mashing buckoff-revival system
- * itself (sets WM_STATUS_ZOMBIE, does the opponent's pin-broken/raise-arm
- * bookkeeping, `clear_combo_meter`) -- both gated on the same
- * `CHECK_COMBO_GO` check proven above to never pass in this port.
+ * The `#zmb` zombie-transform tail IS translated now, in
+ * wm/arcade/wm_arcade_final_battle.h, and reached from the match's own
+ * tick rather than from here -- finishing a transform needs init_smoves'
+ * tables and the life data, which only the match has. It is no longer
+ * unreachable either: `#dobuck` is not the only way to become a zombie.
+ * ANIM.ASM's _ani_waitroll promotes a drone straight off the
+ * FINAL_BATTLE_LINEUP queue when he dies in the final battle, with no
+ * buckoff involved at all.
+ *
+ * STILL not translated: the `#count_btns`/`#dobuck` button-mashing
+ * buckoff revival itself (sets WM_STATUS_ZOMBIE, does the opponent's
+ * pin-broken/raise-arm bookkeeping, `clear_combo_meter`), gated on
+ * CHECK_COMBO_GO, which this port answers "not lit" from a combo-meter
+ * fill it does not track per player. That gate is the one thing keeping
+ * the buckoff out, and it is a smaller claim than the one this comment
+ * used to make.
  */
 void wm_arcade_mode_dead(wm_arcade_actor_t *actor);
 

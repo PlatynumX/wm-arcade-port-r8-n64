@@ -1598,9 +1598,13 @@ static void set_pinable_bit(wm_arcade_actor_t *actor, const wm_anim_env *env,
  * The source guards it with "don't go to sleep if this is an 8-on-1 or
  * 8-on-2 match, UNLESS wrestler_count is 0, which means there's no hope
  * of becoming a zombie" -- `@royal_rumble` or is_8_on_1, then
- * wrestler_count. Both of those are permanently false in this port, for
- * the reasons set out in wm/arcade/wm_arcade_mode_dead.h, so control
- * always reaches #not8 and the guard is not written out here.
+ * wrestler_count. royal_rumble is still permanently zero here, but
+ * is_8_on_1 is NOT: the final rung of the championship ladder is one.
+ * The guard is still not written out, and now for a narrower reason --
+ * it turns on @wrestler_count, the on-screen counter WRESTLE.ASM creates
+ * only for a rumble or an 8-on-1 display, which this port does not carry.
+ * A KO'd drone in the final battle is promoted by _ani_waitroll rather
+ * than kept awake by this, so the outcome is unchanged.
  *
  * What is left is three tests, and two of them are refusals: a pinned
  * wrestler is not KO'd (the pin is already the ending) and neither is

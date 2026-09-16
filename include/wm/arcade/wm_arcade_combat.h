@@ -129,6 +129,18 @@ struct wm_arcade_actor {
     void *meter_proc;
     int32_t wrestler_num;
     int32_t player_num;
+    /*
+     * PLYR.EQU:235 NEW_WRESTLERNUM, "turn into this guy from zombie
+     * mode", and :250 ZOMBIE_TIME, "Ticks since we became a zombie".
+     * Both are written by the final battle's queue promotion
+     * (ANIM.ASM:3096) and read on the way back out: change_wrestler
+     * copies NEW_WRESTLERNUM over WRESTLERNUM, and mode_dead's zombie
+     * tail transforms anyway once ZOMBIE_TIME passes TSEC*10, "because
+     * something has probably gone wrong with our trip to the side of
+     * the arena".
+     */
+    int32_t new_wrestlernum;
+    int32_t zombie_time;
 
     /* Stage 2: REACT1.ASM / ANIM.ASM combat state. */
     uint32_t last_hit_time;

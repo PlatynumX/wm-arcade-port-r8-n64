@@ -77,7 +77,9 @@ void wm_arcade_match_score_award_round(wm_arcade_match_score_t *score, int winne
     if (winner_side != 0 && winner_side != 1) return; /* draw: no award */
 
     rounds = (winner_side == 0) ? &score->p1rounds : &score->p2rounds;
-    ++*rounds;
+    /* `inc a4 / inc a4 / ... / dec a4` -- two in a final battle or a
+       rumble, one otherwise. */
+    *rounds += score->double_rounds ? 2 : 1;
 
     if (*rounds >= 2)
         score->match_winner = winner_side + 1;

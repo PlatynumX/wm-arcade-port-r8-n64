@@ -138,6 +138,34 @@ static uint8_t get_rnd_wrestler(wm_pregame_state *s, uint8_t excluded) {
     return (uint8_t)wm_get_rnd_wrestler(excluded, s ? s->rng : NULL);
 }
 
+/*
+ * PROGRESS.ASM:1593 get_final_lineup. INIT_TEMP_TABLE and RANDOMIZE_ORDER
+ * -- exactly the two init_ladder_table opens with, which is why they are
+ * shared here rather than copied -- then the eight shuffled wrestlers go
+ * into FINAL_BATTLE_LINEUP with an end-of-battle marker after them.
+ */
+static void get_final_lineup(wm_pregame_state *s) {
+    uint8_t temp[8];
+    init_temp_table(temp);
+    randomize_order(s, temp);
+    wm_final_set_lineup(&s->final_battle, temp);
+}
+
+void wm_pregame_get_final_lineup(wm_pregame_state *s) {
+    if (s) get_final_lineup(s);
+}
+
+/*
+ * PROGRESS.ASM:1535 get_royal_lineup: the same draw, then the swap and
+ * rotate that keep the two humans' own picks out of the front of it.
+ */
+void wm_pregame_get_royal_lineup(wm_pregame_state *s,
+                                 uint8_t index1, uint8_t index2) {
+    if (!s) return;
+    get_final_lineup(s);
+    wm_final_royal_fixup(&s->final_battle, index1, index2);
+}
+
 static uint32_t scramble_table_entry(wm_pregame_state *s,
                                      int ladder_index,
                                      uint32_t packed) {
@@ -145,11 +173,52 @@ static uint32_t scramble_table_entry(wm_pregame_state *s,
     if (count <= 1u)
         return packed;
 
+    /*
+     * Two branches before the scramble, and both of them are taken
+     * INSTEAD of it. They only exist for a three-opponent entry --
+     * `cmpi 3,a2 / jrne #begin`.
+     */
+    if (count == 3u) {
+        /*
+         * "It's three guys. Is it the final match? (we can't use
+         * is_final_match because CURRENT_LADDER hasn't been incremented
+         * yet.)" -- which is why the source compares against
+         * FINAL_BATTLE-2 where is_final_match uses FINAL_BATTLE-1. This
+         * port scrambles AFTER next_in_ladder has advanced, so the rung
+         * being asked about is the same one either way and the test is
+         * written against the post-increment index.
+         *
+         * `move @belt_type,a14 / jrz #notfin`: there is no eight-on-one
+         * on the intercontinental ladder, so that belt's own last rung
+         * falls through and stays an ordinary three-on-one.
+         */
+        if (s->belt_type != WM_PREGAME_BELT_INTERCONTINENTAL &&
+            ladder_index == WM_PREGAME_FINAL_LADDER_INDEX) {
+            /* `#final_match`: a brand new lineup, the first three of it
+               as the rung you meet, and FINAL_PTR left on the fourth --
+               `andi 00FFFFFFh` clears the fourth guy out of the entry and
+               `ori 03000000h` sets the count. */
+            get_final_lineup(s);
+            wm_final_reset_ptr(&s->final_battle);
+            return pack_ladder_entry(3u,
+                                     (uint8_t)s->final_battle.lineup[0],
+                                     (uint8_t)s->final_battle.lineup[1],
+                                     (uint8_t)s->final_battle.lineup[2]);
+        }
+
+        /*
+         * `#notfin` -- "no. one time in 32, make it three doinks." The
+         * draw is not the RNG at all: it is PCNT's low five bits, so the
+         * easter egg depends on WHEN the pregame reaches this line rather
+         * than on the shared RAND, and an entry it fires on is the
+         * literal `movi 03060606h,a1`: count 3, wrestler 6 three times.
+         */
+        if ((s->pcnt & 31u) == 0u)
+            return 0x03060606u;
+    }
+
     /* PROGRESS.ASM::scramble_table_entry excludes the human and, except for
-       the first entry, every drone from the previous fight.  Final-battle
-       replacement and the PCNT 1-in-32 triple-Doink easter egg depend on
-       source-global state that is not reached by the current first-pregame
-       port, so keep those branches at the later-ladder boundary. */
+       the first entry, every drone from the previous fight. */
     uint8_t excluded = (uint8_t)(1u << ladder_slot_for_source_wrestler(
         s->player_source_wrestler));
     if (ladder_index > 0) {
@@ -204,6 +273,16 @@ static void next_in_ladder(wm_pregame_state *s) {
     s->opponents[0] = (uint8_t)(p & 0xffu);
     s->opponents[1] = (uint8_t)((p >> 8) & 0xffu);
     s->opponents[2] = (uint8_t)((p >> 16) & 0xffu);
+}
+
+/*
+ * PROGRESS.ASM's NEXT_IN_LADDER, which PUT_UP_PROGRESS (:2689) runs once
+ * per match. Exposed because it is the whole of what a match advance
+ * does to the ladder, and because the final rung's own branch is only
+ * reachable through it.
+ */
+void wm_pregame_next_in_ladder(wm_pregame_state *s) {
+    if (s) next_in_ladder(s);
 }
 
 static void enter_progress(wm_pregame_state *s, wm_audio_state *audio) {
@@ -432,11 +511,19 @@ void wm_pregame_next_match(wm_pregame_state *s, uint32_t win_streak) {
     uint8_t belt;
     uint32_t matches;
     wm_pregame_ladder_entry table[WM_PREGAME_LADDER_ENTRIES];
+    wm_final_battle_state_t final_battle;
+    uint32_t pcnt;
 
     if (!s) return;
     /* Everything that survives a match: the ladder and where we are on
-       it, who the player picked, the belt, and the match counter. */
+       it, who the player picked, the belt, and the match counter.
+       FINAL_BATTLE_LINEUP and FINAL_PTR belong on that list too -- they
+       are BSS globals in the source, not per-screen state, and the whole
+       point of the queue is that it outlives the wrestlers coming out of
+       it. PCNT is the main loop's counter and never resets at all. */
     ladder = s->current_ladder_index;
+    final_battle = s->final_battle;
+    pcnt = s->pcnt;
     rng = s->rng;
     src = s->player_source_wrestler;
     roster = s->player_roster_wrestler;
@@ -456,6 +543,8 @@ void wm_pregame_next_match(wm_pregame_state *s, uint32_t win_streak) {
     s->match_count = matches + 1u;
     s->win_streak = win_streak;
     memcpy(s->ladder, table, sizeof(table));
+    s->final_battle = final_battle;
+    s->pcnt = pcnt;
 }
 
 /*

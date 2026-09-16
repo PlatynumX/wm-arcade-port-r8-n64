@@ -96,20 +96,30 @@ void wm_arcade_round_tick(wm_arcade_round_state_t *rs,
  * (LIFEBAR.ASM:5099 "trouble... this should never happen") is explicitly
  * not a normal path.
  *
- * p1rounds/p2rounds increment by 1 for a normal round win. The source's
- * is_8_on_1/royal_rumble +2 override for a final match does not apply --
- * neither mode exists in this port. match_winner is set (1 = side 0, 2 =
+ * p1rounds/p2rounds increment by 1 for a normal round win -- unless
+ * `double_rounds` is set, which is the source's own
+ * `inc a4 / inc a4 / calla is_8_on_1 / jrc #a4ok / @royal_rumble /
+ * jrnz #a4ok / dec a4`: it increments twice and takes one back off
+ * only when the match is NEITHER an eight-on-one nor a rumble. In the
+ * final battle one round decides it, which is what makes a gauntlet of
+ * eight a single fight rather than a best of three.
+ *
+ * The flag lives on the score rather than arriving as an argument
+ * because the source reads two globals here and the port's two callers
+ * come from different directions; the match sets it once at creation.
+ *
+ * match_winner is set (1 = side 0, 2 =
  * side 1) the moment either count reaches LIFEBAR.ASM's real best-of-3
  * threshold of 2, and this function then no-ops (matching the ONE-shot
  * nature of a round award: calling it again for the same decided round
  * would double-count, so the caller -- wm_match_tick -- calls this only on
  * the false-to-true edge of round_state.decided).
  *
- * NOT translated: DO_ROUNDS and everything a real next round needs (life/
- * position reset, a restarted round_state, on-screen round announcement) --
- * this port has no round-2 restart at all, so match_winner becoming
- * nonzero is currently a dead end: wm_match_tick keeps ticking exactly as
- * it did before the round was decided.
+ * NOT translated: LIFEBAR.ASM:5149 `#tmout`'s own eight-on-one rule --
+ * "If this was an 8-on-1 or 8-on-2 match, the CPU wins when time runs
+ * out", awarded to the first drone without any life comparison. That
+ * belongs to the clock-expiry branch, which is a separate path from this
+ * one.
  */
 typedef struct {
     int32_t p1rounds;
@@ -117,6 +127,8 @@ typedef struct {
     /* 0 = match not yet decided; 1 = side 0 (PSIDE_PLYR1) has won the
        match; 2 = side 1 (PSIDE_PLYR2). */
     int32_t match_winner;
+    /* is_8_on_1 || royal_rumble at match start -- see above. */
+    bool double_rounds;
 } wm_arcade_match_score_t;
 
 void wm_arcade_match_score_init(wm_arcade_match_score_t *score);

@@ -6,6 +6,7 @@
 
 #include "wm/audio.h"
 #include "wm/arcade/wmania_rng.h"
+#include "wm/arcade/wm_arcade_final_battle.h"
 #include "wm/input.h"
 #include "wm/roster.h"
 #include "wm/progress_wrestlers.h"
@@ -84,6 +85,23 @@ typedef struct {
      */
     WmRng *rng;
 
+    /*
+     * WRESTLE.ASM:160 PCNT, the main loop's own free-running counter --
+     * `move @PCNT,a0,L / addk 1,a0 / move a0,@PCNT,L` at WRESTLE.ASM:542,
+     * once per tick and never cleared. scramble_table_entry reads its low
+     * five bits, so the pregame is handed the app's copy rather than
+     * counting its own; a per-screen counter would give the easter egg
+     * below a different period.
+     */
+    uint32_t pcnt;
+
+    /*
+     * PROGRESS.ASM:131 FINAL_BATTLE_LINEUP / :137 FINAL_PTR. Globals in
+     * the source, written here by the ladder builder and read by the
+     * match's animation code -- see wm/arcade/wm_arcade_final_battle.h.
+     */
+    wm_final_battle_state_t final_battle;
+
     /* PROGRESS.ASM world scroll registers represented as source pixels/fixed 16.16. */
     int belt_world_y;
     int32_t progress_world_x_fp;
@@ -161,14 +179,34 @@ uint8_t wm_pregame_opponent_at(const wm_pregame_state *state, unsigned index);
  * intercontinental belt table", so an intercontinental run never has
  * one however far it gets.
  *
- * Several headers in this port state, correctly, that is_8_on_1 always
- * reports "no" HERE -- wm/arcade/wm_arcade_mode_dead.h argues it at
- * length, and wm_arcade_round.h and the drone skill sum both rely on
- * it. That is a statement about the match code, which never sets up a
- * final battle, not about this function: ask it about a final battle
- * on a championship ladder and it says yes.
+ * Several headers in this port used to state that is_8_on_1 always
+ * reports "no" HERE, on the grounds that the match code never set up a
+ * final battle. It does now -- the last rung of the championship
+ * ladder is built by #final_match and played as a gauntlet -- so those
+ * claims have been corrected where they stood.
  */
 bool wm_pregame_is_final_match(const wm_pregame_state *state);
+
+/*
+ * PROGRESS.ASM:1593 get_final_lineup and :1535 get_royal_lineup, the
+ * two generators for FINAL_BATTLE_LINEUP. The ladder builder calls the
+ * first one itself on the final rung; these are exposed for the callers
+ * outside it -- WRESTLE.ASM:1880's #no_buddies runs the royal one by
+ * hand because "you never hit the progress screen in royal_rumble
+ * mode".
+ */
+/*
+ * PROGRESS.ASM NEXT_IN_LADDER, the single step PUT_UP_PROGRESS takes per
+ * match: advance CURRENT_LADDER, scramble the entry it lands on if it
+ * has more than one opponent, and publish it as opponents[]/
+ * opponent_count. The pregame runs it itself on the way into the
+ * progress screen.
+ */
+void wm_pregame_next_in_ladder(wm_pregame_state *state);
+
+void wm_pregame_get_final_lineup(wm_pregame_state *state);
+void wm_pregame_get_royal_lineup(wm_pregame_state *state,
+                                 uint8_t index1, uint8_t index2);
 bool wm_pregame_is_8_on_1(const wm_pregame_state *state);
 
 /*

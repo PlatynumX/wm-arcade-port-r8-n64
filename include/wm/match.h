@@ -5,6 +5,7 @@
 #include "wm/arcade/wm_arcade_closest.h"
 #include "wm/arcade/wm_arcade_combat.h"
 #include "wm/arcade/wm_arcade_coffin.h"
+#include "wm/arcade/wm_arcade_final_battle.h"
 #include "wm/arcade/wm_arcade_pin.h"
 #include "wm/award.h"
 #include "wm/arcade/wm_arcade_match_end.h"
@@ -135,6 +136,32 @@ typedef struct {
        animation-code gates all read the same global, so it stays
        match state instead of being consumed only during creation. */
     bool royal_rumble;
+
+    /*
+     * PROGRESS.ASM:1516 is_8_on_1, latched at match start. The match
+     * cannot answer it for itself -- it reads @belt_type and
+     * @CURRENT_LADDER, which belong to the pregame -- and _ani_waitroll
+     * asks it on every drone's death, so the answer is handed over once
+     * rather than reached for.
+     */
+    bool eight_on_one;
+
+    /*
+     * WRESTLE.ASM @NUM_OPPS, the size of the opposing team the ladder
+     * rung named. #0plyr and #2plyr each create exactly one opponent
+     * side of their own shape; #1plyr's is whatever the rung holds, 1 to
+     * 3. Kept because the animation code gates on it.
+     */
+    int32_t num_opps;
+
+    /*
+     * PROGRESS.ASM:131 FINAL_BATTLE_LINEUP / :137 FINAL_PTR, BORROWED.
+     * The pregame builds the queue and owns the storage; the match only
+     * reads and advances it, which is exactly the split the source has
+     * between PROGRESS and ANIM. NULL outside a final battle, and then
+     * the queue reads as empty.
+     */
+    wm_final_battle_state_t *final_battle;
 
     /*
      * Which actors a human is driving, and each one's committed-input
@@ -560,6 +587,35 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
  */
 void wm_match_set_input(wm_match_state *m, unsigned player,
                         const wm_input_state *in);
+
+/*
+ * WRESTLE.ASM:1600, near the top of start_match and before any of its
+ * three creation branches:
+ *
+ *      calla   is_final_match
+ *      jrnc    #do_zf
+ *      movi    FINAL_BATTLE_LINEUP+24,a14
+ *      move    a14,@FINAL_PTR,L
+ *
+ * The comment above it is the reason it lives there rather than in
+ * NEXT_IN_LADDER, which has already set the same value: "We can't do it
+ * in NEXT_IN_LADDER because if we're speeding through the rounds, that
+ * can happen while wrestler processes from the previous round are still
+ * active and DEAD, so they gobble up the first three slots and we end up
+ * with a 1v5 match." A zombie promotion from the round just finished can
+ * consume queue entries after the ladder set the pointer, so the match
+ * puts it back.
+ *
+ * `fb` is the pregame's queue, borrowed not copied; pass NULL outside a
+ * final battle. `eight_on_one` is is_8_on_1's answer -- the queue is
+ * built for both belts but only the championship ladder replaces the
+ * fallen, which is what makes it an eight-on-one rather than a
+ * three-on-one with a spare list.
+ */
+void wm_match_bind_final_battle(wm_match_state *m,
+                                wm_final_battle_state_t *fb,
+                                bool is_final_match,
+                                bool eight_on_one);
 
 #ifdef __cplusplus
 }

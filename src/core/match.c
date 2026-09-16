@@ -86,6 +86,33 @@ static bool match_anyone_near_death(void *user) {
     return false;
 }
 
+/*
+ * WRESTLE.ASM process_ptrs, the array of wrestler processes indexed by
+ * PLYRNUM. A slot is a pointer, so an empty one is NULL; here an actor
+ * that is not `active` is the same thing.
+ */
+static wm_arcade_actor_t *match_actor_by_plyrnum(void *user, int32_t plyrnum) {
+    wm_match_state *m = (wm_match_state *)user;
+    unsigned i;
+    if (!m || plyrnum < 0) return NULL;
+    for (i = 0; i < m->actor_count; ++i)
+        if (m->actors[i].active && m->actors[i].player_num == plyrnum)
+            return &m->actors[i];
+    return NULL;
+}
+
+/* WRESTLE2.ASM:3896 kill_smove_procs, reached through the env. */
+static void match_kill_smoves(void *user, wm_arcade_actor_t *a) {
+    wm_match_state *m = (wm_match_state *)user;
+    unsigned i;
+    if (!m || !a) return;
+    for (i = 0; i < m->actor_count; ++i) {
+        if (&m->actors[i] != a) continue;
+        wm_smove_kill(m->smoves[i], m->smove_count[i]);
+        return;
+    }
+}
+
 static void match_rope_command(void *user, int bank, int action,
                                int selector, int32_t wrestler_z_fp16) {
     wm_match_state *m = (wm_match_state *)user;
@@ -630,6 +657,41 @@ static void match_reset_for_round(wm_match_state *m) {
     wm_arcade_round_state_init(&m->round_state);
 }
 
+/*
+ * WRESTLE2.ASM:3772 change_wrestler's other half -- the parts that need
+ * the match's own tables, run right after wm_final_change_wrestler has
+ * done the wrestler's own fields.
+ *
+ * `callr init_smoves` here is per-wrestler in the source (it is the
+ * SUBRP with a13 set, not the whole-roster sweep start_match runs), so
+ * only this slot's watchdogs are rebuilt. `calla init_wres_life_data`
+ * is LIFEBAR.ASM:199, "one wrestler, on a swap": his CLIFE snaps to
+ * full, which is what makes the next man in the queue arrive healthy.
+ *
+ * NOT done here and not pretended: choose_pal/pal_getf and the sweep
+ * that writes the new palette over every OBJ_BASE piece, and
+ * change_anim1a/change_anim2a onto the new wrestler's stand4/torso4
+ * pair. Both are the display's, and this port's per-wrestler animation
+ * coverage is what decides whether the second one can mean anything.
+ */
+static void match_finish_zombie_transform(wm_match_state *m, unsigned i) {
+    if (!m || i >= m->actor_count) return;
+
+    wm_final_change_wrestler(&m->actors[i], m->scroll.worldtlx);
+
+    m->smove_count[i] = wm_smove_init(
+        m->actors[i].wrestler_num,
+        m->actors[i].plyr_type == WM_PTYPE_DRONE,
+        m->smoves[i], WM_SMOVE_MAX_PER_WRESTLER,
+        &m->smove_unported[i]);
+
+    /* `calla init_wres_life_data`, LIFEBAR.ASM:199 -- CLIFE snaps to
+       full for this one wrestler, which is how the next man in the
+       queue arrives healthy. This port keeps life on the actor, the
+       same place init_rnd_life_data's sweep writes it. */
+    m->actors[i].life = WM_ARCADE_LIFE_MAX;
+}
+
 static void init_smoves(wm_match_state *m) {
     unsigned i;
     if (!m) return;
@@ -727,6 +789,15 @@ static void match_start_common_tail(wm_match_state *m) {
     wm_move_name_init(&m->move_names);
     memset(&m->move_name, 0, sizeof(m->move_name));
     wm_arcade_match_score_init(&m->score);
+    /*
+     * LIFEBAR.ASM:5131 -- a round in an eight-on-one or a rumble counts
+     * DOUBLE, so one of them decides the match. It has to be applied
+     * here, after the score reset and after the creation path has
+     * settled royal_rumble, rather than in wm_match_bind_final_battle:
+     * the bind runs at start_match's own position, which is before all
+     * three creation branches.
+     */
+    m->score.double_rounds = m->eight_on_one || m->royal_rumble;
 }
 
 
@@ -739,6 +810,19 @@ void wm_match_set_input(wm_match_state *m, unsigned player,
     }
     m->player_input[player] = *in;
     m->player_input_set[player] = true;
+}
+
+void wm_match_bind_final_battle(wm_match_state *m,
+                                wm_final_battle_state_t *fb,
+                                bool is_final_match,
+                                bool eight_on_one) {
+    if (!m) return;
+    m->final_battle = fb;
+    m->eight_on_one = eight_on_one;
+    /* `jrnc #do_zf` -- nothing happens at all when this is not the
+       final match, not even a clear. */
+    if (fb && is_final_match)
+        wm_final_reset_ptr(fb);
 }
 
 void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
@@ -788,6 +872,7 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
        helpers below: every one of them loops over actor_count now
        that buddy mode has raised the cap past it. */
     m->actor_count = 2;
+    m->num_opps = 1;
 
     init_plyr_types(m);
     /* After init_plyr_types: std_taunt's first instruction is
@@ -892,6 +977,10 @@ void wm_match_start_two_player(wm_match_state *m, WmRng *rng,
     m->actor_is_human[0] = (pstatus & 1) != 0;
     m->actor_is_human[1] = (pstatus & 2) != 0;
     m->actor_count = 2;
+    /* #2plyr never writes @NUM_OPPS -- a two-player game does not climb
+       the ladder, so it plays on whatever the last pregame left. One is
+       what the two-player match is. */
+    m->num_opps = 1;
 
     /* `movk 1,a14 / move a14,@buddy_mode_checked`. */
     m->buddy_mode_checked = true;
@@ -1041,6 +1130,8 @@ void wm_match_start_one_player_team(wm_match_state *m, WmRng *rng,
     human->smart_target = opp;
 
     m->actor_count = 1u + count;
+    /* `move @NUM_OPPS,a3` -- the rung's own opponent count. */
+    m->num_opps = (int32_t)(count ? count : 1u);
     for (i = 0; i < m->actor_count; ++i) place_created_wrestler(m, i);
     for (i = 0; i < m->actor_count; ++i) wm_arcade_drone_init(&m->drones[i], 0);
 
@@ -1195,6 +1286,30 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
          * level down.
          */
         if (wm_match_end_tick(&m->match_end, &mec)) m->match_over = 2;
+    }
+
+    /*
+     * DOINK.ASM:2999 mode_dead's `#zmb` tail, one tick per zombie.
+     *
+     * The source runs it from the wrestler's own mode table, where
+     * wm_arcade_mode_dead sits in this port. It is driven from here
+     * instead because finishing the job needs things only the match has
+     * -- init_smoves' watchdog tables and the life data -- and splitting
+     * the transform across a backend callback would put half of
+     * change_wrestler somewhere it cannot see either. What the wrestler
+     * needs done to himself is still in one place, in
+     * wm/arcade/wm_arcade_final_battle.h.
+     */
+    {
+        unsigned zi;
+        for (zi = 0; zi < m->actor_count; ++zi) {
+            wm_arcade_actor_t *z = &m->actors[zi];
+            if (!z->active) continue;
+            if (!(z->status_flags & WM_STATUS_ZOMBIE)) continue;
+            if (z->player_mode != WM_PMODE_DEAD) continue;
+            if (wm_final_zombie_tick(z, m->scroll.worldtlx, NULL, NULL, NULL))
+                match_finish_zombie_transform(m, zi);
+        }
     }
 
     memset(&world, 0, sizeof(world));
@@ -1363,6 +1478,18 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
                the Undertaker's animation and the dead man's push_in_anim
                poll and set the same three. */
             m->wrestler_visual[i].anim_env.coffin = &m->coffin;
+            /* PROGRESS.ASM's final-battle queue, borrowed the same
+               way: _ani_waitroll reads it when a drone dies. */
+            m->wrestler_visual[i].anim_env.final_battle = m->final_battle;
+            m->wrestler_visual[i].anim_env.eight_on_one = m->eight_on_one;
+            /* @WORLDTLX >> 16. This was left at zero, so every
+               routine that reads the scroll's left edge through
+               the env -- anim_code's own included -- was answering
+               against a camera parked at the origin. */
+            m->wrestler_visual[i].anim_env.world_tlx = m->scroll.worldtlx;
+            m->wrestler_visual[i].anim_env.roster_user = m;
+            m->wrestler_visual[i].anim_env.actor_by_plyrnum = match_actor_by_plyrnum;
+            m->wrestler_visual[i].anim_env.kill_smoves = match_kill_smoves;
             /*
              * ANIM.ASM:2130 ANI_SLAVEANIM and everything else that
              * starts an animation on somebody ELSE -- grnd_hit, and
@@ -1389,6 +1516,18 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             m->bret_visual[i].anim_env.sound_user = m->anim_sound_user;
             m->bret_visual[i].anim_env.sound = m->anim_sound;
             m->bret_visual[i].anim_env.coffin = &m->coffin;
+            /* PROGRESS.ASM's final-battle queue, borrowed the same
+               way: _ani_waitroll reads it when a drone dies. */
+            m->bret_visual[i].anim_env.final_battle = m->final_battle;
+            m->bret_visual[i].anim_env.eight_on_one = m->eight_on_one;
+            /* @WORLDTLX >> 16. This was left at zero, so every
+               routine that reads the scroll's left edge through
+               the env -- anim_code's own included -- was answering
+               against a camera parked at the origin. */
+            m->bret_visual[i].anim_env.world_tlx = m->scroll.worldtlx;
+            m->bret_visual[i].anim_env.roster_user = m;
+            m->bret_visual[i].anim_env.actor_by_plyrnum = match_actor_by_plyrnum;
+            m->bret_visual[i].anim_env.kill_smoves = match_kill_smoves;
             m->bret_visual[i].anim_env.slave_user = m;
             m->bret_visual[i].anim_env.change_opp_anim = match_change_anim;
 
@@ -1445,17 +1584,17 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
                 match_wake_round_announce;
             /*
              * WRESTLE.ASM's match-configuration globals, as this match
-             * actually is: no royal rumble, PSTATUS 0 for the attract
-             * match and 1 for the single human, and exactly one opponent
-             * because the ladder team draw is not translated. The
-             * routines that gate on these read them rather than assuming.
+             * actually is. NUM_OPPS is the ladder rung's own count now
+             * that #1plyr creates the real team -- one on rungs 0-3, two
+             * on 4 and 5, three on the final battle. The routines that
+             * gate on these read them rather than assuming.
              */
             m->wrestler_visual[i].anim_env.royal_rumble = m->royal_rumble;
             m->wrestler_visual[i].anim_env.pstatus = m->pstatus;
-            m->wrestler_visual[i].anim_env.num_opps = 1;
+            m->wrestler_visual[i].anim_env.num_opps = m->num_opps;
             m->bret_visual[i].anim_env.royal_rumble = m->royal_rumble;
             m->bret_visual[i].anim_env.pstatus = m->pstatus;
-            m->bret_visual[i].anim_env.num_opps = 1;
+            m->bret_visual[i].anim_env.num_opps = m->num_opps;
             m->wrestler_visual[i].anim_env.award_user = m->anim_award_user;
             m->wrestler_visual[i].anim_env.round_award = m->anim_round_award;
             m->bret_visual[i].anim_env.award_user = m->anim_award_user;

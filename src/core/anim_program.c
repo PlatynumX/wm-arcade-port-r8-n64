@@ -975,6 +975,72 @@ static void run_superslave2(const wm_anim_op *o, wm_arcade_actor_t *actor,
  */
 #define WM_ANI_SPEED_NORMAL 0x100u
 
+/*
+ * ANIM.ASM:3043-3131, _ani_waitroll's `#dead` tail for a wrestler who is
+ * already MODE_DEAD. Returns true if he has been promoted to a zombie
+ * and should roll; false to take `#die` and become xxx_dead_anim.
+ *
+ * Two doors lead to the same queue and the source reaches them by
+ * different routes, which is worth keeping straight:
+ *
+ *   is_8_on_1 set  -> `#fin`, which pays the kill bonus and then reads
+ *                     the queue.
+ *   royal_rumble   -> `#rlife`, which gives the HUMAN TEAM (PLYRNUM 0,
+ *                     `clr a1`) four health and then FALLS THROUGH into
+ *                     `#nolife` -- the same queue read. A rumble drone
+ *                     can become a zombie too, which is why
+ *                     WRESTLE.ASM:1880's #no_buddies builds a lineup by
+ *                     hand: "you never hit the progress screen in
+ *                     royal_rumble mode".
+ *
+ * The bonus in `#fin` is 8 health to the human identified by PSTATUS,
+ * not to whoever landed the blow, and it is withheld if that human is
+ * himself MODE_DEAD ("but not if he's already dead!"). `move @PSTATUS,a1
+ * / dec a1` is PLYRNUM = PSTATUS-1, so it is player one on PSTATUS 1 and
+ * player two on PSTATUS 2 -- and on PSTATUS 3 it would be PLYRNUM 2, a
+ * buddy drone, which no shipped path reaches because #2plyr never climbs
+ * a ladder.
+ */
+static bool waitroll_dead_drone(wm_arcade_actor_t *actor,
+                                const wm_anim_env *env) {
+    int wrestler;
+
+    /* `cmpi PTYPE_PLAYER,a14 / jreq #die`. */
+    if (!actor || actor->plyr_type == WM_PTYPE_PLAYER) return false;
+    if (!env) return false;
+
+    if (env->eight_on_one) {
+        /* `#fin`: the kill bonus, before anything is read. */
+        wm_arcade_actor_t *human = env->actor_by_plyrnum
+            ? env->actor_by_plyrnum(env->roster_user, env->pstatus - 1)
+            : NULL;
+        if (human && human->player_mode != WM_PMODE_DEAD)
+            wm_arcade_adjust_health(human, 8, NULL, false, env->pcnt,
+                                    NULL, NULL);
+    } else if (env->royal_rumble) {
+        /* `#rlife`: `movk 4,a0 / clr a1` -- PLYRNUM 0, unconditionally,
+           with no is-he-dead test of its own. */
+        wm_arcade_actor_t *human = env->actor_by_plyrnum
+            ? env->actor_by_plyrnum(env->roster_user, 0)
+            : NULL;
+        if (human)
+            wm_arcade_adjust_health(human, 4, NULL, false, env->pcnt,
+                                    NULL, NULL);
+    } else {
+        /* `jruc #die` -- an ordinary match, and he stays dead. */
+        return false;
+    }
+
+    /* `#nolife`: `movb *a0,a1 / jrn #die` -- no more guys. */
+    wrestler = wm_final_next_wrestler(env->final_battle);
+    if (wrestler < 0) return false;
+
+    wm_final_make_zombie(actor, wrestler);
+    /* `calla kill_smove_procs` -- the specials belong to who he was. */
+    if (env->kill_smoves) env->kill_smoves(env->roster_user, actor);
+    return true;
+}
+
 static uint16_t frame_ticks(const wm_arcade_actor_t *actor, int32_t ticks) {
     uint32_t speed = WM_ANI_SPEED_NORMAL;
     uint32_t held;
@@ -1113,13 +1179,14 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
                  * MODE_ONGROUND ("just to be safe", the source says) and
                  * waits out IMMOBILIZE_TIME and GETUP_TIME before rolling.
                  *
-                 * NOT translated, and unreachable in this port's match
-                 * mode rather than skipped: the `#dead` path's drone
-                 * branches (is_8_on_1, royal_rumble, FINAL_PTR's zombie
-                 * promotion, adjust_health). In an ordinary match a player
-                 * takes `jreq #die` straight away, and a drone reaches the
-                 * same `jruc #die` with is_8_on_1 false and royal_rumble
-                 * zero -- so both land on the same hand-off this runs.
+                 * The `#dead` path is where the final battle lives. A
+                 * PLAYER takes `jreq #die` straight away and becomes his
+                 * dead animation. A DRONE is asked two questions first --
+                 * is_8_on_1 and @royal_rumble -- and either one sends him
+                 * to the FINAL_BATTLE_LINEUP queue, which is what makes
+                 * the last rung of the championship ladder an eight-on-one
+                 * instead of the three-on-one it looks like. Only when
+                 * both are false does a drone stay dead.
                  */
                 int rolled;
                 if (!actor) { exec->ended = true; return; }
@@ -1129,18 +1196,21 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
                        a zombie rolls up whatever the player does. */
                     actor->stick_val_cur = (uint16_t)WM_MOVE_UP;
                 } else if (actor->player_mode == WM_PMODE_DEAD) {
-                    exec->become = "xxx_dead_anim";
-                    exec->ended = true;
-                    return;
+                    if (!waitroll_dead_drone(actor, exec->env))
+                        goto waitroll_die;
+                    /* `#zombie movi J_UP,a14` into DRN_JOY and
+                       STICK_VAL_CUR, then `jruc #roll`: he is a zombie
+                       from this tick and rolls like one. */
+                    actor->stick_val_cur = (uint16_t)WM_MOVE_UP;
                 } else if (actor->i_will_die) {
                     if (actor->immobilize_time) goto waitroll_repeat;
                     actor->immobilize_time = 0;
                     actor->i_will_die = 0;
                     actor->player_mode = WM_PMODE_DEAD;
                     wm_arcade_clear_lifebar(actor);
-                    exec->become = "xxx_dead_anim";
-                    exec->ended = true;
-                    return;
+                    if (!waitroll_dead_drone(actor, exec->env))
+                        goto waitroll_die;
+                    actor->stick_val_cur = (uint16_t)WM_MOVE_UP;
                 } else {
                     actor->player_mode = WM_PMODE_ONGROUND;
                     if (actor->immobilize_time) goto waitroll_repeat;
@@ -1158,11 +1228,19 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
                     continue;
                 }
             waitroll_repeat:
-                /* `#repeat`: clear Z_BOUND, hold the frame one tick. */
+                /* `#repeat`: clear Z_BOUND, hold the frame one tick. This
+                   is what a wrestler who DID roll falls into, exactly as
+                   `#roll`'s `calla do_roll / jrz #getup` drops past its
+                   own branch into `#repeat`. */
                 actor->z_bound = 0;
                 exec->next_pc = pc;
                 exec->ticks_left = 1;
                 exec->waiting = true;
+                return;
+            waitroll_die:
+                /* `#die`: OANIBASE and OANIPC both to xxx_dead_anim. */
+                exec->become = "xxx_dead_anim";
+                exec->ended = true;
                 return;
             }
             case WM_AOP_SUPERSLAVE2:

@@ -10,6 +10,7 @@
 #include "wm/arcade/wmania_rng.h"
 #include "wm/arcade/wm_arcade_announcer.h"
 #include "wm/arcade/wm_arcade_coffin.h"
+#include "wm/arcade/wm_arcade_final_battle.h"
 
 /*
  * An animation as the program it is in ANIM.ASM, rather than as a flat list
@@ -414,12 +415,10 @@ typedef struct wm_anim_env {
      * answer assumed for them.
      *
      * `pstatus` is PSTATUS, one bit per human player, so 3 is two humans;
-     * `num_opps` is NUM_OPPS, the size of the opposing team. This port
-     * starts either the PSTATUS==0 attract match or the single-human
-     * #1plyr one, and never draws a full team from the ladder table, so
-     * in practice these are 0 or 1 and num_opps is 1 -- but the routines
-     * read them rather than being written around them, so a match type
-     * added later gets the source's own behaviour for free.
+     * `num_opps` is NUM_OPPS, the size of the opposing team, which the
+     * #1plyr path now takes from the ladder rung rather than assuming --
+     * rungs 4 and 5 are two-on-one and rung 6 is three-on-one.
+     * `royal_rumble` stays false: no app mode starts one.
      */
     bool royal_rumble;
     int32_t pstatus;
@@ -579,6 +578,42 @@ typedef struct wm_anim_env {
      * routines answer "no" -- which is what BSS zeroed to anyway.
      */
     wm_coffin_state_t *coffin;
+
+    /*
+     * PROGRESS.ASM's FINAL_BATTLE_LINEUP/FINAL_PTR pair and the
+     * is_8_on_1 answer that decides whether _ani_waitroll ever looks at
+     * them. Globals in the source for the same reason the coffin state
+     * is: PROGRESS writes them, ANIM reads them, and only one final
+     * battle runs at a time. The match borrows the pregame's storage and
+     * lends it on from here.
+     *
+     * A NULL queue reads as empty, which is what a dead drone outside a
+     * final battle needs -- he simply stays dead.
+     */
+    wm_final_battle_state_t *final_battle;
+    bool eight_on_one;
+    /*
+     * process_ptrs, the other half of the pair ANIM.ASM:3073 uses to
+     * find the human who gets a kill bonus: `move @PSTATUS,a1 / dec a1`
+     * names a PLYRNUM and this finds its slot. A lookup rather than an
+     * index because PLYRNUM is not an actor slot -- in #1plyr the one
+     * human sits in slot 0 whether his PLYRNUM is 0 or 1, and the drones
+     * start at 2. @royal_rumble and @PSTATUS themselves are already
+     * above.
+     *
+     * NULL leaves the bonus unpaid, which is what an env with no roster
+     * behind it can honestly do.
+     */
+    void *roster_user;
+    wm_arcade_actor_t *(*actor_by_plyrnum)(void *user, int32_t plyrnum);
+    /*
+     * WRESTLE2.ASM:3896 kill_smove_procs, which ANIM.ASM:3111 runs on a
+     * wrestler the moment he is promoted to zombie: the special-move
+     * watchdogs belong to the wrestler he WAS. init_smoves makes the new
+     * ones when change_wrestler finally transforms him. The runs live on
+     * the match, so this reaches back for them.
+     */
+    void (*kill_smoves)(void *user, wm_arcade_actor_t *a);
 
     void *rope_user;
     void (*rope_command)(void *user, int bank, int action, int selector,

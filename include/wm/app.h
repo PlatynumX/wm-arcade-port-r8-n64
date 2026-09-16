@@ -248,6 +248,20 @@ typedef struct {
     wm_source_clock source_clock;
     wm_scheduler scheduler;
     wm_input_state latched_input;
+    /*
+     * WRESTLE.ASM:160 PCNT, "Main loop cnt" -- bumped by
+     * WRESTLE.ASM:542's `move @PCNT,a0,L / addk 1,a0 / move a0,@PCNT,L`
+     * at the bottom of every pass through mainlp, and cleared by
+     * nothing. wm_app_tick IS that pass, so this counts there and is
+     * lent to the pregame, whose scramble_table_entry reads its low five
+     * bits for the triple-Doink draw.
+     *
+     * The match still keeps its own per-match tick_count for the PCNT
+     * its combat code wants; the two are deliberately not merged here,
+     * because doing so changes timestamps all through REACT and DRONE
+     * and belongs in its own change.
+     */
+    uint32_t pcnt;
     unsigned boot_ticks;
     bool attract_started;
     /*

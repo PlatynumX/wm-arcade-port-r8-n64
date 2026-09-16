@@ -6,6 +6,7 @@
 #include "wm/arcade/wm_arcade_combat.h"
 #include "wm/arcade/wm_arcade_coffin.h"
 #include "wm/arcade/wm_arcade_final_battle.h"
+#include "wm/arcade/wm_arcade_react9_core.h"
 #include "wm/arcade/wm_arcade_pin.h"
 #include "wm/award.h"
 #include "wm/arcade/wm_arcade_match_end.h"
@@ -161,6 +162,16 @@ typedef struct {
      * reads it to decide whether the combo-meter threshold is 16 or 0.
      */
     int32_t instant_combos_on;
+
+    /*
+     * REACT1.ASM's own callback set and its context, owned here because
+     * wm_arcade_react_callbacks_t has ONE `user` shared by all its
+     * hooks -- the match needs it for adjust_health, and the reaction
+     * dispatcher needs a wm_arcade_react1_context_t -- so the match
+     * holds the context and an adapter hands it over.
+     */
+    wm_arcade_react1_callbacks_t react1_cb;
+    wm_arcade_react1_context_t react1_ctx;
 
     /*
      * PROGRESS.ASM:131 FINAL_BATTLE_LINEUP / :137 FINAL_PTR, BORROWED.

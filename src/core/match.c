@@ -1,5 +1,6 @@
 #include "wm/match.h"
 #include "wm/arcade/wm_arcade_roster_anims.h"
+#include "wm/arcade/wm_arcade_react_anims.h"
 #include "wm/arcade/wm_arcade_buddies.h"
 #include "wm/announce_tables.h"
 #include "wm/award.h"
@@ -1324,6 +1325,117 @@ static void wm_match_death_change_anim(wm_arcade_actor_t *victim,
     match_change_anim(victim, label, m);
 }
 
+/*
+ * REACT1.ASM's change_anim hook: the victim's own reaction animation.
+ *
+ * This is what makes a hit look like a hit. Until it was wired, the
+ * reaction was COMPUTED on every blow and then discarded -- damage
+ * applied and nothing else, so nobody ever staggered, flinched or went
+ * down. See wm/arcade/wm_arcade_react_anims.h for how a typed group
+ * becomes one wrestler's label, and which ten groups have no table yet.
+ */
+static void wm_match_react_change_anim(wm_arcade_actor_t *victim,
+                                       wm_arcade_react1_anim_group_t group,
+                                       void *user) {
+    wm_match_state *m = (wm_match_state *)user;
+    const char *label;
+    if (!m || !victim) return;
+    label = wm_react_anim_label(group, (int)victim->wrestler_num,
+                               victim->facing_dir);
+    if (!label) return;
+    match_change_anim(victim, label, m);
+}
+
+/* REACT's own sound hook, onto the same queue every other cue uses. */
+static void wm_match_react_sound(wm_arcade_actor_t *victim,
+                                 wm_arcade_react1_sound_t sound,
+                                 void *user) {
+    wm_match_state *m = (wm_match_state *)user;
+    (void)victim;
+    if (m && m->anim_sound) m->anim_sound(m->anim_sound_user, (uint16_t)sound);
+}
+
+/* REACT2's `calla triple_sound` with an explicit id. */
+static void wm_match_react_triple_sound(wm_arcade_actor_t *victim,
+                                        uint16_t sound_id, void *user) {
+    wm_match_state *m = (wm_match_state *)user;
+    (void)victim;
+    if (m && m->anim_sound) m->anim_sound(m->anim_sound_user, sound_id);
+}
+
+/* REACT2's `calla get_health`. */
+static int32_t wm_match_react_get_health(const wm_arcade_actor_t *victim,
+                                         void *user) {
+    (void)user;
+    return victim ? victim->life : 0;
+}
+
+/* REACT2's ck_live_teammates, against this match's own roster. */
+static int wm_match_react_live_teammates(const wm_arcade_actor_t *victim,
+                                         void *user) {
+    wm_match_state *m = (wm_match_state *)user;
+    unsigned i;
+    if (!m || !victim) return 0;
+    for (i = 0; i < m->actor_count; ++i) {
+        const wm_arcade_actor_t *p = &m->actors[i];
+        if (p == victim || !p->active) continue;
+        if (p->player_side != victim->player_side) continue;
+        if (p->player_mode == WM_PMODE_DEAD) continue;
+        return 1;
+    }
+    return 0;
+}
+
+/*
+ * REACT3 hit_bigboot's `RNDPER 100` -- "return nonzero iff the target
+ * implementation's RNDPER leaves HI true". The same shared RAND every
+ * other draw in the game stirs.
+ */
+static int wm_match_react_rndper_hi(uint16_t argument, void *user) {
+    wm_match_state *m = (wm_match_state *)user;
+    if (!m || !m->anim_rng) return 0;
+    /*
+     * UTIL.ASM:1734 RNDPER, written out the same way src/core/anim_code.c
+     * and wrestler_taunt.c already read it: RNDRNG0(999) is the identical
+     * stir and mul_high, and `jrhi` means the event happens when the
+     * probability EXCEEDS the draw. The argument is per mille, so
+     * REACT3's own `RNDPER 100` is a one-in-ten chance and not one in
+     * four.
+     */
+    return wm_rng_rndrng0(m->anim_rng, 999u) < (uint32_t)argument ? 1 : 0;
+}
+
+/* REACT1's wres_collis_off on the victim. */
+static void wm_match_react_collisions_off(wm_arcade_actor_t *victim,
+                                          void *user) {
+    (void)user;
+    wm_arcade_wrestler_collisions_off(victim);
+}
+
+/*
+ * wm_arcade_react_callbacks_t.reaction -- the seam that was declared,
+ * built for, and never filled in.
+ *
+ * It exists as an adapter rather than as the bridge itself because
+ * wm_arcade_react_callbacks_t carries ONE `user` for all its hooks: the
+ * match needs it for adjust_health, and the REACT dispatcher needs a
+ * wm_arcade_react1_context_t. So the match owns the context and this
+ * hands it across.
+ */
+static void wm_match_reaction(wm_arcade_actor_t *attacker,
+                              wm_arcade_actor_t *victim,
+                              wm_arcade_reaction_id_t reaction,
+                              int16_t *hit_damage_pending,
+                              int16_t *new_victim_movedir,
+                              void *user) {
+    wm_match_state *m = (wm_match_state *)user;
+    if (!m) return;
+    wm_arcade_react123456789_reaction_callback(attacker, victim, reaction,
+                                               hit_damage_pending,
+                                               new_victim_movedir,
+                                               &m->react1_ctx);
+}
+
 /* wm_arcade_react_callbacks_t.adjust_health adapter: the real logic lives
    in wm_arcade_adjust_health (wm/arcade/wm_arcade_lifebar.h), shared with
    BRET.ASM's own self-death path (wm_bret_backend_callbacks). */
@@ -1834,7 +1946,29 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
            since it was written, so the first hit of a round scored no
            award at all. */
         react_cb.round_first_hit_award = wm_match_first_hit_award;
+        /*
+         * REACT1.ASM's hit_table dispatch. This seam was declared in
+         * wm/arcade/wm_arcade_react.h, a signature-compatible bridge was
+         * written for it covering REACT1 through REACT9, and nothing
+         * ever assigned it -- so every blow computed its reaction and
+         * threw it away. Damage landed; nothing else did.
+         */
+        react_cb.reaction = wm_match_reaction;
         react_cb.user = m;
+
+        /* The context that dispatcher needs, rebuilt each tick so it
+           tracks whatever the match's own seams currently point at. */
+        memset(&m->react1_cb, 0, sizeof m->react1_cb);
+        m->react1_cb.change_anim = wm_match_react_change_anim;
+        m->react1_cb.play_sound = wm_match_react_sound;
+        m->react1_cb.triple_sound = wm_match_react_triple_sound;
+        m->react1_cb.get_health = wm_match_react_get_health;
+        m->react1_cb.victim_has_live_teammates = wm_match_react_live_teammates;
+        m->react1_cb.rndper_hi = wm_match_react_rndper_hi;
+        m->react1_cb.collisions_off = wm_match_react_collisions_off;
+        m->react1_cb.user = m;
+        memset(&m->react1_ctx, 0, sizeof m->react1_ctx);
+        m->react1_ctx.callbacks = &m->react1_cb;
 
         m->combat_runtime.pcnt = m->tick_count;
         m->combat_runtime.round_tickcount = (uint16_t)m->tick_count;

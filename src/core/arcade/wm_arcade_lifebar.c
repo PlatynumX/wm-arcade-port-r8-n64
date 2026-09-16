@@ -70,6 +70,13 @@ void wm_arcade_adjust_health(wm_arcade_actor_t *victim, int16_t delta,
                        overwriting it to WM_PMODE_DEAD at the end. */
                     uint16_t old_mode = victim->player_mode;
                     bool play_death_anim = true;
+                    /*
+                     * `#will_die` is the one path that does NOT die: it
+                     * jumps to `#skip`, which is BELOW the SETMODE DEAD.
+                     * wres_collis_off still runs -- that is `#skip`'s own
+                     * first line -- so only the mode is withheld.
+                     */
+                    bool becomes_dead = true;
 
                     victim->roll_pos = 0;
 
@@ -108,14 +115,49 @@ void wm_arcade_adjust_health(wm_arcade_actor_t *victim, int16_t delta,
                             }
                             break;
                         }
+                        case WM_PMODE_ONGROUND: case WM_PMODE_DEAD:
+                            /*
+                             * LIFEBAR.ASM:1712 `#grnd`: a man who was
+                             * already down when the killing blow landed
+                             * convulses where he lies instead of falling
+                             * back. The table is convulse_t (:1863), nine
+                             * per-wrestler hitonground animations.
+                             *
+                             * Note the order the source tests in: DEAD is
+                             * checked BEFORE ONGROUND and both land here,
+                             * so a wrestler hit again after he is already
+                             * dead convulses too.
+                             *
+                             * No velocity is touched on this path -- the
+                             * `#fallbk` knockback and the catch-all's
+                             * zeroing are both somewhere else.
+                             */
+                            if (death_anim && death_anim->change_anim) {
+                                death_anim->change_anim(victim,
+                                    WM_R1_ANIM_HIT_ON_GROUND,
+                                    death_anim->user);
+                            }
+                            break;
+                        case WM_PMODE_HEADHELD:
+                            /*
+                             * `#will_die`: `movi 3*60,a0 / move
+                             * a0,*a13(I_WILL_DIE)` -- he does not die yet,
+                             * he dies in three seconds unless something
+                             * intervenes. Translated, and reachable the
+                             * moment anything puts a wrestler in HEADHELD;
+                             * nothing does today, which
+                             * tests/test_source_tools.py now guards as a
+                             * claim rather than leaving as a comment.
+                             */
+                            victim->i_will_die = 3 * 60;
+                            becomes_dead = false;
+                            break;
                         default:
-                            /* LIFEBAR.ASM's own unmatched-mode catch-all
-                               (also covers HEADHELD's real #will_die
-                               deferral and ONGROUND/DEAD's real convulse_t
-                               dispatch -- see wm_arcade_lifebar.h for why
-                               neither is reachable in this port and isn't
-                               guessed at here): zero all velocities, no
-                               anim change. */
+                            /* LIFEBAR.ASM's own unmatched-mode catch-all:
+                               zero all velocities, no anim change. The
+                               source's comment beside it is a shrug --
+                               "Puppet mode? Others? How best to deal with
+                               this?" above a commented-out LOCKUP. */
                             victim->x_vel = 0;
                             victim->y_vel = 0;
                             victim->z_vel = 0;
@@ -123,8 +165,9 @@ void wm_arcade_adjust_health(wm_arcade_actor_t *victim, int16_t delta,
                         }
                     }
 
-                    /* LIFEBAR.ASM:1723-1725 SETMODE DEAD + wres_collis_off. */
-                    victim->player_mode = WM_PMODE_DEAD;
+                    /* LIFEBAR.ASM:1723-1725 SETMODE DEAD + wres_collis_off,
+                       with the deferral's own skip over the first of them. */
+                    if (becomes_dead) victim->player_mode = WM_PMODE_DEAD;
                     wm_arcade_wrestler_collisions_off(victim);
                 }
             }

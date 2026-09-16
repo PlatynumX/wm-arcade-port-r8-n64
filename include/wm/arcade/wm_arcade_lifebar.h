@@ -168,18 +168,25 @@ typedef struct wm_arcade_death_anim_callback {
  * other real sound call a no-op too, wm_arcade_bret_callbacks_t.sound is
  * never wired anywhere, so adding a bridge for only this one call would be
  * inconsistent with every other already-real Bret sound cue), the #grnd
- * convulse_t/hitonground dispatch -- and BOTH reasons this was skipped
- * for have stopped being true, so it is a real open gap rather than an
- * unreachable one. It was said to need a player_mode of ONGROUND or DEAD
- * at the moment of death "which this port's Bret dispatcher never sets":
- * four live sites set ONGROUND (ANI_WAITROLL, the attach-anim release,
- * mode_dead's own buckoff, and the slam victim's landing). And it was
- * said that "no hrt_hitonground_anim data has been extracted either":
- * all nine wrestlers' hitonground animations are in the generated
- * programs. What remains is the dispatch itself. The #will_die HEADHELD
- * deferral (sets i_will_die=180 without immediately dying) still needs
- * an eventual consumer this port does not have, and flash_red is pure
- * lifebar rendering.
+ * convulse_t/hitonground dispatch and the #will_die HEADHELD deferral
+ * are BOTH translated now, and the note that used to skip them is worth
+ * recording because both of its reasons had quietly stopped being true.
+ * It said #grnd needs a player_mode of ONGROUND or DEAD at the moment of
+ * death "which this port's Bret dispatcher never sets" -- four live
+ * sites set ONGROUND (ANI_WAITROLL, the attach-anim release, mode_dead's
+ * buckoff, and the slam victim's landing) -- and that "no
+ * hrt_hitonground_anim data has been extracted either", when all nine
+ * wrestlers' hitonground animations are in the generated programs.
+ *
+ * #grnd takes convulse_t (LIFEBAR.ASM:1863) and touches no velocity: the
+ * knockback is #fallbk's and the zeroing is the catch-all's. #will_die
+ * sets I_WILL_DIE to 3*60 and jumps to `#skip`, which is BELOW the
+ * SETMODE DEAD -- so it is the one death path that does not make the
+ * wrestler dead, which is the whole point of a deferral. Nothing puts a
+ * wrestler in HEADHELD today; that is a checked claim in
+ * tests/test_source_tools.py rather than a comment now.
+ *
+ * Still not translated: flash_red, which is pure lifebar rendering.
  */
 void wm_arcade_adjust_health(wm_arcade_actor_t *victim, int16_t delta,
                              wm_arcade_actor_t *damage_source,

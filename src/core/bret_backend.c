@@ -483,10 +483,19 @@ void wm_bret_backend_change_torso_anim(wm_arcade_actor_t *actor,
     start_if_new(&bva->torso_visual, wm_bret_anim_sequence(id));
 }
 
-/* wm_arcade_adjust_health's death_anim bridge: the only id it ever passes
-   is WM_R1_ANIM_FALL_BACK (see wm/arcade/wm_arcade_lifebar.h), which is the
-   real hrt_fall_back_anim -- already wired as WM_BRET_ANIM_FALL_BACK by
-   Bret's own I_WILL_DIE self-death case (wm_arcade_bret.c). */
+/*
+ * wm_arcade_adjust_health's death_anim bridge, for BRET'S OWN self-death
+ * only -- mode_normal's `movi -10,a0 / calla adjust_health` when
+ * I_WILL_DIE comes due. Every other death goes through the match's
+ * bridge, which resolves LIFEBAR.ASM's per-wrestler tables by label.
+ *
+ * WM_R1_ANIM_FALL_BACK really is the only id this one can see, and the
+ * reason is worth stating now that #grnd is translated: the convulse
+ * branch needs a player_mode of ONGROUND or DEAD, and mode_normal --
+ * which is where this call comes from -- is neither. A wrestler killed
+ * while already down is killed by somebody, so he arrives through the
+ * hit path instead.
+ */
 static void wm_bret_backend_death_change_anim(wm_arcade_actor_t *actor,
                                               wm_arcade_react1_anim_group_t anim,
                                               void *user) {

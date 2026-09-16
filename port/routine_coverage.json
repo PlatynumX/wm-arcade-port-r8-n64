@@ -8111,10 +8111,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "data",
-   "evidence": "LIFEBAR.ASM:1863. The same story: nine REFLONGs identical to REACT1.ASM:1856 hitonground_tbl, behind the alias chain `SUBR convulse_t` / `#hitonground`.",
-   "from_generated": false,
-   "ledgered": true
+   "status": "implemented",
+   "evidence": "rows_convulse_t",
+   "from_generated": true,
+   "ledgered": false
   },
   {
    "name": "copy_rom_string",
@@ -12852,10 +12852,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "data",
-   "evidence": "LIFEBAR.ASM:1849. Nine REFLONGs, and they are the SAME nine as REACT1.ASM:1801 fall_back_tbl -- hrt_fall_back_anim down to lex_fall_back_anim with slot 7 empty. Already extracted under that name into src/generated/roster_anim_tables.c. tools/wlrostertbl.py does not see this copy because three labels stand in a row above the rows (`SUBR fallbacks_t`, then `#fallbacks_t`, then `#fall_back`) and its reader stops at the second. Teaching it to walk an alias chain was tried and reverted: it misattributed rows across the tree and cost fourteen tables that were being read correctly, for two whose contents are already here.",
-   "from_generated": false,
-   "ledgered": true
+   "status": "implemented",
+   "evidence": "rows_fallbacks_t",
+   "from_generated": true,
+   "ledgered": false
   },
   {
    "name": "fastanic",

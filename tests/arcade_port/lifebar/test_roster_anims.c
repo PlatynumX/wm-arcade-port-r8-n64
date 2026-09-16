@@ -16,7 +16,7 @@ static void test_shape(void)
 {
     int i;
 
-    assert(wm_roster_anim_table_count == 36);
+    assert(wm_roster_anim_table_count == 38);
     for (i = 0; i < wm_roster_anim_table_count; ++i) {
         const wm_roster_anim_table *t = &wm_roster_anim_tables[i];
         assert(t->name && t->file && t->row);

@@ -220,6 +220,19 @@ static const char *const rows_climbthru_top_anims[WM_ROSTER_ANIM_SLOTS * 1] = {
     "lex_climbthru_top_anim",        /* 8 Lex Luger */
     "dnk_climbthru_top_anim",        /* 9 Referee */
 };
+/* LIFEBAR.ASM:1863 -- slot */
+static const char *const rows_convulse_t[WM_ROSTER_ANIM_SLOTS * 1] = {
+    "hrt_hitonground_anim",          /* 0 Bret Hart */
+    "rzr_hitonground_anim",          /* 1 Razor Ramon */
+    "und_hitonground_anim",          /* 2 Undertaker */
+    "yok_hitonground_anim",          /* 3 Yokozuna */
+    "shn_hitonground_anim",          /* 4 Shawn Michaels */
+    "bam_hitonground_anim",          /* 5 Bam Bam */
+    "dnk_hitonground_anim",          /* 6 Doink */
+    NULL,                            /* 7 Adam Bomb */
+    "lex_hitonground_anim",          /* 8 Lex Luger */
+    NULL,                            /* 9 Referee */
+};
 /* PROGRESS.ASM:3273 -- pair */
 static const char *const rows_dead_addr[WM_ROSTER_ANIM_SLOTS * 2] = {
     "hrt_dizzy_anim",                /* 0 Bret Hart col 0 */
@@ -280,6 +293,19 @@ static const char *const rows_fall_back_tbukl_tbl[WM_ROSTER_ANIM_SLOTS * 1] = {
     "dnk_fall_back_tbukl_anim",      /* 6 Doink */
     NULL,                            /* 7 Adam Bomb */
     "lex_fall_back_tbukl_anim",      /* 8 Lex Luger */
+    NULL,                            /* 9 Referee */
+};
+/* LIFEBAR.ASM:1849 -- slot */
+static const char *const rows_fallbacks_t[WM_ROSTER_ANIM_SLOTS * 1] = {
+    "hrt_fall_back_anim",            /* 0 Bret Hart */
+    "rzr_fall_back_anim",            /* 1 Razor Ramon */
+    "und_fall_back_anim",            /* 2 Undertaker */
+    "yok_fall_back_anim",            /* 3 Yokozuna */
+    "shn_fall_back_anim",            /* 4 Shawn Michaels */
+    "bam_fall_back_anim",            /* 5 Bam Bam */
+    "dnk_fall_back_anim",            /* 6 Doink */
+    NULL,                            /* 7 Adam Bomb */
+    "lex_fall_back_anim",            /* 8 Lex Luger */
     NULL,                            /* 9 Referee */
 };
 /* REACT1.ASM:1746 -- slot */
@@ -636,10 +662,12 @@ const wm_roster_anim_table wm_roster_anim_tables[] = {
     { "climbthru_bot_anims", "WRESTLE2.ASM", 721, 10, 1, WM_ROSTER_COL_SLOT, rows_climbthru_bot_anims },
     { "climbthru_side_anims", "WRESTLE2.ASM", 769, 10, 1, WM_ROSTER_COL_SLOT, rows_climbthru_side_anims },
     { "climbthru_top_anims", "WRESTLE2.ASM", 733, 10, 1, WM_ROSTER_COL_SLOT, rows_climbthru_top_anims },
+    { "convulse_t", "LIFEBAR.ASM", 1863, 9, 1, WM_ROSTER_COL_SLOT, rows_convulse_t },
     { "dead_addr", "PROGRESS.ASM", 3273, 10, 2, WM_ROSTER_COL_PAIR, rows_dead_addr },
     { "dizzy_table", "FINISEQ.ASM", 1493, 9, 1, WM_ROSTER_COL_SLOT, rows_dizzy_table },
     { "fall_back_tbl", "REACT1.ASM", 1801, 9, 1, WM_ROSTER_COL_SLOT, rows_fall_back_tbl },
     { "fall_back_tbukl_tbl", "REACT1.ASM", 1812, 9, 1, WM_ROSTER_COL_SLOT, rows_fall_back_tbukl_tbl },
+    { "fallbacks_t", "LIFEBAR.ASM", 1849, 9, 1, WM_ROSTER_COL_SLOT, rows_fallbacks_t },
     { "head_hit2_sand_tbl", "REACT1.ASM", 1746, 9, 1, WM_ROSTER_COL_SLOT, rows_head_hit2_sand_tbl },
     { "head_hit2_tbl", "REACT1.ASM", 1735, 9, 2, WM_ROSTER_COL_FACING, rows_head_hit2_tbl },
     { "head_hit_dizzy_tbl", "REACT1.ASM", 1757, 9, 2, WM_ROSTER_COL_FACING, rows_head_hit_dizzy_tbl },
@@ -662,4 +690,4 @@ const wm_roster_anim_table wm_roster_anim_tables[] = {
     { "waiting_addr", "PROGRESS.ASM", 3333, 10, 2, WM_ROSTER_COL_PAIR, rows_waiting_addr },
 };
 
-const int wm_roster_anim_table_count = 36;
+const int wm_roster_anim_table_count = 38;

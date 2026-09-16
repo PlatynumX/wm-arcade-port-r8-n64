@@ -66,7 +66,8 @@ SLOT_NAMES = (
     "Lex Luger", "Referee",
 )
 
-LABEL_RE = re.compile(r"^\s*(?:SUBRP?\s+)?([A-Za-z_][A-Za-z0-9_]*):?\s*$")
+LABEL_RE = re.compile(r"^\s*(SUBRP?\s+)?([A-Za-z_][A-Za-z0-9_]*):?\s*$")
+LOCAL_LABEL_RE = re.compile(r"^\s*#[A-Za-z_][A-Za-z0-9_]*:?\s*$")
 LONG_RE = re.compile(r"^\s*\.long\s+(.+)$", re.I)
 # REFLONG expands to `.globl label` + `.long label` (MACROS.H:45), so a
 # REFLONG line is one table row that also exports the name.
@@ -91,6 +92,7 @@ def _blocks(path: pathlib.Path):
         if not m:
             i += 1
             continue
+        is_subr = m.group(1) is not None
         rows: list[str] = []
         j = i + 1
         while j < len(lines):
@@ -98,6 +100,32 @@ def _blocks(path: pathlib.Path):
                 j += 1
                 continue
             if SKIP_RE.match(lines[j]):
+                j += 1
+                continue
+            #
+            # A `#local` alias sitting between the global label and its
+            # data, as at LIFEBAR.ASM:1863 and :1849:
+            #
+            #    SUBR  convulse_t
+            #   #hitonground
+            #    REFLONG  hrt_hitonground_anim
+            #
+            # Two conditions, and both are load-bearing.
+            #
+            # No row may have been read yet: a local label further down
+            # is a SECOND table starting inside the first --
+            # FIREWORK.ASM's #flare_anim2 is one -- and swallowing that
+            # would silently merge two tables into one.
+            #
+            # And the outer label must have been written with an
+            # explicit SUBR/SUBRP. Without that this skip reaches across
+            # a bare identifier on its own line, which in this assembler
+            # is just as likely a MACRO INVOCATION as a label -- and
+            # DRONE.ASM:2838 is exactly that, a `DS_END` three lines
+            # above `#taunt_t`, which would then be handed the taunt
+            # table as if DS_END were its name.
+            #
+            if not rows and is_subr and LOCAL_LABEL_RE.match(lines[j]):
                 j += 1
                 continue
             rm = REFLONG_RE.match(lines[j])
@@ -111,7 +139,7 @@ def _blocks(path: pathlib.Path):
             rows += [t.strip() for t in lm.group(1).split(",") if t.strip()]
             j += 1
         if rows:
-            yield m.group(1), i + 1, rows
+            yield m.group(2), i + 1, rows
         i = max(j, i + 1)
 
 

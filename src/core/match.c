@@ -1,4 +1,5 @@
 #include "wm/match.h"
+#include "wm/arcade/wm_arcade_roster_anims.h"
 #include "wm/arcade/wm_arcade_buddies.h"
 #include "wm/announce_tables.h"
 #include "wm/award.h"
@@ -1269,27 +1270,58 @@ void wm_match_start_selected(wm_match_state *m, WmRng *rng,
     wm_match_start_one_player(m, rng, 1, p1_source_wrestler, 0);
 }
 
-/* wm_arcade_adjust_health's death_anim bridge for the generic hit path:
-   unlike wm_bret_backend_adjust_health (which always IS a Bret actor), the
-   hit path's victim could be either actor[], and only the one carrying
-   WM_ROSTER_BRET has a real backend to dispatch through -- everyone else
-   simply gets no death anim, same as this port's every other Bret-only
-   boundary. */
+/*
+ * wm_arcade_adjust_health's death_anim bridge. LIFEBAR.ASM's death
+ * dispatch names two per-wrestler tables and this resolves both:
+ * fallbacks_t (:1849) for a man knocked off his feet, convulse_t
+ * (:1863) for one already on the ground.
+ *
+ * It used to be Bret-only, "since only the one carrying WM_ROSTER_BRET
+ * has a real backend to dispatch through". Every wrestler has had a
+ * program-driven backend since the generic dispatcher landed, and both
+ * tables carry all nine, so the roster table decides the label and
+ * match_change_anim starts it -- the same route the climb animations
+ * take out of confine_wrestler.
+ */
 static void wm_match_death_change_anim(wm_arcade_actor_t *victim,
                                        wm_arcade_react1_anim_group_t anim,
                                        void *user) {
     wm_match_state *m = (wm_match_state *)user;
-    unsigned i;
-    if (!m || anim != WM_R1_ANIM_FALL_BACK) return;
-    for (i = 0; i < m->actor_count; ++i) {
-        if (&m->actors[i] == victim) {
+    const wm_roster_anim_table *table;
+    const char *table_name;
+    const char *label;
+
+    if (!m || !victim) return;
+    if (anim == WM_R1_ANIM_FALL_BACK)            table_name = "fallbacks_t";
+    else if (anim == WM_R1_ANIM_HIT_ON_GROUND)   table_name = "convulse_t";
+    else return;
+
+    /*
+     * Bret has a richer backend than the label path can drive: it
+     * selects by typed id and keeps current_id, which his dispatcher
+     * reads back. Where a typed id exists for what the table names, use
+     * it -- fall_back is one. hitonground is not (his typed enum carries
+     * only the FACEDOWN variant, a different animation from the one
+     * convulse_t names), so that falls through to the label.
+     */
+    if (anim == WM_R1_ANIM_FALL_BACK) {
+        unsigned i;
+        for (i = 0; i < m->actor_count; ++i) {
+            if (&m->actors[i] != victim) continue;
             if (m->actors[i].wrestler_num == WM_ROSTER_BRET) {
                 wm_bret_backend_change_anim(victim, WM_BRET_ANIM_FALL_BACK,
                                             &m->bret_visual[i]);
+                return;
             }
-            return;
+            break;
         }
     }
+
+    table = wm_roster_anim_find(table_name);
+    if (!table) return;
+    label = wm_roster_anim_for(table, (int)victim->wrestler_num);
+    if (!label) return;                 /* slot 7, the cut Adam Bomb */
+    match_change_anim(victim, label, m);
 }
 
 /* wm_arcade_react_callbacks_t.adjust_health adapter: the real logic lives

@@ -1082,16 +1082,6 @@
   "status": "hardware",
   "note": "MAIN.ASM. Moves the I/O window in the address map. Its one call site in WRESTLE.ASM's main loop is commented out, under the author's own question: \"isn't there a less obvious place that we can remap the IO ???\""
  },
- "fallbacks_t": {
-  "file": "LIFEBAR.ASM",
-  "status": "data",
-  "note": "LIFEBAR.ASM:1849. Nine REFLONGs, and they are the SAME nine as REACT1.ASM:1801 fall_back_tbl -- hrt_fall_back_anim down to lex_fall_back_anim with slot 7 empty. Already extracted under that name into src/generated/roster_anim_tables.c. tools/wlrostertbl.py does not see this copy because three labels stand in a row above the rows (`SUBR fallbacks_t`, then `#fallbacks_t`, then `#fall_back`) and its reader stops at the second. Teaching it to walk an alias chain was tried and reverted: it misattributed rows across the tree and cost fourteen tables that were being read correctly, for two whose contents are already here."
- },
- "convulse_t": {
-  "file": "LIFEBAR.ASM",
-  "status": "data",
-  "note": "LIFEBAR.ASM:1863. The same story: nine REFLONGs identical to REACT1.ASM:1856 hitonground_tbl, behind the alias chain `SUBR convulse_t` / `#hitonground`."
- },
  "raise_dead": {
   "file": "FINISEQ.ASM",
   "status": "process",

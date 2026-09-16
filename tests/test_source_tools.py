@@ -3185,7 +3185,12 @@ def test_roster_anim_tables_name_real_routines() -> None:
     tables = wlrostertbl.roster_tables()
     if not tables:
         return
-    assert len(tables) == 36, sorted(tables)
+    # 38 since LIFEBAR's convulse_t and fallbacks_t were picked up: both
+    # are `SUBR name` followed by a #local alias before the data, which
+    # the row scanner used to stop at. The count is pinned so a change
+    # in what the extractor sees has to be looked at rather than
+    # absorbed -- which is how these two were noticed missing.
+    assert len(tables) == 38, sorted(tables)
 
     routines = set()
     for path in sorted(wlanim.ORIG.glob("*.ASM")):

@@ -262,6 +262,27 @@ struct wm_arcade_actor {
      */
     int32_t z_bound;
     /*
+     * PLYR.EQU X_BOUND, confine_wrestler's X counterpart to Z_BOUND: the
+     * boundary line's own X at the wrestler's Z, stored when a clamp
+     * puts him on it. Only the out-of-ring branch writes it.
+     */
+    int32_t x_bound;
+    /*
+     * PLYR.EQU HIT_GATE_TIME, a PCNT stamp. WRESTLE.ASM:3688 reads it
+     * back: a runner who hit the arena gate within the last three
+     * seconds falls back instead of bouncing off.
+     */
+    uint32_t hit_gate_time;
+    /*
+     * PLYR.EQU:231 CLIMB_START "time at start of current climb attempt"
+     * and :232 CLIMB_LAST "time of last climb attempt", both PCNT
+     * stamps. wm_ring_idiot_check is the routine that reads them: a
+     * player holding a direction into the ropes across consecutive
+     * ticks eventually climbs without pressing a button.
+     */
+    uint32_t climb_start;
+    uint32_t climb_last;
+    /*
      * PLYR.EQU CUR_FRAME as do_roll writes it: the frame a wrestler shows
      * while his own animation is parked. It is not the puppet field above
      * -- that is an ATTACKER choosing the frame; this is the wrestler

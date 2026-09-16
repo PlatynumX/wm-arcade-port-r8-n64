@@ -10617,6 +10617,9 @@ static void test_ring_calc_line_x(void) {
 static void test_arcade_confine_wrestler_inside_ring_no_clamp(void) {
     wm_arcade_actor_t a;
     memset(&a, 0, sizeof(a));
+    /* PLYR.EQU INRING inverted: a placed wrestler is IN the ring,
+       which wm_match_start writes and a bare memset does not. */
+    a.in_ring = 1;
     a.x_int = WM_RING_X_CENTER; a.x_fixed = WM_RING_X_CENTER << 16;
     a.z_int = 1184; a.z_fixed = 1184 << 16;
     a.hurt_box.x1 = a.x_int - 30;
@@ -10634,6 +10637,9 @@ static void test_arcade_confine_wrestler_clamps_z(void) {
     wm_arcade_actor_t a;
 
     memset(&a, 0, sizeof(a));
+    /* PLYR.EQU INRING inverted: a placed wrestler is IN the ring,
+       which wm_match_start writes and a bare memset does not. */
+    a.in_ring = 1;
     a.x_int = WM_RING_X_CENTER; a.x_fixed = WM_RING_X_CENTER << 16;
     a.hurt_box.x1 = a.x_int - 30;
     a.hurt_box.x2 = a.x_int + 30;
@@ -10644,6 +10650,9 @@ static void test_arcade_confine_wrestler_clamps_z(void) {
     CHECK(a.z_fixed == (int32_t)WM_RING_TOP << 16);
 
     memset(&a, 0, sizeof(a));
+    /* PLYR.EQU INRING inverted: a placed wrestler is IN the ring,
+       which wm_match_start writes and a bare memset does not. */
+    a.in_ring = 1;
     a.x_int = WM_RING_X_CENTER; a.x_fixed = WM_RING_X_CENTER << 16;
     a.hurt_box.x1 = a.x_int - 30;
     a.hurt_box.x2 = a.x_int + 30;
@@ -10654,6 +10663,9 @@ static void test_arcade_confine_wrestler_clamps_z(void) {
 
     /* Sitting exactly on the boundary: bit set, but no clamp needed. */
     memset(&a, 0, sizeof(a));
+    /* PLYR.EQU INRING inverted: a placed wrestler is IN the ring,
+       which wm_match_start writes and a bare memset does not. */
+    a.in_ring = 1;
     a.x_int = WM_RING_X_CENTER; a.x_fixed = WM_RING_X_CENTER << 16;
     a.hurt_box.x1 = a.x_int - 30;
     a.hurt_box.x2 = a.x_int + 30;
@@ -10676,6 +10688,9 @@ static void test_arcade_confine_wrestler_clamps_x(void) {
        (hurt_box.x1 == x_int here, offset 0, so x_int itself ends up
        exactly at left_rope). */
     memset(&a, 0, sizeof(a));
+    /* PLYR.EQU INRING inverted: a placed wrestler is IN the ring,
+       which wm_match_start writes and a bare memset does not. */
+    a.in_ring = 1;
     a.z_int = 1184; a.z_fixed = 1184 << 16;
     a.x_int = left_rope - 20; a.x_fixed = a.x_int << 16;
     a.hurt_box.x1 = a.x_int; a.hurt_box.x2 = a.x_int + 60;
@@ -10688,6 +10703,9 @@ static void test_arcade_confine_wrestler_clamps_x(void) {
        (hurt_box.x2 == x_int here, offset 0, so x_int ends up at
        right_rope). */
     memset(&a, 0, sizeof(a));
+    /* PLYR.EQU INRING inverted: a placed wrestler is IN the ring,
+       which wm_match_start writes and a bare memset does not. */
+    a.in_ring = 1;
     a.z_int = 1184; a.z_fixed = 1184 << 16;
     a.x_int = right_rope + 20; a.x_fixed = a.x_int << 16;
     a.hurt_box.x1 = a.x_int - 60; a.hurt_box.x2 = a.x_int;
@@ -10703,6 +10721,9 @@ static void test_arcade_confine_wrestler_noconfine_and_attached_skip(void) {
     wm_arcade_actor_t a;
 
     memset(&a, 0, sizeof(a));
+    /* PLYR.EQU INRING inverted: a placed wrestler is IN the ring,
+       which wm_match_start writes and a bare memset does not. */
+    a.in_ring = 1;
     a.anim_mode = WM_MODE_NOCONFINE;
     a.x_int = 0; a.x_fixed = 0;
     a.z_int = 0; a.z_fixed = 0;
@@ -10712,6 +10733,9 @@ static void test_arcade_confine_wrestler_noconfine_and_attached_skip(void) {
     CHECK(a.z_int == 0);
 
     memset(&a, 0, sizeof(a));
+    /* PLYR.EQU INRING inverted: a placed wrestler is IN the ring,
+       which wm_match_start writes and a bare memset does not. */
+    a.in_ring = 1;
     a.player_mode = WM_PMODE_ATTACHED;
     a.x_int = 0; a.x_fixed = 0;
     a.z_int = 0; a.z_fixed = 0;

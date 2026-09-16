@@ -692,6 +692,54 @@ static void match_finish_zombie_transform(wm_match_state *m, unsigned i) {
     m->actors[i].life = WM_ARCADE_LIFE_MAX;
 }
 
+/*
+ * confine_wrestler with everything it needs, plus the three things it
+ * decides but cannot carry out.
+ *
+ * The climb checks live INSIDE confine_wrestler in the source
+ * (WRESTLE.ASM:3103, :3121, :3235 for the way out and :3560, :3583,
+ * :3604 for the way back in), and climbing out is the only thing in the
+ * game that clears INRING. They were translated a long time ago in
+ * wm/arcade/wmania_ring_climb.h and had no caller at all, so no wrestler
+ * ever left the ring and the whole out-of-ring half of confine_wrestler
+ * was dead by construction.
+ */
+static void match_confine_actor(wm_match_state *m, unsigned i,
+                                wm_arcade_actor_t *const *actor_ptrs) {
+    wm_confine_result_t res;
+    wm_arcade_actor_t *a = &m->actors[i];
+
+    wm_arcade_confine_wrestler_ex(a, actor_ptrs, m->actor_count,
+                                  m->tick_count, &res);
+
+    /* `calla change_anim1a` on whichever climbthru/climbin animation the
+       check chose. NEW_FACING_DIR came with it. */
+    if (res.climb_anim) {
+        a->new_facing_dir = (int32_t)res.climb_facing;
+        match_change_anim(a, res.climb_anim, m);
+    }
+
+    /*
+     * WRESTLE.ASM:3729 `movk 1,a0 / calla change_wrestler` -- a zombie
+     * who reaches the arena edge transforms there rather than waiting
+     * out mode_dead's ten seconds. (The `movk 1,a0` is dead:
+     * change_wrestler never reads a0.)
+     */
+    if (res.zombie_transform) match_finish_zombie_transform(m, i);
+
+    /*
+     * The gate crash's own animation is a FACETBL/FACE24TBL dispatch --
+     * fall_back_tbl when he hit this gate inside three seconds,
+     * bncoff_gate otherwise. wm_arcade_confine_wrestler_ex has already
+     * applied the velocities, the mode, RUN_TIME and the damage; only
+     * the animation choice comes back here.
+     */
+    if (res.gate_crash) {
+        /* `movi 0c5h,a0 / calla triple_sound`. */
+        if (m->anim_sound) m->anim_sound(m->anim_sound_user, 0xc5u);
+    }
+}
+
 static void init_smoves(wm_match_state *m) {
     unsigned i;
     if (!m) return;
@@ -1637,14 +1685,14 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
                    same reason and at the same point. Runs before position
                    integration so this tick's confinement uses this tick's
                    own hurt_box. */
-                wm_arcade_confine_wrestler(&m->actors[i]);
+                match_confine_actor(m, i, actor_ptrs);
             } else {
                 wm_wrestler_backend_tick(&m->wrestler_visual[i], &m->actors[i]);
                 /* These six now have a real, moving hurt_box of their own
                    (their animations are program-driven), so confine_wrestler
                    applies to them exactly as it does to Bret -- it reads
                    OBJ_COLLX1/X2, which is what the hurt box is. */
-                wm_arcade_confine_wrestler(&m->actors[i]);
+                match_confine_actor(m, i, actor_ptrs);
             }
             /*
              * Position integration used to happen here, through

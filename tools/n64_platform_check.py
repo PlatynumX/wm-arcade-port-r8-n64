@@ -25,16 +25,33 @@ So: REAL libdragon headers, all five files. In order of preference,
   3. The old shim, for the one file it can honestly cover.
   4. Skip, saying which.
 
-What this does NOT do is build a ROM, and it must not be mistaken for
-one. -fsyntax-only with the HOST compiler catches what an unverified
-edit actually gets wrong -- undeclared identifiers, wrong argument
-types, bad struct members, typos -- against the real declarations. It
-does not catch anything that depends on the target: MIPS word sizes,
-endianness, alignment, or codegen. libdragon's own headers emit
-format-string warnings here for exactly that reason (int32_t is `int`
-on this host and `long` on MIPS), so warnings from inside libdragon are
-reported and not counted, while any warning from OUR files is a
-failure.
+Three tiers, strongest first, and the check says which one it ran:
+
+  MIPS64 -O2      a real compile to object code with the same cross
+                  compiler n64_link_check.py uses for the core. The
+                  difference that matters is ENDIANNESS: this host is
+                  little-endian and both this target and the N64 are
+                  big-endian, so a byte-order assumption that the host
+                  pass cannot see fails here. (Type widths happen to
+                  agree between the two, so those are not what this
+                  buys.) It also generates code rather than parsing.
+  host syntax     -fsyntax-only with the host compiler, when no cross
+                  compiler is installed.
+  shim            the old hand-written stand-in, for the one file it
+                  can honestly speak for, when there are no real
+                  headers at all.
+
+What none of them does is build a ROM, and this must not be mistaken
+for one. The cross-compiler here targets mips64-linux, not the bare
+metal mips64-elf libdragon links with, so these objects are not ROM
+objects -- what they prove is that the code compiles for the real word
+size and endianness, not that it links or runs. The asset pipeline,
+DragonFS and the actual link still need the toolchain.
+
+libdragon's own headers emit format-string warnings on the HOST pass
+(int32_t is `int` there and `long` on MIPS), so warnings from inside
+libdragon are reported and not counted, while any warning from OUR
+files is a failure.
 """
 import os
 import pathlib
@@ -67,6 +84,9 @@ LIBDRAGON_BRANCH = "trunk"
 # libdragon requires GNU extensions -- pputils.h says so with an #error,
 # and dlfcn.h has a top-level asm() that needs them too.
 STD = "-std=gnu11"
+
+# The same cross-compiler tools/n64_link_check.py uses for the core.
+CROSS_CC = "mips64-linux-gnuabi64-gcc"
 
 
 def _cached_clone() -> pathlib.Path | None:
@@ -102,11 +122,20 @@ def _libdragon_include() -> tuple[pathlib.Path | None, str]:
 
 
 def _compile(cc: str, path: pathlib.Path, include: pathlib.Path,
-             third_party: pathlib.Path | None) -> int:
+             third_party: pathlib.Path | None,
+             obj: pathlib.Path | None = None) -> int:
     """0 on success. Warnings from OUR file count as failure; warnings
-    from inside the headers are shown and forgiven."""
-    cmd = [cc, "-fsyntax-only", STD, "-Wall", "-Wextra",
-           "-I", str(include), "-I", str(ROOT / "include"), str(path)]
+    from inside the headers are shown and forgiven.
+
+    With `obj` this really compiles, to object code, which is what makes
+    the cross pass worth more than the host one."""
+    if obj is not None:
+        cmd = [cc, "-c", "-O2", STD, "-Wall", "-Wextra",
+               "-I", str(include), "-I", str(ROOT / "include"),
+               str(path), "-o", str(obj)]
+    else:
+        cmd = [cc, "-fsyntax-only", STD, "-Wall", "-Wextra",
+               "-I", str(include), "-I", str(ROOT / "include"), str(path)]
     proc = subprocess.run(cmd, capture_output=True, text=True)
     text = proc.stdout + proc.stderr
     if proc.returncode != 0:
@@ -133,19 +162,32 @@ def main() -> int:
 
     include, how = _libdragon_include()
     if include is not None:
+        cross = shutil.which(CROSS_CC)
         failures = 0
-        for rel in COVERED:
-            path = ROOT / rel
-            if not path.exists():
-                print("n64_platform_check: missing %s" % rel)
-                failures += 1
-                continue
-            failures += _compile(cc, path, include, include)
+        with tempfile.TemporaryDirectory() as tmp:
+            for rel in COVERED:
+                path = ROOT / rel
+                if not path.exists():
+                    print("n64_platform_check: missing %s" % rel)
+                    failures += 1
+                    continue
+                if cross:
+                    obj = pathlib.Path(tmp) / (path.stem + ".o")
+                    failures += _compile(cross, path, include, include, obj)
+                else:
+                    failures += _compile(cc, path, include, include)
         if failures:
             print("n64_platform_check: %d file(s) failed" % failures)
             return 1
-        print("n64_platform_check: %d platform source(s) clean against real "
-              "libdragon headers (%s)" % (len(COVERED), how))
+        if cross:
+            print("n64_platform_check: %d platform source(s) compile clean "
+                  "for mips64 at -O2 against real libdragon headers (%s)"
+                  % (len(COVERED), how))
+        else:
+            print("n64_platform_check: %d platform source(s) type-check clean "
+                  "on the host against real libdragon headers (%s); no %s, so "
+                  "nothing target-dependent was checked"
+                  % (len(COVERED), how, CROSS_CC))
         return 0
 
     # No real headers. Fall back to the shim, which can only speak for

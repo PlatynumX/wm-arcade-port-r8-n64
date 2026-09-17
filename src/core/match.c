@@ -1,6 +1,7 @@
 #include "wm/match.h"
 #include "wm/arcade/wm_arcade_roster_anims.h"
 #include "wm/arcade/wm_arcade_react_anims.h"
+#include "wm/arcade/wm_arcade_react5_core.h"
 #include "wm/arcade/wm_arcade_buddies.h"
 #include "wm/announce_tables.h"
 #include "wm/award.h"
@@ -1954,6 +1955,18 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
          * threw it away. Damage landed; nothing else did.
          */
         react_cb.reaction = wm_match_reaction;
+        /*
+         * REACT1.ASM:428 `calla good_run_hit / jrc #good_hit`, the very
+         * first thing wrestler_hit does: a run collision that is not a
+         * genuine run hit is discarded before WHOHITME is even set, so
+         * "reversals will start hitting innocent bystanders who run by"
+         * cannot happen. REACT5.ASM:127 is the test itself and has been
+         * translated since fix38 -- but this seam was never assigned, so
+         * wm_arcade_wrestler_hit took its `!callbacks->good_run_hit`
+         * early-out and returned WM_WRESTLER_HIT_NEEDS_RUN_HOOK instead.
+         * Every AMODE_RUN collision in the game did nothing at all.
+         */
+        react_cb.good_run_hit = wm_arcade_react5_good_run_hit_callback;
         react_cb.user = m;
 
         /* The context that dispatcher needs, rebuilt each tick so it

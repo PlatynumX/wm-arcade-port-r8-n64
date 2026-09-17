@@ -370,14 +370,18 @@ static void backend_razor_change_anim(wm_arcade_actor_t *actor,
                                       void *user) {
     const char *label = wm_arcade_razor_anim_label(id);
     if (!actor || !label) return;
-    /* WRESTLE2.ASM:3443 start_run_anim is state setup with no WL frames of
-       its own, so there is no program to run -- what it does IS the setup.
-       Bret's backend takes the same fork for the same reason. */
-    if (strcmp(label, "start_run_anim") == 0) {
-        wm_arcade_start_run(actor);
-        actor->anim_mode |= (uint16_t)(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
-        return;
-    }
+    /*
+     * start_run_anim used to be special-cased here, calling
+     * wm_arcade_start_run and returning. That was right about the
+     * routine having no WL frames and wrong about what follows: the
+     * source's #setup_run ENDS by selecting #run_anims[WRESTLERNUM] and
+     * changing to it, and returning early meant Razor entered MODE
+     * RUNNING and then stood there -- no run animation, and so no
+     * ANI_ATTACK_ON,AMODE_RUN, which is the only thing that ever sets
+     * that attack mode. The program path handles all of it now
+     * (src/core/anim_code.c's #setup_run), so this takes the same
+     * ordinary route as every other label.
+     */
     backend_change_anim_label(actor, label, user);
 }
 

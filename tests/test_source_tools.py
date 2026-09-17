@@ -3185,27 +3185,50 @@ def test_roster_anim_tables_name_real_routines() -> None:
     tables = wlrostertbl.roster_tables()
     if not tables:
         return
-    # 38 since LIFEBAR's convulse_t and fallbacks_t were picked up: both
-    # are `SUBR name` followed by a #local alias before the data, which
-    # the row scanner used to stop at. The count is pinned so a change
-    # in what the extractor sees has to be looked at rather than
-    # absorbed -- which is how these two were noticed missing.
-    assert len(tables) == 38, sorted(tables)
+    # 64 since the extractor stopped requiring a GLOBAL head. Most of
+    # these tables are written with a `#local` one, #run_anims
+    # (WRESTLE2.ASM:3560) among them, and reading only globals silently
+    # lost 26 of them. The rule did not change -- defined once in the
+    # whole tree or refused -- only the assumption that "defined once"
+    # implied "global". The count is pinned so a change in what the
+    # extractor sees has to be looked at rather than absorbed, which is
+    # how both this and the earlier convulse_t/fallbacks_t gap were
+    # noticed.
+    assert len(tables) == 64, sorted(tables)
+    assert "#run_anims" in tables
 
-    routines = set()
+    routines: set[str] = set()
+    locals_by_file: dict[str, set[str]] = {}
     for path in sorted(wlanim.ORIG.glob("*.ASM")):
-        text = path.read_text(errors="replace")
+        # Comments are stripped first, because a SUBR line may carry one:
+        # SHNSEQ4.ASM:1285 is `SUBR shn_flyout_anim ;starts on OSX7`, and
+        # matching against the raw line anchors $ past the comment and
+        # misses the definition entirely. That went unnoticed while this
+        # only saw the global tables -- none of their rows happened to
+        # name a routine declared with a trailing comment -- and #local
+        # #flyout_tbl2 names exactly one that does.
+        text = "\n".join(wlanim.strip_comment(r) for r in
+                         path.read_text(errors="replace").splitlines())
         routines.update(re.findall(r"^\s*SUBRP?\s+([A-Za-z_]\w*)\s*$",
                                    text, re.M))
         # PROGRESS.ASM's leg/torso rows name animations declared as bare
         # column-0 labels rather than with SUBR.
         routines.update(re.findall(r"^([A-Za-z_]\w*)\s*$", text, re.M))
+        # A table's rows may be #local labels rather than global
+        # routines: SPECIAL.ASM:227 #star_art hands each wrestler his own
+        # #hdizzy_anim / #rdizzy_anim / ... , all defined a few lines
+        # below it in the same file. Those resolve within the file, so
+        # they are collected per file rather than into the global set.
+        locals_by_file[path.name] = set(
+            re.findall(r"^(#[A-Za-z_]\w*):?\s*$", text, re.M))
 
     for name, (fname, line, rows) in tables.items():
         for slot, label in enumerate(rows):
             if label is None:
                 continue
-            assert label in routines, (name, fname, line, slot, label)
+            where = (locals_by_file.get(fname, set()) if label.startswith("#")
+                     else routines)
+            assert label in where, (name, fname, line, slot, label)
 
     # The two details the header claims, asserted against the data.
     # (Both of these tables are one column wide, so a row index is a

@@ -33,6 +33,8 @@
 #include "wm/arcade/wm_arcade_roll.h"
 #include "wm/arcade/wm_arcade_combat_defs.h"
 #include "wm/arcade/wm_arcade_roster.h"
+#include "wm/arcade/wm_arcade_start_run.h"
+#include "wm/arcade/wm_arcade_roster_anims.h"
 #include "wm/arcade/wm_arcade_veladd.h"
 #include "wm/arcade/wmania_ring_geometry.h"
 #include "wm/arcade/wm_arcade_butcount.h"
@@ -1775,6 +1777,39 @@ static void coffin_change_by_roster(wm_arcade_actor_t *actor,
 }
 
 /*
+ * WRESTLE2.ASM:3452 #setup_run, start_run_anim's own ANI_CODE.
+ *
+ * start_run_anim has no WL frames at all: it is SETMODE, DETACH, this
+ * routine, END. The routine does the state half (wm_arcade_start_run --
+ * direction, the cleared getup/run timers, MODE RUNNING) and then ends
+ * with `#run_anims[WRESTLERNUM]` and `calla change_anim1a` on a13, which
+ * is the self-change seam.
+ *
+ * The consequence is the whole point. Every wrestler's run animation
+ * begins `ANI_ATTACK_ON,AMODE_RUN` and, as HRTSEQ1.ASM says in its own
+ * comment, "I'm turning on an attack box for the entire run sequence. I
+ * never turn it off" -- so running into somebody IS an attack, and it is
+ * the only way AMODE_RUN is ever set. Without this hook the generic
+ * backend ran start_run_anim's three opcodes, found no translation for
+ * the ANI_CODE, and stopped: no run animation, no MODE RUNNING, no
+ * attack box. Six of the eight wrestlers never ran at all.
+ */
+static void setup_run(wm_arcade_actor_t *actor,
+                      const wm_anim_env *env, int32_t param) {
+    const char *label;
+    (void)env;
+    (void)param;
+    if (!actor) return;
+    wm_arcade_start_run(actor);
+    /* The table is #run_anims itself (a `#local` head, which is why the
+       roster extractor had to learn to read those), not one of the
+       ANI_CODE-keyed rows wm_anim_code_roster_label serves. */
+    label = wm_roster_anim_for(wm_roster_anim_find("#run_anims"),
+                               actor->wrestler_num);
+    if (label) actor->change_anim_label = label;
+}
+
+/*
  * HRTSEQ4.ASM:1134 #set_wrestler_xflip -- the same body as
  * ANI_SET_WRESTLER_XFLIP, reached as a routine instead of an opcode.
  */
@@ -3282,6 +3317,7 @@ static const struct {
     { "is_he_in", "FINISEQ.ASM", coffin_is_he_in, 0, 0 },
     { "is_guy_up", "FINISEQ.ASM", coffin_is_guy_up, 0, 0 },
     { "close_door", "FINISEQ.ASM", coffin_close_door, 0, 0 },
+    { "#setup_run", "WRESTLE2.ASM", setup_run, 0, 0 },
     { "guy_is_in", "FINISEQ.ASM", coffin_guy_is_in, 0, 0 },
     { "make_wres_disappear", "FINISEQ.ASM", coffin_make_wres_disappear, 0, 0 },
     { "push_to_coffin", "FINISEQ.ASM", coffin_push_to_coffin, 0, 0 },

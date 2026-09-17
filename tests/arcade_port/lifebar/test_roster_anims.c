@@ -16,7 +16,9 @@ static void test_shape(void)
 {
     int i;
 
-    assert(wm_roster_anim_table_count == 38);
+    /* 38 until the extractor learned to read `#local` heads as well as
+       global ones; most of these tables are written that way. */
+    assert(wm_roster_anim_table_count == 64);
     for (i = 0; i < wm_roster_anim_table_count; ++i) {
         const wm_roster_anim_table *t = &wm_roster_anim_tables[i];
         assert(t->name && t->file && t->row);

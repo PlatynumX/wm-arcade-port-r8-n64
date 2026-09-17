@@ -18,11 +18,20 @@ row count and the contents are both read rather than assumed.
 
 tools/wlpuppet.py already extracts the tables that ANI_SLAVEANIM,
 ANI_CHANGEANIM_TBL and friends name as command operands, resolving each
-from its use site because those labels are `#local` and reused. These
-are the other kind: plain globals reached by ordinary code
-(`movi fall_back_tbl,a0`), which have exactly one definition each and so
-need no use site to disambiguate. Anything defined more than once is
+from its use site. These are the other kind: tables reached by ordinary
+code (`movi fall_back_tbl,a0`, `addi #run_anims,a0`), which need no use
+site BECAUSE THEY ARE DEFINED ONCE. Anything defined more than once is
 refused here rather than guessed at -- that is wlpuppet's job.
+
+Defined-once is the rule, not global-versus-local. This read globals only
+at first, which quietly lost most of them: the majority of these tables
+are written with a `#local` head, #run_anims (WRESTLE2.ASM:3560 -- the
+run animation each wrestler starts, and the reason a running wrestler
+turns on an AMODE_RUN attack box) among them, and so are the knockdown,
+getup, climb, bounce and buckoff tables. A local defined once in the
+whole tree is exactly as unambiguous as a global defined once. Seventeen
+local names are NOT: #headheld_tbl has sixteen definitions, #flyout_tbl
+seven, and those are refused here like any other ambiguous name.
 """
 from __future__ import annotations
 import argparse
@@ -68,6 +77,9 @@ SLOT_NAMES = (
 
 LABEL_RE = re.compile(r"^\s*(SUBRP?\s+)?([A-Za-z_][A-Za-z0-9_]*):?\s*$")
 LOCAL_LABEL_RE = re.compile(r"^\s*#[A-Za-z_][A-Za-z0-9_]*:?\s*$")
+# The same thing with the name captured, for a local that STARTS a table
+# rather than aliasing one. See _blocks.
+LOCAL_START_RE = re.compile(r"^\s*(#[A-Za-z_][A-Za-z0-9_]*):?\s*$")
 LONG_RE = re.compile(r"^\s*\.long\s+(.+)$", re.I)
 # REFLONG expands to `.globl label` + `.long label` (MACROS.H:45), so a
 # REFLONG line is one table row that also exports the name.
@@ -82,6 +94,16 @@ SKIP_RE = re.compile(r"^\s*\.(ref|globl|global|def|even|align)\b", re.I)
 MIN_ANIM_ROWS = 5
 
 
+def _ident(name: str) -> str:
+    """The C identifier for a table whose source name may be `#local`.
+
+    The emitted `name` field keeps the source spelling, `#` and all,
+    because that is what a caller looks the table up by; only the static
+    array behind it needs a legal identifier.
+    """
+    return "local_" + name[1:] if name.startswith("#") else name
+
+
 def _blocks(path: pathlib.Path):
     """Every `label` followed by a run of .long rows, in one file."""
     lines = [wlanim.strip_comment(r)
@@ -89,10 +111,21 @@ def _blocks(path: pathlib.Path):
     i = 0
     while i < len(lines):
         m = LABEL_RE.match(lines[i]) if lines[i].strip() else None
-        if not m:
+        lm = LOCAL_START_RE.match(lines[i]) if lines[i].strip() else None
+        if not m and not lm:
             i += 1
             continue
-        is_subr = m.group(1) is not None
+        # A `#local` head is read too. Most of these tables are local:
+        # #run_anims (WRESTLE2.ASM:3560, the run animation every wrestler
+        # starts with) is one, and so are the knockdown, getup, climb and
+        # bounce tables. They obey the identical rule -- one definition in
+        # the whole tree or nothing, because only a use site can say which
+        # of several a caller means -- and a local defined once is no more
+        # ambiguous than a global defined once. Seventeen local names ARE
+        # defined more than once (#headheld_tbl in sixteen places), and
+        # those are refused here exactly as an ambiguous global is.
+        name = m.group(2) if m else lm.group(1)
+        is_subr = bool(m) and m.group(1) is not None
         rows: list[str] = []
         j = i + 1
         while j < len(lines):
@@ -139,12 +172,12 @@ def _blocks(path: pathlib.Path):
             rows += [t.strip() for t in lm.group(1).split(",") if t.strip()]
             j += 1
         if rows:
-            yield m.group(2), i + 1, rows
+            yield name, i + 1, rows
         i = max(j, i + 1)
 
 
 def roster_tables() -> dict[str, tuple[str, int, list[str | None]]]:
-    """{label: (file, line, rows)} for every unambiguous global table.
+    """{label: (file, line, rows)} for every unambiguously named table.
 
     Rows are padded to ROSTER_SLOTS with None so every table has the same
     shape in C; the real length is kept so a nine-row table is not
@@ -164,7 +197,9 @@ def roster_tables() -> dict[str, tuple[str, int, list[str | None]]]:
         if len(defs) != 1:
             # Defined more than once: block-scoped, and only a use site
             # can say which one a given caller means. wlpuppet.py's
-            # resolution handles those.
+            # resolution handles those. This is why most `#local` names
+            # are refused -- #headheld_tbl has sixteen definitions and
+            # #flyout_tbl seven -- while the ones defined once are read.
             continue
         fname, line, rows = defs[0]
         facings = _facings(rows)
@@ -282,7 +317,7 @@ def render_c() -> str:
         kind = column_kind(name, cols, rows)
         out.append("/* %s:%d -- %s */" % (fname, line, kind))
         out.append("static const char *const rows_%s[WM_ROSTER_ANIM_SLOTS * %d] = {"
-                   % (name, cols))
+                   % (_ident(name), cols))
         for i, r in enumerate(rows):
             cell = "NULL," if r is None else '"%s",' % r
             if cols == 1:
@@ -299,7 +334,7 @@ def render_c() -> str:
         declared = ROSTER_SLOTS if _declared_ten(fname, line) else 9
         out.append('    { "%s", "%s", %d, %d, %d, WM_ROSTER_COL_%s, rows_%s },'
                    % (name, fname, line, declared, cols,
-                      column_kind(name, cols, rows).upper(), name))
+                      column_kind(name, cols, rows).upper(), _ident(name)))
     out.append("};")
     out.append("")
     out.append("const int wm_roster_anim_table_count = %d;" % len(tables))

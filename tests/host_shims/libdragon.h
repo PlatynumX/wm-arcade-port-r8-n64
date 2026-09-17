@@ -7,14 +7,23 @@
  * this container is one. A file nobody can compile is a file whose
  * next edit is unverified.
  *
- * So: declare the handful of things the platform sources actually use
- * from libdragon, well enough for a -fsyntax-only pass to type-check
- * everything around them. This is NOT a libdragon implementation and
- * must never reach a ROM build; tools/n64_platform_check.py is the
- * only thing that puts it on an include path.
+ * This is now a FALLBACK and not the main path. tools/n64_platform_check.py
+ * prefers the REAL libdragon headers -- from $N64_INST when a local
+ * install exists, otherwise from a pinned shallow clone it fetches once
+ * -- and checks all five platform sources against them. The argument
+ * this file was written under was that a shim big enough for main.c
+ * "would be a fake libdragon rather than a check". That was right about
+ * the shim and wrong about the conclusion: the real headers can simply
+ * be fetched, and nothing about them has to be guessed.
  *
- * Add a declaration here when a platform file starts using something
- * new -- the check failing is the signal that it did.
+ * What is left here is the offline case: no N64_INST, no network, no
+ * cache. Then the check says so plainly and covers the one file this
+ * can honestly speak for, rather than implying the platform layer was
+ * checked.
+ *
+ * This is NOT a libdragon implementation and must never reach a ROM
+ * build; n64_platform_check.py is the only thing that puts it on an
+ * include path.
  */
 #ifndef WM_HOST_SHIM_LIBDRAGON_H
 #define WM_HOST_SHIM_LIBDRAGON_H

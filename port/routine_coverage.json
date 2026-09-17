@@ -505,10 +505,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "implemented",
-   "evidence": "show_credits_crd_scrn2",
+   "status": "display",
+   "evidence": "AUDIT.ASM:998, the credit page's own entry point for a shorter sleep. It clears SHOW_CRD_FLAG, takes CP_PID1, and if the page is not already up runs display_blank, WIPEOUT and dpageflip before printing. Both of the routines it leans on are already ledgered as hardware for the same reason: this is screen setup for a page this port does not draw.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "CREATE_DISQUAL",
@@ -1481,7 +1481,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "implemented",
-   "evidence": "kill_pin_him",
+   "evidence": "wm_app_kill_pin_him",
    "from_generated": false,
    "ledgered": false
   },
@@ -2035,10 +2035,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "implemented",
-   "evidence": "shaker2",
+   "status": "renamed",
+   "evidence": "wm_shake_tick",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "SHIFT_BARS_IN_Z",
@@ -2951,7 +2951,7 @@
    "external_callers": 19,
    "references": 19,
    "status": "implemented",
-   "evidence": "adjust_health",
+   "evidence": "backend_adjust_health",
    "from_generated": false,
    "ledgered": false
   },
@@ -2966,7 +2966,7 @@
    "external_callers": 0,
    "references": 2,
    "status": "implemented",
-   "evidence": "adjust_perfects",
+   "evidence": "match_end_adjust_perfects",
    "from_generated": false,
    "ledgered": false
   },
@@ -3580,8 +3580,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "implemented",
-   "evidence": "auto_pin_check",
+   "status": "unknown",
+   "evidence": "",
    "from_generated": false,
    "ledgered": false
   },
@@ -7210,8 +7210,8 @@
    "local": false,
    "external_callers": 8,
    "references": 8,
-   "status": "implemented",
-   "evidence": "bounce_off_ropes",
+   "status": "unknown",
+   "evidence": "",
    "from_generated": false,
    "ledgered": false
   },
@@ -7225,8 +7225,8 @@
    "local": false,
    "external_callers": 14,
    "references": 16,
-   "status": "implemented",
-   "evidence": "bozo_check",
+   "status": "unknown",
+   "evidence": "",
    "from_generated": false,
    "ledgered": false
   },
@@ -7796,7 +7796,7 @@
    "external_callers": 8,
    "references": 8,
    "status": "implemented",
-   "evidence": "check_secret_moves",
+   "evidence": "wm_bret_backend_check_secret_moves",
    "from_generated": false,
    "ledgered": false
   },
@@ -8577,7 +8577,7 @@
    "external_callers": 1,
    "references": 1,
    "status": "renamed",
-   "evidence": "create_dizzy",
+   "evidence": "match_create_dizzy",
    "from_generated": false,
    "ledgered": true
   },
@@ -8757,8 +8757,8 @@
    "external_callers": 4,
    "references": 4,
    "status": "implemented",
-   "evidence": "crowd_cheer",
-   "from_generated": true,
+   "evidence": "do_crowd_cheer",
+   "from_generated": false,
    "ledgered": false
   },
   {
@@ -9086,8 +9086,8 @@
    "local": false,
    "external_callers": 2,
    "references": 3,
-   "status": "implemented",
-   "evidence": "ditch_getup_meter",
+   "status": "unknown",
+   "evidence": "",
    "from_generated": false,
    "ledgered": false
   },
@@ -9101,10 +9101,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "renamed",
-   "evidence": "ditch_getup_meter",
+   "status": "unknown",
+   "evidence": "",
    "from_generated": false,
-   "ledgered": true
+   "ledgered": false
   },
   {
    "name": "dizzy_proc",
@@ -12807,7 +12807,7 @@
    "local": false,
    "external_callers": 18,
    "references": 18,
-   "status": "implemented",
+   "status": "cited",
    "evidence": "drone_change_back",
    "from_generated": false,
    "ledgered": false
@@ -13423,7 +13423,7 @@
    "external_callers": 4,
    "references": 4,
    "status": "display",
-   "evidence": "WRESTLE2.ASM. Flashes the life bar red on a hit. Pure lifebar rendering -- wm/arcade/wm_arcade_lifebar.h already records it as the one piece of adjust_health's tail that is drawing rather than damage.",
+   "evidence": "WRESTLE2.ASM:3585, and it is not the life bar: the body is one QDMAN fill of colour 1b1bh over [256,400] at [0,0], which is the WHOLE SCREEN, exactly like flash_white five lines above it with a different colour. The note here used to say \"flashes the life bar red on a hit ... pure lifebar rendering\", which was read off where it is called from rather than off what it does. Still display either way -- there is no screen to fill.",
    "from_generated": false,
    "ledgered": true
   },
@@ -13437,10 +13437,10 @@
    "local": false,
    "external_callers": 6,
    "references": 6,
-   "status": "implemented",
-   "evidence": "flash_white",
+   "status": "display",
+   "evidence": "WRESTLE2.ASM:3575. Nine lines, all of them one QDMAN fill: colour 1111h over [256,400] at [0,0], which is the whole screen. flash_red immediately below it is the same call with a different colour. Nothing but drawing, and there is no display processor here.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "fling_delay",
@@ -14113,7 +14113,7 @@
    "external_callers": 7,
    "references": 9,
    "status": "implemented",
-   "evidence": "get_health",
+   "evidence": "wm_life_get_health",
    "from_generated": false,
    "ledgered": false
   },
@@ -14472,8 +14472,8 @@
    "local": false,
    "external_callers": 6,
    "references": 6,
-   "status": "implemented",
-   "evidence": "ditch_getup_meter",
+   "status": "unknown",
+   "evidence": "",
    "from_generated": false,
    "ledgered": false
   },
@@ -14503,7 +14503,7 @@
    "external_callers": 1,
    "references": 2,
    "status": "implemented",
-   "evidence": "good_run_hit",
+   "evidence": "wm_arcade_react5_good_run_hit",
    "from_generated": false,
    "ledgered": false
   },
@@ -18990,7 +18990,7 @@
    "external_callers": 8,
    "references": 8,
    "status": "implemented",
-   "evidence": "keep_attached",
+   "evidence": "wm_arcade_keep_attached",
    "from_generated": false,
    "ledgered": false
   },
@@ -22095,7 +22095,7 @@
    "external_callers": 8,
    "references": 9,
    "status": "implemented",
-   "evidence": "master_keep_attached",
+   "evidence": "wm_arcade_master_keep_attached",
    "from_generated": false,
    "ledgered": false
   },
@@ -23400,7 +23400,7 @@
    "external_callers": 67,
    "references": 68,
    "status": "implemented",
-   "evidence": "pal_getf",
+   "evidence": "wm_pal_getf",
    "from_generated": false,
    "ledgered": false
   },
@@ -24104,7 +24104,7 @@
    "local": false,
    "external_callers": 8,
    "references": 8,
-   "status": "implemented",
+   "status": "cited",
    "evidence": "raisearm_check",
    "from_generated": false,
    "ledgered": false
@@ -24498,7 +24498,7 @@
    "external_callers": 0,
    "references": 1,
    "status": "implemented",
-   "evidence": "anim_round_award",
+   "evidence": "wm_app_round_award",
    "from_generated": false,
    "ledgered": false
   },
@@ -27947,8 +27947,8 @@
    "local": false,
    "external_callers": 8,
    "references": 8,
-   "status": "implemented",
-   "evidence": "set_raisearm_bit",
+   "status": "unknown",
+   "evidence": "",
    "from_generated": false,
    "ledgered": false
   },
@@ -28247,9 +28247,9 @@
    "local": false,
    "external_callers": 5,
    "references": 5,
-   "status": "implemented",
+   "status": "cited",
    "evidence": "shake_all_ropes",
-   "from_generated": true,
+   "from_generated": false,
    "ledgered": false
   },
   {
@@ -32463,8 +32463,8 @@
    "external_callers": 88,
    "references": 119,
    "status": "implemented",
-   "evidence": "triple_sound",
-   "from_generated": true,
+   "evidence": "wm_match_react_triple_sound",
+   "from_generated": false,
    "ledgered": false
   },
   {

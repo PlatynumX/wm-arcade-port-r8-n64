@@ -895,8 +895,8 @@
  "create_dizzy_proc": {
   "file": "SPECIAL.ASM",
   "status": "renamed",
-  "symbol": "create_dizzy",
-  "note": "SPECIAL.ASM:87. The stars over a dizzy wrestler. Its gate (STARS_FLAG, one set at a time) and its per-wrestler offset are translated in the animation VM; the star itself is a DEBRIS_PID object, so the VM reaches it through wm_anim_env's create_dizzy seam."
+  "symbol": "match_create_dizzy",
+  "note": "SPECIAL.ASM:87. The stars over a dizzy wrestler. Its gate (STARS_FLAG, one set at a time) and its per-wrestler offset are translated in the animation VM; the star itself is a DEBRIS_PID object, so the VM reaches it through wm_anim_env's create_dizzy seam, which match.c fills with match_create_dizzy. This used to name the SEAM as its symbol rather than the function behind it -- true of the routing, useless as evidence, and it stopped resolving the moment a seam name stopped counting as a definition."
  },
  "begin_ani": {
   "file": "SPECIAL.ASM",
@@ -1023,7 +1023,7 @@
  "flash_red": {
   "file": "WRESTLE2.ASM",
   "status": "display",
-  "note": "WRESTLE2.ASM. Flashes the life bar red on a hit. Pure lifebar rendering -- wm/arcade/wm_arcade_lifebar.h already records it as the one piece of adjust_health's tail that is drawing rather than damage."
+  "note": "WRESTLE2.ASM:3585, and it is not the life bar: the body is one QDMAN fill of colour 1b1bh over [256,400] at [0,0], which is the WHOLE SCREEN, exactly like flash_white five lines above it with a different colour. The note here used to say \"flashes the life bar red on a hit ... pure lifebar rendering\", which was read off where it is called from rather than off what it does. Still display either way -- there is no screen to fill."
  },
  "match_timer": {
   "file": "WRESTLE2.ASM",
@@ -1036,12 +1036,6 @@
   "status": "renamed",
   "symbol": "wm_smove_kill",
   "note": "WRESTLE2.ASM:3896. The other end of init_smoves: every SMOVE_PID process whose PA8 is this wrestler dies. The port keeps each wrestler's watchdogs in his own array (wm/match.h), so the PA8 comparison is what the array IS and wm_smove_kill marks all of them dead."
- },
- "ditch_getup_meter_a9": {
-  "file": "WRESTLE2.ASM",
-  "status": "renamed",
-  "symbol": "ditch_getup_meter",
-  "note": "WRESTLE2.ASM. Drop a wrestler's getup meter, reached from keep_onscreen when a run is stopped and from the react layer. The port carries it as a callback on wm_arcade_react_callbacks_t because the meter is a display object the core does not own."
  },
  "obj_yzsort": {
   "file": "DISPLAY.ASM",
@@ -2541,5 +2535,21 @@
   "file": "PAL.ASM",
   "status": "display",
   "note": "PAL.ASM:744. pal_fade with the IRQSKYE background palette and irqskyeo baked in -- it loads those two and jumps into pal_fade's own body at pf1c. The arithmetic is pal_fade's, which wm/arcade/wm_arcade_pal.h translates; all this entry point adds is which hardware palette gets faded, and the sky is the renderer's."
+ },
+ "flash_white": {
+  "file": "WRESTLE2.ASM",
+  "status": "display",
+  "note": "WRESTLE2.ASM:3575. Nine lines, all of them one QDMAN fill: colour 1111h over [256,400] at [0,0], which is the whole screen. flash_red immediately below it is the same call with a different colour. Nothing but drawing, and there is no display processor here."
+ },
+ "CRD_SCRN2": {
+  "file": "AUDIT.ASM",
+  "status": "display",
+  "note": "AUDIT.ASM:998, the credit page's own entry point for a shorter sleep. It clears SHOW_CRD_FLAG, takes CP_PID1, and if the page is not already up runs display_blank, WIPEOUT and dpageflip before printing. Both of the routines it leans on are already ledgered as hardware for the same reason: this is screen setup for a page this port does not draw."
+ },
+ "SHAKER2": {
+  "file": "UTIL.ASM",
+  "status": "renamed",
+  "symbol": "wm_shake_tick",
+  "note": "UTIL.ASM:2406, \"Shake screen as if an earthquake is in effect\". Translated as the oscillator in wm/arcade/wm_arcade_shake.h, which names it at the top of the file; wm_shake_init/start/tick are the whole of it. It resolved only through a callback field called shaker2 until seam names stopped counting, and it could not resolve by suffix because wm_shake_tick does not end in the routine's name -- which is what the ledger is for."
  }
 }

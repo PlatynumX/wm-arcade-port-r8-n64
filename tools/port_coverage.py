@@ -344,6 +344,16 @@ def _split_code_and_prose(text: str) -> tuple[str, str]:
     return code, "\n".join(prose)
 
 
+# A function-pointer FIELD or typedef: `void (*mode_puppet)(...)`.
+#
+# The name in one of these is the name of a HOLE, not of anything that
+# fills it. Every seam in this port is deliberately called after the
+# source routine it stands for, so counting the declaration as evidence
+# made the seam certify its own routine as translated -- see
+# port_symbols.
+CALLBACK_DECL = re.compile(r"\(\s*\*\s*([A-Za-z_][A-Za-z0-9_]*)\s*\)\s*\(")
+
+
 def port_symbols() -> tuple[set[str], set[str], set[str]]:
     """(identifiers defined in code, identifiers named in prose, generated).
 
@@ -352,10 +362,30 @@ def port_symbols() -> tuple[set[str], set[str], set[str]]:
     variable counts -- but it is exactly the distinction that matters
     here, because the failure being fixed is a name that appears ONLY in
     a comment.
+
+    With one carve-out, for the same reason. A FUNCTION-POINTER FIELD
+    DECLARATION IS NOT EVIDENCE. This port names every callback seam
+    after the source routine it stands for, so `int (*auto_pin_check)
+    (wm_arcade_actor_t *, void *)` in a header put the string
+    `auto_pin_check` into the code pool and resolved WRESTLE.ASM:3886 as
+    implemented -- while nothing implemented it and nothing set the
+    field. Nine routines were resolving that way, and the ledger's own
+    shadow guard could not see it: that guard was written for plain
+    struct fields (match_timer, reset_dufus_msgs, clear_icon_total,
+    which it did catch) and a function-pointer member reads the same to
+    an identifier scan.
+
+    So the declaration occurrence is dropped before identifiers are
+    collected. A name that appears ONLY there vanishes from the pool; a
+    name that is also assigned (`cb.mode_puppet = backend_mode_puppet`)
+    or called (`c->mode_puppet(a, c->user)`) survives on those
+    occurrences, which is the distinction that matters -- a wired seam
+    has something behind it and an unwired one has nothing.
     """
     code_ids: set[str] = set()
     prose_ids: set[str] = set()
     generated_ids: set[str] = set()
+    seam_ids: set[str] = set()
     for d in PORT_DIRS:
         for path in sorted((ROOT / d).rglob("*")):
             if path.suffix not in (".c", ".h"):
@@ -365,10 +395,34 @@ def port_symbols() -> tuple[set[str], set[str], set[str]]:
                 path.read_text(errors="replace"))
             ids = set(IDENT.findall(code))
             code_ids |= ids
+            seam_ids |= set(CALLBACK_DECL.findall(code))
             prose_ids |= set(IDENT.findall(prose))
             if rel.startswith(GENERATED):
                 generated_ids |= ids | set(IDENT.findall(prose))
+    # The carve-out. A seam name goes only if nothing else in the port
+    # carries it: an implementation whose name matches a seam exactly
+    # keeps it, and one named after the routine the usual way
+    # (wm_arcade_mode_puppet for mode_puppet) was never reached through
+    # the seam in the first place -- _boundary_hits finds it by suffix.
+    code_ids -= seam_ids
     return code_ids, prose_ids, generated_ids
+
+
+def callback_seam_names() -> set[str]:
+    """Every identifier declared as a function-pointer field or typedef.
+
+    Exposed so a test can hold the carve-out above to the real headers
+    rather than to a hand-kept list.
+    """
+    out: set[str] = set()
+    for d in PORT_DIRS:
+        for path in sorted((ROOT / d).rglob("*")):
+            if path.suffix not in (".c", ".h"):
+                continue
+            code, _prose = _split_code_and_prose(
+                path.read_text(errors="replace"))
+            out |= set(CALLBACK_DECL.findall(code))
+    return out
 
 
 # Wrappers the generators put around an extracted routine's own name.

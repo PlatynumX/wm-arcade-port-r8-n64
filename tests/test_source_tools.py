@@ -967,6 +967,33 @@ def test_port_manifest() -> None:
         assert "WM_ATTRACT_SHOW_TITLE: return WM_PORT_PARTIAL_SOURCE" in text
         assert "harness-only" in out_md.read_text()
 
+
+def test_the_generated_coverage_doc_is_reproducible() -> None:
+    """docs/PORT_COVERAGE.md must come out of the manifest, unedited.
+
+    It is generated, and it does not say so anywhere a person editing it
+    would see. Prose written straight into it survives until the next
+    run of scripts/regenerate_source_data.sh and then vanishes without a
+    word -- which is exactly what happened to four rows written by hand
+    across two commits, one of them (shared_plyrmode_handlers) lost
+    between being written and being committed.
+
+    The fix is to edit port/translation_manifest.json; this is the check
+    that says so, by failing when the two disagree.
+    """
+    out = ROOT / "docs" / "PORT_COVERAGE.md"
+    if not out.exists():
+        return
+    data = port_manifest.load(ROOT / "port" / "translation_manifest.json")
+    with tempfile.TemporaryDirectory() as td_s:
+        fresh = pathlib.Path(td_s) / "coverage.md"
+        port_manifest.emit_md(data, fresh)
+        assert fresh.read_text() == out.read_text(), (
+            "docs/PORT_COVERAGE.md does not match what "
+            "port/translation_manifest.json generates -- it is a "
+            "generated file; edit the manifest instead")
+
+
 def test_source_text_bundle() -> None:
     import zipfile
     with tempfile.TemporaryDirectory() as td_s:
@@ -3653,6 +3680,50 @@ def test_the_routine_ledger_justifies_every_entry() -> None:
             assert total[name] == 0, name
 
 
+def test_a_callback_seam_is_not_evidence() -> None:
+    """A function-pointer field's NAME does not translate its routine.
+
+    Every callback seam in this port is deliberately called after the
+    source routine it stands for, so `int (*auto_pin_check)(...)` in a
+    header put that exact string into the identifier pool and resolved
+    WRESTLE.ASM:3886 as implemented -- while nothing implemented it and
+    nothing set the field. Twelve routines were resolving that way.
+
+    The ledger's own shadow guard could not see it. That guard was
+    written for plain struct fields, and did catch three (match_timer,
+    reset_dufus_msgs, clear_icon_total); a function-pointer member reads
+    the same to an identifier scan, so it walked straight past.
+
+    Note what the fix does NOT rest on: whether the seam is wired. A
+    NULL-checked call through a seam nobody fills -- which is what all
+    eight dispatchers do -- keeps the identifier alive just as a
+    declaration does, so "declared but never used" would have missed
+    most of them. A seam name is not evidence, wired or not; the thing
+    that fills one is named on the other side of the assignment, and
+    _boundary_hits finds that by suffix.
+    """
+    if not wlanim.ORIG.exists():
+        return
+    seams = port_coverage.callback_seam_names()
+    assert len(seams) > 100, len(seams)
+    code_ids, _prose, _gen = port_coverage.port_symbols()
+    # The carve-out really happened: no seam name survives in the pool
+    # unless something else in the port carries the same identifier.
+    leaked = sorted(seams & code_ids)
+    assert not leaked, leaked
+
+    # And the specific shape it was missing: a seam that IS called,
+    # through a NULL check, by every dispatcher.
+    assert "bounce_off_ropes" in seams
+    assert not port_coverage._boundary_hits("bounce_off_ropes", code_ids)
+
+    # A real translation still resolves -- the rule costs nothing where
+    # something actually implements the routine.
+    for real in ("keep_attached", "master_keep_attached", "pal_getf"):
+        assert real in seams, real
+        assert port_coverage._boundary_hits(real, code_ids), real
+
+
 def test_the_ledger_cannot_shadow_real_code() -> None:
     """No entry may claim a routine the automatic pass already resolves.
 
@@ -3962,6 +4033,7 @@ def main() -> int:
     test_coverage_only_counts_linked_files()
     test_coverage_dead_means_nothing_names_it()
     test_the_routine_ledger_justifies_every_entry()
+    test_a_callback_seam_is_not_evidence()
     test_the_ledger_cannot_shadow_real_code()
     test_coverage_resolves_every_routine_known_to_be_translated()
     test_coverage_does_not_claim_things_that_are_not_translated()
@@ -3994,6 +4066,7 @@ def main() -> int:
     test_source_ir_graph()
     test_source_inventory()
     test_port_manifest()
+    test_the_generated_coverage_doc_is_reproducible()
     test_source_text_bundle()
     test_every_reachability_claim_still_holds()
     test_the_reachability_claims_are_actually_checkable()

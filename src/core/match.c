@@ -469,8 +469,15 @@ static void place_created_wrestler(wm_match_state *m, unsigned actor_index) {
 }
 
 void wm_match_init(wm_match_state *m) {
+    size_t i;
     if (!m) return;
     memset(m, 0, sizeof(*m));
+    /* SPECIAL.ASM:1278 init_special_objlist, and the cold init each
+       pooled process gets once. A zeroed list is already empty, but the
+       source has a routine for it and so does this. */
+    wm_arcade_special_lists_init(&m->specials);
+    for (i = 0; i < WM_MATCH_MAX_SPECIALS; ++i)
+        wm_arcade_special_obj_init(&m->special_pool[i]);
 }
 
 unsigned wm_match_draw_wrestler_index(WmRng *rng) {
@@ -604,6 +611,234 @@ static void match_end_reset_winstreak_rows(void *user, unsigned mask) {
     if (!m) return;
     for (p = 0; p < WM_AWARD_PLAYER_COUNT; ++p)
         if (mask & (1u << p)) wm_award_reset_winstreak(&m->awards, p);
+}
+
+/*
+ * init_smoves' watchdogs for ONE wrestler, one tick each.
+ *
+ * The arcade runs every one as its own SMOVE_PID process, and WHERE
+ * that process sits is load-bearing. init_smoves creates them with
+ * `GETPRC_INSERT`, whose own comment at MPROC.ASM:358 says what that
+ * means: "Identical to GETPRC, except that the created process is
+ * placed in the process list immediately BEFORE the parent process,
+ * not after." The parent is the wrestler, so every one of his monitors
+ * runs before he does, every frame.
+ *
+ * That ordering is the whole point. A free move's last input is an
+ * attack button, and the wrestler's own dispatcher would take that
+ * same press as an ordinary punch or kick -- which starts an animation
+ * whose header sets MODE_UNINT, which is exactly what the monitor's own
+ * `WM_SMOVE_G_UNINT` guard then refuses on. This port used to tick the
+ * monitors at the END of the frame, after the dispatchers, so the
+ * ordinary attack won that race every time and no free move could ever
+ * fire: DOWN-AWAY-KICK completed the sequence, reached the guard, and
+ * was turned down by the kick it had just triggered. The Undertaker's
+ * two spirit moves and Yokozuna's salt -- the three projectiles -- were
+ * unreachable for that reason and not for any of their own.
+ *
+ * So it runs here instead, per wrestler, immediately after his switches
+ * are read and before anything of his own moves.
+ */
+static void match_tick_smoves_for(wm_match_state *m, unsigned ai) {
+    size_t si;
+    wm_arcade_actor_t *a = &m->actors[ai];
+    wm_smove_env_t senv;
+    wm_arcade_und_finish_callbacks_t ucb;
+
+    if (!a->active) return;
+
+    memset(&ucb, 0, sizeof(ucb));
+    ucb.set_in_finish_move = match_set_in_finish_move;
+    ucb.set_world_origin = match_set_world_origin;
+    ucb.rng = m->anim_rng;
+    ucb.user = m;
+
+    memset(&senv, 0, sizeof(senv));
+    senv.my_pins = wm_arcade_pins_for(&m->pins, (int)a->player_side);
+    senv.victim = a->who_i_hit ? a->who_i_hit
+                               : (ai == 0 ? &m->actors[1]
+                                          : &m->actors[0]);
+    /* PLYR.EQU RING_TIME. Nothing in this port counts a
+       wrestler out of the ring yet, so it is derived from the
+       INRING flag that IS maintained rather than left at a
+       value that would pass the guard by accident. */
+    senv.ring_time = a->in_ring ? 1 : -1;
+    /*
+     * *a8(CLOSEST_NUM) through process_ptrs, which
+     * WRESTLE.ASM:4489 get_opp_plyrmode reads. In a two-man
+     * match that is the other wrestler; the charge,
+     * grab_toss_air and free-move monitors all test his mode
+     * and refuse when he is down.
+     */
+    senv.closest = (ai == 0) ? &m->actors[1] : &m->actors[0];
+    senv.pcnt = m->tick_count;
+    senv.world_tlx = m->scroll.worldtlx;
+    senv.world_tly = m->scroll.worldtly;
+    senv.und_cb = &ucb;
+
+    for (si = 0; si < m->smove_count[ai]; ++si) {
+        wm_smove_fire_t fire;
+        if (!wm_smove_tick(&m->smoves[ai][si], a, &senv, &fire))
+            continue;
+        if (fire.walk_fast) a->walk_fast = fire.walk_fast;
+        if (fire.risk) a->risk = fire.risk;
+        /* `movk 15,a14 / move a14,*a0(IMMOBILIZE_TIME)` -- the
+           move pins the man it is done to. The amount is the
+           row's own; eighteen of the forty pin nobody. */
+        if (fire.victim && fire.victim_immobilize > 0)
+            fire.victim->immobilize_time = fire.victim_immobilize;
+        if (fire.anim) {
+            a->special_move_addr = (uintptr_t)fire.anim;
+            match_change_anim(a, fire.anim, m);
+        }
+    }
+}
+
+/* ------------------------------------------------------------------ *
+ * SPECIAL.ASM's projectiles.
+ *
+ * Three of the five constructors are reachable in the shipped game and
+ * two are not: every call site for Doink's pie (DNKSEQ2.ASM:116, :159
+ * `ANI_SNOT,doink_pie`) and Bam Bam's fireball (BAMSEQ2.ASM:693
+ * `CREATE0 bam_fireball`) is commented out. Their constructors stay
+ * translated and tested; nothing here calls them, because nothing in
+ * the arcade did either.
+ * ------------------------------------------------------------------ */
+
+/*
+ * `CREATE0 <routine>`: the source makes a whole process. Here a pool
+ * slot is claimed instead, cold-initialised once, and handed to the
+ * same constructor. A full pool drops the throw rather than recycling a
+ * live projectile -- the source cannot run out, so there is no source
+ * behaviour to copy, and silently stealing one in flight would be worse
+ * than one that never appears.
+ */
+static void match_spawn_special(void *user, wm_arcade_actor_t *owner,
+                                int kind) {
+    wm_match_state *m = (wm_match_state *)user;
+    size_t i;
+
+    if (!m || !owner) return;
+    for (i = 0; i < WM_MATCH_MAX_SPECIALS; ++i) {
+        wm_arcade_special_obj_t *obj = &m->special_pool[i];
+        if (obj->in_list) continue;
+        wm_arcade_special_obj_init(obj);
+        m->specials_spawned++;
+        m->specials_born_this_tick |= 1u << i;
+        switch ((wm_arcade_special_kind_t)kind) {
+        case WM_SP_KIND_YOKO_SALT:
+            wm_arcade_spawn_yoko_salt(&m->specials, obj, owner);
+            break;
+        case WM_SP_KIND_TAKER_SPIRIT:
+            wm_arcade_spawn_taker_spirit(&m->specials, obj, owner);
+            break;
+        case WM_SP_KIND_TAKER_REAPER:
+            wm_arcade_spawn_taker_reaper(&m->specials, obj, owner);
+            break;
+        /* Cut from the shipped game -- see above. Reached only if
+           something starts calling a commented-out spawn. */
+        case WM_SP_KIND_DOINK_PIE:
+        case WM_SP_KIND_BAM_FIREBALL:
+        default:
+            break;
+        }
+        return;
+    }
+}
+
+/*
+ * One turn of each projectile's own process loop (SPECIAL.ASM:1745 for
+ * the salt, :1610 for the spirit and reaper -- the same shape both
+ * times):
+ *
+ *     #lp  callr sp_velocity_add
+ *          ...write the object's draw position...
+ *          SLEEPK 1
+ *          callr sp_animate
+ *          move *a13(SP_DIE),a0 / jrnz #die
+ *          move @WORLDTLX+16,a0 / addi 200,a0
+ *          move *a13(SP_OBJ_XPOSINT),a1 / sub a1,a0 / abs a0
+ *          cmpi 256,a0 / jrlt #lp          ;"off screen by 56 pixels"
+ *     #die delete_special_objlist / DELOBJ / DIE
+ *
+ * One difference between the two is real and is kept: the salt calls
+ * delete_special_objlist inside #die, so both exits remove it from the
+ * collision list, while the spirit and reaper call it just ABOVE the
+ * #die label -- so the SP_DIE exit jumps past it. That is safe rather
+ * than a leak, because SP_DIE is only ever set by special_hit and
+ * wrestler_hit_special, which have already removed the object
+ * themselves. Reproduced as written.
+ */
+/*
+ * COLLIS.ASM:733 object_collisions, called from `#loop calla
+ * check_collisions` -- the FIRST thing WRESTLE.ASM's main loop does
+ * (:2062). The main-loop process sits ahead of every wrestler in the
+ * process list, because GETPRC links a child AFTER its parent, so this
+ * sweep sees the projectiles as they were at the end of last frame. A
+ * projectile a wrestler's animation CREATE0s later this frame is not
+ * swept until the next one, and that is why the two halves are separate
+ * functions here rather than one.
+ */
+static void match_sweep_specials(wm_match_state *m,
+                                 wm_arcade_actor_t **actor_ptrs) {
+    wm_arcade_special_callbacks_t cb;
+
+    size_t i;
+    wm_arcade_special_obj_t *held[WM_MATCH_MAX_SPECIALS];
+    size_t held_n = 0;
+
+    if (!m) return;
+
+    /* Anything built by this tick's animations is lifted off the lists
+       for the sweep and put straight back -- the arcade's own one-frame
+       boundary, expressed against a pool instead of a process list. */
+    for (i = 0; i < WM_MATCH_MAX_SPECIALS; ++i) {
+        if (!(m->specials_born_this_tick & (1u << i))) continue;
+        if (!m->special_pool[i].in_list) continue;
+        held[held_n++] = &m->special_pool[i];
+        wm_arcade_special_delete(&m->specials, &m->special_pool[i]);
+    }
+
+    wm_arcade_special_set_all_boxes(&m->specials);
+    memset(&cb, 0, sizeof cb);
+    cb.react1 = &m->react1_ctx;
+    (void)wm_arcade_object_collisions(&m->specials, actor_ptrs,
+                                      m->actor_count,
+                                      &m->combat_runtime, &cb);
+
+    for (i = 0; i < held_n; ++i)
+        wm_arcade_special_insert(&m->specials, held[i]);
+    m->specials_born_this_tick = 0u;
+}
+
+static void match_step_specials(wm_match_state *m) {
+    size_t i;
+
+    if (!m) return;
+
+    for (i = 0; i < WM_MATCH_MAX_SPECIALS; ++i) {
+        wm_arcade_special_obj_t *obj = &m->special_pool[i];
+        int32_t centre, dx;
+
+        if (!obj->in_list) continue;
+
+        wm_arcade_special_velocity_add(obj);
+        wm_arcade_special_tick_source_state(obj);   /* sp_animate */
+
+        if (obj->die != 0) {
+            /* The spirit/reaper exit that skips the delete; doing it
+               here is a no-op for an object already off the list. */
+            wm_arcade_special_delete(&m->specials, obj);
+            continue;
+        }
+
+        /* `@WORLDTLX+16` is the world X's integer half. */
+        centre = (m->scroll.worldtlx >> 16) + 200;
+        dx = centre - (obj->x_fixed >> 16);
+        if (dx < 0) dx = -dx;
+        if (dx >= 256)
+            wm_arcade_special_delete(&m->specials, obj);
+    }
 }
 
 /*
@@ -1732,6 +1967,15 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             }
         }
 
+        /*
+         * This wrestler's own special-move monitors, run here because
+         * the arcade's sit immediately BEFORE him in the process list
+         * (GETPRC_INSERT, MPROC.ASM:358) -- see match_tick_smoves_for.
+         * His switches have just been read; nothing of his own has
+         * moved yet.
+         */
+        match_tick_smoves_for(m, i);
+
         /* WRESTLE.ASM:2453 `callr count_button_presses`, right after
            update_joystat and before animate_wrestler: every newly-pressed
            button bumps its own PLYR.EQU counter, and the animation VM's
@@ -1904,6 +2148,12 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             m->bret_visual[i].anim_env.set_no_debris = match_set_no_debris;
             m->wrestler_visual[i].anim_env.react_debris = match_react_debris;
             m->bret_visual[i].anim_env.react_debris = match_react_debris;
+            /* SPECIAL.ASM's projectiles: the animation says who is
+               throwing and what, the match makes the object. */
+            m->wrestler_visual[i].anim_env.special_user = m;
+            m->wrestler_visual[i].anim_env.spawn_special = match_spawn_special;
+            m->bret_visual[i].anim_env.special_user = m;
+            m->bret_visual[i].anim_env.spawn_special = match_spawn_special;
             m->wrestler_visual[i].anim_env.screen_user = m;
             m->wrestler_visual[i].anim_env.draw_move_name = match_draw_move_name;
             m->bret_visual[i].anim_env.screen_user = m;
@@ -2080,6 +2330,19 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
 
         (void)wm_arcade_check_wrestler_collisions(actor_ptrs, m->actor_count,
                                                   m->tick_count, &combat_cb);
+
+        /*
+         * object_collisions is part of the same check_collisions call,
+         * so the sweep is here -- but it deliberately runs against the
+         * projectiles as they stood before this tick's animations, the
+         * way the arcade's own main-loop ordering does. The stepping
+         * half is match_step_specials, below, where the projectile
+         * processes themselves would run.
+         */
+        match_sweep_specials(m, actor_ptrs);
+        /* ...and the projectile processes' own turn, which in the
+           arcade runs later in the frame than the sweep above. */
+        match_step_specials(m);
 
         /*
          * COLLIS.ASM:56 overlap_collision, which keeps two wrestlers from
@@ -2271,70 +2534,6 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
     if (m->in_finish_move && m->coffin.finish_completed != 0) {
         m->in_finish_move = false;
         m->coffin.finish_completed = 0;
-    }
-
-    /*
-     * init_smoves' watchdogs, one tick each. The arcade runs every one
-     * as its own SMOVE_PID process; there is no scheduler here, so
-     * they are ticked in the order init_smoves made them, which is the
-     * order the wrestler's own smove table lists them.
-     */
-    {
-        unsigned ai;
-        for (ai = 0; ai < m->actor_count; ++ai) {
-            size_t si;
-            wm_arcade_actor_t *a = &m->actors[ai];
-            wm_smove_env_t senv;
-            wm_arcade_und_finish_callbacks_t ucb;
-
-            if (!a->active) continue;
-
-            memset(&ucb, 0, sizeof(ucb));
-            ucb.set_in_finish_move = match_set_in_finish_move;
-            ucb.set_world_origin = match_set_world_origin;
-            ucb.rng = m->anim_rng;
-            ucb.user = m;
-
-            memset(&senv, 0, sizeof(senv));
-            senv.my_pins = wm_arcade_pins_for(&m->pins, (int)a->player_side);
-            senv.victim = a->who_i_hit ? a->who_i_hit
-                                       : (ai == 0 ? &m->actors[1]
-                                                  : &m->actors[0]);
-            /* PLYR.EQU RING_TIME. Nothing in this port counts a
-               wrestler out of the ring yet, so it is derived from the
-               INRING flag that IS maintained rather than left at a
-               value that would pass the guard by accident. */
-            senv.ring_time = a->in_ring ? 1 : -1;
-            /*
-             * *a8(CLOSEST_NUM) through process_ptrs, which
-             * WRESTLE.ASM:4489 get_opp_plyrmode reads. In a two-man
-             * match that is the other wrestler; the charge,
-             * grab_toss_air and free-move monitors all test his mode
-             * and refuse when he is down.
-             */
-            senv.closest = (ai == 0) ? &m->actors[1] : &m->actors[0];
-            senv.pcnt = m->tick_count;
-            senv.world_tlx = m->scroll.worldtlx;
-            senv.world_tly = m->scroll.worldtly;
-            senv.und_cb = &ucb;
-
-            for (si = 0; si < m->smove_count[ai]; ++si) {
-                wm_smove_fire_t fire;
-                if (!wm_smove_tick(&m->smoves[ai][si], a, &senv, &fire))
-                    continue;
-                if (fire.walk_fast) a->walk_fast = fire.walk_fast;
-                if (fire.risk) a->risk = fire.risk;
-                /* `movk 15,a14 / move a14,*a0(IMMOBILIZE_TIME)` -- the
-                   move pins the man it is done to. The amount is the
-                   row's own; eighteen of the forty pin nobody. */
-                if (fire.victim && fire.victim_immobilize > 0)
-                    fire.victim->immobilize_time = fire.victim_immobilize;
-                if (fire.anim) {
-                    a->special_move_addr = (uintptr_t)fire.anim;
-                    match_change_anim(a, fire.anim, m);
-                }
-            }
-        }
     }
 
     /*

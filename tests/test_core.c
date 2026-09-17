@@ -5121,6 +5121,19 @@ struct debris_log {
     bool last_set;
 };
 
+/* SPECIAL.ASM's projectile constructors, as the env seam reports them. */
+struct special_log {
+    int n;
+    int kind[8];
+    wm_arcade_actor_t *owner[8];
+};
+
+static void special_sink(void *user, wm_arcade_actor_t *owner, int kind) {
+    struct special_log *l = (struct special_log *)user;
+    if (l->n < 8) { l->kind[l->n] = kind; l->owner[l->n] = owner; }
+    ++l->n;
+}
+
 static void debris_sink(void *user, const char *effect,
                         wm_arcade_actor_t *at, int count, int32_t yoff) {
     struct debris_log *l = (struct debris_log *)user;
@@ -5408,15 +5421,34 @@ static void test_debris_family(void) {
      * UNDSEQ4.ASM's two #fireball -- same name, same file, and each one
      * is a DIFFERENT spirit. This is the local-label pair that had no
      * translation at all before the resolver existed.
+     *
+     * They used to go out through the DEBRIS seam as named effects,
+     * because this port had nothing that could build a collision
+     * object. It does now (wm/arcade/wm_arcade_special.h, translated
+     * and called by nothing until the match grew a pool for them), so
+     * each one constructs a real projectile -- pull the old spirit,
+     * push the reaper, exactly as SPECIAL.ASM:1536 and :1541 split on
+     * SP_ID. YOKSEQ3.ASM's #do_salt is the third and last live one.
      */
+    {
+        struct special_log sl;
+        memset(&sl, 0, sizeof(sl));
+        env.spawn_special = special_sink;
+        env.special_user = &sl;
+        CHECK(wm_anim_code_run(&a, &env, "#fireball", "UNDSEQ4.ASM", 265));
+        CHECK(wm_anim_code_run(&a, &env, "#fireball", "UNDSEQ4.ASM", 348));
+        CHECK(wm_anim_code_run(&a, &env, "#do_salt", "YOKSEQ3.ASM", 3565));
+        CHECK(sl.n == 3);
+        CHECK(sl.kind[0] == WM_SP_KIND_TAKER_SPIRIT);
+        CHECK(sl.kind[1] == WM_SP_KIND_TAKER_REAPER);
+        CHECK(sl.kind[2] == WM_SP_KIND_YOKO_SALT);
+        CHECK(sl.owner[0] == &a && sl.owner[1] == &a && sl.owner[2] == &a);
+        env.spawn_special = NULL;
+        env.special_user = NULL;
+    }
     memset(&log, 0, sizeof(log));
     env.create_debris = debris_sink;
     env.debris_user = &log;
-    CHECK(wm_anim_code_run(&a, &env, "#fireball", "UNDSEQ4.ASM", 265));
-    CHECK(wm_anim_code_run(&a, &env, "#fireball", "UNDSEQ4.ASM", 348));
-    CHECK(log.n == 2);
-    CHECK(strcmp(log.effect[0], "und_spirit_pull") == 0);
-    CHECK(strcmp(log.effect[1], "und_spirit_push") == 0);
 
     /*
      * DNKSEQ3.ASM:285 start_sparks, and the label placement that matters:

@@ -13,6 +13,7 @@
 #include "wm/arcade/wm_arcade_round_reset.h"
 #include "wm/arcade/wm_arcade_scroll.h"
 #include "wm/arcade/wm_arcade_smove.h"
+#include "wm/arcade/wm_arcade_special.h"
 #include "wm/arcade/wm_arcade_confine.h"
 #include "wm/arcade/wm_arcade_drone.h"
 #include "wm/arcade/wm_arcade_lifebar.h"
@@ -91,6 +92,11 @@ extern "C" {
  * when both players asked for buddy mode.
  */
 #define WM_MATCH_MAX_ACTORS 4
+
+/* How many SPECIAL.ASM projectiles can be in flight at once. The source
+   CREATEs a process each and has no limit; this is a pool, and eight
+   covers every reachable case with room to spare. */
+#define WM_MATCH_MAX_SPECIALS 8
 
 typedef struct {
     wm_arcade_actor_t actors[WM_MATCH_MAX_ACTORS];
@@ -394,6 +400,44 @@ typedef struct {
 
     /* WRESTLE2.ASM:1681 scroll_world's @WORLDTLX / @WORLDTLY. */
     wm_scroll_state scroll;
+
+    /*
+     * SPECIAL.ASM's projectile processes and the collision lists they
+     * insert themselves into (init_special_objlist / #p1_objlist and
+     * friends).
+     *
+     * The source CREATEs a process per projectile and lets it delete
+     * itself; this port has no process system for them, so they live in
+     * a fixed pool and the lists thread through it exactly as the
+     * source's do. Eight is generous: the three live spawns are one
+     * object each and only two wrestlers can be throwing at once.
+     *
+     * Nothing referenced wm_arcade_special.c at all before this -- the
+     * whole subsystem was translated, unit-tested, and had no home in
+     * the match, so no projectile existed in the game.
+     */
+    wm_arcade_special_lists_t specials;
+    wm_arcade_special_obj_t special_pool[WM_MATCH_MAX_SPECIALS];
+    /*
+     * How many projectiles this match has constructed. The objects
+     * themselves can be gone again within a tick or two, so a caller
+     * that wants to know one HAPPENED needs a counter rather than a
+     * scan of the pool.
+     */
+    uint32_t specials_spawned;
+    /*
+     * Which pool slots were constructed during THIS tick.
+     *
+     * WRESTLE.ASM:2062 `#loop calla check_collisions` is the first thing
+     * the main loop does, and the main-loop process sits ahead of every
+     * wrestler (GETPRC links a child after its parent), so the sweep for
+     * a frame happens before the animations that create projectiles in
+     * it. A projectile is therefore first swept on the frame AFTER the
+     * one that made it, by which time its own process has run
+     * sp_velocity_add once. This mask is that one-frame boundary.
+     */
+    uint32_t specials_born_this_tick;
+
 
     /*
      * The two processes FINISEQ.ASM's coffin finish creates through

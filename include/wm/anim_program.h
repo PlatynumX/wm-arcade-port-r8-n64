@@ -467,6 +467,29 @@ typedef struct wm_anim_env {
     void (*set_no_debris)(void *user, bool off);
 
     /*
+     * SPECIAL.ASM's projectiles. Three ANI_CODE routines CREATE0 one:
+     * YOKSEQ3.ASM:3564 #do_salt (yok_salt_spray), and UNDSEQ4.ASM's two
+     * #fireball definitions, at :265 (und_spirit_pull, the old spirit)
+     * and :348 (und_spirit_push, the reaper). The constructors live in
+     * wm/arcade/wm_arcade_special.h and the objects themselves belong to
+     * the match, which owns their pool and their collision lists -- so
+     * the animation says WHO is throwing and WHAT, and the match makes
+     * it exist.
+     *
+     * `kind` is a wm_arcade_special_kind_t, passed as an int so this
+     * header does not have to pull in the whole special/react chain for
+     * one enum.
+     *
+     * Doink's pie and Bam Bam's fireball have constructors too and are
+     * deliberately not reachable from here: every call site for them in
+     * the source is commented out (DNKSEQ2.ASM:116 and :159's
+     * `ANI_SNOT,doink_pie`, BAMSEQ2.ASM:693's `CREATE0 bam_fireball`),
+     * so they are cut from the shipped game rather than missing here.
+     */
+    void *special_user;
+    void (*spawn_special)(void *user, wm_arcade_actor_t *owner, int kind);
+
+    /*
      * WRESTLE2.ASM:3575 flash_white -- a QDMAN fill of the whole screen,
      * `[1111h,0000h]` colour over `[256,400]` at the origin. The numbers
      * are real; the fill needs a framebuffer.

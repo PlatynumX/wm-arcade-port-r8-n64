@@ -35,6 +35,7 @@
 #include "wm/arcade/wm_arcade_roster.h"
 #include "wm/arcade/wm_arcade_start_run.h"
 #include "wm/arcade/wm_arcade_roster_anims.h"
+#include "wm/arcade/wm_arcade_special.h"
 #include "wm/arcade/wm_arcade_veladd.h"
 #include "wm/arcade/wmania_ring_geometry.h"
 #include "wm/arcade/wm_arcade_butcount.h"
@@ -682,16 +683,40 @@ static void set_immob(wm_arcade_actor_t *actor, const wm_anim_env *env,
 }
 
 /*
+ * SPECIAL.ASM's projectiles, reached from their sequence files' own
+ * ANI_CODE. Each site is `move a13,a11 / CREATE0 <routine> / rets`:
+ * a11 is the thrower, which is this actor.
+ *
+ * These used to go out through the DEBRIS seam, with a comment saying
+ * so -- "both are collision objects rather than debris, but they reach
+ * this port the same way: as a named effect the object system would
+ * build". The object system exists now (wm/arcade/wm_arcade_special.h,
+ * translated and unit-tested all along and called by nothing), so they
+ * build a real object with real velocities, a real collision box and a
+ * real lifetime instead of naming an effect nobody drew. The debris
+ * call is dropped rather than kept beside it: one throw is one object,
+ * and a future renderer has a better hook in the object's own
+ * wm_arcade_special_anim_source_name.
+ */
+static void spawn_special(wm_arcade_actor_t *actor, const wm_anim_env *env,
+                          int32_t param) {
+    if (!actor || !env || !env->spawn_special) return;
+    env->spawn_special(env->special_user, actor, (int)param);
+}
+
+/*
  * UNDSEQ4.ASM:265 and :348 #fireball -- two routines with the same name
- * in the same file, one per spirit move: `und_spirit_pull` for the old
- * spirits, `und_spirit_push` for the reaper. Both are one CREATE0 on
- * himself, and both are collision objects rather than debris, but they
- * reach this port the same way: as a named effect the object system
- * would build.
+ * in the same file, one per spirit move, which is exactly why the
+ * ANI_CODE registry carries a definition LINE. `und_spirit_pull` makes
+ * the old spirit and `und_spirit_push` the reaper; SPECIAL.ASM:1536 and
+ * :1541 label them "Old spirits" and "New reaper" in as many words, and
+ * the only difference between the two constructors is the SP_ID that
+ * picks which.
  */
 static void fireball(wm_arcade_actor_t *actor, const wm_anim_env *env,
                      int32_t param) {
-    debris(env, param ? "und_spirit_push" : "und_spirit_pull", actor, 1, 0);
+    spawn_special(actor, env,
+                  param ? WM_SP_KIND_TAKER_REAPER : WM_SP_KIND_TAKER_SPIRIT);
 }
 
 /* UNDSEQ2.ASM's CREATE_URN2 (PROGRESS.ASM:3874) -- the Undertaker's urn,
@@ -751,8 +776,7 @@ static void salt_blocked(wm_arcade_actor_t *actor, const wm_anim_env *env,
 static void do_salt(wm_arcade_actor_t *actor, const wm_anim_env *env,
                     int32_t param) {
     (void)param;
-    if (!actor) return;
-    debris(env, "yok_salt_spray", actor, 1, 0);
+    spawn_special(actor, env, WM_SP_KIND_YOKO_SALT);
 }
 
 /*

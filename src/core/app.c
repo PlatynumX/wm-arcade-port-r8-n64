@@ -508,6 +508,127 @@ static void wm_app_round_award(void *user, int player_num,
  * GENERIC_DISPLAY, the two JAM_STR plates that put GAME and OVER on
  * it, display_unblank, and UNIT_CLR.
  */
+/* ------------------------------------------------------------------ *
+ * HSTD.ASM's high-score tables.
+ *
+ * The persistence backend is the port's to supply -- the header says so
+ * -- and this is the host one: the encoded bytes live in the app. They
+ * outlast a game and an attract loop, which is what the flow needs to
+ * be exercised, and they do not pretend to outlast the process. The N64
+ * build points the same two callbacks at cartridge storage instead.
+ * ------------------------------------------------------------------ */
+
+static int wm_app_hs_read(void *user, void *dst, size_t size) {
+    wm_app *app = (wm_app *)user;
+    if (!app || !dst) return -1;
+    if (app->hs_save_cursor + size > app->hs_save_len) return -1;
+    memcpy(dst, app->hs_save_bytes + app->hs_save_cursor, size);
+    app->hs_save_cursor += size;
+    return 0;
+}
+
+static int wm_app_hs_write(void *user, const void *src, size_t size) {
+    wm_app *app = (wm_app *)user;
+    if (!app || !src) return -1;
+    if (app->hs_save_cursor + size > sizeof app->hs_save_bytes) return -1;
+    memcpy(app->hs_save_bytes + app->hs_save_cursor, src, size);
+    app->hs_save_cursor += size;
+    if (app->hs_save_cursor > app->hs_save_len)
+        app->hs_save_len = app->hs_save_cursor;
+    return 0;
+}
+
+static void wm_app_hs_store(wm_app *app) {
+    if (!app) return;
+    app->hs_save_cursor = 0;
+    app->hs_save_len = 0;
+    if (wm_hs_save_write(&app->hiscore, &app->hs_backend)) app->hs_writes++;
+}
+
+/*
+ * The win-streak table, offered when a credit ends.
+ *
+ * Four routines can put a row on a table -- winstreak, pin speed,
+ * beaten game and tag time -- and this is the one whose trigger this
+ * port can actually reach. Game over here means the player LOST (the
+ * continue timed out with no human left), and the streak that just
+ * ended is exactly what WINSTREAK_TAB records. The other three are
+ * wired to nothing yet and say why at the call below.
+ *
+ * Whether the score qualifies is not decided here: wm_hs_begin_* runs
+ * the source's own FIND_LOW_TABLE_LEVEL and returns false when the row
+ * does not make the table, the same way DO_BEATEN_GAME is called from
+ * SELECT.ASM:211 unconditionally and lets the table logic refuse.
+ *
+ * The source's auto_init cache is kept: a player who already typed his
+ * initials this credit does not type them again, and the row commits
+ * straight away.
+ */
+static void wm_app_hs_offer_end_of_credit(wm_app *app, unsigned player,
+                                          int32_t old_streak) {
+    uint8_t initials[WM_HS_NUM_INITIALS];
+    uint8_t wrestler;
+
+    if (!app || player >= 2u) return;
+    app->hs_pending_valid = false;
+    if (old_streak <= 0) return;
+
+    wrestler = (uint8_t)app->pregame.player_roster_wrestler;
+    if (!wm_hs_begin_winstreak(&app->hiscore, (uint8_t)player, wrestler,
+                               (uint32_t)old_streak, &app->hs_pending))
+        return;
+    app->hs_pending_valid = true;
+
+    if (wm_hs_system_has_cached_initials(&app->hiscore, (uint8_t)player)) {
+        wm_hs_system_get_cached_initials(&app->hiscore, (uint8_t)player,
+                                         initials);
+        (void)wm_hs_commit_pending(&app->hiscore, &app->hs_pending, initials);
+        app->hs_commits++;
+        app->hs_pending_valid = false;
+        wm_app_hs_store(app);
+        return;
+    }
+
+    wm_hs_entry_begin(&app->hs_entry, WM_HS_ENTRY_THREE_PLUS_WRESTLER,
+                      (uint8_t)player, wrestler,
+                      wm_rng_rndrng0_callback, &app->rng);
+    app->mode = WM_APP_MODE_HISCORE_ENTRY;
+}
+
+/* One tick of the initials input, and the commit when it finishes. */
+static void wm_app_hs_entry_tick(wm_app *app, const wm_input_state *in) {
+    WmHsEntryInput hin;
+    uint8_t initials[WM_HS_NUM_INITIALS];
+
+    if (!app) return;
+    memset(&hin, 0, sizeof hin);
+    if (in) {
+        /* The grid is walked with the stick and committed with an
+           attack button, the way HI_INPUT_PID reads its switches. */
+        if (in->stick_y > 50) hin.stick_current |= WM_HS_STICK_UP;
+        if (in->stick_y < -50) hin.stick_current |= WM_HS_STICK_DOWN;
+        if (in->stick_x < -50) hin.stick_current |= WM_HS_STICK_LEFT;
+        if (in->stick_x > 50) hin.stick_current |= WM_HS_STICK_RIGHT;
+        hin.stick_down = hin.stick_current;
+        hin.accept_down = in->light_punch || in->power_punch ||
+                          in->light_kick || in->power_kick;
+    }
+    (void)wm_hs_entry_tick(&app->hs_entry, &hin);
+    if (!app->hs_entry.finished) return;
+
+    wm_hs_entry_get_initials(&app->hs_entry, initials);
+    if (app->hs_pending_valid && !wm_hs_entry_is_empty(initials)) {
+        (void)wm_hs_commit_pending(&app->hiscore, &app->hs_pending, initials);
+        app->hs_commits++;
+        /* auto_init: he does not type them again this credit. */
+        wm_hs_system_cache_initials(&app->hiscore, app->hs_entry.player_index,
+                                    initials);
+        wm_app_hs_store(app);
+    }
+    app->hs_pending_valid = false;
+    app->mode = WM_APP_MODE_GAME_OVER;
+}
+
 static void wm_app_start_game_over(wm_app *app) {
     if (!app) return;
     /* `clr a14 / move a14,@rr_loss / move a14,@PSTATUS`. */
@@ -593,6 +714,26 @@ void wm_app_init(wm_app *app) {
     wm_rng_init(&app->rng, 0, app_rng_hcount, app_rng_sp, app);
     wm_source_clock_init(&app->source_clock);
     wm_scheduler_init(&app->scheduler);
+    /*
+     * HSTD.ASM's tables. INIT_HSTRING's own reset value is the
+     * operator's ADJUSTED default; this port has no operator-settings
+     * system, so it uses the arcade's own fallback the same way every
+     * other GET_ADJ here does.
+     *
+     * The backend is the port's (wmania_hiscore_persist.h says so);
+     * this is the host one, and the N64 build points the same two
+     * callbacks at cartridge storage. A first run finds nothing and
+     * TABLE_CMOS_CHECK builds the factory tables, which is exactly
+     * what a fresh machine does.
+     */
+    wm_hs_system_init(&app->hiscore, WM_HS_ADJUSTED_RESET_DEFAULT);
+    app->hs_backend.read = wm_app_hs_read;
+    app->hs_backend.write = wm_app_hs_write;
+    app->hs_backend.user = app;
+    app->hs_save_cursor = 0;
+    (void)wm_hs_save_read(&app->hiscore, &app->hs_backend,
+                          WM_HS_ADJUSTED_RESET_DEFAULT);
+    (void)wm_hs_system_table_cmos_check(&app->hiscore);
     app->p1_choice = WM_WRESTLER_BRET;
     app->p2_choice = WM_WRESTLER_BAM_BAM;
     app->attract.amode_loops = 0;
@@ -983,6 +1124,11 @@ void wm_app_tick_dual(wm_app *app,
                                       app->match_pstatus == 2 ? 1u : 0u]);
             app->mode = WM_APP_MODE_PREGAME;
         } else if (ev == WM_SELECT_CONTINUE_TIMEOUT_EVENT) {
+            /* Offered BEFORE the streak is cleared -- WINSTREAK_TAB
+               records the run that just ended, and a moment later
+               there is nothing left to record. */
+            wm_app_hs_offer_end_of_credit(
+                app, player, (int32_t)app->awards.win_streak[player]);
             app->awards.win_streak[player] = 0;
             if (app->match_pstatus != 0) {
                 unsigned survivor = app->match_pstatus == 2 ? 1u : 0u;
@@ -1005,6 +1151,14 @@ void wm_app_tick_dual(wm_app *app,
      * (see wm_app_start_game_over); this is the wait it holds the
      * screen for, with FADE_MASTER_VOL running under it.
      */
+    if (app->mode == WM_APP_MODE_HISCORE_ENTRY) {
+        /* HI_INPUT_PID's own tick. The game-over path in the source
+           waits on this process (`are_we_waiting4`); here it is a mode
+           that hands control back to GAME_OVER when it finishes. */
+        wm_app_hs_entry_tick(app, input);
+        return;
+    }
+
     if (app->mode == WM_APP_MODE_GAME_OVER) {
         /*
          * `MOVI -1,A11 / MOVI 100,A8 / CREATE FADE_PID,FADE_MASTER_VOL`

@@ -173,7 +173,7 @@ CORE_C += $(FIX38_ARCADE_C)
 
 
 ASSET_C := src/generated/bret_sprites.c src/generated/sports_logo.c src/generated/dcs_logo.c src/generated/title_screen.c src/generated/title_sparkle.c src/generated/bmod_tables.c src/generated/sports_background.c src/generated/sports_motto.c src/generated/select_sprites.c src/generated/select_background_main.c src/generated/select_background_choice.c src/generated/progress_background.c src/generated/progress_wrestlers.c
-N64_C := src/platform/n64/main.c src/platform/n64/dcs_effect.c src/platform/n64/audio_backend.c src/platform/n64/dcs_bank.c src/platform/n64/streamed_character_art.c
+N64_C := src/platform/n64/main.c src/platform/n64/dcs_effect.c src/platform/n64/audio_backend.c src/platform/n64/dcs_bank.c src/platform/n64/streamed_character_art.c src/platform/n64/hiscore_eeprom.c
 C_FILES := $(CORE_C) $(ASSET_C) $(N64_C)
 
 # Full current wrestler frame corpus stays in ROM/DragonFS, not resident RDRAM.

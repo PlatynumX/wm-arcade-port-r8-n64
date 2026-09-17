@@ -5,6 +5,9 @@
 #include <stddef.h>
 #include "wm/attract.h"
 #include "wm/arcade/wm_arcade_sound.h"
+#include "wm/arcade/wmania_hiscore_entry.h"
+#include "wm/arcade/wmania_hiscore_persist.h"
+#include "wm/arcade/wmania_hiscore_system.h"
 #include "wm/audio.h"
 #include "wm/award.h"
 #include "wm/arcade/wm_arcade_powerup.h"
@@ -169,7 +172,15 @@ typedef enum {
      * of GAME OVER with the master volume fading under it, and the
      * bookkeeping a finished game owes the next one.
      */
-    WM_APP_MODE_GAME_OVER
+    WM_APP_MODE_GAME_OVER,
+    /*
+     * HSTD.ASM's initials input, reached from SELECT.ASM:211's
+     * `JSRP DO_BEATEN_GAME` when a finished game qualifies for a
+     * table. The source runs it as a HI_INPUT_PID process the
+     * game-over path waits on (`are_we_waiting4`); this port has no
+     * process system for it, so it is an app mode instead.
+     */
+    WM_APP_MODE_HISCORE_ENTRY
 } wm_app_mode;
 
 typedef struct {
@@ -189,6 +200,36 @@ typedef struct {
      */
     wm_sound_bell_t bell;
     wm_sound_pin_him_t pin_him;
+
+    /*
+     * HSTD.ASM's high-score tables, and the initials entry that feeds
+     * them.
+     *
+     * Nine files and ~1,900 lines of this were translated, unit-tested,
+     * and called by nothing outside themselves: no game ever qualified
+     * for a table, no initials were ever entered, and nothing was ever
+     * saved or loaded. The tables existed and the game could not reach
+     * them.
+     *
+     * The save backend is deliberately abstract -- read/write callbacks
+     * the port supplies (wm/arcade/wmania_hiscore_persist.h says so in
+     * as many words). The host build keeps the bytes in RAM, which is
+     * exactly right for a host build: they survive an attract loop and
+     * a game, and nothing pretends they survive the process.
+     */
+    WmHsSystem hiscore;
+    WmHsEntryState hs_entry;
+    WmHsPendingEntry hs_pending;
+    bool hs_pending_valid;
+    WmHsSaveBackend hs_backend;
+    /* WM_HS_SAVE_MAX_BYTES of encoded table, plus how much is real. */
+    uint8_t hs_save_bytes[WM_HS_SAVE_MAX_BYTES];
+    size_t hs_save_len;
+    size_t hs_save_cursor;
+    /* Counters a test can read: how many entries have been committed,
+       and how many times the tables have been written out. */
+    uint32_t hs_commits;
+    uint32_t hs_writes;
     wm_app_mode mode;
     wm_select_screen_state select;
     wm_select_continue_state continue_select;

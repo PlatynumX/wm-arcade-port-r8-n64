@@ -97,22 +97,6 @@ unsigned wm_match_increment_wincount(wm_match_streaks_t *st,
 bool wm_match_two_round_victory(const wm_arcade_match_score_t *score,
                                 bool eight_on_one);
 
-/*
- * LIFEBAR.ASM:3650 is_perfect, the gate on `MATCH_AWARD a10,PERFECT_AWD`.
- *
- * An eight-on-one is never perfect (`calla is_8_on_1 / jrc #final`, and
- * #final is the clrc). Otherwise it walks process_ptrs for NUM_WRES
- * entries, skipping empty slots and everybody on the other PLYR_SIDE,
- * and any TEAMMATE whose health is not LIFE_MAX loses it. Note it is the
- * winning SIDE that has to be untouched, not the winning wrestler: in a
- * two-on-one, a partner who got hit costs the award.
- *
- * `winner_side` is a PLYR_SIDE (0 or 1), not LIFEBAR's 1-or-2
- * match_winner.
- */
-bool wm_match_is_perfect(wm_arcade_actor_t *const *actors, size_t actor_count,
-                         int32_t winner_side, bool eight_on_one);
-
 /* ---- the end-of-round graphic index (LIFEBAR.ASM:2872) ----------- */
 
 /*

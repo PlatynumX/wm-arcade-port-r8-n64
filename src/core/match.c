@@ -880,10 +880,33 @@ static void match_grant_match_awards(wm_match_state *m,
     if (wm_match_two_round_victory(&m->score, m->eight_on_one))
         wm_award_match_award(&m->awards, p, WM_AWARD_TWO_ROUND);
 
-    /* `callr is_perfect / jrnc #not_perfect`. The CREATE_PERFECT
-       graphic and its SLEEP 55+50 are presentation and are not here. */
-    if (wm_match_is_perfect(actors, m->actor_count, side, m->eight_on_one))
-        wm_award_match_award(&m->awards, p, WM_AWARD_PERFECT);
+    /*
+     * `callr is_perfect / jrnc #not_perfect`. The CREATE_PERFECT
+     * graphic and its SLEEP 55+50 are presentation and are not here.
+     *
+     * This is wm/arcade/wm_arcade_lifebar.h's own translation of
+     * LIFEBAR.ASM:3650, not a second one. A duplicate did briefly live
+     * in wm_arcade_match_end.c: the routine was already translated and
+     * tested and had never been called, so writing the award path found
+     * a gap that was really a missing caller. One routine, one
+     * translation.
+     */
+    {
+        const wm_arcade_actor_t *winner = NULL;
+        size_t wi;
+        for (wi = 0; wi < m->actor_count; ++wi) {
+            if (actors[wi] && actors[wi]->active &&
+                actors[wi]->player_side == side) {
+                winner = actors[wi];
+                break;
+            }
+        }
+        if (winner &&
+            wm_arcade_is_perfect(winner,
+                                 (const wm_arcade_actor_t *const *)actors,
+                                 m->actor_count, m->eight_on_one))
+            wm_award_match_award(&m->awards, p, WM_AWARD_PERFECT);
+    }
 }
 
 /* The two sounds DO_WAIT makes itself, through triple_sound. */

@@ -78,6 +78,28 @@ static void mk(wm_arcade_actor_t *a, int side, int32_t life)
     a->life = life;
 }
 
+/*
+ * LIFEBAR.ASM:3650 is_perfect, which the award path gates PERFECT_AWD
+ * on. It is wm/arcade/wm_arcade_lifebar.h's translation -- the routine
+ * was already here and had simply never been called, which is the same
+ * shape of gap as the award itself. `winner` is an actor rather than a
+ * side because that is what the source's a10 is.
+ */
+static bool is_perfect(wm_arcade_actor_t *const *ptr, size_t n,
+                       int side, bool eight)
+{
+    size_t i;
+    const wm_arcade_actor_t *winner = NULL;
+    for (i = 0; i < n; ++i)
+        if (ptr[i] && ptr[i]->active && ptr[i]->player_side == side) {
+            winner = ptr[i];
+            break;
+        }
+    if (!winner) return false;
+    return wm_arcade_is_perfect(winner, (const wm_arcade_actor_t *const *)ptr,
+                                n, eight);
+}
+
 static void test_is_perfect(void)
 {
     wm_arcade_actor_t a[3];
@@ -87,14 +109,14 @@ static void test_is_perfect(void)
     mk(&a[0], 0, WM_ARCADE_LIFE_MAX);
     mk(&a[1], 1, 0);
     mk(&a[2], 1, 7);
-    assert(wm_match_is_perfect(ptr, 3, 0, false));
+    assert(is_perfect(ptr, 3, 0, false));
     /* The enemy being hurt is the whole idea -- it cannot cost the
        award, and the loser's own side is plainly not perfect. */
-    assert(!wm_match_is_perfect(ptr, 3, 1, false));
+    assert(!is_perfect(ptr, 3, 1, false));
 
     /* One point of damage on the winner loses it. */
     a[0].life = WM_ARCADE_LIFE_MAX - 1;
-    assert(!wm_match_is_perfect(ptr, 3, 0, false));
+    assert(!is_perfect(ptr, 3, 0, false));
 
     /*
      * It is the winning SIDE, not the winning wrestler: a partner who
@@ -103,21 +125,21 @@ static void test_is_perfect(void)
     mk(&a[0], 0, WM_ARCADE_LIFE_MAX);
     mk(&a[1], 0, WM_ARCADE_LIFE_MAX - 30);
     mk(&a[2], 1, 0);
-    assert(!wm_match_is_perfect(ptr, 3, 0, false));
+    assert(!is_perfect(ptr, 3, 0, false));
 
     /* An inactive slot is skipped, the way `jrz #nxt` skips an empty
        process_ptrs entry -- so a hurt partner who is not in the ring
        does not count. */
     a[1].active = 0;
-    assert(wm_match_is_perfect(ptr, 3, 0, false));
+    assert(is_perfect(ptr, 3, 0, false));
 
     /* An eight-on-one is never perfect, however it was won. */
     a[1].active = 1;
     a[1].life = WM_ARCADE_LIFE_MAX;
-    assert(wm_match_is_perfect(ptr, 3, 0, false));
-    assert(!wm_match_is_perfect(ptr, 3, 0, true));
+    assert(is_perfect(ptr, 3, 0, false));
+    assert(!is_perfect(ptr, 3, 0, true));
 
-    assert(!wm_match_is_perfect(NULL, 3, 0, false));
+    assert(!wm_arcade_is_perfect(NULL, NULL, 3, false));
 }
 
 /* ---- the sequence's new steps ------------------------------------- */

@@ -54,6 +54,16 @@ static void test_is_perfect(void)
     memset(&me, 0, sizeof(me));
     memset(&mate, 0, sizeof(mate));
     memset(&foe, 0, sizeof(foe));
+    /*
+     * Active, because a bare memset leaves them looking like empty
+     * process_ptrs slots -- which is what `jrz #nxt` skips. These
+     * passed before only because is_perfect tested for a NULL pointer
+     * and not for the flag, the way its sibling sweep
+     * wm_arcade_get_live_bits always has.
+     */
+    me.active = 1;
+    mate.active = 1;
+    foe.active = 1;
     me.player_side = 0;
     mate.player_side = 0;
     foe.player_side = 1;

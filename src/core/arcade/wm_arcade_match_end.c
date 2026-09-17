@@ -3,7 +3,6 @@
  * wm/arcade/wm_arcade_match_end.h.
  */
 #include "wm/arcade/wm_arcade_match_end.h"
-#include "wm/arcade/wm_arcade_lifebar.h"
 
 #include <stddef.h>
 #include <string.h>
@@ -51,27 +50,6 @@ bool wm_match_two_round_victory(const wm_arcade_match_score_t *score,
         return false;
     /* `calla is_8_on_1 / jrc #no_2_rnd_victory`. */
     return !eight_on_one;
-}
-
-bool wm_match_is_perfect(wm_arcade_actor_t *const *actors, size_t actor_count,
-                         int32_t winner_side, bool eight_on_one) {
-    size_t i;
-
-    /* `calla is_8_on_1 / jrc #final`, and #final is the clrc. */
-    if (eight_on_one) return false;
-    if (!actors) return false;
-
-    for (i = 0; i < actor_count; ++i) {
-        const wm_arcade_actor_t *a = actors[i];
-        if (!a || !a->active) continue;                 /* `jrz #nxt` */
-        if (a->player_side != winner_side) continue;    /* "skip enemies" */
-        /* "injured guy found. return !c" */
-        if (a->life != WM_ARCADE_LIFE_MAX) return false;
-    }
-    /* "no injured teammates found. return c" -- including the case where
-       the sweep found no teammates at all, which the source reaches the
-       same way. */
-    return true;
 }
 
 int wm_match_end_round_index(const wm_arcade_match_score_t *score) {

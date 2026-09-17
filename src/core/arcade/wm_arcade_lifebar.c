@@ -201,7 +201,15 @@ bool wm_arcade_is_perfect(const wm_arcade_actor_t *winner,
 
     for (i = 0; i < actor_count; ++i) {
         const wm_arcade_actor_t *a = actors[i];
-        if (!a) continue;                            /* `jrz #nxt` */
+        /*
+         * `move *a3+,a4,L / jrz #nxt` skips an EMPTY process_ptrs
+         * slot. This used to test only for NULL, which left it the
+         * odd one out: wm_arcade_get_live_bits walks the same
+         * process_ptrs sweep and reads an inactive actor as an empty
+         * slot, which is what `active` means in this port's actor
+         * records. Two translations of one loop now agree.
+         */
+        if (!a || !a->active) continue;              /* `jrz #nxt` */
         if (a->player_side != winner->player_side) continue;
         if (a->life != WM_LIFE_MAX) return false;    /* an injured one */
     }

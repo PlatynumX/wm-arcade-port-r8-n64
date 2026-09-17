@@ -245,9 +245,22 @@ typedef struct {
     int32_t sleep;
 } wm_sound_bell_t;
 
-void wm_sound_bell_start(wm_sound_bell_t *b, wm_sound_state_t *s);
+/*
+ * `out_call` is the DCS call the ring actually produced, or 0 when the
+ * mixer refused it.
+ *
+ * It is an out-parameter for a reason worth stating: these two, and
+ * pin_him below, arbitrated a channel through triple_sound and then
+ * threw the answer away. They kept the DURATION (pin_him sleeps on it)
+ * and dropped the call, so a caller had nothing to send to the board
+ * and the routines could not make a sound however they were wired.
+ * wm_sound_tune_tick already had the right shape; these now match it.
+ */
+void wm_sound_bell_start(wm_sound_bell_t *b, wm_sound_state_t *s,
+                         uint16_t *out_call);
 /* One tick; true while it is still ringing. */
-bool wm_sound_bell_tick(wm_sound_bell_t *b, wm_sound_state_t *s);
+bool wm_sound_bell_tick(wm_sound_bell_t *b, wm_sound_state_t *s,
+                        uint16_t *out_call);
 
 /*
  * DCSSOUND.ASM:1673 wmania_tune -- the attract theme, and not a tune
@@ -294,7 +307,7 @@ typedef struct {
 /* Returns false when the RNDPER roll kills it before it starts. */
 bool wm_sound_pin_him_start(wm_sound_pin_him_t *p, WmRng *rng);
 bool wm_sound_pin_him_tick(wm_sound_pin_him_t *p, wm_sound_state_t *s,
-                           WmRng *rng);
+                           WmRng *rng, uint16_t *out_call);
 /* DCSSOUND.ASM:3989 KILL_PIN_HIM. */
 void wm_sound_pin_him_kill(wm_sound_pin_him_t *p);
 

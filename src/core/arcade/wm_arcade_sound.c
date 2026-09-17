@@ -290,26 +290,33 @@ wm_sound_result_t wm_sound_wrtable(wm_sound_state_t *s, int wrestler_num,
 /* ------------------------------------------------------------------ */
 /* ring_bell                                                          */
 
-void wm_sound_bell_start(wm_sound_bell_t *b, wm_sound_state_t *s) {
+void wm_sound_bell_start(wm_sound_bell_t *b, wm_sound_state_t *s,
+                         uint16_t *out_call) {
     wm_sound_result_t r;
+    if (out_call) *out_call = 0;
     if (!b) return;
     memset(b, 0, sizeof(*b));
     /* `movi bell_snd,a0 / callr triple_sound / sra 16,a14 / move
        a14,*a13(#BELL_CHANNEL),W` -- the first ring goes through the
        ordinary arbitration, and the channel it lands on is kept. */
     r = wm_sound_triple(s, WM_SOUND_BELL_CALL);
+    if (out_call && r.played) *out_call = r.call;
     b->channel = r.channel;
     b->rings_left = 2;
     b->sleep = WM_SOUND_BELL_GAP;
     b->active = true;
 }
 
-bool wm_sound_bell_tick(wm_sound_bell_t *b, wm_sound_state_t *s) {
+bool wm_sound_bell_tick(wm_sound_bell_t *b, wm_sound_state_t *s,
+                        uint16_t *out_call) {
+    wm_sound_result_t r;
+    if (out_call) *out_call = 0;
     if (!b || !b->active) return false;
     if (--b->sleep > 0) return true;
     /* The second and third rings go onto the channel the first one
        took, whatever is there now. */
-    (void)wm_sound_channel(s, WM_SOUND_BELL_CALL, b->channel);
+    r = wm_sound_channel(s, WM_SOUND_BELL_CALL, b->channel);
+    if (out_call && r.played) *out_call = r.call;
     if (--b->rings_left <= 0) { b->active = false; return false; }
     b->sleep = WM_SOUND_BELL_GAP;
     return true;
@@ -372,12 +379,13 @@ bool wm_sound_pin_him_start(wm_sound_pin_him_t *p, WmRng *rng) {
 }
 
 bool wm_sound_pin_him_tick(wm_sound_pin_him_t *p, wm_sound_state_t *s,
-                           WmRng *rng) {
+                           WmRng *rng, uint16_t *out_call) {
     uint32_t pick;
     uint16_t call;
     wm_sound_result_t r;
     int32_t nap;
 
+    if (out_call) *out_call = 0;
     if (!p || !p->active) return false;
     if (p->sleep > 0) { p->sleep -= 1; return true; }
 
@@ -394,6 +402,7 @@ bool wm_sound_pin_him_tick(wm_sound_pin_him_t *p, wm_sound_state_t *s,
     p->last = call;
 
     r = wm_sound_triple(s, (int32_t)call);
+    if (out_call && r.played) *out_call = r.call;
 
     /*
      * `CLR A0 / MOVX A14,A0 / subk 20,a0 / CALLA PRCSLP` -- the low

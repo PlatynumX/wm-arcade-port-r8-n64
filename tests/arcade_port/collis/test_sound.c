@@ -359,11 +359,17 @@ static void test_ring_bell(void) {
     wm_sound_state_t s;
     wm_sound_bell_t b;
     uint8_t ch;
-    int i, rings = 1;
+    uint16_t call = 0;
+    int i, rings = 1, calls = 0;
 
     wm_sound_init(&s);
-    wm_sound_bell_start(&b, &s);
+    wm_sound_bell_start(&b, &s, &call);
     assert(b.active);
+    /* The call comes back out now. It used to be arbitrated and then
+       dropped, so the bell could never actually be sent to the board
+       however it was wired. */
+    assert(call != 0);
+    ++calls;
     ch = b.channel;
     assert(ch >= 1 && ch <= WM_SOUND_CHANNELS);
     /* The bell is 0xB1, one of the two non-announcer rows at
@@ -372,9 +378,9 @@ static void test_ring_bell(void) {
 
     for (i = 0; i < 500 && b.active; ++i) {
         wm_sound_update(&s);
-        if (wm_sound_bell_tick(&b, &s)) {
-            /* nothing */
-        }
+        call = 0;
+        (void)wm_sound_bell_tick(&b, &s, &call);
+        if (call != 0) ++calls;
         if (s.call[ch - 1] ==
             (uint16_t)(wm_sound_table[WM_SOUND_BELL_CALL].call + ch - 1) &&
             s.duration[ch - 1] == wm_sound_table[WM_SOUND_BELL_CALL].duration)
@@ -383,6 +389,8 @@ static void test_ring_bell(void) {
     assert(!b.active);
     /* Three in total, a third of a second apart. */
     assert(rings >= 3);
+    /* And all three produced a call for the caller to send. */
+    assert(calls == 3);
     assert(i >= 2 * WM_SOUND_BELL_GAP);
 }
 
@@ -433,10 +441,14 @@ static void test_pin_him_never_repeats(void) {
     wm_sound_init(&s);
     for (i = 0; i < 5000 && p.active; ++i) {
         uint16_t before = p.last;
+        uint16_t out = 0;
         wm_sound_update(&s);
-        wm_sound_pin_him_tick(&p, &s, &rng);
-        if (p.last != before && n < WM_SOUND_PIN_HIM_CALLS)
+        wm_sound_pin_him_tick(&p, &s, &rng, &out);
+        if (p.last != before && n < WM_SOUND_PIN_HIM_CALLS) {
             seen[n++] = p.last;
+            /* Every line the chant decides on is handed back. */
+            assert(out != 0);
+        }
     }
     assert(!p.active);
     assert(n >= 2);

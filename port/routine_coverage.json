@@ -1435,10 +1435,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "renamed",
-   "evidence": "wm_sound_pin_him_kill",
+   "status": "implemented",
+   "evidence": "kill_pin_him",
    "from_generated": false,
-   "ledgered": true
+   "ledgered": false
   },
   {
    "name": "LEXGRN_P",

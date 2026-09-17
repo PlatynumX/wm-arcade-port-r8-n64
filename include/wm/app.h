@@ -181,6 +181,14 @@ typedef struct {
      * played at all.
      */
     wm_sound_state_t sound;
+    /*
+     * The two SOUND_PID processes a match asks for through its own
+     * seams: LIFEBAR.ASM's ring_bell and AWARD.ASM's END_MATCH_SPEECH.
+     * They live here because they need the mixer and the audio queue,
+     * both of which are the app's; the match only says when.
+     */
+    wm_sound_bell_t bell;
+    wm_sound_pin_him_t pin_him;
     wm_app_mode mode;
     wm_select_screen_state select;
     wm_select_continue_state continue_select;

@@ -374,6 +374,9 @@ static void match_set_no_debris(void *user, bool off) {
 static void match_win_announce(void *user) {
     wm_match_state *m = (wm_match_state *)user;
     if (!m) return;
+    /* DNKSEQ2.ASM:5212 `CALLA KILL_PIN_HIM` -- the pin stuck, so the
+       crowd stops asking for one. */
+    if (m->kill_pin_him) m->kill_pin_him(m->sound_proc_user);
     (void)wm_arcade_win_announce(&m->round_announce);
 }
 
@@ -937,6 +940,9 @@ static void match_reset_for_round(wm_match_state *m) {
     unsigned i;
 
     if (!m) return;
+    /* LIFEBAR.ASM:3136 `CREATE SOUND_PID,ring_bell`, in reset_for_round
+       itself -- every round after the first opens with the bell too. */
+    if (m->start_bell) m->start_bell(m->sound_proc_user);
     for (i = 0; i < WM_MATCH_MAX_ACTORS; ++i) actors[i] = &m->actors[i];
 
     /* reset_for_round's own loop over every wrestler. */
@@ -1248,6 +1254,17 @@ void wm_match_bind_final_battle(wm_match_state *m,
         wm_final_reset_ptr(fb);
 }
 
+/*
+ * LIFEBAR.ASM:2511 `CREATE SOUND_PID,ring_bell` -- the match opens with
+ * the bell, and reset_for_round rings it again at :3136 for rounds two
+ * and three. Both had no caller: the routine is a SOUND_PID process
+ * with its own channel bookkeeping, so it lives on whoever owns the
+ * mixer and the match only says when.
+ */
+static void match_ring_the_bell(wm_match_state *m) {
+    if (m && m->start_bell) m->start_bell(m->sound_proc_user);
+}
+
 void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
     wm_arcade_actor_t *p1, *opp;
     if (!m) return;
@@ -1306,6 +1323,7 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
     m->active = true;
     m->tick_count = 0;
     match_start_common_tail(m);
+    match_ring_the_bell(m);
 }
 
 
@@ -1463,6 +1481,7 @@ void wm_match_start_two_player(wm_match_state *m, WmRng *rng,
     m->active = true;
     m->tick_count = 0;
     match_start_common_tail(m);
+    match_ring_the_bell(m);
 }
 
 /*
@@ -1585,6 +1604,7 @@ void wm_match_start_one_player(wm_match_state *m, WmRng *rng,
 void wm_match_start_selected(wm_match_state *m, WmRng *rng,
                              uint8_t p1_source_wrestler) {
     wm_match_start_one_player(m, rng, 1, p1_source_wrestler, 0);
+    match_ring_the_bell(m);
 }
 
 /*
@@ -2473,8 +2493,20 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             wm_arcade_actor_t *pinner =
                 wm_arcade_pin_prompt(actor_ptrs, m->actor_count,
                                      m->round_state.prompt_dead_side);
-            if (pinner)
+            if (pinner) {
                 wm_arcade_pins_award(&m->pins, (int)pinner->player_side);
+                /*
+                 * AWARD.ASM:1835 `calla END_MATCH_SPEECH ;do the
+                 * obnoxious "PIN HIM!" crap`, and the line immediately
+                 * under it -- `MOVI 0BBH,A0 / CALLA triple_sound`, the
+                 * source's own "Move name annc snd". Both sit inside
+                 * pin_prompt, past the same #fp_dn gate this branch is,
+                 * and neither had a caller here.
+                 */
+                if (m->start_pin_him) m->start_pin_him(m->sound_proc_user);
+                if (m->anim_sound)
+                    m->anim_sound(m->anim_sound_user, WM_MATCH_MOVE_NAME_SND);
+            }
         }
     }
 

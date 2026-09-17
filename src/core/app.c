@@ -440,6 +440,47 @@ static void wm_app_anim_sound(void *user, uint16_t call) {
     if (r.played) (void)wm_audio_send_command(&app->audio, r.call);
 }
 
+/*
+ * The match's three sound-process seams. Each of these is a SOUND_PID
+ * process in the arcade -- a little state machine that owns a channel
+ * for several seconds -- which is why they cannot go through
+ * wm_app_anim_sound like an ordinary one-shot call.
+ */
+static void wm_app_start_bell(void *user) {
+    wm_app *app = (wm_app *)user;
+    uint16_t call = 0;
+    if (!app) return;
+    wm_sound_bell_start(&app->bell, &app->sound, &call);
+    if (call) (void)wm_audio_send_command(&app->audio, call);
+}
+
+static void wm_app_start_pin_him(void *user) {
+    wm_app *app = (wm_app *)user;
+    if (!app) return;
+    /* `movi 150,a0 / calla RNDPER / jals SUCIDE` -- 150 in 1000, so
+       most of the time the crowd says nothing at all. The roll is the
+       routine's own. */
+    (void)wm_sound_pin_him_start(&app->pin_him, &app->rng);
+}
+
+static void wm_app_kill_pin_him(void *user) {
+    wm_app *app = (wm_app *)user;
+    if (app) wm_sound_pin_him_kill(&app->pin_him);
+}
+
+/* Both processes, one tick each, with whatever they decide to say
+   forwarded to the board. */
+static void wm_app_tick_sound_procs(wm_app *app) {
+    uint16_t call;
+    if (!app) return;
+    call = 0;
+    (void)wm_sound_bell_tick(&app->bell, &app->sound, &call);
+    if (call) (void)wm_audio_send_command(&app->audio, call);
+    call = 0;
+    (void)wm_sound_pin_him_tick(&app->pin_him, &app->sound, &app->rng, &call);
+    if (call) (void)wm_audio_send_command(&app->audio, call);
+}
+
 /* Hand the match the services its ANI_CODE routines reach for. Both live
    on the app, so this is done wherever a match is started. */
 /* AWARD.ASM round_award, behind JJXM.H's RND_AWARD macro. The award
@@ -492,6 +533,10 @@ static void wm_app_bind_anim_env(wm_app *app) {
     app->match.anim_rng = &app->rng;
     app->match.anim_sound_user = app;
     app->match.anim_sound = wm_app_anim_sound;
+    app->match.sound_proc_user = app;
+    app->match.start_bell = wm_app_start_bell;
+    app->match.start_pin_him = wm_app_start_pin_him;
+    app->match.kill_pin_him = wm_app_kill_pin_him;
     app->match.anim_award_user = app;
     app->match.anim_round_award = wm_app_round_award;
     wm_anim_code_reset();
@@ -509,8 +554,12 @@ static bool tick_gameplay(wm_app *app, const wm_input_state *input) {
      * it could ever fire.
      */
     if (a->call_ticks == 0) {
-        wm_match_start_attract(&app->match, &app->rng);
+        /* Bound BEFORE the match starts, not after: start_match's own
+           `CREATE SOUND_PID,ring_bell` (LIFEBAR.ASM:2511) happens
+           inside it, and a seam assigned afterwards would miss it.
+           The other start site (two-player) already binds first. */
         wm_app_bind_anim_env(app);
+        wm_match_start_attract(&app->match, &app->rng);
     }
 
     {
@@ -690,6 +739,9 @@ void wm_app_tick_dual(wm_app *app,
      * heard again.
      */
     wm_sound_update(&app->sound);
+    /* The two SOUND_PID processes, beside snd_update the way the
+       arcade's scheduler runs them beside it. */
+    wm_app_tick_sound_procs(app);
     /* SOURCE_SELECT_MODE_TICK */
     if (app->mode == WM_APP_MODE_SELECT) {
         wm_select_screen_tick(&app->select,

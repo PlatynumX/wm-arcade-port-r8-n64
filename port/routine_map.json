@@ -1421,12 +1421,6 @@
   "symbol": "wm_sound_pin_him_tick",
   "note": "DCSSOUND.ASM:3946 and the PIN_HIM_PROC it creates: the crowd's \"pin him!\" chant. Eight calls drawn from a five-entry table, each starting twenty ticks before the last one ends, and one rule that is the whole character of it -- a draw repeating the LAST call is replaced by the next table entry, which is what the two duplicate entries at the end of WHICH_PIN_HIM are for. It runs 150 times in 1000. Not translated: the commented-out SET_UP_PERSONAL_CALL/ADD_VOICE lines above it, which are commented out in the source too."
  },
- "KILL_PIN_HIM": {
-  "file": "DCSSOUND.ASM",
-  "status": "renamed",
-  "symbol": "wm_sound_pin_him_kill",
-  "note": "DCSSOUND.ASM:3989. `KILALL PIN_HIM_PID` -- stop the chant."
- },
  "do_tune_commands": {
   "file": "DCSSOUND.ASM",
   "status": "partial",

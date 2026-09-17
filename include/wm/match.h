@@ -98,6 +98,10 @@ extern "C" {
    covers every reachable case with room to spare. */
 #define WM_MATCH_MAX_SPECIALS 8
 
+/* AWARD.ASM:1837 `MOVI 0BBH,A0 / CALLA triple_sound` -- the source's
+   own comment calls it the "Move name annc snd". */
+#define WM_MATCH_MOVE_NAME_SND 0xBBu
+
 typedef struct {
     wm_arcade_actor_t actors[WM_MATCH_MAX_ACTORS];
     wm_arcade_drone_state_t drones[WM_MATCH_MAX_ACTORS];
@@ -352,6 +356,26 @@ typedef struct {
     WmRng *anim_rng;
     void *anim_sound_user;
     void (*anim_sound)(void *user, uint16_t call);
+    /*
+     * The two SOUND_PID processes a match starts, which are not one-shot
+     * calls and so cannot go through anim_sound: each is a little state
+     * machine that owns a channel over several seconds. They live on
+     * whoever owns the mixer (the app), and the match says WHEN.
+     *
+     *   ring_bell        LIFEBAR.ASM:2511 at the start of the match and
+     *                    :3136 in reset_for_round -- three rings a third
+     *                    of a second apart, the second and third forced
+     *                    onto the first one's channel "to conserve
+     *                    tracks".
+     *   END_MATCH_SPEECH AWARD.ASM:1835, inside pin_prompt: "do the
+     *                    obnoxious PIN HIM! crap". Killed again by
+     *                    DNKSEQ2.ASM:5212's win_announce, which is
+     *                    KILL_PIN_HIM.
+     */
+    void *sound_proc_user;
+    void (*start_bell)(void *user);
+    void (*start_pin_him)(void *user);
+    void (*kill_pin_him)(void *user);
     /*
      * AWARD.ASM round_award, through JJXM.H's RND_AWARD macro. The award
      * arrays are per credit rather than per match, so the app owns them;

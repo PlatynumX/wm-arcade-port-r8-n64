@@ -279,7 +279,7 @@ static bool start_if_new(wm_visual_state *state, const wm_visual_sequence *seq) 
  * rather than from a second hand-written table, so a label can never drift
  * away from the sequence it names.
  */
-static int anim_id_for_label(const char *label) {
+int wm_bret_anim_id_for_label(const char *label) {
     int id;
     if (!label) return -1;
     /* WRESTLE2.ASM:3443 start_run_anim is a state-setup routine with no WL
@@ -742,7 +742,7 @@ static void wm_bret_backend_tick_program(wm_bret_backend_actor *bva,
      * clear for the same reason.
      */
     if (bva->prog.become) {
-        int next = anim_id_for_label(bva->prog.become);
+        int next = wm_bret_anim_id_for_label(bva->prog.become);
         bva->prog.become = NULL;
         bva->prog.program = NULL;
         actor->anim_mode &= (uint16_t)~(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);

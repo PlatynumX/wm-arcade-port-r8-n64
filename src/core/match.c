@@ -1,4 +1,5 @@
 #include "wm/match.h"
+#include "wm/bret_backend.h"
 #include "wm/arcade/wm_arcade_roster_anims.h"
 #include "wm/arcade/wm_arcade_react_anims.h"
 #include "wm/arcade/wm_arcade_react5_core.h"
@@ -691,7 +692,33 @@ static void match_tick_smoves_for(wm_match_state *m, unsigned ai) {
         if (fire.victim && fire.victim_immobilize > 0)
             fire.victim->immobilize_time = fire.victim_immobilize;
         if (fire.anim) {
-            a->special_move_addr = (uintptr_t)fire.anim;
+            /*
+             * `move a14,*a8(SPECIAL_MOVE_ADDR),L` -- the monitor queues
+             * the animation and the wrestler's own process picks it up,
+             * WRESTLE.ASM:3843 move_wrestler.
+             *
+             * What goes in the field is not the same thing for everyone,
+             * and getting that wrong was silent. Seven wrestlers are
+             * label-driven, so the label pointer IS the address, exactly
+             * as the source stores one. Bret is not: his backend selects
+             * by a typed id and reads this field back as one
+             * (wm_arcade_bret.c's `id = (wm_arcade_bret_anim_id_t)
+             * a->special_move_addr`), so handing him a pointer made him
+             * decode it as an id -- a garbage id, which
+             * secret_move_sets_mode_uninit then treated as a secret
+             * move and latched MODE_UNINT|MODE_NOAUTOFLIP on him
+             * permanently. Every later charge and free special move was
+             * refused by its own G_UNINT guard from then on, and nothing
+             * ever cleared it. His three monitors were the only ones
+             * that could reach this, and they could not reach anything
+             * at all until the process-order fix above let them fire.
+             */
+            if (a->wrestler_num == WM_ROSTER_BRET) {
+                int id = wm_bret_anim_id_for_label(fire.anim);
+                if (id >= 0) a->special_move_addr = (uintptr_t)id;
+            } else {
+                a->special_move_addr = (uintptr_t)fire.anim;
+            }
             match_change_anim(a, fire.anim, m);
         }
     }

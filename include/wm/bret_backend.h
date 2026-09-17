@@ -14,6 +14,17 @@ extern "C" {
 #endif
 
 /*
+ * Bret's animation id for a source routine name, or -1.
+ *
+ * His backend selects by a typed id where the other seven select by
+ * label, so anything handing him a label -- a program's `become`, or a
+ * generic special-move monitor's `anim` -- has to come back through
+ * here first. It is derived from his own id->sequence resolver rather
+ * than a second table, so the two cannot drift.
+ */
+int wm_bret_anim_id_for_label(const char *label);
+
+/*
  * The "merge adapter" wm_arcade_bret.h's own comment anticipates: resolves
  * BRET.ASM's wm_arcade_bret_anim_id_t tokens to the native wm_visual_sequence
  * data already extracted from the arcade assets (src/generated/bret_visuals.c,

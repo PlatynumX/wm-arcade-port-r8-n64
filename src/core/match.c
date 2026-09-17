@@ -558,6 +558,44 @@ static void match_end_winstreak_award(void *user) {
         wm_award_check_winstreak(&m->awards, p);
 }
 
+/*
+ * AWARD.ASM:1121 arm_winstreak_award, plus the copy the port's own split
+ * makes necessary.
+ *
+ * In the source there is ONE win streak per player -- @p1winstreak --
+ * and both the match code and the award code read it. This port holds
+ * the match's copy in wm_match_streaks_t and the award subsystem's in
+ * wm_award_state::win_streak, and nothing ever wrote the second. That
+ * mattered: show_bonus_icons resets a player's accumulated icon total
+ * whenever his streak is zero, so with the award copy stuck at zero the
+ * between-match bonus screen wiped the total every time and showed
+ * nothing. The two are written together here, where the source writes
+ * its one.
+ */
+static void match_end_arm_winstreak(void *user, unsigned player,
+                                    int32_t streak) {
+    wm_match_state *m = (wm_match_state *)user;
+    if (!m) return;
+    wm_award_set_win_streak(&m->awards, player, (uint16_t)streak);
+    wm_award_arm_winstreak(&m->awards, player, (uint16_t)streak);
+}
+
+/* create_end_rnd_awards' `callr adjust_perfects`. */
+static void match_end_adjust_perfects(void *user) {
+    wm_match_state *m = (wm_match_state *)user;
+    if (!m) return;
+    wm_award_adjust_perfects_and_blocks(&m->awards);
+}
+
+/* ...and its `clr a8 / callr total_icons / movk 1,a8 / callr total_icons`. */
+static void match_end_total_icons(void *user) {
+    wm_match_state *m = (wm_match_state *)user;
+    unsigned p;
+    if (!m) return;
+    for (p = 0; p < WM_AWARD_PLAYER_COUNT; ++p)
+        wm_award_total_icons(&m->awards, p);
+}
+
 /* increment_wincount's `rst_winstreak_awards` for a streak that just
    went to zero. */
 static void match_end_reset_winstreak_rows(void *user, unsigned mask) {
@@ -566,6 +604,48 @@ static void match_end_reset_winstreak_rows(void *user, unsigned mask) {
     if (!m) return;
     for (p = 0; p < WM_AWARD_PLAYER_COUNT; ++p)
         if (mask & (1u << p)) wm_award_reset_winstreak(&m->awards, p);
+}
+
+/*
+ * LIFEBAR.ASM:2810-2825, the two MATCH awards -- the block between
+ * set_winner and CALL_MATCH_OVER, which is upstream of DO_WAIT and had
+ * no translation at all. Nothing in this port ever called match_award,
+ * so no match-level award existed: TWO_RND_AWD, PERFECT_AWD and (for
+ * want of arming, above) FIVE_WINS_AWD were all unreachable, and with
+ * them the whole match[] half of the award state stayed whatever the
+ * per-round accumulation had left in it.
+ *
+ * `a10` is what set_winner found: "PLYRNUM of a wrestler on the winning
+ * team. The pinner if there is one." match_award then reads his own
+ * PLYRNUM and refuses anybody from slot 2 up, so only a human scores
+ * one; PLYR_SIDE picks the row. This takes the winning SIDE from the
+ * score, which is the same answer for the case the port can reach --
+ * one human a side -- and says so rather than pretending to have the
+ * pinner's process.
+ */
+static void match_grant_match_awards(wm_match_state *m,
+                                     wm_arcade_actor_t *const *actors) {
+    int32_t side;
+    unsigned p;
+
+    if (!m || m->score.match_winner <= 0) return;
+    side = m->score.match_winner - 1;     /* 1-or-2 -> PLYR_SIDE */
+
+    /* match_award's own `cmpi 2,a9 / jrge #ma_out`: a drone cannot be
+       awarded anything, so the winning side only scores if a human is
+       playing on it. PSTATUS is one bit per human player and the port's
+       player index doubles as PLYR_SIDE for the humans. */
+    p = (unsigned)side;
+    if (p >= WM_AWARD_PLAYER_COUNT) return;
+    if ((m->pstatus & (1 << p)) == 0) return;
+
+    if (wm_match_two_round_victory(&m->score, m->eight_on_one))
+        wm_award_match_award(&m->awards, p, WM_AWARD_TWO_ROUND);
+
+    /* `callr is_perfect / jrnc #not_perfect`. The CREATE_PERFECT
+       graphic and its SLEEP 55+50 are presentation and are not here. */
+    if (wm_match_is_perfect(actors, m->actor_count, side, m->eight_on_one))
+        wm_award_match_award(&m->awards, p, WM_AWARD_PERFECT);
 }
 
 /* The two sounds DO_WAIT makes itself, through triple_sound. */
@@ -1523,10 +1603,14 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
            bar, so there is nothing to wait for. */
         mec.awards_done = true;
         mec.user = m;
+        mec.royal_rumble = m->royal_rumble;
         mec.run_awards = match_end_awards;
         mec.run_winstreak_award = match_end_winstreak_award;
         mec.reset_winstreak_rows = match_end_reset_winstreak_rows;
         mec.sound = match_end_sound;
+        mec.arm_winstreak = match_end_arm_winstreak;
+        mec.adjust_perfects = match_end_adjust_perfects;
+        mec.total_icons = match_end_total_icons;
         /*
          * LIFEBAR.ASM:2985, the last thing DO_WAIT does before it
          * dies: `MOVK 2,A0 / move a0,@match_over`. Until this the
@@ -2105,7 +2189,13 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
              * finished match was a dead end -- exactly the shape of
              * bug the round reset just fixed, one level up.
              */
-            else wm_match_end_start(&m->match_end);
+            else {
+                /* LIFEBAR.ASM grants these two in announce_rnd_winner,
+                   a few lines before CALL_MATCH_OVER -- so before the
+                   DO_WAIT sequence this call starts, not inside it. */
+                match_grant_match_awards(m, actor_ptrs);
+                wm_match_end_start(&m->match_end);
+            }
         }
         /*
          * WRESTLE2.ASM:4235 `CREATE PINHIM_ANIM_PID,pin_prompt`, on the

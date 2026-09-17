@@ -75,6 +75,44 @@ typedef struct {
 unsigned wm_match_increment_wincount(wm_match_streaks_t *st,
                                      int32_t match_winner, int32_t pstatus);
 
+/* ---- the two MATCH awards (LIFEBAR.ASM:2810-2825) ---------------- */
+
+/*
+ * `MATCH_AWARD a10,TWO_RND_AWD`, and the gate above it:
+ *
+ *     move  @p1rounds,a0
+ *     move  @p2rounds,a3
+ *     or    a0,a3
+ *     cmpi  2,a3
+ *     jrnz  #no_2_rnd_victory
+ *     calla is_8_on_1
+ *     jrc   #no_2_rnd_victory
+ *
+ * The test is a bitwise OR of the two round counts against 2, not "the
+ * winner has two and the loser none", and the difference is real: a 2-0
+ * gives 2 either way round, while a 2-1 gives 3 and misses. So it is a
+ * straight-rounds sweep, reached by an odd route. An eight-on-one never
+ * counts, however it was won.
+ */
+bool wm_match_two_round_victory(const wm_arcade_match_score_t *score,
+                                bool eight_on_one);
+
+/*
+ * LIFEBAR.ASM:3650 is_perfect, the gate on `MATCH_AWARD a10,PERFECT_AWD`.
+ *
+ * An eight-on-one is never perfect (`calla is_8_on_1 / jrc #final`, and
+ * #final is the clrc). Otherwise it walks process_ptrs for NUM_WRES
+ * entries, skipping empty slots and everybody on the other PLYR_SIDE,
+ * and any TEAMMATE whose health is not LIFE_MAX loses it. Note it is the
+ * winning SIDE that has to be untouched, not the winning wrestler: in a
+ * two-on-one, a partner who got hit costs the award.
+ *
+ * `winner_side` is a PLYR_SIDE (0 or 1), not LIFEBAR's 1-or-2
+ * match_winner.
+ */
+bool wm_match_is_perfect(wm_arcade_actor_t *const *actors, size_t actor_count,
+                         int32_t winner_side, bool eight_on_one);
+
 /* ---- the end-of-round graphic index (LIFEBAR.ASM:2872) ----------- */
 
 /*
@@ -165,6 +203,11 @@ typedef struct {
     bool tip_due;
     /* The winner's theme, or -1 before WM_MEND_TIP. */
     int tune;
+    /* WM_MEND_AWARD_BAR is re-entered every tick while it polls
+       awards_done, so its one-shot half -- check_for_award_for_winstreak
+       and adjust_perfects, each of which the source runs exactly once --
+       is gated on this rather than on the phase. */
+    bool bar_started;
 } wm_match_end_t;
 
 void wm_match_end_init(wm_match_end_t *st);
@@ -182,6 +225,10 @@ typedef struct {
     /* Whether the caller's award bar has finished
        (@award_ok_to_die >= 3). True when there is none to wait for. */
     bool awards_done;
+    /* create_end_rnd_awards' own first line is `move @royal_rumble,a14 /
+       jrz #cera_ok / DIE`, so in a rumble neither adjust_perfects nor
+       total_icons runs at all. */
+    bool royal_rumble;
     void *user;
     /* The five award routines, in the order the source calls them.
        Any may be NULL. */
@@ -190,6 +237,25 @@ typedef struct {
     /* rst_winstreak_awards for each player whose streak was cleared. */
     void (*reset_winstreak_rows)(void *user, unsigned player_mask);
     void (*sound)(void *user, int sound);
+    /*
+     * AWARD.ASM:1121 arm_winstreak_award, called by increment_wincount
+     * with each player's NEW streak whether it went up or to zero -- it
+     * arms on a non-zero multiple of five and disarms otherwise. This
+     * header has described that call since it was written and nothing
+     * made it, so nothing was ever armed and the FIVE_WINS award that
+     * run_winstreak_award exists to grant could never fire.
+     */
+    void (*arm_winstreak)(void *user, unsigned player, int32_t streak);
+    /*
+     * create_end_rnd_awards' own two decisions, as opposed to its bars:
+     * `callr adjust_perfects` the moment the process starts, and
+     * `callr total_icons` for each player once the bars have finished
+     * (@award_ok_to_die == 1). Without the second the accumulated icon
+     * total stays zero forever, so the bonus the select screen shows
+     * between matches is always nothing.
+     */
+    void (*adjust_perfects)(void *user);
+    void (*total_icons)(void *user);
 } wm_match_end_ctx_t;
 
 /* One tick. Returns true on the tick the match finishes (the phase

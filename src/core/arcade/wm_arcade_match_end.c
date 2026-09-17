@@ -3,6 +3,7 @@
  * wm/arcade/wm_arcade_match_end.h.
  */
 #include "wm/arcade/wm_arcade_match_end.h"
+#include "wm/arcade/wm_arcade_lifebar.h"
 
 #include <stddef.h>
 #include <string.h>
@@ -38,6 +39,39 @@ unsigned wm_match_increment_wincount(wm_match_streaks_t *st,
     if (st->p2winstreak == 0) cleared |= 2u;
 
     return cleared;
+}
+
+bool wm_match_two_round_victory(const wm_arcade_match_score_t *score,
+                                bool eight_on_one) {
+    if (!score) return false;
+    /* `or a0,a3 / cmpi 2,a3 / jrnz #no_2_rnd_victory` -- a bitwise OR,
+       not a sum and not a comparison of the winner's count. 2|0 is 2
+       whichever side swept; 2|1 is 3 and misses. */
+    if ((score->p1rounds | score->p2rounds) != WM_MATCH_ROUNDS_TO_WIN)
+        return false;
+    /* `calla is_8_on_1 / jrc #no_2_rnd_victory`. */
+    return !eight_on_one;
+}
+
+bool wm_match_is_perfect(wm_arcade_actor_t *const *actors, size_t actor_count,
+                         int32_t winner_side, bool eight_on_one) {
+    size_t i;
+
+    /* `calla is_8_on_1 / jrc #final`, and #final is the clrc. */
+    if (eight_on_one) return false;
+    if (!actors) return false;
+
+    for (i = 0; i < actor_count; ++i) {
+        const wm_arcade_actor_t *a = actors[i];
+        if (!a || !a->active) continue;                 /* `jrz #nxt` */
+        if (a->player_side != winner_side) continue;    /* "skip enemies" */
+        /* "injured guy found. return !c" */
+        if (a->life != WM_ARCADE_LIFE_MAX) return false;
+    }
+    /* "no injured teammates found. return c" -- including the case where
+       the sweep found no teammates at all, which the source reaches the
+       same way. */
+    return true;
 }
 
 int wm_match_end_round_index(const wm_arcade_match_score_t *score) {
@@ -118,6 +152,17 @@ bool wm_match_end_tick(wm_match_end_t *st, const wm_match_end_ctx_t *ctx) {
             cleared = wm_match_increment_wincount(
                 ctx->streaks,
                 ctx->score ? ctx->score->match_winner : 0, ctx->pstatus);
+        /*
+         * AWARD.ASM:1121 arm_winstreak_award, called for BOTH players
+         * with the value increment_wincount just wrote -- on a loss
+         * that value is zero, which disarms. The source calls it from
+         * inside increment_wincount; it is here because the streaks
+         * belong to the caller's state rather than to this routine.
+         */
+        if (ctx->arm_winstreak && ctx->streaks) {
+            ctx->arm_winstreak(ctx->user, 0u, ctx->streaks->p1winstreak);
+            ctx->arm_winstreak(ctx->user, 1u, ctx->streaks->p2winstreak);
+        }
         if (cleared && ctx->reset_winstreak_rows)
             ctx->reset_winstreak_rows(ctx->user, cleared);
         /* replace_wins draws the win-count text here; not translated. */
@@ -151,9 +196,24 @@ bool wm_match_end_tick(wm_match_end_t *st, const wm_match_end_ctx_t *ctx) {
     case WM_MEND_AWARD_BAR:
         /* `#end`: check_for_award_for_winstreak, then the award bar,
            then `#wait_awards_dead` -- a poll on @award_ok_to_die
-           reaching 3, which the caller answers. */
-        if (ctx->run_winstreak_award) ctx->run_winstreak_award(ctx->user);
+           reaching 3, which the caller answers.
+
+           The one-shot half is gated on bar_started because this phase
+           is re-entered on every polling tick: the source runs each of
+           these exactly once, when the process starts. */
+        if (!st->bar_started) {
+            st->bar_started = true;
+            if (ctx->run_winstreak_award) ctx->run_winstreak_award(ctx->user);
+            /* create_end_rnd_awards' own first act, after the rumble
+               DIE: `callr adjust_perfects`. */
+            if (!ctx->royal_rumble && ctx->adjust_perfects)
+                ctx->adjust_perfects(ctx->user);
+        }
         if (!ctx->awards_done) return false;      /* still polling */
+        /* `#no_state_advance`: once @award_ok_to_die is 1 the bars are
+           done and total_icons runs for player 0 then player 1. */
+        if (!ctx->royal_rumble && ctx->total_icons)
+            ctx->total_icons(ctx->user);
         st->phase = (uint8_t)WM_MEND_TIP;
         st->sleep_left = WM_MEND_AWARD_WAIT;
         break;

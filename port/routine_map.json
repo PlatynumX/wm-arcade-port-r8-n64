@@ -228,12 +228,6 @@
   "symbol": "wm_award_accumulate_round",
   "note": "Folds the round arrays into the match arrays, inverting the blocks award on the way."
  },
- "adjust_perfects": {
-  "file": "AWARD.ASM",
-  "status": "renamed",
-  "symbol": "wm_award_adjust_perfects_and_blocks",
-  "note": "The source's name undersells it: it adjusts blocks as well, in a second and differently-shaped pass."
- },
  "get_num_awards": {
   "file": "AWARD.ASM",
   "status": "renamed",

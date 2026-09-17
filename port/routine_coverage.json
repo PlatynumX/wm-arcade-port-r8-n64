@@ -2905,10 +2905,10 @@
    "local": false,
    "external_callers": 0,
    "references": 2,
-   "status": "renamed",
-   "evidence": "wm_award_adjust_perfects_and_blocks",
+   "status": "implemented",
+   "evidence": "adjust_perfects",
    "from_generated": false,
-   "ledgered": true
+   "ledgered": false
   },
   {
    "name": "adjust_taker_facing",
@@ -31323,7 +31323,7 @@
    "external_callers": 0,
    "references": 2,
    "status": "implemented",
-   "evidence": "wm_award_total_icons",
+   "evidence": "match_end_total_icons",
    "from_generated": false,
    "ledgered": false
   },

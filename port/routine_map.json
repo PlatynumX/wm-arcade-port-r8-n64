@@ -2457,8 +2457,9 @@
  },
  "arw_bwait": {
   "file": "LIFEBAR.ASM",
-  "status": "display",
-  "note": "The arrow that waits for a button on the between-rounds screen."
+  "status": "renamed",
+  "symbol": "wm_arcade_round_announce_tick",
+  "note": "LIFEBAR.ASM:2695, and NOT an arrow -- `arw` is announce_rnd_winner, whose SLEEP 90 this label is the far side of. It is where the round-announce process parks while somebody is attempting a buckoff, and where an ANI_LOOP with DID_PIN set wakes it up early (\"they'll check and see if we're sleeping at arw_bwait, and if we are, they'll wake us up right away\"). Translated as WM_ARW_BUCKOFF_WAIT inside wm_arcade_round_announce_tick. The note here used to read \"the arrow that waits for a button on the between-rounds screen\", which was read off the name and was wrong in every part."
  },
  "flash_2ndwind": {
   "file": "LIFEBAR.ASM",
@@ -2519,5 +2520,26 @@
   "status": "renamed",
   "symbol": "wm_app_start_game_over",
   "note": "LIFEBAR.ASM:2996 #do_game_over and SELECT.ASM:1190 do_game_over -- two routines of the same name, the SELECT one being what the declined continue runs. It sets GAMSTATE to INGAMEOVER and holds the GAME OVER graphic for its dwell before handing back to attract mode. wm_app_start_game_over is that transition; wm/app.h's game_over_ticks is the dwell."
+ },
+ "announce_rnd_winner": {
+  "file": "LIFEBAR.ASM",
+  "status": "renamed",
+  "symbol": "wm_arcade_round_announce_tick",
+  "note": "LIFEBAR.ASM:2642, the process win_announce creates, and where a round actually ends when somebody is pinned rather than when the pin countdown runs out. It was already translated -- wm/arcade/wm_arcade_round_announce.h names it as the routine it carries, down to the round award and the end-of-match announcement -- and it never appeared in this accounting at all because its SUBR line ends in a `;process` comment, which the collector's end-of-line anchor refused. 73 routines came back when that was fixed."
+ },
+ "CREATE_REVERSAL_MESS": {
+  "file": "LIFEBAR.ASM",
+  "status": "display",
+  "note": "LIFEBAR.ASM:3583. The whole body is a screen message and a sound: an is_there_one_already guard, then CREATE a MESSAGE_PID running SPECIAL_MESSAGE with the REVERS string at 1801h, then triple_sound 0BBh. Its only caller is the CREATE three lines above it. Nothing in it is gameplay, and there is no renderer here to put the word on screen."
+ },
+ "anims_franim": {
+  "file": "UTIL.ASM",
+  "status": "display",
+  "note": "UTIL.ASM:941. Walks OBJLST for the object with a given OID and runs FRANIMQ over a FRAN list on it, A11 times or forever when A11 is negative. Object/DMA frame animation, which belongs to the renderer, and unrelated to the ANIM.ASM wrestler animation stream this port does run."
+ },
+ "pal_fadeae": {
+  "file": "PAL.ASM",
+  "status": "display",
+  "note": "PAL.ASM:744. pal_fade with the IRQSKYE background palette and irqskyeo baked in -- it loads those two and jumps into pal_fade's own body at pf1c. The arithmetic is pal_fade's, which wm/arcade/wm_arcade_pal.h translates; all this entry point adds is which hardware palette gets faded, and the sky is the renderer's."
  }
 }

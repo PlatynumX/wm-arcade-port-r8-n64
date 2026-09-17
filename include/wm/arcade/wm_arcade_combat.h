@@ -283,6 +283,20 @@ struct wm_arcade_actor {
     uint32_t climb_start;
     uint32_t climb_last;
     /*
+     * PLYR.EQU:223-224 PUPPET_TIME/PUPPET_TICKS, "used by mode_puppet
+     * watchdog" and read by nothing else in the source. The PCNT of the
+     * last tick he was checked, and how many consecutive ticks the
+     * current run of them has lasted -- see wm/arcade/wm_arcade_modes.h.
+     *
+     * Both are declared WORD, and the run-length test is a comparison
+     * against exactly 1, so the arithmetic is done in that width here
+     * too: a PCNT that has wrapped past 65535 restarts the run instead
+     * of matching, which is what the source's own word subtraction
+     * does.
+     */
+    uint16_t puppet_time;
+    uint16_t puppet_ticks;
+    /*
      * PLYR.EQU CUR_FRAME as do_roll writes it: the frame a wrestler shows
      * while his own animation is parked. It is not the puppet field above
      * -- that is an ATTACKER choosing the frame; this is the wrestler

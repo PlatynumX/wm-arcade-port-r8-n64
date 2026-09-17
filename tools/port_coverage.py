@@ -54,9 +54,19 @@ PORT_DIRS = ("include", "src")
 # origin recorded.
 GENERATED = "src/generated/"
 
+# Matched against comment-stripped text, never raw source. Anchoring on
+# end-of-line is right -- `SUBR` takes one operand, so anything else on
+# the line means it is not a definition -- but a TRAILING COMMENT is not
+# "anything else", and this used to be run over the raw file. 73 real
+# routines were invisible to the whole accounting as a result, among
+# them DOINK.ASM's `SUBR mode_puppet ;20 (used by everyone)` and
+# TAKER.ASM's `SUBR mode_choking ;25`, and every one of ROPES.ASM's
+# rope-wobble variants. The totals balanced only because the routines
+# were never counted on either side. See _subr_text.
 SUBR_RE = re.compile(
     r"^[ \t]*SUBR(P?)[ \t]+(#?)([A-Za-z_][A-Za-z0-9_]*):?[ \t]*$",
     re.I | re.M)
+# Also matched against comment-stripped text -- see SUBR_RE.
 SUBR_LINE_RE = re.compile(
     r"^[ \t]*SUBRP?[ \t]+#?[A-Za-z_][A-Za-z0-9_]*:?[ \t]*$", re.I)
 
@@ -238,6 +248,17 @@ def unassembled_routines() -> dict[str, str]:
 # ------------------------------------------------------------------ #
 # the source side
 
+def _subr_text(path: pathlib.Path) -> str:
+    """A file with its comments stripped, line numbering preserved.
+
+    SUBR_RE anchors on end-of-line and has to, so it must not see a
+    trailing comment. Stripping line by line and rejoining keeps
+    `text.count("\n", 0, m.start())` a true line number.
+    """
+    return "\n".join(wlanim.strip_comment(line)
+                     for line in path.read_text(errors="replace").splitlines())
+
+
 def source_routines() -> dict[str, list[tuple[str, int, bool]]]:
     """{name: [(file, line, is_local)]} for every SUBR in the tree."""
     linked = linked_asm()
@@ -245,7 +266,7 @@ def source_routines() -> dict[str, list[tuple[str, int, bool]]]:
     for path in sorted(wlanim.ORIG.glob("*.ASM")):
         if linked and path.name.upper() not in linked:
             continue
-        text = path.read_text(errors="replace")
+        text = _subr_text(path)
         for m in SUBR_RE.finditer(text):
             line = text.count("\n", 0, m.start()) + 1
             out[m.group(3)].append((path.name, line, bool(m.group(2))))
@@ -274,9 +295,12 @@ def reference_counts() -> tuple[collections.Counter, collections.Counter]:
     for path in sorted(wlanim.ORIG.glob("*.ASM")):
         if linked and path.name.upper() not in linked:
             continue
-        text = path.read_text(errors="replace")
         body_lines = []
-        for line in text.splitlines():
+        for raw in path.read_text(errors="replace").splitlines():
+            # Comment-stripped for the same reason SUBR_RE is: a
+            # `SUBR name ;comment` line did not match SUBR_LINE_RE, so
+            # the definition was counted as a reference to itself.
+            line = wlanim.strip_comment(raw)
             if re.match(r"^\s*\.(ref|def|globl)\b", line, re.I):
                 continue
             if SUBR_LINE_RE.match(line):

@@ -57,6 +57,7 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_closest.c
     src/core/arcade/wm_arcade_combat.c
     src/core/arcade/wm_arcade_confine.c
+    src/core/arcade/wm_arcade_modes.c
     src/core/arcade/wm_arcade_und_finish.c
     src/core/arcade/wm_arcade_veladd.c
     src/core/arcade/wm_arcade_roll.c

@@ -17,8 +17,10 @@ static void test_shape(void)
     int i;
 
     /* 38 until the extractor learned to read `#local` heads as well as
-       global ones; most of these tables are written that way. */
-    assert(wm_roster_anim_table_count == 64);
+       global ones -- most of these tables are written that way -- and 64
+       until it learned that `REFLONG a,b` is two longs and that several
+       identical definitions of a name are not ambiguous. */
+    assert(wm_roster_anim_table_count == 72);
     for (i = 0; i < wm_roster_anim_table_count; ++i) {
         const wm_roster_anim_table *t = &wm_roster_anim_tables[i];
         assert(t->name && t->file && t->row);
@@ -34,6 +36,64 @@ static void test_shape(void)
     assert(wm_roster_anim_for(NULL, 0) == NULL);
     assert(wm_roster_anim_col(NULL, 0, 0) == NULL);
     assert(wm_roster_anim_facing(NULL, 0, 1) == NULL);
+}
+
+/*
+ * mode_puppet's own table (DOINK.ASM:3594 `#stand_tbl`), which was not
+ * here at all until two bugs in tools/wlrostertbl.py were fixed: it
+ * OPENS with a two-label `REFLONG` row, which the extractor refused and
+ * which broke the whole block; and its use site spells it
+ * `FACE24TBL #stand_tbl`, which could not match a name kept with its
+ * `#`, so even once read it was typed as a bare column pair instead of
+ * a facing pair.
+ *
+ * Its contents are worth pinning beside wm_ani_init_rows, which carries
+ * the same nine wrestlers' stand2/stand4 from each `*_ani_init`: the
+ * two agree label for label, which is the check that says this is read
+ * out of the source rather than derived from the wrestler prefix.
+ */
+static void test_the_puppet_watchdog_stand_table(void)
+{
+    const wm_roster_anim_table *t = wm_roster_anim_find("#stand_tbl");
+
+    assert(t);
+    assert(t->columns == 2);
+    assert(t->kind == WM_ROSTER_COL_FACING);
+    assert(t->slots == 9);              /* no Referee row */
+    assert(strcmp(wm_roster_anim_facing(t, 0, 1), "hrt_stand2_anim") == 0);
+    assert(strcmp(wm_roster_anim_facing(t, 0, 0), "hrt_stand4_anim") == 0);
+    assert(strcmp(wm_roster_anim_facing(t, 3, 0), "yok_stand4_anim") == 0);
+    assert(strcmp(wm_roster_anim_facing(t, 8, 1), "lex_stand2_anim") == 0);
+    /* Adam Bomb's row is a real `.long 0,0`. */
+    assert(wm_roster_anim_facing(t, WM_ROSTER_ANIM_ADAM_BOMB, 0) == NULL);
+    assert(wm_roster_anim_facing(t, WM_ROSTER_ANIM_ADAM_BOMB, 1) == NULL);
+}
+
+/*
+ * #faced_tbl is defined three times -- BAMSEQ3, DNKSEQ3, UNDSEQ3 -- and
+ * the three agree, so the refusal rule has nothing to protect and it is
+ * read. UNDSEQ3 writes it entirely with `.long` and packs the last
+ * three entries onto one line, the other two use `REFLONG` with two
+ * labels on some rows; the rows are compared after parsing, so the
+ * spelling does not enter into it.
+ */
+static void test_identically_defined_tables_are_available(void)
+{
+    const wm_roster_anim_table *t = wm_roster_anim_find("#faced_tbl");
+
+    assert(t);
+    assert(t->columns == 1);
+    assert(t->slots == 9);
+    assert(strcmp(wm_roster_anim_for(t, 0), "hrt_break_face_anim") == 0);
+    assert(strcmp(wm_roster_anim_for(t, 1), "rzr_break_face_anim") == 0);
+    assert(strcmp(wm_roster_anim_for(t, 8), "lex_break_face_anim") == 0);
+    assert(wm_roster_anim_for(t, WM_ROSTER_ANIM_ADAM_BOMB) == NULL);
+
+    /* Sixteen identical definitions, and it comes in the same way. */
+    assert(wm_roster_anim_find("#headheld_tbl") != NULL);
+    /* A name whose definitions really DO conflict is still refused:
+       REACT4.ASM carries #head_hit2 twice, with different rows. */
+    assert(wm_roster_anim_find("#head_hit2") == NULL);
 }
 
 static void test_face24_tables_are_facing_pairs(void)
@@ -278,6 +338,8 @@ static void test_the_six_climb_tables_are_all_there(void)
 int main(void)
 {
     test_shape();
+    test_the_puppet_watchdog_stand_table();
+    test_identically_defined_tables_are_available();
     test_the_cut_wrestler_and_the_referee();
     test_yokozuna_has_no_turnbuckle_fall();
     test_the_six_climb_tables_are_all_there();

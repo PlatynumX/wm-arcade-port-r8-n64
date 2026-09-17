@@ -83,7 +83,22 @@ LOCAL_START_RE = re.compile(r"^\s*(#[A-Za-z_][A-Za-z0-9_]*):?\s*$")
 LONG_RE = re.compile(r"^\s*\.long\s+(.+)$", re.I)
 # REFLONG expands to `.globl label` + `.long label` (MACROS.H:45), so a
 # REFLONG line is one table row that also exports the name.
-REFLONG_RE = re.compile(r"^\s*REFLONG\s+([A-Za-z_][A-Za-z0-9_]*)\s*$", re.I)
+#
+# It is declared with ONE parameter and invoked with two on 44 lines in
+# the tree, which reads like a mistake and is not: the assembler
+# substitutes the argument text, so `REFLONG a,b` expands to
+# `.globl a,b` + `.long a,b` and emits BOTH longs. REACT4.ASM:429
+# #head_hit2 proves it -- rows 0 and 8 are `REFLONG a,b` and the other
+# eight are `.long a,b`, in one FACE24TBL table whose every row is two
+# longs wide. Were REFLONG emitting one long, those two rows would be
+# half-width and every wrestler after Bret would draw the wrong
+# animation.
+#
+# This used to accept a single label only, so a two-label row matched
+# nothing, fell through to the `.long` test, and BROKE THE BLOCK -- and
+# since both #head_hit2 and DOINK.ASM's #stand_tbl open with one, those
+# tables were not merely truncated, they were lost whole.
+REFLONG_RE = re.compile(r"^\s*REFLONG\s+(.+)$", re.I)
 # Declarations, not data. knee_hit_tbl (REACT3.ASM:223) puts eight `.ref`
 # lines between its label and its rows; reading them as the end of the
 # table loses the table entirely.
@@ -163,7 +178,7 @@ def _blocks(path: pathlib.Path):
                 continue
             rm = REFLONG_RE.match(lines[j])
             if rm:
-                rows.append(rm.group(1))
+                rows += [t.strip() for t in rm.group(1).split(",") if t.strip()]
                 j += 1
                 continue
             lm = LONG_RE.match(lines[j])
@@ -194,12 +209,22 @@ def roster_tables() -> dict[str, tuple[str, int, list[str | None]]]:
 
     out: dict[str, tuple[str, int, list[str | None]]] = {}
     for name, defs in sorted(seen.items()):
-        if len(defs) != 1:
-            # Defined more than once: block-scoped, and only a use site
-            # can say which one a given caller means. wlpuppet.py's
-            # resolution handles those. This is why most `#local` names
-            # are refused -- #headheld_tbl has sixteen definitions and
-            # #flyout_tbl seven -- while the ones defined once are read.
+        # Defined more than once: block-scoped, and only a use site can
+        # say which one a given caller means. wlpuppet.py's resolution
+        # handles those. This is why most `#local` names are refused --
+        # #headheld_tbl has sixteen definitions and #flyout_tbl seven --
+        # while the ones defined once are read.
+        #
+        # Unless every definition says THE SAME THING, in which case
+        # there is nothing for a use site to disambiguate and the rule
+        # has nothing to protect. #faced_tbl is the case: BAMSEQ3.ASM,
+        # DNKSEQ3.ASM and UNDSEQ3.ASM each carry it and the nine rows
+        # are identical, only written with different macros and line
+        # breaks (UNDSEQ3 packs `dnk,0,lex` onto one `.long`). Rows are
+        # compared after parsing, so the spelling of the source line
+        # does not enter into it.
+        bodies = {tuple(rows) for _f, _l, rows in defs}
+        if len(bodies) != 1:
             continue
         fname, line, rows = defs[0]
         facings = _facings(rows)
@@ -226,6 +251,17 @@ def face24_operands() -> set[str]:
             for raw in path.read_text(errors="replace").splitlines():
                 m = _FACE24_RE.match(wlanim.strip_comment(raw))
                 if m:
+                    # Both spellings. The stripped one is what lets a
+                    # `FACE24TBL #x` use site speak for a table defined
+                    # as the global `x`; keeping the exact text is what
+                    # lets a LOCAL table be recognised by its own use
+                    # site, since roster_tables() keys those on the name
+                    # WITH the `#`. Storing only the stripped form meant
+                    # `FACE24TBL #stand_tbl` could never match
+                    # `#stand_tbl`, so a real facing pair was demoted to
+                    # WM_ROSTER_COL_PAIR and its two columns lost their
+                    # up/down meaning.
+                    names.add(m.group(1))
                     names.add(m.group(1).lstrip("#"))
         _FACE24_CACHE = names
     return _FACE24_CACHE
@@ -283,13 +319,21 @@ def _facings(rows: list[str]) -> int | None:
 
 
 def _ambiguous() -> dict[str, int]:
-    seen: dict[str, int] = collections.Counter()
+    """Names with more than one DISTINCT body, and how many they have.
+
+    Same rule roster_tables() applies, and stated once here so the two
+    cannot drift: a name defined several times is only ambiguous when
+    the definitions actually disagree. Several identical ones leave
+    nothing for a use site to choose between -- #headheld_tbl has
+    sixteen and they all match.
+    """
+    seen: dict[str, set[tuple[str, ...]]] = collections.defaultdict(set)
     for path in sorted(wlanim.ORIG.glob("*.ASM")):
         for name, _line, rows in _blocks(path):
             if _facings(rows) is not None and \
                sum(1 for r in rows if r.endswith("_anim")) >= MIN_ANIM_ROWS:
-                seen[name] += 1
-    return {k: v for k, v in seen.items() if v > 1}
+                seen[name].add(tuple(rows))
+    return {k: len(v) for k, v in seen.items() if len(v) > 1}
 
 
 def render_c() -> str:
@@ -385,7 +429,8 @@ def main() -> int:
                      sum(1 for r in rows if r), sum(1 for r in rows if not r)))
         print("\n%d unambiguous global tables" % len(tables))
         amb = _ambiguous()
-        print("%d labels defined more than once, left to tools/wlpuppet.py: %s"
+        print("%d labels with conflicting definitions, left to "
+              "tools/wlpuppet.py: %s"
               % (len(amb), ", ".join(sorted(amb))[:200]))
         return 0
     text = render_c()

@@ -7,18 +7,18 @@ only in a note saying it is missing does not count as present.
 
 | status | meaning | count |
 |---|---|---|
-| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 1974 |
+| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 2040 |
 | `inlined` | the port does it, spelled out at each use site (ledger) | 13 |
-| `renamed` | the port does it under another name (ledger) | 158 |
+| `renamed` | the port does it under another name (ledger) | 159 |
 | `partial` | partly translated; the ledger note says which part | 18 |
 | `data` | a table, extracted by a tool (ledger) | 51 |
 | `process` | a CREATE/SLEEP wrapper (ledger) | 21 |
-| `display` | object/DMA drawing; this port has no renderer (ledger) | 130 |
+| `display` | object/DMA drawing; this port has no renderer (ledger) | 132 |
 | `hardware` | talks to the cabinet (ledger) | 68 |
 | `dead` | **measured**: no caller outside its own file | 37 |
-| `unassembled` | **measured**: inside a `.if` the assembler skipped | 64 |
+| `unassembled` | **measured**: inside a `.if` the assembler skipped | 68 |
 
-**2534 of 2534 routines are accounted for; 0 are open** (`cited` + `unknown`).
+**2607 of 2607 routines are accounted for; 0 are open** (`cited` + `unknown`).
 
 ## Open routines by file
 

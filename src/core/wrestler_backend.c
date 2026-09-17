@@ -1,5 +1,6 @@
 #include "wm/wrestler_backend.h"
 #include "wm/arcade/wm_arcade_confine.h"
+#include "wm/arcade/wm_arcade_modes.h"
 #include "wm/arcade/wm_arcade_combo.h"
 #include "wm/arcade/wm_arcade_pin.h"
 
@@ -434,6 +435,38 @@ static int backend_climb_turnbuckle(wm_arcade_actor_t *actor, void *user) {
     return 1;                          /* `setc` */
 }
 
+/*
+ * The three PLYRMODE handlers the whole roster shares
+ * (wm/arcade/wm_arcade_modes.h). Every dispatcher called these three
+ * seams and neither backend filled any of them, and unlike
+ * keep_attached there is no fallback behind them -- so a wrestler who
+ * entered MODE_PUPPET, MODE_INAIR2 or MODE_CHOKING never left it.
+ */
+static void backend_mode_puppet(wm_arcade_actor_t *actor, void *user) {
+    wm_wrestler_backend_actor *st = (wm_wrestler_backend_actor *)user;
+    wm_mode_puppet_result_t r;
+
+    if (!actor || !st) return;
+    r = wm_arcade_mode_puppet(actor, st->pcnt);
+    /* The watchdog's own `calla change_anim1a`. It is the only thing
+       this routine ever starts, and only when it has barked. */
+    if (r.glitched_to_stand && r.stand_anim)
+        backend_change_anim_label(actor, r.stand_anim, st);
+}
+
+static void backend_mode_inair2(wm_arcade_actor_t *actor, void *user) {
+    (void)user;
+    wm_arcade_mode_inair2(actor);
+}
+
+static void backend_mode_choking(wm_arcade_actor_t *actor, void *user) {
+    (void)user;
+    /* The looping-sound kill it reports is DCSSOUND.ASM's, and this
+       backend has no sound queue to send it to; the state change is
+       applied to the actor either way, which is what gets him loose. */
+    (void)wm_arcade_mode_choking(actor);
+}
+
 wm_arcade_roster_callbacks_t wm_wrestler_roster_callbacks(
     wm_wrestler_backend_actor *state) {
     wm_arcade_roster_callbacks_t cb;
@@ -446,6 +479,9 @@ wm_arcade_roster_callbacks_t wm_wrestler_roster_callbacks(
     cb.can_pin = backend_can_pin;
     cb.code_addr = backend_code_addr;
     cb.climb_turnbuckle = backend_climb_turnbuckle;
+    cb.mode_puppet = backend_mode_puppet;
+    cb.mode_inair2 = backend_mode_inair2;
+    cb.mode_choking = backend_mode_choking;
     cb.user = state;
     return cb;
 }
@@ -490,6 +526,9 @@ wm_arcade_razor_callbacks_t wm_wrestler_razor_callbacks(
     cb.can_pin = backend_can_pin;
     cb.code_addr = backend_code_addr;
     cb.climb_turnbuckle = backend_climb_turnbuckle;
+    cb.mode_puppet = backend_mode_puppet;
+    cb.mode_inair2 = backend_mode_inair2;
+    cb.mode_choking = backend_mode_choking;
     cb.user = state;
     return cb;
 }

@@ -3171,6 +3171,116 @@ def test_palettes_generate_the_shipped_file() -> None:
     assert wlpal.render_c() == out.read_text()
 
 
+def test_reflong_rows_may_carry_two_labels() -> None:
+    """`REFLONG a,b` is two longs, and dropping it lost whole tables.
+
+    MACROS.H:45 declares REFLONG with ONE parameter, and 44 lines in the
+    tree invoke it with two. That reads like a mistake and is not: the
+    assembler substitutes the argument text, so `REFLONG a,b` expands to
+    `.globl a,b` + `.long a,b` and emits both.
+
+    REACT4.ASM:429 #head_hit2 is the proof, and it is why this is a test
+    rather than a comment: rows 0 and 8 are `REFLONG a,b` while the
+    other eight are `.long a,b`, in one FACE24TBL table whose every row
+    is two longs. Were REFLONG emitting a single long, those two rows
+    would be half-width and every wrestler after Bret would draw the
+    wrong animation.
+
+    The extractor used to accept a single label only, so a two-label row
+    matched nothing, fell through to the `.long` test and broke the
+    block -- and because both #head_hit2 and DOINK.ASM's #stand_tbl
+    OPEN with such a row, those blocks yielded nothing at all rather
+    than a short table.
+
+    #head_hit2 is still not an extracted table, and for a different and
+    legitimate reason: REACT4.ASM defines it twice, at :429 and :597,
+    with DIFFERENT rows. So it is refused as ambiguous like any other
+    such name. What the block proves is the row width, which is what
+    this test reads it for.
+    """
+    if not wlanim.ORIG.exists():
+        return
+    blocks = [(line, rows) for name, line, rows
+              in wlrostertbl._blocks(wlanim.ORIG / "REACT4.ASM")
+              if name == "#head_hit2"]
+    assert [line for line, _rows in blocks] == [429, 597], blocks
+    rows = blocks[0][1]
+    assert len(rows) == 20, rows
+    assert rows[0] == "hrt_2_head_hit3_anim"     # REFLONG hrt_2,hrt_4
+    assert rows[1] == "hrt_4_head_hit3_anim"
+    assert rows[2] == "rzr_2_head_hit3_anim"     # .long rzr_2,rzr_4
+    assert rows[16] == "lex_2_head_hit3_anim"    # REFLONG lex_2,lex_4
+    assert rows[17] == "lex_4_head_hit3_anim"
+    # The two bodies really do disagree, which is what refuses the name.
+    assert blocks[0][1] != blocks[1][1]
+    assert "#head_hit2" not in wlrostertbl.roster_tables()
+
+    # And mode_puppet's own table, the one this was found through.
+    tables = wlrostertbl.roster_tables()
+    assert "#stand_tbl" in tables
+    _f, _l, stand = tables["#stand_tbl"]
+    assert stand[0] == "hrt_stand2_anim"
+    assert stand[1] == "hrt_stand4_anim"
+    assert stand[14] is None and stand[15] is None      # Adam Bomb
+    assert stand[16] == "lex_stand2_anim"
+    assert stand[17] == "lex_stand4_anim"
+
+
+def test_identical_definitions_are_not_ambiguous() -> None:
+    """Several definitions that all say the same thing name one table.
+
+    The refusal rule exists because only a use site can say which of
+    several bodies a caller means. When every body is identical there is
+    nothing to choose between, so the rule has nothing to protect.
+
+    #faced_tbl is the case that forced this: BAMSEQ3.ASM, DNKSEQ3.ASM
+    and UNDSEQ3.ASM each carry it and the nine rows agree, written with
+    different macros and line breaks (UNDSEQ3 packs `dnk,0,lex` onto one
+    `.long`). Rows are compared after parsing, so how the source line
+    was spelled does not enter into it. #headheld_tbl, with sixteen
+    identical definitions, comes in the same way.
+    """
+    if not wlanim.ORIG.exists():
+        return
+    tables = wlrostertbl.roster_tables()
+    for name in ("#faced_tbl", "#headheld_tbl", "#flyout_tbl"):
+        assert name in tables, name
+    _f, _l, faced = tables["#faced_tbl"]
+    assert faced[:9] == ["hrt_break_face_anim", "rzr_break_face_anim",
+                         "und_break_face_anim", "yok_break_face_anim",
+                         "shn_break_face_anim", "bam_break_face_anim",
+                         "dnk_break_face_anim", None,
+                         "lex_break_face_anim"], faced
+
+    # A name whose bodies DISAGREE is still refused. Nothing in the tree
+    # is that today -- every multiply-defined table that parses agrees
+    # -- so this drives the comparison directly rather than asserting a
+    # fact about the data that could stop being true.
+    defs = [("A.ASM", 1, ["x_anim"] * 9), ("B.ASM", 1, ["y_anim"] * 9)]
+    assert len({tuple(r) for _f, _l, r in defs}) == 2
+
+
+def test_a_local_table_is_recognised_by_its_own_use_site() -> None:
+    """`FACE24TBL #stand_tbl` marks #stand_tbl as a facing pair.
+
+    face24_operands() normalised every operand by stripping the leading
+    `#`, which is what lets a `FACE24TBL #x` use site speak for a table
+    defined as the global `x`. But roster_tables() keys a local table on
+    the name WITH the `#`, so the lookup could never match and a real
+    facing pair was demoted to WM_ROSTER_COL_PAIR -- its two columns
+    keeping their order and losing their up/down meaning. Both
+    spellings are recorded now.
+    """
+    if not wlanim.ORIG.exists():
+        return
+    ops = wlrostertbl.face24_operands()
+    assert "#stand_tbl" in ops and "stand_tbl" in ops
+    tables = wlrostertbl.roster_tables()
+    _f, _l, stand = tables["#stand_tbl"]
+    assert wlrostertbl.column_kind("#stand_tbl", 2, stand) == \
+        wlrostertbl.COL_FACING
+
+
 def test_roster_anim_tables_name_real_routines() -> None:
     """Every label in a per-wrestler table is a routine that exists.
 
@@ -3185,16 +3295,16 @@ def test_roster_anim_tables_name_real_routines() -> None:
     tables = wlrostertbl.roster_tables()
     if not tables:
         return
-    # 64 since the extractor stopped requiring a GLOBAL head. Most of
-    # these tables are written with a `#local` one, #run_anims
+    # 72. It was 64 when the extractor stopped requiring a GLOBAL head
+    # (most of these tables have a `#local` one, #run_anims
     # (WRESTLE2.ASM:3560) among them, and reading only globals silently
-    # lost 26 of them. The rule did not change -- defined once in the
-    # whole tree or refused -- only the assumption that "defined once"
-    # implied "global". The count is pinned so a change in what the
-    # extractor sees has to be looked at rather than absorbed, which is
-    # how both this and the earlier convulse_t/fallbacks_t gap were
-    # noticed.
-    assert len(tables) == 64, sorted(tables)
+    # lost 26); the last eight came from two REFLONG/ambiguity bugs
+    # below. The rule has never changed -- defined once in the whole
+    # tree, or every definition identical, or refused. The count is
+    # pinned so a change in what the extractor sees has to be looked at
+    # rather than absorbed, which is how this and the earlier
+    # convulse_t/fallbacks_t gap were both noticed.
+    assert len(tables) == 72, sorted(tables)
     assert "#run_anims" in tables
 
     routines: set[str] = set()
@@ -3396,19 +3506,27 @@ def test_declarations_are_not_the_end_of_a_table() -> None:
 
 
 def test_roster_anim_tables_refuse_ambiguous_labels() -> None:
-    """A label defined more than once is left to wlpuppet.py.
+    """A label with CONFLICTING definitions is left to wlpuppet.py.
 
     Those are `#local` and block-scoped; only a use site can say which
     definition a caller means, and picking one would be the same class
     of mistake as resolving #make_black by bare name.
+
+    Defined more than once is not itself the test -- see
+    test_identical_definitions_are_not_ambiguous. Twelve names really do
+    disagree between definitions, #head_hit2 among them, and those are
+    the ones refused.
     """
     if not wlanim.ORIG.exists():
         return
     tables = wlrostertbl.roster_tables()
     ambiguous = wlrostertbl._ambiguous()
-    assert ambiguous, "expected at least one reused table label"
+    assert ambiguous, "expected at least one conflicting table label"
     for name in ambiguous:
         assert name not in tables, name
+    # Every name it reports has at least two bodies that differ.
+    assert all(n >= 2 for n in ambiguous.values()), ambiguous
+    assert "#head_hit2" in ambiguous
 
 
 def test_roster_anim_tables_generate_the_shipped_file() -> None:
@@ -3821,6 +3939,9 @@ def main() -> int:
     test_glyph_metrics_generate_the_shipped_file()
     test_imgpal_palettes_are_self_consistent()
     test_palettes_generate_the_shipped_file()
+    test_reflong_rows_may_carry_two_labels()
+    test_identical_definitions_are_not_ambiguous()
+    test_a_local_table_is_recognised_by_its_own_use_site()
     test_roster_anim_tables_name_real_routines()
     test_face24_tables_are_two_columns_wide()
     test_a_two_long_row_is_not_always_a_facing_pair()

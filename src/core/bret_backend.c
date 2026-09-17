@@ -1,5 +1,6 @@
 #include "wm/bret_backend.h"
 #include "wm/arcade/wm_arcade_confine.h"
+#include "wm/arcade/wm_arcade_modes.h"
 #include "wm/wrestler_backend.h"
 #include "wm/arcade/wm_arcade_pin.h"
 #include "wm/arcade/wm_arcade_start_run.h"
@@ -849,6 +850,32 @@ static int bret_climb_turnbuckle(wm_arcade_actor_t *actor, void *user) {
     return 1;                          /* `setc` */
 }
 
+/*
+ * The three shared PLYRMODE handlers, Bret's copies. Same routines as
+ * the other seven run (wm/arcade/wm_arcade_modes.h) -- the source has
+ * one body each for the whole roster -- and they differ here only in
+ * starting an animation by label through bret_start_label.
+ */
+static void bret_mode_puppet(wm_arcade_actor_t *actor, void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    wm_mode_puppet_result_t r;
+
+    if (!actor || !bva) return;
+    r = wm_arcade_mode_puppet(actor, bva->round_tickcount);
+    if (r.glitched_to_stand && r.stand_anim)
+        bret_start_label(actor, bva, r.stand_anim);
+}
+
+static void bret_mode_inair2(wm_arcade_actor_t *actor, void *user) {
+    (void)user;
+    wm_arcade_mode_inair2(actor);
+}
+
+static void bret_mode_choking(wm_arcade_actor_t *actor, void *user) {
+    (void)user;
+    (void)wm_arcade_mode_choking(actor);
+}
+
 wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva) {
     wm_arcade_bret_callbacks_t cb;
     memset(&cb, 0, sizeof(cb));
@@ -861,6 +888,9 @@ wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva)
     cb.check_secret_moves = wm_bret_backend_check_secret_moves;
     cb.code_addr = bret_code_addr;
     cb.climb_turnbuckle = bret_climb_turnbuckle;
+    cb.mode_puppet = bret_mode_puppet;
+    cb.mode_inair2 = bret_mode_inair2;
+    cb.mode_choking = bret_mode_choking;
     cb.user = bva;
     return cb;
 }

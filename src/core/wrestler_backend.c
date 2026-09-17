@@ -1,4 +1,5 @@
 #include "wm/wrestler_backend.h"
+#include "wm/arcade/wm_arcade_confine.h"
 #include "wm/arcade/wm_arcade_combo.h"
 #include "wm/arcade/wm_arcade_pin.h"
 
@@ -133,14 +134,30 @@ void wm_wrestler_backend_execute_walk(wm_arcade_actor_t *actor,
        applied the new value -- which is what the real routine sees,
        since it overwrites FACING_DIR itself afterwards. */
     {
-        int old_compass = wm_convert_facing(old_facing_dir);
-        int new_compass = wm_convert_facing(actor->new_facing_dir);
-        const char *turn = slot_label(
-            wm_wrestler_rotate_anims, st->wrestler_num,
-            old_compass >= 0 ? old_compass >> 1 : -1,
-            new_compass >= 0 ? new_compass >> 1 : -1);
+        const char *turn = wm_wrestler_set_rotate_anim(
+            actor, st->wrestler_num, old_facing_dir);
         if (turn) backend_change_anim_label(actor, turn, st);
     }
+}
+
+const char *wm_wrestler_set_rotate_anim(wm_arcade_actor_t *actor,
+                                        int wrestler_num,
+                                        int32_t facing_dir) {
+    int old_compass, new_compass;
+
+    if (!actor) return NULL;
+
+    old_compass = wm_convert_facing(facing_dir);
+    new_compass = wm_convert_facing(actor->new_facing_dir);
+
+    /* WRESTLE.ASM:5082-5083, and it is not conditional on having found
+       an animation: `move *a13(NEW_FACING_DIR),a14 / move a14,
+       *a13(FACING_DIR)` runs between the table read and the rets. */
+    actor->facing_dir = actor->new_facing_dir;
+
+    return slot_label(wm_wrestler_rotate_anims, wrestler_num,
+                      old_compass >= 0 ? old_compass >> 1 : -1,
+                      new_compass >= 0 ? new_compass >> 1 : -1);
 }
 
 static void backend_execute_walk(wm_arcade_actor_t *actor, void *user) {
@@ -343,6 +360,80 @@ static int backend_can_pin(wm_arcade_actor_t *actor,
                              st->all_actors, st->all_actor_count) ? 1 : 0;
 }
 
+/*
+ * mode_waitanim's `call a0` (BRET.ASM:2550, copied verbatim into every
+ * other wrestler file), for the whole shared backend.
+ *
+ * Every wrestler dispatcher already read CODE_ADDR here and handed it to
+ * this callback; there was simply nothing on the other side of it, and
+ * nothing wrote the field either, so WM_PMODE_WAITANIM was a state a
+ * wrestler could only be put into and never leave. The three routines
+ * that really do write CODE_ADDR are the climb deferrals in
+ * WRESTLE2.ASM -- climb_turnbuckle (:200), ck_climb_out_side (:578) and
+ * ck_climb_in_side (:702), see wm/arcade/wm_arcade_confine.h -- so the
+ * token is a WmRingClimbContinuation and this is where it comes back
+ * out.
+ *
+ * Unknown tokens are ignored rather than called: the source's `call a0`
+ * would jump to whatever was there, which is not a behaviour worth
+ * reproducing with a C function pointer.
+ */
+static void backend_code_addr(wm_arcade_actor_t *actor, uint32_t token,
+                              void *user) {
+    wm_wrestler_backend_actor *st = (wm_wrestler_backend_actor *)user;
+    const char *label;
+
+    if (!actor) return;
+    switch ((WmRingClimbContinuation)token) {
+    case WM_RING_CLIMB_CONT_TURNBUCKLE:
+    case WM_RING_CLIMB_CONT_OUT_SIDE:
+    case WM_RING_CLIMB_CONT_IN_SIDE:
+        break;
+    default:
+        return;
+    }
+
+    label = wm_arcade_climb_continue(actor, (WmRingClimbContinuation)token);
+    /* The continuation's own `calla change_anim1a`. */
+    if (label) backend_change_anim_label(actor, label, st);
+    /* CODE_ADDR is not cleared by the source, but PLYRMODE has just
+       left WAITANIM, so it is never read again until the next deferral
+       overwrites it. Cleared here anyway: a stale token that a later
+       SETMODE WAITANIM from somewhere else picked up would be a bug
+       that looked like a climb. */
+    actor->code_addr = 0;
+}
+
+/*
+ * climb_turnbuckle (WRESTLE2.ASM:103), the callback every dispatcher's
+ * mode_normal already called and nobody supplied -- so no wrestler on
+ * this backend could climb a turnbuckle at all.
+ *
+ * The deferral is the same shape as the rope climbs': if he is not
+ * already facing the corner (and #face_turnbuckle says which way that
+ * is per wrestler -- four of the nine climb with their BACK to it), the
+ * turn animation goes first and the climb itself waits in CODE_ADDR.
+ */
+static int backend_climb_turnbuckle(wm_arcade_actor_t *actor, void *user) {
+    wm_wrestler_backend_actor *st = (wm_wrestler_backend_actor *)user;
+    wm_climb_turnbuckle_result_t r;
+
+    if (!actor || !st) return 0;
+    r = wm_arcade_climb_turnbuckle(actor, st->all_actors,
+                                   st->all_actor_count);
+    if (!r.handled) return 0;          /* `clrc` */
+
+    if (r.anim) {
+        backend_change_anim_label(actor, r.anim, st);
+    } else if (r.rotate_then != WM_RING_CLIMB_CONT_NONE) {
+        const char *turn = wm_wrestler_set_rotate_anim(
+            actor, st->wrestler_num, actor->facing_dir);
+        if (turn) backend_change_anim_label(actor, turn, st);
+        actor->code_addr = (uintptr_t)r.rotate_then;
+    }
+    return 1;                          /* `setc` */
+}
+
 wm_arcade_roster_callbacks_t wm_wrestler_roster_callbacks(
     wm_wrestler_backend_actor *state) {
     wm_arcade_roster_callbacks_t cb;
@@ -353,6 +444,8 @@ wm_arcade_roster_callbacks_t wm_wrestler_roster_callbacks(
     cb.check_combo_go = backend_check_combo_go;
     cb.change_anim_label = backend_change_anim_label;
     cb.can_pin = backend_can_pin;
+    cb.code_addr = backend_code_addr;
+    cb.climb_turnbuckle = backend_climb_turnbuckle;
     cb.user = state;
     return cb;
 }
@@ -395,6 +488,8 @@ wm_arcade_razor_callbacks_t wm_wrestler_razor_callbacks(
     cb.mode_dead = backend_mode_dead;
     cb.check_combo_go = backend_check_combo_go;
     cb.can_pin = backend_can_pin;
+    cb.code_addr = backend_code_addr;
+    cb.climb_turnbuckle = backend_climb_turnbuckle;
     cb.user = state;
     return cb;
 }

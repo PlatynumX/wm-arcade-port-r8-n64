@@ -53,12 +53,27 @@ static void climb_from_actor(WmRingClimbPlayer *p,
     p->animbase_label = a->anipc_program;
 }
 
-/* The fields a climb check writes back onto the wrestler it ran on. */
+/*
+ * The fields a climb check writes back onto the wrestler it ran on.
+ *
+ * PLYRMODE is one of them. The checks really do SETMODE: the two side
+ * ones drop to MODE_NORMAL when they start the climb (WRESTLE2.ASM:590,
+ * :715), climb_turnbuckle goes to MODE_CLIMBTURNBKL (:213), and all
+ * three of the rotate-first paths SETMODE WAITANIM (:201, :579, :703). The climb module computes all of
+ * that faithfully; this used to leave it in the module's own row and
+ * copy only the other four fields back, so a wrestler who climbed in
+ * while RUNNING stayed RUNNING and -- worse -- one parked in WAITANIM
+ * was never parked at all.
+ *
+ * The two enums are the same numbers: WM_RING_MODE_* and WM_PMODE_* are
+ * both transcribed from PLYR.EQU, so this is a copy and not a mapping.
+ */
 static void climb_to_actor(wm_arcade_actor_t *a, const WmRingClimbPlayer *p) {
     a->climbing_thru = p->climbing_thru;
     a->new_facing_dir = (int32_t)p->new_facing_dir;
     a->climb_start = p->climb_start;
     a->climb_last = p->climb_last;
+    a->player_mode = (int32_t)p->player_mode;
 }
 
 static void climb_ctx_init(climb_ctx *c,
@@ -113,6 +128,10 @@ static void climb_sync_self(climb_ctx *c, const wm_arcade_actor_t *a) {
     p->coll_x1 = (int16_t)a->hurt_box.x1;
     p->coll_x2 = (int16_t)a->hurt_box.x2;
     p->inring = (int16_t)(a->in_ring ? 0 : 1);
+    /* Read live, like the position above: an earlier check in this same
+       pass may already have moved him (climb_to_actor writes PLYRMODE
+       back now), and every one of these routines gates on it. */
+    p->player_mode = (int16_t)a->player_mode;
 }
 
 static void climb_record(climb_ctx *c, wm_arcade_actor_t *actor,
@@ -121,6 +140,17 @@ static void climb_record(climb_ctx *c, wm_arcade_actor_t *actor,
     if (!c->out) return;
     if (r.action == WM_RING_CLIMB_ACTION_SOURCE_QUIRK_INPUT_REQUIRED) {
         c->out->climb_needs_source_quirk = true;
+        return;
+    }
+    if (r.action == WM_RING_CLIMB_ACTION_ROTATE_THEN_CONTINUE) {
+        /* He is facing the wrong way. The source turns him first and
+           defers the climb through CODE_ADDR + MODE WAITANIM; see
+           wm_confine_result_t::climb_rotate_then. climb_to_actor above
+           has already parked him in WAITANIM and, for the two side
+           checks, set CLIMBING_THRU -- so the caller MUST carry this
+           continuation, or he waits on an animation nobody started. */
+        c->out->climb_rotate_then = r.continuation;
+        c->out->climb_facing = r.target_facing;
         return;
     }
     if (r.action != WM_RING_CLIMB_ACTION_START_ANIMATION) return;
@@ -538,4 +568,86 @@ void wm_arcade_final_confine(wm_arcade_actor_t *const *actors,
 
         wm_arcade_confine_wrestler(a);
     }
+}
+
+/*
+ * mode_waitanim's `call a0`, for the three climb continuations. See
+ * wm/arcade/wm_arcade_confine.h.
+ *
+ * This is deliberately in this file rather than beside the climb module
+ * itself: climb_from_actor/climb_to_actor are the one place that knows
+ * how a wm_arcade_actor_t maps onto a WmRingClimbPlayer -- INRING's
+ * inverted polarity above included -- and the continuation has to go
+ * through exactly that mapping or it would be a second, drifting copy
+ * of it.
+ */
+const char *wm_arcade_climb_continue(wm_arcade_actor_t *actor,
+                                     WmRingClimbContinuation cont) {
+    WmRingClimbPlayer p;
+    WmRingClimbResult r;
+
+    if (!actor) return NULL;
+    if (cont == WM_RING_CLIMB_CONT_NONE) return NULL;
+
+    climb_from_actor(&p, actor);
+    r = wm_ring_climb_continue(&p, cont);
+    climb_to_actor(actor, &p);
+
+    /* SOURCE_NULL_ANIMATION is a real 0 in the source's own table, not
+       a missing translation, and the source would have branched to it.
+       PLYRMODE has already been applied, so he still leaves WAITANIM. */
+    if (r.action != WM_RING_CLIMB_ACTION_START_ANIMATION) return NULL;
+    return r.source_animation_label;
+}
+
+/*
+ * climb_turnbuckle (WRESTLE2.ASM:103). See wm/arcade/wm_arcade_confine.h.
+ *
+ * The roster is passed whole because the check's own #climbit loop
+ * sweeps process_ptrs for somebody already on or climbing the SAME
+ * turnbuckle -- the left one if the climber is left of RING_X_CENTER,
+ * the right one otherwise -- and refuses if it finds him.
+ */
+wm_climb_turnbuckle_result_t wm_arcade_climb_turnbuckle(
+    wm_arcade_actor_t *actor,
+    wm_arcade_actor_t *const *actors,
+    size_t actor_count) {
+    wm_climb_turnbuckle_result_t out;
+    climb_ctx c;
+    WmRingClimbResult r;
+    int32_t rope_x;
+
+    memset(&out, 0, sizeof out);
+    if (!actor) return out;
+
+    climb_ctx_init(&c, actor, actors, actor_count, 0u, NULL);
+    if (!c.have_self) {
+        /* Called without the actor in the list: run him alone rather
+           than against a roster he is not in, which would read the
+           wrong row as "self". */
+        climb_from_actor(&c.players[0], actor);
+        c.count = 1u;
+        c.self_index = 0u;
+    }
+
+    /* `calla get_rope_x` -- the same value at both comparison sites. */
+    rope_x = wm_ring_get_rope_x(actor->x_int, actor->z_int);
+
+    r = wm_ring_climb_turnbuckle(&c.players[c.self_index],
+                                 c.players, c.count, (int16_t)rope_x);
+    if (r.action == WM_RING_CLIMB_ACTION_NONE) return out;
+
+    /* The check glitches a near miss onto RING_TOP itself, so the Z it
+       wrote has to come back with the rest. */
+    actor->z_int = c.players[c.self_index].z_int;
+    actor->z_fixed = c.players[c.self_index].z_fp16;
+    climb_to_actor(actor, &c.players[c.self_index]);
+
+    out.handled = true;                /* `setc` */
+    out.facing = r.target_facing;
+    if (r.action == WM_RING_CLIMB_ACTION_ROTATE_THEN_CONTINUE)
+        out.rotate_then = r.continuation;
+    else if (r.action == WM_RING_CLIMB_ACTION_START_ANIMATION)
+        out.anim = r.source_animation_label;
+    return out;
 }

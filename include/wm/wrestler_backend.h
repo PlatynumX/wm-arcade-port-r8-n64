@@ -156,6 +156,36 @@ extern const wm_ani_init_row wm_ani_init_rows[WM_ANI_INIT_SLOTS];
 void wm_wrestler_backend_execute_walk(wm_arcade_actor_t *actor,
                                       wm_wrestler_backend_actor *state);
 
+/*
+ * WRESTLE.ASM:5062 SUBR set_rotate_anim, on its own.
+ *
+ *      returns: A0 = rotation anim based on NEW_FACING_DIR & FACING_DIR
+ *
+ * Two halves, and the second one is the half that gets forgotten: it
+ * picks wres_rotate_anims[WRESTLERNUM][FACING_DIR>>1][NEW_FACING_DIR>>1]
+ * -- both through convert_facing, both halved because "only uses
+ * diagonals (0-3)" -- and it also copies NEW_FACING_DIR into FACING_DIR
+ * (WRESTLE.ASM:5082-5083), unconditionally, before returning. The turn
+ * animation is therefore cosmetic: by the time it plays, the wrestler
+ * already faces where he was turning to.
+ *
+ * It does NOT start the animation. Every caller does its own
+ * `calla change_anim1a` on the returned label, which is why this
+ * returns it instead. NULL means that wrestler's table slot is a real 0
+ * (the referee's), or that convert_facing found no compass direction.
+ *
+ * `facing_dir` is passed rather than read off the actor because the two
+ * call sites see different values there: the idle (#zip) path reaches
+ * this after wm_execute_walk has already applied the same copy, so it
+ * has to hand in the pre-copy value the real routine would have read,
+ * while the climb paths (WRESTLE2.ASM:196, :574, :698 -- the
+ * `calla set_rotate_anim` before each deferral's CODE_ADDR store) call
+ * it cold and pass actor->facing_dir.
+ */
+const char *wm_wrestler_set_rotate_anim(wm_arcade_actor_t *actor,
+                                        int wrestler_num,
+                                        int32_t facing_dir);
+
 void wm_wrestler_backend_ani_init(wm_wrestler_backend_actor *state,
                                   wm_arcade_actor_t *actor);
 

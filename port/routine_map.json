@@ -996,12 +996,6 @@
   "symbol": "wm_wrestler_backend_execute_walk",
   "note": "WRESTLE.ASM:4946. Reselect the leg cycle for the direction a wrestler is walking, and the torso with it. Reached only from the eight real-movement arms of execute_walk's dispatch, i.e. under MOVE_DIR != 0. The port gates the torso half on its single anim_mode where the source uses ANIMODE2; nothing here writes an ANIMODE2, so that is the primary channel's mode -- the same approximation Bret's backend has always made."
  },
- "set_rotate_anim": {
-  "file": "WRESTLE.ASM",
-  "status": "renamed",
-  "symbol": "wm_wrestler_backend_execute_walk",
-  "note": "WRESTLE.ASM:5062. change_walk_anim's counterpart on the idle path: no movement, so the turn animation is chosen from the facing alone. Both halves live in wm_wrestler_backend_execute_walk, which is the dispatch that picks between them."
- },
  "update_joystat": {
   "file": "WRESTLE.ASM",
   "status": "renamed",

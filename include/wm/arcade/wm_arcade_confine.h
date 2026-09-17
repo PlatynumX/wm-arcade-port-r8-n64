@@ -5,6 +5,7 @@
 #include <stddef.h>
 
 #include "wm/arcade/wm_arcade_combat.h"
+#include "wm/arcade/wmania_ring_climb.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -125,6 +126,45 @@ typedef struct {
     bool climb_needs_source_quirk;
 
     /*
+     * The other half of what the climb checks can decide, and the half
+     * that used to be dropped on the floor here.
+     *
+     * Three routines reach the rope while the wrestler is facing the
+     * WRONG WAY, and the source does not climb on the spot. It turns
+     * him first. Two of them are in this routine -- ck_climb_out_side
+     * (WRESTLE2.ASM:578) and ck_climb_in_side (:702); the third,
+     * climb_turnbuckle (:200), is called from each wrestler's own
+     * mode_normal instead and has its own entry point below.
+     *
+     *      calla   set_rotate_anim
+     *      calla   change_anim1a
+     *      movi    #climb,a0
+     *      move    a0,*a13(CODE_ADDR),L    ;when the rotate anim
+     *      SETMODE WAITANIM                ;finishes
+     *
+     * and mode_waitanim -- BRET.ASM:2550, copied verbatim into every
+     * other wrestler file -- `call`s CODE_ADDR once that rotate
+     * animation ends. The climb itself is the continuation, which
+     * wm_ring_climb_continue is.
+     *
+     * WM_RING_CLIMB_CONT_NONE means no rotate is pending. Anything else
+     * is a continuation the caller must (a) start the rotate animation
+     * for, (b) park in WM_PMODE_WAITANIM, and (c) keep until the
+     * animation ends -- wm_arcade_actor_t::code_addr is where it goes,
+     * because CODE_ADDR is the field the source uses for exactly this.
+     *
+     * Dropping it is not a cosmetic loss. Both of the two here set
+     * CLIMBING_THRU=1 on this path as well, and that flag is cleared
+     * only by an ANI_INRING/ANI_NOTINRING op inside the climbthru
+     * animation (ANIM.ASM:405, :4471). So a wrestler who walked into
+     * the side ropes facing away used to come out of the check flagged
+     * as climbing through, with no animation running to ever clear it,
+     * and ck_climb_in_side's own `if (climbing_thru) return` then
+     * refused him the ropes for the rest of the match.
+     */
+    WmRingClimbContinuation climb_rotate_then;
+
+    /*
      * WRESTLE.ASM:3664, the gate crash: a wrestler in MODE_RUNNING who
      * hits the arena fence. The velocities, MODE_NORMAL, RUN_TIME and
      * the damage are applied to the actor; which ANIMATION he plays is
@@ -160,6 +200,74 @@ void wm_arcade_confine_wrestler_ex(wm_arcade_actor_t *actor,
                                    size_t actor_count,
                                    uint32_t pcnt,
                                    wm_confine_result_t *out);
+
+/*
+ * WRESTLE2.ASM:103 SUBR climb_turnbuckle -- the fourth climb check, and
+ * the one that is not inside confine_wrestler.
+ *
+ * Every wrestler's own mode_normal calls it directly (BRET.ASM:1453,
+ * BAM.ASM:1410, DNK.ASM:1468, DOINK.ASM:1828 and the rest) with
+ * STICK_VAL_CUR in a0, and all eight of this port's dispatchers already
+ * had the callback seam for it -- with nothing behind it, the same way
+ * ck_climb_out_* had no caller before the ring-out work. So nobody could
+ * climb a turnbuckle.
+ *
+ * It is here rather than beside the module for the reason
+ * wm_arcade_climb_continue is: this file owns the one mapping between a
+ * wm_arcade_actor_t and a WmRingClimbPlayer, INRING's inverted polarity
+ * included. `rope_x` comes from wm_ring_get_rope_x (WRESTLE.ASM:5789),
+ * which is what the source's own `calla get_rope_x` computes at each of
+ * the two comparison sites.
+ *
+ * `handled` is the source's carry flag: `setc` on both climb paths,
+ * `clrc` at #not_top/#no_climb, and the dispatcher stops processing the
+ * tick when it is set.
+ */
+typedef struct {
+    bool handled;
+    /* `calla change_anim1a` on #climb_anims[WRESTLERNUM], or NULL when
+       the turn has to come first (or for a wrestler whose row in that
+       table is a real 0). */
+    const char *anim;
+    /* CODE_ADDR: WM_RING_CLIMB_CONT_TURNBUCKLE when the wrestler has to
+       turn to the corner first, WM_RING_CLIMB_CONT_NONE otherwise. */
+    WmRingClimbContinuation rotate_then;
+    uint16_t facing;                 /* NEW_FACING_DIR */
+} wm_climb_turnbuckle_result_t;
+
+wm_climb_turnbuckle_result_t wm_arcade_climb_turnbuckle(
+    wm_arcade_actor_t *actor,
+    wm_arcade_actor_t *const *actors,
+    size_t actor_count);
+
+/*
+ * mode_waitanim's `call a0`, for the climb continuations.
+ *
+ * BRET.ASM:2550, and the identical copy in every other wrestler file:
+ *
+ *      mode_waitanim   ;12
+ *              move    *a13(ANIMODE),a0
+ *              btst    MODE_END_BIT,a0
+ *              jrz     #not_ended
+ *              move    *a13(CODE_ADDR),a0,L
+ *              call    a0
+ *
+ * There is no NULL check on a0 there, because the source never enters
+ * WAITANIM without having written CODE_ADDR in the instruction before
+ * the SETMODE. This port carries the token in
+ * wm_arcade_actor_t::code_addr and decodes it here.
+ *
+ * `cont` is the WmRingClimbContinuation the confine pass reported in
+ * wm_confine_result_t::climb_rotate_then. Returns the source animation
+ * label the continuation wants started (`change_anim1a`), or NULL --
+ * for WM_RING_CLIMB_CONT_NONE, and for a wrestler whose entry in the
+ * continuation's animation table is a real 0 (the referee's, and Adam
+ * Bomb's in rollthru_top_anims). PLYRMODE and CLIMBING_THRU are
+ * applied to the actor either way, exactly as the continuation sets
+ * them: that is what takes him back out of WAITANIM.
+ */
+const char *wm_arcade_climb_continue(wm_arcade_actor_t *actor,
+                                     WmRingClimbContinuation cont);
 
 /*
  * WRESTLE.ASM:6163 SUBRP final_confine, called from the main loop at

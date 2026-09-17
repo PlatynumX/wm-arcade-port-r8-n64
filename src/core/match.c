@@ -1,5 +1,6 @@
 #include "wm/match.h"
 #include "wm/bret_backend.h"
+#include "wm/wrestler_backend.h"
 #include "wm/arcade/wm_arcade_roster_anims.h"
 #include "wm/arcade/wm_arcade_react_anims.h"
 #include "wm/arcade/wm_arcade_react5_core.h"
@@ -1091,6 +1092,45 @@ static void match_confine_actor(wm_match_state *m, unsigned i,
     if (res.climb_anim) {
         a->new_facing_dir = (int32_t)res.climb_facing;
         match_change_anim(a, res.climb_anim, m);
+    }
+
+    /*
+     * The other half of the same decision, and until now the half that
+     * went nowhere: he reached the rope facing the wrong way, so the
+     * source turns him first and defers the climb.
+     *
+     *      move    a2,*a13(NEW_FACING_DIR)
+     *      calla   set_rotate_anim
+     *      calla   change_anim1a
+     *      movi    #climb,a0
+     *      move    a0,*a13(CODE_ADDR),L
+     *      SETMODE WAITANIM
+     *
+     * (WRESTLE2.ASM:196-201, :574-579 and :698-703.) All four lines
+     * matter. set_rotate_anim picks the turn animation AND copies
+     * NEW_FACING_DIR into FACING_DIR, so he is already facing the right
+     * way while the turn plays; change_anim1a starts it; CODE_ADDR
+     * remembers where to resume; and WM_PMODE_WAITANIM -- which
+     * wm_arcade_confine_wrestler_ex has already written -- is what makes
+     * each wrestler's own mode_waitanim pick the continuation up when
+     * that animation ends.
+     *
+     * Dropping the continuation was not a missing flourish. Two of the
+     * three checks also set CLIMBING_THRU on this path, and only the
+     * climbthru animation's own ANI_INRING/ANI_NOTINRING clears it
+     * (ANIM.ASM:405, :4471), so a wrestler who walked into the side
+     * ropes facing away came out of the check flagged as climbing
+     * through with nothing running to ever unflag him -- and
+     * ck_climb_in_side's leading `if (climbing_thru) return` then
+     * refused him the ropes for the rest of the match.
+     */
+    if (res.climb_rotate_then != WM_RING_CLIMB_CONT_NONE) {
+        const char *turn;
+        a->new_facing_dir = (int32_t)res.climb_facing;
+        turn = wm_wrestler_set_rotate_anim(a, (int)a->wrestler_num,
+                                           a->facing_dir);
+        if (turn) match_change_anim(a, turn, m);
+        a->code_addr = (uintptr_t)res.climb_rotate_then;
     }
 
     /*

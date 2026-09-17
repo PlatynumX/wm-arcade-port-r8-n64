@@ -1,4 +1,6 @@
 #include "wm/bret_backend.h"
+#include "wm/arcade/wm_arcade_confine.h"
+#include "wm/wrestler_backend.h"
 #include "wm/arcade/wm_arcade_pin.h"
 #include "wm/arcade/wm_arcade_start_run.h"
 #include "wm/arcade/wm_arcade_anim_combat.h"
@@ -775,6 +777,78 @@ static int bret_can_pin(wm_arcade_actor_t *actor,
                              bva->all_actors, bva->all_actor_count) ? 1 : 0;
 }
 
+/*
+ * `calla change_anim1a` with a source label, for Bret.
+ *
+ * His dispatcher selects by typed id, so his change_anim seam takes
+ * ids; a label from the climb tables has none. It goes straight to his
+ * program channel instead -- the same route match_change_anim already
+ * uses to hand him a climb animation -- and his current_id is
+ * deliberately left alone so his next selection restarts him normally.
+ */
+static void bret_start_label(wm_arcade_actor_t *actor,
+                             wm_bret_backend_actor *bva,
+                             const char *label) {
+    const wm_anim_program *prog;
+    if (!actor || !bva || !label) return;
+    prog = wm_anim_program_find(label);
+    if (!prog) return;
+    bva->anim_env.opponent = bva->opponent;
+    wm_anim_exec_start(&bva->prog, prog, actor, bva->round_tickcount,
+                       &bva->anim_env);
+}
+
+/*
+ * mode_waitanim's `call a0` (BRET.ASM:2550), Bret's copy. Identical in
+ * purpose to the shared backend's (src/core/wrestler_backend.c), which
+ * carries the reasoning; it differs only in starting the continuation's
+ * animation through bret_start_label above.
+ */
+static void bret_code_addr(wm_arcade_actor_t *actor, uint32_t token,
+                           void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    const char *label;
+
+    if (!actor || !bva) return;
+    switch ((WmRingClimbContinuation)token) {
+    case WM_RING_CLIMB_CONT_TURNBUCKLE:
+    case WM_RING_CLIMB_CONT_OUT_SIDE:
+    case WM_RING_CLIMB_CONT_IN_SIDE:
+        break;
+    default:
+        return;
+    }
+
+    label = wm_arcade_climb_continue(actor, (WmRingClimbContinuation)token);
+    actor->code_addr = 0;
+    bret_start_label(actor, bva, label);
+}
+
+/*
+ * climb_turnbuckle (WRESTLE2.ASM:103), Bret's copy of the callback his
+ * own mode_normal already called with nothing behind it.
+ */
+static int bret_climb_turnbuckle(wm_arcade_actor_t *actor, void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    wm_climb_turnbuckle_result_t r;
+
+    if (!actor || !bva) return 0;
+    r = wm_arcade_climb_turnbuckle(actor, bva->all_actors,
+                                   bva->all_actor_count);
+    if (!r.handled) return 0;          /* `clrc` */
+
+    if (r.anim) {
+        bret_start_label(actor, bva, r.anim);
+    } else if (r.rotate_then != WM_RING_CLIMB_CONT_NONE) {
+        bret_start_label(actor, bva,
+                         wm_wrestler_set_rotate_anim(
+                             actor, (int)actor->wrestler_num,
+                             actor->facing_dir));
+        actor->code_addr = (uintptr_t)r.rotate_then;
+    }
+    return 1;                          /* `setc` */
+}
+
 wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva) {
     wm_arcade_bret_callbacks_t cb;
     memset(&cb, 0, sizeof(cb));
@@ -785,6 +859,8 @@ wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva)
     cb.adjust_health = wm_bret_backend_adjust_health;
     cb.mode_dead = wm_bret_backend_mode_dead;
     cb.check_secret_moves = wm_bret_backend_check_secret_moves;
+    cb.code_addr = bret_code_addr;
+    cb.climb_turnbuckle = bret_climb_turnbuckle;
     cb.user = bva;
     return cb;
 }

@@ -159,7 +159,7 @@ r9 is the first broad **shared-engine** pass. It is not a claim that the complet
 - What did pay off was fixing two gaps in the **reader itself**, both found by comparing its frame lists against the emitter's across the whole roster: `SUBR` labels **alias** (`bam_stand2_anim` is immediately followed by `bam_stand8_anim` with one body under both, so the first was getting an empty body), and a frame's tick count is sometimes a small **expression** (`WL 2+1,B2WL1A+FR4`). Strict independent coverage went **192 → 294 animations**, still all agreeing exactly.
 - **The check that was not shipped, and why.** A whole-roster frame-subsequence comparison reaches 92% agreement (1,339 of 1,455), and the residual 116 are not divergences: they are the two documented emitter behaviours — bodies grown across routine boundaries, and cross-routine branches like `bam_run2_anim`, whose entire body is `ANI_GOTO,#run2` into *another routine*. Making that check green would mean replicating the emitter's span logic inside the thing meant to check it independently. It is left as a measurement rather than a test, because a check that has to copy its subject is not a check.
 
-- **The sprite bundler was NOT generalised, and the measurement is why.** Pointing it at the whole roster was the plan; costing it first killed it. Bret's bundle is 303 frames for **1.8 MB of payload** (5.8 KB a frame, 11.2 MB of generated C). The roster names **4,861** frames — about **29 MB uncompressed**, on top of an `anim_programs.c.o` that is already 3.5 MB. `tools/wimpimg.py` says why in its own header: the WIMP containers are the **artist format, before the arcade's own LOAD2/DMA2 packing**, so this is the unpacked floor and the real arcade ROM stored it packed. And an N64 has **4 MB of RDRAM** (8 with the Expansion Pak) — 29 MB cannot be resident under any packaging. Expanding every frame into a linked C array is the wrong shape; the art has to stay packed on cart and be DMA'd per frame, which is what the original did. That is a design decision, not a refactor, so it is written down rather than half-built.
+- **The sprite bundler was NOT generalised, and the measurement is why.** Pointing it at the whole roster was the plan; costing it first killed it. Bret's bundle is 303 frames for **1.8 MB of payload** (5.8 KB a frame, 11.2 MB of generated C). The roster names **4,861** frames — about **29 MB uncompressed**, on top of an `anim_programs.c.o` that is already 2.46 MiB of cartridge (that figure was 3.5 MB here until the ROM was actually measured -- see the cartridge budget below; the argument does not change). `tools/wimpimg.py` says why in its own header: the WIMP containers are the **artist format, before the arcade's own LOAD2/DMA2 packing**, so this is the unpacked floor and the real arcade ROM stored it packed. And an N64 has **4 MB of RDRAM** (8 with the Expansion Pak) — 29 MB cannot be resident under any packaging. Expanding every frame into a linked C array is the wrong shape; the art has to stay packed on cart and be DMA'd per frame, which is what the original did. That is a design decision, not a refactor, so it is written down rather than half-built.
 - **A regression I introduced, found by the invariant sweep.** `xxx_dead_anim` is not part of the roster sweep — `scripts/regenerate_source_data.sh` adds it with an explicit `--animation WRESTLE2.ASM xxx_dead_anim`. Regenerating the file by hand with just `--roster --slave-targets`, which I had been doing, **silently dropped it**, and `anim_program.c`'s death path sets `exec->become = "xxx_dead_anim"` — which then resolved to nothing and ended the animation quietly. There is a test now that every hard-coded `become` target in the C resolves to a real program, confirmed to fail against exactly that mis-regeneration. `ANI_ROT` also joined the terminator set: it parks forever rather than ending, which is how `xxx_dead_anim` finishes.
 
 - **Tournament state and the crowd, both real: `ANI_CODE` 2,109 -> 2,147 of 2,303 (91.6% -> 93.2%), 104 -> 106 names.** Two of the six systems the previous entry called blockers turned out to be answerable from the source rather than from a subsystem this port lacks.
@@ -288,6 +288,23 @@ wm_arcade_r9.z64
 ```
 
 GitHub Actions fetches the historical WrestleMania source directly, regenerates translated tables/frontier reports and required artwork, builds the ROM, uploads the `wm-arcade-r9-build` Actions artifact, and publishes the ROM plus reports to the `rom-build` branch.
+
+## Cartridge budget
+
+```sh
+python3 tools/n64_rom_budget.py
+```
+
+**44.58 MiB of a 78 MB cartridge, 59.9% used.** 8.92 MiB of code and
+generated tables plus a 35.66 MiB DragonFS payload; `.bss` is 0.67
+MiB, which is the tighter number, being RAM on a 4 MiB machine. The
+tool compiles the ROM's own source list for mips64 and sums the
+sections that occupy cartridge space, so the figure is checked on
+every `ctest` run (`wm_n64_budget`, failing past 85%) rather than
+estimated once. It classifies by ELF flags, not section names --
+`anim_programs.c`'s 2.4 MiB of pointer tables land in
+`.data.rel.ro.local`, which a name list missed. `docs/N64_FIRST.md`
+has the breakdown and the caveats.
 
 ## Source/regeneration tools
 

@@ -204,6 +204,17 @@ if(WM_BUILD_TESTS)
              COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/n64_platform_check.py
              WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
+    # How big is this ROM? Nobody knew: the art had been measured but the
+    # code side never had, and src/generated is 200,000 lines of it. This
+    # compiles the ROM's source list for mips64, sums the sections that
+    # occupy cartridge space, adds the DragonFS payload and compares the
+    # total with the budget -- and fails past 85% of it, so the first
+    # warning is not also the emergency. Skips itself without the
+    # cross-compiler, like the two checks above.
+    add_test(NAME wm_n64_budget
+             COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/n64_rom_budget.py
+             WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
     # The DragonFS roster payload's own format contract.
     add_test(NAME wm_stream_roster
              COMMAND ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/stream_roster_assets.py --self-test

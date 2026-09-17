@@ -8,6 +8,59 @@
 - Keep the synchronous CI8 render path until hardware proves a faster queueing strategy is stable with multiple large layered wrestlers.
 - Preserve original source frame names/labels in generated data so failures can be traced back to ASM and WIMP assets.
 
+## Measured cartridge budget (2026-09)
+
+The art had been measured; the code never had. `src/generated` is
+200,000-odd lines of tables and nobody knew what they weighed, so
+`tools/n64_rom_budget.py` now measures it -- it compiles the ROM's own
+source list for mips64 (the same list `n64_link_check.py` links), sums
+the sections that occupy cartridge space, adds the DragonFS payload and
+compares the total with the budget. It runs as the `wm_n64_budget`
+ctest and fails past 85%, so the first warning is not also the
+emergency.
+
+| | bytes | |
+|---|---|---|
+| code (executable) | 327,496 | 0.31 MiB |
+| read-only data | 6,044,076 | 5.76 MiB |
+| relocated read-only data | 2,921,800 | 2.79 MiB |
+| writable data | 54,848 | 0.05 MiB |
+| **code subtotal** | **9,348,220** | **8.92 MiB** |
+| DragonFS payload (5,150 files) | 37,395,966 | 35.66 MiB |
+| **total** | **46,744,186** | **44.58 MiB** |
+| budget | 78,000,000 | 74.39 MiB |
+
+**59.9% of the cartridge, with 31 MB spare.** The biggest single
+contributors are all generated: `anim_programs.c` 2.46 MiB,
+`progress_wrestlers.c` 2.42, `bret_sprites.c` 1.75,
+`select_sprites.c` 0.69.
+
+`.bss` is **698,480 bytes (0.67 MiB)**, and that is the number worth
+watching rather than the cartridge one: it is RAM on a machine with 4
+MiB of it, alongside framebuffers and the frame cache.
+
+### Why the first measurement was 2.8 MiB light
+
+The tool's first version matched section *names* -- `.text`, `.rodata*`,
+`.data` -- and reported 6.11 MiB. It was wrong, and wrong about the
+single biggest thing in the ROM. `anim_programs.c` is 2.4 MiB of
+pointer tables, and GCC puts those in `.data.rel.ro.local`: read-only
+once relocated, so not `.rodata` by name, and write-flagged, so not
+matched as `.data` either. It is as cartridge-resident as anything
+else. The tool classifies by ELF flags now -- ALLOC with contents is
+cartridge, ALLOC and NOBITS is `.bss`, anything else is link metadata
+-- because a list of names goes stale the moment the compiler invents
+a section and a flag test does not.
+
+Two smaller corrections from the same pass. The payload is **35.66
+MiB, not the 46 MB an earlier note gave**: that came from `du`, which
+block-rounds 5,150 small files and charges a megabyte and a half of
+tail padding DragonFS does not pay. And the total is an estimate in
+both directions, not a floor: mergeable string sections are summed per
+object and the linker deduplicates them, and `--gc-sections` discards
+what nothing references, while the figure omits libdragon itself, the
+DFS header and per-file overhead, and padding to a power of two.
+
 ## Measured sprite budget (2026-09, re-measured)
 
 The port now emits the full roster as DragonFS payload, so this is the

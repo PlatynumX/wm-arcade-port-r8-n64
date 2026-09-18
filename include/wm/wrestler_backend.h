@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include "wm/arcade/wm_arcade_roster.h"
+#include "wm/arcade/wm_arcade_joystat.h"
 #include "wm/arcade/wm_arcade_razor.h"
 #include "wm/anim_program.h"
 #include "wm/movement.h"
@@ -123,6 +124,15 @@ typedef struct wm_wrestler_backend_actor {
      */
     void (*round_award)(void *user, int player_num, int award_index);
     void *round_award_user;
+
+    /*
+     * WRESTLE.ASM's per-wrestler wrest_joystat input-history ring buffer
+     * (wm/arcade/wm_arcade_joystat.h), which check_secret_moves scans
+     * for button sequences. Bret's backend has had one since his secret
+     * moves were wired; the other seven need their own, because
+     * check_secret_moves is per-process and so is its queue.
+     */
+    wm_arcade_joystat_t joystat;
 } wm_wrestler_backend_actor;
 
 /*

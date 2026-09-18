@@ -8,6 +8,8 @@
 #include "wm/wrestler_sound_tables.h"
 #include "wm/arcade/wm_arcade_teammates.h"
 #include "wm/award.h"
+#include "wm/arcade/wm_arcade_wrestler_port.h"
+#include "wm/arcade/wm_arcade_joystat.h"
 #include "wm/anim_program.h"
 #include "wm/arcade/wm_arcade_combo.h"
 #include "wm/arcade/wm_arcade_pin.h"
@@ -614,6 +616,183 @@ static void backend_razor_sound(wm_arcade_actor_t *actor,
  * skip the test when the seam is empty, so the refusal never fired and
  * a wrestler could launch a flying kick while walking away.
  */
+/*
+ * WRESTLE.ASM:4851 check_secret_moves, for the seven wrestlers who are
+ * not Bret.
+ *
+ * THIS IS A SECOND MECHANISM, not a second route into the one that
+ * already works, and establishing that was the point of the trace this
+ * came out of. The source has two:
+ *
+ *   - check_secret_moves (here) is the FIRST thing every move_xxx does,
+ *     `movi xxx_secret_moves,a11 / calla check_secret_moves` before the
+ *     mode table is even indexed. It walks that wrestler's own pattern
+ *     table against wrest_joystat, a per-player ring buffer of
+ *     (round_tickcount, joy+buttons) entries, and JUMPS to the matched
+ *     entry's code. Button sequences: grab-fling, hip toss, ear slap.
+ *
+ *   - init_smoves (WRESTLE2.ASM) GETPRC_INSERTs one SMOVE_PID process
+ *     per entry of xxx_smove_table at match start, and those watchdogs
+ *     are what match_tick_smoves_for drives. Different table, different
+ *     driver, different moves.
+ *
+ * Only Bret's half of the first one was wired. The seam was declared in
+ * wm_arcade_roster.h and wm_arcade_razor.h, called at the top of all
+ * seven other dispatchers, and filled by nobody -- so seven wrestlers
+ * had no button-sequence secret moves at all, while their smove
+ * monitors worked and made it look as though the mechanism was covered.
+ *
+ * The body is Bret's, generalised: his version is the same routine
+ * against his own typed tables, and the parts that differ per wrestler
+ * -- which button charges, for how long, and what each pattern fires --
+ * are all data the profile and the dispatcher already carry.
+ */
+static uint16_t backend_charge_dtime(const wm_arcade_actor_t *actor,
+                                     uint16_t button) {
+    /* WRESTLE.ASM's get_punch_dtime and its siblings, by button. */
+    switch (button) {
+    case WM_BTN_PUNCH:  return actor->punch_dtime;
+    case WM_BTN_BLOCK:  return actor->block_dtime;
+    case WM_BTN_SPUNCH: return actor->powerp_dtime;
+    case WM_BTN_KICK:   return actor->kick_dtime;
+    case WM_BTN_SKICK:  return actor->powerk_dtime;
+    default:            return 0;
+    }
+}
+
+static void backend_check_secret_moves(
+    wm_arcade_actor_t *actor, const wm_arcade_input_pattern_t *patterns,
+    size_t count, void *user) {
+    wm_wrestler_backend_actor *st = (wm_wrestler_backend_actor *)user;
+    const wm_arcade_wrestler_profile_t *profile;
+    wm_arcade_wrestler_port_bindings_t bind;
+    wm_arcade_roster_callbacks_t roster_cb;
+    wm_arcade_razor_callbacks_t razor_cb;
+    uint16_t now, charge_dtime;
+    size_t i;
+
+    if (!actor || !st || !patterns) return;
+    profile = wm_arcade_roster_profile(
+        (wm_arcade_roster_id_t)actor->wrestler_num);
+    if (!profile) return;
+
+    now = (uint16_t)st->pcnt;
+    wm_arcade_joystat_update(&st->joystat, actor, now);
+
+    /* Captured BEFORE update_joy_dtime, for the reason Bret's copy
+       spells out: a release tick's dtime has to be the duration
+       accumulated through the previous tick, not this tick's reset. */
+    charge_dtime = backend_charge_dtime(actor, profile->charge_button);
+    wm_arcade_update_joy_dtime(actor);
+
+    /* WRESTLE.ASM:4853-4862, the four top-of-function gates. */
+    if (actor->immobilize_time) return;
+    if (actor->player_mode == WM_PMODE_DIZZY ||
+        actor->player_mode == WM_PMODE_WAITANIM) return;
+    if (actor->getup_time) return;
+
+    memset(&bind, 0, sizeof(bind));
+    roster_cb = wm_wrestler_roster_callbacks(st);
+    razor_cb = wm_wrestler_razor_callbacks(st);
+    bind.razor = &razor_cb;
+    bind.taker = &roster_cb;
+    bind.yoko = &roster_cb;
+    bind.shawn = &roster_cb;
+    bind.bam = &roster_cb;
+    bind.doink = &roster_cb;
+    bind.lex = &roster_cb;
+
+    for (i = 0; i < count; ++i) {
+        /*
+         * `move *a11+,a0,L / call a0 / jrc #done` -- the table's FIRST
+         * entry is executable code rather than a value/mask row, and it
+         * is checked every tick and takes priority. In this port that
+         * entry carries a NULL step list and its label is the charge's
+         * own (charge_buzz, firepnch, charge_salt, ...), which is
+         * exactly what wm_arcade_port_release_charge dispatches on.
+         */
+        if (!patterns[i].steps) {
+            if ((actor->but_val_up & profile->charge_button) &&
+                wm_arcade_port_release_charge(profile, actor, st->opponent,
+                                              patterns[i].source_label,
+                                              charge_dtime, &bind))
+                return;
+            continue;
+        }
+
+        /* "only check if newest entry in queue is fresh". Tested here
+           rather than before the loop because the charge probe above
+           does not depend on it -- the source checks it between the
+           `call a0` and #next_table for the same reason. */
+        if (st->joystat.entries[0].tickcount != now) return;
+
+        /*
+         * The two step structs are the same two uint16_t fields; the
+         * matcher carries Bret's type name only because his secret
+         * moves were translated first. Cast rather than duplicated so
+         * there is one matcher and one place for its rules.
+         */
+        if (wm_arcade_joystat_matches(
+                &st->joystat, now,
+                (const wm_arcade_bret_sequence_step_t *)patterns[i].steps,
+                patterns[i].step_count, patterns[i].max_ticks)) {
+            (void)wm_arcade_port_fire_secret(profile, actor, st->opponent,
+                                             patterns[i].source_label,
+                                             (uint32_t)st->pcnt, &bind);
+            return;
+        }
+    }
+}
+
+/*
+ * Razor's copy. NOT a cast of the one above, though it started as one:
+ * wm_arcade_razor_secret_pattern_t leads with a typed id where
+ * wm_arcade_input_pattern_t leads with a source-label string, so the
+ * two are the same SHAPE and different LAYOUT, and reinterpreting one
+ * as the other would have read an enum as a pointer. The step rows
+ * genuinely are identical and are still shared.
+ *
+ * His table also has no charge entry -- all six rows carry real steps,
+ * and his two charge probes live outside it (RAZOR.ASM's
+ * charge_flying_kick and rzr_charge_slashes, reached through
+ * wm_arcade_port_release_charge) -- so the executable-first-entry arm
+ * has nothing to do here.
+ */
+static void backend_razor_check_secret_moves(
+    wm_arcade_actor_t *actor, const wm_arcade_razor_secret_pattern_t *patterns,
+    size_t count, void *user) {
+    wm_wrestler_backend_actor *st = (wm_wrestler_backend_actor *)user;
+    wm_arcade_razor_callbacks_t razor_cb;
+    uint16_t now;
+    size_t i;
+
+    if (!actor || !st || !patterns) return;
+
+    now = (uint16_t)st->pcnt;
+    wm_arcade_joystat_update(&st->joystat, actor, now);
+    wm_arcade_update_joy_dtime(actor);
+
+    if (actor->immobilize_time) return;
+    if (actor->player_mode == WM_PMODE_DIZZY ||
+        actor->player_mode == WM_PMODE_WAITANIM) return;
+    if (actor->getup_time) return;
+    if (st->joystat.entries[0].tickcount != now) return;
+
+    razor_cb = wm_wrestler_razor_callbacks(st);
+    for (i = 0; i < count; ++i) {
+        if (!patterns[i].steps) continue;
+        if (wm_arcade_joystat_matches(
+                &st->joystat, now,
+                (const wm_arcade_bret_sequence_step_t *)patterns[i].steps,
+                patterns[i].step_count, patterns[i].max_ticks)) {
+            (void)wm_arcade_razor_fire_secret(actor, st->opponent,
+                                              patterns[i].id,
+                                              (uint32_t)st->pcnt, &razor_cb);
+            return;
+        }
+    }
+}
+
 static int backend_ck_ignore(wm_arcade_actor_t *actor, void *user) {
     (void)user;
     return wm_arcade_ck_ignore(actor) ? 1 : 0;
@@ -708,6 +887,7 @@ wm_arcade_roster_callbacks_t wm_wrestler_roster_callbacks(
     cb.bozo_check = backend_bozo_check;
     cb.teammate_pin = backend_teammate_pin;
     cb.ck_ignore = backend_ck_ignore;
+    cb.check_secret_moves = backend_check_secret_moves;
     cb.do_reversal = backend_do_reversal;
     cb.do_reversal_message = backend_do_reversal_message;
     cb.find_and_kill_endless = backend_find_and_kill_endless;
@@ -766,6 +946,7 @@ wm_arcade_razor_callbacks_t wm_wrestler_razor_callbacks(
     cb.bozo_check = backend_bozo_check;
     cb.teammate_pin = backend_teammate_pin;
     cb.ck_ignore = backend_ck_ignore;
+    cb.check_secret_moves = backend_razor_check_secret_moves;
     cb.do_reversal = backend_do_reversal;
     cb.do_reversal_message = backend_do_reversal_message;
     cb.find_and_kill_endless = backend_find_and_kill_endless;

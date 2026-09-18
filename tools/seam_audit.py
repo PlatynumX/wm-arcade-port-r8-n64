@@ -46,11 +46,30 @@ VERDICTS = ("wired", "display", "hardware", "unreached", "fallback",
             "deferred")
 
 
-def scan() -> tuple[dict[str, str], set[str], set[str]]:
-    """(seam name -> declaring file, assigned names, called names)."""
+def scan() -> tuple[dict[str, str], set[str], set[str],
+                    dict[str, int], dict[str, int]]:
+    """(seam -> declaring file, assigned, called, decl counts, assign counts).
+
+    The two counts exist because of a BLIND SPOT this tool had and was
+    caught by: it keys on the seam's NAME, so a seam declared in several
+    callback structs and filled in only one of them reads as filled.
+    check_secret_moves was exactly that -- declared in
+    wm_arcade_roster.h, wm_arcade_razor.h and wm_arcade_bret.h, assigned
+    only for Bret, and therefore invisible here while seven wrestlers
+    had no button-sequence secret moves at all.
+
+    Resolving it properly means knowing which struct each assignment
+    targets, which needs a real C parser rather than a regex. The counts
+    are the cheap signal instead: a name declared in more structs than
+    it has assignment sites is worth a look. It is reported, not
+    enforced -- one adapter legitimately serving two structs is normal,
+    and a heuristic that failed the build on it would be noise.
+    """
     decl: dict[str, str] = {}
     assigned: set[str] = set()
     called: set[str] = set()
+    decl_n: dict[str, int] = {}
+    assign_n: dict[str, int] = {}
     for d in port_coverage.PORT_DIRS:
         for p in sorted((ROOT / d).rglob("*")):
             if p.suffix not in (".c", ".h"):
@@ -62,13 +81,16 @@ def scan() -> tuple[dict[str, str], set[str], set[str]]:
                 p.read_text(errors="replace"))
             for n in port_coverage.CALLBACK_DECL.findall(code):
                 decl.setdefault(n, rel)
-            assigned |= set(ASSIGN.findall(code))
+                decl_n[n] = decl_n.get(n, 0) + 1
+            for n in ASSIGN.findall(code):
+                assigned.add(n)
+                assign_n[n] = assign_n.get(n, 0) + 1
             called |= set(CALL.findall(code))
-    return decl, assigned, called
+    return decl, assigned, called, decl_n, assign_n
 
 
 def audit() -> dict:
-    decl, assigned, called = scan()
+    decl, assigned, called, decl_n, assign_n = scan()
     rows = []
     for name in sorted(decl):
         rows.append({
@@ -78,10 +100,16 @@ def audit() -> dict:
             "called": name in called,
         })
     open_rows = [r for r in rows if not r["filled"] and r["called"]]
+    # See scan(): declared in more structs than it has assignment sites.
+    thin = sorted(n for n in decl
+                  if decl_n.get(n, 0) > 1
+                  and assign_n.get(n, 0) < decl_n.get(n, 0)
+                  and n in assigned and n in called)
     return {
         "total": len(rows),
         "filled": sum(1 for r in rows if r["filled"]),
         "called_but_empty": len(open_rows),
+        "partially_filled": thin,
         "rows": rows,
     }
 
@@ -136,6 +164,12 @@ def main() -> int:
     print("callback seams:      %d" % a["total"])
     print("filled by something: %d" % a["filled"])
     print("called but empty:    %d" % a["called_but_empty"])
+    if a["partially_filled"]:
+        print("\nfilled in fewer structs than declare them (%d) --"
+              % len(a["partially_filled"]))
+        print("a heuristic, not a verdict; see scan()'s docstring:")
+        for n in a["partially_filled"]:
+            print("   ", n)
     missing = [n for n in empty if n not in ledger]
     stale = [n for n in ledger if n not in empty]
     if missing:

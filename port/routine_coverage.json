@@ -7796,7 +7796,7 @@
    "external_callers": 8,
    "references": 8,
    "status": "implemented",
-   "evidence": "wm_bret_backend_check_secret_moves",
+   "evidence": "backend_check_secret_moves",
    "from_generated": false,
    "ledgered": false
   },

@@ -218,7 +218,12 @@ wm_arcade_taker_step_result_t wm_arcade_move_taker(wm_arcade_actor_t*a,wm_arcade
 }
 
 static int reject_common(wm_arcade_actor_t*a,wm_arcade_actor_t*o){return !a||!o||(a->anim_mode&WM_MODE_UNINT)||o->player_mode==WM_PMODE_DEAD||o->player_mode==WM_PMODE_HEADHELD||o->player_mode==WM_PMODE_ATTACHED;}
-int wm_arcade_taker_release_charge(wm_arcade_actor_t*a,wm_arcade_actor_t*o,uint16_t ticks,const wm_arcade_taker_callbacks_t*c){(void)o;if(!a||ticks<110)return 0;if(a->player_mode==WM_PMODE_HEADHELD||a->player_mode==WM_PMODE_HEADHOLD||(a->anim_mode&WM_MODE_UNINT))return 0;startsp(a,"scrt_spirit",c); snd(a,"SPIRIT",c); return 1;}
+int wm_arcade_taker_release_charge(wm_arcade_actor_t*a,wm_arcade_actor_t*o,uint16_t ticks,const wm_arcade_taker_callbacks_t*c){(void)o;if(!a||ticks<110)return 0;if(a->player_mode==WM_PMODE_HEADHELD||a->player_mode==WM_PMODE_HEADHOLD||(a->anim_mode&WM_MODE_UNINT))return 0;startsp(a,"scrt_spirit",c);
+    /* TAKER.ASM:404 plays `WRSND W_TAKER,GRABHOLD_T1,GRABHOLD_T2` here.
+       This read "SPIRIT", which is the name of the MOVE (scrt_spirit)
+       and not of any sound: SOUND.H has no such mnemonic, so it
+       resolved to nothing the moment the seam behind it was filled. */
+    snd(a,"GRABHOLD",c); return 1;}
 int wm_arcade_taker_fire_secret(wm_arcade_actor_t*a,wm_arcade_actor_t*o,wm_arcade_taker_secret_id_t id,uint32_t pcnt,const wm_arcade_taker_callbacks_t*c){
     switch(id){
     case WM_TAKER_SECRET_NECK_GRAB:

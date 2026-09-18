@@ -18,6 +18,9 @@
 #include "wm/wrestler_backend.h"
 #include "wm/bret_backend.h"
 #include "wm/arcade/wm_arcade_doink.h"
+#include "wm/wrestler_sound_labels.h"
+#include "wm/wrestler_sound_tables.h"
+#include "wm_arcade_roster.h"
 
 static int endless_kills;
 static void kill_endless(wm_arcade_actor_t *a, void *user) {
@@ -263,12 +266,120 @@ static void test_the_dispatcher_branch(void) {
     assert(last_anim && strcmp(last_anim, "dnk_3_head_slam_anim") == 0);
 }
 
+/* ---- and the sound seam behind all of it ------------------------- */
+
+static uint32_t snd_hc(void *u) { uint32_t *t = u; return (*t += 0x139u) & 0x1ff; }
+static uint32_t snd_spf(void *u) { uint32_t *t = u; return 0x01000000u + ((*t * 7u) & 0x3fff); }
+static uint16_t sound_calls[8];
+static int sound_count;
+static void cap_call(void *user, uint16_t call) {
+    (void)user;
+    if (sound_count < 8) sound_calls[sound_count] = call;
+    ++sound_count;
+}
+
+static void test_the_sound_seam(void) {
+    wm_wrestler_backend_actor st;
+    wm_arcade_roster_callbacks_t cb;
+    wm_arcade_bret_callbacks_t bcb;
+    wm_bret_backend_actor bva;
+    wm_arcade_actor_t me;
+    wm_sndlabel_t s;
+
+    /*
+     * sound_label was declared in wm/arcade/wm_arcade_roster.h and
+     * assigned by nobody, so every `snd(a,"...",c)` in the six shared
+     * dispatchers -- fifty of them -- was dropped on the floor. The
+     * tables behind it have been here since the sound work; the
+     * mnemonic-to-move-index step and this assignment were what was
+     * missing.
+     */
+    memset(&st, 0, sizeof st);
+    cb = wm_wrestler_roster_callbacks(&st);
+    assert(cb.sound_label != NULL);
+
+    memset(&bva, 0, sizeof bva);
+    bcb = wm_bret_backend_callbacks(&bva);
+    assert(bcb.sound != NULL);
+
+    /* The resolver reads SOUND.H's own indexes. */
+    s = wm_wrsnd_label("GRABFLING");
+    assert(s.kind == WM_SNDLABEL_WRSND && s.move1 == 32 && s.move2 == 33);
+    /* A pair need not come from one family: RAZOR.ASM:383 grabs and
+       then punches. */
+    s = wm_wrsnd_label("GRABFLING_PUNCH");
+    assert(s.kind == WM_SNDLABEL_WRSND && s.move1 == 32 && s.move2 == 1);
+    /* And BLOCK_WOOSH is not a WRSND at all -- DCSSOUND.ASM:4265 is one
+       fixed triple_sound for everybody. */
+    s = wm_wrsnd_label("BLOCK_WOOSH");
+    assert(s.kind == WM_SNDLABEL_FIXED && s.call == 0x16u);
+    /* A name the table does not carry resolves to UNKNOWN rather than
+       to silence, which is what lets the source-tools test refuse one. */
+    assert(wm_wrsnd_label("SPIRIT").kind == WM_SNDLABEL_UNKNOWN);
+    assert(wm_wrsnd_label(NULL).kind == WM_SNDLABEL_UNKNOWN);
+
+    /* End to end: a real label through the real seam reaches the sound
+       sink with what MASTER_SOUND_TABLE holds for that wrestler. */
+    memset(&me, 0, sizeof me);
+    me.active = 1;
+    me.wrestler_num = WM_ROSTER_DOINK;
+    st.anim_env.sound = cap_call;
+    st.anim_env.sound_user = NULL;
+    st.anim_env.rng = NULL;
+
+    sound_count = 0;
+    cb.sound_label(&me, "BLOCK_WOOSH", cb.user);
+    assert(sound_count == 1 && sound_calls[0] == 0x16u);
+
+    /*
+     * A WRSND pair goes through wm_wrsndx, which plays what the tables
+     * hold -- and with no RNG a random-indexed entry resolves to 0
+     * rather than inventing a draw, which is the rest of the port's
+     * rule. So this asserts the call was MADE, against the table's own
+     * answer, rather than pinning a sound id this test invented.
+     */
+    {
+        WmRng r;
+        uint32_t t = 1;
+        int direct, through_seam;
+
+        wm_rng_init(&r, 0x2468ACE0u, snd_hc, snd_spf, &t);
+        st.anim_env.rng = &r;
+
+        /*
+         * Against wm_wrsndx's own answer rather than a sound id this
+         * test invented: the seam must play exactly what WRSND plays
+         * for that wrestler and that move pair. Almost every
+         * per-wrestler entry has table_sound's random bit set, so
+         * without an RNG the draw resolves to 0 and nothing is played
+         * -- which is the rest of the port's rule, and is why this arm
+         * needs one.
+         */
+        sound_count = 0;
+        cb.sound_label(&me, "GRABFLING", cb.user);
+        through_seam = sound_count;
+
+        wm_rng_init(&r, 0x2468ACE0u, snd_hc, snd_spf, &t);
+        sound_count = 0;
+        direct = wm_wrsndx(WM_ROSTER_DOINK, 32, 33, &r, NULL, cap_call);
+        assert(through_seam == direct);
+        assert(direct >= 1);
+    }
+
+    /* An unknown label plays nothing at all rather than something
+       arbitrary. */
+    sound_count = 0;
+    cb.sound_label(&me, "NOT_A_SOUND", cb.user);
+    assert(sound_count == 0);
+}
+
 int main(void) {
     test_which_buttons_count();
     test_the_refusals();
     test_what_it_does();
     test_the_seams_are_wired();
     test_the_dispatcher_branch();
+    test_the_sound_seam();
     printf("bozo ok\n");
     return 0;
 }

@@ -4,6 +4,8 @@
 #include "wm/arcade/wm_arcade_bounce.h"
 #include "wm/arcade/wm_arcade_auto_pin.h"
 #include "wm/arcade/wm_arcade_bozo.h"
+#include "wm/wrestler_sound_labels.h"
+#include "wm/wrestler_sound_tables.h"
 #include "wm/anim_program.h"
 #include "wm/arcade/wm_arcade_combo.h"
 #include "wm/arcade/wm_arcade_pin.h"
@@ -521,6 +523,75 @@ static void backend_set_raisearm_bit(wm_arcade_actor_t *actor, void *user) {
  * power move and the head-held reversal were missing outright rather
  * than merely inert.
  */
+/*
+ * SOUND.H's WRSND, reached through the dispatchers' string seam.
+ *
+ * wm_arcade_roster_callbacks_t::sound_label was declared once and
+ * assigned by nobody, so all fifty `snd(a,"...",c)` calls across the six
+ * shared dispatchers were dropped. The tables behind it have been here
+ * since the sound work (wm/wrestler_sound_tables.h is the whole of
+ * WRSNDX, MASTER_SOUND_TABLE and its random sub-tables); what was
+ * missing was the mnemonic-to-move-index step and this assignment.
+ */
+static void backend_sound_label(wm_arcade_actor_t *actor,
+                                const char *source_label, void *user) {
+    wm_wrestler_backend_actor *st = (wm_wrestler_backend_actor *)user;
+    wm_sndlabel_t s;
+
+    if (!actor || !st || !source_label || !st->anim_env.sound) return;
+    s = wm_wrsnd_label(source_label);
+    switch (s.kind) {
+    case WM_SNDLABEL_WRSND:
+        (void)wm_wrsndx((int)actor->wrestler_num, s.move1, s.move2,
+                        st->anim_env.rng, st->anim_env.sound_user,
+                        st->anim_env.sound);
+        break;
+    case WM_SNDLABEL_FIXED:
+        st->anim_env.sound(st->anim_env.sound_user, s.call);
+        break;
+    case WM_SNDLABEL_UNKNOWN:
+        /* Nothing is invented for a name the table does not carry. A
+           source-tools test walks every label the dispatchers use and
+           refuses one that lands here, so this arm means the table is
+           behind the callers rather than that the sound is silent. */
+        break;
+    }
+}
+
+/*
+ * Razor's sound seam, which takes a typed id rather than a string --
+ * his module is the one that selects by id everywhere. Every id maps to
+ * a WRSND form read straight out of RAZOR.ASM's own calls.
+ */
+static const char *razor_sound_label(wm_arcade_razor_sound_id_t id) {
+    switch (id) {
+    case WM_RZR_SND_PUNCH:            return "PUNCH";
+    case WM_RZR_SND_HDBUTT:           return "HDBUTT";
+    case WM_RZR_SND_LBOWDROP:         return "LBOWDROP";
+    case WM_RZR_SND_BLOCK_WOOSH:      return "BLOCK_WOOSH";
+    case WM_RZR_SND_UPRCUT:           return "UPRCUT";
+    /* `WRSND W_RAZOR,UPRCUT_T2` and `WRSND W_RAZOR,KICK_T2` -- the
+       one-sound form, twice each in RAZOR.ASM. */
+    case WM_RZR_SND_UPRCUT_T2:        return "UPRCUT_T2";
+    case WM_RZR_SND_KICK:             return "KICK";
+    case WM_RZR_SND_KICK_T2:          return "KICK_T2";
+    case WM_RZR_SND_FLYKICK:          return "FLYKICK";
+    case WM_RZR_SND_GRABHOLD:         return "GRABHOLD";
+    /* `WRSND W_RAZOR,GRABFLING_T1,PUNCH_T2` -- the grab and then the
+       punch, which is what the compound id is named after. */
+    case WM_RZR_SND_GRABFLING_PUNCH:  return "GRABFLING_PUNCH";
+    case WM_RZR_SND_PUSH:             return "PUSH";
+    case WM_RZR_SND_TURNDIVE:         return "TURNDIVE";
+    case WM_RZR_SND_NONE:             break;
+    }
+    return NULL;
+}
+
+static void backend_razor_sound(wm_arcade_actor_t *actor,
+                                wm_arcade_razor_sound_id_t id, void *user) {
+    backend_sound_label(actor, razor_sound_label(id), user);
+}
+
 static void backend_find_and_kill_endless(wm_arcade_actor_t *actor,
                                           void *user) {
     (void)actor;
@@ -550,6 +621,7 @@ wm_arcade_roster_callbacks_t wm_wrestler_roster_callbacks(
     cb.mode_dead = backend_mode_dead;
     cb.check_combo_go = backend_check_combo_go;
     cb.change_anim_label = backend_change_anim_label;
+    cb.sound_label = backend_sound_label;
     cb.can_pin = backend_can_pin;
     cb.code_addr = backend_code_addr;
     cb.climb_turnbuckle = backend_climb_turnbuckle;
@@ -599,6 +671,7 @@ wm_arcade_razor_callbacks_t wm_wrestler_razor_callbacks(
     wm_arcade_razor_callbacks_t cb;
     memset(&cb, 0, sizeof(cb));
     cb.change_anim = backend_razor_change_anim;
+    cb.sound = backend_razor_sound;
     cb.execute_walk = backend_execute_walk;
     cb.adjust_health = backend_adjust_health;
     cb.mode_dead = backend_mode_dead;

@@ -4113,3 +4113,46 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+def test_every_sound_label_a_dispatcher_uses_resolves() -> None:
+    """A string sound seam must not quietly play nothing.
+
+    Six of the eight dispatchers call sound by a MNEMONIC --
+    `snd(a,"GRABFLING",c)` -- because that is how SOUND.H's
+    `WRSND W_DOINK,GRABFLING_T1,GRABFLING_T2` was transcribed. The seam
+    behind it was declared once and assigned by nobody, so all of those
+    calls were dropped; wiring it turns a dropped call into a lookup,
+    and a lookup that misses is silent in exactly the same way.
+
+    That is not hypothetical. `snd(a,"SPIRIT",c)` named the MOVE
+    (scrt_spirit) rather than any sound: SOUND.H has no SPIRIT, and
+    TAKER.ASM:404 plays `WRSND W_TAKER,GRABHOLD_T1,GRABHOLD_T2`. It
+    would have resolved to nothing forever. This walks every literal the
+    dispatchers pass and refuses one the table does not carry.
+    """
+    src = ROOT / "src" / "core" / "arcade"
+    if not src.exists():
+        return
+    used: set[str] = set()
+    for path in sorted(src.glob("wm_arcade_*.c")):
+        text = path.read_text(errors="replace")
+        used |= set(re.findall(r'snd\(\s*a\s*,\s*"([A-Z_0-9]+)"', text))
+    assert used, "no string sound labels found -- did the callers change?"
+
+    table = ROOT / "src" / "core" / "wrestler_sound_labels.c"
+    known = set(re.findall(r'\{\s*"([A-Z_0-9]+)"\s*,\s*WM_SNDLABEL_',
+                           table.read_text(errors="replace")))
+    missing = sorted(used - known)
+    assert not missing, missing
+
+    # And every name the table carries is a real SOUND.H mnemonic (or the
+    # documented compound of two), so the table cannot drift into
+    # inventions of its own.
+    sound_h = wlanim.ORIG / "SOUND.H"
+    if not sound_h.exists():
+        return
+    equs = set(re.findall(r"^([A-Z_0-9]+)\s+equ\s",
+                          sound_h.read_text(errors="replace"), re.M))
+    compound = {"GRABFLING_PUNCH", "HIPTOSS_PUNCH", "BLOCK_WOOSH"}
+    for name in sorted(known - compound):
+        assert name in equs or (name + "_T1") in equs, name

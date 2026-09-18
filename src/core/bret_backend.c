@@ -4,6 +4,8 @@
 #include "wm/arcade/wm_arcade_bounce.h"
 #include "wm/arcade/wm_arcade_auto_pin.h"
 #include "wm/arcade/wm_arcade_bozo.h"
+#include "wm/wrestler_sound_labels.h"
+#include "wm/wrestler_sound_tables.h"
 #include "wm/anim_program.h"
 #include "wm/wrestler_backend.h"
 #include "wm/arcade/wm_arcade_pin.h"
@@ -928,6 +930,52 @@ static void bret_set_raisearm_bit(wm_arcade_actor_t *actor, void *user) {
  * power move and the head-held reversal were missing outright rather
  * than merely inert.
  */
+/*
+ * Bret's sound seam. Same shape as Razor's, and the same source: every
+ * id is a WRSND form read out of BRET.ASM's own calls.
+ */
+static const char *bret_sound_label(wm_arcade_bret_sound_id_t id) {
+    switch (id) {
+    case WM_BRET_SND_PUNCH:       return "PUNCH";
+    case WM_BRET_SND_HDBUTT:      return "HDBUTT";
+    case WM_BRET_SND_LBOWDROP:    return "LBOWDROP";
+    case WM_BRET_SND_BLOCK_WOOSH: return "BLOCK_WOOSH";
+    case WM_BRET_SND_UPRCUT:      return "UPRCUT";
+    case WM_BRET_SND_KICK:        return "KICK";
+    case WM_BRET_SND_FLYKICK:     return "FLYKICK";
+    case WM_BRET_SND_GRABFLING:   return "GRABFLING";
+    /* `WRSND W_BRET,HIPTOSS_T1,PUNCH_T2` -- the toss and then the
+       punch, three times in BRET.ASM. */
+    case WM_BRET_SND_HIPTOSS:     return "HIPTOSS_PUNCH";
+    case WM_BRET_SND_PUSH:        return "PUSH";
+    case WM_BRET_SND_TURNDIVE:    return "TURNDIVE";
+    case WM_BRET_SND_NONE:        break;
+    }
+    return NULL;
+}
+
+static void bret_sound(wm_arcade_actor_t *actor,
+                       wm_arcade_bret_sound_id_t id, void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    wm_sndlabel_t s;
+    const char *label = bret_sound_label(id);
+
+    if (!actor || !bva || !label || !bva->anim_env.sound) return;
+    s = wm_wrsnd_label(label);
+    switch (s.kind) {
+    case WM_SNDLABEL_WRSND:
+        (void)wm_wrsndx((int)actor->wrestler_num, s.move1, s.move2,
+                        bva->anim_env.rng, bva->anim_env.sound_user,
+                        bva->anim_env.sound);
+        break;
+    case WM_SNDLABEL_FIXED:
+        bva->anim_env.sound(bva->anim_env.sound_user, s.call);
+        break;
+    case WM_SNDLABEL_UNKNOWN:
+        break;
+    }
+}
+
 static void bret_find_and_kill_endless(wm_arcade_actor_t *actor,
                                           void *user) {
     (void)actor;
@@ -968,6 +1016,7 @@ wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva)
     cb.set_raisearm_bit = bret_set_raisearm_bit;
     cb.drone_change_back = bret_drone_change_back;
     cb.bozo_check = bret_bozo_check;
+    cb.sound = bret_sound;
     cb.find_and_kill_endless = bret_find_and_kill_endless;
     cb.user = bva;
     return cb;

@@ -2,6 +2,7 @@
 #include "wm/arcade/wm_arcade_confine.h"
 #include "wm/arcade/wm_arcade_modes.h"
 #include "wm/arcade/wm_arcade_bounce.h"
+#include "wm/arcade/wm_arcade_auto_pin.h"
 #include "wm/arcade/wm_arcade_combo.h"
 #include "wm/arcade/wm_arcade_pin.h"
 
@@ -485,6 +486,37 @@ static void backend_bounce_off_ropes(wm_arcade_actor_t *actor, void *user) {
         backend_change_anim_label(actor, r.bounce_anim, st);
 }
 
+/*
+ * The auto-pin's return path and the victory pose
+ * (wm/arcade/wm_arcade_auto_pin.h). All three seams sat empty in every
+ * dispatcher, which mattered the moment auto_pin_check could actually
+ * hand a human to the drone AI: nothing turned him back.
+ */
+/* Referenced by nothing while the seam above is unwired; kept
+   because the decision is about the match loop and not about
+   this adapter, and deleting it would hide that. */
+WM_MAYBE_UNUSED static int backend_raisearm_check(wm_arcade_actor_t *actor, void *user) {
+    wm_wrestler_backend_actor *st = (wm_wrestler_backend_actor *)user;
+    if (!actor || !st) return 0;
+    return wm_arcade_raisearm_check(actor, st->all_actors, st->all_actor_count,
+                                   st->anim_env.royal_rumble,
+                                   /* raisearm_check only asks whether
+                                      the queue is empty, and peeks
+                                      without advancing it. */
+                                   wm_final_queue_empty(
+                                       st->anim_env.final_battle)) ? 1 : 0;
+}
+
+static void backend_set_raisearm_bit(wm_arcade_actor_t *actor, void *user) {
+    (void)user;
+    wm_arcade_set_raisearm_bit(actor);
+}
+
+static void backend_drone_change_back(wm_arcade_actor_t *actor, void *user) {
+    (void)user;
+    (void)wm_arcade_drone_change_back(actor);
+}
+
 wm_arcade_roster_callbacks_t wm_wrestler_roster_callbacks(
     wm_wrestler_backend_actor *state) {
     wm_arcade_roster_callbacks_t cb;
@@ -501,6 +533,33 @@ wm_arcade_roster_callbacks_t wm_wrestler_roster_callbacks(
     cb.mode_inair2 = backend_mode_inair2;
     cb.mode_choking = backend_mode_choking;
     cb.bounce_off_ropes = backend_bounce_off_ropes;
+    /*
+     * raisearm_check is TRANSLATED AND DELIBERATELY NOT WIRED HERE, and
+     * this is the one place that says why.
+     *
+     * The routine is right and the source is unambiguous about what it
+     * means: "nobody has pinned. if we're outside or all our opponents
+     * are outside, do a raisearm." The #raisearm branch sits BEFORE the
+     * pin branch in every wrestler's mode_normal, so a winner whose
+     * dead opponent has left the ring poses instead of pinning.
+     *
+     * Wiring it was tried, and it strands the match. Measured, on the
+     * live loop: at tick 0 the dead opponent is still in the ring and
+     * the check correctly says no, so the winner pins and the round
+     * ends. By tick 2 his death animation has rolled him OUT
+     * (in_ring 1 -> 0), the check correctly says yes, and the winner
+     * poses -- forever, because this port's round only ends on the pin.
+     * The arcade does not need the pin there: the round ends from the
+     * DEAD wrestler's own path, win_announce into announce_rnd_winner,
+     * which wm_arcade_round_announce_tick translates but which nothing
+     * drives when nobody pins.
+     *
+     * So the blocker is not this routine, it is that round-end path,
+     * and wiring this seam before that one trades a round that ends
+     * wrongly for a round that never ends. The two must land together.
+     */
+    cb.set_raisearm_bit = backend_set_raisearm_bit;
+    cb.drone_change_back = backend_drone_change_back;
     cb.user = state;
     return cb;
 }
@@ -549,6 +608,10 @@ wm_arcade_razor_callbacks_t wm_wrestler_razor_callbacks(
     cb.mode_inair2 = backend_mode_inair2;
     cb.mode_choking = backend_mode_choking;
     cb.bounce_off_ropes = backend_bounce_off_ropes;
+    /* raisearm_check is left unwired here for the reason spelled out in
+       wm_wrestler_roster_callbacks above -- Razor is not a special case. */
+    cb.set_raisearm_bit = backend_set_raisearm_bit;
+    cb.drone_change_back = backend_drone_change_back;
     cb.user = state;
     return cb;
 }

@@ -141,7 +141,7 @@ static wm_arcade_lex_step_result_t mode_normal(wm_arcade_actor_t*a,wm_arcade_act
     if(o&&o->player_mode==WM_PMODE_DEAD&&!(o->status_flags&WM_STATUS_ZOMBIE)){
         int reciprocal=a->attach_proc&&a->attach_proc->attach_proc==a;
         if(!reciprocal){
-            if((c&&c->teammate_pin&&c->teammate_pin(a,c->user))||(c&&c->raisearm_check&&c->raisearm_check(a,c->user))){anim(a,face_label(L.raise2,L.raise4,a),c);if(c->set_raisearm_bit)c->set_raisearm_bit(a,c->user);return WM_LEX_STEP_ACTION;}
+            if((c&&c->teammate_pin&&c->teammate_pin(a,c->user))||(c&&c->raisearm_check&&c->raisearm_check(a,c->user))){anim(a,face_label(L.raise2,L.raise4,a),c);if(c->set_raisearm_bit)c->set_raisearm_bit(a,c->user);if(c->drone_change_back)c->drone_change_back(a,c->user);return WM_LEX_STEP_ACTION;}
             if(a->but_val_cur&&c&&c->can_pin&&c->can_pin(a,o,c->user)){
             anim(a,face_label(L.pin2,L.pin4,a),c); a->status_flags |= WM_STATUS_DID_PIN;
                 if(c->drone_change_back)c->drone_change_back(a,c->user);

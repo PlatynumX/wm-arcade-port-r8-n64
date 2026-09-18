@@ -1,4 +1,23 @@
 /*
+ * The auto-pin, its return path, and the victory pose -- four routines
+ * that only make sense as one story.
+ *
+ *   auto_pin_check      WRESTLE.ASM:3886   human -> temp drone
+ *   raisearm_check      WRESTLE2.ASM:3683  may he raise his arm?
+ *   set_raisearm_bit    WRESTLE2.ASM:4514  he did
+ *   drone_change_back   WRESTLE2.ASM:3416  temp drone -> human again
+ *
+ * Beat everyone and stop doing anything, and auto_pin_check hands you to
+ * the drone AI, which walks over and pins. The last thing both the #pin
+ * and #raisearm paths do, in every one of the eight wrestler files, is
+ * call drone_change_back -- "if we're a temp drone for auto-pin
+ * purposes, turn back into a normal player here." Without it the loan
+ * is never repaid: a human handed to the AI to finish a pin would stay
+ * a drone for the rest of the match.
+ *
+ * ----------------------------------------------------------------- */
+
+/*
  * WRESTLE.ASM:3886 SUBR auto_pin_check -- the auto-pin.
  *
  * The source's own header on it: "if all opponents are dead, wait four
@@ -25,6 +44,16 @@
 #include <stdint.h>
 
 #include "wm/arcade/wm_arcade_combat.h"
+
+/*
+ * For an adapter that is kept on purpose while its seam is unwired --
+ * see the raisearm_check note in src/core/wrestler_backend.c.
+ */
+#if defined(__GNUC__)
+#define WM_MAYBE_UNUSED __attribute__((unused))
+#else
+#define WM_MAYBE_UNUSED
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -78,6 +107,60 @@ typedef struct {
  */
 wm_auto_pin_result_t wm_arcade_auto_pin_check(wm_arcade_actor_t *actor,
                                               const wm_auto_pin_env_t *env);
+
+
+/*
+ * WRESTLE2.ASM:3416 drone_change_back -- hand control back.
+ *
+ * Eight lines, and the whole of it is one guard and one store: a PLYRNUM
+ * of 2 or more is a REAL drone and is left alone ("don't check real
+ * drones"), and anyone else is made PTYPE_PLAYER. The source does not
+ * bother asking whether he was a temp drone first, and says so:
+ * "don't bother checking if they're a drone or not. In either case,
+ * turning them human again won't hurt."
+ *
+ * Called at the end of the #pin and #raisearm paths in all eight
+ * wrestler files (BRET.ASM:1402 and :1413 are the pair), and from
+ * reset_wrestle/reset_wrestle2 between rounds (WRESTLE.ASM:2681,
+ * :2822).
+ */
+bool wm_arcade_drone_change_back(wm_arcade_actor_t *actor);
+
+/*
+ * WRESTLE2.ASM:4514 set_raisearm_bit -- one `ori M_DID_RAISEARM` into
+ * STATUS_FLAGS, and nothing else. Called right after the arm-raise
+ * animation starts; the bit is what stops him doing it twice.
+ */
+void wm_arcade_set_raisearm_bit(wm_arcade_actor_t *actor);
+
+/*
+ * WRESTLE2.ASM:3683 raisearm_check -- may he raise his arm in victory?
+ *
+ * Returns the source's carry: set is yes. Two parts.
+ *
+ * FIRST, a royal-rumble hack that the source labels as one. A HUMAN in a
+ * rumble may only raise his arm once @FINAL_PTR's queue is empty --
+ * `move @FINAL_PTR,a14,L / move *a14,a14 / jrn #hack_done`, a peek that
+ * does NOT advance the pointer, which is what wm_final_queue_empty is
+ * for. A drone skips the hack entirely (`PLAYER=0`, so a nonzero
+ * PLYR_TYPE jumps past it).
+ *
+ * SECOND, the real test, over every process: every opponent -- anyone
+ * whose PLYR_SIDE differs, which is how the sweep skips himself and his
+ * teammates in one comparison -- must be MODE_DEAD and not a ZOMBIE, or
+ * the answer is no. Dead opponents who are still INSIDE the ring are
+ * counted as it goes.
+ *
+ * Then the geometry, which is the part worth reading twice: if HE is
+ * outside the ring the answer is yes regardless, and if he is inside it
+ * is yes only when no dead opponent is inside with him. A body on the
+ * mat beside him is what stops the pose.
+ */
+bool wm_arcade_raisearm_check(const wm_arcade_actor_t *actor,
+                              wm_arcade_actor_t *const *actors,
+                              size_t actor_count,
+                              bool royal_rumble,
+                              bool final_queue_empty);
 
 #ifdef __cplusplus
 }

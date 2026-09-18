@@ -12807,8 +12807,8 @@
    "local": false,
    "external_callers": 18,
    "references": 18,
-   "status": "cited",
-   "evidence": "drone_change_back",
+   "status": "implemented",
+   "evidence": "backend_drone_change_back",
    "from_generated": false,
    "ledgered": false
   },
@@ -24104,8 +24104,8 @@
    "local": false,
    "external_callers": 8,
    "references": 8,
-   "status": "cited",
-   "evidence": "raisearm_check",
+   "status": "implemented",
+   "evidence": "backend_raisearm_check",
    "from_generated": false,
    "ledgered": false
   },
@@ -27947,8 +27947,8 @@
    "local": false,
    "external_callers": 8,
    "references": 8,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "backend_set_raisearm_bit",
    "from_generated": false,
    "ledgered": false
   },

@@ -2,6 +2,7 @@
 #include "wm/arcade/wm_arcade_confine.h"
 #include "wm/arcade/wm_arcade_modes.h"
 #include "wm/arcade/wm_arcade_bounce.h"
+#include "wm/arcade/wm_arcade_auto_pin.h"
 #include "wm/wrestler_backend.h"
 #include "wm/arcade/wm_arcade_pin.h"
 #include "wm/arcade/wm_arcade_start_run.h"
@@ -891,6 +892,35 @@ static void bret_bounce_off_ropes(wm_arcade_actor_t *actor, void *user) {
         bret_start_label(actor, bva, r.bounce_anim);
 }
 
+/*
+ * The same three, Bret's copies (wm/arcade/wm_arcade_auto_pin.h).
+ */
+/* Referenced by nothing while the seam above is unwired; kept
+   because the decision is about the match loop and not about
+   this adapter, and deleting it would hide that. */
+WM_MAYBE_UNUSED static int bret_raisearm_check(wm_arcade_actor_t *actor, void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    if (!actor || !bva) return 0;
+    return wm_arcade_raisearm_check(actor, bva->all_actors,
+                                   bva->all_actor_count,
+                                   bva->anim_env.royal_rumble,
+                                   /* raisearm_check only asks whether
+                                      the queue is empty, and peeks
+                                      without advancing it. */
+                                   wm_final_queue_empty(
+                                       bva->anim_env.final_battle)) ? 1 : 0;
+}
+
+static void bret_set_raisearm_bit(wm_arcade_actor_t *actor, void *user) {
+    (void)user;
+    wm_arcade_set_raisearm_bit(actor);
+}
+
+static void bret_drone_change_back(wm_arcade_actor_t *actor, void *user) {
+    (void)user;
+    (void)wm_arcade_drone_change_back(actor);
+}
+
 wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva) {
     wm_arcade_bret_callbacks_t cb;
     memset(&cb, 0, sizeof(cb));
@@ -907,6 +937,15 @@ wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva)
     cb.mode_inair2 = bret_mode_inair2;
     cb.mode_choking = bret_mode_choking;
     cb.bounce_off_ropes = bret_bounce_off_ropes;
+    /*
+     * raisearm_check is translated and deliberately NOT wired, here or
+     * in any other dispatcher. src/core/wrestler_backend.c, in
+     * wm_wrestler_roster_callbacks, carries the measurement and the
+     * reason; Bret's dispatcher is no different, it just has its own
+     * callback struct.
+     */
+    cb.set_raisearm_bit = bret_set_raisearm_bit;
+    cb.drone_change_back = bret_drone_change_back;
     cb.user = bva;
     return cb;
 }

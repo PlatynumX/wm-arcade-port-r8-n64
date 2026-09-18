@@ -7,7 +7,7 @@ only in a note saying it is missing does not count as present.
 
 | status | meaning | count |
 |---|---|---|
-| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 2030 |
+| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 2033 |
 | `inlined` | the port does it, spelled out at each use site (ledger) | 13 |
 | `renamed` | the port does it under another name (ledger) | 159 |
 | `partial` | partly translated; the ledger note says which part | 18 |
@@ -17,15 +17,15 @@ only in a note saying it is missing does not count as present.
 | `hardware` | talks to the cabinet (ledger) | 68 |
 | `dead` | **measured**: no caller outside its own file | 37 |
 | `unassembled` | **measured**: inside a `.if` the assembler skipped | 68 |
-| `cited` | named only in a comment -- not evidence of anything | 3 |
-| `unknown` | no mention anywhere | 5 |
+| `cited` | named only in a comment -- not evidence of anything | 1 |
+| `unknown` | no mention anywhere | 4 |
 
-**2599 of 2607 routines are accounted for; 8 are open** (`cited` + `unknown`).
+**2602 of 2607 routines are accounted for; 5 are open** (`cited` + `unknown`).
 
 ## Open routines by file
 
 | file | open | routines |
 |---|---|---|
-| WRESTLE2.ASM | 6 | `ditch_getup_meter`, `ditch_getup_meter_a9`, `drone_change_back`, `getup_meter`, `raisearm_check`, `set_raisearm_bit` |
+| WRESTLE2.ASM | 3 | `ditch_getup_meter`, `ditch_getup_meter_a9`, `getup_meter` |
 | DOINK.ASM | 1 | `bozo_check` |
 | WRESTLE.ASM | 1 | `shake_all_ropes` |

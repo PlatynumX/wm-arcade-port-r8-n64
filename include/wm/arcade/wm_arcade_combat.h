@@ -297,6 +297,12 @@ struct wm_arcade_actor {
     uint16_t puppet_time;
     uint16_t puppet_ticks;
     /*
+     * PLYR.EQU:229 AUTO_PIN_CNTDOWN, "time before auto-pin kicks in".
+     * Counted up by auto_pin_check (wm/arcade/wm_arcade_auto_pin.h) and
+     * read by nothing else, exactly as in the source.
+     */
+    uint16_t auto_pin_cntdown;
+    /*
      * PLYR.EQU CUR_FRAME as do_roll writes it: the frame a wrestler shows
      * while his own animation is parked. It is not the puppet field above
      * -- that is an ATTACKER choosing the frame; this is the wrestler

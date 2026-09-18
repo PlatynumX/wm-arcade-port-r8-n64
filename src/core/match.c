@@ -1,6 +1,7 @@
 #include "wm/match.h"
 #include "wm/bret_backend.h"
 #include "wm/wrestler_backend.h"
+#include "wm/arcade/wm_arcade_auto_pin.h"
 #include "wm/arcade/wm_arcade_roster_anims.h"
 #include "wm/arcade/wm_arcade_react_anims.h"
 #include "wm/arcade/wm_arcade_react5_core.h"
@@ -1065,6 +1066,57 @@ static void match_finish_zombie_transform(wm_match_state *m, unsigned i) {
        queue arrives healthy. This port keeps life on the actor, the
        same place init_rnd_life_data's sweep writes it. */
     m->actors[i].life = WM_ARCADE_LIFE_MAX;
+}
+
+/*
+ * WRESTLE.ASM:3886 auto_pin_check, at its own place in the loop.
+ *
+ * "if all opponents are dead, wait four seconds, then wait for the unint
+ * bit to clear, then turn into a drone." Its one caller is move_wrestler
+ * (WRESTLE.ASM:3858), one line before the per-character dispatch, every
+ * tick, for every wrestler -- which is where this sits.
+ *
+ * WHY IT IS CALLED FROM HERE AND NOT FROM THE TRANSLATED move_wrestler.
+ * There are two translations of that routine. wm_arcade_move_wrestler
+ * (wm/arcade/wm_arcade_move_dispatch.h) is the faithful one -- the @HALT
+ * check, the SPECIAL_MOVE_ADDR drain, auto_pin_check, then the
+ * per-character dispatch -- and it is called only from a test.
+ * wm_arcade_move_ported_wrestler is that last step alone, and it is what
+ * this loop calls.
+ *
+ * Routing this loop through the faithful one was tried and backed out,
+ * because the two cannot simply be collapsed. The drain is not missing:
+ * BRET.ASM's half of it lives INSIDE his own dispatcher
+ * (src/core/arcade/wm_arcade_bret.c:375), keyed on a typed
+ * wm_arcade_bret_anim_id_t, and his own monitors are what write it. A
+ * shared drain running first would take his queued id, cast it as a
+ * label pointer, and skip his dispatcher on the tick that was supposed
+ * to consume it. Reconciling that means deciding whether
+ * SPECIAL_MOVE_ADDR carries an id or an address for everybody, which is
+ * its own change; until then, the honest thing is to put auto_pin_check
+ * where the source calls it and say why the rest is still split.
+ *
+ * (For the other seven the field is vestigial rather than latched: the
+ * monitor writes it to mirror the source's queue and no dispatcher
+ * reads it, because match_tick_smoves_for starts the animation itself.)
+ */
+static void match_auto_pin_check(wm_match_state *m, unsigned i,
+                                 wm_arcade_actor_t *opp,
+                                 wm_arcade_actor_t *const *actor_ptrs) {
+    wm_auto_pin_env_t ape;
+
+    memset(&ape, 0, sizeof ape);
+    /* The same two globals the mode_dead env reads, read the same way. */
+    ape.in_finish_move = m->in_finish_move;
+    ape.finish_completed = m->coffin.finish_completed != 0;
+    ape.royal_rumble = m->royal_rumble;
+    ape.opponent = opp;
+    ape.actors = actor_ptrs;
+    ape.actor_count = m->actor_count;
+
+    /* Becoming a drone is the whole effect and it lands on the actor's
+       own PLYR_TYPE; the drone AI picks him up from there. */
+    (void)wm_arcade_auto_pin_check(&m->actors[i], &ape);
 }
 
 /*
@@ -2319,6 +2371,10 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             bind.bam = &roster_cb;
             bind.doink = &roster_cb;
             bind.lex = &roster_cb;
+
+            /* `callr auto_pin_check` -- one line before the
+               per-character dispatch, which is the next statement. */
+            match_auto_pin_check(m, i, opp, actor_ptrs);
 
             if (profile)
                 (void)wm_arcade_move_ported_wrestler(profile, &m->actors[i], opp,

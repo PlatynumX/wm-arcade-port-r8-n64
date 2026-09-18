@@ -57,6 +57,7 @@ CORE_C := \
 FIX38_ARCADE_C := \
     src/core/arcade/wm_arcade_anim_combat.c \
     src/core/arcade/wm_arcade_confine.c \
+    src/core/arcade/wm_arcade_auto_pin.c \
     src/core/arcade/wm_arcade_bounce.c \
     src/core/arcade/wm_arcade_modes.c \
     src/core/arcade/wm_arcade_und_finish.c \

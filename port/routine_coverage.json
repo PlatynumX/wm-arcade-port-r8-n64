@@ -3580,8 +3580,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "match_auto_pin_check",
    "from_generated": false,
    "ledgered": false
   },

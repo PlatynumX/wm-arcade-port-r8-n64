@@ -1369,6 +1369,35 @@ static void match_start_common_tail(wm_match_state *m) {
      * three creation branches.
      */
     m->score.double_rounds = m->eight_on_one || m->royal_rumble;
+
+    /*
+     * `CREATE GETUP_PID,getup_meter` -- one per wrestler, right after
+     * his wrestler_main, at every one of WRESTLE.ASM's six match-start
+     * branches. Started here rather than in each of this port's three
+     * creation paths for the same reason everything else in this
+     * function is: the paths differ in who they make, not in what is
+     * made for them.
+     *
+     * It comes AFTER the round setup above, which is the source's order
+     * too -- reset_for_round stamps DELAY_METER with its fourteen
+     * seconds and then slide_offscr's eighteen replace them. That
+     * eighteen is the point of wiring this at all: nothing was writing
+     * it, and DELAY_METER set is what makes a knocked-down wrestler get
+     * straight back up instead of having to mash (wm_arcade_roll.c's
+     * `jrz #reg` arm wipes GETUP_TIME outright).
+     */
+    {
+        unsigned gi;
+        for (gi = 0; gi < m->actor_count; ++gi) {
+            wm_arcade_actor_t *ptrs[WM_MATCH_MAX_ACTORS];
+            unsigned k;
+            for (k = 0; k < m->actor_count; ++k) ptrs[k] = &m->actors[k];
+            (void)wm_arcade_getup_meter_start(
+                &m->getup_meter[gi], &m->actors[gi], ptrs, m->actor_count,
+                m->drone_meters_on != 0, m->num_opps,
+                m->royal_rumble);
+        }
+    }
 }
 
 
@@ -2179,6 +2208,25 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
            getup meter, in the same main-loop pass. */
         wm_arcade_tick_wrestler_timers(&m->actors[i]);
         wm_arcade_tick_getup_time(&m->actors[i]);
+
+        /*
+         * One tick of his own getup_meter process (WRESTLE2.ASM:950).
+         * It runs AFTER the countdown above, which is the order two
+         * separate processes fall into here and is the order that
+         * matters: the meter reads DELAY_METER, and the countdown is
+         * what brings it down.
+         *
+         * The frame it asks for is thrown away. What it is here for is
+         * slide_offscr's `movi 18*60,a0 / move a0,*a10(DELAY_METER)`,
+         * which nothing else in this port writes; the green bar itself
+         * is the display's and there is nothing yet to hand it to.
+         */
+        {
+            wm_getup_meter_frame_t gmf;
+            wm_arcade_getup_meter_tick(&m->getup_meter[i], &m->actors[i],
+                                       NULL, &gmf);
+            (void)gmf;
+        }
 
         /* WRESTLE.ASM::move_wrestler dispatches every wrestler process
            through its own move_xxx; wm_arcade_move_ported_wrestler is that

@@ -22,6 +22,7 @@
 #include "wm/arcade/wm_arcade_match_clock.h"
 #include "wm/arcade/wm_arcade_round.h"
 #include "wm/arcade/wm_arcade_round_announce.h"
+#include "wm/arcade/wm_arcade_getup_meter.h"
 #include "wm/arcade/wm_arcade_target.h"
 #include "wm/arcade/wm_arcade_shake.h"
 #include "wm/arcade/wm_arcade_debris.h"
@@ -172,6 +173,14 @@ typedef struct {
      * reads it to decide whether the combo-meter threshold is 16 or 0.
      */
     int32_t instant_combos_on;
+
+    /*
+     * AWARD.ASM's `drone_meters_on`, the other powerup the getup meter
+     * reads: getup_meter's `move @drone_meters_on,a14 / jrz #die` is
+     * what decides whether a LONE drone gets a bar of his own. Copied in
+     * by the app the same way instant_combos_on is.
+     */
+    int32_t drone_meters_on;
 
     /*
      * REACT1.ASM's own callback set and its context, owned here because
@@ -499,6 +508,19 @@ typedef struct {
      * one, so the deciding tick's own state is still observable.
      */
     bool round_reset_pending;
+
+    /*
+     * WRESTLE.ASM:1730 `CREATE GETUP_PID,getup_meter`, one per wrestler,
+     * made right after his wrestler_main at every one of the six
+     * match-start branches. The process decides for itself whether it is
+     * allowed to exist -- a drone with a human teammate kills its own --
+     * so the port starts one for everybody too and lets it say no.
+     *
+     * It persists across rounds, as the source's does: nothing
+     * re-CREATEs it at WRESTLERS_RESET, and its own MODE_DEAD test sends
+     * it back offscreen when the round ends.
+     */
+    wm_getup_meter_t getup_meter[WM_MATCH_MAX_ACTORS];
 
     /*
      * LIFEBAR.ASM:2852 DO_WAIT, the end-of-match path. Started on the

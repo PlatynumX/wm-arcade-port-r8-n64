@@ -9086,8 +9086,8 @@
    "local": false,
    "external_callers": 2,
    "references": 3,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_arcade_ditch_getup_meter",
    "from_generated": false,
    "ledgered": false
   },
@@ -9101,8 +9101,8 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "wm_arcade_ditch_getup_meter_a9",
    "from_generated": false,
    "ledgered": false
   },
@@ -14472,8 +14472,8 @@
    "local": false,
    "external_callers": 6,
    "references": 6,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "getup_meter",
    "from_generated": false,
    "ledgered": false
   },

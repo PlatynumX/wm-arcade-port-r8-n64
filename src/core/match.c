@@ -132,6 +132,73 @@ static void match_rope_command(void *user, int bank, int action,
 }
 
 /*
+ * WRESTLE.ASM:6069 shake_all_ropes, reached the OTHER way.
+ *
+ * There are two callers in the source and this port had only one of
+ * them. DNKSEQ2's four `WL ANI_CODE,shake_all_ropes` rows go through the
+ * animation opcode of the same name (src/core/anim_code.c), which has
+ * been right since the rope work landed. REACT4.ASM:196 calls it as a
+ * plain routine from the bounce helper -- and that seam
+ * (wm_arcade_react1_callbacks_t::shake_all_ropes) was declared,
+ * NULL-checked and never filled, so a bounce off a stomped wrestler
+ * shook nothing.
+ *
+ * The body is the source's, unchanged: ROPE_BOUNCEUD with selector 2 on
+ * all four banks. Its `NUM_OPPS >= 2` suppression is commented out in
+ * the source and stays that way.
+ */
+static void match_react_shake_all_ropes(void *user) {
+    static const int banks[4] = { WM_ROPE_FRONT, WM_ROPE_BACK,
+                                  WM_ROPE_LEFT, WM_ROPE_RIGHT };
+    wm_match_state *m = (wm_match_state *)user;
+    size_t i;
+    if (!m) return;
+    for (i = 0; i < 4; ++i)
+        match_rope_command(m, banks[i], (int)WM_ROPE_BOUNCE_UD, 2, 0);
+}
+
+/*
+ * REACT4.ASM:199 `movi 8,a10 / calla SHAKER2` -- the screen shake that
+ * goes with it, and the second seam that was never filled.
+ *
+ * NOT named after the seam, deliberately. UTIL.ASM's SHAKER2 is ledgered
+ * as renamed onto wm_shake_tick precisely because it "resolved only
+ * through a callback field called shaker2 until seam names stopped
+ * counting" -- and an adapter called match_react_shaker2 puts that
+ * accident straight back, this time as a definition the carve-out
+ * cannot reach. The ledger's own anti-shadow guard caught it, which is
+ * what that guard is for.
+ */
+static void match_react_screen_shake(int amount, void *user) {
+    wm_match_state *m = (wm_match_state *)user;
+    if (!m) return;
+    wm_shake_start(&m->shake, amount);
+}
+
+/*
+ * REACT5's `calla ditch_getup_meter` -- REACT1.ASM:798's own call, on a
+ * wrestler who was BOUNCING or RUNNING when he was hit.
+ *
+ * The third unfilled seam, and the one that had nothing behind it until
+ * now: wm_arcade_ditch_getup_meter is this commit's neighbour
+ * (wm/arcade/wm_arcade_getup_meter.h). REACT5 has already checked
+ * GETUP_TIME and METER_PROC before it calls, which are two of the
+ * routine's own three guards; PLYR_DIZZY is the third and is checked
+ * inside, where the source checks it.
+ */
+static void match_react_slide_getup_meter(wm_arcade_actor_t *attacker,
+                                          void *user) {
+    wm_match_state *m = (wm_match_state *)user;
+    unsigned i;
+    if (!m || !attacker) return;
+    for (i = 0; i < m->actor_count; ++i)
+        if (&m->actors[i] == attacker) {
+            (void)wm_arcade_ditch_getup_meter(attacker, &m->getup_meter[i]);
+            return;
+        }
+}
+
+/*
  * ANIM.ASM:41 _ani_rope_z / set_rope_z. Only the second half's Z is
  * decided by the action -- RZ_HIGH is a fixed value, RZ_NORM copies the
  * first half -- and that is what wm_rope_second_half_z returns. The strand
@@ -2527,6 +2594,16 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
         m->react1_cb.victim_has_live_teammates = wm_match_react_live_teammates;
         m->react1_cb.rndper_hi = wm_match_react_rndper_hi;
         m->react1_cb.collisions_off = wm_match_react_collisions_off;
+        /*
+         * REACT4.ASM:196 and :199, and REACT5's own
+         * `calla ditch_getup_meter`. All three seams were declared,
+         * NULL-checked at their call sites and assigned by nobody, so a
+         * bounce off a stomped wrestler shook no ropes and no screen,
+         * and a runner hit mid-run kept his getup meter.
+         */
+        m->react1_cb.shake_all_ropes = match_react_shake_all_ropes;
+        m->react1_cb.shaker2 = match_react_screen_shake;
+        m->react1_cb.slide_getup_meter = match_react_slide_getup_meter;
         m->react1_cb.user = m;
         memset(&m->react1_ctx, 0, sizeof m->react1_ctx);
         m->react1_ctx.callbacks = &m->react1_cb;

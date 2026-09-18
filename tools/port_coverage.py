@@ -353,6 +353,18 @@ def _split_code_and_prose(text: str) -> tuple[str, str]:
 # port_symbols.
 CALLBACK_DECL = re.compile(r"\(\s*\*\s*([A-Za-z_][A-Za-z0-9_]*)\s*\)\s*\(")
 
+# A real C function DEFINITION -- a name followed by a parameter list and
+# then an opening brace, with no semicolon in between. This is the one
+# thing that outranks the seam carve-out below, and it has to be a
+# definition rather than a declaration or a call: those are exactly what
+# an unwired seam already has, so accepting either would put the hole
+# straight back. Nothing more precise is needed, because the question it
+# answers is narrow -- does the port CONTAIN a routine of this name.
+FUNC_DEF = re.compile(
+    r"^[ \t]*(?:[A-Za-z_][A-Za-z0-9_]*[ \t\*]+)+"
+    r"([A-Za-z_][A-Za-z0-9_]*)[ \t]*\([^;{]*\)[ \t]*\{",
+    re.M)
+
 
 def port_symbols() -> tuple[set[str], set[str], set[str]]:
     """(identifiers defined in code, identifiers named in prose, generated).
@@ -375,17 +387,34 @@ def port_symbols() -> tuple[set[str], set[str], set[str]]:
     which it did catch) and a function-pointer member reads the same to
     an identifier scan.
 
-    So the declaration occurrence is dropped before identifiers are
-    collected. A name that appears ONLY there vanishes from the pool; a
-    name that is also assigned (`cb.mode_puppet = backend_mode_puppet`)
-    or called (`c->mode_puppet(a, c->user)`) survives on those
-    occurrences, which is the distinction that matters -- a wired seam
-    has something behind it and an unwired one has nothing.
+    So a seam name is dropped from the pool OUTRIGHT, wired or not. That
+    is deliberate and stronger than "declared but never used": a
+    NULL-checked call through a seam nobody fills keeps the identifier
+    alive exactly as the declaration does, so dropping only the
+    declaration caught almost none of them. Whatever actually fills a
+    seam is named on the other side of the assignment and _boundary_hits
+    finds it there by suffix.
+
+    AND ONE EXCEPTION TO THE CARVE-OUT, because the blunt rule has a
+    cost and the cost came due. A seam name that the port also DEFINES a
+    function for is kept. shake_all_ropes is the case: WRESTLE.ASM:6069
+    has two callers, DNKSEQ2's four `WL ANI_CODE,shake_all_ropes` rows
+    and REACT4.ASM:196's plain `calla`, and this port serves them
+    separately -- a real translation in src/core/anim_code.c for the
+    animation opcode, and a callback seam of the same name for REACT4.
+    Subtracting the name wholesale erased the translation along with the
+    seam and left a finished routine reading as `cited`.
+
+    A definition is safe where a declaration and a call are not: none of
+    the twelve routines the carve-out was written for had one. They were
+    seams and nothing else, which is the whole of what was wrong with
+    them.
     """
     code_ids: set[str] = set()
     prose_ids: set[str] = set()
     generated_ids: set[str] = set()
     seam_ids: set[str] = set()
+    defined_ids: set[str] = set()
     for d in PORT_DIRS:
         for path in sorted((ROOT / d).rglob("*")):
             if path.suffix not in (".c", ".h"):
@@ -396,15 +425,13 @@ def port_symbols() -> tuple[set[str], set[str], set[str]]:
             ids = set(IDENT.findall(code))
             code_ids |= ids
             seam_ids |= set(CALLBACK_DECL.findall(code))
+            defined_ids |= set(FUNC_DEF.findall(code))
             prose_ids |= set(IDENT.findall(prose))
             if rel.startswith(GENERATED):
                 generated_ids |= ids | set(IDENT.findall(prose))
-    # The carve-out. A seam name goes only if nothing else in the port
-    # carries it: an implementation whose name matches a seam exactly
-    # keeps it, and one named after the routine the usual way
-    # (wm_arcade_mode_puppet for mode_puppet) was never reached through
-    # the seam in the first place -- _boundary_hits finds it by suffix.
-    code_ids -= seam_ids
+    # The carve-out, and its one exception: a seam name survives when the
+    # port also defines a function of that name. See the docstring.
+    code_ids -= (seam_ids - defined_ids)
     return code_ids, prose_ids, generated_ids
 
 

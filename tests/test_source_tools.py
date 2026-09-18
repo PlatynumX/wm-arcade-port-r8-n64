@@ -3707,10 +3707,38 @@ def test_a_callback_seam_is_not_evidence() -> None:
     seams = port_coverage.callback_seam_names()
     assert len(seams) > 100, len(seams)
     code_ids, _prose, _gen = port_coverage.port_symbols()
-    # The carve-out really happened: no seam name survives in the pool
-    # unless something else in the port carries the same identifier.
+
+    # The carve-out really happened, and its ONE exception is exactly
+    # what it claims to be: a seam name survives in the pool only when
+    # the port also DEFINES a function of that name.
+    #
+    # shake_all_ropes is why the exception exists. WRESTLE.ASM:6069 has
+    # two callers -- DNKSEQ2's four `WL ANI_CODE,shake_all_ropes` rows
+    # and REACT4.ASM:196's plain `calla` -- and this port serves them
+    # separately, with a real translation in src/core/anim_code.c for
+    # the opcode and a seam of the same name for REACT4. Subtracting the
+    # name wholesale erased the translation along with the seam and left
+    # a finished routine reading as `cited`.
+    #
+    # A definition is safe where a declaration and a call are not: none
+    # of the twelve routines the carve-out was written for had one, and
+    # being seams and nothing else was the whole of what was wrong with
+    # them.
+    defined = set()
+    for d in port_coverage.PORT_DIRS:
+        for path in sorted((port_coverage.ROOT / d).rglob("*")):
+            if path.suffix not in (".c", ".h"):
+                continue
+            code, _prose_text = port_coverage._split_code_and_prose(
+                path.read_text(errors="replace"))
+            defined |= set(port_coverage.FUNC_DEF.findall(code))
     leaked = sorted(seams & code_ids)
-    assert not leaked, leaked
+    assert all(n in defined for n in leaked), \
+        [n for n in leaked if n not in defined]
+    # And the exception is narrow rather than a way out: it lets a
+    # handful of names through, not most of them.
+    assert len(leaked) < len(seams) // 10, (len(leaked), len(seams))
+    assert "shake_all_ropes" in leaked, leaked
 
     # Both assertions above have teeth, and between them they pin the
     # rule from each side: the first fails if the carve-out is taken

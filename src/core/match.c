@@ -2744,6 +2744,21 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
                 m->round_announce.winner ? (int)m->round_announce.winner->player_side
                                          : -1;
         }
+        /*
+         * LIFEBAR.ASM:3071 WRESTLERS_RESET, which lives inside
+         * announce_rnd_winner and nowhere else. The reset owed by the
+         * KO countdown above is this port's stand-in for the rounds
+         * the announcer never runs -- a clock timeout, a double KO --
+         * and that stand-in was carrying every live round, because
+         * nothing had ever reached win_announce in the match loop. It
+         * is reached now, from a raise-arm animation's own ANI_CODE,
+         * and the announcer owes its own reset: without this the
+         * round it just awarded is the last one that ever starts.
+         */
+        if (m->round_announce.wrestlers_reset_due) {
+            m->round_announce.wrestlers_reset_due = false;
+            if (m->score.match_winner == 0) m->round_reset_pending = true;
+        }
     }
 
     ++m->tick_count;

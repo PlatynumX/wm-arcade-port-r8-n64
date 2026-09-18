@@ -157,7 +157,6 @@ bool wm_arcade_round_announce_tick(wm_arcade_round_announce_t *st,
 
     switch ((wm_arcade_arw_phase_t)st->phase) {
     case WM_ARW_IDLE:
-    case WM_ARW_FINISHED:
         return false;
 
     case WM_ARW_FINISH_WAIT: {
@@ -192,7 +191,27 @@ bool wm_arcade_round_announce_tick(wm_arcade_round_announce_t *st,
         if (ctx->match_over)
             ctx->match_over(ctx->user, st->winner ? st->winner->player_side
                                                   : -1);
-        st->phase = (uint8_t)WM_ARW_FINISHED;
+        st->phase = (uint8_t)WM_ARW_POST_TOKEN;
+        st->sleep_left = WM_ARW_POST_TOKEN_SLEEP;
+        return false;
+
+    case WM_ARW_POST_TOKEN:
+        /* `SLEEPK 20` */
+        if (st->sleep_left > 0) { --st->sleep_left; return false; }
+        /*
+         * `move @p1rounds,a0 / cmpi 2,a0 / jrz DO_WAIT` and the same
+         * for p2rounds. Two rounds for either side is the end of the
+         * match and belongs to DO_WAIT, which this port runs as
+         * wm_match_end_tick; anything else is #go0, and #go0 runs down
+         * to WRESTLERS_RESET.
+         */
+        if (!ctx->score ||
+            (ctx->score->p1rounds != 2 && ctx->score->p2rounds != 2))
+            st->wrestlers_reset_due = true;
+        /* And then the process is gone, which is all `EXISTP ANNC_PID`
+           ever asked. annc_rnd_winner_done is what keeps it from
+           starting again, and reset_for_round2 is what clears that. */
+        st->phase = (uint8_t)WM_ARW_IDLE;
         return false;
     }
     return false;

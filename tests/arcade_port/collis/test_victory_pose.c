@@ -25,6 +25,8 @@
 #include "wm/arcade/wm_arcade_final_battle.h"
 #include "wm/wrestler_backend.h"
 #include "wm/bret_backend.h"
+#include "wm/match.h"
+#include "wm_arcade_roster.h"
 
 static void winner(wm_arcade_actor_t *a) {
     memset(a, 0, sizeof *a);
@@ -225,23 +227,17 @@ static void test_the_seams_are_wired(void) {
     assert(bret_cb.set_raisearm_bit && bret_cb.drone_change_back);
 
     /*
-     * raisearm_check's seam is deliberately NULL, and this asserts the
-     * decision so it cannot be undone silently. src/core/wrestler_
-     * backend.c carries the reasoning; the short version is that the
-     * routine is right and wiring it strands the match. Measured on the
-     * live loop: at tick 0 the dead opponent is still in the ring, the
-     * check says no, the winner pins and the round ends; by tick 2 his
-     * death animation has rolled him out, the check correctly says yes,
-     * and the winner poses forever, because this port's round only ends
-     * on the pin. The arcade ends it from the DEAD man's own path
-     * (win_announce -> announce_rnd_winner, which
-     * wm_arcade_round_announce_tick translates and nothing drives when
-     * nobody pins). That path is the blocker, and the two have to land
-     * together.
+     * And raisearm_check's, in all three. Wiring this one needed the
+     * announcer's own tail first: the #raisearm branch plays
+     * xxx_N_raise_arm_anim, whose FIFTH op is ANI_CODE win_announce --
+     * so the pose really does end the round, exactly as the arcade's
+     * does, and it was announce_rnd_winner stopping at CALL_MATCH_OVER
+     * without ever reaching WRESTLERS_RESET that stranded the match.
+     * See wm/arcade/wm_arcade_round_announce.h.
      */
-    assert(roster_cb.raisearm_check == NULL);
-    assert(razor_cb.raisearm_check == NULL);
-    assert(bret_cb.raisearm_check == NULL);
+    assert(roster_cb.raisearm_check != NULL);
+    assert(razor_cb.raisearm_check != NULL);
+    assert(bret_cb.raisearm_check != NULL);
 
     winner(&me); loser(&opp);
     opp.in_ring = 0;
@@ -263,6 +259,89 @@ static void test_the_seams_are_wired(void) {
     assert(me.plyr_type == WM_PTYPE_PLAYER);
 }
 
+/* ------------------------------------------------------------------
+ * The pose on the live loop, end to end.
+ *
+ * This is the test the whole change exists for. The #raisearm branch
+ * plays xxx_N_raise_arm_anim, and that animation's fifth op is
+ * `ANI_CODE,win_announce` (DNKSEQ2.ASM:5159 and its seven siblings) --
+ * so the victory pose starts announce_rnd_winner and ends the round,
+ * with no pin anywhere in it.
+ *
+ * What it did NOT do until now is start the NEXT round.
+ * WRESTLERS_RESET lives inside announce_rnd_winner and nowhere else
+ * (LIFEBAR.ASM:3071), and this port's translation of that process
+ * stopped at CALL_MATCH_OVER. The reset was owed off the KO countdown
+ * instead, which carried every live round only because nothing had
+ * ever reached win_announce in the match loop.
+ * ------------------------------------------------------------------ */
+
+static wm_match_state MS;
+static uint32_t hc_stub(void *u) { (void)u; return 0; }
+static uint32_t spf_stub(void *u) { (void)u; return 1; }
+
+static void test_the_pose_ends_the_round_and_the_next_one_starts(void) {
+    WmRng r;
+    uint32_t t = 1;
+    wm_input_state in;
+    int i;
+    int first_award = -1, first_reset = -1;
+    int32_t round0;
+    int posed = 0, pinned = 0;
+
+    wm_rng_init(&r, 0x12345678u, hc_stub, spf_stub, &t);
+    memset(&MS, 0, sizeof MS);
+    wm_match_init(&MS);
+    wm_match_start_selected(&MS, &r, (uint8_t)WM_ROSTER_TAKER);
+    memset(&in, 0, sizeof in);
+    round0 = (int32_t)MS.current_round;
+
+    for (i = 0; i < 4000 && MS.match_end.match_over == 0; ++i) {
+        unsigned k;
+        /* Hold side 1 dead, and never press a button: there is no pin
+           on this path, which is the point. */
+        for (k = 0; k < MS.actor_count; ++k)
+            if (MS.actors[k].player_side == 1) {
+                MS.actors[k].player_mode = (uint16_t)WM_PMODE_DEAD;
+                MS.actors[k].life = 0;
+            }
+        wm_match_tick(&MS, NULL, &in);
+        if (first_award < 0 && MS.score.p1rounds == 1) first_award = i;
+        if (first_award >= 0 && first_reset < 0 && MS.current_round != round0)
+            first_reset = i;
+        if (MS.actors[0].status_flags & WM_STATUS_DID_RAISEARM) posed = 1;
+        if (MS.actors[0].status_flags & WM_STATUS_DID_PIN) pinned = 1;
+    }
+
+    /*
+     * The round is ended by the pose, and quickly: the opponent's death
+     * animation rolls him out of the ring within a couple of ticks, and
+     * from there raisearm_check says yes. The KO countdown that used to
+     * be the only thing ending a round takes 264.
+     */
+    assert(first_award >= 0 && first_award < 30);
+    /* It really was the announcer, and it really was win_announce that
+       started it -- KILL_PIN_HIM is reached nowhere else. */
+    assert(MS.round_announce.pin_him_kills >= 1u);
+    /* Nobody pinned; he posed. */
+    assert(posed);
+    assert(!pinned);
+
+    /*
+     * And the next round starts -- SLEEPK 30 then SLEEPK 20 after the
+     * award, which is where the reset lands. Before the announcer owed
+     * its own WRESTLERS_RESET this stuck at one round forever.
+     */
+    assert(first_reset >= 0);
+    assert(first_reset - first_award >= WM_ARW_PRE_TOKEN_SLEEP);
+    assert(first_reset - first_award <=
+           WM_ARW_PRE_TOKEN_SLEEP + WM_ARW_POST_TOKEN_SLEEP + 4);
+
+    /* The whole match plays out, as it does on the pin path. */
+    assert(MS.match_end.match_over == 2);
+    assert(MS.score.p1rounds == 2);
+}
+
 int main(void) {
     test_control_comes_back();
     test_the_raisearm_bit();
@@ -270,6 +349,7 @@ int main(void) {
     test_the_inside_outside_rule();
     test_the_royal_rumble_hack();
     test_the_seams_are_wired();
+    test_the_pose_ends_the_round_and_the_next_one_starts();
     printf("victory pose ok\n");
     return 0;
 }

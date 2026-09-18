@@ -53,13 +53,39 @@ extern "C" {
 #define WM_ARW_FINISH_POLL 10              /* #fini_wait's SLEEPK 10 */
 #define WM_ARW_BUCKOFF_SLEEP 90            /* the SLEEP 90 before arw_bwait */
 #define WM_ARW_PRE_TOKEN_SLEEP 30          /* SLEEPK 30 */
+/*
+ * LIFEBAR.ASM:2842's `SLEEPK 20`, the one after CALL_MATCH_OVER, and
+ * then the branch this process has always had and this port did not:
+ *
+ *      move @p1rounds,a0 / cmpi 2,a0 / jrz DO_WAIT
+ *      move @p2rounds,a0 / cmpi 2,a0 / jrnz #go0
+ *
+ * Two rounds for either side falls into DO_WAIT; anything else goes to
+ * #go0, and #go0 runs on down to WRESTLERS_RESET -- "cause wrestlers to
+ * re-appear in the correct spot to start the next round", LIFEBAR.ASM:
+ * 3071, which calls reset_for_round and reset_for_round2. DO_WAIT's own
+ * tail reaches #go0 too, after its waits, so the arcade resets the
+ * wrestlers on both arms.
+ *
+ * WHY THIS MATTERS HERE: WRESTLERS_RESET exists ONLY inside
+ * announce_rnd_winner. This port owed it off its KO countdown instead,
+ * which works only because the countdown is the only thing that has ever
+ * decided a live round -- the announcer is reached from a pin animation
+ * or a raise-arm animation's own ANI_CODE, and neither happened. The
+ * moment one does, the round is awarded and the next one never starts.
+ */
+#define WM_ARW_POST_TOKEN_SLEEP 20
 
 typedef enum {
     WM_ARW_IDLE = 0,      /* no process: win_announce has not been reached */
     WM_ARW_FINISH_WAIT,   /* #fini_wait: in_finish_move is set */
     WM_ARW_BUCKOFF_WAIT,  /* the SLEEP 90 that ends at arw_bwait */
     WM_ARW_PRE_TOKEN,     /* the round is awarded; SLEEPK 30 before the call */
-    WM_ARW_FINISHED       /* the process reached CALL_MATCH_OVER and died */
+    WM_ARW_POST_TOKEN     /* CALL_MATCH_OVER is made; SLEEPK 20, then the
+                             p1rounds/p2rounds branch, and then the
+                             process dies -- so there is no terminal
+                             phase, only IDLE again, which is what
+                             `EXISTP ANNC_PID` reads once it is gone */
 } wm_arcade_arw_phase_t;
 
 typedef struct {
@@ -76,6 +102,22 @@ typedef struct {
        win_announce does it unconditionally, before either guard, so it
        happens even on the calls where the process itself declines. */
     uint32_t pin_him_kills;
+    /*
+     * WRESTLERS_RESET is owed. Raised when the process reaches #go0 --
+     * the arm the source takes when neither side has two rounds -- and
+     * cleared by whoever performs the reset. It is a signal rather than
+     * a call because reset_for_round needs the whole match, and because
+     * the source's reset really is the last thing this process does
+     * before it dies.
+     *
+     * Not raised on the DO_WAIT arm. The source gets to WRESTLERS_RESET
+     * there too, but only after DO_WAIT's own waits, and DO_WAIT is
+     * wm_match_end_tick in this port; by the time it is finished the
+     * match is over and there is no next round to stand anybody up for.
+     * Saying so is the point -- it is not that the source does not do
+     * it.
+     */
+    bool wrestlers_reset_due;
 } wm_arcade_round_announce_t;
 
 typedef struct {

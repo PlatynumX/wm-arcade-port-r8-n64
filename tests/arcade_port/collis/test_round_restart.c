@@ -20,10 +20,18 @@ static wm_match_state M;
  * Knock one side out and hold it there until the round is awarded.
  *
  * It watches the ROUND COUNT rather than round_state.decided, because
- * the reset clears `decided` on the same tick it is set -- which is
- * the point of the reset, and is exactly what a caller polling that
- * flag would get wrong. WRESTLE2.ASM:4198's countdown is 5*TSEC, so a
- * KO takes 265 ticks to be called.
+ * the reset clears `decided`, and a caller polling that flag would
+ * miss the award.
+ *
+ * How long this takes is no longer WRESTLE2.ASM:4198's 5*TSEC
+ * countdown. That countdown is this port's stand-in for the rounds
+ * announce_rnd_winner never runs, and it used to carry every round
+ * because nothing in the match loop had ever reached win_announce.
+ * The winner poses now, within a couple of ticks of his opponent's
+ * death animation rolling him out of the ring, and the pose's own
+ * ANI_CODE calls win_announce -- so the round is called almost at
+ * once, and the reset arrives 50 ticks later from inside the
+ * announcer, where the source puts it.
  */
 static void kill_side(int side, int max_ticks) {
     wm_input_state in;
@@ -91,17 +99,36 @@ static void test_round_actually_restarts(void) {
     assert(M.score.match_winner == 0);     /* best of three, not over */
 
     /*
-     * The reset is OWED on the deciding tick, not done on it -- the
-     * source reaches WRESTLERS_RESET from deep inside
-     * announce_rnd_winner, long after the round is called, and
-     * deciding-tick state has to survive for anything watching it.
+     * The reset is not owed on the deciding tick, and that is the
+     * source's own timing rather than a delay this port invented: the
+     * round is awarded at #nobuck, and WRESTLERS_RESET is another
+     * SLEEPK 30, a CALL_MATCH_OVER and a SLEEPK 20 further down the
+     * same process (LIFEBAR.ASM:2842-3071). Deciding-tick state
+     * survives all of it, which is what anything watching the award
+     * needs.
+     *
+     * It used to be owed immediately, because the KO countdown was
+     * the only thing that ever decided a live round and the countdown
+     * owed the reset itself. The round is called by the winner's
+     * victory pose now -- raisearm_check into xxx_N_raise_arm_anim,
+     * whose own ANI_CODE is win_announce -- so the announcer runs, and
+     * the announcer owns its reset.
      */
-    assert(M.round_reset_pending);
     assert(M.round_state.decided);
+    assert(!M.round_reset_pending);
     assert(M.current_round == 0);
     {
         wm_input_state idle;
+        int waited = 0;
         memset(&idle, 0, sizeof idle);
+        while (!M.round_reset_pending && waited < 300) {
+            wm_match_tick(&M, NULL, &idle);
+            ++waited;
+        }
+        assert(M.round_reset_pending);
+        assert(waited >= WM_ARW_PRE_TOKEN_SLEEP + WM_ARW_POST_TOKEN_SLEEP);
+        assert(waited <= WM_ARW_PRE_TOKEN_SLEEP + WM_ARW_POST_TOKEN_SLEEP + 4);
+        assert(M.current_round == 0);      /* owed, still not done */
         wm_match_tick(&M, NULL, &idle);
     }
     assert(!M.round_reset_pending);

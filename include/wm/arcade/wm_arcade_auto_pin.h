@@ -45,16 +45,6 @@
 
 #include "wm/arcade/wm_arcade_combat.h"
 
-/*
- * For an adapter that is kept on purpose while its seam is unwired --
- * see the raisearm_check note in src/core/wrestler_backend.c.
- */
-#if defined(__GNUC__)
-#define WM_MAYBE_UNUSED __attribute__((unused))
-#else
-#define WM_MAYBE_UNUSED
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif

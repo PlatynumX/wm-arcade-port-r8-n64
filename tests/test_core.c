@@ -4783,10 +4783,50 @@ static void test_win_announce(void) {
     CHECK(log.n_over == 1);
     CHECK(log.over_side == 0);
     CHECK(log.n_sound == 2 && log.sound == WM_ARW_TOKEN_SOUND);
-    /* The process is gone, and annc_rnd_winner_done keeps it gone. */
+    /*
+     * `SLEEPK 20`, and then the branch. One round is not two, so this
+     * is the #go0 arm and WRESTLERS_RESET is owed -- the reset that
+     * lives only inside this process, and that the port used to owe
+     * off its KO countdown instead.
+     */
+    CHECK(st.phase == (uint8_t)WM_ARW_POST_TOKEN);
+    for (t = 0; t < WM_ARW_POST_TOKEN_SLEEP; ++t) {
+        CHECK(!wm_arcade_round_announce_tick(&st, actors, 2, &ctx));
+        CHECK(!st.wrestlers_reset_due);
+        CHECK(st.phase == (uint8_t)WM_ARW_POST_TOKEN);
+    }
+    CHECK(!wm_arcade_round_announce_tick(&st, actors, 2, &ctx));
+    CHECK(st.wrestlers_reset_due);
+    /* The process is gone, which is all `EXISTP ANNC_PID` ever asked,
+       and annc_rnd_winner_done is what keeps it gone. */
+    CHECK(st.phase == (uint8_t)WM_ARW_IDLE);
     CHECK(!wm_arcade_round_announce_tick(&st, actors, 2, &ctx));
     CHECK(!wm_arcade_win_announce(&st));
     CHECK(score.p1rounds == 1);            /* awarded once, not twice */
+
+    /*
+     * The other arm. Two rounds for either side is DO_WAIT, which is
+     * wm_match_end_tick in this port, and no reset is owed: the source
+     * reaches WRESTLERS_RESET there too, but only after DO_WAIT's own
+     * waits, by which time the match is over.
+     */
+    {
+        wm_arcade_round_announce_t st2;
+        wm_arcade_match_score_t sc2;
+        int u;
+        wm_arcade_round_announce_init(&st2);
+        wm_arcade_match_score_init(&sc2);
+        sc2.p1rounds = 1;
+        ctx.score = &sc2;
+        CHECK(wm_arcade_win_announce(&st2));
+        CHECK(wm_arcade_round_announce_tick(&st2, actors, 2, &ctx));
+        CHECK(sc2.p1rounds == 2);
+        for (u = 0; u < WM_ARW_PRE_TOKEN_SLEEP + WM_ARW_POST_TOKEN_SLEEP + 2; ++u)
+            (void)wm_arcade_round_announce_tick(&st2, actors, 2, &ctx);
+        CHECK(st2.phase == (uint8_t)WM_ARW_IDLE);
+        CHECK(!st2.wrestlers_reset_due);
+        ctx.score = &score;
+    }
 
     /*
      * The buckoff branch: somebody is trying to get up, so the process

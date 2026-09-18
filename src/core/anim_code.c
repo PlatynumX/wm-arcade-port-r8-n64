@@ -2375,6 +2375,11 @@ void wm_anim_code_tick(void) {
     }
 }
 
+void wm_anim_code_find_and_kill_endless(void) {
+    /* The same store the opcode makes; see wm/anim_program.h. */
+    endless_sound = 0u;
+}
+
 void wm_anim_code_reset(void) {
     endless_sound = 0u;
     push_speech_lockout = 0u;

@@ -7225,8 +7225,8 @@
    "local": false,
    "external_callers": 14,
    "references": 16,
-   "status": "unknown",
-   "evidence": "",
+   "status": "implemented",
+   "evidence": "backend_bozo_check",
    "from_generated": false,
    "ledgered": false
   },

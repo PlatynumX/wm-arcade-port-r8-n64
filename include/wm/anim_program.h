@@ -734,6 +734,23 @@ void wm_anim_code_reset(void);
 uint16_t wm_anim_code_endless_sound(void);
 
 /*
+ * DCSSOUND.ASM's FIND_AND_KILL_ENDLESS, as a routine rather than as an
+ * animation opcode.
+ *
+ * It has always been translated (src/core/anim_code.c) and reachable
+ * from the `FIND_AND_KILL_ENDLESS` ANI_CODE row, but the wrestler files
+ * also call it as a plain routine -- from every dispatcher's head-hold
+ * attack path, and from bozo_check -- and that seam was declared in
+ * three callback structs, NULL-checked at fifteen call sites and filled
+ * by nobody. Exposing it is what lets those be filled.
+ *
+ * What is modelled is what is observable through the same seam: the
+ * looping sound stops being the endless one. There are no DCS channels
+ * here to walk.
+ */
+void wm_anim_code_find_and_kill_endless(void);
+
+/*
  * ANIM.ASM's four change_anim entry points.
  *
  * The source has two animation channels per wrestler and a guarded and

@@ -3,6 +3,8 @@
 #include "wm/arcade/wm_arcade_modes.h"
 #include "wm/arcade/wm_arcade_bounce.h"
 #include "wm/arcade/wm_arcade_auto_pin.h"
+#include "wm/arcade/wm_arcade_bozo.h"
+#include "wm/anim_program.h"
 #include "wm/wrestler_backend.h"
 #include "wm/arcade/wm_arcade_pin.h"
 #include "wm/arcade/wm_arcade_start_run.h"
@@ -916,6 +918,31 @@ static void bret_set_raisearm_bit(wm_arcade_actor_t *actor, void *user) {
     wm_arcade_set_raisearm_bit(actor);
 }
 
+/*
+ * DOINK.ASM:3316 bozo_check and DCSSOUND.ASM's FIND_AND_KILL_ENDLESS.
+ *
+ * Both seams were declared in wm/arcade/wm_arcade_bret.h and filled by
+ * nobody. find_and_kill_endless is NULL-checked at fifteen call sites
+ * across the eight dispatchers; bozo_check was worse off than that --
+ * six of the eight dispatchers do not even call it, so the head-hold
+ * power move and the head-held reversal were missing outright rather
+ * than merely inert.
+ */
+static void bret_find_and_kill_endless(wm_arcade_actor_t *actor,
+                                          void *user) {
+    (void)actor;
+    (void)user;
+    wm_anim_code_find_and_kill_endless();
+}
+
+static int bret_bozo_check(wm_arcade_actor_t *actor, void *user) {
+    wm_bozo_env_t env;
+    (void)user;
+    memset(&env, 0, sizeof(env));
+    env.find_and_kill_endless = bret_find_and_kill_endless;
+    return wm_arcade_bozo_check(actor, &env) ? 1 : 0;
+}
+
 static void bret_drone_change_back(wm_arcade_actor_t *actor, void *user) {
     (void)user;
     (void)wm_arcade_drone_change_back(actor);
@@ -940,6 +967,8 @@ wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva)
     cb.raisearm_check = bret_raisearm_check;
     cb.set_raisearm_bit = bret_set_raisearm_bit;
     cb.drone_change_back = bret_drone_change_back;
+    cb.bozo_check = bret_bozo_check;
+    cb.find_and_kill_endless = bret_find_and_kill_endless;
     cb.user = bva;
     return cb;
 }

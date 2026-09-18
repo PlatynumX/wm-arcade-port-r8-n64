@@ -115,6 +115,17 @@ typedef enum wm_arcade_razor_monitor_id {
     WM_RZR_MON_GRAB_TOSS_AIR,
     WM_RZR_MON_HEADHOLD_COMBO2,
     WM_RZR_MON_SLIDING_RUG,
+    /* The two finishing-move monitors below are CUT CONTENT.
+       RAZOR.ASM:154's smove table wraps them in
+       `.if NUM_RAZOR_FINISHES`, and GAME.EQU:584 sets that
+       switch to 0, so the assembler skipped both the table entries
+       and the routines themselves. init_smoves therefore never
+       spawns them and nothing in the shipped game can reach them.
+       The translation below is kept because it is a faithful
+       reading of real source text, not because the game uses it;
+       the smove table no longer lists either, which is what
+       decides. Undertaker's und_finish_move1 is the one finishing
+       move the arcade actually built. */
     WM_RZR_MON_FINISH1,
     WM_RZR_MON_FINISH2
 } wm_arcade_razor_monitor_id_t;

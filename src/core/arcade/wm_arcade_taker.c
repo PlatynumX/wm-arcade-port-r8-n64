@@ -34,6 +34,12 @@ static const wm_arcade_input_pattern_t secret_patterns[]={
     {"neck_grab",s_neck30,3,30},
     {"tomb_smash",s_toward_skick,3,32}
 };
+/* WRESTLE2.ASM's und_smove_table, as the assembler built it.
+   The finishing-move entries every one of these tables carries sit
+   inside `.if NUM_TAKER_FINISHES`, and GAME.EQU:586 sets that switch to
+   1 -- so only the first was assembled. Generated as
+   wm_wrestler_smoves[] (wm/wrestler_anim_tables.h); a source-tool test
+   holds this copy to it. */
 static const char *const special_processes[]={
     "und_hdhold_neckbrk",
     "und_hdhold_faceslam",
@@ -46,8 +52,7 @@ static const char *const special_processes[]={
     "und_choke_slide",
     "std_walk_fast",
     "std_taunt",
-    "und_finish_move1",
-    "und_finish_move2"
+    "und_finish_move1"
 };
 
 const wm_arcade_wrestler_profile_t wm_arcade_profile_taker={
@@ -60,6 +65,10 @@ struct labels {
     const char *stand2,*stand4,*torso2,*torso4,*fall,*block,*push,*run,*climbdown,*pin2,*pin4,*raise2,*raise4;
     const char *punch2,*punch4,*close2,*close4,*ground2,*ground4,*kick2,*kick4,*knee2,*knee4,*stomp2,*stomp4;
     const char *flykick,*turn_punch,*turn_kick,*headhold2,*headhold,*headheld;
+    /* DOINK.ASM:3316 bozo_check's two call sites -- the power move
+       at the top of mode_headhold and the reversal at the top of
+       mode_headheld. The pair alternates on PCNT's low bit. */
+    const char *bozo_a,*bozo_b,*bozo_hh_b,*bozo_snd;
 };
 static const struct labels L={
     "und_stand2_anim",
@@ -92,7 +101,11 @@ static const struct labels L={
     "und_tbukl_butt_drop_anim",
     "und_3_head_hold2_anim",
     "und_3_head_hold_anim",
-    "und_3_head_held_stand_anim"
+    "und_3_head_held_stand_anim",
+    "und_neckbreaker_anim",
+    "und_pile_anim",
+    "und_pile_anim",
+    "GRABHOLD",
 };
 
 static void setmode(wm_arcade_actor_t*a,uint16_t m){if(a&&a->player_mode!=WM_PMODE_DEAD)a->player_mode=m;}
@@ -138,7 +151,7 @@ static wm_arcade_taker_step_result_t mode_normal(wm_arcade_actor_t*a,wm_arcade_a
     if(o&&o->player_mode==WM_PMODE_DEAD&&!(o->status_flags&WM_STATUS_ZOMBIE)){
         int reciprocal=a->attach_proc&&a->attach_proc->attach_proc==a;
         if(!reciprocal){
-            if((c&&c->teammate_pin&&c->teammate_pin(a,c->user))||(c&&c->raisearm_check&&c->raisearm_check(a,c->user))){anim(a,face_label(L.raise2,L.raise4,a),c);if(c->set_raisearm_bit)c->set_raisearm_bit(a,c->user);return WM_TAKER_STEP_ACTION;}
+            if((c&&c->teammate_pin&&c->teammate_pin(a,c->user))||(c&&c->raisearm_check&&c->raisearm_check(a,c->user))){anim(a,face_label(L.raise2,L.raise4,a),c);if(c->set_raisearm_bit)c->set_raisearm_bit(a,c->user);if(c->drone_change_back)c->drone_change_back(a,c->user);return WM_TAKER_STEP_ACTION;}
             if(a->but_val_cur&&c&&c->can_pin&&c->can_pin(a,o,c->user)){
             if ((a->new_facing_dir & WM_MOVE_DOWN) && a->closest_zdist < 0x40 && a->closest_xdist < 35) {
                 anim(a,L.pin4,c); a->status_flags |= WM_STATUS_DID_PIN;
@@ -182,7 +195,16 @@ static wm_arcade_taker_step_result_t mode_block(wm_arcade_actor_t*a,wm_arcade_ac
     (void)e;
     return WM_TAKER_STEP_IDLE;
 }
-static wm_arcade_taker_step_result_t mode_headhold(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_taker_callbacks_t*c){
+static wm_arcade_taker_step_result_t mode_headhold(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_taker_env_t*e,const wm_arcade_taker_callbacks_t*c){
+    /* "Bozo power move": `callr bozo_check / jrnc #fail`, and
+       everything below this is #fail. Six of the eight
+       dispatchers did not call it at all, so the move was
+       missing rather than merely inert. */
+    if(c&&c->bozo_check&&c->bozo_check(a,c->user)){
+        snd(a,L.bozo_snd,c);
+        anim(a,(e&&(e->pcnt&1))?L.bozo_b:L.bozo_a,c);
+        return WM_TAKER_STEP_ACTION;
+    }
     uint8_t ac;if(!o||o->player_mode!=WM_PMODE_HEADHELD){a->z_fixed-=6<<16;setmode(a,WM_PMODE_NORMAL);return WM_TAKER_STEP_ACTION;}if(a->anim_mode&WM_MODE_UNINT)return WM_TAKER_STEP_IDLE;ac=action_table[a->but_val_down&WM_BTN_ATTACK_MASK];
     if(ac==A_PUNCH||ac==A_SPUNCH||ac==A_KICK||ac==A_PUNCHKICK){if(c&&c->find_and_kill_endless)c->find_and_kill_endless(a,c->user);}
 
@@ -192,11 +214,16 @@ static wm_arcade_taker_step_result_t mode_headhold(wm_arcade_actor_t*a,wm_arcade
 wm_arcade_taker_step_result_t wm_arcade_move_taker(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_taker_env_t*e,const wm_arcade_taker_callbacks_t*c){
     if(!a)return WM_TAKER_STEP_IDLE;
     if(c&&c->check_secret_moves)c->check_secret_moves(a,secret_patterns,sizeof secret_patterns/sizeof secret_patterns[0],c->user);
-    switch(a->player_mode){case WM_PMODE_NORMAL:case 18:case 22:case 23:return mode_normal(a,o,e,c);case WM_PMODE_RUNNING:return mode_running(a,o,e,c);case WM_PMODE_ATTACHED:if(c&&c->keep_attached)c->keep_attached(a,c->user);else(void)wm_arcade_keep_attached(a);if(!a->attach_proc){setmode(a,WM_PMODE_NORMAL);a->anim_mode=0;}return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_BOUNCING:return mode_bouncing(a,c);case WM_PMODE_ONTURNBKL:return mode_turn(a,c);case WM_PMODE_BLOCK:return mode_block(a,o,e,c);case WM_PMODE_DEAD:if(c&&c->mode_dead)c->mode_dead(a,c->user);return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_WAITANIM:if((a->anim_mode&WM_MODE_END)&&c&&c->code_addr)c->code_addr(a,(uint32_t)a->code_addr,c->user);return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_MASTER:if(c&&c->master_keep_attached)c->master_keep_attached(a,c->user);else(void)wm_arcade_master_keep_attached(a);return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_HEADHOLD:return mode_headhold(a,o,c);case WM_PMODE_HEADHELD:if((a->anim_mode&WM_MODE_NOGRAVITY)&&c&&c->mode_choking)c->mode_choking(a,c->user);else if(!a->attach_proc&&a->y_int<=a->ground_y)anim(a,L.headheld,c);return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_PUPPET:if(c&&c->mode_puppet)c->mode_puppet(a,c->user);return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_INAIR2:if(c&&c->mode_inair2)c->mode_inair2(a,c->user);return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_CHOKING:if(c&&c->mode_choking)c->mode_choking(a,c->user);return WM_TAKER_STEP_EXTERNAL;default:return WM_TAKER_STEP_IDLE;}
+    switch(a->player_mode){case WM_PMODE_NORMAL:case 18:case 22:case 23:return mode_normal(a,o,e,c);case WM_PMODE_RUNNING:return mode_running(a,o,e,c);case WM_PMODE_ATTACHED:if(c&&c->keep_attached)c->keep_attached(a,c->user);else(void)wm_arcade_keep_attached(a);if(!a->attach_proc){setmode(a,WM_PMODE_NORMAL);a->anim_mode=0;}return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_BOUNCING:return mode_bouncing(a,c);case WM_PMODE_ONTURNBKL:return mode_turn(a,c);case WM_PMODE_BLOCK:return mode_block(a,o,e,c);case WM_PMODE_DEAD:if(c&&c->mode_dead)c->mode_dead(a,c->user);return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_WAITANIM:if((a->anim_mode&WM_MODE_END)&&c&&c->code_addr)c->code_addr(a,(uint32_t)a->code_addr,c->user);return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_MASTER:if(c&&c->master_keep_attached)c->master_keep_attached(a,c->user);else(void)wm_arcade_master_keep_attached(a);return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_HEADHOLD:return mode_headhold(a,o,e,c);case WM_PMODE_HEADHELD:if((a->anim_mode&WM_MODE_NOGRAVITY)&&c&&c->mode_choking){c->mode_choking(a,c->user);return WM_TAKER_STEP_EXTERNAL;}if(c&&c->bozo_check&&c->bozo_check(a,c->user)){if(c->do_reversal)c->do_reversal(a,c->user);if(c->do_reversal_message)c->do_reversal_message(a,c->user);snd(a,L.bozo_snd,c);anim(a,(e&&(e->pcnt&1))?L.bozo_hh_b:L.bozo_a,c);return WM_TAKER_STEP_ACTION;}if(!a->attach_proc&&a->y_int<=a->ground_y)anim(a,L.headheld,c);return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_PUPPET:if(c&&c->mode_puppet)c->mode_puppet(a,c->user);return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_INAIR2:if(c&&c->mode_inair2)c->mode_inair2(a,c->user);return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_CHOKING:if(c&&c->mode_choking)c->mode_choking(a,c->user);return WM_TAKER_STEP_EXTERNAL;default:return WM_TAKER_STEP_IDLE;}
 }
 
 static int reject_common(wm_arcade_actor_t*a,wm_arcade_actor_t*o){return !a||!o||(a->anim_mode&WM_MODE_UNINT)||o->player_mode==WM_PMODE_DEAD||o->player_mode==WM_PMODE_HEADHELD||o->player_mode==WM_PMODE_ATTACHED;}
-int wm_arcade_taker_release_charge(wm_arcade_actor_t*a,wm_arcade_actor_t*o,uint16_t ticks,const wm_arcade_taker_callbacks_t*c){(void)o;if(!a||ticks<110)return 0;if(a->player_mode==WM_PMODE_HEADHELD||a->player_mode==WM_PMODE_HEADHOLD||(a->anim_mode&WM_MODE_UNINT))return 0;startsp(a,"scrt_spirit",c); snd(a,"SPIRIT",c); return 1;}
+int wm_arcade_taker_release_charge(wm_arcade_actor_t*a,wm_arcade_actor_t*o,uint16_t ticks,const wm_arcade_taker_callbacks_t*c){(void)o;if(!a||ticks<110)return 0;if(a->player_mode==WM_PMODE_HEADHELD||a->player_mode==WM_PMODE_HEADHOLD||(a->anim_mode&WM_MODE_UNINT))return 0;startsp(a,"scrt_spirit",c);
+    /* TAKER.ASM:404 plays `WRSND W_TAKER,GRABHOLD_T1,GRABHOLD_T2` here.
+       This read "SPIRIT", which is the name of the MOVE (scrt_spirit)
+       and not of any sound: SOUND.H has no such mnemonic, so it
+       resolved to nothing the moment the seam behind it was filled. */
+    snd(a,"GRABHOLD",c); return 1;}
 int wm_arcade_taker_fire_secret(wm_arcade_actor_t*a,wm_arcade_actor_t*o,wm_arcade_taker_secret_id_t id,uint32_t pcnt,const wm_arcade_taker_callbacks_t*c){
     switch(id){
     case WM_TAKER_SECRET_NECK_GRAB:

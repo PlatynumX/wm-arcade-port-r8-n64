@@ -1,4 +1,5 @@
 #include "wm/pregame.h"
+#include "wm/arcade/wm_arcade_buddies.h"
 
 #include <string.h>
 
@@ -44,17 +45,18 @@ static bool any_source_button(const wm_input_state *in) {
            in->light_kick || in->power_kick || in->block;
 }
 
-/* RNDRNG0 is external/shared Wolf Unit code and is not present in this game's
- * source drop.  Keep the bridge isolated: the ladder *algorithm* below is a
- * direct port; only the entropy primitive is platform-local until RNDRNG0 is
- * recovered from shipped program ROM. */
-static uint32_t rndrng0_bridge(wm_pregame_state *s, uint32_t maximum) {
-    uint32_t x = s->rng_state ? s->rng_state : 0x57574650u;
-    x ^= x << 13;
-    x ^= x >> 17;
-    x ^= x << 5;
-    s->rng_state = x;
-    return (uint32_t)(((uint64_t)x * ((uint64_t)maximum + 1u)) >> 32);
+/*
+ * RNDRNG0 is UTIL.ASM:1713, and it is translated -- wm_rng_rndrng0 in
+ * wm/arcade/wmania_rng.h.  An earlier version of this file used a local
+ * xorshift instead, on the stated grounds that RNDRNG0 was "external/shared
+ * Wolf Unit code and is not present in this game's source drop".  That was
+ * wrong on both counts: the routine is in UTIL.ASM and the port already
+ * had it.  The ladder now draws from the one shared RAND, which is also
+ * what the arcade does -- there is a single @RAND and every RNDRNG0 caller
+ * in the game stirs it.
+ */
+static uint32_t rndrng0(wm_pregame_state *s, uint32_t maximum) {
+    return s->rng ? wm_rng_rndrng0(s->rng, maximum) : 0u;
 }
 
 static void init_temp_table(uint8_t temp[8]) {
@@ -68,7 +70,7 @@ static void randomize_order(wm_pregame_state *s, uint8_t temp[8]) {
        RNDRNG0(A10) chooses an inclusive offset in the remaining suffix. */
     for (unsigned current = 0; current < 8u; ++current) {
         unsigned maximum = 7u - current;
-        unsigned offset = rndrng0_bridge(s, maximum);
+        unsigned offset = rndrng0(s, maximum);
         unsigned other = current + offset;
         uint8_t t = temp[current];
         temp[current] = temp[other];
@@ -126,27 +128,42 @@ static uint8_t ladder_slot_for_source_wrestler(uint8_t source_wrestler) {
     return source_wrestler == 8u ? 7u : (source_wrestler & 7u);
 }
 
-static unsigned count_bits8(uint8_t bits) {
-    unsigned n = 0u;
-    for (unsigned i = 0; i < 8u; ++i)
-        n += (bits >> i) & 1u;
-    return n;
+static uint8_t get_rnd_wrestler(wm_pregame_state *s, uint8_t excluded) {
+    /* PROGRESS.ASM:4273, shared with buddy mode's own draw -- this
+       file used to carry a second copy of the same seven
+       instructions. wm/arcade/wm_arcade_buddies.h is the one
+       translation; it takes the RNG directly rather than through
+       this file's bridge, which is the same shared @RAND either
+       way. */
+    return (uint8_t)wm_get_rnd_wrestler(excluded, s ? s->rng : NULL);
 }
 
-static uint8_t get_rnd_wrestler(wm_pregame_state *s, uint8_t excluded) {
-    /* PROGRESS.ASM::get_rnd_wrestler chooses the Nth non-excluded packed
-       wrestler. RNDRNG0's inclusive-range contract is preserved by the
-       isolated bridge above. */
-    unsigned excluded_count = count_bits8(excluded);
-    unsigned maximum = 7u - excluded_count;
-    unsigned nth = rndrng0_bridge(s, maximum) + 1u;
-    for (uint8_t w = 0; w < 8u; ++w) {
-        if (excluded & (uint8_t)(1u << w))
-            continue;
-        if (--nth == 0u)
-            return w;
-    }
-    return 0u;
+/*
+ * PROGRESS.ASM:1593 get_final_lineup. INIT_TEMP_TABLE and RANDOMIZE_ORDER
+ * -- exactly the two init_ladder_table opens with, which is why they are
+ * shared here rather than copied -- then the eight shuffled wrestlers go
+ * into FINAL_BATTLE_LINEUP with an end-of-battle marker after them.
+ */
+static void get_final_lineup(wm_pregame_state *s) {
+    uint8_t temp[8];
+    init_temp_table(temp);
+    randomize_order(s, temp);
+    wm_final_set_lineup(&s->final_battle, temp);
+}
+
+void wm_pregame_get_final_lineup(wm_pregame_state *s) {
+    if (s) get_final_lineup(s);
+}
+
+/*
+ * PROGRESS.ASM:1535 get_royal_lineup: the same draw, then the swap and
+ * rotate that keep the two humans' own picks out of the front of it.
+ */
+void wm_pregame_get_royal_lineup(wm_pregame_state *s,
+                                 uint8_t index1, uint8_t index2) {
+    if (!s) return;
+    get_final_lineup(s);
+    wm_final_royal_fixup(&s->final_battle, index1, index2);
 }
 
 static uint32_t scramble_table_entry(wm_pregame_state *s,
@@ -156,11 +173,52 @@ static uint32_t scramble_table_entry(wm_pregame_state *s,
     if (count <= 1u)
         return packed;
 
+    /*
+     * Two branches before the scramble, and both of them are taken
+     * INSTEAD of it. They only exist for a three-opponent entry --
+     * `cmpi 3,a2 / jrne #begin`.
+     */
+    if (count == 3u) {
+        /*
+         * "It's three guys. Is it the final match? (we can't use
+         * is_final_match because CURRENT_LADDER hasn't been incremented
+         * yet.)" -- which is why the source compares against
+         * FINAL_BATTLE-2 where is_final_match uses FINAL_BATTLE-1. This
+         * port scrambles AFTER next_in_ladder has advanced, so the rung
+         * being asked about is the same one either way and the test is
+         * written against the post-increment index.
+         *
+         * `move @belt_type,a14 / jrz #notfin`: there is no eight-on-one
+         * on the intercontinental ladder, so that belt's own last rung
+         * falls through and stays an ordinary three-on-one.
+         */
+        if (s->belt_type != WM_PREGAME_BELT_INTERCONTINENTAL &&
+            ladder_index == WM_PREGAME_FINAL_LADDER_INDEX) {
+            /* `#final_match`: a brand new lineup, the first three of it
+               as the rung you meet, and FINAL_PTR left on the fourth --
+               `andi 00FFFFFFh` clears the fourth guy out of the entry and
+               `ori 03000000h` sets the count. */
+            get_final_lineup(s);
+            wm_final_reset_ptr(&s->final_battle);
+            return pack_ladder_entry(3u,
+                                     (uint8_t)s->final_battle.lineup[0],
+                                     (uint8_t)s->final_battle.lineup[1],
+                                     (uint8_t)s->final_battle.lineup[2]);
+        }
+
+        /*
+         * `#notfin` -- "no. one time in 32, make it three doinks." The
+         * draw is not the RNG at all: it is PCNT's low five bits, so the
+         * easter egg depends on WHEN the pregame reaches this line rather
+         * than on the shared RAND, and an entry it fires on is the
+         * literal `movi 03060606h,a1`: count 3, wrestler 6 three times.
+         */
+        if ((s->pcnt & 31u) == 0u)
+            return 0x03060606u;
+    }
+
     /* PROGRESS.ASM::scramble_table_entry excludes the human and, except for
-       the first entry, every drone from the previous fight.  Final-battle
-       replacement and the PCNT 1-in-32 triple-Doink easter egg depend on
-       source-global state that is not reached by the current first-pregame
-       port, so keep those branches at the later-ladder boundary. */
+       the first entry, every drone from the previous fight. */
     uint8_t excluded = (uint8_t)(1u << ladder_slot_for_source_wrestler(
         s->player_source_wrestler));
     if (ladder_index > 0) {
@@ -217,8 +275,27 @@ static void next_in_ladder(wm_pregame_state *s) {
     s->opponents[2] = (uint8_t)((p >> 16) & 0xffu);
 }
 
+/*
+ * PROGRESS.ASM's NEXT_IN_LADDER, which PUT_UP_PROGRESS (:2689) runs once
+ * per match. Exposed because it is the whole of what a match advance
+ * does to the ladder, and because the final rung's own branch is only
+ * reachable through it.
+ */
+void wm_pregame_next_in_ladder(wm_pregame_state *s) {
+    if (s) next_in_ladder(s);
+}
+
 static void enter_progress(wm_pregame_state *s, wm_audio_state *audio) {
-    init_ladder_table(s);          /* SELECT.ASM pregame_show */
+    /*
+     * ONLY next_in_ladder here. INIT_LADDER_TABLE is not part of the
+     * pregame at all -- the source calls it from ATTRACT.ASM:595 and
+     * from SELECT.ASM's GAME_BEATEN, which is to say once per GAME --
+     * while PROGRESS.ASM:2689's PUT_UP_PROGRESS does NEXT_IN_LADDER
+     * once per MATCH. Rebuilding the table here was invisible while a
+     * match was a dead end and the pregame ran once; the moment the
+     * app loops back for a second match it puts the ladder back to
+     * index 0 and the player fights the first opponent forever.
+     */
     next_in_ladder(s);             /* PUT_UP_PROGRESS */
     s->progress_world_x_fp = 0;
     /* CREATE_TEMP_WRESTLER::RUNNING_MAN starts at [140,0], Y=100 and
@@ -293,16 +370,16 @@ static void progress_create_bits(wm_pregame_state *s) {
         wm_progress_bit *b = &s->progress_bits[i];
 
         if ((remaining & 3u) == 0u) {
-            shared_y_fp = (int32_t)(rndrng0_bridge(s, ymax) << 16);
+            shared_y_fp = (int32_t)(rndrng0(s, ymax) << 16);
             ymax += 20u;
         }
 
         b->active = true;
         b->x_fp = (200 << 16);
         b->y_fp = shared_y_fp;
-        b->yvel_fp = -(int32_t)rndrng0_bridge(s, 0x58000u);
-        b->xvel_fp = (int32_t)rndrng0_bridge(s, 0x80000u) - 0x40000;
-        b->kind = (uint8_t)rndrng0_bridge(s, 13u);
+        b->yvel_fp = -(int32_t)rndrng0(s, 0x58000u);
+        b->xvel_fp = (int32_t)rndrng0(s, 0x80000u) - 0x40000;
+        b->kind = (uint8_t)rndrng0(s, 13u);
         b->delay = PROGRESS_BIT_INITIAL_DELAY;
         b->anim_index = 0u;
         b->anim_started = false;
@@ -400,9 +477,11 @@ static void tick_progress_close(wm_pregame_state *s) {
 
 void wm_pregame_init(wm_pregame_state *s,
                      uint8_t selected_source_wrestler,
-                     wm_wrestler_id selected_roster_wrestler) {
+                     wm_wrestler_id selected_roster_wrestler,
+                     WmRng *rng) {
     if (!s) return;
     memset(s, 0, sizeof(*s));
+    s->rng = rng;
     s->phase = WM_PREGAME_BELT_SETUP;
     s->belt_type = WM_PREGAME_BELT_INTERCONTINENTAL; /* INTER_DEFAULT .set 1 */
     s->player_source_wrestler = selected_source_wrestler < 9u ? selected_source_wrestler : 0u;
@@ -411,7 +490,75 @@ void wm_pregame_init(wm_pregame_state *s,
     s->belt_world_y = 0;
     s->match_count = 1u; /* WRESTLE.ASM increments match_cnt before pregame_show. */
     s->win_streak = 0u; /* Fresh one-player run: both source win-streak counters are clear. */
-    s->rng_state = 0x50524731u ^ ((uint32_t)s->player_source_wrestler * 0x9E3779B9u);
+    /* ATTRACT.ASM:595 / SELECT.ASM's own `calla INIT_LADDER_TABLE`:
+       the ladder is built once for the whole game. */
+    init_ladder_table(s);
+}
+
+/*
+ * WRESTLE.ASM:1061 `do_pregame`, re-entered. The source loops back to
+ * that label after every match a human wins, and what it does NOT do
+ * on the way round is as important as what it does: no select screen,
+ * no INIT_LADDER_TABLE. It clears match_winner, bumps match_cnt and
+ * runs pregame_show again, so the next PUT_UP_PROGRESS advances one
+ * rung and the player meets the next opponent.
+ */
+void wm_pregame_next_match(wm_pregame_state *s, uint32_t win_streak) {
+    int ladder;
+    WmRng *rng;
+    uint8_t src;
+    wm_wrestler_id roster;
+    uint8_t belt;
+    uint32_t matches;
+    wm_pregame_ladder_entry table[WM_PREGAME_LADDER_ENTRIES];
+    wm_final_battle_state_t final_battle;
+    uint32_t pcnt;
+
+    if (!s) return;
+    /* Everything that survives a match: the ladder and where we are on
+       it, who the player picked, the belt, and the match counter.
+       FINAL_BATTLE_LINEUP and FINAL_PTR belong on that list too -- they
+       are BSS globals in the source, not per-screen state, and the whole
+       point of the queue is that it outlives the wrestlers coming out of
+       it. PCNT is the main loop's counter and never resets at all. */
+    ladder = s->current_ladder_index;
+    final_battle = s->final_battle;
+    pcnt = s->pcnt;
+    rng = s->rng;
+    src = s->player_source_wrestler;
+    roster = s->player_roster_wrestler;
+    belt = s->belt_type;
+    matches = s->match_count;
+    memcpy(table, s->ladder, sizeof(table));
+
+    memset(s, 0, sizeof(*s));
+    s->rng = rng;
+    s->phase = WM_PREGAME_BELT_SETUP;
+    s->belt_type = belt;
+    s->player_source_wrestler = src;
+    s->player_roster_wrestler = roster;
+    s->current_ladder_index = ladder;
+    s->belt_world_y = 0;
+    /* `move @match_cnt,a0 / inc a0 / move a0,@match_cnt`. */
+    s->match_count = matches + 1u;
+    s->win_streak = win_streak;
+    memcpy(s->ladder, table, sizeof(table));
+    s->final_battle = final_battle;
+    s->pcnt = pcnt;
+}
+
+/*
+ * WRESTLE.ASM:1176 `move @CURRENT_LADDER,A0,L / subi 20h,a0` -- the
+ * step back the CPU-won path takes "because NEXT_IN_LADDER
+ * automatically increments it". A player who continues after losing
+ * faces the SAME opponent again, not the next one.
+ */
+void wm_pregame_ladder_back(wm_pregame_state *s) {
+    if (!s) return;
+    /* Unconditional, as the source is. next_in_ladder's own `if
+       (index < 0) index = 0` absorbs a step back off the bottom, so
+       losing the first match still replays the first opponent. */
+    --s->current_ladder_index;
 }
 
 void wm_pregame_tick(wm_pregame_state *s,
@@ -574,4 +721,29 @@ const char *wm_pregame_phase_name(wm_pregame_phase phase) {
         case WM_PREGAME_READY_FOR_MATCH: return "READY_FOR_MATCH";
         default: return "UNKNOWN";
     }
+}
+
+/*
+ * PROGRESS.ASM:1501 is_final_match and :1516 is_8_on_1. Both report
+ * through the carry flag; see wm/pregame.h for what FINAL_BATTLE's own
+ * out-of-date comment says and what the code does.
+ */
+bool wm_pregame_is_final_match(const wm_pregame_state *state)
+{
+    if (!state) return false;
+    return state->current_ladder_index == WM_PREGAME_FINAL_LADDER_INDEX;
+}
+
+bool wm_pregame_is_8_on_1(const wm_pregame_state *state)
+{
+    if (!state) return false;
+    /* "no 8-on-1 in intercontinental belt table" -- `jrz #no`. */
+    if (state->belt_type == 0) return false;
+    return wm_pregame_is_final_match(state);
+}
+
+/* PROGRESS.ASM:692 NUM_OF_OPPS -- `SRL 24,A3`. */
+uint8_t wm_pregame_num_of_opps(uint32_t packed_ladder_entry)
+{
+    return (uint8_t)(packed_ladder_entry >> 24);
 }

@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "wm/arcade/wmania_rng.h"
+
 #include "wm/audio.h"
 #include "wm/roster.h"
 #include "wm/select.h"
@@ -57,10 +59,13 @@ typedef struct {
     uint8_t p2_player_pal_pref;
     uint8_t p2_selected_source_wrestler;
     uint8_t selected_source_wrestler;
-    uint32_t rng_state;
+    /* The one shared RAND -- SELECT.ASM calls the same RNDRNG0
+     * (UTIL.ASM:1713) as the rest of the game. NULL means un-wired, and
+     * every draw comes back zero, which is what a stirless RAND does. */
+    WmRng *rng;
 } wm_select_screen_state;
 
-void wm_select_screen_init(wm_select_screen_state *state);
+void wm_select_screen_init(wm_select_screen_state *state, WmRng *rng);
 
 void wm_select_screen_tick(wm_select_screen_state *state,
                            int stick_x, int stick_y,

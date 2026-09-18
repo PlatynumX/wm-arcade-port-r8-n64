@@ -4,15 +4,22 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include "wm/attract.h"
+#include "wm/arcade/wm_arcade_sound.h"
+#include "wm/arcade/wmania_hiscore_entry.h"
+#include "wm/arcade/wmania_hiscore_persist.h"
+#include "wm/arcade/wmania_hiscore_system.h"
 #include "wm/audio.h"
 #include "wm/award.h"
+#include "wm/arcade/wm_arcade_powerup.h"
 #include "wm/demo.h"
+#include "wm/match.h"
 #include "wm/process.h"
 #include "wm/roster.h"
 #include "wm/source_clock.h"
 #include "wm/pregame.h"
 #include "wm/select_screen.h"
 #include "wm/select_continue.h"
+#include "wm/arcade/wmania_rng.h"
 
 /* DISPLAY.EQU: TSEC equ 53. Source sleeps expressed in TSEC use this rate.
    Literal source sleeps such as SLEEP 60 stay literal 60 source ticks. */
@@ -33,6 +40,15 @@
 #define WM_SPORTS_LOGO_TOTAL_TICKS \
     (WM_SPORTS_LOGO_BUTTON_ENABLE_TICKS + 8u * WM_SOURCE_TICKS_PER_SEC)
 
+/*
+ * @royal_rumble. This port has no ladder state that can set it, so
+ * it is false everywhere -- but it is read in two unrelated places
+ * (#2plyr's PSIDE subtract and the powerup codes' `jrnz #die`), and
+ * naming it once keeps those two from drifting apart when a rumble
+ * does become reachable.
+ */
+#define WM_APP_ROYAL_RUMBLE false
+
 /* ATTRACT.ASM::show_title: SLEEPK 2, build, SLEEPK 2, CREATE processes,
    SLEEP TSEC/2, wait_on_butn 10*TSEC. */
 #define WM_TITLE_SETUP_TICKS 4u
@@ -42,6 +58,13 @@
     (WM_TITLE_BUTTON_ENABLE_TICKS + 10u * WM_SOURCE_TICKS_PER_SEC)
 #define WM_TITLE_LAVA_PERIOD_TICKS 5u
 #define WM_TITLE_LAVA_STEPS 32u
+
+/* ATTRACT.ASM::show_gameplay (WRESTLE.ASM::start_match, PSTATUS==0 path):
+   SLEEP 3*60 (literal, not TSEC-scaled), then wait_on_butn 10*TSEC. */
+#define WM_GAMEPLAY_RUN_TICKS (3u * 60u)
+#define WM_GAMEPLAY_BUTTON_ENABLE_TICKS WM_GAMEPLAY_RUN_TICKS
+#define WM_GAMEPLAY_TOTAL_TICKS \
+    (WM_GAMEPLAY_BUTTON_ENABLE_TICKS + 10u * WM_SOURCE_TICKS_PER_SEC)
 
 /* Recovered from the rev 1.30 arcade program ROM.
    ATTRACT.ASM passes A8=[102,7], A10=WHERE_WRESTLMANIA_SPARKLES, A9=4.
@@ -119,11 +142,94 @@ typedef enum {
     WM_APP_MODE_ATTRACT = 0,
     WM_APP_MODE_SELECT,
     WM_APP_MODE_PREGAME,
-    WM_APP_MODE_MATCH_INIT
+    WM_APP_MODE_MATCH_INIT,
+    /* WRESTLE.ASM::start_match's #1plyr path -- see wm/match.h for exactly
+       what wm_match_start_selected/wm_match_tick do and don't translate. */
+    WM_APP_MODE_MATCH,
+    /*
+     * WRESTLE.ASM:1116, the code after `JSRP start_match` -- "The only
+     * time we return from start_match is when the match is over". This
+     * mode is that return: one tick that decides where the game goes,
+     * on the `PSTATUS andn match_winner` test.
+     *
+     * A human who WON goes straight back to WM_APP_MODE_PREGAME and
+     * the next rung of the ladder, with no select screen, which is
+     * the source's own `jruc do_pregame`. A human who LOST goes to
+     * the buy-in below.
+     */
+    WM_APP_MODE_MATCH_OVER,
+    /*
+     * WRESTLE.ASM:1183 `JSRP buyin_select` -- SELECT.ASM's continue
+     * offer, already translated in wm/select_continue.h and, until
+     * now, initialised by this file and never used. Accept and the
+     * same opponent comes round again; let it run out and the game
+     * is over.
+     */
+    WM_APP_MODE_CONTINUE,
+    /*
+     * SELECT.ASM:1190 do_game_over, which the declined continue used
+     * to skip straight past on its way back to attract. Four seconds
+     * of GAME OVER with the master volume fading under it, and the
+     * bookkeeping a finished game owes the next one.
+     */
+    WM_APP_MODE_GAME_OVER,
+    /*
+     * HSTD.ASM's initials input, reached from SELECT.ASM:211's
+     * `JSRP DO_BEATEN_GAME` when a finished game qualifies for a
+     * table. The source runs it as a HI_INPUT_PID process the
+     * game-over path waits on (`are_we_waiting4`); this port has no
+     * process system for it, so it is an app mode instead.
+     */
+    WM_APP_MODE_HISCORE_ENTRY
 } wm_app_mode;
 
 typedef struct {
     wm_audio_state audio;
+    /*
+     * DCSSOUND.ASM's four-channel mixer (wm/arcade/wm_arcade_sound.h).
+     * Every sound index the game decides on goes through this before
+     * it reaches the queue above, which is what decides whether it is
+     * played at all.
+     */
+    wm_sound_state_t sound;
+    /*
+     * The two SOUND_PID processes a match asks for through its own
+     * seams: LIFEBAR.ASM's ring_bell and AWARD.ASM's END_MATCH_SPEECH.
+     * They live here because they need the mixer and the audio queue,
+     * both of which are the app's; the match only says when.
+     */
+    wm_sound_bell_t bell;
+    wm_sound_pin_him_t pin_him;
+
+    /*
+     * HSTD.ASM's high-score tables, and the initials entry that feeds
+     * them.
+     *
+     * Nine files and ~1,900 lines of this were translated, unit-tested,
+     * and called by nothing outside themselves: no game ever qualified
+     * for a table, no initials were ever entered, and nothing was ever
+     * saved or loaded. The tables existed and the game could not reach
+     * them.
+     *
+     * The save backend is deliberately abstract -- read/write callbacks
+     * the port supplies (wm/arcade/wmania_hiscore_persist.h says so in
+     * as many words). The host build keeps the bytes in RAM, which is
+     * exactly right for a host build: they survive an attract loop and
+     * a game, and nothing pretends they survive the process.
+     */
+    WmHsSystem hiscore;
+    WmHsEntryState hs_entry;
+    WmHsPendingEntry hs_pending;
+    bool hs_pending_valid;
+    WmHsSaveBackend hs_backend;
+    /* WM_HS_SAVE_MAX_BYTES of encoded table, plus how much is real. */
+    uint8_t hs_save_bytes[WM_HS_SAVE_MAX_BYTES];
+    size_t hs_save_len;
+    size_t hs_save_cursor;
+    /* Counters a test can read: how many entries have been committed,
+       and how many times the tables have been written out. */
+    uint32_t hs_commits;
+    uint32_t hs_writes;
     wm_app_mode mode;
     wm_select_screen_state select;
     wm_select_continue_state continue_select;
@@ -134,15 +240,100 @@ typedef struct {
     wm_demo demo;
     wm_wrestler_id p1_choice;
     wm_wrestler_id p2_choice;
+
+    /*
+     * AWARD.ASM's @p1powerup_request / @p2powerup_request, the two
+     * words #2plyr ANDs to decide buddy mode, plus the output flags
+     * get_powerups derives from them.
+     *
+     * Filled for real: powerup_window_start opens the code window
+     * where PROGRESS.ASM's CLOSE_PROGRESS_SCREEN opens it, the
+     * attempts below run through the pregame, and
+     * powerup_window_close runs get_powerups on the way into the
+     * match.
+     */
+    wm_powerup_flags powerups;
+
+    /*
+     * AWARD.ASM:2182 player_powerup_checker: each player has one
+     * live attempt per code, all racing at once, and PROGRESS.ASM's
+     * CLOSE_PROGRESS_SCREEN is what starts them -- which is why
+     * they run through WM_APP_MODE_PREGAME and are reconciled by
+     * get_powerups on the way into the match.
+     *
+     * `spawned` on a code row is the source's own commented-out
+     * CREATE (no_ring is disabled "until we get blimp module"), so a
+     * row that is not spawned never gets an attempt here either.
+     */
+    wm_powerup_attempt powerup_attempt[2][WM_PUP_CODE_SLOTS];
+    bool powerup_window_open;
+    /* PUPWAITSWITCH compares switches-DOWN, so the level a
+       controller reports has to be edge-detected first. */
+    int32_t powerup_prev_switches[2];
+
+    /*
+     * @PSTATUS as the select screen left it: 1 for one player, 3
+     * when a second joined. start_match branches on it, so it is
+     * settled once when select finishes and read again at
+     * MATCH_INIT rather than re-derived.
+     */
+    int32_t match_pstatus;
     bool show_debug;
+
+    /* WRESTLE.ASM::start_match's PSTATUS==0 path, driven from
+       WM_ATTRACT_SHOW_GAMEPLAY. See wm/match.h for exactly what is and is
+       not translated. */
+    wm_match_state match;
+
+    /* Shared @RAND state. All RNDRNG0 draws (show_gameplay's wrestler pick
+       included) come from this single stream, matching the source's one
+       global RAND. HCOUNT/SP hardware entropy is not wired up yet -- see
+       wmania_rng.h -- so this is seeded plainly rather than from real
+       cabinet jitter. */
+    WmRng rng;
 
     /* Source execution infrastructure. The display backend calls
        wm_app_video_frame at 60 Hz; this advances wm_app_tick at exactly 53 Hz. */
     wm_source_clock source_clock;
     wm_scheduler scheduler;
     wm_input_state latched_input;
+    /*
+     * WRESTLE.ASM:160 PCNT, "Main loop cnt" -- bumped by
+     * WRESTLE.ASM:542's `move @PCNT,a0,L / addk 1,a0 / move a0,@PCNT,L`
+     * at the bottom of every pass through mainlp, and cleared by
+     * nothing. wm_app_tick IS that pass, so this counts there and is
+     * lent to the pregame, whose scramble_table_entry reads its low five
+     * bits for the triple-Doink draw.
+     *
+     * The match still keeps its own per-match tick_count for the PCNT
+     * its combat code wants; the two are deliberately not merged here,
+     * because doing so changes timestamps all through REACT and DRONE
+     * and belongs in its own change.
+     */
+    uint32_t pcnt;
     unsigned boot_ticks;
     bool attract_started;
+    /*
+     * WRESTLE.ASM:1131 `movi 60,a0 / move a0,@are_we_waiting_f` --
+     * "set delay before allowing player to select a wrestler", run on
+     * the way out of every match.
+     */
+    unsigned are_we_waiting_f;
+    /*
+     * @match_winner as the post-match code reads it: 1 = player one's
+     * side, 2 = player two's, 0 = the CPU took it. Kept here because
+     * the match state is re-initialised by the next wm_match_start_*
+     * and this outlives it.
+     */
+    int32_t last_match_winner;
+    /* The continue offer reads a Start EDGE, not the level: a Start
+       still held from the match must not buy in by itself. */
+    bool continue_start_was_down;
+    /* FADE_MASTER_VOL's own process state, for the one place that
+       starts it: do_game_over. */
+    wm_sound_fade_t volume_fade;
+    /* `SLEEP TSEC*4` -- how long GAME OVER stays up. */
+    int32_t game_over_ticks;
 } wm_app;
 
 void wm_app_init(wm_app *app);

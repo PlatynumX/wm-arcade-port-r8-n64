@@ -1,0 +1,192 @@
+{
+ "_README": [
+  "Every callback seam that is CALLED through a NULL check and filled by",
+  "nobody needs a row here. tools/seam_audit.py measures the set; the",
+  "source-tools test refuses a seam that is empty and unledgered, and also",
+  "a row here for a seam that is no longer empty -- so a wiring cannot",
+  "leave a stale excuse behind, and a new empty seam cannot appear",
+  "unnoticed.",
+  "",
+  "The point is not that every seam must be wired. Plenty stand for",
+  "drawing this port has no renderer for. The point is that leaving one",
+  "empty has to be a decision somebody wrote down, because an unwired seam",
+  "is invisible: the call compiles, runs, does nothing, and reads exactly",
+  "like working code. Six separate findings this cycle were that shape.",
+  "",
+  "verdicts:",
+  "  display   - object/DMA drawing; this port has no renderer",
+  "  hardware  - talks to the cabinet (CMOS clock, DIPs, I/O)",
+  "  fallback  - the call sites run the real routine in an else",
+  "  unreached - the caller itself is not on a live path",
+  "  deferred  - real, wireable, and not yet done; the note says what is",
+  "              known and what still has to be established"
+ ],
+ "show_title": {
+  "verdict": "display",
+  "note": "ATTRACT.ASM SHOW_TITLE's title screen. The attract sequence's decisions -- which screen, in what order, for how long -- are translated and tested (wm/attract.h, src/generated/attract_sequence.c); what each screen PAINTS is not, and src/generated/port_status.c already reports it as not-started. Filling this seam would need a renderer, not a translation."
+ },
+ "show_dcs_logo": {
+  "verdict": "display",
+  "note": "ATTRACT.ASM the DCS logo screen. The attract sequence's decisions -- which screen, in what order, for how long -- are translated and tested (wm/attract.h, src/generated/attract_sequence.c); what each screen PAINTS is not, and src/generated/port_status.c already reports it as not-started. Filling this seam would need a renderer, not a translation."
+ },
+ "show_sports_logo": {
+  "verdict": "display",
+  "note": "ATTRACT.ASM the sports logo screen. The attract sequence's decisions -- which screen, in what order, for how long -- are translated and tested (wm/attract.h, src/generated/attract_sequence.c); what each screen PAINTS is not, and src/generated/port_status.c already reports it as not-started. Filling this seam would need a renderer, not a translation."
+ },
+ "show_hiscores": {
+  "verdict": "display",
+  "note": "ATTRACT.ASM show_hstd, the high-score table screen. The attract sequence's decisions -- which screen, in what order, for how long -- are translated and tested (wm/attract.h, src/generated/attract_sequence.c); what each screen PAINTS is not, and src/generated/port_status.c already reports it as not-started. Filling this seam would need a renderer, not a translation."
+ },
+ "show_bio": {
+  "verdict": "display",
+  "note": "ATTRACT.ASM SHOW_BIOS, a wrestler biography page. The attract sequence's decisions -- which screen, in what order, for how long -- are translated and tested (wm/attract.h, src/generated/attract_sequence.c); what each screen PAINTS is not, and src/generated/port_status.c already reports it as not-started. Filling this seam would need a renderer, not a translation."
+ },
+ "show_general_tips": {
+  "verdict": "display",
+  "note": "ATTRACT.ASM show_gen_tips. The attract sequence's decisions -- which screen, in what order, for how long -- are translated and tested (wm/attract.h, src/generated/attract_sequence.c); what each screen PAINTS is not, and src/generated/port_status.c already reports it as not-started. Filling this seam would need a renderer, not a translation."
+ },
+ "show_designer_hint": {
+  "verdict": "display",
+  "note": "ATTRACT.ASM DO_HINTS. The attract sequence's decisions -- which screen, in what order, for how long -- are translated and tested (wm/attract.h, src/generated/attract_sequence.c); what each screen PAINTS is not, and src/generated/port_status.c already reports it as not-started. Filling this seam would need a renderer, not a translation."
+ },
+ "show_operator_message": {
+  "verdict": "display",
+  "note": "ATTRACT.ASM show_operatormsg. The attract sequence's decisions -- which screen, in what order, for how long -- are translated and tested (wm/attract.h, src/generated/attract_sequence.c); what each screen PAINTS is not, and src/generated/port_status.c already reports it as not-started. Filling this seam would need a renderer, not a translation."
+ },
+ "show_copyright": {
+  "verdict": "display",
+  "note": "ATTRACT.ASM the copyright page. The attract sequence's decisions -- which screen, in what order, for how long -- are translated and tested (wm/attract.h, src/generated/attract_sequence.c); what each screen PAINTS is not, and src/generated/port_status.c already reports it as not-started. Filling this seam would need a renderer, not a translation."
+ },
+ "show_aama": {
+  "verdict": "display",
+  "note": "ATTRACT.ASM the AAMA message. The attract sequence's decisions -- which screen, in what order, for how long -- are translated and tested (wm/attract.h, src/generated/attract_sequence.c); what each screen PAINTS is not, and src/generated/port_status.c already reports it as not-started. Filling this seam would need a renderer, not a translation."
+ },
+ "show_time_date": {
+  "verdict": "display",
+  "note": "ATTRACT.ASM show_time_date's clock page. The attract sequence's decisions -- which screen, in what order, for how long -- are translated and tested (wm/attract.h, src/generated/attract_sequence.c); what each screen PAINTS is not, and src/generated/port_status.c already reports it as not-started. Filling this seam would need a renderer, not a translation."
+ },
+ "show_credits_crd_scrn2": {
+  "verdict": "display",
+  "note": "ATTRACT.ASM creditscreen / CRD_SCRN2. The attract sequence's decisions -- which screen, in what order, for how long -- are translated and tested (wm/attract.h, src/generated/attract_sequence.c); what each screen PAINTS is not, and src/generated/port_status.c already reports it as not-started. Filling this seam would need a renderer, not a translation."
+ },
+ "show_gameplay_demo_unimplemented": {
+  "verdict": "display",
+  "note": "ATTRACT.ASM show_gameplay, the attract demo -- named as unimplemented in the seam itself. The attract sequence's decisions -- which screen, in what order, for how long -- are translated and tested (wm/attract.h, src/generated/attract_sequence.c); what each screen PAINTS is not, and src/generated/port_status.c already reports it as not-started. Filling this seam would need a renderer, not a translation."
+ },
+ "read_clock": {
+  "verdict": "hardware",
+  "note": "The CMOS real-time clock the time-and-date screen reads. There is no clock chip here, and inventing a time would make the screen lie."
+ },
+ "time_date_dip_enabled": {
+  "verdict": "hardware",
+  "note": "The operator DIP that enables the time-and-date screen. No switch bank to read; the screen it gates is display anyway."
+ },
+ "remap_io": {
+  "verdict": "hardware",
+  "note": "REMAP_IO, the cabinet's I/O address window, which the attract path reopens around the screens that touch hardware directly. There is no memory-mapped I/O window on this machine to remap, so the call has nothing to stand for."
+ },
+ "music_adjustment_nonzero": {
+  "verdict": "hardware",
+  "note": "The operator's music volume adjustment, read out of CMOS by the attract adapter to decide whether to play music at all. No adjustment store and no CMOS here; a default would be the cabinet's setting invented rather than read."
+ },
+ "pal_getf": {
+  "verdict": "display",
+  "note": "pal_getf, a palette allocation. Object, palette or DMA work with no renderer behind it. The decision that reaches it is translated; the drawing is not."
+ },
+ "screen_flash": {
+  "verdict": "display",
+  "note": "the full-screen flash. Object, palette or DMA work with no renderer behind it. The decision that reaches it is translated; the drawing is not."
+ },
+ "shadow_trail": {
+  "verdict": "display",
+  "note": "the shadow trail a moving object leaves. Object, palette or DMA work with no renderer behind it. The decision that reaches it is translated; the drawing is not."
+ },
+ "impact": {
+  "verdict": "display",
+  "note": "the impact sprite a landed blow spawns. Object, palette or DMA work with no renderer behind it. The decision that reaches it is translated; the drawing is not."
+ },
+ "flash_white": {
+  "verdict": "display",
+  "note": "flash_white's QDMAN fill of the whole screen. Object, palette or DMA work with no renderer behind it. The decision that reaches it is translated; the drawing is not."
+ },
+ "restore_hit_render_state": {
+  "verdict": "display",
+  "note": "putting the palette back after a hit flash. Object, palette or DMA work with no renderer behind it. The decision that reaches it is translated; the drawing is not."
+ },
+ "keep_attached": {
+  "verdict": "fallback",
+  "note": "WRESTLE.ASM keep_attached. Not a hole: every call site reads `if (c && c->keep_attached) ... else (void)wm_arcade_keep_attached(a);`, so the real translated routine runs when the seam is empty. All seven shared dispatchers were checked. The seam exists so a backend CAN take it over, not because anything is missing."
+ },
+ "master_keep_attached": {
+  "verdict": "fallback",
+  "note": "WRESTLE.ASM master_keep_attached. Not a hole: every call site reads `if (c && c->master_keep_attached) ... else (void)wm_arcade_master_keep_attached(a);`, so the real translated routine runs when the seam is empty. All seven shared dispatchers were checked. The seam exists so a backend CAN take it over, not because anything is missing."
+ },
+ "auto_pin_check": {
+  "verdict": "unreached",
+  "note": "A field of wm_arcade_move_wrestler's callback set (wm/arcade/wm_arcade_move_dispatch.h). That routine is the FAITHFUL translation of WRESTLE.ASM's move_wrestler and is called only from a test; the live loop calls wm_arcade_move_ported_wrestler, its last step alone. Why the split exists and what it would take to collapse it -- deciding whether SPECIAL_MOVE_ADDR carries an id or an address for everybody -- is recorded under `auto_pin` in port/translation_manifest.json. auto_pin_check itself IS translated and IS called live, from match.c, where the source calls it."
+ },
+ "character_move": {
+  "verdict": "unreached",
+  "note": "A field of wm_arcade_move_wrestler's callback set (wm/arcade/wm_arcade_move_dispatch.h). That routine is the FAITHFUL translation of WRESTLE.ASM's move_wrestler and is called only from a test; the live loop calls wm_arcade_move_ported_wrestler, its last step alone. Why the split exists and what it would take to collapse it -- deciding whether SPECIAL_MOVE_ADDR carries an id or an address for everybody -- is recorded under `auto_pin` in port/translation_manifest.json. auto_pin_check itself IS translated and IS called live, from match.c, where the source calls it."
+ },
+ "change_anim_special": {
+  "verdict": "unreached",
+  "note": "A field of wm_arcade_move_wrestler's callback set (wm/arcade/wm_arcade_move_dispatch.h). That routine is the FAITHFUL translation of WRESTLE.ASM's move_wrestler and is called only from a test; the live loop calls wm_arcade_move_ported_wrestler, its last step alone. Why the split exists and what it would take to collapse it -- deciding whether SPECIAL_MOVE_ADDR carries an id or an address for everybody -- is recorded under `auto_pin` in port/translation_manifest.json. auto_pin_check itself IS translated and IS called live, from match.c, where the source calls it."
+ },
+ "resolve_label_token": {
+  "verdict": "deferred",
+  "note": "With start_special_label, the two halves of the six shared dispatchers' startsp(): resolve the animation label to a token for SPECIAL_MOVE_ADDR, then start it. Both still empty, so startsp() is inert end to end -- but the question this row used to carry is now ANSWERED, and the answer went the other way. It read: not established whether that matters, because the live special-move path is match_tick_smoves_for and startsp() might never be reached. It IS reached. The two mechanisms are distinct -- check_secret_moves scans xxx_secret_moves against wrest_joystat from the top of every move_xxx, while init_smoves inserts SMOVE_PID watchdogs from xxx_smove_table -- and wiring check_secret_moves made the first one live for the seven wrestlers who are not Bret. Measured: Doink's hip_toss2 pattern matches on one tick of away-plus-punch, wm_arcade_port_fire_secret returns 1, and the handler runs. Several of those handlers do their work through startsp(), so those moves now FIRE and then do nothing visible. What is left is a real piece of work rather than a question: the smove API has no start-by-label entry point, so giving startsp() something to call means deciding how a secret handler names the animation it wants and whether SPECIAL_MOVE_ADDR carries an id or an address -- the same decision recorded under `auto_pin` in port/translation_manifest.json."
+ },
+ "start_special_label": {
+  "verdict": "deferred",
+  "note": "With start_special_label, the two halves of the six shared dispatchers' startsp(): resolve the animation label to a token for SPECIAL_MOVE_ADDR, then start it. Both still empty, so startsp() is inert end to end -- but the question this row used to carry is now ANSWERED, and the answer went the other way. It read: not established whether that matters, because the live special-move path is match_tick_smoves_for and startsp() might never be reached. It IS reached. The two mechanisms are distinct -- check_secret_moves scans xxx_secret_moves against wrest_joystat from the top of every move_xxx, while init_smoves inserts SMOVE_PID watchdogs from xxx_smove_table -- and wiring check_secret_moves made the first one live for the seven wrestlers who are not Bret. Measured: Doink's hip_toss2 pattern matches on one tick of away-plus-punch, wm_arcade_port_fire_secret returns 1, and the handler runs. Several of those handlers do their work through startsp(), so those moves now FIRE and then do nothing visible. What is left is a real piece of work rather than a question: the smove API has no start-by-label entry point, so giving startsp() something to call means deciding how a secret handler names the animation it wants and whether SPECIAL_MOVE_ADDR carries an id or an address -- the same decision recorded under `auto_pin` in port/translation_manifest.json."
+ },
+ "attacker_anim_tag": {
+  "verdict": "deferred",
+  "note": "REACT1.ASM hit_stomp compares the attacker's current ANIBASE label against specific ones. The seam resolves that comparison for the reaction core; empty, hit_stomp reads WM_R_ANIMTAG_OTHER for everybody and takes the general arm. Real and wireable -- the label is on the backend -- but which labels map to which tag has to be read off REACT1.ASM rather than assumed."
+ },
+ "move_grade": {
+  "verdict": "deferred",
+  "note": "REACT's per-move grading, which feeds the award and message paths. The grades themselves are computed; this seam only reports them, so nothing downstream currently hears. Wireable once there is a consumer that is not display."
+ },
+ "unhandled_reaction": {
+  "verdict": "deferred",
+  "note": "The reaction core's own escape hatch for a hit_table entry it has no handler for -- diagnostic rather than behaviour. Worth filling with a counter so the number is measured instead of assumed, which is its own small change."
+ },
+ "attacker_uses_lex_flykick_anim": {
+  "verdict": "deferred",
+  "note": "One REACT1 special case that asks whether the attacker is playing Lex's flying-kick animation. A label comparison like attacker_anim_tag's and blocked on the same reading."
+ },
+ "ck_ignore_reversed": {
+  "verdict": "deferred",
+  "note": "Razor's twin of ck_ignore, taking BOTH wrestlers rather than one. ck_ignore is wired now against wm_arcade_ck_ignore; this one's source routine and its second argument have not been identified yet, and pointing it at the one-argument translation would be inventing the difference away."
+ },
+ "bonus_message": {
+  "verdict": "deferred",
+  "note": "The bonus text a special move puts on screen, plus the award behind it. The message is display; whether an award rides along -- as it does in DO_REVERSAL_MESS, which is why that one got wired -- has to be read off the callers."
+ },
+ "first_hit_message": {
+  "verdict": "deferred",
+  "note": "The FIRST HIT banner. Its AWARD half is already wired separately through react_cb.round_first_hit_award (ANIM.ASM:2253's `RND_AWARD a13,FIRST_HIT_AWD`), so what is left behind this seam is the drawing."
+ },
+ "partner_breakout": {
+  "verdict": "deferred",
+  "note": "A teammate breaking up a hold in buddy mode. The port runs a fixed pair by default; the call site is live only with four actors, and the routine behind it has not been traced."
+ },
+ "round_award_block": {
+  "verdict": "deferred",
+  "note": "AWARD.ASM's block award. The award machinery is all here (wm_award_round_award, and BLOCK is an index in wm/award.h); what is missing is reading which block events the source scores, which is not the same question as how to score them."
+ },
+ "jump_rope_audio": {
+  "verdict": "deferred",
+  "note": "Bret's jump-rope taunt audio. A WRSND like the ones wired this cycle, but its move mnemonic has not been read off BRET.ASM yet."
+ },
+ "start_shake": {
+  "verdict": "deferred",
+  "note": "The Undertaker's coffin finish asking for a screen shake. wm_shake_start is translated and is wired for REACT4 already, so this is a short wiring -- it wants the finish sequence's own test rather than riding along with an unrelated change."
+ },
+ "play_wrestler_tune": {
+  "verdict": "deferred",
+  "note": "DO_RIGHT_MUSIC's per-wrestler victory tune, which the attract adapter asks for by wrestler number. wm_match_wrestler_tune already resolves WHICH tune (it is asserted in wm_test_match_end), so what is missing behind this seam is playing it -- the DCS tune path, which is the same cluster as do_tune_commands and snd_update and wants one pass of its own rather than a single call bolted on."
+ }
+}

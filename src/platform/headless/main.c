@@ -12,25 +12,44 @@ int main(void) {
     if (app.attract.call != WM_ATTRACT_SHOW_SPORTS_LOGO)
         return 2;
 
+    guard = 0;
     while (app.attract.call == WM_ATTRACT_SHOW_SPORTS_LOGO && guard++ < 4000)
         wm_app_tick(&app, &button);
 
-    /* Strict source mode skips harness-only show_gameplay/credits and lands on
-       the newly translated source title routine. */
-    if (app.attract.call != WM_ATTRACT_SHOW_TITLE)
+    /* SHOW_GAMEPLAY is now source-translated, so strict attract execution
+       must run it rather than skipping directly to SHOW_TITLE. */
+    if (app.attract.call != WM_ATTRACT_SHOW_GAMEPLAY)
         return 3;
 
-    while (app.attract.call == WM_ATTRACT_SHOW_TITLE && guard++ < 6000)
+    guard = 0;
+    while (app.attract.call == WM_ATTRACT_SHOW_GAMEPLAY && guard++ < 4000)
+        wm_app_tick(&app, &button);
+
+    /* CREDITSCREEN remains untranslated, so the dispatcher skips it and
+       reaches the translated title routine. */
+    if (app.attract.call != WM_ATTRACT_SHOW_TITLE)
+        return 4;
+
+    guard = 0;
+    while (app.attract.call == WM_ATTRACT_SHOW_TITLE && guard++ < 4000)
+        wm_app_tick(&app, &button);
+
+    /* ATTRACT.ASM contains a second SHOW_GAMEPLAY call after SHOW_TITLE. */
+    if (app.attract.call != WM_ATTRACT_SHOW_GAMEPLAY)
+        return 5;
+
+    guard = 0;
+    while (app.attract.call == WM_ATTRACT_SHOW_GAMEPLAY && guard++ < 4000)
         wm_app_tick(&app, &button);
 
     if (app.attract.call != WM_ATTRACT_DCS_LOGO)
-        return 4;
-    if (app.attract.amode_loops != 1)
-        return 5;
-    if (wm_attract_call_is_translated(WM_ATTRACT_SHOW_GAMEPLAY))
         return 6;
-    if (!wm_attract_call_is_translated(WM_ATTRACT_SHOW_TITLE))
+    if (app.attract.amode_loops != 1)
         return 7;
+    if (!wm_attract_call_is_translated(WM_ATTRACT_SHOW_GAMEPLAY))
+        return 8;
+    if (!wm_attract_call_is_translated(WM_ATTRACT_SHOW_TITLE))
+        return 9;
 
     printf("wm_arcade_port r9\n");
     printf("attract source calls=%zu current=%s loops=%u\n",
@@ -38,8 +57,9 @@ int main(void) {
            wm_attract_call_name(app.attract.call),
            app.attract.amode_loops);
     printf("show_gameplay status=%s\n",
-           wm_port_status_name(wm_attract_call_port_status(WM_ATTRACT_SHOW_GAMEPLAY)));
-    printf("frontend rule: harness-only code excluded from normal arcade execution\n");
+           wm_port_status_name(
+               wm_attract_call_port_status(WM_ATTRACT_SHOW_GAMEPLAY)));
+    printf("frontend rule: translated attract calls execute; untranslated calls are skipped\n");
     printf("strict source attract executor: PASS\n");
     return 0;
 }

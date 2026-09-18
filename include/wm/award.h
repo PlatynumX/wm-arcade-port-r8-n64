@@ -23,6 +23,15 @@
 #define WM_PROGRESS_BONUS_ICON_XPOS 56
 #define WM_PROGRESS_BONUS_ICON_YPOS 93
 
+/* AWARD.ASM:80 redeclares LIFE_MAX next to the comeback threshold, and
+ * arm_comeback_award compares against (LIFE_MAX*80)/100 -- 130. */
+#define WM_AWARD_LIFE_MAX 163
+#define WM_AWARD_COMEBACK_HEALTH ((WM_AWARD_LIFE_MAX * 80) / 100)
+/* GAME.EQU:438 NUM_WRES -- the process_ptrs slots arm_comeback walks. */
+#define WM_AWARD_NUM_WRES 7
+/* get_num_awards caps the end-of-match bar at six rows. */
+#define WM_AWARD_MAX_ROWS 6
+
 typedef enum {
     WM_AWARD_POWER_MOVE = 0,
     WM_AWARD_REVERSAL = 1,
@@ -73,6 +82,8 @@ typedef struct {
     uint32_t icon_total[WM_AWARD_PLAYER_COUNT];
     uint16_t win_streak[WM_AWARD_PLAYER_COUNT];
     bool winstreak_armed[WM_AWARD_PLAYER_COUNT];
+    /* AWARD.ASM's pcomeback pair, armed by arm_comeback_award. */
+    bool comeback_armed[WM_AWARD_PLAYER_COUNT];
 } wm_award_state;
 
 void wm_award_init(wm_award_state *state);
@@ -95,5 +106,60 @@ uint32_t wm_award_select_total(const wm_award_state *state, unsigned player);
 uint32_t wm_award_progress_total(const wm_award_state *state);
 wm_bonus_icon_list wm_award_get_bonus_icons(uint32_t total);
 const char *wm_award_bonus_icon_source_name(uint8_t denomination);
+
+/*
+ * The award *conditions* -- the routines that decide whether an award
+ * is earned at all. AWARD.ASM:994 onward.
+ */
+
+/*
+ * is_it_a_really_quick_win (AWARD.ASM:994). The score is
+ * `(match_time & 0xF) * 10 + (match_time >> 16)`.
+ *
+ * The source then does `cmpi 69,a1 / jrgt #quick / jruc #done`, and
+ * that jruc is unconditional -- so the SUPER_QUICK and VERY_QUICK
+ * comparisons written below it can never run. Both awards are worth
+ * zero icons in the shipped build, so the game plays the same either
+ * way, but the branches really are dead and are left dead here.
+ *
+ * Returns the award granted, or -1.
+ */
+int wm_award_quick_win(wm_award_state *state, unsigned plyrnum,
+                       unsigned player, uint32_t match_time);
+
+/*
+ * give_award_if_opponent_is_human (AWARD.ASM:1032). PSTATUS bit 0 is
+ * "player 1 is in", bit 1 is "player 2 is in", and each side tests the
+ * OTHER one's bit.
+ */
+void wm_award_defeat_human(wm_award_state *state, unsigned plyrnum,
+                           unsigned player, uint32_t pstatus);
+
+/*
+ * arm_comeback_award (AWARD.ASM:1059): arm the flag only if every live
+ * enemy is at 80% health or better. `live`, `side_of` and `health`
+ * describe the NUM_WRES process_ptrs slots.
+ *
+ * The source compares each wrestler's PLYR_SIDE against the arming
+ * player's *index* and skips a match, which its own comment justifies:
+ * "humans only, so PLYRNUM == PLYR_SIDE". A drone (plyrnum >= 2) never
+ * arms at all.
+ */
+void wm_award_arm_comeback(wm_award_state *state, unsigned plyrnum,
+                           const bool live[WM_AWARD_NUM_WRES],
+                           const unsigned side_of[WM_AWARD_NUM_WRES],
+                           const int health[WM_AWARD_NUM_WRES]);
+
+/* check_for_award_for_big_comeback (AWARD.ASM:1096). */
+void wm_award_check_comeback(wm_award_state *state, unsigned plyrnum,
+                             unsigned player);
+
+/* get_num_awards (AWARD.ASM:620): how many rows the end-of-match bar
+ * shows, capped at WM_AWARD_MAX_ROWS. */
+unsigned wm_award_num_rows(const wm_award_state *state, unsigned player);
+
+/* get_num_awards also decides each row's icon size: the big one once
+ * the award is worth five or more (`cmpi 5,a11 / jrge`). */
+bool wm_award_row_uses_big_icon(uint8_t award_value);
 
 #endif

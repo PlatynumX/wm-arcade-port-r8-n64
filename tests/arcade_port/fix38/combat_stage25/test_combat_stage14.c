@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "wm_arcade_bret.h"
-#include "wm_arcade_bret_tables.h"
+#include "wm/wrestler_anim_tables.h"
 
 typedef struct tr { int anims,sounds,walks,secrets; wm_arcade_bret_anim_id_t anim; wm_arcade_bret_sound_id_t sound; } tr_t;
 static void an(wm_arcade_actor_t*a,wm_arcade_bret_anim_id_t x,void*u){(void)a;tr_t*t=u;t->anims++;t->anim=x;}
@@ -29,9 +29,13 @@ int main(void){
  int32_t x,z;wm_arcade_bret_velocity_for_dir(7,&x,&z);assert(x==-WM_BRET_WALK_DVEL&&z==-WM_BRET_WALK_DVEL);
  assert(wm_arcade_bret_secret_patterns[7].id==WM_BRET_SECRET_SUPERCUT&&wm_arcade_bret_secret_patterns[7].max_ticks==16);
  a.but_val_up=WM_BTN_SPUNCH;assert(wm_arcade_bret_try_charge_ddt(&a,&o,99,&c)==0);
- assert(strcmp(wm_arcade_bret_rotate_anim_labels[0][1],"hrt_2_to_4_turn_anim")==0);
- assert(strcmp(wm_arcade_bret_leg_anim_labels[7][4],"hrt_walk6_f4_anim")==0);
- assert(strcmp(wm_arcade_bret_torso_anim_labels[3][3],"hrt_torso8_anim")==0);
+ /* BRET.ASM:2871/:2897/:2981, now generated for the whole roster by
+    tools/wlwrestlertbl.py rather than transcribed by hand here. The
+    generated data was checked against the hand-written tables these
+    three lines used to read, and all 96 of Bret's labels matched. */
+ assert(strcmp(wm_wrestler_anim_label(&wm_wrestler_rotate_anims[0],0,1),"hrt_2_to_4_turn_anim")==0);
+ assert(strcmp(wm_wrestler_anim_label(&wm_wrestler_leg_anims[0],7,4),"hrt_walk6_f4_anim")==0);
+ assert(strcmp(wm_wrestler_anim_label(&wm_wrestler_torso_anims[0],3,3),"hrt_torso8_anim")==0);
  assert(wm_arcade_bret_monitor_patterns[0].id==WM_BRET_MON_ROLL_UPPERCUT);
  assert(wm_arcade_bret_monitor_patterns[6].max_ticks==40);
  memset(&a,0,sizeof(a));memset(&o,0,sizeof(o));a.player_mode=WM_PMODE_NORMAL;a.run_time=77;

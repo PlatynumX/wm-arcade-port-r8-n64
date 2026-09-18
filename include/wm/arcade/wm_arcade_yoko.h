@@ -33,9 +33,7 @@ typedef enum wm_arcade_yoko_monitor_id {
     WM_YOKO_MON_4,
     WM_YOKO_MON_5,
     WM_YOKO_MON_6,
-    WM_YOKO_MON_7,
-    WM_YOKO_MON_8,
-    WM_YOKO_MON_9
+    WM_YOKO_MON_7
 } wm_arcade_yoko_monitor_id_t;
 
 typedef enum wm_arcade_yoko_step_result {

@@ -77,7 +77,7 @@ typedef struct wm_arcade_combat_runtime {
     uint32_t pcnt;
     uint16_t round_tickcount;
     int any_hits;
-    int dam_mult;
+    int32_t dam_mult;
 } wm_arcade_combat_runtime_t;
 
 typedef struct wm_arcade_react_callbacks {

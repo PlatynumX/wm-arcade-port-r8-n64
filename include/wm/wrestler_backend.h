@@ -113,6 +113,16 @@ typedef struct wm_wrestler_backend_actor {
      */
     wm_arcade_actor_t *const *all_actors;
     size_t all_actor_count;
+
+    /*
+     * AWARD.ASM's round_award, as JJXM.H's RND_AWARD macro reaches it.
+     * Needed because LIFEBAR.ASM:3574 DO_REVERSAL_MESS opens with
+     * `RND_AWARD a8,REVERSAL_AWD` and the reversal seam has to be able
+     * to score it; the match owns the award state, so this is how the
+     * backend reaches it. NULL simply scores nothing.
+     */
+    void (*round_award)(void *user, int player_num, int award_index);
+    void *round_award_user;
 } wm_wrestler_backend_actor;
 
 /*

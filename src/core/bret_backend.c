@@ -6,6 +6,8 @@
 #include "wm/arcade/wm_arcade_bozo.h"
 #include "wm/wrestler_sound_labels.h"
 #include "wm/wrestler_sound_tables.h"
+#include "wm/arcade/wm_arcade_teammates.h"
+#include "wm/award.h"
 #include "wm/anim_program.h"
 #include "wm/wrestler_backend.h"
 #include "wm/arcade/wm_arcade_pin.h"
@@ -976,6 +978,49 @@ static void bret_sound(wm_arcade_actor_t *actor,
     }
 }
 
+/* WRESTLE2.ASM:3253 ck_teammate_pin, and DCSSOUND.ASM:3534 DO_REVERSAL
+   with LIFEBAR.ASM:3574 DO_REVERSAL_MESS. Bret's copies of three seams
+   that were declared in his header and filled by nobody; see
+   src/core/wrestler_backend.c for what each one is. */
+/*
+ * WRESTLE.ASM:6044 ck_ignore_a8 -- "If player is moving away from
+ * opponent, or standing still, tell the calling routine to ignore
+ * button press". BRET.ASM:596 and DOINK.ASM:1399 both gate the flying
+ * kick on it: you cannot launch one while backing off.
+ *
+ * wm_arcade_ck_ignore has been translated since the combat work, and
+ * unlike keep_attached the call sites have NO fallback -- they simply
+ * skip the test when the seam is empty, so the refusal never fired and
+ * a wrestler could launch a flying kick while walking away.
+ */
+static int bret_ck_ignore(wm_arcade_actor_t *actor, void *user) {
+    (void)user;
+    return wm_arcade_ck_ignore(actor) ? 1 : 0;
+}
+
+static int bret_teammate_pin(wm_arcade_actor_t *actor, void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    if (!actor || !bva) return 0;
+    return wm_ck_teammate_pin(actor, bva->all_actors, bva->all_actor_count)
+               ? 1 : 0;
+}
+
+static void bret_do_reversal(wm_arcade_actor_t *actor, void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    if (!actor || !bva) return;
+    (void)wm_anim_code_run(actor, &bva->anim_env, "DO_REVERSAL", NULL, 0);
+}
+
+static void bret_do_reversal_message(wm_arcade_actor_t *actor, void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    if (!actor || !bva) return;
+    if (bva->round_award)
+        bva->round_award(bva->round_award_user, (int)actor->player_num,
+                         (int)WM_AWARD_REVERSAL);
+    if (bva->anim_env.sound)
+        bva->anim_env.sound(bva->anim_env.sound_user, 0x15Cu);
+}
+
 static void bret_find_and_kill_endless(wm_arcade_actor_t *actor,
                                           void *user) {
     (void)actor;
@@ -1016,6 +1061,10 @@ wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva)
     cb.set_raisearm_bit = bret_set_raisearm_bit;
     cb.drone_change_back = bret_drone_change_back;
     cb.bozo_check = bret_bozo_check;
+    cb.teammate_pin = bret_teammate_pin;
+    cb.ck_ignore = bret_ck_ignore;
+    cb.do_reversal = bret_do_reversal;
+    cb.do_reversal_message = bret_do_reversal_message;
     cb.sound = bret_sound;
     cb.find_and_kill_endless = bret_find_and_kill_endless;
     cb.user = bva;

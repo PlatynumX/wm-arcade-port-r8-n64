@@ -172,6 +172,11 @@ typedef struct {
        one pin; see wm_wrestler_backend_actor's copy of this. */
     wm_arcade_actor_t *const *all_actors;
     size_t all_actor_count;
+
+    /* AWARD.ASM's round_award, for DO_REVERSAL_MESS's
+       `RND_AWARD a8,REVERSAL_AWD`. See wm/wrestler_backend.h. */
+    void (*round_award)(void *user, int player_num, int award_index);
+    void *round_award_user;
 } wm_bret_backend_actor;
 
 void wm_bret_backend_init(wm_bret_backend_actor *bva);

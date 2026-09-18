@@ -6,6 +6,8 @@
 #include "wm/arcade/wm_arcade_bozo.h"
 #include "wm/wrestler_sound_labels.h"
 #include "wm/wrestler_sound_tables.h"
+#include "wm/arcade/wm_arcade_teammates.h"
+#include "wm/award.h"
 #include "wm/anim_program.h"
 #include "wm/arcade/wm_arcade_combo.h"
 #include "wm/arcade/wm_arcade_pin.h"
@@ -592,6 +594,77 @@ static void backend_razor_sound(wm_arcade_actor_t *actor,
     backend_sound_label(actor, razor_sound_label(id), user);
 }
 
+/*
+ * WRESTLE2.ASM:3253 ck_teammate_pin, reached through the dispatchers'
+ * own seam rather than from the #raisearm branch's inline test.
+ *
+ * `wm_ck_teammate_pin` has been translated since the teammate work; the
+ * seam in front of it was declared in three headers and filled by
+ * nobody, so the first test in every wrestler's #raisearm branch
+ * ("if a teammate has pinned, raise yer arm") always answered no.
+ */
+/*
+ * WRESTLE.ASM:6044 ck_ignore_a8 -- "If player is moving away from
+ * opponent, or standing still, tell the calling routine to ignore
+ * button press". BRET.ASM:596 and DOINK.ASM:1399 both gate the flying
+ * kick on it: you cannot launch one while backing off.
+ *
+ * wm_arcade_ck_ignore has been translated since the combat work, and
+ * unlike keep_attached the call sites have NO fallback -- they simply
+ * skip the test when the seam is empty, so the refusal never fired and
+ * a wrestler could launch a flying kick while walking away.
+ */
+static int backend_ck_ignore(wm_arcade_actor_t *actor, void *user) {
+    (void)user;
+    return wm_arcade_ck_ignore(actor) ? 1 : 0;
+}
+
+static int backend_teammate_pin(wm_arcade_actor_t *actor, void *user) {
+    wm_wrestler_backend_actor *st = (wm_wrestler_backend_actor *)user;
+    if (!actor || !st) return 0;
+    return wm_ck_teammate_pin(actor, st->all_actors, st->all_actor_count)
+               ? 1 : 0;
+}
+
+/*
+ * DCSSOUND.ASM:3534 DO_REVERSAL and LIFEBAR.ASM:3574 DO_REVERSAL_MESS,
+ * the two calls every dispatcher makes when a head hold is reversed.
+ *
+ * DO_REVERSAL is FIND_AND_KILL_ENDLESS and then one announcer line drawn
+ * from its REVERSAL table at 500 per mille. That table and that call row
+ * are both already extracted -- src/generated/announce_tables.c carries
+ * `{ "DO_REVERSAL", "REVERSAL", 0, 500, true }` -- and the ANI_CODE
+ * dispatcher resolves the announcer group by NAME against that data, so
+ * routing the seam through it plays exactly what the animation path
+ * plays. Its SLEEP of 0 is why the comment beside announce_call says
+ * DO_REVERSAL does the work inline.
+ *
+ * DO_REVERSAL_MESS is three things and this port has two of them: the
+ * round award (`RND_AWARD a8,REVERSAL_AWD`), a voice line
+ * (`movi 15Ch,a0 / calla ADD_VOICE`), and CREATE_REVERSAL_MESS, which
+ * draws "REVERSAL" on the screen and is ledgered as display. The award
+ * is the part that was silently missing: a reversal scored nothing.
+ */
+static void backend_do_reversal(wm_arcade_actor_t *actor, void *user) {
+    wm_wrestler_backend_actor *st = (wm_wrestler_backend_actor *)user;
+    if (!actor || !st) return;
+    (void)wm_anim_code_run(actor, &st->anim_env, "DO_REVERSAL", NULL, 0);
+}
+
+/* `movi 15Ch,a0 / calla ADD_VOICE`. */
+#define WM_REVERSAL_VOICE 0x15Cu
+
+static void backend_do_reversal_message(wm_arcade_actor_t *actor,
+                                        void *user) {
+    wm_wrestler_backend_actor *st = (wm_wrestler_backend_actor *)user;
+    if (!actor || !st) return;
+    if (st->round_award)
+        st->round_award(st->round_award_user, (int)actor->player_num,
+                        (int)WM_AWARD_REVERSAL);
+    if (st->anim_env.sound)
+        st->anim_env.sound(st->anim_env.sound_user, WM_REVERSAL_VOICE);
+}
+
 static void backend_find_and_kill_endless(wm_arcade_actor_t *actor,
                                           void *user) {
     (void)actor;
@@ -633,6 +706,10 @@ wm_arcade_roster_callbacks_t wm_wrestler_roster_callbacks(
     cb.set_raisearm_bit = backend_set_raisearm_bit;
     cb.drone_change_back = backend_drone_change_back;
     cb.bozo_check = backend_bozo_check;
+    cb.teammate_pin = backend_teammate_pin;
+    cb.ck_ignore = backend_ck_ignore;
+    cb.do_reversal = backend_do_reversal;
+    cb.do_reversal_message = backend_do_reversal_message;
     cb.find_and_kill_endless = backend_find_and_kill_endless;
     cb.user = state;
     return cb;
@@ -687,6 +764,10 @@ wm_arcade_razor_callbacks_t wm_wrestler_razor_callbacks(
     cb.set_raisearm_bit = backend_set_raisearm_bit;
     cb.drone_change_back = backend_drone_change_back;
     cb.bozo_check = backend_bozo_check;
+    cb.teammate_pin = backend_teammate_pin;
+    cb.ck_ignore = backend_ck_ignore;
+    cb.do_reversal = backend_do_reversal;
+    cb.do_reversal_message = backend_do_reversal_message;
     cb.find_and_kill_endless = backend_find_and_kill_endless;
     cb.user = state;
     return cb;

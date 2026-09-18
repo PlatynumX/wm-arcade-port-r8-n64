@@ -4156,3 +4156,51 @@ def test_every_sound_label_a_dispatcher_uses_resolves() -> None:
     compound = {"GRABFLING_PUNCH", "HIPTOSS_PUNCH", "BLOCK_WOOSH"}
     for name in sorted(known - compound):
         assert name in equs or (name + "_T1") in equs, name
+
+def test_every_empty_callback_seam_has_a_verdict() -> None:
+    """An unwired seam has to be a decision somebody wrote down.
+
+    This port routes the source's cross-module calls through
+    function-pointer fields named after the routines they stand for. It
+    reads well and has one failure mode, which has now produced findings
+    six times running: a seam gets declared, its call sites get written
+    with a NULL check in front, and nothing ever assigns it. The call
+    compiles, runs, does nothing, and looks exactly like working code.
+
+    Found that way so far: the REACT reaction dispatch, good_run_hit, the
+    match-award tally, bounce_off_ropes, auto_pin_check,
+    drone_change_back, set_raisearm_bit, REACT4's shake_all_ropes and
+    shaker2, REACT5's slide_getup_meter, bozo_check,
+    find_and_kill_endless, and sound_label -- which was dropping fifty
+    calls across six files.
+
+    So the set is measured rather than rediscovered, and every member
+    needs a row in port/seam_ledger.json. The check runs both ways: an
+    empty seam with no row fails, and a row for a seam that is no longer
+    empty fails too -- so a wiring cannot leave a stale excuse behind it,
+    which is the same guard the routine ledger already has.
+    """
+    if not wlanim.ORIG.exists():
+        return
+    sys.path.insert(0, str(ROOT / "tools"))
+    import seam_audit
+
+    a = seam_audit.audit()
+    ledger = seam_audit.load_ledger()
+    empty = {r["name"] for r in a["rows"]
+             if not r["filled"] and r["called"]}
+
+    unledgered = sorted(empty - set(ledger))
+    assert not unledgered, unledgered
+    stale = sorted(set(ledger) - empty)
+    assert not stale, stale
+
+    for name, row in sorted(ledger.items()):
+        assert row.get("verdict") in seam_audit.VERDICTS, (name, row)
+        # A verdict with no reasoning is the thing this file exists to
+        # stop, so the note has to say something.
+        assert len(row.get("note", "")) > 80, name
+
+    # And the totals are real rather than a rounding of themselves.
+    assert a["total"] > 100, a["total"]
+    assert a["filled"] + len(empty) <= a["total"]

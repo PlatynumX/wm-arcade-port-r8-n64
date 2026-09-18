@@ -83,6 +83,14 @@ static void wm_match_first_hit_award(wm_arcade_actor_t *attacker, void *user) {
                         WM_AWARD_FIRST_HIT);
 }
 
+/* AWARD.ASM's round_award, for a backend that needs RND_AWARD. */
+static void match_backend_round_award(void *user, int player_num,
+                                      int award_index) {
+    wm_match_state *m = (wm_match_state *)user;
+    if (!m || !m->anim_round_award) return;
+    m->anim_round_award(m->anim_award_user, player_num, award_index);
+}
+
 static bool match_anyone_near_death(void *user) {
     wm_match_state *m = (wm_match_state *)user;
     unsigned i;
@@ -2362,8 +2370,14 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             /* can_pin's process_ptrs sweep. */
             m->wrestler_visual[i].all_actors = actor_ptrs;
             m->wrestler_visual[i].all_actor_count = m->actor_count;
+            /* RND_AWARD's own sink, for DO_REVERSAL_MESS's
+               `RND_AWARD a8,REVERSAL_AWD`. */
+            m->wrestler_visual[i].round_award = match_backend_round_award;
+            m->wrestler_visual[i].round_award_user = m;
             m->bret_visual[i].all_actors = actor_ptrs;
             m->bret_visual[i].all_actor_count = m->actor_count;
+            m->bret_visual[i].round_award = match_backend_round_award;
+            m->bret_visual[i].round_award_user = m;
 
             m->bret_visual[i].opponent = opp;
             m->bret_visual[i].pcnt = m->tick_count;
@@ -2582,6 +2596,15 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
          * Every AMODE_RUN collision in the game did nothing at all.
          */
         react_cb.good_run_hit = wm_arcade_react5_good_run_hit_callback;
+        /*
+         * REACT1.ASM:798's own `calla ditch_getup_meter`, on a victim
+         * who was BOUNCING or RUNNING when he was hit. A second seam
+         * of that name, distinct from the REACT5 one in
+         * wm_arcade_react1_callbacks_t, and like it declared and
+         * filled by nobody until the getup meter existed to fill it
+         * with.
+         */
+        react_cb.ditch_getup_meter = match_react_slide_getup_meter;
         react_cb.user = m;
 
         /* The context that dispatcher needs, rebuilt each tick so it

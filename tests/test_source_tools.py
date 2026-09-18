@@ -3712,10 +3712,20 @@ def test_a_callback_seam_is_not_evidence() -> None:
     leaked = sorted(seams & code_ids)
     assert not leaked, leaked
 
-    # And the specific shape it was missing: a seam that IS called,
-    # through a NULL check, by every dispatcher.
-    assert "bounce_off_ropes" in seams
-    assert not port_coverage._boundary_hits("bounce_off_ropes", code_ids)
+    # Both assertions above have teeth, and between them they pin the
+    # rule from each side: the first fails if the carve-out is taken
+    # out again, the second if it is made broad enough to swallow a
+    # real translation.
+    #
+    # There is no third assertion about "a seam that is called but not
+    # filled", tempting as one is -- roughly sixty seams in this port
+    # are called through a NULL check with nothing behind them, and
+    # once seam names are subtracted from the pool, "it does not
+    # resolve" is true of every one of them by construction. Asserting
+    # it would look like a check and test nothing. The case that
+    # motivated the rule was bounce_off_ropes, called by all eight
+    # dispatchers and filled by none of them; it is translated now,
+    # which is the other reason not to name a routine here.
 
     # A real translation still resolves -- the rule costs nothing where
     # something actually implements the routine.

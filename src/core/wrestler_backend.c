@@ -1,6 +1,7 @@
 #include "wm/wrestler_backend.h"
 #include "wm/arcade/wm_arcade_confine.h"
 #include "wm/arcade/wm_arcade_modes.h"
+#include "wm/arcade/wm_arcade_bounce.h"
 #include "wm/arcade/wm_arcade_combo.h"
 #include "wm/arcade/wm_arcade_pin.h"
 
@@ -467,6 +468,23 @@ static void backend_mode_choking(wm_arcade_actor_t *actor, void *user) {
     (void)wm_arcade_mode_choking(actor);
 }
 
+/*
+ * bounce_off_ropes (WRESTLE.ASM:5115), the rope rebound every
+ * wrestler's mode_running calls -- and, until now, the seam with
+ * nothing behind it, so a running wrestler crossed the ropes and kept
+ * going (wm/arcade/wm_arcade_bounce.h).
+ */
+static void backend_bounce_off_ropes(wm_arcade_actor_t *actor, void *user) {
+    wm_wrestler_backend_actor *st = (wm_wrestler_backend_actor *)user;
+    wm_bounce_result_t r;
+
+    if (!actor || !st) return;
+    r = wm_arcade_bounce_off_ropes(actor);
+    /* `calla change_anim1a` on his own bounce animation. */
+    if (r.bounced && r.bounce_anim)
+        backend_change_anim_label(actor, r.bounce_anim, st);
+}
+
 wm_arcade_roster_callbacks_t wm_wrestler_roster_callbacks(
     wm_wrestler_backend_actor *state) {
     wm_arcade_roster_callbacks_t cb;
@@ -482,6 +500,7 @@ wm_arcade_roster_callbacks_t wm_wrestler_roster_callbacks(
     cb.mode_puppet = backend_mode_puppet;
     cb.mode_inair2 = backend_mode_inair2;
     cb.mode_choking = backend_mode_choking;
+    cb.bounce_off_ropes = backend_bounce_off_ropes;
     cb.user = state;
     return cb;
 }
@@ -529,6 +548,7 @@ wm_arcade_razor_callbacks_t wm_wrestler_razor_callbacks(
     cb.mode_puppet = backend_mode_puppet;
     cb.mode_inair2 = backend_mode_inair2;
     cb.mode_choking = backend_mode_choking;
+    cb.bounce_off_ropes = backend_bounce_off_ropes;
     cb.user = state;
     return cb;
 }

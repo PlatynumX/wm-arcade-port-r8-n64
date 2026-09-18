@@ -1,6 +1,7 @@
 #include "wm/bret_backend.h"
 #include "wm/arcade/wm_arcade_confine.h"
 #include "wm/arcade/wm_arcade_modes.h"
+#include "wm/arcade/wm_arcade_bounce.h"
 #include "wm/wrestler_backend.h"
 #include "wm/arcade/wm_arcade_pin.h"
 #include "wm/arcade/wm_arcade_start_run.h"
@@ -876,6 +877,20 @@ static void bret_mode_choking(wm_arcade_actor_t *actor, void *user) {
     (void)wm_arcade_mode_choking(actor);
 }
 
+/*
+ * bounce_off_ropes (WRESTLE.ASM:5115), Bret's copy of the same shared
+ * routine (wm/arcade/wm_arcade_bounce.h).
+ */
+static void bret_bounce_off_ropes(wm_arcade_actor_t *actor, void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    wm_bounce_result_t r;
+
+    if (!actor || !bva) return;
+    r = wm_arcade_bounce_off_ropes(actor);
+    if (r.bounced && r.bounce_anim)
+        bret_start_label(actor, bva, r.bounce_anim);
+}
+
 wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva) {
     wm_arcade_bret_callbacks_t cb;
     memset(&cb, 0, sizeof(cb));
@@ -891,6 +906,7 @@ wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva)
     cb.mode_puppet = bret_mode_puppet;
     cb.mode_inair2 = bret_mode_inair2;
     cb.mode_choking = bret_mode_choking;
+    cb.bounce_off_ropes = bret_bounce_off_ropes;
     cb.user = bva;
     return cb;
 }

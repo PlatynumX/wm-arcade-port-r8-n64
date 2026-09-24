@@ -4244,3 +4244,75 @@ def test_the_partially_filled_seams_are_explained() -> None:
         # An explanation for a name nothing flags any more is as stale
         # as a ledger row for a seam that got wired.
         assert name in a["partially_filled"], name
+
+# Labels a dispatcher can select that genuinely have no extracted
+# program. EMPTY, and that is the point: the one entry this list would
+# have held, "fake_head_hold3", turned out not to be a missing
+# animation at all but an invented name -- the source has a
+# per-wrestler dnk_3_fake_hold_anim, und_3_fake_hold_anim and so on,
+# all eight of which were extracted the whole time. If artwork really
+# is missing for one, record it here with the reason rather than
+# letting the count drift.
+ANIM_LABELS_WITHOUT_PROGRAMS: dict[str, str] = {}
+
+
+def test_every_dispatcher_animation_label_resolves() -> None:
+    """A label the dispatcher can select must name a real animation.
+
+    src/core/wrestler_backend.c's change_anim_label takes a label with
+    no generated program as "keep doing whatever you were doing", which
+    is the right behaviour and also a silent one: an invented label and
+    a genuinely unextracted animation look identical from there. The
+    comment beside it claimed the set was "a measured, reported number,
+    not a guess" and named wm_wrestler_backend_program_coverage. THERE
+    WAS NO SUCH FUNCTION. Nothing measured it, and this is that
+    measurement.
+
+    It was worth building. Of 314 distinct labels the six shared
+    dispatchers and Razor's id map can select, exactly one did not
+    resolve: "fake_head_hold3", used in all six files where the source
+    has a per-wrestler name. The fake head hold -- the move you get for
+    re-grabbing within 120 ticks -- played nothing, for everybody. It is
+    the same shape as the fifteen startsp() sites: a string invented in
+    the port standing where a source symbol belongs.
+
+    A C function could not have done this. The set of labels a
+    dispatcher CAN pass is a property of its source text, not of any
+    runtime state, so the measurement belongs here and the comment now
+    says so.
+    """
+    gen = ROOT / "src" / "generated" / "anim_programs.c"
+    if not gen.exists():
+        return
+    progs = set(re.findall(r"prog_([A-Za-z_0-9]+)_ops\b",
+                           gen.read_text(errors="replace")))
+    assert len(progs) > 500, len(progs)
+
+    labels: set[str] = set()
+    arcade = ROOT / "src" / "core" / "arcade"
+    for name in ("doink", "lex", "taker", "yoko", "shawn", "bam"):
+        path = arcade / ("wm_arcade_%s.c" % name)
+        if not path.exists():
+            continue
+        text = path.read_text(errors="replace")
+        # Passed straight to anim(), and every label a `struct labels`
+        # row can hold -- both are things the dispatcher can select.
+        labels |= set(re.findall(r'anim\(a,\s*"([a-z_0-9]+)"', text))
+        labels |= set(re.findall(r'"([a-z]{2,4}_[a-z_0-9]*anim)"', text))
+    razor = arcade / "wm_arcade_razor_anim_labels.c"
+    if razor.exists():
+        labels |= set(re.findall(r'return "([a-z_0-9]+)"',
+                                 razor.read_text(errors="replace")))
+
+    assert len(labels) > 250, len(labels)
+    missing = sorted(l for l in labels
+                     if l not in progs
+                     and l not in ANIM_LABELS_WITHOUT_PROGRAMS)
+    assert not missing, missing
+
+    # And the allowance list cannot rot: an entry for a label that does
+    # resolve, or that nothing selects any more, is as stale as a ledger
+    # row for a seam somebody wired.
+    for name in sorted(ANIM_LABELS_WITHOUT_PROGRAMS):
+        assert name in labels, name
+        assert name not in progs, name

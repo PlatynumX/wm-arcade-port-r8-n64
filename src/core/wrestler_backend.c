@@ -232,10 +232,28 @@ static void backend_change_anim_label(wm_arcade_actor_t *actor,
     prog = wm_anim_program_find(source_label);
     st->current_label = source_label;
     if (!prog) {
-        /* A label with no generated program: the wrestler keeps whatever
-           it was doing rather than freezing on a stale one. Which labels
-           these are is a measured, reported number, not a guess -- see
-           wm_wrestler_backend_program_coverage. */
+        /*
+         * A label with no generated program: the wrestler keeps
+         * whatever he was doing rather than freezing on a stale one.
+         * That is the right behaviour and also a SILENT one -- an
+         * invented label and a genuinely unextracted animation look
+         * identical from here.
+         *
+         * This comment used to say the set was "a measured, reported
+         * number, not a guess" and name a function called
+         * wm_wrestler_backend_program_coverage. There was no such
+         * function; nothing measured it. The measurement exists now,
+         * as test_every_dispatcher_animation_label_resolves in
+         * tests/test_source_tools.py, and it had to be a test rather
+         * than a routine because the set of labels a dispatcher CAN
+         * pass is a property of its source text and not of any state
+         * reachable from in here.
+         *
+         * It found one on its first run: "fake_head_hold3", used in
+         * all six shared dispatchers where the source has a
+         * per-wrestler dnk_3_fake_hold_anim, und_3_fake_hold_anim and
+         * so on -- so the fake head hold played nothing, for everybody.
+         */
         st->prog.program = NULL;
         st->prog.ended = true;
         return;

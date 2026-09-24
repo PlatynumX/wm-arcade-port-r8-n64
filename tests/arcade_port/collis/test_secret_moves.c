@@ -301,6 +301,53 @@ static void test_the_hip_toss_plays_an_animation(void) {
     (void)cap_label_snd;
 }
 
+/* ------------------------------------------------------------------
+ * The fake head hold, which played nothing for everybody.
+ *
+ * DOINK.ASM:455 `movi dnk_3_fake_hold_anim,a0 / calla change_anim1a`,
+ * and each of the other five names its own. The port used one invented
+ * string, "fake_head_hold3", in all six -- a label no source file has
+ * and no program was generated for, so change_anim_label took its
+ * keep-doing-what-you-were-doing arm every time.
+ *
+ * It was the ONE unresolved label of 314, and it was found by building
+ * the measurement a comment had been claiming for months.
+ * ------------------------------------------------------------------ */
+
+static void test_the_fake_hold_plays(void) {
+    wm_wrestler_backend_actor st;
+    wm_arcade_roster_callbacks_t cb;
+    wm_arcade_actor_t me, him;
+    wm_arcade_wrestler_port_bindings_t bind;
+    const wm_arcade_wrestler_profile_t *p;
+
+    setup(&st, &me, &him, WM_ROSTER_DOINK);
+    cb = wm_wrestler_roster_callbacks(&st);
+    p = wm_arcade_roster_profile(WM_ROSTER_DOINK);
+    memset(&bind, 0, sizeof bind);
+    bind.doink = &cb;
+
+    /* A grab well after the last one is the real head hold. */
+    me.last_headhold = 0;
+    st.current_label = NULL;
+    assert(wm_arcade_port_fire_secret(p, &me, &him, "neck_grab", 1000, &bind));
+    assert(st.current_label != NULL);
+    assert(strstr(st.current_label, "fake") == NULL);
+
+    /*
+     * `cmpi 120,a0 / jrlt #fake` -- re-grabbing inside 120 ticks gets
+     * the fake. Before this it got a label that resolved to nothing.
+     */
+    /* The first grab's animation set MODE_UNINT, which reject_common
+       refuses on; in a match it would have run out by now. */
+    me.anim_mode = 0;
+    me.last_headhold = 1000;
+    st.current_label = NULL;
+    assert(wm_arcade_port_fire_secret(p, &me, &him, "neck_grab", 1050, &bind));
+    assert(st.current_label != NULL);
+    assert(strcmp(st.current_label, "dnk_3_fake_hold_anim") == 0);
+}
+
 int main(void) {
     test_the_seam_is_filled();
     test_a_pattern_reaches_its_handler();
@@ -309,6 +356,7 @@ int main(void) {
     test_every_wrestler_has_a_table();
     test_the_partially_filled_pair();
     test_the_hip_toss_plays_an_animation();
+    test_the_fake_hold_plays();
     printf("secret moves ok\n");
     return 0;
 }

@@ -222,7 +222,7 @@ int wm_arcade_shawn_fire_secret(wm_arcade_actor_t*a,wm_arcade_actor_t*o,wm_arcad
     switch(id){
     case WM_SHAWN_SECRET_NECK_GRAB:
         if(reject_common(a,o)||groundish(o))return 0;
-        if((uint32_t)(pcnt-a->last_headhold)<120) anim(a,"fake_head_hold3",c);
+        if((uint32_t)(pcnt-a->last_headhold)<120) anim(a,"shn_3_fake_hold_anim",c);
         else if(a->closest_xdist<=80) anim(a,L.headhold2,c); else anim(a,L.headhold,c);
         return 1; case WM_SHAWN_SECRET_GRAB_FLING: if(reject_common(a,o))return 0; anim(a,face_label(L.headhold2,L.headhold,a),c); snd(a,"GRABFLING",c); return 1; case WM_SHAWN_SECRET_GRAB_FLING2: if(reject_common(a,o))return 0; anim(a,face_label(L.headhold2,L.headhold,a),c); snd(a,"GRABFLING",c); return 1; case WM_SHAWN_SECRET_HIP_TOSS: if(reject_common(a,o)||groundish(o))return 0; if(o->player_mode!=WM_PMODE_INAIR&&o->player_mode!=WM_PMODE_INAIR2&&a->closest_dist>0x70)return 0; anim(a,face_label("shn_2_hiptoss_anim","shn_4_hiptoss_anim",a),c); snd(a,"HIPTOSS_PUNCH",c); return 1; case WM_SHAWN_SECRET_HIP_TOSS2: if(reject_common(a,o)||groundish(o))return 0; if(o->player_mode!=WM_PMODE_INAIR&&o->player_mode!=WM_PMODE_INAIR2&&a->closest_dist>0x70)return 0; anim(a,face_label("shn_2_hiptoss_anim","shn_4_hiptoss_anim",a),c); snd(a,"HIPTOSS_PUNCH",c); return 1;
     case WM_SHAWN_SECRET_FRANKENSTEINER: if(reject_common(a,o)||groundish(o))return 0; anim(a,"shn_fstein_anim",c); return 1;

@@ -219,7 +219,7 @@ int wm_arcade_bam_fire_secret(wm_arcade_actor_t*a,wm_arcade_actor_t*o,wm_arcade_
     switch(id){
     case WM_BAM_SECRET_NECK_GRAB:
         if(reject_common(a,o)||groundish(o))return 0;
-        if((uint32_t)(pcnt-a->last_headhold)<120) anim(a,"fake_head_hold3",c);
+        if((uint32_t)(pcnt-a->last_headhold)<120) anim(a,"bam_3_fake_hold_anim",c);
         else if(a->closest_xdist<=100) anim(a,L.headhold2,c); else anim(a,L.headhold,c);
         return 1; case WM_BAM_SECRET_GRAB_FLING: if(reject_common(a,o))return 0; anim(a,face_label(L.headhold2,L.headhold,a),c); snd(a,"GRABFLING",c); return 1; case WM_BAM_SECRET_GRAB_FLING2: if(reject_common(a,o))return 0; anim(a,face_label(L.headhold2,L.headhold,a),c); snd(a,"GRABFLING",c); return 1; case WM_BAM_SECRET_GRAB_FLING2_DUP: if(reject_common(a,o))return 0; anim(a,face_label(L.headhold2,L.headhold,a),c); snd(a,"GRABFLING",c); return 1; case WM_BAM_SECRET_HIP_TOSS: if(reject_common(a,o)||groundish(o))return 0; if(o->player_mode!=WM_PMODE_INAIR&&o->player_mode!=WM_PMODE_INAIR2&&a->closest_dist>0x70)return 0; anim(a,"bam_3_hiptoss_anim",c); snd(a,"HIPTOSS_PUNCH",c); return 1; case WM_BAM_SECRET_HIP_TOSS2: if(reject_common(a,o)||groundish(o))return 0; if(o->player_mode!=WM_PMODE_INAIR&&o->player_mode!=WM_PMODE_INAIR2&&a->closest_dist>0x70)return 0; anim(a,"bam_3_hiptoss_anim",c); snd(a,"HIPTOSS_PUNCH",c); return 1; case WM_BAM_SECRET_HIP_TOSS2_DUP: if(reject_common(a,o)||groundish(o))return 0; if(o->player_mode!=WM_PMODE_INAIR&&o->player_mode!=WM_PMODE_INAIR2&&a->closest_dist>0x70)return 0; anim(a,"bam_3_hiptoss_anim",c); snd(a,"HIPTOSS_PUNCH",c); return 1;
     case WM_BAM_SECRET_JUMPKICK: if(reject_common(a,o)||groundish(o))return 0; anim(a,"bam_4_jumpkick_anim",c); return 1;

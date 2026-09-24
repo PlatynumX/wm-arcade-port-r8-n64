@@ -1,4 +1,5 @@
 #include "wm/arcade/wm_arcade_razor.h"
+#include "wm/arcade/wm_arcade_jjxm.h"
 #include "wm/arcade/wm_arcade_attach_anim.h"
 #include "wm/arcade/wm_arcade_damage.h"
 
@@ -85,8 +86,6 @@ static int setmode(wm_arcade_actor_t *a,uint16_t m)
 static int face2(const wm_arcade_actor_t *a){return a&&(a->facing_dir&WM_MOVE_UP);}
 static wm_arcade_razor_anim_id_t f24(const wm_arcade_actor_t*a,wm_arcade_razor_anim_id_t i2,wm_arcade_razor_anim_id_t i4)
 { return face2(a)?i2:i4; }
-static int near(const wm_arcade_actor_t*a,int x,int z)
-{ return a&&a->closest_xdist<=x&&a->closest_zdist<=z; }
 static int groundish(const wm_arcade_actor_t*o)
 { return o&&(o->player_mode==WM_PMODE_ONGROUND||o->player_mode==WM_PMODE_DEAD); }
 
@@ -107,59 +106,124 @@ static int do_block(wm_arcade_actor_t*a,const wm_arcade_razor_env_t*e,const wm_a
  if(cb&&cb->round_award_block)cb->round_award_block(a,cb->user);
  anim(a,f24(a,WM_RZR_ANIM_BLOCK2,WM_RZR_ANIM_BLOCK4),cb);snd(a,WM_RZR_SND_BLOCK_WOOSH,cb);a->block_time=0;return 1;
 }
+/*
+ * RAZOR.ASM's six JJXM tables (JJXM.H; wm/arcade/wm_arcade_jjxm.h).
+ * Like Bret's, Razor's dispatcher selects by a typed animation id, so
+ * the tables reach him through a mapping; and like Bret's, what they
+ * replace is a hand-written chain of PLYRMODE comparisons that nothing
+ * could check against the source.
+ */
+static const char *jjxm(const char*section,const char*entry,
+                        const wm_arcade_actor_t*a,const wm_arcade_actor_t*o)
+{
+    return wm_jjxm_pick("RAZOR",section,entry,a,o);
+}
+#define is(t,n) wm_jjxm_is((t),(n))
+
+/* RAZOR.ASM:1379 #punch_punch, alias std_punch. */
 static void std_punch(wm_arcade_actor_t*a,const wm_arcade_razor_callbacks_t*cb)
 {anim(a,f24(a,WM_RZR_ANIM_PUNCH2,WM_RZR_ANIM_PUNCH4),cb);snd(a,WM_RZR_SND_PUNCH,cb);}
-static void do_punch(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_razor_callbacks_t*cb)
+/* :1390 #punch_hdbutt */
+static void rzr_punch_hdbutt(wm_arcade_actor_t*a,const wm_arcade_razor_callbacks_t*cb)
+{anim(a,f24(a,WM_RZR_ANIM_BUTT2,WM_RZR_ANIM_BUTT4),cb);snd(a,WM_RZR_SND_HDBUTT,cb);}
+/* :1399 #punch_lbdrop */
+static void rzr_punch_lbdrop(wm_arcade_actor_t*a,const wm_arcade_razor_callbacks_t*cb)
+{anim(a,f24(a,WM_RZR_ANIM_GROUND_PUNCH2,WM_RZR_ANIM_GROUND_PUNCH4),cb);snd(a,WM_RZR_SND_LBOWDROP,cb);}
+/* :1536 #spunch_close -- stick down is #ck_up, the uppercut; past 65
+   on X it is the plain punch; inside that, the pummel. */
+static void rzr_spunch_close(wm_arcade_actor_t*a,const wm_arcade_razor_callbacks_t*cb)
 {
- if(o&&(o->player_mode==WM_PMODE_ONTURNBKL||o->player_mode==WM_PMODE_CLIMBTURNBKL)){std_punch(a,cb);return;}
- if(groundish(o)){if(near(a,160,140)){anim(a,f24(a,WM_RZR_ANIM_GROUND_PUNCH2,WM_RZR_ANIM_GROUND_PUNCH4),cb);snd(a,WM_RZR_SND_LBOWDROP,cb);}else std_punch(a,cb);return;}
- if(near(a,44,45)){anim(a,f24(a,WM_RZR_ANIM_BUTT2,WM_RZR_ANIM_BUTT4),cb);snd(a,WM_RZR_SND_HDBUTT,cb);}else std_punch(a,cb);
+ if(a->stick_val_cur&WM_MOVE_DOWN){anim(a,WM_RZR_ANIM_UPPERCUT4,cb);snd(a,WM_RZR_SND_UPRCUT,cb);return;}
+ if(a->closest_xdist>65){std_punch(a,cb);return;}
+ anim(a,f24(a,WM_RZR_ANIM_PUMMEL2,WM_RZR_ANIM_PUMMEL4),cb);snd(a,WM_RZR_SND_HDBUTT,cb);
 }
-static void ground_spunch(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_razor_callbacks_t*cb)
+/* :1572 #spunch_far -- the up-slash. */
+static void rzr_spunch_far(wm_arcade_actor_t*a,const wm_arcade_razor_callbacks_t*cb)
+{snd(a,WM_RZR_SND_UPRCUT,cb);anim(a,WM_RZR_ANIM_USLASH3,cb);}
+/* :1579 #spunch_downslash */
+static void rzr_spunch_downslash(wm_arcade_actor_t*a,const wm_arcade_razor_callbacks_t*cb)
+{snd(a,WM_RZR_SND_UPRCUT,cb);anim(a,WM_RZR_ANIM_DSLASH3,cb);}
+/*
+ * :1477 #spunch_lbowdrop. Three arms like Bret's, 30h then 40h -- but
+ * where Bret's #feet gives the shooter, Razor's SMART-TARGETS the man
+ * on the mat (SMRTTGT a13,CLOSEST_NUM) and shakes the rug, with no
+ * sound at all.
+ */
+static void rzr_spunch_lbowdrop(wm_arcade_actor_t*a,wm_arcade_actor_t*o,
+                                const wm_arcade_razor_callbacks_t*cb)
 {
  int32_t dx;
  if(!o||o->player_mode==WM_PMODE_DEAD)goto fallback;
  dx=a->x_fixed-o->x_fixed;if(dx<0)dx=-dx;dx>>=16;if(dx<0x30)goto fallback;
  if((a->obj_control&WM_OBJ_FLIPH)!=(o->obj_control&WM_OBJ_FLIPH)){
-  anim(a,f24(a,WM_RZR_ANIM_HAIR_PICKUP2,WM_RZR_ANIM_HAIR_PICKUP4),cb);snd(a,WM_RZR_SND_LBOWDROP,cb);return;
+  anim(a,f24(a,WM_RZR_ANIM_HAIR_PICKUP2,WM_RZR_ANIM_HAIR_PICKUP4),cb);
+  snd(a,WM_RZR_SND_LBOWDROP,cb);return;
  }
- if(dx>=0x40){a->status_flags|=WM_STATUS_SMART_ATTACK;a->smart_target=o;anim(a,WM_RZR_ANIM_RUGSHAKE,cb);return;}
+ if(dx>=0x40){a->status_flags|=WM_STATUS_SMART_ATTACK;a->smart_target=o;
+              anim(a,WM_RZR_ANIM_RUGSHAKE,cb);return;}
 fallback:
- anim(a,f24(a,WM_RZR_ANIM_GROUND_PUNCH2,WM_RZR_ANIM_GROUND_PUNCH4),cb);snd(a,WM_RZR_SND_LBOWDROP,cb);
+ anim(a,f24(a,WM_RZR_ANIM_GROUND_PUNCH2,WM_RZR_ANIM_GROUND_PUNCH4),cb);
+ snd(a,WM_RZR_SND_LBOWDROP,cb);
+}
+/* :1638 #kick_kick (std_kick), :1648 #kick_knee (std_knee), :1658
+   #kick_stomp -- and :1746 #skick_stomp, the same stomp. :1629
+   #kick_TB. */
+static void std_kick(wm_arcade_actor_t*a,const wm_arcade_razor_callbacks_t*cb)
+{anim(a,f24(a,WM_RZR_ANIM_KICK2,WM_RZR_ANIM_KICK4),cb);snd(a,WM_RZR_SND_KICK,cb);}
+static void rzr_kick_knee(wm_arcade_actor_t*a,const wm_arcade_razor_callbacks_t*cb)
+{anim(a,f24(a,WM_RZR_ANIM_KNEE2,WM_RZR_ANIM_KNEE4),cb);snd(a,WM_RZR_SND_KICK,cb);}
+static void rzr_kick_stomp(wm_arcade_actor_t*a,const wm_arcade_razor_callbacks_t*cb)
+{anim(a,f24(a,WM_RZR_ANIM_STOMP2,WM_RZR_ANIM_STOMP4),cb);snd(a,WM_RZR_SND_KICK,cb);}
+static void rzr_kick_tb(wm_arcade_actor_t*a,const wm_arcade_razor_callbacks_t*cb)
+{anim(a,WM_RZR_ANIM_KICK_TB,cb);snd(a,WM_RZR_SND_KICK,cb);}
+/* :1714 #skick_kick */
+static void rzr_skick_kick(wm_arcade_actor_t*a,const wm_arcade_razor_callbacks_t*cb)
+{anim(a,f24(a,WM_RZR_ANIM_SUPER_KICK2,WM_RZR_ANIM_SUPER_KICK4),cb);snd(a,WM_RZR_SND_FLYKICK,cb);}
+/* :1723 #skick_special -- held toward him is #super_knee, the knee
+   fall, and it plays GRABHOLD. */
+static void rzr_skick_special(wm_arcade_actor_t*a,const wm_arcade_razor_callbacks_t*cb)
+{
+ if(a->stick_val_cur==(uint16_t)(a->new_facing_dir&0x0c)){
+  anim(a,WM_RZR_ANIM_KNEE_FALL4,cb);snd(a,WM_RZR_SND_GRABHOLD,cb);return;}
+ anim(a,f24(a,WM_RZR_ANIM_KNEE2,WM_RZR_ANIM_KNEE4),cb);snd(a,WM_RZR_SND_KICK,cb);
+}
+/* :1756 #skick_bigboot */
+static void rzr_skick_bigboot(wm_arcade_actor_t*a,const wm_arcade_razor_callbacks_t*cb)
+{anim(a,WM_RZR_ANIM_BIGBOOT4,cb);snd(a,WM_RZR_SND_FLYKICK,cb);}
+
+static void do_punch(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_razor_callbacks_t*cb)
+{
+ const char*t=jjxm("mode_normal","#punch",a,o);
+ if(is(t,"#punch_hdbutt"))     rzr_punch_hdbutt(a,cb);
+ else if(is(t,"#punch_lbdrop")) rzr_punch_lbdrop(a,cb);
+ else if(is(t,"#punch_punch")) std_punch(a,cb);
 }
 static void do_super_punch(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_razor_callbacks_t*cb)
 {
- uint16_t m=o?o->player_mode:WM_PMODE_NORMAL;
- if(m==WM_PMODE_RUNNING||m==WM_PMODE_BOUNCING||m==WM_PMODE_INAIR||m==WM_PMODE_INAIR2){anim(a,WM_RZR_ANIM_DSLASH3,cb);snd(a,WM_RZR_SND_UPRCUT,cb);return;}
- if(groundish(o)){if(near(a,160,140))ground_spunch(a,o,cb);else std_punch(a,cb);return;}
- if(near(a,85,45)){
-  if(a->stick_val_cur&WM_MOVE_DOWN){anim(a,WM_RZR_ANIM_UPPERCUT4,cb);snd(a,WM_RZR_SND_UPRCUT,cb);return;}
-  if(a->closest_xdist>65){std_punch(a,cb);return;}
-  anim(a,f24(a,WM_RZR_ANIM_PUMMEL2,WM_RZR_ANIM_PUMMEL4),cb);snd(a,WM_RZR_SND_HDBUTT,cb);return;
- }
- anim(a,WM_RZR_ANIM_USLASH3,cb);snd(a,WM_RZR_SND_UPRCUT,cb);
+ const char*t=jjxm("mode_normal","#super_punch",a,o);
+ if(is(t,"#spunch_close"))          rzr_spunch_close(a,cb);
+ else if(is(t,"#spunch_lbowdrop"))  rzr_spunch_lbowdrop(a,o,cb);
+ else if(is(t,"#spunch_downslash")) rzr_spunch_downslash(a,cb);
+ else if(is(t,"#spunch_far"))       rzr_spunch_far(a,cb);
+ else if(is(t,"std_punch"))         std_punch(a,cb);
 }
-static void std_kick(wm_arcade_actor_t*a,const wm_arcade_razor_callbacks_t*cb)
-{anim(a,f24(a,WM_RZR_ANIM_KICK2,WM_RZR_ANIM_KICK4),cb);snd(a,WM_RZR_SND_KICK,cb);}
 static void do_kick(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_razor_callbacks_t*cb)
 {
- uint16_t m=o?o->player_mode:WM_PMODE_NORMAL;
- if(m==WM_PMODE_INAIR2){anim(a,WM_RZR_ANIM_KICK_TB,cb);snd(a,WM_RZR_SND_KICK,cb);return;}
- if(m==WM_PMODE_ONTURNBKL||m==WM_PMODE_CLIMBTURNBKL){std_kick(a,cb);return;}
- if(groundish(o)){if(near(a,160,140))anim(a,f24(a,WM_RZR_ANIM_STOMP2,WM_RZR_ANIM_STOMP4),cb);else{std_kick(a,cb);return;}snd(a,WM_RZR_SND_KICK,cb);return;}
- if(near(a,70,50))anim(a,f24(a,WM_RZR_ANIM_KNEE2,WM_RZR_ANIM_KNEE4),cb);else anim(a,f24(a,WM_RZR_ANIM_KICK2,WM_RZR_ANIM_KICK4),cb);snd(a,WM_RZR_SND_KICK,cb);
+ const char*t=jjxm("mode_normal","#kick",a,o);
+ if(is(t,"#kick_knee"))       rzr_kick_knee(a,cb);
+ else if(is(t,"#kick_stomp")) rzr_kick_stomp(a,cb);
+ else if(is(t,"#kick_TB"))    rzr_kick_tb(a,cb);
+ else if(is(t,"#kick_kick"))  std_kick(a,cb);
 }
 static void do_super_kick(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_razor_callbacks_t*cb)
 {
- uint16_t m=o?o->player_mode:WM_PMODE_NORMAL;int closez=60;
- if(m==WM_PMODE_RUNNING||m==WM_PMODE_BOUNCING){anim(a,WM_RZR_ANIM_BIGBOOT4,cb);snd(a,WM_RZR_SND_FLYKICK,cb);return;}
- if(m==WM_PMODE_INAIR2){anim(a,WM_RZR_ANIM_KICK_TB,cb);snd(a,WM_RZR_SND_KICK,cb);return;}
- if(m==WM_PMODE_HEADHELD){std_kick(a,cb);return;}
- if(groundish(o)){if(near(a,160,140)){anim(a,f24(a,WM_RZR_ANIM_STOMP2,WM_RZR_ANIM_STOMP4),cb);snd(a,WM_RZR_SND_KICK,cb);}else std_kick(a,cb);return;}
- if(m==WM_PMODE_ONTURNBKL||m==WM_PMODE_CLIMBTURNBKL){if(near(a,70,96)){anim(a,f24(a,WM_RZR_ANIM_SUPER_KICK2,WM_RZR_ANIM_SUPER_KICK4),cb);snd(a,WM_RZR_SND_FLYKICK,cb);}else std_kick(a,cb);return;}
- if(m==WM_PMODE_WAITANIM||m==WM_PMODE_GRAPPLE||m==WM_PMODE_MASTER||m==WM_PMODE_SLAVE||m==WM_PMODE_HEADHOLD||m==WM_PMODE_CHOKEHOLD||m==WM_PMODE_PUPPET||m==WM_PMODE_PUPPET2)closez=62;
- if(!near(a,70,closez)){anim(a,f24(a,WM_RZR_ANIM_SUPER_KICK2,WM_RZR_ANIM_SUPER_KICK4),cb);snd(a,WM_RZR_SND_FLYKICK,cb);return;}
- if(a->stick_val_cur==(uint16_t)(a->new_facing_dir&0x0c)){anim(a,WM_RZR_ANIM_KNEE_FALL4,cb);snd(a,WM_RZR_SND_GRABHOLD,cb);}else{anim(a,f24(a,WM_RZR_ANIM_KNEE2,WM_RZR_ANIM_KNEE4),cb);snd(a,WM_RZR_SND_KICK,cb);}
+ const char*t=jjxm("mode_normal","#super_kick",a,o);
+ if(is(t,"#skick_special"))      rzr_skick_special(a,cb);
+ else if(is(t,"#skick_kick"))    rzr_skick_kick(a,cb);
+ else if(is(t,"#skick_stomp"))   rzr_kick_stomp(a,cb);
+ else if(is(t,"#skick_bigboot")) rzr_skick_bigboot(a,cb);
+ else if(is(t,"#kick_TB"))       rzr_kick_tb(a,cb);
+ else if(is(t,"std_kick"))       std_kick(a,cb);
 }
 static void normal_action(wm_arcade_actor_t*a,wm_arcade_actor_t*o,wm_arcade_razor_action_id_t ac,const wm_arcade_razor_env_t*e,const wm_arcade_razor_callbacks_t*cb)
 {
@@ -191,6 +255,50 @@ static wm_arcade_razor_step_result_t mode_normal(wm_arcade_actor_t*a,wm_arcade_a
 }
 static void fly_elbow(wm_arcade_actor_t*a,const wm_arcade_razor_callbacks_t*cb)
 {anim(a,WM_RZR_ANIM_FLYING_ELBOW,cb);a->x_vel>>=1;snd(a,WM_RZR_SND_FLYKICK,cb);}
+/* ---- the two mode_running tables ------------------------------- */
+
+/* RAZOR.ASM:1938 #punch_clothesline. The Undertaker's shape: a facing
+   gate, RUN_TIME cleared, back to MODE_NORMAL, and inside 70 pixels a
+   headbutt instead of the up-slash. */
+static wm_arcade_razor_step_result_t rzr_punch_clothesline(
+        wm_arcade_actor_t*a,const wm_arcade_razor_callbacks_t*cb)
+{
+ if((a->facing_dir&a->new_facing_dir&(WM_MOVE_LEFT|WM_MOVE_RIGHT))==0)
+  return WM_RZR_STEP_IDLE;
+ a->run_time=0;
+ setmode(a,WM_PMODE_NORMAL);
+ if(a->closest_xdist<70){
+  anim(a,f24(a,WM_RZR_ANIM_BUTT2,WM_RZR_ANIM_BUTT4),cb);snd(a,WM_RZR_SND_HDBUTT,cb);
+ } else {
+  anim(a,WM_RZR_ANIM_USLASH3,cb);snd(a,WM_RZR_SND_GRABHOLD,cb);
+ }
+ return WM_RZR_STEP_ACTION;
+}
+
+static wm_arcade_razor_step_result_t rzr_run_punch(
+        wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_razor_callbacks_t*cb)
+{
+ const char*t=jjxm("mode_running","#punch",a,o);
+ if(is(t,"#punch_clothesline")){return rzr_punch_clothesline(a,cb);}
+ if(is(t,"#punch_flyelbow")){fly_elbow(a,cb);return WM_RZR_STEP_ACTION;}
+ if(is(t,"#punch_rets"))return WM_RZR_STEP_IDLE;   /* `rets` */
+ return WM_RZR_STEP_IDLE;
+}
+static wm_arcade_razor_step_result_t rzr_run_kick(
+        wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_razor_callbacks_t*cb)
+{
+ const char*t=jjxm("mode_running","#kick",a,o);
+ /* :1993 #kick_flykick, alias std_flykick. */
+ if(is(t,"#kick_flykick")){
+  if(cb&&cb->ck_ignore&&cb->ck_ignore(a,cb->user))return WM_RZR_STEP_IDLE;
+  anim(a,WM_RZR_ANIM_FLYING_KICK,cb);snd(a,WM_RZR_SND_FLYKICK,cb);
+  setmode(a,WM_PMODE_INAIR);
+  return WM_RZR_STEP_ACTION;
+ }
+ if(is(t,"std_flyelbow")){fly_elbow(a,cb);return WM_RZR_STEP_ACTION;}
+ return WM_RZR_STEP_IDLE;
+}
+
 static wm_arcade_razor_step_result_t mode_running(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_razor_env_t*e,const wm_arcade_razor_callbacks_t*cb)
 {
  wm_arcade_razor_action_id_t ac;a->run_time++;
@@ -200,8 +308,9 @@ static wm_arcade_razor_step_result_t mode_running(wm_arcade_actor_t*a,wm_arcade_
  if(a->stick_val_cur&WM_MOVE_UP)a->z_vel=-WM_RZR_ZDRIFT;else if(a->stick_val_cur&WM_MOVE_DOWN)a->z_vel=WM_RZR_ZDRIFT;else a->z_vel=0;if(a->delay_butns)return WM_RZR_STEP_IDLE;
  ac=action_table[a->but_val_down&WM_BTN_ATTACK_MASK];
  if(ac==WM_RZR_ACT_BLOCK){a->x_vel>>=1;setmode(a,WM_PMODE_NORMAL);(void)do_block(a,e,cb);return WM_RZR_STEP_ACTION;}
- if(ac==WM_RZR_ACT_KICK||ac==WM_RZR_ACT_SUPER_KICK){if(groundish(o)){fly_elbow(a,cb);return WM_RZR_STEP_ACTION;}if(cb&&cb->ck_ignore&&cb->ck_ignore(a,cb->user))return WM_RZR_STEP_IDLE;anim(a,WM_RZR_ANIM_FLYING_KICK,cb);snd(a,WM_RZR_SND_FLYKICK,cb);setmode(a,WM_PMODE_INAIR);return WM_RZR_STEP_ACTION;}
- if(ac==WM_RZR_ACT_PUNCH||ac==WM_RZR_ACT_SUPER_PUNCH||ac==WM_RZR_ACT_PUNCHKICK||ac==WM_RZR_ACT_GRABOH){if(groundish(o)){if(near(a,176,176)){fly_elbow(a,cb);return WM_RZR_STEP_ACTION;}return WM_RZR_STEP_IDLE;}if((a->facing_dir&a->new_facing_dir&(WM_MOVE_LEFT|WM_MOVE_RIGHT))==0)return WM_RZR_STEP_IDLE;a->run_time=0;setmode(a,WM_PMODE_NORMAL);if(a->closest_xdist<70){anim(a,f24(a,WM_RZR_ANIM_BUTT2,WM_RZR_ANIM_BUTT4),cb);snd(a,WM_RZR_SND_HDBUTT,cb);}else{anim(a,WM_RZR_ANIM_USLASH3,cb);snd(a,WM_RZR_SND_GRABHOLD,cb);}return WM_RZR_STEP_ACTION;}
+ if(ac==WM_RZR_ACT_KICK||ac==WM_RZR_ACT_SUPER_KICK)return rzr_run_kick(a,o,cb);
+ if(ac==WM_RZR_ACT_PUNCH||ac==WM_RZR_ACT_SUPER_PUNCH||ac==WM_RZR_ACT_PUNCHKICK||ac==WM_RZR_ACT_GRABOH)
+  return rzr_run_punch(a,o,cb);
  return WM_RZR_STEP_IDLE;
 }
 static wm_arcade_razor_step_result_t mode_bouncing(wm_arcade_actor_t*a,const wm_arcade_razor_callbacks_t*cb)

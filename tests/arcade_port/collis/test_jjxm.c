@@ -139,13 +139,13 @@ static void test_the_super_kick_is_not_the_light_kick(void) {
     me.but_val_down = WM_BTN_SKICK;
     him.player_mode = WM_PMODE_RUNNING;
     (void)wm_arcade_move_doink(&me, &him, &e, &c);
-    assert(last_label && strcmp(last_label, "dnk_2_bigboot_anim") == 0);
+    assert(last_label && strcmp(last_label, "dnk_4_bigboot_anim") == 0);
 
     actors(&me, &him);
     me.but_val_down = WM_BTN_SKICK;
     him.player_mode = WM_PMODE_INAIR2;
     (void)wm_arcade_move_doink(&me, &him, &e, &c);
-    assert(last_label && strcmp(last_label, "dnk_2_spin_kick_TB_anim") == 0);
+    assert(last_label && strcmp(last_label, "dnk_4_spin_kick_TB_anim") == 0);
 
     /* And the ordinary close row still reaches #skick_special, whose
        own stick test (STICK_VAL_CUR against NEW_FACING_DIR & 0Ch)
@@ -155,7 +155,7 @@ static void test_the_super_kick_is_not_the_light_kick(void) {
     me.but_val_down = WM_BTN_SKICK;
     me.closest_xdist = 30; me.closest_zdist = 30;
     (void)wm_arcade_move_doink(&me, &him, &e, &c);
-    assert(last_label && strcmp(last_label, "dnk_2_knee_anim") == 0);
+    assert(last_label && strcmp(last_label, "dnk_4_knee_anim") == 0);
 
     /* Held toward him, the same row is the knee-fall. */
     actors(&me, &him);

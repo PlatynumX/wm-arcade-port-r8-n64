@@ -12,5 +12,5 @@ a.player_mode=WM_PMODE_NORMAL;o.player_mode=WM_PMODE_NORMAL;assert(!wm_arcade_ta
    the odd one out, and that was the mistranslation showing. */
 assert(strcmp(t.anim,"und_neckbreaker2_anim")==0);
 rt_reset(&t);c=rt_callbacks(&t);a.player_mode=WM_PMODE_NORMAL;a.attach_proc=&o;assert(wm_arcade_taker_fire_secret(&a,&o,WM_TAKER_SECRET_TOMB_SMASH,100,&c));assert(a.attach_proc==NULL&&strcmp(t.anim,"und_tombstone_smash_anim")==0&&t.kills==1);
-rt_reset(&t);c=rt_callbacks(&t);a.player_mode=WM_PMODE_NORMAL;a.facing_dir=WM_MOVE_RIGHT;a.but_val_down=WM_BTN_PUNCH;a.closest_xdist=40;a.closest_zdist=20;o.player_mode=WM_PMODE_NORMAL;wm_arcade_move_taker(&a,&o,NULL,&c);assert(strcmp(t.anim,"und_2_butt_anim")==0);
+rt_reset(&t);c=rt_callbacks(&t);a.player_mode=WM_PMODE_NORMAL;a.facing_dir=WM_MOVE_UP_RIGHT;a.but_val_down=WM_BTN_PUNCH;a.closest_xdist=40;a.closest_zdist=20;o.player_mode=WM_PMODE_NORMAL;wm_arcade_move_taker(&a,&o,NULL,&c);assert(strcmp(t.anim,"und_2_butt_anim")==0);
 puts("Stage 16 Undertaker direct-port tests: PASS");}

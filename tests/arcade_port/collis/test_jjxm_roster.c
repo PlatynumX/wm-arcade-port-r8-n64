@@ -17,6 +17,7 @@
 #include "wm_arcade_yoko.h"
 #include "wm_arcade_shawn.h"
 #include "wm_arcade_bam.h"
+#include "wm_arcade_doink.h"
 #include "wmania_ring_geometry.h"
 
 static const char *last_label;
@@ -120,7 +121,7 @@ static void test_taker_running_punch(void) {
     me.closest_xdist = 200;
     me.but_val_down = WM_BTN_PUNCH;
     (void)wm_arcade_move_taker(&me, &him, &e, &c);
-    assert(last_label && strcmp(last_label, "und_2_run_slap_anim") == 0);
+    assert(last_label && strcmp(last_label, "und_4_run_slap_anim") == 0);
     assert(me.player_mode == WM_PMODE_NORMAL);
     assert(me.run_time == 0);
 
@@ -176,7 +177,7 @@ static void test_yoko_super_punch_has_no_distance_test(void) {
     me.but_val_down = WM_BTN_SPUNCH;
     me.closest_xdist = 10; me.closest_zdist = 10;
     (void)wm_arcade_move_yoko(&me, &him, &e, &c);
-    assert(last_label && strcmp(last_label, "yok_2_jabs_anim") == 0);
+    assert(last_label && strcmp(last_label, "yok_4_jabs_anim") == 0);
     assert(last_sound && strcmp(last_sound, "HDBUTT") == 0);
 
     /* At the very edge of the table's 95/45 row it is still the jabs,
@@ -186,7 +187,7 @@ static void test_yoko_super_punch_has_no_distance_test(void) {
     me.but_val_down = WM_BTN_SPUNCH;
     me.closest_xdist = 95; me.closest_zdist = 45;
     (void)wm_arcade_move_yoko(&me, &him, &e, &c);
-    assert(last_label && strcmp(last_label, "yok_2_jabs_anim") == 0);
+    assert(last_label && strcmp(last_label, "yok_4_jabs_anim") == 0);
 
     /* Stick down is the uppercut. */
     actors(&me, &him, WM_ROSTER_YOKO);
@@ -317,14 +318,14 @@ static void test_bam_super_kick_is_one_move(void) {
     me.but_val_down = WM_BTN_SKICK;
     me.closest_xdist = 10; me.closest_zdist = 10;
     (void)wm_arcade_move_bam(&me, &him, &e, &c);
-    assert(last_label && strcmp(last_label, "bam_2_superkick_anim") == 0);
+    assert(last_label && strcmp(last_label, "bam_4_superkick_anim") == 0);
     assert(last_sound && strcmp(last_sound, "SPUNCH") == 0);
 
     actors(&me, &him, WM_ROSTER_BAM);
     me.but_val_down = WM_BTN_SKICK;
     me.closest_xdist = 200; me.closest_zdist = 200;
     (void)wm_arcade_move_bam(&me, &him, &e, &c);
-    assert(last_label && strcmp(last_label, "bam_2_superkick_anim") == 0);
+    assert(last_label && strcmp(last_label, "bam_4_superkick_anim") == 0);
 }
 
 /* Bam Bam's clothesline is Doink's, gates and all. */
@@ -382,7 +383,56 @@ static void test_bam_do_pile_kills_endless_first(void) {
     assert(last_label && strcmp(last_label, "bam_3_pile_driver_anim") == 0);
 }
 
+/*
+ * MACROS.H:51 FACE24 is `btst MOVE_UP_BIT,a14 / jrnz` -- the "2" form
+ * is the one facing UP, and the "4" form is everything else. Six of
+ * the eight dispatchers had tested WM_MOVE_RIGHT instead, so every
+ * FACE24 selection in them picked the wrong one of the pair whenever
+ * facing and travel disagreed. Bret and Razor had it right; routing
+ * them is how the discrepancy showed up at all.
+ *
+ * This is deliberately not a test of one move: it walks all six of the
+ * files that were wrong and checks both halves of the rule, so the bit
+ * cannot quietly go back to MOVE_RIGHT in any of them.
+ */
+static void test_face24_selects_on_the_up_bit(void) {
+    wm_arcade_roster_callbacks_t c = cbs();
+    wm_arcade_roster_env_t e; memset(&e, 0, sizeof e);
+    wm_arcade_actor_t me, him;
+    struct { int who; const char *up; const char *down; } cases[] = {
+        { WM_ROSTER_LEX,   "lex_2_punch_anim", "lex_4_punch_anim" },
+        { WM_ROSTER_TAKER, "und_2_punch_anim", "und_4_punch_anim" },
+        { WM_ROSTER_YOKO,  "yok_2_punch_anim", "yok_4_punch_anim" },
+        { WM_ROSTER_SHAWN, "shn_2_punch_anim", "shn_4_punch_anim" },
+        { WM_ROSTER_BAM,   "bam_2_punch_anim", "bam_4_punch_anim" },
+        { WM_ROSTER_DOINK, "dnk_2_punch_anim", "dnk_4_punch_anim" }
+    };
+    size_t i;
+    int pass;
+    for (i = 0; i < sizeof cases / sizeof cases[0]; ++i) {
+        for (pass = 0; pass < 2; ++pass) {
+            /* Far enough away that #punch reaches #punch_punch. */
+            actors(&me, &him, cases[i].who);
+            me.but_val_down = WM_BTN_PUNCH;
+            me.closest_xdist = 200; me.closest_zdist = 200;
+            me.facing_dir = me.new_facing_dir =
+                pass ? WM_MOVE_DOWN_RIGHT : WM_MOVE_UP_RIGHT;
+            switch (cases[i].who) {
+            case WM_ROSTER_LEX:   (void)wm_arcade_move_lex(&me,&him,&e,&c); break;
+            case WM_ROSTER_TAKER: (void)wm_arcade_move_taker(&me,&him,&e,&c); break;
+            case WM_ROSTER_YOKO:  (void)wm_arcade_move_yoko(&me,&him,&e,&c); break;
+            case WM_ROSTER_SHAWN: (void)wm_arcade_move_shawn(&me,&him,&e,&c); break;
+            case WM_ROSTER_BAM:   (void)wm_arcade_move_bam(&me,&him,&e,&c); break;
+            default:              (void)wm_arcade_move_doink(&me,&him,&e,&c); break;
+            }
+            assert(last_label);
+            assert(strcmp(last_label, pass ? cases[i].down : cases[i].up) == 0);
+        }
+    }
+}
+
 int main(void) {
+    test_face24_selects_on_the_up_bit();
     test_lex_super_kick();
     test_lex_running_punch_is_the_flying_kick();
     test_taker_running_punch();

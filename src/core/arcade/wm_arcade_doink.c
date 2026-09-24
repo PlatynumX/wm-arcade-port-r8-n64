@@ -113,7 +113,12 @@ static const struct labels L={
 
 static void setmode(wm_arcade_actor_t*a,uint16_t m){if(a&&a->player_mode!=WM_PMODE_DEAD)a->player_mode=m;}
 static int groundish(const wm_arcade_actor_t*o){return o&&(o->player_mode==WM_PMODE_ONGROUND||o->player_mode==WM_PMODE_DEAD);}
-static int face2(const wm_arcade_actor_t*a){return a&&(a->facing_dir&WM_MOVE_RIGHT);}
+/* MACROS.H:51 FACE24 is `btst MOVE_UP_BIT,a14 / jrnz` -- the "2"
+   form is the one facing UP, not the one facing right. This tested
+   WM_MOVE_RIGHT, so every FACE24 selection in this file picked the
+   wrong one of the pair whenever facing and travel disagreed. Bret
+   and Razor had it right; these six did not. */
+static int face2(const wm_arcade_actor_t*a){return a&&(a->facing_dir&WM_MOVE_UP);}
 static const char *face_label(const char*l2,const char*l4,const wm_arcade_actor_t*a){return face2(a)?l2:l4;}
 static void anim(wm_arcade_actor_t*a,const char*l,const wm_arcade_doink_callbacks_t*c){if(c&&c->change_anim_label&&l)c->change_anim_label(a,l,c->user);}
 static void snd(wm_arcade_actor_t*a,const char*l,const wm_arcade_doink_callbacks_t*c){if(c&&c->sound_label&&l)c->sound_label(a,l,c->user);}

@@ -4311,6 +4311,10 @@ def test_every_routed_dispatcher_names_only_real_targets() -> None:
     does nothing on purpose should be visible as such, and the second
     direction of this test is what makes that a rule rather than a
     habit.
+
+    All eight wrestlers are routed, so the count is asserted rather
+    than merely counted: a file that loses its wm_jjxm_pick, or a
+    ninth that appears without one, fails here.
     """
     sys.path.insert(0, str(ROOT / "tools"))
     import wljjxm  # noqa: E402
@@ -4318,9 +4322,10 @@ def test_every_routed_dispatcher_names_only_real_targets() -> None:
     arcade = ROOT / "src" / "core" / "arcade"
     tables = wljjxm.collect()
     routed = 0
-    for wrestler, stem in (("DOINK", "doink"), ("LEX", "lex"),
+    for wrestler, stem in (("BRET", "bret"), ("RAZOR", "razor"),
                            ("TAKER", "taker"), ("YOKO", "yoko"),
-                           ("SHAWN", "shawn"), ("BAM", "bam")):
+                           ("SHAWN", "shawn"), ("BAM", "bam"),
+                           ("DOINK", "doink"), ("LEX", "lex")):
         path = arcade / ("wm_arcade_%s.c" % stem)
         text = path.read_text(errors="replace")
         if "wm_jjxm_pick" not in text:
@@ -4333,7 +4338,7 @@ def test_every_routed_dispatcher_names_only_real_targets() -> None:
                    for row in t["rows"] for key in ("less", "more")}
         assert not (compared - targets), (wrestler, sorted(compared - targets))
         assert not (targets - compared), (wrestler, sorted(targets - compared))
-    assert routed == 6, routed
+    assert routed == 8, routed
 
 
 if __name__ == "__main__":

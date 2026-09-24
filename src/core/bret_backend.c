@@ -4,6 +4,7 @@
 #include "wm/arcade/wm_arcade_bounce.h"
 #include "wm/arcade/wm_arcade_auto_pin.h"
 #include "wm/arcade/wm_arcade_bozo.h"
+#include "wm/arcade/wm_arcade_combo.h"
 #include "wm/wrestler_sound_labels.h"
 #include "wm/wrestler_sound_tables.h"
 #include "wm/arcade/wm_arcade_teammates.h"
@@ -993,6 +994,24 @@ static void bret_sound(wm_arcade_actor_t *actor,
  * skip the test when the seam is empty, so the refusal never fired and
  * a wrestler could launch a flying kick while walking away.
  */
+/*
+ * LIFEBAR.ASM CHECK_COMBO_GO, for Bret.
+ *
+ * His call site reads `if (!cb->check_combo_go || cb->check_combo_go(a,
+ * cb->user) < 0) return 0;` -- so an empty seam does not merely skip the
+ * gate, it REFUSES the move outright. Every one of his head-hold combos
+ * was turned down before it started.
+ *
+ * The other seven have had this since the combo-meter work; Bret's was
+ * the copy nobody filled, and the seam audit could not see it because
+ * the name is filled elsewhere.
+ */
+static int bret_check_combo_go(wm_arcade_actor_t *actor, void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    return (int)wm_arcade_check_combo_go(actor,
+                                         bva ? bva->instant_combos_on : 0);
+}
+
 static int bret_ck_ignore(wm_arcade_actor_t *actor, void *user) {
     (void)user;
     return wm_arcade_ck_ignore(actor) ? 1 : 0;
@@ -1063,6 +1082,7 @@ wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva)
     cb.bozo_check = bret_bozo_check;
     cb.teammate_pin = bret_teammate_pin;
     cb.ck_ignore = bret_ck_ignore;
+    cb.check_combo_go = bret_check_combo_go;
     cb.do_reversal = bret_do_reversal;
     cb.do_reversal_message = bret_do_reversal_message;
     cb.sound = bret_sound;

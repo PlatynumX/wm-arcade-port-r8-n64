@@ -188,5 +188,19 @@
  "play_wrestler_tune": {
   "verdict": "deferred",
   "note": "DO_RIGHT_MUSIC's per-wrestler victory tune, which the attract adapter asks for by wrestler number. wm_match_wrestler_tune already resolves WHICH tune (it is asserted in wm_test_match_end), so what is missing behind this seam is playing it -- the DCS tune path, which is the same cluster as do_tune_commands and snd_update and wants one pass of its own rather than a single call bolted on."
+ },
+ "_PARTIAL": {
+  "_note": [
+   "seam_audit.py keys on a seam's NAME, so one declared in several",
+   "callback structs and filled in only one of them reads as filled.",
+   "check_secret_moves was exactly that and had to be found by hand.",
+   "The tool reports the shape as a heuristic -- declared in more",
+   "structs than it has assignment sites -- and these are the",
+   "explanations for the names it currently flags. Underscore-prefixed",
+   "so the two-way guard on the real ledger ignores it: these names ARE",
+   "filled, so they are not empty seams and must not be rows above."
+  ],
+  "get_health": "Declared in wm_arcade_react1_core.h, where it is filled, and in wm_arcade_getup_meter.h, where it is deliberately optional. The getup meter takes it because WRESTLE2.ASM:1074 calls get_health exactly there, and passing NULL changes no answer: the low-health arm falls through into the same GETUP_TIME test the high-health arm reaches, so the suppression its comment describes was never assembled. test_getup_meter sweeps health 0..100 and asserts the answer never moves, which is why this one is demonstrated rather than asserted.",
+  "play_sound": "Declared in wm_arcade_react1_core.h, where it is filled, and in wmania_attract_adapter.h and wmania_hiscore_adapter.h, where it is not. Those two are the frontend screens' own sound, and every other seam in both adapters is ledgered display or hardware for the same reason -- there is no renderer for the screens the sound would accompany. Consistent with the show_* rows above rather than a separate decision."
  }
 }

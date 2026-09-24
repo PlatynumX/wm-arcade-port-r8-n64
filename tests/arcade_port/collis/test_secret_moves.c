@@ -188,12 +188,59 @@ static void test_every_wrestler_has_a_table(void) {
     }
 }
 
+/* ------------------------------------------------------------------
+ * The two seams the audit's own heuristic turned up.
+ *
+ * seam_audit.py keys on a seam's NAME, so one declared in several
+ * callback structs and filled in only one of them reads as filled.
+ * check_secret_moves was exactly that. The heuristic it grew afterwards
+ * -- declared in more structs than it has assignment sites -- flagged
+ * four, and two of them were real.
+ * ------------------------------------------------------------------ */
+
+static void test_the_partially_filled_pair(void) {
+    wm_wrestler_backend_actor st;
+    wm_bret_backend_actor bva;
+    wm_arcade_razor_callbacks_t razor_cb;
+    wm_arcade_bret_callbacks_t bret_cb;
+    wm_arcade_actor_t me;
+
+    memset(&st, 0, sizeof st);
+    memset(&bva, 0, sizeof bva);
+    razor_cb = wm_wrestler_razor_callbacks(&st);
+    bret_cb = wm_bret_backend_callbacks(&bva);
+
+    /*
+     * change_torso_anim: declared for Bret and for Razor, filled only
+     * for Bret. Razor's dispatcher selects WM_RZR_ANIM_TORSO2/TORSO4 at
+     * two sites, so his SECOND animation channel never moved.
+     */
+    assert(razor_cb.change_torso_anim != NULL);
+
+    /*
+     * check_combo_go: declared in four structs and filled in three. The
+     * missing one was Bret's, and his call site does not merely skip the
+     * gate when it is empty -- `if (!cb->check_combo_go ||
+     * cb->check_combo_go(a, cb->user) < 0) return 0;` REFUSES the move.
+     * Every one of his head-hold combos was turned down before it
+     * started.
+     */
+    assert(bret_cb.check_combo_go != NULL);
+
+    /* And it answers rather than merely existing: an empty combo meter
+       is below the threshold, which is a refusal and not an error. */
+    memset(&me, 0, sizeof me);
+    me.active = 1;
+    (void)bret_cb.check_combo_go(&me, bret_cb.user);
+}
+
 int main(void) {
     test_the_seam_is_filled();
     test_a_pattern_reaches_its_handler();
     test_the_four_gates();
     test_the_queue_must_be_fresh();
     test_every_wrestler_has_a_table();
+    test_the_partially_filled_pair();
     printf("secret moves ok\n");
     return 0;
 }

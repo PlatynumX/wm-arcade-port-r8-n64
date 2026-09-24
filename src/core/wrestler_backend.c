@@ -903,6 +903,29 @@ wm_arcade_roster_callbacks_t wm_wrestler_roster_callbacks(
  * names (src/core/arcade/wm_arcade_razor_anim_labels.c) and then take the
  * identical path the other six do.
  */
+/*
+ * wm_arcade_razor_callbacks_t.change_torso_anim -- the SECOND animation
+ * channel, which Razor's dispatcher selects at two sites
+ * (WM_RZR_ANIM_TORSO2 and TORSO4) and which was filled by nobody.
+ *
+ * The seam was invisible to the seam audit because it keys on a name
+ * and Bret's copy of it IS filled, so `change_torso_anim` read as
+ * covered while Razor's torso never moved. The tool reports that shape
+ * as a heuristic now (declared in more structs than it has assignment
+ * sites); this is one of the four it flagged.
+ *
+ * Nothing new is needed behind it: his ids already resolve to the
+ * source's own routine names, and the shared backend already drives the
+ * torso channel for everybody else.
+ */
+static void backend_razor_change_torso_anim(wm_arcade_actor_t *actor,
+                                            wm_arcade_razor_anim_id_t id,
+                                            void *user) {
+    const char *label = wm_arcade_razor_anim_label(id);
+    if (!actor || !label) return;
+    backend_change_anim2_label(actor, label, user);
+}
+
 static void backend_razor_change_anim(wm_arcade_actor_t *actor,
                                       wm_arcade_razor_anim_id_t id,
                                       void *user) {
@@ -928,6 +951,7 @@ wm_arcade_razor_callbacks_t wm_wrestler_razor_callbacks(
     wm_arcade_razor_callbacks_t cb;
     memset(&cb, 0, sizeof(cb));
     cb.change_anim = backend_razor_change_anim;
+    cb.change_torso_anim = backend_razor_change_torso_anim;
     cb.sound = backend_razor_sound;
     cb.execute_walk = backend_execute_walk;
     cb.adjust_health = backend_adjust_health;

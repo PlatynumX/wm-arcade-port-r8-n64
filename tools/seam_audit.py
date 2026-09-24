@@ -167,9 +167,16 @@ def main() -> int:
     if a["partially_filled"]:
         print("\nfilled in fewer structs than declare them (%d) --"
               % len(a["partially_filled"]))
-        print("a heuristic, not a verdict; see scan()'s docstring:")
+        print("a heuristic, not a verdict; see scan()'s docstring.")
+        partial = {}
+        if LEDGER.exists():
+            partial = json.loads(LEDGER.read_text()).get("_PARTIAL", {})
         for n in a["partially_filled"]:
-            print("   ", n)
+            why = partial.get(n)
+            if isinstance(why, str):
+                print("    %-20s %s" % (n, why[:96] + "..."))
+            else:
+                print("    %-20s (unexplained -- add a _PARTIAL row)" % n)
     missing = [n for n in empty if n not in ledger]
     stale = [n for n in ledger if n not in empty]
     if missing:

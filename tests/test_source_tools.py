@@ -4204,3 +4204,43 @@ def test_every_empty_callback_seam_has_a_verdict() -> None:
     # And the totals are real rather than a rounding of themselves.
     assert a["total"] > 100, a["total"]
     assert a["filled"] + len(empty) <= a["total"]
+
+def test_the_partially_filled_seams_are_explained() -> None:
+    """The audit's heuristic output must not accumulate silently.
+
+    seam_audit.py keys on a seam's NAME, so one declared in several
+    callback structs and filled in only one reads as filled. That is how
+    check_secret_moves stayed invisible while seven wrestlers had no
+    button-sequence secret moves. The heuristic added afterwards --
+    declared in more structs than it has assignment sites -- is printed
+    rather than enforced, because one adapter legitimately serving two
+    structs is normal.
+
+    Printed-and-ignored is how a signal dies, so every name it flags
+    needs an entry under `_PARTIAL` in port/seam_ledger.json saying why
+    it is flagged and why that is fine. Underscore-prefixed because
+    these names ARE filled: they are not empty seams and must not
+    appear as ordinary ledger rows, which the two-way guard would then
+    reject as stale.
+    """
+    if not wlanim.ORIG.exists():
+        return
+    sys.path.insert(0, str(ROOT / "tools"))
+    import seam_audit
+    import json as _json
+
+    a = seam_audit.audit()
+    raw = _json.loads(seam_audit.LEDGER.read_text())
+    partial = raw.get("_PARTIAL", {})
+
+    unexplained = [n for n in a["partially_filled"]
+                   if not isinstance(partial.get(n), str)]
+    assert not unexplained, unexplained
+
+    for name, why in sorted(partial.items()):
+        if name.startswith("_"):
+            continue
+        assert len(why) > 80, name
+        # An explanation for a name nothing flags any more is as stale
+        # as a ledger row for a seam that got wired.
+        assert name in a["partially_filled"], name

@@ -1,5 +1,7 @@
 #include "wm/arcade/wm_arcade_bam.h"
 #include "wm/arcade/wm_arcade_attach_anim.h"
+#include "wm/arcade/wm_arcade_jjxm.h"
+#include "wm/arcade/wmania_ring_geometry.h"
 #include <string.h>
 
 /*
@@ -110,7 +112,6 @@ static const struct labels L={
 
 static void setmode(wm_arcade_actor_t*a,uint16_t m){if(a&&a->player_mode!=WM_PMODE_DEAD)a->player_mode=m;}
 static int groundish(const wm_arcade_actor_t*o){return o&&(o->player_mode==WM_PMODE_ONGROUND||o->player_mode==WM_PMODE_DEAD);}
-static int nearxy(const wm_arcade_actor_t*a,int x,int z){return a&&a->closest_xdist<x&&a->closest_zdist<z;}
 static int face2(const wm_arcade_actor_t*a){return a&&(a->facing_dir&WM_MOVE_RIGHT);}
 static const char *face_label(const char*l2,const char*l4,const wm_arcade_actor_t*a){return face2(a)?l2:l4;}
 static void anim(wm_arcade_actor_t*a,const char*l,const wm_arcade_bam_callbacks_t*c){if(c&&c->change_anim_label&&l)c->change_anim_label(a,l,c->user);}
@@ -125,24 +126,127 @@ static int do_block(wm_arcade_actor_t*a,const wm_arcade_bam_env_t*e,const wm_arc
     setmode(a,WM_PMODE_BLOCK);
     return 1;
 }
-static void basic_punch(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_bam_callbacks_t*c){
-    int cx=50,cz=45; int gx=160,gz=140;
-    if(groundish(o)&&nearxy(a,gx,gz)){anim(a,face_label(L.ground2,L.ground4,a),c);snd(a,"LBOWDROP",c);return;}
-    if(nearxy(a,cx,cz)){anim(a,face_label(L.close2,L.close4,a),c);snd(a,"HDBUTT",c);}
-    else {anim(a,face_label(L.punch2,L.punch4,a),c);snd(a,"PUNCH",c);}
+/*
+ * BAM.ASM's six JJXM tables (JJXM.H; wm/arcade/wm_arcade_jjxm.h).
+ * Two details the approximation had wrong beyond the usual: Bam Bam's
+ * hair grab and elbow drop both play KICK rather than LBOWDROP, and
+ * his super kick is one animation for BOTH arms of the close test --
+ * #skick_special and #skick_kick are two labels on one instruction.
+ */
+static const char *jjxm(const char*section,const char*entry,
+                        const wm_arcade_actor_t*a,const wm_arcade_actor_t*o){
+    return wm_jjxm_pick("BAM",section,entry,a,o);
 }
-static void basic_kick(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_bam_callbacks_t*c){
-    int cx=50,cz=50;
-    if(groundish(o)&&nearxy(a,160,140))anim(a,face_label(L.stomp2,L.stomp4,a),c);
-    else if(nearxy(a,cx,cz))anim(a,face_label(L.knee2,L.knee4,a),c);
-    else anim(a,face_label(L.kick2,L.kick4,a),c);
+#define is(t,n) wm_jjxm_is((t),(n))
+
+/* BAM.ASM:1494 #punch_punch, alias std_punch. */
+static void bam_punch_punch(wm_arcade_actor_t*a,const wm_arcade_bam_callbacks_t*c){
+    anim(a,face_label(L.punch2,L.punch4,a),c); snd(a,"PUNCH",c);
+}
+/* :1504 #punch_hdbutt */
+static void bam_punch_hdbutt(wm_arcade_actor_t*a,const wm_arcade_bam_callbacks_t*c){
+    anim(a,face_label(L.close2,L.close4,a),c); snd(a,"HDBUTT",c);
+}
+/* :1513 #punch_lbowdrop */
+static void bam_punch_lbowdrop(wm_arcade_actor_t*a,const wm_arcade_bam_callbacks_t*c){
+    anim(a,face_label(L.ground2,L.ground4,a),c); snd(a,"LBOWDROP",c);
+}
+/* :1597 #spunch_jump -- the slap, and the only place Bam Bam's super
+   punch plays SPUNCH at all. */
+static void bam_spunch_jump(wm_arcade_actor_t*a,const wm_arcade_bam_callbacks_t*c){
+    anim(a,face_label("bam_2_slap_anim","bam_4_slap_anim",a),c); snd(a,"SPUNCH",c);
+}
+/* :1607 #spunch_special. One threshold, 55 on X, and past it the move
+   is the jump slap. */
+static void bam_spunch_special(wm_arcade_actor_t*a,const wm_arcade_bam_callbacks_t*c){
+    if(a->closest_xdist>55){ bam_spunch_jump(a,c); return; }
+    anim(a,face_label("bam_2_butts_anim","bam_4_butts_anim",a),c); snd(a,"HDBUTT",c);
+}
+/* :1636 #spunch_lbowdrop -- the hair grab, and note the sound: KICK on
+   both arms, not LBOWDROP. */
+static void bam_spunch_lbowdrop(wm_arcade_actor_t*a,wm_arcade_actor_t*o,
+                                const wm_arcade_bam_callbacks_t*c){
+    int hair=0;
+    if(o&&o->player_mode!=WM_PMODE_DEAD){
+        int32_t dx=a->x_fixed-o->x_fixed;
+        if(dx<0)dx=-dx;
+        if((dx>>16)>=0x20&&
+           ((a->obj_control&WM_OBJ_FLIPH)!=(o->obj_control&WM_OBJ_FLIPH)))
+            hair=1;
+    }
+    if(hair) anim(a,face_label("bam_2_hair_pickup_anim","bam_4_hair_pickup_anim",a),c);
+    else     anim(a,face_label(L.ground2,L.ground4,a),c);
     snd(a,"KICK",c);
 }
-static void super_punch(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_bam_callbacks_t*c){
-    if(groundish(o)&&nearxy(a,160,140)){anim(a,face_label(L.ground2,L.ground4,a),c);return;}
-    if(a->closest_xdist<=90&&a->closest_zdist<55) anim(a,face_label("bam_2_butts_anim","bam_4_butts_anim",a),c); else anim(a,face_label("bam_2_slap_anim","bam_4_slap_anim",a),c); snd(a,"SPUNCH",c);
+/* :2665 do_pile. Bam Bam's runs FIND_AND_KILL_ENDLESS FIRST, before
+   the USR_VAR2 test -- so a headheld opponent ends an endless combo
+   whether or not the pile driver comes out. Without the stick down it
+   falls into mode_headhold's own #punch, the knee to the head. */
+static void bam_do_pile(wm_arcade_actor_t*a,const wm_arcade_bam_callbacks_t*c){
+    if(c&&c->find_and_kill_endless)c->find_and_kill_endless(a,c->user);
+    if(!a->usr_var2) return;
+    if(a->stick_val_cur&WM_MOVE_DOWN){
+        snd(a,"GRABHOLD",c); anim(a,"bam_3_pile_driver_anim",c); return;
+    }
+    if(c&&c->find_and_kill_endless)c->find_and_kill_endless(a,c->user);
+    snd(a,"UPRCUT",c); anim(a,"bam_4_knee2_anim",c);
 }
-static void super_kick(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_bam_callbacks_t*c){basic_kick(a,o,c);}
+/* :1741 #kick_kick (std_kick), :1751 #kick_knee (std_knee), :1761
+   #kick_stomp (alias attack_stomp). */
+static void bam_kick_kick(wm_arcade_actor_t*a,const wm_arcade_bam_callbacks_t*c){
+    anim(a,face_label(L.kick2,L.kick4,a),c); snd(a,"KICK",c);
+}
+static void bam_kick_knee(wm_arcade_actor_t*a,const wm_arcade_bam_callbacks_t*c){
+    anim(a,face_label(L.knee2,L.knee4,a),c); snd(a,"KICK",c);
+}
+static void bam_kick_stomp(wm_arcade_actor_t*a,const wm_arcade_bam_callbacks_t*c){
+    anim(a,face_label(L.stomp2,L.stomp4,a),c); snd(a,"KICK",c);
+}
+/* :1731 #kick_TB */
+static void bam_kick_tb(wm_arcade_actor_t*a,const wm_arcade_bam_callbacks_t*c){
+    anim(a,"bam_kick_TB_anim",c); snd(a,"KICK",c);
+}
+/* :1827 #skick_special and :1828 #skick_kick -- two labels, one body,
+   so the super-kick table's near/far split has the same answer either
+   side of it. SPUNCH, not FLYKICK. */
+static void bam_skick_kick(wm_arcade_actor_t*a,const wm_arcade_bam_callbacks_t*c){
+    anim(a,face_label("bam_2_superkick_anim","bam_4_superkick_anim",a),c);
+    snd(a,"SPUNCH",c);
+}
+/* :1851 #graboh, "both super buttons at the same time". */
+static void bam_graboh(wm_arcade_actor_t*a,const wm_arcade_bam_callbacks_t*c){
+    anim(a,"bam_4_graboh_anim",c); snd(a,"GRABHOLD",c);
+}
+
+static void basic_punch(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_bam_callbacks_t*c){
+    const char*t=jjxm("mode_normal","#punch",a,o);
+    if(is(t,"#punch_hdbutt"))        bam_punch_hdbutt(a,c);
+    else if(is(t,"#punch_lbowdrop")) bam_punch_lbowdrop(a,c);
+    else if(is(t,"#punch_punch"))    bam_punch_punch(a,c);
+}
+static void basic_kick(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_bam_callbacks_t*c){
+    const char*t=jjxm("mode_normal","#kick",a,o);
+    if(is(t,"#kick_knee"))       bam_kick_knee(a,c);
+    else if(is(t,"#kick_stomp")) bam_kick_stomp(a,c);
+    else if(is(t,"#kick_TB"))    bam_kick_tb(a,c);
+    else if(is(t,"#kick_kick"))  bam_kick_kick(a,c);
+}
+static void super_punch(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_bam_callbacks_t*c){
+    const char*t=jjxm("mode_normal","#super_punch",a,o);
+    if(is(t,"#spunch_special"))       bam_spunch_special(a,c);
+    else if(is(t,"#spunch_lbowdrop")) bam_spunch_lbowdrop(a,o,c);
+    else if(is(t,"#spunch_jump"))     bam_spunch_jump(a,c);
+    else if(is(t,"do_pile"))          bam_do_pile(a,c);
+    else if(is(t,"std_punch"))        bam_punch_punch(a,c);
+}
+static void super_kick(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_bam_callbacks_t*c){
+    const char*t=jjxm("mode_normal","#super_kick",a,o);
+    if(is(t,"#skick_special"))    bam_skick_kick(a,c);
+    else if(is(t,"#skick_kick"))  bam_skick_kick(a,c);
+    else if(is(t,"attack_stomp")) bam_kick_stomp(a,c);
+    else if(is(t,"#kick_TB"))     bam_kick_tb(a,c);
+    else if(is(t,"std_kick"))     bam_kick_kick(a,c);
+}
 
 static wm_arcade_bam_step_result_t mode_normal(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_bam_env_t*e,const wm_arcade_bam_callbacks_t*c){
     uint8_t ac;
@@ -163,20 +267,83 @@ static wm_arcade_bam_step_result_t mode_normal(wm_arcade_actor_t*a,wm_arcade_act
     if((a->but_val_cur&WM_BTN_BLOCK)&&do_block(a,e,c))return WM_BAM_STEP_ACTION;
     ac=action_table[a->but_val_down&WM_BTN_ATTACK_MASK];
     if((a->but_val_cur&WM_BTN_ATTACK_MASK)==(WM_BTN_PUNCH|WM_BTN_KICK))ac=A_PUNCHKICK;
-    switch(ac){case A_PUNCH:basic_punch(a,o,c);break;case A_BLOCK:(void)do_block(a,e,c);break;case A_SPUNCH:super_punch(a,o,c);break;case A_KICK:basic_kick(a,o,c);break;case A_PUNCHKICK:anim(a,"start_run_anim",c);break;case A_SKICK:case A_GRABOH:super_kick(a,o,c);break;default:break;}
+    switch(ac){case A_PUNCH:basic_punch(a,o,c);break;case A_BLOCK:(void)do_block(a,e,c);break;case A_SPUNCH:super_punch(a,o,c);break;case A_KICK:basic_kick(a,o,c);break;case A_PUNCHKICK:anim(a,"start_run_anim",c);break;case A_SKICK:super_kick(a,o,c);break;case A_GRABOH:bam_graboh(a,c);break;default:break;}
     if(a->anim_mode&WM_MODE_UNINT)return WM_BAM_STEP_ACTION;
     a->move_dir=a->stick_val_cur;
     if(c&&c->climb_turnbuckle&&c->climb_turnbuckle(a,c->user)){if(c->jump_rope_audio)c->jump_rope_audio(a,c->user);return WM_BAM_STEP_EXTERNAL;}
     if(c&&c->execute_walk)c->execute_walk(a,c->user);
     return WM_BAM_STEP_ACTION;
 }
+/* ---- the two mode_running tables ------------------------------- */
+
+/* BAM.ASM:2010 #punch_clothesline -- the same two gates as Doink's,
+   down to the eleven-long #mv_tbl of BIT NUMBERS tested against
+   MOVE_DIR. */
+static const uint8_t bam_cline_mv_tbl[11] = {
+    0, 0, 0, 0, 0, 3 /* MOVE_RIGHT_BIT */, 3,
+    0, 0, 2 /* MOVE_LEFT_BIT */, 2
+};
+static wm_arcade_bam_step_result_t bam_punch_clothesline(
+        wm_arcade_actor_t*a,const wm_arcade_bam_callbacks_t*c){
+    unsigned idx;
+    if(a->move_dir&WM_MOVE_LEFT){
+        if(!(a->x_int>WM_RING_X_MID-0x70)) return WM_BAM_STEP_IDLE;
+    } else {
+        if(!(a->x_int<WM_RING_X_MID+0x70)) return WM_BAM_STEP_IDLE;
+    }
+    idx=(unsigned)(a->new_facing_dir&0xff);
+    if(idx<sizeof bam_cline_mv_tbl/sizeof bam_cline_mv_tbl[0]&&
+       (a->move_dir&(1<<bam_cline_mv_tbl[idx])))
+        return WM_BAM_STEP_IDLE;
+    anim(a,"bam_fly_cline_anim",c);
+    setmode(a,WM_PMODE_INAIR);
+    a->run_time=0;
+    snd(a,"FLYKICK",c);
+    return WM_BAM_STEP_ACTION;
+}
+/* :2068 #punch_bellyflop, alias attack_bellyflop -- the butt drop. */
+static wm_arcade_bam_step_result_t bam_attack_bellyflop(
+        wm_arcade_actor_t*a,const wm_arcade_bam_callbacks_t*c){
+    setmode(a,WM_PMODE_INAIR);
+    a->run_time=0;
+    anim(a,"bam_3_butt_drop_anim",c);
+    snd(a,"FLYKICK",c);
+    return WM_BAM_STEP_ACTION;
+}
+/* :2137 #kick_flyingkick */
+static wm_arcade_bam_step_result_t bam_kick_flyingkick(
+        wm_arcade_actor_t*a,const wm_arcade_bam_callbacks_t*c){
+    if(c&&c->ck_ignore&&c->ck_ignore(a,c->user)) return WM_BAM_STEP_IDLE;
+    anim(a,"bam_flying_kick_anim",c);
+    setmode(a,WM_PMODE_INAIR);
+    snd(a,"FLYKICK",c);
+    return WM_BAM_STEP_ACTION;
+}
+
+static wm_arcade_bam_step_result_t bam_run_punch(
+        wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_bam_callbacks_t*c){
+    const char*t=jjxm("mode_running","#punch",a,o);
+    if(is(t,"#punch_clothesline")) return bam_punch_clothesline(a,c);
+    if(is(t,"#punch_bellyflop"))   return bam_attack_bellyflop(a,c);
+    if(is(t,"#punch_rets"))        return WM_BAM_STEP_IDLE;   /* `rets` */
+    return WM_BAM_STEP_IDLE;
+}
+static wm_arcade_bam_step_result_t bam_run_kick(
+        wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_bam_callbacks_t*c){
+    const char*t=jjxm("mode_running","#kick",a,o);
+    if(is(t,"#kick_flyingkick")) return bam_kick_flyingkick(a,c);
+    if(is(t,"attack_bellyflop")) return bam_attack_bellyflop(a,c);
+    if(is(t,"#kick_rets"))       return WM_BAM_STEP_IDLE;     /* `rets` */
+    return WM_BAM_STEP_IDLE;
+}
+
 static wm_arcade_bam_step_result_t mode_running(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_bam_env_t*e,const wm_arcade_bam_callbacks_t*c){
     int32_t v=0x00060000; a->run_time++; if(!a->usr_var1){if(c&&c->bounce_off_ropes)c->bounce_off_ropes(a,c->user);if(e&&e->hyper_speed_on>0&&e->hyper_speed_on<15)v<<=e->hyper_speed_on;if(!(a->move_dir&WM_MOVE_RIGHT))v=-v;a->x_vel=v;}
     if(a->stick_val_cur&WM_MOVE_UP)a->z_vel=-0x00020000;else if(a->stick_val_cur&WM_MOVE_DOWN)a->z_vel=0x00020000;else a->z_vel=0; if(a->getup_time||a->delay_butns)return WM_BAM_STEP_IDLE;
     switch(action_table[a->but_val_down&WM_BTN_ATTACK_MASK]){
     case A_BLOCK:a->x_vel>>=1;setmode(a,WM_PMODE_NORMAL);(void)do_block(a,e,c);return WM_BAM_STEP_ACTION;
-    case A_KICK:case A_SKICK:if(c&&c->ck_ignore&&c->ck_ignore(a,c->user))return WM_BAM_STEP_IDLE;anim(a,L.flykick,c);setmode(a,WM_PMODE_INAIR);return WM_BAM_STEP_ACTION;
-    case A_PUNCH:case A_SPUNCH:case A_PUNCHKICK:case A_GRABOH:basic_punch(a,o,c);return WM_BAM_STEP_ACTION;
+    case A_KICK:case A_SKICK:return bam_run_kick(a,o,c);
+    case A_PUNCH:case A_SPUNCH:case A_PUNCHKICK:case A_GRABOH:return bam_run_punch(a,o,c);
     default:return WM_BAM_STEP_IDLE;}
 }
 static wm_arcade_bam_step_result_t mode_bouncing(wm_arcade_actor_t*a,const wm_arcade_bam_callbacks_t*c){a->x_vel=0;a->z_vel=0;if(a->anim_mode&WM_MODE_END){a->move_dir^=(WM_MOVE_LEFT+WM_MOVE_RIGHT);a->facing_dir=(a->new_facing_dir&(WM_MOVE_UP+WM_MOVE_DOWN))|a->move_dir;anim(a,L.run,c);setmode(a,WM_PMODE_RUNNING);return WM_BAM_STEP_ACTION;}return WM_BAM_STEP_IDLE;}

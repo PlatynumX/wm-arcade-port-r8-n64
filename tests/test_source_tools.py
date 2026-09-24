@@ -4294,33 +4294,46 @@ def test_the_jjxm_tables_are_read_not_written() -> None:
             "src/generated/jjxm_tables.c is not what tools/wljjxm.py emits"
 
 
-def test_doink_only_names_targets_his_tables_carry() -> None:
+def test_every_routed_dispatcher_names_only_real_targets() -> None:
     """A routed dispatcher must not compare against a label that is not
-    in the table it just read.
+    in the table it just read, and must answer every label that is.
 
     The dispatch is `strcmp(target, "#punch_hdbutt")`, which is how the
     source's own labels stay visible in the C. It is also how a typo
     becomes a branch that can never be taken and a move that silently
-    does not exist -- the same failure the sound seam had. So every
-    name Doink's file compares against is checked to be a target some
-    DOINK table actually names.
+    does not exist -- the same failure the sound seam had. So this runs
+    both directions for every wrestler whose file has been routed: no
+    name compared that no table produces, and no target produced that
+    nothing answers.
+
+    Targets that are a bare `rets` in the source are compared too,
+    explicitly, rather than left to a fall-through -- a target that
+    does nothing on purpose should be visible as such, and the second
+    direction of this test is what makes that a rule rather than a
+    habit.
     """
     sys.path.insert(0, str(ROOT / "tools"))
     import wljjxm  # noqa: E402
 
-    doink = ROOT / "src" / "core" / "arcade" / "wm_arcade_doink.c"
-    text = doink.read_text(errors="replace")
-    compared = set(re.findall(r'is\(t,\s*"([^"]+)"\)', text))
-    assert compared, "wm_arcade_doink.c no longer dispatches on targets"
-
-    targets = {row[key]
-               for t in wljjxm.collect() if t["wrestler"] == "DOINK"
-               for row in t["rows"] for key in ("less", "more")}
-    assert not (compared - targets), sorted(compared - targets)
-
-    # And the other way: every target Doink's six tables can produce is
-    # answered by something, so a row cannot quietly fall through.
-    assert not (targets - compared), sorted(targets - compared)
+    arcade = ROOT / "src" / "core" / "arcade"
+    tables = wljjxm.collect()
+    routed = 0
+    for wrestler, stem in (("DOINK", "doink"), ("LEX", "lex"),
+                           ("TAKER", "taker"), ("YOKO", "yoko"),
+                           ("SHAWN", "shawn"), ("BAM", "bam")):
+        path = arcade / ("wm_arcade_%s.c" % stem)
+        text = path.read_text(errors="replace")
+        if "wm_jjxm_pick" not in text:
+            continue                      # not routed yet; see the manifest
+        routed += 1
+        compared = set(re.findall(r'is\(t,\s*"([^"]+)"\)', text))
+        assert compared, path.name
+        targets = {row[key]
+                   for t in tables if t["wrestler"] == wrestler
+                   for row in t["rows"] for key in ("less", "more")}
+        assert not (compared - targets), (wrestler, sorted(compared - targets))
+        assert not (targets - compared), (wrestler, sorted(targets - compared))
+    assert routed == 6, routed
 
 
 if __name__ == "__main__":

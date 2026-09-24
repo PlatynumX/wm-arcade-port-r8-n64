@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "wm/arcade/wm_arcade_combat.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -111,6 +113,25 @@ const char *wm_jjxm_select(const wm_jjxm_table_t *table,
                            uint16_t opp_mode,
                            int32_t xdist,
                            int32_t zdist);
+
+/*
+ * find + select in the shape a dispatcher wants it: the attacker
+ * supplies CLOSEST_XDIST and CLOSEST_ZDIST, the opponent supplies what
+ * get_opp_plyrmode would have returned.
+ *
+ * A NULL opponent is this port's own case and is not the source's --
+ * get_opp_plyrmode reads CLOSEST_NUM's process and the arcade always
+ * has one. It is answered as MODE_NORMAL, the common arm every table
+ * reaches, which is what the approximations these tables replaced did.
+ */
+const char *wm_jjxm_pick(const char *wrestler,
+                         const char *section,
+                         const char *entry,
+                         const wm_arcade_actor_t *attacker,
+                         const wm_arcade_actor_t *opponent);
+
+/* `target` is this one, and target is not NULL. */
+int wm_jjxm_is(const char *target, const char *name);
 
 #ifdef __cplusplus
 }

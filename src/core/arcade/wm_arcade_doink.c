@@ -147,21 +147,11 @@ static int do_block(wm_arcade_actor_t*a,const wm_arcade_doink_env_t*e,const wm_a
  * Each handler below is a target one of the tables names, under the
  * source's own label, so table and body can be read side by side.
  */
-static uint16_t opp_mode(const wm_arcade_actor_t*o){
-    /* get_opp_plyrmode reads CLOSEST_NUM's process and the arcade
-       always has one. A NULL opponent is this port's own case; it is
-       answered the way the approximation answered it, through the
-       common arm that every table reaches at MODE_NORMAL. */
-    return o?(uint16_t)o->player_mode:(uint16_t)WM_PMODE_NORMAL;
-}
 static const char *jjxm(const char*section,const char*entry,
                         const wm_arcade_actor_t*a,const wm_arcade_actor_t*o){
-    return wm_jjxm_select(wm_jjxm_find("DOINK",section,entry),opp_mode(o),
-                          a->closest_xdist,a->closest_zdist);
+    return wm_jjxm_pick("DOINK",section,entry,a,o);
 }
-static int is(const char*target,const char*name){
-    return target&&strcmp(target,name)==0;
-}
+#define is(t,n) wm_jjxm_is((t),(n))
 
 /* DOINK.ASM:1910 #punch_punch, which `std_punch` is an alias of. */
 static void dnk_punch_punch(wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_t*c){

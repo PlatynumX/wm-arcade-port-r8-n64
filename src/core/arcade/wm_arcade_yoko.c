@@ -1,5 +1,6 @@
 #include "wm/arcade/wm_arcade_yoko.h"
 #include "wm/arcade/wm_arcade_attach_anim.h"
+#include "wm/arcade/wm_arcade_jjxm.h"
 #include <string.h>
 
 /*
@@ -110,7 +111,6 @@ static const struct labels L={
 
 static void setmode(wm_arcade_actor_t*a,uint16_t m){if(a&&a->player_mode!=WM_PMODE_DEAD)a->player_mode=m;}
 static int groundish(const wm_arcade_actor_t*o){return o&&(o->player_mode==WM_PMODE_ONGROUND||o->player_mode==WM_PMODE_DEAD);}
-static int nearxy(const wm_arcade_actor_t*a,int x,int z){return a&&a->closest_xdist<x&&a->closest_zdist<z;}
 static int face2(const wm_arcade_actor_t*a){return a&&(a->facing_dir&WM_MOVE_RIGHT);}
 static const char *face_label(const char*l2,const char*l4,const wm_arcade_actor_t*a){return face2(a)?l2:l4;}
 static void anim(wm_arcade_actor_t*a,const char*l,const wm_arcade_yoko_callbacks_t*c){if(c&&c->change_anim_label&&l)c->change_anim_label(a,l,c->user);}
@@ -125,24 +125,114 @@ static int do_block(wm_arcade_actor_t*a,const wm_arcade_yoko_env_t*e,const wm_ar
     setmode(a,WM_PMODE_BLOCK);
     return 1;
 }
-static void basic_punch(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_yoko_callbacks_t*c){
-    int cx=62,cz=95; int gx=160,gz=140;
-    if(groundish(o)&&nearxy(a,gx,gz)){anim(a,face_label(L.ground2,L.ground4,a),c);snd(a,"LBOWDROP",c);return;}
-    if(nearxy(a,cx,cz)){anim(a,face_label(L.close2,L.close4,a),c);snd(a,"HDBUTT",c);}
-    else {anim(a,face_label(L.punch2,L.punch4,a),c);snd(a,"PUNCH",c);}
+/*
+ * YOKO.ASM's six JJXM tables (JJXM.H; wm/arcade/wm_arcade_jjxm.h).
+ * Yoko's replacement corrects three things the approximation had
+ * simply invented: his #punch_hdbutt is the REPEAT held-headbutt and
+ * not a FACE24 butt; his #spunch_special has NO distance test at all,
+ * only the stick-down uppercut (the 60-pixel one above it is
+ * commented out in the source); and his super punch plays PUNCH and
+ * HDBUTT, never SPUNCH.
+ */
+static const char *jjxm(const char*section,const char*entry,
+                        const wm_arcade_actor_t*a,const wm_arcade_actor_t*o){
+    return wm_jjxm_pick("YOKO",section,entry,a,o);
 }
-static void basic_kick(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_yoko_callbacks_t*c){
-    int cx=60,cz=50;
-    if(groundish(o)&&nearxy(a,160,140))anim(a,face_label(L.stomp2,L.stomp4,a),c);
-    else if(nearxy(a,cx,cz))anim(a,face_label(L.knee2,L.knee4,a),c);
-    else anim(a,face_label(L.kick2,L.kick4,a),c);
+#define is(t,n) wm_jjxm_is((t),(n))
+
+/* YOKO.ASM:1340 #punch_punch, alias std_punch. */
+static void yok_punch_punch(wm_arcade_actor_t*a,const wm_arcade_yoko_callbacks_t*c){
+    anim(a,face_label(L.punch2,L.punch4,a),c); snd(a,"PUNCH",c);
+}
+/* :1350 #punch_hdbutt. The whole non-repeat arm above it is commented
+   out, so what ships is the repeat headbutt, unconditionally. */
+static void yok_punch_hdbutt(wm_arcade_actor_t*a,const wm_arcade_yoko_callbacks_t*c){
+    anim(a,"yok_heldheadbutt_rpt_anim",c); snd(a,"HDBUTT",c);
+}
+/* :1372 #punch_lbdrop -- spelled without the `ow`, unlike everyone
+   else's, which is why the lookup is scoped per wrestler. */
+static void yok_punch_lbdrop(wm_arcade_actor_t*a,const wm_arcade_yoko_callbacks_t*c){
+    anim(a,face_label(L.ground2,L.ground4,a),c); snd(a,"LBOWDROP",c);
+}
+/* :1456 #spunch_slap */
+static void yok_spunch_slap(wm_arcade_actor_t*a,const wm_arcade_yoko_callbacks_t*c){
+    anim(a,face_label("yok_2_slap2_anim","yok_4_slap2_anim",a),c); snd(a,"PUNCH",c);
+}
+/* :1465 #spunch_special */
+static void yok_spunch_special(wm_arcade_actor_t*a,const wm_arcade_yoko_callbacks_t*c){
+    if(a->stick_val_cur&WM_MOVE_DOWN){
+        anim(a,"yok_4_uppercut_anim",c); snd(a,"HDBUTT",c); return;
+    }
+    anim(a,face_label("yok_2_jabs_anim","yok_4_jabs_anim",a),c); snd(a,"HDBUTT",c);
+}
+/* :1493 #spunch_lbowdrop -- the hair grab. */
+static void yok_spunch_lbowdrop(wm_arcade_actor_t*a,wm_arcade_actor_t*o,
+                                const wm_arcade_yoko_callbacks_t*c){
+    int hair=0;
+    if(o&&o->player_mode!=WM_PMODE_DEAD){
+        int32_t dx=a->x_fixed-o->x_fixed;
+        if(dx<0)dx=-dx;
+        if((dx>>16)>=0x20&&
+           ((a->obj_control&WM_OBJ_FLIPH)!=(o->obj_control&WM_OBJ_FLIPH)))
+            hair=1;
+    }
+    if(hair) anim(a,face_label("yok_2_hair_pickup_anim","yok_4_hair_pickup_anim",a),c);
+    else     anim(a,face_label(L.ground2,L.ground4,a),c);
+    snd(a,"LBOWDROP",c);
+}
+/* :1597 #kick_kick, :1606 #kick_knee, :1615 #kick_stomp -- and :1702
+   #skick_knee and :1711 #skick_stomp, which are the same two bodies
+   again under the super-kick table's own labels. */
+static void yok_kick_kick(wm_arcade_actor_t*a,const wm_arcade_yoko_callbacks_t*c){
+    anim(a,face_label(L.kick2,L.kick4,a),c); snd(a,"KICK",c);
+}
+static void yok_kick_knee(wm_arcade_actor_t*a,const wm_arcade_yoko_callbacks_t*c){
+    anim(a,face_label(L.knee2,L.knee4,a),c); snd(a,"KICK",c);
+}
+static void yok_kick_stomp(wm_arcade_actor_t*a,const wm_arcade_yoko_callbacks_t*c){
+    anim(a,face_label(L.stomp2,L.stomp4,a),c); snd(a,"KICK",c);
+}
+/* :1587 #kick_TB -- and it is the GRABOH turnbuckle move, not a kick. */
+static void yok_kick_tb(wm_arcade_actor_t*a,const wm_arcade_yoko_callbacks_t*c){
+    anim(a,"yok_graboh_TB_anim",c); snd(a,"KICK",c);
+}
+/* :1692 #skick_kick, "jumping karate kick" -- KICK, not FLYKICK. */
+static void yok_skick_kick(wm_arcade_actor_t*a,const wm_arcade_yoko_callbacks_t*c){
+    anim(a,face_label("yok_2_superkick_anim","yok_4_superkick_anim",a),c);
     snd(a,"KICK",c);
 }
-static void super_punch(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_yoko_callbacks_t*c){
-    if(groundish(o)&&nearxy(a,160,140)){anim(a,face_label(L.ground2,L.ground4,a),c);return;}
-    if(a->stick_val_cur&WM_MOVE_DOWN) anim(a,"yok_4_uppercut_anim",c); else if(a->closest_xdist<=50&&a->closest_zdist<92) anim(a,face_label("yok_2_jabs_anim","yok_4_jabs_anim",a),c); else anim(a,face_label("yok_2_slap2_anim","yok_4_slap2_anim",a),c); snd(a,"SPUNCH",c);
+/* :1286 #graboh, "both super buttons at the same time". */
+static void yok_graboh(wm_arcade_actor_t*a,const wm_arcade_yoko_callbacks_t*c){
+    anim(a,"yok_graboh_anim",c); snd(a,"GRABHOLD",c);
 }
-static void super_kick(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_yoko_callbacks_t*c){if(!groundish(o)){anim(a,"yok_scissor_anim",c);setmode(a,WM_PMODE_INAIR);snd(a,"GRABHOLD",c);}else basic_kick(a,o,c);}
+
+static void basic_punch(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_yoko_callbacks_t*c){
+    const char*t=jjxm("mode_normal","#punch",a,o);
+    if(is(t,"#punch_hdbutt"))     yok_punch_hdbutt(a,c);
+    else if(is(t,"#punch_lbdrop")) yok_punch_lbdrop(a,c);
+    else if(is(t,"#punch_punch")) yok_punch_punch(a,c);
+}
+static void basic_kick(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_yoko_callbacks_t*c){
+    const char*t=jjxm("mode_normal","#kick",a,o);
+    if(is(t,"#kick_knee"))       yok_kick_knee(a,c);
+    else if(is(t,"#kick_stomp")) yok_kick_stomp(a,c);
+    else if(is(t,"#kick_TB"))    yok_kick_tb(a,c);
+    else if(is(t,"#kick_kick"))  yok_kick_kick(a,c);
+}
+static void super_punch(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_yoko_callbacks_t*c){
+    const char*t=jjxm("mode_normal","#super_punch",a,o);
+    if(is(t,"#spunch_special"))       yok_spunch_special(a,c);
+    else if(is(t,"#spunch_lbowdrop")) yok_spunch_lbowdrop(a,o,c);
+    else if(is(t,"#spunch_slap"))     yok_spunch_slap(a,c);
+    else if(is(t,"std_punch"))        yok_punch_punch(a,c);
+}
+static void super_kick(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_yoko_callbacks_t*c){
+    const char*t=jjxm("mode_normal","#super_kick",a,o);
+    if(is(t,"#skick_knee"))       yok_kick_knee(a,c);
+    else if(is(t,"#skick_stomp")) yok_kick_stomp(a,c);
+    else if(is(t,"#kick_TB"))     yok_kick_tb(a,c);
+    else if(is(t,"#skick_kick"))  yok_skick_kick(a,c);
+}
 
 static wm_arcade_yoko_step_result_t mode_normal(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_yoko_env_t*e,const wm_arcade_yoko_callbacks_t*c){
     uint8_t ac;
@@ -163,21 +253,66 @@ static wm_arcade_yoko_step_result_t mode_normal(wm_arcade_actor_t*a,wm_arcade_ac
     if((a->but_val_cur&WM_BTN_BLOCK)&&do_block(a,e,c))return WM_YOKO_STEP_ACTION;
     ac=action_table[a->but_val_down&WM_BTN_ATTACK_MASK];
     if((a->but_val_cur&WM_BTN_ATTACK_MASK)==(WM_BTN_PUNCH|WM_BTN_KICK))ac=A_PUNCHKICK;
-    switch(ac){case A_PUNCH:basic_punch(a,o,c);break;case A_BLOCK:(void)do_block(a,e,c);break;case A_SPUNCH:super_punch(a,o,c);break;case A_KICK:basic_kick(a,o,c);break;case A_PUNCHKICK:anim(a,"start_run_anim",c);break;case A_SKICK:case A_GRABOH:super_kick(a,o,c);break;default:break;}
+    switch(ac){case A_PUNCH:basic_punch(a,o,c);break;case A_BLOCK:(void)do_block(a,e,c);break;case A_SPUNCH:super_punch(a,o,c);break;case A_KICK:basic_kick(a,o,c);break;case A_PUNCHKICK:anim(a,"start_run_anim",c);break;case A_SKICK:super_kick(a,o,c);break;case A_GRABOH:yok_graboh(a,c);break;default:break;}
     if(a->anim_mode&WM_MODE_UNINT)return WM_YOKO_STEP_ACTION;
     a->move_dir=a->stick_val_cur;
     if(c&&c->climb_turnbuckle&&c->climb_turnbuckle(a,c->user)){if(c->jump_rope_audio)c->jump_rope_audio(a,c->user);return WM_YOKO_STEP_EXTERNAL;}
     if(c&&c->execute_walk)c->execute_walk(a,c->user);
     return WM_YOKO_STEP_ACTION;
 }
+/* ---- the two mode_running tables ------------------------------- */
+
+/* YOKO.ASM:1877 #punch_clobber. ck_ignore first, then RUN_TIME cleared
+   and back to MODE_NORMAL before the run slap. */
+static wm_arcade_yoko_step_result_t yok_punch_clobber(
+        wm_arcade_actor_t*a,const wm_arcade_yoko_callbacks_t*c){
+    if(c&&c->ck_ignore&&c->ck_ignore(a,c->user)) return WM_YOKO_STEP_IDLE;
+    a->run_time=0;
+    setmode(a,WM_PMODE_NORMAL);
+    anim(a,face_label("yok_2_run_slap_anim","yok_4_run_slap_anim",a),c);
+    snd(a,"PUNCH",c);
+    return WM_YOKO_STEP_ACTION;
+}
+/* :1899 #punch_buttdrop, which BOTH running tables name -- it is what
+   the running kick does to a man on the mat as well. GRABTHROW. */
+static wm_arcade_yoko_step_result_t yok_punch_buttdrop(
+        wm_arcade_actor_t*a,const wm_arcade_yoko_callbacks_t*c){
+    anim(a,"yok_3_butt_drop_anim",c);
+    snd(a,"GRABTHROW",c);
+    return WM_YOKO_STEP_ACTION;
+}
+/* :1964 #scissor -- "don't do it if opponent is behind you". */
+static wm_arcade_yoko_step_result_t yok_scissor(
+        wm_arcade_actor_t*a,const wm_arcade_yoko_callbacks_t*c){
+    if(c&&c->ck_ignore&&c->ck_ignore(a,c->user)) return WM_YOKO_STEP_IDLE;
+    anim(a,"yok_scissor_anim",c);
+    setmode(a,WM_PMODE_INAIR);
+    snd(a,"GRABHOLD",c);
+    return WM_YOKO_STEP_ACTION;
+}
+
+static wm_arcade_yoko_step_result_t yok_run_punch(
+        wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_yoko_callbacks_t*c){
+    const char*t=jjxm("mode_running","#punch",a,o);
+    if(is(t,"#punch_clobber"))  return yok_punch_clobber(a,c);
+    if(is(t,"#punch_buttdrop")) return yok_punch_buttdrop(a,c);
+    return WM_YOKO_STEP_IDLE;
+}
+static wm_arcade_yoko_step_result_t yok_run_kick(
+        wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_yoko_callbacks_t*c){
+    const char*t=jjxm("mode_running","#kick",a,o);
+    if(is(t,"#scissor"))        return yok_scissor(a,c);
+    if(is(t,"#punch_buttdrop")) return yok_punch_buttdrop(a,c);
+    return WM_YOKO_STEP_IDLE;
+}
+
 static wm_arcade_yoko_step_result_t mode_running(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_yoko_env_t*e,const wm_arcade_yoko_callbacks_t*c){
-    (void)o;
     int32_t v=0x00060000; a->run_time++; if(!a->usr_var1){if(c&&c->bounce_off_ropes)c->bounce_off_ropes(a,c->user);if(e&&e->hyper_speed_on>0&&e->hyper_speed_on<15)v<<=e->hyper_speed_on;if(!(a->move_dir&WM_MOVE_RIGHT))v=-v;a->x_vel=v;}
     if(a->stick_val_cur&WM_MOVE_UP)a->z_vel=-0x00020000;else if(a->stick_val_cur&WM_MOVE_DOWN)a->z_vel=0x00020000;else a->z_vel=0; if(a->getup_time||a->delay_butns)return WM_YOKO_STEP_IDLE;
     switch(action_table[a->but_val_down&WM_BTN_ATTACK_MASK]){
     case A_BLOCK:a->x_vel>>=1;setmode(a,WM_PMODE_NORMAL);(void)do_block(a,e,c);return WM_YOKO_STEP_ACTION;
-    case A_KICK:case A_SKICK:if(c&&c->ck_ignore&&c->ck_ignore(a,c->user))return WM_YOKO_STEP_IDLE;anim(a,"yok_scissor_anim",c);setmode(a,WM_PMODE_INAIR);return WM_YOKO_STEP_ACTION;
-    case A_PUNCH:case A_SPUNCH:case A_PUNCHKICK:case A_GRABOH:anim(a,face_label("yok_2_run_slap_anim","yok_4_run_slap_anim",a),c);return WM_YOKO_STEP_ACTION;
+    case A_KICK:case A_SKICK:return yok_run_kick(a,o,c);
+    case A_PUNCH:case A_SPUNCH:case A_PUNCHKICK:case A_GRABOH:return yok_run_punch(a,o,c);
     default:return WM_YOKO_STEP_IDLE;}
 }
 static wm_arcade_yoko_step_result_t mode_bouncing(wm_arcade_actor_t*a,const wm_arcade_yoko_callbacks_t*c){a->x_vel=0;a->z_vel=0;if(a->anim_mode&WM_MODE_END){a->move_dir^=(WM_MOVE_LEFT+WM_MOVE_RIGHT);a->facing_dir=(a->new_facing_dir&(WM_MOVE_UP+WM_MOVE_DOWN))|a->move_dir;anim(a,L.run,c);setmode(a,WM_PMODE_RUNNING);return WM_YOKO_STEP_ACTION;}return WM_YOKO_STEP_IDLE;}

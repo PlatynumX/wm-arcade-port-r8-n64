@@ -1,5 +1,6 @@
 #include "wm/arcade/wm_arcade_taker.h"
 #include "wm/arcade/wm_arcade_attach_anim.h"
+#include "wm/arcade/wm_arcade_jjxm.h"
 #include <string.h>
 
 /*
@@ -110,7 +111,6 @@ static const struct labels L={
 
 static void setmode(wm_arcade_actor_t*a,uint16_t m){if(a&&a->player_mode!=WM_PMODE_DEAD)a->player_mode=m;}
 static int groundish(const wm_arcade_actor_t*o){return o&&(o->player_mode==WM_PMODE_ONGROUND||o->player_mode==WM_PMODE_DEAD);}
-static int nearxy(const wm_arcade_actor_t*a,int x,int z){return a&&a->closest_xdist<x&&a->closest_zdist<z;}
 static int face2(const wm_arcade_actor_t*a){return a&&(a->facing_dir&WM_MOVE_RIGHT);}
 static const char *face_label(const char*l2,const char*l4,const wm_arcade_actor_t*a){return face2(a)?l2:l4;}
 static void anim(wm_arcade_actor_t*a,const char*l,const wm_arcade_taker_callbacks_t*c){if(c&&c->change_anim_label&&l)c->change_anim_label(a,l,c->user);}
@@ -125,24 +125,141 @@ static int do_block(wm_arcade_actor_t*a,const wm_arcade_taker_env_t*e,const wm_a
     setmode(a,WM_PMODE_BLOCK);
     return 1;
 }
+/*
+ * TAKER.ASM's six JJXM tables (JJXM.H; wm/arcade/wm_arcade_jjxm.h).
+ * As with Doink and Lex, what stood here expressed the two common rows
+ * of each 22-row table and nothing else, and super_kick called
+ * basic_kick outright.
+ */
+static const char *jjxm(const char*section,const char*entry,
+                        const wm_arcade_actor_t*a,const wm_arcade_actor_t*o){
+    return wm_jjxm_pick("TAKER",section,entry,a,o);
+}
+#define is(t,n) wm_jjxm_is((t),(n))
+
+/* TAKER.ASM:1724 #punch_punch, alias std_punch. */
+static void und_punch_punch(wm_arcade_actor_t*a,const wm_arcade_taker_callbacks_t*c){
+    anim(a,face_label(L.punch2,L.punch4,a),c); snd(a,"PUNCH",c);
+}
+/* :1735 #punch_hdbutt */
+static void und_punch_hdbutt(wm_arcade_actor_t*a,const wm_arcade_taker_callbacks_t*c){
+    anim(a,face_label(L.close2,L.close4,a),c); snd(a,"HDBUTT",c);
+}
+/* :1745 #punch_lbowdrop */
+static void und_punch_lbowdrop(wm_arcade_actor_t*a,const wm_arcade_taker_callbacks_t*c){
+    anim(a,face_label(L.ground2,L.ground4,a),c); snd(a,"LBOWDROP",c);
+}
+/* :1836 #spunch_slap, which mode_normal's #graboh is an alias of --
+   "jumping punch attack", and its sound is GRABHOLD, not SPUNCH. */
+static void und_spunch_slap(wm_arcade_actor_t*a,const wm_arcade_taker_callbacks_t*c){
+    anim(a,face_label("und_2_slap_anim","und_4_slap_anim",a),c);
+    snd(a,"GRABHOLD",c);
+}
+/* :1846 #spunch_special. Stick DOWN is the uppercut; otherwise an
+   xdist past 70 -- not 95 -- falls back to the slap. */
+static void und_spunch_special(wm_arcade_actor_t*a,const wm_arcade_taker_callbacks_t*c){
+    if(a->stick_val_cur&WM_MOVE_DOWN){
+        anim(a,face_label("und_2_uppercut_anim","und_4_uppercut_anim",a),c);
+        snd(a,"HDBUTT",c); return;
+    }
+    if(a->closest_xdist>70){ und_spunch_slap(a,c); return; }
+    anim(a,face_label("und_2_butts_anim","und_4_butts_anim",a),c); snd(a,"HDBUTT",c);
+}
+/* :1884 #spunch_lbowdrop -- the hair grab. */
+static void und_spunch_lbowdrop(wm_arcade_actor_t*a,wm_arcade_actor_t*o,
+                                const wm_arcade_taker_callbacks_t*c){
+    int hair=0;
+    if(o&&o->player_mode!=WM_PMODE_DEAD){
+        int32_t dx=a->x_fixed-o->x_fixed;
+        if(dx<0)dx=-dx;
+        if((dx>>16)>=0x20&&
+           ((a->obj_control&WM_OBJ_FLIPH)!=(o->obj_control&WM_OBJ_FLIPH)))
+            hair=1;
+    }
+    if(hair) anim(a,face_label("und_2_hair_pickup_anim","und_4_hair_pickup_anim",a),c);
+    else     anim(a,face_label(L.ground2,L.ground4,a),c);
+    snd(a,"LBOWDROP",c);
+}
+/* :2800 do_pile, reached from the super-punch table's HEADHELD row.
+   The Undertaker's differs from Doink's: USR_VAR2 clear does NOT give
+   up, it falls into #upper; and neither arm plays a sound. Both need
+   the stick held DOWN, and neither does anything without it. */
+static void und_do_pile(wm_arcade_actor_t*a,const wm_arcade_taker_callbacks_t*c){
+    int down=(a->stick_val_cur&WM_MOVE_DOWN)!=0;
+    if(a->usr_var2){
+        if(c&&c->find_and_kill_endless)c->find_and_kill_endless(a,c->user);
+        if(!down) return;
+        anim(a,"und_pile_anim",c);
+        return;
+    }
+    if(!down) return;
+    if(c&&c->find_and_kill_endless)c->find_and_kill_endless(a,c->user);
+    anim(a,face_label("und_2_uppercut_anim","und_4_uppercut_anim",a),c);
+}
+/* :1986 #kick_kick, alias std_kick. */
+static void und_kick_kick(wm_arcade_actor_t*a,const wm_arcade_taker_callbacks_t*c){
+    anim(a,face_label(L.kick2,L.kick4,a),c); snd(a,"KICK",c);
+}
+/* :2009 #kick_knee, alias std_knee. */
+static void und_kick_knee(wm_arcade_actor_t*a,const wm_arcade_taker_callbacks_t*c){
+    anim(a,face_label(L.knee2,L.knee4,a),c); snd(a,"KICK",c);
+}
+/* :2020 #kick_stomp, alias attack_stomp; and :2117 #skick_stomp, the
+   same body again. */
+static void und_kick_stomp(wm_arcade_actor_t*a,const wm_arcade_taker_callbacks_t*c){
+    anim(a,face_label(L.stomp2,L.stomp4,a),c); snd(a,"KICK",c);
+}
+/* :1975 #kick_TB */
+static void und_kick_tb(wm_arcade_actor_t*a,const wm_arcade_taker_callbacks_t*c){
+    anim(a,"und_kick_TB_anim",c); snd(a,"KICK",c);
+}
+/* :2086 #skick_kick */
+static void und_skick_kick(wm_arcade_actor_t*a,const wm_arcade_taker_callbacks_t*c){
+    anim(a,face_label("und_2_super_kick_anim","und_4_super_kick_anim",a),c);
+    snd(a,"FLYKICK",c);
+}
+/* :2095 #skick_special */
+static void und_skick_special(wm_arcade_actor_t*a,const wm_arcade_taker_callbacks_t*c){
+    if(a->stick_val_cur==(uint16_t)(a->new_facing_dir&0x0c)){
+        anim(a,"und_4_knee_fall_anim",c); snd(a,"GRABHOLD",c); return;
+    }
+    anim(a,face_label(L.knee2,L.knee4,a),c); snd(a,"KICK",c);
+}
+/* :2127 #skick_bigboot */
+static void und_skick_bigboot(wm_arcade_actor_t*a,const wm_arcade_taker_callbacks_t*c){
+    anim(a,"und_4_bigboot_anim",c); snd(a,"FLYKICK",c);
+}
+
 static void basic_punch(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_taker_callbacks_t*c){
-    int cx=75,cz=45; int gx=160,gz=140;
-    if(groundish(o)&&nearxy(a,gx,gz)){anim(a,face_label(L.ground2,L.ground4,a),c);snd(a,"LBOWDROP",c);return;}
-    if(nearxy(a,cx,cz)){anim(a,face_label(L.close2,L.close4,a),c);snd(a,"HDBUTT",c);}
-    else {anim(a,face_label(L.punch2,L.punch4,a),c);snd(a,"PUNCH",c);}
+    const char*t=jjxm("mode_normal","#punch",a,o);
+    if(is(t,"#punch_hdbutt"))        und_punch_hdbutt(a,c);
+    else if(is(t,"#punch_lbowdrop")) und_punch_lbowdrop(a,c);
+    else if(is(t,"#punch_punch"))    und_punch_punch(a,c);
 }
 static void basic_kick(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_taker_callbacks_t*c){
-    int cx=50,cz=50;
-    if(groundish(o)&&nearxy(a,160,140))anim(a,face_label(L.stomp2,L.stomp4,a),c);
-    else if(nearxy(a,cx,cz))anim(a,face_label(L.knee2,L.knee4,a),c);
-    else anim(a,face_label(L.kick2,L.kick4,a),c);
-    snd(a,"KICK",c);
+    const char*t=jjxm("mode_normal","#kick",a,o);
+    if(is(t,"#kick_knee"))       und_kick_knee(a,c);
+    else if(is(t,"#kick_stomp")) und_kick_stomp(a,c);
+    else if(is(t,"#kick_TB"))    und_kick_tb(a,c);
+    else if(is(t,"#kick_kick"))  und_kick_kick(a,c);
 }
 static void super_punch(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_taker_callbacks_t*c){
-    if(groundish(o)&&nearxy(a,160,140)){anim(a,face_label(L.ground2,L.ground4,a),c);return;}
-    if(a->stick_val_cur&WM_MOVE_DOWN) anim(a,"und_4_uppercut_anim",c); else if(a->closest_xdist<=95) anim(a,face_label("und_2_butts_anim","und_4_butts_anim",a),c); else anim(a,face_label(L.punch2,L.punch4,a),c); snd(a,"SPUNCH",c);
+    const char*t=jjxm("mode_normal","#super_punch",a,o);
+    if(is(t,"#spunch_special"))       und_spunch_special(a,c);
+    else if(is(t,"#spunch_lbowdrop")) und_spunch_lbowdrop(a,o,c);
+    else if(is(t,"#spunch_slap"))     und_spunch_slap(a,c);
+    else if(is(t,"do_pile"))          und_do_pile(a,c);
+    else if(is(t,"std_punch"))        und_punch_punch(a,c);
 }
-static void super_kick(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_taker_callbacks_t*c){basic_kick(a,o,c);}
+static void super_kick(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_taker_callbacks_t*c){
+    const char*t=jjxm("mode_normal","#super_kick",a,o);
+    if(is(t,"#skick_special"))      und_skick_special(a,c);
+    else if(is(t,"#skick_kick"))    und_skick_kick(a,c);
+    else if(is(t,"#skick_stomp"))   und_kick_stomp(a,c);
+    else if(is(t,"#skick_bigboot")) und_skick_bigboot(a,c);
+    else if(is(t,"#kick_TB"))       und_kick_tb(a,c);
+    else if(is(t,"std_kick"))       und_kick_kick(a,c);
+}
 
 static wm_arcade_taker_step_result_t mode_normal(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_taker_env_t*e,const wm_arcade_taker_callbacks_t*c){
     uint8_t ac;
@@ -167,20 +284,80 @@ static wm_arcade_taker_step_result_t mode_normal(wm_arcade_actor_t*a,wm_arcade_a
     if((a->but_val_cur&WM_BTN_BLOCK)&&do_block(a,e,c))return WM_TAKER_STEP_ACTION;
     ac=action_table[a->but_val_down&WM_BTN_ATTACK_MASK];
     if((a->but_val_cur&WM_BTN_ATTACK_MASK)==(WM_BTN_PUNCH|WM_BTN_KICK))ac=A_PUNCHKICK;
-    switch(ac){case A_PUNCH:basic_punch(a,o,c);break;case A_BLOCK:(void)do_block(a,e,c);break;case A_SPUNCH:super_punch(a,o,c);break;case A_KICK:basic_kick(a,o,c);break;case A_PUNCHKICK:anim(a,"start_run_anim",c);break;case A_SKICK:case A_GRABOH:super_kick(a,o,c);break;default:break;}
+    switch(ac){case A_PUNCH:basic_punch(a,o,c);break;case A_BLOCK:(void)do_block(a,e,c);break;case A_SPUNCH:super_punch(a,o,c);break;case A_KICK:basic_kick(a,o,c);break;case A_PUNCHKICK:anim(a,"start_run_anim",c);break;case A_SKICK:super_kick(a,o,c);break;case A_GRABOH:und_spunch_slap(a,c);break;default:break;}
     if(a->anim_mode&WM_MODE_UNINT)return WM_TAKER_STEP_ACTION;
     a->move_dir=a->stick_val_cur;
     if(c&&c->climb_turnbuckle&&c->climb_turnbuckle(a,c->user)){if(c->jump_rope_audio)c->jump_rope_audio(a,c->user);return WM_TAKER_STEP_EXTERNAL;}
     if(c&&c->execute_walk)c->execute_walk(a,c->user);
     return WM_TAKER_STEP_ACTION;
 }
+/* ---- the two mode_running tables ------------------------------- */
+
+/*
+ * TAKER.ASM:2283 #punch_clothesline. A different gate from Doink's --
+ * no ring-position test at all. "Don't do it if you're running away
+ * from your opponent": FACING_DIR and NEW_FACING_DIR are ANDed and
+ * masked to the left/right bits, and a zero result refuses. It clears
+ * RUN_TIME and drops to MODE_NORMAL before choosing, and inside 70
+ * pixels it is a headbutt rather than the run slap.
+ */
+static wm_arcade_taker_step_result_t und_punch_clothesline(
+        wm_arcade_actor_t*a,const wm_arcade_taker_callbacks_t*c){
+    if(!((a->facing_dir & a->new_facing_dir) & (WM_MOVE_LEFT|WM_MOVE_RIGHT)))
+        return WM_TAKER_STEP_IDLE;
+    a->run_time=0;
+    setmode(a,WM_PMODE_NORMAL);
+    if(a->closest_xdist<70){
+        anim(a,face_label(L.close2,L.close4,a),c); snd(a,"HDBUTT",c);
+        return WM_TAKER_STEP_ACTION;
+    }
+    anim(a,face_label("und_2_run_slap_anim","und_4_run_slap_anim",a),c);
+    snd(a,"GRABHOLD",c);
+    return WM_TAKER_STEP_ACTION;
+}
+/* :2320 #punch_bellyflop, alias attack_bellyflop -- the flying butt
+   drop, which is one of the five labels REACT4's hit_stomp compares
+   the attacker's ANIBASE against. */
+static wm_arcade_taker_step_result_t und_attack_bellyflop(
+        wm_arcade_actor_t*a,const wm_arcade_taker_callbacks_t*c){
+    anim(a,"und_flying_butt_drop_anim",c);
+    snd(a,"FLYKICK",c);
+    return WM_TAKER_STEP_ACTION;
+}
+/* :2386 #kick_flyingkick */
+static wm_arcade_taker_step_result_t und_kick_flyingkick(
+        wm_arcade_actor_t*a,const wm_arcade_taker_callbacks_t*c){
+    if(c&&c->ck_ignore&&c->ck_ignore(a,c->user)) return WM_TAKER_STEP_IDLE;
+    anim(a,L.flykick,c);
+    setmode(a,WM_PMODE_INAIR);
+    snd(a,"FLYKICK",c);
+    return WM_TAKER_STEP_ACTION;
+}
+
+static wm_arcade_taker_step_result_t und_run_punch(
+        wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_taker_callbacks_t*c){
+    const char*t=jjxm("mode_running","#punch",a,o);
+    if(is(t,"#punch_clothesline")) return und_punch_clothesline(a,c);
+    if(is(t,"#punch_bellyflop")||is(t,"attack_bellyflop"))
+        return und_attack_bellyflop(a,c);
+    if(is(t,"#punch_rets"))        return WM_TAKER_STEP_IDLE;   /* `rets` */
+    return WM_TAKER_STEP_IDLE;
+}
+static wm_arcade_taker_step_result_t und_run_kick(
+        wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_taker_callbacks_t*c){
+    const char*t=jjxm("mode_running","#kick",a,o);
+    if(is(t,"#kick_flyingkick")) return und_kick_flyingkick(a,c);
+    if(is(t,"attack_bellyflop")) return und_attack_bellyflop(a,c);
+    return WM_TAKER_STEP_IDLE;
+}
+
 static wm_arcade_taker_step_result_t mode_running(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_taker_env_t*e,const wm_arcade_taker_callbacks_t*c){
     int32_t v=0x00060000; a->run_time++; if(!a->usr_var1){if(c&&c->bounce_off_ropes)c->bounce_off_ropes(a,c->user);if(e&&e->hyper_speed_on>0&&e->hyper_speed_on<15)v<<=e->hyper_speed_on;if(!(a->move_dir&WM_MOVE_RIGHT))v=-v;a->x_vel=v;}
     if(a->stick_val_cur&WM_MOVE_UP)a->z_vel=-0x00020000;else if(a->stick_val_cur&WM_MOVE_DOWN)a->z_vel=0x00020000;else a->z_vel=0; if(a->getup_time||a->delay_butns)return WM_TAKER_STEP_IDLE;
     switch(action_table[a->but_val_down&WM_BTN_ATTACK_MASK]){
     case A_BLOCK:a->x_vel>>=1;setmode(a,WM_PMODE_NORMAL);(void)do_block(a,e,c);return WM_TAKER_STEP_ACTION;
-    case A_KICK:case A_SKICK:if(c&&c->ck_ignore&&c->ck_ignore(a,c->user))return WM_TAKER_STEP_IDLE;anim(a,L.flykick,c);setmode(a,WM_PMODE_INAIR);return WM_TAKER_STEP_ACTION;
-    case A_PUNCH:case A_SPUNCH:case A_PUNCHKICK:case A_GRABOH:basic_punch(a,o,c);return WM_TAKER_STEP_ACTION;
+    case A_KICK:case A_SKICK:return und_run_kick(a,o,c);
+    case A_PUNCH:case A_SPUNCH:case A_PUNCHKICK:case A_GRABOH:return und_run_punch(a,o,c);
     default:return WM_TAKER_STEP_IDLE;}
 }
 static wm_arcade_taker_step_result_t mode_bouncing(wm_arcade_actor_t*a,const wm_arcade_taker_callbacks_t*c){a->x_vel=0;a->z_vel=0;if(a->anim_mode&WM_MODE_END){a->move_dir^=(WM_MOVE_LEFT+WM_MOVE_RIGHT);a->facing_dir=(a->new_facing_dir&(WM_MOVE_UP+WM_MOVE_DOWN))|a->move_dir;anim(a,L.run,c);setmode(a,WM_PMODE_RUNNING);return WM_TAKER_STEP_ACTION;}return WM_TAKER_STEP_IDLE;}

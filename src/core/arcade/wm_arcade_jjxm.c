@@ -38,3 +38,22 @@ const char *wm_jjxm_select(const wm_jjxm_table_t *table,
     /* JJXM_END: LOCKUP / rets. */
     return NULL;
 }
+
+const char *wm_jjxm_pick(const char *wrestler,
+                         const char *section,
+                         const char *entry,
+                         const wm_arcade_actor_t *attacker,
+                         const wm_arcade_actor_t *opponent)
+{
+    if (!attacker) return NULL;
+    return wm_jjxm_select(wm_jjxm_find(wrestler, section, entry),
+                          opponent ? (uint16_t)opponent->player_mode
+                                   : (uint16_t)WM_PMODE_NORMAL,
+                          attacker->closest_xdist,
+                          attacker->closest_zdist);
+}
+
+int wm_jjxm_is(const char *target, const char *name)
+{
+    return target && name && strcmp(target, name) == 0;
+}

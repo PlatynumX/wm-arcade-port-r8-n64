@@ -1,5 +1,6 @@
 #include "wm/arcade/wm_arcade_shawn.h"
 #include "wm/arcade/wm_arcade_attach_anim.h"
+#include "wm/arcade/wm_arcade_jjxm.h"
 #include <string.h>
 
 /*
@@ -113,7 +114,6 @@ static const struct labels L={
 
 static void setmode(wm_arcade_actor_t*a,uint16_t m){if(a&&a->player_mode!=WM_PMODE_DEAD)a->player_mode=m;}
 static int groundish(const wm_arcade_actor_t*o){return o&&(o->player_mode==WM_PMODE_ONGROUND||o->player_mode==WM_PMODE_DEAD);}
-static int nearxy(const wm_arcade_actor_t*a,int x,int z){return a&&a->closest_xdist<x&&a->closest_zdist<z;}
 static int face2(const wm_arcade_actor_t*a){return a&&(a->facing_dir&WM_MOVE_RIGHT);}
 static const char *face_label(const char*l2,const char*l4,const wm_arcade_actor_t*a){return face2(a)?l2:l4;}
 static void anim(wm_arcade_actor_t*a,const char*l,const wm_arcade_shawn_callbacks_t*c){if(c&&c->change_anim_label&&l)c->change_anim_label(a,l,c->user);}
@@ -128,24 +128,111 @@ static int do_block(wm_arcade_actor_t*a,const wm_arcade_shawn_env_t*e,const wm_a
     setmode(a,WM_PMODE_BLOCK);
     return 1;
 }
+/*
+ * SHAWN.ASM's EIGHT JJXM tables -- he is the only wrestler with more
+ * than six. His mode_running splits the punch group in two (#punch and
+ * #punchkick against #super_punch and #graboh) and the kick group in
+ * two as well, so the running super punch is a flip slam where the
+ * running punch is only ever a run stomp.
+ */
+static const char *jjxm(const char*section,const char*entry,
+                        const wm_arcade_actor_t*a,const wm_arcade_actor_t*o){
+    return wm_jjxm_pick("SHAWN",section,entry,a,o);
+}
+#define is(t,n) wm_jjxm_is((t),(n))
+
+/* SHAWN.ASM:1971 #punch_punch, alias std_punch. */
+static void shn_punch_punch(wm_arcade_actor_t*a,const wm_arcade_shawn_callbacks_t*c){
+    anim(a,face_label(L.punch2,L.punch4,a),c); snd(a,"PUNCH",c);
+}
+/* :1982 #punch_hdbutt, which is `jruc #hdbutt` to :2071. */
+static void shn_punch_hdbutt(wm_arcade_actor_t*a,const wm_arcade_shawn_callbacks_t*c){
+    anim(a,face_label(L.close2,L.close4,a),c); snd(a,"HDBUTT",c);
+}
+/* :1986 #punch_lbdrop -- Shawn's ground attack is the FALLING PUNCH. */
+static void shn_punch_lbdrop(wm_arcade_actor_t*a,const wm_arcade_shawn_callbacks_t*c){
+    anim(a,face_label("shn_2_falling_punch_anim","shn_4_falling_punch_anim",a),c);
+    snd(a,"LBOWDROP",c);
+}
+/* :2050 #spunch_slap, which mode_normal's #graboh is an alias of. */
+static void shn_spunch_slap(wm_arcade_actor_t*a,const wm_arcade_shawn_callbacks_t*c){
+    anim(a,face_label("shn_2_slap_anim","shn_4_slap_anim",a),c); snd(a,"SPUNCH",c);
+}
+/* :2060 #spunch_special. The threshold is 64 on X only, and past it
+   the move is the plain punch rather than the slap. */
+static void shn_spunch_special(wm_arcade_actor_t*a,const wm_arcade_shawn_callbacks_t*c){
+    if(a->closest_xdist>64){ shn_punch_punch(a,c); return; }
+    anim(a,face_label("shn_2_pummel_anim","shn_4_pummel_anim",a),c); snd(a,"HDBUTT",c);
+}
+/* :2081 #spunch_lbowdrop -- the hair grab. */
+static void shn_spunch_lbowdrop(wm_arcade_actor_t*a,wm_arcade_actor_t*o,
+                                const wm_arcade_shawn_callbacks_t*c){
+    int hair=0;
+    if(o&&o->player_mode!=WM_PMODE_DEAD){
+        int32_t dx=a->x_fixed-o->x_fixed;
+        if(dx<0)dx=-dx;
+        if((dx>>16)>=0x20&&
+           ((a->obj_control&WM_OBJ_FLIPH)!=(o->obj_control&WM_OBJ_FLIPH)))
+            hair=1;
+    }
+    if(hair) anim(a,face_label("shn_2_hair_pickup_anim","shn_4_hair_pickup_anim",a),c);
+    else     anim(a,face_label("shn_2_falling_punch_anim","shn_4_falling_punch_anim",a),c);
+    snd(a,"LBOWDROP",c);
+}
+/* :2180 #kick_kick (std_kick), :2190 #kick_knee (std_knee), :2204
+   #kick_stomp -- and :2283 #skick_stomp, the same stomp again. */
+static void shn_kick_kick(wm_arcade_actor_t*a,const wm_arcade_shawn_callbacks_t*c){
+    anim(a,face_label(L.kick2,L.kick4,a),c); snd(a,"KICK",c);
+}
+static void shn_kick_knee(wm_arcade_actor_t*a,const wm_arcade_shawn_callbacks_t*c){
+    anim(a,face_label(L.knee2,L.knee4,a),c); snd(a,"KICK",c);
+}
+static void shn_kick_stomp(wm_arcade_actor_t*a,const wm_arcade_shawn_callbacks_t*c){
+    anim(a,face_label(L.stomp2,L.stomp4,a),c); snd(a,"KICK",c);
+}
+/* :2170 #kick_TB */
+static void shn_kick_tb(wm_arcade_actor_t*a,const wm_arcade_shawn_callbacks_t*c){
+    anim(a,"shn_spinkick_TB_anim",c); snd(a,"KICK",c);
+}
+/* :2274 #skick_kick */
+static void shn_skick_kick(wm_arcade_actor_t*a,const wm_arcade_shawn_callbacks_t*c){
+    anim(a,"shn_spinkick_anim",c); snd(a,"FLYKICK",c);
+}
+/* :2262 #skick_frank -- the frankensteiner, and ck_ignore does not
+   refuse it outright: a refused one FALLS THROUGH to the spin kick. */
+static void shn_skick_frank(wm_arcade_actor_t*a,const wm_arcade_shawn_callbacks_t*c){
+    if(c&&c->ck_ignore&&c->ck_ignore(a,c->user)){ shn_skick_kick(a,c); return; }
+    anim(a,"shn_fstein_anim",c); snd(a,"KICK",c);
+}
+
 static void basic_punch(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_shawn_callbacks_t*c){
-    int cx=50,cz=45; int gx=160,gz=140;
-    if(groundish(o)&&nearxy(a,gx,gz)){anim(a,face_label(L.ground2,L.ground4,a),c);snd(a,"LBOWDROP",c);return;}
-    if(nearxy(a,cx,cz)){anim(a,face_label(L.close2,L.close4,a),c);snd(a,"HDBUTT",c);}
-    else {anim(a,face_label(L.punch2,L.punch4,a),c);snd(a,"PUNCH",c);}
+    const char*t=jjxm("mode_normal","#punch",a,o);
+    if(is(t,"#punch_hdbutt"))      shn_punch_hdbutt(a,c);
+    else if(is(t,"#punch_lbdrop")) shn_punch_lbdrop(a,c);
+    else if(is(t,"#punch_punch"))  shn_punch_punch(a,c);
 }
 static void basic_kick(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_shawn_callbacks_t*c){
-    int cx=50,cz=50;
-    if(groundish(o)&&nearxy(a,160,140))anim(a,face_label(L.stomp2,L.stomp4,a),c);
-    else if(nearxy(a,cx,cz))anim(a,face_label(L.knee2,L.knee4,a),c);
-    else anim(a,face_label(L.kick2,L.kick4,a),c);
-    snd(a,"KICK",c);
+    const char*t=jjxm("mode_normal","#kick",a,o);
+    if(is(t,"#kick_knee"))       shn_kick_knee(a,c);
+    else if(is(t,"#kick_stomp")) shn_kick_stomp(a,c);
+    else if(is(t,"#kick_TB"))    shn_kick_tb(a,c);
+    else if(is(t,"#kick_kick"))  shn_kick_kick(a,c);
 }
 static void super_punch(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_shawn_callbacks_t*c){
-    if(groundish(o)&&nearxy(a,160,140)){anim(a,face_label(L.ground2,L.ground4,a),c);return;}
-    if(a->closest_xdist<=85&&a->closest_zdist<45) anim(a,face_label("shn_2_pummel_anim","shn_4_pummel_anim",a),c); else anim(a,face_label(L.punch2,L.punch4,a),c); snd(a,"SPUNCH",c);
+    const char*t=jjxm("mode_normal","#super_punch",a,o);
+    if(is(t,"#spunch_special"))       shn_spunch_special(a,c);
+    else if(is(t,"#spunch_lbowdrop")) shn_spunch_lbowdrop(a,o,c);
+    else if(is(t,"#spunch_slap"))     shn_spunch_slap(a,c);
+    else if(is(t,"std_punch"))        shn_punch_punch(a,c);
 }
-static void super_kick(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_shawn_callbacks_t*c){if(!groundish(o)){anim(a,"shn_fstein_anim",c);snd(a,"GRABHOLD",c);}else basic_kick(a,o,c);}
+static void super_kick(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_shawn_callbacks_t*c){
+    const char*t=jjxm("mode_normal","#super_kick",a,o);
+    if(is(t,"#skick_frank"))      shn_skick_frank(a,c);
+    else if(is(t,"#skick_stomp")) shn_kick_stomp(a,c);
+    else if(is(t,"#kick_TB"))     shn_kick_tb(a,c);
+    else if(is(t,"#skick_kick"))  shn_skick_kick(a,c);
+    else if(is(t,"std_kick"))     shn_kick_kick(a,c);
+}
 
 static wm_arcade_shawn_step_result_t mode_normal(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_shawn_env_t*e,const wm_arcade_shawn_callbacks_t*c){
     uint8_t ac;
@@ -166,20 +253,99 @@ static wm_arcade_shawn_step_result_t mode_normal(wm_arcade_actor_t*a,wm_arcade_a
     if((a->but_val_cur&WM_BTN_BLOCK)&&do_block(a,e,c))return WM_SHAWN_STEP_ACTION;
     ac=action_table[a->but_val_down&WM_BTN_ATTACK_MASK];
     if((a->but_val_cur&WM_BTN_ATTACK_MASK)==(WM_BTN_PUNCH|WM_BTN_KICK))ac=A_PUNCHKICK;
-    switch(ac){case A_PUNCH:basic_punch(a,o,c);break;case A_BLOCK:(void)do_block(a,e,c);break;case A_SPUNCH:super_punch(a,o,c);break;case A_KICK:basic_kick(a,o,c);break;case A_PUNCHKICK:anim(a,"start_run_anim",c);break;case A_SKICK:case A_GRABOH:super_kick(a,o,c);break;default:break;}
+    switch(ac){case A_PUNCH:basic_punch(a,o,c);break;case A_BLOCK:(void)do_block(a,e,c);break;case A_SPUNCH:super_punch(a,o,c);break;case A_KICK:basic_kick(a,o,c);break;case A_PUNCHKICK:anim(a,"start_run_anim",c);break;case A_SKICK:super_kick(a,o,c);break;case A_GRABOH:shn_spunch_slap(a,c);break;default:break;}
     if(a->anim_mode&WM_MODE_UNINT)return WM_SHAWN_STEP_ACTION;
     a->move_dir=a->stick_val_cur;
     if(c&&c->climb_turnbuckle&&c->climb_turnbuckle(a,c->user)){if(c->jump_rope_audio)c->jump_rope_audio(a,c->user);return WM_SHAWN_STEP_EXTERNAL;}
     if(c&&c->execute_walk)c->execute_walk(a,c->user);
     return WM_SHAWN_STEP_ACTION;
 }
+/* ---- the FOUR mode_running tables ------------------------------ */
+
+/* SHAWN.ASM:2585 #kick_runstomp, alias attack_runstomp. ck_ignore
+   refuses it, and it plays no sound of its own. This is the label
+   REACT4's hit_stomp compares against for the scream. */
+static wm_arcade_shawn_step_result_t shn_attack_runstomp(
+        wm_arcade_actor_t*a,const wm_arcade_shawn_callbacks_t*c){
+    if(c&&c->ck_ignore&&c->ck_ignore(a,c->user)) return WM_SHAWN_STEP_IDLE;
+    anim(a,"shn_run_stomp_anim",c);
+    return WM_SHAWN_STEP_ACTION;
+}
+/* :2293 attack_flykick. TWO refusals: ck_ignore, and then its own
+   `calla get_opp_plyrmode` -- "don't do it if the bad guy is on the
+   ground" -- which is a second, independent look at the opponent's
+   mode after the table has already keyed on it. */
+static wm_arcade_shawn_step_result_t shn_attack_flykick(
+        wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_shawn_callbacks_t*c){
+    if(c&&c->ck_ignore&&c->ck_ignore(a,c->user)) return WM_SHAWN_STEP_IDLE;
+    if(o&&(o->player_mode==WM_PMODE_ONGROUND||o->player_mode==WM_PMODE_DEAD))
+        return WM_SHAWN_STEP_IDLE;
+    setmode(a,WM_PMODE_INAIR);
+    anim(a,"shn_flying_kick_anim",c);
+    snd(a,"FLYKICK",c);
+    return WM_SHAWN_STEP_ACTION;
+}
+/* :2643 #attack_fstein */
+static wm_arcade_shawn_step_result_t shn_attack_fstein(
+        wm_arcade_actor_t*a,const wm_arcade_shawn_callbacks_t*c){
+    if(c&&c->ck_ignore&&c->ck_ignore(a,c->user)) return WM_SHAWN_STEP_IDLE;
+    anim(a,"shn_fstein_anim",c);
+    setmode(a,WM_PMODE_INAIR);
+    snd(a,"GRABHOLD",c);
+    return WM_SHAWN_STEP_ACTION;
+}
+/* :2526 #punch_flipslam. The Undertaker's facing gate, and its sound
+   is a MIXED WRSND pair: HIPTOSS_T1 with PUNCH_T2. */
+static wm_arcade_shawn_step_result_t shn_punch_flipslam(
+        wm_arcade_actor_t*a,const wm_arcade_shawn_callbacks_t*c){
+    if(!((a->facing_dir & a->new_facing_dir) & (WM_MOVE_LEFT|WM_MOVE_RIGHT)))
+        return WM_SHAWN_STEP_IDLE;
+    anim(a,"shn_flipslam_anim",c);
+    snd(a,"HIPTOSS_PUNCH",c);
+    return WM_SHAWN_STEP_ACTION;
+}
+
+static wm_arcade_shawn_step_result_t shn_run_punch(
+        wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_shawn_callbacks_t*c){
+    const char*t=jjxm("mode_running","#punch",a,o);
+    if(is(t,"attack_runstomp")) return shn_attack_runstomp(a,c);
+    if(is(t,"#punch_rets"))     return WM_SHAWN_STEP_IDLE;   /* `rets` */
+    return WM_SHAWN_STEP_IDLE;
+}
+static wm_arcade_shawn_step_result_t shn_run_spunch(
+        wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_shawn_callbacks_t*c){
+    const char*t=jjxm("mode_running","#super_punch",a,o);
+    if(is(t,"#punch_flipslam")) return shn_punch_flipslam(a,c);
+    if(is(t,"attack_runstomp")) return shn_attack_runstomp(a,c);
+    if(is(t,"#spunch_rets"))    return WM_SHAWN_STEP_IDLE;   /* `rets` */
+    return WM_SHAWN_STEP_IDLE;
+}
+static wm_arcade_shawn_step_result_t shn_run_kick(
+        wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_shawn_callbacks_t*c){
+    const char*t=jjxm("mode_running","#kick",a,o);
+    if(is(t,"#kick_runstomp")) return shn_attack_runstomp(a,c);
+    if(is(t,"attack_flykick")) return shn_attack_flykick(a,o,c);
+    return WM_SHAWN_STEP_IDLE;
+}
+static wm_arcade_shawn_step_result_t shn_run_skick(
+        wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_shawn_callbacks_t*c){
+    const char*t=jjxm("mode_running","#super_kick",a,o);
+    if(is(t,"#attack_fstein")) return shn_attack_fstein(a,c);
+    if(is(t,"attack_flykick")) return shn_attack_flykick(a,o,c);
+    if(is(t,"attack_runstomp")) return shn_attack_runstomp(a,c);
+    return WM_SHAWN_STEP_IDLE;
+}
+
 static wm_arcade_shawn_step_result_t mode_running(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_shawn_env_t*e,const wm_arcade_shawn_callbacks_t*c){
     int32_t v=0x00060000; a->run_time++; if(!a->usr_var1){if(c&&c->bounce_off_ropes)c->bounce_off_ropes(a,c->user);if(e&&e->hyper_speed_on>0&&e->hyper_speed_on<15)v<<=e->hyper_speed_on;if(!(a->move_dir&WM_MOVE_RIGHT))v=-v;a->x_vel=v;}
     if(a->stick_val_cur&WM_MOVE_UP)a->z_vel=-0x00020000;else if(a->stick_val_cur&WM_MOVE_DOWN)a->z_vel=0x00020000;else a->z_vel=0; if(a->getup_time||a->delay_butns)return WM_SHAWN_STEP_IDLE;
     switch(action_table[a->but_val_down&WM_BTN_ATTACK_MASK]){
     case A_BLOCK:a->x_vel>>=1;setmode(a,WM_PMODE_NORMAL);(void)do_block(a,e,c);return WM_SHAWN_STEP_ACTION;
-    case A_KICK:case A_SKICK:if(c&&c->ck_ignore&&c->ck_ignore(a,c->user))return WM_SHAWN_STEP_IDLE;anim(a,L.flykick,c);setmode(a,WM_PMODE_INAIR);return WM_SHAWN_STEP_ACTION;
-    case A_PUNCH:case A_SPUNCH:case A_PUNCHKICK:case A_GRABOH:basic_punch(a,o,c);return WM_SHAWN_STEP_ACTION;
+    /* Four tables, not two -- see the note above shn_run_punch. */
+    case A_PUNCH:case A_PUNCHKICK:return shn_run_punch(a,o,c);
+    case A_SPUNCH:case A_GRABOH:return shn_run_spunch(a,o,c);
+    case A_KICK:return shn_run_kick(a,o,c);
+    case A_SKICK:return shn_run_skick(a,o,c);
     default:return WM_SHAWN_STEP_IDLE;}
 }
 static wm_arcade_shawn_step_result_t mode_bouncing(wm_arcade_actor_t*a,const wm_arcade_shawn_callbacks_t*c){a->x_vel=0;a->z_vel=0;if(a->anim_mode&WM_MODE_END){a->move_dir^=(WM_MOVE_LEFT+WM_MOVE_RIGHT);a->facing_dir=(a->new_facing_dir&(WM_MOVE_UP+WM_MOVE_DOWN))|a->move_dir;anim(a,L.run,c);setmode(a,WM_PMODE_RUNNING);return WM_SHAWN_STEP_ACTION;}return WM_SHAWN_STEP_IDLE;}

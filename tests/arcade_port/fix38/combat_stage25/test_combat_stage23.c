@@ -39,7 +39,7 @@ int main(void)
 #undef PROVE
 
     /* The unified charge API must enter each dedicated source module by its literal source-table label. */
-    rt_reset(&u);uc=rt_callbacks(&u);b.taker=&uc;a1=normal_opp();o1=normal_opp();assert(wm_arcade_port_release_charge(&wm_arcade_profile_taker,&a1,&o1,"button_hold",110,&b));assert(strcmp(u.special,"scrt_spirit")==0);b.taker=NULL;
+    rt_reset(&u);uc=rt_callbacks(&u);b.taker=&uc;a1=normal_opp();o1=normal_opp();assert(wm_arcade_port_release_charge(&wm_arcade_profile_taker,&a1,&o1,"button_hold",110,&b));assert(strcmp(u.anim,"und_neckbreaker2_anim")==0); /* was special=="scrt_spirit" -- see test_combat_stage16 */b.taker=NULL;
     rt_reset(&u);uc=rt_callbacks(&u);b.yoko=&uc;a1=normal_opp();o1=normal_opp();a1.facing_dir=WM_MOVE_RIGHT;assert(wm_arcade_port_release_charge(&wm_arcade_profile_yoko,&a1,&o1,"charge_salt",85,&b));assert(strcmp(u.anim,"yok_2_salt_anim")==0);b.yoko=NULL;
     rt_reset(&u);uc=rt_callbacks(&u);b.shawn=&uc;a1=normal_opp();o1=normal_opp();assert(wm_arcade_port_release_charge(&wm_arcade_profile_shawn,&a1,&o1,"charge_flying_kick",85,&b));assert(strcmp(u.anim,"shn_flying_kick_anim")==0);b.shawn=NULL;
     rt_reset(&u);uc=rt_callbacks(&u);b.bam=&uc;a1=normal_opp();o1=normal_opp();a1.facing_dir=WM_MOVE_RIGHT;assert(wm_arcade_port_release_charge(&wm_arcade_profile_bam,&a1,&o1,"firepnch",85,&b));assert(strcmp(u.anim,"bam_2_fpunch_anim")==0);b.bam=NULL;

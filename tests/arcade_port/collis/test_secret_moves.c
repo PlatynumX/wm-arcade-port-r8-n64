@@ -32,6 +32,7 @@
 #include "wm/arcade/wm_arcade_roster.h"
 #include "wm/arcade/wm_arcade_wrestler_port.h"
 #include "wm/arcade/wmania_rng.h"
+#include "wm/wrestler_sound_labels.h"
 
 static int sound_calls;
 static void cap_sound(void *u, uint16_t call) { (void)u; (void)call; ++sound_calls; }
@@ -234,6 +235,72 @@ static void test_the_partially_filled_pair(void) {
     (void)bret_cb.check_combo_go(&me, bret_cb.user);
 }
 
+/* ------------------------------------------------------------------
+ * And what the secret handlers actually DO.
+ *
+ * Wiring check_secret_moves made these reachable, and reachable turned
+ * out to expose a mistranslation rather than a missing piece: fifteen
+ * handlers called startsp(), the port's "start a special-move process"
+ * helper, where the source ends in a plain `calla change_anim1a`.
+ * DOINK.ASM:583 #scrt_hiptoss is `FACE24 dnk,hiptoss_anim / calla
+ * change_anim1a / WRSND W_DOINK,HIPTOSS_T1,PUNCH_T2` -- an animation
+ * and a sound, and SPECIAL_MOVE_ADDR is never touched.
+ * ------------------------------------------------------------------ */
+
+static const char *fired_anim;
+static const char *fired_snd;
+static void cap_anim(wm_arcade_actor_t *a, const char *l, void *u) {
+    (void)a; (void)u; fired_anim = l;
+}
+static void cap_label_snd(wm_arcade_actor_t *a, const char *l, void *u) {
+    (void)a; (void)u; fired_snd = l;
+}
+
+static void test_the_hip_toss_plays_an_animation(void) {
+    wm_wrestler_backend_actor st;
+    wm_arcade_roster_callbacks_t cb;
+    wm_arcade_actor_t me, him;
+    const wm_arcade_wrestler_profile_t *p;
+
+    setup(&st, &me, &him, WM_ROSTER_DOINK);
+    cb = wm_wrestler_roster_callbacks(&st);
+    p = wm_arcade_roster_profile(WM_ROSTER_DOINK);
+
+    press_away_punch(&me);
+    cb.check_secret_moves(&me, p->secrets, p->secret_count, cb.user);
+
+    /*
+     * Observed on the BACKEND rather than through a capture hung on the
+     * callback struct, and that is not incidental: the adapter rebuilds
+     * the callbacks from the backend state before it dispatches, so a
+     * caller cannot inject one. backend_change_anim_label records the
+     * label it selected, which is the same thing from the other side.
+     */
+    fired_anim = st.current_label;
+
+    /*
+     * Doink faces right, so FACE24's second column -- the source's own
+     * MOVE_UP_BIT-clear form. Before this the handler called
+     * startsp("hip_toss"), whose two seams are empty, and the move
+     * fired and did nothing at all.
+     */
+    assert(fired_anim != NULL);
+    assert(strstr(fired_anim, "hiptoss") != NULL);
+    /*
+     * And the sound is the source's MIXED pair, SOUND.H's HIPTOSS_T1
+     * (40) with PUNCH_T2 (1) -- not the GRABFLING every one of these
+     * sites used to name, and not a pair from one family.
+     */
+    {
+        wm_sndlabel_t sl = wm_wrsnd_label("HIPTOSS_PUNCH");
+        assert(sl.kind == WM_SNDLABEL_WRSND);
+        assert(sl.move1 == 40 && sl.move2 == 1);
+    }
+    (void)fired_snd;
+    (void)cap_anim;
+    (void)cap_label_snd;
+}
+
 int main(void) {
     test_the_seam_is_filled();
     test_a_pattern_reaches_its_handler();
@@ -241,6 +308,7 @@ int main(void) {
     test_the_queue_must_be_fresh();
     test_every_wrestler_has_a_table();
     test_the_partially_filled_pair();
+    test_the_hip_toss_plays_an_animation();
     printf("secret moves ok\n");
     return 0;
 }

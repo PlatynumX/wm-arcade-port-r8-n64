@@ -218,11 +218,21 @@ wm_arcade_taker_step_result_t wm_arcade_move_taker(wm_arcade_actor_t*a,wm_arcade
 }
 
 static int reject_common(wm_arcade_actor_t*a,wm_arcade_actor_t*o){return !a||!o||(a->anim_mode&WM_MODE_UNINT)||o->player_mode==WM_PMODE_DEAD||o->player_mode==WM_PMODE_HEADHELD||o->player_mode==WM_PMODE_ATTACHED;}
-int wm_arcade_taker_release_charge(wm_arcade_actor_t*a,wm_arcade_actor_t*o,uint16_t ticks,const wm_arcade_taker_callbacks_t*c){(void)o;if(!a||ticks<110)return 0;if(a->player_mode==WM_PMODE_HEADHELD||a->player_mode==WM_PMODE_HEADHOLD||(a->anim_mode&WM_MODE_UNINT))return 0;startsp(a,"scrt_spirit",c);
-    /* TAKER.ASM:404 plays `WRSND W_TAKER,GRABHOLD_T1,GRABHOLD_T2` here.
-       This read "SPIRIT", which is the name of the MOVE (scrt_spirit)
-       and not of any sound: SOUND.H has no such mnemonic, so it
-       resolved to nothing the moment the seam behind it was filled. */
+int wm_arcade_taker_release_charge(wm_arcade_actor_t*a,wm_arcade_actor_t*o,uint16_t ticks,const wm_arcade_taker_callbacks_t*c){if(!a||ticks<110)return 0;if(a->player_mode==WM_PMODE_HEADHELD||a->player_mode==WM_PMODE_HEADHOLD||(a->anim_mode&WM_MODE_UNINT))return 0;
+    /* TAKER.ASM:378 #scrt_spirit. `calla get_opp_plyrmode / cmpi
+       MODE_ONGROUND,a0 / jrz #out` -- "Don't do it when he is on
+       ground". The opponent was ignored here; the guard is his. */
+    if(o&&o->player_mode==WM_PMODE_ONGROUND)return 0;
+    /* `cmpi MODE_RUNNING,a0 / jrz #leapbrk` -- the sliding neck
+       breaker, and otherwise the standing one. This used to call
+       startsp("scrt_spirit"), which is the ROUTINE's name and not an
+       animation: the source's two arms both end in change_anim1a, and
+       SPECIAL_MOVE_ADDR is never touched on this path. */
+    anim(a,a->player_mode==WM_PMODE_RUNNING ? "und_neckbreaker3_anim"
+                                            : "und_neckbreaker2_anim",c);
+    /* `WRSND W_TAKER,GRABHOLD_T1,GRABHOLD_T2`, on both arms. This read
+       "SPIRIT", which is the move's name and not any sound: SOUND.H has
+       no such mnemonic. */
     snd(a,"GRABHOLD",c); return 1;}
 int wm_arcade_taker_fire_secret(wm_arcade_actor_t*a,wm_arcade_actor_t*o,wm_arcade_taker_secret_id_t id,uint32_t pcnt,const wm_arcade_taker_callbacks_t*c){
     switch(id){
@@ -230,7 +240,7 @@ int wm_arcade_taker_fire_secret(wm_arcade_actor_t*a,wm_arcade_actor_t*o,wm_arcad
         if(reject_common(a,o)||groundish(o))return 0;
         if((uint32_t)(pcnt-a->last_headhold)<120) anim(a,"fake_head_hold3",c);
         else if(a->closest_xdist<=80) anim(a,L.headhold2,c); else anim(a,L.headhold,c);
-        return 1; case WM_TAKER_SECRET_GRAB_FLING: if(reject_common(a,o))return 0; anim(a,face_label(L.headhold2,L.headhold,a),c); snd(a,"GRABFLING",c); return 1; case WM_TAKER_SECRET_GRAB_FLING2: if(reject_common(a,o))return 0; anim(a,face_label(L.headhold2,L.headhold,a),c); snd(a,"GRABFLING",c); return 1; case WM_TAKER_SECRET_HIP_TOSS: if(reject_common(a,o)||groundish(o))return 0; if(o->player_mode!=WM_PMODE_INAIR&&o->player_mode!=WM_PMODE_INAIR2&&a->closest_dist>0x70)return 0; startsp(a,"hip_toss",c); snd(a,"GRABFLING",c); return 1; case WM_TAKER_SECRET_HIP_TOSS2: if(reject_common(a,o)||groundish(o))return 0; if(o->player_mode!=WM_PMODE_INAIR&&o->player_mode!=WM_PMODE_INAIR2&&a->closest_dist>0x70)return 0; startsp(a,"hip_toss",c); snd(a,"GRABFLING",c); return 1;
+        return 1; case WM_TAKER_SECRET_GRAB_FLING: if(reject_common(a,o))return 0; anim(a,face_label(L.headhold2,L.headhold,a),c); snd(a,"GRABFLING",c); return 1; case WM_TAKER_SECRET_GRAB_FLING2: if(reject_common(a,o))return 0; anim(a,face_label(L.headhold2,L.headhold,a),c); snd(a,"GRABFLING",c); return 1; case WM_TAKER_SECRET_HIP_TOSS: if(reject_common(a,o)||groundish(o))return 0; if(o->player_mode!=WM_PMODE_INAIR&&o->player_mode!=WM_PMODE_INAIR2&&a->closest_dist>0x70)return 0; anim(a,face_label("und_2_snapmirror_anim","und_4_snapmirror_anim",a),c); snd(a,"GRABFLING_PUNCH",c); return 1; case WM_TAKER_SECRET_HIP_TOSS2: if(reject_common(a,o)||groundish(o))return 0; if(o->player_mode!=WM_PMODE_INAIR&&o->player_mode!=WM_PMODE_INAIR2&&a->closest_dist>0x70)return 0; anim(a,face_label("und_2_snapmirror_anim","und_4_snapmirror_anim",a),c); snd(a,"GRABFLING_PUNCH",c); return 1;
     case WM_TAKER_SECRET_TOMB_SMASH:
         if ((a->anim_mode & WM_MODE_UNINT) || a->player_mode==WM_PMODE_ONTURNBKL) return 0;
         a->attach_proc=NULL; setmode(a,WM_PMODE_NORMAL); if(c&&c->find_and_kill_endless)c->find_and_kill_endless(a,c->user);

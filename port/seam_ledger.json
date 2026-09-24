@@ -143,7 +143,7 @@
  },
  "attacker_anim_tag": {
   "verdict": "deferred",
-  "note": "REACT1.ASM hit_stomp compares the attacker's current ANIBASE label against specific ones. The seam resolves that comparison for the reaction core; empty, hit_stomp reads WM_R_ANIMTAG_OTHER for everybody and takes the general arm. Real and wireable -- the label is on the backend -- but which labels map to which tag has to be read off REACT1.ASM rather than assumed."
+  "note": "REACT4.ASM:137 hit_stomp compares the ATTACKER's ANIBASE against five named labels -- shn_combo_run_stomp_anim and shn_run_stomp_anim decide scream-versus-elbow-drop sound, dnk_belly_anim and und_flying_butt_drop_anim decide the bounce off the downed man (ropes and screen shake with it), lex_flying_ground_punch_anim decides the bounce with the extra Y velocity. The seam resolves that comparison for the reaction core; empty, hit_stomp reads WM_R_ANIMTAG_OTHER for everybody and takes the general arm. The label is on the backend (wrestler_visual[i].current_label), so the wiring is short -- but it was inert for a second reason as well: until the JJXM move tables were routed, NO dispatcher ever selected any of the five, so the comparison could not have matched whatever the seam returned. dnk_belly_anim is now selectable (Doink's running punch and running kick both reach it); the other four wait on their wrestlers' tables."
  },
  "move_grade": {
   "verdict": "deferred",
@@ -155,7 +155,7 @@
  },
  "attacker_uses_lex_flykick_anim": {
   "verdict": "deferred",
-  "note": "One REACT1 special case that asks whether the attacker is playing Lex's flying-kick animation. A label comparison like attacker_anim_tag's and blocked on the same reading."
+  "note": "REACT1.ASM:1453, the Lex hack: `cmpi lex_flying_kick_anim,a14 / jreq #midhit` and the same for lex_super_kick_anim -- \"Lex's flying kicks don't knock you down. Use CALL_MID_HIT.\" A label comparison like attacker_anim_tag's, against the attacker's ANIBASE. lex_flying_kick_anim IS selected by wm_arcade_lex.c today, so unlike its neighbour this one would bite the moment it is filled."
  },
  "ck_ignore_reversed": {
   "verdict": "deferred",

@@ -127,16 +127,16 @@ static int do_block(wm_arcade_actor_t*a,const wm_arcade_taker_env_t*e,const wm_a
 }
 static void basic_punch(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_taker_callbacks_t*c){
     int cx=75,cz=45; int gx=160,gz=140;
-    if(groundish(o)&&nearxy(a,gx,gz)){anim(a,face_label(L.ground2,L.ground4,a),c);snd(a,"LBOWDROP_T1/LBOWDROP_T2",c);return;}
-    if(nearxy(a,cx,cz)){anim(a,face_label(L.close2,L.close4,a),c);snd(a,"HDBUTT_T1/HDBUTT_T2",c);}
-    else {anim(a,face_label(L.punch2,L.punch4,a),c);snd(a,"PUNCH_T1/PUNCH_T2",c);}
+    if(groundish(o)&&nearxy(a,gx,gz)){anim(a,face_label(L.ground2,L.ground4,a),c);snd(a,"LBOWDROP",c);return;}
+    if(nearxy(a,cx,cz)){anim(a,face_label(L.close2,L.close4,a),c);snd(a,"HDBUTT",c);}
+    else {anim(a,face_label(L.punch2,L.punch4,a),c);snd(a,"PUNCH",c);}
 }
 static void basic_kick(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_taker_callbacks_t*c){
     int cx=50,cz=50;
     if(groundish(o)&&nearxy(a,160,140))anim(a,face_label(L.stomp2,L.stomp4,a),c);
     else if(nearxy(a,cx,cz))anim(a,face_label(L.knee2,L.knee4,a),c);
     else anim(a,face_label(L.kick2,L.kick4,a),c);
-    snd(a,"KICK_T1/KICK_T2",c);
+    snd(a,"KICK",c);
 }
 static void super_punch(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_taker_callbacks_t*c){
     if(groundish(o)&&nearxy(a,160,140)){anim(a,face_label(L.ground2,L.ground4,a),c);return;}
@@ -244,7 +244,7 @@ int wm_arcade_taker_fire_secret(wm_arcade_actor_t*a,wm_arcade_actor_t*o,wm_arcad
     case WM_TAKER_SECRET_TOMB_SMASH:
         if ((a->anim_mode & WM_MODE_UNINT) || a->player_mode==WM_PMODE_ONTURNBKL) return 0;
         a->attach_proc=NULL; setmode(a,WM_PMODE_NORMAL); if(c&&c->find_and_kill_endless)c->find_and_kill_endless(a,c->user);
-        anim(a,"und_tombstone_smash_anim",c); snd(a,"GRABHOLD_T1/GRABHOLD_T2",c); return 1;
+        anim(a,"und_tombstone_smash_anim",c); snd(a,"GRABHOLD",c); return 1;
     default:return 0;}
 }
 int wm_arcade_taker_fire_monitor(wm_arcade_actor_t*a,wm_arcade_actor_t*o,wm_arcade_taker_monitor_id_t id,const wm_arcade_taker_env_t*e,int opponent_attack_is_leaping,const wm_arcade_taker_callbacks_t*c){

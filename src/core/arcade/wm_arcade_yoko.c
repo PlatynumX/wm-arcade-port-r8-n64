@@ -127,22 +127,22 @@ static int do_block(wm_arcade_actor_t*a,const wm_arcade_yoko_env_t*e,const wm_ar
 }
 static void basic_punch(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_yoko_callbacks_t*c){
     int cx=62,cz=95; int gx=160,gz=140;
-    if(groundish(o)&&nearxy(a,gx,gz)){anim(a,face_label(L.ground2,L.ground4,a),c);snd(a,"LBOWDROP_T1/LBOWDROP_T2",c);return;}
-    if(nearxy(a,cx,cz)){anim(a,face_label(L.close2,L.close4,a),c);snd(a,"HDBUTT_T1/HDBUTT_T2",c);}
-    else {anim(a,face_label(L.punch2,L.punch4,a),c);snd(a,"PUNCH_T1/PUNCH_T2",c);}
+    if(groundish(o)&&nearxy(a,gx,gz)){anim(a,face_label(L.ground2,L.ground4,a),c);snd(a,"LBOWDROP",c);return;}
+    if(nearxy(a,cx,cz)){anim(a,face_label(L.close2,L.close4,a),c);snd(a,"HDBUTT",c);}
+    else {anim(a,face_label(L.punch2,L.punch4,a),c);snd(a,"PUNCH",c);}
 }
 static void basic_kick(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_yoko_callbacks_t*c){
     int cx=60,cz=50;
     if(groundish(o)&&nearxy(a,160,140))anim(a,face_label(L.stomp2,L.stomp4,a),c);
     else if(nearxy(a,cx,cz))anim(a,face_label(L.knee2,L.knee4,a),c);
     else anim(a,face_label(L.kick2,L.kick4,a),c);
-    snd(a,"KICK_T1/KICK_T2",c);
+    snd(a,"KICK",c);
 }
 static void super_punch(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_yoko_callbacks_t*c){
     if(groundish(o)&&nearxy(a,160,140)){anim(a,face_label(L.ground2,L.ground4,a),c);return;}
     if(a->stick_val_cur&WM_MOVE_DOWN) anim(a,"yok_4_uppercut_anim",c); else if(a->closest_xdist<=50&&a->closest_zdist<92) anim(a,face_label("yok_2_jabs_anim","yok_4_jabs_anim",a),c); else anim(a,face_label("yok_2_slap2_anim","yok_4_slap2_anim",a),c); snd(a,"SPUNCH",c);
 }
-static void super_kick(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_yoko_callbacks_t*c){if(!groundish(o)){anim(a,"yok_scissor_anim",c);setmode(a,WM_PMODE_INAIR);snd(a,"GRABHOLD_T1/GRABHOLD_T2",c);}else basic_kick(a,o,c);}
+static void super_kick(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_yoko_callbacks_t*c){if(!groundish(o)){anim(a,"yok_scissor_anim",c);setmode(a,WM_PMODE_INAIR);snd(a,"GRABHOLD",c);}else basic_kick(a,o,c);}
 
 static wm_arcade_yoko_step_result_t mode_normal(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_yoko_env_t*e,const wm_arcade_yoko_callbacks_t*c){
     uint8_t ac;
@@ -215,7 +215,7 @@ wm_arcade_yoko_step_result_t wm_arcade_move_yoko(wm_arcade_actor_t*a,wm_arcade_a
 }
 
 static int reject_common(wm_arcade_actor_t*a,wm_arcade_actor_t*o){return !a||!o||(a->anim_mode&WM_MODE_UNINT)||o->player_mode==WM_PMODE_DEAD||o->player_mode==WM_PMODE_HEADHELD||o->player_mode==WM_PMODE_ATTACHED;}
-int wm_arcade_yoko_release_charge(wm_arcade_actor_t*a,wm_arcade_actor_t*o,uint16_t ticks,const wm_arcade_yoko_callbacks_t*c){if(!a||ticks<85)return 0;if(a->player_mode==WM_PMODE_HEADHELD||a->player_mode==WM_PMODE_HEADHOLD||(a->anim_mode&WM_MODE_UNINT))return 0;if(!o||o->player_mode==WM_PMODE_ATTACHED)return 0; anim(a,face_label("yok_2_salt_anim","yok_4_salt_anim",a),c); a->run_time=0; setmode(a,WM_PMODE_NORMAL); snd(a,"HDBUTT_T1/HDBUTT_T2",c); return 1;}
+int wm_arcade_yoko_release_charge(wm_arcade_actor_t*a,wm_arcade_actor_t*o,uint16_t ticks,const wm_arcade_yoko_callbacks_t*c){if(!a||ticks<85)return 0;if(a->player_mode==WM_PMODE_HEADHELD||a->player_mode==WM_PMODE_HEADHOLD||(a->anim_mode&WM_MODE_UNINT))return 0;if(!o||o->player_mode==WM_PMODE_ATTACHED)return 0; anim(a,face_label("yok_2_salt_anim","yok_4_salt_anim",a),c); a->run_time=0; setmode(a,WM_PMODE_NORMAL); snd(a,"HDBUTT",c); return 1;}
 int wm_arcade_yoko_fire_secret(wm_arcade_actor_t*a,wm_arcade_actor_t*o,wm_arcade_yoko_secret_id_t id,uint32_t pcnt,const wm_arcade_yoko_callbacks_t*c){
     switch(id){
     case WM_YOKO_SECRET_NECK_GRAB:

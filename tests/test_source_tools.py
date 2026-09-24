@@ -4009,110 +4009,36 @@ def test_the_reachability_claims_are_actually_checkable() -> None:
 
 
 def main() -> int:
-    test_wlanim()
-    test_wlprogram()
-    test_wlprogram_roster_wide()
-    test_wlprogram_is_deterministic()
-    test_body_stop_ends_a_frameless_routine()
-    test_linked_files_is_the_game()
-    test_bare_label_routines()
-    test_slave_targets_all_emit()
-    test_truncated_frame_names()
-    test_gravity_opcodes()
-    test_command_table_ops_keep_their_operands()
-    test_roll_tables()
-    test_self_contained_command_ops()
-    test_per_wrestler_aux_tables()
-    test_anim_code_registry_reaches_its_call_sites()
-    test_a_local_routine_defined_twice_gets_two_rows()
-    test_the_emitter_skips_nothing()
-    test_every_ani_code_call_site_resolves()
-    test_target_offsets_grid()
-    test_target_tables_generate_the_shipped_file()
-    test_code_roster_tables_are_read_not_transcribed()
-    test_smove_monitor_registry_is_honest()
-    test_crowd_tables_come_out_of_the_source()
-    test_announce_tables()
-    test_announce_tables_generate_the_shipped_file()
-    test_announce_calls_are_spelled_as_the_call_sites_spell_them()
-    test_wrsnd_tables()
-    test_wrsnd_tables_generate_the_shipped_file()
-    test_sound_table_is_read_not_transcribed()
-    test_sound_table_generates_the_shipped_file()
-    test_the_tune_script_vm_has_no_programs()
-    test_the_compressed_text_decodes_to_what_the_source_says()
-    test_story_text_generates_the_shipped_file()
-    test_font_tables_are_read_not_transcribed()
-    test_font_tables_generate_the_shipped_file()
-    test_glyph_metrics_come_out_of_the_artwork()
-    test_glyph_metrics_generate_the_shipped_file()
-    test_imgpal_palettes_are_self_consistent()
-    test_palettes_generate_the_shipped_file()
-    test_reflong_rows_may_carry_two_labels()
-    test_identical_definitions_are_not_ambiguous()
-    test_a_local_table_is_recognised_by_its_own_use_site()
-    test_roster_anim_tables_name_real_routines()
-    test_face24_tables_are_two_columns_wide()
-    test_a_two_long_row_is_not_always_a_facing_pair()
-    test_declarations_are_not_the_end_of_a_table()
-    test_a_roster_table_row_gets_a_program()
-    test_a_file_local_equate_resolves()
-    test_roster_anim_tables_refuse_ambiguous_labels()
-    test_roster_anim_tables_generate_the_shipped_file()
-    test_per_wrestler_anim_tables_come_out_of_the_dispatch_lists()
-    test_per_wrestler_tables_generate_the_shipped_file()
-    test_smove_tables_honour_the_finishing_move_switch()
-    test_coverage_does_not_count_code_the_assembler_skipped()
-    test_the_two_bmod_producers_agree()
-    test_sprite_banks_can_be_bundled_per_wrestler()
-    test_extracted_cut_content_says_so()
-    test_coverage_does_not_count_a_comment_as_an_implementation()
-    test_coverage_matches_only_a_suffix_or_a_generated_wrapper()
-    test_coverage_only_counts_linked_files()
-    test_coverage_dead_means_nothing_names_it()
-    test_the_routine_ledger_justifies_every_entry()
-    test_a_callback_seam_is_not_evidence()
-    test_the_ledger_cannot_shadow_real_code()
-    test_coverage_resolves_every_routine_known_to_be_translated()
-    test_coverage_does_not_claim_things_that_are_not_translated()
-    test_no_emitted_branch_has_a_lost_destination()
-    test_every_branch_op_is_listed_as_one()
-    test_digit_leading_local_labels_are_seen()
-    test_programs_record_where_they_start()
-    test_emitted_programs_hold_together()
-    test_every_hard_coded_animation_label_resolves()
-    test_the_two_extractors_agree()
-    test_an_independent_reading_agrees()
-    test_a_label_past_the_last_op_is_not_a_position()
-    test_a_branch_can_reach_the_head_of_a_later_routine()
-    test_waithitopp_is_a_mode_and_a_frame()
-    test_roster_dispatcher_labels_all_emit()
-    test_wlprogram_tick_expressions()
-    test_wlanim_label_def()
-    test_wlattack_audit()
-    test_wlattack_frame_indices()
-    test_manifest()
-    test_wimp_probe()
-    test_wimp_emit_c()
-    test_bundle_multi_container()
-    test_frontend_bundle()
-    test_sparkle_bundle()
-    test_dcs_bundle()
-    test_bdd_bundle()
-    test_bmod_source_generator()
-    test_attract_sequence()
-    test_source_ir_graph()
-    test_source_inventory()
-    test_port_manifest()
-    test_the_generated_coverage_doc_is_reproducible()
-    test_source_text_bundle()
-    test_every_reachability_claim_still_holds()
-    test_the_reachability_claims_are_actually_checkable()
+    """Run every test in this file.
+
+    It used to be a hand-written list of ninety-nine calls, with the
+    `if __name__` guard sitting in the MIDDLE of the file. Twelve test
+    functions were not on the list, and four of those were defined
+    BELOW the guard, so they had not been defined yet when main() ran
+    and could not have been called even if somebody had added them.
+    Twelve tests that looked like coverage and were not executing --
+    including the one written specifically to catch a sound label that
+    resolves to nothing, which is exactly the kind of quiet failure it
+    existed to refuse.
+
+    A list you have to remember to add to is not a mechanism. This
+    sweeps the module instead, in definition order so the reading order
+    is still the running order, and the guard is at the end of the file
+    where it cannot cut anything off.
+    """
+    tests = sorted(
+        ((fn.__code__.co_firstlineno, name, fn)
+         for name, fn in list(globals().items())
+         if name.startswith("test_") and inspect.isfunction(fn)
+         and fn.__module__ == __name__),
+    )
+    assert tests, "no tests found -- did the naming convention change?"
+    for _, name, fn in tests:
+        assert not inspect.signature(fn).parameters, name
+        fn()
     print("source tool tests passed")
     return 0
 
-if __name__ == "__main__":
-    raise SystemExit(main())
 
 def test_every_sound_label_a_dispatcher_uses_resolves() -> None:
     """A string sound seam must not quietly play nothing.
@@ -4129,6 +4055,15 @@ def test_every_sound_label_a_dispatcher_uses_resolves() -> None:
     TAKER.ASM:404 plays `WRSND W_TAKER,GRABHOLD_T1,GRABHOLD_T2`. It
     would have resolved to nothing forever. This walks every literal the
     dispatchers pass and refuses one the table does not carry.
+
+    The literal pattern is `"[^"]+"` and it is deliberately that loose,
+    because the first version of this test matched `[A-Z_0-9]+` and so
+    could not see a slash. Thirty-four calls were written in the shape
+    the WRSND macro takes its two arguments in -- `"PUNCH_T1/PUNCH_T2"`,
+    `"KICK_T1/KICK_T2"`, three more families -- and every one of them
+    fell through the character class, through wm_wrsnd_label, and out
+    the far side as silence. A test that only looks at the names it
+    expects checks nothing.
     """
     src = ROOT / "src" / "core" / "arcade"
     if not src.exists():
@@ -4136,7 +4071,7 @@ def test_every_sound_label_a_dispatcher_uses_resolves() -> None:
     used: set[str] = set()
     for path in sorted(src.glob("wm_arcade_*.c")):
         text = path.read_text(errors="replace")
-        used |= set(re.findall(r'snd\(\s*a\s*,\s*"([A-Z_0-9]+)"', text))
+        used |= set(re.findall(r'snd\(\s*a\s*,\s*"([^"]+)"', text))
     assert used, "no string sound labels found -- did the callers change?"
 
     table = ROOT / "src" / "core" / "wrestler_sound_labels.c"
@@ -4316,3 +4251,77 @@ def test_every_dispatcher_animation_label_resolves() -> None:
     for name in sorted(ANIM_LABELS_WITHOUT_PROGRAMS):
         assert name in labels, name
         assert name not in progs, name
+
+
+
+
+def test_the_jjxm_tables_are_read_not_written() -> None:
+    """JJXM.H's 1100 rows, and the file they are shipped as.
+
+    tools/wljjxm.py reads the fifty tables out of the eight wrestler
+    .ASM files. This runs the tool again and holds the generated C to
+    it -- so a hand edit to src/generated/jjxm_tables.c, or a tool
+    change that quietly drops a row, fails here rather than in a match.
+    """
+    sys.path.insert(0, str(ROOT / "tools"))
+    import wljjxm  # noqa: E402
+
+    tables = wljjxm.collect()
+    assert len(tables) == 50, len(tables)
+    assert sum(len(t["rows"]) for t in tables) == 1100
+
+    # Every table is the same 22 opponent modes, in PLYR.EQU order as
+    # the wrestler files write them.
+    for t in tables:
+        assert len(t["rows"]) == 22, (t["file"], t["line"])
+        assert t["section"] in ("mode_normal", "mode_running"), t["section"]
+        for row in t["rows"]:
+            assert row["mode_value"] in wljjxm.MODES.values()
+            if row["dx"] is None:
+                assert row["dz"] is None and row["less"] == row["more"]
+
+    # MODE_CHOKING (25) has no row anywhere: JJXM_END, the press does
+    # nothing. Stated as a measurement rather than assumed.
+    never = sorted(set(wljjxm.MODES) -
+                   {r["mode"] for t in tables for r in t["rows"]})
+    assert never == ["CHOKING"], never
+
+    with tempfile.TemporaryDirectory() as tmp:
+        out = pathlib.Path(tmp) / "jjxm_tables.c"
+        wljjxm.emit_c(tables, out)
+        shipped = ROOT / "src" / "generated" / "jjxm_tables.c"
+        assert out.read_text() == shipped.read_text(), \
+            "src/generated/jjxm_tables.c is not what tools/wljjxm.py emits"
+
+
+def test_doink_only_names_targets_his_tables_carry() -> None:
+    """A routed dispatcher must not compare against a label that is not
+    in the table it just read.
+
+    The dispatch is `strcmp(target, "#punch_hdbutt")`, which is how the
+    source's own labels stay visible in the C. It is also how a typo
+    becomes a branch that can never be taken and a move that silently
+    does not exist -- the same failure the sound seam had. So every
+    name Doink's file compares against is checked to be a target some
+    DOINK table actually names.
+    """
+    sys.path.insert(0, str(ROOT / "tools"))
+    import wljjxm  # noqa: E402
+
+    doink = ROOT / "src" / "core" / "arcade" / "wm_arcade_doink.c"
+    text = doink.read_text(errors="replace")
+    compared = set(re.findall(r'is\(t,\s*"([^"]+)"\)', text))
+    assert compared, "wm_arcade_doink.c no longer dispatches on targets"
+
+    targets = {row[key]
+               for t in wljjxm.collect() if t["wrestler"] == "DOINK"
+               for row in t["rows"] for key in ("less", "more")}
+    assert not (compared - targets), sorted(compared - targets)
+
+    # And the other way: every target Doink's six tables can produce is
+    # answered by something, so a row cannot quietly fall through.
+    assert not (targets - compared), sorted(targets - compared)
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

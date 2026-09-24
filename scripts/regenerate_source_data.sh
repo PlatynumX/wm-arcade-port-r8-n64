@@ -166,6 +166,10 @@ python3 "$ROOT/tools/wlwrestlertbl.py" \
     --out "$ROOT/src/generated/wrestler_anim_tables.c"
 python3 "$ROOT/tools/wlsmove.py" \
     --out-c "$ROOT/src/generated/smove_tables.c"
+# JJXM.H's opponent-mode move tables -- 1100 rows across the eight
+# wrestler files, which decide what every attack button actually does.
+python3 "$ROOT/tools/wljjxm.py" \
+    --out-c "$ROOT/src/generated/jjxm_tables.c"
 python3 "$ROOT/tools/wlpal.py" \
     --out "$ROOT/src/generated/palettes.c"
 python3 "$ROOT/tools/wlvoice.py" \

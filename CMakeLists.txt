@@ -112,6 +112,8 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_round_announce.c
     src/core/arcade/wm_arcade_getup_meter.c
     src/core/arcade/wm_arcade_bozo.c
+    src/core/arcade/wm_arcade_jjxm.c
+    src/generated/jjxm_tables.c
     src/core/wrestler_sound_labels.c
     src/core/arcade/wm_arcade_target.c
     src/core/arcade/wm_arcade_shake.c

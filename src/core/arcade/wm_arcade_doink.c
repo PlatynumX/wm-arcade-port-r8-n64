@@ -1,5 +1,7 @@
 #include "wm/arcade/wm_arcade_doink.h"
 #include "wm/arcade/wm_arcade_attach_anim.h"
+#include "wm/arcade/wm_arcade_jjxm.h"
+#include "wm/arcade/wmania_ring_geometry.h"
 #include <string.h>
 
 /*
@@ -111,7 +113,6 @@ static const struct labels L={
 
 static void setmode(wm_arcade_actor_t*a,uint16_t m){if(a&&a->player_mode!=WM_PMODE_DEAD)a->player_mode=m;}
 static int groundish(const wm_arcade_actor_t*o){return o&&(o->player_mode==WM_PMODE_ONGROUND||o->player_mode==WM_PMODE_DEAD);}
-static int nearxy(const wm_arcade_actor_t*a,int x,int z){return a&&a->closest_xdist<x&&a->closest_zdist<z;}
 static int face2(const wm_arcade_actor_t*a){return a&&(a->facing_dir&WM_MOVE_RIGHT);}
 static const char *face_label(const char*l2,const char*l4,const wm_arcade_actor_t*a){return face2(a)?l2:l4;}
 static void anim(wm_arcade_actor_t*a,const char*l,const wm_arcade_doink_callbacks_t*c){if(c&&c->change_anim_label&&l)c->change_anim_label(a,l,c->user);}
@@ -126,24 +127,173 @@ static int do_block(wm_arcade_actor_t*a,const wm_arcade_doink_env_t*e,const wm_a
     setmode(a,WM_PMODE_BLOCK);
     return 1;
 }
+/*
+ * ------------------------------------------------------------------
+ * DOINK.ASM's six JJXM tables (JJXM.H; wm/arcade/wm_arcade_jjxm.h).
+ *
+ * What stood here was one groundish()+near() approximation per button.
+ * It got the two common rows of each table about right and lost
+ * everything else: every row that names ONE target for a whole
+ * opponent mode (do_pile against a HEADHELD opponent, the big boot
+ * against a RUNNING or BOUNCING one, the turnbuckle spin kick against
+ * an INAIR2 one, the unconditional punch against a CLIMBTURNBKL one),
+ * the WAITANIM-and-below rows whose Z threshold is 62 rather than 60,
+ * the modes with no row at all -- MODE_CHOKING, where the press does
+ * nothing -- and the whole of mode_running, where the same buttons
+ * mean a flying clothesline and a belly flop. super_kick was not an
+ * approximation at all; it called basic_kick, so Doink's super kick
+ * was his light kick.
+ *
+ * Each handler below is a target one of the tables names, under the
+ * source's own label, so table and body can be read side by side.
+ */
+static uint16_t opp_mode(const wm_arcade_actor_t*o){
+    /* get_opp_plyrmode reads CLOSEST_NUM's process and the arcade
+       always has one. A NULL opponent is this port's own case; it is
+       answered the way the approximation answered it, through the
+       common arm that every table reaches at MODE_NORMAL. */
+    return o?(uint16_t)o->player_mode:(uint16_t)WM_PMODE_NORMAL;
+}
+static const char *jjxm(const char*section,const char*entry,
+                        const wm_arcade_actor_t*a,const wm_arcade_actor_t*o){
+    return wm_jjxm_select(wm_jjxm_find("DOINK",section,entry),opp_mode(o),
+                          a->closest_xdist,a->closest_zdist);
+}
+static int is(const char*target,const char*name){
+    return target&&strcmp(target,name)==0;
+}
+
+/* DOINK.ASM:1910 #punch_punch, which `std_punch` is an alias of. */
+static void dnk_punch_punch(wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_t*c){
+    anim(a,face_label(L.punch2,L.punch4,a),c); snd(a,"PUNCH",c);
+}
+/* :1921 #punch_hdbutt */
+static void dnk_punch_hdbutt(wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_t*c){
+    anim(a,face_label(L.close2,L.close4,a),c); snd(a,"HDBUTT",c);
+}
+/* :1931 #punch_lbowdrop */
+static void dnk_punch_lbowdrop(wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_t*c){
+    anim(a,face_label(L.ground2,L.ground4,a),c); snd(a,"LBOWDROP",c);
+}
+/* :2012 #spunch_slap */
+static void dnk_spunch_slap(wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_t*c){
+    anim(a,face_label("dnk_2_slap_anim","dnk_4_slap_anim",a),c); snd(a,"SPUNCH",c);
+}
+/* :2021 #spunch_special. Stick DOWN is the uppercut; otherwise an
+   xdist past 60 falls all the way back to the plain punch, and only
+   inside that does the double headbutt come out. */
+static void dnk_spunch_special(wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_t*c){
+    if(a->stick_val_cur&WM_MOVE_DOWN){
+        anim(a,"dnk_4_uppercut_anim",c); snd(a,"SPUNCH",c); return;
+    }
+    if(a->closest_xdist>60){ dnk_punch_punch(a,c); return; }
+    anim(a,face_label("dnk_2_butts_anim","dnk_4_butts_anim",a),c); snd(a,"HDBUTT",c);
+}
+/* :2067 #spunch_lbowdrop -- the hair grab. Three things have to hold:
+   the man on the mat is not DEAD, he is at least 20h whole pixels away
+   along X, and the two sprites' M_FLIPH bits DIFFER, which is what
+   "at his head rather than his feet" amounts to. `cmp a0,a14 / jrz
+   #no` means the SAME flip is the ordinary elbow drop. */
+static void dnk_spunch_lbowdrop(wm_arcade_actor_t*a,wm_arcade_actor_t*o,
+                                const wm_arcade_doink_callbacks_t*c){
+    int hair=0;
+    if(o&&o->player_mode!=WM_PMODE_DEAD){
+        int32_t dx=a->x_fixed-o->x_fixed;
+        if(dx<0)dx=-dx;
+        if((dx>>16)>=0x20&&
+           ((a->obj_control&WM_OBJ_FLIPH)!=(o->obj_control&WM_OBJ_FLIPH)))
+            hair=1;
+    }
+    if(hair) anim(a,face_label("dnk_2_hair_pickup_anim","dnk_4_hair_pickup_anim",a),c);
+    else     anim(a,face_label(L.ground2,L.ground4,a),c);
+    snd(a,"LBOWDROP",c);
+}
+/* :3451 do_pile, which lives in mode_headhold and which the
+   mode_normal super-punch table jumps into when the CLOSEST opponent
+   is HEADHELD -- a third wrestler attacking a man someone else is
+   holding, so it is reachable only in buddy and eight-on-one matches.
+   USR_VAR2 is Doink's repeated-uppercut flag and gates the whole
+   routine. */
+static void dnk_do_pile(wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_t*c){
+    if(!a->usr_var2) return;
+    if(c&&c->find_and_kill_endless)c->find_and_kill_endless(a,c->user);
+    if(a->stick_val_cur&WM_MOVE_DOWN){
+        snd(a,"UPRCUT",c); anim(a,"dnk_3_pile_driver_anim",c); return;
+    }
+    /* mode_headhold's own #punch, which do_pile falls into. */
+    if(c&&c->find_and_kill_endless)c->find_and_kill_endless(a,c->user);
+    if(a->stick_val_cur==(uint16_t)(a->new_facing_dir&0x0c)){
+        snd(a,"UPRCUT",c); anim(a,"dnk_uppercuts_to_head_anim",c); return;
+    }
+    anim(a,"dnk_uppercut_to_head_anim",c); snd(a,"UPRCUT",c);
+}
+/* :2169 #kick_kick, alias std_kick. */
+static void dnk_kick_kick(wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_t*c){
+    anim(a,face_label(L.kick2,L.kick4,a),c); snd(a,"KICK",c);
+}
+/* :2180 #kick_knee, alias std_knee. */
+static void dnk_kick_knee(wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_t*c){
+    anim(a,face_label(L.knee2,L.knee4,a),c); snd(a,"KICK",c);
+}
+/* :2190 #kick_stomp, and :2300 #skick_stomp, which is the same body. */
+static void dnk_kick_stomp(wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_t*c){
+    anim(a,face_label(L.stomp2,L.stomp4,a),c); snd(a,"KICK",c);
+}
+/* :2255 #skick_TB */
+static void dnk_skick_tb(wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_t*c){
+    anim(a,face_label("dnk_2_spin_kick_TB_anim","dnk_4_spin_kick_TB_anim",a),c);
+    snd(a,"FLYKICK",c);
+}
+/* :2265 #skick_kick, alias #graboh. */
+static void dnk_skick_kick(wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_t*c){
+    anim(a,face_label("dnk_2_spin_kick_anim","dnk_4_spin_kick_anim",a),c);
+    snd(a,"FLYKICK",c);
+}
+/* :2275 #skick_special. Holding TOWARD the opponent turns the knee
+   into the knee-fall; anything else is the plain knee. */
+static void dnk_skick_special(wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_t*c){
+    if(a->stick_val_cur==(uint16_t)(a->new_facing_dir&0x0c)){
+        anim(a,"dnk_4_knee_fall_anim",c); snd(a,"GRABHOLD",c); return;
+    }
+    anim(a,face_label(L.knee2,L.knee4,a),c); snd(a,"FLYKICK",c);
+}
+/* :2311 #skick_bigboot */
+static void dnk_skick_bigboot(wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_t*c){
+    anim(a,face_label("dnk_2_bigboot_anim","dnk_4_bigboot_anim",a),c);
+    snd(a,"FLYKICK",c);
+}
+
+/* ---- the four mode_normal tables ---- */
 static void basic_punch(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_doink_callbacks_t*c){
-    int cx=50,cz=45; int gx=160,gz=140;
-    if(groundish(o)&&nearxy(a,gx,gz)){anim(a,face_label(L.ground2,L.ground4,a),c);snd(a,"LBOWDROP_T1/LBOWDROP_T2",c);return;}
-    if(nearxy(a,cx,cz)){anim(a,face_label(L.close2,L.close4,a),c);snd(a,"HDBUTT_T1/HDBUTT_T2",c);}
-    else {anim(a,face_label(L.punch2,L.punch4,a),c);snd(a,"PUNCH_T1/PUNCH_T2",c);}
+    const char*t=jjxm("mode_normal","#punch",a,o);
+    if(is(t,"#punch_hdbutt"))        dnk_punch_hdbutt(a,c);
+    else if(is(t,"#punch_lbowdrop")) dnk_punch_lbowdrop(a,c);
+    else if(is(t,"#punch_punch"))    dnk_punch_punch(a,c);
 }
 static void basic_kick(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_doink_callbacks_t*c){
-    int cx=50,cz=50;
-    if(groundish(o)&&nearxy(a,160,140))anim(a,face_label(L.stomp2,L.stomp4,a),c);
-    else if(nearxy(a,cx,cz))anim(a,face_label(L.knee2,L.knee4,a),c);
-    else anim(a,face_label(L.kick2,L.kick4,a),c);
-    snd(a,"KICK_T1/KICK_T2",c);
+    const char*t=jjxm("mode_normal","#kick",a,o);
+    if(is(t,"#kick_knee"))       dnk_kick_knee(a,c);
+    else if(is(t,"#kick_stomp")) dnk_kick_stomp(a,c);
+    else if(is(t,"#skick_TB"))   dnk_skick_tb(a,c);
+    else if(is(t,"#kick_kick"))  dnk_kick_kick(a,c);
 }
 static void super_punch(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_doink_callbacks_t*c){
-    if(groundish(o)&&nearxy(a,160,140)){anim(a,face_label(L.ground2,L.ground4,a),c);return;}
-    if(a->closest_xdist<=85&&a->closest_zdist<55) anim(a,face_label("dnk_2_butts_anim","dnk_4_butts_anim",a),c); else anim(a,face_label("dnk_2_slap_anim","dnk_4_slap_anim",a),c); snd(a,"SPUNCH",c);
+    const char*t=jjxm("mode_normal","#super_punch",a,o);
+    if(is(t,"#spunch_special"))       dnk_spunch_special(a,c);
+    else if(is(t,"#spunch_lbowdrop")) dnk_spunch_lbowdrop(a,o,c);
+    else if(is(t,"#spunch_slap"))     dnk_spunch_slap(a,c);
+    else if(is(t,"do_pile"))          dnk_do_pile(a,c);
+    else if(is(t,"std_punch"))        dnk_punch_punch(a,c);
 }
-static void super_kick(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_doink_callbacks_t*c){basic_kick(a,o,c);}
+static void super_kick(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_doink_callbacks_t*c){
+    const char*t=jjxm("mode_normal","#super_kick",a,o);
+    if(is(t,"#skick_special"))      dnk_skick_special(a,c);
+    else if(is(t,"#skick_kick"))    dnk_skick_kick(a,c);
+    else if(is(t,"#skick_stomp"))   dnk_kick_stomp(a,c);
+    else if(is(t,"#skick_bigboot")) dnk_skick_bigboot(a,c);
+    else if(is(t,"#skick_TB"))      dnk_skick_tb(a,c);
+    else if(is(t,"std_kick"))       dnk_kick_kick(a,c);
+}
 
 static wm_arcade_doink_step_result_t mode_normal(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_doink_env_t*e,const wm_arcade_doink_callbacks_t*c){
     uint8_t ac;
@@ -164,20 +314,104 @@ static wm_arcade_doink_step_result_t mode_normal(wm_arcade_actor_t*a,wm_arcade_a
     if((a->but_val_cur&WM_BTN_BLOCK)&&do_block(a,e,c))return WM_DOINK_STEP_ACTION;
     ac=action_table[a->but_val_down&WM_BTN_ATTACK_MASK];
     if((a->but_val_cur&WM_BTN_ATTACK_MASK)==(WM_BTN_PUNCH|WM_BTN_KICK))ac=A_PUNCHKICK;
-    switch(ac){case A_PUNCH:basic_punch(a,o,c);break;case A_BLOCK:(void)do_block(a,e,c);break;case A_SPUNCH:super_punch(a,o,c);break;case A_KICK:basic_kick(a,o,c);break;case A_PUNCHKICK:anim(a,"start_run_anim",c);break;case A_SKICK:case A_GRABOH:super_kick(a,o,c);break;default:break;}
+    switch(ac){case A_PUNCH:basic_punch(a,o,c);break;case A_BLOCK:(void)do_block(a,e,c);break;case A_SPUNCH:super_punch(a,o,c);break;case A_KICK:basic_kick(a,o,c);break;case A_PUNCHKICK:anim(a,"start_run_anim",c);break;case A_SKICK:super_kick(a,o,c);break;case A_GRABOH:dnk_skick_kick(a,c);break;default:break;}
     if(a->anim_mode&WM_MODE_UNINT)return WM_DOINK_STEP_ACTION;
     a->move_dir=a->stick_val_cur;
     if(c&&c->climb_turnbuckle&&c->climb_turnbuckle(a,c->user)){if(c->jump_rope_audio)c->jump_rope_audio(a,c->user);return WM_DOINK_STEP_EXTERNAL;}
     if(c&&c->execute_walk)c->execute_walk(a,c->user);
     return WM_DOINK_STEP_ACTION;
 }
+/* ---- the two mode_running tables ------------------------------- */
+
+/*
+ * DOINK.ASM:2471 #punch_clothesline. Two gates before the lunge, and
+ * the source is emphatic about why: "Only allow clothesline if near
+ * centre of ring, and running toward opponent."
+ *
+ * The first is position -- past RING_X_MID+70h running right, or short
+ * of RING_X_MID-70h running left, and the press is simply dropped.
+ *
+ * The second is #mv_tbl, eleven longs indexed by NEW_FACING_DIR, whose
+ * value is a BIT NUMBER tested against MOVE_DIR. Facing left
+ * (UP_LEFT 5, DOWN_LEFT 6) stores MOVE_RIGHT_BIT and facing right
+ * (UP_RIGHT 9, DOWN_RIGHT 10) stores MOVE_LEFT_BIT, so a wrestler
+ * running AWAY from the way he faces is refused. Every other index
+ * holds 0, which is MOVE_UP_BIT -- so for those facings the test asks
+ * whether he is drifting up the screen. That is the table as written.
+ */
+static const uint8_t dnk_cline_mv_tbl[11] = {
+    0, 0, 0, 0, 0, 3 /* MOVE_RIGHT_BIT */, 3,
+    0, 0, 2 /* MOVE_LEFT_BIT */, 2
+};
+
+static wm_arcade_doink_step_result_t dnk_punch_clothesline(
+        wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_t*c){
+    unsigned idx;
+    if(a->move_dir&WM_MOVE_LEFT){
+        if(!(a->x_int>WM_RING_X_MID-0x70)) return WM_DOINK_STEP_IDLE;
+    } else {
+        if(!(a->x_int<WM_RING_X_MID+0x70)) return WM_DOINK_STEP_IDLE;
+    }
+    idx=(unsigned)(a->new_facing_dir&0xff);
+    if(idx<sizeof dnk_cline_mv_tbl/sizeof dnk_cline_mv_tbl[0]&&
+       (a->move_dir&(1<<dnk_cline_mv_tbl[idx])))
+        return WM_DOINK_STEP_IDLE;
+    anim(a,"dnk_fly_cline_anim",c);
+    setmode(a,WM_PMODE_INAIR);
+    a->run_time=0;
+    snd(a,"FLYKICK",c);
+    return WM_DOINK_STEP_ACTION;
+}
+
+/* :2530 #punch_lbowdrop / #punch_bellyflop -- two labels on one
+   instruction, which is why the table's 176/176 split has the same
+   body either side of it -- and :2622 #kick_runstomp, which is the
+   same move again. */
+static wm_arcade_doink_step_result_t dnk_run_belly(
+        wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_t*c){
+    anim(a,"dnk_belly_anim",c);
+    setmode(a,WM_PMODE_INAIR);
+    a->run_time=0;
+    snd(a,"FLYKICK",c);
+    return WM_DOINK_STEP_ACTION;
+}
+
+/* :2605 #kick_flyingkick. Note what it does NOT do: it is the one
+   member of this group that leaves RUN_TIME alone. */
+static wm_arcade_doink_step_result_t dnk_kick_flyingkick(
+        wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_t*c){
+    if(c&&c->ck_ignore&&c->ck_ignore(a,c->user)) return WM_DOINK_STEP_IDLE;
+    anim(a,L.flykick,c);
+    setmode(a,WM_PMODE_INAIR);
+    snd(a,"FLYKICK",c);
+    return WM_DOINK_STEP_ACTION;
+}
+
+static wm_arcade_doink_step_result_t run_punch(
+        wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_doink_callbacks_t*c){
+    const char*t=jjxm("mode_running","#punch",a,o);
+    if(is(t,"#punch_clothesline")) return dnk_punch_clothesline(a,c);
+    if(is(t,"#punch_bellyflop")||is(t,"#punch_lbowdrop")) return dnk_run_belly(a,c);
+    return WM_DOINK_STEP_IDLE;
+}
+static wm_arcade_doink_step_result_t run_kick(
+        wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_doink_callbacks_t*c){
+    const char*t=jjxm("mode_running","#kick",a,o);
+    if(is(t,"#kick_runstomp")) return dnk_run_belly(a,c);
+    if(is(t,"#kick_flyingkick")) return dnk_kick_flyingkick(a,c);
+    return WM_DOINK_STEP_IDLE;
+}
+
 static wm_arcade_doink_step_result_t mode_running(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_doink_env_t*e,const wm_arcade_doink_callbacks_t*c){
     int32_t v=0x00060000; a->run_time++; if(!a->usr_var1){if(c&&c->bounce_off_ropes)c->bounce_off_ropes(a,c->user);if(e&&e->hyper_speed_on>0&&e->hyper_speed_on<15)v<<=e->hyper_speed_on;if(!(a->move_dir&WM_MOVE_RIGHT))v=-v;a->x_vel=v;}
     if(a->stick_val_cur&WM_MOVE_UP)a->z_vel=-0x00020000;else if(a->stick_val_cur&WM_MOVE_DOWN)a->z_vel=0x00020000;else a->z_vel=0; if(a->getup_time||a->delay_butns)return WM_DOINK_STEP_IDLE;
     switch(action_table[a->but_val_down&WM_BTN_ATTACK_MASK]){
     case A_BLOCK:a->x_vel>>=1;setmode(a,WM_PMODE_NORMAL);(void)do_block(a,e,c);return WM_DOINK_STEP_ACTION;
-    case A_KICK:case A_SKICK:if(c&&c->ck_ignore&&c->ck_ignore(a,c->user))return WM_DOINK_STEP_IDLE;anim(a,L.flykick,c);setmode(a,WM_PMODE_INAIR);return WM_DOINK_STEP_ACTION;
-    case A_PUNCH:case A_SPUNCH:case A_PUNCHKICK:case A_GRABOH:basic_punch(a,o,c);return WM_DOINK_STEP_ACTION;
+    /* DOINK.ASM:2580's table, reached from #kick and #super_kick alike. */
+    case A_KICK:case A_SKICK:return run_kick(a,o,c);
+    /* :2444's table, reached from #punch, #super_punch, #punchkick and
+       #graboh alike -- the clothesline group. */
+    case A_PUNCH:case A_SPUNCH:case A_PUNCHKICK:case A_GRABOH:return run_punch(a,o,c);
     default:return WM_DOINK_STEP_IDLE;}
 }
 static wm_arcade_doink_step_result_t mode_bouncing(wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_t*c){a->x_vel=0;a->z_vel=0;if(a->anim_mode&WM_MODE_END){a->move_dir^=(WM_MOVE_LEFT+WM_MOVE_RIGHT);a->facing_dir=(a->new_facing_dir&(WM_MOVE_UP+WM_MOVE_DOWN))|a->move_dir;anim(a,L.run,c);setmode(a,WM_PMODE_RUNNING);return WM_DOINK_STEP_ACTION;}return WM_DOINK_STEP_IDLE;}

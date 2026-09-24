@@ -68,6 +68,16 @@ void wm_arcade_match_score_init(wm_arcade_match_score_t *score) {
     score->p1rounds = 0;
     score->p2rounds = 0;
     score->match_winner = 0;
+    /*
+     * And this one, which init did not touch while award_round read it.
+     * wm_match_start assigns it right after calling init (match.c), so
+     * the live path happened to be safe and the gap only showed up
+     * where a caller initialises a score and awards a round without
+     * going through the match -- which is what
+     * test_arcade_match_score_awards_rounds_and_sets_match_winner does,
+     * and why that test has been failing.
+     */
+    score->double_rounds = false;
 }
 
 void wm_arcade_match_score_award_round(wm_arcade_match_score_t *score, int winner_side) {

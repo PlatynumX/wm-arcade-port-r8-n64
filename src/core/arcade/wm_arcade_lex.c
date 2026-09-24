@@ -125,16 +125,16 @@ static int do_block(wm_arcade_actor_t*a,const wm_arcade_lex_env_t*e,const wm_arc
 }
 static void basic_punch(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_lex_callbacks_t*c){
     int cx=40,cz=45; int gx=160,gz=140;
-    if(groundish(o)&&nearxy(a,gx,gz)){anim(a,face_label(L.ground2,L.ground4,a),c);snd(a,"LBOWDROP_T1/LBOWDROP_T2",c);return;}
-    if(nearxy(a,cx,cz)){anim(a,face_label(L.close2,L.close4,a),c);snd(a,"HDBUTT_T1/HDBUTT_T2",c);}
-    else {anim(a,face_label(L.punch2,L.punch4,a),c);snd(a,"PUNCH_T1/PUNCH_T2",c);}
+    if(groundish(o)&&nearxy(a,gx,gz)){anim(a,face_label(L.ground2,L.ground4,a),c);snd(a,"LBOWDROP",c);return;}
+    if(nearxy(a,cx,cz)){anim(a,face_label(L.close2,L.close4,a),c);snd(a,"HDBUTT",c);}
+    else {anim(a,face_label(L.punch2,L.punch4,a),c);snd(a,"PUNCH",c);}
 }
 static void basic_kick(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_lex_callbacks_t*c){
     int cx=50,cz=50;
     if(groundish(o)&&nearxy(a,160,140))anim(a,face_label(L.stomp2,L.stomp4,a),c);
     else if(nearxy(a,cx,cz))anim(a,face_label(L.knee2,L.knee4,a),c);
     else anim(a,face_label(L.kick2,L.kick4,a),c);
-    snd(a,"KICK_T1/KICK_T2",c);
+    snd(a,"KICK",c);
 }
 static void super_punch(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_lex_callbacks_t*c){
     if(groundish(o)&&nearxy(a,160,140)){anim(a,face_label(L.ground2,L.ground4,a),c);return;}

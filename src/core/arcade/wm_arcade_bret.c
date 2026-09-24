@@ -93,7 +93,21 @@ const wm_arcade_bret_monitor_pattern_t wm_arcade_bret_monitor_patterns[9] = {
     { WM_BRET_MON_FINISH2, mon_finish2, 5, 60 }
 };
 
+/*
+ * ANIM.ASM's two primary-animation entry points. :4532 change_anim1
+ * returns without restarting when the request names the animation
+ * already running and that animation has not ended; :4542
+ * change_anim1a is the label on the instruction after both tests, so
+ * entering there always replays from frame 0.
+ *
+ * anim() is change_anim1a because that is what almost every call site
+ * in this file is. anim1() is the guarded one, and every use of it
+ * below names the source line it comes from.
+ */
 static void anim(wm_arcade_actor_t *a, wm_arcade_bret_anim_id_t id,
+                 const wm_arcade_bret_callbacks_t *cb)
+{ if (cb && cb->change_anim_restart) cb->change_anim_restart(a,id,cb->user); }
+static void anim1(wm_arcade_actor_t *a, wm_arcade_bret_anim_id_t id,
                  const wm_arcade_bret_callbacks_t *cb)
 { if (cb && cb->change_anim) cb->change_anim(a,id,cb->user); }
 static void snd(wm_arcade_actor_t *a, wm_arcade_bret_sound_id_t id,
@@ -128,7 +142,8 @@ static int do_block(wm_arcade_actor_t *a,const wm_arcade_bret_env_t *e,const wm_
 {
     if (e && e->blocking_off) return 0;
     if (cb && cb->round_award_block) cb->round_award_block(a,cb->user);
-    anim(a,WM_BRET_ANIM_BLOCK4,cb); snd(a,WM_BRET_SND_BLOCK_WOOSH,cb);
+    anim1(a,WM_BRET_ANIM_BLOCK4,cb);    /* :1574 change_anim1 */
+    snd(a,WM_BRET_SND_BLOCK_WOOSH,cb);
     a->block_time=0; return 1;
 }
 
@@ -179,7 +194,11 @@ static void hrt_spunch_special(wm_arcade_actor_t *a,const wm_arcade_bret_callbac
         anim(a,WM_BRET_ANIM_UPPERCUT4,cb); snd(a,WM_BRET_SND_UPRCUT,cb); return;
     }
     if (a->closest_xdist > 55) { hrt_punch_punch(a,cb); return; }
-    anim(a,f24(a,WM_BRET_ANIM_BUTTS2,WM_BRET_ANIM_BUTTS4),cb); snd(a,WM_BRET_SND_HDBUTT,cb);
+    /* :1658 change_anim1. The uppercut arm just above is :1666
+       change_anim1a -- Doink's #ck_up uppercut is the guarded one and
+       Bret's is not, so this really is per wrestler. */
+    anim1(a,f24(a,WM_BRET_ANIM_BUTTS2,WM_BRET_ANIM_BUTTS4),cb);
+    snd(a,WM_BRET_SND_HDBUTT,cb);
 }
 /*
  * :1674 #spunch_lbowdrop. Bret's is the one with THREE arms, and its
@@ -198,7 +217,8 @@ static void hrt_spunch_lbowdrop(wm_arcade_actor_t *a,wm_arcade_actor_t *o,
         dx >>= 16;
         if (dx >= 0x30) {
             if ((a->obj_control & WM_OBJ_FLIPH) != (o->obj_control & WM_OBJ_FLIPH)) {
-                anim(a,f24(a,WM_BRET_ANIM_HAIR_PICKUP2,WM_BRET_ANIM_HAIR_PICKUP4),cb);
+                /* :1710 change_anim1 */
+                anim1(a,f24(a,WM_BRET_ANIM_HAIR_PICKUP2,WM_BRET_ANIM_HAIR_PICKUP4),cb);
                 snd(a,WM_BRET_SND_LBOWDROP,cb); return;
             }
             if (dx >= 0x40) {
@@ -207,7 +227,9 @@ static void hrt_spunch_lbowdrop(wm_arcade_actor_t *a,wm_arcade_actor_t *o,
             }
         }
     }
-    anim(a,f24(a,WM_BRET_ANIM_GROUND_PUNCH2,WM_BRET_ANIM_GROUND_PUNCH4),cb);
+    /* :1727 #no, change_anim1 -- while :1555 #punch_lbowdrop selects
+       the same pair of animations with change_anim1a. */
+    anim1(a,f24(a,WM_BRET_ANIM_GROUND_PUNCH2,WM_BRET_ANIM_GROUND_PUNCH4),cb);
     snd(a,WM_BRET_SND_LBOWDROP,cb);
 }
 /* :1798 #kick_kick (std_kick), :1808 #kick_knee (std_knee), :1818
@@ -239,7 +261,8 @@ static void hrt_skick_kick(wm_arcade_actor_t *a,const wm_arcade_bret_callbacks_t
 static void hrt_skick_special(wm_arcade_actor_t *a,const wm_arcade_bret_callbacks_t *cb)
 {
     if (a->stick_val_cur != (uint16_t)(a->new_facing_dir & 0x0c)) { hrt_kick_knee(a,cb); return; }
-    anim(a,WM_BRET_ANIM_KNEE_FALL4,cb); snd(a,WM_BRET_SND_KICK,cb);
+    anim1(a,WM_BRET_ANIM_KNEE_FALL4,cb);  /* :1901 change_anim1 */
+    snd(a,WM_BRET_SND_KICK,cb);
 }
 
 static void do_punch(wm_arcade_actor_t *a,wm_arcade_actor_t *o,const wm_arcade_bret_callbacks_t *cb)

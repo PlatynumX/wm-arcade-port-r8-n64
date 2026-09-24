@@ -219,6 +219,9 @@ const wm_visual_sequence *wm_bret_rotate_anim(int old_facing_compass, int new_fa
 /* wm_arcade_bret_callbacks_t.change_anim body. */
 void wm_bret_backend_change_anim(wm_arcade_actor_t *actor,
                                  wm_arcade_bret_anim_id_t id, void *user);
+void wm_bret_backend_change_anim_restart(wm_arcade_actor_t *actor,
+                                         wm_arcade_bret_anim_id_t id,
+                                         void *user);
 /* wm_arcade_bret_callbacks_t.change_torso_anim body. */
 void wm_bret_backend_change_torso_anim(wm_arcade_actor_t *actor,
                                        wm_arcade_bret_anim_id_t id, void *user);

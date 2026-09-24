@@ -118,7 +118,19 @@ static int groundish(const wm_arcade_actor_t*o){return o&&(o->player_mode==WM_PM
    and Razor had it right; these six did not. */
 static int face2(const wm_arcade_actor_t*a){return a&&(a->facing_dir&WM_MOVE_UP);}
 static const char *face_label(const char*l2,const char*l4,const wm_arcade_actor_t*a){return face2(a)?l2:l4;}
-static void anim(wm_arcade_actor_t*a,const char*l,const wm_arcade_yoko_callbacks_t*c){if(c&&c->change_anim_label&&l)c->change_anim_label(a,l,c->user);}
+/*
+ * ANIM.ASM's two primary-animation entry points. :4532 change_anim1
+ * returns without restarting when the request names the animation
+ * already running and that animation has not ended; :4542
+ * change_anim1a is the label on the instruction after both tests, so
+ * entering there always replays from frame 0.
+ *
+ * anim() is change_anim1a because that is what almost every call site
+ * in this file is. anim1() is the guarded one, and every use of it
+ * below names the source line it comes from.
+ */
+static void anim(wm_arcade_actor_t*a,const char*l,const wm_arcade_yoko_callbacks_t*c){if(c&&c->change_anim_restart&&l)c->change_anim_restart(a,l,c->user);}
+static void anim1(wm_arcade_actor_t*a,const char*l,const wm_arcade_yoko_callbacks_t*c){if(c&&c->change_anim_label&&l)c->change_anim_label(a,l,c->user);}
 static void snd(wm_arcade_actor_t*a,const char*l,const wm_arcade_yoko_callbacks_t*c){if(c&&c->sound_label&&l)c->sound_label(a,l,c->user);}
 static void startsp(wm_arcade_actor_t*a,const char*l,const wm_arcade_yoko_callbacks_t*c){if(!a||!l)return;if(c&&c->resolve_label_token)a->special_move_addr=c->resolve_label_token(l,c->user);if(c&&c->start_special_label)c->start_special_label(a,l,c->user);}
 
@@ -166,7 +178,8 @@ static void yok_spunch_slap(wm_arcade_actor_t*a,const wm_arcade_yoko_callbacks_t
 /* :1465 #spunch_special */
 static void yok_spunch_special(wm_arcade_actor_t*a,const wm_arcade_yoko_callbacks_t*c){
     if(a->stick_val_cur&WM_MOVE_DOWN){
-        anim(a,"yok_4_uppercut_anim",c); snd(a,"HDBUTT",c); return;
+        anim1(a,"yok_4_uppercut_anim",c);   /* :1487 #ck_up, change_anim1 */
+        snd(a,"HDBUTT",c); return;
     }
     anim(a,face_label("yok_2_jabs_anim","yok_4_jabs_anim",a),c); snd(a,"HDBUTT",c);
 }
@@ -181,8 +194,9 @@ static void yok_spunch_lbowdrop(wm_arcade_actor_t*a,wm_arcade_actor_t*o,
            ((a->obj_control&WM_OBJ_FLIPH)!=(o->obj_control&WM_OBJ_FLIPH)))
             hair=1;
     }
-    if(hair) anim(a,face_label("yok_2_hair_pickup_anim","yok_4_hair_pickup_anim",a),c);
-    else     anim(a,face_label(L.ground2,L.ground4,a),c);
+    /* :1529 and :1535, both change_anim1. */
+    if(hair) anim1(a,face_label("yok_2_hair_pickup_anim","yok_4_hair_pickup_anim",a),c);
+    else     anim1(a,face_label(L.ground2,L.ground4,a),c);
     snd(a,"LBOWDROP",c);
 }
 /* :1597 #kick_kick, :1606 #kick_knee, :1615 #kick_stomp -- and :1702

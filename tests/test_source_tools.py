@@ -4341,5 +4341,133 @@ def test_every_routed_dispatcher_names_only_real_targets() -> None:
     assert routed == 8, routed
 
 
+def test_the_guarded_change_anim_count_matches_the_source() -> None:
+    """Each dispatcher's anim1() count matches its file's live
+    `calla change_anim1` sites, minus the ones in modes nobody ported.
+
+    ANIM.ASM:4532 change_anim1 does nothing when the request names the
+    animation already running; :4542 change_anim1a always replays from
+    frame 0. The port had ONE seam, which always guarded, so every
+    change_anim1a call site in these eight files behaved as a
+    change_anim1 -- a mashed move could not retrigger while its own
+    animation was still playing.
+
+    Counting is the check that survives refactoring: it does not care
+    which line a call sits on, only that the number of guarded
+    selections in the C equals the number in the assembly. The
+    subtracted rows are the guarded calls that live in a mode no
+    dispatcher implements, each named with the mode it is waiting on,
+    so translating that mode makes this test fail until its anim1()
+    arrives.
+    """
+    sys.path.insert(0, str(ROOT / "tools"))
+    import wljjxm  # noqa: E402
+
+    asm = ROOT / "original" / "wwf-wrestlemania"
+    arcade = ROOT / "src" / "core" / "arcade"
+    # {source line: the unported mode the guarded call sits in}
+    unported = {
+        "BRET":  {},
+        "RAZOR": {},
+        "TAKER": {3038: "mode_chokehold"},
+        "YOKO":  {2282: "mode_oppoverhead"},
+        "SHAWN": {},
+        "BAM":   {2453: "mode_oppoverhead"},
+        "DOINK": {},
+        "LEX":   {2273: "mode_oppoverhead"},
+    }
+    guarded = re.compile(r"\bcalla\s+change_anim1(?![0-9A-Za-z_])")
+    for wrestler, stem in (("BRET", "bret"), ("RAZOR", "razor"),
+                           ("TAKER", "taker"), ("YOKO", "yoko"),
+                           ("SHAWN", "shawn"), ("BAM", "bam"),
+                           ("DOINK", "doink"), ("LEX", "lex")):
+        lines = (asm / (wrestler + ".ASM")).read_text(
+            errors="replace").split("\n")
+        sites = [n for n, raw in enumerate(lines, 1)
+                 if guarded.search(wljjxm.strip_comment(raw))]
+        skip = unported[wrestler]
+        for line in skip:
+            assert line in sites, (wrestler, line, "no longer a guarded site")
+        want = len(sites) - len(skip)
+        text = _strip_comments(
+            (arcade / ("wm_arcade_%s.c" % stem)).read_text(errors="replace"))
+        calls = len(re.findall(r"\banim1\s*\(", text))
+        defs = len(re.findall(r"static\s+void\s+anim1\s*\(", text))
+        assert defs == 1, (wrestler, defs)
+        got = calls - defs
+        assert got == want, (wrestler, got, want, sorted(skip.items()))
+
+
+def test_the_restart_seam_is_bound_wherever_the_guarded_one_is() -> None:
+    """Nothing may fill a guarded change_anim seam without also filling
+    its restart twin.
+
+    The two are separate function pointers with no fallback between
+    them, deliberately: a seam nobody fills should be visibly unfilled
+    rather than quietly degrade to the other entry point. The cost is
+    that a caller binding only one silently drops every call through
+    the other -- which is what happened to the test harnesses the first
+    time this split was built, and is why it is a rule now.
+
+    Which structs are in scope is read from the headers, not listed
+    here: a callbacks type counts when it declares BOTH fields, so
+    wm_arcade_react1_callbacks_t and the death_anim bridge, which have
+    a change_anim and no restart twin, are out of scope by construction
+    rather than by exception.
+    """
+    kinds, aliases = {}, []
+    for header in sorted((ROOT / "include").rglob("*.h")):
+        text = _strip_comments(header.read_text(errors="replace"))
+        for m in re.finditer(r"typedef struct \w+ \{(.*?)\}\s*(\w+);",
+                             text, re.S):
+            body, name = m.group(1), m.group(2)
+            fields = set(re.findall(r"\(\*(\w+)\)", body))
+            for guard, restart in (("change_anim_label", "change_anim_restart"),
+                                   ("change_anim", "change_anim_restart"),
+                                   ("change_torso_label", "change_torso_restart")):
+                if guard in fields and restart in fields:
+                    kinds.setdefault(name, []).append((guard, restart))
+        aliases += re.findall(r"typedef\s+(\w+)\s+(\w+);", text)
+    # A per-wrestler alias of the shared struct is the same struct. Headers
+    # are swept in name order, so an alias can be read BEFORE the struct it
+    # names (wm_arcade_doink.h sorts ahead of wm_arcade_roster.h) -- resolve
+    # to a fixed point rather than in one pass. Getting that wrong is not
+    # academic: it silently emptied this sweep the first time it was written.
+    changed = True
+    while changed:
+        changed = False
+        for base, alias in aliases:
+            if base in kinds and alias not in kinds:
+                kinds[alias] = list(kinds[base])
+                changed = True
+    assert kinds, "no callbacks struct declares both entry points"
+    for stem in ("bret", "razor", "taker", "yoko", "shawn", "bam",
+                 "doink", "lex", "roster"):
+        assert "wm_arcade_%s_callbacks_t" % stem in kinds, stem
+
+    sources = (sorted((ROOT / "src").rglob("*.c"))
+               + sorted((ROOT / "tests").rglob("*.c"))
+               + sorted((ROOT / "tests").rglob("*.h")))
+    checked = 0
+    for path in sources:
+        text = _strip_comments(path.read_text(errors="replace"))
+        for kind, pairs in kinds.items():
+            for var in set(re.findall(
+                    r"\b%s\s+(\w+)\s*[;=]" % re.escape(kind), text)):
+                for guard, restart in pairs:
+                    bound = re.search(
+                        r"\b%s\s*(?:\.|->)\s*%s\s*=\s*([A-Za-z_]\w*)\s*;"
+                        % (re.escape(var), re.escape(guard)), text)
+                    if not bound or bound.group(1) in ("NULL", "0"):
+                        continue
+                    checked += 1
+                    twin = re.search(
+                        r"\b%s\s*(?:\.|->)\s*%s\s*=" % (re.escape(var),
+                                                          re.escape(restart)),
+                        text)
+                    assert twin, (str(path.relative_to(ROOT)), var, guard)
+    assert checked, "the sweep found nothing to check"
+
+
 if __name__ == "__main__":
     raise SystemExit(main())

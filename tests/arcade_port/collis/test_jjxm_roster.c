@@ -37,6 +37,7 @@ static wm_arcade_roster_callbacks_t cbs(void) {
     wm_arcade_roster_callbacks_t c;
     memset(&c, 0, sizeof c);
     c.change_anim_label = cap_anim;
+    c.change_anim_restart = cap_anim;
     c.sound_label = cap_snd;
     return c;
 }

@@ -155,6 +155,7 @@ typedef struct wm_arcade_razor_env {
 
 typedef struct wm_arcade_razor_callbacks {
     void (*change_anim)(wm_arcade_actor_t *, wm_arcade_razor_anim_id_t, void *);
+    void (*change_anim_restart)(wm_arcade_actor_t *, wm_arcade_razor_anim_id_t, void *);
     void (*change_torso_anim)(wm_arcade_actor_t *, wm_arcade_razor_anim_id_t, void *);
     void (*sound)(wm_arcade_actor_t *, wm_arcade_razor_sound_id_t, void *);
     void (*check_secret_moves)(wm_arcade_actor_t *, const wm_arcade_razor_secret_pattern_t *, size_t, void *);

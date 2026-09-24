@@ -13,7 +13,7 @@ static int ign(wm_arcade_actor_t*a,void*u){(void)a;(void)u;return 0;}
 static int combo_ok(wm_arcade_actor_t*a,void*u){(void)a;(void)u;return 0;}
 int main(void){
  wm_arcade_actor_t a,o; tr_t t; wm_arcade_bret_env_t e={1000,0,0,0,0}; wm_arcade_bret_callbacks_t c;
- memset(&a,0,sizeof(a));memset(&o,0,sizeof(o));memset(&t,0,sizeof(t));memset(&c,0,sizeof(c)); c.change_anim=an;c.sound=so;c.execute_walk=wa;c.check_secret_moves=sec;c.ck_ignore=ign;c.check_combo_go=combo_ok;c.user=&t;
+ memset(&a,0,sizeof(a));memset(&o,0,sizeof(o));memset(&t,0,sizeof(t));memset(&c,0,sizeof(c)); c.change_anim=an;c.change_anim_restart=an;c.change_anim_restart=an;c.sound=so;c.execute_walk=wa;c.check_secret_moves=sec;c.ck_ignore=ign;c.check_combo_go=combo_ok;c.user=&t;
  a.player_mode=WM_PMODE_NORMAL;a.facing_dir=WM_MOVE_UP_RIGHT;a.new_facing_dir=WM_MOVE_RIGHT;a.closest_xdist=40;a.closest_zdist=20;a.but_val_down=WM_BTN_PUNCH;o.player_mode=WM_PMODE_NORMAL;
  assert(wm_arcade_move_bret(&a,&o,&e,&c)==WM_BRET_STEP_ACTION);assert(t.anim==WM_BRET_ANIM_BUTT2&&t.sound==WM_BRET_SND_HDBUTT&&t.secrets==1);
  memset(&t,0,sizeof(t));a.player_mode=WM_PMODE_NORMAL;a.but_val_down=WM_BTN_SPUNCH;a.stick_val_cur=WM_MOVE_DOWN;a.closest_xdist=30;a.closest_zdist=20;

@@ -120,13 +120,25 @@ static int groundish(const wm_arcade_actor_t*o){return o&&(o->player_mode==WM_PM
    and Razor had it right; these six did not. */
 static int face2(const wm_arcade_actor_t*a){return a&&(a->facing_dir&WM_MOVE_UP);}
 static const char *face_label(const char*l2,const char*l4,const wm_arcade_actor_t*a){return face2(a)?l2:l4;}
-static void anim(wm_arcade_actor_t*a,const char*l,const wm_arcade_doink_callbacks_t*c){if(c&&c->change_anim_label&&l)c->change_anim_label(a,l,c->user);}
+/*
+ * ANIM.ASM's two primary-animation entry points. :4532 change_anim1
+ * returns without restarting when the request names the animation
+ * already running and that animation has not ended; :4542
+ * change_anim1a is the label on the instruction after both tests, so
+ * entering there always replays from frame 0.
+ *
+ * anim() is change_anim1a because that is what almost every call site
+ * in this file is. anim1() is the guarded one, and every use of it
+ * below names the source line it comes from.
+ */
+static void anim(wm_arcade_actor_t*a,const char*l,const wm_arcade_doink_callbacks_t*c){if(c&&c->change_anim_restart&&l)c->change_anim_restart(a,l,c->user);}
+static void anim1(wm_arcade_actor_t*a,const char*l,const wm_arcade_doink_callbacks_t*c){if(c&&c->change_anim_label&&l)c->change_anim_label(a,l,c->user);}
 static void snd(wm_arcade_actor_t*a,const char*l,const wm_arcade_doink_callbacks_t*c){if(c&&c->sound_label&&l)c->sound_label(a,l,c->user);}
 static void startsp(wm_arcade_actor_t*a,const char*l,const wm_arcade_doink_callbacks_t*c){if(!a||!l)return;if(c&&c->resolve_label_token)a->special_move_addr=c->resolve_label_token(l,c->user);if(c&&c->start_special_label)c->start_special_label(a,l,c->user);}
 
 static int do_block(wm_arcade_actor_t*a,const wm_arcade_doink_env_t*e,const wm_arcade_doink_callbacks_t*c){
     if(e&&e->blocking_off)return 0;
-    anim(a,L.block,c);
+    anim1(a,L.block,c);                 /* :1949 change_anim1 */
     a->block_time=0;
     snd(a,"BLOCK_WOOSH",c);
     setmode(a,WM_PMODE_BLOCK);
@@ -179,10 +191,12 @@ static void dnk_spunch_slap(wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_
    inside that does the double headbutt come out. */
 static void dnk_spunch_special(wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_t*c){
     if(a->stick_val_cur&WM_MOVE_DOWN){
-        anim(a,"dnk_4_uppercut_anim",c); snd(a,"SPUNCH",c); return;
+        anim1(a,"dnk_4_uppercut_anim",c);   /* :2061 change_anim1 */
+        snd(a,"SPUNCH",c); return;
     }
     if(a->closest_xdist>60){ dnk_punch_punch(a,c); return; }
-    anim(a,face_label("dnk_2_butts_anim","dnk_4_butts_anim",a),c); snd(a,"HDBUTT",c);
+    anim1(a,face_label("dnk_2_butts_anim","dnk_4_butts_anim",a),c); /* :2051 */
+    snd(a,"HDBUTT",c);
 }
 /* :2067 #spunch_lbowdrop -- the hair grab. Three things have to hold:
    the man on the mat is not DEAD, he is at least 20h whole pixels away
@@ -199,8 +213,10 @@ static void dnk_spunch_lbowdrop(wm_arcade_actor_t*a,wm_arcade_actor_t*o,
            ((a->obj_control&WM_OBJ_FLIPH)!=(o->obj_control&WM_OBJ_FLIPH)))
             hair=1;
     }
-    if(hair) anim(a,face_label("dnk_2_hair_pickup_anim","dnk_4_hair_pickup_anim",a),c);
-    else     anim(a,face_label(L.ground2,L.ground4,a),c);
+    /* :2102 and :2107, both change_anim1 -- unlike :1931 #punch_lbowdrop,
+       which is the same animation entered with change_anim1a. */
+    if(hair) anim1(a,face_label("dnk_2_hair_pickup_anim","dnk_4_hair_pickup_anim",a),c);
+    else     anim1(a,face_label(L.ground2,L.ground4,a),c);
     snd(a,"LBOWDROP",c);
 }
 /* :3451 do_pile, which lives in mode_headhold and which the
@@ -209,18 +225,30 @@ static void dnk_spunch_lbowdrop(wm_arcade_actor_t*a,wm_arcade_actor_t*o,
    holding, so it is reachable only in buddy and eight-on-one matches.
    USR_VAR2 is Doink's repeated-uppercut flag and gates the whole
    routine. */
-static void dnk_do_pile(wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_t*c){
-    if(!a->usr_var2) return;
-    if(c&&c->find_and_kill_endless)c->find_and_kill_endless(a,c->user);
-    if(a->stick_val_cur&WM_MOVE_DOWN){
-        snd(a,"UPRCUT",c); anim(a,"dnk_3_pile_driver_anim",c); return;
-    }
-    /* mode_headhold's own #punch, which do_pile falls into. */
+/* :3430 mode_headhold's #punch. Holding TOWARD the opponent is the
+   PLURAL dnk_uppercuts_to_head_anim -- the combo animation -- and
+   anything else is the single dnk_uppercut_to_head_anim. The source
+   plays the sound BEFORE the animation on the first arm and AFTER it
+   on the second; both orders are kept because the port's snd() and
+   anim() are separate seams and the ordering is the only record of
+   which arm ran. */
+static void dnk_hdhold_punch(wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_t*c){
     if(c&&c->find_and_kill_endless)c->find_and_kill_endless(a,c->user);
     if(a->stick_val_cur==(uint16_t)(a->new_facing_dir&0x0c)){
         snd(a,"UPRCUT",c); anim(a,"dnk_uppercuts_to_head_anim",c); return;
     }
     anim(a,"dnk_uppercut_to_head_anim",c); snd(a,"UPRCUT",c);
+}
+static void dnk_do_pile(wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_t*c){
+    if(!a->usr_var2) return;            /* `jrz #z` -- nothing at all */
+    if(c&&c->find_and_kill_endless)c->find_and_kill_endless(a,c->user);
+    if(!(a->stick_val_cur&WM_MOVE_DOWN)){
+        /* `jrz #punch`: falls into #punch, which calls
+           FIND_AND_KILL_ENDLESS a second time. */
+        dnk_hdhold_punch(a,c);
+        return;
+    }
+    snd(a,"UPRCUT",c); anim(a,"dnk_3_pile_driver_anim",c);
 }
 /* :2169 #kick_kick, alias std_kick. */
 static void dnk_kick_kick(wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_t*c){
@@ -248,9 +276,11 @@ static void dnk_skick_kick(wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_t
    into the knee-fall; anything else is the plain knee. */
 static void dnk_skick_special(wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_t*c){
     if(a->stick_val_cur==(uint16_t)(a->new_facing_dir&0x0c)){
-        anim(a,"dnk_4_knee_fall_anim",c); snd(a,"GRABHOLD",c); return;
+        anim1(a,"dnk_4_knee_fall_anim",c);  /* :2293 change_anim1 */
+        snd(a,"GRABHOLD",c); return;
     }
-    anim(a,face_label(L.knee2,L.knee4,a),c); snd(a,"FLYKICK",c);
+    anim1(a,face_label(L.knee2,L.knee4,a),c); /* :2284 change_anim1 */
+    snd(a,"FLYKICK",c);
 }
 /* :2311 #skick_bigboot */
 static void dnk_skick_bigboot(wm_arcade_actor_t*a,const wm_arcade_doink_callbacks_t*c){
@@ -431,10 +461,65 @@ static wm_arcade_doink_step_result_t mode_headhold(wm_arcade_actor_t*a,wm_arcade
         anim(a,(e&&(e->pcnt&1))?L.bozo_b:L.bozo_a,c);
         return WM_DOINK_STEP_ACTION;
     }
-    uint8_t ac;if(!o||o->player_mode!=WM_PMODE_HEADHELD){a->z_fixed-=6<<16;setmode(a,WM_PMODE_NORMAL);return WM_DOINK_STEP_ACTION;}if(a->anim_mode&WM_MODE_UNINT)return WM_DOINK_STEP_IDLE;ac=action_table[a->but_val_down&WM_BTN_ATTACK_MASK];
-    if(ac==A_PUNCH||ac==A_SPUNCH||ac==A_KICK||ac==A_PUNCHKICK){if(c&&c->find_and_kill_endless)c->find_and_kill_endless(a,c->user);}
-    if(ac==A_SPUNCH){anim(a,"dnk_combo_uppercut_to_head_anim",c);return WM_DOINK_STEP_ACTION;}
-    if(ac==A_PUNCH||ac==A_KICK||ac==A_PUNCHKICK){anim(a,L.close4,c);return WM_DOINK_STEP_ACTION;}return WM_DOINK_STEP_IDLE;
+    /*
+     * `#fail`. The mode reads WHOIHIT, not the caller's opponent: this
+     * is the man Doink has by the head, who need not be the closest
+     * wrestler once a third one is in the ring.
+     */
+    wm_arcade_actor_t *v = a->who_i_hit ? a->who_i_hit : o;
+    uint8_t ac;
+    if(!v||v->player_mode!=WM_PMODE_HEADHELD){
+        /*
+         * `#exit`: drop six units of Z, then FACE the opponent --
+         * MOVE_DOWN_RIGHT normally and MOVE_DOWN_LEFT when B_FLIPH is
+         * set -- into BOTH FACING_DIR and NEW_FACING_DIR, and only
+         * then SETMODE NORMAL. The facing write used to be missing,
+         * so letting go of a head hold left Doink pointing wherever
+         * the hold had put him.
+         */
+        int32_t f=(a->obj_control&WM_OBJ_FLIPH)?WM_MOVE_DOWN_LEFT
+                                              :WM_MOVE_DOWN_RIGHT;
+        a->z_fixed-=6<<16;
+        a->facing_dir=f;
+        a->new_facing_dir=f;
+        setmode(a,WM_PMODE_NORMAL);
+        return WM_DOINK_STEP_ACTION;
+    }
+    if(a->anim_mode&WM_MODE_UNINT)return WM_DOINK_STEP_IDLE;
+    /*
+     * mode_headhold's OWN #action_table (:3411). Same shape as
+     * mode_normal's, and its #block, #graboh and #z all fall on one
+     * `rets`, so three of the eight actions do nothing here.
+     *
+     * Every animation below is change_anim1a. That is not incidental:
+     * #punch restarting from frame 0 on each press is what the
+     * repeated-uppercut combo is, and USR_VAR2 -- which do_pile checks
+     * -- is the flag that combo sets.
+     */
+    ac=action_table[a->but_val_down&WM_BTN_ATTACK_MASK];
+    switch(ac){
+    case A_PUNCH:                                   /* :3430 #punch */
+        dnk_hdhold_punch(a,c);
+        return WM_DOINK_STEP_ACTION;
+    case A_SPUNCH:                                  /* :3451 #super_punch */
+        dnk_do_pile(a,c);
+        return WM_DOINK_STEP_ACTION;
+    case A_KICK: case A_PUNCHKICK:                  /* :3467 #kick/#punchkick */
+        if(c&&c->find_and_kill_endless)c->find_and_kill_endless(a,c->user);
+        snd(a,"KICK",c);
+        anim(a,"dnk_3_knee_to_head_anim",c);
+        return WM_DOINK_STEP_ACTION;
+    case A_SKICK:                                   /* :3477 #super_kick */
+        /* Toward the opponent only; anything else falls on #z. */
+        if(a->stick_val_cur!=(uint16_t)(a->new_facing_dir&0x0c))
+            return WM_DOINK_STEP_IDLE;
+        if(c&&c->find_and_kill_endless)c->find_and_kill_endless(a,c->user);
+        snd(a,"KICK",c);
+        anim(a,"dnk_3_knees_to_head_anim",c);
+        return WM_DOINK_STEP_ACTION;
+    default:                                        /* #block, #graboh, #z */
+        return WM_DOINK_STEP_IDLE;
+    }
 }
 
 wm_arcade_doink_step_result_t wm_arcade_move_doink(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_doink_env_t*e,const wm_arcade_doink_callbacks_t*c){

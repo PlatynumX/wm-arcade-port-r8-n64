@@ -53,8 +53,33 @@ typedef struct wm_arcade_roster_env {
 } wm_arcade_roster_env_t;
 
 typedef struct wm_arcade_roster_callbacks {
+    /*
+     * ANIM.ASM has TWO primary-animation entry points and the eight
+     * wrestler files call both, deliberately:
+     *
+     *   :4532 change_anim1   -- if MODE_END_BIT is set restart anyway,
+     *                           otherwise compare ANIBASE to the request
+     *                           and RETURN WITHOUT RESTARTING when they
+     *                           are the same animation.
+     *   :4542 change_anim1a  -- the tail of change_anim1, entered
+     *                           directly: always reset ANIBASE, ANIPC,
+     *                           ANIMODE, ANICNT and OBJ_GRAVITY and run
+     *                           animate_wrestler1 from the top.
+     *
+     * change_anim_label is change_anim1 (guarded); change_anim_restart
+     * is change_anim1a (unguarded). Which one a move uses is visible
+     * behaviour, not a detail: a held block must NOT retrigger each
+     * tick, while a mashed stomp MUST replay from frame 0. 44 of the
+     * roughly 450 call sites in the eight wrestler files are the
+     * guarded form; everything else is change_anim1a.
+     */
     void (*change_anim_label)(wm_arcade_actor_t *, const char *source_label, void *);
+    void (*change_anim_restart)(wm_arcade_actor_t *, const char *source_label, void *);
+    /* :4563 change_anim2 / :4573 change_anim2a, the same split on the
+       second channel. The guarded form is the walk torso and the three
+       mode_oppoverhead stands; every *_ani_init is the unguarded one. */
     void (*change_torso_label)(wm_arcade_actor_t *, const char *source_label, void *);
+    void (*change_torso_restart)(wm_arcade_actor_t *, const char *source_label, void *);
     void (*sound_label)(wm_arcade_actor_t *, const char *source_label, void *);
     void (*check_secret_moves)(wm_arcade_actor_t *, const wm_arcade_input_pattern_t *, size_t, void *);
     void (*execute_walk)(wm_arcade_actor_t *, void *);

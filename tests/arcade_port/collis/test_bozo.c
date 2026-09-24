@@ -218,6 +218,7 @@ static void test_the_dispatcher_branch(void) {
 
     memset(&cb, 0, sizeof cb);
     cb.change_anim_label = cap_anim;
+    cb.change_anim_restart = cap_anim;
     cb.sound_label = cap_sound;
     cb.do_reversal = cap_reversal;
     cb.do_reversal_message = cap_reversal_msg;

@@ -383,8 +383,19 @@ wm_arcade_frame_box_t wm_hurt_box_for_frame(const char *source_frame) {
     return box;
 }
 
-void wm_bret_backend_change_anim(wm_arcade_actor_t *actor,
-                                 wm_arcade_bret_anim_id_t id, void *user) {
+/*
+ * ANIM.ASM:4532 change_anim1 and :4542 change_anim1a, on Bret's typed
+ * backend. `guard` is change_anim1's two tests -- same ANIBASE, not
+ * ended -- and dropping it is what entering at change_anim1a does.
+ *
+ * Bret's file calls the guarded form five times (BRET.ASM:1574, :1658,
+ * :1710, :1727, :1901) and the unguarded one forty-seven; this used to
+ * be one always-guarded function, so a mashed move could not replay
+ * while its own animation was still running.
+ */
+static void bret_change_anim(wm_arcade_actor_t *actor,
+                             wm_arcade_bret_anim_id_t id, void *user,
+                             bool guard) {
     wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
     const wm_visual_sequence *seq;
     bool is_new_selection;
@@ -397,8 +408,13 @@ void wm_bret_backend_change_anim(wm_arcade_actor_t *actor,
        already in progress -- current_id changing is the only signal
        available without real timing data. */
     seq = wm_bret_anim_sequence(id);
-    is_new_selection = seq ? start_if_new(&bva->visual, seq)
-                           : (bva->current_id != id);
+    if (guard) {
+        is_new_selection = seq ? start_if_new(&bva->visual, seq)
+                               : (bva->current_id != id);
+    } else {
+        if (seq) wm_visual_start(&bva->visual, seq);
+        is_new_selection = true;
+    }
     bva->current_id = id;
     if (!actor || !is_new_selection) return;
 
@@ -487,12 +503,29 @@ void wm_bret_backend_change_anim(wm_arcade_actor_t *actor,
     }
 }
 
+/* ANIM.ASM:4532 change_anim1 -- guarded. */
+void wm_bret_backend_change_anim(wm_arcade_actor_t *actor,
+                                 wm_arcade_bret_anim_id_t id, void *user) {
+    bret_change_anim(actor, id, user, true);
+}
+
+/* ANIM.ASM:4542 change_anim1a -- unguarded, always from the top. */
+void wm_bret_backend_change_anim_restart(wm_arcade_actor_t *actor,
+                                         wm_arcade_bret_anim_id_t id,
+                                         void *user) {
+    bret_change_anim(actor, id, user, false);
+}
+
+/* BRET.ASM:1264 bret_ani_init is change_anim2a, and it is the only
+   thing in the file that writes this channel. */
 void wm_bret_backend_change_torso_anim(wm_arcade_actor_t *actor,
                                        wm_arcade_bret_anim_id_t id, void *user) {
     wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    const wm_visual_sequence *seq;
     (void)actor;
     if (!bva) return;
-    start_if_new(&bva->torso_visual, wm_bret_anim_sequence(id));
+    seq = wm_bret_anim_sequence(id);
+    if (seq) wm_visual_start(&bva->torso_visual, seq);
 }
 
 /*
@@ -1065,6 +1098,7 @@ wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva)
     memset(&cb, 0, sizeof(cb));
     cb.can_pin = bret_can_pin;
     cb.change_anim = wm_bret_backend_change_anim;
+    cb.change_anim_restart = wm_bret_backend_change_anim_restart;
     cb.change_torso_anim = wm_bret_backend_change_torso_anim;
     cb.execute_walk = wm_bret_backend_execute_walk;
     cb.adjust_health = wm_bret_backend_adjust_health;

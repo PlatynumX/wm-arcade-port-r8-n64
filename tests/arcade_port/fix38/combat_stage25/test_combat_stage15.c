@@ -27,7 +27,7 @@ int main(void){
     tr_t t;
     int32_t x,z;
     memset(&a,0,sizeof(a));memset(&o,0,sizeof(o));memset(&c,0,sizeof(c));memset(&t,0,sizeof(t));
-    c.change_anim=an;c.sound=so;c.check_secret_moves=sec;c.ck_ignore=ign;c.ck_ignore_reversed=ignrev;
+    c.change_anim=an;c.change_anim_restart=an;c.change_anim_restart=an;c.sound=so;c.check_secret_moves=sec;c.ck_ignore=ign;c.ck_ignore_reversed=ignrev;
     c.check_combo_go=combo_ok;c.bonus_message=bonus;c.do_reversal=rev;c.do_reversal_message=rev;c.find_and_kill_endless=killend;c.user=&t;
 
     a.player_mode=WM_PMODE_NORMAL;a.facing_dir=WM_MOVE_UP_RIGHT;a.new_facing_dir=WM_MOVE_RIGHT;

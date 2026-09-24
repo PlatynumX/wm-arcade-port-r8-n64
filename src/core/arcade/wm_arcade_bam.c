@@ -119,13 +119,25 @@ static int groundish(const wm_arcade_actor_t*o){return o&&(o->player_mode==WM_PM
    and Razor had it right; these six did not. */
 static int face2(const wm_arcade_actor_t*a){return a&&(a->facing_dir&WM_MOVE_UP);}
 static const char *face_label(const char*l2,const char*l4,const wm_arcade_actor_t*a){return face2(a)?l2:l4;}
-static void anim(wm_arcade_actor_t*a,const char*l,const wm_arcade_bam_callbacks_t*c){if(c&&c->change_anim_label&&l)c->change_anim_label(a,l,c->user);}
+/*
+ * ANIM.ASM's two primary-animation entry points. :4532 change_anim1
+ * returns without restarting when the request names the animation
+ * already running and that animation has not ended; :4542
+ * change_anim1a is the label on the instruction after both tests, so
+ * entering there always replays from frame 0.
+ *
+ * anim() is change_anim1a because that is what almost every call site
+ * in this file is. anim1() is the guarded one, and every use of it
+ * below names the source line it comes from.
+ */
+static void anim(wm_arcade_actor_t*a,const char*l,const wm_arcade_bam_callbacks_t*c){if(c&&c->change_anim_restart&&l)c->change_anim_restart(a,l,c->user);}
+static void anim1(wm_arcade_actor_t*a,const char*l,const wm_arcade_bam_callbacks_t*c){if(c&&c->change_anim_label&&l)c->change_anim_label(a,l,c->user);}
 static void snd(wm_arcade_actor_t*a,const char*l,const wm_arcade_bam_callbacks_t*c){if(c&&c->sound_label&&l)c->sound_label(a,l,c->user);}
 static void startsp(wm_arcade_actor_t*a,const char*l,const wm_arcade_bam_callbacks_t*c){if(!a||!l)return;if(c&&c->resolve_label_token)a->special_move_addr=c->resolve_label_token(l,c->user);if(c&&c->start_special_label)c->start_special_label(a,l,c->user);}
 
 static int do_block(wm_arcade_actor_t*a,const wm_arcade_bam_env_t*e,const wm_arcade_bam_callbacks_t*c){
     if(e&&e->blocking_off)return 0;
-    anim(a,L.block,c);
+    anim1(a,L.block,c);                 /* :1534 change_anim1 */
     a->block_time=0;
     snd(a,"BLOCK_WOOSH",c);
     setmode(a,WM_PMODE_BLOCK);
@@ -179,7 +191,9 @@ static void bam_spunch_lbowdrop(wm_arcade_actor_t*a,wm_arcade_actor_t*o,
            ((a->obj_control&WM_OBJ_FLIPH)!=(o->obj_control&WM_OBJ_FLIPH)))
             hair=1;
     }
-    if(hair) anim(a,face_label("bam_2_hair_pickup_anim","bam_4_hair_pickup_anim",a),c);
+    /* :1672 change_anim1; Bam's #no arm at :1678 is change_anim1a,
+       the same split Shawn has. */
+    if(hair) anim1(a,face_label("bam_2_hair_pickup_anim","bam_4_hair_pickup_anim",a),c);
     else     anim(a,face_label(L.ground2,L.ground4,a),c);
     snd(a,"KICK",c);
 }

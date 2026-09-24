@@ -9,8 +9,8 @@ reads like working code.
 
 | | count |
 |---|---|
-| seams declared | 160 |
-| filled by something | 97 |
+| seams declared | 162 |
+| filled by something | 100 |
 | **called but empty** | **42** |
 
 Every empty one carries a verdict in `port/seam_ledger.json`,

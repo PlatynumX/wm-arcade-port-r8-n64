@@ -250,25 +250,19 @@
   "file": "ANIM.ASM",
   "status": "renamed",
   "symbol": "wm_anim_exec_start_if_new",
-  "note": "The guarded primary entry: restart if the animation ended, do nothing if it is already the one playing, else fall into change_anim1a."
+  "note": "The GUARDED primary entry: restart if the animation ended, do nothing if it is already the one playing, else fall into change_anim1a. The dispatchers reach it as anim1(); 41 of their roughly 450 call sites use it and the rest use change_anim1a, a distinction the port collapsed onto the guarded form until this was split."
  },
  "change_anim1a": {
   "file": "ANIM.ASM",
   "status": "renamed",
   "symbol": "wm_anim_exec_start",
-  "note": "The unconditional primary entry, gravity reset included. 503 call sites, the most-referenced routine in the game."
- },
- "change_anim2": {
-  "file": "ANIM.ASM",
-  "status": "renamed",
-  "symbol": "wm_anim_exec_start_secondary_if_new",
-  "note": "The guarded secondary entry."
+  "note": "The UNCONDITIONAL primary entry, gravity reset included. 503 call sites, the most-referenced routine in the game, and the form the dispatchers reach as plain anim()."
  },
  "change_anim2a": {
   "file": "ANIM.ASM",
   "status": "renamed",
   "symbol": "wm_anim_exec_start_secondary",
-  "note": "The unconditional secondary entry -- the torso channel, and the one that does NOT reset gravity."
+  "note": "The unconditional secondary entry -- the torso channel, and the one that does NOT reset gravity. Every *_ani_init uses it; its guarded twin change_anim2 is now implemented outright as backend_change_anim2 and no longer needs a ledger line."
  },
  "change_anim_anim": {
   "file": "ANIM.ASM",

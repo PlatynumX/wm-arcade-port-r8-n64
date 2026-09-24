@@ -60,7 +60,7 @@ static void test_bret_ground_super_punch_has_three_arms(void) {
     wm_arcade_bret_callbacks_t cb;
     wm_arcade_bret_env_t e;
     memset(&cb, 0, sizeof cb); memset(&e, 0, sizeof e);
-    cb.change_anim = bret_cap_anim; cb.sound = bret_cap_snd;
+    cb.change_anim = bret_cap_anim; cb.change_anim_restart = bret_cap_anim; cb.sound = bret_cap_snd;
 
     /* Far enough, opposite flip: the hair pickup. */
     base(&me, &him, WM_ROSTER_BRET);
@@ -104,7 +104,7 @@ static void test_bret_super_punch_has_a_dead_row(void) {
     wm_arcade_bret_callbacks_t cb;
     wm_arcade_bret_env_t e;
     memset(&cb, 0, sizeof cb); memset(&e, 0, sizeof e);
-    cb.change_anim = bret_cap_anim; cb.sound = bret_cap_snd;
+    cb.change_anim = bret_cap_anim; cb.change_anim_restart = bret_cap_anim; cb.sound = bret_cap_snd;
 
     base(&me, &him, WM_ROSTER_BRET);
     me.but_val_down = WM_BTN_SPUNCH;
@@ -120,7 +120,7 @@ static void test_bret_named_rows(void) {
     wm_arcade_bret_callbacks_t cb;
     wm_arcade_bret_env_t e;
     memset(&cb, 0, sizeof cb); memset(&e, 0, sizeof e);
-    cb.change_anim = bret_cap_anim; cb.sound = bret_cap_snd;
+    cb.change_anim = bret_cap_anim; cb.change_anim_restart = bret_cap_anim; cb.sound = bret_cap_snd;
 
     base(&me, &him, WM_ROSTER_BRET);
     me.but_val_down = WM_BTN_KICK;
@@ -165,7 +165,7 @@ static void test_razor_rug_shake_smart_targets(void) {
     wm_arcade_razor_callbacks_t cb;
     wm_arcade_razor_env_t e;
     memset(&cb, 0, sizeof cb); memset(&e, 0, sizeof e);
-    cb.change_anim = rzr_cap_anim; cb.sound = rzr_cap_snd;
+    cb.change_anim = rzr_cap_anim; cb.change_anim_restart = rzr_cap_anim; cb.sound = rzr_cap_snd;
 
     base(&me, &him, WM_ROSTER_RAZOR);
     me.but_val_down = WM_BTN_SPUNCH;
@@ -185,7 +185,7 @@ static void test_razor_super_kick_rows(void) {
     wm_arcade_razor_callbacks_t cb;
     wm_arcade_razor_env_t e;
     memset(&cb, 0, sizeof cb); memset(&e, 0, sizeof e);
-    cb.change_anim = rzr_cap_anim; cb.sound = rzr_cap_snd;
+    cb.change_anim = rzr_cap_anim; cb.change_anim_restart = rzr_cap_anim; cb.sound = rzr_cap_snd;
 
     base(&me, &him, WM_ROSTER_RAZOR);
     me.but_val_down = WM_BTN_SKICK;
@@ -210,7 +210,7 @@ static void test_razor_running_kick_is_the_flying_elbow(void) {
     wm_arcade_razor_callbacks_t cb;
     wm_arcade_razor_env_t e;
     memset(&cb, 0, sizeof cb); memset(&e, 0, sizeof e);
-    cb.change_anim = rzr_cap_anim; cb.sound = rzr_cap_snd;
+    cb.change_anim = rzr_cap_anim; cb.change_anim_restart = rzr_cap_anim; cb.sound = rzr_cap_snd;
 
     base(&me, &him, WM_ROSTER_RAZOR);
     me.player_mode = WM_PMODE_RUNNING;

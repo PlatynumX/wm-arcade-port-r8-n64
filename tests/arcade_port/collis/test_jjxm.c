@@ -109,6 +109,7 @@ static wm_arcade_doink_callbacks_t cbs(void) {
     wm_arcade_doink_callbacks_t c;
     memset(&c, 0, sizeof c);
     c.change_anim_label = cap_anim;
+    c.change_anim_restart = cap_anim;
     return c;
 }
 

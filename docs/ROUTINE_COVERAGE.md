@@ -7,9 +7,9 @@ only in a note saying it is missing does not count as present.
 
 | status | meaning | count |
 |---|---|---|
-| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 2038 |
+| `implemented` | a port identifier IS the name, ends with it, or is a generator's wrapper around it | 2039 |
 | `inlined` | the port does it, spelled out at each use site (ledger) | 13 |
-| `renamed` | the port does it under another name (ledger) | 159 |
+| `renamed` | the port does it under another name (ledger) | 158 |
 | `partial` | partly translated; the ledger note says which part | 18 |
 | `data` | a table, extracted by a tool (ledger) | 51 |
 | `process` | a CREATE/SLEEP wrapper (ledger) | 21 |

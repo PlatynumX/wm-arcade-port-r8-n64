@@ -60,8 +60,12 @@ const wm_move_velocity_entry *wm_wrestler_velocity_table(int32_t wrestler_num) {
 /* Defined below, beside the other channel plumbing. */
 static void backend_change_anim_label(wm_arcade_actor_t *actor,
                                       const char *source_label, void *user);
+static void backend_change_anim_restart(wm_arcade_actor_t *actor,
+                                        const char *source_label, void *user);
 static void backend_change_anim2_label(wm_arcade_actor_t *actor,
                                        const char *source_label, void *user);
+static void backend_change_anim2_restart(wm_arcade_actor_t *actor,
+                                         const char *source_label, void *user);
 
 /*
  * The label a slot's table holds at (row, col), or NULL.
@@ -211,21 +215,39 @@ static int backend_check_combo_go(wm_arcade_actor_t *actor, void *user) {
 }
 
 /*
- * wm_arcade_roster_callbacks_t.change_anim_label.
+ * ANIM.ASM's two primary-animation entry points, as one body with the
+ * guard switched off for the second.
  *
- * The six label-based dispatchers have always passed the source's own
- * routine name here, and the program registry is keyed on exactly that, so
- * this is the whole join: look the label up, and run it.
+ * The eight dispatchers have always passed the source's own routine name
+ * here, and the program registry is keyed on exactly that, so the lookup
+ * is the whole join.
+ *
+ * `guard` is what separates :4532 change_anim1 from :4542 change_anim1a:
+ *
+ *      move  *a13(ANIMODE),a2
+ *      btst  MODE_END_BIT,a2       ; if the animation has ENDED,
+ *      jrnz  change_anim1a         ; always restart it
+ *      move  *a13(ANIBASE),a2,L
+ *      cmp   a0,a2
+ *      jreq  #no_change            ; same animation, still running: NOP
+ *
+ * change_anim1a is the label on the next instruction, so entering there
+ * skips both tests. st->prog.ended stands in for MODE_END_BIT and
+ * st->current_label for ANIBASE.
+ *
+ * This used to be one function that always guarded, which quietly turned
+ * every change_anim1a call site in the eight dispatchers into a
+ * change_anim1 -- so a move you mash could not replay while its own
+ * animation was still running.
  */
-static void backend_change_anim_label(wm_arcade_actor_t *actor,
-                                      const char *source_label, void *user) {
+static void backend_change_anim(wm_arcade_actor_t *actor,
+                                const char *source_label, void *user,
+                                bool guard) {
     wm_wrestler_backend_actor *st = (wm_wrestler_backend_actor *)user;
     const wm_anim_program *prog;
     if (!actor || !st || !source_label) return;
 
-    /* Selecting the animation already playing does not restart it -- the
-       dispatchers call change_anim every tick they stay in the same mode. */
-    if (st->current_label && st->prog.program && !st->prog.ended &&
+    if (guard && st->current_label && st->prog.program && !st->prog.ended &&
         strcmp(st->current_label, source_label) == 0)
         return;
 
@@ -264,19 +286,33 @@ static void backend_change_anim_label(wm_arcade_actor_t *actor,
                        &st->anim_env);
 }
 
+/* ANIM.ASM:4532 change_anim1 -- guarded. */
+static void backend_change_anim_label(wm_arcade_actor_t *actor,
+                                      const char *source_label, void *user) {
+    backend_change_anim(actor, source_label, user, true);
+}
+
+/* ANIM.ASM:4542 change_anim1a -- unguarded, always from the top. */
+static void backend_change_anim_restart(wm_arcade_actor_t *actor,
+                                        const char *source_label, void *user) {
+    backend_change_anim(actor, source_label, user, false);
+}
+
 /*
- * change_anim2 on the generic backend. Mirrors the primary path above,
- * including its "already playing this" guard, and differs in the two
- * ways the source differs: it writes the second channel, and starting
- * it does not reset gravity.
+ * :4563 change_anim2 / :4573 change_anim2a on the generic backend.
+ * Mirrors the primary path above, including the same `guard` split, and
+ * differs in the two ways the source differs: it writes the second
+ * channel, and starting it does not reset gravity.
  */
-static void backend_change_anim2_label(wm_arcade_actor_t *actor,
-                                       const char *source_label, void *user) {
+static void backend_change_anim2(wm_arcade_actor_t *actor,
+                                 const char *source_label, void *user,
+                                 bool guard) {
     wm_wrestler_backend_actor *st = (wm_wrestler_backend_actor *)user;
     const wm_anim_program *prog;
     if (!actor || !st || !source_label) return;
 
-    if (st->torso_label && st->torso_prog.program && !st->torso_prog.ended &&
+    if (guard && st->torso_label && st->torso_prog.program &&
+        !st->torso_prog.ended &&
         strcmp(st->torso_label, source_label) == 0)
         return;
 
@@ -293,6 +329,18 @@ static void backend_change_anim2_label(wm_arcade_actor_t *actor,
                                  (uint16_t)st->pcnt, &st->anim_env);
 }
 
+/* ANIM.ASM:4563 change_anim2 -- guarded. */
+static void backend_change_anim2_label(wm_arcade_actor_t *actor,
+                                       const char *source_label, void *user) {
+    backend_change_anim2(actor, source_label, user, true);
+}
+
+/* ANIM.ASM:4573 change_anim2a -- unguarded. */
+static void backend_change_anim2_restart(wm_arcade_actor_t *actor,
+                                         const char *source_label, void *user) {
+    backend_change_anim2(actor, source_label, user, false);
+}
+
 void wm_wrestler_backend_ani_init(wm_wrestler_backend_actor *state,
                                   wm_arcade_actor_t *actor) {
     const wm_ani_init_row *row;
@@ -306,10 +354,14 @@ void wm_wrestler_backend_ani_init(wm_wrestler_backend_actor *state,
 
     /* `move *a13(FACING_DIR),a0 / btst PLAYER_RIGHT_BIT,a0 / jrnz #p1` */
     facing_right = (actor->facing_dir & WM_MOVE_RIGHT) != 0;
-    backend_change_anim_label(actor,
-                              facing_right ? row->stand2 : row->stand4, state);
-    backend_change_anim2_label(actor,
-                               facing_right ? row->torso2 : row->torso4, state);
+    /* BRET.ASM:1247 bret_ani_init and its seven siblings: change_anim1a
+       and change_anim2a, both unguarded. */
+    backend_change_anim_restart(actor,
+                                facing_right ? row->stand2 : row->stand4,
+                                state);
+    backend_change_anim2_restart(actor,
+                                 facing_right ? row->torso2 : row->torso4,
+                                 state);
 }
 
 const char *wm_wrestler_backend_torso_frame(
@@ -424,7 +476,7 @@ static void backend_code_addr(wm_arcade_actor_t *actor, uint32_t token,
 
     label = wm_arcade_climb_continue(actor, (WmRingClimbContinuation)token);
     /* The continuation's own `calla change_anim1a`. */
-    if (label) backend_change_anim_label(actor, label, st);
+    if (label) backend_change_anim_restart(actor, label, st);
     /* CODE_ADDR is not cleared by the source, but PLYRMODE has just
        left WAITANIM, so it is never read again until the next deferral
        overwrites it. Cleared here anyway: a stale token that a later
@@ -452,12 +504,17 @@ static int backend_climb_turnbuckle(wm_arcade_actor_t *actor, void *user) {
                                    st->all_actor_count);
     if (!r.handled) return 0;          /* `clrc` */
 
+    /* Every change_anim in WRESTLE2.ASM's climb routines -- :197, :211,
+       :300, :359, :417, :431, :492, :575, :588, :699, :713 -- is
+       change_anim1a. set_rotate_anim's own call is commented out at
+       WRESTLE.ASM:5086, so the caller picks the entry point, and here
+       it picks the unguarded one. */
     if (r.anim) {
-        backend_change_anim_label(actor, r.anim, st);
+        backend_change_anim_restart(actor, r.anim, st);
     } else if (r.rotate_then != WM_RING_CLIMB_CONT_NONE) {
         const char *turn = wm_wrestler_set_rotate_anim(
             actor, st->wrestler_num, actor->facing_dir);
-        if (turn) backend_change_anim_label(actor, turn, st);
+        if (turn) backend_change_anim_restart(actor, turn, st);
         actor->code_addr = (uintptr_t)r.rotate_then;
     }
     return 1;                          /* `setc` */
@@ -479,7 +536,7 @@ static void backend_mode_puppet(wm_arcade_actor_t *actor, void *user) {
     /* The watchdog's own `calla change_anim1a`. It is the only thing
        this routine ever starts, and only when it has barked. */
     if (r.glitched_to_stand && r.stand_anim)
-        backend_change_anim_label(actor, r.stand_anim, st);
+        backend_change_anim_restart(actor, r.stand_anim, st);
 }
 
 static void backend_mode_inair2(wm_arcade_actor_t *actor, void *user) {
@@ -891,6 +948,19 @@ wm_arcade_roster_callbacks_t wm_wrestler_roster_callbacks(
     cb.mode_dead = backend_mode_dead;
     cb.check_combo_go = backend_check_combo_go;
     cb.change_anim_label = backend_change_anim_label;
+    cb.change_anim_restart = backend_change_anim_restart;
+    /*
+     * The second channel. No dispatcher reaches either of these yet:
+     * the only guarded change_anim2 call sites in the eight wrestler
+     * files are BAM.ASM:2444, LEX.ASM:2263 and YOKO.ASM:2273, all in
+     * mode_oppoverhead, and mode 10 is not translated in any
+     * dispatcher. They are bound rather than left NULL so that when it
+     * is, the seam is already the right shape -- and so that
+     * change_torso_label, which was declared and never assigned by
+     * anybody, stops being a field that only looks wired.
+     */
+    cb.change_torso_label = backend_change_anim2_label;
+    cb.change_torso_restart = backend_change_anim2_restart;
     cb.sound_label = backend_sound_label;
     cb.can_pin = backend_can_pin;
     cb.code_addr = backend_code_addr;
@@ -941,7 +1011,8 @@ static void backend_razor_change_torso_anim(wm_arcade_actor_t *actor,
                                             void *user) {
     const char *label = wm_arcade_razor_anim_label(id);
     if (!actor || !label) return;
-    backend_change_anim2_label(actor, label, user);
+    /* RAZOR.ASM:1105 and :1119, razor_ani_init: change_anim2a. */
+    backend_change_anim2_restart(actor, label, user);
 }
 
 static void backend_razor_change_anim(wm_arcade_actor_t *actor,
@@ -964,11 +1035,22 @@ static void backend_razor_change_anim(wm_arcade_actor_t *actor,
     backend_change_anim_label(actor, label, user);
 }
 
+/* RAZOR.ASM's change_anim1a call sites -- forty-nine of them against four
+   guarded ones (:1510, :1560, :1740, :1966). */
+static void backend_razor_change_anim_restart(wm_arcade_actor_t *actor,
+                                              wm_arcade_razor_anim_id_t id,
+                                              void *user) {
+    const char *label = wm_arcade_razor_anim_label(id);
+    if (!actor || !label) return;
+    backend_change_anim_restart(actor, label, user);
+}
+
 wm_arcade_razor_callbacks_t wm_wrestler_razor_callbacks(
     wm_wrestler_backend_actor *state) {
     wm_arcade_razor_callbacks_t cb;
     memset(&cb, 0, sizeof(cb));
     cb.change_anim = backend_razor_change_anim;
+    cb.change_anim_restart = backend_razor_change_anim_restart;
     cb.change_torso_anim = backend_razor_change_torso_anim;
     cb.sound = backend_razor_sound;
     cb.execute_walk = backend_execute_walk;

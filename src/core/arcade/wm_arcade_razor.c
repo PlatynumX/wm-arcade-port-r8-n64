@@ -75,7 +75,21 @@ const wm_arcade_razor_monitor_pattern_t wm_arcade_razor_monitor_patterns[9] = {
     { WM_RZR_MON_FINISH2, mon_finish2, 5, 60 }
 };
 
+/*
+ * ANIM.ASM's two primary-animation entry points. :4532 change_anim1
+ * returns without restarting when the request names the animation
+ * already running and that animation has not ended; :4542
+ * change_anim1a is the label on the instruction after both tests, so
+ * entering there always replays from frame 0.
+ *
+ * anim() is change_anim1a because that is what almost every call site
+ * in this file is. anim1() is the guarded one, and every use of it
+ * below names the source line it comes from.
+ */
 static void anim(wm_arcade_actor_t *a, wm_arcade_razor_anim_id_t id,
+                 const wm_arcade_razor_callbacks_t *cb)
+{ if (cb && cb->change_anim_restart) cb->change_anim_restart(a,id,cb->user); }
+static void anim1(wm_arcade_actor_t *a, wm_arcade_razor_anim_id_t id,
                  const wm_arcade_razor_callbacks_t *cb)
 { if (cb && cb->change_anim) cb->change_anim(a,id,cb->user); }
 static void snd(wm_arcade_actor_t *a, wm_arcade_razor_sound_id_t id,
@@ -135,7 +149,8 @@ static void rzr_spunch_close(wm_arcade_actor_t*a,const wm_arcade_razor_callbacks
 {
  if(a->stick_val_cur&WM_MOVE_DOWN){anim(a,WM_RZR_ANIM_UPPERCUT4,cb);snd(a,WM_RZR_SND_UPRCUT,cb);return;}
  if(a->closest_xdist>65){std_punch(a,cb);return;}
- anim(a,f24(a,WM_RZR_ANIM_PUMMEL2,WM_RZR_ANIM_PUMMEL4),cb);snd(a,WM_RZR_SND_HDBUTT,cb);
+ /* :1560 change_anim1; the uppercut arm above is :1546 change_anim1a. */
+ anim1(a,f24(a,WM_RZR_ANIM_PUMMEL2,WM_RZR_ANIM_PUMMEL4),cb);snd(a,WM_RZR_SND_HDBUTT,cb);
 }
 /* :1572 #spunch_far -- the up-slash. */
 static void rzr_spunch_far(wm_arcade_actor_t*a,const wm_arcade_razor_callbacks_t*cb)
@@ -156,7 +171,9 @@ static void rzr_spunch_lbowdrop(wm_arcade_actor_t*a,wm_arcade_actor_t*o,
  if(!o||o->player_mode==WM_PMODE_DEAD)goto fallback;
  dx=a->x_fixed-o->x_fixed;if(dx<0)dx=-dx;dx>>=16;if(dx<0x30)goto fallback;
  if((a->obj_control&WM_OBJ_FLIPH)!=(o->obj_control&WM_OBJ_FLIPH)){
-  anim(a,f24(a,WM_RZR_ANIM_HAIR_PICKUP2,WM_RZR_ANIM_HAIR_PICKUP4),cb);
+  /* :1510 change_anim1, while :1399 #punch_lbdrop and the #feet
+     rug-shake below are both change_anim1a. */
+  anim1(a,f24(a,WM_RZR_ANIM_HAIR_PICKUP2,WM_RZR_ANIM_HAIR_PICKUP4),cb);
   snd(a,WM_RZR_SND_LBOWDROP,cb);return;
  }
  if(dx>=0x40){a->status_flags|=WM_STATUS_SMART_ATTACK;a->smart_target=o;
@@ -184,7 +201,8 @@ static void rzr_skick_kick(wm_arcade_actor_t*a,const wm_arcade_razor_callbacks_t
 static void rzr_skick_special(wm_arcade_actor_t*a,const wm_arcade_razor_callbacks_t*cb)
 {
  if(a->stick_val_cur==(uint16_t)(a->new_facing_dir&0x0c)){
-  anim(a,WM_RZR_ANIM_KNEE_FALL4,cb);snd(a,WM_RZR_SND_GRABHOLD,cb);return;}
+  anim1(a,WM_RZR_ANIM_KNEE_FALL4,cb);   /* :1740 change_anim1 */
+  snd(a,WM_RZR_SND_GRABHOLD,cb);return;}
  anim(a,f24(a,WM_RZR_ANIM_KNEE2,WM_RZR_ANIM_KNEE4),cb);snd(a,WM_RZR_SND_KICK,cb);
 }
 /* :1756 #skick_bigboot */
@@ -268,7 +286,9 @@ static wm_arcade_razor_step_result_t rzr_punch_clothesline(
  a->run_time=0;
  setmode(a,WM_PMODE_NORMAL);
  if(a->closest_xdist<70){
-  anim(a,f24(a,WM_RZR_ANIM_BUTT2,WM_RZR_ANIM_BUTT4),cb);snd(a,WM_RZR_SND_HDBUTT,cb);
+  /* :1966 mode_running's #hdbutt, change_anim1 -- :1390
+     #punch_hdbutt picks the same pair with change_anim1a. */
+  anim1(a,f24(a,WM_RZR_ANIM_BUTT2,WM_RZR_ANIM_BUTT4),cb);snd(a,WM_RZR_SND_HDBUTT,cb);
  } else {
   anim(a,WM_RZR_ANIM_USLASH3,cb);snd(a,WM_RZR_SND_GRABHOLD,cb);
  }

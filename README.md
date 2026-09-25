@@ -3,6 +3,15 @@
 **Primary target:** Nintendo 64 / libdragon.  
 **Porting rule:** when the arcade source implements it, translate that implementation and use its original data/assets. Do not replace it with invented N64 behavior.
 
+**Checking a build on a console:** each revision note at the repo root ends by
+naming what a console should show for that revision -- `MIDWAY_R8H3_NOTES.md`
+for the Midway Sports logo, `MIDWAY_R8H4_NOTES.md` for the attract flow, and
+`R9_GAMEPLAY_WIRING_NOTES.md` for the r9 gameplay wiring. The headless suite
+proves values are computed and delivered; it runs at no frame rate against no
+TV, so anything about how the game *looks or feels* is only ever settled on
+hardware. A revision note without that section fails
+`test_every_revision_note_says_what_to_look_for_on_hardware`.
+
 r9 is the first broad **shared-engine** pass. It is not a claim that the complete arcade game is already playable. The point of this revision is to replace one-off bring-up code with reusable source-driven systems that whole parts of the original program can execute on.
 
 ## What r9 actually translates

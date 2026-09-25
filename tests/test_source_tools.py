@@ -5414,3 +5414,94 @@ def test_every_actor_field_read_in_src_is_also_written() -> None:
             "%s is listed as never written and something now writes it. "
             "Drop the row -- keeping it hides that the question was "
             "settled." % name)
+
+
+# Revision notes that predate the expected-hardware-test convention, with the
+# reason each is exempt. A note listed here that GAINS a hardware-test section
+# fails the companion check below, so this list cannot outlive its reasons.
+#
+# Nothing goes in here to make the guard quiet. A new revision note is expected
+# to say what a console should show; if it genuinely cannot -- a revision that
+# changes no observable behaviour at all -- that claim belongs in the note as
+# prose, not as a row here.
+NOTE_NO_HARDWARE_TEST = {
+    "MIDWAY_R8H6_NOTES.md": (
+        "r8h6 is where the convention lapsed. Its own 'Deliberately still "
+        "absent' section is the closest it comes, and it describes what is "
+        "missing rather than what a console should show. Writing an expected "
+        "test for it now would be inventing an observation nobody made."
+    ),
+    "R9_SOURCE_ENGINE_NOTES.md": (
+        "The r9 source-engine notes are a running translation log across many "
+        "commits, not a single flashable revision, so there is no one console "
+        "state they describe. R9_GAMEPLAY_WIRING_NOTES.md carries the "
+        "hardware test for the r9 gameplay work instead."
+    ),
+}
+
+_HARDWARE_TEST_RE = re.compile(r"expected\s+(hardware\s+)?test", re.IGNORECASE)
+
+
+def _revision_notes() -> "list[pathlib.Path]":
+    """Every revision note at the repo root.
+
+    Matched by shape rather than by a hand-kept list, so a note added
+    tomorrow is covered without anyone remembering to add it.
+    """
+    return sorted(
+        p for p in ROOT.glob("*_NOTES.md") if p.is_file()
+    )
+
+
+def test_every_revision_note_says_what_to_look_for_on_hardware() -> None:
+    """A revision note must name what a console should show.
+
+    This port can be flashed and played, and four of its commits turned on
+    behaviour that no headless test can see -- damage multipliers, run
+    speed, animations that were previously refused. A suite that passes
+    tells you the values are computed and delivered. It cannot tell you
+    they look right at 60 Hz, and nothing else in this repo was asking.
+
+    The convention existed (MIDWAY_R8H3_NOTES.md ends with 'Expected
+    hardware test for this revision') and then quietly stopped. That is
+    the same failure mode as every other bug this suite guards: a thing
+    that was true once, stopped being true, and nothing noticed.
+    """
+    notes = _revision_notes()
+    assert len(notes) >= 4, f"revision notes vanished? found {notes}"
+
+    missing = []
+    for note in notes:
+        if note.name in NOTE_NO_HARDWARE_TEST:
+            continue
+        if not _HARDWARE_TEST_RE.search(note.read_text(encoding="utf-8")):
+            missing.append(note.name)
+
+    assert not missing, (
+        "revision note(s) with no expected-hardware-test section: "
+        + ", ".join(missing)
+        + ". Say what a person holding a controller should be able to tell, "
+        "or add a row to NOTE_NO_HARDWARE_TEST explaining why this revision "
+        "has nothing observable to check."
+    )
+
+
+def test_the_hardware_test_exemptions_are_all_still_needed() -> None:
+    """A listed note that gains a hardware test must leave the list.
+
+    Without this the exemption list is write-only: it would keep excusing
+    notes that had since been fixed, and the guard would measure less and
+    less while still passing.
+    """
+    names = {p.name for p in _revision_notes()}
+    for name, reason in NOTE_NO_HARDWARE_TEST.items():
+        assert name in names, (
+            f"{name} is exempted from the hardware-test guard but no longer "
+            "exists at the repo root. Delete the row."
+        )
+        assert reason.strip(), f"{name} needs a real reason, not an empty one"
+        body = (ROOT / name).read_text(encoding="utf-8")
+        assert not _HARDWARE_TEST_RE.search(body), (
+            f"{name} now HAS an expected-hardware-test section, so its "
+            "NOTE_NO_HARDWARE_TEST row is stale. Delete the row."
+        )

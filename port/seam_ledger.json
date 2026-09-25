@@ -19,7 +19,27 @@
   "  fallback  - the call sites run the real routine in an else",
   "  unreached - the caller itself is not on a live path",
   "  deferred  - real, wireable, and not yet done; the note says what is",
-  "              known and what still has to be established"
+  "              known and what still has to be established",
+  "",
+  "`check` -- the mechanical premise under a verdict, so the verdict",
+  "cannot rot the way a prose note can. Every `unreached` and",
+  "`fallback` row carries one, and",
+  "test_every_ledger_verdict_premise_still_holds re-measures it:",
+  "  fallback-else   every call site of the seam is followed by the",
+  "                  named routine in an else, so the real translation",
+  "                  runs when the seam is empty",
+  "  no-src-caller   nothing in src/ calls the named entry point,",
+  "                  and src/ still defines it -- so the claim is",
+  "                  measuring a symbol that exists rather than",
+  "                  passing on a name that has been renamed away",
+  "  guarded-by-test the claim is measured by the named test instead",
+  "",
+  "This exists because a reachability claim went stale twice in one",
+  "cycle: WM_PMODE_HEADHELD stopped being unreachable the moment",
+  "mode_chokehold was translated, and wlvoice.py's exclusion of the",
+  "rope tables rested on a layer that had since been written. Both",
+  "were prose. A verdict nobody can re-measure is an excuse with a",
+  "shelf life."
  ],
  "show_title": {
   "verdict": "display",
@@ -115,35 +135,67 @@
  },
  "keep_attached": {
   "verdict": "fallback",
-  "note": "WRESTLE.ASM keep_attached. Not a hole: every call site reads `if (c && c->keep_attached) ... else (void)wm_arcade_keep_attached(a);`, so the real translated routine runs when the seam is empty. All seven shared dispatchers were checked. The seam exists so a backend CAN take it over, not because anything is missing."
+  "note": "WRESTLE.ASM keep_attached. Not a hole: every call site reads `if (c && c->keep_attached) ... else (void)wm_arcade_keep_attached(a);`, so the real translated routine runs when the seam is empty. All EIGHT call sites were checked -- the seven shared dispatchers and Bret's own, which the note used to leave out of its count. `check` re-measures them rather than asking anyone to take this sentence's word for it. The seam exists so a backend CAN take it over, not because anything is missing.",
+  "check": {
+   "kind": "fallback-else",
+   "routine": "wm_arcade_keep_attached"
+  }
  },
  "master_keep_attached": {
   "verdict": "fallback",
-  "note": "WRESTLE.ASM master_keep_attached. Not a hole: every call site reads `if (c && c->master_keep_attached) ... else (void)wm_arcade_master_keep_attached(a);`, so the real translated routine runs when the seam is empty. All seven shared dispatchers were checked. The seam exists so a backend CAN take it over, not because anything is missing."
+  "note": "WRESTLE.ASM master_keep_attached. Not a hole: every call site reads `if (c && c->master_keep_attached) ... else (void)wm_arcade_master_keep_attached(a);`, so the real translated routine runs when the seam is empty. All EIGHT call sites were checked -- the seven shared dispatchers and Bret's own, which the note used to leave out of its count. `check` re-measures them rather than asking anyone to take this sentence's word for it. The seam exists so a backend CAN take it over, not because anything is missing.",
+  "check": {
+   "kind": "fallback-else",
+   "routine": "wm_arcade_master_keep_attached"
+  }
  },
  "auto_pin_check": {
   "verdict": "unreached",
-  "note": "A field of wm_arcade_move_wrestler's callback set (wm/arcade/wm_arcade_move_dispatch.h). That routine is the FAITHFUL translation of WRESTLE.ASM's move_wrestler and is called only from a test; the live loop calls wm_arcade_move_ported_wrestler, its last step alone. Why the split exists and what it would take to collapse it -- deciding whether SPECIAL_MOVE_ADDR carries an id or an address for everybody -- is recorded under `auto_pin` in port/translation_manifest.json. auto_pin_check itself IS translated and IS called live, from match.c, where the source calls it."
+  "note": "A field of wm_arcade_move_wrestler's callback set (wm/arcade/wm_arcade_move_dispatch.h). That routine is the FAITHFUL translation of WRESTLE.ASM's move_wrestler and is called only from a test; the live loop calls wm_arcade_move_ported_wrestler, its last step alone. Why the split exists and what it would take to collapse it -- deciding whether SPECIAL_MOVE_ADDR carries an id or an address for everybody -- is recorded under `auto_pin` in port/translation_manifest.json. auto_pin_check itself IS translated and IS called live, from match.c, where the source calls it.",
+  "check": {
+   "kind": "no-src-caller",
+   "symbol": "wm_arcade_move_wrestler"
+  }
  },
  "character_move": {
   "verdict": "unreached",
-  "note": "A field of wm_arcade_move_wrestler's callback set (wm/arcade/wm_arcade_move_dispatch.h). That routine is the FAITHFUL translation of WRESTLE.ASM's move_wrestler and is called only from a test; the live loop calls wm_arcade_move_ported_wrestler, its last step alone. Why the split exists and what it would take to collapse it -- deciding whether SPECIAL_MOVE_ADDR carries an id or an address for everybody -- is recorded under `auto_pin` in port/translation_manifest.json. auto_pin_check itself IS translated and IS called live, from match.c, where the source calls it."
+  "note": "A field of wm_arcade_move_wrestler's callback set (wm/arcade/wm_arcade_move_dispatch.h). That routine is the FAITHFUL translation of WRESTLE.ASM's move_wrestler and is called only from a test; the live loop calls wm_arcade_move_ported_wrestler, its last step alone. Why the split exists and what it would take to collapse it -- deciding whether SPECIAL_MOVE_ADDR carries an id or an address for everybody -- is recorded under `auto_pin` in port/translation_manifest.json. auto_pin_check itself IS translated and IS called live, from match.c, where the source calls it.",
+  "check": {
+   "kind": "no-src-caller",
+   "symbol": "wm_arcade_move_wrestler"
+  }
  },
  "change_anim_special": {
   "verdict": "unreached",
-  "note": "A field of wm_arcade_move_wrestler's callback set (wm/arcade/wm_arcade_move_dispatch.h). That routine is the FAITHFUL translation of WRESTLE.ASM's move_wrestler and is called only from a test; the live loop calls wm_arcade_move_ported_wrestler, its last step alone. Why the split exists and what it would take to collapse it -- deciding whether SPECIAL_MOVE_ADDR carries an id or an address for everybody -- is recorded under `auto_pin` in port/translation_manifest.json. auto_pin_check itself IS translated and IS called live, from match.c, where the source calls it."
+  "note": "A field of wm_arcade_move_wrestler's callback set (wm/arcade/wm_arcade_move_dispatch.h). That routine is the FAITHFUL translation of WRESTLE.ASM's move_wrestler and is called only from a test; the live loop calls wm_arcade_move_ported_wrestler, its last step alone. Why the split exists and what it would take to collapse it -- deciding whether SPECIAL_MOVE_ADDR carries an id or an address for everybody -- is recorded under `auto_pin` in port/translation_manifest.json. auto_pin_check itself IS translated and IS called live, from match.c, where the source calls it.",
+  "check": {
+   "kind": "no-src-caller",
+   "symbol": "wm_arcade_move_wrestler"
+  }
  },
  "resolve_label_token": {
   "verdict": "unreached",
-  "note": "With start_special_label, the two halves of the six shared dispatchers' startsp(). THE QUESTION THIS ROW CARRIED IS ANSWERED, and the answer is that most of the callers were a MISTRANSLATION rather than a missing implementation. The row previously asked whether startsp() being inert mattered; the next pass established that it IS reached from check_secret_moves, and this one read what the source actually does at those call sites. Every one of them ends in `calla change_anim1a` and never touches SPECIAL_MOVE_ADDR: DOINK.ASM:583 #scrt_hiptoss is `FACE24 dnk,hiptoss_anim / calla change_anim1a / WRSND W_DOINK,HIPTOSS_T1,PUNCH_T2`, and the other five are the same shape. So the fifteen secret-move call sites are gone -- replaced by the animation and sound the source plays -- and what is left is ONE caller per file, in fire_monitor, where the label comes from the wrestler's smove table rather than a literal. That one is genuinely about SPECIAL_MOVE_ADDR, and it is UNREACHED: wm_arcade_port_fire_monitor has no caller anywhere in src/, only in tests, because the live monitor path is match_tick_smoves_for, which starts the animation itself. The id-versus-address decision recorded under `auto_pin` still stands, and it is now the only thing behind these two seams -- not fifteen moves that fire and do nothing."
+  "note": "With start_special_label, the two halves of the six shared dispatchers' startsp(). THE QUESTION THIS ROW CARRIED IS ANSWERED, and the answer is that most of the callers were a MISTRANSLATION rather than a missing implementation. The row previously asked whether startsp() being inert mattered; the next pass established that it IS reached from check_secret_moves, and this one read what the source actually does at those call sites. Every one of them ends in `calla change_anim1a` and never touches SPECIAL_MOVE_ADDR: DOINK.ASM:583 #scrt_hiptoss is `FACE24 dnk,hiptoss_anim / calla change_anim1a / WRSND W_DOINK,HIPTOSS_T1,PUNCH_T2`, and the other five are the same shape. So the fifteen secret-move call sites are gone -- replaced by the animation and sound the source plays -- and what is left is ONE caller per file, in fire_monitor, where the label comes from the wrestler's smove table rather than a literal. That one is genuinely about SPECIAL_MOVE_ADDR, and it is UNREACHED: wm_arcade_port_fire_monitor has no caller AT ALL -- not in src/ and not in tests, which the note used to say. What the tests call is the eight per-wrestler wm_arcade_<name>_fire_monitor bodies directly; the profile-driven front door above them is reached by nothing. The live monitor path is match_tick_smoves_for, a second translation of the same routines built from tools/wlsmove.py's generated tables, and it starts the animation itself. The id-versus-address decision recorded under `auto_pin` still stands, and it is now the only thing behind these two seams -- not fifteen moves that fire and do nothing.",
+  "check": {
+   "kind": "no-src-caller",
+   "symbol": "wm_arcade_port_fire_monitor"
+  }
  },
  "start_special_label": {
   "verdict": "unreached",
-  "note": "With start_special_label, the two halves of the six shared dispatchers' startsp(). THE QUESTION THIS ROW CARRIED IS ANSWERED, and the answer is that most of the callers were a MISTRANSLATION rather than a missing implementation. The row previously asked whether startsp() being inert mattered; the next pass established that it IS reached from check_secret_moves, and this one read what the source actually does at those call sites. Every one of them ends in `calla change_anim1a` and never touches SPECIAL_MOVE_ADDR: DOINK.ASM:583 #scrt_hiptoss is `FACE24 dnk,hiptoss_anim / calla change_anim1a / WRSND W_DOINK,HIPTOSS_T1,PUNCH_T2`, and the other five are the same shape. So the fifteen secret-move call sites are gone -- replaced by the animation and sound the source plays -- and what is left is ONE caller per file, in fire_monitor, where the label comes from the wrestler's smove table rather than a literal. That one is genuinely about SPECIAL_MOVE_ADDR, and it is UNREACHED: wm_arcade_port_fire_monitor has no caller anywhere in src/, only in tests, because the live monitor path is match_tick_smoves_for, which starts the animation itself. The id-versus-address decision recorded under `auto_pin` still stands, and it is now the only thing behind these two seams -- not fifteen moves that fire and do nothing."
+  "note": "With start_special_label, the two halves of the six shared dispatchers' startsp(). THE QUESTION THIS ROW CARRIED IS ANSWERED, and the answer is that most of the callers were a MISTRANSLATION rather than a missing implementation. The row previously asked whether startsp() being inert mattered; the next pass established that it IS reached from check_secret_moves, and this one read what the source actually does at those call sites. Every one of them ends in `calla change_anim1a` and never touches SPECIAL_MOVE_ADDR: DOINK.ASM:583 #scrt_hiptoss is `FACE24 dnk,hiptoss_anim / calla change_anim1a / WRSND W_DOINK,HIPTOSS_T1,PUNCH_T2`, and the other five are the same shape. So the fifteen secret-move call sites are gone -- replaced by the animation and sound the source plays -- and what is left is ONE caller per file, in fire_monitor, where the label comes from the wrestler's smove table rather than a literal. That one is genuinely about SPECIAL_MOVE_ADDR, and it is UNREACHED: wm_arcade_port_fire_monitor has no caller AT ALL -- not in src/ and not in tests, which the note used to say. What the tests call is the eight per-wrestler wm_arcade_<name>_fire_monitor bodies directly; the profile-driven front door above them is reached by nothing. The live monitor path is match_tick_smoves_for, a second translation of the same routines built from tools/wlsmove.py's generated tables, and it starts the animation itself. The id-versus-address decision recorded under `auto_pin` still stands, and it is now the only thing behind these two seams -- not fifteen moves that fire and do nothing.",
+  "check": {
+   "kind": "no-src-caller",
+   "symbol": "wm_arcade_port_fire_monitor"
+  }
  },
  "unhandled_reaction": {
   "verdict": "unreached",
-  "note": "A port-INVENTED diagnostic, not a source routine: REACT1's dispatcher calls it when handed a reaction its own chunk does not cover. The note used to read 'diagnostic rather than behaviour. Worth filling with a counter so the number is measured instead of assumed.' The number is measured now, and it is ZERO. The live chain is wm_arcade_react123456789_reaction_callback -- all nine REACT files -- and driving every value of wm_arcade_reaction_id_t through it leaves nothing over: 52 enum members, ids 0 through 51, all claimed. The seam can only fire for a value outside the enum, which no caller produces. So it is unreached rather than deferred, and test_every_reaction_id_is_handled_by_the_chain holds it there -- a counter would have reported the same zero without saying why."
+  "note": "A port-INVENTED diagnostic, not a source routine: REACT1's dispatcher calls it when handed a reaction its own chunk does not cover. The note used to read 'diagnostic rather than behaviour. Worth filling with a counter so the number is measured instead of assumed.' The number is measured now, and it is ZERO. The live chain is wm_arcade_react123456789_reaction_callback -- all nine REACT files -- and driving every value of wm_arcade_reaction_id_t through it leaves nothing over: 52 enum members, ids 0 through 51, all claimed. The seam can only fire for a value outside the enum, which no caller produces. So it is unreached rather than deferred, and test_every_reaction_id_is_handled_by_the_chain holds it there -- a counter would have reported the same zero without saying why.",
+  "check": {
+   "kind": "guarded-by-test",
+   "test": "test_every_reaction_id_is_handled_by_the_chain"
+  }
  },
  "play_wrestler_tune": {
   "verdict": "deferred",

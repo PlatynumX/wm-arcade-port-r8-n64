@@ -18,6 +18,7 @@
 #include "wm/arcade/wm_arcade_react.h"
 #include "wm/arcade/wm_arcade_react1_core.h"
 #include "wm/arcade/wm_arcade_react4_core.h"
+#include "wm/arcade/wm_arcade_react9_core.h"
 #include "wm/anim_program.h"
 
 /*

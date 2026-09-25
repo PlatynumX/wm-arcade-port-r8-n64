@@ -4686,3 +4686,179 @@ def test_the_restart_seam_is_bound_wherever_the_guarded_one_is() -> None:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
+
+def _match_c_function(name: str) -> str:
+    """The body of one static function in src/core/match.c."""
+    body = (ROOT / "src" / "core" / "match.c").read_text()
+    # The definition, not the forward declaration: the one whose
+    # parameter list is followed by a brace rather than a semicolon.
+    for m in re.finditer(r"^[\w ]*\b%s\s*\(" % re.escape(name), body, re.M):
+        close = body.index(")", m.end() - 1)
+        while body[close + 1:close + 2] in (" ", "\n"):
+            close += 1
+        if body[close + 1:close + 2] == "{":
+            start = m.start()
+            break
+    else:
+        raise AssertionError("no definition of %s in match.c" % name)
+    open_brace = body.index("{", start)
+    depth, i = 1, open_brace + 1
+    while depth and i < len(body):
+        if body[i] == "{":
+            depth += 1
+        elif body[i] == "}":
+            depth -= 1
+        i += 1
+    return body[start:i]
+
+
+def test_the_smove_loop_consumes_every_field_a_monitor_fires() -> None:
+    """A fired special move must not lose half of itself on the way out.
+
+    wm_smove_fire_t's own header says why: "the side effects it also
+    performs listed beside it so a caller cannot silently drop half of
+    a move". Its only live consumer is match_tick_smoves_for, and that
+    is a promise nothing was keeping.
+
+    It was not keeping it. `bonus` -- the `movi <n>,a10` before each of
+    the twenty-three live BONUS_MESS creations in the eight wrestler
+    files -- was computed by wm_smove_hdhold_fire, handed back on this
+    struct, and dropped. LIFEBAR.ASM:3302 shows what that
+    costs: BONUS_MESS sets DAM_MULT to 2 and scores HIGH_RISK_AWD on
+    every path past its first test, so twenty-three head-hold specials
+    were missing their x1.5 damage and their award. Nothing failed;
+    the moves simply hit for less than the arcade's.
+
+    So every field is required to appear in the loop by name. A new
+    column on the struct is then a compile-clean, test-failing change
+    until somebody decides what the match does with it, which is the
+    only moment the decision is cheap.
+    """
+    hdr = (ROOT / "include" / "wm" / "arcade" / "wm_arcade_smove.h").read_text()
+    end = hdr.index("} wm_smove_fire_t;")
+    start = hdr.rindex("typedef struct {", 0, end)
+    fields = set(re.findall(r"^\s*(?:const\s+)?[A-Za-z_][\w ]*?\**\s*(\w+)\s*;",
+                            _strip_comments(hdr[start:end]), re.M))
+    assert len(fields) >= 6, \
+        "wm_smove_fire_t fields not parsed (%r) -- this guard reads the " \
+        "struct, so a parse that finds nothing would pass trivially" % fields
+
+    loop = _match_c_function("match_tick_smoves_for")
+    # in_finish_move is a REPORT, not an instruction: the fire routine
+    # has already raised it through env->und_cb by the time it answers,
+    # so consuming it again would raise it twice.
+    reported = {"in_finish_move"}
+    missing = sorted(f for f in fields - reported
+                     if not re.search(r"fire\.%s\b" % re.escape(f), loop))
+    assert not missing, (
+        "match_tick_smoves_for never reads %s off wm_smove_fire_t.\n"
+        "A monitor that fires one of these performs only the part the "
+        "loop happens to look at; the rest is computed and thrown away, "
+        "which is how twenty-three specials lost their BONUS_MESS."
+        % ", ".join(missing))
+
+
+def test_every_ledger_verdict_premise_still_holds() -> None:
+    """Re-measure the mechanical claim under every reachability verdict.
+
+    port/seam_ledger.json's `display` and `hardware` rows say something
+    about RENDERING, which this tree cannot check. Its `unreached` and
+    `fallback` rows say something about the CODE -- that nothing calls
+    a thing, or that an else runs the real routine -- and those are
+    facts with a shelf life.
+
+    They have expired before. WM_PMODE_HEADHELD was unreachable until
+    mode_chokehold was translated, and wlvoice.py excluded the rope
+    tables on the strength of a layer that had since been written.
+    Both were prose nobody could re-run. So each such row now carries a
+    `check`, and this is the thing that runs it.
+    """
+    import json as _json
+    ledger = _json.loads((ROOT / "port" / "seam_ledger.json").read_text())
+    src = {p: _strip_comments(p.read_text())
+           for p in sorted((ROOT / "src").rglob("*.c"))}
+    tests_text = "".join(
+        p.read_text() for p in sorted((ROOT / "tests").rglob("*.c")))
+
+    measured = 0
+    for name, row in ledger.items():
+        if name == "_README" or not isinstance(row, dict):
+            continue
+        verdict = row.get("verdict")
+        if verdict not in ("unreached", "fallback"):
+            continue
+        check = row.get("check")
+        assert isinstance(check, dict), (
+            "seam %r is verdicted %r, which is a claim about the code, "
+            "and carries no `check` to re-measure it with" % (name, verdict))
+        kind = check.get("kind")
+        measured += 1
+
+        if kind == "fallback-else":
+            routine = check["routine"]
+            sites = 0
+            for path, body in src.items():
+                for m in re.finditer(r"->%s\s*\(" % re.escape(name), body):
+                    sites += 1
+                    window = body[m.start():m.start() + 260]
+                    assert re.search(r"else\s*\(void\)%s\s*\("
+                                     % re.escape(routine), window), (
+                        "%s calls the %r seam at %s:%d with no `else "
+                        "(void)%s(...)` behind it. The ledger calls this "
+                        "verdict `fallback` on the grounds that the real "
+                        "routine runs when the seam is empty; at this call "
+                        "site nothing does."
+                        % (path.name, name, path.name,
+                           body.count("\n", 0, m.start()) + 1, routine))
+            assert sites >= 2, (
+                "the %r fallback claim measured %d call sites, which is "
+                "too few to be reading the dispatchers" % (name, sites))
+
+        elif kind == "no-src-caller":
+            symbol = check["symbol"]
+            callers = []
+            for path, body in src.items():
+                for m in re.finditer(r"\b%s\s*\(" % re.escape(symbol), body):
+                    line = body.count("\n", 0, m.start()) + 1
+                    # Its own definition and any prototype are not calls.
+                    head = body.rindex("\n", 0, m.start()) + 1
+                    decl = body[head:m.start()].strip()
+                    if decl and not decl.endswith(("=", "(", ",", "return")):
+                        continue
+                    callers.append("%s:%d" % (path.name, line))
+            assert not callers, (
+                "the %r seam is verdicted `unreached` because nothing in "
+                "src/ calls %s, and now something does: %s.\n"
+                "Whatever the row was excusing is on a live path."
+                % (name, symbol, ", ".join(callers)))
+            # And the symbol still has to EXIST, or "nothing calls it"
+            # is true of a name that is simply gone and this check has
+            # quietly stopped measuring anything. A definition starts
+            # its own line; a call never does.
+            defined = False
+            for body in src.values():
+                for m in re.finditer(r"\b%s\s*\(" % re.escape(symbol), body):
+                    close = body.find(")", m.end() - 1)
+                    while close >= 0 and body[close + 1:close + 2] in (" ", "\n"):
+                        close += 1
+                    if close >= 0 and body[close + 1:close + 2] == "{":
+                        defined = True
+            assert defined, (
+                "the %r claim names %s, which src/ no longer defines -- "
+                "so this check is measuring nothing" % (name, symbol))
+
+        elif kind == "guarded-by-test":
+            wanted = check["test"]
+            assert wanted in tests_text, (
+                "the %r row defers to %s, which no test in tests/ defines"
+                % (name, wanted))
+
+        else:
+            raise AssertionError("seam %r has an unknown check kind %r"
+                                 % (name, kind))
+
+    assert measured == 8, (
+        "expected the ledger's six `unreached` and two `fallback` rows, "
+        "measured %d -- a verdict was added or retired without this "
+        "guard being told" % measured)

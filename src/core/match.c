@@ -910,6 +910,11 @@ static void match_end_reset_winstreak_rows(void *user, unsigned mask) {
         if (mask & (1u << p)) wm_award_reset_winstreak(&m->awards, p);
 }
 
+/* LIFEBAR.ASM:3302 BONUS_MESS, defined below beside its react wrapper.
+   Declared here because the monitors reach it before it is written. */
+static void match_bonus_mess(wm_match_state *m, wm_arcade_actor_t *attacker,
+                             int bonus);
+
 /*
  * init_smoves' watchdogs for ONE wrestler, one tick each.
  *
@@ -981,6 +986,35 @@ static void match_tick_smoves_for(wm_match_state *m, unsigned ai) {
             continue;
         if (fire.walk_fast) a->walk_fast = fire.walk_fast;
         if (fire.risk) a->risk = fire.risk;
+        /*
+         * `movi <n>,a10` and then the process: twenty-three live ones
+         * across the eight wrestler files, twenty-two spelled `CREATE
+         * MESSAGE_PID,BONUS_MESS` and YOKO.ASM:803 spelled `CREATE0
+         * BONUS_MESS`. (A raw grep says twenty-six; three of those are
+         * commented out in the source.) This loop computed every one
+         * of those numbers and threw it away.
+         *
+         * BONUS_MESS is not display. LIFEBAR.ASM:3302 sets DAM_MULT to
+         * 2 and scores HIGH_RISK_AWD on every path past its first test,
+         * so a head-hold special is meant to hit for x1.5 and to score;
+         * only the words are gated on the first-time flag. The port
+         * carries all twenty-three -- twenty-two generated head-hold
+         * rows plus SHAWN.ASM:1606 flipslam -- and all twenty-three
+         * landed here and stopped. The seam was wired on the REACT and
+         * ANIM.ASM paths, both of which pass -1, so what was reachable
+         * was the taunt's high risk and never a secret move's.
+         *
+         * -1 means the monitor does NOT create the process at all; it
+         * is not A10 = -1, which is the taunt path and would hand out
+         * an award the source never gives here. So the sign is a gate,
+         * not an argument.
+         *
+         * It runs before the immobilise and the animation because the
+         * source's CREATE sits there; what the created process then
+         * reads of RISK is the value written just above, which is the
+         * order a separate process would have seen anyway.
+         */
+        if (fire.bonus >= 0) match_bonus_mess(m, a, fire.bonus);
         /* `movk 15,a14 / move a14,*a0(IMMOBILIZE_TIME)` -- the
            move pins the man it is done to. The amount is the
            row's own; eighteen of the forty pin nobody. */
@@ -2249,9 +2283,8 @@ static void match_partner_breakout(wm_arcade_actor_t *partner,
  * (delta*(1+mult))>>1 and clears it -- so this is the writer that
  * consumer was short of on the secret-move path.
  */
-static void match_react_bonus_message(wm_arcade_actor_t *attacker,
-                                      int bonus, void *user) {
-    wm_match_state *m = (wm_match_state *)user;
+static void match_bonus_mess(wm_match_state *m, wm_arcade_actor_t *attacker,
+                             int bonus) {
     wm_bonus_mess_result r;
     if (!m || !attacker) return;
     r = wm_bonus_mess(&m->bonus_mess, bonus, attacker->risk);
@@ -2273,6 +2306,13 @@ static void match_react_bonus_message(wm_arcade_actor_t *attacker,
      */
     if (r.dam_mult != 0) m->combat_runtime.dam_mult = r.dam_mult;
     /* r.show_text is the message itself, which this port does not draw. */
+}
+
+/* REACT1.ASM:550 and ANIM.ASM:2237, both `CREATE0 BONUS_MESS` with A10
+   already -1 -- the taunt-style high risk rather than a move number. */
+static void match_react_bonus_message(wm_arcade_actor_t *attacker,
+                                      int bonus, void *user) {
+    match_bonus_mess((wm_match_state *)user, attacker, bonus);
 }
 
 /* REACT2's `calla get_health`. */

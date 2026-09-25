@@ -4397,6 +4397,54 @@ def test_the_guarded_change_anim_count_matches_the_source() -> None:
         assert got == want, (wrestler, got, want, sorted(skip.items()))
 
 
+def test_the_breakout_kinds_map_to_their_own_animations() -> None:
+    """Each partner_breakout kind selects the label REACT1 selects.
+
+    REACT1.ASM:746 #goto_stand_anim picks xxx_goto_stand_anim and :753
+    #abort_att_anim picks xxx_aborted_attach_anim, and the port's
+    implementation is a switch over the two kinds. A C test cannot check
+    that: the reaction tests bind their own recorder for the seam, so
+    pointing BOTH kinds at one animation passes every one of them --
+    which is what a mutation showed.
+
+    The pairing is read off the assembly rather than written here, in
+    both directions, so a third kind or a renamed label fails.
+    """
+    asm = ROOT / "original" / "wwf-wrestlemania"
+    lines = (asm / "REACT1.ASM").read_text(errors="replace").split("\n")
+
+    sys.path.insert(0, str(ROOT / "tools"))
+    import wljjxm  # noqa: E402
+
+    # Each `#<label>` arm and the xxx_ animation it moves into a0.
+    arms, current = {}, None
+    for raw in lines:
+        t = wljjxm.strip_comment(raw)
+        m = re.match(r"^(#\w+)\s*$", t.strip())
+        if m:
+            current = m.group(1)
+            continue
+        m = re.search(r"\bmovi\s+(xxx_\w+_anim)\s*,\s*a0", t)
+        if m and current:
+            arms.setdefault(current, m.group(1))
+    assert arms.get("#goto_stand_anim") == "xxx_goto_stand_anim", arms
+    assert arms.get("#abort_att_anim") == "xxx_aborted_attach_anim", arms
+
+    body = _strip_comments((ROOT / "src" / "core" / "match.c")
+                           .read_text(errors="replace"))
+    start = body.index("match_partner_breakout(")
+    impl = body[start:body.index("\n}\n", start)]
+
+    pairs = dict(re.findall(
+        r"case\s+(WM_PARTNER_\w+):\s*label\s*=\s*\"(\w+)\"", impl))
+    assert pairs == {
+        "WM_PARTNER_GOTO_STAND": arms["#goto_stand_anim"],
+        "WM_PARTNER_ABORT_ATTACH_ANIM": arms["#abort_att_anim"],
+    }, pairs
+    # And they really are two different animations.
+    assert len(set(pairs.values())) == 2, pairs
+
+
 def test_ck_ignore_has_one_body_and_one_argument() -> None:
     """WRESTLE.ASM:6016 ck_ignore and :6044 ck_ignore_a8 are the same
     routine, and no third form exists.

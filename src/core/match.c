@@ -2168,6 +2168,75 @@ static void wm_match_react_triple_sound(wm_arcade_actor_t *victim,
 }
 
 /*
+ * LIFEBAR.ASM:3290 FIRSTATT_MESS, the FIRST HIT banner.
+ *
+ * The ledger said: "Its AWARD half is already wired separately through
+ * react_cb.round_first_hit_award ... so what is left behind this seam is
+ * the drawing." Almost. FIRSTATT_MESS sets up its own message and then
+ * `jruc #common` -- INTO BONUS_MESS's tail -- and #common's second
+ * instruction after the message is `MOVI 0BBH,A0 / CALLA triple_sound`.
+ * The guitar is behind this seam too, and it is not drawing.
+ *
+ * The rest genuinely is: the FIRSTATT banner itself, and the xDAMAGE
+ * "2x" banner #inhere shows after it. The multiplier those words
+ * describe is set by the CALLER (ANIM.ASM:2261 `movk 2,a14 / move
+ * a14,@DAM_MULT`), which this port already does.
+ */
+static void match_first_hit_message(wm_arcade_actor_t *attacker, void *user) {
+    wm_match_state *m = (wm_match_state *)user;
+    if (!m || !attacker) return;
+    wm_match_react_triple_sound(attacker, 0xBBu, m);
+}
+
+/*
+ * REACT1.ASM:746 #goto_stand_anim and :753 #abort_att_anim -- what
+ * hit_stuff does to a THIRD wrestler when the man he was holding gets
+ * hit by somebody else.
+ *
+ * The seam was ledgered as untraced: "A teammate breaking up a hold in
+ * buddy mode. The port runs a fixed pair by default; the call site is
+ * live only with four actors, and the routine behind it has not been
+ * traced." It is two instructions and a label apiece:
+ *
+ *     #goto_stand_anim                #abort_att_anim
+ *         PUSH  a13                       PUSH  a13
+ *         move  a1,a13                    move  a1,a13
+ *         movi  xxx_goto_stand_anim,a0    movi  xxx_aborted_attach_anim,a0
+ *         calla change_anim1a             calla change_anim1a
+ *         PULL  a13                       PULL  a13
+ *
+ * The `move a1,a13` is the partner being swapped in so change_anim1a
+ * acts on HIM rather than on the victim -- the same register-convention
+ * plumbing ck_ignore's caller does, and the reason this reads as a
+ * routine of its own when it is a two-line arm.
+ *
+ * Both animations are generic rather than per wrestler: `xxx_` in this
+ * source means shared, and REACT1.ASM:1873 and :1927 define them once
+ * for the whole roster. They have been in the generated programs since
+ * they were extracted; nothing selected them.
+ *
+ * Both are change_anim1a, unguarded -- a partner already standing is
+ * sent back to the top of the stand animation rather than left alone.
+ *
+ * The note was right about one thing: this needs a third party. The
+ * caller only fires when the partner's own ATTACH_PROC points back at
+ * the victim AND the partner is not the attacker, which two wrestlers
+ * cannot satisfy. Buddy mode's four actors can.
+ */
+static void match_partner_breakout(wm_arcade_actor_t *partner,
+                                   wm_arcade_partner_breakout_t kind,
+                                   void *user) {
+    const char *label;
+    if (!partner) return;
+    switch (kind) {
+    case WM_PARTNER_GOTO_STAND:        label = "xxx_goto_stand_anim"; break;
+    case WM_PARTNER_ABORT_ATTACH_ANIM: label = "xxx_aborted_attach_anim"; break;
+    default:                           return;
+    }
+    match_change_anim(partner, label, user);
+}
+
+/*
  * LIFEBAR.ASM:3302 BONUS_MESS, the non-display half.
  *
  * The seam was ledgered as display, with the question of whether an
@@ -2845,6 +2914,10 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
         react_cb.round_first_hit_award = wm_match_first_hit_award;
         /* LIFEBAR.ASM:3302 BONUS_MESS -- see the routine's comment. */
         react_cb.bonus_message = match_react_bonus_message;
+        /* REACT1.ASM:746/:753 -- see the routine's comment. */
+        react_cb.partner_breakout = match_partner_breakout;
+        /* LIFEBAR.ASM:3290 -- the guitar, not the banner. */
+        react_cb.first_hit_message = match_first_hit_message;
         /*
          * REACT1.ASM's hit_table dispatch. This seam was declared in
          * wm/arcade/wm_arcade_react.h, a signature-compatible bridge was

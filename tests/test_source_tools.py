@@ -5141,3 +5141,143 @@ def test_the_special_move_field_has_one_writer() -> None:
         "match.c writes ->special_move_addr %d times but only %d of those "
         "are inside match_queue_special_move. A write outside it does not "
         "convert Bret's label to his typed id." % (len(raw), len(inside)))
+
+
+# A powerup flag that wm_match_state has a field for, which the app is NOT
+# expected to copy across at match start, and why. Everything else must be
+# copied: the app is the only place the two structs meet.
+POWERUP_NOT_DELIVERED = (
+    ("p_request",
+     "not a flag but the two reconciled REQUEST words; the match takes "
+     "them as arguments to wm_match_start_two_player rather than as state"),
+)
+
+
+
+def _struct_fields(header, struct_name):
+    """The depth-1 field names of one struct, brace-matched.
+
+    Doing this by searching backwards for `{` finds a NESTED brace in any
+    struct that contains one, which wm_match_state does -- and then the
+    caller silently reads the tail of the struct as though it were all of
+    it. So the opening brace is found by matching from the typedef, and
+    only depth-1 declarations count.
+    """
+    text = _strip_comments(pathlib.Path(header).read_text())
+    end = text.index("} " + struct_name)
+    # Walk back from the closing brace to its partner.
+    depth, i = 1, end - 1
+    while i >= 0 and depth:
+        if text[i] == "}":
+            depth += 1
+        elif text[i] == "{":
+            depth -= 1
+        i -= 1
+    start = i + 1
+    body, out, depth = text[start + 1:end], [], 0
+    for line in body.splitlines():
+        opens, closes = line.count("{"), line.count("}")
+        if depth == 0:
+            m = re.match(r"\s*(?:const\s+)?[A-Za-z_][\w ]*?\**\s*"
+                         r"(\w+)\s*(?:\[[^\]]*\])?\s*;\s*$", line)
+            if m and not line.lstrip().startswith("}"):
+                out.append(m.group(1))
+        depth += opens - closes
+    return out
+
+
+def test_every_powerup_flag_the_match_holds_is_delivered() -> None:
+    """get_powerups computes seven globals; the app must hand over the ones
+    the match has somewhere to put.
+
+    This is the guard for a defect with no symptom. wm_get_powerups
+    computed @blocking_off and @hyper_speed_on, all eight dispatchers read
+    them, and app.c copied neither -- so both codes could be entered and
+    changed nothing. Zero is a legitimate value for both, so nothing
+    failed, nothing warned, and the match simply played as though nobody
+    had asked.
+
+    The rule is mechanical: a field name present on BOTH wm_powerup_flags
+    and wm_match_state is a flag the app is the only bridge for, so app.c
+    has to assign it. A deliberate exception goes in POWERUP_NOT_DELIVERED
+    with its reason.
+    """
+    root = pathlib.Path(__file__).resolve().parents[1]
+
+    flags = set(_struct_fields(root / "include" / "wm" / "arcade" /
+                               "wm_arcade_powerup.h", "wm_powerup_flags"))
+    match = set(_struct_fields(root / "include" / "wm" / "match.h",
+                               "wm_match_state"))
+    assert len(flags) >= 6 and len(match) >= 40, (
+        "powerup/match fields not parsed (%d/%d) -- a parse that finds "
+        "nothing would pass trivially" % (len(flags), len(match)))
+    # The first version of this test scanned backwards for the struct's
+    # opening brace and found a NESTED one, so it read 37 tail fields of
+    # wm_match_state, intersected them with the flags, got the empty set
+    # and passed on nothing. The size check above did not notice, because
+    # 37 is a plausible number. This is the check that would have: the
+    # two structs are known to share fields, so an empty overlap means
+    # the parse is wrong, not that there is nothing to deliver.
+    assert flags & match, \
+        "no field name is shared between wm_powerup_flags and " \
+        "wm_match_state -- the parse is wrong, not the delivery"
+
+    app = _strip_comments((root / "src" / "core" / "app.c").read_text())
+    excused = {name for name, _why in POWERUP_NOT_DELIVERED}
+
+    missing = []
+    for f in sorted(flags & match):
+        if f in excused:
+            continue
+        # `app->match.<f> = app->powerups.<f>;` in any spacing.
+        if not re.search(r"\.%s\s*=\s*[\w\->.]*powerups\s*\.\s*%s\b"
+                         % (re.escape(f), re.escape(f)), app):
+            missing.append(f)
+    assert not missing, (
+        "wm_match_state has a field for these powerup flags and app.c "
+        "never copies them in: %s.\n"
+        "get_powerups computes them and the match's consumers read them, "
+        "so the code can be entered and do nothing. Copy them at "
+        "MATCH_INIT beside instant_combos_on, or record the exception."
+        % ", ".join(missing))
+
+    for name, why in POWERUP_NOT_DELIVERED:
+        assert name in flags, \
+            "POWERUP_NOT_DELIVERED names %r, which is not a powerup " \
+            "flag" % name
+        assert len(why) > 20, "%s has no real reason recorded" % name
+
+
+def test_the_roster_env_builder_fills_every_field() -> None:
+    """The dispatcher env is memset and then filled by hand, field by field.
+
+    That is a list somebody has to remember to add to, and it went wrong:
+    the builder set pcnt, p1rounds and p2rounds and left blocking_off and
+    hyper_speed_on at the zero the memset put there. Zero is a legal value
+    for both -- blocking works, the shift is by nothing -- so all eight
+    dispatchers read the field and believed it.
+
+    Every field of wm_arcade_roster_env_t must be assigned in the block
+    that builds it. A new field is then a test failure until the builder
+    is told about it, which is the only moment anyone is thinking about
+    what it should hold.
+    """
+    root = pathlib.Path(__file__).resolve().parents[1]
+    fields = _struct_fields(root / "include" / "wm" / "arcade" /
+                            "wm_arcade_roster.h", "wm_arcade_roster_env_t")
+    assert len(fields) >= 5, \
+        "wm_arcade_roster_env_t fields not parsed (%r)" % fields
+
+    body = _strip_comments((root / "src" / "core" / "match.c").read_text())
+    # The builder is the memset of a wm_arcade_roster_env_t through to the
+    # call that consumes it.
+    start = body.index("memset(&env, 0, sizeof(env))")
+    end = body.index("wm_arcade_move_ported_wrestler", start)
+    region = body[start:end]
+
+    missing = [f for f in fields
+               if not re.search(r"\benv\s*\.\s*%s\s*=" % re.escape(f), region)]
+    assert not missing, (
+        "the roster env builder in match.c never assigns %s, so every "
+        "dispatcher reads whatever the memset left -- usually a zero that "
+        "is also a legal value." % ", ".join(missing))

@@ -51,8 +51,16 @@ typedef struct {
     /* @WORLDTLX / @WORLDTLY, the scroll origin, in 16.16. */
     int32_t world_tlx;
     int32_t world_tly;
-    /* @finish_completed, raised by the animation when it is done. */
-    bool finish_completed;
+    /*
+     * @finish_completed had a field here and it was vestigial: no caller
+     * supplied it and no routine read it. The guard list at TAKER.ASM:633
+     * does not include it -- @finish_completed appears only at :697
+     * `#fdone_wait`, the spin AFTER the animation starts, which this port
+     * models in the coffin driver against m->coffin.finish_completed
+     * rather than here. A declared input that reads false to everyone is
+     * worse than no field, because the next person to fill this env would
+     * reasonably expect a guard behind it.
+     */
 } wm_arcade_und_finish_env_t;
 
 typedef struct {

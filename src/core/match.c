@@ -2772,6 +2772,26 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             env.pcnt = m->tick_count;
             env.p1rounds = m->score.p1rounds;
             env.p2rounds = m->score.p2rounds;
+            /*
+             * @blocking_off and @hyper_speed_on. This builder set three
+             * of the struct's five fields and left these two at the zero
+             * the memset put there -- and zero is a legitimate value for
+             * both, so nothing looked wrong. std_block's `move
+             * @blocking_off,a14 / jrnz` and mode_running's `move
+             * @hyper_speed_on,a14 / sll a14,a0` are translated in all
+             * eight dispatchers; they were reading a field the match
+             * never filled in.
+             */
+            env.blocking_off = m->blocking_off;
+            env.hyper_speed_on = m->hyper_speed_on;
+            /*
+             * ANIM.ASM:157 `move @hyper_speed_on,a14 / srl a14,a1` --
+             * the same powerup scales how long an animation FRAME is
+             * held, which this port reads off the actor rather than a
+             * global (wm_arcade_combat.h). Nothing wrote it either, so
+             * the halving never happened.
+             */
+            m->actors[i].hyper_speed = (uint16_t)m->hyper_speed_on;
 
             m->wrestler_visual[i].opponent = opp;
             m->wrestler_visual[i].pcnt = m->tick_count;

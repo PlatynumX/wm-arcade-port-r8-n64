@@ -184,6 +184,24 @@ typedef struct {
     int32_t drone_meters_on;
 
     /*
+     * AWARD.ASM's `blocking_off` and `hyper_speed_on`, the other two
+     * powerups the MATCH has consumers for. Copied in by the app the
+     * same way the two above are -- and they were not, which was the
+     * whole of the defect: wm_get_powerups computed both and nothing
+     * carried them any further, so the BLOCKING OFF and HYPER MATCH
+     * codes could be entered and changed nothing.
+     *
+     * blocking_off keeps its bit value (`movi 2020h,a8`, hence
+     * WM_BLOCKING_OFF_VALUE) because the source never normalises it;
+     * every consumer only asks whether it is non-zero. hyper_speed_on
+     * IS normalised to 1 at AWARD.ASM:2276, and it is a SHIFT COUNT,
+     * not a flag: `sll a14,a0` on the run velocity and `srl a14,a1` on
+     * a frame's hold, so one bit means twice the speed either way.
+     */
+    int32_t blocking_off;
+    int32_t hyper_speed_on;
+
+    /*
      * REACT1.ASM's own callback set and its context, owned here because
      * wm_arcade_react_callbacks_t has ONE `user` shared by all its
      * hooks -- the match needs it for adjust_health, and the reaction

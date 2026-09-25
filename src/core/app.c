@@ -975,6 +975,15 @@ void wm_app_tick_dual(wm_app *app,
         /* AWARD.ASM's combos_on powerup, read by CHECK_COMBO_GO. */
         app->match.instant_combos_on = app->powerups.instant_combos_on;
         app->match.drone_meters_on = app->powerups.drone_meters_on;
+        /*
+         * AWARD.ASM:2279 and :2262, the other two the match consumes.
+         * These two lines are the whole fix for a defect that had the
+         * shape of working code: get_powerups computed both flags, all
+         * eight dispatchers read them, and nothing in between carried
+         * them, so entering either code did nothing at all.
+         */
+        app->match.blocking_off = app->powerups.blocking_off;
+        app->match.hyper_speed_on = app->powerups.hyper_speed_on;
         wm_app_bind_anim_env(app);
         if (app->match_pstatus == 3) {
             /* start_match's #2plyr. No royal-rumble app mode exists yet. */

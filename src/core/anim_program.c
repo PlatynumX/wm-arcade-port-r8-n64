@@ -968,10 +968,20 @@ static void run_superslave2(const wm_anim_op *o, wm_arcade_actor_t *actor,
  * Only a FRAME goes through this. ANI_PAUSE (:1252) and ANI_HMBWAIT both
  * write OANICNT directly, unscaled, so neither is affected.
  *
- * Every ANI_SETSPEED in the source drop is 100h and nothing sets
- * hyper_speed, so this is identity for the whole shipped game -- which is
- * exactly why its absence was invisible. It is here so the port is right
- * by construction rather than by coincidence.
+ * Every ANI_SETSPEED in the source drop is 100h, so the ANI_SPEED half
+ * is identity for the whole shipped game.
+ *
+ * THE HYPER_SPEED HALF IS NOT. This comment used to say "nothing sets
+ * hyper_speed", and that is only true of the animation data: AWARD.ASM's
+ * hyper_powerup_check listens for LEFT-PUNCH-PUNCH-BLOCK, and
+ * get_powerups at :2276 normalises the resulting bit to 1 and stores it
+ * in @hyper_speed_on. (AWARD.ASM:2066 carries the comment "Disabled for
+ * now" beside the `ori HYPER_MATCH_ON,a9` that arms it, and the
+ * instruction is live -- the comment is not.) So a player who enters the
+ * code halves every frame hold for the rest of the match.
+ *
+ * It is a SHIFT COUNT and not a flag, in both directions: `srl a14,a1`
+ * here and `sll a14,a0` on the run velocity in all eight wrestler files.
  */
 #define WM_ANI_SPEED_NORMAL 0x100u
 
@@ -1053,8 +1063,9 @@ static uint16_t frame_ticks(const wm_arcade_actor_t *actor, int32_t ticks) {
      * A count of 0 means "move on next tick" in the source, which its
      * `dec / jrgt` reaches naturally. This interpreter counts down from
      * ticks_left instead, so the floor is one tick. Only reachable when
-     * the hyper-speed powerup halves a single-tick frame, which nothing
-     * here enables.
+     * the hyper-speed powerup halves a single-tick frame -- which the
+     * match now enables, because actor->hyper_speed was written by
+     * nobody until the powerup was carried through to it.
      */
     return (uint16_t)(held ? held : 1);
 }

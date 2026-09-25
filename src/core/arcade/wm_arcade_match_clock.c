@@ -9,7 +9,7 @@
 #include "wm/arcade/wm_arcade_round.h"
 
 /*
- * WRESTLE2.ASM:4339. `.asg 1500,BASETM` then five rows, and the two
+ * WRESTLE2.ASM:4358 timer_table. `.asg 1500,BASETM` then five rows, and the two
  * outer pairs are computed by the assembler as BASETM*30/100 and
  * BASETM*15/100 -- integer arithmetic on 1500, so 450 and 225 exactly
  * with nothing to round.

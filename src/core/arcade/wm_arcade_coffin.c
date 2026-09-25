@@ -110,7 +110,7 @@ bool wm_coffin_rise_step(int32_t *sizey, int32_t *ypos) {
 }
 
 /*
- * do_up_coffin `#mv_dn_lp` (FINISEQ.ASM:838). `cmpi 1,a14 / jrle`, so
+ * do_up_coffin `#mv_dn_lp` (FINISEQ.ASM:850). `cmpi 1,a14 / jrle`, so
  * the test is <= 1 and not == 0; from 136 in steps of 4 it stops on 0
  * either way, but a size that is not a multiple of 4 would stop one
  * step earlier here and never at all in the rise above.

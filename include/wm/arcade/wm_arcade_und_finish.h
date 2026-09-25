@@ -133,10 +133,10 @@ void wm_arcade_und_shake_world(int32_t base_tlx, int32_t base_tly,
 /* The animation und_finish_move1 starts, TAKER.ASM's own label. */
 #define WM_UND_FINISH_ANIM "und_2_raise_dead_anim"
 
-/* TAKER.ASM:718's own constant: the ring's right edge, less 100. */
+/* TAKER.ASM:573's own constant: the ring's right edge, less 100. */
 #define WM_UND_VIEW_STOP_X (1322 - 100)
 /* The midpoint the view scrolls to is halfway between the Undertaker
-   and x=1200 (TAKER.ASM:726 `addi [1200,0],a14`). */
+   and x=1200 (TAKER.ASM:578 `addi [1200,0],a14`). */
 #define WM_UND_VIEW_TARGET_X 1200
 /* Neither wrestler may be right of this (TAKER.ASM:544, :549). */
 #define WM_UND_FINISH_MAX_X (WM_RING_X_CENTER + 100)

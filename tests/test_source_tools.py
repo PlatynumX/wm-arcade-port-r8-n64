@@ -5505,3 +5505,58 @@ def test_the_hardware_test_exemptions_are_all_still_needed() -> None:
             f"{name} now HAS an expected-hardware-test section, so its "
             "NOTE_NO_HARDWARE_TEST row is stale. Delete the row."
         )
+
+
+def test_every_citation_points_at_the_line_it_quotes() -> None:
+    """A citation and its quoted instruction must agree.
+
+    Every factual claim in this port rests on a `FILE.ASM:NNNN` citation,
+    and most of those citations quote the instruction they are about. The
+    line number and the quote are two independent statements about one
+    fact, so when they disagree, one is wrong -- and a wrong line number
+    sends the next reader into the wrong routine to re-check a value they
+    were told had been verified. That is worse than no citation, because
+    it looks like evidence.
+
+    Ten were wrong when this check was written. The largest pointed at
+    ANIM.ASM:91, `SUBR animate_wrestler1`, for a RPT_COUNT test that
+    lives at :3281 -- 3,191 lines away, in a comment block whose
+    neighbours cited :3214 and :3239 correctly.
+
+    Only unambiguous cases are reported: a quote whose instructions occur
+    more than once in the cited file is skipped rather than guessed at.
+    The checker knows the port's real citation conventions -- pointing at
+    the enclosing `SUBR`/label, or at the source's own comment -- so a
+    finding means the citation is wrong, not merely unusual.
+    """
+    spec = importlib.util.spec_from_file_location(
+        "citation_check", ROOT / "tools" / "citation_check.py"
+    )
+    assert spec and spec.loader
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    # The check must still be measuring something. If a refactor makes the
+    # quoted runs unlocatable, this passes on an empty set and says nothing
+    # -- the exact failure the port keeps finding in its own guards.
+    paths = [
+        p
+        for d in ("src", "include")
+        for p in (ROOT / d).rglob("*")
+        if p.suffix in (".c", ".h")
+    ]
+    locatable = sum(
+        1 for (_, _, name, _, snip) in mod.pairs(sorted(paths))
+        if len(mod.locate(name, snip)) == 1
+    )
+    assert locatable >= 80, (
+        f"only {locatable} citations are locatable; this check has stopped "
+        "measuring anything and would pass on nearly any tree"
+    )
+
+    bad = mod.findings(paths)
+    assert not bad, "citation(s) disagree with the line they quote:\n" + "\n".join(
+        f'  {f["c_file"]}:{f["c_line"]} cites {f["asm_file"]}:{f["cited"]}'
+        f' but `{f["snippet"][:60]}` is at :{f["span"]}'
+        for f in bad
+    )

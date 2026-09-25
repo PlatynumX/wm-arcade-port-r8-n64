@@ -23,7 +23,7 @@
 /* ANIM.ASM:4405 `movi 80,a0 / move a0,@allow_offscrn`. */
 #define WM_ALLOW_OFFSCRN_TICKS 80
 
-/* ANIM.ASM:1683 `cmpi >0f0000,a1` -- the leap's Y velocity cap. */
+/* ANIM.ASM:1476 `cmpi >0f0000,a1` -- the leap's Y velocity cap. */
 #define WM_LEAP_MAX_YVEL 0x0F0000
 
 static void play_sound(const wm_anim_env *env, uint16_t call) {
@@ -1439,7 +1439,8 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
                 pc = exec->rpt_count ? (size_t)o->target : pc + 1;
                 continue;
             case WM_AOP_IFNOT_RPTCOUNT:
-                /* ANIM.ASM:91 `jrnz #fail2` -- the same test inverted. */
+                /* ANIM.ASM:3281 `move *a13(RPT_COUNT),a14 / jrnz #fail2` -- the same
+                   test inverted. */
                 pc = !exec->rpt_count ? (size_t)o->target : pc + 1;
                 continue;
             /* ANIM.ASM:3214 `cmp a0,a14 / jrlt #fail`: the branch is taken

@@ -43,7 +43,7 @@ extern "C" {
  * wm_arcade_match_score_award_round already records.
  */
 
-/* LIFEBAR.ASM:2771's `MOVI CROWD_VICTORY_LOOP,A3 / CALLA SNDSND`, and
+/* LIFEBAR.ASM:2782's `MOVI CROWD_VICTORY_LOOP,A3 / CALLA SNDSND`, and
    the bare `movi 27,a3 / calla SNDSND` before CALL_MATCH_OVER. */
 #define WM_ARW_VICTORY_SOUND 2058          /* SOUND.EQU CROWD_VICTORY_LOOP */
 #define WM_ARW_VICTORY_TICKS 200           /* SOUND.EQU D_CROWD_VICTORY_LOOP */

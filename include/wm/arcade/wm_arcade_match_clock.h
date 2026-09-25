@@ -71,7 +71,7 @@ typedef struct {
 #define WM_MATCH_CLOCK_START_DELAY (WM_MATCH_CLOCK_TSEC * 2)
 
 /*
- * WRESTLE2.ASM:4339 #timer_table, `.asg 1500,BASETM` and five rows at
+ * WRESTLE2.ASM:4358 timer_table, `.asg 1500,BASETM` and five rows at
  * BASETM -30%, -15%, BASETM, +15%, +30%, indexed by the operator's
  * ADJSPEED (1 = slowest, 5 = fastest).
  *

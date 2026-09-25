@@ -36,7 +36,7 @@ static void frames_for(const wm_match_state *m, size_t i,
 }
 
 /*
- * ANIM.ASM:4645 -- `move *a13(OBJ_ZPOS),a0,L / ori [01000h,0],a0`, then
+ * ANIM.ASM:4636 -- `move *a13(OBJ_ZPOS),a0,L / ori [01000h,0],a0`, then
  * the out-of-ring drop. INRING is zero inside the ring.
  */
 int32_t wm_match_display_priority(int32_t z_fixed, int32_t in_ring) {

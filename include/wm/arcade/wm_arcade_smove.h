@@ -165,7 +165,7 @@ typedef struct {
 typedef struct {
     /* The animation to start on the wrestler himself, or NULL. */
     const char *anim;
-    /* DOINK.ASM:1136 std_walk_fast's `movi 15*60,a0 / move
+    /* DOINK.ASM:1125 std_walk_fast's `movi 15*60,a0 / move
        a0,*a8(WALK_FAST)`; 0 when this monitor does not set it. */
     int32_t walk_fast;
     /* DOINK.ASM:1270 std_taunt's `movi 8000h+12*60,a0 / move
@@ -572,7 +572,7 @@ bool wm_smove_tick(wm_smove_run_t *run, wm_arcade_actor_t *a,
 #define WM_SMOVE_TIMEOUT_FINISH 53   /* TAKER.ASM:610, `.equ TSEC` */
 #define WM_SMOVE_TIMEOUT_DOINK  61   /* DOINK.ASM:1096 and :1219 */
 
-/* DOINK.ASM:1136 `movi 15*60,a0` and :1270 `movi 8000h+12*60,a0`.
+/* DOINK.ASM:1125 `movi 15*60,a0` and :1269 `movi 8000h+12*60,a0`.
    Both are in 60ths, not TSEC ticks -- the source's own constants. */
 #define WM_SMOVE_WALK_FAST_TIME (15 * 60)
 #define WM_SMOVE_TAUNT_RISK     (0x8000u + 12u * 60u)

@@ -501,6 +501,7 @@ static void match_set_world_origin(int32_t tlx, int32_t tly, void *user) {
     m->scroll.worldtly = tly;
 }
 
+
 /*
  * REACT's per-move grading: `calla CALL_NASTY_MOVE` and
  * `calla CALL_AVERAGE_MOVE`, at REACT4.ASM:351, :363, :390 and
@@ -1619,6 +1620,10 @@ static void match_start_common_tail(wm_match_state *m) {
             wm_rope_runtime_init_bank(&m->ropes[b], (WmRopeBank)b, false);
     }
     wm_announcer_init(&m->announcer);       /* RESET_VOICE_QUEUE */
+    /* WRESTLE.ASM:1621, in start_match: `clr a0 / move
+       a0,@message_flag,L` -- and a LONG is half the field, which
+       wm_bonus_mess_reset_match preserves. */
+    wm_bonus_mess_reset_match(&m->bonus_mess);
     wm_anim_code_reset();
     wm_arcade_round_state_init(&m->round_state);
     /*
@@ -2162,6 +2167,45 @@ static void wm_match_react_triple_sound(wm_arcade_actor_t *victim,
     if (m && m->anim_sound) m->anim_sound(m->anim_sound_user, sound_id);
 }
 
+/*
+ * LIFEBAR.ASM:3302 BONUS_MESS, the non-display half.
+ *
+ * The seam was ledgered as display, with the question of whether an
+ * award rides along left to "be read off the callers". It is not in the
+ * callers: BONUS_MESS itself sets DAM_MULT and scores HIGH_RISK_AWD on
+ * every path, so every secret move in the game is meant to hit harder
+ * and to score, and with this seam empty it did neither.
+ *
+ * DAM_MULT already had a working consumer -- adjust_health scales by
+ * (delta*(1+mult))>>1 and clears it -- so this is the writer that
+ * consumer was short of on the secret-move path.
+ */
+static void match_react_bonus_message(wm_arcade_actor_t *attacker,
+                                      int bonus, void *user) {
+    wm_match_state *m = (wm_match_state *)user;
+    wm_bonus_mess_result r;
+    if (!m || !attacker) return;
+    r = wm_bonus_mess(&m->bonus_mess, bonus, attacker->risk);
+    if (!r.ran) return;
+    if (r.high_risk_award)
+        match_backend_round_award(m, (int)attacker->player_num,
+                                  (int)WM_AWARD_HIGH_RISK);
+    /* `MOVI 0BBH,A0 / CALLA triple_sound` -- the guitar. The source
+       reaches it only past is_there_one_already, which asks whether a
+       message is already on this side's screen; nothing in this port
+       puts one there, so the gate never fires and the sound always
+       plays. That is what the code does with no messages, not a
+       simplification of it. */
+    if (r.guitar) wm_match_react_triple_sound(attacker, 0xBBu, m);
+    /*
+     * dam_mult 0 means "leave the caller's value alone" -- ANIM.ASM:2234
+     * has already put 4 there for the taunt-style path, and #tag's own
+     * write is commented out at :3320.
+     */
+    if (r.dam_mult != 0) m->combat_runtime.dam_mult = r.dam_mult;
+    /* r.show_text is the message itself, which this port does not draw. */
+}
+
 /* REACT2's `calla get_health`. */
 static int32_t wm_match_react_get_health(const wm_arcade_actor_t *victim,
                                          void *user) {
@@ -2696,10 +2740,16 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             m->bret_visual[i].anim_env.award_user = m->anim_award_user;
             m->bret_visual[i].anim_env.round_award = m->anim_round_award;
             m->wrestler_visual[i].anim_env.announcer = &m->announcer;
+            /* LIFEBAR.ASM:108 message_flag -- one per match, like
+               the queue beside it. */
+            m->wrestler_visual[i].anim_env.bonus_mess = &m->bonus_mess;
             m->wrestler_visual[i].anim_env.anyone_near_death =
                 match_anyone_near_death;
             m->wrestler_visual[i].anim_env.announcer_user = m;
             m->bret_visual[i].anim_env.announcer = &m->announcer;
+            /* LIFEBAR.ASM:108 message_flag -- one per match, like
+               the queue beside it. */
+            m->bret_visual[i].anim_env.bonus_mess = &m->bonus_mess;
             m->bret_visual[i].anim_env.anyone_near_death =
                 match_anyone_near_death;
             m->bret_visual[i].anim_env.announcer_user = m;
@@ -2793,6 +2843,8 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
            since it was written, so the first hit of a round scored no
            award at all. */
         react_cb.round_first_hit_award = wm_match_first_hit_award;
+        /* LIFEBAR.ASM:3302 BONUS_MESS -- see the routine's comment. */
+        react_cb.bonus_message = match_react_bonus_message;
         /*
          * REACT1.ASM's hit_table dispatch. This seam was declared in
          * wm/arcade/wm_arcade_react.h, a signature-compatible bridge was
@@ -2853,6 +2905,7 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             match_react_attacker_uses_lex_flykick;
         m->react1_cb.attacker_anim_tag = match_react_attacker_anim_tag;
         m->react1_cb.move_grade = match_react_move_grade;
+
         m->react1_cb.user = m;
         memset(&m->react1_ctx, 0, sizeof m->react1_ctx);
         m->react1_ctx.callbacks = &m->react1_cb;

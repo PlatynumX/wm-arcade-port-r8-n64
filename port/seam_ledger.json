@@ -145,10 +145,6 @@
   "verdict": "deferred",
   "note": "The reaction core's own escape hatch for a hit_table entry it has no handler for -- diagnostic rather than behaviour. Worth filling with a counter so the number is measured instead of assumed, which is its own small change."
  },
- "bonus_message": {
-  "verdict": "deferred",
-  "note": "The bonus text a special move puts on screen, plus the award behind it. The message is display; whether an award rides along -- as it does in DO_REVERSAL_MESS, which is why that one got wired -- has to be read off the callers."
- },
  "first_hit_message": {
   "verdict": "deferred",
   "note": "The FIRST HIT banner. Its AWARD half is already wired separately through react_cb.round_first_hit_award (ANIM.ASM:2253's `RND_AWARD a13,FIRST_HIT_AWD`), so what is left behind this seam is the drawing."

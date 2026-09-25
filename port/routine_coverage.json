@@ -355,10 +355,10 @@
    "local": false,
    "external_callers": 25,
    "references": 25,
-   "status": "process",
-   "evidence": "The source's own comment: 'Process which displays high risk - 2x damage & possibly move name'.",
+   "status": "implemented",
+   "evidence": "bonus_mess",
    "from_generated": false,
-   "ledgered": true
+   "ledgered": false
   },
   {
    "name": "BROKEN_ARM_BLOOD",

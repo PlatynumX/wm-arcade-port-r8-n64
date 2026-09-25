@@ -9,6 +9,7 @@
 #include "wm/anim_puppet.h"
 #include "wm/arcade/wmania_rng.h"
 #include "wm/arcade/wm_arcade_announcer.h"
+#include "wm/arcade/wm_arcade_bonus_mess.h"
 #include "wm/arcade/wm_arcade_coffin.h"
 #include "wm/arcade/wm_arcade_final_battle.h"
 
@@ -393,6 +394,14 @@ typedef struct wm_anim_env {
      * reaches it the same way, through wm/announce_tables.h.
      */
     wm_announcer_state *announcer;
+    /*
+     * LIFEBAR.ASM:108 message_flag, for BONUS_MESS. One per match, like
+     * the announcer queue beside it -- which is why it lives here and
+     * not on a per-actor backend state. NULL means a caller with no
+     * match around it, and BONUS_MESS's award and multiplier still
+     * happen; only the first-time-only text gate needs the memory.
+     */
+    wm_bonus_mess_state *bonus_mess;
     /* DO_END_STUFF's `get_health` sweep over every wrestler: is anybody
        under 40 health? NULL means "cannot tell", and the announcer then
        keeps walking the ordinary table exactly as a healthy roster does. */

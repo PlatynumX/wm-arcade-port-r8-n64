@@ -25,6 +25,7 @@
 #include "wm/arcade/wm_arcade_getup_meter.h"
 #include "wm/arcade/wm_arcade_target.h"
 #include "wm/arcade/wm_arcade_shake.h"
+#include "wm/arcade/wm_arcade_bonus_mess.h"
 #include "wm/arcade/wm_arcade_debris.h"
 #include "wm/arcade/wmania_rng.h"
 #include "wm/arcade/wmania_rope_runtime.h"
@@ -568,6 +569,12 @@ typedef struct {
      * without an app around it; an app that owns its own
      * wm_award_state can copy it in and out.
      */
+    /*
+     * LIFEBAR.ASM:108's message_flag, cleared (half of it) by
+     * start_match. See wm/arcade/wm_arcade_bonus_mess.h -- the bits gate
+     * a secret move's message text, not its award or its damage.
+     */
+    wm_bonus_mess_state bonus_mess;
     wm_award_state awards;
     /* @match_cnt, for the tip rule. The cabinet counts matches across
        credits, so the app owns it; the match reads it. */

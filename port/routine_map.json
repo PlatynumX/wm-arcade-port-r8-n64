@@ -110,11 +110,6 @@
   "status": "process",
   "note": "A display process. Its one piece of logic -- RND_AWARD a8,REVERSAL_AWD -- is translated in wm/award.h; the rest is the message object and its voice call."
  },
- "BONUS_MESS": {
-  "file": "LIFEBAR.ASM",
-  "status": "process",
-  "note": "The source's own comment: 'Process which displays high risk - 2x damage & possibly move name'."
- },
  "meters": {
   "file": "LIFEBAR.ASM",
   "status": "process",

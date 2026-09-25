@@ -1165,11 +1165,42 @@ static void bret_round_award_block(wm_arcade_actor_t *actor, void *user) {
                     (int)WM_AWARD_BLOCKS);
 }
 
+/*
+ * LIFEBAR.ASM:3302 BONUS_MESS, on Bret's's secret-move path.
+ *
+ * It is not display: the routine writes DAM_MULT, scores HIGH_RISK_AWD
+ * and plays the guitar on every path past its first test. `bonus` is
+ * A10, whose sign picks between ANIM.ASM:2230's taunt-style high risk
+ * (which has already set DAM_MULT to 4 and must not be overwritten) and
+ * the wrestler files' numbered secret moves (which set it to 2).
+ *
+ * The DAM_MULT half cannot land from here: this port keeps it on the
+ * match's combat runtime, which a backend does not hold. The award and
+ * the sound do, and they are the parts that were silently absent.
+ */
+static void bret_bonus_message(wm_arcade_actor_t *actor, int bonus,
+                                  void *user) {
+    wm_bret_backend_actor *st = (wm_bret_backend_actor *)user;
+    wm_bonus_mess_result r;
+    if (!actor || !st) return;
+    r = wm_bonus_mess(st->anim_env.bonus_mess, bonus, actor->risk);
+    if (!r.ran) return;
+    if (r.high_risk_award && st->round_award)
+        st->round_award(st->round_award_user, (int)actor->player_num,
+                        (int)WM_AWARD_HIGH_RISK);
+    /* `MOVI 0BBH,A0 / CALLA triple_sound` -- the guitar. The env's
+       `sound` hook IS triple_sound: its comment says the call is "the
+       sound's own index into triple_sndtab, passed through unchanged". */
+    if (r.guitar && st->anim_env.sound)
+        st->anim_env.sound(st->anim_env.sound_user, 0xBBu);
+}
+
 wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva) {
     wm_arcade_bret_callbacks_t cb;
     memset(&cb, 0, sizeof(cb));
     cb.can_pin = bret_can_pin;
     cb.change_anim = wm_bret_backend_change_anim;
+    cb.bonus_message = bret_bonus_message;
     cb.climb_rope_audio = bret_climb_rope_audio;
     cb.round_award_block = bret_round_award_block;
     cb.jump_rope_audio = bret_jump_rope_audio;

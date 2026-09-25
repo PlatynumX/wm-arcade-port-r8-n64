@@ -1011,6 +1011,36 @@ static void backend_round_award_block(wm_arcade_actor_t *actor, void *user) {
                     (int)WM_AWARD_BLOCKS);
 }
 
+/*
+ * LIFEBAR.ASM:3302 BONUS_MESS, on Razor's's secret-move path.
+ *
+ * It is not display: the routine writes DAM_MULT, scores HIGH_RISK_AWD
+ * and plays the guitar on every path past its first test. `bonus` is
+ * A10, whose sign picks between ANIM.ASM:2230's taunt-style high risk
+ * (which has already set DAM_MULT to 4 and must not be overwritten) and
+ * the wrestler files' numbered secret moves (which set it to 2).
+ *
+ * The DAM_MULT half cannot land from here: this port keeps it on the
+ * match's combat runtime, which a backend does not hold. The award and
+ * the sound do, and they are the parts that were silently absent.
+ */
+static void backend_bonus_message(wm_arcade_actor_t *actor, int bonus,
+                                  void *user) {
+    wm_wrestler_backend_actor *st = (wm_wrestler_backend_actor *)user;
+    wm_bonus_mess_result r;
+    if (!actor || !st) return;
+    r = wm_bonus_mess(st->anim_env.bonus_mess, bonus, actor->risk);
+    if (!r.ran) return;
+    if (r.high_risk_award && st->round_award)
+        st->round_award(st->round_award_user, (int)actor->player_num,
+                        (int)WM_AWARD_HIGH_RISK);
+    /* `MOVI 0BBH,A0 / CALLA triple_sound` -- the guitar. The env's
+       `sound` hook IS triple_sound: its comment says the call is "the
+       sound's own index into triple_sndtab, passed through unchanged". */
+    if (r.guitar && st->anim_env.sound)
+        st->anim_env.sound(st->anim_env.sound_user, 0xBBu);
+}
+
 wm_arcade_roster_callbacks_t wm_wrestler_roster_callbacks(
     wm_wrestler_backend_actor *state) {
     wm_arcade_roster_callbacks_t cb;
@@ -1125,6 +1155,7 @@ wm_arcade_razor_callbacks_t wm_wrestler_razor_callbacks(
     wm_arcade_razor_callbacks_t cb;
     memset(&cb, 0, sizeof(cb));
     cb.change_anim = backend_razor_change_anim;
+    cb.bonus_message = backend_bonus_message;
     cb.climb_rope_audio = backend_climb_rope_audio;
     cb.round_award_block = backend_round_award_block;
     cb.jump_rope_audio = backend_jump_rope_audio;

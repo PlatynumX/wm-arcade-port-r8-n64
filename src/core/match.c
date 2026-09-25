@@ -207,6 +207,99 @@ static void match_react_slide_getup_meter(wm_arcade_actor_t *attacker,
 }
 
 /*
+ * REACT1.ASM:1453 and REACT4.ASM:137, the two places REACT compares the
+ * ATTACKER's ANIBASE against named animation labels.
+ *
+ * Both seams were declared, NULL-checked at their call sites and filled
+ * by nobody, so every label comparison in REACT answered "not that one".
+ * What that cost is specific and is written out at each one below.
+ *
+ * The label an attacker is playing lives in whichever backend drives
+ * him: the shared one keeps the source label itself in current_label,
+ * and Bret's typed one keeps an id whose sequence carries the label. So
+ * this is a lookup, not a guess -- and it is the reason the seams are
+ * here in the match rather than inside REACT, which has no backend.
+ */
+static const char *match_attacker_source_label(wm_match_state *m,
+                                               const wm_arcade_actor_t *a) {
+    unsigned i;
+    if (!m || !a) return NULL;
+    for (i = 0; i < m->actor_count; ++i) {
+        if (&m->actors[i] != a) continue;
+        if (a->wrestler_num == WM_ROSTER_BRET) {
+            const wm_visual_sequence *seq =
+                wm_bret_anim_sequence(m->bret_visual[i].current_id);
+            return seq ? seq->source_label : NULL;
+        }
+        return m->wrestler_visual[i].current_label;
+    }
+    return NULL;
+}
+
+/*
+ * REACT1.ASM:1453, in the flying-kick handler, under the source's own
+ * comment: "HACK! - Lex's flying kicks don't knock you down. Use
+ * CALL_MID_HIT."
+ *
+ *      move  *a10(ANIBASE),a14,L
+ *      cmpi  lex_flying_kick_anim,a14
+ *      jreq  #midhit
+ *      cmpi  lex_super_kick_anim,a14
+ *      jreq  #midhit
+ *      calla CALL_DROP_KICK
+ *
+ * Two labels, and only Lex's. With this seam empty every flying kick in
+ * the game took CALL_DROP_KICK, so Lex's two kicks knocked opponents
+ * down when the source says they must not -- a rule about one wrestler
+ * that was silently applied to nobody.
+ */
+static int match_react_attacker_uses_lex_flykick(
+        const wm_arcade_actor_t *attacker, void *user) {
+    const char *label = match_attacker_source_label((wm_match_state *)user,
+                                                   attacker);
+    if (!label) return 0;
+    return strcmp(label, "lex_flying_kick_anim") == 0 ||
+           strcmp(label, "lex_super_kick_anim") == 0;
+}
+
+/*
+ * REACT4.ASM:137 hit_stomp, under "more nasty hacks...". Five labels,
+ * two separate comparisons, three different outcomes:
+ *
+ *   shn_combo_run_stomp_anim, shn_run_stomp_anim -> DO_SCREAM instead of
+ *       the LBOWDROP sound pair and `triple_sound 43h`.
+ *   dnk_belly_anim, und_flying_butt_drop_anim -> #bounce, which throws
+ *       the ATTACKER back up off the downed man's chest and shakes the
+ *       ropes and the screen with him.
+ *   lex_flying_ground_punch_anim -> #bounce3, the same bounce and then a
+ *       Y velocity overwrite, under the source's own warning "REALLY
+ *       NASTY HACK! Watch out if you modify this in any way."
+ *
+ * Empty, this seam returned WM_R_ANIMTAG_OTHER for everything: Shawn's
+ * two run stomps played the ordinary elbow-drop sound instead of a
+ * scream, and Doink's belly flop, the Undertaker's butt drop and Lex's
+ * flying ground punch all landed on the mat and stayed there.
+ */
+static wm_arcade_react_anim_tag_t match_react_attacker_anim_tag(
+        const wm_arcade_actor_t *attacker, void *user) {
+    static const struct { const char *label; wm_arcade_react_anim_tag_t tag; }
+    tags[] = {
+        { "shn_combo_run_stomp_anim",     WM_R_ANIMTAG_SHN_COMBO_RUN_STOMP },
+        { "shn_run_stomp_anim",           WM_R_ANIMTAG_SHN_RUN_STOMP },
+        { "dnk_belly_anim",               WM_R_ANIMTAG_DNK_BELLY },
+        { "und_flying_butt_drop_anim",    WM_R_ANIMTAG_UND_FLYING_BUTT_DROP },
+        { "lex_flying_ground_punch_anim", WM_R_ANIMTAG_LEX_FLYING_GROUND_PUNCH }
+    };
+    const char *label = match_attacker_source_label((wm_match_state *)user,
+                                                    attacker);
+    size_t i;
+    if (!label) return WM_R_ANIMTAG_OTHER;
+    for (i = 0; i < sizeof tags / sizeof tags[0]; ++i)
+        if (strcmp(label, tags[i].label) == 0) return tags[i].tag;
+    return WM_R_ANIMTAG_OTHER;
+}
+
+/*
  * ANIM.ASM:41 _ani_rope_z / set_rope_z. Only the second half's Z is
  * decided by the action -- RZ_HIGH is a fixed value, RZ_NORM copies the
  * first half -- and that is what wm_rope_second_half_z returns. The strand
@@ -2627,6 +2720,14 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
         m->react1_cb.shake_all_ropes = match_react_shake_all_ropes;
         m->react1_cb.shaker2 = match_react_screen_shake;
         m->react1_cb.slide_getup_meter = match_react_slide_getup_meter;
+        /*
+         * REACT1.ASM:1453 and REACT4.ASM:137's ANIBASE comparisons.
+         * Declared and filled by nobody until now, so every label
+         * comparison in REACT answered 'not that one'.
+         */
+        m->react1_cb.attacker_uses_lex_flykick_anim =
+            match_react_attacker_uses_lex_flykick;
+        m->react1_cb.attacker_anim_tag = match_react_attacker_anim_tag;
         m->react1_cb.user = m;
         memset(&m->react1_ctx, 0, sizeof m->react1_ctx);
         m->react1_ctx.callbacks = &m->react1_cb;

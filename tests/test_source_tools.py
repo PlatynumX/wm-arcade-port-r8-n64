@@ -4397,6 +4397,107 @@ def test_the_guarded_change_anim_count_matches_the_source() -> None:
         assert got == want, (wrestler, got, want, sorted(skip.items()))
 
 
+def test_the_react_label_comparisons_name_the_source_labels() -> None:
+    """The port's two ANIBASE-comparison seams compare EXACTLY the labels
+    the source does.
+
+    REACT1.ASM:1453 and REACT4.ASM:137 each compare the attacker's
+    ANIBASE against a fixed list of `cmpi <label>_anim,aN`. The C that
+    answers those seams carries the same lists as string literals, and
+    nothing in a C-level test can check that: the reaction tests bind
+    their own recorders, so they prove REACT HONOURS the seams and say
+    nothing about whether what fills them is right. Emptying the Lex
+    check to `return 0` passes every one of them.
+
+    So the lists are compared against the assembly instead, in both
+    directions -- a label the source compares and the port does not is
+    a rule applied to nobody, and one the port compares and the source
+    does not is invented.
+    """
+    asm = ROOT / "original" / "wwf-wrestlemania"
+
+    def compared(path, start, end):
+        """`cmpi <something>_anim,aN` operands in a line range."""
+        lines = (asm / path).read_text(errors="replace").split("\n")
+        out = []
+        for raw in lines[start - 1:end]:
+            t = wljjxm.strip_comment(raw)
+            m = re.search(r"\bcmpi\s+([A-Za-z_]\w*_anim)\s*,", t)
+            if m:
+                out.append(m.group(1))
+        return out
+
+    sys.path.insert(0, str(ROOT / "tools"))
+    import wljjxm  # noqa: E402
+
+    # Only the two seam implementations, not the whole file: match.c names
+    # plenty of other animations (und_4_pin2_anim among them) and sweeping
+    # all of them would make this test report the file's vocabulary rather
+    # than these two comparisons.
+    body = _strip_comments((ROOT / "src" / "core" / "match.c")
+                           .read_text(errors="replace"))
+    impl = ""
+    for fn in ("match_react_attacker_uses_lex_flykick",
+               "match_react_attacker_anim_tag"):
+        start = body.index(fn + "(")
+        impl += body[start:body.index("\n}\n", start)]
+    assert impl, "neither seam implementation found in match.c"
+
+    # REACT1.ASM:1453, the Lex hack -- the two cmpi lines between the
+    # #noblock label and the CALL_DROP_KICK that follows them.
+    lex = compared("REACT1.ASM", 1450, 1462)
+    assert lex == ["lex_flying_kick_anim", "lex_super_kick_anim"], lex
+
+    # REACT4.ASM:137 hit_stomp, both comparison blocks.
+    stomp = compared("REACT4.ASM", 137, 175)
+    assert stomp == ["shn_combo_run_stomp_anim", "shn_run_stomp_anim",
+                     "dnk_belly_anim", "und_flying_butt_drop_anim",
+                     "lex_flying_ground_punch_anim"], stomp
+
+    want = set(lex) | set(stomp)
+    have = set(re.findall(r'"([a-z]{3}_[a-z0-9_]*_anim)"', impl))
+    assert not (want - have), sorted(want - have)
+    assert not (have - want), sorted(have - want)
+
+
+def test_the_two_turnbuckle_tables_are_both_named_and_distinct() -> None:
+    """The climb and the dive queue DIFFERENT announcer tables.
+
+    DCSSOUND.ASM's wrestler-file callers reach ADD_IF_SILENT directly
+    with a table in a2: CLIMB_ROPES from mode_normal's climb branch and
+    JUMP_ROPES from mode_turn's dive, nine call sites each. The port had
+    one seam for both, so pointing the pair at one table would be
+    invisible to any C test that binds its own recorder -- which is what
+    happened when this was mutation-tested.
+    """
+    asm = ROOT / "original" / "wwf-wrestlemania"
+    files = ("BRET", "RAZOR", "TAKER", "YOKO", "SHAWN", "BAM", "DOINK",
+             "LEX", "DNK")
+    counts = {"CLIMB_ROPES": 0, "JUMP_ROPES": 0}
+    for f in files:
+        text = (asm / (f + ".ASM")).read_text(errors="replace")
+        for name in counts:
+            counts[name] += len(re.findall(
+                r"(?i)\bmovi\s+%s\s*,\s*a2\b" % name, text))
+    # DNK.ASM is the unassembled Doink variant and carries one of each too,
+    # so nine files and nine sites apiece.
+    assert counts["CLIMB_ROPES"] == 9, counts
+    assert counts["JUMP_ROPES"] == 9, counts
+
+    for backend in ("wrestler_backend.c", "bret_backend.c"):
+        body = _strip_comments((ROOT / "src" / "core" / backend)
+                               .read_text(errors="replace"))
+        climb = re.search(r"climb_rope_audio[^}]*?\"(\w+)\"", body, re.S)
+        jump = re.search(r"jump_rope_audio[^}]*?\"(\w+)\"", body, re.S)
+        assert climb and climb.group(1) == "CLIMB_ROPES", (backend, climb)
+        assert jump and jump.group(1) == "JUMP_ROPES", (backend, jump)
+
+    # And the generated tables really are two different tables.
+    gen = (ROOT / "src" / "generated" / "announce_tables.c").read_text()
+    for name in ("CLIMB_ROPES", "JUMP_ROPES"):
+        assert '"%s"' % name in gen, name
+
+
 def test_the_restart_seam_is_bound_wherever_the_guarded_one_is() -> None:
     """Nothing may fill a guarded change_anim seam without also filling
     its restart twin.

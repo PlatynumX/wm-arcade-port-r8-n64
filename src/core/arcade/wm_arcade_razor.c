@@ -267,7 +267,7 @@ static wm_arcade_razor_step_result_t mode_normal(wm_arcade_actor_t*a,wm_arcade_a
  normal_action(a,o,action_table[a->but_val_down&WM_BTN_ATTACK_MASK],e,cb);
  if(a->anim_mode&WM_MODE_UNINT)return WM_RZR_STEP_ACTION;
  a->move_dir=a->stick_val_cur;
- if(cb&&cb->climb_turnbuckle&&cb->climb_turnbuckle(a,cb->user)){if(cb->jump_rope_audio)cb->jump_rope_audio(a,cb->user);return WM_RZR_STEP_EXTERNAL;}
+ if(cb&&cb->climb_turnbuckle&&cb->climb_turnbuckle(a,cb->user)){if(cb->climb_rope_audio)cb->climb_rope_audio(a,cb->user);return WM_RZR_STEP_EXTERNAL;}
  if(cb&&cb->execute_walk)cb->execute_walk(a,cb->user);
  return WM_RZR_STEP_ACTION;
 }

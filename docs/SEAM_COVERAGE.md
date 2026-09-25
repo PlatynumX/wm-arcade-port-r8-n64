@@ -9,24 +9,21 @@ reads like working code.
 
 | | count |
 |---|---|
-| seams declared | 162 |
-| filled by something | 100 |
-| **called but empty** | **42** |
+| seams declared | 163 |
+| filled by something | 104 |
+| **called but empty** | **39** |
 
 Every empty one carries a verdict in `port/seam_ledger.json`,
 and a source-tools test refuses both an unledgered empty seam
 and a ledger row for a seam that is no longer empty.
 
-## deferred (12)
+## deferred (9)
 
 | seam | declared in |
 |---|---|
-| `attacker_anim_tag` | `include/wm/arcade/wm_arcade_react1_core.h` |
-| `attacker_uses_lex_flykick_anim` | `include/wm/arcade/wm_arcade_react1_core.h` |
 | `bonus_message` | `include/wm/arcade/wm_arcade_bret.h` |
 | `ck_ignore_reversed` | `include/wm/arcade/wm_arcade_razor.h` |
 | `first_hit_message` | `include/wm/arcade/wm_arcade_react.h` |
-| `jump_rope_audio` | `include/wm/arcade/wm_arcade_bret.h` |
 | `move_grade` | `include/wm/arcade/wm_arcade_react1_core.h` |
 | `partner_breakout` | `include/wm/arcade/wm_arcade_react.h` |
 | `play_wrestler_tune` | `include/wm/arcade/wmania_attract_adapter.h` |

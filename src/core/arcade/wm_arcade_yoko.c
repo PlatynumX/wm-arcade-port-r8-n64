@@ -283,7 +283,7 @@ static wm_arcade_yoko_step_result_t mode_normal(wm_arcade_actor_t*a,wm_arcade_ac
     switch(ac){case A_PUNCH:basic_punch(a,o,c);break;case A_BLOCK:(void)do_block(a,e,c);break;case A_SPUNCH:super_punch(a,o,c);break;case A_KICK:basic_kick(a,o,c);break;case A_PUNCHKICK:anim(a,"start_run_anim",c);break;case A_SKICK:super_kick(a,o,c);break;case A_GRABOH:yok_graboh(a,c);break;default:break;}
     if(a->anim_mode&WM_MODE_UNINT)return WM_YOKO_STEP_ACTION;
     a->move_dir=a->stick_val_cur;
-    if(c&&c->climb_turnbuckle&&c->climb_turnbuckle(a,c->user)){if(c->jump_rope_audio)c->jump_rope_audio(a,c->user);return WM_YOKO_STEP_EXTERNAL;}
+    if(c&&c->climb_turnbuckle&&c->climb_turnbuckle(a,c->user)){if(c->climb_rope_audio)c->climb_rope_audio(a,c->user);return WM_YOKO_STEP_EXTERNAL;}
     if(c&&c->execute_walk)c->execute_walk(a,c->user);
     return WM_YOKO_STEP_ACTION;
 }

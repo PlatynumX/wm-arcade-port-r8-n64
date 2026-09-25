@@ -177,6 +177,34 @@ typedef struct wm_arcade_razor_callbacks {
     void (*set_raisearm_bit)(wm_arcade_actor_t *, void *);
     void (*round_award_block)(wm_arcade_actor_t *, void *);
     void (*bonus_message)(wm_arcade_actor_t *, int bonus, void *);
+    /*
+     * DCSSOUND.ASM:2914 ADD_IF_SILENT, called with a SPEECH TABLE in a2
+     * and an RNDPER percentage in a0 -- the announcer's random-phrase
+     * picker, not a WRSND.
+     *
+     * The wrestler files call it at TWO places around the turnbuckle,
+     * with TWO DIFFERENT TABLES, and the port had one seam for both:
+     *
+     *   climb_rope_audio  mode_normal's climb branch, after
+     *                     climb_turnbuckle sets carry -- BRET.ASM:1456
+     *                     `MOVI CLIMB_ROPES,A2 / MOVI 1000,A0` and its
+     *                     eight siblings. Nine call sites.
+     *   jump_rope_audio   mode_turn, the dive off the top --
+     *                     BRET.ASM:2296 `movi JUMP_ROPES,a2` and its
+     *                     eight. Nine call sites.
+     *
+     * They are different tables with different headers: CLIMB_ROPES
+     * draws one word from twelve rows and carries CRESCENDO_TABLE as its
+     * crowd reaction, JUMP_ROPES draws two words from six and carries
+     * ROPES_CHEER. Climbing up and leaping off do not sound the same.
+     *
+     * The registers differ too: the climb passes WRESTLERNUM in a5 and
+     * the dive passes PLYRNUM. That selects whose voice a personal call
+     * uses, and neither of these two tables holds one, so it does not
+     * change what is said today -- recorded because it is a real
+     * difference and the next table to reach one of these sites might.
+     */
+    void (*climb_rope_audio)(wm_arcade_actor_t *, void *);
     void (*jump_rope_audio)(wm_arcade_actor_t *, void *);
     void (*master_keep_attached)(wm_arcade_actor_t *, void *);
     void (*keep_attached)(wm_arcade_actor_t *, void *);

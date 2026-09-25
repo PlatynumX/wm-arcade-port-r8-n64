@@ -35,6 +35,28 @@ static const int16_t bam_finishes_rows[] = {
     111,
 };
 
+/* DCSSOUND.ASM:3244 CLIMB_ROPES -- rows 0..12 of 18 (1 word(s) each, the rest is the walk-forward padding). */
+static const int16_t climb_ropes_rows[] = {
+    316,
+    317,
+    318,
+    320,
+    321,
+    322,
+    323,
+    239,
+    472,
+    382,
+    466,
+    734,
+    733,
+    316,   /* padding */
+    317,   /* padding */
+    318,   /* padding */
+    320,   /* padding */
+    0,   /* padding */
+};
+
 /* DCSSOUND.ASM:3937 DOINK_FINISHES -- rows 0..0 of 1 (1 word(s) each, the rest is the walk-forward padding). */
 static const int16_t doink_finishes_rows[] = {
     86,
@@ -81,6 +103,21 @@ static const int16_t face_hit_rows[] = {
 /* DCSSOUND.ASM:3904 HART_FINISHES -- rows 0..0 of 1 (1 word(s) each, the rest is the walk-forward padding). */
 static const int16_t hart_finishes_rows[] = {
     568,
+};
+
+/* DCSSOUND.ASM:3267 JUMP_ROPES -- rows 0..6 of 11 (2 word(s) each, the rest is the walk-forward padding). */
+static const int16_t jump_ropes_rows[] = {
+    325, 326,
+    327, 0,
+    319, 0,
+    324, 0,
+    330, 0,
+    464, 0,
+    391, 0,
+    325, 326,   /* padding */
+    327, 0,   /* padding */
+    319, 0,   /* padding */
+    324, 0,   /* padding */
 };
 
 /* DCSSOUND.ASM:3942 LUGER_FINISHES -- rows 0..0 of 2 (1 word(s) each, the rest is the walk-forward padding). */
@@ -370,10 +407,12 @@ static const int16_t yoko_finishes_rows[] = {
 const wm_announce_table wm_announce_tables[] = {
     { "AVERAGE_MOVE", average_move_rows, sizeof(average_move_rows) / sizeof(average_move_rows[0]), 17, 1, false, "CROWD_CHEER" },
     { "BAM_FINISHES", bam_finishes_rows, sizeof(bam_finishes_rows) / sizeof(bam_finishes_rows[0]), 2, 1, true, 0 },
+    { "CLIMB_ROPES", climb_ropes_rows, sizeof(climb_ropes_rows) / sizeof(climb_ropes_rows[0]), 12, 1, true, "CRESCENDO_TABLE" },
     { "DOINK_FINISHES", doink_finishes_rows, sizeof(doink_finishes_rows) / sizeof(doink_finishes_rows[0]), 0, 1, true, 0 },
     { "DROP_KICK", drop_kick_rows, sizeof(drop_kick_rows) / sizeof(drop_kick_rows[0]), 14, 1, false, "CROWD_CHEER" },
     { "FACE_HIT", face_hit_rows, sizeof(face_hit_rows) / sizeof(face_hit_rows[0]), 7, 1, false, "CROWD_ORDINARY" },
     { "HART_FINISHES", hart_finishes_rows, sizeof(hart_finishes_rows) / sizeof(hart_finishes_rows[0]), 0, 1, true, 0 },
+    { "JUMP_ROPES", jump_ropes_rows, sizeof(jump_ropes_rows) / sizeof(jump_ropes_rows[0]), 6, 2, false, "ROPES_CHEER" },
     { "LUGER_FINISHES", luger_finishes_rows, sizeof(luger_finishes_rows) / sizeof(luger_finishes_rows[0]), 0, 1, true, 0 },
     { "MATCH_OVER", match_over_rows, sizeof(match_over_rows) / sizeof(match_over_rows[0]), 6, 1, true, 0 },
     { "MATCH_OVER_DL", match_over_dl_rows, sizeof(match_over_dl_rows) / sizeof(match_over_dl_rows[0]), 3, 1, true, 0 },

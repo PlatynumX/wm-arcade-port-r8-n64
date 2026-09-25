@@ -21,6 +21,7 @@
 #include "wm/arcade/wm_arcade_start_run.h"
 #include "wm/wrestler_anim_tables.h"
 #include "wm/movement.h"
+#include "wm/announce_tables.h"
 
 #include <string.h>
 
@@ -939,6 +940,60 @@ static void backend_drone_change_back(wm_arcade_actor_t *actor, void *user) {
     (void)wm_arcade_drone_change_back(actor);
 }
 
+/*
+ * DCSSOUND.ASM:2914 ADD_IF_SILENT around the turnbuckle, the announcer's
+ * commentary on a climb and on a dive off the top.
+ *
+ * Two SEPARATE tables at two separate call sites, nine of each across the
+ * wrestler files: CLIMB_ROPES from mode_normal's climb branch once
+ * climb_turnbuckle sets carry (BRET.ASM:1456 and its eight siblings), and
+ * JUMP_ROPES from mode_turn's dive (BRET.ASM:2296 and its eight). The
+ * port had ONE seam for both, named for the dive and filled by nobody, so
+ * the turnbuckle was silent -- and would have said the wrong thing on the
+ * way up once it was not.
+ *
+ * Everything the source routine reaches for is already on the animation
+ * env, because the CALL_x announcer group needed it: the queue itself,
+ * the RNG for RNDPER/RNDRNG0, the near-death walk DO_END_STUFF does, and
+ * both halves of DO_CROWD_ANYWAY for a table carrying a crowd `.LONG`.
+ * CLIMB_ROPES carries CRESCENDO_TABLE and JUMP_ROPES carries ROPES_CHEER,
+ * so that last part is not hypothetical here.
+ */
+static void backend_rope_announce(wm_wrestler_backend_actor *st,
+                                  const wm_arcade_actor_t *actor,
+                                  const char *table_name) {
+    const wm_announce_table *t;
+    wm_announce_ctx ctx;
+    if (!st || !actor || !st->anim_env.announcer) return;
+    t = wm_announce_table_find(table_name);
+    if (!t) return;
+    memset(&ctx, 0, sizeof(ctx));
+    ctx.rng = st->anim_env.rng;
+    ctx.wrestler_num = (int)actor->wrestler_num;
+    ctx.anyone_near_death = st->anim_env.anyone_near_death;
+    ctx.user = st->anim_env.announcer_user;
+    ctx.crowd_user = st->anim_env.crowd_user;
+    ctx.crowd_cheer = st->anim_env.crowd_cheer;
+    ctx.crowd_sound = st->anim_env.crowd_sound;
+    ctx.crowd_busy = st->anim_env.crowd_busy
+                     ? st->anim_env.crowd_busy(st->anim_env.crowd_user)
+                     : false;
+    /* `MOVI 1000,A0` at all eighteen call sites. */
+    (void)wm_announce_from_table(st->anim_env.announcer, t, 1000, true, &ctx);
+}
+
+/* CLIMB_ROPES: `move *a13(WRESTLERNUM),A5`. */
+static void backend_climb_rope_audio(wm_arcade_actor_t *actor, void *user) {
+    backend_rope_announce((wm_wrestler_backend_actor *)user, actor, "CLIMB_ROPES");
+}
+
+/* JUMP_ROPES: `move *a13(PLYRNUM),a5` -- a different register from the
+   climb's, which selects whose voice a PERSONAL call uses. Neither of
+   these two tables holds one, so it changes nothing said today. */
+static void backend_jump_rope_audio(wm_arcade_actor_t *actor, void *user) {
+    backend_rope_announce((wm_wrestler_backend_actor *)user, actor, "JUMP_ROPES");
+}
+
 wm_arcade_roster_callbacks_t wm_wrestler_roster_callbacks(
     wm_wrestler_backend_actor *state) {
     wm_arcade_roster_callbacks_t cb;
@@ -948,6 +1003,8 @@ wm_arcade_roster_callbacks_t wm_wrestler_roster_callbacks(
     cb.mode_dead = backend_mode_dead;
     cb.check_combo_go = backend_check_combo_go;
     cb.change_anim_label = backend_change_anim_label;
+    cb.climb_rope_audio = backend_climb_rope_audio;
+    cb.jump_rope_audio = backend_jump_rope_audio;
     cb.change_anim_restart = backend_change_anim_restart;
     /*
      * The second channel. No dispatcher reaches either of these yet:
@@ -1050,6 +1107,8 @@ wm_arcade_razor_callbacks_t wm_wrestler_razor_callbacks(
     wm_arcade_razor_callbacks_t cb;
     memset(&cb, 0, sizeof(cb));
     cb.change_anim = backend_razor_change_anim;
+    cb.climb_rope_audio = backend_climb_rope_audio;
+    cb.jump_rope_audio = backend_jump_rope_audio;
     cb.change_anim_restart = backend_razor_change_anim_restart;
     cb.change_torso_anim = backend_razor_change_torso_anim;
     cb.sound = backend_razor_sound;

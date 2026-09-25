@@ -481,11 +481,21 @@ def ascending_table() -> list[list[int]]:
 
 # Only the tables something translated can actually reach are emitted. The
 # rest of DCSSOUND.ASM's tables are real and parse cleanly, but each is
-# reached from a part of the game this port has not translated:
-# CLIMB_ROPES/JUMP_ROPES from BRET.ASM/BAM.ASM's turnbuckle control layer,
-# MATCH_OVER/MATCH_OVER_DL and the seven *_FINISHES from the post-match
-# speech. Emitting them would be dead data whose correctness nothing here
-# could check.
+# reached from a part of the game this port has not translated -- and that
+# is a claim with a shelf life, so it is worth saying which way it has
+# moved.
+#
+# CLIMB_ROPES and JUMP_ROPES USED TO BE ON THIS LIST, excluded because
+# "the turnbuckle control layer" was untranslated. It is translated: all
+# eight dispatchers run mode_normal's climb branch and mode_turn, and each
+# calls an announcer seam at exactly the two places the source calls
+# ADD_IF_SILENT. Nine call sites each -- CLIMB_ROPES from the climb
+# (BRET.ASM:1456 and its eight siblings), JUMP_ROPES from the dive off the
+# top (BRET.ASM:2296 and its eight) -- so both tables are live data now.
+#
+# Still excluded: MATCH_OVER/MATCH_OVER_DL and the seven *_FINISHES, from
+# the post-match speech. Emitting those would be dead data whose
+# correctness nothing here could check.
 def wanted_tables(calls: dict[str, dict]) -> list[str]:
     # END_GAME_STUFF in a picked row diverts the whole call to
     # SPECIAL_LAST_STUFF (DCSSOUND.ASM:3149 DO_END_STUFF), so that table is
@@ -494,8 +504,12 @@ def wanted_tables(calls: dict[str, dict]) -> list[str]:
     # WRESTLER_SPEECH reach instead of through a CALL_x row.
     ends = {"MATCH_OVER", "MATCH_OVER_DL"}
     ends |= {t for t in which_wrestler_talks() if t}
+    # The turnbuckle pair. Named here rather than discovered through a
+    # CALL_x row because the wrestler files reach ADD_IF_SILENT directly
+    # with the table in a2, the same way PROC_MATCH_OVER does.
+    ropes = {"CLIMB_ROPES", "JUMP_ROPES"}
     return sorted({c["table"] for c in calls.values()} |
-                  {"SPECIAL_LAST_STUFF"} | ends)
+                  {"SPECIAL_LAST_STUFF"} | ends | ropes)
 
 
 def render_c() -> str:

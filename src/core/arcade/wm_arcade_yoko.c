@@ -131,6 +131,14 @@ static const char *face_label(const char*l2,const char*l4,const wm_arcade_actor_
  */
 static void anim(wm_arcade_actor_t*a,const char*l,const wm_arcade_yoko_callbacks_t*c){if(c&&c->change_anim_restart&&l)c->change_anim_restart(a,l,c->user);}
 static void anim1(wm_arcade_actor_t*a,const char*l,const wm_arcade_yoko_callbacks_t*c){if(c&&c->change_anim_label&&l)c->change_anim_label(a,l,c->user);}
+/*
+ * ANIM.ASM:4563 change_anim2 / :4573 change_anim2a, the SECOND
+ * animation channel -- the torso. Same guarded/unguarded split as
+ * anim1()/anim(), and starting one deliberately does not reset gravity:
+ * the torso does not fall. mode_oppoverhead's walking arm is the only
+ * thing in these files that writes it outside *_ani_init.
+ */
+static void torso1(wm_arcade_actor_t*a,const char*l,const wm_arcade_yoko_callbacks_t*c){if(c&&c->change_torso_label&&l)c->change_torso_label(a,l,c->user);}
 static void snd(wm_arcade_actor_t*a,const char*l,const wm_arcade_yoko_callbacks_t*c){if(c&&c->sound_label&&l)c->sound_label(a,l,c->user);}
 static void startsp(wm_arcade_actor_t*a,const char*l,const wm_arcade_yoko_callbacks_t*c){if(!a||!l)return;if(c&&c->resolve_label_token)a->special_move_addr=c->resolve_label_token(l,c->user);if(c&&c->start_special_label)c->start_special_label(a,l,c->user);}
 
@@ -346,6 +354,96 @@ static wm_arcade_yoko_step_result_t mode_block(wm_arcade_actor_t*a,wm_arcade_act
     (void)e;
     return WM_YOKO_STEP_IDLE;
 }
+/*
+ * YOKO.ASM:2231 mode_oppoverhead (mode 10) -- holding the other man
+ * over your head. Only Yokozuna, Lex Luger and Bam Bam Bigelow can be in it: ANI_SETPLYRMODE,
+ * MODE_OPPOVERHEAD appears in BAMSEQ3, LEXSEQ3 and YOKSEQ3 and nowhere
+ * else, which is why the other five files have a two-line stub here and
+ * are right to.
+ *
+ * Every dispatcher used to fall through mode 10 to STEP_IDLE, so a
+ * wrestler who lifted somebody stood frozen with no controls -- and the
+ * port does enter the mode: ten SETPLYRMODE 10 ops in the generated
+ * programs put him there.
+ *
+ * `move *a13(ATTACH_PROC),a2,L / jrz #not_attached / move
+ * *a2(ATTACH_PROC),a0,L / jrnz #still_attached` -- so the hold survives
+ * only while the man being held still has an attachment of his own.
+ * Note this is the LOOSE test: it asks that his ATTACH_PROC be
+ * non-zero, not that it point back at me. mode_chokehold's is strict.
+ */
+static wm_arcade_yoko_step_result_t mode_oppoverhead(
+        wm_arcade_actor_t*a,const wm_arcade_yoko_env_t*e,
+        const wm_arcade_yoko_callbacks_t*c){
+    uint8_t ac;
+    (void)e;
+    if(!a->attach_proc||!a->attach_proc->attach_proc){
+        /* `#not_attached`: let him go and stand up. MODE_UNINT is
+           checked FIRST, so an uninterruptible animation keeps the mode
+           until it ends. */
+        if(a->anim_mode&WM_MODE_UNINT)return WM_YOKO_STEP_IDLE;
+        a->attach_proc=NULL;
+        if(c&&c->find_and_kill_endless)c->find_and_kill_endless(a,c->user);
+        setmode(a,WM_PMODE_NORMAL);
+        a->anim_mode=0;                 /* ANIM.EQU:186 MODE_NORMAL equ 0 */
+        return WM_YOKO_STEP_ACTION;
+    }
+    /* `#still_attached`. */
+    if(a->anim_mode&WM_MODE_UNINT)return WM_YOKO_STEP_IDLE;
+    /*
+     * `andni MOVE_UP,a0 / ori MOVE_DOWN,a0` into BOTH facing fields:
+     * carrying a man overhead forces you to face DOWN-screen whatever
+     * you were facing, keeping the left/right bit.
+     */
+    {
+        int32_t f=(a->facing_dir&~(int32_t)WM_MOVE_UP)|WM_MOVE_DOWN;
+        a->facing_dir=f;
+        a->new_facing_dir=f;
+    }
+    if(a->stick_val_cur){
+        a->move_dir=(int32_t)a->stick_val_cur;
+        if(c&&c->execute_walk)c->execute_walk(a,c->user);
+        /* The TORSO channel, guarded (:2270 change_anim2). */
+        torso1(a,"yok_holdoh_anim",c);
+    } else {
+        /* `#stand` */
+        a->move_dir=0;
+        a->x_vel=0;
+        a->z_vel=0;
+        anim1(a,"yok_stndholdoh_anim",c);   /* :2282 change_anim1 */
+    }
+    /*
+     * `#ck_butns`. mode_oppoverhead's own #action_table has the same
+     * index shape as every other, and #block is NOT a `rets` here --
+     * it is an alias of the slam body, so blocking while you hold a man
+     * overhead drops him.
+     */
+    ac=action_table[a->but_val_down&WM_BTN_ATTACK_MASK];
+    switch(ac){
+    case A_SPUNCH:                      /* :2337 #super_punch */
+        /* `btst PLAYER_UP_BIT / jrz #punch` -- UP only, and it is the
+           one arm that kills the endless process first. */
+        if(a->stick_val_cur&WM_MOVE_UP){
+            if(c&&c->find_and_kill_endless)c->find_and_kill_endless(a,c->user);
+            anim(a,"yok_overhd_slam2_anim",c); snd(a,"HIPTOSS",c);
+            return WM_YOKO_STEP_ACTION;
+        }
+        /* falls through to #punch */
+        /* FALLTHROUGH */
+    case A_PUNCH: case A_BLOCK: case A_KICK: case A_SKICK:
+    case A_PUNCHKICK: case A_GRABOH:    /* :2313, all one body */
+        /* `btst PLAYER_DOWN_BIT / jrz #slam`: DOWN is the SPIN slam,
+           anything else the plain one. Neither calls
+           FIND_AND_KILL_ENDLESS -- only #super_punch does. */
+        if(a->stick_val_cur&WM_MOVE_DOWN) anim(a,"yok_spinslam_anim",c);
+        else                              anim(a,"yok_overhd_slam_anim",c);
+        snd(a,"HIPTOSS",c);
+        return WM_YOKO_STEP_ACTION;
+    default:                            /* #z */
+        return WM_YOKO_STEP_ACTION;
+    }
+}
+
 static wm_arcade_yoko_step_result_t mode_headhold(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_yoko_env_t*e,const wm_arcade_yoko_callbacks_t*c){
     /* "Bozo power move": `callr bozo_check / jrnc #fail`, and
        everything below this is #fail. Six of the eight
@@ -365,7 +463,13 @@ static wm_arcade_yoko_step_result_t mode_headhold(wm_arcade_actor_t*a,wm_arcade_
 wm_arcade_yoko_step_result_t wm_arcade_move_yoko(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_yoko_env_t*e,const wm_arcade_yoko_callbacks_t*c){
     if(!a)return WM_YOKO_STEP_IDLE;
     if(c&&c->check_secret_moves)c->check_secret_moves(a,secret_patterns,sizeof secret_patterns/sizeof secret_patterns[0],c->user);
-    switch(a->player_mode){case WM_PMODE_NORMAL:case 18:case 22:case 23:return mode_normal(a,o,e,c);case WM_PMODE_RUNNING:return mode_running(a,o,e,c);case WM_PMODE_ATTACHED:if(c&&c->keep_attached)c->keep_attached(a,c->user);else(void)wm_arcade_keep_attached(a);if(!a->attach_proc){setmode(a,WM_PMODE_NORMAL);a->anim_mode=0;}return WM_YOKO_STEP_EXTERNAL;case WM_PMODE_BOUNCING:return mode_bouncing(a,c);case WM_PMODE_ONTURNBKL:return mode_turn(a,c);case WM_PMODE_BLOCK:return mode_block(a,o,e,c);case WM_PMODE_DEAD:if(c&&c->mode_dead)c->mode_dead(a,c->user);return WM_YOKO_STEP_EXTERNAL;case WM_PMODE_WAITANIM:if((a->anim_mode&WM_MODE_END)&&c&&c->code_addr)c->code_addr(a,(uint32_t)a->code_addr,c->user);return WM_YOKO_STEP_EXTERNAL;case WM_PMODE_MASTER:if(c&&c->master_keep_attached)c->master_keep_attached(a,c->user);else(void)wm_arcade_master_keep_attached(a);return WM_YOKO_STEP_EXTERNAL;case WM_PMODE_HEADHOLD:return mode_headhold(a,o,e,c);case WM_PMODE_HEADHELD:if((a->anim_mode&WM_MODE_NOGRAVITY)&&c&&c->mode_choking){c->mode_choking(a,c->user);return WM_YOKO_STEP_EXTERNAL;}if(c&&c->bozo_check&&c->bozo_check(a,c->user)){if(c->do_reversal)c->do_reversal(a,c->user);if(c->do_reversal_message)c->do_reversal_message(a,c->user);snd(a,L.bozo_snd,c);anim(a,(e&&(e->pcnt&1))?L.bozo_hh_b:L.bozo_a,c);return WM_YOKO_STEP_ACTION;}if(!a->attach_proc&&a->y_int<=a->ground_y)anim(a,L.headheld,c);return WM_YOKO_STEP_EXTERNAL;case WM_PMODE_PUPPET:if(c&&c->mode_puppet)c->mode_puppet(a,c->user);return WM_YOKO_STEP_EXTERNAL;case WM_PMODE_INAIR2:if(c&&c->mode_inair2)c->mode_inair2(a,c->user);return WM_YOKO_STEP_EXTERNAL;case WM_PMODE_CHOKING:if(c&&c->mode_choking)c->mode_choking(a,c->user);return WM_YOKO_STEP_EXTERNAL;default:return WM_YOKO_STEP_IDLE;}
+    switch(a->player_mode){case WM_PMODE_NORMAL:case 18:case 22:case 23:return mode_normal(a,o,e,c);case WM_PMODE_RUNNING:return mode_running(a,o,e,c);case WM_PMODE_ATTACHED:if(c&&c->keep_attached)c->keep_attached(a,c->user);else(void)wm_arcade_keep_attached(a);if(!a->attach_proc){setmode(a,WM_PMODE_NORMAL);a->anim_mode=0;}return WM_YOKO_STEP_EXTERNAL;case WM_PMODE_BOUNCING:return mode_bouncing(a,c);case WM_PMODE_ONTURNBKL:return mode_turn(a,c);case WM_PMODE_BLOCK:return mode_block(a,o,e,c);case WM_PMODE_DEAD:if(c&&c->mode_dead)c->mode_dead(a,c->user);return WM_YOKO_STEP_EXTERNAL;case WM_PMODE_WAITANIM:if((a->anim_mode&WM_MODE_END)&&c&&c->code_addr)c->code_addr(a,(uint32_t)a->code_addr,c->user);return WM_YOKO_STEP_EXTERNAL;case WM_PMODE_MASTER:if(c&&c->master_keep_attached)c->master_keep_attached(a,c->user);else(void)wm_arcade_master_keep_attached(a);return WM_YOKO_STEP_EXTERNAL;case WM_PMODE_OPPOVERHEAD:return mode_oppoverhead(a,e,c);case WM_PMODE_HEADHOLD:return mode_headhold(a,o,e,c);case WM_PMODE_HEADHELD:if((a->anim_mode&WM_MODE_NOGRAVITY)&&c&&c->mode_choking){c->mode_choking(a,c->user);return WM_YOKO_STEP_EXTERNAL;}if(c&&c->bozo_check&&c->bozo_check(a,c->user)){if(c->do_reversal)c->do_reversal(a,c->user);if(c->do_reversal_message)c->do_reversal_message(a,c->user);snd(a,L.bozo_snd,c);anim(a,(e&&(e->pcnt&1))?L.bozo_hh_b:L.bozo_a,c);return WM_YOKO_STEP_ACTION;}if(!a->attach_proc&&a->y_int<=a->ground_y)anim(a,L.headheld,c);return WM_YOKO_STEP_EXTERNAL;case WM_PMODE_PUPPET:if(c&&c->mode_puppet)c->mode_puppet(a,c->user);return WM_YOKO_STEP_EXTERNAL;case WM_PMODE_INAIR2:if(c&&c->mode_inair2)c->mode_inair2(a,c->user);return WM_YOKO_STEP_EXTERNAL;case WM_PMODE_CHOKING:if(c&&c->mode_choking)c->mode_choking(a,c->user);return WM_YOKO_STEP_EXTERNAL;
+    /* Modes 10 and 24 are a bare `rets` in this file, and correctly so:
+       ANI_SETPLYRMODE,MODE_OPPOVERHEAD appears only in BAMSEQ3,
+       LEXSEQ3 and YOKSEQ3 and MODE_CHOKEHOLD only in UNDSEQ3, so
+       this wrestler can never be in it. */
+    case WM_PMODE_CHOKEHOLD: return WM_YOKO_STEP_IDLE;
+    default:return WM_YOKO_STEP_IDLE;}
 }
 
 static int reject_common(wm_arcade_actor_t*a,wm_arcade_actor_t*o){return !a||!o||(a->anim_mode&WM_MODE_UNINT)||o->player_mode==WM_PMODE_DEAD||o->player_mode==WM_PMODE_HEADHELD||o->player_mode==WM_PMODE_ATTACHED;}

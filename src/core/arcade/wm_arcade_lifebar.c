@@ -143,11 +143,13 @@ void wm_arcade_adjust_health(wm_arcade_actor_t *victim, int16_t delta,
                              * `#will_die`: `movi 3*60,a0 / move
                              * a0,*a13(I_WILL_DIE)` -- he does not die yet,
                              * he dies in three seconds unless something
-                             * intervenes. Translated, and reachable the
-                             * moment anything puts a wrestler in HEADHELD;
-                             * nothing does today, which
-                             * tests/test_source_tools.py now guards as a
-                             * claim rather than leaving as a comment.
+                             * intervenes. This used to carry a note that
+                             * nothing put a wrestler in HEADHELD, so the
+                             * branch was translated and unreachable.
+                             * TAKER.ASM:2940 mode_chokehold's stick-UP arm
+                             * does: turning a choke into a head hold, it
+                             * writes WHOIHIT's PLYRMODE straight to
+                             * MODE_HEADHELD. So this fires now.
                              */
                             victim->i_will_die = 3 * 60;
                             becomes_dead = false;

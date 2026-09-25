@@ -393,6 +393,113 @@ static wm_arcade_taker_step_result_t mode_block(wm_arcade_actor_t*a,wm_arcade_ac
     (void)e;
     return WM_TAKER_STEP_IDLE;
 }
+/*
+ * TAKER.ASM:2940 mode_chokehold (mode 24) -- the Undertaker with his
+ * hand round your throat. Only he can be in it: the one
+ * ANI_SETPLYRMODE,MODE_CHOKEHOLD in the tree is UNDSEQ3.ASM:569, which
+ * is why the other seven files have a four-line stub here. The port
+ * fell through mode 24 to STEP_IDLE, and the generated programs do
+ * reach it.
+ *
+ * `move *a13(ATTACH_PROC),a0,L / jrz #lost_him / move
+ * *a0(ATTACH_PROC),a0,L / cmp a13,a0 / jrne #lost_him` -- the STRICT
+ * test: the man being choked must be attached back to ME. Yoko's,
+ * Lex's and Bam's mode_oppoverhead only ask that his attachment be
+ * non-zero, and the difference is real rather than a slip: an overhead
+ * carry survives its victim being grabbed by a third wrestler, a
+ * chokehold does not.
+ *
+ * And the BUTTON GATE SITS BEFORE THE TABLE HERE, unlike every other
+ * mode: `andi 011111b,a0 / jrz #no_interrupt`. Nothing at all happens
+ * on an empty button word -- not even the IMMOBILIZE_TIME refresh
+ * below, which is what keeps the victim helpless while the Undertaker
+ * is pressing something.
+ */
+static wm_arcade_taker_step_result_t mode_chokehold(
+        wm_arcade_actor_t*a,const wm_arcade_taker_env_t*e,
+        const wm_arcade_taker_callbacks_t*c){
+    wm_arcade_actor_t *victim=a->attach_proc;
+    uint16_t buttons;
+    uint8_t ac;
+    (void)e;
+    if(!victim||victim->attach_proc!=a){
+        /* `#lost_him` */
+        if(c&&c->find_and_kill_endless)c->find_and_kill_endless(a,c->user);
+        a->attach_proc=NULL;
+        setmode(a,WM_PMODE_NORMAL);
+        a->anim_mode=0;                 /* ANIM.EQU:186 MODE_NORMAL equ 0 */
+        return WM_TAKER_STEP_ACTION;
+    }
+    if(a->anim_mode&WM_MODE_UNINT)return WM_TAKER_STEP_IDLE;
+    buttons=(uint16_t)(a->but_val_down&WM_BTN_ATTACK_MASK);
+    if(!buttons)return WM_TAKER_STEP_IDLE;
+    victim->immobilize_time=30;
+    ac=action_table[buttons];
+    switch(ac){
+    case A_SPUNCH: case A_GRABOH:       /* :3023 #super_punch/#graboh */
+        /* `btst MOVE_DOWN_BIT / jrz #punch` */
+        if(a->stick_val_cur&WM_MOVE_DOWN){
+            a->attach_proc=NULL;
+            setmode(a,WM_PMODE_NORMAL);
+            if(c&&c->find_and_kill_endless)c->find_and_kill_endless(a,c->user);
+            anim1(a,face_label("und_2_uppercut_anim","und_4_uppercut_anim",a),c);
+            snd(a,"HDBUTT",c);          /* :3038 change_anim1 */
+            return WM_TAKER_STEP_ACTION;
+        }
+        goto punch;
+    case A_SKICK:                       /* :3042 #super_kick */
+        if(a->stick_val_cur&WM_MOVE_DOWN){
+            /* `#tag`, the CHOKESLAM -- and the one arm that does NOT
+               clear ATTACH_PROC, because the slam carries him down. */
+            setmode(a,WM_PMODE_NORMAL);
+            if(c&&c->find_and_kill_endless)c->find_and_kill_endless(a,c->user);
+            anim(a,"und_chokeslam_anim",c); snd(a,"KICK",c);
+            return WM_TAKER_STEP_ACTION;
+        }
+        goto knee;
+    case A_KICK:                        /* :3057 #kick */
+    knee:
+        /* Both the plain kick and the super kick's non-DOWN arm are the
+           knee, and NEITHER plays a sound -- the only silent arms in
+           the mode. */
+        a->attach_proc=NULL;
+        setmode(a,WM_PMODE_NORMAL);
+        if(c&&c->find_and_kill_endless)c->find_and_kill_endless(a,c->user);
+        anim(a,"und_2_knee_anim",c);
+        return WM_TAKER_STEP_ACTION;
+    case A_PUNCH: case A_PUNCHKICK:     /* :2986 #punch/#punchkick */
+    punch:
+        a->attach_proc=NULL;
+        setmode(a,WM_PMODE_NORMAL);
+        if(!(a->stick_val_cur&WM_MOVE_UP)){
+            /* `#reg` */
+            if(c&&c->find_and_kill_endless)c->find_and_kill_endless(a,c->user);
+            anim(a,"und_2_butt_anim",c); snd(a,"HDBUTT",c);
+            return WM_TAKER_STEP_ACTION;
+        }
+        /*
+         * Stick UP converts the choke into a HEAD HOLD, and does it by
+         * hand rather than through any shared routine: SETMODE HEADHOLD
+         * overriding the SETMODE NORMAL just above, then WHOIHIT's
+         * PLYRMODE written straight to MODE_HEADHELD and his
+         * MODE_NOGRAVITY cleared -- "make sure victim knows he is not
+         * in chokehold anymore", in the source's own words. Without
+         * that last clear he would still be answering mode_choking.
+         */
+        if(c&&c->find_and_kill_endless)c->find_and_kill_endless(a,c->user);
+        setmode(a,WM_PMODE_HEADHOLD);
+        if(a->who_i_hit){
+            a->who_i_hit->player_mode=WM_PMODE_HEADHELD;
+            a->who_i_hit->anim_mode=
+                (uint16_t)(a->who_i_hit->anim_mode&~(uint16_t)WM_MODE_NOGRAVITY);
+        }
+        anim(a,"und_4_knee_butts_anim",c); snd(a,"HDBUTT",c);
+        return WM_TAKER_STEP_ACTION;
+    default:                            /* #z and #block */
+        return WM_TAKER_STEP_IDLE;
+    }
+}
+
 static wm_arcade_taker_step_result_t mode_headhold(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_taker_env_t*e,const wm_arcade_taker_callbacks_t*c){
     /* "Bozo power move": `callr bozo_check / jrnc #fail`, and
        everything below this is #fail. Six of the eight
@@ -412,7 +519,13 @@ static wm_arcade_taker_step_result_t mode_headhold(wm_arcade_actor_t*a,wm_arcade
 wm_arcade_taker_step_result_t wm_arcade_move_taker(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_taker_env_t*e,const wm_arcade_taker_callbacks_t*c){
     if(!a)return WM_TAKER_STEP_IDLE;
     if(c&&c->check_secret_moves)c->check_secret_moves(a,secret_patterns,sizeof secret_patterns/sizeof secret_patterns[0],c->user);
-    switch(a->player_mode){case WM_PMODE_NORMAL:case 18:case 22:case 23:return mode_normal(a,o,e,c);case WM_PMODE_RUNNING:return mode_running(a,o,e,c);case WM_PMODE_ATTACHED:if(c&&c->keep_attached)c->keep_attached(a,c->user);else(void)wm_arcade_keep_attached(a);if(!a->attach_proc){setmode(a,WM_PMODE_NORMAL);a->anim_mode=0;}return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_BOUNCING:return mode_bouncing(a,c);case WM_PMODE_ONTURNBKL:return mode_turn(a,c);case WM_PMODE_BLOCK:return mode_block(a,o,e,c);case WM_PMODE_DEAD:if(c&&c->mode_dead)c->mode_dead(a,c->user);return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_WAITANIM:if((a->anim_mode&WM_MODE_END)&&c&&c->code_addr)c->code_addr(a,(uint32_t)a->code_addr,c->user);return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_MASTER:if(c&&c->master_keep_attached)c->master_keep_attached(a,c->user);else(void)wm_arcade_master_keep_attached(a);return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_HEADHOLD:return mode_headhold(a,o,e,c);case WM_PMODE_HEADHELD:if((a->anim_mode&WM_MODE_NOGRAVITY)&&c&&c->mode_choking){c->mode_choking(a,c->user);return WM_TAKER_STEP_EXTERNAL;}if(c&&c->bozo_check&&c->bozo_check(a,c->user)){if(c->do_reversal)c->do_reversal(a,c->user);if(c->do_reversal_message)c->do_reversal_message(a,c->user);snd(a,L.bozo_snd,c);anim(a,(e&&(e->pcnt&1))?L.bozo_hh_b:L.bozo_a,c);return WM_TAKER_STEP_ACTION;}if(!a->attach_proc&&a->y_int<=a->ground_y)anim(a,L.headheld,c);return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_PUPPET:if(c&&c->mode_puppet)c->mode_puppet(a,c->user);return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_INAIR2:if(c&&c->mode_inair2)c->mode_inair2(a,c->user);return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_CHOKING:if(c&&c->mode_choking)c->mode_choking(a,c->user);return WM_TAKER_STEP_EXTERNAL;default:return WM_TAKER_STEP_IDLE;}
+    switch(a->player_mode){case WM_PMODE_NORMAL:case 18:case 22:case 23:return mode_normal(a,o,e,c);case WM_PMODE_RUNNING:return mode_running(a,o,e,c);case WM_PMODE_ATTACHED:if(c&&c->keep_attached)c->keep_attached(a,c->user);else(void)wm_arcade_keep_attached(a);if(!a->attach_proc){setmode(a,WM_PMODE_NORMAL);a->anim_mode=0;}return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_BOUNCING:return mode_bouncing(a,c);case WM_PMODE_ONTURNBKL:return mode_turn(a,c);case WM_PMODE_BLOCK:return mode_block(a,o,e,c);case WM_PMODE_DEAD:if(c&&c->mode_dead)c->mode_dead(a,c->user);return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_WAITANIM:if((a->anim_mode&WM_MODE_END)&&c&&c->code_addr)c->code_addr(a,(uint32_t)a->code_addr,c->user);return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_MASTER:if(c&&c->master_keep_attached)c->master_keep_attached(a,c->user);else(void)wm_arcade_master_keep_attached(a);return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_CHOKEHOLD:return mode_chokehold(a,e,c);case WM_PMODE_HEADHOLD:return mode_headhold(a,o,e,c);case WM_PMODE_HEADHELD:if((a->anim_mode&WM_MODE_NOGRAVITY)&&c&&c->mode_choking){c->mode_choking(a,c->user);return WM_TAKER_STEP_EXTERNAL;}if(c&&c->bozo_check&&c->bozo_check(a,c->user)){if(c->do_reversal)c->do_reversal(a,c->user);if(c->do_reversal_message)c->do_reversal_message(a,c->user);snd(a,L.bozo_snd,c);anim(a,(e&&(e->pcnt&1))?L.bozo_hh_b:L.bozo_a,c);return WM_TAKER_STEP_ACTION;}if(!a->attach_proc&&a->y_int<=a->ground_y)anim(a,L.headheld,c);return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_PUPPET:if(c&&c->mode_puppet)c->mode_puppet(a,c->user);return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_INAIR2:if(c&&c->mode_inair2)c->mode_inair2(a,c->user);return WM_TAKER_STEP_EXTERNAL;case WM_PMODE_CHOKING:if(c&&c->mode_choking)c->mode_choking(a,c->user);return WM_TAKER_STEP_EXTERNAL;
+    /* Modes 10 and 24 are a bare `rets` in this file, and correctly so:
+       ANI_SETPLYRMODE,MODE_OPPOVERHEAD appears only in BAMSEQ3,
+       LEXSEQ3 and YOKSEQ3 and MODE_CHOKEHOLD only in UNDSEQ3, so
+       this wrestler can never be in it. */
+    case WM_PMODE_OPPOVERHEAD: return WM_TAKER_STEP_IDLE;
+    default:return WM_TAKER_STEP_IDLE;}
 }
 
 static int reject_common(wm_arcade_actor_t*a,wm_arcade_actor_t*o){return !a||!o||(a->anim_mode&WM_MODE_UNINT)||o->player_mode==WM_PMODE_DEAD||o->player_mode==WM_PMODE_HEADHELD||o->player_mode==WM_PMODE_ATTACHED;}

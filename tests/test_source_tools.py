@@ -3918,11 +3918,13 @@ REACHABILITY_CLAIMS = (
     ("royal_rumble", "no-true-writer",
      "wm/arcade/wm_arcade_mode_dead.h and wm_arcade_round.h both rest on "
      "royal_rumble being permanently false"),
-    # wm/arcade/wm_arcade_lifebar.h: the #will_die HEADHELD deferral has
-    # no consumer because nothing puts a wrestler in HEADHELD.
-    ("WM_PMODE_HEADHELD", "no-mode-writer",
-     "wm/arcade/wm_arcade_lifebar.h's #will_die deferral is skipped for "
-     "want of anything that sets HEADHELD"),
+    # WM_PMODE_HEADHELD was here, on the claim that nothing puts a
+    # wrestler in HEADHELD so adjust_health's #will_die deferral had no
+    # consumer. TAKER.ASM:2940 mode_chokehold's stick-UP arm does: it
+    # writes WHOIHIT's PLYRMODE to MODE_HEADHELD by hand while turning a
+    # choke into a head hold. The claim is retired rather than reworded,
+    # and this guard did its job -- the deferral was translated and
+    # unreachable, and translating mode_chokehold made it fire.
 )
 
 
@@ -4366,16 +4368,13 @@ def test_the_guarded_change_anim_count_matches_the_source() -> None:
     asm = ROOT / "original" / "wwf-wrestlemania"
     arcade = ROOT / "src" / "core" / "arcade"
     # {source line: the unported mode the guarded call sits in}
-    unported = {
-        "BRET":  {},
-        "RAZOR": {},
-        "TAKER": {3038: "mode_chokehold"},
-        "YOKO":  {2282: "mode_oppoverhead"},
-        "SHAWN": {},
-        "BAM":   {2453: "mode_oppoverhead"},
-        "DOINK": {},
-        "LEX":   {2273: "mode_oppoverhead"},
-    }
+    # All sixteen mode_oppoverhead/mode_chokehold routines are translated
+    # now -- the four that have bodies and the twelve that are a `rets` --
+    # so nothing is subtracted any more. The dict is kept rather than
+    # deleted: it is where the next unported mode's guarded calls get
+    # written down, and an empty one says plainly that there are none.
+    unported = {w: {} for w in ("BRET", "RAZOR", "TAKER", "YOKO",
+                                "SHAWN", "BAM", "DOINK", "LEX")}
     guarded = re.compile(r"\bcalla\s+change_anim1(?![0-9A-Za-z_])")
     for wrestler, stem in (("BRET", "bret"), ("RAZOR", "razor"),
                            ("TAKER", "taker"), ("YOKO", "yoko"),

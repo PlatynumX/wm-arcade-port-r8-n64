@@ -182,9 +182,12 @@ typedef struct wm_arcade_death_anim_callback {
  * knockback is #fallbk's and the zeroing is the catch-all's. #will_die
  * sets I_WILL_DIE to 3*60 and jumps to `#skip`, which is BELOW the
  * SETMODE DEAD -- so it is the one death path that does not make the
- * wrestler dead, which is the whole point of a deferral. Nothing puts a
- * wrestler in HEADHELD today; that is a checked claim in
- * tests/test_source_tools.py rather than a comment now.
+ * wrestler dead, which is the whole point of a deferral. That used to be
+ * translated-but-unreachable, on a claim checked in
+ * tests/test_source_tools.py that nothing put a wrestler in HEADHELD.
+ * TAKER.ASM:2940 mode_chokehold now does -- its stick-UP arm writes
+ * WHOIHIT's PLYRMODE to MODE_HEADHELD by hand while converting a choke
+ * into a head hold -- so the deferral is live and the claim is retired.
  *
  * Still not translated: flash_red, which is pure lifebar rendering.
  */

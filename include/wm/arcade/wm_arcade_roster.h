@@ -75,6 +75,24 @@ typedef struct wm_arcade_roster_callbacks {
      */
     void (*change_anim_label)(wm_arcade_actor_t *, const char *source_label, void *);
     void (*change_anim_restart)(wm_arcade_actor_t *, const char *source_label, void *);
+    /*
+     * JJXM.H:44 `RND_AWARD a13,BLOCKS_AWD`, which expands to
+     * round_award(a13, BLOCKS_AWD). Every wrestler file has EXACTLY ONE,
+     * in std_block right after the @blocking_off gate and right before
+     * the block animation -- BRET.ASM:1571, RAZOR.ASM:1415,
+     * TAKER.ASM:1768, YOKO.ASM:1390, SHAWN.ASM:2000, BAM.ASM:1531,
+     * DOINK.ASM:1946, LEX.ASM:1381.
+     *
+     * So the answer to "which block events does the source score" is:
+     * ENTERING a block, once, and nothing else. Not a successful block,
+     * not a blocked hit, not holding one. That was the open question
+     * behind this seam, and reading the eight call sites settles it.
+     *
+     * The seam existed only in the Bret and Razor structs, so six of the
+     * eight wrestlers could not score a block award at all even with it
+     * filled.
+     */
+    void (*round_award_block)(wm_arcade_actor_t *, void *);
     /* :4563 change_anim2 / :4573 change_anim2a, the same split on the
        second channel. The guarded form is the walk torso and the three
        mode_oppoverhead stands; every *_ani_init is the unguarded one. */

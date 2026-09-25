@@ -994,6 +994,23 @@ static void backend_jump_rope_audio(wm_arcade_actor_t *actor, void *user) {
     backend_rope_announce((wm_wrestler_backend_actor *)user, actor, "JUMP_ROPES");
 }
 
+/*
+ * JJXM.H:44 `RND_AWARD a13,BLOCKS_AWD` -- round_award(a13, BLOCKS_AWD),
+ * the one award every wrestler file scores from std_block. AWARD.ASM's
+ * BLOCKS_AWD is wm/award.h's WM_AWARD_BLOCKS.
+ *
+ * The seam was declared in the Bret and Razor structs only, so six of
+ * the eight wrestlers could not score a block at all, and in those two
+ * it was filled by nobody. It is on the shared struct now and all eight
+ * call it at the source's own position.
+ */
+static void backend_round_award_block(wm_arcade_actor_t *actor, void *user) {
+    wm_wrestler_backend_actor *st = (wm_wrestler_backend_actor *)user;
+    if (!actor || !st || !st->round_award) return;
+    st->round_award(st->round_award_user, (int)actor->player_num,
+                    (int)WM_AWARD_BLOCKS);
+}
+
 wm_arcade_roster_callbacks_t wm_wrestler_roster_callbacks(
     wm_wrestler_backend_actor *state) {
     wm_arcade_roster_callbacks_t cb;
@@ -1004,6 +1021,7 @@ wm_arcade_roster_callbacks_t wm_wrestler_roster_callbacks(
     cb.check_combo_go = backend_check_combo_go;
     cb.change_anim_label = backend_change_anim_label;
     cb.climb_rope_audio = backend_climb_rope_audio;
+    cb.round_award_block = backend_round_award_block;
     cb.jump_rope_audio = backend_jump_rope_audio;
     cb.change_anim_restart = backend_change_anim_restart;
     /*
@@ -1108,6 +1126,7 @@ wm_arcade_razor_callbacks_t wm_wrestler_razor_callbacks(
     memset(&cb, 0, sizeof(cb));
     cb.change_anim = backend_razor_change_anim;
     cb.climb_rope_audio = backend_climb_rope_audio;
+    cb.round_award_block = backend_round_award_block;
     cb.jump_rope_audio = backend_jump_rope_audio;
     cb.change_anim_restart = backend_razor_change_anim_restart;
     cb.change_torso_anim = backend_razor_change_torso_anim;

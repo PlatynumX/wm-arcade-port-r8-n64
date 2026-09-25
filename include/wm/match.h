@@ -485,6 +485,23 @@ typedef struct {
      * `SLEEP TSEC/2`, then change_anim1a on @dead_wrestler, then DIE.
      * One at a time, which is all the source can have.
      */
+    /*
+     * TAKER.ASM:533 shake_world, the process CREATE FIREWRK_PID starts
+     * and KIL1C ends. It is NOT UTIL.ASM's SHAKER2 (wm_shake_state
+     * above): SHAKER2 is a damped sine-and-exponential oscillator on
+     * WORLDTLY with a finite tick count, and this is an UNBOUNDED
+     * uniform jitter of +/-2 on BOTH axes every three ticks, running
+     * until the finishing move reports done. The seam ledger used to
+     * say wm_shake_start would do for it; it would not.
+     *
+     * `base_tlx`/`base_tly` are the process's own a8/a9: the origin
+     * captured ONCE when it starts, which every jitter offsets from, so
+     * the shake is about a fixed point rather than a random walk.
+     */
+    bool shake_world_on;
+    int32_t shake_world_delay;
+    int32_t shake_world_base_tlx;
+    int32_t shake_world_base_tly;
     wm_coffin_driver_t coffin_driver;
     int32_t raise_dead_delay;
     wm_arcade_actor_t *raise_dead_target;

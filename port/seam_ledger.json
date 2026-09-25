@@ -165,14 +165,6 @@
   "verdict": "deferred",
   "note": "A teammate breaking up a hold in buddy mode. The port runs a fixed pair by default; the call site is live only with four actors, and the routine behind it has not been traced."
  },
- "round_award_block": {
-  "verdict": "deferred",
-  "note": "AWARD.ASM's block award. The award machinery is all here (wm_award_round_award, and BLOCK is an index in wm/award.h); what is missing is reading which block events the source scores, which is not the same question as how to score them."
- },
- "start_shake": {
-  "verdict": "deferred",
-  "note": "The Undertaker's coffin finish asking for a screen shake. wm_shake_start is translated and is wired for REACT4 already, so this is a short wiring -- it wants the finish sequence's own test rather than riding along with an unrelated change."
- },
  "play_wrestler_tune": {
   "verdict": "deferred",
   "note": "DO_RIGHT_MUSIC's per-wrestler victory tune, which the attract adapter asks for by wrestler number. wm_match_wrestler_tune already resolves WHICH tune (it is asserted in wm_test_match_end), so what is missing behind this seam is playing it -- the DCS tune path, which is the same cluster as do_tune_commands and snd_update and wants one pass of its own rather than a single call bolted on."

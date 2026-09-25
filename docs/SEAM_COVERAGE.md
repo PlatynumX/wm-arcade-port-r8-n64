@@ -10,14 +10,14 @@ reads like working code.
 | | count |
 |---|---|
 | seams declared | 163 |
-| filled by something | 104 |
-| **called but empty** | **39** |
+| filled by something | 107 |
+| **called but empty** | **37** |
 
 Every empty one carries a verdict in `port/seam_ledger.json`,
 and a source-tools test refuses both an unledgered empty seam
 and a ledger row for a seam that is no longer empty.
 
-## deferred (9)
+## deferred (7)
 
 | seam | declared in |
 |---|---|
@@ -27,8 +27,6 @@ and a ledger row for a seam that is no longer empty.
 | `move_grade` | `include/wm/arcade/wm_arcade_react1_core.h` |
 | `partner_breakout` | `include/wm/arcade/wm_arcade_react.h` |
 | `play_wrestler_tune` | `include/wm/arcade/wmania_attract_adapter.h` |
-| `round_award_block` | `include/wm/arcade/wm_arcade_bret.h` |
-| `start_shake` | `include/wm/arcade/wm_arcade_und_finish.h` |
 | `unhandled_reaction` | `include/wm/arcade/wm_arcade_react1_core.h` |
 
 ## display (19)

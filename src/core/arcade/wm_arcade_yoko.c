@@ -144,6 +144,9 @@ static void startsp(wm_arcade_actor_t*a,const char*l,const wm_arcade_yoko_callba
 
 static int do_block(wm_arcade_actor_t*a,const wm_arcade_yoko_env_t*e,const wm_arcade_yoko_callbacks_t*c){
     if(e&&e->blocking_off)return 0;
+    /* :1390 `RND_AWARD a13,BLOCKS_AWD`, after the blocking_off
+       gate and before the animation. */
+    if(c&&c->round_award_block)c->round_award_block(a,c->user);
     anim(a,L.block,c);
     a->block_time=0;
     snd(a,"BLOCK_WOOSH",c);

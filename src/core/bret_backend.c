@@ -1148,12 +1148,30 @@ static void bret_jump_rope_audio(wm_arcade_actor_t *actor, void *user) {
     backend_rope_announce((wm_bret_backend_actor *)user, actor, "JUMP_ROPES");
 }
 
+/*
+ * JJXM.H:44 `RND_AWARD a13,BLOCKS_AWD` -- round_award(a13, BLOCKS_AWD),
+ * the one award every wrestler file scores from std_block. AWARD.ASM's
+ * BLOCKS_AWD is wm/award.h's WM_AWARD_BLOCKS.
+ *
+ * The seam was declared in the Bret and Razor structs only, so six of
+ * the eight wrestlers could not score a block at all, and in those two
+ * it was filled by nobody. It is on the shared struct now and all eight
+ * call it at the source's own position.
+ */
+static void bret_round_award_block(wm_arcade_actor_t *actor, void *user) {
+    wm_bret_backend_actor *st = (wm_bret_backend_actor *)user;
+    if (!actor || !st || !st->round_award) return;
+    st->round_award(st->round_award_user, (int)actor->player_num,
+                    (int)WM_AWARD_BLOCKS);
+}
+
 wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva) {
     wm_arcade_bret_callbacks_t cb;
     memset(&cb, 0, sizeof(cb));
     cb.can_pin = bret_can_pin;
     cb.change_anim = wm_bret_backend_change_anim;
     cb.climb_rope_audio = bret_climb_rope_audio;
+    cb.round_award_block = bret_round_award_block;
     cb.jump_rope_audio = bret_jump_rope_audio;
     cb.change_anim_restart = wm_bret_backend_change_anim_restart;
     cb.change_torso_anim = wm_bret_backend_change_torso_anim;

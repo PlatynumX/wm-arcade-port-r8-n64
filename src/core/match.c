@@ -502,6 +502,47 @@ static void match_set_world_origin(int32_t tlx, int32_t tly, void *user) {
 }
 
 /*
+ * TAKER.ASM:602 `CREATE FIREWRK_PID,shake_world` and :711's KIL1C.
+ *
+ * Both seams were declared and neither was filled; kill_shake was not
+ * even CALLED, which the seam audit misses because it only reports
+ * seams that are called and empty. So the coffin finish did not shake
+ * the world, and had it, nothing would have stopped it.
+ *
+ * The process captures @WORLDTLX/@WORLDTLY once into a8/a9 and every
+ * jitter offsets from THOSE, so the shake is about a fixed point. The
+ * body is wm_arcade_und_shake_world; what is here is the process:
+ * start, three-tick cadence, stop.
+ */
+static void match_start_shake(void *user) {
+    wm_match_state *m = (wm_match_state *)user;
+    if (!m || m->shake_world_on) return;   /* CREATE is idempotent here:
+                                              one FIREWRK_PID process */
+    m->shake_world_on = true;
+    m->shake_world_base_tlx = m->scroll.worldtlx;
+    m->shake_world_base_tly = m->scroll.worldtly;
+    /* The loop jitters BEFORE its first SLEEPK, so the tick that starts
+       it is a jitter tick. */
+    m->shake_world_delay = 0;
+}
+
+static void match_kill_shake(void *user) {
+    wm_match_state *m = (wm_match_state *)user;
+    if (!m || !m->shake_world_on) return;
+    m->shake_world_on = false;
+    m->shake_world_delay = 0;
+    /*
+     * KIL1C kills the process and nothing puts the origin back -- unlike
+     * SHAKER2, which takes its own outstanding Y_ADJ off WORLDTLY when
+     * aborted. The world is simply left wherever the last jitter put it,
+     * which is at most two pixels off on each axis, and the scroller
+     * that restarts the moment in_finish_move clears takes it from
+     * there. Restoring it here would be a correction the source does
+     * not make.
+     */
+}
+
+/*
  * SPECIAL.ASM:3415 react_debris. The decision half is real -- the RNDPER
  * gate, the DEBRIS_MAX cap, the per-wrestler impact sound, the
  * Undertaker's pin bat -- and the pieces are objects a renderer would
@@ -824,6 +865,8 @@ static void match_tick_smoves_for(wm_match_state *m, unsigned ai) {
     memset(&ucb, 0, sizeof(ucb));
     ucb.set_in_finish_move = match_set_in_finish_move;
     ucb.set_world_origin = match_set_world_origin;
+    ucb.start_shake = match_start_shake;
+    ucb.kill_shake = match_kill_shake;
     ucb.rng = m->anim_rng;
     ucb.user = m;
 
@@ -2959,8 +3002,33 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
      * raised and the scroller never restarts.
      */
     if (m->in_finish_move && m->coffin.finish_completed != 0) {
-        m->in_finish_move = false;
+        wm_arcade_und_finish_callbacks_t done;
+        memset(&done, 0, sizeof(done));
+        done.set_in_finish_move = match_set_in_finish_move;
+        done.kill_shake = match_kill_shake;
+        done.user = m;
+        wm_arcade_und_finish_done(&done);
         m->coffin.finish_completed = 0;
+    }
+
+    /*
+     * shake_world's `#sw_loop`: jitter, SLEEPK 3, repeat, for as long as
+     * the process lives. It runs AFTER the tail above, so the tick that
+     * stops it does not also jitter.
+     */
+    if (m->shake_world_on) {
+        if (m->shake_world_delay > 0) {
+            --m->shake_world_delay;
+        } else {
+            wm_arcade_und_finish_callbacks_t scb;
+            memset(&scb, 0, sizeof(scb));
+            scb.set_world_origin = match_set_world_origin;
+            scb.rng = m->anim_rng;
+            scb.user = m;
+            wm_arcade_und_shake_world(m->shake_world_base_tlx,
+                                      m->shake_world_base_tly, &scb);
+            m->shake_world_delay = WM_UND_SHAKE_SLEEP - 1;
+        }
     }
 
     /*

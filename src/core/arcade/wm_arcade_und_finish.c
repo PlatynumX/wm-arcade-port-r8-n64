@@ -107,6 +107,13 @@ int wm_arcade_und_adjust_view(const wm_arcade_actor_t *taker,
     return 32;
 }
 
+void wm_arcade_und_finish_done(const wm_arcade_und_finish_callbacks_t *cb) {
+    if (!cb) return;
+    /* The source's order: the flag first, then the process. */
+    if (cb->set_in_finish_move) cb->set_in_finish_move(0, cb->user);
+    if (cb->kill_shake) cb->kill_shake(cb->user);
+}
+
 const char *wm_arcade_und_finish_move1(
         wm_arcade_actor_t *taker, wm_arcade_actor_t *victim,
         const wm_arcade_und_finish_env_t *env,

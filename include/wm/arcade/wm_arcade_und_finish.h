@@ -102,6 +102,23 @@ int wm_arcade_und_adjust_view(const wm_arcade_actor_t *taker,
 /* TAKER.ASM:527 shake_world, one iteration: jitter the world origin by
    RNDRNG0(4)-2 on each axis about the ORIGINAL origin, not the jittered
    one -- the source keeps the base in a8/a9 for the whole loop. */
+/*
+ * TAKER.ASM:697 `#fdone_wait`'s tail, reached once @finish_completed is
+ * set: clear @in_finish_move and then `movi FIREWRK_PID,a0 / calla
+ * KIL1C` -- kill the shaker.
+ *
+ * The clear was already done inline by the caller and the kill was not
+ * done at all: kill_shake was declared and CALLED BY NOBODY, which the
+ * seam audit does not catch because it only looks at seams that are
+ * called and empty. So the jitter, once it had something behind it,
+ * would have run for the rest of the match.
+ */
+void wm_arcade_und_finish_done(const wm_arcade_und_finish_callbacks_t *cb);
+
+/* TAKER.ASM:533 shake_world's SLEEPK -- it jitters, sleeps three ticks,
+   and loops, so the first jitter lands on the tick it starts. */
+#define WM_UND_SHAKE_SLEEP 3
+
 void wm_arcade_und_shake_world(int32_t base_tlx, int32_t base_tly,
                                     const wm_arcade_und_finish_callbacks_t *cb);
 

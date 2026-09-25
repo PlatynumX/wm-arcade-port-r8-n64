@@ -136,6 +136,9 @@ static void startsp(wm_arcade_actor_t*a,const char*l,const wm_arcade_taker_callb
 
 static int do_block(wm_arcade_actor_t*a,const wm_arcade_taker_env_t*e,const wm_arcade_taker_callbacks_t*c){
     if(e&&e->blocking_off)return 0;
+    /* :1768 `RND_AWARD a13,BLOCKS_AWD`, after the blocking_off
+       gate and before the animation. */
+    if(c&&c->round_award_block)c->round_award_block(a,c->user);
     anim1(a,L.block,c);                 /* :1771 change_anim1 */
     a->block_time=0;
     snd(a,"BLOCK_WOOSH",c);

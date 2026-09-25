@@ -212,6 +212,9 @@ typedef struct wm_arcade_bret_callbacks {
     int  (*can_pin)(wm_arcade_actor_t *, const wm_arcade_actor_t *, void *);
     void (*drone_change_back)(wm_arcade_actor_t *, void *);
     void (*set_raisearm_bit)(wm_arcade_actor_t *, void *);
+    /* JJXM.H:44 `RND_AWARD a13,BLOCKS_AWD` in std_block. One per
+       wrestler file and nowhere else, so the scored event is
+       ENTERING a block rather than blocking anything. */
     void (*round_award_block)(wm_arcade_actor_t *, void *);
     void (*bonus_message)(wm_arcade_actor_t *, int bonus, void *);
     /*

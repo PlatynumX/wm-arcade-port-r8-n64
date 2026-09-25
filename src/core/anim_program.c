@@ -534,9 +534,32 @@ static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
             break;
         }
         case WM_AOP_IMMOBILIZE:
-            if (!actor->dizzy && actor->who_i_hit &&
-                actor->who_i_hit->player_mode != WM_PMODE_BLOCK)
+            /*
+             * ANIM.ASM:3933 _ani_immobilize. Two corrections here, both
+             * found by asking which actor fields are read and never
+             * written.
+             *
+             * The gate is `move *a13(PLYR_DIZZY),a1 / jrnz #skip`, and
+             * this read `actor->dizzy` -- a SECOND field on the actor for
+             * the same source one. plyr_dizzy is the field every other
+             * reader uses and the one with the note explaining why it is
+             * always zero (check_dizzy is commented out in the source).
+             * Both read zero today, so nothing was visibly wrong; the
+             * moment anything sets plyr_dizzy, this gate would still have
+             * been reading the dead copy.
+             *
+             * And the source does not only stamp IMMOBILIZE_TIME. Its own
+             * comment is "clear his velocities too", and it clears all
+             * three. Dropping them left a wrestler immobilised in the
+             * sense that the counter ran, and still sliding.
+             */
+            if (!actor->plyr_dizzy && actor->who_i_hit &&
+                actor->who_i_hit->player_mode != WM_PMODE_BLOCK) {
                 actor->who_i_hit->immobilize_time = o->a;
+                actor->who_i_hit->x_vel = 0;
+                actor->who_i_hit->y_vel = 0;
+                actor->who_i_hit->z_vel = 0;
+            }
             break;
         case WM_AOP_ATTACK_ON: {
             wm_arcade_attack_on_args_t args;
@@ -1104,7 +1127,7 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
                 /* Blocked wins over hit, and hit over missed -- the order
                    the source checks them in. */
                 int32_t ticks = actor
-                    ? (actor->hitblocker ? o->c
+                    ? (actor->hit_blocker ? o->c
                        : (actor->anim_mode & WM_MODE_STATUS) ? o->a : o->b)
                     : o->b;
                 if (ticks <= 0) { pc = pc + 1; continue; }
@@ -1392,7 +1415,7 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
                     ? (size_t)o->target : pc + 1;
                 continue;
             case WM_AOP_IFBLOCKED:
-                pc = (actor && actor->hitblocker) ? (size_t)o->target : pc + 1;
+                pc = (actor && actor->hit_blocker) ? (size_t)o->target : pc + 1;
                 continue;
             case WM_AOP_SLIDE_BACK:
                 /* "was there a collision? jrz #no_slide": the branch is the

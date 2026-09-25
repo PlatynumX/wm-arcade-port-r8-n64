@@ -5281,3 +5281,136 @@ def test_the_roster_env_builder_fills_every_field() -> None:
         "the roster env builder in match.c never assigns %s, so every "
         "dispatcher reads whatever the memset left -- usually a zero that "
         "is also a legal value." % ", ".join(missing))
+
+
+# A wm_arcade_actor_t field that src/ reads and never writes, with why the
+# zero it always holds is the right answer. Anything not here is either a
+# dropped input or a duplicate of a field somebody else is writing.
+ACTOR_FIELD_NEVER_WRITTEN = (
+    ("plyr_dizzy",
+     "PLYR.EQU PLYR_DIZZY, and always zero in the SHIPPED GAME too: "
+     "check_dizzy, the routine that would set it, is commented out at "
+     "WRESTLE2.ASM:1370 onward. Reading 'not dizzy' throughout is what "
+     "the arcade does, not a gap"),
+    ("skeleton_pal",
+     "DNKSEQ3.ASM:493 fills it from `movi DNKBLU_P,a0 / calla pal_getf` "
+     "-- a RUNTIME palette allocator, so there is no number to "
+     "transcribe and this port has nothing to ask. Inventing an index "
+     "would make Doink's buzzer look deliberate and wrong"),
+)
+
+
+def test_every_actor_field_read_in_src_is_also_written() -> None:
+    """A field the port reads and nobody writes is a question nobody asked.
+
+    wm_arcade_actor_t is the widest struct here, and it grew two fields
+    for source globals that already had one: HITBLOCKER became
+    hit_blocker (written by all five translated source sites) AND
+    hitblocker (read by ANI_IFBLOCKED, written by nobody), and PLYR_DIZZY
+    became plyr_dizzy AND dizzy. Each time, the writer and the reader
+    picked different fields and the port compiled, ran, and answered
+    every "was I blocked?" with no.
+
+    Neither showed up as a missing seam or an empty callback, because
+    both halves existed -- just not joined. What they do show up as is a
+    field that is read and never written, so that is what this measures.
+    A field legitimately always zero goes in ACTOR_FIELD_NEVER_WRITTEN
+    with the source reason it is zero.
+
+    Fields written only through a pointer (the five button counters, via
+    wm_arcade_butcount.c's counter_at) and struct members written by
+    their own sub-fields (hurt_box.y1 and friends) are not readable as
+    writes here, so they are skipped by shape rather than listed.
+    """
+    root = pathlib.Path(__file__).resolve().parents[1]
+    header = root / "include" / "wm" / "arcade" / "wm_arcade_combat.h"
+    text = _strip_comments(header.read_text())
+
+    start = text.index("struct wm_arcade_actor {")
+    brace = text.index("{", start)
+    depth, i = 1, brace + 1
+    while depth and i < len(text):
+        if text[i] == "{":
+            depth += 1
+        elif text[i] == "}":
+            depth -= 1
+        i += 1
+    body, fields, d = text[brace + 1:i - 1], [], 0
+    for line in body.splitlines():
+        if d == 0:
+            m = re.match(r"\s*(?:const\s+)?[A-Za-z_][\w ]*?\**\s*(\w+)\s*"
+                         r"(?:\[[^\]]*\])?\s*;\s*$", line)
+            if m and not line.lstrip().startswith("}"):
+                fields.append(m.group(1))
+        d += line.count("{") - line.count("}")
+    assert len(fields) >= 120, \
+        "wm_arcade_actor_t fields not parsed (%d) -- a parse that finds " \
+        "nothing would pass trivially" % len(fields)
+
+    src = "\n".join(_strip_comments(p.read_text())
+                    for p in sorted((root / "src").rglob("*.c")))
+    excused = {name for name, _why in ACTOR_FIELD_NEVER_WRITTEN}
+
+    unwritten = []
+    for f in fields:
+        if f in excused:
+            continue
+        reads = writes = 0
+        skip = False
+        for m in re.finditer(r"(?:\.|->)%s\b" % re.escape(f), src):
+            tail = src[m.end():m.end() + 3]
+            stripped = tail.lstrip()
+            if stripped[:1] == ".":
+                skip = True          # a struct member, written sub-field-wise
+                break
+            if stripped[:1] == "=" and stripped[1:2] != "=":
+                writes += 1
+            elif stripped[:2] in ("+=", "-=", "|=", "&=", "^=", "*=", "/="):
+                writes += 1
+                reads += 1
+            elif stripped[:2] in ("++", "--"):
+                writes += 1
+                reads += 1
+            else:
+                reads += 1
+        # `&actor->field` handed to something that writes through it --
+        # the five button counters reach wm_arcade_butcount.c that way.
+        #
+        # The lookarounds are load-bearing. Without them this matched the
+        # SECOND `&` of a `&&`, so any field read inside a logical AND was
+        # silently excused -- which is most of them, and it made this
+        # whole test pass vacuously for exactly the field it was written
+        # to catch.
+        if re.search(r"(?<!&)&(?!&)\s*\w+(?:\.|->)%s\b" % re.escape(f), src):
+            skip = True
+        if not skip and reads > 0 and writes == 0:
+            unwritten.append(f)
+
+    assert not unwritten, (
+        "these wm_arcade_actor_t fields are read in src/ and written by "
+        "nothing: %s.\n"
+        "Either the writer is spelling a DIFFERENT field for the same "
+        "source one -- which is how ANI_IFBLOCKED spent this long "
+        "answering no -- or the input is dropped. If the zero is right, "
+        "add it to ACTOR_FIELD_NEVER_WRITTEN with the source reason."
+        % ", ".join(unwritten))
+
+    for name, why in ACTOR_FIELD_NEVER_WRITTEN:
+        assert name in fields, \
+            "ACTOR_FIELD_NEVER_WRITTEN names %r, which the actor struct " \
+            "has no field for" % name
+        assert len(why) > 20, "%s has no real reason recorded" % name
+        # And a row whose field has GAINED a writer must go, or the list
+        # outlives its reasons -- the same rot the result-field ledger
+        # guards against.
+        wrote = False
+        for m in re.finditer(r"(?:\.|->)%s\b" % re.escape(name), src):
+            tail = src[m.end():m.end() + 3].lstrip()
+            if tail[:1] == "=" and tail[1:2] != "=":
+                wrote = True
+            elif tail[:2] in ("+=", "-=", "|=", "&=", "^=", "++", "--"):
+                wrote = True
+        assert not wrote, (
+            "%s is listed as never written and something now writes it. "
+            "Drop the row -- keeping it hides that the question was "
+            "settled." % name)

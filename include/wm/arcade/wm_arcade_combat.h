@@ -124,7 +124,6 @@ struct wm_arcade_actor {
     int32_t getup_time;
     int32_t delay_meter;
     int32_t safe_time;
-    int32_t dizzy;
     uint32_t head_grab_time;
     void *meter_proc;
     int32_t wrestler_num;
@@ -172,8 +171,20 @@ struct wm_arcade_actor {
     int32_t attachimg_zoff;
     int32_t my_pal;
     int32_t obj_pal;
-    /* PLYR.EQU SKELETON_PAL: the palette Doink's buzzer swaps in, put back
-       from MY_PAL when it ends (DNKSEQ3.ASM set_skeleton_pal/set_my_pal). */
+    /*
+     * PLYR.EQU:166 SKELETON_PAL: the palette Doink's buzzer swaps in, put
+     * back from MY_PAL when it ends (DNKSEQ3.ASM set_skeleton_pal /
+     * set_my_pal, both translated in anim_code.c).
+     *
+     * READ AND NEVER WRITTEN, and for a reason worth stating rather than
+     * leaving to be rediscovered. DNKSEQ3.ASM:493 fills it with `movi
+     * DNKBLU_P,a0 / calla pal_getf` -- a RUNTIME palette allocator that
+     * hands back whatever slot it put DNKBLU_P in. There is no number to
+     * transcribe, and this port has no palette allocator to ask, so
+     * set_skeleton_pal swaps in zero. Inventing an index would make the
+     * buzzer look deliberate and wrong; leaving it at zero keeps it
+     * visibly unfinished, and it is the renderer's to finish.
+     */
     int32_t skeleton_pal;
     /* PLYR.EQU OBJ_CONST: the constant colour the DMA writes in place of
        non-zero pixels when M_CONNON is on -- DNKSEQ3.ASM's make_white and
@@ -230,12 +241,6 @@ struct wm_arcade_actor {
      *   widths is what made an earlier pass here believe block and kick
      *   were dropped from the reset. They are not.
      */
-    /* PLYR.EQU HITBLOCKER: the wrestler who blocked this attack, which
-       ANIM.ASM:83 ANI_IFBLOCKED branches on. Nothing sets it yet -- the
-       blocked-reaction dispatch that would is still unwired -- so the
-       branch is present and always falls through, which is the same path
-       the flat model always took. */
-    int32_t hitblocker;
     int32_t punchb_count;
     int32_t blockb_count;
     int32_t spunchb_count;

@@ -136,7 +136,13 @@ static void hit_run(wm_arcade_actor_t *a, wm_arcade_actor_t *v,
     a->y_vel = FX16(3);
     a->player_mode = WM_PMODE_NORMAL; /* source uses direct MOVE, not SETMODE */
 
-    if (a->dizzy != 0) {
+    /* REACT5.ASM:250 `move *a10(PLYR_DIZZY),a0 / jrz #notdiz0`. This read
+       a->dizzy, a duplicate actor field for the same source one that
+       nothing ever wrote; plyr_dizzy is the field the rest of the port
+       uses. Both read zero, so the dizzy bounce-off was simply never
+       selected -- and would not have been even once something set the
+       real field. */
+    if (a->plyr_dizzy != 0) {
         a->run_time = 0;
         anim(a, WM_R1_ANIM_BOUNCE_OFF_DIZZY, ctx);
     } else {

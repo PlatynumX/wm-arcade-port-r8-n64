@@ -141,17 +141,9 @@
   "verdict": "unreached",
   "note": "With start_special_label, the two halves of the six shared dispatchers' startsp(). THE QUESTION THIS ROW CARRIED IS ANSWERED, and the answer is that most of the callers were a MISTRANSLATION rather than a missing implementation. The row previously asked whether startsp() being inert mattered; the next pass established that it IS reached from check_secret_moves, and this one read what the source actually does at those call sites. Every one of them ends in `calla change_anim1a` and never touches SPECIAL_MOVE_ADDR: DOINK.ASM:583 #scrt_hiptoss is `FACE24 dnk,hiptoss_anim / calla change_anim1a / WRSND W_DOINK,HIPTOSS_T1,PUNCH_T2`, and the other five are the same shape. So the fifteen secret-move call sites are gone -- replaced by the animation and sound the source plays -- and what is left is ONE caller per file, in fire_monitor, where the label comes from the wrestler's smove table rather than a literal. That one is genuinely about SPECIAL_MOVE_ADDR, and it is UNREACHED: wm_arcade_port_fire_monitor has no caller anywhere in src/, only in tests, because the live monitor path is match_tick_smoves_for, which starts the animation itself. The id-versus-address decision recorded under `auto_pin` still stands, and it is now the only thing behind these two seams -- not fifteen moves that fire and do nothing."
  },
- "move_grade": {
-  "verdict": "deferred",
-  "note": "REACT's per-move grading, which feeds the award and message paths. The grades themselves are computed; this seam only reports them, so nothing downstream currently hears. Wireable once there is a consumer that is not display."
- },
  "unhandled_reaction": {
   "verdict": "deferred",
   "note": "The reaction core's own escape hatch for a hit_table entry it has no handler for -- diagnostic rather than behaviour. Worth filling with a counter so the number is measured instead of assumed, which is its own small change."
- },
- "ck_ignore_reversed": {
-  "verdict": "deferred",
-  "note": "Razor's twin of ck_ignore, taking BOTH wrestlers rather than one. ck_ignore is wired now against wm_arcade_ck_ignore; this one's source routine and its second argument have not been identified yet, and pointing it at the one-argument translation would be inventing the difference away."
  },
  "bonus_message": {
   "verdict": "deferred",

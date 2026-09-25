@@ -14,7 +14,6 @@ static void an(wm_arcade_actor_t*a,wm_arcade_razor_anim_id_t x,void*u){(void)a;t
 static void so(wm_arcade_actor_t*a,wm_arcade_razor_sound_id_t x,void*u){(void)a;tr_t*t=u;t->sounds++;t->sound=x;}
 static void sec(wm_arcade_actor_t*a,const wm_arcade_razor_secret_pattern_t*p,size_t n,void*u){(void)a;(void)p;assert(n==6);((tr_t*)u)->secrets++;}
 static int ign(wm_arcade_actor_t*a,void*u){(void)a;(void)u;return 0;}
-static int ignrev(wm_arcade_actor_t*a,wm_arcade_actor_t*b,void*u){(void)a;(void)b;(void)u;return 0;}
 static int combo_ok(wm_arcade_actor_t*a,void*u){(void)a;(void)u;return 0;}
 static void bonus(wm_arcade_actor_t*a,int b,void*u){(void)a;tr_t*t=u;t->bonus++;t->bonus_id=b;}
 static void rev(wm_arcade_actor_t*a,void*u){(void)a;((tr_t*)u)->reversals++;}
@@ -27,7 +26,7 @@ int main(void){
     tr_t t;
     int32_t x,z;
     memset(&a,0,sizeof(a));memset(&o,0,sizeof(o));memset(&c,0,sizeof(c));memset(&t,0,sizeof(t));
-    c.change_anim=an;c.change_anim_restart=an;c.change_anim_restart=an;c.sound=so;c.check_secret_moves=sec;c.ck_ignore=ign;c.ck_ignore_reversed=ignrev;
+    c.change_anim=an;c.change_anim_restart=an;c.sound=so;c.check_secret_moves=sec;c.ck_ignore=ign;
     c.check_combo_go=combo_ok;c.bonus_message=bonus;c.do_reversal=rev;c.do_reversal_message=rev;c.find_and_kill_endless=killend;c.user=&t;
 
     a.player_mode=WM_PMODE_NORMAL;a.facing_dir=WM_MOVE_UP_RIGHT;a.new_facing_dir=WM_MOVE_RIGHT;

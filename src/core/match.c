@@ -502,6 +502,87 @@ static void match_set_world_origin(int32_t tlx, int32_t tly, void *user) {
 }
 
 /*
+ * REACT's per-move grading: `calla CALL_NASTY_MOVE` and
+ * `calla CALL_AVERAGE_MOVE`, at REACT4.ASM:351, :363, :390 and
+ * REACT5.ASM:625.
+ *
+ * THE LEDGER NOTE ON THIS WAS WRONG about the one thing it turned on. It
+ * said "this seam only reports them, so nothing downstream currently
+ * hears. Wireable once there is a consumer that is not display." The
+ * consumer is not display and it already exists: DCSSOUND.ASM:3484 and
+ * :3689 are both two instructions and a CREATE --
+ *
+ *     CALL_NASTY_MOVE
+ *         MOVE  *A13(WRESTLERNUM),A9
+ *         CREATE SOUND_PID,PROC_NASTY_MOVE
+ *     PROC_NASTY_MOVE
+ *         SLEEP 10
+ *         MOVE  A9,A5
+ *         MOVI  NASTY_MOVE,A2
+ *         MOVI  500,A0
+ *         CALLR ADD_IF_SILENT
+ *
+ * -- so a grade is a line of ANNOUNCER COMMENTARY, drawn from a speech
+ * table exactly as the turnbuckle pair is. Both tables and both caller
+ * rows have been in src/generated/announce_tables.c all along, with
+ * their own sleep of 10 and percentage of 500.
+ *
+ * AND THE TWO READ DIFFERENT REGISTERS. CALL_AVERAGE_MOVE takes
+ * WRESTLERNUM from a10 and CALL_NASTY_MOVE from a13, which in REACT are
+ * the attacker and the victim. That is not cosmetic: both tables are
+ * `personal`, so A5 picks which wrestler's own voice lines can come up.
+ * A nasty move is remarked on in the VICTIM's voice and an average one
+ * in the ATTACKER's.
+ *
+ * The existence of a third entry point, CALL_ANI_AVERAGE_MOVE, reading
+ * a13 for the same table is what makes this readable rather than a
+ * guess: the family has one form per register convention, the same way
+ * ck_ignore and ck_ignore_a8 do, and the REACT callers pick by which
+ * one holds the subject they mean.
+ */
+static void match_react_move_grade(wm_arcade_actor_t *attacker,
+                                   wm_arcade_actor_t *victim,
+                                   wm_arcade_move_grade_t grade,
+                                   void *user) {
+    wm_match_state *m = (wm_match_state *)user;
+    const char *name = (grade == WM_R_MOVE_NASTY) ? "CALL_NASTY_MOVE"
+                                                  : "CALL_AVERAGE_MOVE";
+    const wm_announce_call *call;
+    const wm_announce_table *t;
+    const wm_arcade_actor_t *speaker;
+    wm_announce_ctx ctx;
+
+    if (!m) return;
+    call = wm_announce_call_find(name);
+    if (!call) return;
+    t = wm_announce_table_find(call->table);
+    if (!t) return;
+
+    /* a13 for NASTY, a10 for AVERAGE. */
+    speaker = (grade == WM_R_MOVE_NASTY) ? victim : attacker;
+    if (!speaker) return;
+
+    memset(&ctx, 0, sizeof(ctx));
+    ctx.rng = m->anim_rng;
+    ctx.wrestler_num = (int)speaker->wrestler_num;
+    ctx.anyone_near_death = match_anyone_near_death;
+    ctx.user = m;
+    ctx.crowd_user = m;
+    ctx.crowd_cheer = match_crowd_cheer;
+    ctx.crowd_sound = match_crowd_sound;
+    ctx.crowd_busy = match_crowd_busy(m);
+    /*
+     * PROC_x's own `SLEEP 10` is a process delay before the queue, and
+     * ADD_IF_SILENT is what it then calls. This port has no process to
+     * hold the ten ticks, so the line is offered now; the queue's own
+     * silence test is what decides whether it is taken, which is the
+     * part that changes what you hear.
+     */
+    (void)wm_announce_from_table(&m->announcer, t, call->percent,
+                                 true, &ctx);
+}
+
+/*
  * TAKER.ASM:602 `CREATE FIREWRK_PID,shake_world` and :711's KIL1C.
  *
  * Both seams were declared and neither was filled; kill_shake was not
@@ -2771,6 +2852,7 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
         m->react1_cb.attacker_uses_lex_flykick_anim =
             match_react_attacker_uses_lex_flykick;
         m->react1_cb.attacker_anim_tag = match_react_attacker_anim_tag;
+        m->react1_cb.move_grade = match_react_move_grade;
         m->react1_cb.user = m;
         memset(&m->react1_ctx, 0, sizeof m->react1_ctx);
         m->react1_ctx.callbacks = &m->react1_cb;

@@ -4397,6 +4397,73 @@ def test_the_guarded_change_anim_count_matches_the_source() -> None:
         assert got == want, (wrestler, got, want, sorted(skip.items()))
 
 
+def test_ck_ignore_has_one_body_and_one_argument() -> None:
+    """WRESTLE.ASM:6016 ck_ignore and :6044 ck_ignore_a8 are the same
+    routine, and no third form exists.
+
+    A ck_ignore_reversed seam was carried in two callbacks structs for a
+    long time, ledgered as "Razor's twin of ck_ignore, taking BOTH
+    wrestlers rather than one", with a warning that filling it from the
+    one-argument translation "would be inventing the difference away".
+    The invention was the difference: the two source routines differ in
+    one register and nothing else, and RAZOR.ASM:631 reaches the a8 form
+    by swapping the registers around the a13 call.
+
+    Checked from the assembly rather than asserted, because the whole
+    reason that note survived is that nobody read it: the two bodies are
+    compared instruction for instruction, and the port is required NOT to
+    declare a two-argument form.
+    """
+    asm = ROOT / "original" / "wwf-wrestlemania"
+    lines = (asm / "WRESTLE.ASM").read_text(errors="replace").split("\n")
+
+    def body(label):
+        """The instructions of a SUBR, to its first `rets` pair."""
+        start = next(i for i, l in enumerate(lines)
+                     if re.match(r"^\s*SUBR\s+%s\s*$" % re.escape(label), l))
+        out, rets = [], 0
+        for raw in lines[start + 1:]:
+            t = wljjxm.strip_comment(raw).strip()
+            if not t:
+                continue
+            if re.match(r"^SUBR\s", t) or t.startswith("mv_tbl"):
+                break
+            out.append(re.sub(r"\s+", " ", t))
+            if t == "rets":
+                rets += 1
+                if rets == 2:
+                    break
+        return out
+
+    sys.path.insert(0, str(ROOT / "tools"))
+    import wljjxm  # noqa: E402
+
+    a13 = body("ck_ignore")
+    a8 = body("ck_ignore_a8")
+    assert a13 and a8
+    # Identical once the register is normalised away -- and DIFFERENT
+    # before, so this is not comparing a string with itself.
+    assert a13 != a8
+    assert [x.replace("*a13(", "*aR(") for x in a13] == \
+           [x.replace("*a8(", "*aR(") for x in a8], (a13, a8)
+
+    # No two-argument form in the port. The seam took
+    # (actor, actor, void*); a one-argument one takes (actor, void*).
+    for header in sorted((ROOT / "include").rglob("*.h")):
+        text = _strip_comments(header.read_text(errors="replace"))
+        assert "ck_ignore_reversed" not in text, header.name
+        for m in re.finditer(r"\(\*(ck_ignore\w*)\)\s*\(([^)]*)\)", text):
+            args = [x.strip() for x in m.group(2).split(",")]
+            assert len(args) == 2, (header.name, m.group(1), args)
+
+    # And RAZOR.ASM:631's swap really is there, which is what makes the
+    # a8 form the one that routine wants.
+    rz = (asm / "RAZOR.ASM").read_text(errors="replace").split("\n")
+    window = [wljjxm.strip_comment(x).strip() for x in rz[625:637]]
+    assert "SWAP a8,a13" in [re.sub(r"\s+", " ", x) for x in window], window
+    assert "calla ck_ignore" in [re.sub(r"\s+", " ", x) for x in window], window
+
+
 def test_the_react_label_comparisons_name_the_source_labels() -> None:
     """The port's two ANIBASE-comparison seams compare EXACTLY the labels
     the source does.

@@ -103,8 +103,32 @@ typedef struct wm_arcade_roster_callbacks {
     void (*execute_walk)(wm_arcade_actor_t *, void *);
     int  (*climb_turnbuckle)(wm_arcade_actor_t *, void *);
     void (*bounce_off_ropes)(wm_arcade_actor_t *, void *);
+    /*
+     * WRESTLE.ASM:6016 ck_ignore -- "If player is moving away from
+     * opponent, or standing still, tell the calling routine to ignore
+     * button press". Returns true to IGNORE, matching the source's carry.
+     *
+     * THERE IS NO TWO-ARGUMENT TWIN, which a ck_ignore_reversed seam
+     * here used to claim. :6016 ck_ignore and :6044 ck_ignore_a8 have
+     * BYTE-IDENTICAL bodies and differ in one thing: which register
+     * holds the wrestler, a13 or a8. RAZOR.ASM:631, inside
+     * rzr_sliding_rug, reaches the a8 form the long way --
+     *
+     *     SWAP  a8,a13
+     *     calla ck_ignore
+     *     jrnc  #norm
+     *     SWAP  a8,a13
+     *
+     * -- because in a monitor PROCESS a13 is the process and a8 is the
+     * wrestler, so the swap is plumbing to satisfy the routine's a13
+     * convention. BRET.ASM:596 and DOINK.ASM:1399 spell the same thing
+     * as `calla ck_ignore_a8` directly.
+     *
+     * So there is one routine, one argument, and the wrestler it checks
+     * is the man pressing the button -- not his opponent, which is what
+     * the invented seam was called with.
+     */
     int  (*ck_ignore)(wm_arcade_actor_t *, void *);
-    int  (*ck_ignore_reversed)(wm_arcade_actor_t *, wm_arcade_actor_t *, void *);
     int  (*bozo_check)(wm_arcade_actor_t *, void *);
     int  (*check_combo_go)(wm_arcade_actor_t *, void *);
     void (*find_and_kill_endless)(wm_arcade_actor_t *, void *);

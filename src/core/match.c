@@ -916,6 +916,33 @@ static void match_bonus_mess(wm_match_state *m, wm_arcade_actor_t *attacker,
                              int bonus);
 
 /*
+ * `move a0,*a8(SPECIAL_MOVE_ADDR),L` -- queue an animation on a
+ * wrestler for his OWN process to pick up next frame, which
+ * WRESTLE.ASM:3843 move_wrestler then dispatches. The source writes it
+ * from two places this port reaches: a fired special-move monitor, and
+ * #dobuck sending the man who pinned you to his buckoff.
+ *
+ * What belongs in the field is not the same thing for everyone. Seven
+ * wrestlers are label-driven, so the label pointer IS the address the
+ * source stores. Bret is not: his backend selects by a typed id and
+ * reads this field back as one, so handing him a pointer makes him
+ * decode garbage -- and a garbage id looked like a secret move, which
+ * latched MODE_UNINT|MODE_NOAUTOFLIP on him permanently and had every
+ * later special refused by its own guard. That was found once, in the
+ * monitor path. Writing the field in a second place would have been a
+ * second chance to get it wrong, so both go through here.
+ */
+static void match_queue_special_move(wm_arcade_actor_t *a, const char *label) {
+    if (!a || !label) return;
+    if (a->wrestler_num == WM_ROSTER_BRET) {
+        int id = wm_bret_anim_id_for_label(label);
+        if (id >= 0) a->special_move_addr = (uintptr_t)id;
+        return;
+    }
+    a->special_move_addr = (uintptr_t)label;
+}
+
+/*
  * init_smoves' watchdogs for ONE wrestler, one tick each.
  *
  * The arcade runs every one as its own SMOVE_PID process, and WHERE
@@ -1026,28 +1053,15 @@ static void match_tick_smoves_for(wm_match_state *m, unsigned ai) {
              * the animation and the wrestler's own process picks it up,
              * WRESTLE.ASM:3843 move_wrestler.
              *
-             * What goes in the field is not the same thing for everyone,
-             * and getting that wrong was silent. Seven wrestlers are
-             * label-driven, so the label pointer IS the address, exactly
-             * as the source stores one. Bret is not: his backend selects
-             * by a typed id and reads this field back as one
-             * (wm_arcade_bret.c's `id = (wm_arcade_bret_anim_id_t)
-             * a->special_move_addr`), so handing him a pointer made him
-             * decode it as an id -- a garbage id, which
-             * secret_move_sets_mode_uninit then treated as a secret
-             * move and latched MODE_UNINT|MODE_NOAUTOFLIP on him
-             * permanently. Every later charge and free special move was
-             * refused by its own G_UNINT guard from then on, and nothing
-             * ever cleared it. His three monitors were the only ones
+             * What goes in the field is not the same thing for
+             * everyone, and getting that wrong was silent; the reasoning
+             * now lives on match_queue_special_move, because #dobuck
+             * writes the same field and would have been a second chance
+             * to get it wrong. His three monitors were the only ones
              * that could reach this, and they could not reach anything
              * at all until the process-order fix above let them fire.
              */
-            if (a->wrestler_num == WM_ROSTER_BRET) {
-                int id = wm_bret_anim_id_for_label(fire.anim);
-                if (id >= 0) a->special_move_addr = (uintptr_t)id;
-            } else {
-                a->special_move_addr = (uintptr_t)fire.anim;
-            }
+            match_queue_special_move(a, fire.anim);
             match_change_anim(a, fire.anim, m);
         }
     }
@@ -1521,13 +1535,38 @@ static void match_confine_actor(wm_match_state *m, unsigned i,
     if (res.zombie_transform) match_finish_zombie_transform(m, i);
 
     /*
-     * The gate crash's own animation is a FACETBL/FACE24TBL dispatch --
-     * fall_back_tbl when he hit this gate inside three seconds,
-     * bncoff_gate otherwise. wm_arcade_confine_wrestler_ex has already
-     * applied the velocities, the mode, RUN_TIME and the damage; only
-     * the animation choice comes back here.
+     * The gate crash's own animation, WRESTLE.ASM:3695. The routine has
+     * already applied the velocities, MODE_NORMAL, RUN_TIME and the
+     * damage; only the animation choice comes back here, because it is a
+     * per-wrestler table dispatch and the routine has no roster.
+     *
+     * It was a choice that came back and stopped. Everything else about
+     * a gate crash happened and the wrestler slid into the fence still
+     * playing his run -- the third instance of this shape found in one
+     * sweep, with the buckoff's two above.
+     *
+     * The two tables are not the same shape, which is the whole reason
+     * the source uses two macros. `FACETBL fall_back_tbl` (REACT1.ASM:1801)
+     * is one long per wrestler. `FACE24TBL bncoff_gate` (REACT5.ASM:353)
+     * is two, and FACE24TBL takes column 0 when MOVE_UP_BIT is SET --
+     * wm_roster_anim_facing applies that rule and ignores it for the
+     * one-column table, so both go through the same call.
+     *
+     * Which one is the three-second rule, and its sense is worth
+     * keeping straight: `cmpi TSEC*3,a14 / jrge #bnc` means THREE
+     * SECONDS OR MORE since the last hit bounces him off, and anything
+     * sooner falls him back. So gate_fall_back true is the recent-hit
+     * case.
      */
     if (res.gate_crash) {
+        const wm_roster_anim_table *tbl = wm_roster_anim_find(
+                res.gate_fall_back ? "fall_back_tbl" : "bncoff_gate");
+        const char *label = tbl ? wm_roster_anim_facing(
+                tbl, (int)a->wrestler_num,
+                (a->facing_dir & (int32_t)WM_MOVE_UP) != 0) : NULL;
+        /* `calla change_anim1a` -- from the top, because he is already
+           playing his run animation and that is what is being replaced. */
+        if (label) match_change_anim(a, label, m);
         /* `movi 0c5h,a0 / calla triple_sound`. */
         if (m->anim_sound) m->anim_sound(m->anim_sound_user, 0xc5u);
     }
@@ -1562,23 +1601,59 @@ static wm_mode_dead_env_t match_mode_dead_env(wm_match_state *m,
 static void match_apply_mode_dead(wm_match_state *m, unsigned i,
                                   const wm_mode_dead_result_t *r) {
     if (!m || !r || !r->bucked_off) return;
+    if (i >= m->actor_count) return;
 
     /*
      * `FACETBL hitonground_tbl / calla change_anim1a` -- the convulse he
-     * comes back to life on. Per-wrestler and facing-dependent; this
-     * port has no hitonground table for every wrestler, so the choice is
-     * left to the roster dispatcher's own next selection rather than
-     * guessed at here.
+     * comes back to life on.
+     *
+     * BOTH OF THESE WERE REFUSED, AND BOTH REFUSALS HAD GONE STALE. This
+     * one read "this port has no hitonground table for every wrestler",
+     * and the other "only some of those animations are extracted". The
+     * registry now carries hitonground_tbl (REACT1.ASM:1856, all ten
+     * rows including the two `.long 0`) and #buckoff_tbl (DOINK.ASM:3235,
+     * nine), and every one of the eight `*_hitonground_anim` and eight
+     * `*_buckoff_anim` programs is generated. Nothing has to be invented
+     * to play either. So a wrestler who mashed his way out of a pin
+     * convulsed in the arcade and stood still here, and the man who had
+     * pinned him was left in his pinning animation.
+     *
+     * FACETBL is the one-long-per-wrestler form (MACROS.H:102), so the
+     * facing plays no part despite the macro's name -- that is
+     * FACE24TBL. A NULL is slot 7 or 9, the cut Adam Bomb and the
+     * Referee, and the source's own `.long 0` for them: the caller
+     * copes rather than substituting somebody else's animation.
+     *
+     * `change_anim1a`, not `change_anim1`: he is very likely already
+     * playing his death animation, and the convulse has to restart from
+     * frame 0 rather than being refused as already running.
+     * match_change_anim is the unguarded form.
      */
-    (void)i;
+    if (r->convulse) {
+        const wm_roster_anim_table *tbl = wm_roster_anim_find("hitonground_tbl");
+        const char *label = tbl ? wm_roster_anim_for(
+                tbl, (int)m->actors[i].wrestler_num) : NULL;
+        if (label) match_change_anim(&m->actors[i], label, m);
+    }
 
     /*
-     * `FACETBL #buckoff_tbl` onto the man who pinned him. Same
-     * situation: the table is nine per-wrestler labels and only some of
-     * those animations are extracted, so SPECIAL_MOVE_ADDR is not
-     * written from an invented label.
+     * `move a0,a8 / FACETBL #buckoff_tbl,a8 / move a0,*a8(SPECIAL_MOVE_ADDR),L`
+     * onto the man who pinned him -- queued on his process rather than
+     * started here, which is what the source does and what the field is
+     * for. The source's own comment is unsure about it ("stick it into
+     * special_move_addr?"); the instruction is not.
+     *
+     * wm_arcade_mode_dead already applies the guard above it: a pinner
+     * carrying DID_RAISEARM is not sent here at all, because he is no
+     * longer on top. So pinner_to_buck being NULL is a decision, not a
+     * gap.
      */
-    (void)r->pinner_to_buck;
+    if (r->pinner_to_buck) {
+        const wm_roster_anim_table *tbl = wm_roster_anim_find("#buckoff_tbl");
+        const char *label = tbl ? wm_roster_anim_for(
+                tbl, (int)r->pinner_to_buck->wrestler_num) : NULL;
+        if (label) match_queue_special_move(r->pinner_to_buck, label);
+    }
 
     /*
      * `calla init_reduce_bog`, "because match_timer clears it when it

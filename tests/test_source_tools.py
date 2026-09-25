@@ -4862,3 +4862,282 @@ def test_every_ledger_verdict_premise_still_holds() -> None:
         "expected the ledger's six `unreached` and two `fallback` rows, "
         "measured %d -- a verdict was added or retired without this "
         "guard being told" % measured)
+
+
+# Every field of a `*_result_t` that no consumer in src/ reads, with why
+# it is only a report. The list exists because a routine that cannot
+# perform a side effect reports it on one of these structs, and a report
+# nobody reads is indistinguishable from working code -- which is exactly
+# how wm_smove_fire_t lost its BONUS_MESS number, mode_choking lost the
+# kill of the Undertaker's choke loop, #dobuck lost both of its animation
+# dispatches and the gate crash lost its.
+#
+# The bar for a row here: the routine ALREADY performed the effect (so
+# the field is an observation), or the port genuinely cannot perform it
+# and the reason names what is missing. "Probably fine" is not a reason.
+RESULT_FIELD_REPORTS = (
+    # --- wm_arcade_anim_combat.h: damage_opp. ------------------------
+    ("wm_arcade_anim_damageopp_result_t", "status",
+     "the outcome enum; every caller branches on the returned struct's "
+     "other fields or on the routine succeeding, never on this"),
+    ("wm_arcade_anim_damageopp_result_t", "signed_damage",
+     "the damage it already handed to adjust_health, kept so a test can "
+     "see the sign convention it applied"),
+    ("wm_arcade_anim_damageopp_result_t", "used_reduced_damage",
+     "which of the two damage branches ran; the branch itself applied it"),
+    ("wm_arcade_anim_damageopp_result_t", "used_next_damage",
+     "as used_reduced_damage -- which branch, not what to do"),
+    ("wm_arcade_anim_damageopp_result_t", "health_hook_called",
+     "whether the health seam was reached, so a test can tell a refused "
+     "hit from one with no hook bound"),
+
+    # --- wm_arcade_special.h: the projectile collision sweep. --------
+    ("wm_arcade_special_collision_result_t", "object_object_hit",
+     "a count of object-on-object overlaps the sweep already resolved"),
+    ("wm_arcade_special_collision_result_t", "unresolved_unchecked_splat_id",
+     "set when wm_arcade_special_hit declines a pair it was handed -- an "
+     "internal diagnostic, and the one field on these structs with no "
+     "header comment of its own"),
+    ("wm_arcade_special_collision_result_t", "last_object",
+     "the last overlapping object, for a test to inspect after a sweep"),
+    ("wm_arcade_special_collision_result_t", "last_victim",
+     "as last_object, on the wrestler side"),
+
+    # --- wm_arcade_react.h: wrestler_hit. ---------------------------
+    ("wm_arcade_wrestler_hit_result_t", "status",
+     "the error enum; callers test the negative return, not this copy"),
+    ("wm_arcade_wrestler_hit_result_t", "damage_before_reaction",
+     "hit_damage_pending as the reaction hook found it, for a test that "
+     "wants to see the hook rewrite it"),
+    ("wm_arcade_wrestler_hit_result_t", "damage_after_reaction",
+     "the same global after the hook, and the value it then applied"),
+    ("wm_arcade_wrestler_hit_result_t", "new_victim_movedir",
+     "reported AFTER the routine writes it: wm_arcade_react.c does "
+     "`victim->move_dir = new_movedir` and then copies it here"),
+    ("wm_arcade_wrestler_hit_result_t", "reaction_hook_called",
+     "whether the reaction seam was reached at all"),
+    ("wm_arcade_wrestler_hit_result_t", "health_hook_called",
+     "whether the health seam was reached at all"),
+
+    # --- wm_arcade_auto_pin.h. --------------------------------------
+    ("wm_auto_pin_result_t", "became_drone",
+     "the routine's own `movi PTYPE_DRONE,a14 / move a14,*a13(PLYR_TYPE)`; "
+     "it writes PLYR_TYPE itself and reports that it did"),
+    ("wm_auto_pin_result_t", "counted",
+     "whether the countdown advanced, which the header says is reported "
+     "separately because the two kinds of guard are otherwise "
+     "indistinguishable from outside"),
+
+    # --- wm_arcade_bounce.h. ----------------------------------------
+    ("wm_bounce_result_t", "opened_risk_window",
+     "RISK was written BY the routine. WRESTLE.ASM:5156 is `MOVI 60,A0 / "
+     "MOVE A0,*A13(RISK)` and nothing else: the label after it is called "
+     "ALREADY_DONE_RISK_MESS but no message is created there, so despite "
+     "the name there is no consumer half to miss"),
+
+    # --- wm_arcade_confine.h. ---------------------------------------
+    ("wm_confine_result_t", "climb_needs_source_quirk",
+     "a known GAP rather than a report: the source reads its condition "
+     "through the process_ptrs cursor and this port supplies no value "
+     "for it, so 'he did not climb out the side' stays visible"),
+
+    # --- wm_arcade_modes.h: mode_choking. ---------------------------
+    ("wm_mode_choking_result_t", "fell_out",
+     "true exactly when kill_endless_sound is, which both backends now "
+     "read; the state change it describes is applied to the actor"),
+
+    # --- wm_arcade_mode_dead.h: #dobuck. ----------------------------
+    ("wm_mode_dead_result_t", "second_wind_message",
+     "`CREATE MESSAGE_PID,MOVE_NAME_ANNC` with a10=41, and that routine "
+     "IS display: LIFEBAR.ASM:3444 ends at DO_THIS_MESS with no award, "
+     "no DAM_MULT and no sound -- unlike BONUS_MESS, which was checked "
+     "for the same reason and turned out not to be"),
+
+    # --- wm_arcade_plyr_start.h. ------------------------------------
+    # These six are a different case from the rest of this list: the
+    # ROUTINE has no caller in src/ either, so they are unreached rather
+    # than dropped. Wiring the press-start-to-join path is what would
+    # make them reachable, and that is a piece of work, not a line.
+    ("wm_plyr_start_result_t", "outcome",
+     "wm_plyr_start has no caller in src/ at all -- the join-mid-game "
+     "path is not wired, so every field here is unreached, not dropped"),
+    ("wm_plyr_start_result_t", "awards_reset_due",
+     "`calla rst_winstreak_awards`, and a real action -- but unreached: "
+     "nothing in src/ calls wm_plyr_start"),
+    ("wm_plyr_start_result_t", "dufus_msgs_reset_due",
+     "`calla reset_dufus_msgs`, same: a real action behind an unreached "
+     "routine"),
+    ("wm_plyr_start_result_t", "icon_total_clear_due",
+     "`calla clear_icon_total`, same"),
+    ("wm_plyr_start_result_t", "cleared_state",
+     "whether the state block was wiped; the routine wipes it"),
+    ("wm_plyr_start_result_t", "took_credit",
+     "`calla CR_STRTP` -- whether a credit was taken, on the joining "
+     "path only. Unreached with the rest of this struct"),
+)
+
+
+def _result_structs():
+    """Every `*_result_t`-shaped struct in include/, with its fields."""
+    root = pathlib.Path(__file__).resolve().parents[1]
+    out = {}
+    for hdr in sorted((root / "include").rglob("*.h")):
+        text = _strip_comments(hdr.read_text())
+        for m in re.finditer(r"\}\s*(\w+_(?:result|fire|out|report)_t)\s*;",
+                             text):
+            name = m.group(1)
+            k = text.rfind("typedef struct", 0, m.start())
+            if k < 0:
+                continue
+            brace = text.find("{", k)
+            if brace < 0 or brace > m.start():
+                continue          # an enum typedef, no body
+            body = text[brace + 1:m.start()]
+            if "{" in body:
+                continue          # nested; not one of these
+            fields = re.findall(
+                r"^\s*(?:const\s+)?[A-Za-z_][\w ]*?\**\s*(\w+)\s*;",
+                body, re.M)
+            if fields:
+                out[name] = fields
+    return out
+
+
+def test_every_reported_result_field_is_read_or_explained() -> None:
+    """A field a routine reports must be consumed, or be a known report.
+
+    This is the general form of the wm_smove_fire_t finding. A translated
+    routine that cannot perform a side effect -- start an animation, stop
+    a sound, hand out an award -- reports it on its result struct and
+    trusts the caller. Four times now the caller has not read it, and
+    every time the symptom was nothing at all: the routine ran, the
+    struct was filled, the game was quietly less than the arcade.
+
+    So every field of every one of these structs must either be read
+    somewhere in src/, or appear in RESULT_FIELD_REPORTS with a reason
+    that says why reading it would be wrong. Adding a field to a result
+    struct now fails this test until somebody decides which it is.
+    """
+    root = pathlib.Path(__file__).resolve().parents[1]
+    src = "\n".join(_strip_comments(p.read_text())
+                    for p in sorted((root / "src").rglob("*.c")))
+    known = {(s, f) for s, f, _why in RESULT_FIELD_REPORTS}
+
+    def read_count(field: str) -> int:
+        n = 0
+        for m in re.finditer(r"(?:\.|->)%s\b" % re.escape(field), src):
+            tail = src[m.end():m.end() + 3].lstrip()
+            # A plain assignment is a write; `==`, `+=` and bare uses read.
+            if tail[:1] == "=" and tail[1:2] != "=":
+                continue
+            n += 1
+        return n
+
+    structs = _result_structs()
+    assert len(structs) >= 8, \
+        "result structs not parsed (%d found) -- this guard reads the " \
+        "headers, so a parse that finds nothing would pass trivially" \
+        % len(structs)
+
+    unexplained = []
+    for name, fields in sorted(structs.items()):
+        for f in fields:
+            if read_count(f) == 0 and (name, f) not in known:
+                unexplained.append("%s.%s" % (name, f))
+    assert not unexplained, (
+        "these result fields are written and no consumer in src/ reads "
+        "them, and no reason is recorded: %s.\n"
+        "Either wire them, or add a row to RESULT_FIELD_REPORTS saying "
+        "why the field is an observation rather than an instruction. A "
+        "dropped side effect looks exactly like working code."
+        % ", ".join(unexplained))
+
+
+def test_the_result_field_reasons_are_all_still_needed() -> None:
+    """A row that has become wired, or renamed, must not sit here.
+
+    Without this the list only ever grows, and a reason that has stopped
+    applying reads as though somebody checked it recently.
+    """
+    root = pathlib.Path(__file__).resolve().parents[1]
+    src = "\n".join(_strip_comments(p.read_text())
+                    for p in sorted((root / "src").rglob("*.c")))
+    structs = _result_structs()
+
+    for name, field, why in RESULT_FIELD_REPORTS:
+        assert name in structs, \
+            "RESULT_FIELD_REPORTS names %r, which no header defines" % name
+        assert field in structs[name], \
+            "RESULT_FIELD_REPORTS names %s.%s, which that struct has no " \
+            "field for" % (name, field)
+        assert len(why) > 20, \
+            "%s.%s has no real reason recorded" % (name, field)
+        reads = 0
+        for m in re.finditer(r"(?:\.|->)%s\b" % re.escape(field), src):
+            tail = src[m.end():m.end() + 3].lstrip()
+            if tail[:1] == "=" and tail[1:2] != "=":
+                continue
+            reads += 1
+        assert reads == 0, (
+            "%s.%s is listed as a report nobody reads, and %d consumer(s) "
+            "now read it. Drop the row -- keeping it hides that the "
+            "question was settled." % (name, field, reads))
+
+
+def test_the_three_facetbl_dispatches_are_still_wired() -> None:
+    """The animation choices #dobuck and the gate crash report.
+
+    All three were refused once, on grounds about what data the port had:
+    "no hitonground table for every wrestler", "only some of those
+    animations are extracted". Both had stopped being true, and the C test
+    wm_test_dropped_result_fields measures the data. This measures the
+    other half -- that the three call sites still name their tables and
+    still start or queue something -- because a refusal is one edit away
+    and reads perfectly reasonably when it lands.
+    """
+    body = _match_c_function("match_apply_mode_dead")
+    for want in ('wm_roster_anim_find("hitonground_tbl")',
+                 'wm_roster_anim_find("#buckoff_tbl")'):
+        assert want in body, \
+            "match_apply_mode_dead no longer names %s -- #dobuck's own " \
+            "convulse or the pinner's buckoff has stopped being played" % want
+    assert "match_change_anim(" in body, \
+        "match_apply_mode_dead names hitonground_tbl but starts nothing"
+    assert "match_queue_special_move(" in body, \
+        "match_apply_mode_dead names #buckoff_tbl but queues nothing"
+
+    confine = _match_c_function("match_confine_actor")
+    for want in ('"fall_back_tbl"', '"bncoff_gate"'):
+        assert want in confine, \
+            "the gate crash no longer names %s; WRESTLE.ASM:3695 picks " \
+            "between the two and plays one of them" % want
+    # And it must go through the FACE24TBL-aware lookup, because one of
+    # the two tables has two columns and wm_roster_anim_for would silently
+    # take column 0 for both facings.
+    assert "wm_roster_anim_facing(" in confine, \
+        "the gate crash resolves its label without wm_roster_anim_facing, " \
+        "so bncoff_gate's second column is unreachable"
+
+
+def test_the_special_move_field_has_one_writer() -> None:
+    """SPECIAL_MOVE_ADDR is written through one function, not two.
+
+    Bret's backend reads that field back as a typed id where the other
+    seven read it as a label pointer, and handing him a pointer latched
+    MODE_UNINT|MODE_NOAUTOFLIP on him permanently -- every later special
+    refused by its own guard, nothing ever clearing it. That was found
+    once, in the monitor path. #dobuck writes the same field, so the
+    conversion lives in match_queue_special_move and this refuses a
+    second raw write.
+    """
+    body = (ROOT / "src" / "core" / "match.c").read_text()
+    stripped = _strip_comments(body)
+    raw = [m.start() for m in
+           re.finditer(r"->special_move_addr\s*=", stripped)]
+    helper = _match_c_function("match_queue_special_move")
+    inside = [m.start() for m in
+              re.finditer(r"->special_move_addr\s*=", _strip_comments(helper))]
+    assert len(raw) == len(inside), (
+        "match.c writes ->special_move_addr %d times but only %d of those "
+        "are inside match_queue_special_move. A write outside it does not "
+        "convert Bret's label to his typed id." % (len(raw), len(inside)))

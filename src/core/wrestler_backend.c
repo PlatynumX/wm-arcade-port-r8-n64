@@ -545,12 +545,29 @@ static void backend_mode_inair2(wm_arcade_actor_t *actor, void *user) {
     wm_arcade_mode_inair2(actor);
 }
 
+/*
+ * mode_choking (TAKER.ASM:3110). The routine gets him loose; what it
+ * cannot do is stop the sound, so it reports it and this performs it.
+ *
+ * It used to read `(void)wm_arcade_mode_choking(actor)` under a comment
+ * saying "this backend has no sound queue to send it to". That was not
+ * so. TAKER.ASM:3127's `CALLA FIND_AND_KILL_ENDLESS` is DCSSOUND.ASM:4223,
+ * which reads @ENDLESS_SOUND, stops that channel and clears the global --
+ * and it takes no arguments and needs no queue. The port has had it since
+ * the animation opcodes landed, wm_anim_code_find_and_kill_endless(), and
+ * fifteen other call sites already reach it. So the Undertaker's choke
+ * loop played on after his victim fell out of the hold, and went on
+ * playing: nothing else clears that global on this path.
+ *
+ * The channel write is the half this port has no sink for. The global is
+ * the half other code reads (wm_anim_code_endless_sound), so it is the
+ * half that matters here.
+ */
 static void backend_mode_choking(wm_arcade_actor_t *actor, void *user) {
+    wm_mode_choking_result_t r;
     (void)user;
-    /* The looping-sound kill it reports is DCSSOUND.ASM's, and this
-       backend has no sound queue to send it to; the state change is
-       applied to the actor either way, which is what gets him loose. */
-    (void)wm_arcade_mode_choking(actor);
+    r = wm_arcade_mode_choking(actor);
+    if (r.kill_endless_sound) wm_anim_code_find_and_kill_endless();
 }
 
 /*

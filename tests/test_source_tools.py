@@ -5652,3 +5652,90 @@ def test_doink_walks_at_the_same_speed_as_everyone_else() -> None:
             f"wrestler_backend.c still holds {dead}, which is DNK.ASM:2790's "
             "superseded value, not DOINK.ASM:3672's"
         )
+
+
+def test_attract_text_matches_the_source_strings() -> None:
+    """The generated attract text must be ATTRACT.ASM's, scoped per routine.
+
+    The screens' geometry, timing and per-line labels were all extracted and
+    correct. The labels resolved to nothing -- "copyright_ln1" occurred in
+    exactly one place in the tree, the array declaring it -- so the copyright
+    and AAMA screens had an exact x, an exact y, a line step and a fade, and
+    no words.
+
+    The trap this guards is routine scope. Both routines number their lines
+    `#ln1`.. and `#` makes the label local: aama_message has #ln1..#ln5 plus
+    #ln2b, show_copyright has #ln1..#ln19. Resolving by name finds aama's
+    first, so "AAMA PARENTAL ADVISORY" would head the copyright page. The
+    check re-derives both extents here rather than trusting the tool it is
+    checking.
+    """
+    spec = importlib.util.spec_from_file_location(
+        "wlattracttext", ROOT / "tools" / "wlattracttext.py"
+    )
+    assert spec and spec.loader
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    asm = (ROOT / "original" / "wwf-wrestlemania" / "ATTRACT.ASM").read_text(
+        errors="replace"
+    ).splitlines()
+
+    # Independent re-derivation: find each routine's own .string block by
+    # walking from its header to the next column-0 label.
+    def own_strings(routine: str) -> "list[tuple[str, str]]":
+        start = None
+        for i, line in enumerate(asm):
+            if re.match(rf"^\s*SUBRP?\s+{routine}\s*$", line) or re.match(
+                rf"^{routine}\s*$", line
+            ):
+                start = i
+                break
+        assert start is not None, f"{routine} not found in ATTRACT.ASM"
+        out = []
+        for line in asm[start + 1:]:
+            if re.match(r"^\s*SUBRP?\s+[A-Za-z_]\w*|^[A-Za-z_]\w*\s*$", line):
+                break
+            m = re.match(r'^#(\w+)\s+\.string\s+"([^"]*)"\s*,\s*0\s*$', line)
+            if m:
+                out.append((m.group(1), m.group(2)))
+        return out
+
+    cop = own_strings("show_copyright")
+    aama = own_strings("aama_message")
+    assert len(cop) == 19, [c[0] for c in cop]
+    assert len(aama) == 6, [a[0] for a in aama]
+    # The collision is real, so the guard is measuring something: both
+    # routines genuinely define #ln1.
+    assert cop[0][0] == aama[0][0] == "ln1"
+    assert cop[0][1] != aama[0][1]
+
+    _out, rows = mod.build()
+    got = {label: text for label, text, _ln in rows}
+    assert len(got) == 25, sorted(got)
+
+    for label, text in cop:
+        assert got[f"copyright_{label}"] == text, label
+    for label, text in aama:
+        assert got[f"aama_{label}"] == text, label
+
+    # And the generated file on disk agrees with what the tool produces now.
+    disk = (ROOT / "src" / "generated" / "attract_text.c").read_text()
+    assert disk == "\n".join(_out), (
+        "src/generated/attract_text.c is stale -- run "
+        "scripts/regenerate_source_data.sh"
+    )
+
+    # Every label the screens declare must appear. Read the declarations out
+    # of the data file rather than restating them.
+    data = (ROOT / "src" / "core" / "arcade" / "wmania_attract_data.c").read_text()
+    declared = set()
+    for array in ("wm_attract_copyright_page1_labels",
+                  "wm_attract_copyright_page2_labels",
+                  "wm_attract_aama_labels"):
+        i = data.index(array)
+        body = data[data.index("{", i):data.index("};", i)]
+        declared |= set(re.findall(r'"([^"]+)"', body))
+    assert len(declared) == 25, sorted(declared)
+    missing = sorted(d for d in declared if d not in got)
+    assert not missing, f"declared attract labels with no text: {missing}"

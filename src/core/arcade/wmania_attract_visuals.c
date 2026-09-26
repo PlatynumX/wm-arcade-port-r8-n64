@@ -1,6 +1,7 @@
 #include "wm/arcade/wmania_attract_visuals.h"
 
 #include "wm/arcade/wmania_attract_data.h"
+#include "wm/arcade/wmania_attract_text.h"
 
 size_t wm_attract_aama_gradient(
     WmAttractGradientRow *out,
@@ -50,6 +51,7 @@ size_t wm_attract_copyright_page1_placements(
             (int)i * WM_ATTRACT_COPYRIGHT_LINE_STEP);
         out[i].x = WM_ATTRACT_COPYRIGHT_X;
         out[i].source_label = wm_attract_copyright_page1_labels[i];
+        out[i].text = wm_attract_text(out[i].source_label);
     }
 
     return WM_ATTRACT_COPYRIGHT_PAGE1_LINES;
@@ -71,6 +73,7 @@ size_t wm_attract_copyright_page2_placements(
             (int)i * WM_ATTRACT_COPYRIGHT_LINE_STEP);
         out[i].x = WM_ATTRACT_COPYRIGHT_X;
         out[i].source_label = wm_attract_copyright_page2_labels[i];
+        out[i].text = wm_attract_text(out[i].source_label);
     }
 
     return WM_ATTRACT_COPYRIGHT_PAGE2_LINES;
@@ -96,6 +99,7 @@ size_t wm_attract_aama_placements(
         out[i].y = y[i];
         out[i].x = x[i];
         out[i].source_label = wm_attract_aama_labels[i];
+        out[i].text = wm_attract_text(out[i].source_label);
     }
 
     return 6u;

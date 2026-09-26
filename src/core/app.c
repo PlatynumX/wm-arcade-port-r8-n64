@@ -1,4 +1,6 @@
 #include "wm/app.h"
+#include "wm/anim_program.h"
+#include "wm/arcade/wm_arcade_drone_data.h"
 #include <string.h>
 
 static const wm_input_state no_input = {0};
@@ -215,12 +217,22 @@ static void begin_call(wm_app *app, wm_attract_call call) {
     switch (call) {
         case WM_ATTRACT_DCS_LOGO:
             a->dcs_phase = WM_DCS_STATIC;
-            /* Source-owned DCS command: start at DCS_LOGO entry, tick 0. */
-            (void)wm_audio_send_command(&app->audio, 1005);
-            /* ATTR.ASM::DCS_LOGO SNDSND 1005 after display_unblank.
-               Source suppresses it once AMODE_LOOPS >= 2. ADJMUSIC is
-               not exposed yet; this frontend's default is enabled. */
+            /* ATTRACT.ASM:3011 DCS_LOGO's SNDSND 1005, after the
+               display_unblank at :3002, gated
+               by TURN_SOUNDS_OFF_IF_NEED (ATTRACT.ASM:669): once
+               AMODE_LOOPS >= 2 the source sets SOUNDSUP and the attract
+               loop plays silent. ADJMUSIC is not exposed yet; this
+               frontend's default is enabled, so only the loop count gates
+               it here.
+
+               This guard used to sit below the send with no body of its
+               own, so it captured the following `break` instead: the
+               command was sent unconditionally, and on the third attract
+               loop onward WM_ATTRACT_DCS_LOGO fell through into
+               WM_ATTRACT_SHOW_SPORTS_LOGO and reset that call's own
+               world/scroll state while the call was still DCS_LOGO. */
             if (a->amode_loops < 2u)
+                (void)wm_audio_send_command(&app->audio, 1005);
             break;
         case WM_ATTRACT_SHOW_SPORTS_LOGO:
             a->sports_world_x = 0;
@@ -259,7 +271,7 @@ static void finish_base_loop(wm_app *app) {
 static void advance_call(wm_app *app) {
     wm_attract_state *a = &app->attract;
     if (a->call == WM_ATTRACT_DCS_LOGO) {
-        /* ATTR.ASM DCS screen stop/reset boundary. */
+        /* ATTRACT.ASM DCS screen stop/reset boundary. */
         (void)wm_audio_send_command(&app->audio, 0);
     }
     kill_call_processes(app, a->call);
@@ -376,15 +388,353 @@ static bool tick_title(wm_app *app, const wm_input_state *input) {
     return a->call_ticks >= WM_TITLE_TOTAL_TICKS;
 }
 
+/*
+ * The shared @RAND stream's two hardware entropy inputs.
+ *
+ * WRESTLE.ASM's randomize step is `rl RAND,RAND / rl HCOUNT,RAND / add sp`
+ * -- and `add sp` is the only part that can change RAND's value at all (see
+ * wm/arcade/wmania_rng.h). Left at zero, as this port did until now, RAND
+ * could only rotate: seeded from 0 it stayed 0, so every RNDRNG0 in the game
+ * returned 0 forever. That silently pinned every drone decision to the first
+ * entry of whatever table it rolled against -- the AI only ever chose
+ * `#run`.
+ *
+ * Neither input has a true N64 equivalent: HCOUNT is the arcade's video-beam
+ * line counter and SP is the TMS34010 stack pointer at the moment of the
+ * call. Both are derived here from the real source clock instead, the same
+ * surrogate approach (and the same `tick * 8 & 0x1ff` beam derivation) this
+ * file's own title-sparkle RNG already uses. Deterministic, unlike the
+ * hardware, which is what the host tests want.
+ */
+static uint32_t app_rng_hcount(void *user) {
+    const wm_app *app = (const wm_app *)user;
+    return app ? ((app->scheduler.tick * 8u) & 0x1ffu) : 0u;
+}
+
+static uint32_t app_rng_sp(void *user) {
+    const wm_app *app = (const wm_app *)user;
+    /* A TMS34010 stack pointer counts *down* from the top of its region as
+       calls nest; this mirrors that shape rather than reusing the HCOUNT
+       ramp, so the two inputs never move in lockstep. */
+    return app ? (0x00010000u - (app->scheduler.tick * 64u)) : 0u;
+}
+
+/*
+ * DCSSOUND.ASM:2061 triple_sound, and the one seam every in-match
+ * sound in this port arrives through: the animation VM's ANI_CODE
+ * sound routines, WRSND's per-wrestler tables, the debris bursts,
+ * DO_WAIT's two sounds and the announcer.
+ *
+ * The value handed in is an INDEX into triple_sndtab, not a DCS
+ * call, and until the mixer existed the two were confused: the index
+ * went into the audio queue unchanged, so the platform was handed a
+ * table row number where a sound call belonged, and every sound the
+ * game decided on was queued regardless of the four channels or the
+ * priorities. Now the mixer arbitrates and what reaches the queue is
+ * what the arcade would actually have sent to the board.
+ */
+static void wm_app_anim_sound(void *user, uint16_t call) {
+    wm_app *app = (wm_app *)user;
+    wm_sound_result_t r;
+    if (!app) return;
+    r = wm_sound_triple(&app->sound, (int32_t)call);
+    if (r.played) (void)wm_audio_send_command(&app->audio, r.call);
+}
+
+/*
+ * The match's three sound-process seams. Each of these is a SOUND_PID
+ * process in the arcade -- a little state machine that owns a channel
+ * for several seconds -- which is why they cannot go through
+ * wm_app_anim_sound like an ordinary one-shot call.
+ */
+static void wm_app_start_bell(void *user) {
+    wm_app *app = (wm_app *)user;
+    uint16_t call = 0;
+    if (!app) return;
+    wm_sound_bell_start(&app->bell, &app->sound, &call);
+    if (call) (void)wm_audio_send_command(&app->audio, call);
+}
+
+static void wm_app_start_pin_him(void *user) {
+    wm_app *app = (wm_app *)user;
+    if (!app) return;
+    /* `movi 150,a0 / calla RNDPER / jals SUCIDE` -- 150 in 1000, so
+       most of the time the crowd says nothing at all. The roll is the
+       routine's own. */
+    (void)wm_sound_pin_him_start(&app->pin_him, &app->rng);
+}
+
+static void wm_app_kill_pin_him(void *user) {
+    wm_app *app = (wm_app *)user;
+    if (app) wm_sound_pin_him_kill(&app->pin_him);
+}
+
+/* Both processes, one tick each, with whatever they decide to say
+   forwarded to the board. */
+static void wm_app_tick_sound_procs(wm_app *app) {
+    uint16_t call;
+    if (!app) return;
+    call = 0;
+    (void)wm_sound_bell_tick(&app->bell, &app->sound, &call);
+    if (call) (void)wm_audio_send_command(&app->audio, call);
+    call = 0;
+    (void)wm_sound_pin_him_tick(&app->pin_him, &app->sound, &app->rng, &call);
+    if (call) (void)wm_audio_send_command(&app->audio, call);
+}
+
+/* Hand the match the services its ANI_CODE routines reach for. Both live
+   on the app, so this is done wherever a match is started. */
+/* AWARD.ASM round_award, behind JJXM.H's RND_AWARD macro. The award
+   arrays are per credit, so they live on the app; the wrestler's own
+   PLYRNUM picks the row, exactly as `move :REG:,a0 / calla round_award`
+   does with a13. */
+static void wm_app_round_award(void *user, int player_num,
+                               unsigned award_index) {
+    wm_app *app = (wm_app *)user;
+    if (!app || player_num < 0 ||
+        (unsigned)player_num >= WM_AWARD_PLAYER_COUNT)
+        return;
+    wm_award_round_award(&app->awards, (unsigned)player_num, award_index);
+}
+
+/*
+ * SELECT.ASM:1190 do_game_over's entry half, run once.
+ *
+ * `calla INIT_LADDER_TABLE` is the first thing it does and the
+ * comment beside it is ";kill the ladder" -- a finished game does
+ * not hand its ladder to the next one. wm_pregame_init rebuilds it,
+ * which is where that call lives in this port.
+ *
+ * Not translated, and all of it screen: display_blank, WIPEOUT,
+ * GENERIC_DISPLAY, the two JAM_STR plates that put GAME and OVER on
+ * it, display_unblank, and UNIT_CLR.
+ */
+/* ------------------------------------------------------------------ *
+ * HSTD.ASM's high-score tables.
+ *
+ * The persistence backend is the port's to supply -- the header says so
+ * -- and this is the host one: the encoded bytes live in the app. They
+ * outlast a game and an attract loop, which is what the flow needs to
+ * be exercised, and they do not pretend to outlast the process. The N64
+ * build points the same two callbacks at cartridge storage instead.
+ * ------------------------------------------------------------------ */
+
+static int wm_app_hs_read(void *user, void *dst, size_t size) {
+    wm_app *app = (wm_app *)user;
+    if (!app || !dst) return -1;
+    if (app->hs_save_cursor + size > app->hs_save_len) return -1;
+    memcpy(dst, app->hs_save_bytes + app->hs_save_cursor, size);
+    app->hs_save_cursor += size;
+    return 0;
+}
+
+static int wm_app_hs_write(void *user, const void *src, size_t size) {
+    wm_app *app = (wm_app *)user;
+    if (!app || !src) return -1;
+    if (app->hs_save_cursor + size > sizeof app->hs_save_bytes) return -1;
+    memcpy(app->hs_save_bytes + app->hs_save_cursor, src, size);
+    app->hs_save_cursor += size;
+    if (app->hs_save_cursor > app->hs_save_len)
+        app->hs_save_len = app->hs_save_cursor;
+    return 0;
+}
+
+static void wm_app_hs_store(wm_app *app) {
+    if (!app) return;
+    app->hs_save_cursor = 0;
+    app->hs_save_len = 0;
+    if (wm_hs_save_write(&app->hiscore, &app->hs_backend)) app->hs_writes++;
+}
+
+/*
+ * The win-streak table, offered when a credit ends.
+ *
+ * Four routines can put a row on a table -- winstreak, pin speed,
+ * beaten game and tag time -- and this is the one whose trigger this
+ * port can actually reach. Game over here means the player LOST (the
+ * continue timed out with no human left), and the streak that just
+ * ended is exactly what WINSTREAK_TAB records. The other three are
+ * wired to nothing yet and say why at the call below.
+ *
+ * Whether the score qualifies is not decided here: wm_hs_begin_* runs
+ * the source's own FIND_LOW_TABLE_LEVEL and returns false when the row
+ * does not make the table, the same way DO_BEATEN_GAME is called from
+ * SELECT.ASM:211 unconditionally and lets the table logic refuse.
+ *
+ * The source's auto_init cache is kept: a player who already typed his
+ * initials this credit does not type them again, and the row commits
+ * straight away.
+ */
+static void wm_app_hs_offer_end_of_credit(wm_app *app, unsigned player,
+                                          int32_t old_streak) {
+    uint8_t initials[WM_HS_NUM_INITIALS];
+    uint8_t wrestler;
+
+    if (!app || player >= 2u) return;
+    app->hs_pending_valid = false;
+    if (old_streak <= 0) return;
+
+    wrestler = (uint8_t)app->pregame.player_roster_wrestler;
+    if (!wm_hs_begin_winstreak(&app->hiscore, (uint8_t)player, wrestler,
+                               (uint32_t)old_streak, &app->hs_pending))
+        return;
+    app->hs_pending_valid = true;
+
+    if (wm_hs_system_has_cached_initials(&app->hiscore, (uint8_t)player)) {
+        wm_hs_system_get_cached_initials(&app->hiscore, (uint8_t)player,
+                                         initials);
+        (void)wm_hs_commit_pending(&app->hiscore, &app->hs_pending, initials);
+        app->hs_commits++;
+        app->hs_pending_valid = false;
+        wm_app_hs_store(app);
+        return;
+    }
+
+    wm_hs_entry_begin(&app->hs_entry, WM_HS_ENTRY_THREE_PLUS_WRESTLER,
+                      (uint8_t)player, wrestler,
+                      wm_rng_rndrng0_callback, &app->rng);
+    app->mode = WM_APP_MODE_HISCORE_ENTRY;
+}
+
+/* One tick of the initials input, and the commit when it finishes. */
+static void wm_app_hs_entry_tick(wm_app *app, const wm_input_state *in) {
+    WmHsEntryInput hin;
+    uint8_t initials[WM_HS_NUM_INITIALS];
+
+    if (!app) return;
+    memset(&hin, 0, sizeof hin);
+    if (in) {
+        /* The grid is walked with the stick and committed with an
+           attack button, the way HI_INPUT_PID reads its switches. */
+        if (in->stick_y > 50) hin.stick_current |= WM_HS_STICK_UP;
+        if (in->stick_y < -50) hin.stick_current |= WM_HS_STICK_DOWN;
+        if (in->stick_x < -50) hin.stick_current |= WM_HS_STICK_LEFT;
+        if (in->stick_x > 50) hin.stick_current |= WM_HS_STICK_RIGHT;
+        hin.stick_down = hin.stick_current;
+        hin.accept_down = in->light_punch || in->power_punch ||
+                          in->light_kick || in->power_kick;
+    }
+    (void)wm_hs_entry_tick(&app->hs_entry, &hin);
+    if (!app->hs_entry.finished) return;
+
+    wm_hs_entry_get_initials(&app->hs_entry, initials);
+    if (app->hs_pending_valid && !wm_hs_entry_is_empty(initials)) {
+        (void)wm_hs_commit_pending(&app->hiscore, &app->hs_pending, initials);
+        app->hs_commits++;
+        /* auto_init: he does not type them again this credit. */
+        wm_hs_system_cache_initials(&app->hiscore, app->hs_entry.player_index,
+                                    initials);
+        wm_app_hs_store(app);
+    }
+    app->hs_pending_valid = false;
+    app->mode = WM_APP_MODE_GAME_OVER;
+}
+
+static void wm_app_start_game_over(wm_app *app) {
+    if (!app) return;
+    /* `clr a14 / move a14,@rr_loss / move a14,@PSTATUS`. */
+    app->pregame.finished = false;
+    /* `MOVI -1,A11 / MOVI 100,A8 / CREATE FADE_PID,FADE_MASTER_VOL`. */
+    wm_sound_fade_start(&app->volume_fade, app->sound.master_volume, 100);
+    /* `SLEEP TSEC*4`. */
+    app->game_over_ticks = WM_MATCH_CLOCK_TSEC * 4;
+    app->mode = WM_APP_MODE_GAME_OVER;
+}
+
+static void wm_app_bind_anim_env(wm_app *app) {
+    /*
+     * WRESTLE.ASM:1600's FINAL_PTR re-init, run from start_match's own
+     * position -- before the creation branch, on every match. The queue
+     * itself belongs to the pregame; is_final_match and is_8_on_1 are
+     * its questions to answer, so both are asked here rather than
+     * reconstructed inside the match.
+     */
+    wm_match_bind_final_battle(&app->match, &app->pregame.final_battle,
+                               wm_pregame_is_final_match(&app->pregame),
+                               wm_pregame_is_8_on_1(&app->pregame));
+    app->match.anim_rng = &app->rng;
+    app->match.anim_sound_user = app;
+    app->match.anim_sound = wm_app_anim_sound;
+    app->match.sound_proc_user = app;
+    app->match.start_bell = wm_app_start_bell;
+    app->match.start_pin_him = wm_app_start_pin_him;
+    app->match.kill_pin_him = wm_app_kill_pin_him;
+    app->match.anim_award_user = app;
+    app->match.anim_round_award = wm_app_round_award;
+    wm_anim_code_reset();
+}
+
+static bool tick_gameplay(wm_app *app, const wm_input_state *input) {
+    wm_attract_state *a = &app->attract;
+
+    /*
+     * These two belong together: the bind hands the freshly started match
+     * its RNG, audio and award seams. Without the braces the bind ran
+     * every tick, and wm_anim_code_reset() inside it wiped the source's
+     * timed sound state on each one -- so a CALL_x announcer process,
+     * which sleeps 5-15 ticks before it says anything, was cleared before
+     * it could ever fire.
+     */
+    if (a->call_ticks == 0) {
+        /* Bound BEFORE the match starts, not after: start_match's own
+           `CREATE SOUND_PID,ring_bell` (LIFEBAR.ASM:2511) happens
+           inside it, and a seam assigned afterwards would miss it.
+           The other start site (two-player) already binds first. */
+        wm_app_bind_anim_env(app);
+        wm_match_start_attract(&app->match, &app->rng);
+    }
+
+    {
+        wm_arcade_drone_callbacks_t cb = wm_arcade_drone_data_callbacks(&app->rng);
+        wm_match_tick(&app->match, &cb, NULL);
+    }
+
+    ++a->call_ticks;
+
+    if ((a->call_ticks > WM_GAMEPLAY_BUTTON_ENABLE_TICKS &&
+         wm_app_any_attract_button(input)) ||
+        a->call_ticks >= WM_GAMEPLAY_TOTAL_TICKS) {
+        /* ATTRACT.ASM::show_gameplay ends by freezing wrestler processes
+           (@HALT), fading, and display_blank -- the next occurrence starts
+           a fresh start_match, not a continuation of this one. */
+        app->match.active = false;
+        return true;
+    }
+    return false;
+}
+
 void wm_app_init(wm_app *app) {
     memset(app, 0, sizeof(*app));
     app->mode = WM_APP_MODE_ATTRACT;
     wm_audio_init(&app->audio);
+    wm_sound_init(&app->sound);
     wm_select_continue_init(&app->continue_select);
     wm_award_init(&app->awards);
     wm_demo_init(&app->demo);
+    wm_match_init(&app->match);
+    wm_rng_init(&app->rng, 0, app_rng_hcount, app_rng_sp, app);
     wm_source_clock_init(&app->source_clock);
     wm_scheduler_init(&app->scheduler);
+    /*
+     * HSTD.ASM's tables. INIT_HSTRING's own reset value is the
+     * operator's ADJUSTED default; this port has no operator-settings
+     * system, so it uses the arcade's own fallback the same way every
+     * other GET_ADJ here does.
+     *
+     * The backend is the port's (wmania_hiscore_persist.h says so);
+     * this is the host one, and the N64 build points the same two
+     * callbacks at cartridge storage. A first run finds nothing and
+     * TABLE_CMOS_CHECK builds the factory tables, which is exactly
+     * what a fresh machine does.
+     */
+    wm_hs_system_init(&app->hiscore, WM_HS_ADJUSTED_RESET_DEFAULT);
+    app->hs_backend.read = wm_app_hs_read;
+    app->hs_backend.write = wm_app_hs_write;
+    app->hs_backend.user = app;
+    app->hs_save_cursor = 0;
+    (void)wm_hs_save_read(&app->hiscore, &app->hs_backend,
+                          WM_HS_ADJUSTED_RESET_DEFAULT);
+    (void)wm_hs_system_table_cmos_check(&app->hiscore);
     app->p1_choice = WM_WRESTLER_BRET;
     app->p2_choice = WM_WRESTLER_BAM_BAM;
     app->attract.amode_loops = 0;
@@ -392,12 +742,148 @@ void wm_app_init(wm_app *app) {
     app->attract_started = false;
 }
 
+/*
+ * AWARD.ASM:2198 powerup_check and :2182 player_powerup_checker.
+ *
+ * powerup_check clears both request words and spawns one checker
+ * per player; each checker CREATEs one process per code, and every
+ * one of them sits waiting for its opening press. This is that,
+ * without the processes: an attempt per code per player, all live
+ * at once, ticked together.
+ *
+ * PROGRESS.ASM:284 CLOSE_PROGRESS_SCREEN is what creates
+ * powerup_check, so the window opens as the progress screen closes
+ * and the codes are entered on the way into the match.
+ */
+static void powerup_window_start(wm_app *app, bool royal_rumble) {
+    int p, c;
+    if (!app) return;
+    /* `clr a8 / move a8,@p1powerup_request,L` and its twin, plus
+       every output flag -- wm_powerup_check does the whole clear. */
+    wm_powerup_reset(&app->powerups);
+    for (p = 0; p < 2; ++p) {
+        for (c = 0; c < WM_PUP_CODE_SLOTS; ++c) {
+            const wm_powerup_code *code =
+                (c < wm_powerup_code_count) ? &wm_powerup_codes[c] : NULL;
+            /* A code whose CREATE is commented out in the source
+               never gets a process, so it never gets an attempt. */
+            if (code && !code->spawned) code = NULL;
+            /* `move @royal_rumble,a14 / jrnz #die` -- no_block and
+               buddy_mode refuse to listen in a rumble. Dormant
+               while royal_rumble is hard-coded false, and wired so
+               it cannot drift from the match's own reading of it. */
+            if (code && royal_rumble && code->blocked_in_royal_rumble)
+                code = NULL;
+            wm_powerup_attempt_start(&app->powerup_attempt[p][c], code);
+        }
+    }
+    app->powerup_window_open = true;
+    app->powerup_prev_switches[0] = 0;
+    app->powerup_prev_switches[1] = 0;
+}
+
+/* PUPWAITSWITCH compares `(stick_down << 5) | buttons_down`. */
+static int32_t powerup_switches(const wm_input_state *in) {
+    int32_t sw = 0;
+    if (!in) return 0;
+    if (in->light_punch) sw |= WM_PUP_PUNCH;
+    if (in->block)       sw |= WM_PUP_BLOCK;
+    if (in->power_punch) sw |= WM_PUP_SUPERP;
+    if (in->light_kick)  sw |= WM_PUP_KICK;
+    if (in->stick_y > 0) sw |= WM_PUP_UP;
+    if (in->stick_y < 0) sw |= WM_PUP_DOWN;
+    if (in->stick_x < 0) sw |= WM_PUP_LEFT;
+    if (in->stick_x > 0) sw |= WM_PUP_RIGHT;
+    return sw;
+}
+
+static void powerup_window_tick(wm_app *app,
+                                const wm_input_state *p1_input,
+                                const wm_input_state *p2_input) {
+    const wm_input_state *in[2];
+    int p, c;
+
+    if (!app || !app->powerup_window_open) return;
+    in[0] = p1_input;
+    in[1] = p2_input;
+
+    for (p = 0; p < 2; ++p) {
+        /*
+         * PUPWAITSWITCH compares switches-DOWN -- what was pressed
+         * THIS tick, not what is held -- so a held button must not
+         * read as five presses.
+         */
+        int32_t level = powerup_switches(in[p]);
+        int32_t sw = level & ~app->powerup_prev_switches[p];
+        app->powerup_prev_switches[p] = level;
+        for (c = 0; c < WM_PUP_CODE_SLOTS; ++c) {
+            wm_powerup_attempt *att = &app->powerup_attempt[p][c];
+            if (!att->code) continue;
+            if (wm_powerup_attempt_tick(att, sw)) {
+                /* The completed code's bit joins that player's
+                   request word, which is all a checker process
+                   does before it dies. */
+                app->powerups.p_request[p] |= att->code->grants;
+            }
+        }
+    }
+}
+
+/*
+ * get_powerups (AWARD.ASM:2230): reconcile the two requests and
+ * write the output flags. Run once, on the way into the match.
+ *
+ * drone_meters is settled here too, and it is the odd one out.
+ * AWARD.ASM:2016 drone_meters_powerup_check has its three-Kick
+ * sequence COMMENTED OUT, so it is not a code at all: pass its two
+ * gates -- "only in one-player games" (PSTATUS != 3) and "only in
+ * one-on-one games" (NUM_OPPS == 1) -- and it grants D_METERS_ON
+ * outright. Both players' checkers run, so both request words get
+ * it. It is evaluated at the close rather than the open because
+ * NUM_OPPS is not settled until the ladder rung is; with no
+ * sequence to enter, nothing between the two instants can change
+ * the answer.
+ */
+static void powerup_window_close(wm_app *app, int32_t pstatus,
+                                 unsigned num_opps) {
+    if (!app || !app->powerup_window_open) return;
+
+    if (pstatus != 3 && num_opps == 1u) {
+        int c;
+        for (c = 0; c < WM_PUP_CODE_SLOTS && c < wm_powerup_code_count; ++c) {
+            if (wm_powerup_codes[c].grants != WM_PU_D_METERS_ON) continue;
+            if (!wm_powerup_codes[c].spawned) continue;
+            app->powerups.p_request[0] |= WM_PU_D_METERS_ON;
+            app->powerups.p_request[1] |= WM_PU_D_METERS_ON;
+        }
+    }
+
+    wm_get_powerups(&app->powerups);
+    app->powerup_window_open = false;
+}
+
 void wm_app_tick_dual(wm_app *app,
                       const wm_input_state *p1_input,
                       const wm_input_state *p2_input) {
     const wm_input_state *input = p1_input;
     if (!app) return;
+    /* WRESTLE.ASM:542, the last thing mainlp does before looping. It is
+       written first here only because every early return below would
+       otherwise skip it, and the source has no early returns to skip. */
+    ++app->pcnt;
+    app->pregame.pcnt = app->pcnt;
     wm_audio_source_tick(&app->audio);
+    /*
+     * DCSSOUND.ASM:2266 snd_update, which WRESTLE.ASM's interrupt
+     * runs once a tick: every channel's duration counted down, and a
+     * channel whose duration reaches zero freed for the next sound.
+     * Without it the four channels fill up once and nothing is ever
+     * heard again.
+     */
+    wm_sound_update(&app->sound);
+    /* The two SOUND_PID processes, beside snd_update the way the
+       arcade's scheduler runs them beside it. */
+    wm_app_tick_sound_procs(app);
     /* SOURCE_SELECT_MODE_TICK */
     if (app->mode == WM_APP_MODE_SELECT) {
         wm_select_screen_tick(&app->select,
@@ -439,26 +925,279 @@ void wm_app_tick_dual(wm_app *app,
 
         if (app->select.finished) {
             /*
-             * Fix36 deliberately ends at the SELECT boundary.  The current
-             * pregame/progression port is still P1-oriented; do not invent a
-             * new two-player pregame here.
+             * `move @PSTATUS,a0 / cmpi 3,a0 / jreq #2plyr` -- whether
+             * a second player joined at the select screen is what
+             * decides which of start_match's paths the match takes,
+             * and it is settled here.
+             *
+             * The pregame/ladder itself is still P1-oriented and no
+             * two-player pregame is invented for it; a two-player
+             * match runs the same pregame for player one and then
+             * starts #2plyr with both choices.
              */
+            app->match_pstatus = app->select.p2_joined ? 3 : 1;
             wm_pregame_init(&app->pregame,
                             app->select.selected_source_wrestler,
-                            app->p1_choice);
+                            app->p1_choice,
+                            &app->rng);
             app->pregame.win_streak = app->awards.win_streak[0];
             app->mode = WM_APP_MODE_PREGAME;
         }
         return;
     }
     if (app->mode == WM_APP_MODE_PREGAME) {
-        wm_pregame_tick(&app->pregame, input, &app->audio);
+        const wm_input_state *pregame_input =
+            app->match_pstatus == 2 ? p2_input : input;
+        /*
+         * PROGRESS.ASM:284 CLOSE_PROGRESS_SCREEN CREATEs
+         * powerup_check once per progress screen. There are several
+         * ways into the pregame now (fresh select, a won match, a
+         * continue), so the window opens on whichever of them got
+         * here rather than being wired to one of them.
+         *
+         * Both pads are read regardless of who is playing: the
+         * source runs a checker per player and a code entered by a
+         * player who is not in the match simply never survives
+         * get_powerups' AND.
+         */
+        if (!app->powerup_window_open)
+            powerup_window_start(app, WM_APP_ROYAL_RUMBLE);
+        powerup_window_tick(app, input, p2_input);
+        wm_pregame_tick(&app->pregame, pregame_input, &app->audio);
         if (app->pregame.finished)
             app->mode = WM_APP_MODE_MATCH_INIT;
         return;
     }
     if (app->mode == WM_APP_MODE_MATCH_INIT) {
-        /* Explicit boundary: start_match is the next source subsystem. */
+        /* get_powerups, before start_match reads the requests. */
+        powerup_window_close(app,
+                             app->match_pstatus ? app->match_pstatus : 1,
+                             app->pregame.opponent_count);
+        /* AWARD.ASM's combos_on powerup, read by CHECK_COMBO_GO. */
+        app->match.instant_combos_on = app->powerups.instant_combos_on;
+        app->match.drone_meters_on = app->powerups.drone_meters_on;
+        /*
+         * AWARD.ASM:2279 and :2262, the other two the match consumes.
+         * These two lines are the whole fix for a defect that had the
+         * shape of working code: get_powerups computed both flags, all
+         * eight dispatchers read them, and nothing in between carried
+         * them, so entering either code did nothing at all.
+         */
+        app->match.blocking_off = app->powerups.blocking_off;
+        app->match.hyper_speed_on = app->powerups.hyper_speed_on;
+        wm_app_bind_anim_env(app);
+        if (app->match_pstatus == 3) {
+            /* start_match's #2plyr. No royal-rumble app mode exists yet. */
+            wm_match_start_two_player(&app->match, &app->rng, 3,
+                                      app->select.selected_source_wrestler,
+                                      app->select.p2_selected_source_wrestler,
+                                      false,
+                                      (int32_t)app->powerups.p_request[0],
+                                      (int32_t)app->powerups.p_request[1]);
+        } else {
+            /*
+             * #1plyr falling into #ndrone: the opponents are the
+             * ladder rung the pregame settled on, not a draw.
+             * wm_pregame_opponent_at has already applied
+             * SORT_OUT_WRESTLER_NUM. Rungs 4 and 5 are two-on-one
+             * and rung 6 is three-on-one, all of which this port
+             * used to play as singles matches.
+             *
+             * `match_pstatus` is 2 when P2 is the sole surviving
+             * human and 1 otherwise.
+             */
+            uint8_t opps[WM_MATCH_MAX_ACTORS - 1];
+            unsigned n = app->pregame.opponent_count;
+            unsigned k;
+            if (n > (unsigned)(WM_MATCH_MAX_ACTORS - 1))
+                n = (unsigned)(WM_MATCH_MAX_ACTORS - 1);
+            for (k = 0; k < n; ++k)
+                opps[k] = wm_pregame_opponent_at(&app->pregame, k);
+            wm_match_start_one_player_team(
+                &app->match, &app->rng,
+                app->match_pstatus == 2 ? 2 : 1,
+                app->select.selected_source_wrestler,
+                app->select.p2_selected_source_wrestler,
+                n ? opps : NULL, n);
+        }
+        app->mode = WM_APP_MODE_MATCH;
+        return;
+    }
+    if (app->mode == WM_APP_MODE_MATCH) {
+        wm_arcade_drone_callbacks_t cb = wm_arcade_drone_data_callbacks(&app->rng);
+        /* read_switches fills every player's set each tick; the
+           second player's only exists in a two-player match. */
+        wm_match_set_input(&app->match, 0, input);
+        wm_match_set_input(&app->match, 1,
+                           (app->match_pstatus & 2) ? p2_input : NULL);
+        wm_match_tick(&app->match, &cb, input);
+        /*
+         * WRESTLE.ASM:2087 `move @match_over,a0 / jrz #not_over /
+         * calla postgame_audits / RETP` -- the main loop returns out
+         * of game_loop the moment the match is over, which is how the
+         * arcade leaves a match at all. Until this the app sat here
+         * forever: the match finished, the score was final, and
+         * nothing above it ever looked.
+         */
+        if (app->match.match_over != 0) {
+            app->last_match_winner = app->match.score.match_winner;
+            app->mode = WM_APP_MODE_MATCH_OVER;
+        }
+        return;
+    }
+    /*
+     * WRESTLE.ASM:1116, the code after `JSRP start_match`: "The only
+     * time we return from start_match is when the match is over and
+     * the game must goto: 1. Buy-in screen ... 2. Ladder screen for
+     * the next matchup ... 3. Finale screens."
+     *
+     * Not here: `AUD1 AUD_TOTALGAMES` (no audit store in this port),
+     * the royal-rumble branch (no rumble), pin_speed_in_case's high
+     * score entry, and the finale.
+     */
+    if (app->mode == WM_APP_MODE_MATCH_OVER) {
+        int32_t pstatus = app->match.pstatus;
+        int32_t lost_mask;
+
+        app->done_howard = false;
+        app->are_we_waiting_f = 60u;
+
+        /* WRESTLE.ASM: PSTATUS ANDN match_winner. Every active human
+           bit absent from the winning side is offered buy-in. */
+        lost_mask = pstatus & ~app->last_match_winner;
+        if (lost_mask == 0) {
+            unsigned survivor = (pstatus & 2) && !(pstatus & 1) ? 1u : 0u;
+            if (survivor == 1u) {
+                app->pregame.player_source_wrestler =
+                    app->select.p2_selected_source_wrestler;
+                app->pregame.player_roster_wrestler = app->p2_choice;
+            }
+            app->match_pstatus = pstatus;
+            wm_pregame_next_match(&app->pregame,
+                                  app->awards.win_streak[survivor]);
+            app->mode = WM_APP_MODE_PREGAME;
+            return;
+        }
+
+        {
+            bool human_won = (pstatus & app->last_match_winner) != 0;
+            unsigned loser = (lost_mask & 1) ? 0u : 1u;
+            const wm_input_state *loser_input = loser ? p2_input : input;
+            uint8_t loser_wrestler = loser
+                ? app->select.p2_selected_source_wrestler
+                : app->select.selected_source_wrestler;
+
+            /* If the CPU won, source clears match_winner and backs the
+               ladder up because NEXT_IN_LADDER will increment it again. */
+            if (!human_won) {
+                app->last_match_winner = 0;
+                wm_pregame_ladder_back(&app->pregame);
+            }
+
+            /* `move @match_winner,@PSTATUS`: a human winner remains
+               active while the loser is offered the continue. */
+            app->match_pstatus = app->last_match_winner;
+            if (app->match_pstatus == 2) {
+                app->pregame.player_source_wrestler =
+                    app->select.p2_selected_source_wrestler;
+                app->pregame.player_roster_wrestler = app->p2_choice;
+            }
+
+            wm_select_continue_init(&app->continue_select);
+            app->continue_start_was_down =
+                loser_input && loser_input->start;
+            wm_select_continue_begin(&app->continue_select, loser,
+                                     loser_wrestler, false,
+                                     0u, 0u, true, true,
+                                     &app->awards);
+            app->mode = WM_APP_MODE_CONTINUE;
+        }
+        return;
+    }
+    if (app->mode == WM_APP_MODE_CONTINUE) {
+        wm_select_continue_event ev;
+        unsigned player = app->continue_select.player;
+        const wm_input_state *player_input = player ? p2_input : input;
+        bool start_level = player_input && player_input->start;
+        bool either_start = (input && input->start) ||
+                            (p2_input && p2_input->start);
+        bool buy_in = start_level && !app->continue_start_was_down;
+        app->continue_start_was_down = start_level;
+
+        ev = wm_select_continue_tick(&app->continue_select,
+                                     buy_in, 0u, either_start, buy_in,
+                                     start_level, &app->audio, &app->awards);
+        if (ev == WM_SELECT_CONTINUE_ACCEPT_EVENT) {
+            app->match_pstatus |= (int32_t)(1u << player);
+            app->awards.win_streak[player] = 0;
+            wm_pregame_next_match(&app->pregame,
+                                  app->awards.win_streak[
+                                      app->match_pstatus == 2 ? 1u : 0u]);
+            app->mode = WM_APP_MODE_PREGAME;
+        } else if (ev == WM_SELECT_CONTINUE_TIMEOUT_EVENT) {
+            /* Offered BEFORE the streak is cleared -- WINSTREAK_TAB
+               records the run that just ended, and a moment later
+               there is nothing left to record. */
+            wm_app_hs_offer_end_of_credit(
+                app, player, (int32_t)app->awards.win_streak[player]);
+            app->awards.win_streak[player] = 0;
+            if (app->match_pstatus != 0) {
+                unsigned survivor = app->match_pstatus == 2 ? 1u : 0u;
+                if (survivor == 1u) {
+                    app->pregame.player_source_wrestler =
+                        app->select.p2_selected_source_wrestler;
+                    app->pregame.player_roster_wrestler = app->p2_choice;
+                }
+                wm_pregame_next_match(&app->pregame,
+                                      app->awards.win_streak[survivor]);
+                app->mode = WM_APP_MODE_PREGAME;
+            } else {
+                wm_app_start_game_over(app);
+            }
+        }
+        return;
+    }
+    /*
+     * SELECT.ASM:1190 do_game_over. The bookkeeping is done on entry
+     * (see wm_app_start_game_over); this is the wait it holds the
+     * screen for, with FADE_MASTER_VOL running under it.
+     */
+    if (app->mode == WM_APP_MODE_HISCORE_ENTRY) {
+        /* HI_INPUT_PID's own tick. The game-over path in the source
+           waits on this process (`are_we_waiting4`); here it is a mode
+           that hands control back to GAME_OVER when it finishes. */
+        wm_app_hs_entry_tick(app, input);
+        return;
+    }
+
+    if (app->mode == WM_APP_MODE_GAME_OVER) {
+        /*
+         * `MOVI -1,A11 / MOVI 100,A8 / CREATE FADE_PID,FADE_MASTER_VOL`
+         * is started BEFORE the four-second sleep and runs beside it,
+         * so the volume is already at zero well before the screen
+         * goes -- 100 ticks against 4*53.
+         */
+        (void)wm_sound_fade_tick(&app->volume_fade, &app->sound);
+
+        /* `SLEEP TSEC*4`. */
+        if (--app->game_over_ticks > 0) return;
+
+        /*
+         * `CLR A3 / CALLA SNDSND` -- call zero, silencing the board
+         * -- then ADJVOLUME is read back and `set_volume` restores
+         * it, so attract does not start muted by the fade.
+         */
+        wm_sound_kill_all(&app->sound);
+        app->sound.master_volume = WM_SOUND_ADJVOLUME_DEFAULT;
+
+        /* `clear_icon_total` for both players. */
+        wm_award_clear_icon_total(&app->awards, 0u);
+        wm_award_clear_icon_total(&app->awards, 1u);
+
+        /* `jauc attract_mode`. */
+        app->mode = WM_APP_MODE_ATTRACT;
+        app->attract_started = false;
+        app->boot_ticks = 0;
         return;
     }
     if (!input) input = &no_input;
@@ -484,13 +1223,27 @@ void wm_app_tick_dual(wm_app *app,
      * SOURCE_SELECT_TITLE_START_BRIDGE
      * Cabinet coin/PSTATUS accounting is not yet a native N64 subsystem.
      * Start on the source title bridges one human player into SELECT.ASM.
+     *
+     * `>=`, not `>`. tick_title below ends the title call on the same
+     * `wm_app_any_attract_button` test, and it increments call_ticks
+     * before testing while this runs before the increment -- so with
+     * a strict `>` the title always advanced first and this bridge
+     * never fired at all. Pressing Start on the title skipped the
+     * title instead of starting a game, which made the whole
+     * select -> pregame -> match path unreachable from the app.
+     *
+     * In the arcade both things really do happen: ATTRACT.ASM's
+     * `wait_on_butn` ends the title on any button AND the start
+     * button separately runs plyr_strtb. Starting a game leaves
+     * attract mode entirely, so the bridge is the one that matters
+     * and it wins the tie.
      */
     if (app->attract.call == WM_ATTRACT_SHOW_TITLE &&
-        app->attract.call_ticks > WM_TITLE_BUTTON_ENABLE_TICKS &&
+        app->attract.call_ticks >= WM_TITLE_BUTTON_ENABLE_TICKS &&
         input && input->start) {
         kill_call_processes(app, app->attract.call);
         app->mode = WM_APP_MODE_SELECT;
-        wm_select_screen_init(&app->select);
+        wm_select_screen_init(&app->select, &app->rng);
         wm_select_screen_set_howard_done(&app->select, app->done_howard);
         /* SELECT.ASM::show_bonus_icons with SHOW_ACCUM_ICONS=0 clears the
            accumulated total on a fresh (zero-winstreak) player. */
@@ -503,6 +1256,7 @@ void wm_app_tick_dual(wm_app *app,
         case WM_ATTRACT_DCS_LOGO: done = tick_dcs_logo(app, input); break;
         case WM_ATTRACT_SHOW_SPORTS_LOGO: done = tick_sports_logo(app, input); break;
         case WM_ATTRACT_SHOW_TITLE: done = tick_title(app, input); break;
+        case WM_ATTRACT_SHOW_GAMEPLAY: done = tick_gameplay(app, input); break;
         default: break;
     }
 
@@ -513,7 +1267,8 @@ void wm_app_tick_dual(wm_app *app,
 
     if (done) {
         if (app->attract.call == WM_ATTRACT_DCS_LOGO) {
-            /* ATTR.ASM::DCS_LOGO exit SNDSND command 0 at nobutn1. */
+            /* ATTRACT.ASM:3157 DCS_LOGO's exit `CLR A3 / CALLA SNDSND`
+               at nobutn1. */
             (void)wm_audio_send_command(&app->audio, 0);
         }
         advance_call(app);

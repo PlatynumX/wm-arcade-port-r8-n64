@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "wm_arcade_razor.h"
-#include "wm_arcade_razor_tables.h"
+#include "wm/wrestler_anim_tables.h"
 
 typedef struct tr {
     int anims,sounds,secrets,bonus,reversals,kills;
@@ -14,7 +14,6 @@ static void an(wm_arcade_actor_t*a,wm_arcade_razor_anim_id_t x,void*u){(void)a;t
 static void so(wm_arcade_actor_t*a,wm_arcade_razor_sound_id_t x,void*u){(void)a;tr_t*t=u;t->sounds++;t->sound=x;}
 static void sec(wm_arcade_actor_t*a,const wm_arcade_razor_secret_pattern_t*p,size_t n,void*u){(void)a;(void)p;assert(n==6);((tr_t*)u)->secrets++;}
 static int ign(wm_arcade_actor_t*a,void*u){(void)a;(void)u;return 0;}
-static int ignrev(wm_arcade_actor_t*a,wm_arcade_actor_t*b,void*u){(void)a;(void)b;(void)u;return 0;}
 static int combo_ok(wm_arcade_actor_t*a,void*u){(void)a;(void)u;return 0;}
 static void bonus(wm_arcade_actor_t*a,int b,void*u){(void)a;tr_t*t=u;t->bonus++;t->bonus_id=b;}
 static void rev(wm_arcade_actor_t*a,void*u){(void)a;((tr_t*)u)->reversals++;}
@@ -27,7 +26,7 @@ int main(void){
     tr_t t;
     int32_t x,z;
     memset(&a,0,sizeof(a));memset(&o,0,sizeof(o));memset(&c,0,sizeof(c));memset(&t,0,sizeof(t));
-    c.change_anim=an;c.sound=so;c.check_secret_moves=sec;c.ck_ignore=ign;c.ck_ignore_reversed=ignrev;
+    c.change_anim=an;c.change_anim_restart=an;c.sound=so;c.check_secret_moves=sec;c.ck_ignore=ign;
     c.check_combo_go=combo_ok;c.bonus_message=bonus;c.do_reversal=rev;c.do_reversal_message=rev;c.find_and_kill_endless=killend;c.user=&t;
 
     a.player_mode=WM_PMODE_NORMAL;a.facing_dir=WM_MOVE_UP_RIGHT;a.new_facing_dir=WM_MOVE_RIGHT;
@@ -83,9 +82,11 @@ int main(void){
     assert(wm_arcade_razor_secret_patterns[5].id==WM_RZR_SECRET_DOWN_SLASH&&wm_arcade_razor_secret_patterns[5].max_ticks==50);
     assert(wm_arcade_razor_monitor_patterns[4].id==WM_RZR_MON_GRAB_TOSS_AIR&&wm_arcade_razor_monitor_patterns[4].max_ticks==40);
     wm_arcade_razor_velocity_for_dir(7,&x,&z);assert(x==-WM_RZR_WALK_DVEL&&z==-WM_RZR_WALK_DVEL);
-    assert(strcmp(wm_arcade_razor_rotate_anim_labels[0][1],"rzr_2_to_4_turn_anim")==0);
-    assert(strcmp(wm_arcade_razor_leg_anim_labels[7][4],"rzr_walk6_f4_anim")==0);
-    assert(strcmp(wm_arcade_razor_torso_anim_labels[3][3],"rzr_torso8_anim")==0);
+    /* RAZOR.ASM:2609 and friends -- generated now, see the note in
+       test_combat_stage14.c. Razor is roster slot 1. */
+    assert(strcmp(wm_wrestler_anim_label(&wm_wrestler_rotate_anims[1],0,1),"rzr_2_to_4_turn_anim")==0);
+    assert(strcmp(wm_wrestler_anim_label(&wm_wrestler_leg_anims[1],7,4),"rzr_walk6_f4_anim")==0);
+    assert(strcmp(wm_wrestler_anim_label(&wm_wrestler_torso_anims[1],3,3),"rzr_torso8_anim")==0);
 
     puts("Stage 15 Razor-specific move/input tests: PASS");
     return 0;

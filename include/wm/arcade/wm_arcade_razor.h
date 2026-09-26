@@ -115,6 +115,17 @@ typedef enum wm_arcade_razor_monitor_id {
     WM_RZR_MON_GRAB_TOSS_AIR,
     WM_RZR_MON_HEADHOLD_COMBO2,
     WM_RZR_MON_SLIDING_RUG,
+    /* The two finishing-move monitors below are CUT CONTENT.
+       RAZOR.ASM:154's smove table wraps them in
+       `.if NUM_RAZOR_FINISHES`, and GAME.EQU:584 sets that
+       switch to 0, so the assembler skipped both the table entries
+       and the routines themselves. init_smoves therefore never
+       spawns them and nothing in the shipped game can reach them.
+       The translation below is kept because it is a faithful
+       reading of real source text, not because the game uses it;
+       the smove table no longer lists either, which is what
+       decides. Undertaker's und_finish_move1 is the one finishing
+       move the arcade actually built. */
     WM_RZR_MON_FINISH1,
     WM_RZR_MON_FINISH2
 } wm_arcade_razor_monitor_id_t;
@@ -144,14 +155,39 @@ typedef struct wm_arcade_razor_env {
 
 typedef struct wm_arcade_razor_callbacks {
     void (*change_anim)(wm_arcade_actor_t *, wm_arcade_razor_anim_id_t, void *);
+    void (*change_anim_restart)(wm_arcade_actor_t *, wm_arcade_razor_anim_id_t, void *);
     void (*change_torso_anim)(wm_arcade_actor_t *, wm_arcade_razor_anim_id_t, void *);
     void (*sound)(wm_arcade_actor_t *, wm_arcade_razor_sound_id_t, void *);
     void (*check_secret_moves)(wm_arcade_actor_t *, const wm_arcade_razor_secret_pattern_t *, size_t, void *);
     void (*execute_walk)(wm_arcade_actor_t *, void *);
     int  (*climb_turnbuckle)(wm_arcade_actor_t *, void *);
     void (*bounce_off_ropes)(wm_arcade_actor_t *, void *);
+    /*
+     * WRESTLE.ASM:6016 ck_ignore -- "If player is moving away from
+     * opponent, or standing still, tell the calling routine to ignore
+     * button press". Returns true to IGNORE, matching the source's carry.
+     *
+     * THERE IS NO TWO-ARGUMENT TWIN, which a ck_ignore_reversed seam
+     * here used to claim. :6016 ck_ignore and :6044 ck_ignore_a8 have
+     * BYTE-IDENTICAL bodies and differ in one thing: which register
+     * holds the wrestler, a13 or a8. RAZOR.ASM:631, inside
+     * rzr_sliding_rug, reaches the a8 form the long way --
+     *
+     *     SWAP  a8,a13
+     *     calla ck_ignore
+     *     jrnc  #norm
+     *     SWAP  a8,a13
+     *
+     * -- because in a monitor PROCESS a13 is the process and a8 is the
+     * wrestler, so the swap is plumbing to satisfy the routine's a13
+     * convention. BRET.ASM:596 and DOINK.ASM:1399 spell the same thing
+     * as `calla ck_ignore_a8` directly.
+     *
+     * So there is one routine, one argument, and the wrestler it checks
+     * is the man pressing the button -- not his opponent, which is what
+     * the invented seam was called with.
+     */
     int  (*ck_ignore)(wm_arcade_actor_t *, void *);
-    int  (*ck_ignore_reversed)(wm_arcade_actor_t *, wm_arcade_actor_t *, void *);
     int  (*bozo_check)(wm_arcade_actor_t *, void *);
     int  (*check_combo_go)(wm_arcade_actor_t *, void *);
     void (*find_and_kill_endless)(wm_arcade_actor_t *, void *);
@@ -163,8 +199,39 @@ typedef struct wm_arcade_razor_callbacks {
     int  (*can_pin)(wm_arcade_actor_t *, const wm_arcade_actor_t *, void *);
     void (*drone_change_back)(wm_arcade_actor_t *, void *);
     void (*set_raisearm_bit)(wm_arcade_actor_t *, void *);
+    /* JJXM.H:44 `RND_AWARD a13,BLOCKS_AWD` in std_block. One per
+       wrestler file and nowhere else, so the scored event is
+       ENTERING a block rather than blocking anything. */
     void (*round_award_block)(wm_arcade_actor_t *, void *);
     void (*bonus_message)(wm_arcade_actor_t *, int bonus, void *);
+    /*
+     * DCSSOUND.ASM:2914 ADD_IF_SILENT, called with a SPEECH TABLE in a2
+     * and an RNDPER percentage in a0 -- the announcer's random-phrase
+     * picker, not a WRSND.
+     *
+     * The wrestler files call it at TWO places around the turnbuckle,
+     * with TWO DIFFERENT TABLES, and the port had one seam for both:
+     *
+     *   climb_rope_audio  mode_normal's climb branch, after
+     *                     climb_turnbuckle sets carry -- BRET.ASM:1456
+     *                     `MOVI CLIMB_ROPES,A2 / MOVI 1000,A0` and its
+     *                     eight siblings. Nine call sites.
+     *   jump_rope_audio   mode_turn, the dive off the top --
+     *                     BRET.ASM:2296 `movi JUMP_ROPES,a2` and its
+     *                     eight. Nine call sites.
+     *
+     * They are different tables with different headers: CLIMB_ROPES
+     * draws one word from twelve rows and carries CRESCENDO_TABLE as its
+     * crowd reaction, JUMP_ROPES draws two words from six and carries
+     * ROPES_CHEER. Climbing up and leaping off do not sound the same.
+     *
+     * The registers differ too: the climb passes WRESTLERNUM in a5 and
+     * the dive passes PLYRNUM. That selects whose voice a personal call
+     * uses, and neither of these two tables holds one, so it does not
+     * change what is said today -- recorded because it is a real
+     * difference and the next table to reach one of these sites might.
+     */
+    void (*climb_rope_audio)(wm_arcade_actor_t *, void *);
     void (*jump_rope_audio)(wm_arcade_actor_t *, void *);
     void (*master_keep_attached)(wm_arcade_actor_t *, void *);
     void (*keep_attached)(wm_arcade_actor_t *, void *);

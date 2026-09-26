@@ -126,7 +126,7 @@ wm_arcade_anim_damageopp_result_t wm_arcade_ani_damageopp(
             if (actor->risk & WM_ARCADE_RISK_HIGH_BIT) {
                 runtime->dam_mult = 4;
                 if (callbacks && callbacks->bonus_message)
-                    callbacks->bonus_message(actor, callbacks->user);
+                    callbacks->bonus_message(actor, -1, callbacks->user);
             }
             actor->risk = 0;
             runtime->any_hits = 1;

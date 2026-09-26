@@ -36,6 +36,22 @@ extern "C" {
 #define WM_RING_BOT_RIGHT  (1343 + 5)
 #define WM_RING_RIGHT_WIDTH (WM_RING_BOT_RIGHT - WM_RING_TOP_RIGHT)
 #define WM_RING_TOP 1023
+
+/* DISPLAY.EQU:56 RING_X_MID. Note this is NOT WM_RING_X_CENTER (0x400+50
+   = 1074): set_xdrift measures from the screen midpoint, and the two are
+   50 units apart. */
+#define WM_RING_X_MID 1024
+
+/*
+ * RING.ASM:23/72 vln_right_rope and vln_left_rope, first two words -- the
+ * top corner of each side's rope line, which tgt_tbukl aims a turnbuckle
+ * climb at. These are RING.ASM's own numbers and differ from
+ * WRESTLE.ASM's vln_*_rope_r pair by five units on the right, so they are
+ * kept separately rather than folded into WM_RING_TOP_RIGHT.
+ */
+#define WM_ROPE_LINE_LEFT_X 856
+#define WM_ROPE_LINE_RIGHT_X (1192 + 100)
+#define WM_ROPE_LINE_TOP_Z 1023
 #define WM_RING_BOT 1345
 #define WM_RING_DEPTH (WM_RING_BOT - WM_RING_TOP)
 
@@ -98,6 +114,72 @@ const WmRingBoundarySeed *wm_ring_boundary_seed(WmRingBoundaryId id);
 
 /* Sanity check for the literal translated source descriptors only. */
 bool wm_ring_boundary_seed_consistent(const WmRingBoundarySeed *seed);
+
+/*
+ * WRESTLE.ASM:5814 SUBR calc_line_x -- given a boundary line's seed and a
+ * player's OBJ_ZPOSINT, returns the line's real X value at that Z (0 if z
+ * is outside [top_z, bottom_z], exactly matching the source's own
+ * out-of-range return).
+ *
+ * The real routine doesn't compute this directly: WRESTLE.ASM:5834 SUBR
+ * set_up_line_tables precomputes, once at startup, a per-Z lookup table via
+ * setup_each_left_table/setup_each_right_table (WRESTLE.ASM:5859-5897) --
+ * for a "left" boundary (top_x > bottom_x, verified true for all 4 of this
+ * port's real left boundaries) each step SUBTRACTS a fixed 16.16 delta
+ * from a running accumulator that starts at top_x; for a "right" boundary
+ * (top_x < bottom_x, verified true for all 4 real right boundaries) each
+ * step ADDS it. Table index i (0-based, i = zpos - top_z) reads the value
+ * after (i+1) accumulation steps -- note this is NOT top_x at i=0, it's
+ * already one step past it; that's a genuine source quirk this function
+ * reproduces exactly (verified by hand-deriving the closed form of the
+ * accumulator: top_x -/+ (i+1)*delta, delta = (width<<16)/(depth+1)
+ * truncating, matching DIVS's signed truncating divide -- all values
+ * involved are non-negative so truncation direction is unambiguous),
+ * computed directly here rather than cached in a table, which is
+ * mathematically identical and avoids needing an init step this port has
+ * no equivalent boot phase for.
+ */
+int32_t wm_ring_calc_line_x(const WmRingBoundarySeed *seed, int32_t zpos);
+
+/*
+ * WRESTLE.ASM:5789 SUBR get_rope_x -- calc_line_x against whichever
+ * rope this wrestler is nearer: the right one if his X is strictly
+ * greater than RING_X_CENTER, the left one otherwise. Exactly at the
+ * centre he gets the left rope, because the source's test is `jrgt`.
+ *
+ * Returns 0 when his Z puts him past either end of that rope, which is
+ * calc_line_x's own out-of-range answer and not an X of zero.
+ */
+int32_t wm_ring_get_rope_x(int32_t xposint, int32_t zposint);
+
+/*
+ * WRESTLE.ASM:5704 SUBR get_box_overlap -- how far, and which way, to
+ * push a wrestler out of a box bounded by two of these lines.
+ *
+ * The box is a left line, a right line, and the top and bottom Z of
+ * the LEFT one (the source reuses a6 and the z reads land on whichever
+ * seed it loaded second). Four distances come out -- to each edge --
+ * and the smallest wins, so a man just inside the left edge is pushed
+ * left rather than all the way across.
+ *
+ * It reports (0, 0) for "not in the box", which is also what it
+ * reports for a Z outside either line's range, so a caller cannot tell
+ * those apart. Ties go to the horizontal push, because every
+ * comparison in the chain is a strict `jrgt`.
+ *
+ * Nothing in the shipped game calls it: all four call sites
+ * (WRESTLE.ASM:5545, :5584, :5633, :5682) are commented out. It is
+ * translated because it is self-contained geometry with an exact
+ * answer, not because anything needs it yet.
+ */
+typedef struct wm_ring_pushout {
+    int32_t xoff;
+    int32_t zoff;
+} wm_ring_pushout;
+
+wm_ring_pushout wm_ring_box_overlap(const WmRingBoundarySeed *left,
+                                    const WmRingBoundarySeed *right,
+                                    int32_t xposint, int32_t zposint);
 
 #ifdef __cplusplus
 }

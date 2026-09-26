@@ -77,7 +77,7 @@ typedef struct wm_arcade_combat_runtime {
     uint32_t pcnt;
     uint16_t round_tickcount;
     int any_hits;
-    int dam_mult;
+    int32_t dam_mult;
 } wm_arcade_combat_runtime_t;
 
 typedef struct wm_arcade_react_callbacks {
@@ -105,7 +105,14 @@ typedef struct wm_arcade_react_callbacks {
 
     void (*round_first_hit_award)(wm_arcade_actor_t *attacker, void *user);
     void (*first_hit_message)(wm_arcade_actor_t *attacker, void *user);
-    void (*bonus_message)(wm_arcade_actor_t *attacker, void *user);
+    /*
+     * LIFEBAR.ASM:3302 BONUS_MESS. `bonus` is A10 and its SIGN picks the
+     * path -- ANIM.ASM:2233 passes -1 for the taunt-style high risk, the
+     * wrestler files pass a real move-message number -- so a seam
+     * without it cannot tell the two apart. It used to be declared
+     * without it here while the Bret and Razor structs carried it.
+     */
+    void (*bonus_message)(wm_arcade_actor_t *attacker, int bonus, void *user);
 
     /* Renderer-specific cleanup for the source's DMAWNZ/control reset. */
     void (*restore_hit_render_state)(wm_arcade_actor_t *actor, void *user);

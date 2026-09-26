@@ -1,4 +1,5 @@
 #include "wm/arcade/wm_arcade_bret.h"
+#include "wm/arcade/wm_arcade_jjxm.h"
 #include "wm/arcade/wm_arcade_damage.h"
 #include "wm/arcade/wm_arcade_attach_anim.h"
 
@@ -92,7 +93,21 @@ const wm_arcade_bret_monitor_pattern_t wm_arcade_bret_monitor_patterns[9] = {
     { WM_BRET_MON_FINISH2, mon_finish2, 5, 60 }
 };
 
+/*
+ * ANIM.ASM's two primary-animation entry points. :4532 change_anim1
+ * returns without restarting when the request names the animation
+ * already running and that animation has not ended; :4542
+ * change_anim1a is the label on the instruction after both tests, so
+ * entering there always replays from frame 0.
+ *
+ * anim() is change_anim1a because that is what almost every call site
+ * in this file is. anim1() is the guarded one, and every use of it
+ * below names the source line it comes from.
+ */
 static void anim(wm_arcade_actor_t *a, wm_arcade_bret_anim_id_t id,
+                 const wm_arcade_bret_callbacks_t *cb)
+{ if (cb && cb->change_anim_restart) cb->change_anim_restart(a,id,cb->user); }
+static void anim1(wm_arcade_actor_t *a, wm_arcade_bret_anim_id_t id,
                  const wm_arcade_bret_callbacks_t *cb)
 { if (cb && cb->change_anim) cb->change_anim(a,id,cb->user); }
 static void snd(wm_arcade_actor_t *a, wm_arcade_bret_sound_id_t id,
@@ -111,15 +126,6 @@ static wm_arcade_bret_anim_id_t f24(const wm_arcade_actor_t *a,
                                      wm_arcade_bret_anim_id_t id2,
                                      wm_arcade_bret_anim_id_t id4)
 { return face_is_2(a) ? id2 : id4; }
-static int near(const wm_arcade_actor_t *a,int x,int z)
-{ return a && a->closest_xdist <= x && a->closest_zdist <= z; }
-static int opp_groundish(const wm_arcade_actor_t *o)
-{ return o && (o->player_mode==WM_PMODE_ONGROUND || o->player_mode==WM_PMODE_DEAD); }
-static int opp_mode_for_close(const wm_arcade_actor_t *o)
-{
-    if (!o) return WM_PMODE_NORMAL;
-    return o->player_mode;
-}
 
 static const wm_arcade_bret_action_id_t action_table[32] = {
     WM_BRET_ACT_NONE,WM_BRET_ACT_PUNCH,WM_BRET_ACT_BLOCK,WM_BRET_ACT_BLOCK,
@@ -136,97 +142,210 @@ static int do_block(wm_arcade_actor_t *a,const wm_arcade_bret_env_t *e,const wm_
 {
     if (e && e->blocking_off) return 0;
     if (cb && cb->round_award_block) cb->round_award_block(a,cb->user);
-    anim(a,WM_BRET_ANIM_BLOCK4,cb); snd(a,WM_BRET_SND_BLOCK_WOOSH,cb);
+    anim1(a,WM_BRET_ANIM_BLOCK4,cb);    /* :1574 change_anim1 */
+    snd(a,WM_BRET_SND_BLOCK_WOOSH,cb);
     a->block_time=0; return 1;
+}
+
+/*
+ * BRET.ASM's six JJXM tables (JJXM.H; wm/arcade/wm_arcade_jjxm.h).
+ *
+ * Bret's dispatcher selects by a typed animation id rather than by a
+ * label string, so the tables reach him through a mapping rather than
+ * directly. What they replace is a hand-written chain of PLYRMODE
+ * comparisons -- faithful in most places, since it was transcribed
+ * from the same tables by eye, but a chain that nothing could check
+ * against the source. Now it is a lookup, and the two-way target guard
+ * in tests/test_source_tools.py holds it to the table.
+ */
+static const char *jjxm(const char *section,const char *entry,
+                        const wm_arcade_actor_t *a,const wm_arcade_actor_t *o)
+{
+    return wm_jjxm_pick("BRET",section,entry,a,o);
+}
+#define is(t,n) wm_jjxm_is((t),(n))
+
+/* BRET.ASM:1536 #punch_punch, alias std_punch. */
+static void hrt_punch_punch(wm_arcade_actor_t *a,const wm_arcade_bret_callbacks_t *cb)
+{
+    anim(a,f24(a,WM_BRET_ANIM_PUNCH2,WM_BRET_ANIM_PUNCH4),cb); snd(a,WM_BRET_SND_PUNCH,cb);
+}
+/* :1546 #punch_hdbutt */
+static void hrt_punch_hdbutt(wm_arcade_actor_t *a,const wm_arcade_bret_callbacks_t *cb)
+{
+    anim(a,f24(a,WM_BRET_ANIM_BUTT2,WM_BRET_ANIM_BUTT4),cb); snd(a,WM_BRET_SND_HDBUTT,cb);
+}
+/* :1555 #punch_lbowdrop -- Bret's is the ground PUNCH. */
+static void hrt_punch_lbowdrop(wm_arcade_actor_t *a,const wm_arcade_bret_callbacks_t *cb)
+{
+    anim(a,f24(a,WM_BRET_ANIM_GROUND_PUNCH2,WM_BRET_ANIM_GROUND_PUNCH4),cb);
+    snd(a,WM_BRET_SND_LBOWDROP,cb);
+}
+/* :1733 #spunch_slap -- the second super punch, and it plays PUNCH. */
+static void hrt_spunch_slap(wm_arcade_actor_t *a,const wm_arcade_bret_callbacks_t *cb)
+{
+    anim(a,f24(a,WM_BRET_ANIM_SUPER_PUNCH2_2,WM_BRET_ANIM_SUPER_PUNCH2_4),cb);
+    snd(a,WM_BRET_SND_PUNCH,cb);
+}
+/* :1634 #spunch_special */
+static void hrt_spunch_special(wm_arcade_actor_t *a,const wm_arcade_bret_callbacks_t *cb)
+{
+    if (a->stick_val_cur & WM_MOVE_DOWN) {
+        anim(a,WM_BRET_ANIM_UPPERCUT4,cb); snd(a,WM_BRET_SND_UPRCUT,cb); return;
+    }
+    if (a->closest_xdist > 55) { hrt_punch_punch(a,cb); return; }
+    /* :1658 change_anim1. The uppercut arm just above is :1666
+       change_anim1a -- Doink's #ck_up uppercut is the guarded one and
+       Bret's is not, so this really is per wrestler. */
+    anim1(a,f24(a,WM_BRET_ANIM_BUTTS2,WM_BRET_ANIM_BUTTS4),cb);
+    snd(a,WM_BRET_SND_HDBUTT,cb);
+}
+/*
+ * :1674 #spunch_lbowdrop. Bret's is the one with THREE arms, and its
+ * thresholds are his own: 30h rather than everyone else's 20h to get
+ * past the first test at all, then the M_FLIPH comparison, and where
+ * the others give up on a match it goes to #feet -- which asks for
+ * 40h and gives the SHOOTER. Only inside that does it fall back to the
+ * ground punch.
+ */
+static void hrt_spunch_lbowdrop(wm_arcade_actor_t *a,wm_arcade_actor_t *o,
+                                const wm_arcade_bret_callbacks_t *cb)
+{
+    if (o && o->player_mode != WM_PMODE_DEAD) {
+        int32_t dx = a->x_fixed - o->x_fixed;
+        if (dx < 0) dx = -dx;
+        dx >>= 16;
+        if (dx >= 0x30) {
+            if ((a->obj_control & WM_OBJ_FLIPH) != (o->obj_control & WM_OBJ_FLIPH)) {
+                /* :1710 change_anim1 */
+                anim1(a,f24(a,WM_BRET_ANIM_HAIR_PICKUP2,WM_BRET_ANIM_HAIR_PICKUP4),cb);
+                snd(a,WM_BRET_SND_LBOWDROP,cb); return;
+            }
+            if (dx >= 0x40) {
+                anim(a,f24(a,WM_BRET_ANIM_SHOOTER2,WM_BRET_ANIM_SHOOTER4),cb);
+                snd(a,WM_BRET_SND_LBOWDROP,cb); return;
+            }
+        }
+    }
+    /* :1727 #no, change_anim1 -- while :1555 #punch_lbowdrop selects
+       the same pair of animations with change_anim1a. */
+    anim1(a,f24(a,WM_BRET_ANIM_GROUND_PUNCH2,WM_BRET_ANIM_GROUND_PUNCH4),cb);
+    snd(a,WM_BRET_SND_LBOWDROP,cb);
+}
+/* :1798 #kick_kick (std_kick), :1808 #kick_knee (std_knee), :1818
+   #kick_stomp (std_stomp), :1789 #kick_TB. */
+static void hrt_kick_kick(wm_arcade_actor_t *a,const wm_arcade_bret_callbacks_t *cb)
+{
+    anim(a,f24(a,WM_BRET_ANIM_KICK2,WM_BRET_ANIM_KICK4),cb); snd(a,WM_BRET_SND_KICK,cb);
+}
+static void hrt_kick_knee(wm_arcade_actor_t *a,const wm_arcade_bret_callbacks_t *cb)
+{
+    anim(a,f24(a,WM_BRET_ANIM_KNEE2,WM_BRET_ANIM_KNEE4),cb); snd(a,WM_BRET_SND_KICK,cb);
+}
+static void hrt_kick_stomp(wm_arcade_actor_t *a,const wm_arcade_bret_callbacks_t *cb)
+{
+    anim(a,f24(a,WM_BRET_ANIM_STOMP2,WM_BRET_ANIM_STOMP4),cb); snd(a,WM_BRET_SND_KICK,cb);
+}
+static void hrt_kick_tb(wm_arcade_actor_t *a,const wm_arcade_bret_callbacks_t *cb)
+{
+    anim(a,WM_BRET_ANIM_KICK_TB,cb); snd(a,WM_BRET_SND_KICK,cb);
+}
+/* :1883 #skick_kick, which #graboh is an alias of. */
+static void hrt_skick_kick(wm_arcade_actor_t *a,const wm_arcade_bret_callbacks_t *cb)
+{
+    anim(a,f24(a,WM_BRET_ANIM_SUPER_KICK2,WM_BRET_ANIM_SUPER_KICK4),cb);
+    snd(a,WM_BRET_SND_FLYKICK,cb);
+}
+/* :1893 #skick_special. Not held toward him it is `jrnz std_knee` --
+   the knee routine itself, not a copy of its body. */
+static void hrt_skick_special(wm_arcade_actor_t *a,const wm_arcade_bret_callbacks_t *cb)
+{
+    if (a->stick_val_cur != (uint16_t)(a->new_facing_dir & 0x0c)) { hrt_kick_knee(a,cb); return; }
+    anim1(a,WM_BRET_ANIM_KNEE_FALL4,cb);  /* :1901 change_anim1 */
+    snd(a,WM_BRET_SND_KICK,cb);
 }
 
 static void do_punch(wm_arcade_actor_t *a,wm_arcade_actor_t *o,const wm_arcade_bret_callbacks_t *cb)
 {
-    int m=opp_mode_for_close(o);
-    if (m==WM_PMODE_CLIMBTURNBKL) {
-        anim(a,f24(a,WM_BRET_ANIM_PUNCH2,WM_BRET_ANIM_PUNCH4),cb); snd(a,WM_BRET_SND_PUNCH,cb); return;
-    }
-    if (opp_groundish(o)) {
-        if (near(a,160,140)) { anim(a,f24(a,WM_BRET_ANIM_GROUND_PUNCH2,WM_BRET_ANIM_GROUND_PUNCH4),cb); snd(a,WM_BRET_SND_LBOWDROP,cb); }
-        else { anim(a,f24(a,WM_BRET_ANIM_PUNCH2,WM_BRET_ANIM_PUNCH4),cb); snd(a,WM_BRET_SND_PUNCH,cb); }
-        return;
-    }
-    if (near(a,50,45)) { anim(a,f24(a,WM_BRET_ANIM_BUTT2,WM_BRET_ANIM_BUTT4),cb); snd(a,WM_BRET_SND_HDBUTT,cb); }
-    else { anim(a,f24(a,WM_BRET_ANIM_PUNCH2,WM_BRET_ANIM_PUNCH4),cb); snd(a,WM_BRET_SND_PUNCH,cb); }
+    const char *t = jjxm("mode_normal","#punch",a,o);
+    if (is(t,"#punch_hdbutt"))        hrt_punch_hdbutt(a,cb);
+    else if (is(t,"#punch_lbowdrop")) hrt_punch_lbowdrop(a,cb);
+    else if (is(t,"#punch_punch"))    hrt_punch_punch(a,cb);
 }
-
 static void do_super_punch(wm_arcade_actor_t *a,wm_arcade_actor_t *o,const wm_arcade_bret_callbacks_t *cb)
 {
-    int m=opp_mode_for_close(o);
-    if (m==WM_PMODE_HEADHELD) return;
-    if (m==WM_PMODE_ONTURNBKL) {
-        anim(a,f24(a,WM_BRET_ANIM_SUPER_PUNCH2_2,WM_BRET_ANIM_SUPER_PUNCH2_4),cb); snd(a,WM_BRET_SND_PUNCH,cb); return;
-    }
-    if (m==WM_PMODE_CLIMBTURNBKL) { do_punch(a,o,cb); return; }
-    if (opp_groundish(o)) {
-        if (!near(a,160,140)) { do_punch(a,o,cb); return; }
-        if (o && o->player_mode!=WM_PMODE_DEAD) {
-            int32_t dx=a->x_fixed-o->x_fixed; if(dx<0) dx=-dx; dx >>= 16;
-            if (dx>=0x30) {
-                if ((a->obj_control & WM_OBJ_FLIPH)!=(o->obj_control & WM_OBJ_FLIPH)) {
-                    anim(a,f24(a,WM_BRET_ANIM_HAIR_PICKUP2,WM_BRET_ANIM_HAIR_PICKUP4),cb); snd(a,WM_BRET_SND_LBOWDROP,cb); return;
-                }
-                if (dx>=0x40) { anim(a,f24(a,WM_BRET_ANIM_SHOOTER2,WM_BRET_ANIM_SHOOTER4),cb); snd(a,WM_BRET_SND_LBOWDROP,cb); return; }
-            }
-        }
-        anim(a,f24(a,WM_BRET_ANIM_GROUND_PUNCH2,WM_BRET_ANIM_GROUND_PUNCH4),cb); snd(a,WM_BRET_SND_LBOWDROP,cb); return;
-    }
-    if (near(a,70,45)) {
-        if (a->stick_val_cur & WM_MOVE_DOWN) { anim(a,WM_BRET_ANIM_UPPERCUT4,cb); snd(a,WM_BRET_SND_UPRCUT,cb); return; }
-        if (a->closest_xdist>55) { do_punch(a,o,cb); return; }
-        anim(a,f24(a,WM_BRET_ANIM_BUTTS2,WM_BRET_ANIM_BUTTS4),cb); snd(a,WM_BRET_SND_HDBUTT,cb); return;
-    }
-    anim(a,f24(a,WM_BRET_ANIM_SUPER_PUNCH2_2,WM_BRET_ANIM_SUPER_PUNCH2_4),cb); snd(a,WM_BRET_SND_PUNCH,cb);
+    const char *t = jjxm("mode_normal","#super_punch",a,o);
+    if (is(t,"#spunch_special"))       hrt_spunch_special(a,cb);
+    else if (is(t,"#spunch_lbowdrop")) hrt_spunch_lbowdrop(a,o,cb);
+    else if (is(t,"#spunch_slap"))     hrt_spunch_slap(a,cb);
+    else if (is(t,"std_punch"))        hrt_punch_punch(a,cb);
+    else if (is(t,"#z"))               return;   /* `rets` -- HEADHELD */
 }
-
 static void do_kick(wm_arcade_actor_t *a,wm_arcade_actor_t *o,const wm_arcade_bret_callbacks_t *cb)
 {
-    int m=opp_mode_for_close(o);
-    if (m==WM_PMODE_INAIR2) { anim(a,WM_BRET_ANIM_KICK_TB,cb); snd(a,WM_BRET_SND_KICK,cb); return; }
-    if (m==WM_PMODE_ONTURNBKL || m==WM_PMODE_CLIMBTURNBKL) {
-        anim(a,f24(a,WM_BRET_ANIM_KICK2,WM_BRET_ANIM_KICK4),cb); snd(a,WM_BRET_SND_KICK,cb); return;
-    }
-    if (opp_groundish(o)) {
-        if (near(a,160,140)) anim(a,f24(a,WM_BRET_ANIM_STOMP2,WM_BRET_ANIM_STOMP4),cb);
-        else anim(a,f24(a,WM_BRET_ANIM_KICK2,WM_BRET_ANIM_KICK4),cb);
-        snd(a,WM_BRET_SND_KICK,cb); return;
-    }
-    if (near(a,50,92)) anim(a,f24(a,WM_BRET_ANIM_KNEE2,WM_BRET_ANIM_KNEE4),cb);
-    else anim(a,f24(a,WM_BRET_ANIM_KICK2,WM_BRET_ANIM_KICK4),cb);
-    snd(a,WM_BRET_SND_KICK,cb);
+    const char *t = jjxm("mode_normal","#kick",a,o);
+    if (is(t,"#kick_knee"))       hrt_kick_knee(a,cb);
+    else if (is(t,"#kick_stomp")) hrt_kick_stomp(a,cb);
+    else if (is(t,"#kick_TB"))    hrt_kick_tb(a,cb);
+    else if (is(t,"#kick_kick"))  hrt_kick_kick(a,cb);
 }
-
 static void do_super_kick(wm_arcade_actor_t *a,wm_arcade_actor_t *o,const wm_arcade_bret_callbacks_t *cb)
 {
-    int m=opp_mode_for_close(o);
-    if (m==WM_PMODE_INAIR2) { do_kick(a,o,cb); return; }
-    if (m==WM_PMODE_HEADHELD) { do_kick(a,o,cb); return; }
-    if (opp_groundish(o)) { do_kick(a,o,cb); return; }
-    if ((m==WM_PMODE_ONTURNBKL||m==WM_PMODE_CLIMBTURNBKL) && !near(a,60,96)) { do_kick(a,o,cb); return; }
-    {
-        int zclose = 60;
-        if (m==WM_PMODE_WAITANIM || m==WM_PMODE_GRAPPLE || m==WM_PMODE_MASTER ||
-            m==WM_PMODE_SLAVE || m==WM_PMODE_HEADHOLD || m==WM_PMODE_PUPPET2 ||
-            m==WM_PMODE_PUPPET || m==WM_PMODE_CHOKEHOLD) zclose = 62;
-        if (m!=WM_PMODE_ONTURNBKL && m!=WM_PMODE_CLIMBTURNBKL && !near(a,60,zclose)) {
-            anim(a,f24(a,WM_BRET_ANIM_SUPER_KICK2,WM_BRET_ANIM_SUPER_KICK4),cb);
-            snd(a,WM_BRET_SND_FLYKICK,cb);
-            return;
-        }
-    }
-    if (m==WM_PMODE_ONTURNBKL || m==WM_PMODE_CLIMBTURNBKL) {
-        anim(a,f24(a,WM_BRET_ANIM_SUPER_KICK2,WM_BRET_ANIM_SUPER_KICK4),cb); snd(a,WM_BRET_SND_FLYKICK,cb); return;
-    }
-    if (a->stick_val_cur == (uint16_t)(a->new_facing_dir & 0x0c)) {
-        anim(a,WM_BRET_ANIM_KNEE_FALL4,cb); snd(a,WM_BRET_SND_KICK,cb);
-    } else {
-        anim(a,f24(a,WM_BRET_ANIM_KNEE2,WM_BRET_ANIM_KNEE4),cb); snd(a,WM_BRET_SND_KICK,cb);
-    }
+    const char *t = jjxm("mode_normal","#super_kick",a,o);
+    if (is(t,"#skick_special"))    hrt_skick_special(a,cb);
+    else if (is(t,"#skick_kick"))  hrt_skick_kick(a,cb);
+    else if (is(t,"#kick_TB"))     hrt_kick_tb(a,cb);
+    else if (is(t,"std_stomp"))    hrt_kick_stomp(a,cb);
+    else if (is(t,"std_kick"))     hrt_kick_kick(a,cb);
+}
+
+/* ---- the two mode_running tables ------------------------------- */
+
+/* :2089 #punch_clothesline -- and Bret's is the running DDT. */
+static wm_arcade_bret_step_result_t hrt_punch_clothesline(
+        wm_arcade_actor_t *a,const wm_arcade_bret_callbacks_t *cb)
+{
+    if ((a->facing_dir & a->new_facing_dir & (WM_MOVE_LEFT|WM_MOVE_RIGHT)) == 0)
+        return WM_BRET_STEP_IDLE;
+    anim(a,WM_BRET_ANIM_RUNNING_DDT,cb); snd(a,WM_BRET_SND_FLYKICK,cb);
+    return WM_BRET_STEP_ACTION;
+}
+/* :2107 #punch_bellyflop, alias std_bellyflop -- the same facing gate
+   again, and the running ground punch. */
+static wm_arcade_bret_step_result_t hrt_std_bellyflop(
+        wm_arcade_actor_t *a,const wm_arcade_bret_callbacks_t *cb)
+{
+    if ((a->facing_dir & a->new_facing_dir & (WM_MOVE_LEFT|WM_MOVE_RIGHT)) == 0)
+        return WM_BRET_STEP_IDLE;
+    anim(a,WM_BRET_ANIM_RUNNING_GROUND_PUNCH,cb); snd(a,WM_BRET_SND_FLYKICK,cb);
+    return WM_BRET_STEP_ACTION;
+}
+/* :2180 #kick_flyingkick */
+static wm_arcade_bret_step_result_t hrt_kick_flyingkick(
+        wm_arcade_actor_t *a,const wm_arcade_bret_callbacks_t *cb)
+{
+    if (cb && cb->ck_ignore && cb->ck_ignore(a,cb->user)) return WM_BRET_STEP_IDLE;
+    anim(a,WM_BRET_ANIM_FLYING_KICK,cb);
+    setmode(a,WM_PMODE_INAIR);
+    snd(a,WM_BRET_SND_FLYKICK,cb);
+    return WM_BRET_STEP_ACTION;
+}
+
+static wm_arcade_bret_step_result_t hrt_run_punch(
+        wm_arcade_actor_t *a,wm_arcade_actor_t *o,const wm_arcade_bret_callbacks_t *cb)
+{
+    const char *t = jjxm("mode_running","#punch",a,o);
+    if (is(t,"#punch_clothesline")) return hrt_punch_clothesline(a,cb);
+    if (is(t,"#punch_bellyflop"))   return hrt_std_bellyflop(a,cb);
+    return WM_BRET_STEP_IDLE;
+}
+static wm_arcade_bret_step_result_t hrt_run_kick(
+        wm_arcade_actor_t *a,wm_arcade_actor_t *o,const wm_arcade_bret_callbacks_t *cb)
+{
+    const char *t = jjxm("mode_running","#kick",a,o);
+    if (is(t,"#kick_flyingkick")) return hrt_kick_flyingkick(a,cb);
+    if (is(t,"std_bellyflop"))    return hrt_std_bellyflop(a,cb);
+    return WM_BRET_STEP_IDLE;
 }
 
 static void normal_action(wm_arcade_actor_t *a,wm_arcade_actor_t *o,wm_arcade_bret_action_id_t ac,const wm_arcade_bret_env_t *e,const wm_arcade_bret_callbacks_t *cb)
@@ -289,7 +408,7 @@ static wm_arcade_bret_step_result_t mode_normal(wm_arcade_actor_t *a,wm_arcade_a
     normal_action(a,o,action_table[a->but_val_down & WM_BTN_ATTACK_MASK],e,cb);
     if (a->anim_mode & WM_MODE_UNINT) return WM_BRET_STEP_ACTION;
     a->move_dir=a->stick_val_cur;
-    if (cb&&cb->climb_turnbuckle&&cb->climb_turnbuckle(a,cb->user)) { if(cb->jump_rope_audio)cb->jump_rope_audio(a,cb->user); return WM_BRET_STEP_EXTERNAL; }
+    if (cb&&cb->climb_turnbuckle&&cb->climb_turnbuckle(a,cb->user)) { if(cb->climb_rope_audio)cb->climb_rope_audio(a,cb->user); return WM_BRET_STEP_EXTERNAL; }
     if(cb&&cb->execute_walk)cb->execute_walk(a,cb->user);
     return WM_BRET_STEP_ACTION;
 }
@@ -314,15 +433,9 @@ static wm_arcade_bret_step_result_t mode_running(wm_arcade_actor_t *a,wm_arcade_
     if (a->delay_butns) return WM_BRET_STEP_IDLE;
     wm_arcade_bret_action_id_t ac=action_table[a->but_val_down & WM_BTN_ATTACK_MASK];
     if (ac==WM_BRET_ACT_BLOCK) { a->x_vel >>= 1; setmode(a,WM_PMODE_NORMAL); (void)do_block(a,e,cb); return WM_BRET_STEP_ACTION; }
-    if (ac==WM_BRET_ACT_KICK || ac==WM_BRET_ACT_SUPER_KICK) {
-        if (cb&&cb->ck_ignore&&cb->ck_ignore(a,cb->user)) return WM_BRET_STEP_IDLE;
-        anim(a,WM_BRET_ANIM_FLYING_KICK,cb); setmode(a,WM_PMODE_INAIR); snd(a,WM_BRET_SND_FLYKICK,cb); return WM_BRET_STEP_ACTION;
-    }
-    if (ac==WM_BRET_ACT_PUNCH||ac==WM_BRET_ACT_SUPER_PUNCH||ac==WM_BRET_ACT_PUNCHKICK||ac==WM_BRET_ACT_GRABOH) {
-        if ((a->facing_dir & a->new_facing_dir & (WM_MOVE_LEFT|WM_MOVE_RIGHT))==0) return WM_BRET_STEP_IDLE;
-        if (opp_groundish(o)) anim(a,WM_BRET_ANIM_RUNNING_GROUND_PUNCH,cb); else anim(a,WM_BRET_ANIM_RUNNING_DDT,cb);
-        snd(a,WM_BRET_SND_FLYKICK,cb); return WM_BRET_STEP_ACTION;
-    }
+    if (ac==WM_BRET_ACT_KICK || ac==WM_BRET_ACT_SUPER_KICK) return hrt_run_kick(a,o,cb);
+    if (ac==WM_BRET_ACT_PUNCH||ac==WM_BRET_ACT_SUPER_PUNCH||ac==WM_BRET_ACT_PUNCHKICK||ac==WM_BRET_ACT_GRABOH)
+        return hrt_run_punch(a,o,cb);
     return WM_BRET_STEP_IDLE;
 }
 
@@ -372,6 +485,19 @@ static wm_arcade_bret_step_result_t mode_headheld(wm_arcade_actor_t*a,const wm_a
 wm_arcade_bret_step_result_t wm_arcade_move_bret(wm_arcade_actor_t*a,wm_arcade_actor_t*o,const wm_arcade_bret_env_t*e,const wm_arcade_bret_callbacks_t*cb)
 {
     if(!a)return WM_BRET_STEP_IDLE;
+    if(a->special_move_addr){
+        /* WRESTLE.ASM:3843-3849 move_wrestler: "check to see if a special
+           move watchdog proc has queued up an anim. If one has, do that
+           instead of calling move_xxx." A real, separate persistent
+           process (e.g. hrt_charge_flying_kick/hrt_charge_face_rake,
+           BRET.ASM:543/614, or wm_arcade_bret_fire_monitor's own headhold
+           moves) sets SPECIAL_MOVE_ADDR asynchronously; the wrestler's own
+           process picks it up here, once, in place of its usual dispatch. */
+        wm_arcade_bret_anim_id_t id=(wm_arcade_bret_anim_id_t)a->special_move_addr;
+        a->special_move_addr=0;
+        anim(a,id,cb);
+        return WM_BRET_STEP_ACTION;
+    }
     if(cb&&cb->check_secret_moves)cb->check_secret_moves(a,wm_arcade_bret_secret_patterns,8,cb->user);
     switch(a->player_mode){
     case WM_PMODE_NORMAL: case 18: case 22: case 23:return mode_normal(a,o,e,cb);
@@ -405,6 +531,14 @@ int wm_arcade_bret_fire_secret(wm_arcade_actor_t*a,wm_arcade_actor_t*o,wm_arcade
     if(!a)return 0;
     switch(id){
     case WM_BRET_SECRET_SUPERCUT:
+        /* BRET.ASM:213 #scrt_cut: "movi hrt_4_super_punch_anim,a0" --
+           WM_BRET_ANIM_SUPER_PUNCH4, which is that label and nothing else.
+           An earlier cycle merged this into WM_BRET_ANIM_SUPER_PUNCH2_4 on
+           the belief that they named the same routine; HRTSEQ2.ASM has
+           both hrt_4_super_punch_anim (:223) and hrt_4_super_punch2_anim
+           (:677), with different frames and different attack boxes, so
+           that merge made every ordinary super punch fire the supercut's
+           box. Separated again -- see wm/arcade/wm_arcade_bret.h. */
         if((a->anim_mode&WM_MODE_UNINT)||!o||o->player_mode==WM_PMODE_ONGROUND||o->player_mode==WM_PMODE_DEAD||o->player_mode==WM_PMODE_HEADHELD||o->player_mode==WM_PMODE_ATTACHED)return 0;
         anim(a,WM_BRET_ANIM_SUPER_PUNCH4,cb);snd(a,WM_BRET_SND_PUNCH,cb);return 1;
     case WM_BRET_SECRET_JUMP_KICK:

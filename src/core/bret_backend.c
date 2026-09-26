@@ -1,0 +1,1356 @@
+#include "wm/bret_backend.h"
+#include "wm/arcade/wm_arcade_confine.h"
+#include "wm/arcade/wm_arcade_modes.h"
+#include "wm/arcade/wm_arcade_bounce.h"
+#include "wm/arcade/wm_arcade_auto_pin.h"
+#include "wm/arcade/wm_arcade_bozo.h"
+#include "wm/arcade/wm_arcade_combo.h"
+#include "wm/wrestler_sound_labels.h"
+#include "wm/wrestler_sound_tables.h"
+#include "wm/arcade/wm_arcade_teammates.h"
+#include "wm/award.h"
+#include "wm/anim_program.h"
+#include "wm/wrestler_backend.h"
+#include "wm/arcade/wm_arcade_pin.h"
+#include "wm/arcade/wm_arcade_start_run.h"
+#include "wm/arcade/wm_arcade_anim_combat.h"
+#include "wm/arcade/wm_arcade_lifebar.h"
+#include "wm/arcade/wm_arcade_mode_dead.h"
+#include "wm/bret_visuals.h"
+#include "wm/announce_tables.h"
+#include <string.h>
+
+void wm_bret_backend_init(wm_bret_backend_actor *bva) {
+    if (!bva) return;
+    memset(bva, 0, sizeof(*bva));
+}
+
+/* BRET.ASM:2897 hrt_leg_anims_table, transcribed value-for-value.
+   leg_table[move_compass][facing_compass], both wm_convert_facing() 0-7
+   results, matching WRESTLE.ASM::change_walk_anim's move_compass*8+
+   facing_compass addressing (WRESTLE.ASM:5000-5014). */
+static const wm_visual_sequence *const leg_table[8][8] = {
+    /* MOVE=UP */
+    { &wm_bret_walk1_f2_anim, &wm_bret_walk1_f2_anim, &wm_bret_walk1_f4_anim, &wm_bret_walk1_f4_anim,
+      &wm_bret_walk1_f4_anim, &wm_bret_walk1_f4_anim, &wm_bret_walk1_f2_anim, &wm_bret_walk1_f2_anim },
+    /* MOVE=UP-RIGHT */
+    { &wm_bret_walk2_f2_anim, &wm_bret_walk2_f2_anim, &wm_bret_walk2_f2_anim, &wm_bret_walk2_f4_anim,
+      &wm_bret_walk8_f4_anim, &wm_bret_walk8_f4_anim, &wm_bret_walk4_f2_anim, &wm_bret_walk4_f2_anim },
+    /* MOVE=RIGHT */
+    { &wm_bret_walk2_f2_anim, &wm_bret_walk2_f2_anim, &wm_bret_walk2_f2_anim, &wm_bret_walk4_f4_anim,
+      &wm_bret_walk4_f4_anim, &wm_bret_walk8_f4_anim, &wm_bret_walk6_f2_anim, &wm_bret_walk6_f2_anim },
+    /* MOVE=DOWN-RIGHT */
+    { &wm_bret_walk2_f2_anim, &wm_bret_walk8_f2_anim, &wm_bret_walk4_f4_anim, &wm_bret_walk4_f4_anim,
+      &wm_bret_walk2_f4_anim, &wm_bret_walk6_f4_anim, &wm_bret_walk2_f2_anim, &wm_bret_walk6_f2_anim },
+    /* MOVE=DOWN */
+    { &wm_bret_walk5_f2_anim, &wm_bret_walk5_f2_anim, &wm_bret_walk5_f4_anim, &wm_bret_walk5_f4_anim,
+      &wm_bret_walk5_f4_anim, &wm_bret_walk5_f4_anim, &wm_bret_walk5_f2_anim, &wm_bret_walk5_f2_anim },
+    /* MOVE=DOWN-LEFT */
+    { &wm_bret_walk2_f2_anim, &wm_bret_walk6_f2_anim, &wm_bret_walk2_f2_anim, &wm_bret_walk6_f4_anim,
+      &wm_bret_walk2_f4_anim, &wm_bret_walk4_f4_anim, &wm_bret_walk2_f2_anim, &wm_bret_walk8_f2_anim },
+    /* MOVE=LEFT */
+    { &wm_bret_walk2_f2_anim, &wm_bret_walk6_f2_anim, &wm_bret_walk6_f2_anim, &wm_bret_walk8_f4_anim,
+      &wm_bret_walk4_f4_anim, &wm_bret_walk4_f4_anim, &wm_bret_walk2_f2_anim, &wm_bret_walk2_f2_anim },
+    /* MOVE=UP-LEFT */
+    { &wm_bret_walk2_f2_anim, &wm_bret_walk4_f2_anim, &wm_bret_walk6_f2_anim, &wm_bret_walk8_f4_anim,
+      &wm_bret_walk6_f4_anim, &wm_bret_walk2_f4_anim, &wm_bret_walk2_f2_anim, &wm_bret_walk2_f2_anim },
+};
+
+const wm_visual_sequence *wm_bret_leg_anim(int move_compass, int facing_compass) {
+    if (move_compass < 0 || move_compass > 7 || facing_compass < 0 || facing_compass > 7)
+        return NULL;
+    return leg_table[move_compass][facing_compass];
+}
+
+/*
+ * BRET.ASM:2871 hrt_rotate_anims_table[old FACING_DIR diag][new
+ * NEW_FACING_DIR diag] (the "TURNS (STANDS)" block), transcribed
+ * value-for-value including its real SUBR aliasing (WRESTLE.ASM's own
+ * table literally reuses the reverse-rotation's address, e.g.
+ * hrt_6_to_8_turn_anim IS hrt_4_to_2_turn_anim, not merely equivalent --
+ * confirmed by reading HRTSEQ1.ASM directly, not guessed): diag2's row is
+ * diag1's row reversed, and diag3's row is diag0's reversed, because
+ * turning e.g. down-right<->down-left is the mirror of up-right<->up-left.
+ * Played by set_rotate_anim/change_anim1 for the idle (#zip) facing-change
+ * case -- see wm_bret_backend_execute_walk's own comment for how the two
+ * diag indices are derived (old FACING_DIR, not old MOVE_DIR).
+ */
+static const wm_visual_sequence *const rotate_table[4][4] = {
+    /* old = UP/UP_RIGHT (diag0) */
+    { &wm_bret_stand2_anim,     &wm_bret_2_to_4_turn_anim, &wm_bret_2_to_6_turn_anim, &wm_bret_2_to_8_turn_anim },
+    /* old = RIGHT/DOWN_RIGHT (diag1) */
+    { &wm_bret_4_to_2_turn_anim, &wm_bret_stand4_anim,     &wm_bret_4_to_6_turn_anim, &wm_bret_4_to_8_turn_anim },
+    /* old = DOWN/DOWN_LEFT (diag2) == hrt_stand6_anim's row, HRTSEQ1.ASM:75 alias of stand4 */
+    { &wm_bret_4_to_8_turn_anim, &wm_bret_4_to_6_turn_anim, &wm_bret_stand4_anim,     &wm_bret_4_to_2_turn_anim },
+    /* old = LEFT/UP_LEFT (diag3) == hrt_stand8_anim's row, HRTSEQ1.ASM:50 alias of stand2 */
+    { &wm_bret_2_to_8_turn_anim, &wm_bret_2_to_6_turn_anim, &wm_bret_2_to_4_turn_anim, &wm_bret_stand2_anim },
+};
+
+const wm_visual_sequence *wm_bret_rotate_anim(int old_facing_compass, int new_facing_compass) {
+    int old_diag, new_diag;
+    if (old_facing_compass < 0 || old_facing_compass > 7) return NULL;
+    if (new_facing_compass < 0 || new_facing_compass > 7) return NULL;
+    old_diag = old_facing_compass >> 1;
+    new_diag = new_facing_compass >> 1;
+    return rotate_table[old_diag][new_diag];
+}
+
+static bool is_leg_turn_sequence(const wm_visual_sequence *seq) {
+    return seq == &wm_bret_2_to_4_turn_anim || seq == &wm_bret_4_to_2_turn_anim ||
+           seq == &wm_bret_4_to_6_turn_anim || seq == &wm_bret_2_to_8_turn_anim ||
+           seq == &wm_bret_4_to_8_turn_anim || seq == &wm_bret_2_to_6_turn_anim;
+}
+
+/*
+ * BRET.ASM:2981 hrt_torso_anims_table[FACING_DIR diag][NEW_FACING_DIR diag]
+ * (the "TURNS (TORSOS)" block), same real aliasing pattern and reasoning as
+ * rotate_table above (e.g. hrt_8_to_6_turn2_anim IS hrt_2_to_4_turn2_anim).
+ * Played by change_walk_anim's torso half while actually walking. Unlike
+ * the leg's turn anims, each of these 12 carries one or two real
+ * ANI_SETFACING commands -- see torso_turn_setfacing below and
+ * wm_bret_backend_tick for how FACING_DIR actually gets promoted mid-walk. */
+static const wm_visual_sequence *const torso_table[4][4] = {
+    { &wm_bret_torso2_anim,      &wm_bret_2_to_4_turn2_anim, &wm_bret_2_to_6_turn2_anim, &wm_bret_2_to_8_turn2_anim },
+    { &wm_bret_4_to_2_turn2_anim, &wm_bret_torso4_anim,      &wm_bret_4_to_6_turn2_anim, &wm_bret_4_to_8_turn2_anim },
+    { &wm_bret_4_to_8_turn2_anim, &wm_bret_4_to_6_turn2_anim, &wm_bret_torso4_anim,      &wm_bret_4_to_2_turn2_anim },
+    { &wm_bret_2_to_8_turn2_anim, &wm_bret_2_to_6_turn2_anim, &wm_bret_2_to_4_turn2_anim, &wm_bret_torso2_anim },
+};
+
+const wm_visual_sequence *wm_bret_torso_anim(int facing_compass, int new_facing_compass) {
+    int facing_diag, new_facing_diag;
+    if (facing_compass < 0 || facing_compass > 7) return NULL;
+    if (new_facing_compass < 0 || new_facing_compass > 7) return NULL;
+    facing_diag = facing_compass >> 1;
+    new_facing_diag = new_facing_compass >> 1;
+    return torso_table[facing_diag][new_facing_diag];
+}
+
+/*
+ * Shared shape for "this sequence fires an instant, once-per-crossing
+ * command right before 1 or 2 specific 0-based frame indices" -- both
+ * ANI_SETFACING in the torso turn2 sequences and ANI_XFLIP in the leg turn
+ * sequences (both below) take this form, hand-traced the same way
+ * attack_windows' active_frame_index is: the command falls right before
+ * the WL frame line at that index. */
+typedef struct {
+    const wm_visual_sequence *seq;
+    unsigned char indices[2];
+    unsigned char count;
+} wm_bret_frame_markers_t;
+
+static bool frame_index_is_marked(const wm_bret_frame_markers_t *w, size_t frame_index) {
+    unsigned char i;
+    if (!w) return false;
+    for (i = 0; i < w->count; ++i)
+        if (w->indices[i] == frame_index) return true;
+    return false;
+}
+
+/* HRTSEQ1.ASM:460-524: each turn2 sequence's real ANI_SETFACING command(s).
+   ANI_SETFACING is ANIM.ASM's _ani_setfacing (ANIM.ASM:1242-1249): an
+   unconditional FACING_DIR=NEW_FACING_DIR copy, fired live off whatever
+   NEW_FACING_DIR is at that instant, not a value captured when the turn
+   started. The two 4-frame sequences (4-to-8/6-to-2 and 2-to-6/8-to-4, the
+   "opposite quadrant" 180-degree-ish turns) carry two such commands. */
+static const wm_bret_frame_markers_t torso_turn_setfacing[] = {
+    { &wm_bret_2_to_4_turn2_anim, {1, 0}, 1 },
+    { &wm_bret_4_to_2_turn2_anim, {1, 0}, 1 },
+    { &wm_bret_4_to_6_turn2_anim, {1, 0}, 1 },
+    { &wm_bret_2_to_8_turn2_anim, {1, 0}, 1 },
+    { &wm_bret_4_to_8_turn2_anim, {1, 3}, 2 },
+    { &wm_bret_2_to_6_turn2_anim, {1, 3}, 2 },
+};
+#define WM_BRET_TORSO_TURN_SETFACING_COUNT \
+    (sizeof(torso_turn_setfacing) / sizeof(torso_turn_setfacing[0]))
+
+static const wm_bret_frame_markers_t *find_torso_turn_setfacing(const wm_visual_sequence *seq) {
+    size_t i;
+    if (!seq) return NULL;
+    for (i = 0; i < WM_BRET_TORSO_TURN_SETFACING_COUNT; ++i)
+        if (torso_turn_setfacing[i].seq == seq) return &torso_turn_setfacing[i];
+    return NULL;
+}
+
+/*
+ * HRTSEQ1.ASM:390-454 ("TURNS (STANDS)", the leg's own rotate_table above):
+ * the real ANI_XFLIP each carries. ANI_XFLIP is ANIM.ASM's _ani_xflip
+ * (ANIM.ASM:939-947): OBJ_CONTROL ^= M_FLIPH (WM_OBJ_FLIPH here). Only 4 of
+ * the 6 canonical bodies carry one at all -- 2_to_4/4_to_2 (adjacent-
+ * quadrant turns, e.g. up-right<->right) never cross the sprite's own
+ * left/right mirror line, so they have none; confirmed by reading each
+ * header directly, not assumed. */
+static const wm_bret_frame_markers_t leg_turn_xflip[] = {
+    { &wm_bret_4_to_6_turn_anim, {1, 0}, 1 },
+    { &wm_bret_2_to_8_turn_anim, {1, 0}, 1 },
+    { &wm_bret_4_to_8_turn_anim, {3, 0}, 1 },
+    { &wm_bret_2_to_6_turn_anim, {3, 0}, 1 },
+};
+#define WM_BRET_LEG_TURN_XFLIP_COUNT \
+    (sizeof(leg_turn_xflip) / sizeof(leg_turn_xflip[0]))
+
+static const wm_bret_frame_markers_t *find_leg_turn_xflip(const wm_visual_sequence *seq) {
+    size_t i;
+    if (!seq) return NULL;
+    for (i = 0; i < WM_BRET_LEG_TURN_XFLIP_COUNT; ++i)
+        if (leg_turn_xflip[i].seq == seq) return &leg_turn_xflip[i];
+    return NULL;
+}
+
+const wm_visual_sequence *wm_bret_anim_sequence(wm_arcade_bret_anim_id_t id) {
+    switch (id) {
+        case WM_BRET_ANIM_STAND2: return &wm_bret_stand2_anim;
+        case WM_BRET_ANIM_STAND4: return &wm_bret_stand4_anim;
+        case WM_BRET_ANIM_TORSO2: return &wm_bret_torso2_anim;
+        case WM_BRET_ANIM_TORSO4: return &wm_bret_torso4_anim;
+        case WM_BRET_ANIM_PUNCH2: return &wm_bret_light_punch2_anim;
+        case WM_BRET_ANIM_PUNCH4: return &wm_bret_light_punch4_anim;
+        /* HRTSEQ2.ASM:618/677 -- BRET.ASM #spunch_slap's own FACE24 pair,
+           which is what do_super_punch selects. Not hrt_4_super_punch_anim:
+           that is WM_BRET_ANIM_SUPER_PUNCH4 below, #scrt_cut's supercut
+           target, a different animation with a different attack box. */
+        case WM_BRET_ANIM_SUPER_PUNCH2_2: return &wm_bret_super_punch2_2_anim;
+        case WM_BRET_ANIM_SUPER_PUNCH2_4: return &wm_bret_super_punch2_4_anim;
+        case WM_BRET_ANIM_SUPER_PUNCH4: return &wm_bret_power_punch_anim;
+        case WM_BRET_ANIM_KICK2: return &wm_bret_light_kick2_anim;
+        case WM_BRET_ANIM_KICK4: return &wm_bret_light_kick4_anim;
+        /* HRTSEQ2.ASM:1334-1335: hrt_4_super_kick_anim is a literal SUBR
+           alias of hrt_2_super_kick_anim, same address -- not distinct
+           artwork, so both ids resolve to the same extracted sequence. */
+        case WM_BRET_ANIM_SUPER_KICK2: return &wm_bret_power_kick_anim;
+        case WM_BRET_ANIM_SUPER_KICK4: return &wm_bret_power_kick_anim;
+        /* HRTSEQ4.ASM:104 hrt_4_block_anim -- the only real block animation
+           Bret has (its 2-facing twin is commented out in the source). */
+        case WM_BRET_ANIM_BLOCK4: return &wm_bret_block4_anim;
+        case WM_BRET_ANIM_BUTT2: return &wm_bret_butt2_anim;
+        case WM_BRET_ANIM_BUTT4: return &wm_bret_butt4_anim;
+        case WM_BRET_ANIM_KNEE2: return &wm_bret_knee2_anim;
+        case WM_BRET_ANIM_KNEE4: return &wm_bret_knee4_anim;
+        case WM_BRET_ANIM_UPPERCUT4: return &wm_bret_uppercut4_anim;
+        case WM_BRET_ANIM_STOMP2: return &wm_bret_stomp2_anim;
+        case WM_BRET_ANIM_STOMP4: return &wm_bret_stomp4_anim;
+        case WM_BRET_ANIM_GROUND_PUNCH2: return &wm_bret_ground_punch2_anim;
+        case WM_BRET_ANIM_GROUND_PUNCH4: return &wm_bret_ground_punch4_anim;
+        case WM_BRET_ANIM_PUSH4: return &wm_bret_push4_anim;
+        case WM_BRET_ANIM_JUMP_KICK4: return &wm_bret_jump_kick4_anim;
+        case WM_BRET_ANIM_KNEE_FALL4: return &wm_bret_knee_fall4_anim;
+        case WM_BRET_ANIM_KICK_TB: return &wm_bret_kick_tb_anim;
+        case WM_BRET_ANIM_HEAD_HELD_STAND3: return &wm_bret_head_held_stand3_anim;
+        case WM_BRET_ANIM_KNEE_TO_HEAD4: return &wm_bret_knee_to_head4_anim;
+        case WM_BRET_ANIM_FAKE_HOLD3: return &wm_bret_fake_hold3_anim;
+        case WM_BRET_ANIM_KNEES_TO_HEAD: return &wm_bret_knees_to_head_anim;
+        case WM_BRET_ANIM_PIN2: return &wm_bret_pin2_anim;
+        case WM_BRET_ANIM_PIN4: return &wm_bret_pin4_anim;
+        case WM_BRET_ANIM_BUTTS2: return &wm_bret_butts2_anim;
+        case WM_BRET_ANIM_BUTTS4: return &wm_bret_butts4_anim;
+        case WM_BRET_ANIM_FLYING_KICK: return &wm_bret_flying_kick_anim;
+        case WM_BRET_ANIM_TBUKL_LEAP: return &wm_bret_tbukl_leap_anim;
+        case WM_BRET_ANIM_RUNNING_GROUND_PUNCH:
+            return &wm_bret_running_ground_punch_anim;
+        case WM_BRET_ANIM_COMBO_PUNCH: return &wm_bret_combo_punch_anim;
+        case WM_BRET_ANIM_COMBO_KICK: return &wm_bret_combo_kick_anim;
+        case WM_BRET_ANIM_FALL_BACK: return &wm_bret_fall_back_anim;
+        case WM_BRET_ANIM_FACEDOWN_GETUP: return &wm_bret_facedown_getup_anim;
+        case WM_BRET_ANIM_FACEUP_GETUP: return &wm_bret_faceup_getup_anim;
+        case WM_BRET_ANIM_FACEUP_GETUP2_4: return &wm_bret_faceup_getup2_4_anim;
+        case WM_BRET_ANIM_HITONGROUND_FACEDOWN:
+            return &wm_bret_hitonground_facedown_anim;
+        /* HRTSEQ3.ASM hrt_3_pile_driver_anim: the finish
+           hrt_knees_to_head_anim hands off to when the player has kept
+           mashing super kick through the last knee. */
+        case WM_BRET_ANIM_PILE_DRIVER3: return &wm_bret_pile_driver3_anim;
+        /* WRESTLE2.ASM:3443 start_run_anim has no WL frames of its own: it
+           is a state-setup routine that ends by selecting the wrestler's
+           own run animation out of #run_anims[WRESTLERNUM]. For Bret that
+           is hrt_run_anim, already extracted, so the id resolves straight
+           to it and wm_arcade_start_run does the state half. */
+        case WM_BRET_ANIM_START_RUN: return &wm_bret_run_anim;
+        default: return NULL;
+    }
+}
+
+
+/* Returns true iff this call actually (re)started the sequence -- callers
+   use that to gate one-shot "instant command processed when a new
+   animation starts" side effects (MODE_UNINT, ANI_SETFACING below) so they
+   fire once per real selection, not every tick a caller happens to pass
+   the same id/sequence again. */
+static bool start_if_new(wm_visual_state *state, const wm_visual_sequence *seq) {
+    if (!state || !seq) return false;
+    if (state->sequence != seq || state->ended) {
+        wm_visual_start(state, seq);
+        return true;
+    }
+    return false;
+}
+
+/*
+ * The animation id whose sequence carries `label`, or -1.
+ *
+ * An ANI_CHANGEANIM or an ANI_IFBUTTONS names its target by source label,
+ * which is what the program carries; the rest of the backend is keyed on
+ * this port's own ids. Resolved by asking the id->sequence map itself
+ * rather than from a second hand-written table, so a label can never drift
+ * away from the sequence it names.
+ */
+int wm_bret_anim_id_for_label(const char *label) {
+    int id;
+    if (!label) return -1;
+    /* WRESTLE2.ASM:3443 start_run_anim is a state-setup routine with no WL
+       frames of its own, so it has no sequence to find it by. */
+    if (strcmp(label, "start_run_anim") == 0)
+        return (int)WM_BRET_ANIM_START_RUN;
+    for (id = 0; id <= (int)WM_BRET_ANIM_HITONGROUND_FACEDOWN; ++id) {
+        const wm_visual_sequence *s =
+            wm_bret_anim_sequence((wm_arcade_bret_anim_id_t)id);
+        if (s && s->source_label && strcmp(s->source_label, label) == 0)
+            return id;
+    }
+    return -1;
+}
+
+
+/*
+ * The attack windows, the animation transitions, the mid-animation
+ * ANI_SETPLYRMODE rows, the per-id header mode bits and the "this attack
+ * sets facing on start" list all used to live here, each of them a table
+ * keyed on (animation id, flat frame index).
+ *
+ * They are gone because the program subsumes every one of them. An attack
+ * box is an ANI_ATTACK_ON op sitting at the point in the op stream where
+ * the source writes it; a mode word is an ANI_SETMODE op; a hand-off is an
+ * ANI_CHANGEANIM. Running the ops applies each of them exactly where and
+ * when ANIM.ASM does, on whichever branch the animation actually took --
+ * which is what a frame-index key could not do, since the flat list it
+ * indexed into was every branch spliced end to end. hrt_4_ground_punch_anim
+ * is the clearest case: it writes its follow-up twice, once for the hit and
+ * once for the miss, so the flat list carried three attack boxes where any
+ * real playthrough fires two.
+ */
+
+/*
+ * wm_arcade_bret_fire_secret's remaining secret-move targets that have no
+ * real extracted wm_visual_sequence data yet (see wm_bret_anim_sequence),
+ * but whose own real HRTSEQ header does lead with `ANI_SETMODE,MODE_UNINT
+ * |MODE_NOAUTOFLIP` exactly like the attacks find_attack_window covers --
+ * read directly from each header, not assumed: hrt_4_jump_kick_anim
+ * (HRTSEQ2.ASM:1265), hrt_running_ddt_anim (HRTSEQ3.ASM:1614),
+ * hrt_hh_2_ddt_anim (HRTSEQ3.ASM:1288), hrt_hiptoss_anim (HRTSEQ3.ASM:445),
+ * hrt_2/4_grabfling_anim (HRTSEQ2.ASM:2421/2433), hrt_rake_face_anim
+ * (HRTSEQ3.ASM:2465), hrt_3_head_hold_anim/hrt_3_head_hold2_anim/
+ * hrt_3_fake_hold_anim (HRTSEQ3.ASM:1126/1105/1089).
+ *
+ * Without frame data there is no wm_visual_state to time a real end from
+ * (the mechanism find_attack_window's own ids use, see
+ * wm_bret_backend_tick), so wm_bret_backend_change_anim clears this back
+ * off itself, same tick, via bva->pending_uninit_clear rather than leaving
+ * it set indefinitely -- a deliberate, documented simplification (real
+ * per-frame duration data would be needed to protect these for their own
+ * actual length, matching the source, rather than just this one tick). */
+static bool secret_move_sets_mode_uninit(wm_arcade_bret_anim_id_t id) {
+    switch (id) {
+        /* WM_BRET_ANIM_JUMP_KICK4 used to be on this list. It now has real
+           extracted frame data and a real attack window, so it gets the
+           properly-timed MODE_UNINT the wired attacks get and no longer
+           needs (or wants) the one-tick stopgap below. */
+        case WM_BRET_ANIM_RUNNING_DDT:
+        case WM_BRET_ANIM_HH_DDT2:
+        case WM_BRET_ANIM_HIPTOSS:
+        case WM_BRET_ANIM_GRABFLING_FACE24:
+        case WM_BRET_ANIM_RAKE_FACE:
+        case WM_BRET_ANIM_HEAD_HOLD2_3:
+        case WM_BRET_ANIM_HEAD_HOLD3:
+            return true;
+        default:
+            return false;
+    }
+}
+
+wm_arcade_frame_box_t wm_hurt_box_for_frame(const char *source_frame) {
+    wm_arcade_frame_box_t box;
+    const wm_frame_geometry_t *geo;
+
+    box.iani3x = 0;
+    box.iani3y = 0;
+    box.iani3z = 0;
+    box.iani3id = 0;
+
+    geo = source_frame ? wm_frame_geometry_find(source_frame) : NULL;
+    if (!geo) return box;
+
+    box.iani3x = -(int32_t)geo->xani;
+    box.iani3y = -(int32_t)geo->yani;
+    box.iani3z = (int32_t)geo->width;
+    box.iani3id = (int32_t)geo->height;
+    return box;
+}
+
+/*
+ * ANIM.ASM:4532 change_anim1 and :4542 change_anim1a, on Bret's typed
+ * backend. `guard` is change_anim1's two tests -- same ANIBASE, not
+ * ended -- and dropping it is what entering at change_anim1a does.
+ *
+ * Bret's file calls the guarded form five times (BRET.ASM:1574, :1658,
+ * :1710, :1727, :1901) and the unguarded one forty-seven; this used to
+ * be one always-guarded function, so a mashed move could not replay
+ * while its own animation was still running.
+ */
+static void bret_change_anim(wm_arcade_actor_t *actor,
+                             wm_arcade_bret_anim_id_t id, void *user,
+                             bool guard) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    const wm_visual_sequence *seq;
+    bool is_new_selection;
+    if (!bva) return;
+
+    /* start_if_new's own "restarted" answer only exists when this id has
+       real extracted frame data to time an end from. Ids without any
+       (secret_move_sets_mode_uninit's own list) still need to tell a
+       genuinely new selection from a repeated call with the same id
+       already in progress -- current_id changing is the only signal
+       available without real timing data. */
+    seq = wm_bret_anim_sequence(id);
+    if (guard) {
+        is_new_selection = seq ? start_if_new(&bva->visual, seq)
+                               : (bva->current_id != id);
+    } else {
+        if (seq) wm_visual_start(&bva->visual, seq);
+        is_new_selection = true;
+    }
+    bva->current_id = id;
+    if (!actor || !is_new_selection) return;
+
+    /*
+     * If this animation has a generated ANIM.ASM program, it drives: the
+     * program's own header ops are the mode bits, the player mode, the
+     * facing set, the velocities and the attack boxes below, so running
+     * both would apply every one of them twice. wm_bret_backend_tick takes
+     * the same fork.
+     */
+    {
+        const wm_anim_program *prog =
+            seq ? wm_anim_program_find(seq->source_label) : NULL;
+        /*
+         * start_run_anim's own ANI_CODE #setup_run (WRESTLE2.ASM:3452)
+         * belongs to SELECTING the run, not to the frames that follow it:
+         * the source's start_run_anim is state setup with no WL frames of
+         * its own that ends by choosing the wrestler's run animation. It
+         * has to run whether or not that target has a program -- and once
+         * the whole roster is emitted it always does, which is what used
+         * to make this fall through to the copy further down.
+         */
+        if (id == WM_BRET_ANIM_START_RUN) wm_arcade_start_run(actor);
+        if (prog) {
+            /* An animation the program is taking over from another still
+               owns whatever attack box the previous one left on; the new
+               program's own ATTACK_ON/OFF ops take it from here. */
+            if (bva->attack_active) {
+                wm_arcade_ani_attack_off(actor, bva->round_tickcount);
+                bva->attack_active = false;
+            }
+            bva->anim_env.opponent = bva->opponent;
+            wm_anim_exec_start(&bva->prog, prog, actor,
+                               bva->round_tickcount, &bva->anim_env);
+            return;
+        }
+        bva->prog.program = NULL;
+        bva->prog.ended = true;
+    }
+
+    /* HRTSEQ2.ASM's own attack headers (hrt_2_punch_anim etc., HRTSEQ2.ASM:
+       184/303/...) all lead with `ANI_SETMODE,MODE_UNINT|MODE_NOAUTOFLIP`.
+       ANI_SETMODE is a zero-tick "instant" command the interpreter
+       processes synchronously the moment a new animation starts (same
+       reasoning already established for the turn sequences' own
+       MODE_INTURN), so BRET.ASM mode_normal's own `if (ANIMODE&MODE_UNINT)
+       return` sees it the instant an attack is selected, before
+       execute_walk would otherwise run this same tick and stomp the
+       just-started attack with an idle-turn/walk-cycle reselection.
+       Cleared back to MODE_NORMAL when the attack animation naturally
+       ends (matching that same header's `ANI_SETMODE,MODE_NORMAL` right
+       before its own ANI_END) -- see wm_bret_backend_tick. */
+    /* start_run_anim's own ANI_CODE #setup_run (WRESTLE2.ASM:3452): pick a
+       run direction, clear the getup/run timers, face that way and enter
+       MODE RUNNING. Its header's ANI_SETMODE,MODE_UNINT|MODE_NOAUTOFLIP is
+       covered by anim_header_sets_uninit below. */
+
+    /*
+     * What is left here is only the ids the program path cannot take:
+     * WM_BRET_ANIM_START_RUN, whose source routine is state setup with no
+     * WL frames of its own, and the secret-move targets that have no
+     * extracted animation at all. Every id that does have one is
+     * program-driven above, where its own header ops carry these same
+     * writes.
+     */
+    if (id == WM_BRET_ANIM_START_RUN) {
+        /* WRESTLE2.ASM:3443 start_run_anim's own ANI_CODE #setup_run
+           (:3452): pick a run direction, clear the getup/run timers, face
+           that way and enter MODE RUNNING, behind the header's own
+           ANI_SETMODE,MODE_UNINT|MODE_NOAUTOFLIP. */
+        wm_arcade_start_run(actor);
+        actor->anim_mode |= (uint16_t)(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
+    } else if (secret_move_sets_mode_uninit(id)) {
+        /* secret_move_sets_mode_uninit's own comment: no frame data means
+           no real way to time this back off, so it's cleared this same
+           tick instead (wm_bret_backend_tick) rather than left set. */
+        actor->anim_mode |= (uint16_t)(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
+        bva->pending_uninit_clear = true;
+        /* Three of those secret-move targets carry a real, instant
+           ANI_SETFACING at their own start. Gated on `is_new_selection`,
+           not every call, since the source command fires exactly once, the
+           instant the animation is selected. */
+        if (id == WM_BRET_ANIM_HIPTOSS ||
+            id == WM_BRET_ANIM_GRABFLING_FACE24)
+            actor->facing_dir = actor->new_facing_dir;
+    }
+}
+
+/* ANIM.ASM:4532 change_anim1 -- guarded. */
+void wm_bret_backend_change_anim(wm_arcade_actor_t *actor,
+                                 wm_arcade_bret_anim_id_t id, void *user) {
+    bret_change_anim(actor, id, user, true);
+}
+
+/* ANIM.ASM:4542 change_anim1a -- unguarded, always from the top. */
+void wm_bret_backend_change_anim_restart(wm_arcade_actor_t *actor,
+                                         wm_arcade_bret_anim_id_t id,
+                                         void *user) {
+    bret_change_anim(actor, id, user, false);
+}
+
+/* BRET.ASM:1264 bret_ani_init is change_anim2a, and it is the only
+   thing in the file that writes this channel. */
+void wm_bret_backend_change_torso_anim(wm_arcade_actor_t *actor,
+                                       wm_arcade_bret_anim_id_t id, void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    const wm_visual_sequence *seq;
+    (void)actor;
+    if (!bva) return;
+    seq = wm_bret_anim_sequence(id);
+    if (seq) wm_visual_start(&bva->torso_visual, seq);
+}
+
+/*
+ * wm_arcade_adjust_health's death_anim bridge, for BRET'S OWN self-death
+ * only -- mode_normal's `movi -10,a0 / calla adjust_health` when
+ * I_WILL_DIE comes due. Every other death goes through the match's
+ * bridge, which resolves LIFEBAR.ASM's per-wrestler tables by label.
+ *
+ * WM_R1_ANIM_FALL_BACK really is the only id this one can see, and the
+ * reason is worth stating now that #grnd is translated: the convulse
+ * branch needs a player_mode of ONGROUND or DEAD, and mode_normal --
+ * which is where this call comes from -- is neither. A wrestler killed
+ * while already down is killed by somebody, so he arrives through the
+ * hit path instead.
+ */
+static void wm_bret_backend_death_change_anim(wm_arcade_actor_t *actor,
+                                              wm_arcade_react1_anim_group_t anim,
+                                              void *user) {
+    if (anim != WM_R1_ANIM_FALL_BACK) return;
+    wm_bret_backend_change_anim(actor, WM_BRET_ANIM_FALL_BACK, user);
+}
+
+/* wm_arcade_bret_callbacks_t.adjust_health body: mode_normal's own
+   I_WILL_DIE self-death call (BRET.ASM:1341-1343, "movi -10,a0 ... calla
+   adjust_health") reads WHOHITME itself for the shared routine's
+   combo-revival check, so this needs no opponent parameter beyond what the
+   actor already carries. */
+static void wm_bret_backend_adjust_health(wm_arcade_actor_t *actor, int delta,
+                                          void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    wm_arcade_death_anim_callback_t death_anim;
+    if (!actor) return;
+    death_anim.change_anim = wm_bret_backend_death_change_anim;
+    death_anim.user = bva;
+    /* No wm_arcade_combat_runtime_t reachable from this self-death path
+       (see wm_arcade_adjust_health's own comment): DAM_MULT tracking is
+       skipped here, not guessed at. */
+    wm_arcade_adjust_health(actor, (int16_t)delta, actor->who_hit_me,
+                            bva ? bva->attract_mode : false,
+                            bva ? bva->pcnt : 0, NULL, &death_anim);
+}
+
+void wm_bret_backend_execute_walk(wm_arcade_actor_t *actor, void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    int32_t old_facing_dir;
+    bool leg_inturn, torso_inturn;
+
+    if (!actor || !bva) return;
+
+    /* WRESTLE.ASM::execute_walk's own top-of-function gate (WRESTLE.ASM:
+       5222-5252): "if our INTURN bit is set, we're doing a turn and we
+       shouldn't do anything here -- treat it like UNINT." The source checks
+       ANIMODE (leg) and ANIMODE2 (torso) independently; this port has no
+       actor-level ANIMODE2 field (only Bret's torso track exists at all),
+       so it's derived from bva's own visual state instead: a turn/turn2
+       sequence is exactly the set that sets MODE_INTURN when played
+       (rotate_table/torso_table's off-diagonal cells, never their
+       diagonal/stand entries). This freeze isn't cosmetic: without it,
+       set_rotate_anim's instant FACING_DIR=NEW_FACING_DIR copy (below)
+       would immediately re-equalize old/new FACING_DIR on the very next
+       idle tick and truncate every turn anim to a single tick; for the
+       two-ANI_SETFACING torso turns it would cut the sequence off before
+       its second FACING_DIR promotion ever fires. */
+    leg_inturn = is_leg_turn_sequence(bva->visual.sequence) && !bva->visual.ended;
+    torso_inturn = find_torso_turn_setfacing(bva->torso_visual.sequence) && !bva->torso_visual.ended;
+    if (leg_inturn || torso_inturn) {
+        if (actor->move_dir == 0) {
+            actor->x_vel = 0;
+            actor->z_vel = 0;
+        }
+        return;
+    }
+
+    old_facing_dir = actor->facing_dir;
+    wm_execute_walk(actor, bva->opponent, wm_bret_velocity_table);
+
+    if (actor->move_dir != 0) {
+        int move_compass, facing_compass;
+
+        /* WRESTLE.ASM::change_walk_anim's leg half (WRESTLE.ASM:5000-5014):
+           reselects hrt_leg_anims_table[MOVE_DIR][FACING_DIR] every tick.
+           FACING_DIR is real (wm_arcade_update_newfacing + wm_execute_walk's
+           WM_MOVE_ZIP catch-up, see wm/arcade/wm_arcade_closest.h and
+           wm/movement.h) -- change_walk_anim's leg half itself never writes
+           FACING_DIR, so this doesn't either; it stays frozen at its last
+           idle value while walking, exactly like the source. */
+        move_compass = wm_convert_facing(actor->move_dir);
+        facing_compass = wm_convert_facing(actor->facing_dir);
+        start_if_new(&bva->visual, wm_bret_leg_anim(move_compass, facing_compass));
+
+        /* WRESTLE.ASM::change_walk_anim's torso half (WRESTLE.ASM:4973-4997):
+           reselects hrt_torso_anims_table[FACING_DIR][NEW_FACING_DIR], gated
+           on MODE_UNINT only (unlike the leg half, which always runs once
+           change_walk_anim is called at all) -- but change_walk_anim itself
+           is only ever called from the 8 real-movement walk_table handlers,
+           never from #zip, so this whole block is correctly nested under
+           MOVE_DIR!=0, not run while idle. Both indices are now real and the
+           table is fully wired (wm_bret_torso_anim), including the 12
+           off-diagonal turn-transition entries. */
+        if (!(actor->anim_mode & WM_MODE_UNINT)) {
+            start_if_new(&bva->torso_visual,
+                         wm_bret_torso_anim(facing_compass,
+                                            wm_convert_facing(actor->new_facing_dir)));
+        }
+    } else {
+        /* WRESTLE.ASM::set_rotate_anim (WRESTLE.ASM:5062-5088), called only
+           from #zip/do_stance (WRESTLE.ASM:5286 `callr set_rotate_anim ;or
+           stance`): selects the LEG turn/stand anim from (OLD FACING_DIR,
+           NEW_FACING_DIR), using FACING_DIR as it was *before* the
+           WM_MOVE_ZIP catch-up above already applied it -- exactly what the
+           real set_rotate_anim reads before it overwrites FACING_DIR itself.
+           No torso reselection happens here: change_walk_anim (which drives
+           the torso) is never called from #zip in the source. */
+        int old_facing_compass = wm_convert_facing(old_facing_dir);
+        int new_facing_compass = wm_convert_facing(actor->new_facing_dir);
+        start_if_new(&bva->visual, wm_bret_rotate_anim(old_facing_compass, new_facing_compass));
+    }
+}
+
+/* wm_arcade_bret_callbacks_t.mode_dead body: DOINK.ASM's shared
+   mode_dead, which needs the match's globals and roster now that the
+   buckoff is reachable -- see wm/arcade/wm_arcade_mode_dead.h. */
+static void wm_bret_backend_mode_dead(wm_arcade_actor_t *actor, void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    if (!bva) { wm_arcade_mode_dead(actor); return; }
+    wm_arcade_mode_dead_ex(actor, &bva->mode_dead_env,
+                           &bva->mode_dead_result);
+}
+
+/* wm_arcade_bret_callbacks_t.check_secret_moves body: WRESTLE.ASM's real
+   update_joystat + check_secret_moves (see wm/arcade/wm_arcade_joystat.h
+   for the full derivation). update_joystat's own recording happens here,
+   first, so this tick's input is guaranteed fresh by the time the
+   patterns are scanned -- the source relies on its own per-process
+   instruction ordering (update_joystat runs earlier in the same tick,
+   before move_bret gets called) for the same guarantee. */
+static void wm_bret_backend_check_secret_moves(wm_arcade_actor_t *actor,
+                                               const wm_arcade_bret_secret_pattern_t *patterns,
+                                               size_t count, void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    wm_arcade_bret_callbacks_t cb;
+    uint16_t now;
+    uint16_t punch_dtime, powerp_dtime, powerk_dtime;
+    size_t i;
+
+    if (!actor || !bva) return;
+
+    now = (uint16_t)bva->pcnt;
+    wm_arcade_joystat_update(&bva->joystat, actor, now);
+
+    /* wm_arcade_update_joy_dtime resets a button's dtime to 0 the instant
+       BUT_VAL_CUR reads it as no longer held -- the exact tick a release
+       is checked below. The real source's own update_joy_dtime and
+       check_secret_moves run from two different points in the per-process
+       loop, in an order that only makes sense if the dtime read on a
+       release tick reflects the duration accumulated *through the
+       previous tick*, not this tick's already-reset value -- so these are
+       captured before updating, not after. */
+    punch_dtime = actor->punch_dtime;
+    powerp_dtime = actor->powerp_dtime;
+    powerk_dtime = actor->powerk_dtime;
+    wm_arcade_update_joy_dtime(actor);
+
+    /* WRESTLE.ASM:4851-4862 top-of-function gates. */
+    if (actor->immobilize_time) return;
+    if (actor->player_mode == WM_PMODE_DIZZY || actor->player_mode == WM_PMODE_WAITANIM) return;
+    if (actor->getup_time) return;
+
+    cb = wm_bret_backend_callbacks(bva);
+
+    /* hrt_charge_flying_kick/hrt_charge_face_rake (BRET.ASM:543/614): two
+       real, independent persistent-process "hold the button, then release
+       it" watchers -- checked every tick, same as bret_secret_moves' own
+       first entry below, regardless of the joystick-history recognizer
+       that follows. wm_arcade_bret_release_charge_flying_kick/
+       release_charge_face_rake already carry their own real preconditions
+       (charge>=100, GETUP_TIME, PLYRMODE, MODE_UNINT, ...); this just
+       supplies the real BUT_VAL_UP edge and dtime they need. */
+    if ((actor->but_val_up & WM_BTN_SKICK) &&
+        wm_arcade_bret_release_charge_flying_kick(actor, bva->opponent, powerk_dtime, &cb)) {
+        return;
+    }
+    if ((actor->but_val_up & WM_BTN_PUNCH) &&
+        wm_arcade_bret_release_charge_face_rake(actor, punch_dtime, &cb)) {
+        return;
+    }
+
+    /* WRESTLE.ASM's own charge_ddt "hold test": bret_secret_moves' real
+       first entry (executable code, not a value/mask table -- see
+       wm/arcade/wm_arcade_joystat.h's own comment), checked every tick and
+       taking priority over the table scan below when it fires, exactly
+       like the source's own "call a0 / jrc #done". */
+    if (wm_arcade_bret_try_charge_ddt(actor, bva->opponent, powerp_dtime, &cb))
+        return;
+
+    /* "only check if newest entry in queue is fresh": nothing was
+       recorded this exact tick, so no pattern can possibly be the one
+       that just completed. */
+    if (bva->joystat.entries[0].tickcount != now) return;
+
+    /* WRESTLE.ASM's own zombie check (B_ZOMBIE) is skipped: WM_STATUS_ZOMBIE
+       is never set on a Bret actor in this port (see wm/arcade/
+       wm_arcade_mode_dead.h's own boundary), so it would never fire. */
+
+    for (i = 0; i < count; ++i) {
+        if (wm_arcade_joystat_matches(&bva->joystat, now, patterns[i].steps,
+                                      patterns[i].step_count, patterns[i].max_ticks)) {
+            wm_arcade_bret_fire_secret(actor, bva->opponent, patterns[i].id, now, &cb);
+            return;
+        }
+    }
+}
+
+/*
+ * One tick of a program-driven animation.
+ *
+ * Everything the side tables used to supply is an op here: ANI_ATTACK_ON /
+ * ANI_ATTACK_ON_Z / ANI_ATTACK_OFF turn the attack box on and off at the
+ * point in the sequence the source turns it on and off, ANI_SETMODE and
+ * ANI_SETPLYRMODE write the modes, and the velocity/offset/friction
+ * commands move the wrestler -- all of them run by the interpreter as it
+ * reaches them, on whichever branch the animation actually took.
+ */
+/*
+ * Step the flat track one frame, whatever its own timing says. Matching on
+ * the frame NAME cannot work: hrt_2_punch_anim shows H2PL3B01 twice in a
+ * row and H2PL3B02 twice in a row, so a name search finds the frame the
+ * track is already on and never leaves it.
+ */
+static void step_visual_one_frame(wm_visual_state *v) {
+    if (!v || v->ended || !v->sequence) return;
+    v->just_started = false;
+    v->ticks_left = 1;
+    wm_visual_tick(v);
+}
+
+static void wm_bret_backend_tick_program(wm_bret_backend_actor *bva,
+                                         wm_arcade_actor_t *actor,
+                                         uint16_t round_tickcount) {
+    const char *frame;
+
+    wm_anim_exec_tick(&bva->prog, actor, round_tickcount);
+
+    frame = wm_anim_exec_frame(&bva->prog);
+    if (frame) {
+        wm_arcade_frame_box_t box = wm_hurt_box_for_frame(frame);
+        wm_arcade_set_hurt_box(actor, &box);
+    }
+
+    if (!bva->prog.ended) return;
+
+    /*
+     * ANI_CHANGEANIM's hand-off, and ANI_IFBUTTONS' cancel: an animation
+     * that ends by BECOMING another does not stop -- the target starts with
+     * its own header, exactly as if it had been selected. The MODE_UNINT
+     * the finished animation set is cleared first so the target's own
+     * header sets its own rather than inheriting it; a target with no
+     * program of its own falls back to the flat path, which needs that
+     * clear for the same reason.
+     */
+    if (bva->prog.become) {
+        int next = wm_bret_anim_id_for_label(bva->prog.become);
+        bva->prog.become = NULL;
+        bva->prog.program = NULL;
+        actor->anim_mode &= (uint16_t)~(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
+        if (next >= 0) {
+            wm_bret_backend_change_anim(actor,
+                                        (wm_arcade_bret_anim_id_t)next, bva);
+            return;
+        }
+        /* A label this port has no animation for: the wrestler is left
+           interruptible rather than stuck in a program that has ended. */
+        return;
+    }
+
+    /* The animation ran to its own ANI_END. Its trailing ANI_SETMODE has
+       already written whatever ANIMODE it leaves behind (HRTSEQ2's attack
+       headers end on MODE_NORMAL, which is an absolute write of 0), so
+       there is nothing here to clear by hand. */
+    bva->prog.program = NULL;
+}
+
+
+/* WRESTLE2.ASM:3925 can_pin -- see wrestler_backend.c's copy for why
+   the victim comes from `opponent` rather than the const argument. */
+static int bret_can_pin(wm_arcade_actor_t *actor,
+                        const wm_arcade_actor_t *opp, void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    if (!bva || !bva->opponent) return 0;
+    if (opp && opp != bva->opponent) return 0;
+    return wm_arcade_can_pin(actor, bva->opponent,
+                             bva->all_actors, bva->all_actor_count) ? 1 : 0;
+}
+
+/*
+ * `calla change_anim1a` with a source label, for Bret.
+ *
+ * His dispatcher selects by typed id, so his change_anim seam takes
+ * ids; a label from the climb tables has none. It goes straight to his
+ * program channel instead -- the same route match_change_anim already
+ * uses to hand him a climb animation -- and his current_id is
+ * deliberately left alone so his next selection restarts him normally.
+ */
+static void bret_start_label(wm_arcade_actor_t *actor,
+                             wm_bret_backend_actor *bva,
+                             const char *label) {
+    const wm_anim_program *prog;
+    if (!actor || !bva || !label) return;
+    prog = wm_anim_program_find(label);
+    if (!prog) return;
+    bva->anim_env.opponent = bva->opponent;
+    wm_anim_exec_start(&bva->prog, prog, actor, bva->round_tickcount,
+                       &bva->anim_env);
+}
+
+/*
+ * mode_waitanim's `call a0` (BRET.ASM:2550), Bret's copy. Identical in
+ * purpose to the shared backend's (src/core/wrestler_backend.c), which
+ * carries the reasoning; it differs only in starting the continuation's
+ * animation through bret_start_label above.
+ */
+static void bret_code_addr(wm_arcade_actor_t *actor, uint32_t token,
+                           void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    const char *label;
+
+    if (!actor || !bva) return;
+    switch ((WmRingClimbContinuation)token) {
+    case WM_RING_CLIMB_CONT_TURNBUCKLE:
+    case WM_RING_CLIMB_CONT_OUT_SIDE:
+    case WM_RING_CLIMB_CONT_IN_SIDE:
+        break;
+    default:
+        return;
+    }
+
+    label = wm_arcade_climb_continue(actor, (WmRingClimbContinuation)token);
+    actor->code_addr = 0;
+    bret_start_label(actor, bva, label);
+}
+
+/*
+ * climb_turnbuckle (WRESTLE2.ASM:103), Bret's copy of the callback his
+ * own mode_normal already called with nothing behind it.
+ */
+static int bret_climb_turnbuckle(wm_arcade_actor_t *actor, void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    wm_climb_turnbuckle_result_t r;
+
+    if (!actor || !bva) return 0;
+    r = wm_arcade_climb_turnbuckle(actor, bva->all_actors,
+                                   bva->all_actor_count);
+    if (!r.handled) return 0;          /* `clrc` */
+
+    if (r.anim) {
+        bret_start_label(actor, bva, r.anim);
+    } else if (r.rotate_then != WM_RING_CLIMB_CONT_NONE) {
+        bret_start_label(actor, bva,
+                         wm_wrestler_set_rotate_anim(
+                             actor, (int)actor->wrestler_num,
+                             actor->facing_dir));
+        actor->code_addr = (uintptr_t)r.rotate_then;
+    }
+    return 1;                          /* `setc` */
+}
+
+/*
+ * The three shared PLYRMODE handlers, Bret's copies. Same routines as
+ * the other seven run (wm/arcade/wm_arcade_modes.h) -- the source has
+ * one body each for the whole roster -- and they differ here only in
+ * starting an animation by label through bret_start_label.
+ */
+static void bret_mode_puppet(wm_arcade_actor_t *actor, void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    wm_mode_puppet_result_t r;
+
+    if (!actor || !bva) return;
+    r = wm_arcade_mode_puppet(actor, bva->round_tickcount);
+    if (r.glitched_to_stand && r.stand_anim)
+        bret_start_label(actor, bva, r.stand_anim);
+}
+
+static void bret_mode_inair2(wm_arcade_actor_t *actor, void *user) {
+    (void)user;
+    wm_arcade_mode_inair2(actor);
+}
+
+/*
+ * mode_choking (TAKER.ASM:3110). The routine gets him loose; what it
+ * cannot do is stop the sound, so it reports it and this performs it.
+ *
+ * It used to read `(void)wm_arcade_mode_choking(actor)` under a comment
+ * saying "this backend has no sound queue to send it to". That was not
+ * so. TAKER.ASM:3127's `CALLA FIND_AND_KILL_ENDLESS` is DCSSOUND.ASM:4223,
+ * which reads @ENDLESS_SOUND, stops that channel and clears the global --
+ * and it takes no arguments and needs no queue. The port has had it since
+ * the animation opcodes landed, wm_anim_code_find_and_kill_endless(), and
+ * fifteen other call sites already reach it. So the Undertaker's choke
+ * loop played on after his victim fell out of the hold, and went on
+ * playing: nothing else clears that global on this path.
+ *
+ * The channel write is the half this port has no sink for. The global is
+ * the half other code reads (wm_anim_code_endless_sound), so it is the
+ * half that matters here.
+ */
+static void bret_mode_choking(wm_arcade_actor_t *actor, void *user) {
+    wm_mode_choking_result_t r;
+    (void)user;
+    r = wm_arcade_mode_choking(actor);
+    if (r.kill_endless_sound) wm_anim_code_find_and_kill_endless();
+}
+
+/*
+ * bounce_off_ropes (WRESTLE.ASM:5115), Bret's copy of the same shared
+ * routine (wm/arcade/wm_arcade_bounce.h).
+ */
+static void bret_bounce_off_ropes(wm_arcade_actor_t *actor, void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    wm_bounce_result_t r;
+
+    if (!actor || !bva) return;
+    r = wm_arcade_bounce_off_ropes(actor);
+    if (r.bounced && r.bounce_anim)
+        bret_start_label(actor, bva, r.bounce_anim);
+}
+
+/*
+ * The same three, Bret's copies (wm/arcade/wm_arcade_auto_pin.h).
+ */
+/* Referenced by nothing while the seam above is unwired; kept
+   because the decision is about the match loop and not about
+   this adapter, and deleting it would hide that. */
+static int bret_raisearm_check(wm_arcade_actor_t *actor, void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    if (!actor || !bva) return 0;
+    return wm_arcade_raisearm_check(actor, bva->all_actors,
+                                   bva->all_actor_count,
+                                   bva->anim_env.royal_rumble,
+                                   /* raisearm_check only asks whether
+                                      the queue is empty, and peeks
+                                      without advancing it. */
+                                   wm_final_queue_empty(
+                                       bva->anim_env.final_battle)) ? 1 : 0;
+}
+
+static void bret_set_raisearm_bit(wm_arcade_actor_t *actor, void *user) {
+    (void)user;
+    wm_arcade_set_raisearm_bit(actor);
+}
+
+/*
+ * DOINK.ASM:3316 bozo_check and DCSSOUND.ASM's FIND_AND_KILL_ENDLESS.
+ *
+ * Both seams were declared in wm/arcade/wm_arcade_bret.h and filled by
+ * nobody. find_and_kill_endless is NULL-checked at fifteen call sites
+ * across the eight dispatchers; bozo_check was worse off than that --
+ * six of the eight dispatchers do not even call it, so the head-hold
+ * power move and the head-held reversal were missing outright rather
+ * than merely inert.
+ */
+/*
+ * Bret's sound seam. Same shape as Razor's, and the same source: every
+ * id is a WRSND form read out of BRET.ASM's own calls.
+ */
+static const char *bret_sound_label(wm_arcade_bret_sound_id_t id) {
+    switch (id) {
+    case WM_BRET_SND_PUNCH:       return "PUNCH";
+    case WM_BRET_SND_HDBUTT:      return "HDBUTT";
+    case WM_BRET_SND_LBOWDROP:    return "LBOWDROP";
+    case WM_BRET_SND_BLOCK_WOOSH: return "BLOCK_WOOSH";
+    case WM_BRET_SND_UPRCUT:      return "UPRCUT";
+    case WM_BRET_SND_KICK:        return "KICK";
+    case WM_BRET_SND_FLYKICK:     return "FLYKICK";
+    case WM_BRET_SND_GRABFLING:   return "GRABFLING";
+    /* `WRSND W_BRET,HIPTOSS_T1,PUNCH_T2` -- the toss and then the
+       punch, three times in BRET.ASM. */
+    case WM_BRET_SND_HIPTOSS:     return "HIPTOSS_PUNCH";
+    case WM_BRET_SND_PUSH:        return "PUSH";
+    case WM_BRET_SND_TURNDIVE:    return "TURNDIVE";
+    case WM_BRET_SND_NONE:        break;
+    }
+    return NULL;
+}
+
+static void bret_sound(wm_arcade_actor_t *actor,
+                       wm_arcade_bret_sound_id_t id, void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    wm_sndlabel_t s;
+    const char *label = bret_sound_label(id);
+
+    if (!actor || !bva || !label || !bva->anim_env.sound) return;
+    s = wm_wrsnd_label(label);
+    switch (s.kind) {
+    case WM_SNDLABEL_WRSND:
+        (void)wm_wrsndx((int)actor->wrestler_num, s.move1, s.move2,
+                        bva->anim_env.rng, bva->anim_env.sound_user,
+                        bva->anim_env.sound);
+        break;
+    case WM_SNDLABEL_FIXED:
+        bva->anim_env.sound(bva->anim_env.sound_user, s.call);
+        break;
+    case WM_SNDLABEL_UNKNOWN:
+        break;
+    }
+}
+
+/* WRESTLE2.ASM:3253 ck_teammate_pin, and DCSSOUND.ASM:3534 DO_REVERSAL
+   with LIFEBAR.ASM:3574 DO_REVERSAL_MESS. Bret's copies of three seams
+   that were declared in his header and filled by nobody; see
+   src/core/wrestler_backend.c for what each one is. */
+/*
+ * WRESTLE.ASM:6044 ck_ignore_a8 -- "If player is moving away from
+ * opponent, or standing still, tell the calling routine to ignore
+ * button press". BRET.ASM:596 and DOINK.ASM:1399 both gate the flying
+ * kick on it: you cannot launch one while backing off.
+ *
+ * wm_arcade_ck_ignore has been translated since the combat work, and
+ * unlike keep_attached the call sites have NO fallback -- they simply
+ * skip the test when the seam is empty, so the refusal never fired and
+ * a wrestler could launch a flying kick while walking away.
+ */
+/*
+ * LIFEBAR.ASM CHECK_COMBO_GO, for Bret.
+ *
+ * His call site reads `if (!cb->check_combo_go || cb->check_combo_go(a,
+ * cb->user) < 0) return 0;` -- so an empty seam does not merely skip the
+ * gate, it REFUSES the move outright. Every one of his head-hold combos
+ * was turned down before it started.
+ *
+ * The other seven have had this since the combo-meter work; Bret's was
+ * the copy nobody filled, and the seam audit could not see it because
+ * the name is filled elsewhere.
+ */
+static int bret_check_combo_go(wm_arcade_actor_t *actor, void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    return (int)wm_arcade_check_combo_go(actor,
+                                         bva ? bva->instant_combos_on : 0);
+}
+
+static int bret_ck_ignore(wm_arcade_actor_t *actor, void *user) {
+    (void)user;
+    return wm_arcade_ck_ignore(actor) ? 1 : 0;
+}
+
+static int bret_teammate_pin(wm_arcade_actor_t *actor, void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    if (!actor || !bva) return 0;
+    return wm_ck_teammate_pin(actor, bva->all_actors, bva->all_actor_count)
+               ? 1 : 0;
+}
+
+static void bret_do_reversal(wm_arcade_actor_t *actor, void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    if (!actor || !bva) return;
+    (void)wm_anim_code_run(actor, &bva->anim_env, "DO_REVERSAL", NULL, 0);
+}
+
+static void bret_do_reversal_message(wm_arcade_actor_t *actor, void *user) {
+    wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
+    if (!actor || !bva) return;
+    if (bva->round_award)
+        bva->round_award(bva->round_award_user, (int)actor->player_num,
+                         (int)WM_AWARD_REVERSAL);
+    if (bva->anim_env.sound)
+        bva->anim_env.sound(bva->anim_env.sound_user, 0x15Cu);
+}
+
+static void bret_find_and_kill_endless(wm_arcade_actor_t *actor,
+                                          void *user) {
+    (void)actor;
+    (void)user;
+    wm_anim_code_find_and_kill_endless();
+}
+
+static int bret_bozo_check(wm_arcade_actor_t *actor, void *user) {
+    wm_bozo_env_t env;
+    (void)user;
+    memset(&env, 0, sizeof(env));
+    env.find_and_kill_endless = bret_find_and_kill_endless;
+    return wm_arcade_bozo_check(actor, &env) ? 1 : 0;
+}
+
+static void bret_drone_change_back(wm_arcade_actor_t *actor, void *user) {
+    (void)user;
+    (void)wm_arcade_drone_change_back(actor);
+}
+
+/*
+ * DCSSOUND.ASM:2914 ADD_IF_SILENT around the turnbuckle, the announcer's
+ * commentary on a climb and on a dive off the top.
+ *
+ * Two SEPARATE tables at two separate call sites, nine of each across the
+ * wrestler files: CLIMB_ROPES from mode_normal's climb branch once
+ * climb_turnbuckle sets carry (BRET.ASM:1456 and its eight siblings), and
+ * JUMP_ROPES from mode_turn's dive (BRET.ASM:2296 and its eight). The
+ * port had ONE seam for both, named for the dive and filled by nobody, so
+ * the turnbuckle was silent -- and would have said the wrong thing on the
+ * way up once it was not.
+ *
+ * Everything the source routine reaches for is already on the animation
+ * env, because the CALL_x announcer group needed it: the queue itself,
+ * the RNG for RNDPER/RNDRNG0, the near-death walk DO_END_STUFF does, and
+ * both halves of DO_CROWD_ANYWAY for a table carrying a crowd `.LONG`.
+ * CLIMB_ROPES carries CRESCENDO_TABLE and JUMP_ROPES carries ROPES_CHEER,
+ * so that last part is not hypothetical here.
+ */
+static void backend_rope_announce(wm_bret_backend_actor *st,
+                                  const wm_arcade_actor_t *actor,
+                                  const char *table_name) {
+    const wm_announce_table *t;
+    wm_announce_ctx ctx;
+    if (!st || !actor || !st->anim_env.announcer) return;
+    t = wm_announce_table_find(table_name);
+    if (!t) return;
+    memset(&ctx, 0, sizeof(ctx));
+    ctx.rng = st->anim_env.rng;
+    ctx.wrestler_num = (int)actor->wrestler_num;
+    ctx.anyone_near_death = st->anim_env.anyone_near_death;
+    ctx.user = st->anim_env.announcer_user;
+    ctx.crowd_user = st->anim_env.crowd_user;
+    ctx.crowd_cheer = st->anim_env.crowd_cheer;
+    ctx.crowd_sound = st->anim_env.crowd_sound;
+    ctx.crowd_busy = st->anim_env.crowd_busy
+                     ? st->anim_env.crowd_busy(st->anim_env.crowd_user)
+                     : false;
+    /* `MOVI 1000,A0` at all eighteen call sites. */
+    (void)wm_announce_from_table(st->anim_env.announcer, t, 1000, true, &ctx);
+}
+
+/* CLIMB_ROPES: `move *a13(WRESTLERNUM),A5`. */
+static void bret_climb_rope_audio(wm_arcade_actor_t *actor, void *user) {
+    backend_rope_announce((wm_bret_backend_actor *)user, actor, "CLIMB_ROPES");
+}
+
+/* JUMP_ROPES: `move *a13(PLYRNUM),a5` -- a different register from the
+   climb's, which selects whose voice a PERSONAL call uses. Neither of
+   these two tables holds one, so it changes nothing said today. */
+static void bret_jump_rope_audio(wm_arcade_actor_t *actor, void *user) {
+    backend_rope_announce((wm_bret_backend_actor *)user, actor, "JUMP_ROPES");
+}
+
+/*
+ * JJXM.H:44 `RND_AWARD a13,BLOCKS_AWD` -- round_award(a13, BLOCKS_AWD),
+ * the one award every wrestler file scores from std_block. AWARD.ASM's
+ * BLOCKS_AWD is wm/award.h's WM_AWARD_BLOCKS.
+ *
+ * The seam was declared in the Bret and Razor structs only, so six of
+ * the eight wrestlers could not score a block at all, and in those two
+ * it was filled by nobody. It is on the shared struct now and all eight
+ * call it at the source's own position.
+ */
+static void bret_round_award_block(wm_arcade_actor_t *actor, void *user) {
+    wm_bret_backend_actor *st = (wm_bret_backend_actor *)user;
+    if (!actor || !st || !st->round_award) return;
+    st->round_award(st->round_award_user, (int)actor->player_num,
+                    (int)WM_AWARD_BLOCKS);
+}
+
+/*
+ * LIFEBAR.ASM:3302 BONUS_MESS, on Bret's's secret-move path.
+ *
+ * It is not display: the routine writes DAM_MULT, scores HIGH_RISK_AWD
+ * and plays the guitar on every path past its first test. `bonus` is
+ * A10, whose sign picks between ANIM.ASM:2230's taunt-style high risk
+ * (which has already set DAM_MULT to 4 and must not be overwritten) and
+ * the wrestler files' numbered secret moves (which set it to 2).
+ *
+ * The DAM_MULT half cannot land from here: this port keeps it on the
+ * match's combat runtime, which a backend does not hold. The award and
+ * the sound do, and they are the parts that were silently absent.
+ */
+static void bret_bonus_message(wm_arcade_actor_t *actor, int bonus,
+                                  void *user) {
+    wm_bret_backend_actor *st = (wm_bret_backend_actor *)user;
+    wm_bonus_mess_result r;
+    if (!actor || !st) return;
+    r = wm_bonus_mess(st->anim_env.bonus_mess, bonus, actor->risk);
+    if (!r.ran) return;
+    if (r.high_risk_award && st->round_award)
+        st->round_award(st->round_award_user, (int)actor->player_num,
+                        (int)WM_AWARD_HIGH_RISK);
+    /* `MOVI 0BBH,A0 / CALLA triple_sound` -- the guitar. The env's
+       `sound` hook IS triple_sound: its comment says the call is "the
+       sound's own index into triple_sndtab, passed through unchanged". */
+    if (r.guitar && st->anim_env.sound)
+        st->anim_env.sound(st->anim_env.sound_user, 0xBBu);
+}
+
+wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva) {
+    wm_arcade_bret_callbacks_t cb;
+    memset(&cb, 0, sizeof(cb));
+    cb.can_pin = bret_can_pin;
+    cb.change_anim = wm_bret_backend_change_anim;
+    cb.bonus_message = bret_bonus_message;
+    cb.climb_rope_audio = bret_climb_rope_audio;
+    cb.round_award_block = bret_round_award_block;
+    cb.jump_rope_audio = bret_jump_rope_audio;
+    cb.change_anim_restart = wm_bret_backend_change_anim_restart;
+    cb.change_torso_anim = wm_bret_backend_change_torso_anim;
+    cb.execute_walk = wm_bret_backend_execute_walk;
+    cb.adjust_health = wm_bret_backend_adjust_health;
+    cb.mode_dead = wm_bret_backend_mode_dead;
+    cb.check_secret_moves = wm_bret_backend_check_secret_moves;
+    cb.code_addr = bret_code_addr;
+    cb.climb_turnbuckle = bret_climb_turnbuckle;
+    cb.mode_puppet = bret_mode_puppet;
+    cb.mode_inair2 = bret_mode_inair2;
+    cb.mode_choking = bret_mode_choking;
+    cb.bounce_off_ropes = bret_bounce_off_ropes;
+    cb.raisearm_check = bret_raisearm_check;
+    cb.set_raisearm_bit = bret_set_raisearm_bit;
+    cb.drone_change_back = bret_drone_change_back;
+    cb.bozo_check = bret_bozo_check;
+    cb.teammate_pin = bret_teammate_pin;
+    cb.ck_ignore = bret_ck_ignore;
+    cb.check_combo_go = bret_check_combo_go;
+    cb.do_reversal = bret_do_reversal;
+    cb.do_reversal_message = bret_do_reversal_message;
+    cb.sound = bret_sound;
+    cb.find_and_kill_endless = bret_find_and_kill_endless;
+    cb.user = bva;
+    return cb;
+}
+
+void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
+                          uint16_t round_tickcount) {
+    size_t leg_old_frame_index, torso_old_frame_index;
+
+    if (!bva) return;
+    bva->round_tickcount = round_tickcount;
+    /* hrt_4_block_anim's ANI_WAITRELEASE,PLAYER_BLOCK_BIT: park on its own
+       frame 1 while the block button is still held, so the animation (and
+       with it WM_PMODE_BLOCK) lasts exactly as long as the player holds
+       block, instead of running straight through in nine ticks. */
+    /*
+     * hrt_4_block_anim's ANI_WAITRELEASE used to be special-cased here,
+     * holding both tracks by hand while the block button stayed down. It
+     * is a real opcode now (WM_AOP_WAITRELEASE), so the program parks
+     * itself and the flat track follows it like every other wait. The
+     * hand-rolled version is deleted rather than left to drift beside the
+     * op that replaced it.
+     */
+    /*
+     * The flat leg track no longer runs on its own timing while a program
+     * is driving. It never could keep up once ANI_WAITHITGND existed -- a
+     * fall parks the program on one frame for as long as it takes to land,
+     * and the flat list has no such command in it, so the two drifted
+     * apart by the whole length of every fall. The program is what runs
+     * the animation; the flat track is synced to the frame IT is showing,
+     * below, so callers reading `visual` see the wrestler's real frame.
+     */
+    leg_old_frame_index = bva->visual.frame_index;
+    if (!bva->prog.program) wm_visual_tick(&bva->visual);
+    torso_old_frame_index = bva->torso_visual.frame_index;
+    wm_visual_tick(&bva->torso_visual);
+
+    /* HRTSEQ1.ASM's ANI_SETFACING (torso_turn_setfacing above) and
+       ANI_XFLIP (leg_turn_xflip above): each fires exactly once per
+       crossing into a marked frame, matching the real animation
+       interpreter executing that command exactly once as it reaches that
+       point in the sequence -- not every tick the frame is held. */
+    if (actor && bva->torso_visual.frame_index != torso_old_frame_index &&
+        frame_index_is_marked(find_torso_turn_setfacing(bva->torso_visual.sequence),
+                              bva->torso_visual.frame_index)) {
+        actor->facing_dir = actor->new_facing_dir;
+    }
+    if (actor && bva->visual.frame_index != leg_old_frame_index &&
+        frame_index_is_marked(find_leg_turn_xflip(bva->visual.sequence),
+                              bva->visual.frame_index)) {
+        actor->obj_control = (uint16_t)(actor->obj_control ^ WM_OBJ_FLIPH);
+    }
+
+    if (!actor) return;
+
+    /*
+     * A program-driven animation runs from its ops and nothing below
+     * applies to it: the attack boxes, the mode and player-mode writes,
+     * the motion commands and the end are all in the op stream, so the
+     * side tables would only apply each of them a second time -- and on
+     * the wrong frame whenever a branch has taken the animation down a
+     * path the flat list cannot express. The flat track keeps ticking
+     * alongside purely so callers reading `visual` still see which
+     * sequence is playing.
+     */
+    if (bva->prog.program) {
+        /*
+         * The flat track steps when the PROGRAM steps, one frame for one
+         * frame, rather than running on its own clock. Both lists come out
+         * of the same source stream in the same order, so they stay in
+         * step -- and an ANI_WAITHITGND that parks the program for the
+         * length of a fall now parks the flat track with it, instead of
+         * letting it run away through the rest of the animation while the
+         * wrestler is still in the air.
+         */
+        size_t pc_before = bva->prog.pc;
+        wm_bret_backend_tick_program(bva, actor, round_tickcount);
+        if (bva->prog.pc != pc_before) step_visual_one_frame(&bva->visual);
+        return;
+    }
+
+    {
+        const wm_visual_frame *cur = wm_visual_current(&bva->visual);
+        wm_arcade_frame_box_t box =
+            wm_hurt_box_for_frame(cur ? cur->source_frame : NULL);
+        wm_arcade_set_hurt_box(actor, &box);
+    }
+
+    /* What reaches here is a walk, turn or stand cycle -- an unbranching
+       frame loop with no commands in it -- or one of the secret-move ids
+       that has no extracted animation at all. There is no attack box, no
+       mode write and no hand-off among them; everything that had one is
+       program-driven above. */
+
+    /* secret_move_sets_mode_uninit's own ids have no frame data to time a
+       real end from, so the WM_MODE_UNINT wm_bret_backend_change_anim set
+       for one of them earlier this same tick (protecting it from being
+       reselected by this tick's own player_mode dispatch continuation)
+       gets cleared right back off here, rather than left set indefinitely
+       -- see that function's own comment for why this is a deliberate,
+       bounded simplification rather than the source's real per-animation
+       duration. */
+    if (bva->pending_uninit_clear) {
+        actor->anim_mode &= (uint16_t)~(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
+        bva->pending_uninit_clear = false;
+    }
+}
+

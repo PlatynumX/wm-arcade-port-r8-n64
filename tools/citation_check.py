@@ -220,7 +220,113 @@ def findings(paths: list[pathlib.Path] | None = None):
     return out
 
 
+
+def linked_asm() -> set[str]:
+    """The .ASM files WRESTLE.CMD actually links.
+
+    The historical source dump carries variants the shipped game does not
+    build: ATTR.ASM beside ATTRACT.ASM, FIREBAK.ASM beside FIREWORK.ASM,
+    DNK.ASM beside DOINK.ASM, LEXSEQ1'.ASM beside LEXSEQ1.ASM. They define
+    the SAME labels, so a citation into one looks perfectly plausible and
+    the values it names are usually right -- until they are not. DNK.ASM
+    still carries the oldest of three walk speeds every other file records
+    having revised, and this port shipped it as Doink's, making him slower
+    than the arcade.
+
+    tools/port_coverage.py reads this same file for the same reason. The
+    linker command is the only authority on what is in the game.
+    """
+    cmd = SRC / "WRESTLE.CMD"
+    if not cmd.exists():
+        return set()
+    objs = re.findall(r"^([A-Za-z0-9_]+)\.obj", cmd.read_text(errors="replace"),
+                      re.I | re.M)
+    return {o.upper() + ".ASM" for o in objs}
+
+
+# A line-numbered citation is evidence, so it must name a file the game
+# builds. These name an unlinked file ON PURPOSE, to say it is unlinked.
+# A bare file mention with no line number is prose, not evidence, and is
+# not checked -- that is how RING.ASM ("no longer used", by its own header)
+# and the DNK/DOINK duplicate discussions in tools/ stay legal.
+CITES_UNLINKED_DELIBERATELY = {
+    ("include/wm/arcade/wmania_ring_geometry.h", "RING.ASM"):
+        "OPEN QUESTION, not a settled exemption. RING.ASM is not in "
+        "WRESTLE.CMD and its own header says the file 'is no longer "
+        "required' -- yet vln_right_rope and vln_left_rope are defined "
+        "ONLY there (RING.ASM:23, :72) and are referenced by files that ARE "
+        "linked: ANIM.ASM:1711, :1759, :2576, :2579, REF.ASM:868, :878 and "
+        "SHNSEQ2.ASM:2569, :2573. A shipped ROM cannot have unresolved "
+        "symbols, so either WRESTLE.CMD is not the exact link line of the "
+        "shipped build or those symbols are supplied another way. Until "
+        "that is established, this header keeps RING.ASM's numbers AND its "
+        "own warning not to trust them, which is the honest state. Do not "
+        "delete this row to make the check quiet, and do not treat it as "
+        "proof the citation is fine.",
+    ("tests/test_source_tools.py", "ADMSEQ3.ASM"):
+        "Names ADMSEQ3.ASM:199 to document a symbol COLLISION -- it defines "
+        "dnk_3_head_held_anim and so does DNKSEQ3.ASM:1624. The citation's "
+        "whole point is that this file is not the game.",
+    ("tests/test_source_tools.py", "DNK.ASM"):
+        "The guard's own docstring names DNK.ASM:2790 as the worked example "
+        "-- the Doink walk speed this port shipped from the wrong file.",
+    ("tools/wlanim.py", "ADMSEQ3.ASM"):
+        "Same collision, in the tool that has to resolve it: searching the "
+        "drop alphabetically finds the wrong one first.",
+    ("tools/citation_check.py", "DNK.ASM"):
+        "This module's own docstrings name DNK.ASM:2790 as the worked "
+        "example of why the check exists.",
+    ("src/core/wrestler_backend.c", "DNK.ASM"):
+        "Names DNK.ASM:2790 to record where this port's wrong Doink walk "
+        "speed came from. Removing the citation would delete the evidence.",
+    ("include/wm/wrestler_backend.h", "DNK.ASM"):
+        "Same, on the declaration: says the old 30000h/21f0eh claim was "
+        "DNK.ASM's and why that file is not the game.",
+}
+
+
+def unlinked_citations(paths: list[pathlib.Path] | None = None):
+    """Line-numbered citations naming a file WRESTLE.CMD does not link."""
+    if paths is None:
+        paths = [
+            p
+            for d in ("src", "include", "tests", "tools")
+            for p in (ROOT / d).rglob("*")
+            if p.suffix in (".c", ".h", ".py")
+        ]
+    linked = linked_asm()
+    if not linked:
+        return []
+    out = []
+    for p in sorted(paths):
+        rel = str(p.relative_to(ROOT))
+        # This module documents the unlinked files it exists to catch, so
+        # its own prose names them by line. Exempting the checker beats
+        # writing a row per example and then having to add one every time
+        # the documentation gains a case.
+        if rel == "tools/citation_check.py":
+            continue
+        for m in re.finditer(r"\b([A-Z0-9_]+'?\.ASM):(\d+)\b",
+                             p.read_text(errors="replace")):
+            name = m.group(1)
+            if name in linked:
+                continue
+            if not (SRC / name).exists():
+                continue  # a fixture name in a test, not a real source file
+            if (rel, name) in CITES_UNLINKED_DELIBERATELY:
+                continue
+            out.append({"c_file": rel, "asm_file": name, "cited": int(m.group(2))})
+    return out
+
+
 def main() -> int:
+    unl = unlinked_citations()
+    for u in unl:
+        print(f'{u["c_file"]}  cites {u["asm_file"]}:{u["cited"]}'
+              f'  -- WRESTLE.CMD does not link {u["asm_file"]}')
+    if unl:
+        print(f'{len(unl)} citation(s) name an unlinked source file\n')
+
     got = findings()
     for f in sorted(got, key=lambda d: -abs(d["actual"] - d["cited"])):
         print(

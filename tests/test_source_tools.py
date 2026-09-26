@@ -5560,3 +5560,95 @@ def test_every_citation_points_at_the_line_it_quotes() -> None:
         f' but `{f["snippet"][:60]}` is at :{f["span"]}'
         for f in bad
     )
+
+
+def test_no_citation_uses_an_unlinked_source_variant() -> None:
+    """A line-numbered citation must name a file the game builds.
+
+    The source drop carries variants the shipped game does not link:
+    ATTR.ASM beside ATTRACT.ASM, DNK.ASM beside DOINK.ASM, FIREBAK.ASM
+    beside FIREWORK.ASM, LEXSEQ1'.ASM beside LEXSEQ1.ASM. They define the
+    SAME labels, so citing one looks right and usually IS right -- until
+    it is not.
+
+    It was not, once, and it cost real gameplay. DNK.ASM:2790 sets
+    `#VEL equ 30000h / #DVEL equ 21f0eh`; DOINK.ASM:3672, the file
+    WRESTLE.CMD links, sets 3a000h / 31000h -- identical to the other
+    seven wrestlers, each of which records the same `;38000h ;30000h`
+    revision history in its own trailing comment. The roster was sped up
+    twice and DNK.ASM was left at the oldest pair. This port shipped that
+    pair as Doink's, so Doink walked at about 82% of arcade speed on the
+    cardinals and 69% on the diagonals, under a comment asserting he
+    "really is a little slower than everyone else."
+
+    A bare file mention with no line number is prose, not evidence, and is
+    not checked -- that is how RING.ASM's own "no longer required" warning
+    and the DNK/DOINK discussions in tools/ stay legal.
+    """
+    spec = importlib.util.spec_from_file_location(
+        "citation_check_linked", ROOT / "tools" / "citation_check.py"
+    )
+    assert spec and spec.loader
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    linked = mod.linked_asm()
+    assert len(linked) > 50, (
+        f"WRESTLE.CMD gave only {len(linked)} linked files; without it this "
+        "check cannot distinguish a shipped file from an abandoned variant"
+    )
+    assert "DOINK.ASM" in linked and "DNK.ASM" not in linked, (
+        "the DNK/DOINK pair is this check's worked example; if the linker "
+        "command no longer separates them, re-establish which file ships"
+    )
+
+    bad = mod.unlinked_citations()
+    assert not bad, (
+        "citation(s) name a source file WRESTLE.CMD does not link:\n"
+        + "\n".join(
+            f'  {b["c_file"]} cites {b["asm_file"]}:{b["cited"]}' for b in bad
+        )
+        + "\nUse the shipped file, or add a row to "
+        "CITES_UNLINKED_DELIBERATELY saying why the variant is the point."
+    )
+
+
+def test_doink_walks_at_the_same_speed_as_everyone_else() -> None:
+    """All eight linked wrestler files share one #VEL/#DVEL pair.
+
+    Read out of the source rather than asserted, so if a future extraction
+    reintroduces DNK.ASM's numbers the test says which file they came from.
+    """
+    want = None
+    for name in ("BRET", "RAZOR", "TAKER", "YOKO", "SHAWN", "BAM", "LEX", "DOINK"):
+        body = (ROOT / "original" / "wwf-wrestlemania" / f"{name}.ASM").read_text(
+            errors="replace"
+        ).splitlines()
+        tbl = next(
+            (i for i, l in enumerate(body)
+             if re.match(r"^\s*SUBR\s+\w+_velocity_table\b", l)),
+            None,
+        )
+        assert tbl is not None, f"{name}.ASM has no xxx_velocity_table"
+        pair = {}
+        for l in body[max(0, tbl - 12):tbl]:
+            m = re.match(r"^#(VEL|DVEL)\s+equ\s+([0-9a-fA-F]+)h", l)
+            if m:
+                pair[m.group(1)] = int(m.group(2), 16)
+        assert set(pair) == {"VEL", "DVEL"}, f"{name}.ASM: found {pair}"
+        if want is None:
+            want = pair
+        assert pair == want, (
+            f"{name}.ASM has {pair} but the roster shares {want} -- if a "
+            "wrestler genuinely diverged, wm_wrestler_velocity_table needs "
+            "its per-wrestler table back"
+        )
+    assert want == {"VEL": 0x3a000, "DVEL": 0x31000}, want
+
+    # And the port must not still be carrying DNK.ASM's superseded pair.
+    src = (ROOT / "src" / "core" / "wrestler_backend.c").read_text()
+    for dead in ("0x00030000", "0x00021f0e"):
+        assert dead not in src, (
+            f"wrestler_backend.c still holds {dead}, which is DNK.ASM:2790's "
+            "superseded value, not DOINK.ASM:3672's"
+        )

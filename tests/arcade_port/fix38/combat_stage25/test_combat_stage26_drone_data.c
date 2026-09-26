@@ -265,8 +265,20 @@ static void test_all_wrestlers_move(void) {
     };
     int k;
 
-    /* Doink is the one wrestler whose own ASM uses a different #VEL/#DVEL. */
-    assert(wm_wrestler_velocity_table(WM_ROSTER_DOINK) !=
+    /*
+     * Every wrestler shares one #VEL/#DVEL pair -- Doink included.
+     *
+     * This assertion used to demand the opposite, that Doink's table
+     * DIFFER from Bret's, and it passed: the port gave him 30000h/21f0eh
+     * out of DNK.ASM:2790, an abandoned Doink variant WRESTLE.CMD does not
+     * link. DOINK.ASM:3672, the file the game builds, sets 3a000h/31000h
+     * like all seven others, and each of the eight records the same
+     * `;38000h ;30000h` revision history in its own trailing comment.
+     * DNK.ASM was simply never updated.
+     *
+     * So the test was pinning a defect in place. It now pins the source.
+     */
+    assert(wm_wrestler_velocity_table(WM_ROSTER_DOINK) ==
            wm_wrestler_velocity_table(WM_ROSTER_BRET));
     assert(wm_wrestler_velocity_table(WM_ROSTER_LEX) ==
            wm_wrestler_velocity_table(WM_ROSTER_BRET));

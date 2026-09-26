@@ -540,10 +540,9 @@ void wm_arcade_wrestler_collisions_off(wm_arcade_actor_t *actor);
  * the whole content of the routine: six instructions, five of them the
  * guard.
  *
- * Nothing in the shipped game calls it. DNK.ASM:118 and DOINK.ASM:49
- * each declare it with `.ref` and the only `calla` -- REACT5.ASM:873 --
- * is commented out, so the two declarations are all that is left of
- * whatever used to.
+ * Nothing in the shipped game calls it. DOINK.ASM:49 declares it with
+ * `.ref` and the only `calla` -- REACT5.ASM:873 -- is commented out, so
+ * that one declaration is all that is left of whatever used to.
  */
 void wm_arcade_inc_getup_time(wm_arcade_actor_t *actor, int32_t amount);
 

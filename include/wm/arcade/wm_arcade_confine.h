@@ -206,7 +206,7 @@ void wm_arcade_confine_wrestler_ex(wm_arcade_actor_t *actor,
  * the one that is not inside confine_wrestler.
  *
  * Every wrestler's own mode_normal calls it directly (BRET.ASM:1453,
- * BAM.ASM:1410, DNK.ASM:1468, DOINK.ASM:1828 and the rest) with
+ * BAM.ASM:1410, DOINK.ASM:1828 and the rest) with
  * STICK_VAL_CUR in a0, and all eight of this port's dispatchers already
  * had the callback seam for it -- with nothing behind it, the same way
  * ck_climb_out_* had no caller before the ring-out work. So nobody could

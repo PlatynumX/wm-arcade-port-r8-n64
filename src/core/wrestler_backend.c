@@ -30,11 +30,19 @@
  * its own xxx_velocity_table (see wm/wrestler_backend.h). Bret's pair is
  * already spelled out as WM_BRET_WALK_VEL/DVEL in wm/arcade/wm_arcade_bret.h
  * and matches these exactly.
+ *
+ * All EIGHT linked files carry the same pair, Doink's DOINK.ASM:3672
+ * included, and each carries the same history in a trailing comment --
+ * `#VEL equ 3a000h ;38000h ;30000h` -- so the roster was sped up twice and
+ * every wrestler moved together. There is no outlier.
+ *
+ * This port used to give Doink 30000h/21f0eh, which is the OLDEST of those
+ * three values, and it came from DNK.ASM:2790 -- an abandoned Doink variant
+ * that WRESTLE.CMD does not link and that was simply never updated. Both
+ * files define `dnk_velocity_table`; only DOINK.ASM's is in the game.
  */
 #define WM_WALK_VEL_STD  0x0003a000
 #define WM_WALK_DVEL_STD 0x00031000
-#define WM_WALK_VEL_DNK  0x00030000
-#define WM_WALK_DVEL_DNK 0x00021f0e
 
 /* The table body itself is identical in all eight files, compass-ordered:
    .long 0,-#VEL / #DVEL,-#DVEL / #VEL,0 / #DVEL,#DVEL / 0,#VEL /
@@ -51,11 +59,14 @@
 
 static const wm_move_velocity_entry s_velocity_std[8] =
     WM_WALK_TABLE(WM_WALK_VEL_STD, WM_WALK_DVEL_STD);
-static const wm_move_velocity_entry s_velocity_doink[8] =
-    WM_WALK_TABLE(WM_WALK_VEL_DNK, WM_WALK_DVEL_DNK);
 
 const wm_move_velocity_entry *wm_wrestler_velocity_table(int32_t wrestler_num) {
-    return wrestler_num == (int32_t)WM_ROSTER_DOINK ? s_velocity_doink : s_velocity_std;
+    /* One table: the eight linked files' #VEL/#DVEL are identical, so the
+       wrestler does not select between them. The argument is kept because
+       the source reads each wrestler's OWN table and a later revision
+       could diverge again. */
+    (void)wrestler_num;
+    return s_velocity_std;
 }
 
 /* Defined below, beside the other channel plumbing. */

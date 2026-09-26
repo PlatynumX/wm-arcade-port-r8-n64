@@ -526,7 +526,7 @@ static void render_sports_background(const wm_app *app) {
     if (!sports_background_cache_ready)
         return;
 
-    /* ATTR.ASM::logo_mod universe starts, verbatim. */
+    /* ATTRACT.ASM:1747 logo_mod universe starts, verbatim. */
     static const int16_t module_starts[6][2] = {
         {-400,    0},
         {-800,  400},
@@ -571,7 +571,7 @@ static void render_sports_background(const wm_app *app) {
 }
 
 static void render_sports_motto(void) {
-    /* ATTR.ASM::rule_str:
+    /* ATTRACT.ASM:1666 rule_str:
        JAM_STR osgmd8_ascii,6,0,200,225,SGMD8WHT,print_string_C2 */
     const char *text = wm_sports_motto_text();
     if (!text) return;
@@ -611,7 +611,7 @@ static void render_midway_sports(const wm_app *app) {
 
     render_sports_background(app);
 
-    /* ATTR.ASM LOGO_LIST: SPRTLG01..SPRTLG17 share one object anchor. */
+    /* ATTRACT.ASM:1762 LOGO_LIST: SPRTLG01..SPRTLG17 share one object anchor. */
     const float anchor_x = 200.0f * WM_FRONTEND_SCALE_X;
     const float anchor_y = 118.0f * WM_FRONTEND_SCALE_Y;
     const size_t count = wm_sports_logo_sprite_count();

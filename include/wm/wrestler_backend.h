@@ -217,10 +217,14 @@ const char *wm_wrestler_backend_torso_frame(
 /*
  * Each wrestler's own xxx_velocity_table (BRET.ASM:2848 hrt_, RAZOR.ASM:2586
  * rzr_, TAKER.ASM:3145 und_, YOKO.ASM:2662 yok_, SHAWN.ASM:3203 shn_,
- * BAM.ASM:2810 bam_, DNK.ASM:2794 dnk_, LEX.ASM:2619 lex_), all built from
- * that file's own #VEL/#DVEL. Seven of the eight share #VEL=3a000h /
- * #DVEL=31000h; Doink is the one genuine outlier at 30000h / 21f0eh, i.e.
- * really is a little slower than everyone else.
+ * BAM.ASM:2810 bam_, DOINK.ASM:3676 dnk_, LEX.ASM:2619 lex_), all built from
+ * that file's own #VEL/#DVEL. All eight share #VEL=3a000h / #DVEL=31000h, so
+ * every wrestler walks at the same speed and there is no outlier.
+ *
+ * This header used to say Doink was slower, at 30000h / 21f0eh. Those are
+ * DNK.ASM:2790's values -- an abandoned Doink variant WRESTLE.CMD does not
+ * link, left at the oldest of the three values every other file records in
+ * its own trailing `;38000h ;30000h` history comment.
  */
 const wm_move_velocity_entry *wm_wrestler_velocity_table(int32_t wrestler_num);
 

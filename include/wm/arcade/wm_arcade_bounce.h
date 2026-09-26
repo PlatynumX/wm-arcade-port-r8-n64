@@ -2,7 +2,7 @@
  * WRESTLE.ASM:5115 SUBR bounce_off_ropes -- the rope rebound.
  *
  * What makes a whip into the ropes come back. Every wrestler's own
- * mode_running calls it (BRET.ASM:1935, BAM.ASM:1880, DNK.ASM:1970,
+ * mode_running calls it (BRET.ASM:1935, BAM.ASM:1880,
  * DOINK.ASM:2337 and the rest), and all eight of this port's
  * dispatchers already had the callback seam for it with nothing behind
  * it -- so a running wrestler crossed the ropes and kept going.

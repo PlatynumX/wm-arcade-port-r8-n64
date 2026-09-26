@@ -217,7 +217,8 @@ static void begin_call(wm_app *app, wm_attract_call call) {
     switch (call) {
         case WM_ATTRACT_DCS_LOGO:
             a->dcs_phase = WM_DCS_STATIC;
-            /* ATTR.ASM::DCS_LOGO SNDSND 1005 after display_unblank, gated
+            /* ATTRACT.ASM:3011 DCS_LOGO's SNDSND 1005, after the
+               display_unblank at :3002, gated
                by TURN_SOUNDS_OFF_IF_NEED (ATTRACT.ASM:669): once
                AMODE_LOOPS >= 2 the source sets SOUNDSUP and the attract
                loop plays silent. ADJMUSIC is not exposed yet; this
@@ -270,7 +271,7 @@ static void finish_base_loop(wm_app *app) {
 static void advance_call(wm_app *app) {
     wm_attract_state *a = &app->attract;
     if (a->call == WM_ATTRACT_DCS_LOGO) {
-        /* ATTR.ASM DCS screen stop/reset boundary. */
+        /* ATTRACT.ASM DCS screen stop/reset boundary. */
         (void)wm_audio_send_command(&app->audio, 0);
     }
     kill_call_processes(app, a->call);
@@ -1266,7 +1267,8 @@ void wm_app_tick_dual(wm_app *app,
 
     if (done) {
         if (app->attract.call == WM_ATTRACT_DCS_LOGO) {
-            /* ATTR.ASM::DCS_LOGO exit SNDSND command 0 at nobutn1. */
+            /* ATTRACT.ASM:3157 DCS_LOGO's exit `CLR A3 / CALLA SNDSND`
+               at nobutn1. */
             (void)wm_audio_send_command(&app->audio, 0);
         }
         advance_call(app);

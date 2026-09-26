@@ -3,7 +3,7 @@
  * high-risk window nobody could open.
  *
  * Every wrestler's mode_running calls this (BRET.ASM:1935,
- * BAM.ASM:1880, DNK.ASM:1970, DOINK.ASM:2337, ...) and all eight of
+ * BAM.ASM:1880, DOINK.ASM:2337, ...) and all eight of
  * this port's dispatchers already had the callback seam with nothing
  * behind it, so a running wrestler crossed the ropes and kept going.
  *

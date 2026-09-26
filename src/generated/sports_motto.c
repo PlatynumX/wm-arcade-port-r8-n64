@@ -1,6 +1,6 @@
 /* Auto-generated from original IMG/SGMD8.IMG glyph pixels.
    Palette is exact IMGPAL.ASM::SGMD8WHT (12 RGB555 words).
-   ATTR.ASM::rule_str:
+   ATTRACT.ASM:1666 rule_str:
      JAM_STR osgmd8_ascii,6,0,200,225,SGMD8WHT,print_string_C2
      WE MAKE THE GAMES THAT MAKE THE INDUSTRY
    Glyphs are required by exact original names osgmd8_<CHAR>. */

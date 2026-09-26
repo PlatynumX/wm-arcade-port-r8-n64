@@ -34,6 +34,7 @@ add_library(wmcore STATIC
     src/core/match_display.c
     src/generated/attract_sequence.c
     src/generated/attract_text.c
+    src/generated/rd7font.c
     src/generated/select_tables.c
     src/generated/port_status.c
     src/generated/finish_sequences.c
@@ -154,6 +155,7 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wmania_attract_secret.c
     src/core/arcade/wmania_attract_time.c
     src/core/arcade/wmania_attract_visuals.c
+    src/core/arcade/wm_arcade_stringer.c
     src/core/arcade/wmania_hiscore_adapter.c
     src/core/arcade/wmania_hiscore_core.c
     src/core/arcade/wmania_hiscore_counter.c

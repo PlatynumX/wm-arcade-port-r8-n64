@@ -31,6 +31,7 @@ CORE_C := \
     src/core/bret_backend.c \
     src/core/anim_program.c \
     src/core/arcade/wm_arcade_start_run.c \
+    src/core/arcade/wm_arcade_stringer.c \
     src/core/wrestler_backend.c \
     src/core/human_input.c \
     src/core/visual.c \
@@ -41,6 +42,7 @@ CORE_C := \
     src/core/composite.c \
     src/generated/attract_sequence.c \
     src/generated/attract_text.c \
+    src/generated/rd7font.c \
     src/generated/select_tables.c \
     src/generated/port_status.c \
     src/generated/finish_sequences.c \

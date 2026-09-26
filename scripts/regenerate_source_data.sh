@@ -194,6 +194,8 @@ python3 "$ROOT/tools/attract_sequence.py" \
     --out "$ROOT/src/generated/attract_sequence.c"
 python3 "$ROOT/tools/wlattracttext.py" \
     --out "$ROOT/src/generated/attract_text.c"
+python3 "$ROOT/tools/wlfont7.py" \
+    --out "$ROOT/src/generated/rd7font.c"
 python3 "$ROOT/tools/port_coverage.py" \
     --out-md "$ROOT/docs/ROUTINE_COVERAGE.md" \
     --out-json "$ROOT/port/routine_coverage.json"

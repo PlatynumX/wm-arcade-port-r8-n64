@@ -5739,3 +5739,64 @@ def test_attract_text_matches_the_source_strings() -> None:
     assert len(declared) == 25, sorted(declared)
     missing = sorted(d for d in declared if d not in got)
     assert not missing, f"declared attract labels with no text: {missing}"
+
+
+def test_rd7font_slots_and_index_base() -> None:
+    """RD7FONT's 93 slots, and the character each one is.
+
+    UTIL.ASM's string engine indexes its font by `char - 33`: stringr1_1 does
+    `subk 32,a1`, sends <= 0 to the space path, then `subk 1,a1` and `sll 5,a1`
+    for the long stride. RD7FONT's first entry is FONT7excla, '!', character
+    33 -- so the derivation and the table agree, and an off-by-one here would
+    shift the entire alphabet by one glyph.
+
+    Six widths are not measurable and must stay -1. WIMP truncates an image
+    name to eight characters, so FONT7parenl/parenr/paren2l/paren2r all land
+    on `FONT7par` and FONT7percen/FONT7period on `FONT7per`. TROGF7.IMG holds
+    the four `FONT7par` images as two adjacent same-width pairs, 3x10 and
+    4x10, and nothing in the container says which pair is the parens.
+    FONTS.LOD would; it is zero bytes here.
+    """
+    spec = importlib.util.spec_from_file_location(
+        "wlfont7", ROOT / "tools" / "wlfont7.py"
+    )
+    assert spec and spec.loader
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    slots = mod.rd7font_slots()
+    assert len(slots) == 93, len(slots)
+    assert slots[0] == "FONT7excla", slots[0]
+    assert slots[ord("A") - 33] == "FONT7A"
+    assert slots[ord("0") - 33] == "FONT70"
+    assert slots[ord("Z") - 33] == "FONT7Z"
+
+    _out, unmeasured, measured = mod.build()
+    assert sorted(unmeasured) == [
+        "FONT7paren2l", "FONT7paren2r", "FONT7parenl", "FONT7parenr",
+        "FONT7percen", "FONT7period",
+    ], sorted(unmeasured)
+    # The ambiguity must be real, or this is guarding nothing: the four
+    # `FONT7par` images must genuinely disagree on width.
+    widths = mod.container_widths()
+    assert len(widths["FONT7par"]) > 1, widths["FONT7par"]
+    assert len(widths["FONT7per"]) > 1, widths["FONT7per"]
+    # And most of the font IS measured, so -1 is specific rather than a
+    # blanket failure to read the container.
+    assert len(measured) >= 75, len(measured)
+    assert measured["FONT7A"] > 0
+
+    disk = (ROOT / "src" / "generated" / "rd7font.c").read_text()
+    assert disk == "\n".join(_out), (
+        "src/generated/rd7font.c is stale -- run "
+        "scripts/regenerate_source_data.sh"
+    )
+    # TEXT.ASM is the shipped font file; BACKUP/TEXT.ASM is a second copy in
+    # this tree and must not be the one read.
+    cmd = (ROOT / "original" / "wwf-wrestlemania" / "WRESTLE.CMD").read_text(
+        errors="replace"
+    )
+    assert re.search(r"^text\.obj", cmd, re.I | re.M), (
+        "text.obj is no longer in WRESTLE.CMD -- re-establish which file "
+        "defines the shipped RD7FONT before trusting these widths"
+    )

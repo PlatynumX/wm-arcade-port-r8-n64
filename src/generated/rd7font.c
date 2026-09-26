@@ -9,6 +9,71 @@
  * an eight-character WIMP name with another glyph (FONT7parenl vs
  * FONT7paren2l, FONT7percen vs FONT7period) and FONTS.LOD, which would
  * give the packing order that separates them, is zero bytes here.
+ *
+ * IDENTIFIED BY ARTWORK, because the truncated name could not say
+ * which image was which. The slot position gives the character; these
+ * maps give which glyph is that character. Judge them yourself:
+ *   FONT7percen -> width 11
+ *     .##.....##.
+ *     #..#...##..
+ *     #..#..##...
+ *     .##..##....
+ *     ....##..##.
+ *     ...##..#..#
+ *     ..##...#..#
+ *     .##.....##.
+ *   FONT7period -> width 3
+ *     ##.
+ *     ##.
+ *
+ * STILL UNRESOLVED, and left at -1 on purpose. Two mirrored pairs; one
+ * pair is () and the other {}. At this size a left parenthesis and a
+ * left brace have the same outline, and the spur that separates them
+ * is not in the data:
+ *   FONT7par 3x10 #64
+ *     .##
+ *     ###
+ *     ##.
+ *     ##.
+ *     ##.
+ *     ##.
+ *     ##.
+ *     ##.
+ *     ###
+ *     .##
+ *   FONT7par 3x10 #65
+ *     ##.
+ *     ###
+ *     .##
+ *     .##
+ *     .##
+ *     .##
+ *     .##
+ *     .##
+ *     ###
+ *     ##.
+ *   FONT7par 4x10 #73
+ *     ..##
+ *     .###
+ *     .##.
+ *     .##.
+ *     ##..
+ *     ##..
+ *     .##.
+ *     .##.
+ *     .###
+ *     ..##
+ *   FONT7par 4x10 #74
+ *     ##..
+ *     ###.
+ *     .##.
+ *     .##.
+ *     ..##
+ *     ..##
+ *     .##.
+ *     .##.
+ *     ###.
+ *     ##..
  */
 #include "wm/arcade/wm_arcade_rd7font.h"
 
@@ -17,7 +82,7 @@ const int16_t wm_rd7font_width[WM_RD7FONT_SLOTS] = {
       6,  /* [ 1] '\"'  FONT7quote */
      10,  /* [ 2] '#'  FONT7pound */
       6,  /* [ 3] '$'  FONT7doll */
-     -1,  /* [ 4] '%'  FONT7percen */
+     11,  /* [ 4] '%'  FONT7percen */
       7,  /* [ 5] '&'  FONT7and */
       3,  /* [ 6] '''  FONT7apost */
      -1,  /* [ 7] '('  FONT7parenl */
@@ -26,7 +91,7 @@ const int16_t wm_rd7font_width[WM_RD7FONT_SLOTS] = {
       6,  /* [10] '+'  FONT7plus */
       3,  /* [11] ','  FONT7comma */
       5,  /* [12] '-'  FONT7dash */
-     -1,  /* [13] '.'  FONT7period */
+      3,  /* [13] '.'  FONT7period */
       5,  /* [14] '/'  FONT7forsp */
       6,  /* [15] '0'  FONT70 */
       4,  /* [16] '1'  FONT71 */

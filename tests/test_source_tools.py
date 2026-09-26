@@ -5772,10 +5772,20 @@ def test_rd7font_slots_and_index_base() -> None:
     assert slots[ord("Z") - 33] == "FONT7Z"
 
     _out, unmeasured, measured = mod.build()
+    # FONT7percen and FONT7period were in this list and were settled by
+    # reading the artwork; the four paren slots were not, and must not be.
     assert sorted(unmeasured) == [
         "FONT7paren2l", "FONT7paren2r", "FONT7parenl", "FONT7parenr",
-        "FONT7percen", "FONT7period",
     ], sorted(unmeasured)
+    assert measured["FONT7period"] == 3, measured["FONT7period"]
+    assert measured["FONT7percen"] == 11, measured["FONT7percen"]
+    # The artwork resolution must rest on the pixels, not on an image index:
+    # the dot is small and solid, the percent is not.
+    _res, _ev = mod.resolve_by_artwork(list(unmeasured))
+    assert _res == {"FONT7period": 3, "FONT7percen": 11}, _res
+    assert len(_ev["FONT7period"]) == 2, _ev["FONT7period"]
+    assert all(len(r) == 3 for r in _ev["FONT7period"]), _ev["FONT7period"]
+    assert len(_ev["FONT7percen"]) == 8, _ev["FONT7percen"]
     # The ambiguity must be real, or this is guarding nothing: the four
     # `FONT7par` images must genuinely disagree on width.
     widths = mod.container_widths()

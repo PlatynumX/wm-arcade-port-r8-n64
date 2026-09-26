@@ -138,23 +138,28 @@ static void test_unknown_widths_fail_closed(void) {
     for (i = 0; i < WM_RD7FONT_SLOTS; ++i) {
         if (wm_rd7font_width[i] < 0) ++unknown;
     }
-    /* Six slots: FONT7percen, FONT7parenl, FONT7parenr, FONT7period,
-       FONT7paren2l, FONT7paren2r. None of the six is reused elsewhere in
-       the table, unlike FONT7excla and FONT7dash which each fill two
-       slots -- so six names means six slots. */
-    assert(unknown == 6);
-
-    /* '(' ')' and '.' are among them, and the copyright text uses all
-       three, which is why this blocks real lines rather than only exotic
-       ones. */
+    /* Four slots: FONT7parenl, FONT7parenr, FONT7paren2l, FONT7paren2r.
+       None is reused elsewhere in the table, unlike FONT7excla and
+       FONT7dash which each fill two slots. */
+    assert(unknown == 4);
     assert(wm_rd7font_width['(' - WM_RD7FONT_FIRST_CHAR] < 0);
     assert(wm_rd7font_width[')' - WM_RD7FONT_FIRST_CHAR] < 0);
-    assert(wm_rd7font_width['.' - WM_RD7FONT_FIRST_CHAR] < 0);
-    assert(wm_rd7font_width['%' - WM_RD7FONT_FIRST_CHAR] < 0);
+    assert(wm_rd7font_width['{' - WM_RD7FONT_FIRST_CHAR] < 0);
+    assert(wm_rd7font_width['}' - WM_RD7FONT_FIRST_CHAR] < 0);
+
+    /*
+     * '.' and '%' WERE in that set and are not any more: they were settled
+     * by reading the artwork rather than the truncated name. A 3x2 solid
+     * block is a full stop and an 11x8 pair of rings joined by a diagonal
+     * is a percent sign. These two widths are the whole reason 22 of the 25
+     * attract lines are measurable instead of 14.
+     */
+    assert(wm_rd7font_width['.' - WM_RD7FONT_FIRST_CHAR] == 3);
+    assert(wm_rd7font_width['%' - WM_RD7FONT_FIRST_CHAR] == 11);
     /* And a letter IS measured, so -1 is not simply everywhere. */
     assert(wm_rd7font_width['A' - WM_RD7FONT_FIRST_CHAR] > 0);
 
-    assert(!wm_stringer_measurable("(C) 1995", rd7));
+    assert(!wm_stringer_measurable("(C) 1995", rd7));  /* the paren */
     assert(wm_stringer_length("(C) 1995", rd7, 1) == -1);
     assert(wm_stringer_place("(C) 1995", rd7, 1, WM_STRINGER_CENTRE,
                              200, 110, g, 128) == -1);
@@ -163,6 +168,10 @@ static void test_unknown_widths_fail_closed(void) {
        rather than the engine simply not working with RD7FONT. */
     assert(wm_stringer_measurable("ALL RIGHTS RESERVED", rd7));
     assert(wm_stringer_length("ALL RIGHTS RESERVED", rd7, 1) > 0);
+    /* And a full stop no longer blocks a line, which is the point of the
+       artwork identification. */
+    assert(wm_stringer_measurable("ALL RIGHTS RESERVED.", rd7));
+    assert(wm_stringer_measurable("FROM ACCLAIM ENTERTAINMENT INC.", rd7));
     puts("stringer: unknown widths fail closed PASS");
 }
 
@@ -195,7 +204,7 @@ static void test_the_real_attract_lines(void) {
     assert(ok + blocked == wm_attract_text_count);
     assert(ok > 0 && blocked > 0);
     printf("stringer: %zu of %zu attract lines have a computable layout; "
-           "%zu blocked on the six unmeasured glyphs\n",
+           "%zu still blocked on the four unresolved paren slots\n",
            ok, wm_attract_text_count, blocked);
 }
 

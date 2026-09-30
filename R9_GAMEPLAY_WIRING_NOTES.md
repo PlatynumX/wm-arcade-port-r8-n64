@@ -115,14 +115,32 @@ under the source's own comment "clear his velocities too".
 8. **Immobilised opponents stop dead.** A victim who gets immobilised should stop
    moving, not keep sliding along their last velocity.
 
-## Expected hardware test: the attract text blit
+## The attract text blit: NOT reachable yet, so do not flash for it
 
-`src/platform/n64/rd7text.c` is new and NOTHING IN THIS CONTAINER CAN RUN IT.
-It compiles for mips64 against real libdragon headers -- `wm_n64_link` now does
-that, where before it skipped the platform layer entirely -- and every position
-it draws at is checked headlessly. But a compile is not a picture, and the
-combiner mode in particular is the kind of thing that is either right or
-completely wrong with nothing in between.
+`src/platform/n64/rd7text.c` compiles for mips64 against real libdragon headers
+-- `wm_n64_link` now does that, where before it skipped the platform layer
+entirely -- and every position it draws at is checked headlessly.
+
+IT IS ALSO CALLED BY NOBODY, and items 9-12 below CANNOT HAPPEN until that
+changes. They are written down as what to look for once the chain is
+connected, not as something a flash today would show. Five layers sit between
+"the text is computable" and "the text appears":
+
+  - `wm_rd7text_draw` has no caller.
+  - `wm_text_build_draw_list` is called only by tests.
+  - `wmania_attract_adapter` -- 160 lines with a full callback set, including
+    `show_copyright` -- is built by nothing in the live app.
+  - `show_copyright`'s port status is NOT_STARTED, so
+    `wm_attract_call_is_translated` skips it out of the attract flow.
+  - `main.c`'s render switch has four cases and none for copyright.
+
+An earlier version of this section promised these checks outright. That was
+wrong and is corrected here rather than quietly dropped: a note that promises
+behaviour the build cannot produce sends someone to a TV for nothing.
+
+WHEN THE CHAIN IS CONNECTED, these are the things to look at. A compile is not
+a picture, and the combiner mode in particular is either right or completely
+wrong with nothing in between.
 
 9. **The copyright screen has words on it.** Nine centred lines, 12 pixels
    apart, starting 110 from the top, then a second page of ten. Before this

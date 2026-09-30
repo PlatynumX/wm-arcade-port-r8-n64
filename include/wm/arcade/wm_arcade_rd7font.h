@@ -55,6 +55,30 @@ extern "C" {
  */
 extern const int16_t wm_rd7font_width[WM_RD7FONT_SLOTS];
 
+/*
+ * The glyph's ink mask: `ink[y * w + x]` is non-zero where the glyph draws.
+ *
+ * A mask is the whole artwork this path needs. SYS.EQU:217 is
+ * `DMACNZ .equ 8008h  ;WRITE CONSTANT ON NON-ZERO DATA`, and STRCNRMO_2 sets
+ * those flags, so a glyph is stencilled in the single colour its caller
+ * passes -- show_copyright's `movi [>1111,0000],a6  ;pal 0, color 17`. The
+ * glyph's own palette never reaches the screen on this path.
+ *
+ * `ink == NULL` means the backing image could not be established, not that
+ * the glyph is blank. The four `FONT7par` slots are NULL: their facing IS
+ * known (a left form anchors its ends right of its middle, a right form the
+ * reverse), but which of the two mirrored pairs is () and which is {} is not,
+ * and assigning them on "braces are wider" would be a typographic guess
+ * rather than a reading of the data.
+ */
+typedef struct wm_rd7font_glyph {
+    int16_t width;
+    int16_t height;
+    const uint8_t *ink;
+} wm_rd7font_glyph;
+
+extern const wm_rd7font_glyph wm_rd7font_glyph_table[WM_RD7FONT_SLOTS];
+
 #ifdef __cplusplus
 }
 #endif

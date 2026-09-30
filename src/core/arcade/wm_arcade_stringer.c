@@ -117,7 +117,54 @@ int32_t wm_stringer_place(const char *text, const wm_stringer_font *font,
 
 const wm_stringer_font *wm_stringer_rd7font(void) {
     static const wm_stringer_font f = {
-        wm_rd7font_width, WM_RD7FONT_SLOTS, WM_RD7FONT_FIRST_CHAR
+        wm_rd7font_width, wm_rd7font_glyph_table,
+        WM_RD7FONT_SLOTS, WM_RD7FONT_FIRST_CHAR
     };
     return &f;
+}
+
+/* ---- the draw list ------------------------------------------------ */
+
+int32_t wm_text_build_draw_list(const char *text, const wm_stringer_font *font,
+                                int32_t spacing_x, wm_stringer_justify justify,
+                                int32_t x, int32_t y,
+                                wm_text_draw_item *out, size_t capacity) {
+    wm_stringer_glyph placed[128];
+    int32_t n, i, written = 0;
+
+    if (!out || !font || !font->glyphs) return -1;
+
+    n = wm_stringer_place(text, font, spacing_x, justify, x, y,
+                          placed, sizeof placed / sizeof placed[0]);
+    if (n < 0) return -1;
+
+    /*
+     * Two passes. The first refuses the whole line if any glyph it needs has
+     * no mask, so a line is either drawn as the source draws it or not drawn
+     * at all -- never drawn with holes in it.
+     */
+    for (i = 0; i < n; ++i) {
+        const wm_rd7font_glyph *g;
+        if (placed[i].slot < 0) continue;            /* a space draws nothing */
+        if ((size_t)placed[i].slot >= font->slots) return -1;
+        g = &font->glyphs[placed[i].slot];
+        if (!g->ink) return -1;
+        /* The two tables come out of the same resolution, so a width that
+           disagrees with its mask means one of them was edited by hand. */
+        if (g->width != placed[i].width) return -1;
+    }
+
+    for (i = 0; i < n; ++i) {
+        const wm_rd7font_glyph *g;
+        if (placed[i].slot < 0) continue;
+        if ((size_t)written >= capacity) return -1;
+        g = &font->glyphs[placed[i].slot];
+        out[written].x = placed[i].x;
+        out[written].y = placed[i].y;
+        out[written].width = g->width;
+        out[written].height = g->height;
+        out[written].ink = g->ink;
+        ++written;
+    }
+    return written;
 }

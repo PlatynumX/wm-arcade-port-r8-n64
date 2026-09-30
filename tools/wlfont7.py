@@ -92,6 +92,54 @@ def _art_map(rows: "list[list[int]]") -> "list[str]":
     return ["".join("#" if v else "." for v in r) for r in rows]
 
 
+
+def facing(rows: "list[list[int]]") -> int:
+    """-1 when the glyph faces left, +1 when right, 0 when it is symmetric.
+
+    A bracket, parenthesis or brace is told apart from its mirror by where its
+    ENDS sit relative to its MIDDLE, not by total ink. `(` anchors its ends to
+    the right and pushes its middle left; `)` is the reverse. Centre-of-mass
+    does not work for this: the 4x10 pair holds its extreme for only two of ten
+    rows, so the mean follows the broad part and points the wrong way.
+    """
+    h = len(rows)
+    if h < 4:
+        return 0
+
+    def mean_x(sel: "list[int]") -> float:
+        xs = [x for r in sel for x, v in enumerate(r) if v]
+        return sum(xs) / len(xs) if xs else 0.0
+
+    ends = mean_x([rows[0], rows[h - 1]])
+    mid = mean_x(rows[h // 2 - 1:h // 2 + 1])
+    if abs(ends - mid) < 0.25:
+        return 0
+    return -1 if ends > mid else 1
+
+
+def resolve_mirror_pair(data: bytes, candidates: list, left_name: str,
+                        right_name: str) -> "dict[str, object]":
+    """Assign a left/right name to each of two mirrored images, by facing.
+
+    FONT7bracl and FONT7bracr both truncate to `FONT7bra` and are both 3x10,
+    so the WIDTH was never ambiguous but which image is `[` and which is `]`
+    was. The artwork answers it: a left bracket's top and bottom bars reach
+    right of its upright, a right bracket's reach left.
+    """
+    if len(candidates) != 2:
+        return {}
+    sided = {}
+    for im in candidates:
+        f = facing(_pixels(data, im))
+        if f < 0:
+            sided.setdefault("left", []).append(im)
+        elif f > 0:
+            sided.setdefault("right", []).append(im)
+    if len(sided.get("left", [])) != 1 or len(sided.get("right", [])) != 1:
+        return {}
+    return {left_name: sided["left"][0], right_name: sided["right"][0]}
+
+
 def resolve_by_artwork(unmeasured: "list[str]") -> "tuple[dict[str, int], dict[str, list[str]]]":
     """Identify what a truncated name cannot, by reading the glyph itself.
 
@@ -226,9 +274,112 @@ def build() -> tuple[list[str], list[str], dict[str, int]]:
     return out, unmeasured, measured
 
 
+
+def glyph_images() -> "dict[str, object]":
+    """The image backing each RD7FONT symbol, where it can be established.
+
+    Unambiguous stem -> the one image. FONT7bra and FONT7par are mirrored
+    pairs and resolve by facing. FONT7per resolves by size. What is left
+    unresolved is only WHICH PAIR of FONT7par is () and which is {} -- both
+    pairs' left and right are known, the pair assignment is not, so all four
+    are omitted rather than half-guessed.
+    """
+    data, _h, images, _p = wimpimg.parse_file(SRC / "IMG" / "TROGF7.IMG")
+    by_stem: dict[str, list] = collections.defaultdict(list)
+    for im in images:
+        by_stem[im.name].append(im)
+
+    out: dict[str, object] = {}
+    for sym in set(rd7font_slots()):
+        cands = by_stem.get(sym[:NAME_FIELD], [])
+        if len(cands) == 1:
+            out[sym] = cands[0]
+
+    out.update(resolve_mirror_pair(data, by_stem.get("FONT7bra", []),
+                                   "FONT7bracl", "FONT7bracr"))
+
+    per = by_stem.get("FONT7per", [])
+    if len(per) == 2:
+        small = [im for im in per if im.width <= 3 and im.height <= 3]
+        big = [im for im in per if im not in small]
+        if len(small) == 1 and len(big) == 1:
+            out["FONT7period"] = small[0]
+            out["FONT7percen"] = big[0]
+    return data, out
+
+
+def build_glyphs() -> "tuple[list[str], int, list[str]]":
+    """Emit each slot's ink mask: one byte per pixel, 1 where the glyph draws.
+
+    A mask is all the renderer needs. SYS.EQU:217 is
+    `DMACNZ .equ 8008h ;WRITE CONSTANT ON NON-ZERO DATA`, and STRCNRMO_2 sets
+    exactly that -- so a glyph is stencilled in ONE colour, the constant
+    show_copyright passes as `movi [>1111,0000],a6  ;pal 0, color 17`. The
+    glyph's own palette never reaches the screen on this path, which is why
+    the mask, not the CI8 pixels, is the artwork this needs.
+    """
+    slots = rd7font_slots()
+    data, backing = glyph_images()
+
+    body: list[str] = []
+    table: list[str] = []
+    missing: list[str] = []
+    emitted: dict[str, str] = {}
+
+    for i, sym in enumerate(slots):
+        im = backing.get(sym)
+        if im is None:
+            if sym not in missing:
+                missing.append(sym)
+            table.append(f"    {{ 0, 0, 0 }},  /* [{i:2}] {sym}: unresolved */")
+            continue
+        if sym not in emitted:
+            rows = _pixels(data, im)
+            flat = [v for r in rows for v in r]
+            name = f"s_ink_{sym}"
+            emitted[sym] = name
+            body.append(f"/* {sym}  {im.width}x{im.height} */")
+            body.append(f"static const uint8_t {name}[{len(flat)}] = {{")
+            for r in rows:
+                body.append("    " + ", ".join(str(v) for v in r) + ",")
+            body.append("};")
+            body.append("")
+        table.append(
+            f"    {{ {im.width:2}, {im.height:2}, {emitted[sym]} }},"
+            f"  /* [{i:2}] '{chr(i + FIRST_CHAR) if chr(i + FIRST_CHAR) not in chr(34) + chr(92) else '?'}' {sym} */"
+        )
+
+    out = [
+        "/* Generated by tools/wlfont7.py from TEXT.ASM and IMG/TROGF7.IMG.",
+        " * Do not edit.",
+        " *",
+        " * RD7FONT's glyphs as INK MASKS -- one byte per pixel, 1 where the",
+        " * glyph draws. A mask is all this path needs: SYS.EQU:217 is",
+        " * `DMACNZ .equ 8008h ;WRITE CONSTANT ON NON-ZERO DATA` and STRCNRMO_2",
+        " * sets exactly those flags, so every glyph is stencilled in the ONE",
+        " * colour its caller passes -- show_copyright's",
+        " * `movi [>1111,0000],a6  ;pal 0, color 17`. The glyph's own palette",
+        " * never reaches the screen here.",
+        " *",
+        " * A row of { 0, 0, 0 } is a slot whose backing image could not be",
+        " * established, not a blank glyph. Callers must skip it rather than",
+        " * draw nothing and advance as if they had.",
+        " */",
+        '#include "wm/arcade/wm_arcade_rd7font.h"',
+        "",
+    ] + body + [
+        "const wm_rd7font_glyph wm_rd7font_glyph_table[WM_RD7FONT_SLOTS] = {",
+    ] + table + [
+        "};",
+        "",
+    ]
+    return out, len(emitted), missing
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--out", type=pathlib.Path)
+    ap.add_argument("--out-glyphs", type=pathlib.Path)
     ns = ap.parse_args()
     out, unmeasured, measured = build()
     text = "\n".join(out)
@@ -236,8 +387,13 @@ def main() -> int:
         ns.out.write_text(text)
         print(f"RD7FONT: 93 slots, {len(measured)} distinct glyphs measured, "
               f"{len(unmeasured)} not measurable ({', '.join(unmeasured)})")
-    else:
+    elif not ns.out_glyphs:
         sys.stdout.write(text)
+    if ns.out_glyphs:
+        g, n, missing = build_glyphs()
+        ns.out_glyphs.write_text("\n".join(g))
+        print(f"RD7FONT masks: {n} distinct glyphs, "
+              f"{len(missing)} unresolved ({', '.join(missing)})")
     return 0
 
 

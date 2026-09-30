@@ -208,6 +208,133 @@ static void test_the_real_attract_lines(void) {
            ok, wm_attract_text_count, blocked);
 }
 
+
+/* ---- the draw list ------------------------------------------------ */
+
+/*
+ * The two generated tables come out of one resolution pass, so a slot with a
+ * width must have a mask and the two must agree. If they ever disagree, one
+ * of the files was edited by hand -- both say "Do not edit" -- and the
+ * stringer would place a glyph at a position its artwork does not fill.
+ */
+static void test_widths_and_masks_agree(void) {
+    size_t i, with_ink = 0;
+
+    for (i = 0; i < WM_RD7FONT_SLOTS; ++i) {
+        const wm_rd7font_glyph *g = &wm_rd7font_glyph_table[i];
+        if (wm_rd7font_width[i] < 0) {
+            assert(g->ink == NULL);          /* unresolved both ways */
+            continue;
+        }
+        assert(g->ink != NULL);
+        assert(g->width == wm_rd7font_width[i]);
+        assert(g->height > 0);
+        ++with_ink;
+    }
+    /* 93 slots, 4 unresolved. */
+    assert(with_ink == WM_RD7FONT_SLOTS - 4);
+    puts("stringer: widths and masks agree PASS");
+}
+
+/* Every mask must have at least one ink pixel -- an all-zero mask would
+   draw nothing while the pen advanced, which is the failure a NULL is
+   supposed to prevent. */
+static void test_no_mask_is_blank(void) {
+    size_t i, j;
+    for (i = 0; i < WM_RD7FONT_SLOTS; ++i) {
+        const wm_rd7font_glyph *g = &wm_rd7font_glyph_table[i];
+        int ink = 0;
+        if (!g->ink) continue;
+        for (j = 0; j < (size_t)(g->width * g->height); ++j) {
+            if (g->ink[j]) { ink = 1; break; }
+        }
+        assert(ink && "a resolved glyph with no ink pixels");
+    }
+    puts("stringer: no resolved mask is blank PASS");
+}
+
+static void test_draw_list_positions_and_spaces(void) {
+    const wm_stringer_font *rd7 = wm_stringer_rd7font();
+    wm_text_draw_item items[128];
+    wm_stringer_glyph placed[128];
+    int32_t n, m, i, j;
+
+    /* A space produces no item but still advances the pen, so the item
+       count is the non-space character count and the x of the character
+       after a space reflects the five pixels plus spacing. */
+    n = wm_text_build_draw_list("AB CD", rd7, 1, WM_STRINGER_LEFT,
+                                0, 0, items, 128);
+    assert(n == 4);
+
+    m = wm_stringer_place("AB CD", rd7, 1, WM_STRINGER_LEFT, 0, 0, placed, 128);
+    assert(m == 5);
+    /* The items must line up with the non-space placements, in order. */
+    for (i = 0, j = 0; i < m; ++i) {
+        if (placed[i].slot < 0) continue;
+        assert(items[j].x == placed[i].x);
+        assert(items[j].y == placed[i].y);
+        assert(items[j].width == placed[i].width);
+        ++j;
+    }
+    assert(j == n);
+    puts("stringer: draw list positions PASS");
+}
+
+/*
+ * All or nothing. A line containing an unresolved glyph must return -1
+ * rather than a list with that character quietly dropped -- a copyright
+ * notice missing its parentheses is worse than one not drawn.
+ */
+static void test_draw_list_refuses_a_partial_line(void) {
+    const wm_stringer_font *rd7 = wm_stringer_rd7font();
+    wm_text_draw_item items[128];
+
+    assert(wm_text_build_draw_list("(C) 1995", rd7, 1, WM_STRINGER_CENTRE,
+                                   200, 110, items, 128) == -1);
+    /* Not because the call is broken: the same line without the parens works. */
+    assert(wm_text_build_draw_list("C 1995", rd7, 1, WM_STRINGER_CENTRE,
+                                   200, 110, items, 128) > 0);
+    /* A capacity too small is also a refusal, not a truncation. */
+    assert(wm_text_build_draw_list("ALL RIGHTS RESERVED", rd7, 1,
+                                   WM_STRINGER_LEFT, 0, 0, items, 2) == -1);
+    /* A font with no masks loaded can measure but not draw. */
+    {
+        wm_stringer_font no_art = *rd7;
+        no_art.glyphs = NULL;
+        assert(wm_stringer_length("ABC", &no_art, 1) > 0);
+        assert(wm_text_build_draw_list("ABC", &no_art, 1, WM_STRINGER_LEFT,
+                                       0, 0, items, 128) == -1);
+    }
+    puts("stringer: draw list refuses partial lines PASS");
+}
+
+/* The real copyright page, end to end: every line the widths allow must
+   produce a complete draw list at the source's own geometry. */
+static void test_the_copyright_page_draws(void) {
+    const wm_stringer_font *rd7 = wm_stringer_rd7font();
+    wm_text_draw_item items[256];
+    size_t i, drew = 0, refused = 0;
+
+    for (i = 0; i < WM_ATTRACT_COPYRIGHT_PAGE1_LINES; ++i) {
+        const char *t = wm_attract_text(wm_attract_copyright_page1_labels[i]);
+        int32_t n = wm_text_build_draw_list(
+            t, rd7, 1, WM_STRINGER_CENTRE, WM_ATTRACT_COPYRIGHT_X,
+            (int32_t)(WM_ATTRACT_COPYRIGHT_FIRST_Y +
+                      i * WM_ATTRACT_COPYRIGHT_LINE_STEP),
+            items, 256);
+        if (n < 0) { ++refused; continue; }
+        ++drew;
+        /* The line sits on its own row and straddles the centre. */
+        assert(items[0].y == (int16_t)(WM_ATTRACT_COPYRIGHT_FIRST_Y +
+                                      i * WM_ATTRACT_COPYRIGHT_LINE_STEP));
+        assert(items[0].x <= WM_ATTRACT_COPYRIGHT_X);
+        assert(items[n - 1].x >= items[0].x);
+    }
+    printf("stringer: copyright page 1 -- %zu of %u lines draw, %zu refused\n",
+           drew, (unsigned)WM_ATTRACT_COPYRIGHT_PAGE1_LINES, refused);
+    assert(drew > 0);
+}
+
 int main(void) {
     test_strnglen_arithmetic();
     test_a_high_bit_byte_ends_the_string();
@@ -216,6 +343,11 @@ int main(void) {
     test_the_slot_base();
     test_unknown_widths_fail_closed();
     test_the_real_attract_lines();
+    test_widths_and_masks_agree();
+    test_no_mask_is_blank();
+    test_draw_list_positions_and_spaces();
+    test_draw_list_refuses_a_partial_line();
+    test_the_copyright_page_draws();
     puts("stringer: all checks passed");
     return 0;
 }

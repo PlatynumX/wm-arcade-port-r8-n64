@@ -115,6 +115,38 @@ under the source's own comment "clear his velocities too".
 8. **Immobilised opponents stop dead.** A victim who gets immobilised should stop
    moving, not keep sliding along their last velocity.
 
+## Expected hardware test: the attract text blit
+
+`src/platform/n64/rd7text.c` is new and NOTHING IN THIS CONTAINER CAN RUN IT.
+It compiles for mips64 against real libdragon headers -- `wm_n64_link` now does
+that, where before it skipped the platform layer entirely -- and every position
+it draws at is checked headlessly. But a compile is not a picture, and the
+combiner mode in particular is the kind of thing that is either right or
+completely wrong with nothing in between.
+
+9. **The copyright screen has words on it.** Nine centred lines, 12 pixels
+   apart, starting 110 from the top, then a second page of ten. Before this
+   they were nine exact positions with nothing drawn at them.
+
+10. **The text is one flat colour, not coloured per glyph.** The source draws
+    it `DMACNZ` -- "write constant on non-zero data" -- so every character is
+    stencilled in the single colour the caller passes. If the glyphs come out
+    multicoloured, or in the font artwork's own palette, the combiner is
+    wrong: it should take RGB from the primitive colour and alpha from the
+    texture, and nothing else.
+
+11. **Three lines will be MISSING, and that is correct.** The two
+    "(C) 1995 ..." lines and the "(P) 1993" one contain parentheses, whose
+    widths this port cannot establish (see `src/generated/rd7font.c`). The
+    engine refuses a line it cannot measure rather than drawing it wrong, so
+    those three do not appear at all. A partly-drawn copyright line would be
+    the bug; a missing one is the intended refusal.
+
+12. **Nothing should be clipped or doubled at the glyph edges.** Each glyph
+    uploads as a small I8 texture whose row pitch is padded to 8 bytes, with
+    the blit width set to the glyph's real width. If padding columns are being
+    sampled, characters will show a smear to their right.
+
 ## Deliberately still absent
 
 - `pal_getf`, a runtime palette allocator, so `skeleton_pal` stays unwritten and

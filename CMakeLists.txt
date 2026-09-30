@@ -35,6 +35,7 @@ add_library(wmcore STATIC
     src/generated/attract_sequence.c
     src/generated/attract_text.c
     src/generated/rd7font.c
+    src/generated/rd7font_glyphs.c
     src/generated/select_tables.c
     src/generated/port_status.c
     src/generated/finish_sequences.c

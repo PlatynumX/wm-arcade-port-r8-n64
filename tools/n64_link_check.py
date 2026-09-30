@@ -10,14 +10,21 @@ missing too, so the ROM had six undefined symbols and could not have linked.
 A full ROM needs libdragon. Catching this class of drift does not: an ordinary
 mips64 cross-compiler compiles the portable core for the real target word size
 and endianness, and a relocatable link reports any symbol the ROM's own source
-list fails to define. Only the platform layer (src/platform/n64) is skipped,
-since that genuinely needs libdragon headers.
+list fails to define.
+
+The platform layer (src/platform/n64) needs libdragon's headers, so it used to
+be skipped outright -- which meant the RDPQ code had never been compiled by
+anything in this repo, not even type-checked. It is now compiled WHEN those
+headers can be found (N64_INST, or a libdragon checkout the finder locates) and
+reported as skipped when they cannot. Opportunistic is worth having: a renderer
+that only ever gets read is a renderer whose API calls nobody has checked.
 
 Exits non-zero, naming the symbols and the files that define them, when the
 ROM source list is incomplete.
 """
 from __future__ import annotations
 
+import os
 import pathlib
 import re
 import shutil
@@ -35,6 +42,68 @@ EXTERNAL = re.compile(
     r"^(mem(cpy|set|move|cmp)|str(len|cmp|ncmp|cpy|ncpy|chr|str)|abs|labs|"
     r"sqrt|snprintf|sprintf|printf|puts|putchar|malloc|free|calloc|realloc|"
     r"exit|assert|qsort|rand|srand|__).*")
+
+
+def libdragon_include() -> "pathlib.Path | None":
+    """libdragon's include directory, if this machine has one.
+
+    N64_INST is the official variable. Beyond that, look for a checkout whose
+    include/ holds libdragon.h -- a fetched tree is enough to TYPE-CHECK the
+    platform layer even when it is not enough to link a ROM.
+    """
+    env = os.environ.get("N64_INST")
+    cands: list[pathlib.Path] = []
+    if env:
+        cands += [pathlib.Path(env) / "mips64-elf" / "include",
+                  pathlib.Path(env) / "include"]
+    cands += [pathlib.Path("/opt/libdragon/include"),
+              pathlib.Path("/usr/local/libdragon/include")]
+    cands += sorted(pathlib.Path("/tmp").glob("wm-libdragon-*/include"))
+    for d in cands:
+        if (d / "libdragon.h").is_file():
+            return d
+    return None
+
+
+def check_platform_layer(inc: pathlib.Path) -> "list[str]":
+    """Compile each src/platform/n64 file. Returns the ones that fail.
+
+    THE FLAGS ARE THE CHECK. A first version of this passed -Wall -Wextra and
+    treated warnings as tolerable, because libdragon's own rdpq.h emits
+    -Wformat warnings from its assert macros. Mutation testing then showed it
+    accepted `rdpq_set_prim_colour(...)` -- a misspelt API call -- and
+    `rdpq_mode_alphacompare("1")`, because in C both are warnings, not errors.
+    A check that compiles broken RDPQ code is worse than no check: it reads as
+    verification.
+
+    So the diagnostics that mean "this call does not exist" or "this argument
+    is the wrong kind of thing" are promoted to errors, and only libdragon's
+    own -Wformat noise is silenced -- narrowly, by name, rather than by
+    tolerating every warning.
+    """
+    strict = [
+        "-Werror=implicit-function-declaration",
+        "-Werror=implicit-int",
+        "-Werror=int-conversion",
+        "-Werror=incompatible-pointer-types",
+        "-Werror=return-type",
+        "-Werror=undef",
+        # libdragon's assertf macros, not ours.
+        "-Wno-format",
+    ]
+    bad: list[str] = []
+    plat = ROOT / "src" / "platform" / "n64"
+    with tempfile.TemporaryDirectory() as tmp:
+        for src in sorted(plat.glob("*.c")):
+            r = subprocess.run(
+                [CC, "-c", "-I", str(inc), "-I", str(ROOT / "include"),
+                 "-I", str(plat), "-I", str(ROOT / "build/include"),
+                 "-O1", "-std=gnu11", "-Wall"] + strict + ["-o",
+                 str(pathlib.Path(tmp) / (src.stem + ".o")), str(src)],
+                capture_output=True, text=True)
+            if r.returncode != 0:
+                bad.append(f"{src.relative_to(ROOT)}:\n{r.stderr}")
+    return bad
 
 
 def rom_sources() -> list[str]:
@@ -83,6 +152,20 @@ def main() -> int:
 
         r = subprocess.run([NM, "-u", str(combined)], capture_output=True, text=True)
         undef = sorted({line.split()[-1] for line in r.stdout.splitlines() if line.strip()})
+
+    inc = libdragon_include()
+    if inc is None:
+        print("n64_link_check: libdragon headers not found "
+              "(set N64_INST); src/platform/n64 NOT compiled")
+    else:
+        bad = check_platform_layer(inc)
+        if bad:
+            print("n64_link_check: the platform layer fails to compile for "
+                  "mips64:\n" + "\n".join(bad), file=sys.stderr)
+            return 1
+        n = len(list((ROOT / "src" / "platform" / "n64").glob("*.c")))
+        print(f"n64_link_check: platform layer compiles for mips64 "
+              f"({n} files, libdragon at {inc})")
 
     unresolved = [s for s in undef if not EXTERNAL.match(s)]
     if unresolved:

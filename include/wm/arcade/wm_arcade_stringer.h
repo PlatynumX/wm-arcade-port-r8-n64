@@ -48,11 +48,25 @@ typedef enum {
    comment says "Hard code a space". STRNGLEN does the same with `addk 5,a7`. */
 #define WM_STRINGER_SPACE_WIDTH 5
 
+/* Forward-declared: the glyph masks live with the font they belong to. */
+struct wm_rd7font_glyph;
+
 typedef struct {
     /* Glyph widths by slot, slot 0 being `first_char`. A negative width
        means the width is unknown, and the engine refuses rather than
        treating it as zero. */
     const int16_t *width;
+    /*
+     * The ink masks for those same slots, or NULL when the font has none
+     * loaded -- measuring a line needs only widths, so STRNGLEN works
+     * either way and only the draw list requires this.
+     *
+     * It lives HERE rather than being looked up globally because
+     * wm_text_build_draw_list takes a font: reaching past the argument to a
+     * fixed table would make the parameter a decoration, which is the exact
+     * shape of half the defects this port has spent its last ten commits on.
+     */
+    const struct wm_rd7font_glyph *glyphs;
     size_t slots;
     int first_char;
 } wm_stringer_font;
@@ -104,6 +118,47 @@ int32_t wm_stringer_place(const char *text, const wm_stringer_font *font,
 
 /* RD7FONT as a wm_stringer_font. */
 const wm_stringer_font *wm_stringer_rd7font(void);
+
+/* ---- the draw list ------------------------------------------------ */
+
+/*
+ * One stencilled glyph: where it goes and which pixels are ink.
+ *
+ * This is the whole of what stringr1_1's DMA path hands the hardware on this
+ * route. SYS.EQU:217 is `DMACNZ .equ 8008h  ;WRITE CONSTANT ON NON-ZERO DATA`
+ * and STRCNRMO_2 sets those flags, so there is no per-glyph palette: the ink
+ * is stencilled in the single colour the caller passed in a6, which
+ * show_copyright spells `movi [>1111,0000],a6  ;pal 0, color 17`.
+ *
+ * Coordinates are arcade coordinates -- the 400x256 space the source works
+ * in. Scaling to the N64's 320x240 is the platform's job, as it is for every
+ * other frontend asset.
+ */
+typedef struct {
+    int16_t x;
+    int16_t y;
+    int16_t width;
+    int16_t height;
+    /* width*height bytes, non-zero where the glyph draws. Never NULL in a
+       list this returns -- an unresolved glyph makes the whole call fail. */
+    const uint8_t *ink;
+} wm_text_draw_item;
+
+/*
+ * Build the draw list for one line.
+ *
+ * Returns the number of items, or -1 if the line cannot be drawn: an unknown
+ * width, an unresolved glyph mask, or a capacity that is too small. Spaces
+ * advance the pen and produce NO item, because the source looks up nothing
+ * for them -- `subk 32,a1 / jrle strr1` jumps past the glyph fetch entirely.
+ *
+ * -1 rather than a partial line is deliberate. A copyright notice or an AAMA
+ * advisory with characters silently missing is worse than one not drawn.
+ */
+int32_t wm_text_build_draw_list(const char *text, const wm_stringer_font *font,
+                                int32_t spacing_x, wm_stringer_justify justify,
+                                int32_t x, int32_t y,
+                                wm_text_draw_item *out, size_t capacity);
 
 #ifdef __cplusplus
 }

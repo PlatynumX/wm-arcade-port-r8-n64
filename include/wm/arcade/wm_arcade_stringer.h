@@ -27,7 +27,9 @@ extern "C" {
  * word: set means GETOBJ/INSOBJ, one object per character with OIMG, OSAG,
  * OFLAGS, OPAL, OSCALE, OCTRL, OID and OZPOS filled; clear means a direct
  * QDMAN blit. Both are the object/DMA renderer this port does not have,
- * the same seam as screen_flash and pal_getf. So these functions answer
+ * the same seam as screen_flash. (pal_getf was named here too, and that
+ * was wrong: PAL.ASM:236 is translated in wm_arcade_pal.h.) So these
+ * functions answer
  * "what should be drawn and where", and a renderer decides how.
  */
 

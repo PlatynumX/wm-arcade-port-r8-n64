@@ -3071,8 +3071,19 @@ static void inc_loop(wm_arcade_actor_t *actor, const wm_anim_env *env,
  * write in it is commented out in the source; what is left live is the
  * palette pair, so it moves nobody. Only the MY_PAL half is translated
  * here: SKELETON_PAL comes from `pal_getf` on a per-file palette symbol
- * (DNKBLU_P and friends), and this port has no palette system to resolve
- * one.
+ * (DNKSEQ3.ASM:493 `movi DNKBLU_P,a0 / calla pal_getf`).
+ *
+ * THIS COMMENT USED TO SAY the port "has no palette system to resolve
+ * one", and that has not been true for some time. PAL.ASM:236 pal_getf is
+ * translated in wm/arcade/wm_arcade_pal.h -- slot reuse, free-slot scan,
+ * pal_clean fallback and all -- DNKBLU_P is registered by name in
+ * src/generated/palettes.c, and wm_pal_getf_by_name exists precisely as the
+ * bridge for wm_anim_env's pal_getf seam.
+ *
+ * What is actually missing is smaller and more ordinary: nothing in the
+ * LIVE app supplies env->pal_getf. Only tests/test_core.c sets it. So the
+ * seam is unwired rather than unbuildable, and SKELETON_PAL stays zero for
+ * that reason and not the one this comment used to give.
  */
 static void set_position(wm_arcade_actor_t *actor, const wm_anim_env *env,
                          int32_t param) {

@@ -36,16 +36,16 @@ static const wm_arcade_drone_script_list_t *range_list(
 }
 
 static const wm_arcade_drone_script_op_t vm_ops[] = {
-    {WM_DRONE_SC_CALL_CODE,0,0,0,0,"call_exact"},
-    {WM_DRONE_SC_RANDOM_JUMP,0,0,100,3,NULL},
-    {WM_DRONE_SC_DONE,0,0,0,0,NULL},
-    {WM_DRONE_SC_INPUT,(uint16_t)(WM_BTN_PUNCH | (WM_MOVE_RIGHT<<5)),4,0,0,NULL},
-    {WM_DRONE_SC_DONE,0,0,0,0,NULL}
+    {WM_DRONE_SC_CALL_CODE,0,0,0,0,"call_exact",NULL},
+    {WM_DRONE_SC_RANDOM_JUMP,0,0,100,3,NULL,NULL},
+    {WM_DRONE_SC_DONE,0,0,0,0,NULL,NULL},
+    {WM_DRONE_SC_INPUT,(uint16_t)(WM_BTN_PUNCH | (WM_MOVE_RIGHT<<5)),4,0,0,NULL,NULL},
+    {WM_DRONE_SC_DONE,0,0,0,0,NULL,NULL}
 };
 static const wm_arcade_drone_script_t vm_script = {"vm_exact",vm_ops,sizeof(vm_ops)/sizeof(vm_ops[0])};
 static const wm_arcade_drone_script_op_t seek_ops[] = {
-    {WM_DRONE_SC_SEEK,0,0,0,0,NULL},
-    {WM_DRONE_SC_INPUT,(uint16_t)(WM_BTN_KICK | (WM_MOVE_LEFT<<5)),2,0,0,NULL}
+    {WM_DRONE_SC_SEEK,0,0,0,0,NULL,NULL},
+    {WM_DRONE_SC_INPUT,(uint16_t)(WM_BTN_KICK | (WM_MOVE_LEFT<<5)),2,0,0,NULL,NULL}
 };
 static const wm_arcade_drone_script_t seek_script = {"seek_exact",seek_ops,2};
 static const wm_arcade_drone_script_t *resolve(const char*l,void*u){

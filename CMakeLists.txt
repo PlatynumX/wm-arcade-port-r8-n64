@@ -157,6 +157,7 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wmania_attract_time.c
     src/core/arcade/wmania_attract_visuals.c
     src/core/arcade/wm_arcade_stringer.c
+    src/core/arcade/wm_arcade_objlist.c
     src/core/arcade/wmania_hiscore_adapter.c
     src/core/arcade/wmania_hiscore_core.c
     src/core/arcade/wmania_hiscore_counter.c

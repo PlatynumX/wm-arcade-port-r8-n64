@@ -17,19 +17,19 @@ Every empty one carries a verdict in `port/seam_ledger.json`,
 and a source-tools test refuses both an unledgered empty seam
 and a ledger row for a seam that is no longer empty.
 
-## deferred (1)
+## deferred (2)
 
 | seam | declared in |
 |---|---|
+| `pal_getf` | `include/wm/anim_program.h` |
 | `play_wrestler_tune` | `include/wm/arcade/wmania_attract_adapter.h` |
 
-## display (19)
+## display (18)
 
 | seam | declared in |
 |---|---|
 | `flash_white` | `include/wm/arcade/wm_arcade_react1_core.h` |
 | `impact` | `include/wm/arcade/wm_arcade_react1_core.h` |
-| `pal_getf` | `include/wm/anim_program.h` |
 | `restore_hit_render_state` | `include/wm/arcade/wm_arcade_react.h` |
 | `screen_flash` | `include/wm/anim_program.h` |
 | `shadow_trail` | `include/wm/anim_program.h` |

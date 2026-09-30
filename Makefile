@@ -32,6 +32,7 @@ CORE_C := \
     src/core/anim_program.c \
     src/core/arcade/wm_arcade_start_run.c \
     src/core/arcade/wm_arcade_stringer.c \
+    src/core/arcade/wm_arcade_objlist.c \
     src/core/wrestler_backend.c \
     src/core/human_input.c \
     src/core/visual.c \

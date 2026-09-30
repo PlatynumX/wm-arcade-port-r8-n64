@@ -110,8 +110,8 @@
   "note": "The operator's music volume adjustment, read out of CMOS by the attract adapter to decide whether to play music at all. No adjustment store and no CMOS here; a default would be the cabinet's setting invented rather than read."
  },
  "pal_getf": {
-  "verdict": "display",
-  "note": "pal_getf, a palette allocation. Object, palette or DMA work with no renderer behind it. The decision that reaches it is translated; the drawing is not."
+  "verdict": "deferred",
+  "note": "pal_getf's SEAM is empty, but not for the reason this row used to give. It read 'a palette allocation. Object, palette or DMA work with no renderer behind it' -- and PAL.ASM:236 pal_getf is TRANSLATED, in wm/arcade/wm_arcade_pal.h: resident-slot reuse, the free-slot scan over NMFPAL, the pal_clean fallback, the palette-number arithmetic, with NMBPAL=0 and PAL64=0 collapsing the two branches the shipped board never assembles. DNKBLU_P and the rest are registered by name in src/generated/palettes.c, and wm_pal_getf_by_name was written as this seam's bridge. So the verdict is deferred, not display: nothing in the LIVE app supplies wm_anim_env's pal_getf -- only tests/test_core.c does, and the bridge has no caller -- which is an unwired seam with a working implementation behind it, not a missing system. It was load-bearing while it was wrong: it is the reason wm_arcade_combat.h gave for skeleton_pal (Doink's electrocution buzzer) staying zero, and this session repeated it to the user more than once before checking."
  },
  "screen_flash": {
   "verdict": "display",

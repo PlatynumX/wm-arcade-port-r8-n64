@@ -176,14 +176,24 @@ struct wm_arcade_actor {
      * back from MY_PAL when it ends (DNKSEQ3.ASM set_skeleton_pal /
      * set_my_pal, both translated in anim_code.c).
      *
-     * READ AND NEVER WRITTEN, and for a reason worth stating rather than
-     * leaving to be rediscovered. DNKSEQ3.ASM:493 fills it with `movi
-     * DNKBLU_P,a0 / calla pal_getf` -- a RUNTIME palette allocator that
-     * hands back whatever slot it put DNKBLU_P in. There is no number to
-     * transcribe, and this port has no palette allocator to ask, so
-     * set_skeleton_pal swaps in zero. Inventing an index would make the
-     * buzzer look deliberate and wrong; leaving it at zero keeps it
-     * visibly unfinished, and it is the renderer's to finish.
+     * READ AND NEVER WRITTEN, and the reason this note used to give was
+     * WRONG. DNKSEQ3.ASM:493 fills it with `movi DNKBLU_P,a0 / calla
+     * pal_getf`, and the note said there was no palette allocator here to
+     * ask, so zero was the honest answer.
+     *
+     * There is one. PAL.ASM:236 pal_getf is translated in
+     * wm/arcade/wm_arcade_pal.h -- resident-slot reuse, the free-slot scan,
+     * the pal_clean fallback -- DNKBLU_P is registered by name in
+     * src/generated/palettes.c, and wm_pal_getf_by_name was written as the
+     * bridge for wm_anim_env's pal_getf seam.
+     *
+     * What is actually missing is that nothing in the LIVE app supplies that
+     * seam; only tests/test_core.c does, and wm_pal_getf_by_name has no
+     * caller. So this is an unwired seam, not an absent system, and the fix
+     * is supplying the seam rather than waiting on a renderer. Zero still
+     * stands for now -- inventing an index would make Doink's electrocution
+     * buzzer look deliberate and wrong -- but it stands on a smaller and
+     * truer reason.
      */
     int32_t skeleton_pal;
     /* PLYR.EQU OBJ_CONST: the constant colour the DMA writes in place of

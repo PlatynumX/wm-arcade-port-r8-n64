@@ -1287,6 +1287,30 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
                 if (actor) run_superslave2(o, actor, exec->env);
                 return;
             case WM_AOP_END:
+                /*
+                 * ANIM.ASM:2497 _ani_end:
+                 *
+                 *     move  *a10(OANIMODE),a0
+                 *     ori   MODE_END,a0
+                 *     move  a0,*a10(OANIMODE)
+                 *     jruc  _exit
+                 *
+                 * The bit is ORed in, so it survives the ANI_SETMODE
+                 * that usually sits immediately before the ANI_END --
+                 * hrt_bounce_anim (HRTSEQ1.ASM:575) ends on
+                 * `ANI_SETMODE,MODE_NORMAL` then `ANI_END`, which
+                 * leaves ANIMODE at exactly MODE_END rather than at 0.
+                 *
+                 * That distinction is the whole point of the bit: every
+                 * dispatcher's mode_bouncing (BRET.ASM:2232 and its
+                 * eight counterparts) leaves BOUNCING only on
+                 * `btst MODE_END_BIT`, so a wrestler who hits the ropes
+                 * stays in PLYRMODE BOUNCING for the rest of the match
+                 * unless this is set. mode_waitanim's CODE_ADDR call
+                 * and change_anim1's restart guard read the same bit.
+                 */
+                if (actor && !exec->secondary)
+                    actor->anim_mode |= WM_MODE_END;
                 exec->ended = true;
                 return;
             case WM_AOP_REPEAT:
@@ -1562,25 +1586,43 @@ int wm_anim_program_label(const wm_anim_program *program, const char *label) {
 
 static void exec_start(wm_anim_exec *exec, const wm_anim_program *program,
                        wm_arcade_actor_t *actor, uint16_t round_tickcount,
-                       const wm_anim_env *env, bool reset_gravity) {
+                       const wm_anim_env *env, bool primary) {
     if (!exec) return;
     memset(exec, 0, sizeof(*exec));
     exec->program = program;
     exec->env = env;
+    exec->secondary = !primary;
     /*
-     * ANIM.ASM:4553 change_anim1 (and :4520 change_anim_anim) both do
+     * ANIM.ASM:4547 change_anim1a `clr a0 / move a0,*a13(ANIMODE)`, its
+     * counterpart at :4578 writing ANIMODE2 for the torso channel, and
+     * :4522 change_anim_anim doing the same from inside an anim command.
+     *
+     * A new animation starts from a blank mode word and its own header
+     * then says what it wants; nothing is inherited from the animation
+     * that just finished. This is also the half that retires MODE_END:
+     * _ani_end sets the bit, and the next selection is what clears it,
+     * so without this clear a wrestler whose animation had ended once
+     * would answer "ended" to every MODE_END test for the rest of the
+     * round.
+     *
+     * Only the primary channel's word exists here -- see
+     * wm_anim_exec::secondary.
+     */
+    if (actor && primary) actor->anim_mode = 0;
+    /*
+     * ANIM.ASM:4552 change_anim1a (and :4519 change_anim_anim) both do
      * `movi GRAVITY,a0 / move a0,*a13(OBJ_GRAVITY),L` -- "reset gravity",
      * their own comment. Every animation therefore starts at the default
      * fall rate, and an animation that wants its own must say so with
      * ANI_SETLONG,OBJ_GRAVITY. Without this reset a single heavy fall
      * would make the wrestler heavy for the rest of the match.
      *
-     * change_anim2a does NOT do this, which is why it is a parameter:
-     * the secondary channel is the torso and the torso does not fall.
-     * Resetting gravity from it would undo whatever the primary
-     * animation had just set.
+     * change_anim2a does NOT do this, which is why the two channels are
+     * told apart: the secondary channel is the torso and the torso does
+     * not fall. Resetting gravity from it would undo whatever the
+     * primary animation had just set.
      */
-    if (actor && reset_gravity) actor->gravity = WM_GRAVITY;
+    if (actor && primary) actor->gravity = WM_GRAVITY;
     if (!program || program->op_count == 0) {
         exec->ended = true;
         return;
@@ -1679,12 +1721,12 @@ void wm_anim_exec_start_secondary(wm_anim_exec *exec,
  */
 static bool start_if_new(wm_anim_exec *exec, const wm_anim_program *program,
                          wm_arcade_actor_t *actor, uint16_t round_tickcount,
-                         const wm_anim_env *env, bool reset_gravity) {
+                         const wm_anim_env *env, bool primary) {
     if (!exec) return false;
     if (exec->program == program && !exec->ended) {
         return false;                   /* `jreq #no_change` */
     }
-    exec_start(exec, program, actor, round_tickcount, env, reset_gravity);
+    exec_start(exec, program, actor, round_tickcount, env, primary);
     return true;
 }
 

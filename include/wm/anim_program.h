@@ -681,6 +681,20 @@ typedef struct {
      * holds both.
      */
     bool waiting;
+    /*
+     * This exec drives the secondary (torso) channel rather than the
+     * primary one.
+     *
+     * ANIM.ASM:79 sets the animation runner's a10 to `a13+ANIMODE` for
+     * the primary channel and :84 to `a13+ANIMODE2` for the secondary,
+     * and every OANIMODE write in the runner then lands on whichever of
+     * the two the caller chose -- ANI_SETMODE, ANI_ORMODE and
+     * _ani_end's `ori MODE_END` alike. The actor carries one anim_mode,
+     * which is ANIMODE; ANIMODE2 is not modelled, so a secondary exec's
+     * mode writes have nowhere to go and are dropped rather than
+     * corrupting the primary channel's.
+     */
+    bool secondary;
     const char *become;    /* set when the program asks to become another */
     const wm_anim_env *env;   /* services ANI_CODE routines may reach for */
 } wm_anim_exec;

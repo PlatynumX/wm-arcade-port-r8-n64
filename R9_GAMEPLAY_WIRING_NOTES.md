@@ -165,6 +165,43 @@ wrong with nothing in between.
     the blit width set to the glyph's real width. If padding columns are being
     sampled, characters will show a smear to their right.
 
+## The rope bounce: items 13-16, and these ARE flashable
+
+`ANI_END` (ANIM.ASM:2497) ORs `MODE_END` into the mode word. The port's
+animation VM set an internal `ended` flag instead and never that bit, so
+every `btst MODE_END_BIT` in the game read a bit nothing wrote --
+including the one in all nine dispatchers' `mode_bouncing` (BRET.ASM:2232
+and its counterparts), which is the only way out of `PLYRMODE BOUNCING`.
+
+The measured effect, two Bret drones over 20000 ticks, before and after:
+
+| | before | after |
+|---|---|---|
+| actor-ticks in BOUNCING | 39845 / 40000 | 448 / 40000 |
+| actor-ticks in NORMAL | 59 | 19482 |
+| actor-ticks in BLOCK | 0 | 19057 |
+| distinct animations played | 5 | 8 |
+| of those, carrying an `ATTACK_ON` | 2 | 4 |
+| damage taken by either man | none, on any seed | lands |
+
+13. **A wrestler who runs into the ropes comes off them.** He should rebound
+    once, turn round and run the other way. If he sticks to the ropes and
+    stays there for the rest of the round, this is back.
+
+14. **The wrestlers fight.** Two drones left alone must throw punches, kicks
+    and blocks, and the life bars must move. Before this they ran back and
+    forth between the ropes for the full match and neither bar ever moved.
+
+15. **Nobody is permanently uninterruptable.** `MODE_END` is retired by the
+    next `change_anim1a` (ANIM.ASM:4543 `clr a0 / move a0,*a13(ANIMODE)`),
+    which the port had also been missing. If a wrestler freezes mid-move and
+    stops responding, that clear is the suspect, not this set.
+
+16. **A puppet still hangs limp.** `wres_slave_anim` ends on
+    `MODE_UNINT+MODE_NOAUTOFLIP+MODE_NOGRAVITY` then `ANI_END`, and the bit
+    is ORed in, so all four survive. A carried wrestler who starts falling
+    out of his carrier's arms means the OR became an assignment.
+
 ## Deliberately still absent
 
 - `pal_getf`, a runtime palette allocator, so `skeleton_pal` stays unwritten and

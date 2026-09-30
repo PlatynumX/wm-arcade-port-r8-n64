@@ -275,6 +275,141 @@ static void test_ifrope_actually_branches(void)
     assert(strcmp(near_rope, away) != 0);
 }
 
+/*
+ * ANIM.ASM:2497 _ani_end -- the opcode ORs MODE_END into the mode word
+ * rather than assigning it, and hrt_bounce_anim (HRTSEQ1.ASM:575) is
+ * the animation that makes the difference visible: it ends on
+ *
+ *     .word  ANI_SETMODE,MODE_NORMAL
+ *     .word  ANI_END
+ *
+ * so ANIMODE lands at exactly MODE_END, not at 0. Getting this wrong
+ * is not cosmetic -- see the bouncing test below.
+ */
+static void test_ani_end_sets_mode_end(void)
+{
+    const wm_anim_program *prog = wm_anim_program_find("hrt_bounce_anim");
+    wm_anim_exec exec;
+    wm_arcade_actor_t a;
+    int i;
+
+    assert(prog != NULL);
+    memset(&exec, 0, sizeof(exec));
+    memset(&a, 0, sizeof(a));
+
+    wm_anim_exec_start(&exec, prog, &a, 0, NULL);
+    /* Its own header sets UNINT|OVERLAP|NOAUTOFLIP|NOCONFINE, so the
+       mode word is NOT MODE_END while it is still running. */
+    assert((a.anim_mode & WM_MODE_END) == 0);
+
+    for (i = 0; i < 400 && !exec.ended; ++i)
+        wm_anim_exec_tick(&exec, &a, (uint16_t)i);
+    assert(exec.ended);
+
+    /* The trailing ANI_SETMODE,MODE_NORMAL wrote 0 and then ANI_END
+       ORed the bit in on top of it: exactly MODE_END, nothing else. */
+    assert(a.anim_mode == WM_MODE_END);
+}
+
+/*
+ * ANIM.ASM:4547 change_anim1a `clr a0 / move a0,*a13(ANIMODE)`.
+ *
+ * Selecting an animation starts from a blank mode word, which is what
+ * retires the MODE_END the last one left behind. Without it a wrestler
+ * whose animation had ended once would answer "ended" to every
+ * MODE_END test for the rest of the round.
+ *
+ * The animation has to be one that never writes ANIMODE itself, or the
+ * clear proves nothing: 1401 of the 1555 emitted programs carry an
+ * ANI_SETMODE somewhere, and an absolute write of the whole word hides
+ * a missing clear. A walk is one of the 154 that carry none, which is
+ * also why it matters -- a wrestler who walks out of an uninterruptable
+ * animation must not stay uninterruptable while he walks.
+ */
+static void test_starting_an_animation_clears_mode_end(void)
+{
+    const wm_anim_program *prog = wm_anim_program_find("bam_walk1_f2_anim");
+    wm_anim_exec exec;
+    wm_arcade_actor_t a;
+    size_t i;
+
+    assert(prog != NULL);
+    /* The premise: this program writes no mode bits of its own. */
+    for (i = 0; i < prog->op_count; ++i)
+        assert(prog->ops[i].op != WM_AOP_SETMODE);
+
+    memset(&exec, 0, sizeof(exec));
+    memset(&a, 0, sizeof(a));
+
+    /* Whatever the previous animation left, including MODE_END. */
+    a.anim_mode = (uint16_t)(WM_MODE_END | WM_MODE_UNINT | WM_MODE_NOCONFINE);
+    wm_anim_exec_start(&exec, prog, &a, 0, NULL);
+    assert(a.anim_mode == 0);
+}
+
+/*
+ * _ani_end ORs rather than assigns, so an animation whose last mode
+ * write leaves bits standing keeps them alongside MODE_END.
+ *
+ * wres_slave_anim (ANIM.ASM:4603) is the whole of that case:
+ *
+ *     .word  ANI_SETMODE,MODE_UNINT+MODE_NOAUTOFLIP+MODE_NOGRAVITY
+ *     .word  ANI_ZEROVELS
+ *     .word  ANI_SETSPEED,100h
+ *     .word  ANI_END
+ *
+ * It must finish holding four bits, not one. A puppet left without
+ * MODE_NOGRAVITY would start falling the moment his animation ended;
+ * one left without MODE_UNINT would become interruptable while still
+ * being carried. wm_arcade_anim_enter_slave_idle hand-executes this
+ * same animation and agrees on all four.
+ */
+static void test_ani_end_keeps_the_mode_bits_already_set(void)
+{
+    const wm_anim_program *prog = wm_anim_program_find("wres_slave_anim");
+    wm_anim_exec exec;
+    wm_arcade_actor_t a;
+    int i;
+
+    assert(prog != NULL);
+    memset(&exec, 0, sizeof(exec));
+    memset(&a, 0, sizeof(a));
+
+    wm_anim_exec_start(&exec, prog, &a, 0, NULL);
+    for (i = 0; i < 64 && !exec.ended; ++i)
+        wm_anim_exec_tick(&exec, &a, (uint16_t)i);
+    assert(exec.ended);
+
+    assert(a.anim_mode == (uint16_t)(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP |
+                                     WM_MODE_NOGRAVITY | WM_MODE_END));
+}
+
+/*
+ * ANIM.ASM:79 and :84 -- the runner's a10 is `a13+ANIMODE` for the
+ * primary channel and `a13+ANIMODE2` for the secondary, so every
+ * OANIMODE write lands on whichever word the caller chose. The actor
+ * here carries ANIMODE only; a torso animation reaching its ANI_END
+ * must therefore leave the body's mode word alone rather than tell the
+ * dispatcher the BODY animation has ended.
+ */
+static void test_only_the_primary_channel_writes_mode_end(void)
+{
+    const wm_anim_program *prog = wm_anim_program_find("hrt_bounce_anim");
+    wm_anim_exec exec;
+    wm_arcade_actor_t a;
+    int i;
+
+    assert(prog != NULL);
+    memset(&exec, 0, sizeof(exec));
+    memset(&a, 0, sizeof(a));
+
+    wm_anim_exec_start_secondary(&exec, prog, &a, 0, NULL);
+    for (i = 0; i < 400 && !exec.ended; ++i)
+        wm_anim_exec_tick(&exec, &a, (uint16_t)i);
+    assert(exec.ended);
+    assert((a.anim_mode & WM_MODE_END) == 0);
+}
+
 int main(void)
 {
     test_ani_init_rows();
@@ -284,6 +419,10 @@ int main(void)
     test_only_the_primary_channel_resets_gravity();
     test_ani_repeat_loops_rather_than_ending();
     test_ifrope_actually_branches();
+    test_ani_end_sets_mode_end();
+    test_starting_an_animation_clears_mode_end();
+    test_ani_end_keeps_the_mode_bits_already_set();
+    test_only_the_primary_channel_writes_mode_end();
     printf("ANIM.ASM change_anim and the torso channel: all checks passed\n");
     return 0;
 }

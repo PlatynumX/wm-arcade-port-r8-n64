@@ -247,6 +247,14 @@ static int backend_check_combo_go(wm_arcade_actor_t *actor, void *user) {
  * skips both tests. st->prog.ended stands in for MODE_END_BIT and
  * st->current_label for ANIBASE.
  *
+ * The actor's anim_mode does now carry a real MODE_END -- ANI_END sets
+ * it, as ANIM.ASM:2497 does -- but the exec's own flag is kept here
+ * rather than swapped for it, because they answer slightly different
+ * questions: `ended` is also true for the one tick an ANI_CHANGEANIM
+ * hand-off is pending, which in the source sets no MODE_END. Either
+ * reading restarts, and the hand-off starts its target immediately, so
+ * the guard is never consulted in between.
+ *
  * This used to be one function that always guarded, which quietly turned
  * every change_anim1a call site in the eight dispatchers into a
  * change_anim1 -- so a move you mash could not replay while its own

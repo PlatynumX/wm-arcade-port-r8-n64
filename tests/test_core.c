@@ -7888,8 +7888,13 @@ static void test_targeting_and_drift(void) {
     CHECK(a.tgt_xoff == 111 && a.tgt_zoff == 222);   /* only Y */
 
     /*
-     * SHNSEQ2.ASM:2566 tgt_tbukl -- aim at the near turnbuckle, from
-     * RING.ASM's own rope lines.
+     * SHNSEQ2.ASM:2566 tgt_tbukl -- aim at the near turnbuckle.
+     *
+     * It reads the first two words of vln_right_rope / vln_left_rope,
+     * which set_up_line_tables (WRESTLE.ASM:5834) generates at runtime
+     * from RING.EQU's constants. This used to take RING.ASM's
+     * pregenerated table instead, and RING.ASM is a dead file that
+     * cannot assemble -- see wmania_ring_geometry.h.
      */
     memset(&a, 0, sizeof(a));
     a.x_int = WM_RING_X_CENTER - 200;
@@ -7909,9 +7914,23 @@ static void test_targeting_and_drift(void) {
     CHECK(wm_anim_code_run(&a, &env, "tgt_tbukl", NULL, 0));
     CHECK(a.tgt_xoff == WM_ROPE_LINE_LEFT_X);
 
-    /* RING.ASM's right rope line is not WRESTLE.ASM's -- five units
-       apart, which is why they are kept as separate constants. */
-    CHECK(WM_ROPE_LINE_RIGHT_X != WM_RING_TOP_RIGHT);
+    /*
+     * The rope line's corner IS the ring's corner, because the table
+     * tgt_tbukl reads is generated from the same RING.EQU constants:
+     * setup_each_right_table (WRESTLE.ASM:5879) opens with
+     * `move *a1(0),*a0+,L`, copying RING_TOP_RIGHT and RING_TOP
+     * straight through.
+     *
+     * This assertion used to be `!=`, pinning the bug in place: the port
+     * carried RING.ASM's 1192+100 = 1292 against the shipped 1292+5 =
+     * 1297, and a test asserted the difference rather than questioning
+     * it. Five units short on every right-hand turnbuckle climb.
+     */
+    CHECK(WM_ROPE_LINE_RIGHT_X == WM_RING_TOP_RIGHT);
+    CHECK(WM_ROPE_LINE_LEFT_X == WM_RING_TOP_LEFT);
+    CHECK(WM_ROPE_LINE_TOP_Z == WM_RING_TOP);
+    /* And the corrected value is the one RING.EQU:45 states. */
+    CHECK(WM_ROPE_LINE_RIGHT_X == 1297);
 
     /* All five are answered by name, and none of them crashes on NULL. */
     CHECK(wm_anim_code_run(NULL, &env, "set_xdrift", NULL, 0));

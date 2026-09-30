@@ -4025,8 +4025,21 @@ def main() -> int:
 
     A list you have to remember to add to is not a mechanism. This
     sweeps the module instead, in definition order so the reading order
-    is still the running order, and the guard is at the end of the file
-    where it cannot cut anything off.
+    is still the running order.
+
+    THAT WAS ONLY HALF THE FIX, AND THE OTHER HALF ROTTED. The sweep
+    cannot see a function that has not been defined yet, so it still
+    depends on the `if __name__` guard being the LAST thing in the file
+    -- and that was left to a sentence in this docstring saying it was.
+    It was not: the guard sat at line 4687 of a 5900-line file and
+    SEVENTEEN test functions had been appended below it, none of which
+    had run since. Among them the citation checker, the
+    expected-hardware-test checker, the ledger-verdict checker, the
+    actor-field audit and the Doink walk-speed pin -- every guard added
+    over the last several commits, each one reported as passing.
+
+    A comment is not a mechanism either.
+    test_the_test_runner_is_the_last_thing_in_this_file now asserts it.
     """
     tests = sorted(
         ((fn.__code__.co_firstlineno, name, fn)
@@ -4684,10 +4697,6 @@ def test_the_restart_seam_is_bound_wherever_the_guarded_one_is() -> None:
     assert checked, "the sweep found nothing to check"
 
 
-if __name__ == "__main__":
-    raise SystemExit(main())
-
-
 def _match_c_function(name: str) -> str:
     """The body of one static function in src/core/match.c."""
     body = (ROOT / "src" / "core" / "match.c").read_text()
@@ -5287,11 +5296,6 @@ def test_the_roster_env_builder_fills_every_field() -> None:
 # zero it always holds is the right answer. Anything not here is either a
 # dropped input or a duplicate of a field somebody else is writing.
 ACTOR_FIELD_NEVER_WRITTEN = (
-    ("plyr_dizzy",
-     "PLYR.EQU PLYR_DIZZY, and always zero in the SHIPPED GAME too: "
-     "check_dizzy, the routine that would set it, is commented out at "
-     "WRESTLE2.ASM:1370 onward. Reading 'not dizzy' throughout is what "
-     "the arcade does, not a gap"),
     ("skeleton_pal",
      "DNKSEQ3.ASM:493 fills it from `movi DNKBLU_P,a0 / calla pal_getf` "
      "-- a RUNTIME palette allocator, so there is no number to "
@@ -5810,3 +5814,112 @@ def test_rd7font_slots_and_index_base() -> None:
         "text.obj is no longer in WRESTLE.CMD -- re-establish which file "
         "defines the shipped RD7FONT before trusting these widths"
     )
+
+
+def test_wrestle_cmd_resolves_as_a_link_line() -> None:
+    """Nothing WRESTLE.CMD builds needs a symbol only an unlinked file has.
+
+    This port treats WRESTLE.CMD as the authority on which of the dump's
+    variant files are the game -- ATTRACT.ASM not ATTR.ASM, DOINK.ASM not
+    DNK.ASM -- and that authority was carried as an OPEN QUESTION, because
+    vln_right_rope and vln_left_rope looked as though only the unlinked
+    RING.ASM defined them while linked files referenced them. A shipped
+    ROM cannot have unresolved symbols, so either the link line was wrong
+    or the reading was.
+
+    The reading was wrong. WRESTLE.ASM:312 `bssx vln_right_rope,...`
+    defines both, and BSSX expands to `.def` + `.bss` (MACROS.H:241), so
+    they are exported by a file that IS linked. RING.ASM's copies are a
+    dead variant's -- its line 16 is the bare sentence "This entire ASM
+    file is no longer required", which is not assemblable at all.
+
+    Settled mechanically here rather than by argument: TMS34010 assembly
+    exports with `.def`/`.globl` (and the SUBR/BSSX macros, which expand
+    to `.def`) and imports with `.ref`, so a link resolves when every
+    `.ref` in a linked file has an export in a linked file.
+
+    WHAT THIS DOES NOT SHOW. Resolution cannot distinguish variants that
+    export the SAME symbols: swapping ATTRACT.ASM for ATTR.ASM, or
+    FIREWORK.ASM for FIREBAK.ASM, leaves the link just as resolvable. For
+    those pairs the link line's own naming is the only evidence, and that
+    is what it stays. What resolution DOES catch is a variant that
+    exports a different set -- DNK.ASM for DOINK.ASM is 31 findings --
+    which is the case that cost Doink his walk speed.
+    """
+    mod = load("link_resolve", ROOT / "tools" / "link_resolve.py")
+    r = mod.report()
+    assert r is not None, "WRESTLE.CMD is missing from the source dump"
+
+    # Every .obj in the link line is a file this dump actually carries.
+    assert not r["obj_without_asm"], r["obj_without_asm"]
+    assert len(r["objs"]) == 99, len(r["objs"])
+
+    only_unlinked = [u for u in r["unresolved"] if u[2]]
+    assert not only_unlinked, (
+        "symbols resolvable ONLY from a file WRESTLE.CMD does not link -- "
+        "the link line is not the one that built the ROM: "
+        + "; ".join(f"{o}.obj refs {s} (in {', '.join(w)})"
+                    for o, s, w in only_unlinked[:10])
+    )
+
+    # The check must be able to fail, or it reads as verification while
+    # verifying nothing. Substituting the dead DNK.ASM for the shipped
+    # DOINK.ASM has to be caught.
+    real = mod.linked_objs(mod.SRC / "WRESTLE.CMD")
+    swapped = [o for o in real if o != "doink"] + ["dnk"]
+    present = {o: p for o in swapped if (p := mod.asm_for(o))}
+    exports: dict[str, list[str]] = {}
+    imports: dict[str, set[str]] = {}
+    for obj, path in present.items():
+        exp, imp = mod.symbols(path, None, set())
+        imports[obj] = imp
+        for sym in exp:
+            exports.setdefault(sym, []).append(obj)
+    elsewhere: set[str] = set()
+    for path in sorted(mod.SRC.glob("*.ASM")):
+        if path.stem.lower() in present:
+            continue
+        exp, _ = mod.symbols(path)
+        elsewhere |= exp
+    caught = [s for obj in present for s in imports[obj]
+              if s not in exports and s in elsewhere]
+    assert len(caught) >= 20, (
+        "swapping the dead DNK.ASM in for DOINK.ASM was not detected, so "
+        f"this check cannot fail: only {len(caught)} findings"
+    )
+
+
+def test_the_test_runner_is_the_last_thing_in_this_file() -> None:
+    """No test may be defined below the `if __name__` guard.
+
+    main() sweeps globals() for test functions, which can only see what
+    is already defined -- so a test appended below the guard is collected
+    by nothing and runs never. That is how seventeen guards in this file
+    came to be silently skipped while being reported as passing, and a
+    skipped guard is worse than an absent one: it reads as verification.
+
+    The first fix for this replaced a hand-written call list with the
+    sweep and left the ordering requirement to a sentence in main()'s
+    docstring. This is the assertion that sentence should have been.
+    """
+    text = pathlib.Path(__file__).read_text()
+    lines = text.splitlines()
+    guards = [i for i, l in enumerate(lines)
+              if l.startswith('if __name__ == "__main__":')]
+    assert len(guards) == 1, f"{len(guards)} `if __name__` guards"
+    after = [(i + 1, l) for i, l in enumerate(lines)
+             if i > guards[0] and l.startswith("def test_")]
+    assert not after, (
+        "test(s) defined below the `if __name__` guard, so main() cannot "
+        "collect them and they do not run:\n"
+        + "\n".join(f"  line {n}: {l}" for n, l in after)
+    )
+    # And the guard really is at the bottom: nothing but itself and its
+    # own body follows.
+    tail = [l for l in lines[guards[0] + 1:] if l.strip()
+            and not l.startswith("    ")]
+    assert not tail, f"code after the guard: {tail[:3]}"
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

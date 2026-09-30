@@ -250,19 +250,6 @@ def linked_asm() -> set[str]:
 # not checked -- that is how RING.ASM ("no longer used", by its own header)
 # and the DNK/DOINK duplicate discussions in tools/ stay legal.
 CITES_UNLINKED_DELIBERATELY = {
-    ("include/wm/arcade/wmania_ring_geometry.h", "RING.ASM"):
-        "OPEN QUESTION, not a settled exemption. RING.ASM is not in "
-        "WRESTLE.CMD and its own header says the file 'is no longer "
-        "required' -- yet vln_right_rope and vln_left_rope are defined "
-        "ONLY there (RING.ASM:23, :72) and are referenced by files that ARE "
-        "linked: ANIM.ASM:1711, :1759, :2576, :2579, REF.ASM:868, :878 and "
-        "SHNSEQ2.ASM:2569, :2573. A shipped ROM cannot have unresolved "
-        "symbols, so either WRESTLE.CMD is not the exact link line of the "
-        "shipped build or those symbols are supplied another way. Until "
-        "that is established, this header keeps RING.ASM's numbers AND its "
-        "own warning not to trust them, which is the honest state. Do not "
-        "delete this row to make the check quiet, and do not treat it as "
-        "proof the citation is fine.",
     ("tests/test_source_tools.py", "ADMSEQ3.ASM"):
         "Names ADMSEQ3.ASM:199 to document a symbol COLLISION -- it defines "
         "dnk_3_head_held_anim and so does DNKSEQ3.ASM:1624. The citation's "
@@ -276,6 +263,24 @@ CITES_UNLINKED_DELIBERATELY = {
     ("tools/citation_check.py", "DNK.ASM"):
         "This module's own docstrings name DNK.ASM:2790 as the worked "
         "example of why the check exists.",
+    ("tools/citation_check.py", "RING.ASM"):
+        "RING.ASM:16 is the bare sentence 'This entire ASM file is no "
+        "longer required' -- not assemblable, which is why the file cannot "
+        "be in any build. Named here because that line is the evidence. "
+        "This used to be an OPEN QUESTION on the ring-geometry header, "
+        "claiming vln_right_rope was defined ONLY in RING.ASM while linked "
+        "files referenced it. That claim was FALSE: WRESTLE.ASM:312 "
+        "`bssx vln_right_rope` defines it, and BSSX expands to .def + .bss "
+        "(MACROS.H:241). The header had taken RING.ASM's pregenerated "
+        "numbers anyway and was five units short on every right-hand "
+        "turnbuckle climb. tools/link_resolve.py settles the link line "
+        "mechanically now.",
+    ("tests/arcade_port/fix38/combat_stage25/test_combat_stage26_drone_data.c",
+     "DNK.ASM"):
+        "This test USED to assert Doink's velocity differed from everyone "
+        "else's, pinning the bug; it now asserts the opposite and names "
+        "DNK.ASM:2790 as the unlinked file the wrong 30000h came from. The "
+        "citation is the evidence, so it stays.",
     ("src/core/wrestler_backend.c", "DNK.ASM"):
         "Names DNK.ASM:2790 to record where this port's wrong Doink walk "
         "speed came from. Removing the citation would delete the evidence.",

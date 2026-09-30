@@ -13,6 +13,9 @@ extern "C" {
  *
  * NOTE: RING.ASM is explicitly marked "This entire ASM file is no longer
  * required."  Do not use its old pregenerated line tables as authority.
+ * That warning was here and the rope line below was taken from RING.ASM
+ * anyway; see WM_ROPE_LINE_RIGHT_X. tools/link_resolve.py now settles
+ * which files the game builds mechanically rather than by note.
  */
 
 #define WM_RING_Y_SCALE_MULTIPLIER 0x3566
@@ -43,15 +46,32 @@ extern "C" {
 #define WM_RING_X_MID 1024
 
 /*
- * RING.ASM:23/72 vln_right_rope and vln_left_rope, first two words -- the
- * top corner of each side's rope line, which tgt_tbukl aims a turnbuckle
- * climb at. These are RING.ASM's own numbers and differ from
- * WRESTLE.ASM's vln_*_rope_r pair by five units on the right, so they are
- * kept separately rather than folded into WM_RING_TOP_RIGHT.
+ * The top corner of each side's rope line, which tgt_tbukl
+ * (SHNSEQ2.ASM:2566) aims a turnbuckle climb at.
+ *
+ * tgt_tbukl reads the first two words of vln_right_rope / vln_left_rope.
+ * Those are BSS, not data: WRESTLE.ASM:312 `bssx vln_right_rope,...`
+ * only reserves the space, and set_up_line_tables (WRESTLE.ASM:5834)
+ * FILLS it at runtime from the vln_*_rope_r parameter blocks at
+ * WRESTLE.ASM:287. setup_each_right_table (:5879) opens with
+ * `move *a1(0),*a0+,L`, copying that block's first long straight
+ * through, so the two words tgt_tbukl reads are exactly RING_TOP_RIGHT
+ * and RING_TOP -- RING.EQU:45 and :48.
+ *
+ * THIS PORT TOOK RING.ASM'S PREGENERATED TABLE INSTEAD, and RING.ASM is
+ * dead. Line 16 of it is the bare sentence "This entire ASM file is no
+ * longer required" -- not assemblable at all -- and WRESTLE.CMD does not
+ * link it. Its right-hand x1 is `1192+100` = 1292 where the shipped
+ * constant is `1292+5` = 1297, so every turnbuckle climb on the right of
+ * the ring was aimed five units short of the corner. The left side and
+ * the Z agreed by coincidence, which is why only one number moves here.
+ *
+ * Named separately from WM_RING_TOP_* because that is what the routine
+ * reads -- the rope line's corner, which happens to be the ring's.
  */
-#define WM_ROPE_LINE_LEFT_X 856
-#define WM_ROPE_LINE_RIGHT_X (1192 + 100)
-#define WM_ROPE_LINE_TOP_Z 1023
+#define WM_ROPE_LINE_LEFT_X  WM_RING_TOP_LEFT
+#define WM_ROPE_LINE_RIGHT_X WM_RING_TOP_RIGHT
+#define WM_ROPE_LINE_TOP_Z   WM_RING_TOP
 #define WM_RING_BOT 1345
 #define WM_RING_DEPTH (WM_RING_BOT - WM_RING_TOP)
 

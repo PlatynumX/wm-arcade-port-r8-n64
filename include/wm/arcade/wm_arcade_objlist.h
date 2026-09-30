@@ -21,8 +21,8 @@ extern "C" {
  * ID class with obj_del1c and builds the second page. The objects' lifetime IS
  * the screen's behaviour, so it has to be modelled, not rebuilt.
  *
- * The pool is DISPLAY.ASM:1451's: `movi NOBJ,b0` over OBSIZ-sized blocks
- * linked head to tail, with OFREE pointing at the first. NOBJ is 350
+ * The pool is DISPLAY.ASM:1454's `movi NOBJ,b0` over OBSIZ-sized blocks
+ * linked head to tail, with OFREE pointing at the first (:1452). NOBJ is 350
  * (DISPLAY.EQU:96) and that number is the real budget -- GETOBJ's failure path
  * is CALLERR, not a resize.
  *
@@ -76,7 +76,7 @@ typedef struct {
     bool in_use[WM_OBJ_COUNT];
 } wm_obj_pool;
 
-/* DISPLAY.ASM:1451's free-list build: every block linked head to tail. */
+/* DISPLAY.ASM:1452's free-list build: every block linked head to tail. */
 void wm_obj_pool_init(wm_obj_pool *p);
 
 /*

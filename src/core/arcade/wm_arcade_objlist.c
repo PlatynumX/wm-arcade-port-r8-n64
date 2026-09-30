@@ -15,7 +15,8 @@ void wm_obj_pool_init(wm_obj_pool *p) {
     if (!p) return;
     memset(p, 0, sizeof *p);
     /*
-     * DISPLAY.ASM:1451. `movi OBJSTR,a1 / move a1,@OFREE,L / movi NOBJ,b0`
+     * DISPLAY.ASM:1452. `movi OBJSTR,a1,L / move a1,@OFREE,L`, then
+     * `movi NOBJ,b0` at :1454,
      * then a loop linking each block to the next. The last block's link is
      * whatever follows it in RAM; the list is bounded by the count, not by a
      * terminator, so here the tail terminates explicitly.

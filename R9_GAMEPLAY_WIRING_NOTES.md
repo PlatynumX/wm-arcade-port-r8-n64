@@ -115,55 +115,55 @@ under the source's own comment "clear his velocities too".
 8. **Immobilised opponents stop dead.** A victim who gets immobilised should stop
    moving, not keep sliding along their last velocity.
 
-## The attract text blit: NOT reachable yet, so do not flash for it
+## The attract text blit: items 9-12, NOW reachable and flashable
 
-`src/platform/n64/rd7text.c` compiles for mips64 against real libdragon headers
--- `wm_n64_link` now does that, where before it skipped the platform layer
-entirely -- and every position it draws at is checked headlessly.
+This block used to say items 9-12 COULD NOT HAPPEN, and listed the five
+layers between "the text is computable" and "the text appears". All five
+are now joined: show_copyright and aama_message are partial-source so
+the app stops skipping them, each has its own tick function with the
+source's sleep boundaries, and main.c's attract switch renders both
+through wm_text_build_draw_list and wm_rd7text_draw.
 
-IT IS ALSO CALLED BY NOBODY, and items 9-12 below CANNOT HAPPEN until that
-changes. They are written down as what to look for once the chain is
-connected, not as something a flash today would show. Five layers sit between
-"the text is computable" and "the text appears":
+Reaching them takes EIGHT attract loops -- `advance_call`'s
+`amode_loops & 7` -- which is about 23500 source ticks, roughly seven
+and a half minutes of attract mode. Leave it running.
 
-  - `wm_rd7text_draw` has no caller.
-  - `wm_text_build_draw_list` is called only by tests.
-  - `wmania_attract_adapter` -- 160 lines with a full callback set, including
-    `show_copyright` -- is built by nothing in the live app.
-  - `show_copyright`'s port status is NOT_STARTED, so
-    `wm_attract_call_is_translated` skips it out of the attract flow.
-  - `main.c`'s render switch has four cases and none for copyright.
+ 9. **The copyright screen has words on it, in two pages.** Nine centred
+    lines 12 pixels apart from y 110, then a second page of ten. Each
+    page holds about three seconds after a settle and any button pages
+    forward. Measured call length is 362 source ticks for the pair.
 
-An earlier version of this section promised these checks outright. That was
-wrong and is corrected here rather than quietly dropped: a note that promises
-behaviour the build cannot produce sends someone to a TV for nothing.
+10. **The AAMA advisory appears after it**, one page of six lines, held
+    about four seconds -- a second longer than each copyright page,
+    because the source says `wait_on_butn 4*TSEC` where copyright says
+    3. Measured 236 ticks.
 
-WHEN THE CHAIN IS CONNECTED, these are the things to look at. A compile is not
-a picture, and the combiner mode in particular is either right or completely
-wrong with nothing in between.
+11. **THREE of the nineteen copyright lines are MISSING, and that is
+    correct.** The two "(C) 1995 ..." lines and the "(P) 1993" one
+    contain parentheses whose widths this port cannot establish, so the
+    engine refuses the whole line rather than drawing it short. 7 of
+    page one's 9 and 9 of page two's 10 draw. A partly-drawn copyright
+    line would be the bug. All six AAMA lines draw.
 
-9. **The copyright screen has words on it.** Nine centred lines, 12 pixels
-   apart, starting 110 from the top, then a second page of ten. Before this
-   they were nine exact positions with nothing drawn at them.
+12. **The text is one flat colour, not coloured per glyph.** DMACNZ is
+    "write constant on non-zero data", so each character is stencilled
+    in one colour. Multicoloured glyphs, or glyphs in the font artwork's
+    own palette, mean the combiner is wrong.
 
-10. **The text is one flat colour, not coloured per glyph.** The source draws
-    it `DMACNZ` -- "write constant on non-zero data" -- so every character is
-    stencilled in the single colour the caller passes. If the glyphs come out
-    multicoloured, or in the font artwork's own palette, the combiner is
-    wrong: it should take RGB from the primitive colour and alpha from the
-    texture, and nothing else.
+### What these screens are still MISSING, on purpose
 
-11. **Three lines will be MISSING, and that is correct.** The two
-    "(C) 1995 ..." lines and the "(P) 1993" one contain parentheses, whose
-    widths this port cannot establish (see `src/generated/rd7font.c`). The
-    engine refuses a line it cannot measure rather than drawing it wrong, so
-    those three do not appear at all. A partly-drawn copyright line would be
-    the bug; a missing one is the intended refusal.
-
-12. **Nothing should be clipped or doubled at the glyph edges.** Each glyph
-    uploads as a small I8 texture whose row pitch is padded to 8 bytes, with
-    the blit width set to the glyph's real width. If padding columns are being
-    sampled, characters will show a smear to their right.
+- The SMWWF2 logo on the copyright page, its fade_up process, and
+  `do_the_grad_thang`'s gradient behind the AAMA text. Those are the
+  object and palette layers, the same seam pal_getf and screen_flash
+  wait on. Both pages come up on flat black at full brightness. The
+  fades' 20-tick settles ARE in the timing, so the pages hold for
+  exactly as long as the arcade's do.
+- "- MILD" on the AAMA screen should be a DIFFERENT COLOUR from the
+  advisory above it (the source's >0606 against >1111). It is not.
+  Both source colour words are kept in wm_attract_aama_lines, but
+  resolving a TMS palette index to RGB needs the palette this port does
+  not allocate. Two invented colours would look deliberate and be
+  wrong.
 
 ## The rope bounce: items 13-16, and these ARE flashable
 

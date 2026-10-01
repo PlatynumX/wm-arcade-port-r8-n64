@@ -15,8 +15,8 @@ wm_port_status wm_attract_call_port_status(wm_attract_call call) {
         case WM_ATTRACT_SHOW_BIOS_TIPS: return WM_PORT_NOT_STARTED;
         case WM_ATTRACT_SHOW_OPERATORMSG: return WM_PORT_NOT_STARTED;
         case WM_ATTRACT_SHOW_TIME_DATE: return WM_PORT_NOT_STARTED;
-        case WM_ATTRACT_SHOW_COPYRIGHT: return WM_PORT_NOT_STARTED;
-        case WM_ATTRACT_AAMA_MESSAGE: return WM_PORT_NOT_STARTED;
+        case WM_ATTRACT_SHOW_COPYRIGHT: return WM_PORT_PARTIAL_SOURCE;
+        case WM_ATTRACT_AAMA_MESSAGE: return WM_PORT_PARTIAL_SOURCE;
         case WM_ATTRACT_CALL_COUNT: break;
     }
     return WM_PORT_NOT_STARTED;

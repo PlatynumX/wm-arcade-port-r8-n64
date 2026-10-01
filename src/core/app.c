@@ -239,6 +239,13 @@ static void begin_call(wm_app *app, wm_attract_call call) {
             a->sports_world_y = 0;
             wm_process_kill_id(&app->scheduler, WM_PID_WATER);
             break;
+        case WM_ATTRACT_SHOW_COPYRIGHT:
+            /* -1 until the SLEEPK 2 before the first line is placed. */
+            a->copyright_page = -1;
+            break;
+        case WM_ATTRACT_AAMA_MESSAGE:
+            a->aama_placed = false;
+            break;
         case WM_ATTRACT_SHOW_TITLE:
             a->title_lava_step = 0;
             reset_title_sparkles(a);
@@ -662,6 +669,69 @@ static void wm_app_bind_anim_env(wm_app *app) {
     app->match.anim_award_user = app;
     app->match.anim_round_award = wm_app_round_award;
     wm_anim_code_reset();
+}
+
+/*
+ * ATTRACT.ASM:1095 show_copyright.
+ *
+ * Two pages of centred text either side of an obj_del1c, with a
+ * skippable `wait_on_butn 3*TSEC` on each. The source has no page
+ * variable -- the two pages are straight-line code -- so this keeps
+ * one, and a button press during either wait ends that page early
+ * exactly as wait_on_butn does.
+ *
+ * What the port does NOT do here: the SMWWF2 logo BEGINOBJ, the
+ * fade_up process and display_blank/display_unblank. Those are the
+ * object and palette layers, the same ones pal_getf and screen_flash
+ * wait on, so the page appears at full brightness without the fade in.
+ * The TIMING of the fade is still honoured -- its 20-tick settle is in
+ * the boundaries below -- so the page holds for exactly as long as the
+ * arcade's does.
+ */
+static bool tick_copyright(wm_app *app, const wm_input_state *input) {
+    wm_attract_state *a = &app->attract;
+    ++a->call_ticks;
+
+    /* `SLEEPK 2`, then the nine lines go down. */
+    if (a->call_ticks >= WM_COPYRIGHT_PLACE_TICKS && a->copyright_page < 0)
+        a->copyright_page = 0;
+
+    if (a->copyright_page == 0) {
+        /* The first wait_on_butn: skippable once the 20-tick settle is
+           past, and it hands over to page two rather than ending the
+           call -- that is the obj_del1c in the middle. */
+        bool button_now = a->call_ticks > WM_COPYRIGHT_PAGE1_SETTLE_TICKS &&
+                          wm_app_any_attract_button(input);
+        if (button_now || a->call_ticks >= WM_COPYRIGHT_PAGE1_TOTAL_TICKS) {
+            a->copyright_page = 1;
+            /* A skipped page must not shorten page two's own waits, so
+               the clock is moved to where page two begins rather than
+               left where the press happened. */
+            a->call_ticks = WM_COPYRIGHT_PAGE1_TOTAL_TICKS;
+        }
+        return false;
+    }
+
+    /* The second wait_on_butn ends the call. */
+    if (a->call_ticks > WM_COPYRIGHT_PAGE2_SETTLE_TICKS &&
+        wm_app_any_attract_button(input)) return true;
+    return a->call_ticks >= WM_COPYRIGHT_TOTAL_TICKS;
+}
+
+/*
+ * ATTRACT.ASM:274 aama_message -- one page of six lines, held by a
+ * skippable `wait_on_butn 4*TSEC` after a 20-tick settle.
+ *
+ * NOT translated here: do_the_grad_thang, the gradient background, and
+ * display_blank/display_unblank. The advisory text appears on black.
+ */
+static bool tick_aama(wm_app *app, const wm_input_state *input) {
+    wm_attract_state *a = &app->attract;
+    ++a->call_ticks;
+    if (a->call_ticks >= WM_AAMA_PLACE_TICKS) a->aama_placed = true;
+    if (a->call_ticks > WM_AAMA_SETTLE_TICKS &&
+        wm_app_any_attract_button(input)) return true;
+    return a->call_ticks >= WM_AAMA_TOTAL_TICKS;
 }
 
 static bool tick_gameplay(wm_app *app, const wm_input_state *input) {
@@ -1257,6 +1327,8 @@ void wm_app_tick_dual(wm_app *app,
         case WM_ATTRACT_SHOW_SPORTS_LOGO: done = tick_sports_logo(app, input); break;
         case WM_ATTRACT_SHOW_TITLE: done = tick_title(app, input); break;
         case WM_ATTRACT_SHOW_GAMEPLAY: done = tick_gameplay(app, input); break;
+        case WM_ATTRACT_SHOW_COPYRIGHT: done = tick_copyright(app, input); break;
+        case WM_ATTRACT_AAMA_MESSAGE: done = tick_aama(app, input); break;
         default: break;
     }
 

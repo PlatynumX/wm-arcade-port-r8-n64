@@ -76,6 +76,43 @@ extern const char *const wm_attract_copyright_page2_labels[
 /* AAMA source labels. */
 extern const char *const wm_attract_aama_labels[6];
 
+/*
+ * aama_message's six lines are NOT a uniform column, so the generic
+ * WmAttractScreenLayout above cannot express them and this table does.
+ * ATTRACT.ASM:308-343, one `movi [y,x],a9` and one `movi [colour,0],a6`
+ * per line:
+ *
+ *   ln1   [54+60-20,200]  y  94  x 200  colour >1111
+ *   ln2   [54+60,>b1]     y 114  x 177  colour >1111
+ *   ln2b  [54+60,>104]    y 114  x 260  colour >0606
+ *   ln3   [54+71,200]     y 125  x 200  colour >1111
+ *   ln4   [54+82,200]     y 136  x 200  colour >1111
+ *   ln5   [54+93,200]     y 147  x 200  colour >1111
+ *
+ * ln2 and ln2b share a y and sit side by side -- "LIFE-LIKE VIOLENCE"
+ * centred on 177 and "- MILD" on 260 -- and ln2b is the one line on any
+ * of these screens drawn in a DIFFERENT colour. Every x is a centre,
+ * because STRCNRMO_2 is the centred entry point.
+ *
+ * `colour` is the source's own word. It is kept rather than converted
+ * because resolving a TMS palette index to RGB needs the palette this
+ * port has not translated; see wmania_attract_data.c.
+ */
+typedef struct {
+    const char *label;
+    int16_t x;
+    int16_t y;
+    uint16_t colour;
+} WmAttractAamaLine;
+
+#define WM_ATTRACT_AAMA_LINES 6u
+extern const WmAttractAamaLine wm_attract_aama_lines[WM_ATTRACT_AAMA_LINES];
+
+/* aama_message's own boundaries: SLEEPK 2, place, SLEEPK 2 +
+   display_unblank, SLEEPK 20, wait_on_butn 4*TSEC (ATTRACT.ASM:352). */
+#define WM_ATTRACT_AAMA_SETTLE_TICKS 20
+#define WM_ATTRACT_AAMA_WAIT_TSEC 4
+
 /* Bio source-render geometry. */
 #define WM_ATTRACT_BIO_BACKGROUND_SYMBOL "biopageBMOD"
 #define WM_ATTRACT_BIO_STORY_BACKGROUND_SYMBOL "story_bgnd"

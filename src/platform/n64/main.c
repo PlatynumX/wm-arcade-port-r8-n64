@@ -31,6 +31,10 @@
 
 /* Original arcade frontend coordinates are 400x256 (SCRNEND [256,405]).
    Keep the original object coordinate system and transform only at draw time. */
+#include "rd7text.h"
+#include "wm/arcade/wmania_attract_data.h"
+#include "wm/arcade/wmania_attract_text.h"
+
 #define WM_ARCADE_SCREEN_W 400.0f
 #define WM_ARCADE_SCREEN_H 256.0f
 #define WM_N64_SCREEN_W 320.0f
@@ -653,6 +657,98 @@ static void draw_title_sparkle(const wm_title_sparkle *sp) {
                               (float)sp->y * WM_FRONTEND_SCALE_Y,
                               spr->xani, spr->yani, false, spr,
                               WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
+}
+
+/*
+ * ATTRACT.ASM:1095 show_copyright's two text pages.
+ *
+ * Nine lines then ten, centred on x 200 from y 110 in steps of 12, each
+ * one through STRCNRMO_2 -- which is DMACNZ|M_NOCOLL, so the glyphs are
+ * stencils in the one colour a6 carries: `movi [>1111,0000],a6`, the
+ * source's own comment reading "pal 0, color 17".
+ *
+ * A line whose width cannot be established returns -1 from
+ * wm_text_build_draw_list and is SKIPPED rather than drawn short. Three
+ * of the nineteen are in that state -- the two "(C) 1995" lines and the
+ * "(P) 1993" one -- because the four FONT7par widths could not be read
+ * out of the artwork. See src/generated/rd7font.c.
+ */
+#define WM_COPYRIGHT_MAX_GLYPHS 64
+
+static void render_copyright_page(const wm_app *app) {
+    const char *const *labels;
+    unsigned count, i;
+
+    if (app->attract.copyright_page < 0) return;
+
+    if (app->attract.copyright_page == 0) {
+        labels = wm_attract_copyright_page1_labels;
+        count = WM_ATTRACT_COPYRIGHT_PAGE1_LINES;
+    } else {
+        labels = wm_attract_copyright_page2_labels;
+        count = WM_ATTRACT_COPYRIGHT_PAGE2_LINES;
+    }
+
+    for (i = 0; i < count; ++i) {
+        wm_text_draw_item items[WM_COPYRIGHT_MAX_GLYPHS];
+        const char *text = wm_attract_text(labels[i]);
+        int32_t n;
+        if (!text) continue;
+        n = wm_text_build_draw_list(
+                text, wm_stringer_rd7font(), 1, WM_STRINGER_CENTRE,
+                WM_ATTRACT_COPYRIGHT_X,
+                WM_ATTRACT_COPYRIGHT_FIRST_Y +
+                    (int32_t)i * WM_ATTRACT_COPYRIGHT_LINE_STEP,
+                items, WM_COPYRIGHT_MAX_GLYPHS);
+        if (n <= 0) continue;   /* unmeasurable line: absent, not wrong */
+        wm_rd7text_draw(items, (int)n, RGBA32(255, 255, 255, 255),
+                        WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
+    }
+}
+
+static void render_copyright(const wm_app *app) {
+    /* display_blank/WIPEOUT at the head of the routine. The SMWWF2 logo
+       and the fade_up process are the object and palette layers this
+       port does not have, so the page comes up on black at full
+       brightness; its timing is still the source's. */
+    fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+    render_copyright_page(app);
+}
+
+/*
+ * ATTRACT.ASM:274 aama_message's six lines.
+ *
+ * Per-line x, y and colour out of wm_attract_aama_lines -- the screen
+ * is not a column. ln2 and ln2b share a y and sit side by side, and
+ * ln2b carries the source's other colour word.
+ *
+ * BOTH COLOURS DRAW THE SAME HERE. The table keeps >1111 and >0606,
+ * but resolving a TMS palette index to RGB needs the palette this port
+ * does not allocate, so "- MILD" does not stand apart from the advisory
+ * the way the arcade's does. Inventing two colours would look
+ * deliberate and be wrong.
+ */
+static void render_aama(const wm_app *app) {
+    unsigned i;
+
+    /* display_blank at the head of the routine; do_the_grad_thang's
+       gradient is the background layer this port has no renderer for. */
+    fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+    if (!app->attract.aama_placed) return;
+
+    for (i = 0; i < WM_ATTRACT_AAMA_LINES; ++i) {
+        const WmAttractAamaLine *ln = &wm_attract_aama_lines[i];
+        wm_text_draw_item items[WM_COPYRIGHT_MAX_GLYPHS];
+        const char *text = wm_attract_text(ln->label);
+        int32_t n;
+        if (!text) continue;
+        n = wm_text_build_draw_list(
+                text, wm_stringer_rd7font(), 1, WM_STRINGER_CENTRE,
+                ln->x, ln->y, items, WM_COPYRIGHT_MAX_GLYPHS);
+        if (n <= 0) continue;
+        wm_rd7text_draw(items, (int)n, RGBA32(255, 255, 255, 255),
+                        WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
+    }
 }
 
 static void render_title_screen(const wm_app *app) {
@@ -2110,6 +2206,12 @@ static void render_app(const wm_app *app) {
             break;
         case WM_ATTRACT_SHOW_GAMEPLAY:
             render_source_match(app);
+            break;
+        case WM_ATTRACT_SHOW_COPYRIGHT:
+            render_copyright(app);
+            break;
+        case WM_ATTRACT_AAMA_MESSAGE:
+            render_aama(app);
             break;
         default:
             /* Untranslated source routines are skipped by the portable core;

@@ -68,3 +68,24 @@ const char *const wm_attract_aama_labels[6] = {
     "aama_ln1", "aama_ln2", "aama_ln2b",
     "aama_ln3", "aama_ln4", "aama_ln5"
 };
+
+/*
+ * ATTRACT.ASM:308-343. See the header for the source lines these come
+ * from and why the screen needs a per-line table.
+ *
+ * The two colours are the source's own words: >1111 is its "pal 0,
+ * color 17" and >0606 is color 6, the one ln2b uses so that "- MILD"
+ * reads apart from the advisory above it. They are carried here and NOT
+ * resolved: turning a TMS palette index into RGB needs the palette, and
+ * this port has no pal_getf behind it. The renderer draws both in the
+ * same colour as a result -- a known, visible divergence rather than an
+ * invented pair of colours.
+ */
+const WmAttractAamaLine wm_attract_aama_lines[WM_ATTRACT_AAMA_LINES] = {
+    { "aama_ln1",  200,  94, 0x1111u },
+    { "aama_ln2",  177, 114, 0x1111u },
+    { "aama_ln2b", 260, 114, 0x0606u },
+    { "aama_ln3",  200, 125, 0x1111u },
+    { "aama_ln4",  200, 136, 0x1111u },
+    { "aama_ln5",  200, 147, 0x1111u }
+};

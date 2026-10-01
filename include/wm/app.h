@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include "wm/attract.h"
+#include "wm/arcade/wmania_attract_data.h"
 #include "wm/arcade/wm_arcade_sound.h"
 #include "wm/arcade/wmania_hiscore_entry.h"
 #include "wm/arcade/wmania_hiscore_persist.h"
@@ -58,6 +59,52 @@
     (WM_TITLE_BUTTON_ENABLE_TICKS + 10u * WM_SOURCE_TICKS_PER_SEC)
 #define WM_TITLE_LAVA_PERIOD_TICKS 5u
 #define WM_TITLE_LAVA_STEPS 32u
+
+/*
+ * ATTRACT.ASM:1095 show_copyright, exact sleep boundaries.
+ *
+ *   SLEEPK 2                      -- page one's nine lines are placed
+ *   BEGINOBJ SMWWF2 / CREATE fade_up / DISPLAYON
+ *   SLEEPK 2 / display_unblank
+ *   SLEEPK 20
+ *   wait_on_butn 3*TSEC
+ *   obj_del1c CLSNEUT|TYPTEXT|SUBTXT   -- page one's text deleted
+ *   ...page two's ten lines...
+ *   SLEEPK 20
+ *   wait_on_butn 3*TSEC
+ *   RETP
+ *
+ * Both waits are skippable, which is what wait_on_butn means, so a
+ * player can page through. The geometry (x 200, first y 110, step 12,
+ * 9 then 10 lines) is in wm/arcade/wmania_attract_data.h and matches
+ * the source's `movi [50+60,200],a9` through `[158+60,200]`.
+ */
+#define WM_COPYRIGHT_PLACE_TICKS 2u
+#define WM_COPYRIGHT_UNBLANK_TICKS (WM_COPYRIGHT_PLACE_TICKS + 2u)
+#define WM_COPYRIGHT_PAGE1_SETTLE_TICKS \
+    (WM_COPYRIGHT_UNBLANK_TICKS + WM_ATTRACT_COPYRIGHT_FADE_SETTLE_TICKS)
+#define WM_COPYRIGHT_PAGE1_TOTAL_TICKS \
+    (WM_COPYRIGHT_PAGE1_SETTLE_TICKS + \
+     WM_ATTRACT_COPYRIGHT_PAGE_WAIT_TSEC * WM_SOURCE_TICKS_PER_SEC)
+#define WM_COPYRIGHT_PAGE2_SETTLE_TICKS \
+    (WM_COPYRIGHT_PAGE1_TOTAL_TICKS + WM_ATTRACT_COPYRIGHT_FADE_SETTLE_TICKS)
+#define WM_COPYRIGHT_TOTAL_TICKS \
+    (WM_COPYRIGHT_PAGE2_SETTLE_TICKS + \
+     WM_ATTRACT_COPYRIGHT_PAGE_WAIT_TSEC * WM_SOURCE_TICKS_PER_SEC)
+
+/*
+ * ATTRACT.ASM:274 aama_message. SLEEPK 2; do_the_grad_thang; the six
+ * lines; SLEEPK 2 + display_unblank; SLEEPK 20; wait_on_butn 4*TSEC.
+ * One page, and a longer wait than the copyright screen's three
+ * seconds -- it is a parental advisory and the source holds it longer.
+ */
+#define WM_AAMA_PLACE_TICKS 2u
+#define WM_AAMA_UNBLANK_TICKS (WM_AAMA_PLACE_TICKS + 2u)
+#define WM_AAMA_SETTLE_TICKS \
+    (WM_AAMA_UNBLANK_TICKS + WM_ATTRACT_AAMA_SETTLE_TICKS)
+#define WM_AAMA_TOTAL_TICKS \
+    (WM_AAMA_SETTLE_TICKS + \
+     WM_ATTRACT_AAMA_WAIT_TSEC * WM_SOURCE_TICKS_PER_SEC)
 
 /* ATTRACT.ASM::show_gameplay (WRESTLE.ASM::start_match, PSTATUS==0 path):
    SLEEP 3*60 (literal, not TSEC-scaled), then wait_on_butn 10*TSEC. */
@@ -136,6 +183,17 @@ typedef struct {
     wm_title_sparkle title_random_sparkle;
     uint32_t title_random_state;
     uint32_t title_rng_counter;
+    /*
+     * show_copyright's page, 0 or 1. The source has no variable for it
+     * -- the two pages are straight-line code either side of an
+     * obj_del1c -- so the port needs one to say which set of lines is
+     * on screen. -1 means the text has not been placed yet, which is
+     * the SLEEPK 2 before the first line goes down.
+     */
+    int copyright_page;
+    /* aama_message has one page; this is simply whether its lines have
+       been placed yet, i.e. whether the SLEEPK 2 is past. */
+    bool aama_placed;
 } wm_attract_state;
 
 typedef enum {

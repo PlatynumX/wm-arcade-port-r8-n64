@@ -274,6 +274,126 @@ can spend a round blocking each other, so this may be correct. It is not
 established either way, and the test asserts the aggregate rather than
 pretending otherwise.
 
+## Four more attract screens: items 21-25, and these ARE flashable
+
+ATTRACT.ASM:1416 `show_gen_tips`, :3390 `DO_HINTS`, :2067 `show_bios` and
+:2070/:2588 `show_bios_tips` / `show_wres_tips`. Four screens whose text all
+comes out of the source's own pointer tables. The extracted text table goes
+from 25 rows to 164, and 141 elements reach a screen:
+
+| screen | new text rows | drawn |
+|---|---|---|
+| `show_gen_tips` | 9 | 9 |
+| `DO_HINTS` | 61 | 59 |
+| `show_wres_tips` | 49 | 49 |
+| `show_bios` | 19 | 24 |
+
+plus one shared `blank` spacer row, which is why the rows total 139. The bios
+draw MORE than they have rows because the height and weight are composed at
+draw time: 8 hometowns plus 16 number-and-unit runs. What does not reach a
+screen is exactly the `blank` spacer wherever it occurs, the two dead `#HNT_7`
+lines, and the eight brace-wrapped quotes.
+
+This is the second half of the same join `c8e6e54` opened. The text extractor,
+RD7FONT and the stencil blit were already there and already correct; what these
+four needed was (a) their text, which the extractor could not reach because
+they do not number their lines the way `show_copyright` does, (b) a tick
+machine, and (c) a port status other than `not-started`, without which
+`skip_untranslated_calls` walked past them whatever else was true.
+
+Two real defects turned up on the way, neither of them in code I had written:
+
+**The hint table was the superseded file's.** `wm_attract_hints` held five
+records and `WM_ATTRACT_ACTIVE_HINTS` was 5. That is ATTR.ASM:3482's
+`NUM_HINTS`. The shipped ATTRACT.ASM:3386 says 10 and `WHICH_HINT` holds ten.
+The two files' orders also diverge after index 2 -- ATTR runs HNT_2,4,3,7,5 and
+ATTRACT runs HNT_2,4,3,9,7,5,8,1,6,A -- so the old table was naming the WRONG
+hint at two live indices as well as missing five. Task #107 re-anchored this
+file's citations and missed the table itself.
+
+**One hint stores two lines the arcade has never drawn.** `#HNT_7` ("SECOND
+WIND", index 4) declares 6 in its count word and lists eight pointers, and
+`NEXT_HINT` (:3545) uses the count as its `DSJS` counter. `#HNT_7G` and
+`#HNT_7H` are in the ROM and have never been on a screen; the second reads
+"...DOES NOT WORK IF" / "IF YOU DIE OUTSIDE THE RING.", a doubled IF that went
+unnoticed because nobody could see it. The port carries both counts and draws
+the count word's.
+
+21. **TONS O' TIPS comes up and holds ten seconds.** A centred title at the top
+    and four tips of two lines each, with a gap between the pairs, the column
+    running from about a quarter of the way down (arcade y 60) to near the
+    bottom (y 210) in steps of 15. 673 ticks (12.7s) end to end: 89 of those are the
+    `BLOW_0_TO_1` wipe, during which the screen is deliberately BLANK, then one
+    second, then a skippable ten. Any attract button should cut it short.
+
+22. **A hint screen comes up, and a DIFFERENT one next time round.** Title
+    centred near the top, three to six body lines centred below it. The first
+    one the cabinet ever shows is "COMBO MODE", not "IN-AIR PICK OFF": both
+    `last_hint` and `next_bio` increment before use, so index 1 leads. Loop the
+    attract mode ten times and you should see all ten titles, in this order
+    from a cold boot: COMBO MODE, TURNBUCKLE LEAPS, EXCESSIVE BLOCKING, SECOND
+    WIND, REVERSALS, HEAD HOLDS, OUT OF RING, HIGH RISK MANEUVERS, CHOOSE
+    WISELY, IN-AIR PICK OFF. **If the THIRD screen is SECOND WIND instead of
+    EXCESSIVE BLOCKING, the ATTR.ASM table has come back** -- that old table's
+    order from the same cold boot would run COMBO MODE, TURNBUCKLE LEAPS,
+    SECOND WIND, REVERSALS, then wrap straight back to IN-AIR PICK OFF after
+    five. 957 ticks (18s) each.
+
+23. **SECOND WIND shows SIX lines, ending "ONCE YOUR HEALTH METER RUNS OUT."**
+    Not eight. If you can read "NOTE THAT THIS DOES NOT WORK IF" on that
+    screen, the port is drawing `line_total` where it should draw `line_count`,
+    and it is showing text the arcade never did.
+
+24. **A wrestler bio comes up, then the SAME wrestler's SPECIAL MOVES.** Two
+    consecutive screens, 513 ticks (9.7s) each. The bio shows a hometown, a
+    height and a weight; the tips page shows a centred "SPECIAL MOVES" and
+    three tips of two lines, and those lines are LEFT aligned near the screen
+    edge -- the only line column of these four screens that is not centred,
+    because `wt_line1_setup` goes through `print_string` and not
+    `print_string_C`. The first bio from a cold boot is **Razor Ramon, MIAMI,
+    FLORIDA, 6 FT. 7 IN., 262 LBS.** -- wrestler 1, not Bret. Over eight
+    attract cycles you should see all eight in roster order ending on Bret, and
+    the tips page must never show a different wrestler from the bio before it.
+
+25. **THE BIO QUOTES ARE MISSING, and that is correct.** All eight of them.
+    Every quote in `#bio_data` is wrapped in the source's own brace-quotes and
+    the four `FONT7par` widths could not be established from the artwork, so
+    `wm_text_build_draw_list` refuses the whole line rather than drawing it
+    short -- the same refusal as the copyright's three parenthesis lines. If a
+    quote appears, something is now guessing a glyph width. (Two of them,
+    `#bambam_quote` and `#doink_quote`, are also missing their closing brace in
+    the source.)
+
+### What these four screens are still MISSING, on purpose
+
+- **All the artwork.** `show_gen_tips` and `DO_HINTS` want `MVEBAR_R`,
+  `SHADOW01` and the `JUDDER_SHADOW` process that shakes the bar; `DO_HINTS`
+  adds `MUGBAK`, `MUGFRNT`, the tip author's name object and a `WGSF22` digit
+  for the hint number; `show_bios` wants `biopageBMOD`, a wrestler logo through
+  `MAKE_UP_LOGO`, a mugshot from `wrestler_mugs2`, `ATT_TXT` and four `ATTMTR`
+  attribute bars. Each page is text on black.
+- **The two screen transitions.** `BLOW_0_TO_1` and the `CLOSE_SCREEN_LINE` /
+  `OPEN_SCREEN_LINE` pair are framebuffer and palette effects with no renderer
+  here. Their DURATIONS are kept, because they are plain `SLEEP`s -- 89 ticks
+  and 41 ticks each -- and dropping them would have ended every one of these
+  screens early. So expect each page to appear abruptly rather than wipe in,
+  but to appear at the right moment and last the right length.
+- **The two-size typography on the bio's height and weight.** The arcade prints
+  the number in `wsf14_ascii` and its unit suffix in `wsf10_ascii` four pixels
+  lower, chaining through `@mess_cursx2`. One font and no `cursx2` here, so
+  each is one string on the number's baseline: "6 FT. 7 IN." rather than the
+  arcade's mixed sizes. The characters and their order are the source's.
+- **The per-wrestler tune.** `#wrestler_tunes` is read and the `SNDSND` is not
+  issued; that is the sound table, not this screen.
+
+### A thing deliberately NOT fixed here
+
+`src/core/arcade/wmania_attract_core.c` holds a second copy of the `last_hint`
+and `next_bio` stepping rules, for a sequencer that only its own tests drive --
+nothing in `src/core/app.c` uses it. Unifying the two attract sequencers is a
+refactor, not a translation, and it is not attempted in this change. Both
+copies are now correct and both are marked; if either changes, both must.
+
 ## Deliberately still absent
 
 - `pal_getf`, a runtime palette allocator, so `skeleton_pal` stays unwritten and
@@ -281,12 +401,22 @@ pretending otherwise.
   look deliberate and wrong; zero keeps it visibly unfinished.
 - `screen_flash`, `shadow_trail`, `impact`, `flash_white` and
   `restore_hit_render_state` — object/palette/DMA work with no renderer behind it.
-- Ten ATTRACT.ASM screens whose scheduler is translated and whose bodies are not
-  (`show_hstd`, `creditscreen`, `DO_HINTS`, `show_gen_tips`, `show_bios`,
-  `show_bios_tips`, `show_operatormsg`, `show_time_date`, `show_copyright`,
-  `aama_message`). Two of those are additionally hardware-gated and will stay
-  that way: `show_time_date` wants a CMOS real-time clock, and it and
-  `show_operatormsg` sit behind operator DIP switches there is no bank to read.
+- Four ATTRACT.ASM screens whose scheduler is translated and whose bodies are
+  not: `show_hstd`, `creditscreen`, `show_operatormsg` and `show_time_date`.
+  This list was ten; `show_copyright` and `aama_message` were translated in
+  `c8e6e54`, and `DO_HINTS`, `show_gen_tips`, `show_bios` and `show_bios_tips`
+  below. Two of the four will stay absent: `show_time_date` wants a CMOS
+  real-time clock, and it and `show_operatormsg` sit behind operator DIP
+  switches there is no bank to read -- and `show_operatormsg` has no source
+  text to translate in any case, because it reads the message a cabinet
+  operator typed into CMOS (`RC_BYTEI` over `CUSTOM_MESSAGE`, ATTRACT.ASM:692).
+  `show_hstd` and `creditscreen` have no such excuse; they are simply not done.
+- Every object on the four screens below, and all of their colour. The arcade
+  picks SGMD8YEL, SGMD8RED, RUBYPAL, BLUE and WSF_Y_P out of IMGPAL.ASM and
+  resolving a TMS palette index needs the allocator `pal_getf` would be, so
+  every line is drawn white; and four source fonts (osgemd, ogmd10, wsf14,
+  wsf10) collapse to RD7FONT, the only one whose widths and masks have been
+  recovered from the artwork.
 - The DCSSOUND family is the largest unfinished system: `snd_update`,
   `do_tune_commands`, `announcer_sound`, `END_MATCH_SPEECH` and `nosounds` are
   partial, and `play_wrestler_tune` (LIFEBAR.ASM:3003 `DO_RIGHT_MUSIC`) is the

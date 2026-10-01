@@ -246,6 +246,60 @@ static void begin_call(wm_app *app, wm_attract_call call) {
         case WM_ATTRACT_AAMA_MESSAGE:
             a->aama_placed = false;
             break;
+        case WM_ATTRACT_DO_HINTS:
+            /*
+             * ATTRACT.ASM:3444. `move @last_hint,a0 / jrn #reset_chint /
+             * inc a0 / cmpi NUM_HINTS,a0 / jrge #reset_chint`, then
+             * `#shint move a0,@last_hint`. So a negative last_hint and one
+             * that has reached NUM_HINTS both restart at 0, and last_hint
+             * survives the call -- which hint comes up depends on how many
+             * attract cycles the cabinet has run.
+             */
+            if (a->last_hint < 0 ||
+                a->last_hint + 1 >= (int16_t)WM_ATTRACT_ACTIVE_HINTS)
+                a->last_hint = 0;
+            else
+                ++a->last_hint;
+            a->hint_index = a->last_hint;
+            break;
+        case WM_ATTRACT_SHOW_BIOS:
+        case WM_ATTRACT_SHOW_BIOS_TIPS:
+            /*
+             * ATTRACT.ASM:2073. `movb @next_bio,a10 / andi 1111b,a10 /
+             * inc a10 / cmpi 8,a10 / jrlt #in_range / clr a10`, then
+             * `movb a10,@next_bio`. So the first bio shown is wrestler 1
+             * and not 0, and the cycle is 1,2,3,4,5,6,7,0.
+             *
+             * attract_mode then calls the SAME routine a second time for
+             * the tips page, after backing next_bio up one (:237-:241,
+             * `dec a14 / andi 7,a14`) so the increment lands on the
+             * wrestler just shown. bios_tips is @bios_type, set at :236
+             * and cleared at :245.
+             */
+            if (call == WM_ATTRACT_SHOW_BIOS_TIPS) {
+                /*
+                 * attract_mode does this between the two calls, not inside
+                 * the routine; the instant is the same.
+                 *
+                 * It also saves next_bio into nb_save first (:238) and then,
+                 * once the tips page returns, reads nb_save back and writes
+                 * it straight to nb_save again (:246-:247). Nothing else in
+                 * the file reads nb_save, so the whole round trip is dead --
+                 * presumably it used to restore next_bio and the restore was
+                 * edited out. There is nothing to model, so this port has no
+                 * nb_save: a field written here and read by nobody would be
+                 * the same defect the rest of this commit is about.
+                 */
+                a->next_bio = (int16_t)((a->next_bio - 1) & 7);
+            }
+            {
+                int bio = (a->next_bio & 0x0f) + 1;
+                if (bio >= (int)WM_ATTRACT_WRESTLERS) bio = 0;
+                a->bio_index = bio;
+                a->next_bio = (int16_t)bio;
+            }
+            a->bios_tips = (call == WM_ATTRACT_SHOW_BIOS_TIPS);
+            break;
         case WM_ATTRACT_SHOW_TITLE:
             a->title_lava_step = 0;
             reset_title_sparkles(a);
@@ -734,6 +788,45 @@ static bool tick_aama(wm_app *app, const wm_input_state *input) {
     return a->call_ticks >= WM_AAMA_TOTAL_TICKS;
 }
 
+/*
+ * The three table-driven text screens.
+ *
+ * All three have the same shape: the page is built, a whole-screen transition
+ * runs while it is hidden, a fixed SLEEP holds it, then wait_on_butn ends the
+ * call on any attract button or on its own timeout. wait_on_butn
+ * (ATTRACT.ASM:2823) samples AFTER its SLEEPK 1, so the button is live from
+ * the first tick of the wait and there is no settle to clear -- unlike
+ * show_copyright, whose fade is what the port's settle models.
+ *
+ * The transitions themselves are not drawn: BLOW_0_TO_1 and the screen-line
+ * wipes are framebuffer and palette effects this port has no renderer for.
+ * Their DURATIONS are kept, because they are plain SLEEPs and dropping them
+ * would make every one of these screens finish early.
+ */
+static bool tick_gen_tips(wm_app *app, const wm_input_state *input) {
+    wm_attract_state *a = &app->attract;
+    ++a->call_ticks;
+    if (a->call_ticks > WM_GEN_TIPS_SETTLE_TICKS &&
+        wm_app_any_attract_button(input)) return true;
+    return a->call_ticks >= WM_GEN_TIPS_TOTAL_TICKS;
+}
+
+static bool tick_hints(wm_app *app, const wm_input_state *input) {
+    wm_attract_state *a = &app->attract;
+    ++a->call_ticks;
+    if (a->call_ticks > WM_HINTS_SETTLE_TICKS &&
+        wm_app_any_attract_button(input)) return true;
+    return a->call_ticks >= WM_HINTS_TOTAL_TICKS;
+}
+
+static bool tick_bios(wm_app *app, const wm_input_state *input) {
+    wm_attract_state *a = &app->attract;
+    ++a->call_ticks;
+    if (a->call_ticks > WM_BIOS_SETTLE_TICKS &&
+        wm_app_any_attract_button(input)) return true;
+    return a->call_ticks >= WM_BIOS_TOTAL_TICKS;
+}
+
 static bool tick_gameplay(wm_app *app, const wm_input_state *input) {
     wm_attract_state *a = &app->attract;
 
@@ -808,6 +901,13 @@ void wm_app_init(wm_app *app) {
     app->p1_choice = WM_WRESTLER_BRET;
     app->p2_choice = WM_WRESTLER_BAM_BAM;
     app->attract.amode_loops = 0;
+    /*
+     * -1, not 0, so "no screen has chosen yet" is representable: 0 is a real
+     * hint and a real wrestler. last_hint and next_bio stay at the memset's
+     * zero, which is the cold-boot .bss these counters read in the arcade.
+     */
+    app->attract.hint_index = -1;
+    app->attract.bio_index = -1;
     app->attract.call = WM_ATTRACT_SHOW_HSTD;
     app->attract_started = false;
 }
@@ -1329,6 +1429,10 @@ void wm_app_tick_dual(wm_app *app,
         case WM_ATTRACT_SHOW_GAMEPLAY: done = tick_gameplay(app, input); break;
         case WM_ATTRACT_SHOW_COPYRIGHT: done = tick_copyright(app, input); break;
         case WM_ATTRACT_AAMA_MESSAGE: done = tick_aama(app, input); break;
+        case WM_ATTRACT_SHOW_GEN_TIPS: done = tick_gen_tips(app, input); break;
+        case WM_ATTRACT_DO_HINTS: done = tick_hints(app, input); break;
+        case WM_ATTRACT_SHOW_BIOS:
+        case WM_ATTRACT_SHOW_BIOS_TIPS: done = tick_bios(app, input); break;
         default: break;
     }
 

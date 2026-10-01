@@ -1,11 +1,28 @@
 #include "wm/arcade/wmania_attract_data.h"
 
+/*
+ * WHICH_HINT, ATTRACT.ASM:3625, in its own order -- which is the on-screen
+ * order, because `last_hint` steps the index -- and NOT the #HNT_n numbering.
+ *
+ * number_image_index is the index again: DO_HINTS reaches WHICH_22_NUM with
+ * `PULLP A2 / SLL 5,A2 / ADDI WHICH_22_NUM,A2` (:3471), the same hint number
+ * it used for WHICH_HINT. WHICH_22_NUM (:3613) runs WGSF22_1..WGSF22_9 then
+ * WGSF22_0, so index 9 shows the "0" glyph.
+ *
+ * Hint 9 reuses hint 4's tip-name object (EUGTIP) and hint 3's mugshot
+ * (JSHMUG); that pairing is the source's, not a transcription slip.
+ */
 const WmAttractHint wm_attract_hints[WM_ATTRACT_ACTIVE_HINTS] = {
     { "HNTT_2", "HNT_2", "JMSTIP", "JASMUG", 0u },
     { "HNTT_4", "HNT_4", "MIKTIP", "MIKMUG", 1u },
     { "HNTT_3", "HNT_3", "MJTTIP", "MRKMUG", 2u },
-    { "HNTT_7", "HNT_7", "EUGTIP", "EUGMUG", 3u },
-    { "HNTT_5", "HNT_5", "SHNTIP", "SHNMUG", 4u }
+    { "HNTT_9", "HNT_9", "JOSTIP", "JSHMUG", 3u },
+    { "HNTT_7", "HNT_7", "EUGTIP", "EUGMUG", 4u },
+    { "HNTT_5", "HNT_5", "SHNTIP", "SHNMUG", 5u },
+    { "HNTT_8", "HNT_8", "JAKTIP", "JAKMUG", 6u },
+    { "HNTT_1", "HNT_1", "SALTIP", "SALMUG", 7u },
+    { "HNTT_6", "HNT_6", "TONTIP", "TONMUG", 8u },
+    { "HNTT_A", "HNT_A", "EUGTIP", "JSHMUG", 9u }
 };
 
 const WmAttractBio wm_attract_bios[WM_ATTRACT_WRESTLERS] = {

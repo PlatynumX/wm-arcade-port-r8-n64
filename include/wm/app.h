@@ -106,6 +106,51 @@
     (WM_AAMA_SETTLE_TICKS + \
      WM_ATTRACT_AAMA_WAIT_TSEC * WM_SOURCE_TICKS_PER_SEC)
 
+/*
+ * show_gen_tips (ATTRACT.ASM:1416). print_gen_tips puts the column up before
+ * the SLEEPK 1, then BLOW_0_TO_1 blanks the screen for its own run and brings
+ * it back, then SLEEP TSEC, then wait_on_butn for 10*TSEC.
+ */
+#define WM_GEN_TIPS_PLACE_TICKS 1u
+#define WM_GEN_TIPS_REVEAL_TICKS \
+    (WM_GEN_TIPS_PLACE_TICKS + WM_ATTRACT_BLOW_0_TO_1_TICKS)
+#define WM_GEN_TIPS_SETTLE_TICKS \
+    (WM_GEN_TIPS_REVEAL_TICKS + \
+     WM_ATTRACT_GENERAL_TIPS_PREWAIT_TSEC * WM_SOURCE_TICKS_PER_SEC)
+#define WM_GEN_TIPS_TOTAL_TICKS \
+    (WM_GEN_TIPS_SETTLE_TICKS + \
+     WM_ATTRACT_GENERAL_TIPS_WAIT_TSEC * WM_SOURCE_TICKS_PER_SEC)
+
+/*
+ * DO_HINTS (ATTRACT.ASM:3390). CLOSE_SCREEN_LINE first, then the page is
+ * built, then OPEN_SCREEN_LINE reveals it, then SLEEP 80, then wait_on_butn
+ * for 15*TSEC. Both line wipes cost the same; see WM_ATTRACT_SCREEN_LINE_TICKS.
+ */
+#define WM_HINTS_PLACE_TICKS ((unsigned)WM_ATTRACT_SCREEN_LINE_TICKS)
+#define WM_HINTS_REVEAL_TICKS \
+    (WM_HINTS_PLACE_TICKS + WM_ATTRACT_SCREEN_LINE_TICKS)
+#define WM_HINTS_SETTLE_TICKS \
+    (WM_HINTS_REVEAL_TICKS + WM_ATTRACT_HINT_PREWAIT_TICKS)
+#define WM_HINTS_TOTAL_TICKS \
+    (WM_HINTS_SETTLE_TICKS + \
+     WM_ATTRACT_HINT_WAIT_TSEC * WM_SOURCE_TICKS_PER_SEC)
+
+/*
+ * show_bios and show_bios_tips (ATTRACT.ASM:2067/:2070) -- one routine with
+ * two entry points, @bios_type choosing which text it prints. Unlike
+ * show_gen_tips it has no SLEEPK before BLOW_0_TO_1, so the page is placed on
+ * the call's first tick.
+ */
+#define WM_BIOS_PLACE_TICKS 0u
+#define WM_BIOS_REVEAL_TICKS \
+    (WM_BIOS_PLACE_TICKS + WM_ATTRACT_BLOW_0_TO_1_TICKS)
+#define WM_BIOS_SETTLE_TICKS \
+    (WM_BIOS_REVEAL_TICKS + \
+     WM_ATTRACT_BIO_NORMAL_PREWAIT_TSEC * WM_SOURCE_TICKS_PER_SEC)
+#define WM_BIOS_TOTAL_TICKS \
+    (WM_BIOS_SETTLE_TICKS + \
+     WM_ATTRACT_BIO_NORMAL_WAIT_TSEC * WM_SOURCE_TICKS_PER_SEC)
+
 /* ATTRACT.ASM::show_gameplay (WRESTLE.ASM::start_match, PSTATUS==0 path):
    SLEEP 3*60 (literal, not TSEC-scaled), then wait_on_butn 10*TSEC. */
 #define WM_GAMEPLAY_RUN_TICKS (3u * 60u)
@@ -194,6 +239,36 @@ typedef struct {
     /* aama_message has one page; this is simply whether its lines have
        been placed yet, i.e. whether the SLEEPK 2 is past. */
     bool aama_placed;
+
+    /*
+     * DO_HINTS' and show_bios' source-persistent choices.
+     *
+     * ATTRACT.ASM keeps `last_hint` (.bss, :3388) and `next_bio` (.bss,
+     * :2065) across attract cycles and steps each on entry, so which hint
+     * and which wrestler come up is a function of how long the cabinet has
+     * been looping, not of the call. attract_mode backs next_bio up one
+     * between show_bios and show_bios_tips (:237-:241) so both screens show
+     * the same wrestler; the source's nb_save (.bss, :131) is not carried
+     * here because its round trip is dead -- see the comment on that branch
+     * in begin_call().
+     *
+     * hint_index and bio_index are the resolved choices for the call that is
+     * running, each set on entry to its own call. -1 is "nothing has chosen
+     * yet" and is what wm_app_init leaves them at, because 0 is a real hint
+     * and a real wrestler. bios_tips is @bios_type,
+     * which attract_mode sets to 1 for the SPECIAL MOVES page (:235) and back
+     * to 0 after (:244).
+     *
+     * NOTE: src/core/arcade/wmania_attract_core.c holds a second copy of
+     * these same stepping rules, for a sequencer that only its own tests
+     * drive. Unifying the two is a refactor and not done here; if either
+     * changes, both must.
+     */
+    int16_t last_hint;
+    int16_t next_bio;
+    int hint_index;
+    int bio_index;
+    bool bios_tips;
 } wm_attract_state;
 
 typedef enum {

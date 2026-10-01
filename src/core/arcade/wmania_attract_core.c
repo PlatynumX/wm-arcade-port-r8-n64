@@ -56,7 +56,8 @@ size_t wm_attract_build_cycle(
 
     /*
      * Exact active DO_HINTS behavior:
-     * last_hint++ and wrap at NUM_HINTS=5.
+     * last_hint++ and wrap at NUM_HINTS, which ATTRACT.ASM:3386 sets to
+     * 10. (ATTR.ASM:3482, the superseded dump, said 5.)
      */
     hint = (uint8_t)(state->last_hint + 1);
     if (hint >= WM_ATTRACT_ACTIVE_HINTS) {

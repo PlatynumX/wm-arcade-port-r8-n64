@@ -11420,6 +11420,38 @@ static void test_attract_source_flow(void) {
     }
     CHECK(app.match.active);
     wm_app_tick(&app, &button);
+
+    /*
+     * The four table-driven text screens sit between the second
+     * show_gameplay and the top of the loop (ATTRACT.ASM:232-:243). They
+     * used to be status not-started, so skip_untranslated_calls walked
+     * straight past them and the next call here was DCS_LOGO. Now they run,
+     * so the loop is driven through each of them the same way.
+     *
+     * Each ends on the held button, but only once its own settle is past --
+     * wait_on_butn is not reached until the screen's wipes and SLEEP are
+     * done -- so this ticks until the call changes rather than assuming a
+     * count. show_bios and show_bios_tips are two entries into one routine
+     * and both appear.
+     */
+    {
+        static const wm_attract_call text_screens[] = {
+            WM_ATTRACT_DO_HINTS, WM_ATTRACT_SHOW_GEN_TIPS,
+            WM_ATTRACT_SHOW_BIOS, WM_ATTRACT_SHOW_BIOS_TIPS
+        };
+        for (unsigned s = 0; s < 4u; ++s) {
+            unsigned guard = 0;
+            CHECK(app.attract.call == text_screens[s]);
+            while (app.attract.call == text_screens[s] && guard < 2000u) {
+                wm_app_tick(&app, &button);
+                ++guard;
+            }
+            CHECK(guard < 2000u);
+            /* The held button must actually cut each one short, so none of
+               them can have run its full length. */
+            CHECK(guard < WM_HINTS_TOTAL_TICKS);
+        }
+    }
     CHECK(app.attract.call == WM_ATTRACT_DCS_LOGO);
     CHECK(app.attract.amode_loops == 1);
 

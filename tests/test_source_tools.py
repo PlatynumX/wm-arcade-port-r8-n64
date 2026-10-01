@@ -5716,7 +5716,17 @@ def test_attract_text_matches_the_source_strings() -> None:
 
     _out, rows = mod.build()
     got = {label: text for label, text, _ln in rows}
-    assert len(got) == 25, sorted(got)
+    # This guard is about the two #ln-numbered screens, so it counts THEIR
+    # rows. It used to assert the whole table was 25, which was the same
+    # number only while those two were the only screens extracted; the four
+    # table-driven screens now contribute the rest, and
+    # test_the_table_driven_attract_text_walks_the_shipped_tables guards
+    # those. The total is still asserted, below, so a table that silently
+    # emptied is still caught.
+    prefixed = {k: v for k, v in got.items()
+                if k.startswith(("copyright_", "aama_"))}
+    assert len(prefixed) == 25, sorted(prefixed)
+    assert len(got) == 164, len(got)
 
     for label, text in cop:
         assert got[f"copyright_{label}"] == text, label
@@ -5887,6 +5897,127 @@ def test_wrestle_cmd_resolves_as_a_link_line() -> None:
         "swapping the dead DNK.ASM in for DOINK.ASM was not detected, so "
         f"this check cannot fail: only {len(caught)} findings"
     )
+
+
+def test_the_table_driven_attract_text_walks_the_shipped_tables() -> None:
+    """The four screens whose text comes out of a pointer table.
+
+    show_gen_tips, DO_HINTS, show_bios and show_wres_tips do not number
+    their lines; they index them through #gen_tip_table, WHICH_HINT,
+    #bio_data and wrestler_tips. Two things can go wrong with that and
+    neither shows up as a build failure.
+
+    FIRST, the table can be the wrong file's. wm_attract_hints held five
+    records and NUM_HINTS was 5, which is ATTR.ASM:3482 -- the superseded
+    dump. ATTRACT.ASM:3386 says 10. The orders also diverge after index 2
+    (ATTR: HNT_2,4,3,7,5; ATTRACT: HNT_2,4,3,9,7,5,8,1,6,A), so the old
+    table named the wrong hint at two live indices as well as missing five.
+
+    SECOND, a count word can be ignored. #HNT_7 declares 6 lines and lists
+    eight pointers, and NEXT_HINT uses the count as its DSJS counter, so
+    two lines of "SECOND WIND" are in the ROM and have never been drawn.
+
+    This re-derives both from ATTRACT.ASM here rather than trusting the
+    tool it is checking, and separately checks that the tool REFUSES a name
+    the file defines twice instead of picking one.
+    """
+    spec = importlib.util.spec_from_file_location(
+        "wlattracttext", ROOT / "tools" / "wlattracttext.py"
+    )
+    assert spec and spec.loader
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+
+    src = (ROOT / "original" / "wwf-wrestlemania" / "ATTRACT.ASM").read_text(
+        errors="replace"
+    )
+    lines = src.splitlines()
+
+    # --- independent re-derivation of WHICH_HINT -------------------------
+    start = next(i for i, l in enumerate(lines) if l.startswith("WHICH_HINT"))
+    records: "list[list[str]]" = []
+    for line in lines[start + 1:]:
+        m = re.match(r"^\s+\.LONG\s+(.*)$", line, re.I)
+        if not m:
+            if line.strip() and not line.lstrip().startswith(";"):
+                break
+            continue
+        fields = [f.strip() for f in m.group(1).split(",")]
+        assert len(fields) == 4, f"WHICH_HINT row of {len(fields)}: {line!r}"
+        records.append(fields)
+    assert len(records) == 10, f"WHICH_HINT has {len(records)} records"
+
+    # NUM_HINTS must agree with the table's own length.
+    num = next(l for l in lines if l.startswith("NUM_HINTS"))
+    assert re.search(r"\.EQU\s+10\b", num, re.I), num
+
+    # --- the titles, in the table's order, from the generated file -------
+    generated = (ROOT / "src" / "generated" / "attract_text.c").read_text()
+
+    # The label must be followed by whitespace or end of line: a bare
+    # startswith for `#HNT_2` also matches `#HNT_2A`, which is one of its own
+    # body lines.
+    def defined_at(label: str) -> int:
+        pat = re.compile(re.escape(label) + r"(\s|$)")
+        at = [i for i, l in enumerate(lines) if pat.match(l)]
+        assert len(at) == 1, f"{label} defined {len(at)}x in ATTRACT.ASM"
+        return at[0]
+
+    def text_of(label: str) -> str:
+        start_at = defined_at(label)
+        for line in lines[start_at:start_at + 4]:
+            m = re.search(r'\.byte\s+"([^"]*)"|\.string\s+"([^"]*)"',
+                          line, re.I)
+            if m:
+                return m.group(1) if m.group(1) is not None else m.group(2)
+        raise AssertionError(f"no literal under {label}")
+
+    titles = [text_of(r[0]) for r in records]
+    assert titles[0] == "IN-AIR PICK OFF", titles[0]
+    assert titles[3] == "EXCESSIVE BLOCKING", titles[3]   # ATTR had SECOND WIND
+    assert titles[4] == "SECOND WIND", titles[4]          # ATTR had REVERSALS
+    assert titles[9] == "CHOOSE WISELY", titles[9]
+    # Every one of them, in order, must appear in the generated hint table.
+    table = generated[generated.index("wm_attract_hint_texts"):]
+    where = [table.index('"%s"' % t) for t in titles]
+    assert where == sorted(where), (
+        "wm_attract_hint_texts is not in WHICH_HINT's order")
+
+    # --- the count word vs the pointer count -----------------------------
+    counted = {}
+    for r in records:
+        at = defined_at(r[1])
+        longs: "list[str]" = []
+        for line in lines[at:]:
+            m = re.search(r"\.long\s+(.*)$", line, re.I)
+            if m:
+                longs += [f.strip() for f in m.group(1).split(",")]
+            elif longs:
+                break
+        counted[r[1]] = (int(longs[0]), len(longs) - 1)
+    mismatched = {k: v for k, v in counted.items() if v[0] != v[1]}
+    assert mismatched == {"#HNT_7": (6, 8)}, mismatched
+    assert "        6, 8" in generated, (
+        "the generated hint table does not carry #HNT_7's 6-of-8 split")
+
+    # --- the tool refuses an ambiguous name ------------------------------
+    asm = mod.Asm(src)
+    assert len(asm.defs["#ln1"]) == 2, "ATTRACT.ASM should define #ln1 twice"
+    try:
+        asm.unique("#ln1")
+    except SystemExit as exc:
+        assert "2 times" in str(exc), str(exc)
+    else:
+        raise AssertionError(
+            "Asm.unique resolved #ln1, which ATTRACT.ASM defines twice; the "
+            "assembler's `#` scoping rule is not established from this dump "
+            "so the tool must refuse rather than choose")
+
+    # --- and the shapes the tool asserts are the shapes in the file ------
+    assert len(asm.walk("#gen_tip_table", mod.GEN_TIP_SLOTS)) == 11
+    assert len(asm.longs("#bio_data")) == mod.WRESTLERS == 8
+    for table in asm.longs("wrestler_tips"):
+        assert len(asm.walk(table, mod.WRES_TIP_LINES)) == 8
 
 
 def test_the_test_runner_is_the_last_thing_in_this_file() -> None:

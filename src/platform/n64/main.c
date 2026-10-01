@@ -751,6 +751,178 @@ static void render_aama(const wm_app *app) {
     }
 }
 
+/*
+ * The three table-driven text screens: show_gen_tips, DO_HINTS and
+ * show_bios / show_bios_tips.
+ *
+ * WHAT IS HERE is every word the source stores and the position it stores it
+ * at, scaled from the arcade's 400x256 like every other frontend asset.
+ *
+ * WHAT IS NOT, for all three: the artwork. show_gen_tips and DO_HINTS put up
+ * MVEBAR_R and SHADOW01 (and DO_HINTS adds MUGBAK, MUGFRNT, the tip author's
+ * name object and a WGSF22 digit); show_bios puts up biopageBMOD, a wrestler
+ * logo, a mugshot from wrestler_mugs2, ATT_TXT and four ATTMTR attribute
+ * bars. None of those has an import pipeline here -- the same object seam
+ * show_copyright's SMWWF2 logo waits on -- so each page comes up as text on
+ * black.
+ *
+ * ALSO NOT HERE: colour. The source picks SGMD8YEL, SGMD8RED, RUBYPAL, BLUE
+ * and WSF_Y_P out of IMGPAL.ASM, and resolving a TMS palette index needs a
+ * palette this port does not allocate, so every line is drawn in white.
+ * Four fonts collapse to one for the same reason: the arcade sets
+ * osgemd_ascii, ogmd10_ascii, wsf14_ascii and wsf10_ascii, and RD7FONT is
+ * the only font whose widths and masks have been recovered.
+ *
+ * A line whose width cannot be established is SKIPPED, not drawn short --
+ * see render_copyright_page. That is why the bio quotes do not appear: every
+ * one of them is wrapped in the source's own brace-quotes, and the four
+ * FONT7par widths are among the glyphs the artwork would not give up.
+ */
+static bool draw_text_line(const char *text, int32_t x, int32_t y,
+                           wm_stringer_justify justify) {
+    wm_text_draw_item items[WM_COPYRIGHT_MAX_GLYPHS];
+    int32_t n;
+    if (!text || !*text) return false;   /* a `blank` spacer draws nothing */
+    n = wm_text_build_draw_list(text, wm_stringer_rd7font(), 1, justify,
+                                x, y, items, WM_COPYRIGHT_MAX_GLYPHS);
+    if (n <= 0) return false;
+    wm_rd7text_draw(items, (int)n, RGBA32(255, 255, 255, 255),
+                    WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
+    return true;
+}
+
+/*
+ * One source literal can hold more than one line: control byte 1 steps
+ * mess_cursy by @mess_line_spacing (STRING.ASM:515). The extractor emits it
+ * as '\n', so a literal carrying one is drawn here as two lines `step` apart.
+ */
+static void draw_text_block(const char *text, int32_t x, int32_t y,
+                            int32_t step, wm_stringer_justify justify) {
+    char line[96];
+    if (!text) return;
+    for (;;) {
+        const char *brk = strchr(text, '\n');
+        if (!brk) {
+            (void)draw_text_line(text, x, y, justify);
+            return;
+        }
+        {
+            size_t len = (size_t)(brk - text);
+            if (len >= sizeof line) len = sizeof line - 1;
+            memcpy(line, text, len);
+            line[len] = '\0';
+        }
+        (void)draw_text_line(line, x, y, justify);
+        y += step;
+        text = brk + 1;
+    }
+}
+
+static void render_gen_tips(const wm_app *app) {
+    unsigned i;
+
+    fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+    /* BLOW_0_TO_1 clears @DISPLAYON for all but its first few ticks, so the
+       page is genuinely not on screen while the wipe runs. */
+    if (app->attract.call_ticks < WM_GEN_TIPS_REVEAL_TICKS) return;
+
+    (void)draw_text_line(wm_attract_text(WM_ATTRACT_GENERAL_TIPS_TITLE_LABEL),
+                         WM_ATTRACT_GENERAL_TIPS_TITLE_X,
+                         WM_ATTRACT_GENERAL_TIPS_TITLE_Y,
+                         WM_STRINGER_CENTRE);
+
+    /* #sgt_loop walks wm_attract_general_tip_labels to its NULL, stepping y
+       by 15 for every slot including the three `blank` ones. */
+    for (i = 0; wm_attract_general_tip_labels[i]; ++i)
+        (void)draw_text_line(
+            wm_attract_text(wm_attract_general_tip_labels[i]),
+            WM_ATTRACT_GENERAL_TIPS_LINE_X,
+            WM_ATTRACT_GENERAL_TIPS_FIRST_Y +
+                (int32_t)i * WM_ATTRACT_GENERAL_TIPS_LINE_STEP,
+            WM_STRINGER_CENTRE);
+}
+
+static void render_hints(const wm_app *app) {
+    const wm_attract_hint_text *hint;
+    unsigned i;
+    int index = app->attract.hint_index;
+
+    fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+    if (index < 0 || index >= (int)WM_ATTRACT_ACTIVE_HINTS) return;
+    /* CLOSE_SCREEN_LINE, then the page is built, then OPEN_SCREEN_LINE
+       reveals it; nothing is on screen until that second wipe is done. */
+    if (app->attract.call_ticks < WM_HINTS_REVEAL_TICKS) return;
+
+    hint = &wm_attract_hint_texts[index];
+    (void)draw_text_line(hint->title, WM_ATTRACT_HINT_TITLE_X,
+                         WM_ATTRACT_HINT_TITLE_Y, WM_STRINGER_CENTRE);
+
+    /* line_count, not line_total: NEXT_HINT's DSJS counter is what the
+       arcade draws, and hint 4 stores two lines past it that never show. */
+    for (i = 0; i < hint->line_count; ++i)
+        (void)draw_text_line(hint->lines[i], WM_ATTRACT_HINT_BODY_X,
+                             WM_ATTRACT_HINT_BODY_Y +
+                                 (int32_t)i * WM_ATTRACT_HINT_BODY_LINE_STEP,
+                             WM_STRINGER_CENTRE);
+}
+
+static void render_bios(const wm_app *app) {
+    const WmAttractBio *bio;
+    int index = app->attract.bio_index;
+    char run[32];
+
+    fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+    if (index < 0 || index >= (int)WM_ATTRACT_WRESTLERS) return;
+    if (app->attract.call_ticks < WM_BIOS_REVEAL_TICKS) return;
+
+    bio = &wm_attract_bios[index];
+
+    if (app->attract.bios_tips) {
+        /* show_wres_tips: wt_title_setup is centred on 135, but the lines go
+           through print_string and not print_string_C, so they are LEFT
+           aligned on x 10 -- the one line column here that is not centred. */
+        unsigned i;
+        (void)draw_text_line(wm_attract_text(WM_ATTRACT_WRES_TIPS_TITLE_LABEL),
+                             WM_ATTRACT_WRES_TIPS_TITLE_X,
+                             WM_ATTRACT_WRES_TIPS_TITLE_Y,
+                             WM_STRINGER_CENTRE);
+        for (i = 0; i < WM_ATTRACT_WRES_TIP_LINES; ++i)
+            (void)draw_text_line(
+                wm_attract_wres_tip_lines[index][i],
+                WM_ATTRACT_WRES_TIPS_LINE_X,
+                WM_ATTRACT_WRES_TIPS_FIRST_Y +
+                    (int32_t)i * WM_ATTRACT_WRES_TIPS_LINE_STEP,
+                WM_STRINGER_LEFT);
+        return;
+    }
+
+    /* The bio page. halfwidth is deliberately NOT applied: see the field's
+       own comment in wm/arcade/wmania_attract_data.h -- the source reads it
+       and the only code that used it is commented out. */
+    (void)draw_text_line(wm_attract_text(bio->from_label),
+                         WM_ATTRACT_BIO_FROM_X, WM_ATTRACT_BIO_FROM_Y,
+                         WM_STRINGER_LEFT);
+
+    /* The arcade draws the height as four chained prints -- feet, " FT. ",
+       inches, " IN." -- in two fonts on two baselines four pixels apart.
+       One font and no cursx2 here, so it is one string on the number's y. */
+    snprintf(run, sizeof run, "%u%s%u%s",
+             (unsigned)bio->height_ft, wm_attract_text("feet"),
+             (unsigned)bio->height_in, wm_attract_text("inches"));
+    (void)draw_text_line(run, WM_ATTRACT_BIO_HEIGHT_X,
+                         WM_ATTRACT_BIO_HEIGHT_Y, WM_STRINGER_LEFT);
+
+    snprintf(run, sizeof run, "%u%s",
+             (unsigned)bio->weight_lbs, wm_attract_text("pounds"));
+    (void)draw_text_line(run, WM_ATTRACT_BIO_WEIGHT_X,
+                         WM_ATTRACT_BIO_WEIGHT_Y, WM_STRINGER_LEFT);
+
+    /* print_string_C2, so the x is a centre; mess_line_spacing is 14 here. */
+    draw_text_block(wm_attract_text(bio->quote_label),
+                    WM_ATTRACT_BIO_QUOTE_X, WM_ATTRACT_BIO_QUOTE_Y,
+                    WM_ATTRACT_BIO_QUOTE_LINE_STEP, WM_STRINGER_CENTRE);
+}
+
 static void render_title_screen(const wm_app *app) {
     fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
     if (app->attract.call_ticks < WM_TITLE_SETUP_TICKS)
@@ -2212,6 +2384,18 @@ static void render_app(const wm_app *app) {
             break;
         case WM_ATTRACT_AAMA_MESSAGE:
             render_aama(app);
+            break;
+        case WM_ATTRACT_SHOW_GEN_TIPS:
+            render_gen_tips(app);
+            break;
+        case WM_ATTRACT_DO_HINTS:
+            render_hints(app);
+            break;
+        /* One source routine with two entry points; @bios_type, carried
+           here as attract.bios_tips, picks which text it prints. */
+        case WM_ATTRACT_SHOW_BIOS:
+        case WM_ATTRACT_SHOW_BIOS_TIPS:
+            render_bios(app);
             break;
         default:
             /* Untranslated source routines are skipped by the portable core;

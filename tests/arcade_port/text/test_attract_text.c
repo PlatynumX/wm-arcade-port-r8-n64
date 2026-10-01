@@ -81,7 +81,22 @@ static void test_every_declared_label_resolves(void) {
         const char *t = wm_attract_text(wm_attract_aama_labels[i]);
         assert(t && *t);
     }
-    assert(wm_attract_text_count == 25u);
+    /* This file is about the two #ln-numbered screens, so it counts THEIR
+       entries. 25 was the whole table only while those two were the only
+       screens extracted; show_gen_tips, DO_HINTS, show_bios and
+       show_wres_tips now contribute the rest, keyed by their own source
+       labels, and test_attract_tables.c guards those. The total is asserted
+       too, so a table that silently emptied is still caught. */
+    {
+        size_t prefixed = 0;
+        const wm_attract_text_entry *e = wm_attract_text_entries();
+        for (i = 0; i < wm_attract_text_count; ++i)
+            if (strncmp(e[i].label, "copyright_", 10) == 0 ||
+                strncmp(e[i].label, "aama_", 5) == 0)
+                ++prefixed;
+        assert(prefixed == 25u);
+    }
+    assert(wm_attract_text_count == 164u);
     /* An unknown label answers NULL rather than inventing something. */
     assert(wm_attract_text("copyright_ln20") == NULL);
     assert(wm_attract_text(NULL) == NULL);

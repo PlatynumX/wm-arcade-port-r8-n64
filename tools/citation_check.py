@@ -287,6 +287,30 @@ CITES_UNLINKED_DELIBERATELY = {
     ("include/wm/wrestler_backend.h", "DNK.ASM"):
         "Same, on the declaration: says the old 30000h/21f0eh claim was "
         "DNK.ASM's and why that file is not the game.",
+    ("include/wm/arcade/wmania_attract_data.h", "ATTR.ASM"):
+        "Names ATTR.ASM:3482 because that is where this port's wrong "
+        "NUM_HINTS came from. The hint table held five records and the "
+        "shipped ATTRACT.ASM:3386 says ten; worse, the two files' orders "
+        "diverge after index 2 (ATTR: HNT_2,4,3,7,5; ATTRACT: "
+        "HNT_2,4,3,9,7,5,8,1,6,A), so the old table also named the WRONG "
+        "hint at two live indices. The citation IS the evidence for why 10 "
+        "is right, so it stays.",
+    ("src/core/arcade/wmania_attract_core.c", "ATTR.ASM"):
+        "Same wrong NUM_HINTS, named in the comment on the last_hint wrap "
+        "that used to say 5.",
+    ("tests/arcade_port/text/test_attract_tables.c", "ATTR.ASM"):
+        "The guard for the hint table names ATTR.ASM:3482 as the superseded "
+        "file whose count and order the port had shipped. Without the "
+        "citation the test reads as an arbitrary preference for ten.",
+    ("tests/arcade_port/fix38/ring_rng/test_attract_complete.c", "ATTR.ASM"):
+        "This test USED to assert HNTT_5 at hint index 4, which is "
+        "ATTR.ASM:3722's fifth record; it now asserts the shipped file's "
+        "HNTT_7 and names the old file to say where the stale expectation "
+        "came from.",
+    ("tests/test_source_tools.py", "ATTR.ASM"):
+        "The table-driven attract guard's docstring names ATTR.ASM:3482 as "
+        "the worked example -- the NUM_HINTS this port shipped from the "
+        "wrong file, alongside DNK.ASM:2790's walk speed.",
 }
 
 

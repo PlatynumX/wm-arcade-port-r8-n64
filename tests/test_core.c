@@ -11347,6 +11347,28 @@ static void test_attract_source_flow(void) {
     }
     wm_app_tick(&app, &button);
     CHECK(app.attract_started);
+    /*
+     * show_hstd is the attract loop's first call (ATTRACT.ASM:183) and is
+     * now translated, so the loop opens on it instead of skipping to
+     * DCS_LOGO. The held button cuts it short -- but not before BLOW_0_TO_1
+     * and the half-second settle, which the source does not sample buttons
+     * inside -- so this drives through rather than assuming a count.
+     */
+    CHECK(app.attract.call == WM_ATTRACT_SHOW_HSTD);
+    {
+        unsigned guard = 0;
+        while (app.attract.call == WM_ATTRACT_SHOW_HSTD && guard < 4000u) {
+            wm_app_tick(&app, &button);
+            ++guard;
+        }
+        CHECK(guard < 4000u);
+        CHECK(guard > (unsigned)WM_ATTRACT_BLOW_0_TO_1_TICKS);
+    }
+    CHECK(app.attract.call == WM_ATTRACT_DCS_LOGO);
+    /* The tick that ended show_hstd began DCS_LOGO but did not tick it, so
+       one more restores the call_ticks == 1 the rest of this walk assumes. */
+    CHECK(app.attract.call_ticks == 0);
+    wm_app_tick(&app, &button);
     CHECK(app.attract.call == WM_ATTRACT_DCS_LOGO);
     CHECK(app.attract.call_ticks == 1);
 
@@ -11451,6 +11473,19 @@ static void test_attract_source_flow(void) {
                them can have run its full length. */
             CHECK(guard < WM_HINTS_TOTAL_TICKS);
         }
+    }
+    /*
+     * And the loop comes back round to show_hstd before DCS_LOGO, because
+     * show_hstd is #loop's first call. Drive through it the same way.
+     */
+    {
+        unsigned guard = 0;
+        CHECK(app.attract.call == WM_ATTRACT_SHOW_HSTD);
+        while (app.attract.call == WM_ATTRACT_SHOW_HSTD && guard < 4000u) {
+            wm_app_tick(&app, &button);
+            ++guard;
+        }
+        CHECK(guard < 4000u);
     }
     CHECK(app.attract.call == WM_ATTRACT_DCS_LOGO);
     CHECK(app.attract.amode_loops == 1);

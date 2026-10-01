@@ -9,6 +9,7 @@
 #include "wm/arcade/wmania_hiscore_entry.h"
 #include "wm/arcade/wmania_hiscore_persist.h"
 #include "wm/arcade/wmania_hiscore_system.h"
+#include "wm/arcade/wmania_hstd_screen.h"
 #include "wm/audio.h"
 #include "wm/award.h"
 #include "wm/arcade/wm_arcade_powerup.h"
@@ -269,6 +270,14 @@ typedef struct {
     int hint_index;
     int bio_index;
     bool bios_tips;
+
+    /*
+     * show_hstd's whole machine (ATTRACT.ASM:1443). It is big enough and
+     * self-contained enough to live in its own module; see
+     * wm/arcade/wmania_hstd_screen.h. It reads the high-score system this
+     * struct's owner already holds.
+     */
+    WmHstdState hstd;
 } wm_attract_state;
 
 typedef enum {

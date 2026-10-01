@@ -3,7 +3,7 @@
 
 wm_port_status wm_attract_call_port_status(wm_attract_call call) {
     switch (call) {
-        case WM_ATTRACT_SHOW_HSTD: return WM_PORT_NOT_STARTED;
+        case WM_ATTRACT_SHOW_HSTD: return WM_PORT_PARTIAL_SOURCE;
         case WM_ATTRACT_DCS_LOGO: return WM_PORT_PARTIAL_SOURCE;
         case WM_ATTRACT_SHOW_SPORTS_LOGO: return WM_PORT_PARTIAL_SOURCE;
         case WM_ATTRACT_SHOW_GAMEPLAY: return WM_PORT_PARTIAL_SOURCE;

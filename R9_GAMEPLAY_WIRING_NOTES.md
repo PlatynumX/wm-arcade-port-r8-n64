@@ -394,6 +394,88 @@ nothing in `src/core/app.c` uses it. Unifying the two attract sequencers is a
 refactor, not a translation, and it is not attempted in this change. Both
 copies are now correct and both are marked; if either changes, both must.
 
+## The high-score tables: items 26-30, and these ARE flashable
+
+ATTRACT.ASM:1443 `show_hstd`, translated as
+`src/core/arcade/wmania_hstd_screen.c`.
+
+This one is the clearest instance yet of the shape every commit in this port
+keeps finding. `wmania_hiscore_present.h` already carried the row selection,
+both titles, the row positions, the highlight flag and **every one of the
+source's scroll timings** -- 36 and 34 ticks a step, 85 ticks of hold, 15h to
+run the last rows off, half a second of settle, five seconds of final wait --
+all correct. And `wm_hs_present_rows()` was called by exactly one test and by
+no screen, because this routine's port status was `not-started`, so
+`skip_untranslated_calls` walked straight past it. Almost nothing needed
+extracting; what was missing was a consumer.
+
+Two findings came out of reading the drawer:
+
+**The initials do not print at the x the caller passes.** `a9` is packed
+[Y,X] as the port already believed, but `HSTD.ASM:1652` adds fifty to the x
+before storing `mess_cursx`. The printed rows' x of 8 lands at 58. Anything
+rendering at 8 would have been fifty pixels out.
+
+**The score position is dead on this path.** Every caller computes one --
+[63,10] for the printed rows, [13BH,10] for the spawned ones -- and
+`draw_beaten_table_entry` restores it with `pull a9,a10` at `:1624` and never
+mentions `a10` again in its remaining 111 lines. What a row shows is initials
+plus a row of defeated-wrestler icons, drawn off `a9`; there is no score text.
+This is scoped: the tag, pin-speed and win-streak drawers all do use `a10`, so
+the layout's score fields are live for those three screens and dead for these
+two.
+
+26. **A cold boot now opens on INTERCONTINENTAL CHAMPS.** It is the attract
+    loop's first call (`ATTRACT.ASM:183`) and used to be skipped entirely, so
+    the machine went straight to the DCS logo. Expect a centred title, three
+    rows of initials a third of the way down, then more rows scrolling up past
+    them. Then the same again as WORLD CHAMPIONS. 1891 ticks (35.7s) for the
+    pair on a fresh cabinet.
+
+27. **The rows GLIDE, they do not step.** Two pixels a tick, with a new row
+    appearing from below every 35 ticks -- which is why they end up 70 pixels
+    apart. If rows jump a whole row-height at a time, the velocity model has
+    been replaced by a counter.
+
+28. **Three rows scroll, then everything stops for about a second and a half,
+    then three more.** The pause is 21 ticks still moving plus 85 held still.
+    A continuous scroll with no pauses means `A11` is not being counted.
+
+29. **The gap between the third row and the fourth is wider than the rest,**
+    and that is correct. 112 pixels instead of 70, because the first scrolled
+    row is spawned at y 294 before the velocity has been turned on. It stays
+    wider as the pair travels up. Do not report this as a bug.
+
+30. **The scroll stops well short of the bottom of the table, and that is also
+    correct on a new cabinet.** The factory tables carry real entries for only
+    ten of the thirty intercontinental ranks and fewer of the world ones, and
+    `@not_blank` -- whose name says the opposite of what it means -- stops the
+    scroll once a zero-score row has been drawn. Measured: the intercontinental
+    table reaches rank 12 and the world table rank 9. Put thirty real scores
+    in and it runs to rank 30 and takes 4422 ticks instead; the host test does
+    exactly that to exercise the other exit.
+
+### What this screen is still MISSING, on purpose
+
+- **The rows show initials only.** The arcade draws up to eight
+  defeated-wrestler icons per row off the same position (`which_crouton` per
+  set bit of the stored bitmask, `OSGEMD_DOT` for each clear one, 48 pixels
+  apart). Those are objects with no pipeline here. There is deliberately no
+  score number either, because the score position is dead -- drawing a figure
+  there would be inventing a layout the arcade does not have.
+- **The highlight.** `WmHstdRow.highlighted` carries the source's GOLD-versus-
+  BLUE pick off the `GET_AUD AUD_INTER`/`AUD_BEATEN` comparison, and resolving
+  a TMS palette index needs the allocator `pal_getf` would be. So the newest
+  entry does not stand apart from the others.
+- **`hstd_mod`'s background, the `MVEBAR_R` bar, the `SHADOW01` shadow and the
+  `JUDDER_SHADOW` process that shakes it, `BLOW_0_TO_1`'s wipe, and
+  `hscore_colcyc`/`hscore_colcyc2`'s colour cycling.** The wipe's 89 ticks are
+  kept even though the wipe is not drawn, so the screen is blank for that
+  stretch and then simply appears.
+- **`SET_PAGE` and `special_copy`**, the banked-ROM read path. The entries come
+  from the translated `WmHsSystem` instead, which is where this port keeps the
+  tables anyway.
+
 ## Deliberately still absent
 
 - `pal_getf`, a runtime palette allocator, so `skeleton_pal` stays unwritten and
@@ -401,16 +483,17 @@ copies are now correct and both are marked; if either changes, both must.
   look deliberate and wrong; zero keeps it visibly unfinished.
 - `screen_flash`, `shadow_trail`, `impact`, `flash_white` and
   `restore_hit_render_state` — object/palette/DMA work with no renderer behind it.
-- Four ATTRACT.ASM screens whose scheduler is translated and whose bodies are
-  not: `show_hstd`, `creditscreen`, `show_operatormsg` and `show_time_date`.
-  This list was ten; `show_copyright` and `aama_message` were translated in
-  `c8e6e54`, and `DO_HINTS`, `show_gen_tips`, `show_bios` and `show_bios_tips`
-  below. Two of the four will stay absent: `show_time_date` wants a CMOS
-  real-time clock, and it and `show_operatormsg` sit behind operator DIP
-  switches there is no bank to read -- and `show_operatormsg` has no source
-  text to translate in any case, because it reads the message a cabinet
-  operator typed into CMOS (`RC_BYTEI` over `CUSTOM_MESSAGE`, ATTRACT.ASM:692).
-  `show_hstd` and `creditscreen` have no such excuse; they are simply not done.
+- Three ATTRACT.ASM screens whose scheduler is translated and whose bodies are
+  not: `creditscreen`, `show_operatormsg` and `show_time_date`. This list was
+  ten; `show_copyright` and `aama_message` were translated in `c8e6e54`,
+  `DO_HINTS`, `show_gen_tips`, `show_bios` and `show_bios_tips` in `b805dec`,
+  and `show_hstd` below. Two of the three will stay absent: `show_time_date`
+  wants a CMOS real-time clock, and it and `show_operatormsg` sit behind
+  operator DIP switches there is no bank to read -- and `show_operatormsg` has
+  no source text to translate in any case, because it reads the message a
+  cabinet operator typed into CMOS (`RC_BYTEI` over `CUSTOM_MESSAGE`,
+  ATTRACT.ASM:692). `creditscreen` has no such excuse; it is simply not done,
+  and its body is a `JSRP CRD_SCRN2` into a file nobody has read yet.
 - Every object on the four screens below, and all of their colour. The arcade
   picks SGMD8YEL, SGMD8RED, RUBYPAL, BLUE and WSF_Y_P out of IMGPAL.ASM and
   resolving a TMS palette index needs the allocator `pal_getf` would be, so

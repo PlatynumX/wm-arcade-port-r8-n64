@@ -167,6 +167,7 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wmania_hiscore_present.c
     src/core/arcade/wmania_hiscore_special.c
     src/core/arcade/wmania_hiscore_system.c
+    src/core/arcade/wmania_hstd_screen.c
     src/core/arcade/wmania_ring_climb.c
     src/core/arcade/wmania_ring_geometry.c
     src/core/arcade/wmania_ring_out.c

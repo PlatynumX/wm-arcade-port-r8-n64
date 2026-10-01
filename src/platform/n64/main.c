@@ -34,6 +34,7 @@
 #include "rd7text.h"
 #include "wm/arcade/wmania_attract_data.h"
 #include "wm/arcade/wmania_attract_text.h"
+#include "wm/arcade/wmania_hstd_screen.h"
 
 #define WM_ARCADE_SCREEN_W 400.0f
 #define WM_ARCADE_SCREEN_H 256.0f
@@ -921,6 +922,66 @@ static void render_bios(const wm_app *app) {
     draw_text_block(wm_attract_text(bio->quote_label),
                     WM_ATTRACT_BIO_QUOTE_X, WM_ATTRACT_BIO_QUOTE_Y,
                     WM_ATTRACT_BIO_QUOTE_LINE_STEP, WM_STRINGER_CENTRE);
+}
+
+/*
+ * ATTRACT.ASM:1443 show_hstd -- the two scrolling high-score tables.
+ *
+ * WHAT IS HERE: the title, and every live row's initials at the y the scroll
+ * machine has them at. The machine (wm/arcade/wmania_hstd_screen.h) owns the
+ * positions; this only draws them.
+ *
+ * A ROW IS INITIALS ONLY HERE. The arcade draws the initials plus up to eight
+ * defeated-wrestler icons off the same position -- the stored "score" for
+ * these two tables is a bitmask, not a number, and draw_beaten_table_entry
+ * walks its bits for which_crouton icons and OSGEMD_DOT for the clear ones.
+ * Those are objects with no pipeline here. There is deliberately NO score
+ * text: the score position every caller passes is dead in that routine, so
+ * drawing a number at it would be inventing a layout the arcade does not
+ * have.
+ *
+ * THE HIGHLIGHT IS COMPUTED AND NOT DRAWN. WmHstdRow.highlighted carries the
+ * source's GOLD-versus-BLUE pick, off the GET_AUD AUD_INTER/AUD_BEATEN
+ * comparison, and resolving a TMS palette index needs the allocator pal_getf
+ * would be, so the newest entry does not stand apart. Inventing a second
+ * colour would look deliberate and be wrong.
+ */
+static void render_hstd(const wm_app *app) {
+    const WmHstdState *st = &app->attract.hstd;
+    const WmHsPresentDescriptor *desc =
+        &wm_hs_present_sequence[wm_hstd_screen(st)];
+    unsigned i;
+
+    /* SET_UP_PIXEL_WIPE + hstd_mod's background, and BLOW_0_TO_1's wipe,
+       are the layers this port has no renderer for. */
+    fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+
+    /* BLOW_0_TO_1 clears @DISPLAYON for most of its run. */
+    if (st->phase == WM_HSTD_PHASE_WIPE || st->phase == WM_HSTD_PHASE_PLACE)
+        return;
+
+    (void)draw_text_line(desc->title, desc->layout.title_x,
+                         desc->layout.title_y, WM_STRINGER_CENTRE);
+
+    for (i = 0; i < st->row_count; ++i) {
+        const WmHstdRow *row = &st->rows[i];
+        WmHsDisplayRow display;
+        char initials[WM_HS_NUM_INITIALS + 1u];
+
+        /* Rows can sit past the top: DELETE_ANY_OFF_TOP only runs at the end
+           of each step, so one may be below -30 for a few ticks. */
+        if (row->y < -16 || row->y > 256) continue;
+        if (wm_hs_present_rows(&app->hiscore, wm_hstd_screen(st), row->rank,
+                               &display, 1u) != 1u)
+            continue;
+
+        memcpy(initials, display.initials, sizeof initials);
+        initials[WM_HS_NUM_INITIALS] = '\0';
+        (void)draw_text_line(initials,
+                             desc->layout.first_initials_x +
+                                 WM_HSTD_INITIALS_X_BIAS,
+                             row->y, WM_STRINGER_LEFT);
+    }
 }
 
 static void render_title_screen(const wm_app *app) {
@@ -2384,6 +2445,9 @@ static void render_app(const wm_app *app) {
             break;
         case WM_ATTRACT_AAMA_MESSAGE:
             render_aama(app);
+            break;
+        case WM_ATTRACT_SHOW_HSTD:
+            render_hstd(app);
             break;
         case WM_ATTRACT_SHOW_GEN_TIPS:
             render_gen_tips(app);

@@ -246,6 +246,17 @@ static void begin_call(wm_app *app, wm_attract_call call) {
         case WM_ATTRACT_AAMA_MESSAGE:
             a->aama_placed = false;
             break;
+        case WM_ATTRACT_SHOW_HSTD:
+            /*
+             * `calla table_cmos_check` is the first thing show_hstd does
+             * (ATTRACT.ASM:1445); wm_app_init has already run its port
+             * (wm_hs_system_table_cmos_check), and re-running it here would
+             * be the source's own call rather than a port invention -- but
+             * it rebuilds factory tables on a bad checksum, so it is left to
+             * the one place that owns persistence.
+             */
+            wm_hstd_begin(&a->hstd, &app->hiscore);
+            break;
         case WM_ATTRACT_DO_HINTS:
             /*
              * ATTRACT.ASM:3444. `move @last_hint,a0 / jrn #reset_chint /
@@ -1429,6 +1440,12 @@ void wm_app_tick_dual(wm_app *app,
         case WM_ATTRACT_SHOW_GAMEPLAY: done = tick_gameplay(app, input); break;
         case WM_ATTRACT_SHOW_COPYRIGHT: done = tick_copyright(app, input); break;
         case WM_ATTRACT_AAMA_MESSAGE: done = tick_aama(app, input); break;
+        case WM_ATTRACT_SHOW_HSTD:
+            /* The machine counts its own ticks, so call_ticks is not used. */
+            ++app->attract.call_ticks;
+            done = wm_hstd_tick(&app->attract.hstd, &app->hiscore,
+                                wm_app_any_attract_button(input));
+            break;
         case WM_ATTRACT_SHOW_GEN_TIPS: done = tick_gen_tips(app, input); break;
         case WM_ATTRACT_DO_HINTS: done = tick_hints(app, input); break;
         case WM_ATTRACT_SHOW_BIOS:

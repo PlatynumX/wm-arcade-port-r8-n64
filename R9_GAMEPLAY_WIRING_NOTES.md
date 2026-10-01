@@ -223,9 +223,19 @@ Five Bret-v-Bret bouts, 80000 actor-ticks, before and after:
 | BLOCK | 7093 / 7057 | 1238 / 40 |
 | damage, 20 bouts | 10 events | 1248 events |
 
-17. **A wrestler who climbs the turnbuckle comes off it.** He should jump
-    or climb down within a second or two. If he stands up there for the
-    rest of the round, this is back -- that was 7854 consecutive ticks.
+17. **A wrestler who climbs the turnbuckle comes off it -- and this one
+    needs a HUMAN to test.** He should jump or climb down within a second
+    or two; standing up there for the rest of the round is the defect
+    returning, and that was 7854 consecutive ticks.
+    Watching attract mode will NOT show it either way. Measured after the
+    fix, across 25 bouts and 400000 actor-ticks, the drones enter
+    PLYRMODE ONTURNBKL exactly ZERO times -- down from 39265 before it.
+    That is consistent with the source's gate (ck_climb_out_top needs
+    `stick_val_cur` to equal UP_LEFT or UP_RIGHT exactly while at the
+    rope, and a drone steering toward an opponent does not hold a pure
+    diagonal there), but it also means the turnbuckle path is now
+    UNEXERCISED in drone-versus-drone play. It is not proven working by
+    anything in this repo; only a player climbing it will say.
 
 18. **The drones keep fighting all round, not just at the start.** The
     old behaviour was normal play for roughly the first fifteen seconds
@@ -242,6 +252,20 @@ Five Bret-v-Bret bouts, 80000 actor-ticks, before and after:
     still block each other a great deal -- roughly half the time at equal
     skill -- so frequent blocking is expected and a permanent block is
     not.
+
+What this DID make reachable for the first time: mode_waitanim's
+CODE_ADDR continuation, the deferral every ring climb goes through
+(WRESTLE2.ASM:200 climb_turnbuckle, :578 ck_climb_out_side, :702
+ck_climb_in_side). PLYRMODE WAITANIM had occurred ZERO times in 400000
+actor-ticks before this and now occurs 16 times, with `code_addr`
+non-zero on exactly those same 16 -- the token stored and consumed in
+step rather than left dangling. 16 in 400000 is rare, which fits: it
+takes a wrestler walking into the side ropes facing away.
+
+Still at zero, and expected to be: the final battle's zombie promotion
+(wm_arcade_final_battle.c:230, which also gates on MODE_END). It needs
+the last rung of the championship ladder, not a plain bout, and is
+covered by tests/arcade_port/collis/test_final_battle_queue.c instead.
 
 One thing NOT fixed and worth watching: one bout in twenty (Bret v Bret
 on seed 1 of the test's own feed) still produces no damage at all, and

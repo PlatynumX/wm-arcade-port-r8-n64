@@ -34,12 +34,20 @@ static uint32_t g_tick, g_seed;
 static uint32_t hc(void *u) { (void)u; return g_tick * 7u + 13u + g_seed * 101u; }
 static uint32_t spf(void *u) { (void)u; return 0x1234u + g_tick + g_seed * 7919u; }
 
+#define WM_FIGHT_MODES 32u
+
 typedef struct {
     unsigned bouncing;      /* actor-ticks in PLYRMODE BOUNCING */
     unsigned normal;        /* actor-ticks in PLYRMODE NORMAL */
     unsigned actor_ticks;
     unsigned longest_bounce;/* longest unbroken BOUNCING run, one actor */
     unsigned damage_events; /* ticks on which either life changed */
+    /* Per-PLYRMODE occupancy and the longest unbroken run in it. When a
+       mode's longest run EQUALS its total occupancy, one wrestler
+       entered it and never left -- the signature of a one-way door, and
+       the shape of all three defects this file guards. */
+    unsigned mode_ticks[WM_FIGHT_MODES];
+    unsigned mode_longest[WM_FIGHT_MODES];
 } fight_stats;
 
 static void play(fight_stats *st, uint32_t seed, int w0, int w1,
@@ -49,7 +57,10 @@ static void play(fight_stats *st, uint32_t seed, int w0, int w1,
     static WmRng rng;
     wm_arcade_drone_callbacks_t cb;
     unsigned t, run0 = 0, run1 = 0;
+    static unsigned mode_run[2][WM_FIGHT_MODES];
     int32_t l0, l1;
+
+    memset(mode_run, 0, sizeof mode_run);
 
     memset(st, 0, sizeof *st);
     g_seed = seed;
@@ -72,7 +83,17 @@ static void play(fight_stats *st, uint32_t seed, int w0, int w1,
 
         for (i = 0; i < m.actor_count && i < 2; ++i) {
             unsigned *run = i == 0 ? &run0 : &run1;
+            unsigned pm = m.actors[i].player_mode;
             st->actor_ticks++;
+            if (pm < WM_FIGHT_MODES) {
+                unsigned k;
+                st->mode_ticks[pm]++;
+                mode_run[i][pm]++;
+                if (mode_run[i][pm] > st->mode_longest[pm])
+                    st->mode_longest[pm] = mode_run[i][pm];
+                for (k = 0; k < WM_FIGHT_MODES; ++k)
+                    if (k != pm) mode_run[i][k] = 0;
+            }
             if (m.actors[i].player_mode == WM_PMODE_BOUNCING) {
                 st->bouncing++;
                 if (++*run > st->longest_bounce) st->longest_bounce = *run;
@@ -153,11 +174,94 @@ static void test_somebody_takes_damage(void)
     assert(total > 0);
 }
 
+/*
+ * No PLYRMODE may be a one-way door.
+ *
+ * A mode whose longest unbroken run equals its whole occupancy was
+ * entered once and never left. That single measurement caught all three
+ * defects this file exists for:
+ *
+ *   BOUNCING   39845 ticks, longest run 39845  (ANI_END set no MODE_END)
+ *   ONTURNBKL   7854 ticks, longest run  7854  (the drone never acted)
+ *   BLOCK       7093 ticks, longest run  7057  (same cause)
+ *
+ * After both fixes the longest runs are 28, 0 and 40. NORMAL is exempt
+ * only in the sense that it is the resting state -- it still must not
+ * hold a wrestler for the entire bout, which it did (8000 of 8000).
+ */
+static void test_no_player_mode_is_a_one_way_door(void)
+{
+    fight_stats st;
+    unsigned pm;
+    play(&st, 0, WM_ROSTER_BRET, WM_ROSTER_BRET, 4000);
+
+    assert(st.actor_ticks > 0);
+    for (pm = 0; pm < WM_FIGHT_MODES; ++pm) {
+        if (st.mode_ticks[pm] == 0) continue;
+        /* A mode occupied only briefly cannot show the pattern, so only
+           judge the ones a wrestler spends real time in. */
+        if (st.mode_ticks[pm] < 200u) continue;
+        assert(st.mode_longest[pm] < st.mode_ticks[pm]);
+        /* And no mode may swallow most of the bout in one sitting. */
+        assert(st.mode_longest[pm] * 2u < 4000u);
+    }
+}
+
+/*
+ * The match must produce a real exchange, measured over a spread.
+ *
+ * Before the drone's opponent lookup was fixed, twenty bouts produced
+ * 10 damage events between them and most produced none. They now
+ * produce 1248, a mean of 62 a bout.
+ *
+ * NOT asserted per-bout, and that is a measurement not a convenience:
+ * of those twenty, one (Bret v Bret on seed 1) still produces ZERO and
+ * two produce 1 and 4. Two drones of equal skill can spend a round
+ * blocking each other, and Lex v Razor is reliably the quietest
+ * pairing. Whether that quiet bout is correct arcade behaviour or a
+ * further defect is NOT established -- so this asserts the aggregate
+ * and the majority, which are the claims the evidence supports, and
+ * leaves the outlier on the record instead of picking seeds until it
+ * disappears.
+ *
+ * The thresholds sit far below the measured 1248/20-of-20 and far above
+ * the pre-fix 10, so a regression to the old behaviour fails loudly
+ * while ordinary RNG drift does not.
+ */
+static void test_the_match_produces_a_real_exchange(void)
+{
+    static const int pairs[5][2] = {
+        { WM_ROSTER_BRET,  WM_ROSTER_BRET  },
+        { WM_ROSTER_YOKO,  WM_ROSTER_SHAWN },
+        { WM_ROSTER_BAM,   WM_ROSTER_DOINK },
+        { WM_ROSTER_RAZOR, WM_ROSTER_TAKER },
+        { WM_ROSTER_LEX,   WM_ROSTER_RAZOR },
+    };
+    unsigned total = 0, bouts = 0, drew_blood = 0;
+    uint32_t seed;
+    int p;
+
+    for (seed = 0; seed < 4u; ++seed) {
+        for (p = 0; p < 5; ++p) {
+            fight_stats st;
+            play(&st, seed, pairs[p][0], pairs[p][1], 20000);
+            total += st.damage_events;
+            ++bouts;
+            if (st.damage_events > 0) ++drew_blood;
+        }
+    }
+    assert(bouts == 20u);
+    assert(total >= 300u);          /* measured 1248; pre-fix 10 */
+    assert(drew_blood >= 15u);      /* measured 20 of 20 */
+}
+
 int main(void)
 {
     test_a_rope_bounce_ends();
     test_the_wrestlers_do_not_live_in_the_ropes();
     test_somebody_takes_damage();
+    test_no_player_mode_is_a_one_way_door();
+    test_the_match_produces_a_real_exchange();
     printf("live fight: rope bounce ends, drones leave the ropes, damage lands\n");
     return 0;
 }

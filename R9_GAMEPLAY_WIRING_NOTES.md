@@ -202,6 +202,54 @@ The measured effect, two Bret drones over 20000 ticks, before and after:
     is ORed in, so all four survive. A carried wrestler who starts falling
     out of his carrier's arms means the OR became an assignment.
 
+## The drone's opponent: items 17-20, and these ARE flashable
+
+`drone_main` (DRONE.ASM:121) opens by reading `CLOSEST_NUM` and indexing
+`process_ptrs` to find who it is fighting. The port read `smart_target`
+instead -- the SMART_ATTACK lock, which `ani_attack_off` zeroes on every
+attack end. It was NULL on 38136 of 40000 actor-ticks (95.3%), so the AI
+switched itself off from the first completed attack onward while the last
+stick direction kept being re-committed.
+
+Five Bret-v-Bret bouts, 80000 actor-ticks, before and after:
+
+| PLYRMODE | before (ticks / longest run) | after |
+|---|---|---|
+| NORMAL | 63561 / 8000 | 51570 / 1764 |
+| RUNNING | 1018 / 65 | 16998 / 70 |
+| INAIR | 0 | 1090 / 73 |
+| ONGROUND | 0 | 2256 / 228 |
+| ONTURNBKL | 7854 / 7854 | 0 |
+| BLOCK | 7093 / 7057 | 1238 / 40 |
+| damage, 20 bouts | 10 events | 1248 events |
+
+17. **A wrestler who climbs the turnbuckle comes off it.** He should jump
+    or climb down within a second or two. If he stands up there for the
+    rest of the round, this is back -- that was 7854 consecutive ticks.
+
+18. **The drones keep fighting all round, not just at the start.** The
+    old behaviour was normal play for roughly the first fifteen seconds
+    (tick 927 is where it died) and then two men drifting with the stick
+    stuck wherever it last was. If the match opens well and goes inert,
+    look here and not at the collision code.
+
+19. **Wrestlers get knocked down and get up again.** PLYRMODE INAIR and
+    ONGROUND never occurred at all before this; a bout with no knockdowns
+    means attacks are not landing.
+
+20. **A blocking wrestler stops blocking.** Block was held for 7057
+    consecutive ticks; it should break within a second. Note the drones
+    still block each other a great deal -- roughly half the time at equal
+    skill -- so frequent blocking is expected and a permanent block is
+    not.
+
+One thing NOT fixed and worth watching: one bout in twenty (Bret v Bret
+on seed 1 of the test's own feed) still produces no damage at all, and
+Lex v Razor is reliably the quietest pairing. Two equally skilled drones
+can spend a round blocking each other, so this may be correct. It is not
+established either way, and the test asserts the aggregate rather than
+pretending otherwise.
+
 ## Deliberately still absent
 
 - `pal_getf`, a runtime palette allocator, so `skeleton_pal` stays unwritten and

@@ -374,6 +374,53 @@ static const char *pick_range_script(const wm_arcade_actor_t *self,
     return list->scripts[idx];
 }
 
+/*
+ * DRONE.ASM:121, drone_main's first job -- find out who it is fighting:
+ *
+ *      move  *a13(CLOSEST_NUM),a14
+ *      X32   a14
+ *      addi  process_ptrs,a14
+ *      move  *a14,a8,L          ;A8=*Closest's proc
+ *
+ * CLOSEST_NUM is a PLYRNUM (PLYR.EQU:72) and process_ptrs is indexed by
+ * it, so the lookup is "the wrestler whose PLYRNUM this is". The drone
+ * world's actor list IS process_ptrs, which is why the resolution
+ * belongs here rather than behind a callback that cannot see it.
+ *
+ * THIS USED TO READ smart_target, VIA cb->closest_actor. That field is
+ * the SMART_ATTACK lock, not the nearest opponent: match.c sets it once
+ * as a fixed pair at match start (its own comment says so) and
+ * wm_arcade_ani_attack_off zeroes it every time an attack animation
+ * ends. Measured over a 20000-tick match it was NULL on 38136 of 40000
+ * actor-ticks -- 95.3% -- so drone_main's `if (!opp)` bailed out and the
+ * AI was effectively off from tick 927 onwards, while
+ * wm_arcade_drone_commit_inputs kept re-committing the last stale stick.
+ * A wrestler who reached the turnbuckle stayed on it for the rest of the
+ * round because the script that jumps him off was never selected.
+ *
+ * The callback is kept as the fallback for callers with no actor list:
+ * the unit harnesses pass a world they build by hand and set
+ * smart_target deliberately. It also covers the opening of a match,
+ * where calc_closest2's every-fourth-tick throttle (staggered by
+ * PLYRNUM) leaves CLOSEST_NUM at WM_CLOSEST_NUM_NONE briefly -- measured
+ * at 3 ticks for a two-man bout, and smart_target is still the fixed
+ * pair match start gave it for all of them.
+ */
+static wm_arcade_actor_t *drone_closest(wm_arcade_actor_t *self,
+                                        const wm_arcade_drone_world_t *w,
+                                        const wm_arcade_drone_callbacks_t *cb) {
+    size_t i;
+    if (self && w && w->actors && self->closest_num != WM_CLOSEST_NUM_NONE) {
+        for (i = 0; i < w->actor_count; ++i) {
+            wm_arcade_actor_t *p = w->actors[i];
+            if (!p || p == self) continue;
+            if (p->player_num == self->closest_num) return p;
+        }
+    }
+    if (cb && cb->closest_actor) return cb->closest_actor(self, cb->user);
+    return self ? self->smart_target : 0;
+}
+
 wm_arcade_drone_step_result_t wm_arcade_drone_main(
     wm_arcade_actor_t *self, wm_arcade_drone_state_t *d,
     const wm_arcade_drone_world_t *w, const wm_arcade_drone_callbacks_t *cb) {
@@ -385,7 +432,7 @@ wm_arcade_drone_step_result_t wm_arcade_drone_main(
     if (!self || !d || !w) return WM_DRONE_STEP_IDLE;
     old_but = d->but;
     old_joy = d->joy;
-    opp = cb && cb->closest_actor ? cb->closest_actor(self, cb->user) : self->smart_target;
+    opp = drone_closest(self, w, cb);
     if (!opp) {
         wm_arcade_drone_commit_inputs(self, d, old_but, old_joy);
         return WM_DRONE_STEP_IDLE;

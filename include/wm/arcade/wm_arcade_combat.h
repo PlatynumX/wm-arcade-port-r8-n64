@@ -23,6 +23,10 @@ typedef struct wm_arcade_frame_box {
     int32_t iani3id;
 } wm_arcade_frame_box_t;
 
+/* No CLOSEST_NUM yet: calc_closest has not chosen an opponent for this
+   wrestler. A real PLYRNUM is never negative. */
+#define WM_CLOSEST_NUM_NONE (-1)
+
 typedef struct wm_arcade_actor wm_arcade_actor_t;
 
 /*
@@ -433,6 +437,25 @@ struct wm_arcade_actor {
     int32_t closest_xdist;
     int32_t closest_ydist;
     int32_t closest_zdist;
+    /*
+     * PLYR.EQU:72 CLOSEST_NUM -- "number of closest opponent", the
+     * PLYRNUM of whoever calc_closest settled on, written at its
+     * `#accept` (WRESTLE.ASM:4322 `move *a10(PLYRNUM),a14 / move
+     * a14,*a13(CLOSEST_NUM)`).
+     *
+     * It is a PLAYER NUMBER, not a slot index: the source resolves it
+     * with `X32 a14 / addi process_ptrs,a14`, so anything that wants the
+     * actor looks him up by PLYRNUM. WM_CLOSEST_NUM_NONE means
+     * calc_closest has not run yet.
+     *
+     * drone_main (DRONE.ASM:121) is the reason this field has to exist
+     * rather than callers passing the opponent around: it opens by
+     * reading CLOSEST_NUM to find who it is fighting. The port had it
+     * reading smart_target instead -- the SMART_ATTACK lock, which
+     * ani_attack_off zeroes on every attack end -- so the drone's
+     * opponent was NULL on 95% of actor-ticks and the AI simply stopped.
+     */
+    int32_t closest_num;
     int32_t walk_fast;
     int32_t i_will_die;
     uint32_t block_time;

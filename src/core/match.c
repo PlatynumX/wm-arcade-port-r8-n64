@@ -788,6 +788,13 @@ static void init_actor_life(wm_arcade_actor_t *a) {
     a->active = 1;
     a->in_ring = 1;
     a->life = WM_ARCADE_LIFE_MAX;
+    /*
+     * Not zero: 0 is player one's real PLYRNUM, so a memset alone would
+     * have every fresh wrestler naming him as his closest opponent
+     * before calc_closest has run once. CLOSEST_NUM is only meaningful
+     * after that, and this says so.
+     */
+    a->closest_num = WM_CLOSEST_NUM_NONE;
 }
 
 /*

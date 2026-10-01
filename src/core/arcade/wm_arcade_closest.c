@@ -38,6 +38,15 @@ void wm_arcade_calc_closest(wm_arcade_actor_t *a, const wm_arcade_actor_t *o) {
             (uint32_t)dz * (uint32_t)dz +
             (uint32_t)dy * (uint32_t)dy;
     a->closest_dist = isqrt32(sumsq);
+
+    /*
+     * `#accept`'s last two instructions (WRESTLE.ASM:4322): the winner's
+     * PLYRNUM goes in CLOSEST_NUM alongside the four distances. This
+     * port is handed the winner rather than scanning for him -- see
+     * calc_closest2 below -- but the field still has to be written,
+     * because drone_main reads it to find its opponent.
+     */
+    a->closest_num = o->player_num;
 }
 
 void wm_arcade_update_newfacing(wm_arcade_actor_t *a, const wm_arcade_actor_t *o) {

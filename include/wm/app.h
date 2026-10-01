@@ -99,6 +99,19 @@
  * One page, and a longer wait than the copyright screen's three
  * seconds -- it is a parental advisory and the source holds it longer.
  */
+/*
+ * creditscreen (ATTRACT.ASM:793) through CRD_SCRN2 (AUDIT.ASM:998). Three
+ * SLEEPK 2 with the text going up between the first two, then SLEEP 1*TSEC,
+ * then a 4*TSEC button loop. See wm/arcade/wmania_attract_data.h for why
+ * this screen shows one fixed state.
+ */
+#define WM_CREDIT_SETTLE_TICKS \
+    (WM_ATTRACT_CREDIT_UNBLANK_TICKS + \
+     WM_ATTRACT_CREDIT_SETTLE_TSEC * WM_SOURCE_TICKS_PER_SEC)
+#define WM_CREDIT_TOTAL_TICKS \
+    (WM_CREDIT_SETTLE_TICKS + \
+     WM_ATTRACT_CREDIT_WAIT_TSEC * WM_SOURCE_TICKS_PER_SEC)
+
 #define WM_AAMA_PLACE_TICKS 2u
 #define WM_AAMA_UNBLANK_TICKS (WM_AAMA_PLACE_TICKS + 2u)
 #define WM_AAMA_SETTLE_TICKS \

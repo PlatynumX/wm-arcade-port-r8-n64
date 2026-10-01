@@ -476,6 +476,93 @@ two.
   from the translated `WmHsSystem` instead, which is where this port keeps the
   tables anyway.
 
+## The credit screen: items 31-33, and the last attract screen
+
+ATTRACT.ASM:793 `creditscreen`, a thin wrapper around AUDIT.ASM:998
+`CRD_SCRN2`. **`CRD_SCRN2` was in the dump all along** -- in `AUDIT.ASM`. The
+note here previously said its body was "a `JSRP CRD_SCRN2` into a file nobody
+has read yet", which was true only in the sense that nobody had looked.
+
+**This screen is different in kind from every other attract screen**, and that
+difference is the whole of what is worth knowing about it. The others display
+DATA, which the port either already had or could extract. This one displays
+the cabinet's **coin state** -- and this port has none of it: no credits, no
+coin inputs, no CMOS adjustments, no pricing tables, no DIP bank, no tamper
+audit. `credits_string` does not read its text out of a table; it *evaluates*
+it, and every branch is chosen by a setting that does not exist here.
+
+So the port shows exactly one state: a factory-set cabinet with nothing in it,
+which is precisely the state it is in. The five lines were **derived** from the
+arcade's own `FACTORY_TABLE` (AUDIT.ASM:2905) with zero credits, and the whole
+derivation is written out in `wm/arcade/wmania_attract_data.h` so it can be
+checked rather than trusted -- there is no coin subsystem here to check it
+against, which is exactly why it is written down.
+
+31. **A credit screen comes up twice per attract loop and holds five
+    seconds.** After each of the two gameplay demos. Five centred lines:
+
+        CREDITS : 0
+        1 CREDIT / 1 COIN
+        2 CREDITS TO START
+        2 CREDITS TO CONTINUE
+        INSERT COINS
+
+    271 ticks (5.1s). Text appears at tick 6 and any attract button cuts it
+    short from tick 60 -- not before, because `CRD_SCRN2` does not sample
+    buttons during its three `SLEEPK 2` or its `SLEEP 1*TSEC`.
+
+32. **It says INSERT COINS, not PRESS START, and CREDITS : 0.** Both follow
+    from there being no coin subsystem: zero credits divided by the factory's
+    two-credits-to-start is zero, so the routine takes `#not_ready`. If you
+    ever see "PRESS  START", "READY FOR 1 PLAYER", "FREE  PLAY" or any credit
+    count but zero, something is now inventing cabinet state.
+
+33. **Both plurals are plural.** "2 CREDITS TO START", not "2 CREDIT TO
+    START". The source picks the singular form only when the count is exactly
+    one, and the factory value is two. Getting this wrong would be the
+    cheapest possible tell that the suffix is hard-coded rather than selected.
+
+### What this screen never shows, and why
+
+Every line below is real source text, extracted and not invented -- it is
+simply never *selected*, because selecting it needs state the port has not
+got. None of it is drawn:
+
+| line | needs |
+|---|---|
+| `FREE  PLAY` | `ADJFREPL` non-zero, i.e. an operator menu |
+| `PRESS  START` | credits ≥ credits-to-start |
+| `READY FOR 1 PLAYER` and its 2/3/4 variants | the same |
+| ` (MAXIMUM)` | credits ≥ `ADJMAXC` (50) |
+| any credit count but `0` | a coin input |
+| any pricing line but `1 CREDIT / 1 COIN` | `ADJPRICE` ≠ 1, a pricing table |
+| the dollar-bill message | UJ2 switch 1, a DIP bank |
+
+Also absent: `slateBMOD`'s background, and all five palettes the lines ask for
+(`GOLD`, `SGMD8GLD`, `GREENPAL` and the rest), so the page is white on black
+like every other screen.
+
+### Two source documentation errors found reading this
+
+- **`TAMPEREDP` states its own polarity backwards.** ADJUST.ASM:946 says "THIS
+  IS NON-ZERO IF ANY OF THE 1ST 6 COIN PARAMETERS HAVE BEEN ADJUSTED", but the
+  routine returns `GET_ADJ(ADJ1ST6)` and `ADJ1ST6` is documented at
+  AUDIT.ASM:2932 as "NON-ZERO MEANS 1ST 6 UNTOUCHED". Non-zero means **not**
+  tampered. The factory value is 1, so a fresh cabinet shows the pricing line
+  and an operator who has edited the coinage hides it -- the opposite of what
+  the header leads you to expect.
+- **`crd_updatetxt` runs twice** (AUDIT.ASM:1032 and :1057), and the second
+  call opens with `KILALL` and `obj_delc`, so it deletes the text the first
+  call drew and draws it again. The port draws once; the result on screen is
+  the same.
+
+### One path that is unreachable from the attract loop
+
+`creditscreen` passes `a10 = 1`, so `#ck2`'s `move a10,a10 / jrnz KILL_CRD2`
+always returns to the caller. The `10*TSEC` second wait loop and the
+`KILL_CRD` exit that re-`CREATE`s `attract_mode` belong to the `CRD_SCRN`
+entry point (`a10 = 0`), which nothing in the shipped attract loop calls.
+
 ## Deliberately still absent
 
 - `pal_getf`, a runtime palette allocator, so `skeleton_pal` stays unwritten and
@@ -483,17 +570,16 @@ two.
   look deliberate and wrong; zero keeps it visibly unfinished.
 - `screen_flash`, `shadow_trail`, `impact`, `flash_white` and
   `restore_hit_render_state` — object/palette/DMA work with no renderer behind it.
-- Three ATTRACT.ASM screens whose scheduler is translated and whose bodies are
-  not: `creditscreen`, `show_operatormsg` and `show_time_date`. This list was
-  ten; `show_copyright` and `aama_message` were translated in `c8e6e54`,
-  `DO_HINTS`, `show_gen_tips`, `show_bios` and `show_bios_tips` in `b805dec`,
-  and `show_hstd` below. Two of the three will stay absent: `show_time_date`
-  wants a CMOS real-time clock, and it and `show_operatormsg` sit behind
-  operator DIP switches there is no bank to read -- and `show_operatormsg` has
-  no source text to translate in any case, because it reads the message a
-  cabinet operator typed into CMOS (`RC_BYTEI` over `CUSTOM_MESSAGE`,
-  ATTRACT.ASM:692). `creditscreen` has no such excuse; it is simply not done,
-  and its body is a `JSRP CRD_SCRN2` into a file nobody has read yet.
+- Two ATTRACT.ASM screens whose scheduler is translated and whose bodies are
+  not, and both will stay that way: `show_time_date` wants a CMOS real-time
+  clock, and it and `show_operatormsg` sit behind operator DIP switches there
+  is no bank to read -- and `show_operatormsg` has no source text to translate
+  in any case, because it reads the message a cabinet operator typed into CMOS
+  (`RC_BYTEI` over `CUSTOM_MESSAGE`, ATTRACT.ASM:692). **Every other attract
+  screen is now translated.** This list was ten: `show_copyright` and
+  `aama_message` in `c8e6e54`; `DO_HINTS`, `show_gen_tips`, `show_bios` and
+  `show_bios_tips` in `b805dec`; `show_hstd` in `f7cc208`; `creditscreen`
+  below.
 - Every object on the four screens below, and all of their colour. The arcade
   picks SGMD8YEL, SGMD8RED, RUBYPAL, BLUE and WSF_Y_P out of IMGPAL.ASM and
   resolving a TMS palette index needs the allocator `pal_getf` would be, so

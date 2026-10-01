@@ -814,6 +814,21 @@ static bool tick_aama(wm_app *app, const wm_input_state *input) {
  * Their DURATIONS are kept, because they are plain SLEEPs and dropping them
  * would make every one of these screens finish early.
  */
+/*
+ * creditscreen (ATTRACT.ASM:793), which is a thin wrapper around
+ * CRD_SCRN2 (AUDIT.ASM:998) and passes a10 = 1, so CRD_SCRN2 always
+ * returns through KILL_CRD2 rather than killing the process and
+ * re-CREATEing attract_mode. The second wait loop and that exit belong
+ * to the CRD_SCRN entry, which nothing in the attract loop uses.
+ */
+static bool tick_creditscreen(wm_app *app, const wm_input_state *input) {
+    wm_attract_state *a = &app->attract;
+    ++a->call_ticks;
+    if (a->call_ticks > WM_CREDIT_SETTLE_TICKS &&
+        wm_app_any_attract_button(input)) return true;
+    return a->call_ticks >= WM_CREDIT_TOTAL_TICKS;
+}
+
 static bool tick_gen_tips(wm_app *app, const wm_input_state *input) {
     wm_attract_state *a = &app->attract;
     ++a->call_ticks;
@@ -1445,6 +1460,9 @@ void wm_app_tick_dual(wm_app *app,
             ++app->attract.call_ticks;
             done = wm_hstd_tick(&app->attract.hstd, &app->hiscore,
                                 wm_app_any_attract_button(input));
+            break;
+        case WM_ATTRACT_CREDITSCREEN:
+            done = tick_creditscreen(app, input);
             break;
         case WM_ATTRACT_SHOW_GEN_TIPS: done = tick_gen_tips(app, input); break;
         case WM_ATTRACT_DO_HINTS: done = tick_hints(app, input); break;

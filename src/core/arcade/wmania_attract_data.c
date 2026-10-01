@@ -44,6 +44,32 @@ const WmAttractBio wm_attract_bios[WM_ATTRACT_WRESTLERS] = {
       "luger_quote", "LEX3", 10u, 7u, 3u, "luger_tips" }
 };
 
+/*
+ * CRD_SCRN2's five lines for a factory-set cabinet with no credits -- see
+ * wm/arcade/wmania_attract_data.h for the whole derivation, including why
+ * these five and not any of the others the routine can produce.
+ *
+ * The credit count and the two adjustment numbers are formatted here rather
+ * than at draw time because they cannot change: this port has no coin
+ * subsystem to change them. If one is ever added, these become a function of
+ * it and this table goes away.
+ */
+const WmAttractCreditLine
+wm_attract_credit_lines[WM_ATTRACT_CREDIT_LINES] = {
+    /* #crd_str "CREDITS : " + dec_to_asc(CRED_P = 0), AUDIT.ASM:1421-:1422.
+       No " (MAXIMUM)" because 0 < ADJMAXC 50. LN1_setup's y is LN1+4. */
+    { "CREDITS : 0", 74, "crd_str" },
+    /* CSELCT entry 0's CS_LIST -> Q_Q -> C11, MENU.ASM:7132. */
+    { "1 CREDIT / 1 COIN", 132, "C11" },
+    /* dec_to_asc(ADJCSTRT = 2) + #crd_2starts, the plural, AUDIT.ASM:1425-:1426. */
+    { "2 CREDITS TO START", 149, "crd_2starts" },
+    /* dec_to_asc(ADJCCONT = 2) + #crd_2conts, AUDIT.ASM:1429-:1430. */
+    { "2 CREDITS TO CONTINUE", 166, "crd_2conts" },
+    /* #str_insert, AUDIT.ASM:1435-:1436, because 0 credits is #not_ready.
+       LN5_setup's y is LN5+10 = 200, plus YSPACE 25. */
+    { "INSERT COINS", 225, "str_insert" }
+};
+
 const WmAttractScreenLayout wm_attract_general_tips_layout = {
     "hstd_mod", "gen_tip_mes", 200, 10, 200, 60, 15,
     0u, 10u, 1u

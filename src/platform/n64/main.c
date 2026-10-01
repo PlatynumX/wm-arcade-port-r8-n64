@@ -984,6 +984,32 @@ static void render_hstd(const wm_app *app) {
     }
 }
 
+/*
+ * creditscreen (ATTRACT.ASM:793) through CRD_SCRN2 (AUDIT.ASM:998).
+ *
+ * Five fixed lines, centred on x 200. They are fixed because this port has
+ * no coin subsystem for them to vary with: see
+ * wm/arcade/wmania_attract_data.h for the derivation and for the list of
+ * lines the routine can produce that are therefore never selected.
+ *
+ * NOT HERE: slateBMOD's background and every one of the lines' palettes
+ * (GOLD, SGMD8GLD, GREENPAL), so the page is white text on black.
+ */
+static void render_creditscreen(const wm_app *app) {
+    unsigned i;
+
+    fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+    /* display_blank/WIPEOUT until crd_updatetxt, then display_unblank. */
+    if (app->attract.call_ticks < (unsigned)WM_ATTRACT_CREDIT_UNBLANK_TICKS)
+        return;
+
+    for (i = 0; i < WM_ATTRACT_CREDIT_LINES; ++i)
+        (void)draw_text_line(wm_attract_credit_lines[i].text,
+                             WM_ATTRACT_CREDIT_X,
+                             wm_attract_credit_lines[i].y,
+                             WM_STRINGER_CENTRE);
+}
+
 static void render_title_screen(const wm_app *app) {
     fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
     if (app->attract.call_ticks < WM_TITLE_SETUP_TICKS)
@@ -2448,6 +2474,9 @@ static void render_app(const wm_app *app) {
             break;
         case WM_ATTRACT_SHOW_HSTD:
             render_hstd(app);
+            break;
+        case WM_ATTRACT_CREDITSCREEN:
+            render_creditscreen(app);
             break;
         case WM_ATTRACT_SHOW_GEN_TIPS:
             render_gen_tips(app);

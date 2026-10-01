@@ -11412,6 +11412,22 @@ static void test_attract_source_flow(void) {
     }
     CHECK(app.attract.call_ticks == WM_GAMEPLAY_BUTTON_ENABLE_TICKS);
     wm_app_tick(&app, &button);
+    /*
+     * creditscreen sits between each show_gameplay and what follows it
+     * (wm_source_attract_loop positions 4 and 7) and is now translated, so
+     * it no longer gets skipped. The held button cuts it short, but not
+     * until the 4*TSEC wait begins -- CRD_SCRN2 does not sample buttons
+     * during its three SLEEPK 2 or its SLEEP 1*TSEC.
+     */
+    CHECK(app.attract.call == WM_ATTRACT_CREDITSCREEN);
+    {
+        unsigned guard = 0;
+        while (app.attract.call == WM_ATTRACT_CREDITSCREEN && guard < 1000u) {
+            wm_app_tick(&app, &button);
+            ++guard;
+        }
+        CHECK(guard == WM_CREDIT_SETTLE_TICKS + 1u);
+    }
     CHECK(app.attract.call == WM_ATTRACT_SHOW_TITLE);
 
     unsigned initial_lava = app.attract.title_lava_step;
@@ -11442,6 +11458,18 @@ static void test_attract_source_flow(void) {
     }
     CHECK(app.match.active);
     wm_app_tick(&app, &button);
+
+    /* The loop's second creditscreen, between the second show_gameplay and
+       the text screens. */
+    CHECK(app.attract.call == WM_ATTRACT_CREDITSCREEN);
+    {
+        unsigned guard = 0;
+        while (app.attract.call == WM_ATTRACT_CREDITSCREEN && guard < 1000u) {
+            wm_app_tick(&app, &button);
+            ++guard;
+        }
+        CHECK(guard == WM_CREDIT_SETTLE_TICKS + 1u);
+    }
 
     /*
      * The four table-driven text screens sit between the second

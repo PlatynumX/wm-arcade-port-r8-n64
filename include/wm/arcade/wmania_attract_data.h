@@ -325,6 +325,103 @@ extern const WmAttractAamaLine wm_attract_aama_lines[WM_ATTRACT_AAMA_LINES];
 #define WM_ATTRACT_AAMA_FADE_SETTLE_TICKS 20
 #define WM_ATTRACT_AAMA_WAIT_TSEC 4
 
+/*
+ * creditscreen (ATTRACT.ASM:793) and the CRD_SCRN2 it wraps (AUDIT.ASM:998).
+ *
+ * THIS SCREEN IS DIFFERENT IN KIND FROM EVERY OTHER ATTRACT SCREEN. The
+ * others display data; this one displays the cabinet's COIN STATE, and this
+ * port has none of that state: no credits, no coin inputs, no CMOS
+ * adjustments, no pricing tables, no DIP bank, no tamper audit. So its text
+ * cannot be read out of a table the way the hints or the bios can -- it has
+ * to be EVALUATED, and what it evaluates to depends entirely on settings that
+ * do not exist here.
+ *
+ * So the port shows exactly one state: a factory-set cabinet with no credits
+ * in it, which is precisely the state it is in. Everything below is derived
+ * from the arcade's own FACTORY_TABLE (AUDIT.ASM:2905) with CRED_P = 0, and
+ * the derivation is written out so it can be checked rather than trusted:
+ *
+ *   ADJFREPL  (19) = 0   -> not free play, so credits_string takes
+ *                           #not_freeply and "FREE  PLAY" never shows
+ *   ADJPRICE  (1)  = 1   -> GET_CSPT -> CS_POINT(1) -> `DEC a0` -> CSELCT
+ *                           entry 0, "USA 1: 1 COIN = 1 CREDIT", whose
+ *                           CS_LIST is Q_Q -> the single string C11
+ *                           (MENU.ASM:7132) "1 CREDIT / 1 COIN"
+ *   ADJ1ST6   (22) = 1   -> TAMPEREDP returns non-zero, so the `JRZ #done`
+ *                           after AUDIT.ASM:1272's `calla TAMPEREDP` is
+ *                           NOT taken and that one
+ *                           pricing line does print
+ *   ADJCSTRT  (12) = 2   -> `dec a0` is non-zero, so the PLURAL
+ *                           " CREDITS TO START" is chosen
+ *   ADJCCONT  (13) = 2   -> likewise " CREDITS TO CONTINUE"
+ *   ADJMAXC   (18) = 50  -> 0 < 50, so " (MAXIMUM)" is not appended
+ *   CRED_P         = 0   -> 0 / 2 = 0, so #not_ready: "INSERT COINS", and
+ *                           none of the four "READY FOR ..." lines nor
+ *                           "PRESS  START" is selected
+ *
+ * The y positions come out of the same evaluation. LN1+4 = 74 for the credit
+ * count. The pricing block starts at `140 - (YSPACE0 * a10) / 2` with
+ * YSPACE0 = 17 and a10 = 3 (its floor of 2, plus one CS_LIST string, plus
+ * nothing for the not-ready case), so 140 - 51/2 = 115; each of the three
+ * lines then adds 17 BEFORE printing, giving 132, 149 and 166. The last line
+ * resets to LN5+10 = 200 and adds YSPACE = 25, giving 225.
+ *
+ * TAMPEREDP'S HEADER COMMENT IS WRONG ABOUT ITS OWN POLARITY. ADJUST.ASM:946
+ * says "THIS IS NON-ZERO IF ANY OF THE 1ST 6 COIN PARAMETERS HAVE BEEN
+ * ADJUSTED", but it returns GET_ADJ(ADJ1ST6) and ADJ1ST6 is documented at
+ * AUDIT.ASM:2932 as "NON-ZERO MEANS 1ST 6 UNTOUCHED". Non-zero means NOT
+ * tampered. The factory value is 1, so a fresh cabinet shows the pricing
+ * line; a cabinet whose coinage has been edited hides it.
+ */
+#define WM_ATTRACT_CREDIT_X 200
+#define WM_ATTRACT_CREDIT_LINES 5u
+
+/* The factory values the lines above are evaluated at, so a test can assert
+   them rather than re-deriving them from prose. */
+#define WM_ATTRACT_CREDIT_ADJ_CSTRT 2
+#define WM_ATTRACT_CREDIT_ADJ_CCONT 2
+#define WM_ATTRACT_CREDIT_ADJ_MAXC 50
+#define WM_ATTRACT_CREDIT_ADJ_FREPL 0
+#define WM_ATTRACT_CREDIT_ADJ_PRICE 1
+#define WM_ATTRACT_CREDIT_ADJ_1ST6 1
+#define WM_ATTRACT_CREDIT_CREDITS 0
+
+typedef struct {
+    const char *text;
+    int16_t y;            /* x is always WM_ATTRACT_CREDIT_X, and every line
+                             goes through print_string_C or _C2, so it is a
+                             centre */
+    const char *source_label;   /* which literal, for the citation trail */
+} WmAttractCreditLine;
+
+extern const WmAttractCreditLine
+wm_attract_credit_lines[WM_ATTRACT_CREDIT_LINES];
+
+/*
+ * CRD_SCRN2's timing, from the creditscreen entry (a10 = 1).
+ *
+ * `SLEEPK 2` puts the text up at tick 2 -- crd_updatetxt runs between the
+ * first and second of them. `display_unblank` is at tick 6, after the third.
+ * Then `SLEEP 1*TSEC`, and then a 4*TSEC loop that samples buttons, so the
+ * screen is skippable from tick 60 and ends on its own at 271.
+ *
+ * crd_updatetxt RUNS TWICE: once at :1032 and again at #cont (:1057). The
+ * second call opens with `KILALL CP_PID1` and `obj_delc TYPTEXT`, so it
+ * deletes the text the first call drew and redraws it. The port draws once;
+ * the result on screen is the same.
+ *
+ * THE SECOND WAIT LOOP IS UNREACHABLE FROM HERE. After the 4*TSEC loop,
+ * `#ck2` does `move a10,a10 / jrnz KILL_CRD2`, and creditscreen passes
+ * a10 = 1, so it always returns there. The `10*TSEC` loop at #lp1 and the
+ * KILL_CRD exit that re-CREATEs attract_mode belong to the CRD_SCRN entry
+ * (a10 = 0), which nothing in the attract loop uses.
+ */
+#define WM_ATTRACT_CREDIT_PLACE_TICKS 2
+#define WM_ATTRACT_CREDIT_UNBLANK_TICKS 6
+#define WM_ATTRACT_CREDIT_SETTLE_TSEC 1
+#define WM_ATTRACT_CREDIT_WAIT_TSEC 4
+#define WM_ATTRACT_CREDIT_BACKGROUND_SYMBOL "slateBMOD"
+
 /* Operator-message source presentation / dan_test backdrop. */
 #define WM_ATTRACT_OPERATOR_BACKGROUND_SYMBOL "SPORTBKBMOD"
 #define WM_ATTRACT_OPERATOR_BALL_SYMBOL "BALLD05A"

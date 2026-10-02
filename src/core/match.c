@@ -1760,6 +1760,14 @@ static void match_start_common_tail(wm_match_state *m) {
     m->clock_warning = false;
     wm_arcade_round_announce_init(&m->round_announce);
     wm_match_end_init(&m->match_end);
+    /*
+     * `MOVE A0,@MUSIC_HAP` (WRESTLE.ASM:1679), in start_match's
+     * "initialize various other crap" run of clears beside
+     * @match_winner, @DAM_MULT, @combo_audit_done, @no_debris,
+     * @any_hits, @PERFECT_WINS and @WINS_OBJ. The second of the
+     * latch's three clear sites.
+     */
+    wm_music_clear(m->music);
     m->match_over = 0;
     wm_award_init(&m->awards);
     /* WRESTLE.ASM:4552 init_reduce_bog, with this match's two actors. */
@@ -2555,6 +2563,7 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
         /* @award_ok_to_die reaching 3. Nothing here draws the award
            bar, so there is nothing to wait for. */
         mec.awards_done = true;
+        mec.music = m->music;
         mec.user = m;
         mec.royal_rumble = m->royal_rumble;
         mec.run_awards = match_end_awards;

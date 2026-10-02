@@ -107,6 +107,7 @@ target_sources(wmcore PRIVATE
     src/core/arcade/wm_arcade_final_battle.c
     src/core/arcade/wm_arcade_react_anims.c
     src/core/arcade/wm_arcade_sound.c
+    src/core/arcade/wm_arcade_music.c
     src/core/arcade/wm_arcade_story.c
     src/core/arcade/wm_arcade_coffin.c
     src/core/arcade/wm_arcade_match_clock.c

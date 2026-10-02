@@ -563,6 +563,164 @@ always returns to the caller. The `10*TSEC` second wait loop and the
 `KILL_CRD` exit that re-`CREATE`s `attract_mode` belong to the `CRD_SCRN`
 entry point (`a10 = 0`), which nothing in the shipped attract loop calls.
 
+## The music: items 34-37, and the port gets quieter on purpose
+
+Four places in the dump hand a wrestler's theme to the DCS board. The port
+reached **none** of them, and the one command it *did* send was one the arcade
+would have muted.
+
+| # | what changed | where |
+|---|---|---|
+| 34 | the DCS logo's bang is gated on ADJMUSIC, not just the loop count | `ATTRACT.ASM:3004-3009` |
+| 35 | the bio screens play the wrestler's theme | `ATTRACT.ASM:2290-2306` |
+| 36 | `@SOUNDSUP` is written by the game instead of only by a test | `ATTRACT.ASM:669` |
+| 37 | the winner's theme and the pregame's reach the board, through `@MUSIC_HAP` | `LIFEBAR.ASM:2933`, `PROGRESS.ASM:2709` |
+
+### ADJMUSIC ships at 1, and 1 means OFF
+
+`AUDIT.ASM:2927` is `.word 1 ;ADJMUSIC 17 ;attract mode music = off`. The
+comment is the arcade's own and it settles both halves at once: non-zero means
+attract music **off**, and a cabinet nobody has been into ships at 1.
+
+`src/core/app.c` said the opposite, in as many words -- *"ADJMUSIC is not
+exposed yet; this frontend's default is enabled"* -- and played DCS_LOGO's
+command 1005 on the first two attract loops of every eight. On hardware, with
+the exact recovered DCS asset behind it. **A factory cabinet plays no bang at
+all.** So this change makes the port quieter, and that is the fix, not a
+regression.
+
+Turn ADJMUSIC to zero -- what an operator who wants attract music does -- and
+both the bang and the eight bio themes come back. The test checks both
+settings.
+
+### The gate is TWO tests, and ATTRACT.ASM writes it out three times
+
+```
+	MOVE	@AMODE_LOOPS,A0
+	CMPI	2,A0
+	JRGE	no
+	ADJUST	ADJMUSIC
+	JRNZ	no
+```
+
+at `:3004-3009` for the bang, at `:2294-2299` for the bio theme, and with the
+branches inverted at `:670-675` inside `TURN_SOUNDS_OFF_IF_NEED`. The port made
+only the loop-count half of the first, made none of the second, and had the
+third translated **twice** in `wmania_attract_core.c` and called by nothing.
+One translation now, in `wm/arcade/wm_arcade_music.h`, with the two published
+attract-core predicates delegating to it.
+
+### Three tune tables, two shapes, one set of numbers
+
+| table | row | indexed by |
+|---|---|---|
+| `LIFEBAR.ASM:3016` | `5,2,1,7,6,4,8,0,3` | the winner's `WRESTLERNUM` |
+| `PROGRESS.ASM:2862` | `5,2,1,7,6,4,8,0,3` | the human's select index |
+| `ATTRACT.ASM:2817` | `5,2,1,7,6,4,8,3` | the attract's bio counter |
+
+The third has **eight** entries: the same list with Adam Bomb's cut slot 7
+**removed** rather than zeroed, so every row after it has moved down one. Read
+either shape with the other's index and every wrestler past Adam Bomb gets the
+wrong man's music. The values are raw board commands, which is why his 0 is not
+a gap in the table -- 0 is the board's own silence command
+(`DCSSOUND.ASM:2466-2467`).
+
+The port had the nine-entry row transcribed twice: in `pregame.c` as
+`which_music_source`, read only by a `(void)` cast to keep the compiler quiet,
+and again in `wm_arcade_match_end.c`. Each source table is now transcribed
+once, and a test asserts that the first two are identical rather than assuming
+it.
+
+### `@MUSIC_HAP` was a field on the wrong struct, written by nobody
+
+`LIFEBAR.ASM:110` `BSSX MUSIC_HAP,16` -- one word, `.ref`'d by `ATTRACT.ASM`,
+`PROGRESS.ASM` and `WRESTLE.ASM`. The port had it as `uint16_t music_hap` on
+`WmAttractState`, with no writer and no reader. It could not have worked there
+even filled in: the attract is the one of the three files that **only clears**
+it.
+
+| | where |
+|---|---|
+| cleared | `ATTRACT.ASM:157` (attract begins), `WRESTLE.ASM:1679` (match setup), `LIFEBAR.ASM:2853-2854` (`DO_WAIT`) |
+| set | `LIFEBAR.ASM:3007`, inside `DO_RIGHT_MUSIC2` |
+| read | `PROGRESS.ASM:2709` (before `WHICH_MUSIC`), `LIFEBAR.ASM:2979` (before the catch-up create) |
+
+The pregame's own `SNDSND` does **not** set it. That is what makes the latch
+mean "the winner's theme has already been started" rather than "some music is
+playing".
+
+### The race the latch exists for
+
+`#end` (`LIFEBAR.ASM:2933`) `CREATE`s `DO_RIGHT_MUSIC`, which is
+`DO_RIGHT_MUSIC2` behind a `SLEEP 55` -- two entry points one line apart, and
+that sleep is the only difference between them. The tail then waits for the
+award bar and for up to `TSEC*3` that a button press cuts short, and only then
+reads `MUSIC_HAP` and creates `DO_RIGHT_MUSIC2` (`:2981`) if it is still clear.
+
+So the second create is a **catch-up** for a player who skipped the wait in
+under 55 ticks. Nothing kills the first process, so a skip that beats the sleep
+leaves both armed and the same command goes out twice. That is modelled, not
+smoothed over.
+
+The port instead assigned `tune` at the tip phase and played nothing, with
+`WM_MATCH_MUSIC_SLEEP 55` defined beside it and used by nobody.
+
+### `@SOUNDSUP` was written only by a test
+
+`wm_sound_state_t.suppressed` is the flag `triple_sound` and `SNDSND` both
+refuse on, and nothing in the live app ever set it -- so
+`TURN_SOUNDS_OFF_IF_NEED`'s whole purpose, muting the gameplay demo, did
+nothing at all. It is wired now at `show_gameplay`'s two call sites
+(`ATTRACT.ASM:607` and `:616`), cleared at the eighth loop's reset
+(`:268-270`, where one register goes to both `AMODE_LOOPS` and `SOUNDSUP`), and
+cleared at the coin drop (`AUDIT.ASM:457-458`, *"TURN SOUNDS ON. (A-MODE SOUND
+SUPRESSOR)"*), for which this port's Start-on-title bridge stands in as it
+already does for PSTATUS.
+
+At factory settings ADJMUSIC alone satisfies the gate, so the **first** gameplay
+demo mutes the board and it stays muted until the eighth loop. **Bell
+included** -- which is why `test_sound_procs` now checks both settings instead
+of asserting the bell is always heard. A probe puts the first suppression at
+tick 2850 and the reset at tick 65856.
+
+### A name of mine nearly certified a routine
+
+The refusal helper was first called `wm_music_sndsnd_allowed`. The coverage
+collector resolves a source routine by any identifier **ending** in its name,
+so `SNDSND` -- honestly ledgered `hardware`, because the two byte writes and
+the `poll_sirq` waits are the board's protocol -- began reading as implemented
+and its verdict silently became a stale excuse.
+`test_the_ledger_cannot_shadow_real_code` caught it before the commit. Renamed
+`wm_music_board_call_allowed`, which is also what it actually is: the caller's
+half of `SNDSND`, which the ledger's own note already claimed was translated.
+
+### Two ledger rows were wrong rather than stale
+
+Both are deleted with the translation.
+
+- **`DO_RIGHT_MUSIC`** was ledgered `display` with the note *"Picks the music
+  for the round about to start and hands it to SNDSND."* It is not display, and
+  it plays the **winner's** theme after the match is **over** -- not the round
+  about to start.
+- **`DO_RIGHT_MUSIC2`** read *"The same for the second half of a match."* It is
+  a second entry point into the same five instructions, one line later.
+
+### What is still absent here, on purpose
+
+- **No sample data for commands 1 through 8.** The N64 backend's default branch
+  logs an untranslated DCS command rather than playing something else
+  (`src/platform/n64/audio_backend.c`), so queuing the real command number
+  guesses nothing. That was the half of `pregame.c`'s old refusal that was
+  right; the other half had it dropping the command instead of sending it.
+- **No operator-settings system.** ADJMUSIC is one field holding
+  `FACTORY_TABLE`'s value, the same arrangement as ADJVOLUME's
+  `WM_SOUND_ADJVOLUME_DEFAULT` and the credit screen's figures.
+- `ATTRACT.ASM:2303` reads its table row as `move *a10,a3,L` out of a `.word`
+  table, so A3 comes back with the **next** row in its high half.
+  `DCSSOUND.ASM:2530-2531` masks A3 to sixteen bits before splitting it into
+  the two bytes it sends, so the upper word is discarded unread and the port
+  reads one row. Written down so the `,L` is not later "fixed" into a bug.
+
 ## Deliberately still absent
 
 - `pal_getf`, a runtime palette allocator, so `skeleton_pal` stays unwritten and
@@ -588,8 +746,22 @@ entry point (`a10 = 0`), which nothing in the shipped attract loop calls.
   recovered from the artwork.
 - The DCSSOUND family is the largest unfinished system: `snd_update`,
   `do_tune_commands`, `announcer_sound`, `END_MATCH_SPEECH` and `nosounds` are
-  partial, and `play_wrestler_tune` (LIFEBAR.ASM:3003 `DO_RIGHT_MUSIC`) is the
-  ledger's one remaining deferred row.
+  partial. `play_wrestler_tune` is no longer on that list and its note was
+  wrong twice over: it named `LIFEBAR.ASM:3003 DO_RIGHT_MUSIC`, but the seam's
+  only two call sites are the BIO screens and they read a **different table**
+  (`ATTRACT.ASM:2817`, eight entries, by bio counter -- not the nine-entry one
+  by WRESTLERNUM the note quoted); and it claimed the blocker was that the
+  adapter "has no music sink", when `SNDSND`'s own header calls its argument a
+  "sound code (0-1ff)" (`DCSSOUND.ASM:2517`) and `wm/audio.h`'s queue has been
+  carrying exactly those since the DCS logo work. What is actually true is that
+  `wm_attract_run_cycle`, the function that reads the adapter, **has no caller
+  anywhere** -- so the row is `unreached`, and the bio theme is played by the
+  live sequencer in `app.c` instead. `pal_getf` is the ledger's one remaining
+  deferred row.
+- Unifying the two attract sequencers. `src/core/arcade/wmania_attract_adapter.c`
+  is a second one that nothing drives -- not src/, not tests -- and it is where
+  `play_wrestler_tune` lives. Collapsing it into `app.c`'s is a refactor, not a
+  translation.
 
 Anything still source-missing stays marked as such. Provisional behaviour is not
 claimed as source-exact.

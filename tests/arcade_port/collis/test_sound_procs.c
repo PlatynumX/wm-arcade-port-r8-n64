@@ -60,16 +60,27 @@ static void test_the_bell_rings_three_times(void)
 /*
  * And in a real app: starting a match rings it, and the calls reach
  * the audio queue. Before this the match started in silence.
+ *
+ * `want_heard` says whether the ring is expected to reach the board.
+ * In attract mode that is ADJMUSIC's business, not the bell's:
+ * show_gameplay calls TURN_SOUNDS_OFF_IF_NEED immediately before
+ * `CREATE AMODE_GAMEPLAY_PID,start_match` (ATTRACT.ASM:616-618), and
+ * @SOUNDSUP refuses every triple_sound while it is set
+ * (DCSSOUND.ASM:2067). So the demo's bell PROCESS still starts -- the
+ * CREATE is unconditional -- and what it decides to play is dropped.
  */
-static void test_a_started_match_rings_the_bell(void)
+static void run_attract_bell(bool want_heard)
 {
     uint16_t seen[32];
     unsigned n;
     int i;
     uint16_t bell_call;
+    unsigned k;
+    bool found = false;
 
     memset(&APP, 0, sizeof APP);
     wm_app_init(&APP);
+    if (want_heard) APP.adj_music = 0u;   /* attract music turned on */
     bell_call = wm_sound_table[WM_SOUND_BELL_CALL].call;
 
     /* Run the app far enough into attract for a match to start. */
@@ -78,18 +89,34 @@ static void test_a_started_match_rings_the_bell(void)
         memset(&in, 0, sizeof in);
         wm_app_tick(&APP, &in);
     }
+    /* The process starts either way. */
     assert(APP.bell.active);
+    /* And the suppression is the gate's, not the bell's. */
+    assert(APP.sound.suppressed == !want_heard);
 
     n = drain(&APP, seen, 32);
-    {
-        unsigned k;
-        bool found = false;
-        for (k = 0; k < n; ++k)
-            /* Channels 1-4 use call, call+1, call+2, call+3. */
-            if (seen[k] >= bell_call && seen[k] <= (uint16_t)(bell_call + 3))
-                found = true;
-        assert(found);
-    }
+    for (k = 0; k < n; ++k)
+        /* Channels 1-4 use call, call+1, call+2, call+3. */
+        if (seen[k] >= bell_call && seen[k] <= (uint16_t)(bell_call + 3))
+            found = true;
+    assert(found == want_heard);
+}
+
+static void test_a_started_match_rings_the_bell(void)
+{
+    /*
+     * With attract music on, the bell is heard -- which is what this
+     * test checked before TURN_SOUNDS_OFF_IF_NEED was wired, when
+     * @SOUNDSUP was written by nothing at all.
+     */
+    run_attract_bell(true);
+    /*
+     * And at FACTORY settings it is not, because ADJMUSIC ships at 1
+     * (AUDIT.ASM:2927, "attract mode music = off") and that alone
+     * satisfies TURN_SOUNDS_OFF_IF_NEED on the very first loop. A
+     * factory cabinet's gameplay demo is silent, bell included.
+     */
+    run_attract_bell(false);
 }
 
 /*

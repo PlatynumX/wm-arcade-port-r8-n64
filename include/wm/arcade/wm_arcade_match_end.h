@@ -5,6 +5,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "wm/arcade/wm_arcade_music.h"
 #include "wm/arcade/wm_arcade_round.h"
 
 #ifdef __cplusplus
@@ -128,20 +129,23 @@ bool wm_match_tip_due(int32_t p1winstreak, int32_t p2winstreak,
 #define WM_MATCH_TIP_WINS 25
 #define WM_MATCH_TIP_MATCHES 100
 
-/* ---- DO_RIGHT_MUSIC (LIFEBAR.ASM:2996) --------------------------- */
+/* ---- DO_RIGHT_MUSIC (LIFEBAR.ASM:3003) --------------------------- */
 
 /*
- * `#wrestler_tunes .word 5,2,1,7,6,4,8,0,3`, indexed by the WINNER's
- * WRESTLERNUM -- each wrestler has his own theme. Slot 7 is Adam
- * Bomb, cut from the game, and carries 0; that is the table's real
- * content, not a gap.
+ * The winner's theme, by his WRESTLERNUM. One line, kept because it
+ * is the name this header has published since it was written; the
+ * table, the latch that decides WHEN it plays, and the 55-tick sleep
+ * all live in wm/arcade/wm_arcade_music.h now, because the pregame and
+ * the attract read the same latch and two of the three tune tables are
+ * not this one.
  *
- * DO_RIGHT_MUSIC sleeps 55 first and DO_RIGHT_MUSIC2 does not; they
- * are the same routine entered one line apart, which is why the
- * second exists at all.
+ * This header used to carry `WM_MATCH_MUSIC_SLEEP 55` beside it and
+ * nothing used it -- the sequence below assigned `tune` at the tip
+ * phase and nothing played it, so the 55 ticks the source waits first
+ * had nowhere to be spent. WM_MUSIC_DO_RIGHT_SLEEP is the same number
+ * where it is now counted down.
  */
 int wm_match_wrestler_tune(int32_t wrestler_num);
-#define WM_MATCH_MUSIC_SLEEP 55
 
 /* ---- the sequence ------------------------------------------------ */
 
@@ -185,8 +189,25 @@ typedef struct {
     int32_t match_over;
     /* Whether the tip check came out true this match. */
     bool tip_due;
-    /* The winner's theme, or -1 before WM_MEND_TIP. */
+    /*
+     * The winner's theme, or -1 before WM_MEND_AWARD_BAR -- which is
+     * where `CREATE SOUND_PID,DO_RIGHT_MUSIC` happens (LIFEBAR.ASM:2933),
+     * not the tip phase. It used to be assigned at the tip phase, which
+     * is where the source makes its SECOND, conditional create; the
+     * first one, with its 55-tick sleep, was missing entirely, so the
+     * theme was decided about two seconds late and then not played.
+     */
     int tune;
+    /*
+     * Whether the tip phase's `CREATE SOUND_PID,DO_RIGHT_MUSIC2`
+     * (LIFEBAR.ASM:2981) actually fired -- that is, whether MUSIC_HAP
+     * was still clear when :2979 read it. False is the ordinary case:
+     * the 55-tick sleep runs out during the award bar and the three
+     * second wait, so the latch is set and the catch-up is skipped.
+     * True means the player got from `#end` to the tip check in under
+     * 55 ticks.
+     */
+    bool music_catch_up;
     /* WM_MEND_AWARD_BAR is re-entered every tick while it polls
        awards_done, so its one-shot half -- check_for_award_for_winstreak
        and adjust_perfects, each of which the source runs exactly once --
@@ -209,6 +230,15 @@ typedef struct {
     /* Whether the caller's award bar has finished
        (@award_ok_to_die >= 3). True when there is none to wait for. */
     bool awards_done;
+    /*
+     * @MUSIC_HAP. A pointer because the latch is a global that outlives
+     * the match: DO_WAIT clears it (LIFEBAR.ASM:2853-2854), DO_RIGHT_MUSIC2
+     * sets it (:3007), and the next match's PREGAME is what reads it
+     * (PROGRESS.ASM:2709). NULL leaves the whole music path alone and
+     * `tune` is still decided, which is what a test that only cares
+     * about the award sequence wants.
+     */
+    wm_music_state_t *music;
     /* create_end_rnd_awards' own first line is `move @royal_rumble,a14 /
        jrz #cera_ok / DIE`, so in a rumble neither adjust_perfects nor
        total_icons runs at all. */

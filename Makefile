@@ -125,6 +125,7 @@ FIX38_ARCADE_C := \
     src/core/arcade/wm_arcade_final_battle.c \
     src/core/arcade/wm_arcade_react_anims.c \
     src/core/arcade/wm_arcade_sound.c \
+    src/core/arcade/wm_arcade_music.c \
     src/core/arcade/wm_arcade_story.c \
     src/core/arcade/wm_arcade_shake.c \
     src/core/arcade/wm_arcade_smove.c \

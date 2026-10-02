@@ -6,6 +6,7 @@
 #include "wm/attract.h"
 #include "wm/arcade/wmania_attract_data.h"
 #include "wm/arcade/wm_arcade_sound.h"
+#include "wm/arcade/wm_arcade_music.h"
 #include "wm/arcade/wmania_hiscore_entry.h"
 #include "wm/arcade/wmania_hiscore_persist.h"
 #include "wm/arcade/wmania_hiscore_system.h"
@@ -355,6 +356,25 @@ typedef struct {
      */
     wm_sound_bell_t bell;
     wm_sound_pin_him_t pin_him;
+    /*
+     * @MUSIC_HAP (LIFEBAR.ASM:110) and the DO_RIGHT_MUSIC process that
+     * sets it. A third SOUND_PID process beside the two above, and the
+     * one piece of state the attract, the pregame and the match-end
+     * all three touch -- which is why it is here and not on any of
+     * them. wm/arcade/wm_arcade_music.h has the whole chain.
+     */
+    wm_music_state_t music;
+    /*
+     * ADJMUSIC, the one CMOS adjustment the music gates read. This
+     * port has no operator-settings system, so it holds the value
+     * FACTORY_TABLE ships (AUDIT.ASM:2927: `.word 1 ;attract mode
+     * music = off`) -- the same reasoning as ADJVOLUME's
+     * WM_SOUND_ADJVOLUME_DEFAULT, and the same reasoning the credit
+     * screen's figures already rest on. It is a field rather than a
+     * constant so a test can turn attract music on and see the other
+     * half of every gate.
+     */
+    uint16_t adj_music;
 
     /*
      * HSTD.ASM's high-score tables, and the initials entry that feeds

@@ -125,6 +125,15 @@ size_t wm_attract_build_cycle(
     return n;
 }
 
+/*
+ * These two were the same source gate written out twice here and a
+ * third time in src/core/app.c: `MOVE @AMODE_LOOPS,A0 / CMPI 2,A0`
+ * and `ADJUST ADJMUSIC / JRNZ`, which ATTRACT.ASM itself repeats at
+ * :670-675, :2294-2299 and :3004-3009. One translation now, in
+ * wm/arcade/wm_arcade_music.h, which is also where the ADJMUSIC
+ * factory value that decides them lives. These keep their published
+ * names and their bool-flag argument.
+ */
 bool wm_attract_demo_should_suppress_sound(
     const WmAttractState *state,
     bool music_adjustment_nonzero)
@@ -133,7 +142,8 @@ bool wm_attract_demo_should_suppress_sound(
         return music_adjustment_nonzero;
     }
 
-    return music_adjustment_nonzero || state->amode_loops >= 2u;
+    return wm_music_demo_suppresses_sound(
+        state->amode_loops, music_adjustment_nonzero ? 1u : 0u);
 }
 
 bool wm_attract_bio_music_allowed(
@@ -144,7 +154,8 @@ bool wm_attract_bio_music_allowed(
         return false;
     }
 
-    return state->amode_loops < 2u && !music_adjustment_nonzero;
+    return wm_music_attract_allowed(
+        state->amode_loops, music_adjustment_nonzero ? 1u : 0u);
 }
 
 uint16_t wm_attract_wait_button_begin(WmAttractState *state)

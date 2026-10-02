@@ -198,8 +198,12 @@
   }
  },
  "play_wrestler_tune": {
-  "verdict": "deferred",
-  "note": "LIFEBAR.ASM:3003 DO_RIGHT_MUSIC, and this is the one deferred note that was SUBSTANTIALLY RIGHT -- the rest of this list was not, so it is worth saying which. It said the tune id is already resolved and what is missing is playing it. Both true. The correction is only to the size of the thing: it is not 'the DCS tune path' but five instructions -- `MOVK 1,A0 / MOVE A0,@MUSIC_HAP`, then #wrestler_tunes[WRESTLERNUM] (`.word 5,2,1,7,6,4,8,0,3`) into A3 and one `calla SNDSND`. DO_RIGHT_MUSIC is DO_RIGHT_MUSIC2 with a SLEEP 55 in front, which is the only difference between them. What genuinely blocks it: the seam belongs to wmania_attract_adapter, whose owner has no music sink. The match's sound sinks are for effects and speech; MUSIC_HAP is a separate channel, and giving the adapter one would mean inventing a music subsystem rather than translating a routine."
+  "verdict": "unreached",
+  "note": "THE NOTE THAT USED TO SIT HERE NAMED THE WRONG ROUTINE, and said so confidently: it read 'LIFEBAR.ASM:3003 DO_RIGHT_MUSIC, and this is the one deferred note that was SUBSTANTIALLY RIGHT'. It is not DO_RIGHT_MUSIC. This seam is a field of WmAttractAdapter and the only two call sites are the BIO screens (src/core/arcade/wmania_attract_adapter.c), which pass wm_attract_bios[].tune_id -- ATTRACT.ASM:2817's EIGHT-entry `#wrestler_tunes .word 5,2,1,7,6,4,8,3`, indexed by the bio counter. DO_RIGHT_MUSIC reads a DIFFERENT table, LIFEBAR.ASM:3016's nine-entry one with Adam Bomb's 0 still in it, indexed by the winner's WRESTLERNUM. Two tables, two index meanings, and every wrestler past Adam Bomb gets the wrong man's music if they are swapped. The old note quoted the nine-entry row for a seam that uses the eight-entry one. ITS STATED BLOCKER WAS ALSO WRONG. It said the adapter 'has no music sink' and that giving it one 'would mean inventing a music subsystem rather than translating a routine'. SNDSND's own header calls its argument a 'sound code (0-1ff)' (DCSSOUND.ASM:2517) and the tune tables hold exactly that, so the sink was wm/audio.h's queue all along -- the same queue that has been carrying command 1005 and command 0 from the attract since the DCS logo work. Nothing had to be invented. WHAT IS ACTUALLY TRUE OF THIS SEAM: wm_attract_run_cycle, the function that reads the adapter, HAS NO CALLER ANYWHERE -- not in src/, not in tests/. The live attract sequencer is src/core/app.c's own, and that is where the bio theme is now played, through wm_arcade_music.h's gate and the eight-entry table. So the seam is unreached, and filling it would fill a second sequencer nothing drives. Unifying the two attract sequencers remains a refactor rather than a translation, noted under `attract_screen_text` in port/translation_manifest.json.",
+  "check": {
+   "kind": "no-src-caller",
+   "symbol": "wm_attract_run_cycle"
+  }
  },
  "_PARTIAL": {
   "_note": [

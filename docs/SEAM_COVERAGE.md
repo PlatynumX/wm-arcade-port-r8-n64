@@ -17,12 +17,11 @@ Every empty one carries a verdict in `port/seam_ledger.json`,
 and a source-tools test refuses both an unledgered empty seam
 and a ledger row for a seam that is no longer empty.
 
-## deferred (2)
+## deferred (1)
 
 | seam | declared in |
 |---|---|
 | `pal_getf` | `include/wm/anim_program.h` |
-| `play_wrestler_tune` | `include/wm/arcade/wmania_attract_adapter.h` |
 
 ## display (18)
 
@@ -63,13 +62,14 @@ and a ledger row for a seam that is no longer empty.
 | `remap_io` | `include/wm/arcade/wmania_attract_adapter.h` |
 | `time_date_dip_enabled` | `include/wm/arcade/wmania_attract_adapter.h` |
 
-## unreached (6)
+## unreached (7)
 
 | seam | declared in |
 |---|---|
 | `auto_pin_check` | `include/wm/arcade/wm_arcade_move_dispatch.h` |
 | `change_anim_special` | `include/wm/arcade/wm_arcade_move_dispatch.h` |
 | `character_move` | `include/wm/arcade/wm_arcade_move_dispatch.h` |
+| `play_wrestler_tune` | `include/wm/arcade/wmania_attract_adapter.h` |
 | `resolve_label_token` | `include/wm/arcade/wm_arcade_roster.h` |
 | `start_special_label` | `include/wm/arcade/wm_arcade_roster.h` |
 | `unhandled_reaction` | `include/wm/arcade/wm_arcade_react1_core.h` |

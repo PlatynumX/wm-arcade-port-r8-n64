@@ -4867,8 +4867,8 @@ def test_every_ledger_verdict_premise_still_holds() -> None:
             raise AssertionError("seam %r has an unknown check kind %r"
                                  % (name, kind))
 
-    assert measured == 8, (
-        "expected the ledger's six `unreached` and two `fallback` rows, "
+    assert measured == 9, (
+        "expected the ledger's seven `unreached` and two `fallback` rows, "
         "measured %d -- a verdict was added or retired without this "
         "guard being told" % measured)
 

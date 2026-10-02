@@ -29,7 +29,18 @@
 #define PROGRESS_SHAKE_STEP_TICKS 2u
 #define PROGRESS_SHAKE_STEPS 12u
 
-static const uint8_t which_music_source[9] = {5,2,1,7,6,4,8,0,3};
+/*
+ * PROGRESS.ASM:2600 `movi 2056,a3 / calla SNDSND`, the sound
+ * PUT_UP_PROGRESS makes before anything else.
+ */
+#define WM_PREGAME_PROGRESS_SOUND 2056u
+
+/*
+ * WHICH_MUSIC (PROGRESS.ASM:2862) used to be transcribed here as
+ * `which_music_source` and read only by a `(void)` cast. It is one of
+ * the three tune tables in wm/arcade/wm_arcade_music.h now, where the
+ * other two -- which are NOT the same shape -- live beside it.
+ */
 
 /* PROGRESS.ASM tables are run-length pairs: number of matches, opponents. */
 static const uint8_t ladder_intercontinental[][2] = {
@@ -311,12 +322,36 @@ static void enter_progress(wm_pregame_state *s, wm_audio_state *audio) {
     s->flash_frame = 0;
     s->phase = WM_PREGAME_PROGRESS_SETUP;
 
-    /* PUT_UP_PROGRESS does SNDSND 2056, then WHICH_MUSIC for the human.
-       The current N64 DCS bank does not yet map those source commands, so do
-       not substitute a guessed track. Preserve the exact IDs in state/code. */
-    (void)audio;
-    (void)which_music_source[s->player_source_wrestler < 9u ?
-                             s->player_source_wrestler : 0u];
+    /*
+     * PUT_UP_PROGRESS's two sound calls.
+     *
+     * PROGRESS.ASM:2600-2601 `movi 2056,a3 / calla SNDSND`, then the
+     * human's theme at :2712-2715, behind PROGRESS.ASM:2709-2710
+     * `MOVE @MUSIC_HAP,A0 / JRNZ MUSIC_ALREADY_GOING`. Note what that
+     * latch means here: the pregame's SNDSND does NOT set MUSIC_HAP --
+     * only DO_RIGHT_MUSIC2 does -- so the theme plays whenever the
+     * previous match's DO_WAIT cleared it, which is every match a
+     * human won.
+     *
+     * This used to send neither, with a note saying the N64 DCS bank
+     * does not map these commands so no guessed track should be
+     * substituted. The note was right about the asset and wrong about
+     * the consequence: the command numbers ARE the source's, so
+     * sending them guesses nothing, and the N64 backend's own default
+     * branch logs an untranslated command rather than playing
+     * something else (src/platform/n64/audio_backend.c). What was
+     * actually happening was that the pregame decided on a theme and
+     * dropped it, with the table read and discarded one line below the
+     * note to keep the compiler quiet.
+     */
+    if (audio) {
+        (void)wm_audio_send_command(audio, WM_PREGAME_PROGRESS_SOUND);
+        if (!wm_music_started(s->music)) {
+            int tune = wm_music_which_music(
+                (int32_t)s->music_source_wrestler);
+            (void)wm_audio_send_command(audio, (uint16_t)tune);
+        }
+    }
 }
 
 static int32_t progress_speed_fp(unsigned remaining) {
@@ -485,6 +520,7 @@ void wm_pregame_init(wm_pregame_state *s,
     s->phase = WM_PREGAME_BELT_SETUP;
     s->belt_type = WM_PREGAME_BELT_INTERCONTINENTAL; /* INTER_DEFAULT .set 1 */
     s->player_source_wrestler = selected_source_wrestler < 9u ? selected_source_wrestler : 0u;
+    s->music_source_wrestler = s->player_source_wrestler;
     s->player_roster_wrestler = selected_roster_wrestler;
     s->current_ladder_index = -1;
     s->belt_world_y = 0;
@@ -513,6 +549,8 @@ void wm_pregame_next_match(wm_pregame_state *s, uint32_t win_streak) {
     wm_pregame_ladder_entry table[WM_PREGAME_LADDER_ENTRIES];
     wm_final_battle_state_t final_battle;
     uint32_t pcnt;
+    wm_music_state_t *music;
+    uint8_t music_src;
 
     if (!s) return;
     /* Everything that survives a match: the ladder and where we are on
@@ -526,6 +564,12 @@ void wm_pregame_next_match(wm_pregame_state *s, uint32_t win_streak) {
     pcnt = s->pcnt;
     rng = s->rng;
     src = s->player_source_wrestler;
+    /* @MUSIC_HAP is a global and @index1/@index2 are the select
+       screen's, so neither is something a new match re-decides. This
+       memset/restore is where a field the app set once gets silently
+       dropped, which is why they are on the list. */
+    music = s->music;
+    music_src = s->music_source_wrestler;
     roster = s->player_roster_wrestler;
     belt = s->belt_type;
     matches = s->match_count;
@@ -536,6 +580,8 @@ void wm_pregame_next_match(wm_pregame_state *s, uint32_t win_streak) {
     s->phase = WM_PREGAME_BELT_SETUP;
     s->belt_type = belt;
     s->player_source_wrestler = src;
+    s->music = music;
+    s->music_source_wrestler = music_src;
     s->player_roster_wrestler = roster;
     s->current_ladder_index = ladder;
     s->belt_world_y = 0;

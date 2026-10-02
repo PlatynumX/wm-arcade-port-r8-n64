@@ -2398,16 +2398,6 @@
   "symbol": "wm_sound_which_pin_him",
   "note": "A `WL` animation list -- PINHIM01 through its last frame, two ticks each. An image sequence, not code."
  },
- "DO_RIGHT_MUSIC": {
-  "file": "LIFEBAR.ASM",
-  "status": "display",
-  "note": "Picks the music for the round about to start and hands it to SNDSND."
- },
- "DO_RIGHT_MUSIC2": {
-  "file": "LIFEBAR.ASM",
-  "status": "display",
-  "note": "The same for the second half of a match."
- },
  "DO_ROUNDS": {
   "file": "LIFEBAR.ASM",
   "status": "display",

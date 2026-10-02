@@ -4,6 +4,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "wm/arcade/wm_arcade_music.h"
 #include "wm/audio.h"
 #include "wm/arcade/wmania_rng.h"
 #include "wm/arcade/wm_arcade_final_battle.h"
@@ -69,6 +70,30 @@ typedef struct {
     /* SELECT/PROGRESS source wrestler number: Bret=0 ... Lex=8, slot 7 spare. */
     uint8_t player_source_wrestler;
     wm_wrestler_id player_roster_wrestler;
+    /*
+     * Whose theme PUT_UP_PROGRESS plays. The source does not simply
+     * use "the player's" wrestler: PROGRESS.ASM:2699-2704 loads
+     * @index1, shifts @PSTATUS right one so player one's bit lands in
+     * the carry, and takes @index2 instead when that bit is clear. So
+     * it is player one's choice when player one is in the game and
+     * player two's otherwise.
+     *
+     * wm_pregame_init defaults it to player_source_wrestler, which is
+     * the answer whenever player one is playing; a caller that knows
+     * PSTATUS overrides it for the player-two-only case. It is a
+     * separate field rather than a second argument because this
+     * port's pregame is player-one-oriented everywhere else and
+     * conflating the two would hide that.
+     */
+    uint8_t music_source_wrestler;
+    /*
+     * @MUSIC_HAP, the latch PROGRESS.ASM:2709 reads before it sends
+     * that theme (wm/arcade/wm_arcade_music.h). A pointer to the
+     * app's: the flag is set by the PREVIOUS match's end and cleared
+     * by its DO_WAIT, so the pregame only reads it. NULL means no
+     * music, which is what every pregame unit test wants.
+     */
+    wm_music_state_t *music;
 
     /* INIT_LADDER_TABLE / CURRENT_LADDER state. */
     wm_pregame_ladder_entry ladder[WM_PREGAME_LADDER_ENTRIES];

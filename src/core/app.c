@@ -197,6 +197,46 @@ static void move_back_off_screen_proc(wm_process *proc, void *user) {
     wm_process_sleep(&app->scheduler, proc, 1);
 }
 
+/*
+ * DCSSOUND.ASM:2519 SNDSND -- a RAW board command, which is a
+ * different thing from wm_app_anim_sound's triple_sound index below
+ * and must not be confused with it: SNDSND's own header calls its
+ * argument "sound code (0-1ff)" (:2517), while triple_sound takes a
+ * row number into triple_sndtab. The music path and the attract's
+ * silence commands are SNDSND; everything a wrestler does is
+ * triple_sound.
+ *
+ * What this adds over calling wm_audio_send_command directly -- which
+ * is what every one of these sites used to do -- is SNDSND's own first
+ * instruction: `move @SOUNDSUP,a0 / jrnz sendx`. Without it the
+ * attract's silence commands and the DCS bang were sent while the
+ * arcade's board would have been muted.
+ */
+static void wm_app_board_call(wm_app *app, int32_t code) {
+    if (!app) return;
+    /* @SOUNDSUP holds the literal 2 when set (ATTRACT.ASM:677); this
+       port keeps the flag as a bool and restores the value here, since
+       SNDSND only ever tests it against zero. */
+    if (!wm_music_board_call_allowed(
+            app->sound.suppressed ? (uint16_t)WM_MUSIC_SOUNDSUP_DEMO : 0u,
+            code))
+        return;
+    (void)wm_audio_send_command(&app->audio, (uint16_t)code);
+}
+
+/*
+ * ATTRACT.ASM:669 TURN_SOUNDS_OFF_IF_NEED, called twice by
+ * show_gameplay (:607 and :616). It only ever SETS @SOUNDSUP; the two
+ * places that clear it are the boot path (UTIL.ASM:158) and the end of
+ * every eighth attract loop (ATTRACT.ASM:270).
+ */
+static void wm_app_turn_sounds_off_if_need(wm_app *app) {
+    if (!app) return;
+    if (wm_music_demo_suppresses_sound(app->attract.amode_loops,
+                                       app->adj_music))
+        app->sound.suppressed = true;
+}
+
 static void kill_call_processes(wm_app *app, wm_attract_call call) {
     if (!app) return;
     if (call == WM_ATTRACT_SHOW_TITLE) {
@@ -217,22 +257,38 @@ static void begin_call(wm_app *app, wm_attract_call call) {
     switch (call) {
         case WM_ATTRACT_DCS_LOGO:
             a->dcs_phase = WM_DCS_STATIC;
-            /* ATTRACT.ASM:3011 DCS_LOGO's SNDSND 1005, after the
-               display_unblank at :3002, gated
-               by TURN_SOUNDS_OFF_IF_NEED (ATTRACT.ASM:669): once
-               AMODE_LOOPS >= 2 the source sets SOUNDSUP and the attract
-               loop plays silent. ADJMUSIC is not exposed yet; this
-               frontend's default is enabled, so only the loop count gates
-               it here.
-
-               This guard used to sit below the send with no body of its
-               own, so it captured the following `break` instead: the
-               command was sent unconditionally, and on the third attract
-               loop onward WM_ATTRACT_DCS_LOGO fell through into
-               WM_ATTRACT_SHOW_SPORTS_LOGO and reset that call's own
-               world/scroll state while the call was still DCS_LOGO. */
-            if (a->amode_loops < 2u)
-                (void)wm_audio_send_command(&app->audio, 1005);
+            /*
+             * ATTRACT.ASM:3011 DCS_LOGO's `MOVI 1005,A3 / CALLA
+             * SNDSND`, after the display_unblank at :3002.
+             *
+             * The gate is the screen's OWN, written out at :3004-3009,
+             * and it is TWO tests, not one. This read AMODE_LOOPS only,
+             * with a comment admitting the other half -- "ADJMUSIC is
+             * not exposed yet; this frontend's default is enabled" --
+             * and that guess was wrong in the direction that makes
+             * noise: FACTORY_TABLE ships ADJMUSIC at 1 and 1 means OFF
+             * (AUDIT.ASM:2927, whose own comment reads "attract mode
+             * music = off"). A factory cabinet plays no bang at all,
+             * and this port played one on the first two loops of every
+             * eight -- with the real recovered DCS asset behind it on
+             * hardware.
+             *
+             * The loop-count half is also not TURN_SOUNDS_OFF_IF_NEED,
+             * as the old comment had it. That routine is called from
+             * show_gameplay (:607, :616) and sets SOUNDSUP for
+             * everything; these two tests are inline here because
+             * DCS_LOGO runs BEFORE the first gameplay demo of a loop
+             * and so cannot rely on it.
+             *
+             * This guard used to sit below the send with no body of its
+             * own, so it captured the following `break` instead: the
+             * command was sent unconditionally, and on the third attract
+             * loop onward WM_ATTRACT_DCS_LOGO fell through into
+             * WM_ATTRACT_SHOW_SPORTS_LOGO and reset that call's own
+             * world/scroll state while the call was still DCS_LOGO.
+             */
+            if (wm_music_attract_allowed(a->amode_loops, app->adj_music))
+                wm_app_board_call(app, 1005);
             break;
         case WM_ATTRACT_SHOW_SPORTS_LOGO:
             a->sports_world_x = 0;
@@ -310,6 +366,24 @@ static void begin_call(wm_app *app, wm_attract_call call) {
                 a->next_bio = (int16_t)bio;
             }
             a->bios_tips = (call == WM_ATTRACT_SHOW_BIOS_TIPS);
+            /*
+             * `;music` at ATTRACT.ASM:2290, below `no_attr` -- the
+             * page has been printed and BLOW_0_TO_1 has not run yet,
+             * which is this instant, since WM_BIOS_PLACE_TICKS is 0.
+             *
+             * :2294-2299 is the same two-test gate as DCS_LOGO's, and
+             * :2301-2303 reads the EIGHT-entry table at :2817 with the
+             * bio counter -- not the nine-entry WRESTLERNUM one, which
+             * still carries Adam Bomb's row and would give the wrong
+             * man's music for every wrestler past him.
+             *
+             * wm_attract_bio_music_allowed has had this decision since
+             * the attract text work and nothing asked it: the live
+             * sequencer is here, and the adapter that does call it
+             * (wmania_attract_adapter.c) has no caller at all.
+             */
+            if (wm_music_attract_allowed(a->amode_loops, app->adj_music))
+                wm_app_board_call(app, wm_music_attract_tune(a->bio_index));
             break;
         case WM_ATTRACT_SHOW_TITLE:
             a->title_lava_step = 0;
@@ -343,8 +417,14 @@ static void finish_base_loop(wm_app *app) {
 static void advance_call(wm_app *app) {
     wm_attract_state *a = &app->attract;
     if (a->call == WM_ATTRACT_DCS_LOGO) {
-        /* ATTRACT.ASM DCS screen stop/reset boundary. */
-        (void)wm_audio_send_command(&app->audio, 0);
+        /* DCS_LOGO's exit at `nobutn1`: `CLR A3 / CALLA SNDSND`
+           (ATTRACT.ASM:3158-3159). ONE instruction pair, and this port
+           had two translations of it -- wm_app_tick sent the same
+           command just before calling this, so every DCS_LOGO exit
+           silenced the board twice. This is the site that keeps,
+           because it also covers an exit through
+           skip_untranslated_calls. */
+        wm_app_board_call(app, 0);
     }
     kill_call_processes(app, a->call);
 
@@ -373,7 +453,13 @@ static void advance_call(wm_app *app) {
             begin_call(app, WM_ATTRACT_AAMA_MESSAGE);
             return;
         case WM_ATTRACT_FLOW_AAMA:
+            /* `clr a0 / move a0,@AMODE_LOOPS / move a0,@SOUNDSUP`
+               (ATTRACT.ASM:268-270) -- one register written to both, so
+               the loop counter and the sound suppressor are reset
+               together. The SOUNDSUP half was missing, which did not
+               show while nothing ever set it. */
             a->amode_loops = 0;
+            app->sound.suppressed = false;
             begin_base_loop(app);
             return;
     }
@@ -727,6 +813,10 @@ static void wm_app_bind_anim_env(wm_app *app) {
     app->match.anim_rng = &app->rng;
     app->match.anim_sound_user = app;
     app->match.anim_sound = wm_app_anim_sound;
+    /* @MUSIC_HAP is one word shared by the attract, the pregame and
+       the match (wm/arcade/wm_arcade_music.h); the match is handed a
+       pointer to it rather than a copy. */
+    app->match.music = &app->music;
     app->match.sound_proc_user = app;
     app->match.start_bell = wm_app_start_bell;
     app->match.start_pin_him = wm_app_start_pin_him;
@@ -865,6 +955,24 @@ static bool tick_gameplay(wm_app *app, const wm_input_state *input) {
      * it could ever fire.
      */
     if (a->call_ticks == 0) {
+        /*
+         * show_gameplay calls TURN_SOUNDS_OFF_IF_NEED twice, at
+         * ATTRACT.ASM:607 and at :616. The second is immediately
+         * before ATTRACT.ASM:618
+         * `CREATE AMODE_GAMEPLAY_PID,start_match`. Both are made here
+         * because the routine is idempotent -- it only ever stores
+         * 2 -- and because this is the one tick before the match
+         * starts.
+         *
+         * At factory settings this fires on the FIRST loop, since
+         * ADJMUSIC is 1, and @SOUNDSUP then stays set until the eighth
+         * loop's reset. A factory cabinet's attract mode really is
+         * nearly silent after its first gameplay demo; wait_on_butn is
+         * the exception, and it clears and restores SOUNDSUP around its
+         * own feedback sound (ATTRACT.ASM:2830-2846).
+         */
+        wm_app_turn_sounds_off_if_need(app);
+        wm_app_turn_sounds_off_if_need(app);
         /* Bound BEFORE the match starts, not after: start_match's own
            `CREATE SOUND_PID,ring_bell` (LIFEBAR.ASM:2511) happens
            inside it, and a seam assigned afterwards would miss it.
@@ -926,6 +1034,15 @@ void wm_app_init(wm_app *app) {
     (void)wm_hs_system_table_cmos_check(&app->hiscore);
     app->p1_choice = WM_WRESTLER_BRET;
     app->p2_choice = WM_WRESTLER_BAM_BAM;
+    /*
+     * UTIL.ASM:157-158's `clr a0 / move a0,@SOUNDSUP` on the boot
+     * path, and the music latch's own zero. ADJMUSIC comes up at the
+     * value a factory cabinet ships (AUDIT.ASM:2927), which is 1 --
+     * attract music OFF.
+     */
+    wm_music_init(&app->music);
+    app->adj_music = WM_MUSIC_ADJMUSIC_FACTORY;
+    app->sound.suppressed = false;
     app->attract.amode_loops = 0;
     /*
      * -1, not 0, so "no screen has chosen yet" is representable: 0 is a real
@@ -1080,6 +1197,18 @@ void wm_app_tick_dual(wm_app *app,
     /* The two SOUND_PID processes, beside snd_update the way the
        arcade's scheduler runs them beside it. */
     wm_app_tick_sound_procs(app);
+    /*
+     * And the third: DO_RIGHT_MUSIC (LIFEBAR.ASM:3003), which the
+     * match-over tail CREATEs on SOUND_PID and which sleeps 55 ticks
+     * before it sets @MUSIC_HAP and sends the winner's theme. It is
+     * ticked here rather than inside the match because the latch it
+     * sets outlives the match -- the pregame reads it.
+     */
+    wm_music_tick(&app->music);
+    {
+        int tune = wm_music_take(&app->music);
+        if (tune >= 0) wm_app_board_call(app, tune);
+    }
     /* SOURCE_SELECT_MODE_TICK */
     if (app->mode == WM_APP_MODE_SELECT) {
         wm_select_screen_tick(&app->select,
@@ -1137,6 +1266,19 @@ void wm_app_tick_dual(wm_app *app,
                             app->p1_choice,
                             &app->rng);
             app->pregame.win_streak = app->awards.win_streak[0];
+            /*
+             * @MUSIC_HAP, which PUT_UP_PROGRESS reads before it plays
+             * the human's theme, and the index it reads it for:
+             * PROGRESS.ASM:2699-2704 takes @index1 when PSTATUS's
+             * player-one bit is set and @index2 otherwise.
+             * match_pstatus is this port's PSTATUS, so bit 0 answers
+             * it directly.
+             */
+            app->pregame.music = &app->music;
+            app->pregame.music_source_wrestler =
+                (app->match_pstatus & 1) != 0
+                    ? app->select.selected_source_wrestler
+                    : app->select.p2_selected_source_wrestler;
             app->mode = WM_APP_MODE_PREGAME;
         }
         return;
@@ -1408,8 +1550,14 @@ void wm_app_tick_dual(wm_app *app,
             return;
         }
         app->attract_started = true;
-        /* ATTRACT.ASM startup SNDSND command 0 after SLEEPK 8. */
-        (void)wm_audio_send_command(&app->audio, 0);
+        /* `SLEEPK 8 / clr a3 / calla SNDSND` (ATTRACT.ASM:146-149) --
+           "let the sound board reset finish up", then silence it. */
+        wm_app_board_call(app, 0);
+        /* `MOVE A0,@MUSIC_HAP` (ATTRACT.ASM:157), in the same run of
+           clears as AMODE_LOOPS at :156. The first of the latch's three
+           clear sites, and the only one the attract owns -- it never
+           sets it. */
+        wm_music_clear(&app->music);
         begin_base_loop(app);
     }
 
@@ -1438,6 +1586,22 @@ void wm_app_tick_dual(wm_app *app,
         app->attract.call_ticks >= WM_TITLE_BUTTON_ENABLE_TICKS &&
         input && input->start) {
         kill_call_processes(app, app->attract.call);
+        /*
+         * `CLR A0 / MOVE A0,@SOUNDSUP` -- AUDIT.ASM:457-458, whose own
+         * comment reads "TURN SOUNDS ON. (A-MODE SOUND SUPRESSOR)". In
+         * the arcade it is the COIN DROP that lifts the attract's
+         * suppression, half a second after the edge and before
+         * getcoin. This port has no coin mechanism, and this bridge is
+         * already where it stands in one for PSTATUS, so it is where
+         * the clear belongs too.
+         *
+         * It matters because TURN_SOUNDS_OFF_IF_NEED leaves SOUNDSUP
+         * set for the rest of a block of eight attract loops, and
+         * everything a paying player hears -- the select screen, the
+         * pregame's theme, the match -- goes through the same
+         * suppression test.
+         */
+        app->sound.suppressed = false;
         app->mode = WM_APP_MODE_SELECT;
         wm_select_screen_init(&app->select, &app->rng);
         wm_select_screen_set_howard_done(&app->select, app->done_howard);
@@ -1477,11 +1641,10 @@ void wm_app_tick_dual(wm_app *app,
     wm_scheduler_step(&app->scheduler);
 
     if (done) {
-        if (app->attract.call == WM_ATTRACT_DCS_LOGO) {
-            /* ATTRACT.ASM:3157 DCS_LOGO's exit `CLR A3 / CALLA SNDSND`
-               at nobutn1. */
-            (void)wm_audio_send_command(&app->audio, 0);
-        }
+        /* DCS_LOGO's exit `CLR A3 / CALLA SNDSND` used to be sent here
+           as well as inside advance_call, which runs on this same
+           branch -- one source instruction, two sends. advance_call
+           keeps it. */
         advance_call(app);
     }
     skip_untranslated_calls(app);

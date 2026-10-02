@@ -385,6 +385,17 @@ typedef struct {
     void *anim_sound_user;
     void (*anim_sound)(void *user, uint16_t call);
     /*
+     * @MUSIC_HAP and the DO_RIGHT_MUSIC process that sets it
+     * (wm/arcade/wm_arcade_music.h). A pointer to the app's, not a
+     * copy: WRESTLE.ASM:1679 clears it at match setup, LIFEBAR.ASM
+     * clears and sets it at match end, and PROGRESS.ASM:2709 reads it
+     * in the NEXT match's pregame, so the match cannot own it.
+     *
+     * Unlike anim_sound this is not a seam: there is nothing to
+     * implement behind it, only one word of state to share.
+     */
+    wm_music_state_t *music;
+    /*
      * The two SOUND_PID processes a match starts, which are not one-shot
      * calls and so cannot go through anim_sound: each is a little state
      * machine that owns a channel over several seconds. They live on

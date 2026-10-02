@@ -84,11 +84,14 @@ bool wm_match_tip_due(int32_t p1winstreak, int32_t p2winstreak,
 }
 
 int wm_match_wrestler_tune(int32_t wrestler_num) {
-    /* `#wrestler_tunes .word 5,2,1,7,6,4,8,0,3`. Slot 7 is Adam Bomb,
-       cut, and its 0 is the table's own content. */
-    static const int TUNES[9] = { 5, 2, 1, 7, 6, 4, 8, 0, 3 };
-    if (wrestler_num < 0 || wrestler_num >= 9) return 0;
-    return TUNES[wrestler_num];
+    /*
+     * LIFEBAR.ASM:3016's nine-entry `#wrestler_tunes`. The table was
+     * transcribed a second time here, which was harmless while nothing
+     * played it and is not what should happen now that three tables
+     * with two different shapes are all in play: one transcription per
+     * source table, in wm_arcade_music.c, and this stays as the name.
+     */
+    return wm_music_wrestler_tune(wrestler_num);
 }
 
 void wm_match_end_init(wm_match_end_t *st) {
@@ -96,6 +99,7 @@ void wm_match_end_init(wm_match_end_t *st) {
     memset(st, 0, sizeof(*st));
     st->phase = (uint8_t)WM_MEND_IDLE;
     st->tune = -1;
+    st->music_catch_up = false;
 }
 
 void wm_match_end_start(wm_match_end_t *st) {
@@ -126,6 +130,15 @@ bool wm_match_end_tick(wm_match_end_t *st, const wm_match_end_ctx_t *ctx) {
 
     case WM_MEND_WINCOUNT: {
         unsigned cleared = 0;
+        /*
+         * DO_WAIT's own first two instructions, before
+         * increment_wincount: `CLR A0 / MOVE A0,@MUSIC_HAP`
+         * (LIFEBAR.ASM:2853-2854, under DO_WAIT at :2852). This
+         * phase's comment has named them since it was written and
+         * nothing made the write, which did not show while the latch
+         * had no readers either.
+         */
+        wm_music_clear(ctx->music);
         if (ctx->streaks)
             cleared = wm_match_increment_wincount(
                 ctx->streaks,
@@ -186,6 +199,23 @@ bool wm_match_end_tick(wm_match_end_t *st, const wm_match_end_ctx_t *ctx) {
                DIE: `callr adjust_perfects`. */
             if (!ctx->royal_rumble && ctx->adjust_perfects)
                 ctx->adjust_perfects(ctx->user);
+            /*
+             * `CREATE SOUND_PID,DO_RIGHT_MUSIC` (LIFEBAR.ASM:2933),
+             * immediately after the award bar's own create at :2931 and
+             * before the rumble test at :2934. The process sleeps 55
+             * ticks and only then sets MUSIC_HAP and sends the theme,
+             * which is the whole reason the tip phase below has a
+             * second, conditional create to fall back on.
+             *
+             * The tune is read here rather than when the sleep runs
+             * out. The source reads it from *A10(WRESTLERNUM) in the
+             * created process, which is the winner's own process block
+             * and does not change under it, so the instant makes no
+             * difference and this keeps the decision where the caller's
+             * winner_wrestler_num is known to be valid.
+             */
+            st->tune = wm_match_wrestler_tune(ctx->winner_wrestler_num);
+            wm_music_do_right_music(ctx->music, st->tune);
         }
         if (!ctx->awards_done) return false;      /* still polling */
         /* `#no_state_advance`: once @award_ok_to_die is 1 the bars are
@@ -201,7 +231,23 @@ bool wm_match_end_tick(wm_match_end_t *st, const wm_match_end_ctx_t *ctx) {
             ? wm_match_tip_due(ctx->streaks->p1winstreak,
                                ctx->streaks->p2winstreak, ctx->match_cnt)
             : false;
-        st->tune = wm_match_wrestler_tune(ctx->winner_wrestler_num);
+        /*
+         * `MOVE @MUSIC_HAP,A0 / JRNZ MUSIC_ALREADY_GOING / CREATE
+         * SOUND_PID,DO_RIGHT_MUSIC2` (LIFEBAR.ASM:2979-2981).
+         *
+         * Not a second decision about which tune: the same tune, sent
+         * NOW because the 55-tick sleep armed at `#end` has not run out
+         * yet. Nothing kills that first process, so when this fires
+         * both are live and the command goes out twice -- once here and
+         * once when the sleep expires. That is what the source does.
+         *
+         * With ctx->music NULL there is no latch to read and nothing to
+         * create, so the catch-up is not claimed.
+         */
+        if (ctx->music && !wm_music_started(ctx->music)) {
+            st->music_catch_up = true;
+            wm_music_do_right_music2(ctx->music, st->tune);
+        }
         /* `MOVK 2,A0 / move a0,@match_over`, the 4Dh sound, and HALT
            cleared. */
         st->match_over = 2;

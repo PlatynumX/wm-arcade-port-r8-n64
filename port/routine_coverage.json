@@ -910,10 +910,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "display",
-   "evidence": "Picks the music for the round about to start and hands it to SNDSND.",
+   "status": "implemented",
+   "evidence": "wm_music_do_right_music",
    "from_generated": false,
-   "ledgered": true
+   "ledgered": false
   },
   {
    "name": "DO_RIGHT_MUSIC2",
@@ -925,10 +925,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "display",
-   "evidence": "The same for the second half of a match.",
+   "status": "implemented",
+   "evidence": "wm_music_do_right_music2",
    "from_generated": false,
-   "ledgered": true
+   "ledgered": false
   },
   {
    "name": "DO_ROUNDS",

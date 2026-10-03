@@ -3653,7 +3653,9 @@ def test_the_routine_ledger_justifies_every_entry() -> None:
     Each entry has to name a real routine in a linked file, carry a
     status the tool knows and a note, and -- if it claims the port does
     the work under another name -- name a port identifier that really
-    is defined in code rather than merely mentioned.
+    is defined in code rather than merely mentioned. A constant counts
+    for this, though not for the suffix rule: a ledger row is a reviewed
+    verdict, and an enumerator is declared, not mentioned.
     """
     if not wlanim.ORIG.exists():
         return
@@ -3662,6 +3664,9 @@ def test_the_routine_ledger_justifies_every_entry() -> None:
 
     routines = port_coverage.source_routines()
     code_ids, _prose, _gen = port_coverage.port_symbols()
+    # A ledger verdict may name a constant (an smove monitor id whose
+    # `case` holds the body); the suffix rule may not. See port_constants.
+    declared = code_ids | port_coverage.port_constants()
     _outside, total = port_coverage.reference_counts()
 
     for name, entry in ledger.items():
@@ -3674,7 +3679,7 @@ def test_the_routine_ledger_justifies_every_entry() -> None:
         if entry["status"] in ("inlined", "renamed", "partial"):
             sym = entry.get("symbol")
             assert sym, "%s claims %s but names no symbol" % (name, entry["status"])
-            assert sym in code_ids, \
+            assert sym in declared, \
                 "%s points at %s, which the port does not define" % (name, sym)
         if entry["status"] == "dead":
             assert total[name] == 0, name
@@ -4008,6 +4013,77 @@ def test_the_reachability_claims_are_actually_checkable() -> None:
     for name, _kind, _why in REACHABILITY_CLAIMS:
         assert name in haystack, \
             "reachability claim names %r, which appears nowhere" % name
+
+
+def test_no_constant_certifies_a_routine() -> None:
+    """The name of a value is not a translation of a routine.
+
+    The suffix rule resolves a source routine by any port identifier that
+    IS its name or ends with it, and an object-like `#define` or an
+    enumerator ends with a routine's name as readily as a function does.
+    Twenty-one routines were resolving that way, and two of them were
+    plainly false: ATTRACT.ASM's show_operatormsg and show_time_date read
+    `implemented` -- certified by WM_ATTRACT_SHOW_OPERATORMSG and
+    WM_ATTRACT_SHOW_TIME_DATE, the attract enum's values -- while the
+    manifest said `not-started`, app.c's dispatch had no case for either,
+    and skip_untranslated_calls walked straight past them.
+
+    port_coverage now drops constants from the identifier pool the way it
+    already dropped callback seams, keeping a name only when the port also
+    defines a function of it. This holds that: no `implemented` row may
+    rest on an identifier the port declares only as a constant.
+    """
+    import json
+    sys.path.insert(0, str(ROOT / "tools"))
+    import port_coverage  # noqa: E402
+
+    consts: set[str] = set()
+    funcs: set[str] = set()
+    for d in port_coverage.PORT_DIRS:
+        for path in sorted((ROOT / d).rglob("*")):
+            if path.suffix not in (".c", ".h"):
+                continue
+            if str(path.relative_to(ROOT)).startswith("src/generated"):
+                continue
+            code, _prose = port_coverage._split_code_and_prose(
+                path.read_text(errors="replace"))
+            # Measured with this test's OWN patterns, not
+            # port_coverage.constant_decls. A guard that borrows the
+            # collector it guards goes blind in exactly the case it exists
+            # for: break the collector and the guard's view of "what is a
+            # constant" breaks with it, and the two agree that nothing is
+            # wrong. (That is not hypothetical -- with the shared helper, a
+            # mutation that stopped collecting #defines survived.)
+            consts |= set(re.findall(
+                r"^[ \t]*#[ \t]*define[ \t]+([A-Za-z_]\w*)(?![\w(])",
+                code, re.M))
+            for body in re.findall(r"\benum\b[^{;()]*\{([^}]*)\}", code,
+                                   re.S):
+                consts |= set(re.findall(r"(?:^|,)\s*([A-Za-z_]\w*)", body))
+            funcs |= set(port_coverage.FUNC_DEF.findall(code))
+    only_const = consts - funcs
+
+    cov = json.loads((ROOT / "port" / "routine_coverage.json").read_text())
+    rows = cov if isinstance(cov, list) else cov.get("routines", [])
+    bad = sorted("%s <- %s" % (r["name"], r.get("evidence"))
+                 for r in rows if isinstance(r, dict)
+                 and r.get("status") == "implemented"
+                 and r.get("evidence") in only_const)
+    assert not bad, (
+        "these routines read `implemented` on the strength of a constant's "
+        "name alone:\n  " + "\n  ".join(bad))
+
+    # And the two that exposed it stay honest, plus the one certified by a
+    # #define rather than an enumerator.
+    by_name = {r["name"]: r for r in rows if isinstance(r, dict)}
+    assert by_name["flare_anim2"]["status"] == "data", (
+        "flare_anim2 reads %s -- WM_FW_FLARE_ANIM2 is a #define, which is "
+        "the translation of a frame index, not evidence of a routine"
+        % by_name["flare_anim2"]["status"])
+    for name in ("show_operatormsg", "show_time_date"):
+        assert by_name[name]["status"] != "implemented", (
+            "%s reads implemented again -- the manifest says not-started "
+            "and app.c has no dispatch case for it" % name)
 
 
 def test_every_link_line_parser_agrees_with_the_linker() -> None:

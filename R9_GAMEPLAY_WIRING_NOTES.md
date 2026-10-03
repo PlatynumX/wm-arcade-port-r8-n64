@@ -949,6 +949,50 @@ ledger row disappear while changing no behaviour at all — a hollow wiring,
 which is worse than an honest `deferred`. It gets an owner when something draws
 from it.
 
+## A constant's name was certifying its routine
+
+The coverage tool resolves a source routine by any port identifier that **is**
+its name or **ends with** it. An object-like `#define` or an enumerator ends
+with a routine's name as readily as a function does, and twenty-one routines
+were counted `implemented` on the strength of a value's name alone.
+
+Two were plainly false. **`show_operatormsg` and `show_time_date` read
+`implemented`**, certified by `WM_ATTRACT_SHOW_OPERATORMSG` and
+`WM_ATTRACT_SHOW_TIME_DATE` — the attract enum's own values — while the
+manifest said `not-started`, `app.c`'s dispatch had no case for either, and
+`skip_untranslated_calls` walked straight past them. The coverage report and the
+manifest contradicted each other, and nothing compared them.
+
+The tool now drops object-like `#define`s and enumerators from the identifier
+pool (function-like macros stay, being code). The twenty that fell open each got
+a verdict read off the source:
+
+| routine(s) | verdict | the real translation |
+|---|---|---|
+| ten attract screens | `renamed` | the `tick_*` function `app.c`'s dispatch sends their enum to |
+| `show_operatormsg`, `show_time_date` | `hardware` | none — CMOS message; DIPs and the RTC |
+| five `print_string*` | `renamed` | arms of `wm_string_print_method` |
+| `set_zvel` (HRTSEQ3) | `renamed` | `set_zvel_lead` — it had been certified by an *opcode* |
+| `set_wrestler_xflip` | `renamed` | `set_wrestler_xflip_code` (translated three times) |
+| `BLOCK_WOOSH` | `renamed` | `wm_wrsnd_label`'s FIXED `0x16` row |
+| `flare_anim2` | `data` | the frame index `WM_FW_FLARE_ANIM2` — honest, for a label |
+
+`SHAKER` fell to `dead`, measured: PROGRESS.ASM `.ref`s it and nothing calls it.
+`implemented` 2041 → 2020, every one of the 21 accounted for elsewhere, open
+still 0.
+
+`test_no_constant_certifies_a_routine` measures constants with its **own**
+patterns, not the tool's. With the shared helper, a mutation that stopped
+collecting `#define`s survived — the guard and the thing it guards agreeing
+that nothing was wrong.
+
+The ledger is deliberately exempt. Four BRET.ASM rows (hrt_grab_toss_air,
+hrt_hdhold_ddt, hrt_hdhold_faceslam, hrt_roll_uppercut) name a monitor-id
+enumerator as their symbol, because the body lives in that id's `case` in
+wm_arcade_bret_fire_monitor. A ledger row is a reviewed verdict, so its
+symbol only has to be declared in code. `port_constants()` gives the ledger
+check that pool. The suffix rule, which no one reviews, still does not get it.
+
 ## Deliberately still absent
 
 - Nothing about `pal_getf` any more: the allocator is owned, the seam is

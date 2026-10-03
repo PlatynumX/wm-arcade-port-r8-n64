@@ -2530,5 +2530,122 @@
   "status": "renamed",
   "symbol": "wm_shake_tick",
   "note": "UTIL.ASM:2406, \"Shake screen as if an earthquake is in effect\". Translated as the oscillator in wm/arcade/wm_arcade_shake.h, which names it at the top of the file; wm_shake_init/start/tick are the whole of it. It resolved only through a callback field called shaker2 until seam names stopped counting, and it could not resolve by suffix because wm_shake_tick does not end in the routine's name -- which is what the ledger is for."
+ },
+ "show_sports_logo": {
+  "file": "ATTRACT.ASM",
+  "status": "renamed",
+  "symbol": "tick_sports_logo",
+  "note": "Used to read `implemented`, certified by the enum value WM_ATTRACT_SHOW_SPORTS_LOGO -- a value's name, not a translation; see port_coverage's constant carve-out. The screen IS translated: app.c's attract dispatch maps that enum value to tick_sports_logo, with begin_call doing the routine's set-up half."
+ },
+ "show_title": {
+  "file": "ATTRACT.ASM",
+  "status": "renamed",
+  "symbol": "tick_title",
+  "note": "Used to read `implemented`, certified by the enum value WM_ATTRACT_SHOW_TITLE -- a value's name, not a translation; see port_coverage's constant carve-out. The screen IS translated: app.c's attract dispatch maps that enum value to tick_title, with begin_call doing the routine's set-up half."
+ },
+ "show_gameplay": {
+  "file": "ATTRACT.ASM",
+  "status": "renamed",
+  "symbol": "tick_gameplay",
+  "note": "Used to read `implemented`, certified by the enum value WM_ATTRACT_SHOW_GAMEPLAY -- a value's name, not a translation; see port_coverage's constant carve-out. The screen IS translated: app.c's attract dispatch maps that enum value to tick_gameplay, with begin_call doing the routine's set-up half."
+ },
+ "show_copyright": {
+  "file": "ATTRACT.ASM",
+  "status": "renamed",
+  "symbol": "tick_copyright",
+  "note": "Used to read `implemented`, certified by the enum value WM_ATTRACT_SHOW_COPYRIGHT -- a value's name, not a translation; see port_coverage's constant carve-out. The screen IS translated: app.c's attract dispatch maps that enum value to tick_copyright, with begin_call doing the routine's set-up half."
+ },
+ "show_hstd": {
+  "file": "ATTRACT.ASM",
+  "status": "renamed",
+  "symbol": "wm_hstd_tick",
+  "note": "Used to read `implemented`, certified by the enum value WM_ATTRACT_SHOW_HSTD -- a value's name, not a translation; see port_coverage's constant carve-out. The screen IS translated: app.c's attract dispatch maps that enum value to wm_hstd_tick, with begin_call doing the routine's set-up half."
+ },
+ "show_gen_tips": {
+  "file": "ATTRACT.ASM",
+  "status": "renamed",
+  "symbol": "tick_gen_tips",
+  "note": "Used to read `implemented`, certified by the enum value WM_ATTRACT_SHOW_GEN_TIPS -- a value's name, not a translation; see port_coverage's constant carve-out. The screen IS translated: app.c's attract dispatch maps that enum value to tick_gen_tips, with begin_call doing the routine's set-up half."
+ },
+ "DO_HINTS": {
+  "file": "ATTRACT.ASM",
+  "status": "renamed",
+  "symbol": "tick_hints",
+  "note": "Used to read `implemented`, certified by the enum value WM_ATTRACT_DO_HINTS -- a value's name, not a translation; see port_coverage's constant carve-out. The screen IS translated: app.c's attract dispatch maps that enum value to tick_hints, with begin_call doing the routine's set-up half."
+ },
+ "show_bios": {
+  "file": "ATTRACT.ASM",
+  "status": "renamed",
+  "symbol": "tick_bios",
+  "note": "Used to read `implemented`, certified by the enum value WM_ATTRACT_SHOW_BIOS -- a value's name, not a translation; see port_coverage's constant carve-out. The screen IS translated: app.c's attract dispatch maps that enum value to tick_bios, with begin_call doing the routine's set-up half."
+ },
+ "show_bios_tips": {
+  "file": "ATTRACT.ASM",
+  "status": "renamed",
+  "symbol": "tick_bios",
+  "note": "Used to read `implemented`, certified by the enum value WM_ATTRACT_SHOW_BIOS_TIPS -- a value's name, not a translation; see port_coverage's constant carve-out. show_bios and show_bios_tips are one routine with two entry points (ATTRACT.ASM:2067 and :2070), @bios_type choosing which text it prints, and app.c's dispatch sends both enum values to tick_bios for the same reason."
+ },
+ "show_operatormsg": {
+  "file": "ATTRACT.ASM",
+  "status": "hardware",
+  "note": "Used to read `implemented`, certified by the enum value WM_ATTRACT_SHOW_OPERATORMSG -- a value's name, not a translation; see port_coverage's constant carve-out. That was a contradiction nobody saw: the manifest has said `not-started` all along, and app.c's dispatch has no case for it -- skip_untranslated_calls walks past it. It reads the message a cabinet operator typed into CMOS (ATTRACT.ASM:691-:695, `calla ADJ_PAGE / movi CUSTOM_MESSAGE,a7 / calla RC_BYTEI`), so it has no source text to translate at all."
+ },
+ "show_time_date": {
+  "file": "ATTRACT.ASM",
+  "status": "hardware",
+  "note": "Used to read `implemented`, certified by the enum value WM_ATTRACT_SHOW_TIME_DATE -- a value's name, not a translation; see port_coverage's constant carve-out. The same contradiction as show_operatormsg: `not-started` in the manifest, no dispatch case, and `implemented` here. It reads the operator DIPs and the CMOS real-time clock (ATTRACT.ASM:818 `calla READ_DIP`, :822 `@_clk_rd`, :826 `JSRP _GetTime`)."
+ },
+ "print_string": {
+  "file": "STRING.ASM",
+  "status": "renamed",
+  "symbol": "wm_string_print_method",
+  "note": "Used to read `implemented`, certified by the enum value WM_PRINT_STRING -- a value's name, not a translation; see port_coverage's constant carve-out. Translated as one arm of wm_string_print_method's switch, which is how the port represents STRING.ASM's family of print entry points that differ only in justification, buffer and Z. (The engine itself has no instance in src/ -- see the width_fn and draw_fn seam rows -- so it is translated and unreached, which is a reachability fact rather than a coverage one.)"
+ },
+ "print_string_C": {
+  "file": "STRING.ASM",
+  "status": "renamed",
+  "symbol": "wm_string_print_method",
+  "note": "Used to read `implemented`, certified by the enum value WM_PRINT_STRING_C -- a value's name, not a translation; see port_coverage's constant carve-out. Translated as one arm of wm_string_print_method's switch, which is how the port represents STRING.ASM's family of print entry points that differ only in justification, buffer and Z. (The engine itself has no instance in src/ -- see the width_fn and draw_fn seam rows -- so it is translated and unreached, which is a reachability fact rather than a coverage one.)"
+ },
+ "print_string_R": {
+  "file": "STRING.ASM",
+  "status": "renamed",
+  "symbol": "wm_string_print_method",
+  "note": "Used to read `implemented`, certified by the enum value WM_PRINT_STRING_R -- a value's name, not a translation; see port_coverage's constant carve-out. Translated as one arm of wm_string_print_method's switch, which is how the port represents STRING.ASM's family of print entry points that differ only in justification, buffer and Z. (The engine itself has no instance in src/ -- see the width_fn and draw_fn seam rows -- so it is translated and unreached, which is a reachability fact rather than a coverage one.)"
+ },
+ "print_string_Z2": {
+  "file": "STRING.ASM",
+  "status": "renamed",
+  "symbol": "wm_string_print_method",
+  "note": "Used to read `implemented`, certified by the enum value WM_PRINT_STRING_Z2 -- a value's name, not a translation; see port_coverage's constant carve-out. Translated as one arm of wm_string_print_method's switch, which is how the port represents STRING.ASM's family of print entry points that differ only in justification, buffer and Z. (The engine itself has no instance in src/ -- see the width_fn and draw_fn seam rows -- so it is translated and unreached, which is a reachability fact rather than a coverage one.)"
+ },
+ "print_string_with_z": {
+  "file": "STRING.ASM",
+  "status": "renamed",
+  "symbol": "wm_string_print_method",
+  "note": "Used to read `implemented`, certified by the enum value WM_PRINT_STRING_WITH_Z -- a value's name, not a translation; see port_coverage's constant carve-out. Translated as one arm of wm_string_print_method's switch, which is how the port represents STRING.ASM's family of print entry points that differ only in justification, buffer and Z. (The engine itself has no instance in src/ -- see the width_fn and draw_fn seam rows -- so it is translated and unreached, which is a reachability fact rather than a coverage one.)"
+ },
+ "set_wrestler_xflip": {
+  "file": "WRESTLE.ASM",
+  "status": "renamed",
+  "symbol": "set_wrestler_xflip_code",
+  "note": "Used to read `implemented`, certified by the animation opcode WM_ANI_SET_WRESTLER_XFLIP. The body -- FACING_DIR's PLAYER_RIGHT_BIT choosing whether M_FLIPH is set or cleared (WRESTLE.ASM:3050) -- is translated THREE times: as anim_code.c's set_wrestler_xflip_code for HRTSEQ4.ASM:1134's `#set_wrestler_xflip` wrapper, and as the ANI_SET_WRESTLER_XFLIP opcode case in both anim.c and anim_program.c. One routine with three translations is recorded here rather than merged, which would be a refactor."
+ },
+ "set_zvel": {
+  "file": "HRTSEQ3.ASM",
+  "status": "renamed",
+  "symbol": "set_zvel_lead",
+  "note": "Used to read `implemented`, certified by the animation opcode WM_ANI_SET_ZVEL -- a DIFFERENT thing from this routine. HRTSEQ3.ASM:2874 `SUBRP #set_zvel` aims Bret's Z drift so he arrives with the opponent, and anim_code.c registers set_zvel_lead against exactly that definition line."
+ },
+ "BLOCK_WOOSH": {
+  "file": "DCSSOUND.ASM",
+  "status": "renamed",
+  "symbol": "wm_wrsnd_label",
+  "note": "Used to read `implemented`, certified by WM_BRET_SND_BLOCK_WOOSH, a sound-id constant. The routine is three instructions (DCSSOUND.ASM:4265, `MOVI 16h,A0 / CALLA triple_sound / RETS`) called from every wrestler's block, and the port has it as the FIXED row `{ \"BLOCK_WOOSH\", WM_SNDLABEL_FIXED, 0, 0, 0x16u }` that wm_wrsnd_label resolves for every dispatcher's `snd(a,\"BLOCK_WOOSH\",c)`."
+ },
+ "flare_anim2": {
+  "file": "FIREWORK.ASM",
+  "status": "data",
+  "note": "Used to read `implemented`, certified by the #define WM_FW_FLARE_ANIM2. That #define IS the translation, which is why this is `data` and not a correction: `#flare_anim2` is not a routine or a table of its own but a label five images INTO `#flare_anim`, and the port carries it as that frame index into wm_fw_flare_anim -- the flare plays all thirteen images once, then loops from there."
  }
 }

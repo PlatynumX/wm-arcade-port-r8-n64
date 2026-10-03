@@ -442,6 +442,59 @@ FUNC_DEF = re.compile(
     re.M)
 
 
+# The NAME OF A VALUE is not a translation of a routine either. An
+# object-like `#define WM_RING_MODE_DEAD 12` or an enumerator
+# `WM_SP_KIND_DOINK_PIE` ends with the source routine's name as readily
+# as a function does, and the suffix rule cannot tell them apart -- so
+# DOINK.ASM's mode_dead resolved by an enum value, SPECIAL.ASM's
+# doink_pie by a projectile-kind enumerator, and STRING.ASM's five
+# print_string variants by the print-method enum that SELECTS them, with
+# no function of any of those names in the port. Function-like macros
+# are NOT included: `#define FOO(x) ...` is code and can genuinely be a
+# translation, where a constant only names a number.
+CONST_DEFINE = re.compile(
+    r"^[ \t]*#[ \t]*define[ \t]+([A-Za-z_][A-Za-z0-9_]*)(?![A-Za-z0-9_(])",
+    re.M)
+ENUM_BODY = re.compile(r"\benum\b[^{;()]*\{([^}]*)\}", re.S)
+ENUMERATOR = re.compile(r"(?:^|,)\s*([A-Za-z_][A-Za-z0-9_]*)")
+
+
+def constant_decls(code: str) -> set[str]:
+    """Object-like #define names and enumerators in one file's code."""
+    out = set(CONST_DEFINE.findall(code))
+    for body in ENUM_BODY.findall(code):
+        out |= set(ENUMERATOR.findall(body))
+    return out
+
+
+def port_constants() -> set[str]:
+    """Constants the port DECLARES in hand-written code, as a pool of its own.
+
+    port_symbols() drops these from the evidence pool, and that is right
+    for the suffix rule, which nobody reviews. The ledger is the other
+    case: a row there is a verdict someone read the source for, and a
+    verdict may legitimately name an enumerator. BRET.ASM's four smove
+    monitors (hrt_grab_toss_air and kin) are reached in this port by a
+    monitor id and wm_arcade_bret_fire_monitor's case for it, so the id IS
+    the most specific name for where the body lives. The ledger check
+    asks only that the name be declared in code, not merely mentioned,
+    and an enumerator is declared.
+    """
+    consts: set[str] = set()
+    defined: set[str] = set()
+    for d in PORT_DIRS:
+        for path in sorted((ROOT / d).rglob("*")):
+            if path.suffix not in (".c", ".h"):
+                continue
+            if str(path.relative_to(ROOT)).startswith(GENERATED):
+                continue
+            code, _prose = _split_code_and_prose(
+                path.read_text(errors="replace"))
+            consts |= constant_decls(code)
+            defined |= set(FUNC_DEF.findall(code))
+    return consts - defined
+
+
 def port_symbols() -> tuple[set[str], set[str], set[str]]:
     """(identifiers defined in code, identifiers named in prose, generated).
 
@@ -490,6 +543,7 @@ def port_symbols() -> tuple[set[str], set[str], set[str]]:
     prose_ids: set[str] = set()
     generated_ids: set[str] = set()
     seam_ids: set[str] = set()
+    const_ids: set[str] = set()
     defined_ids: set[str] = set()
     for d in PORT_DIRS:
         for path in sorted((ROOT / d).rglob("*")):
@@ -501,6 +555,8 @@ def port_symbols() -> tuple[set[str], set[str], set[str]]:
             ids = set(IDENT.findall(code))
             code_ids |= ids
             seam_ids |= callback_decls(code)
+            if not rel.startswith(GENERATED):
+                const_ids |= constant_decls(code)
             defined_ids |= set(FUNC_DEF.findall(code))
             prose_ids |= set(IDENT.findall(prose))
             if rel.startswith(GENERATED):
@@ -508,6 +564,15 @@ def port_symbols() -> tuple[set[str], set[str], set[str]]:
     # The carve-out, and its one exception: a seam name survives when the
     # port also defines a function of that name. See the docstring.
     code_ids -= (seam_ids - defined_ids)
+    # And the same for constants, for the same reason: a value's name is
+    # not evidence that the routine it shares a suffix with was written.
+    # Generated files are left alone -- their identifiers are tool output
+    # and resolve through GENERATED_WRAPPERS, which is the rule for them.
+    # The `- defined_ids` exception mirrors the seam one and is defensive
+    # rather than load-bearing today, which was checked: no name in the
+    # port is both a constant and a function definition, so subtracting
+    # every constant outright moves nothing at present.
+    code_ids -= (const_ids - defined_ids)
     return code_ids, prose_ids, generated_ids
 
 

@@ -340,10 +340,10 @@
    "local": false,
    "external_callers": 8,
    "references": 8,
-   "status": "implemented",
-   "evidence": "WM_BRET_SND_BLOCK_WOOSH",
+   "status": "renamed",
+   "evidence": "wm_wrsnd_label",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "BONUS_MESS",
@@ -865,10 +865,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "implemented",
-   "evidence": "WM_ATTRACT_DO_HINTS",
-   "from_generated": true,
-   "ledgered": false
+   "status": "renamed",
+   "evidence": "tick_hints",
+   "from_generated": false,
+   "ledgered": true
   },
   {
    "name": "DO_LEX_PUSH",
@@ -2020,9 +2020,9 @@
    "local": false,
    "external_callers": 0,
    "references": 0,
-   "status": "implemented",
-   "evidence": "WM_AOP_SHAKER",
-   "from_generated": true,
+   "status": "dead",
+   "evidence": "nothing anywhere names it",
+   "from_generated": false,
    "ledgered": false
   },
   {
@@ -5966,7 +5966,7 @@
    "external_callers": 0,
    "references": 0,
    "status": "implemented",
-   "evidence": "WM_SP_KIND_BAM_FIREBALL",
+   "evidence": "wm_arcade_spawn_bam_fireball",
    "from_generated": false,
    "ledgered": false
   },
@@ -8022,8 +8022,8 @@
    "external_callers": 18,
    "references": 18,
    "status": "implemented",
-   "evidence": "WM_SMOVE_G_CK_IGNORE",
-   "from_generated": true,
+   "evidence": "backend_ck_ignore",
+   "from_generated": false,
    "ledgered": false
   },
   {
@@ -8712,8 +8712,8 @@
    "external_callers": 0,
    "references": 3,
    "status": "implemented",
-   "evidence": "WM_ATTRACT_CREDITSCREEN",
-   "from_generated": true,
+   "evidence": "render_creditscreen",
+   "from_generated": false,
    "ledgered": false
   },
   {
@@ -12373,7 +12373,7 @@
    "external_callers": 0,
    "references": 0,
    "status": "implemented",
-   "evidence": "WM_SP_KIND_DOINK_PIE",
+   "evidence": "wm_arcade_spawn_doink_pie",
    "from_generated": false,
    "ledgered": false
   },
@@ -13317,10 +13317,10 @@
    "local": true,
    "external_callers": 0,
    "references": 2,
-   "status": "implemented",
-   "evidence": "WM_FW_FLARE_ANIM2",
+   "status": "data",
+   "evidence": "Used to read `implemented`, certified by the #define WM_FW_FLARE_ANIM2. That #define IS the translation, which is why this is `data` and not a correction: `#flare_anim2` is not a routine or a table of its own but a label five images INTO `#flare_anim`, and the port carries it as that frame index into wm_fw_flare_anim -- the flare plays all thirteen images once, then loops from there.",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "flash_2ndwind",
@@ -22695,7 +22695,7 @@
    "external_callers": 9,
    "references": 10,
    "status": "implemented",
-   "evidence": "WM_RING_MODE_DEAD",
+   "evidence": "backend_mode_dead",
    "from_generated": false,
    "ledgered": false
   },
@@ -22710,7 +22710,7 @@
    "external_callers": 9,
    "references": 10,
    "status": "implemented",
-   "evidence": "WM_RING_MODE_INAIR2",
+   "evidence": "backend_mode_inair2",
    "from_generated": false,
    "ledgered": false
   },
@@ -23834,10 +23834,10 @@
    "local": false,
    "external_callers": 12,
    "references": 12,
-   "status": "implemented",
-   "evidence": "WM_PRINT_STRING",
+   "status": "renamed",
+   "evidence": "wm_string_print_method",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "print_string_C",
@@ -23849,10 +23849,10 @@
    "local": false,
    "external_callers": 11,
    "references": 11,
-   "status": "implemented",
-   "evidence": "WM_PRINT_STRING_C",
+   "status": "renamed",
+   "evidence": "wm_string_print_method",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "print_string_R",
@@ -23864,10 +23864,10 @@
    "local": false,
    "external_callers": 2,
    "references": 2,
-   "status": "implemented",
-   "evidence": "WM_PRINT_STRING_R",
+   "status": "renamed",
+   "evidence": "wm_string_print_method",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "print_string_Z2",
@@ -23879,10 +23879,10 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "implemented",
-   "evidence": "WM_PRINT_STRING_Z2",
+   "status": "renamed",
+   "evidence": "wm_string_print_method",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "print_string_with_z",
@@ -23894,10 +23894,10 @@
    "local": false,
    "external_callers": 5,
    "references": 5,
-   "status": "implemented",
-   "evidence": "WM_PRINT_STRING_WITH_Z",
+   "status": "renamed",
+   "evidence": "wm_string_print_method",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "print_string_with_zb",
@@ -24015,8 +24015,8 @@
    "external_callers": 0,
    "references": 1,
    "status": "implemented",
-   "evidence": "WM_COFFIN_PUSH_IN_ANIM",
-   "from_generated": false,
+   "evidence": "prog_push_in_anim_labels",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -24075,8 +24075,8 @@
    "external_callers": 0,
    "references": 1,
    "status": "implemented",
-   "evidence": "WM_COFFIN_RAISE_DEAD_ANIM",
-   "from_generated": false,
+   "evidence": "prog_raise_dead_anim_labels",
+   "from_generated": true,
    "ledgered": false
   },
   {
@@ -24423,7 +24423,7 @@
    "external_callers": 5,
    "references": 12,
    "status": "implemented",
-   "evidence": "WM_RING_BOUNDARY_LEFT_ROPE",
+   "evidence": "maybe_bounce_rope",
    "from_generated": false,
    "ledgered": false
   },
@@ -28112,10 +28112,10 @@
    "local": false,
    "external_callers": 4,
    "references": 8,
-   "status": "implemented",
-   "evidence": "WM_ANI_SET_WRESTLER_XFLIP",
+   "status": "renamed",
+   "evidence": "set_wrestler_xflip_code",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "set_x",
@@ -28172,10 +28172,10 @@
    "local": true,
    "external_callers": 5,
    "references": 7,
-   "status": "implemented",
-   "evidence": "WM_ANI_SET_ZVEL",
+   "status": "renamed",
+   "evidence": "set_zvel_lead",
    "from_generated": false,
-   "ledgered": false
+   "ledgered": true
   },
   {
    "name": "setopp_deadanim",
@@ -31157,10 +31157,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "implemented",
-   "evidence": "WM_ATTRACT_SHOW_BIOS",
-   "from_generated": true,
-   "ledgered": false
+   "status": "renamed",
+   "evidence": "tick_bios",
+   "from_generated": false,
+   "ledgered": true
   },
   {
    "name": "show_bios_tips",
@@ -31172,10 +31172,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "implemented",
-   "evidence": "WM_ATTRACT_SHOW_BIOS_TIPS",
-   "from_generated": true,
-   "ledgered": false
+   "status": "renamed",
+   "evidence": "tick_bios",
+   "from_generated": false,
+   "ledgered": true
   },
   {
    "name": "show_bonus_icons",
@@ -31202,10 +31202,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "implemented",
-   "evidence": "WM_ATTRACT_SHOW_COPYRIGHT",
-   "from_generated": true,
-   "ledgered": false
+   "status": "renamed",
+   "evidence": "tick_copyright",
+   "from_generated": false,
+   "ledgered": true
   },
   {
    "name": "show_dufus_messages",
@@ -31232,10 +31232,10 @@
    "local": false,
    "external_callers": 0,
    "references": 3,
-   "status": "implemented",
-   "evidence": "WM_ATTRACT_SHOW_GAMEPLAY",
-   "from_generated": true,
-   "ledgered": false
+   "status": "renamed",
+   "evidence": "tick_gameplay",
+   "from_generated": false,
+   "ledgered": true
   },
   {
    "name": "show_gen_tips",
@@ -31247,10 +31247,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "implemented",
-   "evidence": "WM_ATTRACT_SHOW_GEN_TIPS",
-   "from_generated": true,
-   "ledgered": false
+   "status": "renamed",
+   "evidence": "tick_gen_tips",
+   "from_generated": false,
+   "ledgered": true
   },
   {
    "name": "show_hstd",
@@ -31262,10 +31262,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "implemented",
-   "evidence": "WM_ATTRACT_SHOW_HSTD",
-   "from_generated": true,
-   "ledgered": false
+   "status": "renamed",
+   "evidence": "wm_hstd_tick",
+   "from_generated": false,
+   "ledgered": true
   },
   {
    "name": "show_mk3_tip",
@@ -31307,10 +31307,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "implemented",
-   "evidence": "WM_ATTRACT_SHOW_OPERATORMSG",
-   "from_generated": true,
-   "ledgered": false
+   "status": "hardware",
+   "evidence": "Used to read `implemented`, certified by the enum value WM_ATTRACT_SHOW_OPERATORMSG -- a value's name, not a translation; see port_coverage's constant carve-out. That was a contradiction nobody saw: the manifest has said `not-started` all along, and app.c's dispatch has no case for it -- skip_untranslated_calls walks past it. It reads the message a cabinet operator typed into CMOS (ATTRACT.ASM:691-:695, `calla ADJ_PAGE / movi CUSTOM_MESSAGE,a7 / calla RC_BYTEI`), so it has no source text to translate at all.",
+   "from_generated": false,
+   "ledgered": true
   },
   {
    "name": "show_options",
@@ -31367,10 +31367,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "implemented",
-   "evidence": "WM_ATTRACT_SHOW_SPORTS_LOGO",
-   "from_generated": true,
-   "ledgered": false
+   "status": "renamed",
+   "evidence": "tick_sports_logo",
+   "from_generated": false,
+   "ledgered": true
   },
   {
    "name": "show_time_date",
@@ -31382,10 +31382,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "implemented",
-   "evidence": "WM_ATTRACT_SHOW_TIME_DATE",
-   "from_generated": true,
-   "ledgered": false
+   "status": "hardware",
+   "evidence": "Used to read `implemented`, certified by the enum value WM_ATTRACT_SHOW_TIME_DATE -- a value's name, not a translation; see port_coverage's constant carve-out. The same contradiction as show_operatormsg: `not-started` in the manifest, no dispatch case, and `implemented` here. It reads the operator DIPs and the CMOS real-time clock (ATTRACT.ASM:818 `calla READ_DIP`, :822 `@_clk_rd`, :826 `JSRP _GetTime`).",
+   "from_generated": false,
+   "ledgered": true
   },
   {
    "name": "show_title",
@@ -31397,10 +31397,10 @@
    "local": false,
    "external_callers": 0,
    "references": 1,
-   "status": "implemented",
-   "evidence": "WM_ATTRACT_SHOW_TITLE",
-   "from_generated": true,
-   "ledgered": false
+   "status": "renamed",
+   "evidence": "tick_title",
+   "from_generated": false,
+   "ledgered": true
   },
   {
    "name": "show_title2",

@@ -24423,7 +24423,7 @@
    "external_callers": 5,
    "references": 12,
    "status": "implemented",
-   "evidence": "maybe_bounce_rope",
+   "evidence": "clear_of_rope",
    "from_generated": false,
    "ledgered": false
   },

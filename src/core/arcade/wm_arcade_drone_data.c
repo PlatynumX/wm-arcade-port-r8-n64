@@ -424,7 +424,20 @@ static const wm_arcade_drone_script_op_t ops_dopbig[] = {
 /* One-op scripts whose entire behavior is a real, wrestler-agnostic DS_CODE
    block (or a persistent SEEK loop) -- see the per-routine callbacks below
    for the transcribed logic. */
-static const wm_arcade_drone_script_op_t ops_call_drn_run[] = {FUNCOP("drn_run")};
+/*
+ * DRONE.ASM:2382 drn_run. The DS_CODE block is the FUNCOP; its two
+ * exits that end in bytecode rather than a bare DS_END are entered by
+ * redirecting to their own op here: #ering (:2520) and #brkseek (:2525)
+ * each tap away from the opponent for two ticks (`.word L_M,2`) and then
+ * DS_JMP to another routine.
+ */
+#define DRN_RUN_ERING   1
+#define DRN_RUN_BRKSEEK 3
+static const wm_arcade_drone_script_op_t ops_call_drn_run[] = {
+    FUNCOP("drn_run"),
+    /* 1 #ering */   IN(LM, 2), JMPX("drn_enterring"),
+    /* 3 #brkseek */ IN(LM, 2), JMPX("drn_seek")
+};
 static const wm_arcade_drone_script_op_t ops_call_drn_oprun[] = {FUNCOP("drn_oprun")};
 static const wm_arcade_drone_script_op_t ops_roll[] = {
     FUNCOP("drn_roll_init"), SEEKOP("drn_roll")
@@ -701,12 +714,25 @@ static const char *const s_M_shrtblkrdl[] = {"#hgrab", "#spx"};
 static int call_drone_chkrun(wm_arcade_actor_t *self, wm_arcade_actor_t *opp,
                              wm_arcade_drone_state_t *d, const char *label, void *user) {
     (void)d; (void)label; (void)user;
-    /* KNOWN DIVERGENCE. #out (DRONE.ASM:2302, INRING != 0: out of the
-       ring) used to be called unreachable because nobody could leave the
-       ring. confine_wrestler's #outring is translated now and wrestlers
-       do, so #out IS reachable -- and is not translated: a drone running
-       outside takes the in-ring test below instead of #out's crowd and
-       ring-post checks. */
+    /* DRONE.ASM:2302 `move *a13(INRING),a14 / jrnz #out ;Out of ring?`.
+       in_ring is 1 inside in this port, so the test flips. */
+    if (self->in_ring == 0) {
+        /* #out (:2329). Running would carry him into the crowd, or --
+           level with the ring in Z -- into the ring's own side. #bad
+           skips the script's run buttons. */
+        int32_t x = self->x_int, z = self->z_int;
+        int level = z >= WM_RING_TOP - 10 && z <= WM_RING_BOT + 10;
+        if (self->facing_dir & WM_MOVE_RIGHT) {
+            if (x >= WM_RING_X_CENTER + 500) return WM_DRONE_CALL_SKIP_NEXT;
+            if (level && x < WM_RING_X_CENTER && x >= WM_RING_X_CENTER - 300)
+                return WM_DRONE_CALL_SKIP_NEXT;   /* Hit rgt ring? */
+        } else {                                  /* #ol */
+            if (x <= WM_RING_X_CENTER - 500) return WM_DRONE_CALL_SKIP_NEXT;
+            if (level && x > WM_RING_X_CENTER && x <= WM_RING_X_CENTER + 300)
+                return WM_DRONE_CALL_SKIP_NEXT;   /* Hit lft ring? */
+        }
+        return WM_DRONE_CALL_CONTINUE;
+    }
     if (opp->player_mode != WM_PMODE_ONGROUND) {
         if (self->closest_zdist < 70 && self->closest_zdist > 30 &&
             self->closest_xdist < 150)
@@ -764,65 +790,82 @@ static int call_drn_run(wm_arcade_actor_t *self, wm_arcade_actor_t *opp,
     a0 = iabs32(a0);
     a2 = self->closest_zdist;
 
-    /* #inr. KNOWN DIVERGENCE, as in call_drone_chkrun: DRONE.ASM:2415's
-       out-of-ring arm (`cmpi 300,a0 / jrgt #ering` ...) is reachable now
-       that wrestlers leave the ring, and is not translated; this always
-       takes the in-ring arm. */
+    if (self->in_ring == 0) {
+        /* DRONE.ASM:2412 `move *a13(INRING),a14 / jrz #inr`, flipped for
+           this port's in_ring (1 inside). Outside the ring: */
+        if (a0 > 300) {                       /* Too far? -> #ering */
+            d->script = "drn_run";
+            d->script_pc = DRN_RUN_ERING;
+            return WM_DRONE_CALL_REDIRECTED;
+        }
+        if (a1 < 0) {                         /* Running away? -> #brkrun */
+            apply_bytecode_input(self, d, 0, WM_MOVE_LEFT, 0);
+            return WM_DRONE_CALL_ABORT;
+        }
+        a2 -= 30;                             /* `subk 30,a2` */
+        if (a2 > 0) {                         /* Too far? -> #brkseek */
+            d->script = "drn_run";
+            d->script_pc = DRN_RUN_BRKSEEK;
+            return WM_DRONE_CALL_REDIRECTED;
+        }
+        goto l_cont;                          /* `jruc #cont` */
+    }
+
+    /*
+     * #inr (:2426). A runner who WON'T hit the rope goes straight to
+     * #rpok -- the attack consideration -- and only #chkopp can break the
+     * run off. This used to be read the other way round: "won't hit the
+     * rope" sent him to #rsk, which only steers, so a running drone in
+     * the ring considered a strike only when about to bounce; and the
+     * non-running path skipped #oprun's Z test on its way to #rpok.
+     */
     {
-        int rope_ok;
-        if (a4 < 0) rope_ok = a3 > WM_RING_X_CENTER - 210; /* #lrp */
-        else rope_ok = a3 < WM_RING_X_CENTER + 210;
-        if (!rope_ok) {
-            if (opp->getup_time <= 0 && opp->player_mode != WM_PMODE_ONGROUND && a0 <= 300) {
-                if (opp->player_mode == WM_PMODE_RUNNING) {
-                    if (a2 < 90) {
-                        apply_bytecode_input(self, d, 0, WM_MOVE_LEFT, 0); /* #brkrun */
-                        return WM_DRONE_CALL_ABORT;
-                    }
-                } else if (a0 <= 180) {
-                    rope_ok = 0; /* fall through to #rpok, not "ok" */
-                } else {
-                    rope_ok = 1;
-                }
-            } else {
-                rope_ok = 1;
-            }
+        int clear_of_rope;
+        if (a4 < 0) clear_of_rope = a3 > WM_RING_X_CENTER - 210; /* #lrp */
+        else clear_of_rope = a3 < WM_RING_X_CENTER + 210;
+        if (!clear_of_rope &&                 /* #chkopp */
+            opp->getup_time <= 0 &&           /* Out of control? */
+            opp->player_mode != WM_PMODE_ONGROUND &&
+            a0 <= 300 &&                      /* Opp X far? */
+            (opp->player_mode == WM_PMODE_RUNNING || a0 <= 180) &&
+            a2 < 90) {                        /* #oprun: Opp Z close? */
+            apply_bytecode_input(self, d, 0, WM_MOVE_LEFT, 0); /* #brkrun */
+            return WM_DRONE_CALL_ABORT;
         }
-        if (!rope_ok) {
-            /* #rpok */
-            if (a1 < 0) goto l_rsk; /* Running away? */
-            /* #cont */
-            if (opp->player_mode == WM_PMODE_INAIR2) {
-                apply_bytecode_input(self, d, 0, WM_MOVE_LEFT, 0); /* #brkrun */
-                return WM_DRONE_CALL_ABORT;
-            }
-            a2 -= 30;
-            if (a2 > 0) goto l_rsk;
-            if (a0 > 250) goto l_rsk;
-            {
-                int32_t roll = 130 + (int32_t)rr(rng, 120);
-                if (a0 > roll) goto l_rsk;
-            }
-            if (opp->player_mode == WM_PMODE_PUPPET2 || opp->player_mode == WM_PMODE_PUPPET ||
-                opp->player_mode == WM_PMODE_HEADHELD || opp->player_mode == WM_PMODE_HEADHOLD ||
-                opp->player_mode == WM_PMODE_ATTACHED) {
-                apply_bytecode_input(self, d, 0, WM_MOVE_LEFT, 0); /* #brkrun */
-                return WM_DRONE_CALL_ABORT;
-            }
-            if (d->but_charge != 0 && d->but_charge_delay <= 0) {
-                d->but_charge = 0; /* fire it */
-                return WM_DRONE_CALL_ABORT; /* #abrt (bare) */
-            }
-            /* #nchrg: two sequential 33%-style rolls (K_M/SK_M/SP_M). */
-            {
-                uint16_t but;
-                if (rr(rng, 99) < 33) but = KM;
-                else if (rr(rng, 99) < 33) but = SKM;
-                else but = SPM;
-                apply_bytecode_input(self, d, but, 0, 0);
-                return WM_DRONE_CALL_ABORT;
-            }
-        }
+    }
+    /* #rpok */
+    if (a1 < 0) goto l_rsk;                   /* Running away? */
+l_cont:
+    /* #cont */
+    if (opp->player_mode == WM_PMODE_INAIR2) {
+        apply_bytecode_input(self, d, 0, WM_MOVE_LEFT, 0); /* #brkrun */
+        return WM_DRONE_CALL_ABORT;
+    }
+    a2 -= 30;
+    if (a2 > 0) goto l_rsk;                   /* Z too far? */
+    if (a0 > 250) goto l_rsk;                 /* X too far? */
+    {
+        int32_t roll = 130 + (int32_t)rr(rng, 120);
+        if (a0 > roll) goto l_rsk;            /* X too far? */
+    }
+    if (opp->player_mode == WM_PMODE_PUPPET2 || opp->player_mode == WM_PMODE_PUPPET ||
+        opp->player_mode == WM_PMODE_HEADHELD || opp->player_mode == WM_PMODE_HEADHOLD ||
+        opp->player_mode == WM_PMODE_ATTACHED) {
+        apply_bytecode_input(self, d, 0, WM_MOVE_LEFT, 0); /* #brkrun */
+        return WM_DRONE_CALL_ABORT;
+    }
+    if (d->but_charge != 0 && d->but_charge_delay <= 0) {
+        d->but_charge = 0; /* fire it */
+        return WM_DRONE_CALL_ABORT; /* #abrt (bare) */
+    }
+    /* #nchrg: two sequential 33%-style rolls (K_M/SK_M/SP_M). */
+    {
+        uint16_t but;
+        if (rr(rng, 99) < 33) but = KM;
+        else if (rr(rng, 99) < 33) but = SKM;
+        else but = SPM;
+        apply_bytecode_input(self, d, but, 0, 0);
+        return WM_DRONE_CALL_ABORT;
     }
 l_rsk:
     {

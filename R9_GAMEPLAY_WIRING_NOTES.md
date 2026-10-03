@@ -1040,15 +1040,35 @@ PUPPET run 515 → 139. DEAD ticks in attract went 15464 → 0. The furthest
 anyone got from ring centre went 3814 → 913. `test_quiet_bout.c` pins
 each cause; 17 mutations, 17 caught.
 
-**Recorded, not fixed.** `drone_chkrun`'s `#out` and `drn_run`'s
-out-of-ring arm are now reachable and are not translated. Their comments
-say so instead of calling them unreachable.
+**Since translated.** `drone_chkrun`'s `#out` and `drn_run`'s
+out-of-ring arm are covered in the next section.
 
-**Not established.** Seed 3 Lex v Razor still draws blood only once.
-Razor, outside at x=1338, is aimed at the ring's right end exactly as
-`drn_enterring` does (DRONE.ASM:2778-2795). The mat-edge confine then
-stands him in the corner, outside `ck_climb_in_top`'s window. Whether
-the arcade drone sticks there too can't be settled from the code.
+**Not established.** A drone outside the ring at a corner. Seed 3 Bam v
+Doink leaves Doink at (809, 962). `drn_enterring` aims him at the ring's
+left end exactly as DRONE.ASM:2778-2795 does, and the mat-edge confine
+holds him in the corner, outside `ck_climb_in_top`'s window. Whether the
+arcade drone sticks there too can't be settled from the code.
+
+## A running drone only thought about hitting you at the ropes
+
+`drn_run` (DRONE.ASM:2382) steers a running drone. Its in-ring arm does
+`cmpi RING_X_CENTER+210,a3 / jrlt #rpok ;Won't hit R rope?`, so a runner
+who is clear of the rope goes to `#rpok` and considers a strike. Only
+`#chkopp`, at the rope, can break the run off. The port had this inside
+out: the clear runner went to `#rsk`, which only steers. A running drone
+in the ring considered a strike only when it was about to bounce. And for
+a standing opponent within 180 it skipped `#oprun`'s Z test.
+
+The two outside arms are translated too, so wrestlers can now run outside
+the ring. `drone_chkrun`'s `#out` skips the run buttons when running
+would hit the crowd or the ring's side. `drn_run`'s outside arm taps away
+and jumps to `drn_enterring` or `drn_seek` (`#ering`, `#brkseek`), or
+breaks off.
+
+Over the twenty bouts: the quietest bout went from 1 damage event to 263,
+and every bout now draws blood. The longest unbroken run went 3776 → 194
+ticks for RUNNING and 19746 → 4617 for NORMAL. `test_drone_running.c`
+pins each path; 8 mutations, 8 caught.
 
 ## Deliberately still absent
 

@@ -235,18 +235,27 @@ static void test_no_player_mode_is_a_one_way_door(void)
  *     #ering, and the drone layer's inverted INRING reads);
  *   every attract bout ran with the first rung's "no aggressive" cap.
  *
- * Measured after, over these twenty: 7104 damage events, every bout
- * drawing blood, longest ONGROUND run 1586, longest PUPPET run 139, no
- * DEAD tick at all, nobody further than 913 from ring centre. The
- * thresholds sit well clear of both sides.
+ * Then drn_run's in-ring arm, read inside out: a runner CLEAR of the
+ * rope goes to #rpok and considers a strike (DRONE.ASM:2426), and the
+ * port only steered him -- see test_drone_running.c, which also pins
+ * the two out-of-ring arms (drone_chkrun's #out, drn_run's #ering and
+ * #brkseek) that became reachable with the ring-out.
  *
- * Still NOT established, and left on the record: seed 3 Lex v Razor
- * draws blood once. Razor ends up outside at x=1338, where drn_enterring
- * aims him at the ring's right end exactly as DRONE.ASM:2778-2795 does,
- * and the mat-edge confine stands him at the corner (z=962) without
- * ck_climb_in_top's 0xC0-from-centre window ever admitting him. Whether
- * the arcade drone sticks there too is not something this port can
- * settle from the code, so it is not tuned away.
+ * Measured after all of it, over these twenty: 7499 damage events, the
+ * quietest bout 263, longest ONGROUND run 419, longest PUPPET run 139,
+ * longest RUNNING run 194 (was 3776), no DEAD tick at all, nobody
+ * further than 913 from ring centre. The thresholds sit well clear of
+ * both sides.
+ *
+ * Still NOT established, and left on the record: a drone outside the
+ * ring at a corner. Seed 3 Bam v Doink leaves Doink at (809, 962) for
+ * the last 4617 ticks: drn_enterring aims him at the ring's left end
+ * exactly as DRONE.ASM:2778-2795 does, and the mat-edge confine stands
+ * him at the corner without ck_climb_in_top's 0xC0-from-centre window
+ * admitting him. Whether the arcade drone sticks there too is not
+ * something this port can settle from the code, so it is not tuned
+ * away. (The same trap held Razor in seed 3 Lex v Razor until drn_run
+ * stopped running him into it.)
  */
 static void test_the_match_produces_a_real_exchange(void)
 {
@@ -259,6 +268,7 @@ static void test_the_match_produces_a_real_exchange(void)
     };
     unsigned total = 0, bouts = 0, drew_blood = 0;
     unsigned longest_ground = 0, longest_puppet = 0, dead = 0, max_x = 0;
+    unsigned longest_run = 0;
     uint32_t seed;
     int p;
 
@@ -273,14 +283,17 @@ static void test_the_match_produces_a_real_exchange(void)
                 longest_ground = st.mode_longest[WM_PMODE_ONGROUND];
             if (st.mode_longest[WM_PMODE_PUPPET] > longest_puppet)
                 longest_puppet = st.mode_longest[WM_PMODE_PUPPET];
+            if (st.mode_longest[WM_PMODE_RUNNING] > longest_run)
+                longest_run = st.mode_longest[WM_PMODE_RUNNING];
             dead += st.mode_ticks[WM_PMODE_DEAD];
             if (st.max_x_off > max_x) max_x = st.max_x_off;
         }
     }
     assert(bouts == 20u);
-    assert(total >= 3000u);         /* measured 7104; 1248 before, 10 first */
-    assert(drew_blood >= 19u);      /* measured 20 of 20 */
-    assert(longest_ground < 4000u); /* measured 1586; was 18000+ */
+    assert(total >= 3000u);         /* measured 7499; 1248 before, 10 first */
+    assert(drew_blood == 20u);      /* measured 20 of 20, the least 263 */
+    assert(longest_ground < 4000u); /* measured 419; was 18000+ */
+    assert(longest_run < 1500u);    /* measured 194; was 3776 */
     assert(longest_puppet < 400u);  /* measured 139; was 515 */
     /* LIFEBAR.ASM:1578: nobody dies in attract mode, from any blow. */
     assert(dead == 0u);             /* was 15464 */

@@ -170,6 +170,22 @@ typedef struct {
     int32_t num_opps;
 
     /*
+     * `@CURRENT_LADDER == LADDER`: this bout is the ladder's first rung.
+     * DRONE.ASM reads it in two places -- the DRN_MODE reroll (:218,
+     * "No aggressive": modes -2..-1 only) and the passive block's random
+     * attack (:538) -- so on the first rung a drone facing a NORMAL
+     * opponent beyond 70 never attacks of its own accord.
+     *
+     * The drone world used to be handed a hard-coded 1 for every match.
+     * Attract mode is the case that is never the first rung:
+     * ATTRACT.ASM:596-602 sets CURRENT_LADDER to LADDER + 32 *
+     * (RNDRNG0(5) + 1), "a battle between #2 and #6 on the ladder". With
+     * the 1, an attract bout that drifted apart could not restart: two
+     * drones stood 180 apart outside the ring for 19000 ticks.
+     */
+    bool first_ladder;
+
+    /*
      * AWARD.ASM's `combos_on` powerup, a global in the source. The app
      * copies it in from its powerup flags at match start; CHECK_COMBO_GO
      * reads it to decide whether the combo-meter threshold is 16 or 0.

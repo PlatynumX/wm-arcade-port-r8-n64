@@ -215,13 +215,33 @@ wm_arcade_drone_step_result_t wm_arcade_drone_script_step(
                 ++d->script_pc;
                 return WM_DRONE_STEP_SCRIPT;
 
-            case WM_DRONE_SC_SEEK:
-                if (cb && cb->script_seek &&
-                    cb->script_seek(self, opp, d, op->source_label, cb->user) == 0) {
+            case WM_DRONE_SC_SEEK: {
+                const char *before = d->script;
+                int busy = 1;
+                if (cb && cb->script_seek)
+                    busy = cb->script_seek(self, opp, d, op->source_label,
+                                           cb->user);
+                if (d->script && d->script != before) {
+                    /* A DS_JMP out of the seek's own code block (drn_ontb's
+                       #ering): the new script is read at once, the same
+                       tick, exactly as a redirecting FUNCOP's is. */
+                    const wm_arcade_drone_script_t *next =
+                        (cb && cb->resolve_script)
+                            ? cb->resolve_script(d->script, cb->user) : NULL;
+                    if (!next || !next->ops) {
+                        abort_script(d);
+                        return WM_DRONE_STEP_ABORT_SCRIPT;
+                    }
+                    script = next;
+                    guard = 0;
+                    continue;
+                }
+                if (!busy) {
                     ++d->script_pc;
                     continue;
                 }
                 return WM_DRONE_STEP_SCRIPT;
+            }
 
             case WM_DRONE_SC_SKILL_ABORT: {
                 int pct = cb && cb->script_skill_pct
@@ -565,7 +585,14 @@ wm_arcade_drone_step_result_t wm_arcade_drone_main(
     /* MODE_NORMAL has its own passive/aggressive scheduling before #doact. */
     if (mymode == WM_PMODE_NORMAL) {
         int dmode;
-        if (self->in_ring != 0 && opp->in_ring == 0) {
+        /* DRONE.ASM:466-474: `INRING / jrz #ringok ;In ring?` then
+           `*a8(INRING) / jrnz #ringok ;Opp out?` -- only a drone who is
+           OUT, facing an opponent who is IN, goes back in. INRING is 0
+           inside the ring; this port's in_ring is the plain boolean, 1
+           inside (wm_arcade_actor_t::in_ring), so both tests flip. This
+           read them the source's way round and sent the drone who was IN
+           the ring off to "enter" it. */
+        if (self->in_ring == 0 && opp->in_ring != 0) {
             select_script(self, d, "drn_enterring", cb);
             result = run_selected_script(self, opp, d, cb);
             if (result == WM_DRONE_STEP_IDLE) result = WM_DRONE_STEP_SCRIPT;

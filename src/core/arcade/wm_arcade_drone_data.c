@@ -701,9 +701,12 @@ static const char *const s_M_shrtblkrdl[] = {"#hgrab", "#spx"};
 static int call_drone_chkrun(wm_arcade_actor_t *self, wm_arcade_actor_t *opp,
                              wm_arcade_drone_state_t *d, const char *label, void *user) {
     (void)d; (void)label; (void)user;
-    /* #out (raw INRING!=0, i.e. genuinely out of the ring) is unreachable
-       in this port -- in_ring is always true/"in ring", same reasoning as
-       confine_wrestler's own #outring boundary. */
+    /* KNOWN DIVERGENCE. #out (DRONE.ASM:2302, INRING != 0: out of the
+       ring) used to be called unreachable because nobody could leave the
+       ring. confine_wrestler's #outring is translated now and wrestlers
+       do, so #out IS reachable -- and is not translated: a drone running
+       outside takes the in-ring test below instead of #out's crowd and
+       ring-post checks. */
     if (opp->player_mode != WM_PMODE_ONGROUND) {
         if (self->closest_zdist < 70 && self->closest_zdist > 30 &&
             self->closest_xdist < 150)
@@ -761,7 +764,10 @@ static int call_drn_run(wm_arcade_actor_t *self, wm_arcade_actor_t *opp,
     a0 = iabs32(a0);
     a2 = self->closest_zdist;
 
-    /* #inr: raw INRING==0 branch, always taken here (see call_drone_chkrun). */
+    /* #inr. KNOWN DIVERGENCE, as in call_drone_chkrun: DRONE.ASM:2415's
+       out-of-ring arm (`cmpi 300,a0 / jrgt #ering` ...) is reachable now
+       that wrestlers leave the ring, and is not translated; this always
+       takes the in-ring arm. */
     {
         int rope_ok;
         if (a4 < 0) rope_ok = a3 > WM_RING_X_CENTER - 210; /* #lrp */
@@ -884,9 +890,22 @@ static int seek_drn_ontb(wm_arcade_actor_t *self, wm_arcade_actor_t *opp,
             apply_bytecode_input(self, d, KM, 0, 0); /* #jmp */
         return 0;
     }
-    /* #not: in-ring is always true (raw INRING==0 branch) and Bret's
-       wrestler_num isn't Yoko's (3), so #ering is unreachable here, same
-       reasoning as drone_chkrun's own #out. */
+    /* #not. `move *a13(INRING),a0 / jrnz #ering ;!In ring?`: a drone on
+       the floor outside cannot climb a corner post, so #ering is DS_JMP
+       drn_enterring. This was written off as unreachable while nobody
+       could leave the ring; confine_wrestler's #outring has since been
+       translated and they do. Without it a drone outside walked at the
+       corner from the floor for good -- Lex, 12000 ticks at (820, 962).
+       in_ring is 1 inside in this port, so the test flips. */
+    if (self->in_ring == 0) {
+        d->script = "drn_enterring";
+        d->script_pc = 0;
+        return 1;
+    }
+    /* #ny: Yokozuna (WRESTLERNUM 3) will not go up while his opponent
+       is out of the ring -- `move *a8(INRING),a0 / jrnz #x`. */
+    if (self->wrestler_num == 3 && opp->in_ring == 0)
+        return 0; /* #x */
     if (opp->player_mode == WM_PMODE_ONTURNBKL || opp->player_mode == WM_PMODE_INAIR2)
         return 0; /* #x */
     {
@@ -895,8 +914,11 @@ static int seek_drn_ontb(wm_arcade_actor_t *self, wm_arcade_actor_t *opp,
         uint16_t joy = seekxz_joy(self->x_int, self->z_int, target_x, WM_RING_TOP, 32);
         d->joy = joy;
         if (joy == 0) {
-            /* Arrived at visinity: push directly into the corner (result discarded). */
-            (void)seekxz_joy(self->x_int, self->z_int, target_x, WM_RING_TOP - 10, 0);
+            /* Arrived at visinity: push into the turnbuckle. The result is
+               the stick, not a discardable answer: drone_seekxz ends with
+               `move a0,*a13(DRN_JOY)` (DRONE.ASM:3078), so this second call
+               is what leans the drone into the corner and climbs it. */
+            d->joy = seekxz_joy(self->x_int, self->z_int, target_x, WM_RING_TOP - 10, 0);
         }
     }
     if (self->closest_xdist > 120) return 1;
@@ -958,13 +980,15 @@ static int seek_drn_oppdead(wm_arcade_actor_t *self, wm_arcade_actor_t *opp,
 /*
  * drn_enterring's two guards, which the source re-reads at the top of
  * every loop iteration: it gives up if the opponent has left the ring
- * ("Opp out?") or if this drone is already in it ("In ring?"). INRING
- * is zero INSIDE the ring, the same inversion ANIM.ASM's #set_image
- * shadow block settles.
+ * ("Opp out?") or if this drone is already in it ("In ring?"). The
+ * source's INRING is zero INSIDE the ring; this port's in_ring is the
+ * plain boolean, 1 inside (wm_arcade_actor_t::in_ring), so both tests
+ * are written flipped. They used to be copied the source's way round,
+ * which stopped the script in exactly the case it exists for.
  */
 static int enterring_should_stop(const wm_arcade_actor_t *self,
                                  const wm_arcade_actor_t *opp) {
-    return opp->in_ring != 0 || self->in_ring == 0;
+    return opp->in_ring == 0 || self->in_ring != 0;
 }
 
 /* Where he is heading: the nearest of the four apron entry points. */

@@ -13,6 +13,7 @@
 #include "wm/wrestler_backend.h"
 #include "wm/arcade/wm_arcade_pin.h"
 #include "wm/arcade/wm_arcade_start_run.h"
+#include "wm/arcade/wm_arcade_roster_anims.h"
 #include "wm/arcade/wm_arcade_anim_combat.h"
 #include "wm/arcade/wm_arcade_lifebar.h"
 #include "wm/arcade/wm_arcade_mode_dead.h"
@@ -854,6 +855,16 @@ static void bret_code_addr(wm_arcade_actor_t *actor, uint32_t token,
     const char *label;
 
     if (!actor || !bva) return;
+    if (token == WM_CODE_ADDR_DORUN_FLUNG) {
+        /* WRESTLE2.ASM:3515 #dorun_flung; see the shared backend's copy. */
+        actor->code_addr = 0;
+        wm_arcade_dorun_flung_begin(actor);
+        bret_start_label(actor, bva,
+                         wm_roster_anim_for(wm_roster_anim_find("#run_anims"),
+                                            (int)actor->wrestler_num));
+        wm_arcade_dorun_flung_end(actor);
+        return;
+    }
     switch ((WmRingClimbContinuation)token) {
     case WM_RING_CLIMB_CONT_TURNBUCKLE:
     case WM_RING_CLIMB_CONT_OUT_SIDE:

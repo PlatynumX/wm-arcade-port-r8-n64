@@ -192,6 +192,12 @@ enum wm_arcade_status_bits {
     WM_STATUS_GUY_UP        = 1u << 21
 };
 
+/* PLYR.EQU:446 SF_CLEAR_BITS, "bits to CLEAR at any ANI_SETMODE". */
+#define WM_STATUS_SF_CLEAR_BITS                                            \
+    ((uint32_t)(WM_STATUS_SCROLL_CTRL | WM_STATUS_DEAD_ANIM |              \
+                WM_STATUS_DID_RAISEARM | WM_STATUS_KOD |                   \
+                WM_STATUS_COMBO_BROKEN | WM_STATUS_PUSH))
+
 /* PLYR.EQU:264-266 PLYR_TYPE. The referee is negative, so this is a
    signed field and "not a player" is not the same as "a drone". */
 enum {

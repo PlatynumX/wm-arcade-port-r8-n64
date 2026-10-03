@@ -1837,6 +1837,37 @@ static void setup_run(wm_arcade_actor_t *actor,
 }
 
 /*
+ * WRESTLE2.ASM:3505 #x_flip, start_run_flung's first ANI_CODE: turn him
+ * round. `xori >0C` flips both left/right bits and leaves up/down alone.
+ */
+static void flung_x_flip(wm_arcade_actor_t *actor,
+                         const wm_anim_env *env, int32_t param) {
+    (void)env;
+    (void)param;
+    if (!actor) return;
+    actor->facing_dir ^= (int32_t)(WM_MOVE_LEFT | WM_MOVE_RIGHT);
+}
+
+/*
+ * WRESTLE2.ASM:3488 #ok2, start_run_flung's second ANI_CODE, which falls
+ * into #contx. Every wrestler who is flung -- the release slot of every
+ * fling in BAMSEQ2.ASM:2754 and DNKSEQ2.ASM:3998's puppet tables --
+ * runs start_run_flung, and this is the routine in it that hands him
+ * back: WAITANIM with #dorun_flung waiting in CODE_ADDR, so the
+ * animation's ANI_END turns into a run. Untranslated, the op was a no-op;
+ * the flung wrestler kept his full throw velocity in whatever PLYRMODE
+ * the puppet release left him in, and nothing ever stopped him. Measured
+ * in a live Razor v Taker bout: Taker slid at 2.0 a tick from x=1142 to
+ * x=4888 and lay ONGROUND for the remaining 18000 ticks.
+ */
+static void flung_ok2(wm_arcade_actor_t *actor,
+                      const wm_anim_env *env, int32_t param) {
+    (void)env;
+    (void)param;
+    wm_arcade_start_run_flung_ok2(actor);
+}
+
+/*
  * HRTSEQ4.ASM:1134 #set_wrestler_xflip -- the same body as
  * ANI_SET_WRESTLER_XFLIP, reached as a routine instead of an opcode.
  */
@@ -3379,6 +3410,9 @@ static const struct {
     { "is_guy_up", "FINISEQ.ASM", coffin_is_guy_up, 0, 0 },
     { "close_door", "FINISEQ.ASM", coffin_close_door, 0, 0 },
     { "#setup_run", "WRESTLE2.ASM", setup_run, 0, 0 },
+    { "#x_flip", "WRESTLE2.ASM", flung_x_flip, 0, 3505 },
+    /* WRESTLE2.ASM defines #ok2 five times; :3488 is the one start_run_flung calls. */
+    { "#ok2", "WRESTLE2.ASM", flung_ok2, 0, 3488 },
     { "guy_is_in", "FINISEQ.ASM", coffin_guy_is_in, 0, 0 },
     { "make_wres_disappear", "FINISEQ.ASM", coffin_make_wres_disappear, 0, 0 },
     { "push_to_coffin", "FINISEQ.ASM", coffin_push_to_coffin, 0, 0 },

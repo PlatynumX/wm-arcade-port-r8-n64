@@ -1886,6 +1886,8 @@ void wm_match_start_attract(wm_match_state *m, WmRng *rng) {
     m->royal_rumble = false;
     memset(m->actor_is_human, 0, sizeof m->actor_is_human);
     m->has_human = false;
+    /* ATTRACT.ASM:596-602: rung 1 to 6, never LADDER itself. */
+    m->first_ladder = false;
 
     m->index1 = wm_match_draw_wrestler_index(rng);
     /* Placeholder opponent draw -- see wm/match.h. Not @index2. */
@@ -2020,6 +2022,9 @@ void wm_match_start_two_player(wm_match_state *m, WmRng *rng,
     place_created_wrestler(m, 1);
 
     m->pstatus = pstatus;
+    /* The rung is the caller's to know (app.c, from the pregame's
+       CURRENT_LADDER); until it says otherwise, the first. */
+    m->first_ladder = true;
     m->royal_rumble = royal_rumble;
     memset(m->actor_is_human, 0, sizeof m->actor_is_human);
     /* `movi PTYPE_PLAYER,a8 / btst 0,a0 / jrnz #ok / movi
@@ -2187,6 +2192,9 @@ void wm_match_start_one_player_team(wm_match_state *m, WmRng *rng,
     for (i = 0; i < m->actor_count; ++i) wm_arcade_drone_init(&m->drones[i], 0);
 
     m->pstatus = pstatus;
+    /* The rung is the caller's to know (app.c, from the pregame's
+       CURRENT_LADDER); until it says otherwise, the first. */
+    m->first_ladder = true;
     m->royal_rumble = false;
     memset(m->actor_is_human, 0, sizeof m->actor_is_human);
     m->actor_is_human[0] = true;
@@ -2511,6 +2519,14 @@ static void wm_match_adjust_health(wm_arcade_actor_t *victim, int16_t signed_del
                             &death_anim);
 }
 
+/* wm_anim_env::adjust_health: the same adapter, in the env's argument
+   order, so a blow struck from inside an animation is the same blow. */
+static void match_anim_adjust_health(void *user, wm_arcade_actor_t *victim,
+                                     int16_t delta,
+                                     wm_arcade_actor_t *source) {
+    wm_match_adjust_health(victim, delta, source, user);
+}
+
 void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
                    const wm_input_state *human_input) {
     wm_arcade_drone_world_t world;
@@ -2638,7 +2654,7 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
        Same counter the Bret backend already uses for its own pcnt. */
     world.pcnt = m->tick_count;
     world.round_tickcount = (uint16_t)m->tick_count;
-    world.first_ladder = 1;
+    world.first_ladder = m->first_ladder ? 1 : 0;
 
     /* DCSSOUND.ASM's own DUMMY_WAIT lockout, which gates the shove taunts,
        counts down in real time rather than per wrestler. */
@@ -2953,6 +2969,10 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
                by name. screen_user is already `m` above. */
             m->wrestler_visual[i].anim_env.pal_getf = match_pal_getf;
             m->bret_visual[i].anim_env.pal_getf = match_pal_getf;
+            m->wrestler_visual[i].anim_env.adjust_health =
+                match_anim_adjust_health;
+            m->bret_visual[i].anim_env.adjust_health =
+                match_anim_adjust_health;
             m->wrestler_visual[i].anim_env.create_dizzy = match_create_dizzy;
             m->bret_visual[i].anim_env.create_dizzy = match_create_dizzy;
             m->wrestler_visual[i].anim_env.set_allow_offscrn =

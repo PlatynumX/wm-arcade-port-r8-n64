@@ -1391,6 +1391,10 @@ void wm_app_tick_dual(wm_app *app,
                 app->select.selected_source_wrestler,
                 app->select.p2_selected_source_wrestler,
                 n ? opps : NULL, n);
+            /* @CURRENT_LADDER == LADDER, for DRONE.ASM's two
+               first-rung gates (wm_match_state::first_ladder). */
+            app->match.first_ladder =
+                app->pregame.current_ladder_index <= 0;
         }
         app->mode = WM_APP_MODE_MATCH;
         return;

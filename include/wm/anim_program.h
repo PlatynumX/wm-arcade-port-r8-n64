@@ -594,6 +594,22 @@ typedef struct wm_anim_env {
      * before anything else can and pal_clean never frees it.
      */
     int32_t (*pal_getf)(void *user, const char *name);
+    /*
+     * LIFEBAR.ASM adjust_health, as the match calls it, for ANIM.ASM:1993
+     * _ani_damage and :2174 _ani_damageopp. The source has ONE
+     * adjust_health and it reads @PSTATUS itself (:1578 "if we're in
+     * attract mode, don't die!"), plays the death animation, and keeps
+     * DAM_MULT. Calling the routine directly from the VM, with none of
+     * that to hand, meant a blow struck from inside an animation could
+     * kill in attract mode -- Yoko's yok_heldheadbutt_rpt_anim did, and
+     * the victim then lay DEAD for 15000 ticks while the attract refill
+     * gave him his life back -- and killed with no death animation in a
+     * real match. Filled from match.c with its own adjust_health
+     * adapter; NULL falls back to the plain routine, for unit tests that
+     * build an env by hand. `user` is screen_user.
+     */
+    void (*adjust_health)(void *user, wm_arcade_actor_t *victim,
+                          int16_t delta, wm_arcade_actor_t *source);
 
     void *crowd_user;
     void (*crowd_cheer)(void *user, int flags, int percent);

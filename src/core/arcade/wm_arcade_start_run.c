@@ -11,11 +11,18 @@
  * wrestler-specific part is that one table lookup, which the caller
  * supplies.
  *
- * The source's rotate-first path (#contx: halve XVEL, zero ZVEL, defer
- * through CODE_ADDR + MODE WAITANIM) is dead in the shipped code --
- * #ok1 does an unconditional `jruc #dorun` and the `jruc #contx` after it
- * can never be reached -- so it is deliberately not translated.
+ * start_run_anim's rotate-first path (`jruc #contx` after #ok1) is dead
+ * in the shipped code -- #ok1 does an unconditional `jruc #dorun` -- but
+ * #contx itself is NOT dead: start_run_flung's #ok2 falls into it. That
+ * half is wm_arcade_start_run_flung_ok2 below.
  */
+
+/* MACROS.H:131 SETMODE: every PLYRMODE write except onto MODE_DEAD. */
+static void setmode(wm_arcade_actor_t *actor, unsigned mode) {
+    if (actor->player_mode == WM_PMODE_DEAD) return;
+    actor->player_mode = (uint16_t)mode;
+}
+
 void wm_arcade_start_run(wm_arcade_actor_t *actor) {
     uint16_t lr;
 
@@ -36,16 +43,37 @@ void wm_arcade_start_run(wm_arcade_actor_t *actor) {
         actor->facing_dir = (int32_t)(lr | ud);
     }
 
-    /* #dorun / #dorun_flung */
+    /* #dorun, then its fall-through into #dorun_flung. */
     actor->getup_time = 0;
-    actor->usr_var1 = 0;
+    wm_arcade_dorun_flung_begin(actor);
+    wm_arcade_dorun_flung_end(actor);
+}
+
+void wm_arcade_start_run_flung_ok2(wm_arcade_actor_t *actor) {
+    if (!actor) return;
+    /* "Whenever you fling someone, a meter can & will appear" */
+    actor->delay_meter = 0;
+    /* #contx */
+    actor->code_addr = (uintptr_t)WM_CODE_ADDR_DORUN_FLUNG;
+    setmode(actor, WM_PMODE_WAITANIM);
+    actor->x_vel >>= 1;    /* `sra 1`: arithmetic, so a leftward fling stays leftward */
+    actor->z_vel = 0;
+}
+
+void wm_arcade_dorun_flung_begin(wm_arcade_actor_t *actor) {
+    if (!actor) return;
+    actor->usr_var1 = 0;   /* "with x-xel" */
     actor->run_time = 0;
 
+    /* ";Bogosity.." -- the whole FACING_DIR, not just its left/right. */
     actor->move_dir = actor->facing_dir;
     actor->facing_dir = (int32_t)(
         ((uint16_t)actor->new_facing_dir & (WM_MOVE_UP | WM_MOVE_DOWN)) |
         (uint16_t)actor->move_dir);
+}
 
-    actor->player_mode = (uint16_t)WM_PMODE_RUNNING;
+void wm_arcade_dorun_flung_end(wm_arcade_actor_t *actor) {
+    if (!actor) return;
+    setmode(actor, WM_PMODE_RUNNING);
     actor->delay_butns = 1;
 }

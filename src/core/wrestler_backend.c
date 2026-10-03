@@ -19,6 +19,7 @@
 #include "wm/arcade/wm_arcade_anim_combat.h"
 #include "wm/bret_backend.h"
 #include "wm/arcade/wm_arcade_start_run.h"
+#include "wm/arcade/wm_arcade_roster_anims.h"
 #include "wm/wrestler_anim_tables.h"
 #include "wm/movement.h"
 #include "wm/announce_tables.h"
@@ -485,6 +486,18 @@ static void backend_code_addr(wm_arcade_actor_t *actor, uint32_t token,
     const char *label;
 
     if (!actor) return;
+    if (token == WM_CODE_ADDR_DORUN_FLUNG) {
+        /* WRESTLE2.ASM:3515 #dorun_flung, which start_run_flung's #ok2
+           parked here: face the way he slides, change_anim1a to his own
+           run, SETMODE RUNNING. */
+        actor->code_addr = 0;
+        wm_arcade_dorun_flung_begin(actor);
+        label = wm_roster_anim_for(wm_roster_anim_find("#run_anims"),
+                                   actor->wrestler_num);
+        if (label) backend_change_anim_restart(actor, label, st);
+        wm_arcade_dorun_flung_end(actor);
+        return;
+    }
     switch ((WmRingClimbContinuation)token) {
     case WM_RING_CLIMB_CONT_TURNBUCKLE:
     case WM_RING_CLIMB_CONT_OUT_SIDE:

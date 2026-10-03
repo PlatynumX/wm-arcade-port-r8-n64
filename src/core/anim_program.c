@@ -42,15 +42,46 @@ static int32_t directional(const wm_arcade_actor_t *actor, int32_t value,
     return (dir & bit) ? value : -value;
 }
 
+/* LIFEBAR.ASM adjust_health through the match's own adapter when there
+   is one -- see wm_anim_env::adjust_health. */
+static void vm_adjust_health(const wm_anim_env *env, wm_arcade_actor_t *victim,
+                             int16_t delta, wm_arcade_actor_t *source) {
+    if (env && env->adjust_health) {
+        env->adjust_health(env->screen_user, victim, delta, source);
+        return;
+    }
+    wm_arcade_adjust_health(victim, delta, source, false,
+                            env ? env->pcnt : 0u, NULL, NULL);
+}
+
 static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
                         uint16_t round_tickcount, const wm_anim_env *env,
-                        const char *source_file) {
+                        const char *source_file, bool secondary) {
     switch (o->op) {
         case WM_AOP_SETMODE:
-            /* ANI_SETMODE is absolute -- it replaces ANIMODE rather than
-               OR-ing, which is how a trailing MODE_NORMAL clears everything
-               the header set. */
-            actor->anim_mode = (uint16_t)o->a;
+            /*
+             * ANIM.ASM:371 _ani_setmode, in its two halves.
+             *
+             * `move a0,*a10(OANIMODE)`: absolute -- it replaces the mode
+             * word rather than OR-ing, which is how a trailing MODE_NORMAL
+             * clears everything the header set. And a10, not a13: the
+             * secondary channel's a10 is a13+ANIMODE2 (:84), so a torso
+             * animation's SETMODE lands on the torso's word, which this
+             * port does not model. Writing it to ANIMODE instead was a
+             * real defect. A torso exec running alongside a held grab
+             * (und_2_to_4_turn2_anim beside und_3_head_hold2_anim) set the
+             * body's mode to 0 the tick the grab connected, so MODE_UNINT
+             * was gone, mode_normal walked the attacker off, and the
+             * wrestler he had just attached was left a puppet that nobody
+             * drove -- for 515 ticks, then ONGROUND for the rest of the
+             * bout.
+             */
+            if (!secondary) actor->anim_mode = (uint16_t)o->a;
+            /* `andni SF_CLEAR_BITS` on STATUS_FLAGS, and PTIME pulled in
+               to 1 if somebody else's process called this animation.
+               Both are a13-relative, so either channel does them. */
+            actor->status_flags &= ~WM_STATUS_SF_CLEAR_BITS;
+            if (actor->ptime != 0) actor->ptime = 1;
             break;
         case WM_AOP_SETPLYRMODE:
             if (actor->player_mode != WM_PMODE_DEAD)
@@ -367,8 +398,7 @@ static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
            is "positive a0 = health increase", so the operand is the damage
            and adjust_health takes it as a negative delta. */
         case WM_AOP_DAMAGE:
-            wm_arcade_adjust_health(actor, (int16_t)-o->a, NULL, false,
-                                    env ? env->pcnt : 0u, NULL, NULL);
+            vm_adjust_health(env, actor, (int16_t)-o->a, NULL);
             break;
         /* ANIM.ASM:105 -- the held wrestler's PLYRMODE, behind the same
            mutual-link check as the rest of the group, and refused on a
@@ -511,8 +541,7 @@ static void run_command(const wm_anim_op *o, wm_arcade_actor_t *actor,
             if (actor->next_damage &&
                 (env ? env->pcnt : 0u) <= actor->special_damage_time)
                 dmg = actor->next_damage;
-            wm_arcade_adjust_health(v, (int16_t)-dmg, actor, false,
-                                    env ? env->pcnt : 0u, 0, 0);
+            vm_adjust_health(env, v, (int16_t)-dmg, actor);
             break;
         }
         /*
@@ -1513,7 +1542,8 @@ static void advance(wm_anim_exec *exec, wm_arcade_actor_t *actor,
                 continue;
             default:
                 if (actor) run_command(o, actor, round_tickcount, exec->env,
-                                       p ? p->source_file : 0);
+                                       p ? p->source_file : 0,
+                                       exec->secondary);
                 /*
                  * `calla change_anim1a` on a13 from inside the routine
                  * -- FINISEQ.ASM's stand_wrestler and dizzy_wrestler.

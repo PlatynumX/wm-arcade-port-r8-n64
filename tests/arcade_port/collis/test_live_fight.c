@@ -48,6 +48,8 @@ typedef struct {
        the shape of all three defects this file guards. */
     unsigned mode_ticks[WM_FIGHT_MODES];
     unsigned mode_longest[WM_FIGHT_MODES];
+    /* Furthest either wrestler got from the ring's centre in X. */
+    unsigned max_x_off;
 } fight_stats;
 
 static void play(fight_stats *st, uint32_t seed, int w0, int w1,
@@ -93,6 +95,11 @@ static void play(fight_stats *st, uint32_t seed, int w0, int w1,
                     st->mode_longest[pm] = mode_run[i][pm];
                 for (k = 0; k < WM_FIGHT_MODES; ++k)
                     if (k != pm) mode_run[i][k] = 0;
+            }
+            {
+                int32_t off = m.actors[i].x_int - (int32_t)(0x0400 + 50);
+                unsigned u = (unsigned)(off < 0 ? -off : off);
+                if (u > st->max_x_off) st->max_x_off = u;
             }
             if (m.actors[i].player_mode == WM_PMODE_BOUNCING) {
                 st->bouncing++;
@@ -210,23 +217,36 @@ static void test_no_player_mode_is_a_one_way_door(void)
 /*
  * The match must produce a real exchange, measured over a spread.
  *
- * Before the drone's opponent lookup was fixed, twenty bouts produced
- * 10 damage events between them and most produced none. They now
- * produce 1248, a mean of 62 a bout.
+ * Twenty bouts once produced 10 damage events between them; the drone's
+ * opponent lookup took that to 1248. This file then recorded that one
+ * bout (Bret v Bret, seed 1) still produced ZERO and called whether that
+ * was arcade behaviour "NOT established". It was not arcade behaviour.
+ * Both drones stood in NORMAL for all 20000 ticks because drn_ontb threw
+ * away drone_seekxz's stick (DRONE.ASM:3078), and under that sat five
+ * more one-way states -- see test_quiet_bout.c, which pins each cause:
  *
- * NOT asserted per-bout, and that is a measurement not a convenience:
- * of those twenty, one (Bret v Bret on seed 1) still produces ZERO and
- * two produce 1 and 4. Two drones of equal skill can spend a round
- * blocking each other, and Lex v Razor is reliably the quietest
- * pairing. Whether that quiet bout is correct arcade behaviour or a
- * further defect is NOT established -- so this asserts the aggregate
- * and the majority, which are the claims the evidence supports, and
- * leaves the outlier on the record instead of picking seeds until it
- * disappears.
+ *   a thrown man slid off the arena on his throw velocity and lay
+ *     ONGROUND for 18000 ticks (start_run_flung's #ok2 untranslated);
+ *   a held man stayed a PUPPET for 515 ticks after his holder walked off
+ *     (a torso ANI_SETMODE wiped the body's MODE_UNINT);
+ *   a man killed by an animation in ATTRACT mode lay DEAD for 15464
+ *     ticks (ANI_DAMAGEOPP ignored "if we're in attract mode, don't die");
+ *   drones outside the ring walked at a corner post for good (drn_ontb's
+ *     #ering, and the drone layer's inverted INRING reads);
+ *   every attract bout ran with the first rung's "no aggressive" cap.
  *
- * The thresholds sit far below the measured 1248/20-of-20 and far above
- * the pre-fix 10, so a regression to the old behaviour fails loudly
- * while ordinary RNG drift does not.
+ * Measured after, over these twenty: 7104 damage events, every bout
+ * drawing blood, longest ONGROUND run 1586, longest PUPPET run 139, no
+ * DEAD tick at all, nobody further than 913 from ring centre. The
+ * thresholds sit well clear of both sides.
+ *
+ * Still NOT established, and left on the record: seed 3 Lex v Razor
+ * draws blood once. Razor ends up outside at x=1338, where drn_enterring
+ * aims him at the ring's right end exactly as DRONE.ASM:2778-2795 does,
+ * and the mat-edge confine stands him at the corner (z=962) without
+ * ck_climb_in_top's 0xC0-from-centre window ever admitting him. Whether
+ * the arcade drone sticks there too is not something this port can
+ * settle from the code, so it is not tuned away.
  */
 static void test_the_match_produces_a_real_exchange(void)
 {
@@ -238,6 +258,7 @@ static void test_the_match_produces_a_real_exchange(void)
         { WM_ROSTER_LEX,   WM_ROSTER_RAZOR },
     };
     unsigned total = 0, bouts = 0, drew_blood = 0;
+    unsigned longest_ground = 0, longest_puppet = 0, dead = 0, max_x = 0;
     uint32_t seed;
     int p;
 
@@ -248,11 +269,22 @@ static void test_the_match_produces_a_real_exchange(void)
             total += st.damage_events;
             ++bouts;
             if (st.damage_events > 0) ++drew_blood;
+            if (st.mode_longest[WM_PMODE_ONGROUND] > longest_ground)
+                longest_ground = st.mode_longest[WM_PMODE_ONGROUND];
+            if (st.mode_longest[WM_PMODE_PUPPET] > longest_puppet)
+                longest_puppet = st.mode_longest[WM_PMODE_PUPPET];
+            dead += st.mode_ticks[WM_PMODE_DEAD];
+            if (st.max_x_off > max_x) max_x = st.max_x_off;
         }
     }
     assert(bouts == 20u);
-    assert(total >= 300u);          /* measured 1248; pre-fix 10 */
-    assert(drew_blood >= 15u);      /* measured 20 of 20 */
+    assert(total >= 3000u);         /* measured 7104; 1248 before, 10 first */
+    assert(drew_blood >= 19u);      /* measured 20 of 20 */
+    assert(longest_ground < 4000u); /* measured 1586; was 18000+ */
+    assert(longest_puppet < 400u);  /* measured 139; was 515 */
+    /* LIFEBAR.ASM:1578: nobody dies in attract mode, from any blow. */
+    assert(dead == 0u);             /* was 15464 */
+    assert(max_x < 1500u);          /* measured 913; was 3814 */
 }
 
 int main(void)

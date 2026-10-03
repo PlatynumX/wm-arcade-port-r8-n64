@@ -267,7 +267,7 @@ Still at zero, and expected to be: the final battle's zombie promotion
 the last rung of the championship ladder, not a plain bout, and is
 covered by tests/arcade_port/collis/test_final_battle_queue.c instead.
 
-One thing NOT fixed and worth watching: one bout in twenty (Bret v Bret
+(Since established -- see "The quiet bout was six one-way doors".) One thing NOT fixed and worth watching: one bout in twenty (Bret v Bret
 on seed 1 of the test's own feed) still produces no damage at all, and
 Lex v Razor is reliably the quietest pairing. Two equally skilled drones
 can spend a round blocking each other, so this may be correct. It is not
@@ -992,6 +992,63 @@ enumerator as their symbol, because the body lives in that id's `case` in
 wm_arcade_bret_fire_monitor. A ledger row is a reviewed verdict, so its
 symbol only has to be declared in code. `port_constants()` gives the ledger
 check that pool. The suffix rule, which no one reviews, still does not get it.
+
+## The quiet bout was six one-way doors
+
+The drone-opponent fix left one bout in twenty with no damage at all
+(Bret v Bret, seed 1). These notes called it "worth watching" and
+"NOT established". It was a defect, and under it were five more. Each
+one left a live attract bout stuck in a single state for the rest of
+the match. All six were found by watching per-mode occupancy over the
+same twenty bouts and following the longest run back to its cause.
+
+1. **`drn_ontb` threw away its stick.** DRONE.ASM:2677's "Push into
+   turnbuckle" `drone_seekxz` was called with the result discarded. But
+   `drone_seekxz` ends `move a0,*a13(DRN_JOY)` (:3078), so the result
+   *is* the stick. Both Bret drones walked to the corners and stood in
+   NORMAL for 20000 ticks.
+2. **A flung wrestler was never handed back.** WRESTLE2.ASM:3433
+   `start_run_flung` calls `#x_flip` (:3505) and `#ok2` (:3488), and
+   neither was translated. `#ok2` is what puts him in WAITANIM with
+   `#dorun_flung` waiting in CODE_ADDR and halves his slide. The
+   Undertaker slid from x=1142 to x=4888 and lay ONGROUND for 18000
+   ticks. `#dorun_flung` is now a CODE_ADDR token in both backends.
+3. **A torso SETMODE wrote the body's mode word.** ANIM.ASM:371 writes
+   `*a10(OANIMODE)`, and the secondary channel's a10 points at ANIMODE2
+   (:84). A turn animation on the torso cleared MODE_UNINT the tick a
+   grab connected. The attacker walked off and left Razor a puppet for
+   515 ticks, then ONGROUND. The opcode's STATUS_FLAGS half
+   (`SF_CLEAR_BITS`, PTIME) was missing from the VM too.
+4. **Animations could kill in attract mode.** `_ani_damage` and
+   `_ani_damageopp` called `adjust_health` with attract mode off.
+   LIFEBAR.ASM:1578 says "if we're in attract mode, don't die!". Shawn
+   lay DEAD for 15464 ticks while the attract refill gave his life back.
+   Both opcodes now go through the match's own adapter.
+5. **The drone layer read INRING the wrong way round.** The actor's
+   `in_ring` is 1 inside, but `drone_main` and `drn_enterring` tested
+   it the source's way, so the drone *inside* was sent to enter the
+   ring. `drn_ontb`'s `#ering` and `#ny` had been called unreachable
+   before wrestlers could leave the ring. Both are translated now.
+6. **Every bout was treated as the first ladder rung.** That caps
+   DRN_MODE at "No aggressive" (DRONE.ASM:216). ATTRACT.ASM:596-602
+   never picks the first rung, so attract drones could not restart a
+   bout that had drifted apart.
+
+Over the twenty bouts: damage events went 1248 → 7104, and zero-damage
+bouts 1 → 0. The longest ONGROUND run went 18000+ → 1586 and the longest
+PUPPET run 515 → 139. DEAD ticks in attract went 15464 → 0. The furthest
+anyone got from ring centre went 3814 → 913. `test_quiet_bout.c` pins
+each cause; 17 mutations, 17 caught.
+
+**Recorded, not fixed.** `drone_chkrun`'s `#out` and `drn_run`'s
+out-of-ring arm are now reachable and are not translated. Their comments
+say so instead of calling them unreachable.
+
+**Not established.** Seed 3 Lex v Razor still draws blood only once.
+Razor, outside at x=1338, is aimed at the ring's right end exactly as
+`drn_enterring` does (DRONE.ASM:2778-2795). The mat-edge confine then
+stands him in the corner, outside `ck_climb_in_top`'s window. Whether
+the arcade drone sticks there too can't be settled from the code.
 
 ## Deliberately still absent
 

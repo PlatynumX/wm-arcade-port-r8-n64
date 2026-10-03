@@ -1987,6 +1987,33 @@ def test_a_local_routine_defined_twice_gets_two_rows() -> None:
     #    cover fall through to nothing. This looks at EVERY row, numbered
     #    or not: an unnumbered row for a name with two definitions is the
     #    exact shape of the defect.
+    #
+    #    "Every definition" means every definition an animation actually
+    #    CALLS. A `#name` is also an ordinary branch label, and a file can
+    #    reuse one for a `jrle #ok2` inside an unrelated routine:
+    #    WRESTLE2.ASM defines #ok2 six times and only :3488 is ever an
+    #    ANI_CODE target (start_run_flung's). Demanding rows for the five
+    #    branch labels would demand translations of code no animation can
+    #    reach. The defect this guards -- a call site resolving to a
+    #    definition with no row -- is checked exactly: the definitions the
+    #    generated programs' call sites resolve to must all have rows, and
+    #    a duplicated name may not lean on an unnumbered row at all.
+    called = {}
+    generated = ROOT / "src" / "generated" / "anim_programs.c"
+    if generated.exists():
+        gen = generated.read_text()
+        file_of = {ops: f for f, ops in re.findall(
+            r'\{\s*"[^"]+",\s*"([^"]+)",\s*(prog_\w+_ops),', gen)}
+        for ops, body in re.findall(
+                r'static const wm_anim_op (prog_\w+_ops)\[\] = \{(.*?)\n\};',
+                gen, re.S):
+            f = file_of.get(ops)
+            if not f:
+                continue
+            for a, n in re.findall(
+                    r'WM_AOP_CODE, 0, -1, (-?\d+),[^"]*"(#[^"]+)"', body):
+                called.setdefault((n, f), set()).add(int(a))
+        assert called, "no local ANI_CODE call sites found in the programs"
     covered = {}
     for name, where, line in rows:
         if where == "NULL" or not name.startswith("#"):
@@ -1996,8 +2023,11 @@ def test_a_local_routine_defined_twice_gets_two_rows() -> None:
         defs = set(wlanim.local_label_defs(file_lines(f), name))
         if len(defs) <= 1:
             continue
-        assert have == defs, (name, f, "rows", sorted(have),
-                              "definitions", sorted(defs))
+        assert 0 not in have, (name, f, "unnumbered row for a name "
+                               "defined at", sorted(defs))
+        need = called.get((name, f), set()) if called else defs
+        assert need <= have, (name, f, "rows", sorted(have),
+                              "called definitions", sorted(need))
 
     # 3. And the emitter resolved every local call site to a definition:
     #    a 0 there would silently fall back to whichever row came first.

@@ -530,6 +530,50 @@ static void test_score_through_the_whole_pipeline(void)
     assert(log.x[1] == ((160 - (47 >> 1) + 5 + 1) << 16));
 }
 
+/*
+ * How much of each font the artwork actually answers.
+ *
+ * port/seam_ledger.json's `width_fn` row quotes these numbers as its
+ * reason for calling the seam unreached rather than a fallback -- the
+ * art does NOT answer everything, so a port that drove this engine
+ * would need the seam. A row that quotes a measurement nobody measures
+ * is an excuse with a shelf life, so this is where the measuring
+ * happens.
+ */
+static void test_how_much_of_each_font_the_art_answers(void)
+{
+    struct { const wm_font_table *font; int glyphs; int from_art; } want[] = {
+        { &wm_font_font9,  69, 69 },
+        { &wm_font_font9a, 69, 69 },
+        { &wm_font_font18, 65, 65 },
+        { &wm_font_osgemd, 78, 45 },
+        { &wm_font_osgmd8, 78, 46 },
+        { &wm_font_wgsf24, 65, 65 },
+        { &wm_font_wsf10,  67, 67 },
+        { &wm_font_wsf14,  68, 68 },
+        { &wm_font_ogmd10, 75,  0 },
+        { &wm_font_win,    75, 10 },
+    };
+    size_t f;
+    int covered = 0;
+
+    for (f = 0; f < sizeof want / sizeof want[0]; ++f) {
+        int ch, glyphs = 0, from_art = 0;
+        for (ch = 0; ch < 128; ++ch) {
+            const char *g = wm_font_glyph(want[f].font, ch);
+            if (!g) continue;      /* the source's own 0 -- skipped, not blank */
+            ++glyphs;
+            if (wm_glyph_width_from_art(g) >= 0) ++from_art;
+        }
+        assert(glyphs == want[f].glyphs);
+        assert(from_art == want[f].from_art);
+        if (from_art == glyphs) ++covered;
+    }
+    /* Six of the ten are complete; four are not, and ogmd10 has nothing
+       recovered from the artwork at all. */
+    assert(covered == 6);
+}
+
 int main(void)
 {
     test_binbcd();
@@ -543,6 +587,7 @@ int main(void)
     test_printing();
     test_newline_rejustifies_each_line();
     test_font_tables();
+    test_how_much_of_each_font_the_art_answers();
     test_message_descriptor();
     test_print_methods_pick_their_source();
     test_score_through_the_whole_pipeline();

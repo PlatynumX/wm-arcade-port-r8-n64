@@ -807,6 +807,92 @@ which the same interrupt runs.
   highlight undrawn. Both of those notes used to blame `pal_getf` and have been
   corrected to blame the right step.
 
+## The seam audit could not see half the seams
+
+`tools/seam_audit.py` exists so that leaving a callback seam empty has to be a
+decision somebody wrote down. It keyed on `port_coverage.CALLBACK_DECL`:
+
+```
+\(\s*\*\s*([A-Za-z_][A-Za-z0-9_]*)\s*\)\s*\(
+```
+
+which is the **inline** field form, `RET (*name)(...)`. A field declared
+through a typedef matches nothing at all — the regex matches the typedef's
+*type* name instead:
+
+```c
+typedef bool (*wm_pal_in_use_fn)(void *user, uint16_t dma_pal);  /* matches */
+    wm_pal_in_use_fn in_use;                                     /* invisible */
+```
+
+Eleven such fields exist. Six were already filled, which is why nothing else
+had gone wrong. **Five were called through a NULL check in `src/` and assigned
+by nobody there**, so they sat outside the ledger the tool enforces. Seams
+counted: 162 → 173.
+
+Found the way the tool's first blind spot was: by hand, while wiring something
+else.
+
+### It is not only the count
+
+Three places read the same declaration set, and one of them is the **seam
+carve-out** — the rule that stops a seam's name from certifying the source
+routine it is named after. So a typedef'd seam named after a source routine
+would have certified it, which is the exact failure the carve-out exists to
+prevent. Nothing moved when this was fixed, and that was checked rather than
+hoped: none of the five currently matches a source routine name, and
+`docs/ROUTINE_COVERAGE.md` is byte-identical across the change.
+
+### The five, and what they are
+
+| seam | verdict | why |
+|---|---|---|
+| `width_fn` | `unreached` | `wm_string_state` has no instance in `src/` |
+| `draw_fn` | `unreached` | the same — nothing makes a state to print with |
+| `set_image` | `display` | the rope's object image, DMA work with no renderer |
+| `in_use` | `deferred` | `pal_clean`'s OBJLST walk; `wm_obj_pool` has no owner |
+| `ignore_this_pal` | `deferred` | the same, behind a second gate nothing sets |
+
+**A third unowned subsystem.** `wm_string_state` — STRING.ASM's whole text
+engine, translated and tested — has no instance in `src/` at all, beside
+PAL.ASM's allocator (which this cycle gave an owner) and DISPLAY.ASM's object
+pool (which still has none). The live attract text goes through
+`wm_text_build_draw_list`, a different path.
+
+Their checks name the engine's two **constructors**, `wm_string_init` and
+`wm_string_setup_message`, rather than its printer. The inner entry points all
+call each other inside their own file, so *"nothing in `src/` calls
+`wm_string_print`"* is false while telling you nothing. Nothing in `src/` makes
+a `wm_string_state`; that is the premise, and either constructor being used
+trips a check.
+
+**`width_fn` is not a fallback**, which its own header's wording suggests. The
+artwork genuinely does not answer every glyph, and the gap is measured in
+`tests/arcade_port/text/test_string.c` rather than asserted in prose:
+
+| font | glyphs | answered by the art |
+|---|---|---|
+| font9, font9a, font18, wgsf24, wsf10, wsf14 | 69/69/65/65/67/68 | all |
+| osgemd | 78 | 45 |
+| osgmd8 | 78 | 46 |
+| win_ascii | 75 | 10 |
+| ogmd10 | 75 | **0** |
+
+With the seam empty those glyphs measure 0 and advance the cursor by the
+inter-character spacing alone — which matters not at all today, because nothing
+drives the engine, and would matter immediately if anything did.
+
+### Two more the heuristic flagged, both explained rather than wired
+
+- **`fn`** — declared twice, assigned once, and both halves are regex
+  artifacts. The second declaration is the ANI_CODE registry row's own field,
+  and that table is three hundred static initialisers filling it
+  **positionally**, so the `.fn =` the assignment regex looks for never
+  appears.
+- **`random_range`** — its unfilled copy is on the hiscore *renderer* adapter,
+  the same shape as `play_sound` beside it; the live initials entry drives
+  `WmHsEntryState` directly, and that copy is filled.
+
 ## Deliberately still absent
 
 - Nothing about `pal_getf` any more: the allocator is owned, the seam is

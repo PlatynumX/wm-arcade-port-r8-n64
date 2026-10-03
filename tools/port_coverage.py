@@ -353,6 +353,68 @@ def _split_code_and_prose(text: str) -> tuple[str, str]:
 # port_symbols.
 CALLBACK_DECL = re.compile(r"\(\s*\*\s*([A-Za-z_][A-Za-z0-9_]*)\s*\)\s*\(")
 
+# ...and the same thing written through a typedef, which the regex above
+# cannot see. `typedef bool (*wm_pal_in_use_fn)(...)` matches CALLBACK_DECL
+# on the TYPE name; the FIELD `wm_pal_in_use_fn in_use;` matches nothing at
+# all. That was a blind spot in everything built on CALLBACK_DECL: the
+# seam carve-out below could not subtract such a name, so a typedef'd seam
+# named after a source routine would have certified it -- the exact failure
+# the carve-out exists to prevent -- and tools/seam_audit.py could not
+# count it, so five empty seams sat outside the ledger it enforces.
+#
+# Resolving it needs two passes, because the typedef and the field are
+# usually in different headers: collect the type names first, then look
+# for fields declared with them.
+FNPTR_TYPEDEF = re.compile(
+    r"\btypedef\b[^;{}]*?\(\s*\*\s*([A-Za-z_]\w*)\s*\)\s*\(")
+
+
+def _typedef_field_re(types: set[str]) -> "re.Pattern[str] | None":
+    """A pattern matching `<one of those types> name;` field declarations.
+
+    A `*` before the name is excluded on purpose: a pointer to a
+    function pointer is an out-parameter or a table, not a seam
+    something assigns and calls through. That exclusion is defensive
+    rather than load-bearing today, and it was checked: allowing the
+    `*` finds no further names, because the tree currently declares no
+    pointer-to-function-pointer field.
+    """
+    if not types:
+        return None
+    alt = "|".join(sorted((re.escape(t) for t in types), key=len,
+                          reverse=True))
+    return re.compile(r"\b(?:%s)\s+([A-Za-z_]\w*)\s*;" % alt)
+
+
+_FNPTR_TYPES: "set[str] | None" = None
+
+
+def function_pointer_typedefs() -> set[str]:
+    """Every `typedef RET (*NAME)(...)` type name the port declares."""
+    global _FNPTR_TYPES
+    if _FNPTR_TYPES is not None:
+        return _FNPTR_TYPES
+    out: set[str] = set()
+    for d in PORT_DIRS:
+        for path in sorted((ROOT / d).rglob("*")):
+            if path.suffix not in (".c", ".h"):
+                continue
+            code, _prose = _split_code_and_prose(
+                path.read_text(errors="replace"))
+            out |= set(FNPTR_TYPEDEF.findall(code))
+    _FNPTR_TYPES = out
+    return out
+
+
+def callback_decls(code: str) -> set[str]:
+    """Function-pointer FIELD names in one file's code, both spellings."""
+    out = set(CALLBACK_DECL.findall(code))
+    rx = _typedef_field_re(function_pointer_typedefs())
+    if rx is not None:
+        out |= set(rx.findall(code))
+    return out
+
+
 # A real C function DEFINITION -- a name followed by a parameter list and
 # then an opening brace, with no semicolon in between. This is the one
 # thing that outranks the seam carve-out below, and it has to be a
@@ -424,7 +486,7 @@ def port_symbols() -> tuple[set[str], set[str], set[str]]:
                 path.read_text(errors="replace"))
             ids = set(IDENT.findall(code))
             code_ids |= ids
-            seam_ids |= set(CALLBACK_DECL.findall(code))
+            seam_ids |= callback_decls(code)
             defined_ids |= set(FUNC_DEF.findall(code))
             prose_ids |= set(IDENT.findall(prose))
             if rel.startswith(GENERATED):
@@ -448,7 +510,7 @@ def callback_seam_names() -> set[str]:
                 continue
             code, _prose = _split_code_and_prose(
                 path.read_text(errors="replace"))
-            out |= set(CALLBACK_DECL.findall(code))
+            out |= callback_decls(code)
     return out
 
 

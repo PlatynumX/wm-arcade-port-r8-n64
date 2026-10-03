@@ -109,6 +109,34 @@
   "verdict": "hardware",
   "note": "The operator's music volume adjustment, read out of CMOS by the attract adapter to decide whether to play music at all. No adjustment store and no CMOS here; a default would be the cabinet's setting invented rather than read."
  },
+ "width_fn": {
+  "verdict": "unreached",
+  "note": "STRING.ASM's glyph metrics seam, consulted by wm_arcade_string.c's glyph_width for the glyphs wm_glyph_width_from_art cannot answer. NOT a fallback, which is what the header's own wording suggests, because the art genuinely does not answer everything -- and the gap is measured rather than feared: six of the ten extracted fonts are fully covered, while osgemd misses 33 of its 78 glyphs, osgmd8 32 of 78, win_ascii 65 of 75, and ogmd10 all 75, nothing of it having been recovered from the artwork. With the seam empty those glyphs measure 0 and advance the cursor by the inter-character spacing alone. It is unreached rather than deferred because THE WHOLE ENGINE IS. wm_string_state has no instance in src/ at all -- a third subsystem translated, tested and owned by nobody, beside PAL.ASM's allocator and DISPLAY.ASM's object pool -- so no live path has a state to print with. The live attract text goes through wm_text_build_draw_list, a different path entirely. The check names wm_string_init because that is the premise that matters and the only kind of symbol that can carry it: the engine's inner entry points all call each other inside their own file, so `nothing in src/ calls wm_string_print` is false while still telling you nothing. Nothing in src/ makes a wm_string_state. draw_fn's row names the other constructor, wm_string_setup_message, so either one being used trips a check.",
+  "check": {
+   "kind": "no-src-caller",
+   "symbol": "wm_string_init"
+  }
+ },
+ "draw_fn": {
+  "verdict": "unreached",
+  "note": "STRING.ASM's own BEGINOBJP, one call per glyph placed (wm_arcade_string.c:346, inside wm_string_print). Object drawing, so `display` would be defensible -- but the honest verdict is the stronger one: nothing in src/ ever makes a wm_string_state for wm_string_print to be called with. See width_fn's row for the measured shape of that; this one names the engine's other constructor, wm_string_setup_message (the JAM_STR descriptor path), so that the two rows trip independently.",
+  "check": {
+   "kind": "no-src-caller",
+   "symbol": "wm_string_setup_message"
+  }
+ },
+ "set_image": {
+  "verdict": "display",
+  "note": "ROPES.ASM's per-channel object image, handed to a renderer as a source image symbol from inside wmania_rope_runtime.c's render_frame. The rope runtime decides WHICH image each half of each channel should be showing -- that is the translated part and it is live -- and putting it on an object is the DMA work this port has no renderer for, the same seam as screen_flash and shadow_trail."
+ },
+ "in_use": {
+  "verdict": "deferred",
+  "note": "pal_clean's own question (PAL.ASM:126): the source walks OBJLST and BAKLST and keeps any colour map a drawn object is still pointing at. wm_arcade_pal.h turns that into a callback rather than guessing, and what would answer it is wm_obj_pool's `palette` field -- whose own header says \"OPAL -- what pal_clean matches when sweeping\", and which has NO INSTANCE in src/ either. So the thing to establish first is an owner for the object pool, not a backend for this. Nothing is lost meanwhile, and that is measured rather than assumed: wm_pal_getf only reaches pal_clean when all 80 colour maps are taken, and the port asks for three by name -- DIAGP from pal_init, DNKBLU_P from set_position, BAMBLU_P from BAMSEQ2's #set_pal. With in_use empty a clean that did run would free every slot but 0, which is the source's behaviour when nothing is drawn; since nothing IS drawn here, that is also the right answer."
+ },
+ "ignore_this_pal": {
+  "verdict": "deferred",
+  "note": "IGNORE_THIS_PAL, pal_clean's second question, and it is behind TWO gates rather than one: wm_arcade_pal.c consults it only while `ignore_special` is set, and nothing in src/ sets ignore_special either. So even a filled seam would not fire. Everything under in_use's row applies to this one as well -- pal_clean is not reached at the port's palette demand, and the object pool that would answer the first question has no owner yet."
+ },
  "screen_flash": {
   "verdict": "display",
   "note": "the full-screen flash. Object, palette or DMA work with no renderer behind it. The decision that reaches it is translated; the drawing is not."
@@ -213,6 +241,8 @@
    "filled, so they are not empty seams and must not be rows above."
   ],
   "get_health": "Declared in wm_arcade_react1_core.h, where it is filled, and in wm_arcade_getup_meter.h, where it is deliberately optional. The getup meter takes it because WRESTLE2.ASM:1074 calls get_health exactly there, and passing NULL changes no answer: the low-health arm falls through into the same GETUP_TIME test the high-health arm reaches, so the suppression its comment describes was never assembled. test_getup_meter sweeps health 0..100 and asserts the answer never moves, which is why this one is demonstrated rather than asserted.",
-  "play_sound": "Declared in wm_arcade_react1_core.h, where it is filled, and in wmania_attract_adapter.h and wmania_hiscore_adapter.h, where it is not. Those two are the frontend screens' own sound, and every other seam in both adapters is ledgered display or hardware for the same reason -- there is no renderer for the screens the sound would accompany. Consistent with the show_* rows above rather than a separate decision."
+  "play_sound": "Declared in wm_arcade_react1_core.h, where it is filled, and in wmania_attract_adapter.h and wmania_hiscore_adapter.h, where it is not. Those two are the frontend screens' own sound, and every other seam in both adapters is ledgered display or hardware for the same reason -- there is no renderer for the screens the sound would accompany. Consistent with the show_* rows above rather than a separate decision.",
+  "fn": "Declared twice and assigned once, and both halves of that are artifacts of the regexes rather than a hole. wm_process.fn (process.h:18) is the scheduler's process body and src/core/process.c fills it. The second declaration is the ANI_CODE registry row's own `wm_anim_code_fn fn` (anim_code.c:3139), and that table is a static initialiser -- `{ \"hiptoss_delay\", NULL, grab_rate_limit, 0, 0 }` and three hundred more like it -- so every row fills the field POSITIONALLY and the `.fn =` the assignment regex looks for never appears. Both are filled; neither is a seam anything could leave empty, since a registry row without a handler would not compile into the table at all.",
+  "random_range": "Declared on WmHsEntryState (wmania_hiscore_entry.h:109), where wm_hs_entry_init fills it from its own argument, and on the hiscore RENDERER adapter (wmania_hiscore_adapter.h:28), where nothing does. The same shape as play_sound above and for the same reason: that adapter is the hiscore screen's drawing interface, every other seam in it is ledgered display, and the live initials entry (app.c's WM_APP_MODE_HISCORE_ENTRY) drives WmHsEntryState directly rather than going through it. The copy that decides anything -- RNDRNG0 for the initials cursor's random start -- is the one that is filled."
  }
 }

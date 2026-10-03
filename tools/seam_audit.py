@@ -64,6 +64,18 @@ def scan() -> tuple[dict[str, str], set[str], set[str],
     it has assignment sites is worth a look. It is reported, not
     enforced -- one adapter legitimately serving two structs is normal,
     and a heuristic that failed the build on it would be noise.
+
+    A SECOND BLIND SPOT, found the same way -- by hand, while wiring
+    something else. The declaration scan used
+    port_coverage.CALLBACK_DECL directly, which matches the INLINE field
+    form `RET (*name)(...)`. A field declared through a typedef --
+    `wm_pal_in_use_fn in_use;` -- matches nothing at all, so five seams
+    that are CALLED through a NULL check in src/ and assigned by nobody
+    there were invisible to the count and therefore outside the ledger
+    this tool enforces: width_fn and draw_fn, in_use and
+    ignore_this_pal, and set_image. Eleven such fields exist; six were
+    already filled, which is why nothing else went wrong. It now asks
+    port_coverage.callback_decls, which knows both spellings.
     """
     decl: dict[str, str] = {}
     assigned: set[str] = set()
@@ -79,7 +91,7 @@ def scan() -> tuple[dict[str, str], set[str], set[str],
                 continue
             code, _prose = port_coverage._split_code_and_prose(
                 p.read_text(errors="replace"))
-            for n in port_coverage.CALLBACK_DECL.findall(code):
+            for n in port_coverage.callback_decls(code):
                 decl.setdefault(n, rel)
                 decl_n[n] = decl_n.get(n, 0) + 1
             for n in ASSIGN.findall(code):

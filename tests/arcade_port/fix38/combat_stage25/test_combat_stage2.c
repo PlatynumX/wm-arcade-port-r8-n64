@@ -27,7 +27,10 @@ static void adjust_cb(wm_arcade_actor_t *victim, int16_t delta,
 }
 static void first_award(wm_arcade_actor_t *a, void *u) { (void)a; ((struct test_ctx*)u)->first_awards++; }
 static void first_msg(wm_arcade_actor_t *a, void *u) { (void)a; ((struct test_ctx*)u)->first_msgs++; }
-static void bonus_msg(wm_arcade_actor_t *a, void *u) { (void)a; ((struct test_ctx*)u)->bonus_msgs++; }
+/* LIFEBAR.ASM:3302 BONUS_MESS takes A10 -- the move-message number,
+   whose sign picks the path -- so the seam carries it now. */
+static void bonus_msg(wm_arcade_actor_t *a, int bonus, void *u)
+{ (void)a; (void)bonus; ((struct test_ctx*)u)->bonus_msgs++; }
 static int good_run(wm_arcade_actor_t *a, wm_arcade_actor_t *v, void *u)
 { (void)a; (void)v; return ((struct test_ctx*)u)->good_run; }
 static void reaction_cb(wm_arcade_actor_t *a, wm_arcade_actor_t *v,

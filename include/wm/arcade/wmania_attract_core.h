@@ -7,6 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "wm/arcade/wm_arcade_music.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -59,7 +61,15 @@ typedef struct {
     uint16_t soundsup;
 
     uint16_t total_matches;
-    uint16_t music_hap;
+    /*
+     * @MUSIC_HAP used to be a field here, written by nobody and read
+     * by nobody. It could not have lived here even filled in:
+     * LIFEBAR.ASM:110 declares it in BSS and ATTRACT.ASM, PROGRESS.ASM
+     * and WRESTLE.ASM all .ref it, with the attract as the one of the
+     * three that only ever CLEARS it (ATTRACT.ASM:157). The flag the
+     * pregame and the match-end share is in wm/arcade/wm_arcade_music.h
+     * and the app owns the one instance.
+     */
     bool page_flip_enabled;
 } WmAttractState;
 

@@ -53,15 +53,82 @@ typedef struct wm_arcade_roster_env {
 } wm_arcade_roster_env_t;
 
 typedef struct wm_arcade_roster_callbacks {
+    /*
+     * ANIM.ASM has TWO primary-animation entry points and the eight
+     * wrestler files call both, deliberately:
+     *
+     *   :4532 change_anim1   -- if MODE_END_BIT is set restart anyway,
+     *                           otherwise compare ANIBASE to the request
+     *                           and RETURN WITHOUT RESTARTING when they
+     *                           are the same animation.
+     *   :4542 change_anim1a  -- the tail of change_anim1, entered
+     *                           directly: always reset ANIBASE, ANIPC,
+     *                           ANIMODE, ANICNT and OBJ_GRAVITY and run
+     *                           animate_wrestler1 from the top.
+     *
+     * change_anim_label is change_anim1 (guarded); change_anim_restart
+     * is change_anim1a (unguarded). Which one a move uses is visible
+     * behaviour, not a detail: a held block must NOT retrigger each
+     * tick, while a mashed stomp MUST replay from frame 0. 44 of the
+     * roughly 450 call sites in the eight wrestler files are the
+     * guarded form; everything else is change_anim1a.
+     */
     void (*change_anim_label)(wm_arcade_actor_t *, const char *source_label, void *);
+    void (*change_anim_restart)(wm_arcade_actor_t *, const char *source_label, void *);
+    /*
+     * JJXM.H:44 `RND_AWARD a13,BLOCKS_AWD`, which expands to
+     * round_award(a13, BLOCKS_AWD). Every wrestler file has EXACTLY ONE,
+     * in std_block right after the @blocking_off gate and right before
+     * the block animation -- BRET.ASM:1571, RAZOR.ASM:1415,
+     * TAKER.ASM:1768, YOKO.ASM:1390, SHAWN.ASM:2000, BAM.ASM:1531,
+     * DOINK.ASM:1946, LEX.ASM:1381.
+     *
+     * So the answer to "which block events does the source score" is:
+     * ENTERING a block, once, and nothing else. Not a successful block,
+     * not a blocked hit, not holding one. That was the open question
+     * behind this seam, and reading the eight call sites settles it.
+     *
+     * The seam existed only in the Bret and Razor structs, so six of the
+     * eight wrestlers could not score a block award at all even with it
+     * filled.
+     */
+    void (*round_award_block)(wm_arcade_actor_t *, void *);
+    /* :4563 change_anim2 / :4573 change_anim2a, the same split on the
+       second channel. The guarded form is the walk torso and the three
+       mode_oppoverhead stands; every *_ani_init is the unguarded one. */
     void (*change_torso_label)(wm_arcade_actor_t *, const char *source_label, void *);
+    void (*change_torso_restart)(wm_arcade_actor_t *, const char *source_label, void *);
     void (*sound_label)(wm_arcade_actor_t *, const char *source_label, void *);
     void (*check_secret_moves)(wm_arcade_actor_t *, const wm_arcade_input_pattern_t *, size_t, void *);
     void (*execute_walk)(wm_arcade_actor_t *, void *);
     int  (*climb_turnbuckle)(wm_arcade_actor_t *, void *);
     void (*bounce_off_ropes)(wm_arcade_actor_t *, void *);
+    /*
+     * WRESTLE.ASM:6016 ck_ignore -- "If player is moving away from
+     * opponent, or standing still, tell the calling routine to ignore
+     * button press". Returns true to IGNORE, matching the source's carry.
+     *
+     * THERE IS NO TWO-ARGUMENT TWIN, which a ck_ignore_reversed seam
+     * here used to claim. :6016 ck_ignore and :6044 ck_ignore_a8 have
+     * BYTE-IDENTICAL bodies and differ in one thing: which register
+     * holds the wrestler, a13 or a8. RAZOR.ASM:631, inside
+     * rzr_sliding_rug, reaches the a8 form the long way --
+     *
+     *     SWAP  a8,a13
+     *     calla ck_ignore
+     *     jrnc  #norm
+     *     SWAP  a8,a13
+     *
+     * -- because in a monitor PROCESS a13 is the process and a8 is the
+     * wrestler, so the swap is plumbing to satisfy the routine's a13
+     * convention. BRET.ASM:596 and DOINK.ASM:1399 spell the same thing
+     * as `calla ck_ignore_a8` directly.
+     *
+     * So there is one routine, one argument, and the wrestler it checks
+     * is the man pressing the button -- not his opponent, which is what
+     * the invented seam was called with.
+     */
     int  (*ck_ignore)(wm_arcade_actor_t *, void *);
-    int  (*ck_ignore_reversed)(wm_arcade_actor_t *, wm_arcade_actor_t *, void *);
     int  (*bozo_check)(wm_arcade_actor_t *, void *);
     int  (*check_combo_go)(wm_arcade_actor_t *, void *);
     void (*find_and_kill_endless)(wm_arcade_actor_t *, void *);
@@ -73,6 +140,34 @@ typedef struct wm_arcade_roster_callbacks {
     int  (*can_pin)(wm_arcade_actor_t *, const wm_arcade_actor_t *, void *);
     void (*drone_change_back)(wm_arcade_actor_t *, void *);
     void (*set_raisearm_bit)(wm_arcade_actor_t *, void *);
+    /*
+     * DCSSOUND.ASM:2914 ADD_IF_SILENT, called with a SPEECH TABLE in a2
+     * and an RNDPER percentage in a0 -- the announcer's random-phrase
+     * picker, not a WRSND.
+     *
+     * The wrestler files call it at TWO places around the turnbuckle,
+     * with TWO DIFFERENT TABLES, and the port had one seam for both:
+     *
+     *   climb_rope_audio  mode_normal's climb branch, after
+     *                     climb_turnbuckle sets carry -- BRET.ASM:1456
+     *                     `MOVI CLIMB_ROPES,A2 / MOVI 1000,A0` and its
+     *                     eight siblings. Nine call sites.
+     *   jump_rope_audio   mode_turn, the dive off the top --
+     *                     BRET.ASM:2296 `movi JUMP_ROPES,a2` and its
+     *                     eight. Nine call sites.
+     *
+     * They are different tables with different headers: CLIMB_ROPES
+     * draws one word from twelve rows and carries CRESCENDO_TABLE as its
+     * crowd reaction, JUMP_ROPES draws two words from six and carries
+     * ROPES_CHEER. Climbing up and leaping off do not sound the same.
+     *
+     * The registers differ too: the climb passes WRESTLERNUM in a5 and
+     * the dive passes PLYRNUM. That selects whose voice a personal call
+     * uses, and neither of these two tables holds one, so it does not
+     * change what is said today -- recorded because it is a real
+     * difference and the next table to reach one of these sites might.
+     */
+    void (*climb_rope_audio)(wm_arcade_actor_t *, void *);
     void (*jump_rope_audio)(wm_arcade_actor_t *, void *);
     void (*master_keep_attached)(wm_arcade_actor_t *, void *);
     void (*keep_attached)(wm_arcade_actor_t *, void *);

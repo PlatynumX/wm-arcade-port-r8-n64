@@ -48,6 +48,15 @@ typedef struct {
     uint32_t score_bcd;
 } WmHsPendingEntry;
 
+/*
+ * ADJ_HSRESET's factory value, AUDIT.ASM:2962 `.word 5000
+ * ;ADJ_HSRESET  14` -- how many games a table row survives before the
+ * machine resets it. This port has no operator-settings system to read
+ * a live one from, so it uses the source's own default, the same way
+ * every other GET_ADJ in this tree does.
+ */
+#define WM_HS_ADJUSTED_RESET_DEFAULT 5000u
+
 void wm_hs_system_init(WmHsSystem *system, uint32_t adjusted_reset_value);
 void wm_hs_system_rebind(WmHsSystem *system);
 

@@ -5,6 +5,7 @@
 #include <stdint.h>
 #include "wm/arcade/wm_arcade_combat.h"
 #include "wm/arcade/wm_arcade_damage.h"
+#include "wm/arcade/wmania_rng.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -34,6 +35,15 @@ typedef struct wm_arcade_drone_state {
     int32_t seek_dir;          /* DRN_SEEKDIR */
     int32_t seek_dist;         /* DRN_SEEKDIST */
     uint16_t missed_blocks[WM_AT_NUM]; /* source atkcnt_t slice */
+    /*
+     * The one drone script that plays an animation itself: DRONE.ASM:2810
+     * drn_taunt ends `#taunt_t[WRESTLERNUM] -> change_anim1a`. The drone
+     * layer has no visual backend and its callbacks' `user` is the RNG,
+     * so the label is left here for whoever owns the wrestler's
+     * animation to pick up and clear -- the same shape as the death
+     * animation seam in match.c. NULL means nothing is pending.
+     */
+    const char *pending_anim;
 } wm_arcade_drone_state_t;
 
 typedef struct wm_arcade_drone_world {
@@ -72,8 +82,14 @@ typedef struct wm_arcade_drone_script_op {
     uint16_t input_word;       /* low 5 buttons, high bits MOVE_* exactly like source */
     int32_t delay;             /* input delay */
     int32_t percent;           /* RANDOM_JUMP */
-    size_t target_pc;          /* RANDOM_JUMP/JUMP */
+    size_t target_pc;          /* RANDOM_JUMP/JUMP: op index within the target script */
     const char *source_label;  /* skill table or code/function label */
+    /* RANDOM_JUMP/JUMP only: NULL means "jump within this same script" (the
+       original, still-supported behavior). Non-NULL names a *different*
+       script to resolve_script() and switch to -- DRONE.ASM's `DS_JMP
+       drn_enterring`/`DS_JMP drn_seek` style cross-script jumps, which a
+       same-array target_pc cannot express. */
+    const char *target_script;
 } wm_arcade_drone_script_op_t;
 
 typedef struct wm_arcade_drone_script {
@@ -97,7 +113,10 @@ typedef struct wm_arcade_drone_callbacks {
     int32_t (*headheld_delay_max)(int skill, void *user);      /* sklhrdly_t */
 
     int (*check_combo_go)(wm_arcade_actor_t *actor, void *user);
-    void (*seek_dir_dist)(wm_arcade_actor_t *actor, wm_arcade_drone_state_t *drone, void *user);
+    /* drone_seekdirdist: needs the opponent (a8) to compute the sine-table
+       XZ offset from self's own seek_dir/seek_dist. */
+    void (*seek_dir_dist)(wm_arcade_actor_t *actor, wm_arcade_actor_t *opp,
+                          wm_arcade_drone_state_t *drone, void *user);
 
     /* Direct table resolver for wnshort_t / wnmed_t / wnlong_t mode lists. */
     const wm_arcade_drone_script_list_t *(*range_script_list)(
@@ -107,8 +126,21 @@ typedef struct wm_arcade_drone_callbacks {
     /* Decoded script VM seams for the source pointers/calls. */
     const wm_arcade_drone_script_t *(*resolve_script)(const char *source_label, void *user);
     int32_t (*script_skill_pct)(const char *source_table_label, int skill, void *user);
-    int (*script_seek)(wm_arcade_actor_t *self, wm_arcade_drone_state_t *drone, void *user);
-    void (*script_call)(wm_arcade_actor_t *self, const char *source_label, void *user);
+    /* Several distinct source SEEK-shaped loops (drone_seek's plain
+       toward-opponent seek, drn_retreat's drone_seekdirdist-based circling
+       with its own 1/32 stop roll, ...) all decode to the same
+       WM_DRONE_SC_SEEK opcode -- source_label (the op's own, same as
+       CALL_CODE/CALL_FUNCTION's) tells the callback which one to run.
+       Returns 0 once arrived/done, matching the source's own "jrz #x" /
+       "jrnz #lp" branch on the computed joy word. */
+    int (*script_seek)(wm_arcade_actor_t *self, wm_arcade_actor_t *opp,
+                       wm_arcade_drone_state_t *drone, const char *source_label,
+                       void *user);
+    /* See wm_arcade_drone_call_result_t for the four real source outcomes
+       a DS_CODE inline block can report back to the interpreter. */
+    int (*script_call)(wm_arcade_actor_t *self, wm_arcade_actor_t *opp,
+                       wm_arcade_drone_state_t *drone, const char *source_label,
+                       void *user);
 
     void (*script_selected)(wm_arcade_actor_t *self, const char *source_label, void *user);
     void *user;
@@ -122,8 +154,95 @@ typedef enum wm_arcade_drone_step_result {
     WM_DRONE_STEP_ABORT_SCRIPT = 4
 } wm_arcade_drone_step_result_t;
 
+/*
+ * DRONE.ASM's inline "DS_CODE" blocks are literal TMS34010 code spliced into
+ * the script bytecode stream (entered/left via the source's own `exgpc a9`
+ * coroutine swap -- see wm_arcade_drone.c's WM_DRONE_SC_CALL_CODE/
+ * WM_DRONE_SC_CALL_FUNCTION handling). A callback standing in for one of
+ * these blocks needs to report back one of four real source outcomes:
+ *   - CONTINUE:   falls through to the next op (the common case).
+ *   - SKIP_NEXT:  `addk 32,a9` (drone_chkrun's own "#bad" skip) -- the next
+ *                 op (one full value/mask or input pair) is bypassed.
+ *   - ABORT:      the block reached its own `#dsabt`/`clr a9` exit; the
+ *                 script ends now, matching WM_DRONE_SC_INPUT's existing
+ *                 zero/negative-delay abort path.
+ *   - REDIRECTED: the block did what drn_combo's own code does (`move a9,a1
+ *                 ... move *a0,a9,L ... jump a1`): it already reassigned
+ *                 drone->script itself and wants the interpreter to resume
+ *                 reading that *new* script's bytecode immediately, in this
+ *                 same tick (the real `jruc #scplp` after the `jump a1`).
+ */
+typedef enum wm_arcade_drone_call_result {
+    WM_DRONE_CALL_CONTINUE = 0,
+    WM_DRONE_CALL_SKIP_NEXT = 1,
+    WM_DRONE_CALL_ABORT = 2,
+    WM_DRONE_CALL_REDIRECTED = 3
+} wm_arcade_drone_call_result_t;
+
 void wm_arcade_drone_init(wm_arcade_drone_state_t *drone, int skill);
 int wm_arcade_drone_getup_pct(int skill);
+
+/*
+ * DRONE.ASM:3091 drone_calcskill -- "Adjust drone skill level (called
+ * each round)". Everything that decides how hard a drone plays, in one
+ * sum, and the port takes it as data rather than reaching for six
+ * globals: current_round, CURRENT_LADDER, PSTATUS, p1winstreakd,
+ * p1rounds and the operator's ADJDIFF all live outside the match.
+ *
+ * The sum, exactly as the source writes it:
+ *
+ *   base  = ladder + ladder/2                (ladder 0..6, so 0..9)
+ *         + skill_rndm                       (-2..2, rerolled each match)
+ *   won   = win_streak >= 0 ? 6*win_streak   (the source doubles twice
+ *                           : 2*win_streak    and adds both halves)
+ *         + 3*rounds_won                     (again: r, then 2r)
+ *         - 2*(current_round - 1)
+ *         + 2*(adj_difficulty - 2)
+ *   skill = clamp(base + won, 0, 29)
+ *
+ * Two things worth having written down. The win-streak term is NOT
+ * symmetric: a winner gets six times his streak and a loser only twice
+ * his (negative) one, because the `jrlt #loser` jumps past the first
+ * doubling and its add. And the source's own comment on the difficulty
+ * term says "+8 default", which would need ADJDIFF 6; the shipped
+ * default in AUDIT.ASM:2923 is 5, so the real default contribution is
+ * +6.
+ *
+ * PLYR_TYPE 0 is a human and the routine returns without touching
+ * anything, which is why this reports -1 rather than a skill.
+ */
+typedef struct wm_arcade_drone_skill_inputs {
+    int plyr_type;        /* PLYR_TYPE -- 0 is a human, and is left alone */
+    int current_round;    /* 1..3 */
+    int ladder_index;     /* (CURRENT_LADDER - LADDER) / 32, so 0..6 */
+    int win_streak;       /* p1winstreakd / p2winstreakd; negative if lost */
+    int rounds_won;       /* p1rounds / p2rounds */
+    int adj_difficulty;   /* GET_ADJ(ADJDIFF), 1..10; shipped default 5 */
+} wm_arcade_drone_skill_inputs_t;
+
+/*
+ * `skill_rndm` is DRN_SKILLRNDM, carried between rounds: on the first
+ * round of a match it is rerolled to RNDRNG0(4) - 2 and otherwise kept,
+ * so the same match keeps the same handicap. Pass the drone's own copy;
+ * it is read and written.
+ *
+ * Returns the new DRN_SKILL (0..29), or -1 for a human, in which case
+ * nothing is written.
+ */
+int wm_arcade_drone_calcskill(const wm_arcade_drone_skill_inputs_t *in,
+                              int32_t *skill_rndm, WmRng *rng);
+
+/*
+ * DRONE.ASM's other SKLM-built (6 bands x 5-entry linear ramp = 30 skill
+ * levels, matching wm_arcade_drone_getup_pct's own #getup_t pattern) global
+ * tables, plus the one literal (non-SKLM) table. These are wrestler-
+ * agnostic engine constants, not per-wrestler script data.
+ */
+int wm_arcade_drone_block_base_pct(int skill);      /* #blkbase_t */
+int wm_arcade_drone_block_attack_pct(int missed);   /* #blkatk_t, 0..9 */
+int wm_arcade_drone_headhold_delay_max(int skill);  /* sklhhdly_t */
+int wm_arcade_drone_headheld_delay_max(int skill);  /* sklhrdly_t */
+int wm_arcade_drone_repeat_pct(int skill);          /* sklrep_t */
 
 /* Direct decoded-port of DRONE.ASM's script command interpreter. */
 wm_arcade_drone_step_result_t wm_arcade_drone_script_step(

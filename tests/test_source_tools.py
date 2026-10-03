@@ -4010,6 +4010,59 @@ def test_the_reachability_claims_are_actually_checkable() -> None:
             "reachability claim names %r, which appears nowhere" % name
 
 
+def test_every_link_line_parser_agrees_with_the_linker() -> None:
+    """WRESTLE.CMD is the only authority on what is in the game, and four
+    tools read it -- port_coverage, citation_check, wlanim and link_resolve.
+    Three of them matched `name.obj` at the start of a line with no idea
+    of C comments, and the file's lines 50-51 are
+
+        /* robo.obj
+        coll2.obj */
+
+    so ROBO.ASM was excluded only because `/*` happens to sit in front of
+    it, and COLL2.ASM -- starting the next line inside the SAME comment --
+    was counted as shipped. In the routine accounting that made COLL2's
+    `collisions` an in-scope routine, resolved `implemented` by
+    wm_arcade_check_wrestler_collisions, which ends with the same word and
+    translates COLLIS.ASM's check_collisions: a different routine entirely.
+    Two errors cancelling into a plausible number.
+
+    link_resolve.py was the one parser that stripped comments, and said in
+    its docstring exactly which two objects they hide. The others now ask
+    it. This holds all four to one answer, and to the two names the file
+    comments out, so a fifth parser written later cannot quietly disagree.
+    """
+    sys.path.insert(0, str(ROOT / "tools"))
+    import citation_check  # noqa: E402
+    import link_resolve  # noqa: E402
+    import port_coverage  # noqa: E402
+    import wlanim  # noqa: E402
+
+    cmd = ROOT / "original" / "wwf-wrestlemania" / "WRESTLE.CMD"
+    truth = {o.upper() + ".ASM" for o in link_resolve.linked_objs(cmd)}
+
+    assert "COLL2.ASM" not in truth and "ROBO.ASM" not in truth, (
+        "link_resolve itself now counts an object WRESTLE.CMD:50-51 "
+        "comments out")
+    assert port_coverage.linked_asm() == truth, (
+        "port_coverage.linked_asm disagrees with the linker: %s" %
+        sorted(port_coverage.linked_asm() ^ truth))
+    assert citation_check.linked_asm() == truth, (
+        "citation_check.linked_asm disagrees with the linker: %s" %
+        sorted(citation_check.linked_asm() ^ truth))
+    wl = {q.name for q in wlanim.linked_files()}
+    # wlanim drops a name whose .ASM the dump does not carry -- image and
+    # palette objects assembled from sources not in the tree -- so it is a
+    # subset of the truth by construction, never a superset.
+    assert wl <= truth, (
+        "wlanim.linked_files reads a file the linker does not link: %s" %
+        sorted(wl - truth))
+    assert truth - wl == {n for n in truth
+                          if not (cmd.parent / n).exists()}, (
+        "wlanim.linked_files is missing a linked .ASM that the dump does "
+        "carry")
+
+
 def main() -> int:
     """Run every test in this file.
 

@@ -239,9 +239,12 @@ def linked_asm() -> set[str]:
     cmd = SRC / "WRESTLE.CMD"
     if not cmd.exists():
         return set()
-    objs = re.findall(r"^([A-Za-z0-9_]+)\.obj", cmd.read_text(errors="replace"),
-                      re.I | re.M)
-    return {o.upper() + ".ASM" for o in objs}
+    # One parser for the link line, the one that honours C comments --
+    # see port_coverage.linked_asm for what the old line-start regex got
+    # wrong (COLL2.ASM, inside WRESTLE.CMD:50-51's `/* ... */`).
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+    import link_resolve  # noqa: E402
+    return {o.upper() + ".ASM" for o in link_resolve.linked_objs(cmd)}
 
 
 # A line-numbered citation is evidence, so it must name a file the game

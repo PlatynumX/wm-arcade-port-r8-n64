@@ -117,8 +117,6 @@ def load_equ(path: pathlib.Path, prefix: str) -> dict[str, int]:
 
 ORIG = pathlib.Path(__file__).resolve().parents[1] / "original" / "wwf-wrestlemania"
 
-OBJ_RE = re.compile(r"^([A-Za-z0-9_]+)\.obj\b", re.I)
-
 
 def linked_files() -> list[pathlib.Path]:
     """The .ASM files the arcade game actually links, in a fixed order.
@@ -133,11 +131,13 @@ def linked_files() -> list[pathlib.Path]:
     the wrong one.
     """
     cmd = ORIG / "WRESTLE.CMD"
-    names = []
-    for line in cmd.read_text(errors="replace").splitlines():
-        m = OBJ_RE.match(line.strip())
-        if m:
-            names.append(m.group(1).upper() + ".ASM")
+    # link_resolve.linked_objs, which strips C comments first. Matching
+    # a line-start regex line by line read WRESTLE.CMD:51 `coll2.obj */` as a linked
+    # object -- the closing half of the comment that also hides robo.obj
+    # -- so COLL2.ASM was searched for labels as if it were in the game.
+    sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+    import link_resolve  # noqa: E402
+    names = [o.upper() + ".ASM" for o in link_resolve.linked_objs(cmd)]
     seen, out = set(), []
     for n in names:
         q = ORIG / n

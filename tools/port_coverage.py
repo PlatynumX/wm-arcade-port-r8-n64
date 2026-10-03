@@ -43,6 +43,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 import wlanim  # noqa: E402
+import link_resolve  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 LEDGER = ROOT / "port" / "routine_map.json"
@@ -82,9 +83,22 @@ def linked_asm() -> set[str]:
     cmd = wlanim.ORIG / "WRESTLE.CMD"
     if not cmd.exists():
         return set()
-    objs = re.findall(r"^([A-Za-z0-9_]+)\.obj",
-                      cmd.read_text(errors="replace"), re.I | re.M)
-    return {o.upper() + ".ASM" for o in objs}
+    # link_resolve.linked_objs, not a regex of our own. This used to do
+    # `re.findall(r"^([A-Za-z0-9_]+)\.obj", ...)` straight over the file,
+    # which does not know about C comments -- and WRESTLE.CMD:50-51 is
+    #
+    #     /* robo.obj
+    #     coll2.obj */
+    #
+    # so ROBO.ASM was excluded only because `/*` happens to sit in front of
+    # it on its line, and COLL2.ASM, starting the very next line inside the
+    # same comment, was counted as in the game. Its one routine,
+    # `collisions`, then sat in the denominator as an in-scope routine and
+    # resolved `implemented` -- because wm_arcade_check_wrestler_collisions
+    # ends with the same word, and translates COLLIS.ASM's check_collisions,
+    # an entirely different routine. Two errors cancelling into a plausible
+    # answer. link_resolve.py strips comments and says why in its docstring.
+    return {o.upper() + ".ASM" for o in link_resolve.linked_objs(cmd)}
 
 
 # Animation programs are translated wholesale by tools/wlprogram.py, so

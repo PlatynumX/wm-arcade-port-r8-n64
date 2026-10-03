@@ -8312,21 +8312,6 @@
    "ledgered": false
   },
   {
-   "name": "collisions",
-   "kind": "logic",
-   "files": [
-    "COLL2.ASM"
-   ],
-   "definitions": 1,
-   "local": false,
-   "external_callers": 1,
-   "references": 3,
-   "status": "implemented",
-   "evidence": "wm_arcade_check_wrestler_collisions",
-   "from_generated": false,
-   "ledgered": false
-  },
-  {
    "name": "combos_powerup_check",
    "kind": "logic",
    "files": [

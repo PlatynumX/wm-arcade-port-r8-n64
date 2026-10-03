@@ -893,6 +893,62 @@ drives the engine, and would matter immediately if anything did.
   the same shape as `play_sound` beside it; the live initials entry drives
   `WmHsEntryState` directly, and that copy is filled.
 
+## The link line had one right parser and three wrong ones
+
+`WRESTLE.CMD` is the only authority on what is in the game, and four tools read
+it. Three matched `name.obj` at the start of a line with no knowledge of C
+comments, and the file's lines 50-51 are
+
+```
+/* robo.obj
+coll2.obj */
+```
+
+So `ROBO.ASM` was excluded only because `/*` happens to sit in front of it on
+its line, and `COLL2.ASM` — starting the next line **inside the same comment** —
+was counted as shipped by `port_coverage`, `citation_check` and `wlanim`.
+`link_resolve.py` stripped comments correctly, and its docstring named exactly
+those two objects; the manifest even recorded its answer, 99. The right number
+was in the tree and written down, and three tools disagreed with it.
+
+### What that bought: a false `implemented`
+
+`COLL2.ASM`'s one routine, `collisions`, sat in the routine accounting as in
+scope and resolved **`implemented`** — by `wm_arcade_check_wrestler_collisions`,
+which ends with the same word and translates `COLLIS.ASM`'s `check_collisions`,
+a different routine in a different file. Two errors cancelling into a plausible
+number. Its only caller is `ROBO.ASM`'s `CREATE COLL_PID,collisions`, and
+`ROBO.ASM` is the other half of the same comment.
+
+All three now call `link_resolve.linked_objs`. Routines 2607 → 2606,
+`implemented` 2042 → 2041, open still 0, and no generated file changed.
+`test_every_link_line_parser_agrees_with_the_linker` holds all four to one
+answer; each parser mutated back to its old behaviour fails it.
+
+### And it answered the object-list question
+
+`COLL2`'s `collx` builds the collision lists from OBJLST. It was the **only**
+reader of the object list in the dump that is game logic rather than
+presentation — and it is not in the game. Every reader that *is* in the game
+draws something:
+
+| reader | what it does |
+|---|---|
+| `process_dispatch` (MPROC) | the inlined `obj_yzsort` — draw order |
+| `do_win_streaks`, `SHIFT_BARS_IN_Z` (LIFEBAR) | scrolling plates, bar Z order |
+| `STOP_ALL_OBJS`, `MOVE_ALL_OBJS_UP`, `DELETE_ANY_OFF_TOP` (HSTD) | the high-score scroll |
+| `blink_rndper` (SELECT) | blinking text palettes |
+| `CREATE_TEXT_LINE` (SPECIAL), `scrn_rel_off` (PROGRESS) | text, screen-relative offsets |
+| `move_pu_bars_on` (AWARD), `show_operatormsg` (ATTRACT) | bars sliding in, the operator screen |
+| `pal_clean` (PAL) | unreached at this port's palette demand |
+
+So `wm_obj_pool` is **not** given an owner, deliberately. With no renderer that
+draws *from* it, an instance would be filled by nothing and asked by nothing,
+and filling `pal_clean`'s `in_use` seam from an always-empty list would make a
+ledger row disappear while changing no behaviour at all — a hollow wiring,
+which is worse than an honest `deferred`. It gets an owner when something draws
+from it.
+
 ## Deliberately still absent
 
 - Nothing about `pal_getf` any more: the allocator is owned, the seam is

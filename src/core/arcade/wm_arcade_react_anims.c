@@ -20,8 +20,8 @@ const char *wm_react_anim_table_for(wm_arcade_react1_anim_group_t group) {
     case WM_R1_ANIM_SPECIAL_HEAD_HIT2_SAND: return "head_hit2_sand_tbl";
     case WM_R1_ANIM_SPECIAL_BODY_HIT2:     return "body_hit2_tbl";
     case WM_R1_ANIM_WRES_SLAVE:            return "slaveanim_tbl";
+    case WM_R1_ANIM_LOSE_BALANCE:          return "#losebal";
     /* See the header: no global table names these, so none is guessed. */
-    case WM_R1_ANIM_LOSE_BALANCE:
     case WM_R1_ANIM_QUICK_KNEE_HIT:
     case WM_R1_ANIM_SPINKICK_HEAD_HIT:
     case WM_R1_ANIM_FALL_BACK2:

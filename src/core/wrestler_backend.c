@@ -385,6 +385,17 @@ void wm_wrestler_backend_ani_init(wm_wrestler_backend_actor *state,
                                  state);
 }
 
+void wm_wrestler_backend_set_collision_boxes(
+    const wm_wrestler_backend_actor *state, wm_arcade_actor_t *actor) {
+    const char *frame;
+    if (!state || !actor || !state->prog.program) return;
+    frame = wm_anim_exec_frame(&state->prog);
+    if (frame) {
+        wm_arcade_frame_box_t box = wm_hurt_box_for_frame(frame);
+        wm_arcade_set_hurt_box(actor, &box);
+    }
+}
+
 const char *wm_wrestler_backend_torso_frame(
     const wm_wrestler_backend_actor *state) {
     if (!state || !state->torso_prog.program) return NULL;
@@ -394,6 +405,13 @@ const char *wm_wrestler_backend_torso_frame(
 void wm_wrestler_backend_tick(wm_wrestler_backend_actor *state,
                               wm_arcade_actor_t *actor) {
     if (!actor) return;
+
+    /* set_images' #no_2nd_piece, ahead of the animation step as the
+       main loop has it: a body frame with no torso piece ends the torso
+       animation (wm_anim_frame_ends_secondary). */
+    if (state && state->torso_prog.program && !state->torso_prog.ended &&
+        wm_anim_frame_ends_secondary(wm_anim_exec_frame(&state->prog)))
+        state->torso_prog.ended = true;
 
     if (state && state->torso_prog.program) {
         /* The torso runs on its own clock beside the primary channel,

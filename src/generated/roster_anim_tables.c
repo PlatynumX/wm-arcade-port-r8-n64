@@ -346,6 +346,19 @@ static const char *const rows_local_liedown_table[WM_ROSTER_ANIM_SLOTS * 1] = {
     "lex_liedown_anim",              /* 8 Lex Luger */
     NULL,                            /* 9 Referee */
 };
+/* REACT1.ASM:1102 -- slot */
+static const char *const rows_local_losebal[WM_ROSTER_ANIM_SLOTS * 1] = {
+    "hrt_4_losebal_anim",            /* 0 Bret Hart */
+    "rzr_4_losebal_anim",            /* 1 Razor Ramon */
+    "und_4_losebal_anim",            /* 2 Undertaker */
+    "yok_4_losebal_anim",            /* 3 Yokozuna */
+    "shn_4_losebal_anim",            /* 4 Shawn Michaels */
+    "bam_4_losebal_anim",            /* 5 Bam Bam */
+    "dnk_4_losebal_anim",            /* 6 Doink */
+    "dnk_4_losebal_anim",            /* 7 Adam Bomb */
+    "lex_4_losebal_anim",            /* 8 Lex Luger */
+    NULL,                            /* 9 Referee */
+};
 /* HRTSEQ3.ASM:2614 -- slot */
 static const char *const rows_local_react2_tbl[WM_ROSTER_ANIM_SLOTS * 1] = {
     "xxx_get_face_rake2_anim",       /* 0 Bret Hart */
@@ -432,6 +445,19 @@ static const char *const rows_local_taker_debris_anims[WM_ROSTER_ANIM_SLOTS * 1]
     "skull_anim",                    /* 6 Doink */
     "bone2_anim",                    /* 7 Adam Bomb */
     "bat_anim",                      /* 8 Lex Luger */
+    NULL,                            /* 9 Referee */
+};
+/* DRONE.ASM:2841 -- slot */
+static const char *const rows_local_taunt_t[WM_ROSTER_ANIM_SLOTS * 1] = {
+    "hrt_4_taunt_anim",              /* 0 Bret Hart */
+    "rzr_4_taunt_anim",              /* 1 Razor Ramon */
+    "und_4_taunt_anim",              /* 2 Undertaker */
+    "yok_4_taunt_anim",              /* 3 Yokozuna */
+    "shn_4_taunt_anim",              /* 4 Shawn Michaels */
+    "bam_4_taunt_anim",              /* 5 Bam Bam */
+    "dnk_4_taunt_anim",              /* 6 Doink */
+    NULL,                            /* 7 Adam Bomb */
+    "lex_4_taunt_anim",              /* 8 Lex Luger */
     NULL,                            /* 9 Referee */
 };
 /* DOINK.ASM:1277 -- slot */
@@ -1146,12 +1172,14 @@ const wm_roster_anim_table wm_roster_anim_tables[] = {
     { "#knee_hit", "REACT3.ASM", 281, 10, 1, WM_ROSTER_COL_SLOT, rows_local_knee_hit },
     { "#knockdwn", "REACT2.ASM", 339, 10, 1, WM_ROSTER_COL_SLOT, rows_local_knockdwn },
     { "#liedown_table", "BAMSEQ2.ASM", 1375, 9, 1, WM_ROSTER_COL_SLOT, rows_local_liedown_table },
+    { "#losebal", "REACT1.ASM", 1102, 9, 1, WM_ROSTER_COL_SLOT, rows_local_losebal },
     { "#react2_tbl", "HRTSEQ3.ASM", 2614, 9, 1, WM_ROSTER_COL_SLOT, rows_local_react2_tbl },
     { "#run_anims", "WRESTLE2.ASM", 3560, 10, 1, WM_ROSTER_COL_SLOT, rows_local_run_anims },
     { "#stand_tbl", "DOINK.ASM", 3594, 9, 2, WM_ROSTER_COL_FACING, rows_local_stand_tbl },
     { "#star_art", "SPECIAL.ASM", 227, 10, 1, WM_ROSTER_COL_SLOT, rows_local_star_art },
     { "#strt_flail_tbl", "BAMSEQ3.ASM", 391, 9, 1, WM_ROSTER_COL_SLOT, rows_local_strt_flail_tbl },
     { "#taker_debris_anims", "SPECIAL.ASM", 3821, 9, 1, WM_ROSTER_COL_SLOT, rows_local_taker_debris_anims },
+    { "#taunt_t", "DRONE.ASM", 2841, 9, 1, WM_ROSTER_COL_SLOT, rows_local_taunt_t },
     { "#taunt_tbl", "DOINK.ASM", 1277, 9, 1, WM_ROSTER_COL_SLOT, rows_local_taunt_tbl },
     { "SLAM_HIM", "HRTSEQ3.ASM", 408, 9, 1, WM_ROSTER_COL_SLOT, rows_SLAM_HIM },
     { "bncoff", "REACT5.ASM", 333, 10, 2, WM_ROSTER_COL_FACING, rows_bncoff },
@@ -1196,4 +1224,4 @@ const wm_roster_anim_table wm_roster_anim_tables[] = {
     { "waiting_addr", "PROGRESS.ASM", 3333, 10, 2, WM_ROSTER_COL_PAIR, rows_waiting_addr },
 };
 
-const int wm_roster_anim_table_count = 72;
+const int wm_roster_anim_table_count = 74;

@@ -4797,6 +4797,7 @@ static void test_win_announce(void) {
     }
     CHECK(!wm_arcade_round_announce_tick(&st, actors, 2, &ctx));
     CHECK(st.wrestlers_reset_due);
+    CHECK(!st.match_end_due);          /* round one: no DO_WAIT */
     /* The process is gone, which is all `EXISTP ANNC_PID` ever asked,
        and annc_rnd_winner_done is what keeps it gone. */
     CHECK(st.phase == (uint8_t)WM_ARW_IDLE);
@@ -4825,6 +4826,10 @@ static void test_win_announce(void) {
             (void)wm_arcade_round_announce_tick(&st2, actors, 2, &ctx);
         CHECK(st2.phase == (uint8_t)WM_ARW_IDLE);
         CHECK(!st2.wrestlers_reset_due);
+        /* ...and DO_WAIT is owed instead (LIFEBAR.ASM:2845-2852). Until
+           this was raised nothing started DO_WAIT off the announcer, and
+           a match decided by a pose never ended. */
+        CHECK(st2.match_end_due);
         ctx.score = &score;
     }
 

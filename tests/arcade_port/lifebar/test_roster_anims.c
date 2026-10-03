@@ -19,8 +19,10 @@ static void test_shape(void)
     /* 38 until the extractor learned to read `#local` heads as well as
        global ones -- most of these tables are written that way -- and 64
        until it learned that `REFLONG a,b` is two longs and that several
-       identical definitions of a name are not ambiguous. */
-    assert(wm_roster_anim_table_count == 72);
+       identical definitions of a name are not ambiguous. 72 until it
+       learned that copies differing only in whether they carry the
+       Referee row agree too (#losebal, #taunt_t). */
+    assert(wm_roster_anim_table_count == 74);
     for (i = 0; i < wm_roster_anim_table_count; ++i) {
         const wm_roster_anim_table *t = &wm_roster_anim_tables[i];
         assert(t->name && t->file && t->row);

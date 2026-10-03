@@ -265,6 +265,11 @@ void wm_bret_backend_execute_walk(wm_arcade_actor_t *actor, void *user);
 void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
                           uint16_t round_tickcount);
 
+/* Bret's set_collision_boxes for the frame showing now, from whichever
+   of his two tracks is driving -- see wm_wrestler_backend_set_collision_boxes. */
+void wm_bret_backend_set_collision_boxes(const wm_bret_backend_actor *bva,
+                                         wm_arcade_actor_t *actor);
+
 /*
  * SYS.EQU's per-frame ANI3 hurt-box header (IANI3X/Y/Z/ID) is compiled from
  * WIMP artist source by a build step whose output (bretimg.tbl/bret.seq/

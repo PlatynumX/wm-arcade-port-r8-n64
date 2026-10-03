@@ -11,6 +11,7 @@
 #include "wm/anim_program.h"
 #include "wm/arcade/wm_arcade_combat_defs.h"
 #include "wm/arcade/wm_arcade_veladd.h"
+#include "wm/arcade/wm_arcade_roster.h"
 
 #include <assert.h>
 #include <stdio.h>
@@ -97,11 +98,37 @@ static void test_the_two_channels_are_independent(void)
     assert(st.torso_prog.program != NULL);
     assert(st.prog.program != st.torso_prog.program);
 
+    /*
+     * A stand frame is one piece. hrt_stand2_anim's H2ST2A05 is the
+     * whole wrestler, 116 high, with no channel-2 attachment, so
+     * set_images' #no_2nd_piece (ANIM.ASM:4818) ends the torso the first
+     * time the body shows it: ANIMODE2 = MODE_END, "don't bother
+     * animating if no 2nd piece".
+     */
     for (i = 0; i < 40; ++i) {
         wm_wrestler_backend_tick(&st, &a);
     }
-    /* And both are producing frames, on their own clocks. */
+    assert(wm_anim_frame_ends_secondary("H2ST2A05"));
+    assert(st.torso_prog.ended);
+    assert(wm_wrestler_backend_torso_frame(&st) == NULL);
+
+    /*
+     * A walk frame is two. H4WL4A01 is legs only, 77 high, with the
+     * torso hanging off it at (16,5) -- and change_anim2 restarts the
+     * ended torso, which then runs on its own clock beside the legs.
+     */
+    {
+        wm_arcade_roster_callbacks_t cb = wm_wrestler_roster_callbacks(&st);
+        cb.change_anim_restart(&a, "hrt_walk4_f4_anim", cb.user);
+        cb.change_torso_label(&a, "hrt_torso4_anim", cb.user);
+    }
+    assert(!wm_anim_frame_ends_secondary("H4WL4A01"));
+    for (i = 0; i < 40; ++i) {
+        wm_wrestler_backend_tick(&st, &a);
+    }
+    assert(!st.torso_prog.ended);
     assert(wm_wrestler_backend_torso_frame(&st) != NULL);
+    assert(st.prog.program != st.torso_prog.program);
 }
 
 static void test_change_anim1_guard(void)

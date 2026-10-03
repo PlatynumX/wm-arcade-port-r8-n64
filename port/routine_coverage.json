@@ -3086,7 +3086,7 @@
    "external_callers": 0,
    "references": 3,
    "status": "implemented",
-   "evidence": "wm_arcade_bret_ani_init",
+   "evidence": "match_ani_init",
    "from_generated": false,
    "ledgered": false
   },
@@ -27737,10 +27737,10 @@
    "local": false,
    "external_callers": 8,
    "references": 8,
-   "status": "inlined",
-   "evidence": "wm_arcade_set_attack_box",
+   "status": "implemented",
+   "evidence": "wm_bret_backend_set_collision_boxes",
    "from_generated": false,
-   "ledgered": true
+   "ledgered": false
   },
   {
    "name": "set_getup_time",

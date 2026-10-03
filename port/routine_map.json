@@ -427,12 +427,6 @@
   "symbol": "wm_arcade_wrestler_collisions_off",
   "note": "Clears MODE_CHECKHIT. Eleven call sites across the react modules and the lifebar reach it under this name."
  },
- "set_collision_boxes": {
-  "file": "COLLIS.ASM",
-  "status": "inlined",
-  "symbol": "wm_arcade_set_attack_box",
-  "note": "The source sets BOTH boxes in one routine; the port sets them where each is needed. The hurt box comes from the frame the animation is showing (wm_hurt_box_for_frame / wm_arcade_set_hurt_box in wrestler_backend.c's tick), and the attack box from the attacker just before the collision sweep (wm_arcade_set_attack_box). Splitting them is what lets the hurt box follow real per-frame geometry rather than a single box per wrestler."
- },
  "hit_push": {
   "file": "REACT2.ASM",
   "status": "renamed",

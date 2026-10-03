@@ -209,6 +209,22 @@ const char *wm_wrestler_set_rotate_anim(wm_arcade_actor_t *actor,
 void wm_wrestler_backend_ani_init(wm_wrestler_backend_actor *state,
                                   wm_arcade_actor_t *actor);
 
+/*
+ * set_collision_boxes' hurt-box half on its own, for the frame showing
+ * now. The tick already does this right after the animation steps; the
+ * main loop calls it a second time after move_wrestler (WRESTLE.ASM:2475
+ * and the loop head at :2413), when the dispatcher may have started a
+ * new animation on a new first frame.
+ *
+ * COLLIS.ASM's set_collision_boxes sets both boxes in one routine; the
+ * port sets each where it is needed. This is the hurt-box half, from the
+ * frame the animation is showing; the attack box is
+ * wm_arcade_set_attack_box, set on the attacker just before the
+ * collision sweep.
+ */
+void wm_wrestler_backend_set_collision_boxes(
+    const wm_wrestler_backend_actor *state, wm_arcade_actor_t *actor);
+
 /* The torso frame currently showing, or NULL. The primary frame is
    whatever wm_wrestler_backend_tick already publishes. */
 const char *wm_wrestler_backend_torso_frame(

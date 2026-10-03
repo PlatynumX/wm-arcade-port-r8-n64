@@ -208,6 +208,8 @@ bool wm_arcade_round_announce_tick(wm_arcade_round_announce_t *st,
         if (!ctx->score ||
             (ctx->score->p1rounds != 2 && ctx->score->p2rounds != 2))
             st->wrestlers_reset_due = true;
+        else
+            st->match_end_due = true;            /* DO_WAIT */
         /* And then the process is gone, which is all `EXISTP ANNC_PID`
            ever asked. annc_rnd_winner_done is what keeps it from
            starting again, and reset_for_round2 is what clears that. */

@@ -92,6 +92,10 @@ struct wm_arcade_actor {
     /* WRESTLE.ASM PLYR.EQU CAN_MOVE_DIR: WM_MOVE_* bits the wrestler is
        currently confined against (real, see wm/arcade/wm_arcade_confine.h). */
     int32_t can_move_dir;
+    /* CAN_MOVE_TEMP: confine_wrestler_fix1's copy of CAN_MOVE_DIR from
+       the first of the tick's two confine passes, ORed back in by
+       confine_wrestler_fix2 after the second (WRESTLE.ASM:3736). */
+    int32_t can_move_temp;
 
     wm_arcade_actor_t *attach_proc;
     wm_arcade_actor_t *smart_target;

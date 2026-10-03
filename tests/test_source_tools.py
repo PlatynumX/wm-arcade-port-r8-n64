@@ -3352,16 +3352,19 @@ def test_roster_anim_tables_name_real_routines() -> None:
     tables = wlrostertbl.roster_tables()
     if not tables:
         return
-    # 72. It was 64 when the extractor stopped requiring a GLOBAL head
+    # 74. It was 64 when the extractor stopped requiring a GLOBAL head
     # (most of these tables have a `#local` one, #run_anims
     # (WRESTLE2.ASM:3560) among them, and reading only globals silently
-    # lost 26); the last eight came from two REFLONG/ambiguity bugs
-    # below. The rule has never changed -- defined once in the whole
-    # tree, or every definition identical, or refused. The count is
-    # pinned so a change in what the extractor sees has to be looked at
-    # rather than absorbed, which is how this and the earlier
-    # convulse_t/fallbacks_t gap were both noticed.
-    assert len(tables) == 72, sorted(tables)
+    # lost 26); eight more came from two REFLONG/ambiguity bugs below,
+    # and the last two -- #losebal and #taunt_t -- from seeing that
+    # copies differing only in the Referee row agree. The rule is
+    # otherwise unchanged -- defined once in the whole tree, or every
+    # definition agreeing, or refused. The count is pinned so a change
+    # in what the extractor sees has to be looked at rather than
+    # absorbed, which is how this and the earlier convulse_t/fallbacks_t
+    # gap were both noticed.
+    assert len(tables) == 74, sorted(tables)
+    assert "#losebal" in tables and "#taunt_t" in tables
     assert "#run_anims" in tables
 
     routines: set[str] = set()
@@ -3570,9 +3573,11 @@ def test_roster_anim_tables_refuse_ambiguous_labels() -> None:
     of mistake as resolving #make_black by bare name.
 
     Defined more than once is not itself the test -- see
-    test_identical_definitions_are_not_ambiguous. Twelve names really do
+    test_identical_definitions_are_not_ambiguous. Ten names really do
     disagree between definitions, #head_hit2 among them, and those are
-    the ones refused.
+    the ones refused. (Twelve until #losebal and #taunt_t were seen to
+    differ only in carrying the Referee row -- see
+    test_copies_differing_only_by_the_referee_row_agree.)
     """
     if not wlanim.ORIG.exists():
         return
@@ -3584,6 +3589,52 @@ def test_roster_anim_tables_refuse_ambiguous_labels() -> None:
     # Every name it reports has at least two bodies that differ.
     assert all(n >= 2 for n in ambiguous.values()), ambiguous
     assert "#head_hit2" in ambiguous
+
+
+def test_copies_differing_only_by_the_referee_row_agree() -> None:
+    """#losebal: three copies, two lengths, one answer per wrestler.
+
+    REACT1.ASM:1102 writes nine rows; REACT2.ASM:467 and REACT5.ASM:309
+    write the same nine and a tenth, `dnk_4_losebal_anim ;9 Referee`.
+    Every slot all three carry agrees, so a use site has nothing to
+    choose between there and the table is emitted -- from the SHORTEST
+    copy, so the Referee row one of them lacks is not claimed. Until it
+    was, LOSE_BALANCE had no row at all and a pushed wrestler slid on his
+    push velocity with no animation to end it.
+    """
+    agreed = wlrostertbl._agreed
+    nine = ["a_anim"] * 9
+    ten = nine + ["ref_anim"]
+    # Identical copies: the first.
+    assert agreed([("A.ASM", 1, nine), ("B.ASM", 2, list(nine))]) == \
+        ("A.ASM", 1, nine)
+    # Nine and ten agreeing on the nine: the nine, whichever came first.
+    assert agreed([("B.ASM", 5, ten), ("A.ASM", 9, nine)]) == \
+        ("A.ASM", 9, nine)
+    # A disagreement on a slot both carry is refused...
+    other = list(ten)
+    other[3] = "b_anim"
+    assert agreed([("A.ASM", 1, nine), ("B.ASM", 1, other)]) is None
+    # ...and so is a disagreement in the Referee row between two tens.
+    ten_b = nine + ["other_ref_anim"]
+    assert agreed([("A.ASM", 1, ten), ("B.ASM", 1, ten_b)]) is None
+    # ...and a pair of different row widths, even when one is a prefix.
+    assert agreed([("A.ASM", 1, nine), ("B.ASM", 1, nine * 2)]) is None
+
+    if not wlanim.ORIG.exists():
+        return
+    tables = wlrostertbl.roster_tables()
+    assert "#losebal" in tables
+    fname, line, rows = tables["#losebal"]
+    assert (fname, line) == ("REACT1.ASM", 1102), (fname, line)
+    assert rows[:9] == ["hrt_4_losebal_anim", "rzr_4_losebal_anim",
+                        "und_4_losebal_anim", "yok_4_losebal_anim",
+                        "shn_4_losebal_anim", "bam_4_losebal_anim",
+                        "dnk_4_losebal_anim", "dnk_4_losebal_anim",
+                        "lex_4_losebal_anim"], rows
+    assert rows[9] is None
+    assert not wlrostertbl._declared_ten(fname, line)
+    assert "#losebal" not in wlrostertbl._ambiguous()
 
 
 def test_roster_anim_tables_generate_the_shipped_file() -> None:

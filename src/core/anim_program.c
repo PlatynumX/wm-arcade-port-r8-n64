@@ -1709,6 +1709,13 @@ void wm_anim_exec_tick(wm_anim_exec *exec, wm_arcade_actor_t *actor,
     advance(exec, actor, round_tickcount, exec->next_pc);
 }
 
+bool wm_anim_frame_ends_secondary(const char *primary_frame) {
+    const wm_frame_geometry_t *g;
+    if (!primary_frame) return false;
+    g = wm_frame_geometry_find(primary_frame);
+    return g && g->attach_x == -1 && g->attach_y == -1;
+}
+
 const char *wm_anim_exec_frame(const wm_anim_exec *exec) {
     if (!exec || exec->ended || !exec->program) return NULL;
     if (exec->pc >= exec->program->op_count) return NULL;

@@ -118,6 +118,19 @@ typedef struct {
      * it.
      */
     bool wrestlers_reset_due;
+    /*
+     * The DO_WAIT arm, owed: LIFEBAR.ASM:2845-2852 `move @p1rounds,a0 /
+     * cmpi 2,a0 / jrz DO_WAIT` (and p2rounds). Raised on the same tick
+     * wrestlers_reset_due would be, for the other answer. The caller owns
+     * DO_WAIT (wm_match_end_tick) and starts it on this.
+     *
+     * Nothing used to stand here. The announcer -- reached from every
+     * raise-arm animation's ANI_CODE,win_announce -- is how most live
+     * rounds end, and when it ended the deciding round nothing started
+     * DO_WAIT: only the KO countdown's path did. The match had a winner
+     * and never finished, every wrestler standing in the ring for good.
+     */
+    bool match_end_due;
 } wm_arcade_round_announce_t;
 
 typedef struct {

@@ -26,6 +26,7 @@
 #include "wm/wrestler_backend.h"
 #include "wm/bret_backend.h"
 #include "wm/match.h"
+#include "wm/arcade/wmania_ring_geometry.h"
 #include "wm_arcade_roster.h"
 
 static void winner(wm_arcade_actor_t *a) {
@@ -296,6 +297,8 @@ static void test_the_pose_ends_the_round_and_the_next_one_starts(void) {
     memset(&in, 0, sizeof in);
     round0 = (int32_t)MS.current_round;
 
+    {
+        int32_t last_round = -1;
     for (i = 0; i < 4000 && MS.match_end.match_over == 0; ++i) {
         unsigned k;
         /* Hold side 1 dead, and never press a button: there is no pin
@@ -304,7 +307,27 @@ static void test_the_pose_ends_the_round_and_the_next_one_starts(void) {
             if (MS.actors[k].player_side == 1) {
                 MS.actors[k].player_mode = (uint16_t)WM_PMODE_DEAD;
                 MS.actors[k].life = 0;
+                /*
+                 * ...and lying OUTSIDE the ring, at the start of each
+                 * round, which is the case raisearm_check lets through
+                 * for a winner still inside (WRESTLE2.ASM:3727-3731).
+                 *
+                 * This used to happen by itself and for the wrong
+                 * reason. Only Bret ran his *_ani_init, so this dead
+                 * man had no animation and an empty hurt box, and
+                 * confine_wrestler read OBJ_COLLX1 = 0 as "far past the
+                 * left rope" and threw him out of the ring on the first
+                 * tick. With ani_init run for everyone he stands where
+                 * he was put, inside, and the winner -- correctly --
+                 * will not pose over a body in the ring.
+                 */
+                if ((int32_t)MS.current_round != last_round) {
+                    MS.actors[k].in_ring = 0;
+                    MS.actors[k].x_int = WM_RING_X_CENTER + 500;
+                    MS.actors[k].z_int = WM_RING_Z_CENTER;
+                }
             }
+        last_round = (int32_t)MS.current_round;
         wm_match_tick(&MS, NULL, &in);
         if (first_award < 0 && MS.score.p1rounds == 1) first_award = i;
         if (first_award >= 0 && first_reset < 0 && MS.current_round != round0)
@@ -312,11 +335,11 @@ static void test_the_pose_ends_the_round_and_the_next_one_starts(void) {
         if (MS.actors[0].status_flags & WM_STATUS_DID_RAISEARM) posed = 1;
         if (MS.actors[0].status_flags & WM_STATUS_DID_PIN) pinned = 1;
     }
+    }
 
     /*
-     * The round is ended by the pose, and quickly: the opponent's death
-     * animation rolls him out of the ring within a couple of ticks, and
-     * from there raisearm_check says yes. The KO countdown that used to
+     * The round is ended by the pose, and quickly: with the opponent
+     * dead outside the ring raisearm_check says yes at once. The KO countdown that used to
      * be the only thing ending a round takes 264.
      */
     assert(first_award >= 0 && first_award < 30);

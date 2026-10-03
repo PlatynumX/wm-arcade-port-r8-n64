@@ -223,10 +223,10 @@ def roster_tables() -> dict[str, tuple[str, int, list[str | None]]]:
         # breaks (UNDSEQ3 packs `dnk,0,lex` onto one `.long`). Rows are
         # compared after parsing, so the spelling of the source line
         # does not enter into it.
-        bodies = {tuple(rows) for _f, _l, rows in defs}
-        if len(bodies) != 1:
+        agreed = _agreed(defs)
+        if agreed is None:
             continue
-        fname, line, rows = defs[0]
+        fname, line, rows = agreed
         facings = _facings(rows)
         padded: list[str | None] = [None if r == "0" else r for r in rows]
         padded += [None] * (ROSTER_SLOTS * facings - len(padded))
@@ -318,6 +318,31 @@ def _facings(rows: list[str]) -> int | None:
     return None
 
 
+def _agreed(defs: list[tuple[str, int, list[str]]]
+            ) -> tuple[str, int, list[str]] | None:
+    """The one definition every copy of a name agrees with, or None.
+
+    Identical bodies agree, and so do bodies that differ ONLY in having
+    the Referee row or not. #losebal is the case: REACT1.ASM:1102 writes
+    nine rows, REACT2.ASM:467 and REACT5.ASM:309 write the same nine and
+    a tenth (`dnk_4_losebal_anim ;9 Referee`). Every slot all three
+    carry says the same thing, so a use site has nothing to choose
+    between there; the shortest definition is the one returned, so the
+    Referee row -- which one of the three does not have -- is not
+    claimed. Bodies that disagree on any slot they share are still
+    refused, as is a pair with different row widths.
+    """
+    bodies = {tuple(rows) for _f, _l, rows in defs}
+    if len(bodies) == 1:
+        return defs[0]
+    if len({_facings(list(b)) for b in bodies}) != 1:
+        return None
+    shortest = min(len(b) for b in bodies)
+    if len({b[:shortest] for b in bodies}) != 1:
+        return None
+    return min(defs, key=lambda d: (len(d[2]), d[0], d[1]))
+
+
 def _ambiguous() -> dict[str, int]:
     """Names with more than one DISTINCT body, and how many they have.
 
@@ -327,13 +352,15 @@ def _ambiguous() -> dict[str, int]:
     nothing for a use site to choose between -- #headheld_tbl has
     sixteen and they all match.
     """
-    seen: dict[str, set[tuple[str, ...]]] = collections.defaultdict(set)
+    seen: dict[str, list[tuple[str, int, list[str]]]] = \
+        collections.defaultdict(list)
     for path in sorted(wlanim.ORIG.glob("*.ASM")):
-        for name, _line, rows in _blocks(path):
+        for name, line, rows in _blocks(path):
             if _facings(rows) is not None and \
                sum(1 for r in rows if r.endswith("_anim")) >= MIN_ANIM_ROWS:
-                seen[name].add(tuple(rows))
-    return {k: len(v) for k, v in seen.items() if len(v) > 1}
+                seen[name].append((path.name, line, rows))
+    return {k: len({tuple(r) for _f, _l, r in v})
+            for k, v in seen.items() if _agreed(v) is None}
 
 
 def render_c() -> str:

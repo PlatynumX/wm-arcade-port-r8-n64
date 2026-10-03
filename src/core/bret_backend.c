@@ -570,6 +570,34 @@ static void wm_bret_backend_adjust_health(wm_arcade_actor_t *actor, int delta,
                             bva ? bva->pcnt : 0, NULL, &death_anim);
 }
 
+/*
+ * `calla change_anim1` on a leg animation: change_walk_anim's leg half
+ * (WRESTLE.ASM:5017) and #zip's stance (:5286-5287). change_anim1 puts
+ * the new animation in place of whatever was running unless it is the
+ * same one, still going (ANIM.ASM:4532).
+ *
+ * This used to re-select only the flat track. Bret's stance has a real
+ * program (hrt_stand2_anim is emitted), and while a program runs it is
+ * what shows and the flat track does not even tick -- so a Bret who
+ * stepped off from ani_init's stance walked with the stance still playing,
+ * 150 ticks and more in the ladder bouts. With #no_2nd_piece in place
+ * that was no longer only a wrong picture: the stance frames are one
+ * piece, so they ended the torso his walk had just started.
+ */
+static void bret_change_leg(wm_bret_backend_actor *bva,
+                            const wm_visual_sequence *seq) {
+    if (!seq) return;
+    if (bva->prog.program &&
+        !(bva->prog.program->source_label && seq->source_label &&
+          strcmp(bva->prog.program->source_label, seq->source_label) == 0)) {
+        bva->prog.program = NULL;
+        bva->prog.ended = true;
+        wm_visual_start(&bva->visual, seq);
+        return;
+    }
+    start_if_new(&bva->visual, seq);
+}
+
 void wm_bret_backend_execute_walk(wm_arcade_actor_t *actor, void *user) {
     wm_bret_backend_actor *bva = (wm_bret_backend_actor *)user;
     int32_t old_facing_dir;
@@ -616,7 +644,7 @@ void wm_bret_backend_execute_walk(wm_arcade_actor_t *actor, void *user) {
            idle value while walking, exactly like the source. */
         move_compass = wm_convert_facing(actor->move_dir);
         facing_compass = wm_convert_facing(actor->facing_dir);
-        start_if_new(&bva->visual, wm_bret_leg_anim(move_compass, facing_compass));
+        bret_change_leg(bva, wm_bret_leg_anim(move_compass, facing_compass));
 
         /* WRESTLE.ASM::change_walk_anim's torso half (WRESTLE.ASM:4973-4997):
            reselects hrt_torso_anims_table[FACING_DIR][NEW_FACING_DIR], gated
@@ -643,7 +671,7 @@ void wm_bret_backend_execute_walk(wm_arcade_actor_t *actor, void *user) {
            the torso) is never called from #zip in the source. */
         int old_facing_compass = wm_convert_facing(old_facing_dir);
         int new_facing_compass = wm_convert_facing(actor->new_facing_dir);
-        start_if_new(&bva->visual, wm_bret_rotate_anim(old_facing_compass, new_facing_compass));
+        bret_change_leg(bva, wm_bret_rotate_anim(old_facing_compass, new_facing_compass));
     }
 }
 
@@ -789,7 +817,9 @@ static void wm_bret_backend_tick_program(wm_bret_backend_actor *bva,
      * clear for the same reason.
      */
     if (bva->prog.become) {
-        int next = wm_bret_anim_id_for_label(bva->prog.become);
+        const char *target = bva->prog.become;
+        int next = wm_bret_anim_id_for_label(target);
+        const wm_anim_program *by_label;
         bva->prog.become = NULL;
         bva->prog.program = NULL;
         actor->anim_mode &= (uint16_t)~(WM_MODE_UNINT | WM_MODE_NOAUTOFLIP);
@@ -798,8 +828,29 @@ static void wm_bret_backend_tick_program(wm_bret_backend_actor *bva,
                                         (wm_arcade_bret_anim_id_t)next, bva);
             return;
         }
-        /* A label this port has no animation for: the wrestler is left
-           interruptible rather than stuck in a program that has ended. */
+        /*
+         * No typed id, but a program by that name: start it on his
+         * program channel, the route bret_start_label gives the climb
+         * labels. This used to give up here, and the case it gave up on
+         * is how a wrestler dies: ANI_WAITROLL's #die (ANIM.ASM:3135)
+         * hands a man with no life left to the shared xxx_dead_anim
+         * (WRESTLE2.ASM:3992), whose ANI_SETPLYRMODE,MODE_DEAD is what
+         * makes him dead. It is nobody's own animation, so Bret has no id
+         * for it. Measured over the ladder and buddy bouts it is the
+         * label this path takes 45 times in 46; the other is
+         * hrt_hitonground_anim, the end of HRTSEQ4.ASM:1482's fall. A
+         * Bret beaten in buddy mode lay ONGROUND instead of dying, never
+         * counted as down, for 5644 ticks in the bout that showed it.
+         */
+        by_label = wm_anim_program_find(target);
+        if (by_label) {
+            bva->anim_env.opponent = bva->opponent;
+            wm_anim_exec_start(&bva->prog, by_label, actor, round_tickcount,
+                               &bva->anim_env);
+            return;
+        }
+        /* A label with no program at all: left interruptible rather than
+           stuck in a program that has ended. */
         return;
     }
 
@@ -1262,6 +1313,22 @@ wm_arcade_bret_callbacks_t wm_bret_backend_callbacks(wm_bret_backend_actor *bva)
     return cb;
 }
 
+void wm_bret_backend_set_collision_boxes(const wm_bret_backend_actor *bva,
+                                         wm_arcade_actor_t *actor) {
+    const char *frame = NULL;
+    wm_arcade_frame_box_t box;
+    if (!bva || !actor) return;
+    if (bva->prog.program) {
+        frame = wm_anim_exec_frame(&bva->prog);
+    } else {
+        const wm_visual_frame *cur = wm_visual_current(&bva->visual);
+        frame = cur ? cur->source_frame : NULL;
+    }
+    if (!frame) return;
+    box = wm_hurt_box_for_frame(frame);
+    wm_arcade_set_hurt_box(actor, &box);
+}
+
 void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
                           uint16_t round_tickcount) {
     size_t leg_old_frame_index, torso_old_frame_index;
@@ -1291,6 +1358,26 @@ void wm_bret_backend_tick(wm_bret_backend_actor *bva, wm_arcade_actor_t *actor,
      */
     leg_old_frame_index = bva->visual.frame_index;
     if (!bva->prog.program) wm_visual_tick(&bva->visual);
+    /*
+     * set_images' #no_2nd_piece (ANIM.ASM:4818-4820), run by the main
+     * loop before the wrestler animates: a body frame with no torso piece
+     * ends the torso animation, and change_anim2 restarts it later
+     * (start_if_new restarts an ended track). Without it Bret's torso
+     * turn kept playing under a one-piece frame -- every run frame is one
+     * -- and its ANI_SETFACING copied NEW_FACING_DIR into FACING_DIR
+     * mid-run. A drone running right then faced left: the crash into the
+     * crowd fence was skipped as "running away from the gate", drn_run's
+     * backward tap pointed the way he was already running, and he ran
+     * on the spot against the fence for 1892 ticks.
+     */
+    {
+        const wm_visual_frame *leg = bva->prog.program
+            ? NULL : wm_visual_current(&bva->visual);
+        const char *body = bva->prog.program ? wm_anim_exec_frame(&bva->prog)
+                                             : (leg ? leg->source_frame : NULL);
+        if (wm_anim_frame_ends_secondary(body))
+            bva->torso_visual.ended = true;
+    }
     torso_old_frame_index = bva->torso_visual.frame_index;
     wm_visual_tick(&bva->torso_visual);
 

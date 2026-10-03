@@ -36,7 +36,7 @@ static void test_every_mapped_group_resolves(void) {
         WM_R1_ANIM_FALL_BACK_TBUKL, WM_R1_ANIM_KNEE_HIT,
         WM_R1_ANIM_KNOCKDOWN, WM_R1_ANIM_BOUNCE_OFF,
         WM_R1_ANIM_SPECIAL_HEAD_HIT2_SAND, WM_R1_ANIM_SPECIAL_BODY_HIT2,
-        WM_R1_ANIM_WRES_SLAVE
+        WM_R1_ANIM_WRES_SLAVE, WM_R1_ANIM_LOSE_BALANCE
     };
     unsigned i;
     int w;
@@ -59,12 +59,12 @@ static void test_every_mapped_group_resolves(void) {
 }
 
 /*
- * The ten with no table stay NULL rather than pointing at something
+ * The nine with no table stay NULL rather than pointing at something
  * plausible. Asserting this keeps a later "helpful" guess honest.
  */
 static void test_the_unmapped_groups_stay_unmapped(void) {
     static const wm_arcade_react1_anim_group_t unmapped[] = {
-        WM_R1_ANIM_LOSE_BALANCE, WM_R1_ANIM_QUICK_KNEE_HIT,
+        WM_R1_ANIM_QUICK_KNEE_HIT,
         WM_R1_ANIM_SPINKICK_HEAD_HIT, WM_R1_ANIM_FALL_BACK2,
         WM_R1_ANIM_JUMPKICK_HEAD_HIT, WM_R1_ANIM_BOUNCE_OFF_DIZZY,
         WM_R1_ANIM_BACKHAND_HEAD_HIT, WM_R1_ANIM_EARSLAP_HEAD_HIT,
@@ -75,6 +75,28 @@ static void test_the_unmapped_groups_stay_unmapped(void) {
         assert(wm_react_anim_table_for(unmapped[i]) == NULL);
         assert(wm_react_anim_label(unmapped[i], 0, 0) == NULL);
     }
+}
+
+/*
+ * #losebal (REACT2.ASM:467 and two more copies) is what a pushed man
+ * plays. Each wrestler gets his own `_4_losebal_anim`, slot 7 -- "spare"
+ * -- gets Doink's, and the Referee has no row: REACT1.ASM:1102's copy
+ * stops at nine and only that much is claimed.
+ */
+static void test_a_pushed_man_loses_his_balance(void) {
+    static const char *const want[9] = {
+        "hrt_4_losebal_anim", "rzr_4_losebal_anim", "und_4_losebal_anim",
+        "yok_4_losebal_anim", "shn_4_losebal_anim", "bam_4_losebal_anim",
+        "dnk_4_losebal_anim", "dnk_4_losebal_anim", "lex_4_losebal_anim"
+    };
+    const wm_roster_anim_table *t = wm_roster_anim_find("#losebal");
+    int w;
+    assert(t != NULL && t->slots == 9 && t->columns == 1);
+    for (w = 0; w < 9; ++w) {
+        const char *l = wm_react_anim_label(WM_R1_ANIM_LOSE_BALANCE, w, 0);
+        assert(l != NULL && strcmp(l, want[w]) == 0);
+    }
+    assert(wm_react_anim_label(WM_R1_ANIM_LOSE_BALANCE, 9, 0) == NULL);
 }
 
 /*
@@ -207,6 +229,7 @@ static void test_the_match_supplies_a_reaction_hook(void) {
 int main(void) {
     test_every_mapped_group_resolves();
     test_the_unmapped_groups_stay_unmapped();
+    test_a_pushed_man_loses_his_balance();
     test_the_facing_tables_actually_face();
     test_the_hook_runs_before_health_and_is_read_back();
     test_the_match_supplies_a_reaction_hook();

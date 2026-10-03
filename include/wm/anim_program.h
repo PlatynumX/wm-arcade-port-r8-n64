@@ -861,4 +861,17 @@ void wm_anim_exec_tick(wm_anim_exec *exec, wm_arcade_actor_t *actor,
 /* The frame currently showing, or NULL once the program has ended. */
 const char *wm_anim_exec_frame(const wm_anim_exec *exec);
 
+/*
+ * ANIM.ASM:4818-4820, inside #set_image (which set_images runs for every
+ * wrestler from the main loop, WRESTLE.ASM:2065, before the wrestler
+ * processes animate): `move *a9(IANI2X),a14,L / inc a14 / jrz
+ * #no_2nd_piece` ... `#no_2nd_piece movi MODE_END,a0 / move
+ * a0,*a13(ANIMODE2) ;if no 2nd piece`. A primary frame with no second
+ * piece ends the secondary (torso) animation; change_anim2 restarts an
+ * ended one. True when `primary_frame` is such a frame -- the frame
+ * geometry's attachment pair is (-1, -1). An unknown frame answers false,
+ * which leaves the torso alone.
+ */
+bool wm_anim_frame_ends_secondary(const char *primary_frame);
+
 #endif

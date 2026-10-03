@@ -32,6 +32,8 @@ extern "C" {
  *   SPECIAL_HEAD_HIT2_SAND REACT1.ASM:243              FACETBL
  *   SPECIAL_BODY_HIT2     REACT1.ASM:362               FACETBL
  *   WRES_SLAVE            ANIM.ASM:4590 slaveanim_tbl
+ *   LOSE_BALANCE          REACT1.ASM:1060, REACT2.ASM:420, :440,
+ *                         REACT5.ASM:202 -- `FACETBL #losebal`
  *
  * The macro matters, not just the table: FACETBL is one long per
  * wrestler and FACE24TBL is two, the second chosen by FACING_DIR. The
@@ -39,8 +41,19 @@ extern "C" {
  * right thing for both and the caller does not have to know which is
  * which.
  *
- * TEN GROUPS HAVE NO ROW, and they are left NULL rather than pointed at
- * something plausible: LOSE_BALANCE, QUICK_KNEE_HIT, SPINKICK_HEAD_HIT,
+ * #losebal is a `#local`, written three times -- REACT1.ASM:1102,
+ * REACT2.ASM:467, REACT5.ASM:309 -- one beside each of its users. The
+ * three name the same animation for every wrestler; REACT1's copy only
+ * stops at nine rows where the other two add the Referee. So whichever
+ * file a push comes from, the wrestler's row is the same, and
+ * tools/wlrostertbl.py emits the table once (the nine-row copy, so no
+ * Referee row is claimed). Until that was read, LOSE_BALANCE had no
+ * row, and a pushed wrestler got his push velocity (REACT2.ASM:423 and :443,
+ * [8,0]) with no animation to end it: in buddy mode Undertaker slid
+ * 25000 pixels.
+ *
+ * NINE GROUPS HAVE NO ROW, and they are left NULL rather than pointed at
+ * something plausible: QUICK_KNEE_HIT, SPINKICK_HEAD_HIT,
  * FALL_BACK2, JUMPKICK_HEAD_HIT, BOUNCE_OFF_DIZZY, BACKHAND_HEAD_HIT,
  * EARSLAP_HEAD_HIT, GET_BUZZ and BURN. No FACETBL or FACE24TBL in any
  * REACT file names a global table for them; they select their animation

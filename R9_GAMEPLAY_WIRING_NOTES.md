@@ -1070,6 +1070,69 @@ and every bout now draws blood. The longest unbroken run went 3776 → 194
 ticks for RUNNING and 19746 → 4617 for NORMAL. `test_drone_running.c`
 pins each path; 8 mutations, 8 caught.
 
+## Every bout ends, not only the attract mode's
+
+The stuck-state probe behind the last two sections had only ever run on
+attract bouts: one drone against one drone. Run on the one-player ladder
+(two and three opponents) and on buddy mode (four drones), twenty bouts
+in all, it found a match that could not end and seven more defects. None
+of them is reachable from an attract bout.
+
+- **The deciding round never ended the match.** `announce_rnd_winner`
+  branches to `DO_WAIT` when either side has two rounds
+  (LIFEBAR.ASM:2845-2852). The port raised its reset flag for the other
+  answer and nothing for this one, so `DO_WAIT` started only off the KO
+  countdown. Most live rounds end through the raise-arm animations'
+  `ANI_CODE,win_announce`, and 15 of the 20 bouts reached a winner and
+  then stood in the ring for good.
+- **`#dobuck`'s report was applied every tick.** It is cleared only while
+  the wrestler is `MODE_DEAD`, and the whole effect of a buckoff is that
+  he is not. The convulse restarted from frame one for the rest of the
+  match.
+- **Bret could not die.** ANI_WAITROLL's `#die` (ANIM.ASM:3135) hands a
+  beaten wrestler to the shared `xxx_dead_anim` (WRESTLE2.ASM:3992),
+  whose `ANI_SETPLYRMODE,MODE_DEAD` is what makes him dead. Bret has no
+  typed id for it, and his backend gave up on any label without one, so
+  he lay `ONGROUND` for 5644 ticks.
+- **`#no_2nd_piece`** (ANIM.ASM:4818): a one-piece body frame ends the
+  torso. Without it Bret's torso turn kept running under his run frames,
+  and its `ANI_SETFACING` turned a running drone round.
+- **`LOSE_BALANCE` had no table.** `FACETBL #losebal` is a `#local`
+  written three times. The copies agree on every slot they all carry, but
+  one has nine rows and two have ten, so the extractor refused it as
+  ambiguous. It accepts that case now, and a pushed wrestler plays his
+  lose-balance animation instead of sliding 25000 pixels.
+- **The order.** The source's wrestler loop animates, sets the collision
+  boxes and confines BEFORE `move_wrestler` (WRESTLE.ASM:2457-2468). The
+  port dispatched first. A drone running along the ring's bottom edge
+  holding DOWN was a Z step past the rope when `bounce_off_ropes` looked,
+  `calc_line_x` answers 0 there, and he ran on the spot at the left rope
+  for 1800 ticks. The port follows the source's order now, including the
+  second confine pass after the dispatch and `confine_wrestler_fix1`/`fix2`'s
+  `CAN_MOVE_DIR` merge (WRESTLE.ASM:3736).
+- **`ani_init` ran only for Bret.** The other seven started with no
+  animation and an empty hurt box. Once confine ran first, it read that
+  empty box as "far past the left rope" and threw them out of the ring on
+  tick 0. The committed code already did this to a dead man with no
+  animation: 400 pixels a tick, to x=3291 by tick 3. `test_victory_pose.c`
+  had been relying on it. Every wrestler runs his `*_ani_init` at match
+  start and at each round reset now, and the reset hands an auto-pin
+  drone back to the player (`drone_change_back`).
+- **Bret's leg selection didn't replace his stance program.** A Bret who
+  stepped off from his stance walked with the stance still playing, for
+  150 ticks and more. Leg selection replaces it now, as `change_anim1`
+  does.
+
+Over the twenty bouts every match now finishes. The longest RUNNING run
+went 1824 → 73 ticks and the longest ONGROUND run 5644 → 263. The furthest
+anyone got from the ring's centre went 24998 → 578.
+`test_every_bout_ends.c` pins each cause; 13 mutations of the C, 13
+caught, and 2 of the extractor rule, 2 caught.
+
+**Recorded, not translated.** The loop head's `ARE_WE_IN_RING`
+(WRESTLE.ASM:2411) has no caller. `drone_main` still runs at the top of
+the port's tick, where the source runs it after the second confine.
+
 ## Deliberately still absent
 
 - Nothing about `pal_getf` any more: the allocator is owned, the seam is

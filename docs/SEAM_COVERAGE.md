@@ -10,18 +10,12 @@ reads like working code.
 | | count |
 |---|---|
 | seams declared | 162 |
-| filled by something | 111 |
-| **called but empty** | **32** |
+| filled by something | 112 |
+| **called but empty** | **31** |
 
 Every empty one carries a verdict in `port/seam_ledger.json`,
 and a source-tools test refuses both an unledgered empty seam
 and a ledger row for a seam that is no longer empty.
-
-## deferred (1)
-
-| seam | declared in |
-|---|---|
-| `pal_getf` | `include/wm/anim_program.h` |
 
 ## display (18)
 

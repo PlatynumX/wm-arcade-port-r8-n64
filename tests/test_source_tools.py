@@ -5295,13 +5295,16 @@ def test_the_roster_env_builder_fills_every_field() -> None:
 # A wm_arcade_actor_t field that src/ reads and never writes, with why the
 # zero it always holds is the right answer. Anything not here is either a
 # dropped input or a duplicate of a field somebody else is writing.
-ACTOR_FIELD_NEVER_WRITTEN = (
-    ("skeleton_pal",
-     "DNKSEQ3.ASM:493 fills it from `movi DNKBLU_P,a0 / calla pal_getf` "
-     "-- a RUNTIME palette allocator, so there is no number to "
-     "transcribe and this port has nothing to ask. Inventing an index "
-     "would make Doink's buzzer look deliberate and wrong"),
-)
+ACTOR_FIELD_NEVER_WRITTEN = ()
+# Empty, and it is worth saying what came off it. skeleton_pal sat here
+# with the reason "a RUNTIME palette allocator, so there is no number to
+# transcribe and this port has nothing to ask" -- which was false twice
+# over: PAL.ASM's allocator was translated and tested, and what it
+# actually lacked was an owner and a call site. anim_code.c's
+# set_position does the `movi DNKBLU_P,a0 / calla pal_getf / move
+# a0,*a13(SKELETON_PAL)` at DNKSEQ3.ASM:493 now, out of the app's one
+# wm_pal_state, and this guard is what refused to let the row outlive
+# the question.
 
 
 def test_every_actor_field_read_in_src_is_also_written() -> None:

@@ -721,11 +721,98 @@ Both are deleted with the translation.
   the two bytes it sends, so the upper word is discarded unread and the port
   reads one row. Written down so the `,L` is not later "fixed" into a bug.
 
+## The palettes: items 38-40, and Doink's buzzer finally has a colour
+
+PAL.ASM's allocator was translated, unit-tested, and **owned by nobody**. The
+only `wm_pal_state` anywhere in the tree was a file-static in
+`tests/arcade_port/pal/test_pal.c`.
+
+| # | what changed | where |
+|---|---|---|
+| 38 | the app owns one PALRAM, with DIAGP as colour map 0 | `UTIL.ASM:130`, `PAL.ASM:116-118` |
+| 39 | `pal_transfer` drains the queue once a frame | `MAIN.ASM:719` |
+| 40 | `set_position` resolves `DNKBLU_P` into `SKELETON_PAL` | `DNKSEQ3.ASM:493` |
+
+### An unwired seam, and a missing call behind it
+
+Three notes in this tree had explained why `skeleton_pal` stayed zero, each
+with a different wrong reason:
+
+1. *"there is no palette allocator here to ask"* — false. `PAL.ASM:236`
+   `pal_getf` is translated, slot reuse, free-slot scan, `pal_clean` fallback
+   and all, and `DNKBLU_P` is registered by name in
+   `src/generated/palettes.c`.
+2. *"nothing in the LIVE app supplies `env->pal_getf`"* — true, and fixed: the
+   app owns one `wm_pal_state` and `match.c` fills the seam from it.
+3. Neither note mentioned the part that would have left it zero anyway.
+   `anim_code.c`'s `set_position` did only the `MY_PAL = OBJ_PAL` half of
+   `DNKSEQ3.ASM:476` and **never attempted** the `pal_getf` at `:493`. The
+   resolve had no call site to be unwired at.
+
+`set_position`'s name is a lie worth recording: every position write in it is
+commented out (`:486`, `:489`, `:492`), so it moves nobody. What is live is
+
+```
+	movi	DNKBLU_P,a0
+	calla	pal_getf
+	move	a0,*A13(SKELETON_PAL)
+	move	*a13(OBJ_PAL),a0
+	move	a0,*a13(MY_PAL)
+```
+
+One global `SUBR`, `.ref`'d by eight other wrestlers' SEQ files — every
+wrestler's `get_buzz_anim` calls it, and it asks for `DNKBLU_P` in all of them,
+because the buzzer is Doink's and the victim turns Doink-blue.
+
+### 84 KB does not go in a struct four tests put on the stack
+
+`wm_pal_state` is 84 KB — FADERAM alone is 80 x 256 words, three times the whole
+of the rest of `wm_app`. So it is a file-static in `app.c` reached through
+`wm_app::pal`, which `wm_arcade_pal.h` asks for in as many words, and which
+matches the arcade: PALRAM and FADERAM are fixed RAM regions and COLRAM is the
+hardware's, none of them per-game state.
+
+### `pal_init` runs where the source runs it
+
+`calla pal_init` is inside `WIPEOUT` (`UTIL.ASM:130`), and `attract_mode`'s
+first two instructions are `calla display_blank / calla WIPEOUT`
+(`ATTRACT.ASM:142-143`). So every entry into attract mode puts PALRAM back to
+DIAGP-and-nothing-else, and slot 0 stays permanently taken — `pal_clean` starts
+at slot 1 — which is what makes 0 safe as "no palette" for every caller of the
+by-name bridge.
+
+The nine other `calla WIPEOUT` sites in `ATTRACT.ASM` are not modelled, and the
+reason is measurable rather than a shrug: this port's attract screens allocate
+no palettes for them to free. The only two by-name requests in the whole tree
+are made during a match.
+
+### Draining the transfer queue is not cosmetic
+
+`MAIN.ASM:719` `calla pal_transfer ;Copy new PALs` sits inside `DIRQ` (`:592`,
+"Display IRQ"), once a frame. `pal_getf` claims a slot **only if** `pal_set`
+found a free transfer cell, and there are `WM_NUMPALT` (60) of them — so a queue
+nobody empties fills up and then every allocation fails for good. Nothing read
+COLRAM and nothing drained the queue. The port runs it beside `snd_update`,
+which the same interrupt runs.
+
+### What is still absent here
+
+- **`in_use` and `ignore_this_pal`**, `pal_clean`'s questions to OBJLST and
+  BAKLST. `wm_obj_pool` carries the `palette` field for exactly that and has no
+  instance in `src/` either — a second subsystem with no owner. `pal_clean` is
+  also only reached when all 80 slots are full, which three palettes cannot do.
+- **The step after the allocator.** A slot gives you a palette *number*;
+  turning its COLRAM colours into something this renderer can blit is still
+  missing, which is what keeps the AAMA screen's two colours and the high-score
+  highlight undrawn. Both of those notes used to blame `pal_getf` and have been
+  corrected to blame the right step.
+
 ## Deliberately still absent
 
-- `pal_getf`, a runtime palette allocator, so `skeleton_pal` stays unwritten and
-  Doink's electrocution buzzer has no palette. Inventing an index would make it
-  look deliberate and wrong; zero keeps it visibly unfinished.
+- Nothing about `pal_getf` any more: the allocator is owned, the seam is
+  filled, and `skeleton_pal` is written from `DNKBLU_P` -- see the palette
+  section above. What is still missing is the step AFTER it, turning a colour
+  map's COLRAM contents into something this renderer can blit.
 - `screen_flash`, `shadow_trail`, `impact`, `flash_white` and
   `restore_hit_render_state` — object/palette/DMA work with no renderer behind it.
 - Two ATTRACT.ASM screens whose scheduler is translated and whose bodies are

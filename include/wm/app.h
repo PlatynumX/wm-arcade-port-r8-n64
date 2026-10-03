@@ -7,6 +7,7 @@
 #include "wm/arcade/wmania_attract_data.h"
 #include "wm/arcade/wm_arcade_sound.h"
 #include "wm/arcade/wm_arcade_music.h"
+#include "wm/arcade/wm_arcade_pal.h"
 #include "wm/arcade/wmania_hiscore_entry.h"
 #include "wm/arcade/wmania_hiscore_persist.h"
 #include "wm/arcade/wmania_hiscore_system.h"
@@ -375,6 +376,23 @@ typedef struct {
      * half of every gate.
      */
     uint16_t adj_music;
+    /*
+     * PAL.ASM's palette allocator (wm/arcade/wm_arcade_pal.h). The whole
+     * thing -- pal_getf's slot reuse and free-slot scan, pal_clean,
+     * pal_set/pal_transfer, pal_find and the global faders -- was
+     * translated and tested, and had NO INSTANCE in src/ at all: the
+     * only wm_pal_state anywhere was a file-static in
+     * tests/arcade_port/pal/test_pal.c. This is the owner it lacked.
+     *
+     * A pointer to a file-static in app.c, not a member by value: the
+     * struct is 84 KB (FADERAM alone is 80 x 256 words), more than three
+     * times the rest of wm_app put together, and four tests declare a
+     * wm_app on the C stack. wm_arcade_pal.h says in as many words to
+     * give it static or heap storage. It also matches what the arcade
+     * does: PALRAM and FADERAM are fixed RAM regions and COLRAM is the
+     * hardware's, none of them per-game state.
+     */
+    wm_pal_state *pal;
 
     /*
      * HSTD.ASM's high-score tables, and the initials entry that feeds

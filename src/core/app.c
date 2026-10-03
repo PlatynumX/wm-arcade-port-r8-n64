@@ -212,6 +212,13 @@ static void move_back_off_screen_proc(wm_process *proc, void *user) {
  * attract's silence commands and the DCS bang were sent while the
  * arcade's board would have been muted.
  */
+/*
+ * PALRAM, PALTRAM, FADERAM and COLRAM. 84 KB of them, which is why they
+ * are here rather than inside wm_app -- see the `pal` field's note in
+ * wm/app.h. One instance, as the arcade has one.
+ */
+static wm_pal_state wm_app_palram;
+
 static void wm_app_board_call(wm_app *app, int32_t code) {
     if (!app) return;
     /* @SOUNDSUP holds the literal 2 when set (ATTRACT.ASM:677); this
@@ -817,6 +824,9 @@ static void wm_app_bind_anim_env(wm_app *app) {
        the match (wm/arcade/wm_arcade_music.h); the match is handed a
        pointer to it rather than a copy. */
     app->match.music = &app->music;
+    /* The one PALRAM, which the animation VM's palette swaps allocate
+       out of through wm_app_pal_getf. */
+    app->match.palettes = app->pal;
     app->match.sound_proc_user = app;
     app->match.start_bell = wm_app_start_bell;
     app->match.start_pin_him = wm_app_start_pin_him;
@@ -1043,6 +1053,15 @@ void wm_app_init(wm_app *app) {
     wm_music_init(&app->music);
     app->adj_music = WM_MUSIC_ADJMUSIC_FACTORY;
     app->sound.suppressed = false;
+    /*
+     * `calla pal_init` (UTIL.ASM:130), inside WIPEOUT. pal_init clears
+     * PALRAM and PALTRAM and then takes DIAGP -- its own comment is
+     * "always start with DIAGP as pal 0!" (PAL.ASM:116-118) -- which is
+     * what makes slot 0 permanent, since pal_clean skips it, and
+     * therefore what makes 0 safe as "no palette" everywhere else.
+     */
+    app->pal = &wm_app_palram;
+    (void)wm_pal_init_with_diagp(app->pal);
     app->attract.amode_loops = 0;
     /*
      * -1, not 0, so "no screen has chosen yet" is representable: 0 is a real
@@ -1194,6 +1213,21 @@ void wm_app_tick_dual(wm_app *app,
      * heard again.
      */
     wm_sound_update(&app->sound);
+    /*
+     * `calla pal_transfer ;Copy new PALs` -- MAIN.ASM:719, inside DIRQ
+     * (:592, "Display IRQ"), once a frame beside the autoerase. It
+     * drains PALTRAM into COLRAM, which is the half of the allocator
+     * that makes a slot's colours real.
+     *
+     * Draining it is not cosmetic. pal_getf claims a slot only if
+     * pal_set found a free transfer CELL, and there are
+     * WM_NUMPALT (60) of them: a queue nobody empties fills up and then
+     * every allocation fails for good. Nothing in this port read COLRAM
+     * yet and nothing drained the queue either, which is the shape this
+     * project keeps finding -- a thing computed correctly and consumed
+     * by nobody.
+     */
+    wm_pal_transfer(app->pal);
     /* The two SOUND_PID processes, beside snd_update the way the
        arcade's scheduler runs them beside it. */
     wm_app_tick_sound_procs(app);
@@ -1550,6 +1584,17 @@ void wm_app_tick_dual(wm_app *app,
             return;
         }
         app->attract_started = true;
+        /*
+         * `calla display_blank / calla WIPEOUT` are attract_mode's own
+         * first two instructions (ATTRACT.ASM:142-143), and WIPEOUT is
+         * where `calla pal_init` lives (UTIL.ASM:130). So every entry
+         * into attract mode puts PALRAM back to DIAGP-and-nothing-else.
+         * Nine `calla WIPEOUT` sites in ATTRACT.ASM do the same between
+         * individual screens; those are not modelled, because this
+         * port's attract screens allocate no palettes to be freed --
+         * the only two requests in the tree are made during a match.
+         */
+        (void)wm_pal_init_with_diagp(app->pal);
         /* `SLEEPK 8 / clr a3 / calla SNDSND` (ATTRACT.ASM:146-149) --
            "let the sound board reset finish up", then silence it. */
         wm_app_board_call(app, 0);

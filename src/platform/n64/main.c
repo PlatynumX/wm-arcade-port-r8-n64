@@ -942,9 +942,12 @@ static void render_bios(const wm_app *app) {
  *
  * THE HIGHLIGHT IS COMPUTED AND NOT DRAWN. WmHstdRow.highlighted carries the
  * source's GOLD-versus-BLUE pick, off the GET_AUD AUD_INTER/AUD_BEATEN
- * comparison, and resolving a TMS palette index needs the allocator pal_getf
- * would be, so the newest entry does not stand apart. Inventing a second
- * colour would look deliberate and be wrong.
+ * comparison. This used to say the blocker was "the allocator pal_getf would
+ * be"; that allocator is translated and owned now, so the honest blocker is
+ * one step later: GOLDPAL and BLUEPAL would each get a colour map from it,
+ * and this renderer has no path from a palette slot's COLRAM to an RGBA
+ * colour it can blit with. So the newest entry still does not stand apart.
+ * Inventing a second colour would look deliberate and be wrong.
  */
 static void render_hstd(const wm_app *app) {
     const WmHstdState *st = &app->attract.hstd;

@@ -576,12 +576,22 @@ typedef struct wm_anim_env {
      */
     int32_t world_tlx;
     /*
-     * SPECIAL.ASM's pal_getf, for the routines that swap a wrestler's
-     * palette for a named one (BAMSEQ2.ASM's #set_pal asks for BAMBLU_P).
-     * Returns the palette handle, or 0 when this port has no palette
-     * system to resolve one -- and then the routine does its own
-     * bookkeeping and leaves OBJ_PAL alone, so #restore_pal still puts
-     * back exactly what was there.
+     * PAL.ASM:236 pal_getf, for the two routines that resolve a palette
+     * BY NAME rather than carrying one on the wrestler: BAMSEQ2.ASM:1352
+     * asks for BAMBLU_P as Bam Bam burns, DNKSEQ3.ASM:493 for DNKBLU_P as
+     * Doink is electrocuted. Returns the DMA-format palette number.
+     *
+     * Filled from match.c, out of the app's one wm_pal_state. It was
+     * empty in the live app until then and only tests/test_core.c ever
+     * set it, which is why this note used to say the return was "0 when
+     * this port has no palette system to resolve one" -- the system was
+     * here and nothing asked it.
+     *
+     * Zero is still the failure answer, and the callers are written for
+     * it: they do their own MY_PAL and TEMP_PAL bookkeeping and leave
+     * OBJ_PAL alone, so #restore_pal puts back exactly what was there.
+     * It is safe to overload because pal_init takes slot 0 for DIAGP
+     * before anything else can and pal_clean never frees it.
      */
     int32_t (*pal_getf)(void *user, const char *name);
 

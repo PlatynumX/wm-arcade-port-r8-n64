@@ -1286,6 +1286,23 @@ static void match_grant_match_awards(wm_match_state *m,
     }
 }
 
+/*
+ * wm_anim_env's `pal_getf` seam. BAMSEQ2.ASM:1352 and DNKSEQ3.ASM:493
+ * both ask for a palette BY NAME -- `movi BAMBLU_P,a0 / calla pal_getf`
+ * -- and wm_pal_getf_by_name (wm/arcade/wm_arcade_pal.h) was written as
+ * exactly this bridge and had no caller at all until now: PAL.ASM was
+ * translated, tested, and owned by nobody.
+ *
+ * Zero on failure is the source's own answer and is safe to overload as
+ * "no palette", because pal_init takes slot 0 for DIAGP before anything
+ * else can and pal_clean never frees it.
+ */
+static int32_t match_pal_getf(void *user, const char *name) {
+    wm_match_state *m = (wm_match_state *)user;
+    if (!m) return 0;
+    return wm_pal_getf_by_name(m->palettes, name);
+}
+
 /* The two sounds DO_WAIT makes itself, through triple_sound. */
 static void match_end_sound(void *user, int sound) {
     wm_match_state *m = (wm_match_state *)user;
@@ -2932,6 +2949,10 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             m->bret_visual[i].anim_env.draw_move_name = match_draw_move_name;
             m->wrestler_visual[i].anim_env.screen_shake = match_screen_shake;
             m->bret_visual[i].anim_env.screen_shake = match_screen_shake;
+            /* PAL.ASM's allocator, which both palette-swap routines ask
+               by name. screen_user is already `m` above. */
+            m->wrestler_visual[i].anim_env.pal_getf = match_pal_getf;
+            m->bret_visual[i].anim_env.pal_getf = match_pal_getf;
             m->wrestler_visual[i].anim_env.create_dizzy = match_create_dizzy;
             m->bret_visual[i].anim_env.create_dizzy = match_create_dizzy;
             m->wrestler_visual[i].anim_env.set_allow_offscrn =

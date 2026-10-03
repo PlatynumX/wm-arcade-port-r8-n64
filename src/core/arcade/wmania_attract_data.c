@@ -119,10 +119,15 @@ const char *const wm_attract_aama_labels[6] = {
  * The two colours are the source's own words: >1111 is its "pal 0,
  * color 17" and >0606 is color 6, the one ln2b uses so that "- MILD"
  * reads apart from the advisory above it. They are carried here and NOT
- * resolved: turning a TMS palette index into RGB needs the palette, and
- * this port has no pal_getf behind it. The renderer draws both in the
- * same colour as a result -- a known, visible divergence rather than an
- * invented pair of colours.
+ * resolved, and the reason has moved: this note said the port "has no
+ * pal_getf behind it", and it has one now -- PAL.ASM's allocator is
+ * translated, owned by the app, and reached through the match's
+ * pal_getf seam. What is still missing is the step AFTER it. Both
+ * indexes name pal 0, which is DIAGP; turning a colour number inside it
+ * into RGB means reading wm_pal_state's COLRAM, which pal_transfer now
+ * fills and no renderer in this tree looks at. So the renderer still
+ * draws both in the same colour -- a known, visible divergence rather
+ * than an invented pair of colours.
  */
 const WmAttractAamaLine wm_attract_aama_lines[WM_ATTRACT_AAMA_LINES] = {
     { "aama_ln1",  200,  94, 0x1111u },

@@ -417,9 +417,12 @@ static void flsh_wht(wm_arcade_actor_t *actor, const wm_anim_env *env,
  * temporary palette is resolved by name rather than carried on the
  * wrestler: `movi BAMBLU_P,a0 / calla pal_getf`.
  *
- * With no palette system the resolve returns 0 and OBJ_PAL is left where
- * it is -- the save into MY_PAL and the TEMP_PAL bit still happen, so
- * #restore_pal puts back exactly what was there either way.
+ * A failed resolve returns 0 and OBJ_PAL is left where it is -- the save
+ * into MY_PAL and the TEMP_PAL bit still happen, so #restore_pal puts
+ * back exactly what was there either way. That used to be the ONLY
+ * outcome, because nothing in the live app filled env->pal_getf; it is
+ * now the fallback, and BAMBLU_P resolves for real out of the app's
+ * wm_pal_state.
  */
 #define WM_BAM_BURN_PAL "BAMBLU_P"
 
@@ -3068,27 +3071,45 @@ static void inc_loop(wm_arcade_actor_t *actor, const wm_anim_env *env,
 
 /*
  * set_position -- and the name is a lie worth recording. EVERY position
- * write in it is commented out in the source; what is left live is the
- * palette pair, so it moves nobody. Only the MY_PAL half is translated
- * here: SKELETON_PAL comes from `pal_getf` on a per-file palette symbol
- * (DNKSEQ3.ASM:493 `movi DNKBLU_P,a0 / calla pal_getf`).
+ * write in it is commented out in the source (DNKSEQ3.ASM:486, :489,
+ * :492), so it moves nobody; what is left live is the palette pair.
  *
- * THIS COMMENT USED TO SAY the port "has no palette system to resolve
- * one", and that has not been true for some time. PAL.ASM:236 pal_getf is
- * translated in wm/arcade/wm_arcade_pal.h -- slot reuse, free-slot scan,
- * pal_clean fallback and all -- DNKBLU_P is registered by name in
- * src/generated/palettes.c, and wm_pal_getf_by_name exists precisely as the
- * bridge for wm_anim_env's pal_getf seam.
+ * Both halves are translated now, and the SKELETON_PAL one was missing
+ * entirely rather than failing:
  *
- * What is actually missing is smaller and more ordinary: nothing in the
- * LIVE app supplies env->pal_getf. Only tests/test_core.c sets it. So the
- * seam is unwired rather than unbuildable, and SKELETON_PAL stays zero for
- * that reason and not the one this comment used to give.
+ *     movi    DNKBLU_P,a0
+ *     calla   pal_getf
+ *     move    a0,*a13(SKELETON_PAL)
+ *     move    *a13(OBJ_PAL),a0
+ *     move    a0,*a13(MY_PAL)
+ *
+ * This comment used to explain at length why SKELETON_PAL stayed zero --
+ * first that the port "has no palette system to resolve one", then, when
+ * that turned out to be false, that nothing supplied env->pal_getf. The
+ * second was true and is now fixed: match.c fills the seam from the app's
+ * one wm_pal_state. The part no note mentioned is that the resolve was
+ * never attempted here at all, so even a filled seam would have left
+ * Doink's buzzer palette at zero and set_skeleton_pal swapping OBJ_PAL to
+ * nothing.
+ *
+ * The order matters and is the source's: SKELETON_PAL is written from
+ * pal_getf FIRST, then MY_PAL from OBJ_PAL. OBJ_PAL is untouched either
+ * way, so set_skeleton_pal is what actually swaps and set_my_pal is what
+ * puts it back.
  */
+#define WM_DOINK_BUZZ_PAL "DNKBLU_P"
+
 static void set_position(wm_arcade_actor_t *actor, const wm_anim_env *env,
                          int32_t param) {
-    (void)env; (void)param;
-    if (actor) actor->my_pal = actor->obj_pal;
+    (void)param;
+    if (!actor) return;
+    /* `movi DNKBLU_P,a0 / calla pal_getf / move a0,*a13(SKELETON_PAL)`.
+       Zero when the allocator has no slot or the seam is empty, which is
+       what the source stores too when pal_getf fails. */
+    actor->skeleton_pal = (env && env->pal_getf)
+        ? env->pal_getf(env->screen_user, WM_DOINK_BUZZ_PAL)
+        : 0;
+    actor->my_pal = actor->obj_pal;
 }
 
 

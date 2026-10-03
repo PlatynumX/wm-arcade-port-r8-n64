@@ -10,6 +10,7 @@
 #include "wm/arcade/wm_arcade_pin.h"
 #include "wm/award.h"
 #include "wm/arcade/wm_arcade_match_end.h"
+#include "wm/arcade/wm_arcade_pal.h"
 #include "wm/arcade/wm_arcade_round_reset.h"
 #include "wm/arcade/wm_arcade_scroll.h"
 #include "wm/arcade/wm_arcade_smove.h"
@@ -395,6 +396,17 @@ typedef struct {
      * implement behind it, only one word of state to share.
      */
     wm_music_state_t *music;
+    /*
+     * PAL.ASM's allocator (wm/arcade/wm_arcade_pal.h), which the
+     * animation VM's palette-swap routines reach through
+     * wm_anim_env::pal_getf. A pointer for two reasons: PALRAM, PALTRAM,
+     * FADERAM and COLRAM are fixed regions in the arcade rather than
+     * per-match state -- `calla pal_init` happens in WIPEOUT, once per
+     * screen, not once per bout -- and the struct is 84 KB, which is
+     * three times the whole of wm_app and has no business in anything a
+     * caller might put on a stack.
+     */
+    wm_pal_state *palettes;
     /*
      * The two SOUND_PID processes a match starts, which are not one-shot
      * calls and so cannot go through anim_sound: each is a little state

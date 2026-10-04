@@ -217,6 +217,22 @@ typedef struct {
      */
     int32_t blocking_off;
     int32_t hyper_speed_on;
+    /*
+     * AWARD.ASM:2262 @ring_out_on, the RING_OUTS_ON powerup. ARE_WE_IN_RING
+     * reads it twice: set, a wrestler going over the ropes is killed when
+     * he lands (kill_when_hit_ground), and the "get back in" message is
+     * withheld (do_ringout_dufus).
+     */
+    int32_t ring_out_on;
+    /*
+     * SPECIAL.ASM's kill_when_hit_ground processes, one per wrestler at
+     * most: CREATE0'd by ARE_WE_IN_RING when ring-outs are on, they poll
+     * until he is on the ground and then take 150 life.
+     */
+    bool kill_when_hit_ground[WM_MATCH_MAX_ACTORS];
+    /* The pass wrestler_main makes through its loop head once, before its
+       first sleep (WRESTLE.ASM:2406). */
+    bool loop_head_primed;
 
     /*
      * REACT1.ASM's own callback set and its context, owned here because
@@ -342,8 +358,10 @@ typedef struct {
     wm_shake_state shake;
     /*
      * WRESTLE.ASM:257 allow_offscrn -- ANI_SET_IDIOT's 80 ticks of "let
-     * them off screen on toss outs". WRESTLE2.ASM:2214 counts it down once
-     * a tick and skips the ring-out check entirely while it is set.
+     * them off screen on toss outs". WRESTLE2.ASM:2214, in keep_onscreen,
+     * counts it down once a tick and skips keep_onscreen's in-or-out-of-
+     * the-ring test while it is set. ARE_WE_IN_RING's ring-out count does
+     * not read it.
      */
     int32_t allow_offscrn;
     /* What SPECIAL.ASM's create_dizzy_proc was asked for, for a star

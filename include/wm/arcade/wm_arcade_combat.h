@@ -157,6 +157,14 @@ struct wm_arcade_actor {
     uint16_t risk;
 
     int32_t ptime;
+    /*
+     * PLYR.EQU:226 RING_TIME, "used to calculate ring-out damage":
+     * consecutive ticks inside the ring, counted negative while outside
+     * (SPECIAL.ASM:4493). ARE_WE_IN_RING keeps it, at the head of every
+     * wrestler's loop; TAKER.ASM:652 und_finish_move1 refuses when it is
+     * negative.
+     */
+    int32_t ring_time;
     int32_t stars_flag;
     /* PLYR.EQU:246 SCROLL_Y, "if SCROLL_CTRL bit in STATUS_FLAGS" -- what
        the camera should follow instead of this wrestler's own Y while

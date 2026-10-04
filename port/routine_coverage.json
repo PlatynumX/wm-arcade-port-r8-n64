@@ -55,8 +55,8 @@
    "local": false,
    "external_callers": 1,
    "references": 1,
-   "status": "unassembled",
-   "evidence": "SPECIAL.ASM:4565, .if DEBUG",
+   "status": "implemented",
+   "evidence": "match_are_we_in_ring",
    "from_generated": false,
    "ledgered": false
   },
@@ -19020,7 +19020,7 @@
    "external_callers": 0,
    "references": 2,
    "status": "implemented",
-   "evidence": "spawn_kill_when_hit_ground",
+   "evidence": "kill_when_hit_ground",
    "from_generated": false,
    "ledgered": false
   },

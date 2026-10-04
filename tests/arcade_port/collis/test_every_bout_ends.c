@@ -56,6 +56,8 @@ typedef struct {
     unsigned ticks;
     unsigned longest[WM_MATCH_MAX_ACTORS][32];
     unsigned max_x_off;
+    unsigned fix2_violations;
+    unsigned against_ropes;
 } bout_stats;
 
 /*
@@ -105,6 +107,15 @@ static void bout(int kind, unsigned nopp, uint32_t seed, bout_stats *st)
             const wm_arcade_actor_t *a = &M.actors[i];
             unsigned k, pm = a->player_mode;
             int32_t off = a->x_int - WM_RING_X_CENTER;
+            /* confine_wrestler_fix2 (WRESTLE.ASM:3736): whatever the first
+               confine pass found him against, the tick still says -- for
+               anyone the main loop's final_confine (:6163) leaves alone,
+               which re-confines only a wrestler with an ATTACH_PROC and
+               does it without fix2. */
+            if (!a->attach_proc &&
+                (a->can_move_dir & a->can_move_temp) != a->can_move_temp)
+                ++st->fix2_violations;
+            if (a->can_move_temp) ++st->against_ropes;
             unsigned u = (unsigned)(off < 0 ? -off : off);
             if (u > st->max_x_off) st->max_x_off = u;
             for (k = 0; k < 32; ++k) {
@@ -123,6 +134,7 @@ static void bout(int kind, unsigned nopp, uint32_t seed, bout_stats *st)
 static void test_every_ladder_and_buddy_bout_ends(void)
 {
     unsigned worst_run = 0, worst_ground = 0, worst_off = 0, longest_bout = 0;
+    unsigned against_ropes = 0;
     int kind;
     uint32_t seed;
 
@@ -140,6 +152,8 @@ static void test_every_ladder_and_buddy_bout_ends(void)
                 assert(M.match_over == 2);
                 if (st.ticks > longest_bout) longest_bout = st.ticks;
                 if (st.max_x_off > worst_off) worst_off = st.max_x_off;
+                assert(st.fix2_violations == 0);
+                against_ropes += st.against_ropes;
                 for (i = 0; i < M.actor_count; ++i) {
                     /* An idle human stands as long as he likes. */
                     if (kind == 0 && i == 0) continue;
@@ -151,8 +165,10 @@ static void test_every_ladder_and_buddy_bout_ends(void)
             }
         }
     }
-    printf("20 bouts: longest %u ticks, RUNNING %u, ONGROUND %u, x off %u\n",
-           longest_bout, worst_run, worst_ground, worst_off);
+    printf("20 bouts: longest %u ticks, RUNNING %u, ONGROUND %u, x off %u, "
+           "%u actor-ticks against the ropes\n",
+           longest_bout, worst_run, worst_ground, worst_off, against_ropes);
+    assert(against_ropes > 1000);
     /* Measured 73, 263 and 578. Before: 1824 (the rope that never
        bounced), 5644 (the dropped get-up) and 24998 (the slide). */
     assert(worst_run < 400);

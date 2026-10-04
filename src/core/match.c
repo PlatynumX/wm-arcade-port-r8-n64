@@ -2,6 +2,8 @@
 #include "wm/bret_backend.h"
 #include "wm/wrestler_backend.h"
 #include "wm/arcade/wm_arcade_auto_pin.h"
+#include "wm/arcade/wmania_ring_out.h"
+#include "wm/arcade/wm_arcade_powerup.h"
 #include "wm/arcade/wm_arcade_roster_anims.h"
 #include "wm/arcade/wm_arcade_react_anims.h"
 #include "wm/arcade/wm_arcade_react5_core.h"
@@ -996,11 +998,8 @@ static void match_tick_smoves_for(wm_match_state *m, unsigned ai) {
     senv.victim = a->who_i_hit ? a->who_i_hit
                                : (ai == 0 ? &m->actors[1]
                                           : &m->actors[0]);
-    /* PLYR.EQU RING_TIME. Nothing in this port counts a
-       wrestler out of the ring yet, so it is derived from the
-       INRING flag that IS maintained rather than left at a
-       value that would pass the guard by accident. */
-    senv.ring_time = a->in_ring ? 1 : -1;
+    /* PLYR.EQU:226 RING_TIME, kept by ARE_WE_IN_RING. */
+    senv.ring_time = a->ring_time;
     /*
      * *a8(CLOSEST_NUM) through process_ptrs, which
      * WRESTLE.ASM:4489 get_opp_plyrmode reads. In a two-man
@@ -1772,6 +1771,10 @@ static void match_ani_init(wm_match_state *m, unsigned i) {
 
 static void init_bret_backends(wm_match_state *m) {
     unsigned i;
+    /* A new set of wrestler processes: each makes its own pass before
+       its first sleep, and no kill_when_hit_ground is waiting. */
+    m->loop_head_primed = false;
+    memset(m->kill_when_hit_ground, 0, sizeof m->kill_when_hit_ground);
     for (i = 0; i < m->actor_count; ++i) {
         wm_bret_backend_init(&m->bret_visual[i]);
         /* LIFEBAR.ASM adjust_health's "attract mode never dies" rule
@@ -2574,6 +2577,182 @@ static void match_anim_adjust_health(void *user, wm_arcade_actor_t *victim,
     wm_match_adjust_health(victim, delta, source, user);
 }
 
+/*
+ * adjust_health with the source's carry: set when the call killed him.
+ * ARE_WE_IN_RING (`calla adjust_health / jrnc #done`) and
+ * kill_when_hit_ground both make the call with a10 cleared -- nobody
+ * dealt the blow.
+ */
+static bool match_ring_adjust_health(void *user, uint8_t player_num,
+                                     int16_t delta, int16_t source_a10_zero) {
+    wm_match_state *m = (wm_match_state *)user;
+    wm_arcade_actor_t *a = match_actor_by_plyrnum(m, (int32_t)player_num);
+    bool was_dead;
+    (void)source_a10_zero;
+    if (!a) return false;
+    was_dead = a->player_mode == WM_PMODE_DEAD;
+    wm_match_adjust_health(a, delta, NULL, m);
+    return !was_dead && a->player_mode == WM_PMODE_DEAD && a->life == 0;
+}
+
+static void match_ring_out_player(const wm_arcade_actor_t *a,
+                                  WmRingOutPlayer *p) {
+    memset(p, 0, sizeof *p);
+    p->active = a->active != 0;
+    p->player_num = (uint8_t)a->player_num;
+    p->player_side = (int16_t)a->player_side;
+    p->player_mode = (int16_t)a->player_mode;
+    p->status_flags = (uint16_t)a->status_flags;
+    /* INRING is 1 OUTSIDE; in_ring is the plain boolean (see
+       wm_arcade_combat.h), so the flip happens here, once. */
+    p->inring = a->in_ring ? 0 : 1;
+    p->ring_time = a->ring_time;
+    /*
+     * PTIME. The source's sleeping-drone correction (SPECIAL.ASM:4648)
+     * exists because a KO'd drone's process sleeps 7FFFh ticks
+     * (WRESTLE.ASM:2437 SLEEPR) and its RING_TIME stops counting. This
+     * port runs every wrestler every tick and models no such sleep, so
+     * no RING_TIME ever goes stale, and the PTIME every awake wrestler
+     * has -- SLEEPK 1's -- is the one that makes the correction zero.
+     */
+    p->ptime = 1;
+    p->ground_y = (int16_t)a->ground_y;
+    p->object_y_int = (int16_t)a->y_int;
+    p->closest_num = (uint8_t)a->closest_num;
+}
+
+/*
+ * SPECIAL.ASM:4565 ARE_WE_IN_RING, the first thing at the head of each
+ * wrestler's loop (WRESTLE.ASM:2411). It keeps RING_TIME and, after seven
+ * seconds outside with every opponent seven seconds inside, takes a point
+ * of life every eighth tick -- the ring-out -- and on the death that
+ * produces, disqualifies his side.
+ *
+ * It was translated (wmania_ring_out.c) and called by nothing, so a
+ * wrestler could stay outside the ring for good at no cost and RING_TIME
+ * was a stand-in derived from INRING.
+ */
+static void match_are_we_in_ring(wm_match_state *m, unsigned i) {
+    WmRingOutPlayer players[WM_MATCH_MAX_ACTORS];
+    WmRingOutEvents e;
+    unsigned k;
+    int32_t mode_before;
+
+    for (k = 0; k < m->actor_count; ++k)
+        match_ring_out_player(&m->actors[k], &players[k]);
+    /* CLOSEST_NUM is a PLYRNUM; the process table is indexed by it. Map
+       it onto this port's actor slots. */
+    for (k = 0; k < m->actor_count; ++k)
+        if (m->actors[k].player_num == m->actors[i].closest_num)
+            players[i].closest_num = (uint8_t)k;
+    mode_before = players[i].player_mode;
+
+    e = wm_ring_are_we_in_ring_tick(&players[i], players, m->actor_count,
+                                    m->tick_count, WM_TSEC,
+                                    false /* @HALT */,
+                                    m->ring_out_on != 0,
+                                    match_ring_adjust_health, m);
+    m->actors[i].ring_time = players[i].ring_time;
+    if (players[i].player_mode != mode_before)
+        m->actors[i].player_mode = (uint16_t)players[i].player_mode;
+
+    /* `CREATE0 kill_when_hit_ground` -- one per wrestler. */
+    if (e.spawn_kill_when_hit_ground) m->kill_when_hit_ground[i] = true;
+    /*
+     * do_ringout_dufus's `CREATE dufus_msg_on` with a9 = 3, "Get back in
+     * dummy", is a message on the screen; like the getup meter's dufus
+     * message there is nothing yet to hand it to.
+     */
+    if (e.create_disqual) {
+        /* LIFEBAR.ASM:4950 CREATE_DISQUAL opens `movi 0c4h,a0 / calla
+           triple_sound`; the rest is the DISQUALIFIED sign. */
+        if (m->anim_sound) m->anim_sound(m->anim_sound_user, 0xc4u);
+    }
+    /* `CREATE ANNC_PID,announce_rnd_winner`. */
+    if (e.announce_round_winner)
+        (void)wm_arcade_win_announce(&m->round_announce);
+}
+
+/*
+ * SPECIAL.ASM:4550 kill_when_hit_ground, one tick of each pending one:
+ * `SLEEPK 1` until GROUND_Y equals OBJ_YPOSINT, then -150 and DIE.
+ */
+static void match_kill_when_hit_ground(wm_match_state *m, unsigned i) {
+    WmRingOutPlayer p;
+    if (!m->kill_when_hit_ground[i]) return;
+    match_ring_out_player(&m->actors[i], &p);
+    if (wm_ring_kill_when_hit_ground_apply(&p, match_ring_adjust_health, m))
+        m->kill_when_hit_ground[i] = false;
+}
+
+/*
+ * The head of the wrestler loop, WRESTLE.ASM:2411-2421, which the
+ * source runs AFTER move_wrestler and the rest of the tick's body, just
+ * before the SLEEP:
+ *
+ *     calla ARE_WE_IN_RING
+ *     calla set_collision_boxes
+ *     callr confine_wrestler / callr confine_wrestler_fix2
+ *     callr update_newfacing
+ *     callr update_positions        (the scroller's)
+ *     ... calla drone_main          (drones that are not zombies)
+ *
+ * "for whatever reason, confine_wrestler happens twice per tick"
+ * (:3736): fix1, in the body, kept the first pass's CAN_MOVE_DIR in
+ * CAN_MOVE_TEMP, and fix2 ORs it back here so a wrestler the first pass
+ * found against the ropes is still blocked that way.
+ *
+ * drone_main's answer needs no second read after the SLEEP: everything
+ * that asks for a drone's stick or buttons goes through wres_get_* to
+ * DRN_JOY and DRN_BUT (WRESTLE2.ASM:2525), and drone_main works out the
+ * edges itself on the way out (DRONE.ASM:129-130 keep the old pair),
+ * which is what wm_arcade_drone_main's own commit is.
+ */
+static void match_loop_head(wm_match_state *m, unsigned i,
+                            wm_arcade_actor_t *const *actor_ptrs,
+                            wm_arcade_drone_world_t *world,
+                            const wm_arcade_drone_callbacks_t *cb) {
+    wm_arcade_actor_t *a = &m->actors[i];
+    wm_arcade_actor_t *opp;
+
+    match_kill_when_hit_ground(m, i);
+    match_are_we_in_ring(m, i);
+
+    if (a->wrestler_num == WM_ROSTER_BRET)
+        wm_bret_backend_set_collision_boxes(&m->bret_visual[i], a);
+    else
+        wm_wrestler_backend_set_collision_boxes(&m->wrestler_visual[i], a);
+    match_confine_actor(m, i, actor_ptrs);
+    a->can_move_dir |= a->can_move_temp;            /* fix2 */
+
+    /* WRESTLE.ASM:2418 `callr update_newfacing`, toward CLOSEST_NUM's
+       answer -- see match_opponent_of. */
+    opp = match_opponent_of(m, i);
+    if (opp) wm_arcade_update_newfacing(a, opp);
+
+    if (m->actor_is_human[i]) return;
+    (void)wm_arcade_drone_main(a, &m->drones[i], world, cb);
+
+    /*
+     * DRONE.ASM:2810 drn_taunt's own change_anim1a. It is the only drone
+     * script that plays an animation, so rather than hand the drone layer
+     * a visual backend it leaves the label on its state and this picks it
+     * up -- the same shape as wm_match_death_change_anim above. Bret runs
+     * a wm_visual_sequence track rather than the animation VM and has no
+     * label route, so his taunt still only sets RISK.
+     */
+    if (m->drones[i].pending_anim) {
+        if (a->wrestler_num != WM_ROSTER_BRET) {
+            wm_arcade_roster_callbacks_t taunt_cb =
+                wm_wrestler_roster_callbacks(&m->wrestler_visual[i]);
+            if (taunt_cb.change_anim_label)
+                taunt_cb.change_anim_label(a, m->drones[i].pending_anim,
+                                           taunt_cb.user);
+        }
+        m->drones[i].pending_anim = NULL;
+    }
+}
+
 void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
                    const wm_input_state *human_input) {
     wm_arcade_drone_world_t world;
@@ -2707,33 +2886,30 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
        counts down in real time rather than per wrestler. */
     wm_anim_code_tick();
 
+    /*
+     * wrestler_main's own pass before its first SLEEP (WRESTLE.ASM:2406):
+     * `callr calc_closest`, then into #loop, whose head is
+     * match_loop_head. Every later head runs at the end of a tick.
+     */
+    if (!m->loop_head_primed) {
+        for (i = 0; i < m->actor_count; ++i) {
+            wm_arcade_actor_t *o = match_opponent_of(m, i);
+            if (o) wm_arcade_calc_closest(&m->actors[i], o);
+        }
+        for (i = 0; i < m->actor_count; ++i)
+            match_loop_head(m, i, actor_ptrs, &world, cb);
+        m->loop_head_primed = true;
+    }
+
     for (i = 0; i < m->actor_count; ++i) {
-        /* WRESTLE.ASM:2418 `callr update_newfacing`, called unconditionally
-           for every wrestler process before the human/zombie/drone_main
-           branch. The opponent is CLOSEST_NUM's own answer -- see
+        /* CLOSEST_NUM's answer, for the body of this tick -- see
            match_opponent_of, which stops being `the other slot` once
            buddy mode puts four wrestlers in the ring. */
         wm_arcade_actor_t *opp_of_i = match_opponent_of(m, i);
-        if (opp_of_i) wm_arcade_update_newfacing(&m->actors[i], opp_of_i);
 
-        /* WRESTLE.ASM's main loop computes each wrestler's own CLOSEST_*
-           fields every tick for every process (drone_main's own AI
-           decisions -- block detection, range-band script selection --
-           read them exactly like move_bret does), not just for whichever
-           actor happens to carry a real Bret backend. Previously this only
-           ran inside the Bret branch below, so a drone-controlled actor's
-           AI acted on the *previous* tick's stale distances; a drone-
-           controlled Bret got fresh data for move_bret but stale data for
-           its own drone_main decision that same tick.
-
-           Through calc_closest2 rather than calc_closest, because the
-           arcade's own throttle -- every fourth tick, staggered by
-           PLYRNUM, unless the opponent is dead -- skips the distance
-           update and not just the target choice, and the AI reads those
-           distances. See wm/arcade/wm_arcade_closest.h. */
-        if (opp_of_i)
-            (void)wm_arcade_calc_closest2(&m->actors[i], opp_of_i, world.pcnt);
-
+        /* A player's switches, read for this tick. A drone's answer is
+           already in place: drone_main gave it at the loop head, before
+           the sleep. */
         if (m->actor_is_human[i]) {
             /*
              * Each wrestler reads its OWN switches -- PLYRNUM picks
@@ -2746,32 +2922,6 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             if (pn < 2 && m->player_input_set[pn]) in = &m->player_input[pn];
             else if (pn == 0) in = human_input;
             wm_human_input_commit(&m->actors[i], &m->human_input[i], in);
-        } else {
-            uint16_t old_but = m->drones[i].but;
-            uint16_t old_joy = m->drones[i].joy;
-            (void)wm_arcade_drone_main(&m->actors[i], &m->drones[i], &world, cb);
-            wm_arcade_drone_commit_inputs(&m->actors[i], &m->drones[i], old_but, old_joy);
-
-            /*
-             * DRONE.ASM:2810 drn_taunt's own change_anim1a. It is the
-             * only drone script that plays an animation, so rather than
-             * hand the drone layer a visual backend it leaves the label
-             * on its state and this picks it up -- the same shape as
-             * wm_match_death_change_anim above. Bret runs a
-             * wm_visual_sequence track rather than the animation VM and
-             * has no label route, so his taunt still only sets RISK.
-             */
-            if (m->drones[i].pending_anim) {
-                if (m->actors[i].wrestler_num != WM_ROSTER_BRET) {
-                    wm_arcade_roster_callbacks_t taunt_cb =
-                        wm_wrestler_roster_callbacks(&m->wrestler_visual[i]);
-                    if (taunt_cb.change_anim_label)
-                        taunt_cb.change_anim_label(&m->actors[i],
-                                                   m->drones[i].pending_anim,
-                                                   taunt_cb.user);
-                }
-                m->drones[i].pending_anim = NULL;
-            }
         }
 
         /*
@@ -3110,6 +3260,19 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
             /* confine_wrestler_fix1 (:3743). */
             m->actors[i].can_move_temp = m->actors[i].can_move_dir;
 
+            /*
+             * WRESTLE.ASM:2466 `callr calc_closest2`, between the confine
+             * and move_wrestler -- through calc_closest2 rather than
+             * calc_closest because the arcade's own throttle (every fourth
+             * tick, staggered by PLYRNUM, unless the opponent is dead)
+             * skips the distance update and not just the target choice,
+             * and the AI reads those distances. drone_main, at the loop
+             * head after this, reads what it leaves.
+             */
+            if (opp_of_i)
+                (void)wm_arcade_calc_closest2(&m->actors[i], opp_of_i,
+                                              world.pcnt);
+
             /* move_wrestler: `callr auto_pin_check` (WRESTLE.ASM:3858)
                one line before the per-character dispatch. */
             match_auto_pin_check(m, i, opp, actor_ptrs);
@@ -3123,24 +3286,31 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
                                             : &m->wrestler_visual[i].mode_dead_result);
 
             /*
-             * The second confine pass. After move_wrestler the source
-             * runs `calla set_collision_boxes` (:2475) and goes round to
-             * the loop head, where ARE_WE_IN_RING, set_collision_boxes,
-             * confine_wrestler and confine_wrestler_fix2 (:2411-2416) run
-             * before drone_main and the sleep. "for whatever reason,
-             * confine_wrestler happens twice per tick" (:3736): fix1 kept
-             * the first pass's CAN_MOVE_DIR in CAN_MOVE_TEMP, and fix2
-             * ORs it back, so a wrestler the first pass found against
-             * the ropes is still blocked that way after the second.
+             * The tail after move_wrestler, WRESTLE.ASM:2473-2476:
+             * update_links, set_collision_boxes, overlap_collision. All
+             * three used to run once for everybody after the last
+             * wrestler, beside the main loop's check_collisions -- so
+             * the push that keeps two wrestlers out of one another came
+             * after every drone had already decided its next move from
+             * where they stood inside each other.
+             *
+             * update_links (WRESTLE.ASM:3003): an ATTACH_PROC that does
+             * not point back at me is stale and is dropped, so a puppet
+             * is not dragged about by somebody who has let go.
              */
+            wm_round_update_links(&m->actors[i]);
             if (is_bret)
                 wm_bret_backend_set_collision_boxes(&m->bret_visual[i],
                                                     &m->actors[i]);
             else
                 wm_wrestler_backend_set_collision_boxes(&m->wrestler_visual[i],
                                                         &m->actors[i]);
-            match_confine_actor(m, i, actor_ptrs);
-            m->actors[i].can_move_dir |= m->actors[i].can_move_temp;
+            /* COLLIS.ASM:56 overlap_collision, on this tick's hurt boxes. */
+            (void)wm_arcade_overlap_collision(&m->actors[i], actor_ptrs,
+                                              m->actor_count);
+
+            /* Round to the head of the loop and the SLEEP. */
+            match_loop_head(m, i, actor_ptrs, &world, cb);
             /*
              * Position integration used to happen here, through
              * wm_integrate_position -- a placeholder that moved X and Z and
@@ -3284,25 +3454,6 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
         match_step_specials(m);
 
         /*
-         * COLLIS.ASM:56 overlap_collision, which keeps two wrestlers from
-         * standing inside one another. The port has had its body
-         * (wm_arcade_resolve_overlap) for a long time with nothing calling
-         * it, so nothing ever pushed them apart.
-         *
-         * It runs after the attack sweep and reads the same hurt boxes,
-         * which are this tick's: set_collision_boxes' hurt-box half is
-         * applied in each backend's tick above, before confine_wrestler.
-         */
-        {
-            size_t oi;
-            for (oi = 0; oi < m->actor_count; ++oi) {
-                if (!actor_ptrs[oi] || !actor_ptrs[oi]->active) continue;
-                (void)wm_arcade_overlap_collision(actor_ptrs[oi], actor_ptrs,
-                                                  m->actor_count);
-            }
-        }
-
-        /*
          * WRESTLE.ASM:2064 `callr final_confine`, the line straight
          * after check_collisions in the main loop. It re-confines only
          * the wrestlers that have an ATTACH_PROC, because a puppet is
@@ -3312,19 +3463,6 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
          */
         wm_arcade_final_confine(actor_ptrs, m->actor_count);
 
-        /*
-         * WRESTLE.ASM:3003 update_links, which the source runs once a
-         * tick per wrestler: an ATTACH_PROC that is not pointing back
-         * at me is stale and gets dropped. Without it a puppet can
-         * stay attached to somebody who has already let go, and be
-         * dragged around by him for the rest of the round.
-         */
-        {
-            size_t li;
-            for (li = 0; li < m->actor_count; ++li)
-                if (actor_ptrs[li] && actor_ptrs[li]->active)
-                    wm_round_update_links(actor_ptrs[li]);
-        }
     }
 
     {

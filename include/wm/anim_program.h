@@ -547,9 +547,11 @@ typedef struct wm_anim_env {
                          bool restart);
     /*
      * WRESTLE.ASM:257 allow_offscrn, set to 80 by ANI_SET_IDIOT ("Allow
-     * players off screen on toss outs"). WRESTLE2.ASM:2214 counts it down
-     * once a tick and, while it is non-zero, skips the ring-out check
-     * entirely -- so it belongs to the match, not to a copy of the env.
+     * players off screen on toss outs"). WRESTLE2.ASM:2214, in
+     * keep_onscreen, counts it down once a tick and, while it is non-zero,
+     * skips keep_onscreen's own in-or-out-of-the-ring test (not
+     * ARE_WE_IN_RING's ring-out count, which never reads it) -- so it
+     * belongs to the match, not to a copy of the env.
      */
     void (*set_allow_offscrn)(void *user, int32_t ticks);
     /*

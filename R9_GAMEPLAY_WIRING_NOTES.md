@@ -1129,9 +1129,44 @@ anyone got from the ring's centre went 24998 → 578.
 `test_every_bout_ends.c` pins each cause; 13 mutations of the C, 13
 caught, and 2 of the extractor rule, 2 caught.
 
-**Recorded, not translated.** The loop head's `ARE_WE_IN_RING`
-(WRESTLE.ASM:2411) has no caller. `drone_main` still runs at the top of
-the port's tick, where the source runs it after the second confine.
+**Since translated.** The loop head's `ARE_WE_IN_RING` and
+`drone_main`'s place are covered in the next section.
+
+## The head of the wrestler loop, and the ring-out
+
+After `move_wrestler` and before the SLEEP, the source runs the head of
+each wrestler's loop (WRESTLE.ASM:2411-2421): `ARE_WE_IN_RING`, the
+collision boxes, the second confine with `fix2`, `update_newfacing`, and
+`drone_main`. Three things were wrong around it.
+
+- **There was no ring-out.** `ARE_WE_IN_RING` (SPECIAL.ASM:4565) was
+  translated and called by nothing, so a wrestler could stay outside the
+  ring for good. RING_TIME is now kept every tick. Seven seconds outside
+  (371 ticks, TSEC being 53), with every opponent seven seconds inside,
+  costs a point of life every eighth tick. A death from it disqualifies
+  his side, unless a teammate is still standing. With the ring-outs
+  powerup on, going over the ropes kills him when he lands.
+- **`drone_main` ran first.** It ran at the top of the port's tick, so a
+  drone decided from where the last tick left him. It runs after the body
+  now, at the loop head, with `calc_closest2` back between the confine and
+  `move_wrestler`. The source has no second read after the sleep: every
+  reader of a drone's stick goes straight to `DRN_JOY`.
+- **The push came too late.** `move_wrestler`'s tail (`update_links`,
+  `set_collision_boxes`, `overlap_collision`) ran once for everybody after
+  the last wrestler. So the push that keeps two wrestlers apart came after
+  every drone had already decided. Seen from inside `drone_main`, the drone
+  was where the tick left him on 23 of 43 moving ticks; with the tail per
+  wrestler, 114 of 114.
+
+No AI wrestler in the twenty bouts stays out long enough to be hurt (the
+most negative RING_TIME is −169 against −371), so the ring-out is pinned
+by direct tests. `test_ring_out_live.c` and the bout test's `fix2` check
+pin each piece; 13 mutations, 13 caught.
+
+**Recorded, not translated.** A KO'd drone's process sleeps 7FFFh ticks in
+the source (WRESTLE.ASM:2437); the port keeps running it. And
+`master_keep_attached` and `set_wrestler_xflip` are not in match.c's
+per-wrestler tail.
 
 ## Deliberately still absent
 

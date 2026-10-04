@@ -1357,6 +1357,8 @@ void wm_app_tick_dual(wm_app *app,
          */
         app->match.blocking_off = app->powerups.blocking_off;
         app->match.hyper_speed_on = app->powerups.hyper_speed_on;
+        /* AWARD.ASM:2262 RING_OUTS_ON, read by ARE_WE_IN_RING. */
+        app->match.ring_out_on = app->powerups.ring_out_on;
         wm_app_bind_anim_env(app);
         if (app->match_pstatus == 3) {
             /* start_match's #2plyr. No royal-rumble app mode exists yet. */

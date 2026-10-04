@@ -24,11 +24,18 @@
 #include "wm/title_screen.h"
 #include "wm/title_sparkle.h"
 #include "wm/visual.h"
+#include "wm/match_display.h"
+#include "wm/streamed_character_art.h"
 
 #define STICK_DEADZONE 12
 
 /* Original arcade frontend coordinates are 400x256 (SCRNEND [256,405]).
    Keep the original object coordinate system and transform only at draw time. */
+#include "rd7text.h"
+#include "wm/arcade/wmania_attract_data.h"
+#include "wm/arcade/wmania_attract_text.h"
+#include "wm/arcade/wmania_hstd_screen.h"
+
 #define WM_ARCADE_SCREEN_W 400.0f
 #define WM_ARCADE_SCREEN_H 256.0f
 #define WM_N64_SCREEN_W 320.0f
@@ -524,7 +531,7 @@ static void render_sports_background(const wm_app *app) {
     if (!sports_background_cache_ready)
         return;
 
-    /* ATTR.ASM::logo_mod universe starts, verbatim. */
+    /* ATTRACT.ASM:1747 logo_mod universe starts, verbatim. */
     static const int16_t module_starts[6][2] = {
         {-400,    0},
         {-800,  400},
@@ -569,7 +576,7 @@ static void render_sports_background(const wm_app *app) {
 }
 
 static void render_sports_motto(void) {
-    /* ATTR.ASM::rule_str:
+    /* ATTRACT.ASM:1666 rule_str:
        JAM_STR osgmd8_ascii,6,0,200,225,SGMD8WHT,print_string_C2 */
     const char *text = wm_sports_motto_text();
     if (!text) return;
@@ -609,7 +616,7 @@ static void render_midway_sports(const wm_app *app) {
 
     render_sports_background(app);
 
-    /* ATTR.ASM LOGO_LIST: SPRTLG01..SPRTLG17 share one object anchor. */
+    /* ATTRACT.ASM:1762 LOGO_LIST: SPRTLG01..SPRTLG17 share one object anchor. */
     const float anchor_x = 200.0f * WM_FRONTEND_SCALE_X;
     const float anchor_y = 118.0f * WM_FRONTEND_SCALE_Y;
     const size_t count = wm_sports_logo_sprite_count();
@@ -651,6 +658,359 @@ static void draw_title_sparkle(const wm_title_sparkle *sp) {
                               (float)sp->y * WM_FRONTEND_SCALE_Y,
                               spr->xani, spr->yani, false, spr,
                               WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
+}
+
+/*
+ * ATTRACT.ASM:1095 show_copyright's two text pages.
+ *
+ * Nine lines then ten, centred on x 200 from y 110 in steps of 12, each
+ * one through STRCNRMO_2 -- which is DMACNZ|M_NOCOLL, so the glyphs are
+ * stencils in the one colour a6 carries: `movi [>1111,0000],a6`, the
+ * source's own comment reading "pal 0, color 17".
+ *
+ * A line whose width cannot be established returns -1 from
+ * wm_text_build_draw_list and is SKIPPED rather than drawn short. Three
+ * of the nineteen are in that state -- the two "(C) 1995" lines and the
+ * "(P) 1993" one -- because the four FONT7par widths could not be read
+ * out of the artwork. See src/generated/rd7font.c.
+ */
+#define WM_COPYRIGHT_MAX_GLYPHS 64
+
+static void render_copyright_page(const wm_app *app) {
+    const char *const *labels;
+    unsigned count, i;
+
+    if (app->attract.copyright_page < 0) return;
+
+    if (app->attract.copyright_page == 0) {
+        labels = wm_attract_copyright_page1_labels;
+        count = WM_ATTRACT_COPYRIGHT_PAGE1_LINES;
+    } else {
+        labels = wm_attract_copyright_page2_labels;
+        count = WM_ATTRACT_COPYRIGHT_PAGE2_LINES;
+    }
+
+    for (i = 0; i < count; ++i) {
+        wm_text_draw_item items[WM_COPYRIGHT_MAX_GLYPHS];
+        const char *text = wm_attract_text(labels[i]);
+        int32_t n;
+        if (!text) continue;
+        n = wm_text_build_draw_list(
+                text, wm_stringer_rd7font(), 1, WM_STRINGER_CENTRE,
+                WM_ATTRACT_COPYRIGHT_X,
+                WM_ATTRACT_COPYRIGHT_FIRST_Y +
+                    (int32_t)i * WM_ATTRACT_COPYRIGHT_LINE_STEP,
+                items, WM_COPYRIGHT_MAX_GLYPHS);
+        if (n <= 0) continue;   /* unmeasurable line: absent, not wrong */
+        wm_rd7text_draw(items, (int)n, RGBA32(255, 255, 255, 255),
+                        WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
+    }
+}
+
+static void render_copyright(const wm_app *app) {
+    /* display_blank/WIPEOUT at the head of the routine. The SMWWF2 logo
+       and the fade_up process are the object and palette layers this
+       port does not have, so the page comes up on black at full
+       brightness; its timing is still the source's. */
+    fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+    render_copyright_page(app);
+}
+
+/*
+ * ATTRACT.ASM:274 aama_message's six lines.
+ *
+ * Per-line x, y and colour out of wm_attract_aama_lines -- the screen
+ * is not a column. ln2 and ln2b share a y and sit side by side, and
+ * ln2b carries the source's other colour word.
+ *
+ * BOTH COLOURS DRAW THE SAME HERE. The table keeps >1111 and >0606,
+ * but resolving a TMS palette index to RGB needs the palette this port
+ * does not allocate, so "- MILD" does not stand apart from the advisory
+ * the way the arcade's does. Inventing two colours would look
+ * deliberate and be wrong.
+ */
+static void render_aama(const wm_app *app) {
+    unsigned i;
+
+    /* display_blank at the head of the routine; do_the_grad_thang's
+       gradient is the background layer this port has no renderer for. */
+    fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+    if (!app->attract.aama_placed) return;
+
+    for (i = 0; i < WM_ATTRACT_AAMA_LINES; ++i) {
+        const WmAttractAamaLine *ln = &wm_attract_aama_lines[i];
+        wm_text_draw_item items[WM_COPYRIGHT_MAX_GLYPHS];
+        const char *text = wm_attract_text(ln->label);
+        int32_t n;
+        if (!text) continue;
+        n = wm_text_build_draw_list(
+                text, wm_stringer_rd7font(), 1, WM_STRINGER_CENTRE,
+                ln->x, ln->y, items, WM_COPYRIGHT_MAX_GLYPHS);
+        if (n <= 0) continue;
+        wm_rd7text_draw(items, (int)n, RGBA32(255, 255, 255, 255),
+                        WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
+    }
+}
+
+/*
+ * The three table-driven text screens: show_gen_tips, DO_HINTS and
+ * show_bios / show_bios_tips.
+ *
+ * WHAT IS HERE is every word the source stores and the position it stores it
+ * at, scaled from the arcade's 400x256 like every other frontend asset.
+ *
+ * WHAT IS NOT, for all three: the artwork. show_gen_tips and DO_HINTS put up
+ * MVEBAR_R and SHADOW01 (and DO_HINTS adds MUGBAK, MUGFRNT, the tip author's
+ * name object and a WGSF22 digit); show_bios puts up biopageBMOD, a wrestler
+ * logo, a mugshot from wrestler_mugs2, ATT_TXT and four ATTMTR attribute
+ * bars. None of those has an import pipeline here -- the same object seam
+ * show_copyright's SMWWF2 logo waits on -- so each page comes up as text on
+ * black.
+ *
+ * ALSO NOT HERE: colour. The source picks SGMD8YEL, SGMD8RED, RUBYPAL, BLUE
+ * and WSF_Y_P out of IMGPAL.ASM, and resolving a TMS palette index needs a
+ * palette this port does not allocate, so every line is drawn in white.
+ * Four fonts collapse to one for the same reason: the arcade sets
+ * osgemd_ascii, ogmd10_ascii, wsf14_ascii and wsf10_ascii, and RD7FONT is
+ * the only font whose widths and masks have been recovered.
+ *
+ * A line whose width cannot be established is SKIPPED, not drawn short --
+ * see render_copyright_page. That is why the bio quotes do not appear: every
+ * one of them is wrapped in the source's own brace-quotes, and the four
+ * FONT7par widths are among the glyphs the artwork would not give up.
+ */
+static bool draw_text_line(const char *text, int32_t x, int32_t y,
+                           wm_stringer_justify justify) {
+    wm_text_draw_item items[WM_COPYRIGHT_MAX_GLYPHS];
+    int32_t n;
+    if (!text || !*text) return false;   /* a `blank` spacer draws nothing */
+    n = wm_text_build_draw_list(text, wm_stringer_rd7font(), 1, justify,
+                                x, y, items, WM_COPYRIGHT_MAX_GLYPHS);
+    if (n <= 0) return false;
+    wm_rd7text_draw(items, (int)n, RGBA32(255, 255, 255, 255),
+                    WM_FRONTEND_SCALE_X, WM_FRONTEND_SCALE_Y);
+    return true;
+}
+
+/*
+ * One source literal can hold more than one line: control byte 1 steps
+ * mess_cursy by @mess_line_spacing (STRING.ASM:515). The extractor emits it
+ * as '\n', so a literal carrying one is drawn here as two lines `step` apart.
+ */
+static void draw_text_block(const char *text, int32_t x, int32_t y,
+                            int32_t step, wm_stringer_justify justify) {
+    char line[96];
+    if (!text) return;
+    for (;;) {
+        const char *brk = strchr(text, '\n');
+        if (!brk) {
+            (void)draw_text_line(text, x, y, justify);
+            return;
+        }
+        {
+            size_t len = (size_t)(brk - text);
+            if (len >= sizeof line) len = sizeof line - 1;
+            memcpy(line, text, len);
+            line[len] = '\0';
+        }
+        (void)draw_text_line(line, x, y, justify);
+        y += step;
+        text = brk + 1;
+    }
+}
+
+static void render_gen_tips(const wm_app *app) {
+    unsigned i;
+
+    fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+    /* BLOW_0_TO_1 clears @DISPLAYON for all but its first few ticks, so the
+       page is genuinely not on screen while the wipe runs. */
+    if (app->attract.call_ticks < WM_GEN_TIPS_REVEAL_TICKS) return;
+
+    (void)draw_text_line(wm_attract_text(WM_ATTRACT_GENERAL_TIPS_TITLE_LABEL),
+                         WM_ATTRACT_GENERAL_TIPS_TITLE_X,
+                         WM_ATTRACT_GENERAL_TIPS_TITLE_Y,
+                         WM_STRINGER_CENTRE);
+
+    /* #sgt_loop walks wm_attract_general_tip_labels to its NULL, stepping y
+       by 15 for every slot including the three `blank` ones. */
+    for (i = 0; wm_attract_general_tip_labels[i]; ++i)
+        (void)draw_text_line(
+            wm_attract_text(wm_attract_general_tip_labels[i]),
+            WM_ATTRACT_GENERAL_TIPS_LINE_X,
+            WM_ATTRACT_GENERAL_TIPS_FIRST_Y +
+                (int32_t)i * WM_ATTRACT_GENERAL_TIPS_LINE_STEP,
+            WM_STRINGER_CENTRE);
+}
+
+static void render_hints(const wm_app *app) {
+    const wm_attract_hint_text *hint;
+    unsigned i;
+    int index = app->attract.hint_index;
+
+    fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+    if (index < 0 || index >= (int)WM_ATTRACT_ACTIVE_HINTS) return;
+    /* CLOSE_SCREEN_LINE, then the page is built, then OPEN_SCREEN_LINE
+       reveals it; nothing is on screen until that second wipe is done. */
+    if (app->attract.call_ticks < WM_HINTS_REVEAL_TICKS) return;
+
+    hint = &wm_attract_hint_texts[index];
+    (void)draw_text_line(hint->title, WM_ATTRACT_HINT_TITLE_X,
+                         WM_ATTRACT_HINT_TITLE_Y, WM_STRINGER_CENTRE);
+
+    /* line_count, not line_total: NEXT_HINT's DSJS counter is what the
+       arcade draws, and hint 4 stores two lines past it that never show. */
+    for (i = 0; i < hint->line_count; ++i)
+        (void)draw_text_line(hint->lines[i], WM_ATTRACT_HINT_BODY_X,
+                             WM_ATTRACT_HINT_BODY_Y +
+                                 (int32_t)i * WM_ATTRACT_HINT_BODY_LINE_STEP,
+                             WM_STRINGER_CENTRE);
+}
+
+static void render_bios(const wm_app *app) {
+    const WmAttractBio *bio;
+    int index = app->attract.bio_index;
+    char run[32];
+
+    fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+    if (index < 0 || index >= (int)WM_ATTRACT_WRESTLERS) return;
+    if (app->attract.call_ticks < WM_BIOS_REVEAL_TICKS) return;
+
+    bio = &wm_attract_bios[index];
+
+    if (app->attract.bios_tips) {
+        /* show_wres_tips: wt_title_setup is centred on 135, but the lines go
+           through print_string and not print_string_C, so they are LEFT
+           aligned on x 10 -- the one line column here that is not centred. */
+        unsigned i;
+        (void)draw_text_line(wm_attract_text(WM_ATTRACT_WRES_TIPS_TITLE_LABEL),
+                             WM_ATTRACT_WRES_TIPS_TITLE_X,
+                             WM_ATTRACT_WRES_TIPS_TITLE_Y,
+                             WM_STRINGER_CENTRE);
+        for (i = 0; i < WM_ATTRACT_WRES_TIP_LINES; ++i)
+            (void)draw_text_line(
+                wm_attract_wres_tip_lines[index][i],
+                WM_ATTRACT_WRES_TIPS_LINE_X,
+                WM_ATTRACT_WRES_TIPS_FIRST_Y +
+                    (int32_t)i * WM_ATTRACT_WRES_TIPS_LINE_STEP,
+                WM_STRINGER_LEFT);
+        return;
+    }
+
+    /* The bio page. halfwidth is deliberately NOT applied: see the field's
+       own comment in wm/arcade/wmania_attract_data.h -- the source reads it
+       and the only code that used it is commented out. */
+    (void)draw_text_line(wm_attract_text(bio->from_label),
+                         WM_ATTRACT_BIO_FROM_X, WM_ATTRACT_BIO_FROM_Y,
+                         WM_STRINGER_LEFT);
+
+    /* The arcade draws the height as four chained prints -- feet, " FT. ",
+       inches, " IN." -- in two fonts on two baselines four pixels apart.
+       One font and no cursx2 here, so it is one string on the number's y. */
+    snprintf(run, sizeof run, "%u%s%u%s",
+             (unsigned)bio->height_ft, wm_attract_text("feet"),
+             (unsigned)bio->height_in, wm_attract_text("inches"));
+    (void)draw_text_line(run, WM_ATTRACT_BIO_HEIGHT_X,
+                         WM_ATTRACT_BIO_HEIGHT_Y, WM_STRINGER_LEFT);
+
+    snprintf(run, sizeof run, "%u%s",
+             (unsigned)bio->weight_lbs, wm_attract_text("pounds"));
+    (void)draw_text_line(run, WM_ATTRACT_BIO_WEIGHT_X,
+                         WM_ATTRACT_BIO_WEIGHT_Y, WM_STRINGER_LEFT);
+
+    /* print_string_C2, so the x is a centre; mess_line_spacing is 14 here. */
+    draw_text_block(wm_attract_text(bio->quote_label),
+                    WM_ATTRACT_BIO_QUOTE_X, WM_ATTRACT_BIO_QUOTE_Y,
+                    WM_ATTRACT_BIO_QUOTE_LINE_STEP, WM_STRINGER_CENTRE);
+}
+
+/*
+ * ATTRACT.ASM:1443 show_hstd -- the two scrolling high-score tables.
+ *
+ * WHAT IS HERE: the title, and every live row's initials at the y the scroll
+ * machine has them at. The machine (wm/arcade/wmania_hstd_screen.h) owns the
+ * positions; this only draws them.
+ *
+ * A ROW IS INITIALS ONLY HERE. The arcade draws the initials plus up to eight
+ * defeated-wrestler icons off the same position -- the stored "score" for
+ * these two tables is a bitmask, not a number, and draw_beaten_table_entry
+ * walks its bits for which_crouton icons and OSGEMD_DOT for the clear ones.
+ * Those are objects with no pipeline here. There is deliberately NO score
+ * text: the score position every caller passes is dead in that routine, so
+ * drawing a number at it would be inventing a layout the arcade does not
+ * have.
+ *
+ * THE HIGHLIGHT IS COMPUTED AND NOT DRAWN. WmHstdRow.highlighted carries the
+ * source's GOLD-versus-BLUE pick, off the GET_AUD AUD_INTER/AUD_BEATEN
+ * comparison. This used to say the blocker was "the allocator pal_getf would
+ * be"; that allocator is translated and owned now, so the honest blocker is
+ * one step later: GOLDPAL and BLUEPAL would each get a colour map from it,
+ * and this renderer has no path from a palette slot's COLRAM to an RGBA
+ * colour it can blit with. So the newest entry still does not stand apart.
+ * Inventing a second colour would look deliberate and be wrong.
+ */
+static void render_hstd(const wm_app *app) {
+    const WmHstdState *st = &app->attract.hstd;
+    const WmHsPresentDescriptor *desc =
+        &wm_hs_present_sequence[wm_hstd_screen(st)];
+    unsigned i;
+
+    /* SET_UP_PIXEL_WIPE + hstd_mod's background, and BLOW_0_TO_1's wipe,
+       are the layers this port has no renderer for. */
+    fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+
+    /* BLOW_0_TO_1 clears @DISPLAYON for most of its run. */
+    if (st->phase == WM_HSTD_PHASE_WIPE || st->phase == WM_HSTD_PHASE_PLACE)
+        return;
+
+    (void)draw_text_line(desc->title, desc->layout.title_x,
+                         desc->layout.title_y, WM_STRINGER_CENTRE);
+
+    for (i = 0; i < st->row_count; ++i) {
+        const WmHstdRow *row = &st->rows[i];
+        WmHsDisplayRow display;
+        char initials[WM_HS_NUM_INITIALS + 1u];
+
+        /* Rows can sit past the top: DELETE_ANY_OFF_TOP only runs at the end
+           of each step, so one may be below -30 for a few ticks. */
+        if (row->y < -16 || row->y > 256) continue;
+        if (wm_hs_present_rows(&app->hiscore, wm_hstd_screen(st), row->rank,
+                               &display, 1u) != 1u)
+            continue;
+
+        memcpy(initials, display.initials, sizeof initials);
+        initials[WM_HS_NUM_INITIALS] = '\0';
+        (void)draw_text_line(initials,
+                             desc->layout.first_initials_x +
+                                 WM_HSTD_INITIALS_X_BIAS,
+                             row->y, WM_STRINGER_LEFT);
+    }
+}
+
+/*
+ * creditscreen (ATTRACT.ASM:793) through CRD_SCRN2 (AUDIT.ASM:998).
+ *
+ * Five fixed lines, centred on x 200. They are fixed because this port has
+ * no coin subsystem for them to vary with: see
+ * wm/arcade/wmania_attract_data.h for the derivation and for the list of
+ * lines the routine can produce that are therefore never selected.
+ *
+ * NOT HERE: slateBMOD's background and every one of the lines' palettes
+ * (GOLD, SGMD8GLD, GREENPAL), so the page is white text on black.
+ */
+static void render_creditscreen(const wm_app *app) {
+    unsigned i;
+
+    fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+    /* display_blank/WIPEOUT until crd_updatetxt, then display_unblank. */
+    if (app->attract.call_ticks < (unsigned)WM_ATTRACT_CREDIT_UNBLANK_TICKS)
+        return;
+
+    for (i = 0; i < WM_ATTRACT_CREDIT_LINES; ++i)
+        (void)draw_text_line(wm_attract_credit_lines[i].text,
+                             WM_ATTRACT_CREDIT_X,
+                             wm_attract_credit_lines[i].y,
+                             WM_STRINGER_CENTRE);
 }
 
 static void render_title_screen(const wm_app *app) {
@@ -2030,6 +2390,61 @@ static __attribute__((unused)) void render_match(const wm_app *app) {
 
 }
 
+
+static void render_source_match(const wm_app *app) {
+    wm_match_draw_item items[WM_MATCH_DRAW_MAX];
+    const wm_source_sprite *object_palette[9] = {0};
+    size_t count;
+    int camera_x, camera_y;
+
+    /* Until the exact arena object renderer is reconnected, do not put the
+       old rectangle-ring development harness behind source wrestlers. */
+    fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+    if (!app || !app->match.active)
+        return;
+
+    count = wm_match_build_draw_list(&app->match, items, WM_MATCH_DRAW_MAX);
+    camera_x = app->match.scroll.worldtlx >> 16;
+    camera_y = app->match.scroll.worldtly >> 16;
+
+    for (size_t i = 0; i < count; ++i) {
+        const wm_match_draw_item *item = &items[i];
+        const wm_source_sprite *spr;
+        const wm_source_sprite *pal;
+        int32_t id = item->wrestler_num;
+        float base_x, base_y;
+
+        /* The draw list carries the source shadow decision, but the exact
+           shadow object artwork is a separate presentation asset. Never draw
+           the old rectangle approximation here. */
+        if (item->layer == WM_DRAW_SHADOW || !item->frame)
+            continue;
+
+        spr = wm_n64_streamed_character_find(id, item->frame);
+        if (!spr)
+            continue;
+
+        if (item->layer == WM_DRAW_BODY && id >= 0 && id < 9)
+            object_palette[id] = spr;
+        pal = (id >= 0 && id < 9 && object_palette[id])
+                  ? object_palette[id] : spr;
+
+        /* match_display has already computed the exact source ODXOFF/ODYOFF
+           equivalent in anchor_x/anchor_y. Recover the actor/object origin,
+           subtract WRESTLE2.ASM's WORLDTL camera, and let the same proven
+           CI8/TLUT strip renderer apply the image origin and N64 scaling. */
+        base_x = (float)(item->screen_x - item->anchor_x - camera_x)
+                 * WM_FRONTEND_SCALE_X;
+        base_y = (float)(item->screen_y - item->anchor_y - camera_y)
+                 * WM_FRONTEND_SCALE_Y;
+        draw_source_sprite_scaled(spr, base_x, base_y,
+                                  item->anchor_x, item->anchor_y,
+                                  item->flip_x, pal,
+                                  WM_FRONTEND_SCALE_X,
+                                  WM_FRONTEND_SCALE_Y);
+    }
+}
+
 static void render_app(const wm_app *app) {
     surface_t *disp = display_get();
     rdpq_attach(disp, NULL);
@@ -2038,9 +2453,9 @@ static void render_app(const wm_app *app) {
         render_character_select(app);
     } else if (app->mode == WM_APP_MODE_PREGAME) {
         render_pregame(app);
-    } else if (app->mode == WM_APP_MODE_MATCH_INIT) {
-        /* Honest handoff boundary: render_match() is still a dev harness. */
-        fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+    } else if (app->mode == WM_APP_MODE_MATCH_INIT ||
+               app->mode == WM_APP_MODE_MATCH) {
+        render_source_match(app);
     } else switch (app->attract.call) {
         case WM_ATTRACT_DCS_LOGO:
             render_dcs_logo(app);
@@ -2052,9 +2467,31 @@ static void render_app(const wm_app *app) {
             render_title_screen(app);
             break;
         case WM_ATTRACT_SHOW_GAMEPLAY:
-            /* The existing combat renderer is a development harness only.
-               Normal product rendering can never present it as start_match. */
-            fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
+            render_source_match(app);
+            break;
+        case WM_ATTRACT_SHOW_COPYRIGHT:
+            render_copyright(app);
+            break;
+        case WM_ATTRACT_AAMA_MESSAGE:
+            render_aama(app);
+            break;
+        case WM_ATTRACT_SHOW_HSTD:
+            render_hstd(app);
+            break;
+        case WM_ATTRACT_CREDITSCREEN:
+            render_creditscreen(app);
+            break;
+        case WM_ATTRACT_SHOW_GEN_TIPS:
+            render_gen_tips(app);
+            break;
+        case WM_ATTRACT_DO_HINTS:
+            render_hints(app);
+            break;
+        /* One source routine with two entry points; @bios_type, carried
+           here as attract.bios_tips, picks which text it prints. */
+        case WM_ATTRACT_SHOW_BIOS:
+        case WM_ATTRACT_SHOW_BIOS_TIPS:
+            render_bios(app);
             break;
         default:
             /* Untranslated source routines are skipped by the portable core;

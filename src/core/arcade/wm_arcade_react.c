@@ -326,7 +326,7 @@ wm_arcade_wrestler_hit_result_t wm_arcade_wrestler_hit(
             if (attacker->risk & WM_ARCADE_RISK_HIGH_BIT) {
                 runtime->dam_mult = 4;
                 if (callbacks && callbacks->bonus_message)
-                    callbacks->bonus_message(attacker, callbacks->user);
+                    callbacks->bonus_message(attacker, -1, callbacks->user);
             }
             runtime->any_hits = 1;
         }

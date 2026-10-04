@@ -5,7 +5,7 @@
 
 #include "dcs_effect.h"
 
-/* ATTR.ASM walks dcslogo as a 186-pixel-wide 5-bit WIMP image.
+/* ATTRACT.ASM:2985 walks dcslogo as a 186-pixel-wide 5-bit WIMP image.
    The two setup passes prove an 88-row source extent:
      ROT:   31 columns * 6 px = 186, 44 rows * 2 px = 88
      BURST: 46 columns * 4 px + 2 = 186, 21 base rows * 4 with y+6 sampling.
@@ -309,7 +309,8 @@ static void dcs_render_burst(const wm_app *app, const wm_source_sprite *spr) {
     }
     dcs_draw_canvas(spr);
 
-    /* ATTR.ASM sets IRQSKYE white BEFORE each of the three one-tick sleeps:
+    /* ATTRACT.ASM:3142 `MOVK 3,A8` drives FLASH_WHITE, which sets IRQSKYE
+       white BEFORE each of the three one-tick sleeps:
        white, normal, white, normal, white, normal. With phase tick zero being
        the first rendered flash frame, white therefore occurs on 0/2/4. */
     if (app->attract.dcs_phase == WM_DCS_BURST_FLASH &&

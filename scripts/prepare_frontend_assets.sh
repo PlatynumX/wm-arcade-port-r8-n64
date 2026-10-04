@@ -39,13 +39,20 @@ python3 "$ROOT/tools/bdd_bundle.py" \
     --module NTITLESCBMOD \
     --out "$TITLE_OUT"
 
+# NOTE: src/generated/bmod_tables.c has TWO producers -- this script and
+# scripts/prepare_select_assets.sh -- and bmod_source.py numbers its
+# bmod_words_N arrays by the order the modules arrive in. The two lists
+# below and there must therefore stay IDENTICAL, or whichever script ran
+# last silently renumbers the file and the checked-in copy stops
+# reproducing. They disagreed (LADDER and wwfselbk were swapped) until
+# this comment was written; a source-tool test now holds them together.
 python3 "$ROOT/tools/bmod_source.py" \
     --source "$ORIG/BGNDTBL.ASM" \
     --module NTITLESCBMOD \
     --module SPORTBKBMOD \
-    --module LADDERBMOD \
-    --module choiceBMOD \
     --module wwfselbkBMOD \
+    --module choiceBMOD \
+    --module LADDERBMOD \
     --out "$BMOD_OUT"
 
 

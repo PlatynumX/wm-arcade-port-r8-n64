@@ -42,9 +42,25 @@ typedef enum {
 } WmHsPresentScreen;
 
 typedef struct {
-    /* Source comments describe packed positions as [Y,X]. */
+    /*
+     * Source comments describe packed positions as [Y,X], and the run at
+     * HSTD.ASM:1649-:1656 confirms it: cursy is the high half, cursx the low
+     * half. But cursx also gets fifty added to it -- HSTD.ASM:1652
+     * `addi 50,a0` -- so first_initials_x is the REGISTER value and not where
+     * the text lands: x 8 prints at 58. See WM_HSTD_INITIALS_X_BIAS.
+     */
     int16_t first_initials_y;
     int16_t first_initials_x;
+    /*
+     * LIVE FOR TAG, PIN AND STREAK; DEAD FOR INTER AND BEATEN. Those three
+     * screens' drawers use the score position (draw_tag_table_entry
+     * HSTD.ASM:885, draw_pinspeed_table_entry :1149,
+     * draw_winstreak_table_entry :1324). The one show_hstd's two tables use,
+     * draw_beaten_table_entry, restores it with `pull a9,a10` at :1624 and
+     * never mentions a10 again -- those rows show initials plus a row of
+     * defeated-wrestler icons, with no score text. Nothing should draw at
+     * these two for INTER or BEATEN; see wm/arcade/wmania_hstd_screen.h.
+     */
     int16_t first_score_y;
     int16_t first_score_x;
     int16_t row_y_step;

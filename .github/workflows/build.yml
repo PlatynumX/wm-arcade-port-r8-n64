@@ -67,7 +67,8 @@ jobs:
   n64-rom:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/dragonminded/libdragon:trunk
+      # Pin the archived libdragon image by immutable amd64 digest; the moving trunk tag returned manifest-unknown on GitHub Actions.
+      image: ghcr.io/dragonminded/libdragon:latest@sha256:14032432c051382254816719aff603c79a2bdaf9d60deafd6ec0d69871a5c6c0
     env:
       N64_INST: /n64_toolchain
       LIBDRAGON_REV: 0c665e8439aba143424631ba29ef2c305eaa986b

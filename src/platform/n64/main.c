@@ -26,6 +26,7 @@
 #include "wm/visual.h"
 #include "wm/match_display.h"
 #include "wm/streamed_character_art.h"
+#include "wm/ring_background_art.h"
 
 #define STICK_DEADZONE 12
 
@@ -2391,18 +2392,159 @@ static __attribute__((unused)) void render_match(const wm_app *app) {
 }
 
 
+
+/*
+ * BAKLST is drawn before OBJLST in DISPLAY.ASM. The portable match owns the
+ * exact BGND_UD1 residency bits; this is only the N64 DMA equivalent for the
+ * source CI8 blocks NEWRINGB supplies.
+ */
+#define WM_RING_BGND_MAX_BLOCKS 256u
+
+static bool ring_block_before(const wm_bgnd_module_t *module,
+                              size_t a, size_t b)
+{
+    const wm_bgnd_block_t *ba = &module->blocks[a];
+    const wm_bgnd_block_t *bb = &module->blocks[b];
+    const unsigned za = (unsigned)(ba->packed >> 8);
+    const unsigned zb = (unsigned)(bb->packed >> 8);
+
+    if (za != zb) return za < zb;
+    if (ba->y != bb->y) return ba->y < bb->y;
+    return false;
+}
+
+static void draw_ring_ci8(const uint8_t *pixels, const uint16_t *palette,
+                          int width, int height, float x, float y,
+                          bool flip_x, bool flip_y)
+{
+    surface_t tex;
+    int pitch, strip_h;
+
+    if (!pixels || !palette || width <= 0 || height <= 0)
+        return;
+
+    tex = surface_make_linear((void *)(uintptr_t)pixels, FMT_CI8,
+                              width, height);
+    rdpq_set_mode_standard();
+    rdpq_mode_tlut(TLUT_RGBA16);
+    rdpq_mode_filter(FILTER_POINT);
+    rdpq_mode_alphacompare(1);
+    rdpq_tex_upload_tlut((uint16_t *)(uintptr_t)palette, 0, 256);
+
+    pitch = (width + 7) & ~7;
+    strip_h = pitch > 0 ? 2048 / pitch : 0;
+    if (strip_h < 1) strip_h = 1;
+    if (strip_h > 2) strip_h &= ~1;
+
+    for (int t = 0; t < height; t += strip_h) {
+        int h = height - t;
+        int dest_row;
+        if (h > strip_h) h = strip_h;
+        dest_row = flip_y ? height - t - h : t;
+        rdpq_tex_blit(&tex,
+                      x, y + (float)dest_row * WM_FRONTEND_SCALE_Y,
+                      &(rdpq_blitparms_t){
+                          .t0 = t,
+                          .height = h,
+                          .flip_x = flip_x,
+                          .flip_y = flip_y,
+                          .scale_x = WM_FRONTEND_SCALE_X,
+                          .scale_y = WM_FRONTEND_SCALE_Y,
+                          .filtering = false,
+                      });
+    }
+}
+
+static void draw_source_ring_background(const wm_match_state *match)
+{
+    const wm_bgnd_placed_t *placed;
+    const wm_bgnd_module_t *module;
+    size_t order[WM_RING_BGND_MAX_BLOCKS];
+    size_t count = 0;
+    const int camera_x = match ? (match->scroll.worldtlx >> 16) : 0;
+    const int camera_y = match ? (match->scroll.worldtly >> 16) : 0;
+
+    if (!match || wm_bgnd_ring_mod_count != 1)
+        return;
+
+    placed = &wm_bgnd_ring_mod[0];
+    module = placed->module;
+    if (!module || module->block_count > WM_RING_BGND_MAX_BLOCKS)
+        return;
+
+    wm_n64_ring_background_sync(&match->background, module);
+
+    for (size_t i = 0; i < module->block_count; ++i)
+        if (wm_bgnd_is_resident(&match->background, i))
+            order[count++] = i;
+
+    /*
+     * BAKLST uses the same Z/Y object ordering as the source display list.
+     * Preserve source scan order when both keys are equal.
+     */
+    for (size_t i = 1; i < count; ++i) {
+        const size_t key = order[i];
+        size_t j = i;
+        while (j > 0 && ring_block_before(module, key, order[j - 1])) {
+            order[j] = order[j - 1];
+            --j;
+        }
+        order[j] = key;
+    }
+
+    for (size_t oi = 0; oi < count; ++oi) {
+        const size_t bi = order[oi];
+        const wm_bgnd_block_t *block = &module->blocks[bi];
+        const size_t hi = (size_t)(block->hdr & 0x0fffu);
+        const wm_bgnd_header_t *hdr;
+        const wm_ring_background_image *image;
+        const uint16_t *palette;
+        const unsigned pal_index =
+            (unsigned)(block->packed & 0x000fu) |
+            (unsigned)((block->hdr >> 8) & 0x00f0u);
+        const unsigned flags =
+            (unsigned)((block->packed >> 4) & 0x000fu);
+        const bool transparent =
+            (flags & WM_BMOD_TRANSPARENT) != 0;
+        const int world_x = placed->x + block->x;
+        const int world_y = placed->y + block->y;
+
+        if (hi >= module->header_count)
+            continue;
+
+        hdr = &module->headers[hi];
+        image = wm_n64_ring_background_image(hi, hdr->w, hdr->h);
+        palette = wm_n64_ring_background_palette(
+            pal_index, transparent);
+        if (!image || !palette)
+            continue;
+
+        draw_ring_ci8(
+            image->pixels_ci8, palette,
+            image->width, image->height,
+            (float)(world_x - camera_x) * WM_FRONTEND_SCALE_X,
+            (float)(world_y - camera_y) * WM_FRONTEND_SCALE_Y,
+            (flags & WM_BMOD_HFLIP) != 0,
+            (flags & WM_BMOD_VFLIP) != 0);
+    }
+}
+
 static void render_source_match(const wm_app *app) {
     wm_match_draw_item items[WM_MATCH_DRAW_MAX];
     const wm_source_sprite *object_palette[9] = {0};
     size_t count;
     int camera_x, camera_y;
 
-    /* Until the exact arena object renderer is reconnected, do not put the
-       old rectangle-ring development harness behind source wrestlers. */
+    /*
+     * Never fall back to the old rectangle-ring harness. The black clear is
+     * only the framebuffer clear; the source ring BAKLST is painted over it
+     * immediately from the translated BGND_UD1 residency set.
+     */
     fill_rect(0, 0, 320, 240, RGBA32(0, 0, 0, 255));
     if (!app || !app->match.active)
         return;
 
+    draw_source_ring_background(&app->match);
     count = wm_match_build_draw_list(&app->match, items, WM_MATCH_DRAW_MAX);
     camera_x = app->match.scroll.worldtlx >> 16;
     camera_y = app->match.scroll.worldtly >> 16;
@@ -2623,6 +2765,7 @@ int main(void) {
     rdpq_debug_start();
     joypad_init();
     dfs_init(DFS_DEFAULT_LOCATION);
+    wm_n64_ring_background_reset();
     wm_n64_audio_init();
     sports_background_cache_init();
     rdpq_text_register_font(1, rdpq_font_load_builtin(FONT_BUILTIN_DEBUG_VAR));

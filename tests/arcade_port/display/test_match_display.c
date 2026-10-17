@@ -279,6 +279,45 @@ static void test_the_attachment_pair_gates_the_torso(void)
     assert(stand->attach_x == -1 && stand->attach_y == -1);
 }
 
+static uint32_t bgnd_hcount(void *u)
+{
+    (void)u;
+    return 0x1234u;
+}
+
+static uint32_t bgnd_sp(void *u)
+{
+    (void)u;
+    return 0x5678u;
+}
+
+static void test_live_match_owns_the_ring_background(void)
+{
+    wm_match_state m;
+    WmRng rng;
+    wm_input_state input = {0};
+
+    wm_rng_init(&rng, 7u, bgnd_hcount, bgnd_sp, NULL);
+    wm_match_init(&m);
+    wm_match_start_attract(&m, &rng);
+
+    /*
+     * start_match's BGND_UD1 must populate BAKBITS. This catches the old
+     * state where the complete translated scroller existed and no live
+     * match owned it.
+     */
+    assert(m.background.resident_count > 0);
+    assert(m.bgnd_counter == 1);
+
+    /*
+     * game_loop starts bgnd_cntr at 1, so its first pass refreshes and
+     * reloads 8. No drone callback is needed for this ownership test.
+     */
+    wm_match_tick(&m, NULL, &input);
+    assert(m.bgnd_counter == 8);
+    assert(m.background.resident_count > 0);
+}
+
 static void test_it_refuses_to_overrun_the_caller(void)
 {
     wm_match_state m;
@@ -303,6 +342,7 @@ int main(void)
     test_the_shadow_goes_down_even_with_no_frame();
     test_world_position_and_flip_come_from_the_actor();
     test_the_attachment_pair_gates_the_torso();
+    test_live_match_owns_the_ring_background();
     test_it_refuses_to_overrun_the_caller();
     test_the_projection_is_set_image();
     test_invisible_and_noshadow();

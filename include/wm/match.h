@@ -13,6 +13,7 @@
 #include "wm/arcade/wm_arcade_pal.h"
 #include "wm/arcade/wm_arcade_round_reset.h"
 #include "wm/arcade/wm_arcade_scroll.h"
+#include "wm/arcade/wm_arcade_bgnd.h"
 #include "wm/arcade/wm_arcade_smove.h"
 #include "wm/arcade/wm_arcade_special.h"
 #include "wm/arcade/wm_arcade_confine.h"
@@ -313,6 +314,16 @@ typedef struct {
      * a different place.
      */
     bool clock_warning;
+    /*
+     * BAKGND.ASM BGND_UD1's BAKBITS and eight-tick scan counter. The ring
+     * module and scroller were both translated already, but the live match
+     * owned neither, so the N64 renderer had no source-backed arena to draw.
+     * WRESTLE.ASM initializes bgnd_cntr to 1 before game_loop and then
+     * refreshes BAKLST every eight ticks.
+     */
+    wm_bgnd_state_t background;
+    uint8_t bgnd_counter;
+
     /*
      * ROPES.ASM's four rope banks. The whole subsystem -- rope_command's
      * table routing, the runtime's new_command_wake, and the complete

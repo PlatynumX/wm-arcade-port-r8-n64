@@ -114,8 +114,12 @@ jobs:
           sh ./scripts/prepare_bret_sprites.sh
           sh ./scripts/prepare_frontend_assets.sh
           sh ./scripts/prepare_streamed_character_assets.sh
+          sh ./scripts/prepare_ring_assets.sh
           test -s src/generated/bret_sprites.c
           test -s filesystem/wrestlers/STREAMED_ROSTER.txt
+          test -s filesystem/ring/STREAMED_RING.txt
+          test "$(find filesystem/ring -type f -name 'h*.bin' | wc -l)" -eq 95
+          test "$(grep -c '^blocks=211$' filesystem/ring/STREAMED_RING.txt)" -eq 1
           STREAMED_FRAMES=$(find filesystem/wrestlers -type f -name '*.bin' | wc -l)
           STREAMED_BYTES=$(du -cb filesystem/wrestlers/*/*.bin | tail -1 | awk '{print $1}')
           echo "streamed wrestler frames=$STREAMED_FRAMES bytes=$STREAMED_BYTES"

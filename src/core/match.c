@@ -68,6 +68,33 @@ static void wm_match_init_scroller(wm_match_state *m) {
 }
 
 /*
+ * DISPLAY.ASM's screen corners used by BGND_UD1. SCRNTL is [0,-32]
+ * (Y:X), SCRNLR is [254,432], and wm_bgnd_display_rect applies the
+ * source DISP_PAD [20h,40h] itself. These are world-pixel coordinates;
+ * the N64 transform happens only when a resident block is painted.
+ */
+#define WM_MATCH_BGND_SCRNTL_X (-32)
+#define WM_MATCH_BGND_SCRNTL_Y 0
+#define WM_MATCH_BGND_SCRNLR_X 432
+#define WM_MATCH_BGND_SCRNLR_Y 254
+
+static void wm_match_bgnd_update(wm_match_state *m) {
+    wm_bgnd_rect_t view;
+    if (!m) return;
+
+    view = wm_bgnd_display_rect(
+        m->scroll.worldtlx >> 16, m->scroll.worldtly >> 16,
+        WM_MATCH_BGND_SCRNTL_X, WM_MATCH_BGND_SCRNTL_Y,
+        WM_MATCH_BGND_SCRNLR_X, WM_MATCH_BGND_SCRNLR_Y);
+    wm_bgnd_update(&m->background,
+                   wm_bgnd_ring_mod, wm_bgnd_ring_mod_count,
+                   view,
+                   NULL, 0, NULL,
+                   NULL, 0, NULL,
+                   NULL);
+}
+
+/*
  * ANIM.ASM's rope opcodes reaching ROPES.ASM. The animation says which
  * bank and what to do to it; the rope processes belong to the match, so
  * the VM calls out through wm_anim_env and this is what it lands on.
@@ -1402,6 +1429,14 @@ static void match_reset_for_round(wm_match_state *m) {
     /* `calla init_scroller` -- put the camera back too. */
     wm_round_init_scroller(&m->scroll.worldtlx, &m->scroll.worldtly, 1);
 
+    /*
+     * The ring background remains allocated across rounds in the arcade;
+     * BGND_UD1 reconciles it against the reset camera. Make the next
+     * game-loop tick the source's first-counter tick again.
+     */
+    wm_match_bgnd_update(m);
+    m->bgnd_counter = 1;
+
     /* The round state itself, so the next KO can decide again. */
     wm_arcade_round_state_init(&m->round_state);
 }
@@ -1794,6 +1829,17 @@ static void init_bret_backends(wm_match_state *m) {
  */
 static void match_start_common_tail(wm_match_state *m) {
     wm_arcade_combat_runtime_init(&m->combat_runtime);
+
+    /*
+     * WRESTLE.ASM installs ring_mod and calls BGND_UD1 before the wrestler
+     * processes exist. The later startup calls see the same stationary
+     * camera, so one reconciliation produces the same BAKBITS set;
+     * bgnd_cntr=1 preserves the first game-loop refresh.
+     */
+    wm_bgnd_state_init(&m->background);
+    wm_match_bgnd_update(m);
+    m->bgnd_counter = 1;
+
     {
         /* ROPES.ASM creates one process per bank. reduce_bog kills only the
            front/back pair after object creation, which is the source's own
@@ -3565,6 +3611,21 @@ void wm_match_tick(wm_match_state *m, const wm_arcade_drone_callbacks_t *cb,
                     m->anim_sound(m->anim_sound_user, WM_MATCH_MOVE_NAME_SND);
             }
         }
+    }
+
+    /*
+     * WRESTLE.ASM game_loop: after set_images and before the SLEEP,
+     * BGND_UD1 runs when bgnd_cntr reaches zero and reloads it with 8.
+     * audit_ud_flag can postpone that on the cabinet; this port has no
+     * AUDIT_UD process, so the flag is permanently clear. This happens
+     * before scroll_world below, therefore it scans against the camera that
+     * drew this source tick just like the original.
+     */
+    if (m->bgnd_counter <= 1u) {
+        wm_match_bgnd_update(m);
+        m->bgnd_counter = 8u;
+    } else {
+        --m->bgnd_counter;
     }
 
     /*

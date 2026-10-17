@@ -66,23 +66,37 @@ jobs:
 
   n64-rom:
     runs-on: ubuntu-latest
-    container:
-      # Pin the archived libdragon image by immutable amd64 digest; the moving trunk tag returned manifest-unknown on GitHub Actions.
-      image: ghcr.io/dragonminded/libdragon:latest@sha256:14032432c051382254816719aff603c79a2bdaf9d60deafd6ec0d69871a5c6c0
     env:
-      N64_INST: /n64_toolchain
+      N64_INST: /opt/libdragon
       LIBDRAGON_REV: 0c665e8439aba143424631ba29ef2c305eaa986b
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install official N64 GCC toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOOLCHAIN_URL="https://github.com/DragonMinded/libdragon/releases/download/toolchain-continuous-prerelease/gcc-toolchain-mips64-amd64.deb"
+          TOOLCHAIN_SHA256="fac8e6572493a66468b7d45df41b042f90b1a630ec96aa218bd5fb1f320a0a4d"
+          TOOLCHAIN_DEB="$RUNNER_TEMP/gcc-toolchain-mips64-amd64.deb"
+
+          curl -fL --retry 5 --retry-all-errors \
+            -o "$TOOLCHAIN_DEB" "$TOOLCHAIN_URL"
+          echo "$TOOLCHAIN_SHA256  $TOOLCHAIN_DEB" | sha256sum -c -
+
+          sudo dpkg -i "$TOOLCHAIN_DEB"
+          test -x "$N64_INST/bin/mips64-elf-gcc"
+          "$N64_INST/bin/mips64-elf-gcc" --version | head -1
+          sudo chown -R "$USER":"$(id -gn)" "$N64_INST"
+
 
       - name: Ensure host-side asset tools exist
         shell: bash
         run: |
           set -euo pipefail
-          if ! command -v python3 >/dev/null 2>&1; then
-            apt-get update
-            DEBIAN_FRONTEND=noninteractive apt-get install -y python3
-          fi
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            ca-certificates curl gcc g++ git make python3 xxd
           python3 --version
           git --version
           make --version | head -1
@@ -92,6 +106,7 @@ jobs:
         run: |
           set -euo pipefail
           test -x "$N64_INST/bin/mips64-elf-gcc"
+          export PATH="$N64_INST/bin:$PATH"
           rm -rf /tmp/libdragon
           git init -q /tmp/libdragon
           git -C /tmp/libdragon remote add origin https://github.com/DragonMinded/libdragon.git

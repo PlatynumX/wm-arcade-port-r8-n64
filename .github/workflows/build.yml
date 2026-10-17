@@ -179,6 +179,16 @@ jobs:
           rm -rf build/n64 wm_arcade_r9.z64
           make -j2
           test -s wm_arcade_r9.z64
+
+          ELF_RAM_BYTES=$("$N64_INST/bin/mips64-elf-size" build/n64/wm_arcade_r9.elf | awk 'NR==2 {print $1+$2+$3}')
+          echo "ELF resident bytes=$ELF_RAM_BYTES"
+          test "$ELF_RAM_BYTES" -lt 6500000
+
+          if "$N64_INST/bin/mips64-elf-nm" build/n64/wm_arcade_r9.elf | grep -q 'wm_bret_sprite_'; then
+            echo "ERROR: obsolete resident Bret sprite corpus is still linked" >&2
+            exit 1
+          fi
+
           ROM_BYTES=$(wc -c < wm_arcade_r9.z64)
           echo "ROM bytes=$ROM_BYTES"
           test "$ROM_BYTES" -gt 25000000

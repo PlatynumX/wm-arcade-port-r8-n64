@@ -66,22 +66,37 @@ jobs:
 
   n64-rom:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/dragonminded/libdragon@sha256:7671914e4ad020a1e4027cdfd06e8a78b9f068b64f56ab1203632613e84662b1
     env:
-      N64_INST: /n64_toolchain
+      N64_INST: /opt/libdragon
       LIBDRAGON_REV: 0c665e8439aba143424631ba29ef2c305eaa986b
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install official N64 GCC toolchain
+        shell: bash
+        run: |
+          set -euo pipefail
+          TOOLCHAIN_URL="https://github.com/DragonMinded/libdragon/releases/download/toolchain-continuous-prerelease/gcc-toolchain-mips64-amd64.deb"
+          TOOLCHAIN_SHA256="fac8e6572493a66468b7d45df41b042f90b1a630ec96aa218bd5fb1f320a0a4d"
+          TOOLCHAIN_DEB="$RUNNER_TEMP/gcc-toolchain-mips64-amd64.deb"
+
+          curl -fL --retry 5 --retry-all-errors \
+            -o "$TOOLCHAIN_DEB" "$TOOLCHAIN_URL"
+          echo "$TOOLCHAIN_SHA256  $TOOLCHAIN_DEB" | sha256sum -c -
+
+          sudo dpkg -i "$TOOLCHAIN_DEB"
+          test -x "$N64_INST/bin/mips64-elf-gcc"
+          "$N64_INST/bin/mips64-elf-gcc" --version | head -1
+          sudo chown -R "$USER":"$(id -gn)" "$N64_INST"
+
 
       - name: Ensure host-side asset tools exist
         shell: bash
         run: |
           set -euo pipefail
-          if ! command -v python3 >/dev/null 2>&1; then
-            apt-get update
-            DEBIAN_FRONTEND=noninteractive apt-get install -y python3
-          fi
+          sudo apt-get update
+          sudo DEBIAN_FRONTEND=noninteractive apt-get install -y \
+            ca-certificates curl gcc g++ git make python3 xxd
           python3 --version
           git --version
           make --version | head -1
@@ -91,6 +106,7 @@ jobs:
         run: |
           set -euo pipefail
           test -x "$N64_INST/bin/mips64-elf-gcc"
+          export PATH="$N64_INST/bin:$PATH"
           rm -rf /tmp/libdragon
           git init -q /tmp/libdragon
           git -C /tmp/libdragon remote add origin https://github.com/DragonMinded/libdragon.git
@@ -168,6 +184,48 @@ jobs:
           test "$ROM_BYTES" -gt 25000000
           ls -lh wm_arcade_r9.z64
 
+      - name: Build native-toolchain baseline control ROM
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Preserve the WirePass1 ROM first.
+          cp wm_arcade_r9.z64 wm_arcade_r9_wirepass_native.z64
+
+          BASELINE_SHA="c62500241e96d0d865bf968503614b9ea3d38aeb"
+          BASEDIR="$RUNNER_TEMP/wm-baseline-native"
+
+          git fetch --no-tags --depth=1 origin "$BASELINE_SHA"
+          rm -rf "$BASEDIR"
+          git worktree add --detach "$BASEDIR" "$BASELINE_SHA"
+
+          # Reuse the exact historical arcade source already fetched for the
+          # WirePass1 build, then run the baseline's own source/asset pipeline.
+          mkdir -p "$BASEDIR/original"
+          cp -a original/wwf-wrestlemania "$BASEDIR/original/"
+
+          cd "$BASEDIR"
+          sh ./scripts/regenerate_source_data.sh
+          sh ./scripts/inventory_original.sh
+          sh ./scripts/build_source_ir.sh
+          sh ./scripts/build_animation_ir.sh
+          sh ./scripts/prepare_bret_sprites.sh
+          sh ./scripts/prepare_frontend_assets.sh
+          sh ./scripts/prepare_streamed_character_assets.sh
+
+          rm -rf build/n64 wm_arcade_r9.z64
+          make -j2
+          test -s wm_arcade_r9.z64
+          BASE_BYTES=$(wc -c < wm_arcade_r9.z64)
+          echo "baseline native ROM bytes=$BASE_BYTES"
+          test "$BASE_BYTES" -gt 25000000
+
+          cp wm_arcade_r9.z64 "$GITHUB_WORKSPACE/wm_arcade_r9_baseline_native.z64"
+          cd "$GITHUB_WORKSPACE"
+
+          test -s wm_arcade_r9_wirepass_native.z64
+          test -s wm_arcade_r9_baseline_native.z64
+
       - name: Upload ROM and coverage as Actions artifact
         uses: actions/upload-artifact@v4
         with:
@@ -176,6 +234,8 @@ jobs:
           retention-days: 14
           path: |
             wm_arcade_r9.z64
+            wm_arcade_r9_wirepass_native.z64
+            wm_arcade_r9_baseline_native.z64
             docs/PORT_COVERAGE.md
             build/SOURCE_FRONTIER.md
             build/source_ir.json
@@ -184,53 +244,45 @@ jobs:
             build/SOURCE_INVENTORY.md
             bret-r8-textures-png.zip
 
-      - name: Publish ROM to rom-build branch
+      - name: Publish diagnostic ROM pair to rom-build branch
         if: github.event_name == 'push'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          ROM="$GITHUB_WORKSPACE/wm_arcade_r9.z64"
-          ASSETS="$GITHUB_WORKSPACE/bret-r8-textures-png.zip"
-          COVERAGE="$GITHUB_WORKSPACE/docs/PORT_COVERAGE.md"
-          FRONTIER="$GITHUB_WORKSPACE/build/SOURCE_FRONTIER.md"
-          SOURCEIR="$GITHUB_WORKSPACE/build/source_ir.json"
-          ANIMFRONTIER="$GITHUB_WORKSPACE/build/ANIMATION_FRONTIER.md"
-          ANIMIR="$GITHUB_WORKSPACE/build/animation_ir.json"
-          test -s "$ROM"
-          test -s "$ASSETS"
-          test -s "$COVERAGE"
-          test -s "$FRONTIER"
-          test -s "$SOURCEIR"
-          test -s "$ANIMFRONTIER"
-          test -s "$ANIMIR"
-          cp "$ROM" /tmp/wm_arcade_r9.z64
-          cp "$ASSETS" /tmp/bret-r8-textures-png.zip
-          cp "$COVERAGE" /tmp/PORT_COVERAGE.md
-          cp "$FRONTIER" /tmp/SOURCE_FRONTIER.md
-          cp "$SOURCEIR" /tmp/source_ir.json
-          cp "$ANIMFRONTIER" /tmp/ANIMATION_FRONTIER.md
-          cp "$ANIMIR" /tmp/animation_ir.json
+
+          test -s wm_arcade_r9.z64
+          test -s wm_arcade_r9_wirepass_native.z64
+          test -s wm_arcade_r9_baseline_native.z64
+
+          cp wm_arcade_r9.z64 /tmp/wm_arcade_r9.z64
+          cp wm_arcade_r9_wirepass_native.z64 /tmp/wm_arcade_r9_wirepass_native.z64
+          cp wm_arcade_r9_baseline_native.z64 /tmp/wm_arcade_r9_baseline_native.z64
 
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout --orphan rom-build-tmp
           git rm -rf . >/dev/null 2>&1 || true
+
           cp /tmp/wm_arcade_r9.z64 ./wm_arcade_r9.z64
-          cp /tmp/bret-r8-textures-png.zip ./bret-r8-textures-png.zip
-          cp /tmp/PORT_COVERAGE.md ./PORT_COVERAGE.md
-          cp /tmp/SOURCE_FRONTIER.md ./SOURCE_FRONTIER.md
-          cp /tmp/source_ir.json ./source_ir.json
-          cp /tmp/ANIMATION_FRONTIER.md ./ANIMATION_FRONTIER.md
-          cp /tmp/animation_ir.json ./animation_ir.json
+          cp /tmp/wm_arcade_r9_wirepass_native.z64 ./wm_arcade_r9_wirepass_native.z64
+          cp /tmp/wm_arcade_r9_baseline_native.z64 ./wm_arcade_r9_baseline_native.z64
+
           {
-            echo "WrestleMania Arcade N64 r9"
+            echo "WrestleMania Arcade N64 native-toolchain A/B"
             echo "source_commit=$GITHUB_SHA"
+            echo "wirepass_source=8a3f338d1cc1114fb9c625daa5121b3c92190b7e"
+            echo "baseline_source=c62500241e96d0d865bf968503614b9ea3d38aeb"
             echo "workflow_run=$GITHUB_RUN_ID"
             echo "built_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           } > BUILD.txt
-          git add -f wm_arcade_r9.z64 bret-r8-textures-png.zip PORT_COVERAGE.md SOURCE_FRONTIER.md source_ir.json ANIMATION_FRONTIER.md animation_ir.json BUILD.txt
-          git commit -m "ROM build ${GITHUB_SHA::12}"
+
+          git add -f \
+            wm_arcade_r9.z64 \
+            wm_arcade_r9_wirepass_native.z64 \
+            wm_arcade_r9_baseline_native.z64 \
+            BUILD.txt
+          git commit -m "A-B ROM build ${GITHUB_SHA::12}"
           git push --force origin HEAD:rom-build

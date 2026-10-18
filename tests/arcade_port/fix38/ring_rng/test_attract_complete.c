@@ -185,8 +185,15 @@ static void test_visuals_and_data(void)
     assert(p[0].y == 94);
     assert(p[0].x == 200);
 
+    /* WHICH_HINT's own order, ATTRACT.ASM:3625. This used to expect
+       HNTT_5 at index 4, which is ATTR.ASM:3722's fifth record -- the
+       superseded dump, whose order diverges from the shipped file's after
+       index 2. The shipped fourth and fifth are HNT_9 and HNT_7. */
+    assert(WM_ATTRACT_ACTIVE_HINTS == 10u);
     assert(strcmp(wm_attract_hints[0].title_label, "HNTT_2") == 0);
-    assert(strcmp(wm_attract_hints[4].title_label, "HNTT_5") == 0);
+    assert(strcmp(wm_attract_hints[3].title_label, "HNTT_9") == 0);
+    assert(strcmp(wm_attract_hints[4].title_label, "HNTT_7") == 0);
+    assert(strcmp(wm_attract_hints[9].title_label, "HNTT_A") == 0);
 
     assert(wm_attract_bios[0].weight_lbs == 234u);
     assert(wm_attract_bios[2].height_in == 11u);

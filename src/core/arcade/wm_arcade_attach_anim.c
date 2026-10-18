@@ -15,9 +15,7 @@ void wm_arcade_anim_enter_slave_idle(wm_arcade_actor_t *a)
     a->x_vel = a->y_vel = a->z_vel = 0;
     a->ani_speed = 0x0100u;
     /* ANI_SETMODE also clears SF_CLEAR_BITS. */
-    a->status_flags &= ~(WM_STATUS_SCROLL_CTRL | WM_STATUS_DEAD_ANIM |
-                         WM_STATUS_DID_RAISEARM | WM_STATUS_KOD |
-                         WM_STATUS_COMBO_BROKEN | WM_STATUS_PUSH);
+    a->status_flags &= ~WM_STATUS_SF_CLEAR_BITS;
     if (a->ptime != 0) a->ptime = 1;
 }
 

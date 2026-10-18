@@ -13,6 +13,9 @@ extern "C" {
  *
  * NOTE: RING.ASM is explicitly marked "This entire ASM file is no longer
  * required."  Do not use its old pregenerated line tables as authority.
+ * That warning was here and the rope line below was taken from RING.ASM
+ * anyway; see WM_ROPE_LINE_RIGHT_X. tools/link_resolve.py now settles
+ * which files the game builds mechanically rather than by note.
  */
 
 #define WM_RING_Y_SCALE_MULTIPLIER 0x3566
@@ -36,6 +39,39 @@ extern "C" {
 #define WM_RING_BOT_RIGHT  (1343 + 5)
 #define WM_RING_RIGHT_WIDTH (WM_RING_BOT_RIGHT - WM_RING_TOP_RIGHT)
 #define WM_RING_TOP 1023
+
+/* DISPLAY.EQU:56 RING_X_MID. Note this is NOT WM_RING_X_CENTER (0x400+50
+   = 1074): set_xdrift measures from the screen midpoint, and the two are
+   50 units apart. */
+#define WM_RING_X_MID 1024
+
+/*
+ * The top corner of each side's rope line, which tgt_tbukl
+ * (SHNSEQ2.ASM:2566) aims a turnbuckle climb at.
+ *
+ * tgt_tbukl reads the first two words of vln_right_rope / vln_left_rope.
+ * Those are BSS, not data: WRESTLE.ASM:312 `bssx vln_right_rope,...`
+ * only reserves the space, and set_up_line_tables (WRESTLE.ASM:5834)
+ * FILLS it at runtime from the vln_*_rope_r parameter blocks at
+ * WRESTLE.ASM:287. setup_each_right_table (:5879) opens with
+ * `move *a1(0),*a0+,L`, copying that block's first long straight
+ * through, so the two words tgt_tbukl reads are exactly RING_TOP_RIGHT
+ * and RING_TOP -- RING.EQU:45 and :48.
+ *
+ * THIS PORT TOOK RING.ASM'S PREGENERATED TABLE INSTEAD, and RING.ASM is
+ * dead. Line 16 of it is the bare sentence "This entire ASM file is no
+ * longer required" -- not assemblable at all -- and WRESTLE.CMD does not
+ * link it. Its right-hand x1 is `1192+100` = 1292 where the shipped
+ * constant is `1292+5` = 1297, so every turnbuckle climb on the right of
+ * the ring was aimed five units short of the corner. The left side and
+ * the Z agreed by coincidence, which is why only one number moves here.
+ *
+ * Named separately from WM_RING_TOP_* because that is what the routine
+ * reads -- the rope line's corner, which happens to be the ring's.
+ */
+#define WM_ROPE_LINE_LEFT_X  WM_RING_TOP_LEFT
+#define WM_ROPE_LINE_RIGHT_X WM_RING_TOP_RIGHT
+#define WM_ROPE_LINE_TOP_Z   WM_RING_TOP
 #define WM_RING_BOT 1345
 #define WM_RING_DEPTH (WM_RING_BOT - WM_RING_TOP)
 
@@ -98,6 +134,72 @@ const WmRingBoundarySeed *wm_ring_boundary_seed(WmRingBoundaryId id);
 
 /* Sanity check for the literal translated source descriptors only. */
 bool wm_ring_boundary_seed_consistent(const WmRingBoundarySeed *seed);
+
+/*
+ * WRESTLE.ASM:5814 SUBR calc_line_x -- given a boundary line's seed and a
+ * player's OBJ_ZPOSINT, returns the line's real X value at that Z (0 if z
+ * is outside [top_z, bottom_z], exactly matching the source's own
+ * out-of-range return).
+ *
+ * The real routine doesn't compute this directly: WRESTLE.ASM:5834 SUBR
+ * set_up_line_tables precomputes, once at startup, a per-Z lookup table via
+ * setup_each_left_table/setup_each_right_table (WRESTLE.ASM:5859-5897) --
+ * for a "left" boundary (top_x > bottom_x, verified true for all 4 of this
+ * port's real left boundaries) each step SUBTRACTS a fixed 16.16 delta
+ * from a running accumulator that starts at top_x; for a "right" boundary
+ * (top_x < bottom_x, verified true for all 4 real right boundaries) each
+ * step ADDS it. Table index i (0-based, i = zpos - top_z) reads the value
+ * after (i+1) accumulation steps -- note this is NOT top_x at i=0, it's
+ * already one step past it; that's a genuine source quirk this function
+ * reproduces exactly (verified by hand-deriving the closed form of the
+ * accumulator: top_x -/+ (i+1)*delta, delta = (width<<16)/(depth+1)
+ * truncating, matching DIVS's signed truncating divide -- all values
+ * involved are non-negative so truncation direction is unambiguous),
+ * computed directly here rather than cached in a table, which is
+ * mathematically identical and avoids needing an init step this port has
+ * no equivalent boot phase for.
+ */
+int32_t wm_ring_calc_line_x(const WmRingBoundarySeed *seed, int32_t zpos);
+
+/*
+ * WRESTLE.ASM:5789 SUBR get_rope_x -- calc_line_x against whichever
+ * rope this wrestler is nearer: the right one if his X is strictly
+ * greater than RING_X_CENTER, the left one otherwise. Exactly at the
+ * centre he gets the left rope, because the source's test is `jrgt`.
+ *
+ * Returns 0 when his Z puts him past either end of that rope, which is
+ * calc_line_x's own out-of-range answer and not an X of zero.
+ */
+int32_t wm_ring_get_rope_x(int32_t xposint, int32_t zposint);
+
+/*
+ * WRESTLE.ASM:5704 SUBR get_box_overlap -- how far, and which way, to
+ * push a wrestler out of a box bounded by two of these lines.
+ *
+ * The box is a left line, a right line, and the top and bottom Z of
+ * the LEFT one (the source reuses a6 and the z reads land on whichever
+ * seed it loaded second). Four distances come out -- to each edge --
+ * and the smallest wins, so a man just inside the left edge is pushed
+ * left rather than all the way across.
+ *
+ * It reports (0, 0) for "not in the box", which is also what it
+ * reports for a Z outside either line's range, so a caller cannot tell
+ * those apart. Ties go to the horizontal push, because every
+ * comparison in the chain is a strict `jrgt`.
+ *
+ * Nothing in the shipped game calls it: all four call sites
+ * (WRESTLE.ASM:5545, :5584, :5633, :5682) are commented out. It is
+ * translated because it is self-contained geometry with an exact
+ * answer, not because anything needs it yet.
+ */
+typedef struct wm_ring_pushout {
+    int32_t xoff;
+    int32_t zoff;
+} wm_ring_pushout;
+
+wm_ring_pushout wm_ring_box_overlap(const WmRingBoundarySeed *left,
+                                    const WmRingBoundarySeed *right,
+                                    int32_t xposint, int32_t zposint);
 
 #ifdef __cplusplus
 }

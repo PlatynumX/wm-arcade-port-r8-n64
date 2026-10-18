@@ -27,23 +27,16 @@ static void send_dcs(wm_audio_state *audio, uint16_t command) {
 }
 
 /*
- * RNDRNG0 is a shared Williams/Midway primitive referenced by SELECT.ASM but
- * its implementation is not present in the checked-in WWF source tree.
- * Keep that one missing primitive isolated here.  The random-select movement,
- * 5-tick cadence, 14-move wander, legal-direction fallback, and homing are the
- * already-translated SELECT.ASM routines in src/core/select.c.
+ * RNDRNG0 is UTIL.ASM:1713 and it is translated -- wm_rng_rndrng0 in
+ * wm/arcade/wmania_rng.h.  This file used to carry a local xorshift on the
+ * stated grounds that RNDRNG0 was "a shared Williams/Midway primitive ...
+ * not present in the checked-in WWF source tree".  It is present, and the
+ * port already had it.  The random-select movement now draws from the one
+ * shared RAND, as SELECT.ASM does.
  */
-static uint32_t select_rng_next(wm_select_screen_state *state) {
-    uint32_t x = state->rng_state ? state->rng_state : 0x57574653u;
-    x ^= x << 13;
-    x ^= x >> 17;
-    x ^= x << 5;
-    state->rng_state = x;
-    return x;
-}
-
 static uint8_t rndrng0_bridge(wm_select_screen_state *state, uint8_t inclusive_max) {
-    return (uint8_t)(select_rng_next(state) % ((uint32_t)inclusive_max + 1u));
+    if (!state || !state->rng) return 0u;
+    return (uint8_t)wm_rng_rndrng0(state->rng, inclusive_max);
 }
 
 static uint16_t wrestler_name_dcs(uint8_t source_id) {
@@ -133,7 +126,7 @@ static void tick_wrestler_name_process(wm_select_screen_state *state,
 }
 
 
-void wm_select_screen_init(wm_select_screen_state *state) {
+void wm_select_screen_init(wm_select_screen_state *state, WmRng *rng) {
     if (!state) return;
     memset(state, 0, sizeof(*state));
 
@@ -141,7 +134,7 @@ void wm_select_screen_init(wm_select_screen_state *state) {
     state->announcer_queue_equal = true;
     state->selected_source_wrestler = 0xffu;
     state->last_clock_digit = 4u; /* SELECT.ASM clock_digits initializes A11=4. */
-    state->rng_state = 0x57574653u;
+    state->rng = rng;
     state->buyin_blink_countdown = 30u; /* SELECT.ASM CNTR init */
     state->buyin_name_visible = true;
 

@@ -12,10 +12,34 @@ import re
 import sys
 from collections import OrderedDict
 
-import bret_manifest
-import wimpimg
+# The sibling tools import each other by bare name, which only works
+# when tools/ happens to be on the path -- true when this is run as a
+# script from that directory, not true when something imports it. Every
+# other tool here guards the same way.
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
+import bret_manifest  # noqa: E402
+import wimpimg  # noqa: E402
 
 FRAME_RE = re.compile(r'\{"([A-Z][A-Z0-9_]*[0-9]{2})"\s*,\s*[0-9]+\}')
+# The same frames also appear in the generated animation PROGRAMS, in the
+# op form rather than the flat-table form. A program-driven wrestler has no
+# wm_visual_sequence to collect from, so this is where its frames come from.
+PROGRAM_FRAME_RE = re.compile(
+    r'WM_AOP_FRAME[^"\n]*"([A-Z][A-Z0-9_]*[0-9]{2})"')
+# ANI_SUPERSLAVE2's puppet tables name the DEFENDER's frames, and those need
+# geometry too -- the attach offset is built from both frames' own animation
+# origins, so a missing victim frame leaves the victim hanging at (0,0).
+PUPPET_FRAME_RE = re.compile(
+    r'\{"([A-Z][A-Z0-9_]*[0-9]{2})"\s*,\s*-?[0-9]+\s*,\s*-?[0-9]+\s*,\s*-?[0-9]+\}')
+# ...and the same victim frames appear again inside the emitted PROGRAMS,
+# carried by ANI_SUPERSLAVE2 rather than by a puppet table. PROGRAM_FRAME_RE
+# above only matches WM_AOP_FRAME -- the frames a wrestler shows HIMSELF --
+# so without this the poses he puts his VICTIM into were collected only if
+# they happened to appear in a puppet table too. 263 of them did not, and
+# a victim frame with no geometry has no hurt box: the source's own note on
+# why that matters is in the puppet comment above.
+SLAVE_FRAME_RE = re.compile(
+    r'WM_AOP_SUPERSLAVE2[^}]*?"([A-Z][A-Z0-9_]*[0-9]{2})"')
 
 
 def c_ident(s: str) -> str:
@@ -26,13 +50,17 @@ def collect_frames(paths: list[pathlib.Path]) -> list[str]:
     out: list[str] = []
     seen: set[str] = set()
     for path in paths:
-        for match in FRAME_RE.finditer(path.read_text(errors="replace")):
+        text = path.read_text(errors="replace")
+        for match in (list(FRAME_RE.finditer(text)) +
+                      list(PROGRAM_FRAME_RE.finditer(text)) +
+                      list(PUPPET_FRAME_RE.finditer(text)) +
+                      list(SLAVE_FRAME_RE.finditer(text))):
             name = match.group(1).upper()
             if name not in seen:
                 seen.add(name)
                 out.append(name)
     if not out:
-        raise ValueError("no source frame references found in generated visual tables")
+        raise ValueError("no source frame references found in the generated tables")
     return out
 
 
@@ -54,12 +82,22 @@ def rgba5551(rgb555: int, index: int) -> int:
 
 
 def emit(out_path: pathlib.Path, lod: pathlib.Path, img_dir: pathlib.Path,
-         visual_sources: list[pathlib.Path]) -> tuple[int, int]:
+         visual_sources: list[pathlib.Path],
+         prefix: str = "bret", only_mapped: bool = False) -> tuple[int, int]:
     frames = collect_frames(visual_sources)
     mapping = bret_manifest.parse_lod(lod)
+    if only_mapped:
+        # One wrestler's bank: keep the frames THIS .LOD owns and leave
+        # the rest to their own wrestler's bundle. The eight .LOD files
+        # partition the roster's frames cleanly -- 4,476 of them, with
+        # only H4HU4B10 and Y2ST2Z01 in no container at all, the same
+        # two the geometry bundler already reports.
+        frames = [f for f in frames if f in mapping]
+        if not frames:
+            raise ValueError(f"{lod.name} owns none of the referenced frames")
     missing = [f for f in frames if f not in mapping]
     if missing:
-        raise ValueError("BRET.LOD has no container mapping for: " + ", ".join(missing))
+        raise ValueError(f"{lod.name} has no container mapping for: " + ", ".join(missing))
 
     # Load every needed WIMP container exactly once.
     containers: OrderedDict[str, tuple[pathlib.Path, bytes, list, list]] = OrderedDict()
@@ -90,7 +128,7 @@ def emit(out_path: pathlib.Path, lod: pathlib.Path, img_dir: pathlib.Path,
     # experiment instead of another rebuild-per-offset loop.
 
     lines = [
-        "/* Auto-generated from the original Midway Bret WIMP containers. */",
+        f"/* Auto-generated from the original Midway {prefix} WIMP containers. */",
         '#include "wm/bret_sprites.h"',
         "#include <string.h>",
         "",
@@ -138,7 +176,7 @@ def emit(out_path: pathlib.Path, lod: pathlib.Path, img_dir: pathlib.Path,
     lines += [
         "};",
         "",
-        "const wm_source_sprite *wm_bret_sprite_find(const char *source_frame) {",
+        f"const wm_source_sprite *wm_{prefix}_sprite_find(const char *source_frame) {{",
         "    if (!source_frame) return 0;",
         "    for (size_t i = 0; i < sizeof(sprites)/sizeof(sprites[0]); ++i)",
         "        if (strcmp(sprites[i].source_frame, source_frame) == 0) return &sprites[i];",
@@ -161,9 +199,16 @@ def main() -> int:
     ap.add_argument("--img-dir", required=True, type=pathlib.Path)
     ap.add_argument("--visual-source", action="append", required=True, type=pathlib.Path)
     ap.add_argument("--out", required=True, type=pathlib.Path)
+    # One bank per wrestler: the symbol prefix keeps eight of these from
+    # colliding, and --only-mapped keeps each one to the frames its own
+    # .LOD owns. Bret's bank keeps the historical name and shape.
+    ap.add_argument("--prefix", default="bret")
+    ap.add_argument("--only-mapped", action="store_true")
     ns = ap.parse_args()
-    count, pixels = emit(ns.out, ns.lod, ns.img_dir, ns.visual_source)
-    print(f"generated {ns.out}: {count} unique Bret frames, {pixels} CI8 pixels")
+    count, pixels = emit(ns.out, ns.lod, ns.img_dir, ns.visual_source,
+                         ns.prefix, ns.only_mapped)
+    print(f"generated {ns.out}: {count} unique {ns.prefix} frames, "
+          f"{pixels} CI8 pixels")
     # Dump the raw tail for a few source frames.  These lines are intentionally
     # visible in Actions logs so the exact WIMP metadata survives even if a
     # hardware photo is hard to read.

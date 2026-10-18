@@ -86,7 +86,7 @@ static void test_run_yoko_and_skip(void)
 static void test_run_dizzy(void)
 {
     wm_arcade_actor_t a,v; trace_t t={0}; wm_arcade_react1_callbacks_t c=cbs(&t); wm_arcade_react1_context_t x;
-    actors(&a,&v); a.dizzy=1; a.getup_time=44; a.meter_proc=(void*)1;
+    actors(&a,&v); a.plyr_dizzy=1; a.getup_time=44; a.meter_proc=(void*)1;
     wm_arcade_react1_context_init(&x,&c); wm_arcade_react5_apply(&a,&v,WM_RXN_RUN,NULL,NULL,&x);
     assert(a.getup_time==44 && t.slide_calls==0);
     assert(t.anims[1]==WM_R1_ANIM_BOUNCE_OFF_DIZZY);

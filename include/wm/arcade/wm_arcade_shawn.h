@@ -37,9 +37,7 @@ typedef enum wm_arcade_shawn_monitor_id {
     WM_SHAWN_MON_9,
     WM_SHAWN_MON_10,
     WM_SHAWN_MON_11,
-    WM_SHAWN_MON_12,
-    WM_SHAWN_MON_13,
-    WM_SHAWN_MON_14
+    WM_SHAWN_MON_12
 } wm_arcade_shawn_monitor_id_t;
 
 typedef enum wm_arcade_shawn_step_result {

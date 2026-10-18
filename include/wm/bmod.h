@@ -44,12 +44,19 @@ enum {
 bool wm_bmod_decode_block(const wm_bmod_module *module, size_t index,
                           wm_bmod_block *out);
 
-/* Portable reconstruction of the Midway background-object ordering.
-   BAKGND.ASM sends normal background blocks through INSBOBJ and the shared
-   display dispatcher runs YZSORT every frame.  The shared INSBOBJ/YZSORT body
-   is not present in this game's source drop; matching its observed title
-   composition requires Z first and OYPOS top-to-bottom for equal Z.  Returning
-   false for an exact tie lets callers keep source order stable. */
+/* The Midway background-object ordering, from the source rather than from
+   observation.  BAKGND.ASM:721 sends normal background blocks through
+   INSBOBJ, which is DISPLAY.ASM:1540 -- an earlier comment here said that
+   body was "not present in this game's source drop", which was wrong; so is
+   obj_yzsort, at DISPLAY.ASM:1248, and the two agree.
+
+   INSBOBJ's own header says it: "List is sorted by increasing z and
+   increasing y within constant z".  Its walk steps past every node whose Z
+   is smaller and, at equal Z, every node whose Y is smaller, inserting
+   before the first that is not.  obj_yzsort maintains the same order with a
+   bubble pass, and its equal-Z test is `jrge` -- so two objects at the same
+   Z and the same Y are never swapped and keep the order they were inserted
+   in.  Returning false for an exact tie is that stability. */
 bool wm_bmod_draw_before(const wm_bmod_block *a, const wm_bmod_block *b);
 
 /* Original background visibility test used by BGND_UD1/bgnd_addmod. The N64

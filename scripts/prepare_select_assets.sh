@@ -54,6 +54,8 @@ python3 "$ROOT/tools/select_background_bundle.py" \
     --out-choice "$ROOT/src/generated/select_background_choice.c" \
     --out-progress "$ROOT/src/generated/progress_background.c"
 
+# The module order here MUST match scripts/prepare_frontend_assets.sh --
+# see the note there. Both scripts write this same file.
 python3 "$ROOT/tools/bmod_source.py" \
     --source "$ORIG/BGNDTBL.ASM" \
     --module NTITLESCBMOD \

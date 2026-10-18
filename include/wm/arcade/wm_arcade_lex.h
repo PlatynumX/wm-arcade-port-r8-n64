@@ -32,9 +32,7 @@ typedef enum wm_arcade_lex_monitor_id {
     WM_LEX_MON_4,
     WM_LEX_MON_5,
     WM_LEX_MON_6,
-    WM_LEX_MON_7,
-    WM_LEX_MON_8,
-    WM_LEX_MON_9
+    WM_LEX_MON_7
 } wm_arcade_lex_monitor_id_t;
 
 typedef enum wm_arcade_lex_step_result {

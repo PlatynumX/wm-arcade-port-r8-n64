@@ -66,6 +66,48 @@ const wm_visual_sequence wm_bret_power_punch_anim = {
     .repeat = false,
 };
 
+static const wm_visual_frame bret_super_punch2_2_frames[] = {
+    {"H2BC3A01", 3},
+    {"H2BC3A02", 3},
+    {"H2BC3A03", 8},
+    {"H2BC3A04", 3},
+    {"H2BC3A05", 6},
+    {"H2BC3A05", 20},
+    {"H2BC3A05", 2},
+    {"H2BC3A06", 2},
+    {"H2BC3A07", 2},
+    {"H2BC3A08", 2},
+};
+
+const wm_visual_sequence wm_bret_super_punch2_2_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_2_super_punch2_anim",
+    .frames = bret_super_punch2_2_frames,
+    .frame_count = sizeof(bret_super_punch2_2_frames) / sizeof(bret_super_punch2_2_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_super_punch2_4_frames[] = {
+    {"H4BC3A01", 3},
+    {"H4BC3A02", 9},
+    {"H4BC3A03", 2},
+    {"H4BC3A04", 3},
+    {"H4BC3A05", 6},
+    {"H4BC3A05", 20},
+    {"H4BC3A05", 2},
+    {"H4BC3A06", 2},
+    {"H4BC3A07", 2},
+    {"H4BC3A08", 2},
+};
+
+const wm_visual_sequence wm_bret_super_punch2_4_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_4_super_punch2_anim",
+    .frames = bret_super_punch2_4_frames,
+    .frame_count = sizeof(bret_super_punch2_4_frames) / sizeof(bret_super_punch2_4_frames[0]),
+    .repeat = false,
+};
+
 static const wm_visual_frame bret_light_kick2_frames[] = {
     {"H2KM3A01", 1},
     {"H2KM3A01", 1},
@@ -132,4 +174,620 @@ const wm_visual_sequence wm_bret_power_kick_anim = {
     .frames = bret_power_kick_frames,
     .frame_count = sizeof(bret_power_kick_frames) / sizeof(bret_power_kick_frames[0]),
     .repeat = false,
+};
+
+static const wm_visual_frame bret_butt2_frames[] = {
+    {"H2BC3A01", 1},
+    {"H2BC3A01", 1},
+    {"H2BC3A01", 1},
+    {"H2BC3A02", 2},
+    {"H2BC3A03", 2},
+    {"H2BC3A04", 3},
+    {"H2BC3A05", 6},
+    {"H2BC3A05", 2},
+    {"H2BC3A06", 2},
+    {"H2BC3A07", 2},
+    {"H2BC3A08", 2},
+};
+
+const wm_visual_sequence wm_bret_butt2_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_2_butt_anim",
+    .frames = bret_butt2_frames,
+    .frame_count = sizeof(bret_butt2_frames) / sizeof(bret_butt2_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_butt4_frames[] = {
+    {"H4BC3A01", 1},
+    {"H4BC3A01", 1},
+    {"H4BC3A01", 1},
+    {"H4BC3A02", 2},
+    {"H4BC3A03", 2},
+    {"H4BC3A04", 3},
+    {"H4BC3A05", 6},
+    {"H4BC3A05", 2},
+    {"H4BC3A06", 2},
+    {"H4BC3A07", 2},
+    {"H4BC3A08", 2},
+};
+
+const wm_visual_sequence wm_bret_butt4_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_4_butt_anim",
+    .frames = bret_butt4_frames,
+    .frame_count = sizeof(bret_butt4_frames) / sizeof(bret_butt4_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_knee2_frames[] = {
+    {"H4NM3A02", 1},
+    {"H4NM3A02", 1},
+    {"H4NM3A02", 1},
+    {"H4NM3A03", 2},
+    {"H4NM3A04", 2},
+    {"H4NM3A04", 3},
+    {"H4NM3A04", 6},
+    {"H4NM3A05", 3},
+    {"H4NM3A06", 3},
+    {"H4NM3A07", 3},
+};
+
+const wm_visual_sequence wm_bret_knee2_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_2_knee_anim",
+    .frames = bret_knee2_frames,
+    .frame_count = sizeof(bret_knee2_frames) / sizeof(bret_knee2_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_knee4_frames[] = {
+    {"H2NM3A02", 1},
+    {"H2NM3A02", 1},
+    {"H2NM3A02", 1},
+    {"H2NM3A03", 2},
+    {"H2NM3A04", 3},
+    {"H2NM3A04", 1},
+    {"H2NM3A04", 6},
+    {"H2NM3A04", 10},
+    {"H2NM3A05", 3},
+    {"H2NM3A06", 3},
+};
+
+const wm_visual_sequence wm_bret_knee4_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_4_knee_anim",
+    .frames = bret_knee4_frames,
+    .frame_count = sizeof(bret_knee4_frames) / sizeof(bret_knee4_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_uppercut4_frames[] = {
+    {"H4UP3C01", 1},
+    {"H4UP3C02", 1},
+    {"H4UP3C03", 2},
+    {"H4UP3C04", 1},
+    {"H4UP3C05", 2},
+    {"H4UP3C06", 3},
+    {"H4UP3C07", 12},
+    {"H4UP3C08", 3},
+    {"H4UP3C09", 3},
+    {"H4UP3C10", 3},
+    {"H4UP3C11", 3},
+};
+
+const wm_visual_sequence wm_bret_uppercut4_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_4_uppercut_anim",
+    .frames = bret_uppercut4_frames,
+    .frame_count = sizeof(bret_uppercut4_frames) / sizeof(bret_uppercut4_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_stomp2_frames[] = {
+    {"H2MP2B01", 1},
+    {"H2MP2B01", 1},
+    {"H2MP2B01", 1},
+    {"H2MP2B02", 3},
+    {"H2MP2B02", 1},
+    {"H2MP2B03", 3},
+    {"H2MP2B04", 1},
+    {"H2MP2B05", 1},
+    {"H2MP2B05", 3},
+    {"H2MP2B06", 3},
+    {"H2MP2B07", 3},
+    {"H2MP2B08", 3},
+};
+
+const wm_visual_sequence wm_bret_stomp2_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_2_stomp_anim",
+    .frames = bret_stomp2_frames,
+    .frame_count = sizeof(bret_stomp2_frames) / sizeof(bret_stomp2_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_stomp4_frames[] = {
+    {"H4MP4A01", 1},
+    {"H4MP4A01", 1},
+    {"H4MP4A01", 1},
+    {"H4MP4A02", 3},
+    {"H4MP4A02", 1},
+    {"H4MP4A03", 3},
+    {"H4MP4A04", 1},
+    {"H4MP4A05", 1},
+    {"H4MP4A05", 3},
+    {"H4MP4A06", 3},
+    {"H4MP4A07", 3},
+    {"H4MP4A08", 3},
+};
+
+const wm_visual_sequence wm_bret_stomp4_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_4_stomp_anim",
+    .frames = bret_stomp4_frames,
+    .frame_count = sizeof(bret_stomp4_frames) / sizeof(bret_stomp4_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_ground_punch2_frames[] = {
+    {"H2PF2B01", 2},
+    {"H2PF2B02", 2},
+    {"H2PF2B02", 1},
+    {"H2PF2B03", 2},
+    {"H2PF2B04", 3},
+    {"H2PF2B05", 4},
+    {"H2PF2B03", 10},
+    {"H2PF2B04", 4},
+    {"H2PF2B05", 1},
+    {"H2PF2B05", 2},
+    {"H2PF2B06", 3},
+    {"H2PF2B07", 2},
+    {"H2PF2B08", 3},
+};
+
+const wm_visual_sequence wm_bret_ground_punch2_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_2_ground_punch_anim",
+    .frames = bret_ground_punch2_frames,
+    .frame_count = sizeof(bret_ground_punch2_frames) / sizeof(bret_ground_punch2_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_ground_punch4_frames[] = {
+    {"H4PF4B01", 2},
+    {"H4PF4B02", 2},
+    {"H4PF4B02", 1},
+    {"H4PF4B03", 2},
+    {"H4PF4B04", 3},
+    {"H4PF4B05", 4},
+    {"H4PF4B03", 1},
+    {"H4PF4B04", 2},
+    {"H4PF4B05", 2},
+    {"H4PF4B05", 2},
+    {"H4PF4B06", 3},
+    {"H4PF4B07", 2},
+    {"H4PF4B08", 3},
+};
+
+const wm_visual_sequence wm_bret_ground_punch4_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_4_ground_punch_anim",
+    .frames = bret_ground_punch4_frames,
+    .frame_count = sizeof(bret_ground_punch4_frames) / sizeof(bret_ground_punch4_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_push4_frames[] = {
+    {"H4PS3A01", 3},
+    {"H4PS3A02", 3},
+    {"H4PS3A03", 3},
+    {"H4PS3A04", 3},
+    {"H4PS3A04", 15},
+    {"H4PS3A04", 3},
+    {"H4PS3A04", 5},
+    {"H4PS3A05", 3},
+    {"H4PS3A06", 3},
+    {"H4PS3A07", 3},
+    {"H4PS3A08", 3},
+};
+
+const wm_visual_sequence wm_bret_push4_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_4_push_anim",
+    .frames = bret_push4_frames,
+    .frame_count = sizeof(bret_push4_frames) / sizeof(bret_push4_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_jump_kick4_frames[] = {
+    {"H4KM3D01", 3},
+    {"H4KM3D02", 3},
+    {"H4KM3D03", 3},
+    {"H4KM3D04", 4},
+    {"H4KM3D05", 3},
+    {"H4KM3D05", 3},
+    {"H4KM3D07", 3},
+    {"H4KM3D08", 3},
+    {"H4KM3D09", 3},
+};
+
+const wm_visual_sequence wm_bret_jump_kick4_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_4_jump_kick_anim",
+    .frames = bret_jump_kick4_frames,
+    .frame_count = sizeof(bret_jump_kick4_frames) / sizeof(bret_jump_kick4_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_knee_fall4_frames[] = {
+    {"H2NM3A02", 3},
+    {"H2NM3A03", 3},
+    {"H2NM3A04", 3},
+    {"H2NM3A04", 1},
+    {"H2NM3A04", 1},
+    {"H4NM3A05", 3},
+    {"H4NM3A06", 3},
+    {"H4NM3A07", 3},
+};
+
+const wm_visual_sequence wm_bret_knee_fall4_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_4_knee_fall_anim",
+    .frames = bret_knee_fall4_frames,
+    .frame_count = sizeof(bret_knee_fall4_frames) / sizeof(bret_knee_fall4_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_kick_tb_frames[] = {
+    {"H4KM3C01", 3},
+    {"H4KM3C02", 3},
+    {"H4KM3C03", 2},
+    {"H4KM3C04", 8},
+    {"H4KM3C05", 2},
+    {"H4KM3C06", 2},
+    {"H4KM3C07", 2},
+    {"H4KM3C08", 2},
+    {"H4KM3C09", 2},
+};
+
+const wm_visual_sequence wm_bret_kick_tb_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_kick_TB_anim",
+    .frames = bret_kick_tb_frames,
+    .frame_count = sizeof(bret_kick_tb_frames) / sizeof(bret_kick_tb_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_knee_to_head4_frames[] = {
+    {"H2NM3A02", 2},
+    {"H2NM3A03", 2},
+    {"H2NM3A04", 3},
+    {"H2NM3A04", 1},
+    {"H2NM3A04", 6},
+    {"H2NM3A04", 10},
+    {"H2NM3A05", 3},
+    {"H2NM3A06", 3},
+};
+
+const wm_visual_sequence wm_bret_knee_to_head4_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_4_knee_to_head_anim",
+    .frames = bret_knee_to_head4_frames,
+    .frame_count = sizeof(bret_knee_to_head4_frames) / sizeof(bret_knee_to_head4_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_knees_to_head_frames[] = {
+    {"H4KM3C01", 2},
+    {"H4KM3C02", 3},
+    {"H4KM3C03", 2},
+    {"H4KM3C04", 4},
+    {"H4KM3C06", 3},
+    {"H4KM3C07", 3},
+    {"H4KM3C02", 3},
+    {"H4KM3C03", 2},
+    {"H4KM3C04", 3},
+    {"H4KM3C06", 3},
+    {"H4KM3C07", 3},
+    {"H4KM3C08", 3},
+    {"H4KM3C09", 3},
+};
+
+const wm_visual_sequence wm_bret_knees_to_head_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_knees_to_head_anim",
+    .frames = bret_knees_to_head_frames,
+    .frame_count = sizeof(bret_knees_to_head_frames) / sizeof(bret_knees_to_head_frames[0]),
+    .repeat = false,
+    /* ANI_SET_RPTCOUNT,3: frames [1..5] play 3 times before the stream continues. */
+    .loop_first = 1,
+    .loop_last = 5,
+    .loop_count = 3,
+};
+
+static const wm_visual_frame bret_pin2_frames[] = {
+    {"H1TL5A03", 3},
+    {"H1TL5A04", 3},
+    {"H3PN5A01", 3},
+    {"H3PN5A02", 4},
+    {"H3PN5A03", 4},
+    {"H3PN5A04", 18},
+    {"H3PN5A07", 5},
+    {"H3PN5A08", 4},
+    {"H3PN5A08", 4},
+    {"H3PN5A08", 40},
+    {"H3GU4A06", 3},
+    {"H3GU4A07", 3},
+    {"H3GU4A08", 3},
+    {"H3GU4A09", 3},
+    {"H3GU4A10", 3},
+    {"H4SL4C01", 5},
+    {"H4SL4C02", 5},
+    {"H4SL4C03", 5},
+    {"H4SL4C04", 5},
+    {"H4SL4C05", 5},
+    {"H4SL4C06", 5},
+    {"H4SL4C05", 5},
+    {"H4SL4C04", 5},
+    {"H4SL4C07", 5},
+    {"H4SL4C08", 5},
+    {"H4SL4C09", 5},
+    {"H4SL4C08", 5},
+    {"H4SL4C07", 5},
+    {"H4SL4C04", 5},
+    {"H4SL4C05", 5},
+    {"H4SL4C06", 5},
+    {"H4SL4C05", 5},
+    {"H4SL4C04", 5},
+    {"H4SL4C07", 5},
+    {"H4SL4C03", 1000},
+};
+
+const wm_visual_sequence wm_bret_pin2_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_2_pin_anim",
+    .frames = bret_pin2_frames,
+    .frame_count = sizeof(bret_pin2_frames) / sizeof(bret_pin2_frames[0]),
+    .repeat = false,
+    /* ANI_SET_RPTCOUNT,3: frames [18..27] play 3 times before the stream continues. */
+    .loop_first = 18,
+    .loop_last = 27,
+    .loop_count = 3,
+};
+
+static const wm_visual_frame bret_pin4_frames[] = {
+    {"H3PN5A01", 3},
+    {"H3PN5A02", 4},
+    {"H3PN5A03", 4},
+    {"H3PN5A04", 18},
+    {"H3PN5A07", 5},
+    {"H3PN5A08", 4},
+    {"H3PN5A08", 4},
+    {"H3PN5A08", 40},
+    {"H3GU4A06", 3},
+    {"H3GU4A07", 3},
+    {"H3GU4A08", 3},
+    {"H3GU4A09", 3},
+    {"H3GU4A10", 3},
+    {"H4SL4C01", 5},
+    {"H4SL4C02", 5},
+    {"H4SL4C03", 5},
+    {"H4SL4C04", 5},
+    {"H4SL4C05", 5},
+    {"H4SL4C06", 5},
+    {"H4SL4C05", 5},
+    {"H4SL4C04", 5},
+    {"H4SL4C07", 5},
+    {"H4SL4C08", 5},
+    {"H4SL4C09", 5},
+    {"H4SL4C08", 5},
+    {"H4SL4C07", 5},
+    {"H4SL4C04", 5},
+    {"H4SL4C05", 5},
+    {"H4SL4C06", 5},
+    {"H4SL4C05", 5},
+    {"H4SL4C04", 5},
+    {"H4SL4C07", 5},
+    {"H4SL4C03", 1000},
+};
+
+const wm_visual_sequence wm_bret_pin4_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_4_pin_anim",
+    .frames = bret_pin4_frames,
+    .frame_count = sizeof(bret_pin4_frames) / sizeof(bret_pin4_frames[0]),
+    .repeat = false,
+    /* ANI_SET_RPTCOUNT,3: frames [16..25] play 3 times before the stream continues. */
+    .loop_first = 16,
+    .loop_last = 25,
+    .loop_count = 3,
+};
+
+static const wm_visual_frame bret_butts2_frames[] = {
+    {"H2BC3A01", 2},
+    {"H2BC3A02", 2},
+    {"H2BC3A03", 2},
+    {"H2BC3A04", 2},
+    {"H2BC3A05", 6},
+    {"H2BC3A05", 2},
+    {"H2BC3A06", 2},
+    {"H2BC3A07", 2},
+    {"H2BC3A08", 2},
+};
+
+const wm_visual_sequence wm_bret_butts2_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_2_butts_anim",
+    .frames = bret_butts2_frames,
+    .frame_count = sizeof(bret_butts2_frames) / sizeof(bret_butts2_frames[0]),
+    .repeat = false,
+    /* ANI_SET_RPTCOUNT,3: frames [0..7] play 3 times before the stream continues. */
+    .loop_first = 0,
+    .loop_last = 7,
+    .loop_count = 3,
+};
+
+static const wm_visual_frame bret_butts4_frames[] = {
+    {"H4BC3A01", 2},
+    {"H4BC3A02", 2},
+    {"H4BC3A03", 2},
+    {"H4BC3A04", 2},
+    {"H4BC3A05", 6},
+    {"H4BC3A05", 2},
+    {"H4BC3A06", 2},
+    {"H4BC3A07", 2},
+    {"H4BC3A08", 2},
+};
+
+const wm_visual_sequence wm_bret_butts4_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_4_butts_anim",
+    .frames = bret_butts4_frames,
+    .frame_count = sizeof(bret_butts4_frames) / sizeof(bret_butts4_frames[0]),
+    .repeat = false,
+    /* ANI_SET_RPTCOUNT,3: frames [0..7] play 3 times before the stream continues. */
+    .loop_first = 0,
+    .loop_last = 7,
+    .loop_count = 3,
+};
+
+static const wm_visual_frame bret_flying_kick_frames[] = {
+    {"H3DC3A01", 2},
+    {"H3DC3A02", 2},
+    {"H3DC3A03", 7},
+    {"H3DC3A04", 3},
+    {"H3DC3A05", 3},
+    {"H3DC3A05", 3},
+    {"H3DC3A06", 1},
+    {"H3DC3A08", 2},
+    {"H3DC3A09", 2},
+};
+
+const wm_visual_sequence wm_bret_flying_kick_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_flying_kick_anim",
+    .frames = bret_flying_kick_frames,
+    .frame_count = sizeof(bret_flying_kick_frames) / sizeof(bret_flying_kick_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_tbukl_leap_frames[] = {
+    {"H4JP4C01", 3},
+    {"H4JP4C02", 3},
+    {"H4JP4C03", 3},
+    {"H4JP4C04", 3},
+    {"H4JP4C05", 6},
+    {"H4JP4C05", 24},
+    {"H4JP4C06", 1},
+};
+
+const wm_visual_sequence wm_bret_tbukl_leap_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_tbukl_leap_anim",
+    .frames = bret_tbukl_leap_frames,
+    .frame_count = sizeof(bret_tbukl_leap_frames) / sizeof(bret_tbukl_leap_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_running_ground_punch_frames[] = {
+    {"H4JK4C01", 2},
+    {"H4JK4C02", 2},
+    {"H4JK4C03", 3},
+    {"H4JK4C04", 3},
+    {"H4JK4C05", 3},
+    {"H4JK4C06", 2},
+    {"H4JK4C07", 5},
+    {"H4JK4C08", 4},
+};
+
+const wm_visual_sequence wm_bret_running_ground_punch_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_running_ground_punch_anim",
+    .frames = bret_running_ground_punch_frames,
+    .frame_count = sizeof(bret_running_ground_punch_frames) / sizeof(bret_running_ground_punch_frames[0]),
+    .repeat = false,
+};
+
+static const wm_visual_frame bret_combo_punch_frames[] = {
+    {"H4PL3X01", 2},
+    {"H4PL3X02", 2},
+    {"H4PL3X03", 2},
+    {"H4PL3X04", 2},
+    {"H4PL3X04", 1},
+    {"H4PL3X05", 2},
+    {"H4PL3X06", 2},
+    {"H4PL3X07", 2},
+    {"H4PL3X08", 2},
+    {"H4PL3X01", 2},
+    {"H4PL3X02", 2},
+    {"H4PL3X03", 2},
+    {"H4PL3X04", 2},
+    {"H4PL3X04", 1},
+    {"H4PL3X05", 2},
+    {"H4PL3X06", 2},
+    {"H4PL3X07", 2},
+    {"H4PL3X08", 2},
+    {"H4PL3X01", 1},
+    {"H4PL3X02", 1},
+    {"H4PL3X03", 1},
+    {"H4PL3X04", 2},
+    {"H4PL3X04", 1},
+    {"H4PL3X05", 2},
+    {"H4PL3X06", 2},
+    {"H4PL3X07", 1},
+};
+
+const wm_visual_sequence wm_bret_combo_punch_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_combo_punch_anim",
+    .frames = bret_combo_punch_frames,
+    .frame_count = sizeof(bret_combo_punch_frames) / sizeof(bret_combo_punch_frames[0]),
+    .repeat = false,
+    /* ANI_SET_RPTCOUNT,3: frames [18..25] play 3 times before the stream continues. */
+    .loop_first = 18,
+    .loop_last = 25,
+    .loop_count = 3,
+};
+
+static const wm_visual_frame bret_combo_kick_frames[] = {
+    {"H4KM3B02", 2},
+    {"H2KM3A03", 2},
+    {"H2KM3A04", 2},
+    {"H2KM3A05", 2},
+    {"H2KM3A05", 4},
+    {"H2KM3A06", 2},
+    {"H2KM3A08", 2},
+    {"H4KM3B09", 2},
+    {"H4KM3B10", 2},
+    {"H4KM3B02", 2},
+    {"H2KM3A03", 2},
+    {"H2KM3A04", 2},
+    {"H2KM3A05", 2},
+    {"H2KM3A05", 4},
+    {"H2KM3A06", 2},
+    {"H2KM3A08", 2},
+    {"H4KM3B09", 2},
+    {"H4KM3B10", 2},
+    {"H4KM3B02", 1},
+    {"H2KM3A03", 2},
+    {"H2KM3A04", 1},
+    {"H2KM3A05", 1},
+    {"H2KM3A05", 2},
+    {"H2KM3A06", 1},
+    {"H2KM3A08", 2},
+    {"H4KM3B09", 1},
+    {"H4KM3B10", 2},
+};
+
+const wm_visual_sequence wm_bret_combo_kick_anim = {
+    .source_file = "HRTSEQ2.ASM",
+    .source_label = "hrt_combo_kick_anim",
+    .frames = bret_combo_kick_frames,
+    .frame_count = sizeof(bret_combo_kick_frames) / sizeof(bret_combo_kick_frames[0]),
+    .repeat = false,
+    /* ANI_SET_RPTCOUNT,3: frames [18..26] play 3 times before the stream continues. */
+    .loop_first = 18,
+    .loop_last = 26,
+    .loop_count = 3,
 };

@@ -7,6 +7,7 @@
 #include "wm/app.h"
 #include "audio_backend.h"
 #include "wm/bmod.h"
+#include "wm/bret_sprites.h"
 #include "wm/composite.h"
 #include "wm/demo.h"
 #include "wm/dcs_logo.h"
@@ -97,6 +98,43 @@ static void draw_background(void) {
     fill_rect(0, 0, 320, 240, RGBA32(8, 10, 18, 255));
 }
 
+static void draw_ring_back(void) {
+    draw_background();
+    fill_rect(0, 82, 320, 240, RGBA32(20, 22, 28, 255));
+
+    fill_rect(26, 96, 294, 214, RGBA32(92, 92, 102, 255));
+    fill_rect(33, 102, 287, 205, RGBA32(194, 194, 198, 255));
+    fill_rect(39, 108, 281, 199, RGBA32(216, 216, 216, 255));
+
+    fill_rect(25, 83, 31, 205, RGBA32(38, 38, 44, 255));
+    fill_rect(289, 83, 295, 205, RGBA32(38, 38, 44, 255));
+    fill_rect(29, 105, 291, 108, RGBA32(188, 26, 40, 255));
+    fill_rect(29, 114, 291, 117, RGBA32(188, 26, 40, 255));
+    fill_rect(29, 123, 291, 126, RGBA32(188, 26, 40, 255));
+}
+
+static void draw_ring_front(void) {
+    fill_rect(29, 183, 291, 186, RGBA32(202, 28, 44, 255));
+    fill_rect(29, 192, 291, 195, RGBA32(202, 28, 44, 255));
+    fill_rect(29, 201, 291, 204, RGBA32(202, 28, 44, 255));
+    fill_rect(25, 180, 31, 209, RGBA32(38, 38, 44, 255));
+    fill_rect(289, 180, 295, 209, RGBA32(38, 38, 44, 255));
+}
+
+static const wm_source_sprite *bret_object_palette(const wm_source_sprite *fallback) {
+    /* The arcade renderer does not leave each image piece on its source palette.
+       set_image() writes the wrestler's OBJ_PAL back to OPAL after plotting every
+       primary and secondary piece. BRETIMG.ASM exports H4ST4A02 as Bret's base
+       image, so use its palette as the portable equivalent of that shared object
+       palette. Fall back only if the generated source data is incomplete. */
+    const wm_source_sprite *base = wm_bret_sprite_find("H4ST4A02");
+    if (!base || !base->palette_rgba5551 || !base->palette_colors)
+        return fallback;
+    if (fallback && base->palette_colors < fallback->palette_colors)
+        return fallback;
+    return base;
+}
+
 static void draw_source_sprite_scaled(const wm_source_sprite *spr, float anchor_x, float anchor_y,
                                       int display_off_x, int display_off_y,
                                       bool flip_x, const wm_source_sprite *palette_source,
@@ -149,6 +187,14 @@ static void draw_source_sprite_scaled(const wm_source_sprite *spr, float anchor_
     }
 }
 
+static void draw_source_sprite(const wm_source_sprite *spr, int anchor_x, int anchor_y,
+                               int display_off_x, int display_off_y,
+                               bool flip_x, const wm_source_sprite *palette_source) {
+    draw_source_sprite_scaled(spr, (float)anchor_x, (float)anchor_y,
+                              display_off_x, display_off_y, flip_x, palette_source,
+                              1.0f, 1.0f);
+}
+
 /* Draw one original BLIMP/BMOD background block. Unlike WIMP character
    sprites, background CI8 pixels choose their palette from the packed BMOD
    record. BAKGND.ASM MAP_FLAGS bit 2 controls whether index zero writes. */
@@ -197,6 +243,106 @@ static void draw_title_background_block(const wm_title_background_image *img,
                           .filtering = false,
                       });
     }
+}
+
+static void draw_shadow(int x, int y) {
+    fill_rect(x - 13, y - 3, x + 14, y + 2, RGBA32(86, 86, 90, 255));
+}
+
+static const wm_source_sprite *fighter_sprite(const wm_demo_fighter *f) {
+    const wm_visual_frame *frame = wm_visual_current(&f->visual);
+    return frame ? wm_bret_sprite_find(frame->source_frame) : NULL;
+}
+
+static bool fighter_uses_torso_layer(const wm_demo_fighter *f) {
+    return f->action == WM_DEMO_IDLE || f->action == WM_DEMO_WALK ||
+           f->action == WM_DEMO_BLOCK;
+}
+
+static void draw_fighter(const wm_demo_fighter *f) {
+    const wm_source_sprite *spr = fighter_sprite(f);
+    draw_shadow(f->screen_x, f->screen_y);
+    if (!spr) {
+        fill_rect(f->screen_x - 10, f->screen_y - 48,
+                  f->screen_x + 10, f->screen_y, RGBA32(230, 30, 150, 255));
+        return;
+    }
+
+    const wm_source_sprite *object_pal = bret_object_palette(spr);
+    draw_source_sprite(spr, f->screen_x, f->screen_y,
+                       spr->xani, spr->yani, f->flip_x, object_pal);
+
+    if (fighter_uses_torso_layer(f)) {
+        const wm_visual_frame *torso_frame = wm_visual_current(&f->torso_visual);
+        const wm_source_sprite *torso = torso_frame
+            ? wm_bret_sprite_find(torso_frame->source_frame) : NULL;
+        if (torso) {
+            int a2x = spr->wimp_tail[WM_ATTACH_X_SLOT];
+            int a2y = spr->wimp_tail[WM_ATTACH_Y_SLOT];
+            if (!(a2x == -1 && a2y == -1) &&
+                a2x >= -512 && a2x <= 512 && a2y >= -512 && a2y <= 512) {
+                int secondary_xoff, secondary_yoff;
+                wm_secondary_display_offsets(spr->xani, spr->yani, a2x, a2y,
+                                             torso->xani, torso->yani,
+                                             &secondary_xoff, &secondary_yoff);
+                /* Do not negate a hand-built delta when flipped.  The arcade
+                   leaves ODXOFF alone and flips the object around that offset;
+                   rdpq_tex_blit does the same when flip_x is applied before
+                   transformations.  This removes the small waist shear seen
+                   in the r8 hardware video. */
+                draw_source_sprite(torso, f->screen_x, f->screen_y,
+                                   secondary_xoff, secondary_yoff,
+                                   f->flip_x, object_pal);
+            }
+        }
+    }
+}
+
+static void draw_health_bar(int x, int y, int width, int health, bool right_align) {
+    int inner = (width - 4) * health / 100;
+    fill_rect(x, y, x + width, y + 8, RGBA32(24, 24, 30, 255));
+    fill_rect(x + 2, y + 2, x + width - 2, y + 6, RGBA32(70, 18, 22, 255));
+    if (inner <= 0) return;
+    if (right_align)
+        fill_rect(x + width - 2 - inner, y + 2, x + width - 2, y + 6,
+                  RGBA32(228, 210, 72, 255));
+    else
+        fill_rect(x + 2, y + 2, x + 2 + inner, y + 6,
+                  RGBA32(228, 210, 72, 255));
+}
+
+static void draw_match_hud(const wm_app *app) {
+    const wm_demo *demo = &app->demo;
+    const wm_wrestler_def *p1 = wm_roster_get(app->p1_choice);
+    const wm_wrestler_def *p2 = wm_roster_get(app->p2_choice);
+    char line[128];
+
+    draw_health_bar(8, 68, 132, demo->p1.health, false);
+    draw_health_bar(180, 68, 132, demo->p2.health, true);
+    text_line(8, 66, p1 ? p1->name : "P1");
+    text_line(230, 66, p2 ? p2->name : "CPU");
+
+    snprintf(line, sizeof(line), "%s/%s hp:%d   %s/%s hp:%d",
+             wm_demo_action_name(demo->p1.action), wm_demo_facing_name(demo->p1.facing),
+             demo->p1.health,
+             wm_demo_action_name(demo->p2.action), wm_demo_facing_name(demo->p2.facing),
+             demo->p2.health);
+    text_line(8, 14, line);
+
+    snprintf(line, sizeof(line), "hits:%u blocks:%u  P1:%u/%u CPU:%u/%u AI:%s",
+             demo->total_hits, demo->total_blocks,
+             demo->p1.hit_count, demo->p1.action_count,
+             demo->p2.hit_count, demo->p2.action_count,
+             demo->ai_enabled ? "ON" : "OFF");
+    text_line(8, 29, line);
+
+    snprintf(line, sizeof(line), "p1:%d,%d stun:%u  p2:%d,%d stun:%u",
+             demo->p1.screen_x, demo->p1.screen_y, demo->p1.stun_ticks,
+             demo->p2.screen_x, demo->p2.screen_y, demo->p2.stun_ticks);
+    text_line(8, 44, line);
+
+    if ((p1 && !p1->visual_backend_ready) || (p2 && !p2->visual_backend_ready))
+        text_line(8, 214, "SOURCE SLOT SELECTED - BRET ART BACKEND USED AS PLACEHOLDER");
 }
 
 static void render_dcs_logo(const wm_app *app) {
@@ -2225,6 +2371,28 @@ static void render_pregame(const wm_app *app) {
 
 
 
+static __attribute__((unused)) void render_match(const wm_app *app) {
+    const wm_demo *demo = &app->demo;
+    draw_ring_back();
+
+    if (demo->p1.screen_y <= demo->p2.screen_y) {
+        draw_fighter(&demo->p1);
+        draw_fighter(&demo->p2);
+    } else {
+        draw_fighter(&demo->p2);
+        draw_fighter(&demo->p1);
+    }
+    draw_ring_front();
+
+    /* This is the currently translated start_match/gameplay subset.  It is
+       driven by ATTRACT.ASM::show_gameplay timing now; no frontend menu owns it. */
+    if (app->show_debug)
+        draw_match_hud(app);
+
+}
+
+
+
 /*
  * BAKLST is drawn before OBJLST in DISPLAY.ASM. The portable match owns the
  * exact BGND_UD1 residency bits; this is only the N64 DMA equivalent for the
@@ -2591,7 +2759,6 @@ int main(void) {
 
     debug_init_emulog();
     debug_init_usblog();
-    assert_memory_expanded();
     display_init(RESOLUTION_320x240, DEPTH_16_BPP, 2,
                  GAMMA_NONE, FILTERS_RESAMPLE);
     rdpq_init();
@@ -2606,6 +2773,7 @@ int main(void) {
     wm_app_init(&app);
     source_timer.last_us = get_ticks_us();
     debugf("wm_arcade_port r9: 53 Hz arcade wall clock, render-rate independent\n");
+    debugf("embedded Bret source sprites: %u\n", (unsigned)wm_bret_sprite_count());
     debugf("embedded Midway Sports logo pieces: %u\n", (unsigned)wm_sports_logo_sprite_count());
     debugf("embedded source title background: %s (%lu blocks, %lu palettes)\n",
            wm_title_background_source_name(),
